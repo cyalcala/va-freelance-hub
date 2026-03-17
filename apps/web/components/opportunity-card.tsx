@@ -1,4 +1,4 @@
-import type { Opportunity } from "@va-hub/db";
+import type { Opportunity } from "@/lib/db";
 
 interface Props {
   opportunity: Opportunity;

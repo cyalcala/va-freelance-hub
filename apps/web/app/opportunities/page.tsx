@@ -1,4 +1,4 @@
-import { db, opportunities } from "@va-hub/db";
+import { db, opportunities } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
 import { OpportunityCard } from "@/components/opportunity-card";
 

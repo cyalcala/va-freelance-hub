@@ -1,4 +1,4 @@
-import type { VADirectoryEntry } from "@va-hub/db";
+import type { VADirectoryEntry } from "@/lib/db";
 
 interface Props {
   entry: VADirectoryEntry;

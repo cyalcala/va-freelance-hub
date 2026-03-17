@@ -1,4 +1,4 @@
-import { db, vaDirectory } from "@va-hub/db";
+import { db, vaDirectory } from "@/lib/db";
 import { desc } from "drizzle-orm";
 import { DirectoryCard } from "@/components/directory-card";
 
