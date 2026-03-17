@@ -2,7 +2,12 @@ import { XMLParser } from "fast-xml-parser";
 import { createHash } from "crypto";
 import type { NewOpportunity } from "./db";
 
-const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
+const parser = new XMLParser({
+  ignoreAttributes: false,
+  attributeNamePrefix: "@_",
+  processEntities: false,
+  htmlEntities: true,
+});
 
 export interface Source {
   id: string;
@@ -14,27 +19,59 @@ export interface Source {
 }
 
 export const rssSources: Source[] = [
-  { id: "we-work-remotely", name: "We Work Remotely", url: "https://weworkremotely.com/categories/remote-jobs.rss", platform: "WeWorkRemotely", defaultJobType: "full-time", tags: ["remote", "tech"] },
-  { id: "remotive", name: "Remotive", url: "https://remotive.com/remote-jobs/feed/all", platform: "Remotive", defaultJobType: "full-time", tags: ["remote"] },
-  { id: "problogger", name: "ProBlogger", url: "https://problogger.com/jobs/feed/", platform: "ProBlogger", defaultJobType: "freelance", tags: ["writing", "content"] },
-  { id: "remote-co", name: "Remote.co", url: "https://remote.co/remote-jobs/feed/", platform: "RemoteCo", defaultJobType: "full-time", tags: ["remote", "VA"] },
+  {
+    id: "we-work-remotely",
+    name: "We Work Remotely",
+    url: "https://weworkremotely.com/remote-jobs.rss",
+    platform: "WeWorkRemotely",
+    defaultJobType: "full-time",
+    tags: ["remote", "tech", "design", "marketing"],
+  },
+  {
+    id: "remotive",
+    name: "Remotive",
+    url: "https://remotive.com/remote-jobs/feed",
+    platform: "Remotive",
+    defaultJobType: "full-time",
+    tags: ["remote", "tech", "sales", "marketing"],
+  },
+  {
+    id: "authentic-jobs",
+    name: "Authentic Jobs",
+    url: "https://authenticjobs.com/feed/",
+    platform: "AuthenticJobs",
+    defaultJobType: "freelance",
+    tags: ["design", "creative", "web", "freelance"],
+  },
+  {
+    id: "dribbble",
+    name: "Dribbble Jobs",
+    url: "https://dribbble.com/jobs.rss",
+    platform: "Dribbble",
+    defaultJobType: "freelance",
+    tags: ["design", "creative", "UI", "UX"],
+  },
 ];
 
 function toHash(title: string, url: string) {
   return createHash("sha256").update(`${title}::${url}`).digest("hex").slice(0, 16);
 }
 
-function stripHtml(s: string) {
+function stripHtml(s: string | undefined) {
   return s?.replace(/<[^>]*>/g, "").trim() ?? "";
 }
 
 export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
   try {
     const res = await fetch(source.url, {
-      headers: { "User-Agent": "va-freelance-hub/1.0" },
-      signal: AbortSignal.timeout(15_000),
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; va-freelance-hub/1.0)" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(20_000),
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.log(`[rss] ${source.name}: HTTP ${res.status}`);
+      return [];
+    }
     const xml = await res.text();
     const parsed = parser.parse(xml);
     const channel = parsed?.rss?.channel ?? parsed?.feed;
@@ -44,13 +81,20 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
     return items
       .filter((item: any) => item.title && (item.link ?? item.id))
       .map((item: any) => {
-        const title = stripHtml(typeof item.title === "string" ? item.title : item.title?.["#text"] ?? "");
-        const link = typeof item.link === "string" ? item.link : (item.link?.["@_href"] ?? item.id ?? "");
+        const title = stripHtml(
+          typeof item.title === "string" ? item.title : item.title?.["#text"] ?? ""
+        );
+        const link =
+          typeof item.link === "string"
+            ? item.link
+            : (item.link?.["@_href"] ?? item.id ?? "");
+        const sourceUrl = link.trim();
+        if (!title || !sourceUrl) return null;
         return {
           title,
           company: stripHtml(item["dc:creator"] ?? item.author) || null,
           type: source.defaultJobType,
-          sourceUrl: link.trim(),
+          sourceUrl,
           sourcePlatform: source.platform,
           tags: source.tags,
           locationType: "remote" as const,
@@ -58,10 +102,12 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
           description: stripHtml(item.description ?? "").slice(0, 500) || null,
           postedAt: item.pubDate ?? item.published ?? null,
           isActive: true,
-          contentHash: toHash(title, link.trim()),
+          contentHash: toHash(title, sourceUrl),
         } satisfies NewOpportunity;
-      });
-  } catch {
+      })
+      .filter(Boolean) as NewOpportunity[];
+  } catch (err) {
+    console.log(`[rss] ${source.name} failed:`, (err as Error).message);
     return [];
   }
 }
