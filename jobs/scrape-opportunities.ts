@@ -22,10 +22,29 @@ export const scrapeOpportunitiesTask = schedules.task({
     const newItems = allItems.filter((item) => item.contentHash && !existingHashes.has(item.contentHash));
     console.log(`[scrape] ${newItems.length} new after dedup`);
 
+    // Scoring layer to filter out low-relevancy "noise"
+    const relevantItems = newItems.filter(item => {
+      const text = `${item.title} ${item.description ?? ""}`.toLowerCase();
+      const phKeywords = ["philippines", "filipino", "pinoy", "ph", "pampanga", "manila", "cebu", "virtual assistant", "va"];
+      
+      // Calculate score based on keyword presence
+      let score = 0;
+      phKeywords.forEach(kw => {
+        if (text.includes(kw)) score += 1;
+      });
+
+      // Special boost for explicit PH mentions
+      if (text.includes("hires filipinos") || text.includes("philippines only")) score += 5;
+
+      return score >= 1; // Only pick items with at least one relevancy signal
+    });
+
+    console.log(`[scrape] ${relevantItems.length} passed relevancy filter`);
+
     let inserted = 0;
-    for (let i = 0; i < newItems.length; i += 50) {
+    for (let i = 0; i < relevantItems.length; i += 50) {
       try {
-        const batch = newItems.slice(i, i + 50).map(item => ({
+        const batch = relevantItems.slice(i, i + 50).map(item => ({
           ...item,
           id: crypto.randomUUID(),
           scrapedAt: new Date(),

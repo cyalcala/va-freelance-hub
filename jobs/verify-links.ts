@@ -22,18 +22,26 @@ export const verifyLinksTask = schedules.task({
         batch.map(async ({ id, sourceUrl }) => {
           try {
             const res = await fetch(sourceUrl, { 
-              method: "HEAD", 
-              signal: AbortSignal.timeout(8_000), 
+              method: "GET", // Use GET for redirect inspection
+              signal: AbortSignal.timeout(12_000), 
               redirect: "follow",
               headers: { "User-Agent": "Mozilla/5.0 (compatible; va-hub-verifier/1.0)" }
             });
-            if (res.status === 404 || res.status === 410) {
+            
+            const finalUrl = res.url.toLowerCase();
+            const originalUrl = sourceUrl.toLowerCase();
+            const isHomepageRedirect = finalUrl.length < 30 && finalUrl !== originalUrl && (finalUrl.endsWith("/") || !finalUrl.includes("job"));
+
+            if (res.status === 404 || res.status === 410 || isHomepageRedirect) {
+              console.log(`[verify-links] Deactivating ${id} (status: ${res.status}, redirect: ${isHomepageRedirect})`);
               await db.update(schema.opportunities)
                 .set({ isActive: false })
                 .where(eq(schema.opportunities.id, id));
               deactivated++;
             }
-          } catch {}
+          } catch (err) {
+            // Silently fail to avoid batch collapse
+          }
         })
       );
     }
