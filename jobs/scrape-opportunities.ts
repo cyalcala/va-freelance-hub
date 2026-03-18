@@ -38,18 +38,18 @@ export const scrapeOpportunitiesTask = schedules.task({
     // Scoring layer to filter out low-relevancy "noise"
     const relevantItems = newItems.filter(item => {
       const text = `${item.title} ${item.description ?? ""}`.toLowerCase();
-      const phKeywords = ["philippines", "filipino", "pinoy", "ph", "pampanga", "manila", "cebu", "virtual assistant", "va"];
+      const phKeywords = ["philippines", "filipino", "pinoy", "ph", "pampanga", "manila", "cebu", "virtual assistant", "assistant", "va", "remote", "offshore", "outsourcing", "freelance"];
       
       // Calculate score based on keyword presence
       let score = 0;
       phKeywords.forEach(kw => {
-        if (text.includes(kw)) score += 1;
+        if (text.includes(kw)) score += 0.5; // Loosened for higher harvest
       });
 
-      // Special boost for explicit PH mentions
-      if (text.includes("hires filipinos") || text.includes("philippines only")) score += 5;
+      // Special boost for explicit hiring signals
+      if (text.includes("apply") || text.includes("hiring") || text.includes("urgent")) score += 2;
 
-      return score >= 1; // Only pick items with at least one relevancy signal
+      return score >= 0.5; // Harvest any remote/hiring signal
     });
 
     console.log(`[scrape] ${relevantItems.length} passed relevancy filter`);

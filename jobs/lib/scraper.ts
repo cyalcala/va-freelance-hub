@@ -51,6 +51,22 @@ export const rssSources: Source[] = [
     defaultJobType: "full-time",
     tags: ["remote", "customer-support", "admin", "VA"],
   },
+  {
+    id: "remote-ok",
+    name: "Remote OK",
+    url: "https://remoteok.com/remote-jobs.rss",
+    platform: "RemoteOK",
+    defaultJobType: "full-time",
+    tags: ["remote", "global"],
+  },
+  {
+    id: "indeed-ph",
+    name: "Indeed Philippines",
+    url: "https://ph.indeed.com/rss?q=virtual+assistant",
+    platform: "Indeed",
+    defaultJobType: "VA",
+    tags: ["philippines", "VA"],
+  },
 ];
 
 function toHash(title: string, url: string) {
