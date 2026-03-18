@@ -19,13 +19,40 @@ export interface Source {
 }
 
 export const rssSources: Source[] = [
+  // --- LOCAL PHILIPPINES VOLUMES (Priority) ---
+  {
+    id: "indeed-ph",
+    name: "Indeed Philippines",
+    url: "https://ph.indeed.com/rss?q=virtual+assistant",
+    platform: "Indeed",
+    defaultJobType: "VA",
+    tags: ["philippines", "VA", "admin"],
+  },
+  {
+    id: "onlinejobs-blog",
+    name: "OnlineJobs.ph Insiders",
+    url: "https://www.onlinejobs.ph/blog/feed/",
+    platform: "OnlineJobs",
+    defaultJobType: "VA",
+    tags: ["philippines", "tips", "hiring"],
+  },
+  
+  // --- HIGH-FIDELITY REMOTE HARVEST ---
+  {
+    id: "himalayas",
+    name: "Himalayas",
+    url: "https://himalayas.app/jobs/rss",
+    platform: "Himalayas",
+    defaultJobType: "full-time",
+    tags: ["remote", "global"],
+  },
   {
     id: "we-work-remotely",
     name: "We Work Remotely",
     url: "https://weworkremotely.com/categories/remote-jobs.rss",
     platform: "WeWorkRemotely",
     defaultJobType: "full-time",
-    tags: ["remote", "tech", "design", "marketing"],
+    tags: ["remote", "global"],
   },
   {
     id: "remotive",
@@ -33,15 +60,7 @@ export const rssSources: Source[] = [
     url: "https://remotive.com/remote-jobs/feed/all",
     platform: "Remotive",
     defaultJobType: "full-time",
-    tags: ["remote", "tech", "sales", "marketing"],
-  },
-  {
-    id: "problogger",
-    name: "ProBlogger",
-    url: "https://problogger.com/jobs/feed/",
-    platform: "ProBlogger",
-    defaultJobType: "freelance",
-    tags: ["writing", "content", "blogging", "creative"],
+    tags: ["remote", "tech"],
   },
   {
     id: "remote-co",
@@ -49,7 +68,7 @@ export const rssSources: Source[] = [
     url: "https://remote.co/remote-jobs/feed/",
     platform: "RemoteCo",
     defaultJobType: "full-time",
-    tags: ["remote", "customer-support", "admin", "VA"],
+    tags: ["remote", "admin", "VA"],
   },
   {
     id: "remote-ok",
@@ -57,15 +76,15 @@ export const rssSources: Source[] = [
     url: "https://remoteok.com/remote-jobs.rss",
     platform: "RemoteOK",
     defaultJobType: "full-time",
-    tags: ["remote", "global"],
+    tags: ["remote", "high-pay"],
   },
   {
-    id: "indeed-ph",
-    name: "Indeed Philippines",
-    url: "https://ph.indeed.com/rss?q=virtual+assistant",
-    platform: "Indeed",
-    defaultJobType: "VA",
-    tags: ["philippines", "VA"],
+    id: "problogger",
+    name: "ProBlogger",
+    url: "https://problogger.com/jobs/feed/",
+    platform: "ProBlogger",
+    defaultJobType: "freelance",
+    tags: ["writing", "creative"],
   },
 ];
 
