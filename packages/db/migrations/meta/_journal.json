@@ -1,12 +1,12 @@
 {
-  "version": "6",
+  "version": "7",
   "dialect": "sqlite",
   "entries": [
     {
       "idx": 0,
       "version": "6",
-      "when": 1773747146940,
-      "tag": "0000_workable_sandman",
+      "when": 1773828835913,
+      "tag": "0000_dapper_impossible_man",
       "breakpoints": true
     }
   ]
