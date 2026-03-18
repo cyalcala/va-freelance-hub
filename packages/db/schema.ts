@@ -14,7 +14,7 @@ export const agencies = sqliteTable('agencies', {
   metadata: text('metadata', { mode: 'json' }), // raw JSON from APIs
   score: integer('score'), // search-relevancy score
   buzzScore: integer('buzz_score').default(0), // for Pizza Rating (Reddit/Brave/Opportunities count)
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
 export const opportunities = sqliteTable('opportunities', {
