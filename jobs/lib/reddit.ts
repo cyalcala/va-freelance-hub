@@ -25,6 +25,9 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
 
   for (const sub of SUBREDDITS) {
     try {
+      // Small delay between subreddits to respect Reddit rate limits
+      if (allJobs.length > 0) await new Promise(r => setTimeout(r, 300));
+
       const res = await fetch(`https://www.reddit.com/r/${sub.name}/new.json?limit=50`, {
         headers: {
           "User-Agent": "VA.INDEX/1.0 (ethical-harvester; public-json; contact: va-index.com)",
@@ -82,7 +85,8 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
         } as unknown as NewOpportunity);
       }
 
-      console.log(`[reddit] ${sub.label}: ${posts.length} posts → ${allJobs.length} hiring signals`);
+      const subCount = allJobs.filter(j => (j.sourcePlatform as string)?.includes(sub.label)).length;
+      console.log(`[reddit] ${sub.label}: ${posts.length} posts → ${subCount} hiring signals`);
     } catch (err) {
       console.log(`[reddit] ${sub.label} failed:`, (err as Error).message);
     }

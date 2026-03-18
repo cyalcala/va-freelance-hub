@@ -4,6 +4,7 @@ import { fetchRSSFeed, rssSources } from "./lib/scraper";
 import { fetchRedditJobs } from "./lib/reddit";
 import { fetchHNJobs } from "./lib/hackernews";
 import { fetchJobicyJobs } from "./lib/jobicy";
+import { sql } from "drizzle-orm";
 
 function normalizeTitle(title: string): string {
   return title
@@ -74,6 +75,11 @@ export const scrapeOpportunitiesTask = schedules.task({
 
     // ── RELEVANCY FILTER ────────────────────────────────────
     const relevantItems = newItems.filter(item => {
+      // OnlineJobs is a BLOG feed — only pass entries with hiring keywords in title
+      if (item.sourcePlatform === "OnlineJobs") {
+        const t = (item.title || "").toLowerCase();
+        return ["hire", "hiring", "job", "apply", "career", "opening", "vacancy", "role"].some(k => t.includes(k));
+      }
       // PH-native and curated sources bypass filter
       if (item.sourcePlatform && PH_NATIVE_SOURCES.has(item.sourcePlatform)) return true;
       // Reddit & HN already pre-filtered for hiring signals
@@ -108,6 +114,16 @@ export const scrapeOpportunitiesTask = schedules.task({
     }
 
     console.log(`[harvest] ═══ Complete: ${inserted} new opportunities inserted ═══`);
+
+    // ── CLEANUP: Purge stale records older than 60 days ─────
+    try {
+      const sixtyDaysAgo = Math.floor((Date.now() - 60 * 24 * 60 * 60 * 1000) / 1000);
+      await db.run(sql`DELETE FROM opportunities WHERE scraped_at < ${sixtyDaysAgo} AND is_active = 0`);
+      console.log("[harvest] Stale inactive records purged.");
+    } catch {
+      // Non-critical — cleanup failure shouldn't break the harvest
+    }
+
     return { inserted, skipped: allItems.length - inserted };
   },
 });

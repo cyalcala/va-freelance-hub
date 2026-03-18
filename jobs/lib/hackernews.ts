@@ -15,9 +15,19 @@ function toHash(title: string, url: string) {
   return createHash("sha256").update(`${title}::${url}`).digest("hex").slice(0, 16);
 }
 
+function isValidTitle(title: string): boolean {
+  if (title.length < 10 || title.length > 120) return false;
+  // Must contain at least 2 alpha words
+  const words = title.split(/\s+/).filter(w => /^[a-zA-Z]/.test(w));
+  if (words.length < 2) return false;
+  // Reject pure locations, filler, or conversational text
+  const junk = ["hi all", "looking forward", "thanks", "good luck", "i'm", "we're excited"];
+  if (junk.some(j => title.toLowerCase().startsWith(j))) return false;
+  return true;
+}
+
 async function findWhoIsHiringThread(): Promise<number | null> {
   try {
-    // Search for the latest "Who is hiring?" thread by the monthly poster (whoishiring)
     const res = await fetch(`${HN_API}/user/whoishiring.json`, {
       signal: AbortSignal.timeout(8_000),
     });
@@ -26,7 +36,6 @@ async function findWhoIsHiringThread(): Promise<number | null> {
     const user = await res.json();
     const submitted = user?.submitted || [];
 
-    // Check the most recent submissions to find a "Who is hiring" thread
     for (const id of submitted.slice(0, 5)) {
       const itemRes = await fetch(`${HN_API}/item/${id}.json`, {
         signal: AbortSignal.timeout(5_000),
@@ -58,11 +67,10 @@ export async function fetchHNJobs(): Promise<NewOpportunity[]> {
     });
     if (!threadRes.ok) return [];
     const thread = await threadRes.json();
-    const kidIds: number[] = (thread.kids || []).slice(0, 100); // Top 100 comments
+    const kidIds: number[] = (thread.kids || []).slice(0, 100);
 
     const jobs: NewOpportunity[] = [];
 
-    // Fetch comments in batches of 10
     for (let i = 0; i < kidIds.length; i += 10) {
       const batch = kidIds.slice(i, i + 10);
       const comments = await Promise.allSettled(
@@ -79,16 +87,22 @@ export async function fetchHNJobs(): Promise<NewOpportunity[]> {
         const comment = result.value;
         if (!comment.text || comment.dead || comment.deleted) continue;
 
-        const text = comment.text.replace(/<[^>]*>/g, " ").trim();
-        if (text.length < 30) continue;
+        const text = comment.text.replace(/<[^>]*>/g, " ").replace(/&[^;]+;/g, " ").trim();
+        if (text.length < 50) continue;
 
-        // Extract company name from first line (HN convention: "Company | Role | Location | ...")
-        const firstLine = text.split("\n")[0].split("|")[0].trim();
-        const company = firstLine.slice(0, 80) || "HN Hiring";
+        // HN convention: "Company | Role | Location | Salary | ..."
+        const firstLine = text.split("\n")[0];
+        const parts = firstLine.split("|").map((s: string) => s.trim());
+        
+        // Need at least Company | Role
+        if (parts.length < 2) continue;
 
-        // Extract a role title — look for common patterns
-        const parts = text.split("|").map((s: string) => s.trim());
-        const role = parts[1]?.slice(0, 100) || parts[0]?.slice(0, 100) || "Tech Role";
+        const company = parts[0].slice(0, 80);
+        const role = parts[1].slice(0, 120);
+
+        // Quality gate: reject garbage titles
+        if (!isValidTitle(role)) continue;
+        if (!company || company.length < 2) continue;
 
         const sourceUrl = `https://news.ycombinator.com/item?id=${comment.id}`;
 
@@ -101,7 +115,7 @@ export async function fetchHNJobs(): Promise<NewOpportunity[]> {
           sourcePlatform: "HackerNews",
           tags: ["tech", "remote", "high-value"],
           locationType: "remote",
-          payRange: null,
+          payRange: parts.length >= 4 ? parts[3].slice(0, 60) : null,
           description: text.slice(0, 500),
           postedAt: comment.time ? new Date(comment.time * 1000) : new Date(),
           scrapedAt: new Date(),
@@ -111,7 +125,7 @@ export async function fetchHNJobs(): Promise<NewOpportunity[]> {
       }
     }
 
-    console.log(`[hn] Harvested ${jobs.length} roles from thread #${threadId}`);
+    console.log(`[hn] Harvested ${jobs.length} quality roles from thread #${threadId}`);
     return jobs;
   } catch (err) {
     console.log("[hn] Failed to fetch comments:", (err as Error).message);

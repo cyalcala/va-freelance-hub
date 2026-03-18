@@ -10,7 +10,7 @@ if (!url || !authToken) {
 }
 
 const client = createClient({
-  url: url || "file:///dev/null",  // Graceful fallback — queries will fail but import won't crash
+  url: url || "file::memory:",  // In-memory fallback — queries will fail gracefully but import won't crash
   authToken: authToken || "",
 });
 
