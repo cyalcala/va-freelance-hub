@@ -35,12 +35,23 @@ if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
 const rawAgencies = liveAgencies.map((agency) => {
   const isNew = agency.createdAt && (new Date().getTime() - new Date(agency.createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000;
   const heatFlame = "🔥".repeat(agency.hiringHeat || 1);
+  const lowerName = agency.name.toLowerCase();
+  const lowerDesc = (agency.description || '').toLowerCase();
   
-  const text = `${agency.name} ${agency.description}`.toLowerCase();
   let relevancyBoost = 0;
-  if (text.includes('virtual')) relevancyBoost += 10;
-  if (text.includes('philippine') || text.includes('filipino')) relevancyBoost += 5;
-
+  
+  // Heavily prioritize agencies that start with "virtual" or have it in their name natively
+  if (lowerName.startsWith('virtual')) {
+    relevancyBoost += 1000;
+  } else if (lowerName.includes('virtual')) {
+    relevancyBoost += 500;
+  } else if (lowerDesc.includes('virtual')) {
+    relevancyBoost += 100;
+  }
+  
+  if (lowerDesc.includes('philippines') || lowerDesc.includes('filipino')) {
+    relevancyBoost += 50;
+  }
   return {
     name: agency.name,
     description: agency.description || 'Verified Filipino Agency Partner',
