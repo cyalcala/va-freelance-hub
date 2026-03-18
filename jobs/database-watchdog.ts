@@ -4,10 +4,10 @@ import { sql } from "drizzle-orm";
 
 export const databaseWatchdogTask = schedules.task({
   id: "database-watchdog",
-  cron: "0 * * * *", // Run every hour
+  cron: "0 */7 * * *", // Run every 7 hours to optimize free tier usage
   maxDuration: 60,
   run: async () => {
-    console.log("[watchdog] Starting Deep Schema Audit...");
+    console.log("[watchdog] Starting Deep Schema Audit (7h Interval)...");
 
     try {
       // 1. Structural Integrity Check
