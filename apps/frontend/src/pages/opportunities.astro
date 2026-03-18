@@ -1,0 +1,104 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db } from '@va-hub/db/client';
+import { opportunities as opportunitiesTable } from '@va-hub/db/schema';
+import { desc } from 'drizzle-orm';
+
+// Fetch live opportunities
+let liveOpportunities = [];
+let dbError = null;
+
+try {
+  liveOpportunities = await db.select()
+    .from(opportunitiesTable)
+    .orderBy(desc(opportunitiesTable.postedAt))
+    .limit(50);
+} catch (e) {
+  console.error("Database fetch failed:", e);
+  dbError = e.message;
+}
+
+// Format for UI
+const opportunities = liveOpportunities.map((opp) => ({
+  id: opp.id,
+  title: opp.title,
+  company: opp.company || 'Unknown',
+  type: opp.type || 'Agency',
+  sourceUrl: opp.sourceUrl,
+  platform: opp.sourcePlatform || 'Web',
+  date: opp.postedAt ? new Date(opp.postedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Recent',
+  tags: (opp.tags as string[]) || [],
+  pay: opp.payRange || 'Competitive',
+}));
+---
+
+<Layout title="Latest Opportunities | VA.INDEX">
+  <main class="max-w-[1400px] mx-auto px-8 py-12">
+    <header class="mb-12">
+      <h1 class="text-5xl font-extrabold tracking-tight text-white mb-4">Latest Opportunities</h1>
+      <p class="text-zinc-400 text-lg max-w-2xl">
+        Real-time hiring signals from across the ecosystem. Updated hourly for maximum relevancy.
+      </p>
+    </header>
+
+    {dbError ? (
+      <div class="p-8 border border-red-900/30 bg-red-900/5 rounded-2xl">
+        <p class="text-red-400 font-mono text-sm">QUERY_EXCEPTION: {dbError}</p>
+      </div>
+    ) : opportunities.length === 0 ? (
+      <div class="py-24 text-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
+        <div class="w-12 h-12 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin mx-auto mb-6"></div>
+        <p class="text-zinc-500 font-medium">Aggregating fresh signals from Reddit and Brave...</p>
+      </div>
+    ) : (
+      <div class="overflow-x-auto">
+        <table class="w-full border-separate border-spacing-y-2">
+          <thead>
+            <tr class="text-left text-zinc-500 text-[10px] font-black tracking-widest uppercase px-6">
+              <th class="pb-4 pl-6">Position</th>
+              <th class="pb-4">Company</th>
+              <th class="pb-4">Type</th>
+              <th class="pb-4">Date</th>
+              <th class="pb-4 pr-6 text-right">Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {opportunities.map((opp) => (
+              <tr class="group cursor-pointer">
+                <td class="bg-zinc-900/50 group-hover:bg-zinc-800/80 border-y border-white/5 border-l rounded-l-2xl py-6 pl-6 transition-all">
+                  <div class="font-bold text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight">{opp.title}</div>
+                  <div class="flex gap-2 mt-2">
+                    {opp.tags.map(tag => (
+                      <span class="text-[9px] font-bold bg-white/5 text-zinc-500 px-2 py-0.5 rounded uppercase">{tag}</span>
+                    ))}
+                  </div>
+                </td>
+                <td class="bg-zinc-900/50 group-hover:bg-zinc-800/80 border-y border-white/5 py-6">
+                  <span class="text-zinc-400 font-medium">{opp.company}</span>
+                </td>
+                <td class="bg-zinc-900/50 group-hover:bg-zinc-800/80 border-y border-white/5 py-6">
+                  <span class="text-[10px] font-black bg-blue-500/10 text-blue-500 px-2 py-1 rounded-md border border-blue-500/20 uppercase tracking-tighter">
+                    {opp.type}
+                  </span>
+                </td>
+                <td class="bg-zinc-900/50 group-hover:bg-zinc-800/80 border-y border-white/5 py-6 font-mono text-zinc-500 text-sm">
+                  {opp.date}
+                </td>
+                <td class="bg-zinc-900/50 group-hover:bg-zinc-800/80 border-y border-white/5 border-r rounded-r-2xl py-6 pr-6 text-right transition-all">
+                  <a href={opp.sourceUrl} target="_blank" class="inline-flex items-center gap-2 text-zinc-500 group-hover:text-white transition-colors">
+                    <span class="text-xs font-bold uppercase tracking-widest">{opp.platform}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h10v10"></path><path d="M7 17L17 7"></path></svg>
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </main>
+</Layout>
+
+<style>
+  table { width: 100%; border-collapse: separate; border-spacing: 0 0.75rem; }
+</style>

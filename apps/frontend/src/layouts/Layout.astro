@@ -1,25 +1,25 @@
----
-interface Props {
-	title: string;
-}
+import Navbar from '../components/Navbar.astro';
 
 const { title } = Astro.props;
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="bg-[#09090b] text-zinc-100">
+<html lang="en" class="bg-[#000000] text-zinc-100">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
 	<body class="selection:bg-blue-500/30 font-['Geist',sans-serif]">
-		<slot />
+		<Navbar />
+		<div class="pt-20">
+			<slot />
+		</div>
 	</body>
 </html>
 
