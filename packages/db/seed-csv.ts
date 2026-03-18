@@ -21,9 +21,14 @@ async function seed() {
     
     if (parts.length < 2) continue;
 
-    const name = parts[0].trim();
-    const url = parts[1].trim();
+    let name = parts[0].trim();
+    let url = parts[1].trim();
     const description = parts[2]?.replace(/^"|"$/g, "").trim() || "";
+    
+    // Expert normalization: Prepend protocol if missing
+    if (url && !url.startsWith("http")) {
+      url = `https://${url}`;
+    }
     
     newRecords.push({
       id: crypto.randomUUID(),
