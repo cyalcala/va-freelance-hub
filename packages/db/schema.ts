@@ -13,7 +13,9 @@ export const agencies = sqliteTable('agencies', {
   verifiedAt: integer('verified_at', { mode: 'timestamp' }),
   metadata: text('metadata', { mode: 'json' }), // raw JSON from APIs
   score: integer('score'), // search-relevancy score
-  buzzScore: integer('buzz_score').default(0), // for Pizza Rating (Reddit/Brave/Opportunities count)
+  buzzScore: integer('buzz_score').default(0), // overall activity score
+  hiringHeat: integer('hiring_heat').default(1), // 1-3 Flames
+  frictionLevel: integer('friction_level').default(3), // 1-5 (1=Easiest/Direct Portal, 5=High Friction)
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 

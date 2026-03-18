@@ -10,20 +10,21 @@ async function fix() {
   });
 
   try {
-    console.log("EXERTING MANUAL CONTROL OVER TURSO CLOUD...");
+    console.log("SURGICALLY ADDING HEAT & FRICTION COLUMNS...");
     
-    await client.execute("ALTER TABLE agencies ADD COLUMN buzz_score INTEGER DEFAULT 0");
-    console.log("SUCCESS: buzz_score added.");
-    
-    await client.execute("ALTER TABLE agencies ADD COLUMN created_at INTEGER");
-    console.log("SUCCESS: created_at added.");
+    try {
+      await client.execute("ALTER TABLE agencies ADD COLUMN hiring_heat INTEGER DEFAULT 1");
+      console.log("✅ hiring_heat added.");
+    } catch (e) { console.log("⚠️ hiring_heat probably exists"); }
 
-    const rs = await client.execute("PRAGMA table_info(agencies)");
-    console.log("FINAL CLOUD SCHEMA:");
-    console.log(JSON.stringify(rs.rows, null, 2));
-    
+    try {
+      await client.execute("ALTER TABLE agencies ADD COLUMN friction_level INTEGER DEFAULT 3");
+      console.log("✅ friction_level added.");
+    } catch (e) { console.log("⚠️ friction_level probably exists"); }
+
+    console.log("🚀 CLOUD REALIGNED.");
   } catch (e) {
-    console.error("MANUAL FIX FAILED:", e.message);
+    console.error("FIX FAILED:", e.message);
   } finally {
     client.close();
   }

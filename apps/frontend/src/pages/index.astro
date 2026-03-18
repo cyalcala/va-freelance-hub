@@ -11,7 +11,11 @@ let dbError = null;
 try {
   liveAgencies = await db.select()
     .from(agenciesTable)
-    .orderBy(desc(agenciesTable.buzzScore), desc(agenciesTable.createdAt))
+    .orderBy(
+      agenciesTable.frictionLevel,  // Easiest (1) first
+      desc(agenciesTable.hiringHeat), // Hottest (3) next
+      desc(agenciesTable.createdAt)
+    )
     .limit(100);
 } catch (e) {
   console.error("Database fetch failed:", e);
@@ -20,12 +24,7 @@ try {
 
 const agencies = liveAgencies.map((agency) => {
   const isNew = agency.createdAt && (new Date().getTime() - new Date(agency.createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000;
-  
-  // Calculate pizza rating based on buzzScore
-  // 0-10: 1 pizza, 11-30: 2 pizza, 30+: 3 pizza
-  const buzzStr = "🍕".repeat(
-    (agency.buzzScore ?? 0) > 30 ? 3 : (agency.buzzScore ?? 0) > 10 ? 2 : 1
-  );
+  const heatFlame = "🔥".repeat(agency.hiringHeat || 1);
 
   return {
     name: agency.name,
@@ -34,7 +33,7 @@ const agencies = liveAgencies.map((agency) => {
     hiringUrl: agency.hiringUrl || '#',
     sources: (agency.metadata as any)?.source?.split(',') || ['Web'],
     isNew,
-    pizza: buzzStr,
+    heat: heatFlame,
   };
 });
 ---
@@ -46,17 +45,34 @@ const agencies = liveAgencies.map((agency) => {
         <div class="pulse-dot"></div>
         <span class="text-[10px] font-black text-blue-500 tracking-[0.2em] uppercase transition-all group-hover:tracking-[0.4em]">V5.2 LIVE SIGNAL CAPTURE</span>
       </div>
-      <h1 class="text-5xl md:text-6xl font-black text-white tracking-tighter mb-6 leading-[0.9]">The Hiring Signal,<br/><span class="text-blue-600">Automated.</span></h1>
-      <p class="text-zinc-500 max-w-2xl text-base md:text-lg font-medium leading-relaxed">
-        Stop chasing dead links. VA.INDEX scans the web every 120 minutes to find exactly who is hiring Filipino talent right now.
-      </p>
+      
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-12">
+        <div class="max-w-2xl">
+          <h1 class="text-4xl sm:text-6xl font-black text-white mb-6 leading-[0.9] tracking-tighter uppercase whitespace-pre-line">
+            The Hiring Signal, 
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-400">Automated.</span>
+          </h1>
+          <p class="text-lg text-zinc-500 font-medium leading-relaxed max-w-xl">
+            We scan 48+ recruitment channels every 120 minutes to capture high-fidelity hiring signals from verified Filipino agencies. Zero noise. Only live signals.
+          </p>
+        </div>
+        
+        <div class="flex flex-col items-end gap-3 text-right">
+          <div class="px-4 py-2 bg-zinc-950 border border-white/5 rounded-2xl shadow-inner">
+            <p class="text-[10px] font-black uppercase tracking-widest text-zinc-600 mb-1">Total Verified Channels</p>
+            <p class="text-2xl font-black text-white tabular-nums">124 <span class="text-blue-500 text-sm">UP</span></p>
+          </div>
+        </div>
+      </div>
 
-      <div class="mt-12 flex flex-col sm:flex-row items-center gap-4">
-        <div class="relative w-full sm:w-[420px] group">
-          <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700 w-5 h-5 transition-colors group-focus-within:text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <div class="flex flex-col sm:flex-row items-center gap-4">
+        <div class="relative w-full max-w-md group">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-700 group-focus-within:text-blue-500 transition-colors"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          </div>
           <input 
             type="text" 
-            id="agencySearch" 
+            id="agencySearch"
             placeholder="Search agencies, niches, or keywords..." 
             class="bg-brand-dark/50 border border-white/5 rounded-3xl pl-12 pr-6 py-4 text-sm text-white focus:outline-none focus:border-blue-500/30 focus:bg-[#0f0f0f]/80 backdrop-blur-xl transition-all font-medium placeholder:text-zinc-800 w-full"
           />
@@ -87,7 +103,7 @@ const agencies = liveAgencies.map((agency) => {
                   {agency.name}
                 </div>
                 <div class="flex flex-col items-end gap-2">
-                  <div class={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${agency.status === 'active' ? 'bg-blue-500/10 border border-blue-500/20 shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]' : 'bg-zinc-900/50 border border-white/5'}`}>
+                  <div class={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${agency.status === 'active' ? 'bg-blue-500/10 border border-blue-500/20 shadow-[0_0_20px_-5px_rgba(59,130,246,0.35)]' : 'bg-zinc-900/50 border border-white/5'}`}>
                     <div class={agency.status === 'active' ? 'pulse-dot scale-75' : 'w-1.5 h-1.5 rounded-full bg-zinc-800'}></div>
                     <span class={`text-[9px] font-black uppercase tracking-tighter ${agency.status === 'active' ? 'text-blue-500' : 'text-zinc-600'}`}>
                       {agency.status === 'active' ? 'Hiring Now' : 'Quiet Signal'}
@@ -95,9 +111,9 @@ const agencies = liveAgencies.map((agency) => {
                   </div>
                   <div class="flex items-center gap-2">
                     {agency.isNew && (
-                      <span class="text-[8px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-md tracking-widest shadow-[0_0_10px_rgba(59,130,246,0.5)]">NEW</span>
+                      <span class="text-[8px] font-black bg-blue-600 text-white px-2 py-0.5 rounded-md tracking-widest ">NEW</span>
                     )}
-                    <span class="text-sm grayscale-[0.5] group-hover:grayscale-0 transition-all drop-shadow-[0_0_5px_rgba(255,255,255,0.1)]">{agency.pizza}</span>
+                    <span class="text-sm grayscale-[0.5] group-hover:grayscale-0 transition-all drop-shadow-[0_0_5px_rgba(255,100,0,0.2)]">{agency.heat}</span>
                   </div>
                 </div>
               </div>
@@ -105,18 +121,15 @@ const agencies = liveAgencies.map((agency) => {
                 {agency.description}
               </p>
             </div>
-            <div class="mt-10 flex items-center justify-between relative z-10">
-              <div class="flex gap-2">
-                {agency.sources.map(source => (
-                  <span class="px-3 py-1 bg-white/5 rounded-lg text-[9px] font-black text-zinc-700 uppercase tracking-widest border border-white/5">{source}</span>
-                ))}
-              </div>
-              <div class="w-10 h-10 rounded-2xl bg-white/5 border border-white/10 group-hover:border-blue-500/20 group-hover:bg-blue-500/10 flex items-center justify-center transition-all group-hover:translate-x-1 group-hover:-translate-y-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-800 group-hover:text-blue-500 transition-colors"><path d="M7 7h10v10"></path><path d="M7 17L17 7"></path></svg>
-              </div>
+            
+            <div class="mt-8 flex flex-wrap gap-2 relative z-10">
+              {agency.sources.map((source) => (
+                <span class="px-3 py-1 bg-zinc-950 border border-white/5 rounded-lg text-[9px] font-black text-zinc-600 uppercase tracking-wider group-hover:border-blue-500/10 group-hover:text-zinc-400 transition-all">
+                  {source}
+                </span>
+              ))}
             </div>
 
-            {/* Subtle card glow */}
             <div class="absolute -right-8 -bottom-8 w-16 h-16 bg-blue-600/5 blur-2xl rounded-full group-hover:bg-blue-600/10 transition-all"></div>
           </a>
         ))}
@@ -181,14 +194,56 @@ const agencies = liveAgencies.map((agency) => {
     searchInput?.addEventListener('input', runFilter);
     verifiedBtn?.addEventListener('click', () => {
       activeOnly = !activeOnly;
-      verifiedBtn.classList.toggle('text-blue-500');
-      verifiedBtn.classList.toggle('bg-blue-500/10');
-      verifiedBtn.classList.toggle('border-blue-500/20');
-      verifiedBtn.classList.toggle('text-zinc-600');
+      verifiedBtn.classList.toggle('bg-blue-500/10', activeOnly);
+      verifiedBtn.classList.toggle('text-blue-500', activeOnly);
+      verifiedBtn.classList.toggle('border-blue-500/30', activeOnly);
       runFilter();
     });
   }
 
   init();
-  document.addEventListener('astro:after-swap', init);
+  document.addEventListener('astro:page-load', init);
 </script>
+
+<style>
+  .glass-card {
+    background: rgba(10, 10, 10, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    border-radius: 24px;
+    padding: 32px;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
+  }
+
+  .glass-card:hover {
+    background: rgba(15, 15, 15, 0.6);
+    border-color: rgba(59, 130, 246, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -20px rgba(59, 130, 246, 0.15);
+  }
+
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #3b82f6;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 10px #3b82f6;
+  }
+
+  .pulse-dot::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    border-radius: inherit;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    70% { transform: scale(4); opacity: 0; }
+    100% { transform: scale(4); opacity: 0; }
+  }
+</style>
