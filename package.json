@@ -7,8 +7,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "bun run --cwd apps/web dev",
-    "build": "bun run --cwd apps/web build",
+    "dev": "bun run --cwd apps/frontend dev",
+    "build": "bun run --cwd apps/frontend build",
     "db:generate": "bun run --cwd packages/db generate",
     "db:migrate": "bun run --cwd packages/db migrate",
     "trigger:dev": "bunx trigger.dev@latest dev",

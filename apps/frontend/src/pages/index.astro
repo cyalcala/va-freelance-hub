@@ -1,0 +1,105 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { db } from '../../../packages/db/client';
+import { agencies as agenciesTable } from '../../../packages/db/schema';
+import { desc } from 'drizzle-orm';
+
+// Expert implementation: Live data fetching from Turso
+const liveAgencies = await db.select()
+  .from(agenciesTable)
+  .orderBy(desc(agenciesTable.lastSync))
+  .limit(50);
+
+// Mapping for UI
+const agencies = liveAgencies.map((agency) => ({
+  name: agency.name,
+  status: agency.status || 'active',
+  lastSync: agency.lastSync ? new Date(agency.lastSync).toLocaleTimeString() : 'Never',
+  jobs: agency.score || 0, // Fallback score to jobs count for now
+  source: Object.keys(agency.metadata || {})[0] || 'unknown',
+}));
+
+const sourceColors: Record<string, string> = {
+  reddit: '#ff4500',
+  brave: '#fb542b',
+  bluesky: '#0560ff',
+  jobicy: '#8b5cf6',
+  remotive: '#2ecc71',
+  serpapi: '#4285f4',
+};
+---
+
+<Layout title="The Filipino Agency Index">
+	<main class="container">
+		<header class="hero">
+			<h1 class="title">The Filipino Agency Index</h1>
+			<p class="subtitle">
+				Live aggregated signals for Filipino VAs. Upgraded to V5.2 Extreme-Sync Engine.
+			</p>
+		</header>
+
+		<div class="grid">
+			{agencies.map((agency) => (
+				<div class="card">
+					<div class="card-header">
+						<div class="logo-box">{agency.name[0]}</div>
+						<div class="meta-tags">
+							<span class="source-badge" style={`--source-color: ${sourceColors[agency.source] || '#71717a'}`}>
+								{agency.source}
+							</span>
+							<div class="status-container">
+								<span class={`status-dot ${agency.status === 'active' ? 'active-dot' : 'quiet-dot'}`}></span>
+								<span class="status-label">{agency.status}</span>
+							</div>
+						</div>
+					</div>
+					
+					<h3 class="agency-name">{agency.name}</h3>
+					
+					<div class="card-footer">
+						<div class="stat-group">
+							<span class="stat-label">Signals</span>
+							<span class="stat-value font-mono">{agency.jobs}</span>
+						</div>
+						<div class="stat-group border-l">
+							<span class="stat-label">Last Sync</span>
+							<span class="stat-value">{agency.lastSync}</span>
+						</div>
+					</div>
+
+					<a href="#" class="card-overlay"></a>
+				</div>
+			))}
+		</div>
+	</main>
+</Layout>
+
+<style>
+	/* Same styles as before, kept for consistent "Linear" aesthetic */
+	.container { max-width: 1200px; margin: 0 auto; padding: 5rem 1.5rem; animation: fadeIn 0.8s ease-out; }
+	.hero { text-align: center; margin-bottom: 4rem; }
+	.title { font-size: 3.5rem; font-weight: 800; letter-spacing: -0.05em; background: linear-gradient(to bottom, #fff, #a1a1aa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
+	.subtitle { font-size: 1.125rem; color: #71717a; max-width: 42rem; margin: 0 auto; line-height: 1.6; }
+	.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+	.card { position: relative; background: #18181b; border: 1px solid #27272a; border-radius: 1rem; padding: 1.5rem; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+	.card:hover { border-color: #3b82f644; background: #1c1c1f; transform: translateY(-4px); box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); }
+	.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; }
+	.logo-box { width: 3rem; height: 3rem; background: #27272a; border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; color: #ffffff; border: 1px solid #3f3f46; }
+	.meta-tags { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
+	.source-badge { font-size: 0.65rem; padding: 0.2rem 0.6rem; background: color-mix(in srgb, var(--source-color), transparent 85%); color: var(--source-color); border: 1px solid color-mix(in srgb, var(--source-color), transparent 70%); border-radius: 9999px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+	.status-container { display: flex; align-items: center; gap: 0.4rem; }
+	.status-dot { width: 0.4rem; height: 0.4rem; border-radius: 9999px; }
+	.active-dot { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); animation: pulse 2s infinite; }
+	.quiet-dot { background: #52525b; }
+	.status-label { font-size: 0.65rem; font-weight: 600; color: #52525b; text-transform: uppercase; letter-spacing: 0.1em; }
+	.agency-name { font-size: 1.25rem; font-weight: 600; color: #f4f4f5; margin-bottom: 0.5rem; }
+	.card-footer { display: flex; gap: 1rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #27272a; }
+	.stat-group { flex: 1; }
+	.stat-label { display: block; font-size: 0.65rem; color: #52525b; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600; }
+	.stat-value { font-size: 0.875rem; color: #a1a1aa; }
+	.border-l { border-left: 1px solid #27272a; padding-left: 1rem; }
+	.card-overlay { position: absolute; inset: 0; z-index: 10; }
+	@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+	@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.1); } }
+	@media (max-width: 640px) { .title { font-size: 2.5rem; } }
+</style>
