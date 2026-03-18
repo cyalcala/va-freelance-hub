@@ -5,6 +5,7 @@ import { fetchRedditJobs } from "./lib/reddit";
 import { fetchHNJobs } from "./lib/hackernews";
 import { fetchJobicyJobs } from "./lib/jobicy";
 import { sql } from "drizzle-orm";
+import { isLikelyScam } from "./lib/trust";
 
 function normalizeTitle(title: string): string {
   return title
@@ -75,6 +76,11 @@ export const scrapeOpportunitiesTask = schedules.task({
 
     // ── RELEVANCY FILTER ────────────────────────────────────
     const relevantItems = newItems.filter(item => {
+      // Security Layer: Drop scams out of the gate
+      if (isLikelyScam(item.title, item.description ?? "")) {
+        return false;
+      }
+
       // OnlineJobs is a BLOG feed — only pass entries with hiring keywords in title
       if (item.sourcePlatform === "OnlineJobs") {
         const t = (item.title || "").toLowerCase();

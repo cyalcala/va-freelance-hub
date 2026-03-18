@@ -23,10 +23,26 @@ if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
 }
 
 
+function formatRelativeTime(dateInput: Date | null) {
+  if (!dateInput) return 'Today';
+  const now = new Date();
+  const date = new Date(dateInput);
+  const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+  
+  if (diffHours < 1) return 'Just Now';
+  if (diffHours < 24) return `${diffHours}h ago`;
+  
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays === 1) return '1d ago';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  
+  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
 const opportunities = liveOpportunities.map((opp) => ({
   title: opp.title,
   company: opp.company || 'Direct Hire',
-  date: opp.postedAt ? new Date(opp.postedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today',
+  date: formatRelativeTime(opp.postedAt),
   url: opp.sourceUrl,
   source: opp.sourcePlatform || 'Web',
 }));

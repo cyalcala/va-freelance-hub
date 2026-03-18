@@ -1,6 +1,7 @@
 import { schedules } from "@trigger.dev/sdk/v3";
 import { createDb, opportunities } from "./lib/db";
 import { eq, sql } from "drizzle-orm";
+import { isGhostJob } from "./lib/trust";
 
 /**
  * Smart Link Verifier
@@ -9,6 +10,7 @@ import { eq, sql } from "drizzle-orm";
  * - Are older than 7 days (new links don't go stale that fast)
  * - Are NOT from Reddit/HN (those links don't expire)
  * - Limits to 50 checks per run to stay lean
+ * - Uses GET to parse HTML for "Ghost Job" ATS patterns 
  */
 export const verifyLinksTask = schedules.task({
   id: "verify-links",
@@ -37,13 +39,16 @@ export const verifyLinksTask = schedules.task({
         batch.map(async ({ id, source_url }) => {
           try {
             const res = await fetch(source_url, {
-              method: "HEAD", // HEAD is lighter than GET
+              method: "GET", // GET required to read HTML body for ATS ghost jobs
               signal: AbortSignal.timeout(8_000),
               redirect: "follow",
               headers: { "User-Agent": "VA.INDEX/1.0 (link-verifier)" },
             });
 
-            if (res.status === 404 || res.status === 410 || res.status === 403) {
+            const html = await res.text();
+            
+            // Check for 404s/410s, or custom ATS 'Ghost Job' phrasing
+            if (res.status === 404 || res.status === 410 || res.status === 403 || isGhostJob(html)) {
               await db.run(sql`UPDATE opportunities SET is_active = 0 WHERE id = ${id}`);
               deactivated++;
             }

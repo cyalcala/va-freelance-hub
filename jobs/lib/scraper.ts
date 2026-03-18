@@ -155,7 +155,10 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
           locationType: "remote" as const,
           payRange: null,
           description: stripHtml(item.description ?? "").slice(0, 500) || null,
-          postedAt: item.pubDate ? new Date(item.pubDate) : null,
+          postedAt: (() => {
+            const rawDate = item.pubDate || item.published || item.updated || item["dc:date"];
+            return rawDate ? new Date(rawDate) : new Date();
+          })(),
           scrapedAt: new Date(),
           isActive: true,
           contentHash: toHash(title, sourceUrl),

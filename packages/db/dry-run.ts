@@ -3,6 +3,7 @@ import { fetchRSSFeed, rssSources } from "../../jobs/lib/scraper";
 import { fetchRedditJobs } from "../../jobs/lib/reddit";
 import { fetchHNJobs } from "../../jobs/lib/hackernews";
 import { fetchJobicyJobs } from "../../jobs/lib/jobicy";
+import { isLikelyScam } from "../../jobs/lib/trust";
 import * as dotenv from "dotenv";
 
 dotenv.config({ path: "../../.env" });
@@ -52,11 +53,38 @@ async function dryRun() {
   });
   console.log(`NEW UNIQUE: ${newItems.length}`);
 
+  const PH_NATIVE_SOURCES = new Set(["OnlineJobs", "Reddit r/phcareers"]);
+  const relevantItems = newItems.filter(item => {
+    if (isLikelyScam(item.title, item.description ?? "")) {
+      console.log(`[trust] Blocked likely scam: ${item.title}`);
+      return false;
+    }
+    if (item.sourcePlatform === "OnlineJobs") {
+      const t = (item.title || "").toLowerCase();
+      return ["hire", "hiring", "job", "apply", "career", "opening", "vacancy", "role"].some(k => t.includes(k));
+    }
+    if (item.sourcePlatform && PH_NATIVE_SOURCES.has(item.sourcePlatform)) return true;
+    if (item.sourcePlatform?.startsWith("Reddit") || item.sourcePlatform === "HackerNews") return true;
+    if (item.sourcePlatform === "Jobicy") return true;
+
+    const text = `${item.title} ${item.description ?? ""}`.toLowerCase();
+    const signals = [
+      "remote", "virtual", "assistant", "freelance", "outsource",
+      "offshore", "philippines", "filipino", "manila", "cebu",
+      "apply", "hiring", "urgent", "contract", "part-time",
+      "customer support", "data entry", "bookkeeping", "social media",
+      "admin", "executive assistant", "project manager"
+    ];
+    return signals.some(kw => text.includes(kw));
+  });
+
+  console.log(`PASSED RELEVANCY & TRUST FILTERS: ${relevantItems.length}`);
+
   // Insert
   let inserted = 0;
-  for (let i = 0; i < newItems.length; i += 50) {
+  for (let i = 0; i < relevantItems.length; i += 50) {
     try {
-      const batch = newItems.slice(i, i + 50);
+      const batch = relevantItems.slice(i, i + 50);
       await db.insert(opportunities).values(batch).onConflictDoNothing();
       inserted += batch.length;
     } catch (err) {
