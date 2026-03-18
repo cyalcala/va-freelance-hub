@@ -19,6 +19,8 @@
     "typescript": "^5.4.0"
   },
   "dependencies": {
-    "@trigger.dev/sdk": "4.4.3"
+    "@trigger.dev/sdk": "4.4.3",
+    "drizzle-orm": "latest",
+    "@libsql/client": "latest"
   }
 }
