@@ -4,7 +4,7 @@ export default defineConfig({
   project: "proj_hzeuykzmhlzwmqeljfft",
   runtime: "bun",
   logLevel: "log",
-  dirs: ["./jobs"],
+  dirs: ["./jobs", "./packages/sync/tasks"],
   maxDuration: 300,
   retries: {
     enabledInDev: false,
