@@ -16,6 +16,7 @@
     "@astrojs/vercel": "latest",
     "@libsql/client": "latest",
     "drizzle-orm": "latest",
-    "dotenv": "latest"
+    "dotenv": "latest",
+    "@va-hub/db": "workspace:*"
   }
 }
