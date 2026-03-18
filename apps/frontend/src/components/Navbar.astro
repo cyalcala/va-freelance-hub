@@ -3,31 +3,31 @@ const currentPath = Astro.url.pathname;
 ---
 <nav class="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/5">
   <div class="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
-    <div class="flex items-center gap-6">
-      <a href="/" class="text-white font-black text-sm tracking-tighter hover:text-blue-500 transition-colors">
-        VA.INDEX
+    <a href="/" class="text-white font-black text-sm tracking-tighter hover:text-blue-500 transition-colors">
+      VA.INDEX
+    </a>
+
+    <div class="flex bg-[#0a0a0a] border border-white/5 rounded-full p-1 relative">
+      <div 
+        class={`absolute top-1 bottom-1 rounded-full bg-blue-500/10 border border-blue-500/20 transition-all duration-300 ease-out ${currentPath === '/opportunities' ? 'left-[calc(50%+4px)] right-1' : 'left-1 right-[calc(50%+4px)]'}`}
+      ></div>
+      <a 
+        href="/" 
+        class={`relative z-10 px-6 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${currentPath === '/' ? 'text-blue-500' : 'text-zinc-600 hover:text-zinc-400'}`}
+      >
+        Agencies
       </a>
-      <div class="flex items-center gap-4">
-        <a 
-          href="/" 
-          class={`text-[10px] font-black uppercase tracking-widest transition-colors ${currentPath === '/' ? 'text-blue-500' : 'text-zinc-600 hover:text-white'}`}
-        >
-          Agencies
-        </a>
-        <a 
-          href="/opportunities" 
-          class={`text-[10px] font-black uppercase tracking-widest transition-colors ${currentPath === '/opportunities' ? 'text-blue-500' : 'text-zinc-600 hover:text-white'}`}
-        >
-          Feed
-        </a>
-      </div>
+      <a 
+        href="/opportunities" 
+        class={`relative z-10 px-6 py-1.5 text-[10px] font-black uppercase tracking-widest transition-colors duration-300 ${currentPath === '/opportunities' ? 'text-blue-500' : 'text-zinc-600 hover:text-zinc-400'}`}
+      >
+        Feed
+      </a>
     </div>
     
-    <div class="flex items-center gap-3">
-      <div class="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/5 border border-blue-500/10 rounded-full">
-        <div class="pulse-dot"></div>
-        <span class="text-[8px] font-black text-blue-500 tracking-[0.2em] uppercase">SYNCING</span>
-      </div>
+    <div class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/5 border border-blue-500/10 rounded-full">
+      <div class="pulse-dot"></div>
+      <span class="text-[8px] font-black text-blue-500 tracking-[0.2em] uppercase">SYNCING</span>
     </div>
   </div>
 </nav>

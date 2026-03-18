@@ -1,3 +1,7 @@
+import { config } from "dotenv";
+import { resolve } from "path";
+config({ path: resolve(__dirname, "../../.env") });
+
 import { db } from "./client";
 import { agencies } from "./schema";
 import fs from "fs";
@@ -29,13 +33,29 @@ async function seed() {
     if (url && !url.startsWith("http")) {
       url = `https://${url}`;
     }
+
+    // Intelligent Hiring URL Extraction
+    let hiringUrl = url;
+    const lowerDesc = description.toLowerCase();
+    
+    // Heuristic: If description contains a URL that looks like a careers page, use it
+    const urlMatch = description.match(/https?:\/\/[^\s,]+/);
+    if (urlMatch && (urlMatch[0].includes('career') || urlMatch[0].includes('job') || urlMatch[0].includes('apply'))) {
+      hiringUrl = urlMatch[0];
+    } else if (!url.includes('career') && !url.includes('job') && !url.includes('apply')) {
+      // Append common career paths if it's just a root domain
+      const rootUrl = url.replace(/\/$/, '');
+      if (name.toLowerCase().includes('athena')) hiringUrl = "https://jobs.athenago.com";
+      else if (name.toLowerCase().includes('cyberbacker')) hiringUrl = "https://cyberbacker.com/careers";
+      else if (name.toLowerCase().includes('hellorache')) hiringUrl = "https://hellorache.com/apply-now";
+    }
     
     newRecords.push({
       id: crypto.randomUUID(),
       name: name,
       slug: name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
       websiteUrl: url,
-      hiringUrl: url,
+      hiringUrl: hiringUrl,
       description: description,
       status: "active" as const,
       lastSync: new Date(),
