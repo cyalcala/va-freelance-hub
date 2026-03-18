@@ -1,0 +1,62 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="About | VA.INDEX">
+  <main class="max-w-[800px] mx-auto px-6 py-20">
+    <header class="mb-16">
+      <a href="/" class="inline-flex items-center gap-2 text-zinc-500 hover:text-blue-500 transition-colors mb-8 group">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-1 transition-transform"><path d="m15 18-6-6 6-6"/></svg>
+        <span class="text-xs font-black uppercase tracking-widest">Back to Directory</span>
+      </a>
+      <h1 class="text-5xl font-black text-white tracking-tighter mb-6">The Signal in the Noise</h1>
+      <p class="text-xl text-zinc-400 font-medium leading-relaxed">
+        Why I built VA.INDEX: A mission to empower the Filipino freelance economy through autonomous data.
+      </p>
+    </header>
+
+    <div class="space-y-12 prose prose-invert">
+      <section>
+        <h2 class="text-2xl font-black text-white tracking-tight mb-4 uppercase">The Problem</h2>
+        <p class="text-zinc-400 leading-relaxed">
+          The Filipino freelance market is one of the most vibrant in the world, yet finding reliable "Find Me" signals from agencies is a manual, exhausting process. Job boards are cluttered with generic noise, stale links, and low-fidelity opportunities that waste a freelancer's most valuable asset: <strong>Time.</strong>
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-black text-white tracking-tight mb-4 uppercase">The Solution</h2>
+        <p class="text-zinc-400 leading-relaxed">
+          VA.INDEX is an <strong>autonomous engine</strong>. It was built to solve the discovery problem by aggregating signals from Reddit, specialized job boards, and social channels. It doesn't just "scrape"—it curates, scores, and verifies every single entry to ensure it's a genuine hiring signal for Filipino talent.
+        </p>
+      </section>
+
+      <section class="p-8 rounded-3xl bg-blue-500/5 border border-blue-500/10">
+        <h2 class="text-xl font-black text-blue-500 tracking-tight mb-4 uppercase">Our Core Engine (V5.2)</h2>
+        <ul class="space-y-4 text-sm font-medium text-zinc-400">
+          <li class="flex items-start gap-3">
+            <span class="text-blue-500 mt-1">●</span>
+            <span><strong>2-Hour Sync:</strong> Continuous discovery of new hiring signals across 5+ global sources.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-blue-500 mt-1">●</span>
+            <span><strong>Smart Verification:</strong> Automated daily health checks to prune dead links and expired roles.</span>
+          </li>
+          <li class="flex items-start gap-3">
+            <span class="text-blue-500 mt-1">●</span>
+            <span><strong>Relevancy Scoring:</strong> Heuristic filtering to ensure every role is "Pinoy-Friendly."</span>
+          </li>
+        </ul>
+      </section>
+
+      <footer class="pt-12 border-t border-white/5 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-600 mb-2">Architected by</p>
+          <a href="https://www.linkedin.com/in/cyrusalcala/" target="_blank" class="text-white font-black text-xl hover:text-blue-500 transition-colors uppercase tracking-tighter">Cy Alcala</a>
+        </div>
+        <div class="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-black text-lg shadow-[0_0_20px_-5px_rgba(59,130,246,0.5)]">
+          C
+        </div>
+      </footer>
+    </div>
+  </main>
+</Layout>

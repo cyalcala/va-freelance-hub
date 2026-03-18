@@ -2,32 +2,36 @@
 const currentPath = Astro.url.pathname;
 const isHome = currentPath === '/';
 const isOpp = currentPath === '/opportunities';
+const isAbout = currentPath === '/about';
 ---
-<nav class="fixed top-0 left-0 right-0 z-50 transition-colors duration-500 border-b border-white/5 bg-black/60 backdrop-blur-xl">
+<nav class="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-black/70 backdrop-blur-2xl">
   <div class="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2 text-white font-black text-sm tracking-tighter hover:scale-105 transition-all">
-      <div class="w-6 h-6 bg-blue-600 rounded flex items-center justify-center font-black text-xs">V</div>
-      <span>VA.INDEX</span>
+    <a href="/" class="flex items-center gap-3 text-white font-black text-xs tracking-tighter hover:scale-105 transition-all">
+      <div class="w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center font-black text-sm shadow-[0_0_20px_-5px_rgba(59,130,246,0.3)]">V</div>
+      <span class="hidden sm:inline">VA.INDEX (V5.2)</span>
     </a>
 
-    <div class="p-1 border bg-zinc-900/50 border-white/5 rounded-2xl flex items-center gap-1">
+    <div class="p-1 border bg-zinc-950/80 border-white/5 rounded-2xl flex items-center gap-1 shadow-inner">
       <a 
         href="/" 
-        class={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative overflow-hidden group ${isHome ? 'text-blue-500 bg-white/5 shadow-[0_0_20px_-10px_rgba(59,130,246,0.5)]' : 'text-zinc-600 hover:text-zinc-400 hover:bg-white/5'}`}
+        class={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${isHome ? 'text-blue-500 bg-white/5 shadow-[0_0_20px_-10px_rgba(59,130,246,0.5)]' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
       >
-        <span class="relative z-10 font-black">Agencies</span>
+        Agencies
       </a>
       <a 
         href="/opportunities" 
-        class={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 relative overflow-hidden group ${isOpp ? 'text-blue-500 bg-white/5 shadow-[0_0_20px_-10px_rgba(59,130,246,0.5)]' : 'text-zinc-600 hover:text-zinc-400 hover:bg-white/5'}`}
+        class={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${isOpp ? 'text-blue-500 bg-white/5 shadow-[0_0_20px_-10px_rgba(59,130,246,0.5)]' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
       >
-        <span class="relative z-10 font-black">Feed</span>
+        Feed
       </a>
     </div>
     
-    <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 border bg-blue-500/5 border-blue-500/10 rounded-full">
-      <div class="pulse-dot"></div>
-      <span class="text-[8px] font-black text-blue-500 tracking-[0.2em] uppercase">SYNCING</span>
+    <div class="flex items-center gap-6">
+      <a href="/about" class={`text-[10px] font-black uppercase tracking-widest transition-all ${isAbout ? 'text-blue-500' : 'text-zinc-600 hover:text-zinc-400'}`}>Mission</a>
+      <div class="hidden md:flex items-center gap-2 pr-2">
+        <div class="pulse-dot"></div>
+        <span class="text-[8px] font-black text-blue-500 tracking-[0.2em] uppercase">SYNCING</span>
+      </div>
     </div>
   </div>
 </nav>
