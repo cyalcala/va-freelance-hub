@@ -4,11 +4,19 @@ import { db } from '@va-hub/db/client';
 import { agencies as agenciesTable } from '@va-hub/db/schema';
 import { desc } from 'drizzle-orm';
 
-// Expert implementation: Live data fetching from Turso
-const liveAgencies = await db.select()
-  .from(agenciesTable)
-  .orderBy(desc(agenciesTable.lastSync))
-  .limit(50);
+// Expert implementation: Live data fetching from Turso with error handling
+let liveAgencies = [];
+let dbError = null;
+
+try {
+  liveAgencies = await db.select()
+    .from(agenciesTable)
+    .orderBy(desc(agenciesTable.lastSync))
+    .limit(50);
+} catch (e) {
+  console.error("Database fetch failed:", e);
+  dbError = e.message;
+}
 
 // Mapping for UI
 const agencies = liveAgencies.map((agency) => ({
@@ -38,39 +46,73 @@ const sourceColors: Record<string, string> = {
 			</p>
 		</header>
 
-		<div class="grid">
-			{agencies.map((agency) => (
-				<div class="card">
-					<div class="card-header">
-						<div class="logo-box">{agency.name[0]}</div>
-						<div class="meta-tags">
-							<span class="source-badge" style={`--source-color: ${sourceColors[agency.source] || '#71717a'}`}>
-								{agency.source}
-							</span>
-							<div class="status-container">
-								<span class={`status-dot ${agency.status === 'active' ? 'active-dot' : 'quiet-dot'}`}></span>
-								<span class="status-label">{agency.status}</span>
-							</div>
-						</div>
-					</div>
-					
-					<h3 class="agency-name">{agency.name}</h3>
-					
-					<div class="card-footer">
-						<div class="stat-group">
-							<span class="stat-label">Signals</span>
-							<span class="stat-value font-mono">{agency.jobs}</span>
-						</div>
-						<div class="stat-group border-l">
-							<span class="stat-label">Last Sync</span>
-							<span class="stat-value">{agency.lastSync}</span>
-						</div>
-					</div>
-
-					<a href="#" class="card-overlay"></a>
-				</div>
-			))}
-		</div>
+		{dbError ? (
+          <div class="col-span-full py-12 text-center border border-red-900/50 rounded-xl bg-red-900/10">
+            <p class="text-red-400 font-mono text-sm mb-2">DATABASE_ERROR: {dbError}</p>
+            <p class="text-zinc-500 text-sm">Please ensure migrations have been run and environment variables are set.</p>
+          </div>
+        ) : agencies.length === 0 ? (
+          <div class="col-span-full py-12 text-center border border-zinc-800 rounded-xl bg-zinc-900/50">
+            <p class="text-zinc-400">No agencies found yet. Running initial discovery...</p>
+          </div>
+        ) : (
+          <div class="grid">
+            {agencies.map((agency) => (
+              <div class="company-card group">
+                <div class="flex items-start justify-between mb-4">
+                  <div class="w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center overflow-hidden border border-zinc-700">
+                    {agency.logoUrl ? (
+                      <img src={agency.logoUrl} alt={agency.name} class="w-full h-full object-cover" />
+                    ) : (
+                      <span class="text-xl font-bold text-zinc-600">{agency.name.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div class="flex flex-wrap gap-1 justify-end">
+                    {/* Source Badges */}
+                    {(agency.metadata as any)?.source?.split(',').map((src: string) => (
+                      <span class={`source-badge badge-${src.trim().toLowerCase()}`}>
+                        {src.trim()}
+                      </span>
+                    ))}
+                    {agency.status === 'verified' && (
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                        VERIFIED
+                      </span>
+                    )}
+                  </div>
+                </div>
+                
+                <h3 class="text-lg font-bold text-white mb-2 group-hover:text-amber-500 transition-colors">
+                  {agency.name}
+                </h3>
+                
+                <p class="text-sm text-zinc-400 line-clamp-3 mb-6 flex-grow">
+                  {agency.description}
+                </p>
+                
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800">
+                  <a 
+                    href={agency.websiteUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="text-xs font-mono text-zinc-500 hover:text-white transition-colors"
+                  >
+                    {agency.websiteUrl ? new URL(agency.websiteUrl).hostname : ''}
+                  </a>
+                  <a 
+                    href={agency.hiringUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="flex items-center gap-1 text-xs font-bold text-amber-500 hover:text-amber-400 transition-colors"
+                  >
+                    APPLY NOW
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 	</main>
 </Layout>
 
