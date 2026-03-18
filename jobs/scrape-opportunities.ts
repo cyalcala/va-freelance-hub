@@ -1,6 +1,5 @@
 import { schedules } from "@trigger.dev/sdk/v3";
-import { eq } from "drizzle-orm";
-import { createDb, opportunities } from "./lib/db";
+import { db, schema } from "@va-hub/db";
 import { fetchRSSFeed, rssSources } from "./lib/scraper";
 
 export const scrapeOpportunitiesTask = schedules.task({
@@ -8,7 +7,6 @@ export const scrapeOpportunitiesTask = schedules.task({
   cron: "0 */2 * * *", // every 2 hours
   maxDuration: 120,
   run: async () => {
-    const db = createDb();
     console.log("[scrape] Starting opportunity scrape...");
 
     const results = await Promise.allSettled(rssSources.map(fetchRSSFeed));
@@ -18,7 +16,7 @@ export const scrapeOpportunitiesTask = schedules.task({
     if (allItems.length === 0) return { inserted: 0, skipped: 0 };
 
     const existingHashes = new Set(
-      (await db.select({ hash: opportunities.contentHash }).from(opportunities)).map((r) => r.hash)
+      (await db.select({ hash: schema.opportunities.contentHash }).from(schema.opportunities)).map((r) => r.hash)
     );
 
     const newItems = allItems.filter((item) => item.contentHash && !existingHashes.has(item.contentHash));
@@ -27,8 +25,14 @@ export const scrapeOpportunitiesTask = schedules.task({
     let inserted = 0;
     for (let i = 0; i < newItems.length; i += 50) {
       try {
-        await db.insert(opportunities).values(newItems.slice(i, i + 50)).onConflictDoNothing();
-        inserted += Math.min(50, newItems.length - i);
+        const batch = newItems.slice(i, i + 50).map(item => ({
+          ...item,
+          id: crypto.randomUUID(),
+          scrapedAt: new Date(),
+          postedAt: item.postedAt ? new Date(item.postedAt) : null,
+        }));
+        await db.insert(schema.opportunities).values(batch).onConflictDoNothing();
+        inserted += batch.length;
       } catch (err) {
         console.error("[scrape] Batch failed:", err);
       }
