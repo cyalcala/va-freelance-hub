@@ -50,7 +50,7 @@ const agencies = liveAgencies.map((agency) => {
             The Hiring Signal, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blueberry-500 to-indigo-500">Automated.</span>
           </h1>
           <p class="text-lg text-blueberry-800/70 font-medium max-w-xl">
-            Scanning recruitment channels every 120 minutes for verified Filipino agencies.
+            Scanning recruitment channels for verified Filipino agency hiring pulses.
           </p>
         </div>
       </div>
@@ -59,10 +59,10 @@ const agencies = liveAgencies.map((agency) => {
         <input 
           type="text" 
           id="agencySearch"
-          placeholder="Search agencies, niches..." 
+          placeholder="Filter agencies, niches..." 
           class="bg-white border border-blueberry-800/10 rounded-2xl px-6 py-4 text-sm w-full max-w-md focus:outline-none focus:border-blueberry-500/40 transition-all font-medium shadow-sm"
         />
-        <button id="verifiedFilter" class="w-full sm:w-auto px-8 py-4 bg-white border border-blueberry-800/10 rounded-2xl text-[11px] font-black uppercase tracking-widest text-blueberry-800/50 hover:text-blueberry-900 hover:border-blueberry-500/30 active:scale-95 transition-all shadow-sm cursor-pointer">
+        <button id="verifiedFilter" data-toggle-hiring class="w-full sm:w-auto px-8 py-4 bg-white border border-blueberry-800/10 rounded-2xl text-[11px] font-black uppercase tracking-widest text-blueberry-800/50 hover:text-blueberry-900 transition-all shadow-sm cursor-pointer">
           Hiring Now Only
         </button>
       </div>
@@ -73,15 +73,15 @@ const agencies = liveAgencies.map((agency) => {
         <a 
           href={agency.hiringUrl || '#'} 
           target="_blank" 
-          class="glass-card flex flex-col justify-between group h-full relative overflow-hidden active:scale-[0.98]" 
+          class="glass-card flex flex-col justify-between group h-full relative overflow-hidden active:scale-[0.98] transition-all" 
           data-name={agency.name.toLowerCase()} 
           data-status={agency.status}
         >
           <div>
             <div class="flex justify-between items-start mb-6">
-              <div class="text-base font-black text-blueberry-900 tracking-tight group-hover:text-blueberry-500 transition-colors uppercase">{agency.name}</div>
+              <div class="text-base font-black text-blueberry-900 tracking-tight group-hover:text-blueberry-500 transition-colors uppercase pr-4">{agency.name}</div>
               <div class="flex flex-col items-end gap-2 text-[8px] font-black">
-                {agency.status === 'active' && <span class="text-emerald-500 uppercase">● Hiring</span>}
+                {agency.status === 'active' ? <span class="text-emerald-500 uppercase">● Hiring</span> : <span class="text-blueberry-800/30 uppercase">Quiet</span>}
                 <span class="grayscale group-hover:grayscale-0">{agency.heat}</span>
               </div>
             </div>
@@ -94,67 +94,14 @@ const agencies = liveAgencies.map((agency) => {
       ))}
     </div>
 
-    <div id="emptyState" class="hidden py-32 text-center text-blueberry-800/40 text-sm italic">
-      No agencies match your search.
+    <div id="agenciesEmpty" class="hidden py-32 text-center text-blueberry-800/40 italic text-sm">
+      No agencies match your criteria.
     </div>
   </main>
 </Layout>
 
-<script is:inline>
-  function setupAgencies() {
-    console.log("[Agencies] INIT_INTERACTION_LAYER");
-    setTimeout(() => {
-      const search = document.getElementById('agencySearch');
-      const filterBtn = document.getElementById('verifiedFilter');
-      const grid = document.getElementById('agenciesGrid');
-      const empty = document.getElementById('emptyState');
-      
-      if (!grid || !search || !filterBtn) {
-        console.warn("[Agencies] Elements missing, retrying...");
-        return;
-      }
-
-      const cards = grid.querySelectorAll('.glass-card');
-      let activeOnly = false;
-
-      function refresh() {
-        const q = search.value.toLowerCase();
-        let count = 0;
-        cards.forEach(card => {
-          const name = card.getAttribute('data-name') || '';
-          const status = card.getAttribute('data-status');
-          const show = name.includes(q) && (!activeOnly || status === 'active');
-          card.style.display = show ? 'flex' : 'none';
-          if (show) count++;
-        });
-        if (empty) empty.style.display = count > 0 ? 'none' : 'block';
-      }
-
-      search.oninput = refresh;
-      
-      filterBtn.onclick = (e) => {
-        e.preventDefault();
-        activeOnly = !activeOnly;
-        filterBtn.classList.toggle('active-filter', activeOnly);
-        filterBtn.innerText = activeOnly ? '✓ Showing Hiring' : 'Hiring Now Only';
-        refresh();
-      };
-      
-      console.log(`[Agencies] BINDING_SUCCESS: ${cards.length} cards.`);
-    }, 50);
-  }
-
-  setupAgencies();
-  document.addEventListener('astro:page-load', setupAgencies);
-  document.addEventListener('astro:after-swap', setupAgencies);
-</script>
-
 <style>
-  .time-btn {
-    @apply px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer;
-    @apply text-blueberry-800/40 hover:text-blueberry-900;
-  }
-  .time-btn.active {
-    @apply bg-blueberry-50 text-blueberry-900 border border-blueberry-800/10;
+  .active-filter {
+    @apply bg-emerald-50 text-emerald-600 border-emerald-500/20 shadow-inner;
   }
 </style>

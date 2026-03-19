@@ -29,6 +29,98 @@ const { title } = Astro.props;
 			<slot />
 		</div>
 
+		<script is:inline>
+			// UNIVERSAL INTERACTION ENGINE (VA.INDEX)
+			(function() {
+				let state = {
+					query: "",
+					ageLimit: Infinity,
+					activeOnly: false
+				};
+
+				function sync() {
+					const path = window.location.pathname;
+					const isFeed = path.includes('/opportunities');
+					const isAgencies = path === '/';
+
+					if (isFeed) {
+						const grid = document.getElementById('oppsGrid');
+						const empty = document.getElementById('oppsEmpty');
+						if (!grid) return;
+						const items = grid.querySelectorAll('.opp-item');
+						let count = 0;
+						items.forEach(item => {
+							const text = item.getAttribute('data-search') || '';
+							const age = parseFloat(item.getAttribute('data-age') || '999');
+							const show = text.includes(state.query) && age <= state.ageLimit;
+							item.style.display = show ? 'flex' : 'none';
+							if (show) count++;
+						});
+						if (empty) empty.style.display = count > 0 ? 'none' : 'block';
+					}
+
+					if (isAgencies) {
+						const grid = document.getElementById('agenciesGrid');
+						const empty = document.getElementById('agenciesEmpty');
+						if (!grid) return;
+						const cards = grid.querySelectorAll('.glass-card');
+						let count = 0;
+						cards.forEach(card => {
+							const name = card.getAttribute('data-name') || '';
+							const status = card.getAttribute('data-status');
+							const show = name.includes(state.query) && (!state.activeOnly || status === 'active');
+							card.style.display = show ? 'flex' : 'none';
+							if (show) count++;
+						});
+						if (empty) empty.style.display = count > 0 ? 'none' : 'block';
+					}
+				}
+
+				// IMMORTAL LISTENERS
+				document.addEventListener('input', (e) => {
+					if (e.target.id === 'oppSearch' || e.target.id === 'agencySearch') {
+						state.query = e.target.value.toLowerCase().trim();
+						sync();
+					}
+				});
+
+				document.addEventListener('click', (e) => {
+					// Time Filters (Feed)
+					const ageBtn = e.target.closest('[data-age-filter]');
+					if (ageBtn) {
+						e.preventDefault();
+						const container = ageBtn.closest('#timeFilters');
+						container.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+						ageBtn.classList.add('active');
+						const val = ageBtn.getAttribute('data-age-filter');
+						state.ageLimit = (val === 'all') ? Infinity : parseFloat(val);
+						sync();
+					}
+
+					// Hiring Toggle (Agencies)
+					const hireBtn = e.target.closest('[data-toggle-hiring]');
+					if (hireBtn) {
+						e.preventDefault();
+						state.activeOnly = !state.activeOnly;
+						hireBtn.classList.toggle('active-filter', state.activeOnly);
+						hireBtn.innerText = state.activeOnly ? '✓ Showing Hiring' : 'Hiring Now Only';
+						sync();
+					}
+				});
+
+				// LIFECYCLE SYNC
+				document.addEventListener('astro:page-load', () => {
+					// Restore input values if they were swapped out
+					const search = document.getElementById('oppSearch') || document.getElementById('agencySearch');
+					if (search) search.value = state.query;
+					sync();
+				});
+
+				// Initial run
+				sync();
+			})();
+		</script>
+
 		<style is:global>
 			::-webkit-scrollbar {
 				width: 8px;

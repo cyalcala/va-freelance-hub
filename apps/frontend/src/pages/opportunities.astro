@@ -14,7 +14,7 @@ try {
   liveOpportunities = await db.select()
     .from(opportunitiesTable)
     .orderBy(desc(opportunitiesTable.scrapedAt))
-    .limit(500); // 500 is a safe middle ground
+    .limit(500); 
 } catch (e) {
   dbError = e.message;
 }
@@ -34,7 +34,6 @@ function formatRelativeTime(dateInput: Date | null) {
 
 function getRelevanceMetadata(opp: any) {
   const text = `${opp.title} ${opp.company} ${opp.description || ''}`.toLowerCase();
-  
   const isVaFriendly = ["assistant", "va", "customer", "support", "admin", "bookkeeping", "filipino", "philippines", "pinoy"].some(k => text.includes(k));
   const isTech = ["engineer", "developer", "devops", "software", "backend", "frontend", "architect"].some(k => text.includes(k));
   const isSenior = ["senior", "vp", "director", "lead", "principal", "head"].some(k => text.includes(k));
@@ -44,11 +43,10 @@ function getRelevanceMetadata(opp: any) {
   if (isSenior) score -= 20000;
   if (isTech && !isVaFriendly) score -= 10000;
   
-  // Recency Boost
   const now = Date.now();
   const scrapedAt = new Date(opp.scrapedAt).getTime();
   const discoveryHours = (now - scrapedAt) / (1000 * 60 * 60);
-  if (discoveryHours <= 12) score += 100000; // HUGE boost for today's discoveries
+  if (discoveryHours <= 12) score += 100000; 
 
   return { score, isVaFriendly, isTech };
 }
@@ -58,7 +56,6 @@ const scored = liveOpportunities.map(opp => {
   return { ...opp, relevancyScore: meta.score, isVaFriendly: meta.isVaFriendly };
 }).sort((a, b) => (b.relevancyScore - a.relevancyScore));
 
-// Diversity Logic
 const companyCount = new Map();
 const topTier = [];
 const bottomTier = [];
@@ -95,112 +92,66 @@ const opportunities = [...topTier, ...bottomTier].slice(0, 150).map(opp => {
         <div class="pulse-dot"></div>
         <span class="text-[10px] font-black text-blueberry-500 tracking-[0.2em] uppercase">SYSTEM_LIVE</span>
       </div>
-      <h1 class="text-4xl md:text-5xl font-black text-blueberry-900 tracking-tighter mb-4">Latest Roles</h1>
-      <div class="flex items-center gap-4 mt-6">
-        <input 
-          type="text" 
-          id="oppSearch" 
-          placeholder="Filter by title or company..." 
-          class="bg-white border border-blueberry-800/10 rounded-2xl px-6 py-3 text-sm focus:outline-none focus:border-blueberry-500/40 w-full max-w-md"
-        />
-        <div class="flex p-1 bg-white border border-blueberry-800/10 rounded-2xl shadow-sm" id="timeFilters">
-          <button data-filter="all" class="time-btn active">All</button>
-          <button data-filter="24" class="time-btn text-emerald-600">24h</button>
-          <button data-filter="72" class="time-btn">3d</button>
+      <h1 class="text-4xl md:text-5xl font-black text-blueberry-900 tracking-tighter mb-4 uppercase">Latest Feed</h1>
+      <div class="flex flex-col md:flex-row md:items-center gap-4 mt-8">
+        <div class="relative flex-1">
+          <input 
+            type="text" 
+            id="oppSearch" 
+            placeholder="Search roles, companies..." 
+            class="bg-white border border-blueberry-800/10 rounded-2xl px-6 py-3.5 text-sm focus:outline-none focus:border-blueberry-500/40 w-full shadow-sm font-medium"
+          />
+        </div>
+        <div class="flex p-1 bg-white border border-blueberry-800/10 rounded-2xl shadow-sm self-start" id="timeFilters">
+          <button data-age-filter="all" class="time-btn active">All</button>
+          <button data-age-filter="24" class="time-btn text-emerald-600">24h</button>
+          <button data-age-filter="72" class="time-btn">3d</button>
         </div>
       </div>
     </header>
 
-    <div class="flex flex-col gap-2" id="oppsGrid">
+    <div class="flex flex-col gap-3" id="oppsGrid">
       {opportunities.map((opp) => (
         <a 
           href={opp.sourceUrl} 
           target="_blank" 
-          class="opp-item flex items-center justify-between p-4 rounded-2xl bg-white border border-blueberry-800/10 hover:border-blueberry-500/30 transition-all group"
+          class="opp-item flex items-center justify-between p-5 rounded-3xl bg-white border border-blueberry-800/10 hover:border-blueberry-500/20 hover:shadow-md transition-all group"
           data-search={`${opp.title} ${opp.company}`.toLowerCase()}
           data-age={opp.ageHours}
         >
           <div class="flex items-center gap-6">
-            <div class="w-14 text-center">
-              <span class="text-[10px] font-mono text-blueberry-800/40 font-black">{opp.dateLabel}</span>
-              {opp.ageHours <= 24 && <div class="text-[7px] text-emerald-600 font-black uppercase mt-1">Hot</div>}
+            <div class="w-16 flex flex-col items-center gap-1">
+              <span class="text-[10px] font-black text-blueberry-800/40 uppercase tracking-tighter">{opp.dateLabel}</span>
+              {opp.ageHours <= 24 && <span class="px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 text-[8px] font-black uppercase rounded border border-emerald-500/20">Hot</span>}
             </div>
+            <div class="h-6 w-[1px] bg-blueberry-800/5"></div>
             <div>
-              <div class="text-[11px] font-black text-blueberry-900 uppercase tracking-tight">{opp.title}</div>
-              <div class="text-[9px] text-blueberry-800/60 font-bold uppercase tracking-widest">{opp.company}</div>
+              <div class="text-[13px] font-black text-blueberry-900 uppercase tracking-tight group-hover:text-blueberry-600 transition-colors leading-tight mb-1">{opp.title}</div>
+              <div class="text-[10px] text-blueberry-800/60 font-bold uppercase tracking-widest">{opp.company}</div>
             </div>
           </div>
-          <div class="text-[9px] font-black text-blueberry-800/30 uppercase tracking-widest group-hover:text-blueberry-600 transition-colors">
-            {opp.sourcePlatform} ↗
+          <div class="flex items-center gap-4">
+             <span class="text-[9px] font-black text-blueberry-800/20 uppercase tracking-widest hidden sm:block">{opp.sourcePlatform}</span>
+             <div class="w-8 h-8 rounded-full bg-blueberry-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-500"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+             </div>
           </div>
         </a>
       ))}
     </div>
 
-    <div id="emptyState" class="hidden py-24 text-center text-blueberry-800/40 text-sm italic">
-      No roles match your current filter.
+    <div id="oppsEmpty" class="hidden py-32 text-center text-blueberry-800/40 font-medium italic text-sm">
+      Zero results match your current filter.
     </div>
   </main>
 </Layout>
 
-<script is:inline>
-  function setupFeed() {
-    console.log("[Feed] SYNC_INTERACTION_LAYER");
-    setTimeout(() => {
-      const search = document.getElementById('oppSearch');
-      const filters = document.getElementById('timeFilters');
-      const grid = document.getElementById('oppsGrid');
-      const empty = document.getElementById('emptyState');
-      
-      if (!search || !filters || !grid) {
-        console.warn("[Feed] Elements missing, retrying...");
-        return;
-      }
-
-      const items = grid.querySelectorAll('.opp-item');
-      const btns = filters.querySelectorAll('.time-btn');
-      let ageLimit = Infinity;
-
-      function refresh() {
-        const q = search.value.toLowerCase();
-        let visible = 0;
-        items.forEach(item => {
-          const text = item.getAttribute('data-search') || '';
-          const age = parseFloat(item.getAttribute('data-age') || '999');
-          const show = text.includes(q) && age <= ageLimit;
-          item.style.display = show ? 'flex' : 'none';
-          if (show) visible++;
-        });
-        if (empty) empty.style.display = visible > 0 ? 'none' : 'block';
-      }
-
-      search.oninput = refresh;
-      
-      btns.forEach(btn => {
-        btn.onclick = (e) => {
-          e.preventDefault();
-          btns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          const f = btn.getAttribute('data-filter');
-          ageLimit = (f === 'all') ? Infinity : parseFloat(f);
-          refresh();
-        };
-      });
-      console.log(`[Feed] BINDING_SUCCESS: ${items.length} items bound.`);
-    }, 50);
-  }
-
-  setupFeed();
-  document.addEventListener('astro:page-load', setupFeed);
-  document.addEventListener('astro:after-swap', setupFeed);
-</script>
-
 <style>
   .time-btn {
-    @apply px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer;
+    @apply px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer outline-none;
     @apply text-blueberry-800/40 hover:text-blueberry-900;
   }
   .time-btn.active {
-    @apply bg-blueberry-50 text-blueberry-900 border border-blueberry-800/10;
+    @apply bg-blueberry-50 text-blueberry-900 border border-blueberry-800/10 shadow-sm;
   }
 </style>
