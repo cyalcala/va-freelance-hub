@@ -7,274 +7,253 @@ import { desc } from 'drizzle-orm';
 export const prerender = false;
 Astro.response.headers.set('Cache-Control', 'max-age=0, s-maxage=60, stale-while-revalidate=59');
 
-// Fetch live opportunities
 let liveOpportunities = [];
 let dbError = null;
 
-if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
-  dbError = `ENV_MISSING: Database credentials not configured. Add TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in Vercel Dashboard → Settings → Environment Variables.`;
-} else {
-  try {
-    liveOpportunities = await db.select()
-      .from(opportunitiesTable)
-      .orderBy(desc(opportunitiesTable.scrapedAt))
-      .limit(300);
-  } catch (e) {
-    console.error("Database fetch failed:", e);
-    dbError = e.message;
-  }
+try {
+  liveOpportunities = await db.select()
+    .from(opportunitiesTable)
+    .orderBy(desc(opportunitiesTable.scrapedAt))
+    .limit(1000); // Fetch more to allow for diversity slicing
+} catch (e) {
+  dbError = e.message;
 }
 
-
 function formatRelativeTime(dateInput: Date | null) {
-  if (!dateInput) return 'Today';
+  if (!dateInput) return 'Just Now';
   const now = new Date();
   const date = new Date(dateInput);
-  const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+  const diffMs = now.getTime() - date.getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   
-  if (diffHours < 1) return 'Just Now';
+  if (diffMs < 3600000) return 'Just Now'; // < 1 hour
   if (diffHours < 24) return `${diffHours}h ago`;
   
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return '1d ago';
+  if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays}d ago`;
   
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-function calculateRelevance(opp: any) {
-  const text = `${opp.title} ${opp.company} ${opp.description || ''} ${opp.tags || ''}`.toLowerCase();
+const PH_FRIENDLY_COMPANIES = ["virtualstaff", "onlinejobs", "remote staff", "bruntwork", "athena", "cyberbacker", "outsourced", "filta"];
+
+function getScore(opp: any) {
+  const title = (opp.title || "").toLowerCase();
+  const company = (opp.company || "").toLowerCase();
+  const desc = (opp.description || "").toLowerCase();
+  const text = `${title} ${company} ${desc}`.toLowerCase();
+  
   let score = 0;
-  
+
+  // Axis 1: FRESHNESS (The ultimate decider)
   const now = Date.now();
-  const postedAt = opp.postedAt ? new Date(opp.postedAt).getTime() : 0;
-  const scrapedAt = opp.scrapedAt ? new Date(opp.scrapedAt).getTime() : 0;
+  const scrapedAt = new Date(opp.scrapedAt).getTime();
+  const ageHrs = (now - scrapedAt) / (1000 * 60 * 60);
   
-  const ageHours = postedAt ? (now - postedAt) / (1000 * 60 * 60) : 999;
-  const discoveryHours = (now - scrapedAt) / (1000 * 60 * 60);
-  
-  // 1. Core Penalty (-50,000 Pts)
-  const penaltyKw = ["senior", "vp", "president", "director", "principal", "staff", "head of", "lead", "usa only", "us only", "strictly us", "americas"];
-  if (penaltyKw.some(k => text.includes(k))) score -= 50000;
+  if (ageHrs < 1) score += 1000000;
+  else if (ageHrs < 4) score += 500000;
+  else if (ageHrs < 24) score += 100000;
+  else if (ageHrs < 72) score += 50000;
 
-  // 2. Niche Boost (+10,000 Pts)
-  const boostKw = ["virtual assistant", "va", "customer service", "customer support", "sales", "design", "web design", "executive assistant", "marketing", "admin", "bookkeeping", "data entry"];
-  if (boostKw.some(k => text.includes(k))) score += 10000;
+  // Axis 2: FILIPINO AFFINITY
+  const phSignals = ["philippines", "filipino", "pinoy", "tagalog", "worldwide", "global", "remote ph", "home-based"];
+  if (phSignals.some(s => text.includes(s))) score += 50000;
+  if (PH_FRIENDLY_COMPANIES.some(c => company.includes(c))) score += 30000;
 
-  // 3. Native Inclusion Boost (+10,000 Pts)
-  const inclusionKw = ["philippines", "filipino", "pinoy", "manila", "cebu", "worldwide", "global", "anywhere", "any timezone", "international"];
-  if (inclusionKw.some(k => text.includes(k))) score += 10000;
+  // Axis 3: ACCESSIBILITY (Non-Techy / Entry Level)
+  const vaKeywords = ["virtual assistant", "assistant", "cs", "customer service", "support", "admin", "data entry", "bookkeeping", "executive", "marketing", "social media"];
+  if (vaKeywords.some(k => title.includes(k))) score += 40000;
 
-  // 4. Absolute Peak Boost (+20,000 Pts)
-  if (text.includes("virtual assistant") || text.includes("filipino")) score += 20000;
-  
-  // 5. The "JUST NOW" Recency Velocity (+1,000,000 Pts)
-  if (discoveryHours <= 4) {
-    score += 1000000; 
-  } else if (discoveryHours <= 24) {
-    score += 100000;
-  }
+  // Axis 4: DATA HARVEST / OVER-TECH PENALTY
+  const techHarvesterSignals = ["senior", "lead", "principal", "staff engineer", "architect", "manager", "vp", "director"];
+  const isHarvester = techHarvesterSignals.some(s => title.includes(s)) && !text.includes("philippines");
+  if (isHarvester) score -= 200000;
 
   return score;
 }
 
-const scoredOpps = liveOpportunities.map(opp => ({
+// 1. Scoring & Initial Sort
+const scored = liveOpportunities.map(opp => ({
   ...opp,
-  relevancyScore: calculateRelevance(opp)
-})).sort((a, b) => {
-  if (a.relevancyScore !== b.relevancyScore) return b.relevancyScore - a.relevancyScore;
-  
-  const aTime = Math.max(new Date(a.postedAt || 0).getTime(), new Date(a.scrapedAt).getTime());
-  const bTime = Math.max(new Date(b.postedAt || 0).getTime(), new Date(b.scrapedAt).getTime());
-  return bTime - aTime;
-});
+  relevancyScore: getScore(opp)
+})).sort((a, b) => b.relevancyScore - a.relevancyScore);
 
-const opportunities = scoredOpps.map((opp) => {
-  const now = Date.now();
-  const postedAt = opp.postedAt ? new Date(opp.postedAt).getTime() : 0;
-  const scrapedAt = opp.scrapedAt ? new Date(opp.scrapedAt).getTime() : 0;
-  
-  // Use the freshest signal for the "Just Now" label
-  const latestSignal = new Date(Math.max(postedAt, scrapedAt));
-  
-  const ageHours = Math.min(
-    postedAt ? (now - postedAt) / (1000 * 60 * 60) : 999,
-    (now - scrapedAt) / (1000 * 60 * 60)
-  );
+// 2. Fuzzy Dedup & Company Diversity
+const seenFingerprints = new Set();
+const companyUsage = new Map();
+const finalFeed = [];
 
-  return {
-    title: opp.title,
-    company: opp.company || 'Direct Hire',
-    date: formatRelativeTime(latestSignal),
-    url: opp.sourceUrl,
-    source: opp.sourcePlatform || 'Web',
-    ageHours,
-  };
-});
+for (const opp of scored) {
+  const normTitle = opp.title.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 30);
+  const normCompany = (opp.company || 'unknown').toLowerCase().trim();
+  const fingerprint = `${normTitle}|${normCompany}`;
+  
+  if (seenFingerprints.has(fingerprint)) continue;
+
+  // Dynamic Slot Budget
+  const isPhFriendly = PH_FRIENDLY_COMPANIES.some(c => normCompany.includes(c)) || opp.relevancyScore > 100000;
+  const slotLimit = isPhFriendly ? 3 : 1;
+  const currentUsage = companyUsage.get(normCompany) || 0;
+
+  if (currentUsage < slotLimit) {
+    seenFingerprints.add(fingerprint);
+    companyUsage.set(normCompany, currentUsage + 1);
+    
+    // Final UI Prep
+    const latestDate = new Date(Math.max(new Date(opp.postedAt || 0).getTime(), new Date(opp.scrapedAt).getTime()));
+    const ageHrs = (Date.now() - latestDate.getTime()) / (1000 * 60 * 60);
+
+    finalFeed.push({
+      ...opp,
+      displayDate: formatRelativeTime(latestDate),
+      ageHrs
+    });
+  }
+
+  if (finalFeed.length >= 200) break;
+}
 ---
 
-<Layout title="Opportunities | VA.INDEX">
-  <main class="max-w-[1200px] mx-auto px-6 py-12">
+<Layout title="Feed | VA.INDEX">
+  <main class="max-w-[1240px] mx-auto px-6 py-12">
     <header class="mb-12">
-      <div class="flex items-center gap-2 mb-4 group cursor-default">
+      <div class="flex items-center gap-2 mb-6">
         <div class="pulse-dot"></div>
-        <span class="text-[10px] font-black text-blueberry-500 tracking-[0.2em] uppercase transition-all group-hover:tracking-[0.4em]">LIVE OPPORTUNITIES</span>
+        <span class="text-[10px] font-black text-blueberry-500 tracking-[0.2em] uppercase">SYSTEM_LIVE: RELEVANCY_V2</span>
       </div>
-      <h1 class="text-4xl md:text-5xl font-black text-blueberry-900 tracking-tighter mb-4">Latest Roles</h1>
-      <p class="text-blueberry-800/70 max-w-xl text-sm leading-relaxed font-medium">
-        Fresh hiring signals captured from Reddit, Brave, and curated boards.
-      </p>
+      
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10">
+        <div>
+          <h1 class="text-4xl md:text-6xl font-black text-blueberry-900 tracking-tighter mb-4 leading-none uppercase">
+            Live Feed
+          </h1>
+          <p class="text-blueberry-800/60 font-medium max-w-xl text-sm leading-relaxed uppercase tracking-wide">
+            Intelligently ranked by recency, trust, and Filipino accessibility.
+          </p>
+        </div>
+      </div>
 
-      <div class="mt-10 flex flex-col md:flex-row md:items-center gap-4">
-        <div class="relative group max-w-xl w-full">
-          <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 -translate-y-1/2 text-blueberry-800/40 w-4 h-4 transition-colors group-focus-within:text-blueberry-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      <div class="flex flex-col md:flex-row items-center gap-4">
+        <div class="relative flex-1 group">
+          <svg xmlns="http://www.w3.org/2000/svg" class="absolute left-4 top-1/2 -translate-y-1/2 text-blueberry-800/30 w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
           <input 
             type="text" 
             id="oppSearch" 
-            placeholder="Search jobs, titles, or companies..." 
-            class="bg-white/80 border border-blueberry-800/10 rounded-2xl pl-11 pr-4 py-3 text-sm text-blueberry-900 shadow-sm focus:outline-none focus:border-blueberry-500/40 focus:bg-white transition-all font-medium placeholder:text-blueberry-800/40 w-full"
+            placeholder="Filter roles, companies, or keywords..." 
+            class="bg-white border border-blueberry-800/10 rounded-2xl pl-12 pr-6 py-4 text-sm w-full focus:outline-none focus:border-blueberry-500 shadow-sm font-medium transition-all"
           />
         </div>
-        
-        <div class="flex items-center gap-1.5 p-1 bg-white border border-blueberry-800/10 rounded-2xl shadow-sm" id="timeFilters">
+        <div class="flex p-1 bg-white border border-blueberry-800/10 rounded-2xl shadow-sm self-start overflow-hidden" id="timeFilters">
           <button data-filter="all" class="time-btn active">All</button>
           <button data-filter="24" class="time-btn text-emerald-600">24h</button>
           <button data-filter="72" class="time-btn">3d</button>
-          <button data-filter="168" class="time-btn">7d</button>
         </div>
       </div>
     </header>
 
-    {dbError ? (
-      <div class="p-6 border border-red-900/10 bg-red-900/5 rounded-xl text-red-500 text-xs font-mono">
-        SIGNAL_LOST: {dbError}
-      </div>
-    ) : (
-      <div class="flex flex-col gap-2" id="oppsGrid">
-        {opportunities.map((opp) => (
-          <a 
-            href={opp.url} 
-            target="_blank" 
-            class="opp-item flex items-center justify-between p-4 rounded-2xl bg-white border border-blueberry-800/10 hover:bg-oat-100/50 hover:border-blueberry-50/30 active:scale-[0.99] transition-all group shadow-sm"
-            data-search={`${opp.title} ${opp.company} ${opp.source}`.toLowerCase()}
-            data-age={opp.ageHours}
-          >
-            <div class="flex items-center gap-4 md:gap-8">
-              <div class="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
-                <div class="w-14 hidden md:flex flex-col items-center">
-                  <span class="text-[10px] font-mono text-blueberry-800/50 font-black">{opp.date}</span>
-                  {opp.ageHours <= 24 && (
-                    <div class="mt-1 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 text-[7px] font-black uppercase tracking-widest rounded-md border border-emerald-500/20">Hot</div>
-                  )}
-                </div>
-                <div class="h-4 w-[1px] bg-blueberry-800/10 hidden md:block"></div>
-                <div>
-                  <div class="text-[11px] font-black text-blueberry-900 uppercase tracking-tight group-hover:text-blueberry-600 transition-colors">
-                    {opp.title}
-                  </div>
-                  <div class="flex items-center gap-2 mt-0.5">
-                    <span class="text-[9px] text-blueberry-800/60 font-bold uppercase tracking-widest leading-none">
-                      {opp.company}
-                    </span>
-                    <span class="md:hidden text-[9px] text-blueberry-800/40 font-black uppercase tracking-widest leading-none">• {opp.date}</span>
-                    {opp.ageHours <= 24 && (
-                      <span class="md:hidden text-[8px] font-black text-emerald-500">🔥</span>
-                    )}
-                  </div>
-                </div>
+    <div class="grid grid-cols-1 gap-3" id="oppsGrid">
+      {finalFeed.map((opp) => (
+        <a 
+          href={opp.sourceUrl} 
+          target="_blank" 
+          class="opp-item flex items-center justify-between p-5 rounded-[2.5rem] bg-white border border-blueberry-800/5 hover:border-blueberry-500/20 hover:shadow-xl transition-all group relative active:scale-[0.99]"
+          data-search={`${opp.title} ${opp.company}`.toLowerCase()}
+          data-age={opp.ageHrs}
+        >
+          <div class="flex items-center gap-6">
+            <div class="w-20 flex flex-col items-center">
+              <span class="text-[10px] font-black text-blueberry-800/40 uppercase tracking-tighter mb-1">{opp.displayDate}</span>
+              {opp.ageHrs < 1 ? (
+                <span class="px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase rounded-lg shadow-sm">Just Now</span>
+              ) : opp.ageHrs < 24 ? (
+                <span class="px-2 py-0.5 bg-blueberry-50 text-blueberry-500 text-[8px] font-black uppercase rounded-lg border border-blueberry-500/10">Recent</span>
+              ) : null}
+            </div>
+            <div class="h-10 w-[1px] bg-blueberry-800/5"></div>
+            <div>
+              <h3 class="text-[15px] font-black text-blueberry-900 group-hover:text-blueberry-500 transition-colors leading-tight mb-1 uppercase tracking-tight">{opp.title}</h3>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] text-blueberry-800/60 font-bold uppercase tracking-widest">{opp.company}</span>
+                {opp.relevancyScore > 1000000 && <span class="text-[10px]">🔥</span>}
               </div>
             </div>
-            <div class="flex items-center gap-6">
-              <span class="text-[9px] font-black text-blueberry-800/40 uppercase tracking-widest hidden sm:block group-hover:text-blueberry-800/70 transition-colors">
-                {opp.source}
-              </span>
-              <div class="w-8 h-8 rounded-full bg-oat-50 border border-blueberry-800/10 group-hover:border-blueberry-500/30 group-hover:bg-blueberry-50 flex items-center justify-center transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-800/40 group-hover:text-blueberry-600 transition-colors"><path d="M7 7h10v10"></path><path d="M7 17L17 7"></path></svg>
-              </div>
-            </div>
-          </a>
-        ))}
-      </div>
-    )}
+          </div>
+          <div class="flex items-center gap-4 text-blueberry-800/20">
+             <span class="text-[9px] font-black uppercase tracking-[0.2em] hidden sm:block">{opp.sourcePlatform}</span>
+             <div class="w-10 h-10 rounded-full bg-blueberry-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all scale-75 group-hover:scale-100">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-500"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+             </div>
+          </div>
+        </a>
+      ))}
+    </div>
 
-    <div id="emptyState" class="hidden py-24 text-center">
-      <div class="w-16 h-16 bg-white shadow-sm border border-blueberry-800/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-800/40"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-      </div>
-      <h3 class="text-blueberry-900 font-black text-xl mb-2">No roles found</h3>
-      <p class="text-blueberry-800/60 text-sm">Try using different keywords or check back soon.</p>
+    <div id="emptyState" class="hidden py-40 text-center text-blueberry-800/30 font-black uppercase tracking-widest text-sm italic">
+      No matching signals found.
     </div>
   </main>
 </Layout>
 
 <script is:inline>
   function initFeed() {
-    const searchInput = document.getElementById('oppSearch');
-    const timeFilters = document.getElementById('timeFilters');
+    const search = document.getElementById('oppSearch');
+    const filters = document.getElementById('timeFilters');
     const grid = document.getElementById('oppsGrid');
-    const emptyState = document.getElementById('emptyState');
-    if (!grid || !timeFilters) return;
+    const empty = document.getElementById('emptyState');
+    if (!grid) return;
 
-    // Always re-query from fresh DOM
     const items = grid.querySelectorAll('.opp-item');
-    const filterBtns = timeFilters.querySelectorAll('.time-btn');
+    const btns = filters?.querySelectorAll('.time-btn');
+    let q = "";
+    let limit = Infinity;
 
-    // Restore persisted filter state
-    let currentLimit = window._feedAgeLimit !== undefined ? window._feedAgeLimit : Infinity;
-
-    // Sync button visual with persisted state
-    filterBtns.forEach(function(btn) {
-      btn.classList.remove('active');
-      const val = btn.getAttribute('data-filter');
-      const btnLimit = val === 'all' ? Infinity : parseFloat(val || 'Infinity');
-      if (btnLimit === currentLimit) btn.classList.add('active');
-    });
-
-    function runFilter() {
-      const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-      let hasResults = false;
-      items.forEach(function(item) {
-        const searchText = item.getAttribute('data-search') || '';
-        const age = parseFloat(item.getAttribute('data-age') || '999');
-        const show = searchText.includes(query) && age <= currentLimit;
-        item.style.display = show ? 'flex' : 'none';
-        if (show) hasResults = true;
+    function run() {
+      let count = 0;
+      items.forEach(el => {
+        const text = el.dataset.search || "";
+        const age = parseFloat(el.dataset.age || "999");
+        const match = text.includes(q) && age <= limit;
+        el.style.display = match ? 'flex' : 'none';
+        if (match) count++;
       });
-      if (emptyState) emptyState.style.display = hasResults ? 'none' : 'block';
+      if (empty) empty.style.display = count > 0 ? 'none' : 'block';
     }
 
-    if (searchInput) searchInput.addEventListener('input', runFilter);
+    search?.addEventListener('input', (e) => {
+      q = e.target.value.toLowerCase().trim();
+      run();
+    });
 
-    filterBtns.forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
+    btns?.forEach(btn => {
+      btn.addEventListener('click', (e) => {
         e.preventDefault();
-        filterBtns.forEach(function(b) { b.classList.remove('active'); });
+        btns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const filterValue = btn.getAttribute('data-filter');
-        currentLimit = filterValue === 'all' ? Infinity : parseFloat(filterValue || 'Infinity');
-        window._feedAgeLimit = currentLimit;
-        runFilter();
+        const val = btn.dataset.filter;
+        limit = val === 'all' ? Infinity : parseFloat(val);
+        run();
       });
     });
 
-    runFilter();
+    run();
   }
 
-  // Register lifecycle listener only once
-  if (!window._feedListenerSet) {
+  if (!window._feedInitSet) {
     document.addEventListener('astro:after-swap', initFeed);
-    window._feedListenerSet = true;
+    window._feedInitSet = true;
   }
-
   initFeed();
 </script>
 
 <style>
   .time-btn {
-    @apply px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all outline-none;
-    @apply text-blueberry-800/40 hover:text-blueberry-900 hover:bg-blueberry-50/50;
+    @apply px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-blueberry-800/40 hover:text-blueberry-900;
   }
   .time-btn.active {
-    @apply bg-blueberry-50 text-blueberry-900 shadow-sm border border-blueberry-800/5;
+    @apply bg-blueberry-50 text-blueberry-900 shadow-inner;
+  }
+  .opp-item {
+    box-shadow: 0 4px 20px -10px rgba(40, 53, 147, 0.05);
   }
 </style>
