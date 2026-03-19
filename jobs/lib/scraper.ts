@@ -37,17 +37,6 @@ export interface Source {
 }
 
 export const rssSources: Source[] = [
-  // ── LOCAL PHILIPPINES PRIORITY ──────────────────────────────
-  {
-    id: "onlinejobs-blog",
-    name: "OnlineJobs.ph Insiders",
-    url: "https://www.onlinejobs.ph/blog/feed/",
-    platform: "OnlineJobs",
-    defaultJobType: "VA",
-    tags: ["philippines", "tips", "hiring"],
-    ethical_note: "Public blog RSS feed. OnlineJobs.ph is the #1 Filipino VA job board.",
-  },
-
   // ── GLOBAL REMOTE JOB BOARDS (Public RSS) ──────────────────
   {
     id: "himalayas",

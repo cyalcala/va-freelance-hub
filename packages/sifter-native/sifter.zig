@@ -21,6 +21,11 @@ const EXEC_KILLS = [_][]const u8{
     "executive", "lead", "staff", "senior", "manager", "strategist", "researcher",
 };
 
+const CONTENT_KILLS = [_][]const u8{
+    "reading this", "success story", "how to", "hiring tips", "interview with",
+    "why it matters", "stability matters", "insiders", "blog", "guide to",
+};
+
 // Target Categories (Positive Signals)
 const TARGET_SIGNALS = [_][]const u8{
     "virtual assistant", "va", "customer service", "admin", "design", "support",
@@ -40,6 +45,9 @@ export fn sift_job(title_ptr: [*c]const u8, company_ptr: [*c]const u8, desc_ptr:
         if (std.mem.indexOf(u8, lower_title, kill) != null) return @intFromEnum(SiftResult.TRASH);
     }
     for (EXEC_KILLS) |kill| {
+        if (std.mem.indexOf(u8, lower_title, kill) != null) return @intFromEnum(SiftResult.TRASH);
+    }
+    for (CONTENT_KILLS) |kill| {
         if (std.mem.indexOf(u8, lower_title, kill) != null) return @intFromEnum(SiftResult.TRASH);
     }
 
