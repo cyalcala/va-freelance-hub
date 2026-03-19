@@ -18,8 +18,9 @@ The system is highly abstracted. Its core intelligence, scraping arrays, and sca
   - `agencies`: Stores top-level entity metadata (name, verification footprint, hiring URLs, `hiring_heat`, `friction_level`).
   - `opportunities`: Stores individual job signals extracted dynamically. Contains a cryptographically unique `content_hash`.
 
-### The Zig Native Engine (`packages/zig-engine` & `packages/zig-parser`)
-- **Native Compile Interoperability:** To process vast volumes of raw text arrays faster than native Node.js constraints, we integrated a high-speed compiled layer written in Zig (`match.zig`). This theoretically offloads heavy regex text parsing and tokenizing out of the V8 JS engine, allowing raw HTML strings to be scanned and algorithmically scored for scam vectors in microseconds using memory-safe compilation.
+### The Titanium Sieve (Zig Native Engine)
+- **The Sifter (`sifter.zig`):** A high-performance, SIMD-ready binary module that hard-kills Tech/Exec/Blog noise at the hardware level with near-zero latency (~7.9ms per batch).
+- **Bun FFI Bridge:** Native interoperability allows TypeScript to call Zig functions with zero overhead, ensuring the 'Purity Firewall' is absolute before any data enters the database.
 
 ### Orchestration Execution (Trigger.dev v3)
 - **Engine Shift:** We explicitly operate on Trigger.dev's V3 architecture. Traditional Vercel Serverless Functions enforce a brutal 10-60 second execution timeout limit, making heavy scraping unviable. V3 background workers pull the compute off the main thread entirely, allowing scheduled jobs to run for theoretically infinite durations (minutes/hours) natively as isolated background processes.
@@ -44,18 +45,18 @@ All background operations are highly surgical, enforcing O(1) growth caps and st
 - **ATS Semantic Checking:** Instead of just checking HTTP `404 Not Found` statuses, it fetches the HTML `<body>` and runs algorithmic text-checks looking for standard ATS ghost-job signatures (e.g. *"This role has been filled"*, *"No longer accepting applications"*).
 - **Rate Limit Throttling:** Capped surgically at `LIMIT 50` rows per day to ensure network compute remains under $0.05 a month natively while keeping the primary feed highly scrubbed over a cycle.
 
-### The Deep System Audit Engine (`system-audit.ts`)
-- **Cron Cycle:** `0 0 * * *` (Daily at Midnight UTC).
-- **The "Rathole" Closer:** Runs a sweeping database correction that autonomously updates jobs mathematically older than 14 days directly to `is_active = 0`.
-- **The Sentinel:** Checks if the platform organically successfully populated `> 0` signals over the past 24 hours. If APIs unexpectedly break upstream, the sentinel throws a `logger.error(CRITICAL SILENT FAILURE)` via Trigger.dev infrastructure.
-- **Evasion Sweeper:** Conducts a heavy secondary validation sequence looking for complex URL shorteners or obfuscated scam patterns (`t.me` paths) heavily nested in active database bodies.
+### The Resilience Watchdog (`resilience-watchdog.ts`)
+- **Cron Cycle:** `0 */6 * * *` (Every 6 hours).
+- **Pulse Audit:** Detects 'Silent Blackouts' if no data has been discovered in 4 hours.
+- **Stagnation Detector:** Monitors the *average age* of the entire Gold pool. If the feed slows down (avg age > 6h), it triggers a critical system-wide alert.
+- **Purity Guard:** Ensures Gold Tier volume remains stable.
 
 ---
 
-## 4. Frontend Compilation (Astro + Tailwind)
-- **View Layer:** Written entirely in **Astro**, prioritizing zero-JavaScript static generation to achieve sub-200ms DOM rendering. 
-- **Array Priority Rendering:** In `index.astro`, we implement a native `relevancyBoost` point system right after array instantiation. Based dynamically on the text arrays in `agencies`, the system explicitly binds `+1000 points` to names containing 'Virtual', explicitly forcing the most viable algorithmically scored companies over top of the `hiring_score` parameter globally.
-- **Aesthetic Refinement (The Editorial Engine):** Evolved rapidly out of a high-contrast Cyberpunk schema into a `bg-[#F9F8F6]` (Oat) and `text-[#1A237E]` (Deep Blueberry) structure optimized using native CSS viewport-relative media queries applied gracefully upon `.glass-card` elements for fluid mobile deployment.
+## 4. Frontend Rendering (Unified SSR)
+- **Engine Priority:** Both **Astro** (`apps/frontend`) and **Next.js** (`apps/web`) are configured for **Strict SSR** (output: 'server').
+- **Cache-Control Shields:** Both apps enforce `no-store, must-revalidate` to bypass browser/edge caching, ensuring the user always sees the absolute 'Titanium' state of the DB.
+- **Aesthetic Refinement:** O(1) performance focus with Tailwind CSS and zero-JS hydration (Astro).
 
 ---
 

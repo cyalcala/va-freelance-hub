@@ -45,20 +45,28 @@ async function run() {
     console.log(`   [✓] Database securely saved to ${filePath}`);
 
     // 2. Snapshot Codebase (Git)
-    if (!isAutomated) {
+    const hasGit = (() => {
+      try {
+        execSync('git rev-parse --is-inside-work-tree', { stdio: 'ignore' });
+        return true;
+      } catch {
+        return false;
+      }
+    })();
+
+    if (hasGit && !isAutomated) {
       console.log("-> 2. Locking Codebase State...");
       try {
         execSync('git add .', { stdio: 'ignore' });
         execSync(`git commit -m "Auto-Save: System Restore Point ${name}"`, { stdio: 'ignore' });
+        execSync(`git tag -a ${name} -m "System Restore Point"`);
+        console.log(`   [✓] Codebase locked to tag: ${name}`);
       } catch {
         // It's perfectly fine if there is nothing new to commit.
       }
     } else {
-      console.log("-> 2. Linking Snapshot to Commit...");
+      console.log(`-> 2. Skipping Git Integration (${isAutomated ? "Automated Mode" : "No Git Detected"}).`);
     }
-
-    execSync(`git tag -a ${name} -m "System Restore Point"`);
-    console.log(`   [✓] Codebase locked to tag: ${name}`);
 
     // 3. Update Registry
     const registryPath = `${backupDir}/registry.json`;
@@ -67,7 +75,7 @@ async function run() {
       registry = JSON.parse(readFileSync(registryPath, "utf-8"));
     }
     
-    const commitHash = execSync("git rev-parse HEAD").toString().trim();
+    const commitHash = hasGit ? execSync("git rev-parse HEAD").toString().trim() : "no-git-context";
     registry.unshift({
       name,
       timestamp: new Date().toISOString(),

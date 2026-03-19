@@ -5,7 +5,7 @@ import { opportunities as opportunitiesTable } from '@va-hub/db/schema';
 import { desc, asc, and, not, eq } from 'drizzle-orm';
 
 export const prerender = false;
-Astro.response.headers.set('Cache-Control', 'max-age=0, s-maxage=60, stale-while-revalidate=59');
+Astro.response.headers.set('Cache-Control', 'no-store, max-age=0, must-revalidate, s-maxage=60, stale-while-revalidate=59');
 
 let liveOpportunities = [];
 let dbError = null;

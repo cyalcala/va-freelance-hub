@@ -166,5 +166,6 @@ export const scrapeOpportunitiesTask = schedules.task({
   id: "harvest-opportunities",
   cron: "0 */2 * * *", // Runs every 2 hours
   maxDuration: 120,
+  concurrencyLimit: 1,
   run: harvest
 });

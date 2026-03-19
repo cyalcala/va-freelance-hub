@@ -1,5 +1,6 @@
 import { db, opportunities, vaDirectory } from "@/lib/db";
 import { eq, desc, count } from "drizzle-orm";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { OpportunityCard } from "@/components/opportunity-card";
 
@@ -22,6 +23,7 @@ async function getLatestOpportunities() {
 }
 
 export default async function HomePage() {
+  headers().set('Cache-Control', 'no-store, max-age=0, must-revalidate');
   const [stats, latest] = await Promise.all([getStats(), getLatestOpportunities()]);
 
   return (
