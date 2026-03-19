@@ -32,7 +32,7 @@ function formatRelativeTime(dateInput: Date | null) {
   const date = new Date(dateInput);
   const diffHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
   
-  if (diffHours < 1) return 'Just Now';
+  if (diffHours <= 4) return 'Just Now';
   if (diffHours < 24) return `${diffHours}h ago`;
   
   const diffDays = Math.floor(diffHours / 24);
@@ -46,20 +46,31 @@ function calculateRelevance(opp: any) {
   const text = `${opp.title} ${opp.company} ${opp.description || ''} ${opp.tags || ''}`.toLowerCase();
   let score = 0;
   
-  // 1. Core Penalty (-50 Pts)
+  const now = Date.now();
+  const postedAt = opp.postedAt ? new Date(opp.postedAt).getTime() : 0;
+  const ageHours = postedAt ? (now - postedAt) / (1000 * 60 * 60) : 999;
+  
+  // 1. Core Penalty (-50,000 Pts)
   const penaltyKw = ["senior", "vp", "president", "director", "principal", "staff", "head of", "lead", "usa only", "us only", "strictly us", "americas"];
-  if (penaltyKw.some(k => text.includes(k))) score -= 50;
+  if (penaltyKw.some(k => text.includes(k))) score -= 50000;
 
-  // 2. Niche Boost (+20 Pts)
+  // 2. Niche Boost (+10,000 Pts)
   const boostKw = ["virtual assistant", "va", "customer service", "customer support", "sales", "design", "web design", "executive assistant", "marketing", "admin", "bookkeeping", "data entry"];
-  if (boostKw.some(k => text.includes(k))) score += 20;
+  if (boostKw.some(k => text.includes(k))) score += 10000;
 
-  // 3. Native Inclusion Boost (+50 Pts)
+  // 3. Native Inclusion Boost (+10,000 Pts)
   const inclusionKw = ["philippines", "filipino", "pinoy", "manila", "cebu", "worldwide", "global", "anywhere", "any timezone", "international"];
-  if (inclusionKw.some(k => text.includes(k))) score += 50;
+  if (inclusionKw.some(k => text.includes(k))) score += 10000;
 
-  // 4. Absolute Peak Boost (+100 Pts)
-  if (text.includes("virtual assistant") || text.includes("filipino")) score += 100;
+  // 4. Absolute Peak Boost (+20,000 Pts)
+  if (text.includes("virtual assistant") || text.includes("filipino")) score += 20000;
+  
+  // 5. The "JUST NOW" Recency Velocity (+1,000 to +5,000 Pts)
+  if (ageHours <= 4) {
+    score += 5000; 
+  } else if (ageHours <= 24) {
+    score += 1000;
+  }
 
   return score;
 }
