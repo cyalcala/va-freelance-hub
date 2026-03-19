@@ -150,16 +150,11 @@ const agencies = liveAgencies.map((agency) => {
 </script>
 
 <style>
-  .glass-card {
-    @apply bg-white/70 border border-blueberry-800/10 rounded-[20px] p-6 transition-all duration-300 shadow-sm backdrop-blur-xl;
+  .time-btn {
+    @apply px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer;
+    @apply text-blueberry-800/40 hover:text-blueberry-900;
   }
-  .glass-card:hover {
-    @apply bg-white border-blueberry-500/20 -translate-y-1 shadow-md;
-  }
-  .active-filter {
-    @apply bg-emerald-50 text-emerald-600 border-emerald-500/20;
-  }
-  .pulse-dot {
-    @apply w-1.5 h-1.5 bg-blue-500 rounded-full relative shadow-[0_0_8px_#3b82f6];
+  .time-btn.active {
+    @apply bg-blueberry-50 text-blueberry-900 border border-blueberry-800/10;
   }
 </style>

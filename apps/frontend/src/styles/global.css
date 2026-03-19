@@ -4,27 +4,33 @@
 
 @layer base {
   body {
-    @apply bg-black text-zinc-100 antialiased;
+    @apply bg-oat-50 text-blueberry-900 antialiased scroll-smooth;
     font-family: 'Geist', sans-serif;
   }
 }
 
 @layer components {
+  /* Premium Glass Cards */
   .glass-card {
-    @apply bg-[#0a0a0a] border border-white/5 rounded-xl p-5 transition-all duration-300 hover:border-blue-500/30 hover:bg-[#0f0f0f] hover:shadow-[0_0_30px_-10px_rgba(59,130,246,0.1)];
+    @apply bg-white/70 border border-blueberry-800/10 rounded-[24px] p-6 sm:p-8 backdrop-blur-xl shadow-sm transition-all duration-300;
   }
 
+  .glass-card:hover {
+    @apply bg-white border-blueberry-500/20 -translate-y-1 shadow-md;
+  }
+
+  /* Interaction Elements */
   .pulse-dot {
-    @apply relative flex h-2 w-2;
-  }
-
-  .pulse-dot::before {
-    content: '';
-    @apply absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500 opacity-75;
+    @apply relative flex h-2 w-2 bg-blueberry-500 rounded-full shadow-[0_0_10px_#3b82f6];
   }
 
   .pulse-dot::after {
     content: '';
-    @apply relative inline-flex h-2 w-2 rounded-full bg-blue-500;
+    @apply absolute inset-0 rounded-full bg-blueberry-500 animate-ping opacity-75;
+  }
+
+  /* Generic Transition Hooks */
+  .fade-in {
+    @apply animate-in fade-in duration-500 ease-out;
   }
 }
