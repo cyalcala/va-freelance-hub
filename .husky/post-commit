@@ -8,3 +8,6 @@ case "$MSG" in
     bun run save --automated --msg "$MSG"
     ;;
 esac
+
+# 📄 Automated Documenter
+bun run scripts/documenter.ts
