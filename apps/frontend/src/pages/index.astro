@@ -64,21 +64,42 @@ function getTier(opp: any) {
   const techSenior = ["senior", "lead", "principal", "staff engineer", "architect", "manager", "vp", "director", "head of cloud", "cloud alliances"];
   if (techSenior.some(s => title.includes(s)) && !text.includes("philippines")) return 4;
 
-  // 1. GOLD TIER (High-Fidelity Sources + PH Affinity)
-  const prioritySources = ["reddit", "brave", "greenhouse", "lever", "upwork"];
-  const phSignals = ["philippines", "filipino", "pinoy", "tagalog", "remote ph"];
-  const vaRoles = ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin", "customer service", "customer support"];
+  // 1. Tech & Corporate Neutralization (Prevents tech/corporate infiltration into Gold)
+  const highEndTech = ["engineer", "developer", "software", "devops", "sre", "data scientist", "programmer", "architect", "fullstack", "backend", "frontend", "coder", "systems"];
+  const isHighEndTech = highEndTech.some(ht => title.includes(ht)) && !text.includes("junior") && !text.includes("entry");
   
-  if (prioritySources.some(s => source.includes(s))) return 1;
-  if (phSignals.some(s => text.includes(s)) || vaRoles.some(r => title.includes(r))) return 1;
+  const corporateNoise = ["analyst", "manager", "executive", "specialist", "counsel", "payroll", "recruiter", "strategist", "consultant", "account executive", "legal", "compliance"];
+  const isCorporateNoise = corporateNoise.some(cn => title.includes(cn)) && !title.includes("assistant") && !title.includes("support");
+
+  if (source.includes("hackernews") || source.includes("hiring.cafe")) {
+    return isHighEndTech || isCorporateNoise ? 3 : 2;
+  }
+
+  // 2. Accessibility & PH-Native (The True Gold)
+  const phSignals = ["philippines", "filipino", "pinoy", "tagalog", "remote ph"];
+  const vaSignals = ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin assistant", "customer service", "customer support", "moderator", "transcription", "clerk", "receptionist"];
+  
+  if (phSignals.some(s => text.includes(s)) || vaSignals.some(r => title.includes(r))) {
+     if (isHighEndTech || isCorporateNoise) return 2; // Tech/Corp mixed with VA signals is Silver
+     return 1;
+  }
   if (PH_FRIENDLY_COMPANIES.some(c => company.includes(c))) return 1;
 
-  // 2. SILVER TIER (Global Remote / Non-Techy)
+  // 3. Source Elevation (Secondary Gold / Silver)
+  const prioritySources = ["reddit", "brave", "upwork", "hubstaff"];
+  if (prioritySources.some(s => source.includes(s))) {
+    if (isHighEndTech || isCorporateNoise) return 2;
+    return 1; // High-fidelity community role (non-tech/corp) is Gold
+  }
+
+  if (isHighEndTech || isCorporateNoise) return 3; // Corporate/Tech from generic source is Bronze
+
+  // 4. SILVER TIER (Global Remote / Non-Techy)
   const accessibilitySignals = ["assistant", "marketing", "social media", "support", "sales", "entry level", "no experience"];
   const globalSignals = ["worldwide", "global", "anywhere", "remote"];
   if (globalSignals.some(g => text.includes(g)) && accessibilitySignals.some(a => title.includes(a))) return 2;
 
-  // 3. BRONZE TIER (Everything Else)
+  // 5. BRONZE TIER (Everything Else)
   return 3;
 }
 

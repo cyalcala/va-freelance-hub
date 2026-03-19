@@ -51,16 +51,37 @@ export function siftOpportunity(title: string, company: string, description: str
     return OpportunityTier.TRASH;
   }
 
-  // Tech Harvesting check: High seniority title without PH context
-  if (SENIOR_TECH_SIGNALS.some(s => t.includes(s)) && !body.includes("philippines")) {
+  // 1. Tech & Corporate Neutralization (Prevents infiltration into Gold)
+  const highEndTech = ["engineer", "developer", "software", "devops", "sre", "data scientist", "programmer", "architect", "fullstack", "backend", "frontend", "coder", "systems"];
+  const isHighEndTech = highEndTech.some(ht => t.includes(ht)) && !body.includes("junior") && !body.includes("entry");
+  
+  const corporateNoise = ["analyst", "manager", "executive", "specialist", "counsel", "payroll", "recruiter", "strategist", "consultant", "account executive", "legal", "compliance"];
+  const isCorporateNoise = corporateNoise.some(cn => t.includes(cn)) && !t.includes("assistant") && !t.includes("support");
+
+  if (SENIOR_TECH_SIGNALS.some(st => t.includes(st)) && !body.includes("philippines")) {
     return OpportunityTier.TRASH;
   }
 
-  // 1. GOLD TIER
-  const prioritySources = ["reddit", "brave", "greenhouse", "lever", "upwork"];
-  if (prioritySources.some(ps => s.includes(ps))) return OpportunityTier.GOLD;
-  if (GOLD_KEYWORDS.some(g => body.includes(g)) || t.includes("virtual assistant")) {
+  if (s.includes("hackernews") || s.includes("hiring.cafe")) {
+    return isHighEndTech || isCorporateNoise ? OpportunityTier.BRONZE : OpportunityTier.SILVER;
+  }
+
+  // 2. Accessibility & PH-Native (The True Gold)
+  const vaSignals = ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin assistant", "customer service", "customer support", "moderator", "transcription", "clerk", "receptionist"];
+  if (GOLD_KEYWORDS.some(g => body.includes(g)) || vaSignals.some(vs => t.includes(vs))) {
+    if (isHighEndTech || isCorporateNoise) return OpportunityTier.SILVER; // Even an "Admin" role that is high-tech is Silver at best
     return OpportunityTier.GOLD;
+  }
+
+  // 3. Source Elevation (Secondary Gold / Silver)
+  const prioritySources = ["reddit", "brave", "upwork", "hubstaff"];
+  if (prioritySources.some(ps => s.includes(ps))) {
+    if (isHighEndTech || isCorporateNoise) return OpportunityTier.SILVER;
+    return OpportunityTier.GOLD; 
+  }
+
+  if (isHighEndTech || isCorporateNoise) {
+    return OpportunityTier.BRONZE;
   }
 
   // 2. SILVER TIER
