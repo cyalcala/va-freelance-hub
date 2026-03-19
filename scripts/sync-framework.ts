@@ -17,6 +17,7 @@ const FILES_TO_SYNC = [
   'jobs/lib/reddit.ts',
   'jobs/lib/hackernews.ts',
   'jobs/lib/jobicy.ts',
+  'jobs/lib/ats.ts',
   'jobs/lib/trust.ts',
   'scripts/save.ts',
   'scripts/restore.ts',
