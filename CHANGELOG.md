@@ -5,6 +5,20 @@
 **Status: AUTO-PROCESSED**
 
 ### ✨ Major Features
+* feat: surgical pivot - Feed as Home, new Branding Copy (e73907d)
+* feat: complete Intelligent Ranking, Diversity Engine, and Mobile-First Optimization (846d643)
+
+### 🛡️ Reliability & Fixes
+* fix: kill horizontal overflow and unify mobile design system (72a7e54)
+* fix: unify mobile layout and responsive primitives across all pages (c49f449)
+
+---
+
+
+## [2026-03-19] — [Opportunities: 1155 | Agencies: 95]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
 * feat: complete Intelligent Ranking, Diversity Engine, and Mobile-First Optimization (846d643)
 * feat: implement Intelligent Ranking & Diversity Engine for Job Feed (e1227e1)
 

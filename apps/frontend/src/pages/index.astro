@@ -43,19 +43,33 @@ function getTier(opp: any) {
   const title = (opp.title || "").toLowerCase();
   const company = (opp.company || "").toLowerCase();
   const desc = (opp.description || "").toLowerCase();
-  const text = `${title} ${company} ${desc}`.toLowerCase();
+  const source = (opp.sourcePlatform || "").toLowerCase();
+  const text = `${title} ${company} ${desc} ${source}`.toLowerCase();
   
   // 0. HARD KILLS (TRASH TIER)
-  const killLanguage = ["portuguese", "spanish", "german", "french", "strictly us", "usa only", "us only", "americas only", "citizens only"];
-  if (killLanguage.some(k => text.includes(k) && !text.includes("english") && !text.includes("philippines"))) return 4;
+  const strictKills = [
+    "strictly us", "usa only", "us only", "americas only", "citizens only", 
+    "uk only", "united kingdom only", "canada only", "europe only", "china only",
+    "u.s. cities", "united states only", "us based", "usa based"
+  ];
+  const regionalKills = [
+    "beijing", "shanghai", "tokyo", "london", "paris", "berlin", "moscow", "riyadh",
+    "dubai", "new york", "san francisco", "chicago", "hong kong", "singapore",
+    "china", "europe", "emea", "latam"
+  ];
+
+  if (strictKills.some(k => text.includes(k) && !text.includes("philippines"))) return 4;
+  if (regionalKills.some(k => text.includes(k) && !text.includes("philippines") && !text.includes("remote") && !text.includes("global"))) return 4;
 
   const techSenior = ["senior", "lead", "principal", "staff engineer", "architect", "manager", "vp", "director", "head of cloud", "cloud alliances"];
   if (techSenior.some(s => title.includes(s)) && !text.includes("philippines")) return 4;
 
-  // 1. GOLD TIER (Filipino Native / Highly Accessible)
+  // 1. GOLD TIER (High-Fidelity Sources + PH Affinity)
+  const prioritySources = ["reddit", "brave", "greenhouse", "lever", "upwork"];
   const phSignals = ["philippines", "filipino", "pinoy", "tagalog", "remote ph"];
   const vaRoles = ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin", "customer service", "customer support"];
   
+  if (prioritySources.some(s => source.includes(s))) return 1;
   if (phSignals.some(s => text.includes(s)) || vaRoles.some(r => title.includes(r))) return 1;
   if (PH_FRIENDLY_COMPANIES.some(c => company.includes(c))) return 1;
 

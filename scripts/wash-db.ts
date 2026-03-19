@@ -6,12 +6,12 @@ async function wash() {
   console.log("🧼 Starting Database Wash (Raw SQL Mode)...");
   const db = createDb();
   
-  const allOpps: any[] = await db.run(sql`SELECT id, title, company, description FROM opportunities`).then(r => r.rows);
+  const allOpps: any[] = await db.run(sql`SELECT id, title, company, description, source_platform FROM opportunities`).then(r => r.rows);
   console.log(`🔍 Found ${allOpps.length} records to process.`);
 
   let updated = 0;
   for (const opp of allOpps) {
-    const tier = siftOpportunity(opp.title, opp.company || "", opp.description || "");
+    const tier = siftOpportunity(opp.title, opp.company || "", opp.description || "", opp.source_platform);
     
     try {
       // Using raw SQL to bypass Drizzle version mismatch in scripts
