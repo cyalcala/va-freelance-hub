@@ -15,6 +15,7 @@
     "trigger:deploy": "bunx trigger.dev@latest deploy",
     "save": "bun run scripts/save.ts",
     "restore": "bun run scripts/restore.ts",
+    "failsafe": "bun run scripts/failsafe.ts",
     "sync:framework": "bun run scripts/sync-framework.ts",
     "prepare": "husky"
   },

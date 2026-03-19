@@ -1,6 +1,6 @@
 import { db } from "../packages/db/client";
 import { agencies, opportunities } from "../packages/db/schema";
-import { writeFileSync, mkdirSync, existsSync } from "fs";
+import { writeFileSync, readFileSync, mkdirSync, existsSync } from "fs";
 import { execSync } from "child_process";
 
 const creatures = [
@@ -59,6 +59,25 @@ async function run() {
 
     execSync(`git tag -a ${name} -m "System Restore Point"`);
     console.log(`   [✓] Codebase locked to tag: ${name}`);
+
+    // 3. Update Registry
+    const registryPath = `${backupDir}/registry.json`;
+    let registry = [];
+    if (existsSync(registryPath)) {
+      registry = JSON.parse(readFileSync(registryPath, "utf-8"));
+    }
+    
+    const commitHash = execSync("git rev-parse HEAD").toString().trim();
+    registry.unshift({
+      name,
+      timestamp: new Date().toISOString(),
+      commitHash,
+      isAutomated,
+      context: customMsg || "Manual Snapshot"
+    });
+
+    // Keep only the last 20 snapshots to save space
+    writeFileSync(registryPath, JSON.stringify(registry.slice(0, 20), null, 2));
 
     console.log(`\n✅ Restore Point [${name}] Created Successfully.`);
     console.log(`   To restore to this point later, run: bun run restore ${name}\n`);

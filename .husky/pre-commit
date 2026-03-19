@@ -1,0 +1,7 @@
+# 🛡️ Architectural Guardrail
+# This fixes misplaced files (e.g., .astro in root) automatically
+# before the commit is finalized.
+bun run scripts/guardrail.ts
+
+# 🧪 Integrity Check (Optional)
+# bun run lint
