@@ -18,6 +18,9 @@ The system is highly abstracted. Its core intelligence, scraping arrays, and sca
   - `agencies`: Stores top-level entity metadata (name, verification footprint, hiring URLs, `hiring_heat`, `friction_level`).
   - `opportunities`: Stores individual job signals extracted dynamically. Contains a cryptographically unique `content_hash`.
 
+### The Zig Native Engine (`packages/zig-engine` & `packages/zig-parser`)
+- **Native Compile Interoperability:** To process vast volumes of raw text arrays faster than native Node.js constraints, we integrated a high-speed compiled layer written in Zig (`match.zig`). This theoretically offloads heavy regex text parsing and tokenizing out of the V8 JS engine, allowing raw HTML strings to be scanned and algorithmically scored for scam vectors in microseconds using memory-safe compilation.
+
 ### Orchestration Execution (Trigger.dev v3)
 - **Engine Shift:** We explicitly operate on Trigger.dev's V3 architecture. Traditional Vercel Serverless Functions enforce a brutal 10-60 second execution timeout limit, making heavy scraping unviable. V3 background workers pull the compute off the main thread entirely, allowing scheduled jobs to run for theoretically infinite durations (minutes/hours) natively as isolated background processes.
 

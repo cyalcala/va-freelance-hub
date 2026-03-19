@@ -4,6 +4,9 @@ import { db } from '@va-hub/db/client';
 import { opportunities as opportunitiesTable } from '@va-hub/db/schema';
 import { desc } from 'drizzle-orm';
 
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'max-age=0, s-maxage=60, stale-while-revalidate=59');
+
 // Fetch live opportunities
 let liveOpportunities = [];
 let dbError = null;
