@@ -33,6 +33,7 @@ export const opportunities = sqliteTable('opportunities', {
   postedAt: integer('posted_at', { mode: 'timestamp' }),
   scrapedAt: integer('scraped_at', { mode: 'timestamp' }).notNull(),
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  tier: integer('tier').default(3), // 1=Gold, 2=Silver, 3=Bronze, 4=Trash
   contentHash: text('content_hash').unique(),
 });
 

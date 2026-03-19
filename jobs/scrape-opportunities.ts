@@ -7,6 +7,7 @@ import { fetchJobicyJobs } from "./lib/jobicy";
 import { fetchATSJobs } from "./lib/ats";
 import { sql } from "drizzle-orm";
 import { isLikelyScam } from "./lib/trust";
+import { siftOpportunity, OpportunityTier } from "./lib/sifter";
 
 function normalizeTitle(title: string): string {
   return title
@@ -75,42 +76,32 @@ export async function harvest() {
   });
   console.log(`[harvest] ${newItems.length} unique after dedup`);
 
-  // ── RELEVANCY FILTER ────────────────────────────────────
-  const relevantItems = newItems.filter(item => {
-    // Security Layer: Drop scams out of the gate
+  // ── RELEVANCY FILTER & SIFTING ──────────────────────────
+  const relevantItems = newItems.map(item => {
+    // 1. Security Layer: Drop scams out of the gate
     if (isLikelyScam(item.title, item.description ?? "")) {
-      return false;
+      return null;
     }
 
-    // OnlineJobs is a BLOG feed — only pass entries with hiring keywords in title
+    // 2. Intelligent Sifting & Tiering
+    const tier = siftOpportunity(item.title, item.company || "", item.description || "");
+    
+    // 3. Automated Kill (Trash Tier)
+    if (tier === OpportunityTier.TRASH) {
+      return null;
+    }
+
+    // 4. Source-level overrides (OnlineJobs blog filter)
     if (item.sourcePlatform === "OnlineJobs") {
       const t = (item.title || "").toLowerCase();
-      return ["hire", "hiring", "job", "apply", "career", "opening", "vacancy", "role"].some(k => t.includes(k));
+      const isJob = ["hire", "hiring", "job", "apply", "career", "opening", "vacancy", "role"].some(k => t.includes(k));
+      if (!isJob) return null;
     }
-    // PH-native and curated sources bypass filter
-    if (item.sourcePlatform && PH_NATIVE_SOURCES.has(item.sourcePlatform)) return true;
-    // Reddit & HN already pre-filtered for hiring signals
-    if (item.sourcePlatform?.startsWith("Reddit") || item.sourcePlatform === "HackerNews") return true;
-    // Jobicy is already a curated remote board
-    if (item.sourcePlatform === "Jobicy") return true;
-    // ATS Direct-Harvest: verified company job boards
-    if (item.sourcePlatform === "Greenhouse" || item.sourcePlatform === "Lever") return true;
-    // Upwork is already a curated freelance marketplace
-    if (item.sourcePlatform === "Upwork") return true;
 
-    // Global RSS: check for remote/hiring signals
-    const text = `${item.title} ${item.description ?? ""}`.toLowerCase();
-    const signals = [
-      "remote", "virtual", "assistant", "freelance", "outsource",
-      "offshore", "philippines", "filipino", "manila", "cebu",
-      "apply", "hiring", "urgent", "contract", "part-time",
-      "customer support", "data entry", "bookkeeping", "social media",
-      "admin", "executive assistant", "project manager"
-    ];
-    return signals.some(kw => text.includes(kw));
-  });
+    return { ...item, tier };
+  }).filter((item): item is NonNullable<typeof item> => item !== null);
 
-  console.log(`[harvest] ${relevantItems.length} passed relevancy filter`);
+  console.log(`[harvest] ${relevantItems.length} passed sifter funnel`);
 
   // ── INSERT ──────────────────────────────────────────────
   let inserted = 0;

@@ -8,6 +8,20 @@
 * feat: implement Intelligent Ranking & Diversity Engine for Job Feed (e1227e1)
 
 ### 🛡️ Reliability & Fixes
+* fix: kill horizontal overflow and unify mobile design system (72a7e54)
+* fix: unify mobile layout and responsive primitives across all pages (c49f449)
+* fix: surgical toggle repair - is:inline plus fresh DOM re-query on every page swap (e46e783)
+
+---
+
+
+## [2026-03-19] — [Opportunities: 1155 | Agencies: 95]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
+* feat: implement Intelligent Ranking & Diversity Engine for Job Feed (e1227e1)
+
+### 🛡️ Reliability & Fixes
 * fix: unify mobile layout and responsive primitives across all pages (c49f449)
 * fix: surgical toggle repair - is:inline plus fresh DOM re-query on every page swap (e46e783)
 * fix: resolve navbar state freezing by removing incorrect transition:persist (1f1213c)

@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { db } from '@va-hub/db/client';
 import { opportunities as opportunitiesTable } from '@va-hub/db/schema';
-import { desc } from 'drizzle-orm';
+import { desc, asc, and, not, eq } from 'drizzle-orm';
 
 export const prerender = false;
 Astro.response.headers.set('Cache-Control', 'max-age=0, s-maxage=60, stale-while-revalidate=59');
@@ -13,8 +13,9 @@ let dbError = null;
 try {
   liveOpportunities = await db.select()
     .from(opportunitiesTable)
-    .orderBy(desc(opportunitiesTable.scrapedAt))
-    .limit(1000); // Fetch more to allow for diversity slicing
+    .where(not(eq(opportunitiesTable.tier, 4)))
+    .orderBy(asc(opportunitiesTable.tier), desc(opportunitiesTable.scrapedAt))
+    .limit(1000); 
 } catch (e) {
   dbError = e.message;
 }
@@ -38,46 +39,56 @@ function formatRelativeTime(dateInput: Date | null) {
 
 const PH_FRIENDLY_COMPANIES = ["virtualstaff", "onlinejobs", "remote staff", "bruntwork", "athena", "cyberbacker", "outsourced", "filta"];
 
-function getScore(opp: any) {
+function getTier(opp: any) {
   const title = (opp.title || "").toLowerCase();
   const company = (opp.company || "").toLowerCase();
   const desc = (opp.description || "").toLowerCase();
   const text = `${title} ${company} ${desc}`.toLowerCase();
   
-  let score = 0;
+  // 0. HARD KILLS (TRASH TIER)
+  const killLanguage = ["portuguese", "spanish", "german", "french", "strictly us", "usa only", "us only", "americas only", "citizens only"];
+  if (killLanguage.some(k => text.includes(k) && !text.includes("english") && !text.includes("philippines"))) return 4;
 
-  // Axis 1: FRESHNESS (The ultimate decider)
+  const techSenior = ["senior", "lead", "principal", "staff engineer", "architect", "manager", "vp", "director", "head of cloud", "cloud alliances"];
+  if (techSenior.some(s => title.includes(s)) && !text.includes("philippines")) return 4;
+
+  // 1. GOLD TIER (Filipino Native / Highly Accessible)
+  const phSignals = ["philippines", "filipino", "pinoy", "tagalog", "remote ph"];
+  const vaRoles = ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin", "customer service", "customer support"];
+  
+  if (phSignals.some(s => text.includes(s)) || vaRoles.some(r => title.includes(r))) return 1;
+  if (PH_FRIENDLY_COMPANIES.some(c => company.includes(c))) return 1;
+
+  // 2. SILVER TIER (Global Remote / Non-Techy)
+  const accessibilitySignals = ["assistant", "marketing", "social media", "support", "sales", "entry level", "no experience"];
+  const globalSignals = ["worldwide", "global", "anywhere", "remote"];
+  if (globalSignals.some(g => text.includes(g)) && accessibilitySignals.some(a => title.includes(a))) return 2;
+
+  // 3. BRONZE TIER (Everything Else)
+  return 3;
+}
+
+function getFreshnessScore(opp: any) {
   const now = Date.now();
   const scrapedAt = new Date(opp.scrapedAt).getTime();
   const ageHrs = (now - scrapedAt) / (1000 * 60 * 60);
   
-  if (ageHrs < 1) score += 1000000;
-  else if (ageHrs < 4) score += 500000;
-  else if (ageHrs < 24) score += 100000;
-  else if (ageHrs < 72) score += 50000;
-
-  // Axis 2: FILIPINO AFFINITY
-  const phSignals = ["philippines", "filipino", "pinoy", "tagalog", "worldwide", "global", "remote ph", "home-based"];
-  if (phSignals.some(s => text.includes(s))) score += 50000;
-  if (PH_FRIENDLY_COMPANIES.some(c => company.includes(c))) score += 30000;
-
-  // Axis 3: ACCESSIBILITY (Non-Techy / Entry Level)
-  const vaKeywords = ["virtual assistant", "assistant", "cs", "customer service", "support", "admin", "data entry", "bookkeeping", "executive", "marketing", "social media"];
-  if (vaKeywords.some(k => title.includes(k))) score += 40000;
-
-  // Axis 4: DATA HARVEST / OVER-TECH PENALTY
-  const techHarvesterSignals = ["senior", "lead", "principal", "staff engineer", "architect", "manager", "vp", "director"];
-  const isHarvester = techHarvesterSignals.some(s => title.includes(s)) && !text.includes("philippines");
-  if (isHarvester) score -= 200000;
-
-  return score;
+  if (ageHrs < 1) return 1000000;
+  if (ageHrs < 4) return 500000;
+  if (ageHrs < 24) return 100000;
+  return 50000;
 }
 
-// 1. Scoring & Initial Sort
+// 1. Tier & Score & Initial Sort
 const scored = liveOpportunities.map(opp => ({
   ...opp,
-  relevancyScore: getScore(opp)
-})).sort((a, b) => b.relevancyScore - a.relevancyScore);
+  tier: getTier(opp),
+  freshnessScore: getFreshnessScore(opp),
+  relevancyScore: (4 - getTier(opp)) * 1000000 + getFreshnessScore(opp)
+})).sort((a, b) => {
+  if (a.tier !== b.tier) return a.tier - b.tier; // Lower tier (1) wins
+  return b.freshnessScore - a.freshnessScore; // Newer wins within tier
+});
 
 // 2. Fuzzy Dedup & Company Diversity
 const seenFingerprints = new Set();
@@ -92,8 +103,7 @@ for (const opp of scored) {
   if (seenFingerprints.has(fingerprint)) continue;
 
   // Dynamic Slot Budget
-  const isPhFriendly = PH_FRIENDLY_COMPANIES.some(c => normCompany.includes(c)) || opp.relevancyScore > 100000;
-  const slotLimit = isPhFriendly ? 3 : 1;
+  const slotLimit = opp.tier === 1 ? 3 : 1;
   const currentUsage = companyUsage.get(normCompany) || 0;
 
   if (currentUsage < slotLimit) {
