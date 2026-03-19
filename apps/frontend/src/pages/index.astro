@@ -41,55 +41,50 @@ const PH_FRIENDLY_COMPANIES = ["virtualstaff", "onlinejobs", "remote staff", "br
 
 function getTier(opp: any) {
   const title = (opp.title || "").toLowerCase();
-  const company = (opp.company || "").toLowerCase();
   const desc = (opp.description || "").toLowerCase();
   const source = (opp.sourcePlatform || "").toLowerCase();
-  const text = `${title} ${company} ${desc} ${source}`.toLowerCase();
+  const text = `${title} ${desc} ${source}`.toLowerCase();
   
-  // 0. HARD KILLS (TRASH TIER)
-  const strictKills = [
-    "strictly us", "usa only", "us only", "americas only", "citizens only", 
-    "uk only", "united kingdom only", "canada only", "europe only", "china only",
-    "u.s. cities", "united states only", "us based", "usa based",
-    "ceo", "cto", "cfo", "cio", "coo", "vp", "vice president", "director", "president", "head of", "principal", "lead", "leadership", "executive", "staff", "senior", "strategist", "manager", "researcher"
-  ];
-
-  const techKills = [
-    "engineer", "developer", "software", "devops", "sre", "data scientist", "programmer", "architect", "fullstack", "backend", "frontend", "coder", "systems", "tech", "technical", "coding", "javascript", "typescript", "python", "java", "react", "vue", "angular", "node", "aws", "cloud", "infrastructure", "cybersecurity", "security", "ai", "machine learning", "ml", "data science"
-  ];
-
-  const regionalKills = [
-    "beijing", "shanghai", "tokyo", "london", "paris", "berlin", "moscow", "riyadh",
-    "dubai", "new york", "san francisco", "chicago", "hong kong", "singapore",
-    "china", "europe", "emea", "latam"
-  ];
-
-  if (strictKills.some(k => title.includes(k) || (text.includes(k) && !text.includes("assistant")))) return 4;
-  if (techKills.some(tk => title.includes(tk)) && !text.includes("junior") && !text.includes("support")) return 4;
-  
-  const seaSignals = ["philippines", "filipino", "pinoy", "tagalog", "manila", "cebu", "ph", "sea", "southeast asia", "asean", "vietnam", "thailand", "indonesia", "malaysia", "singapore"];
-  if (regionalKills.some(k => text.includes(k) && !seaSignals.some(s => text.includes(s)) && !text.includes("remote") && !text.includes("global"))) return 4;
-
-  // 1. Gold Tier (Hyper-Strict VA & Non-Tech)
-  const vaSignals = ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin assistant", "customer service", "customer support", "moderator", "transcription", "clerk", "receptionist"];
-  const salesSignals = ["sales", "bdr", "sdr", "account executive", "account manager", "appointment setter"];
-  const marketingSignals = ["marketing", "seo", "social media", "copywriter", "content creator", "growth"];
+  // 1. Target Categories
+  const vaSignals = ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin assistant", "assistant", "clerk", "receptionist", "transcription", "moderator"];
+  const supportSignals = ["customer service", "customer support", "support specialist", "support agent", "help desk"];
+  const salesSignals = ["sales", "bdr", "sdr", "account manager", "appointment setter", "lead generation", "business development"];
+  const marketingSignals = ["marketing", "seo", "social media", "copywriter", "content creator", "growth", "strategist"];
   const designSignals = ["designer", "ui", "ux", "creative", "video editor", "graphic designer", "illustrator"];
   
-  const isTargetCategory = [...vaSignals, ...salesSignals, ...marketingSignals, ...designSignals].some(sig => title.includes(sig));
+  const isTargetCategory = [...vaSignals, ...supportSignals, ...salesSignals, ...marketingSignals, ...designSignals].some(sig => title.includes(sig));
+
+  // 2. Hard Tech Kill
+  const techKills = ["engineer", "developer", "software", "devops", "sre", "data scientist", "programmer", "architect", "fullstack", "backend", "frontend", "coder", "systems", "tech", "technical", "coding", "javascript", "typescript", "python", "java", "react", "vue", "angular", "node", "aws", "cloud", "infrastructure", "cybersecurity", "security", "ai", "machine learning", "ml", "data science"];
+  if (techKills.some(tk => title.includes(tk)) && !title.includes("support")) return 4;
+
+  // 3. Absolute Leadership Kill
+  const cSuite = ["ceo", "cto", "vp", "vice president", "director", "president", "head of", "principal", "staff", "researcher"];
+  if (cSuite.some(l => title.includes(l)) && !vaSignals.some(va => title.includes(va))) return 4;
+
+  // 4. Regional Kills
+  const seaSignals = ["philippines", "filipino", "pinoy", "tagalog", "manila", "cebu", "ph", "sea", "southeast asia", "asean", "vietnam", "thailand", "indonesia", "malaysia", "singapore"];
+  const regionalKills = ["beijing", "shanghai", "tokyo", "london", "paris", "berlin", "moscow", "riyadh", "dubai", "new york", "san francisco", "chicago", "hong kong", "singapore", "china", "europe", "emea", "latam"];
+  if (regionalKills.some(k => text.includes(k) && !seaSignals.some(s => text.includes(s)) && !text.includes("remote") && !text.includes("global"))) return 4;
+
+  // 5. Tiering with Contextual Demotion
   const hasSeaSignal = seaSignals.some(s => text.includes(s));
   const hasRemoteSignal = ["remote", "global", "anywhere", "worldwide"].some(r => text.includes(r));
+  const phFocusedSource = ["reddit", "onlinejobs", "direct", "manual", "pinoy", "filipino", "brave"];
+  const isPhContext = hasSeaSignal || phFocusedSource.some(src => source.includes(src));
+  
+  const leadershipPrefix = ["senior", "manager", "lead", "specialist", "researcher"];
+  const isGlobalLeadership = leadershipPrefix.some(l => title.includes(l)) && !phFocusedSource.some(src => source.includes(src)) && !vaSignals.some(va => title.includes(va));
 
-  const highFidelitySource = ["reddit", "brave", "direct", "manual", "upwork"];
-
-  if (isTargetCategory && (hasSeaSignal || hasRemoteSignal)) {
-    if (highFidelitySource.some(src => source.includes(src))) return 1;
-    return hasSeaSignal ? 1 : 2;
+  if (isTargetCategory && (isPhContext || hasRemoteSignal)) {
+    if (isGlobalLeadership) return 2;
+    return isPhContext ? 1 : 2;
   }
 
-  // Everything else is demoted or trash
   return 4;
 }
+
+
 
 function getFreshnessScore(opp: any) {
   const now = Date.now();
