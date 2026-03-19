@@ -27,7 +27,7 @@ export enum OpportunityTier {
 }
 
 // Pre-join config parameters for efficiency (Cached)
-const killsString = [...config.kill_lists.titles, ...config.kill_lists.content].join("|") + "\0";
+const killsString = [...config.kill_lists.titles, ...config.kill_lists.companies, ...config.kill_lists.content].join("|") + "\0";
 const signalsString = config.target_signals.role.join("|") + "\0";
 
 const killsPtr = Buffer.from(killsString);

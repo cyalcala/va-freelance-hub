@@ -34,12 +34,16 @@ export function siftOpportunity(title: string, company: string, description: str
   // 1. Target Categories
   const isTargetCategory = ROLE_SIGNALS.some(sig => t.includes(sig));
 
-  // 2. Hard Tech Kill
+  // 2. Hard Tech & Company Kill
   if (TECH_KILLS.some(tk => t.includes(tk)) && !t.includes("support")) return OpportunityTier.TRASH;
+  if (config.kill_lists.companies.some(ck => c.includes(ck))) return OpportunityTier.TRASH;
 
-  // 3. Absolute Leadership Kill (C-Suite/Global Exec)
-  const cSuite = ["ceo", "cto", "vp", "vice president", "director", "president", "head of", "principal", "staff", "researcher"];
-  if (cSuite.some(l => t.includes(l)) && !ROLE_SIGNALS.some(va => t.includes(va))) return OpportunityTier.TRASH;
+  // 3. Absolute Leadership & Non-Accessible Kill (C-Suite/Global Exec/Ultra-Senior)
+  const cSuite = ["ceo", "cto", "vp", "vice president", "director", "president", "head of", "principal", "staff", "researcher", "lead engineer", "senior engineer"];
+  if (cSuite.some(l => t.includes(l))) return OpportunityTier.TRASH;
+
+  // 4. Regional Kill
+  if (REGIONAL_KILLS.some(k => body.includes(k) && !SEA_SIGNALS.some(sea => body.includes(sea)) && !REMOTE_SIGNALS.some(r => body.includes(r)))) return OpportunityTier.TRASH;
 
   // 4. Regional Kill
   if (REGIONAL_KILLS.some(k => body.includes(k) && !SEA_SIGNALS.some(sea => body.includes(sea)) && !REMOTE_SIGNALS.some(r => body.includes(r)))) return OpportunityTier.TRASH;

@@ -46,19 +46,19 @@ export const defaultConfig: NicheConfig = {
 
   target_signals: {
     region: ["philippines", "filipino", "pinoy", "tagalog", "manila", "cebu", "ph", "sea", "southeast asia"],
-    role: ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin assistant", "customer service", "customer support", "sales", "bdr", "sdr", "marketing", "seo", "social media", "copywriter", "video editor", "graphic designer", "researcher", "moderator", "transcription", "translator", "operations", "clerk", "office", "administrative", "operations specialist", "hr assistant", "recruiter"],
+    role: ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin assistant", "customer service", "customer support", "sales", "bdr", "sdr", "marketing", "seo", "social media", "copywriter", "video editor", "graphic designer", "moderator", "transcription", "translator", "operations", "clerk", "office", "administrative", "operations specialist", "hr assistant", "recruiter"],
     remote: ["remote", "global", "worldwide", "anywhere", "work from home", "wfh"]
   },
 
   kill_lists: {
     titles: [
-      "ceo", "cto", "cfo", "cio", "coo", "vp", "vice president", "director", "president", "head of", "principal", "leadership", "executive",
+      "ceo", "cto", "cfo", "cio", "coo", "vp", "vice president", "director", "president", "head of", "principal", "leadership", "executive", "staff", "researcher",
       "engineer", "developer", "software", "devops", "sre", "data scientist", "programmer", "architect", "fullstack", "backend", "frontend", "coder", "systems", "tech", "technical", "coding", "javascript", "typescript", "python", "java", "react", "vue", "angular", "node", "aws", "cloud", "infrastructure", "cybersecurity", "security", "ai", "machine learning", "ml", "data science"
     ],
-    companies: [],
+    companies: ["canonical", "gitlab", "google", "meta", "apple", "microsoft", "amazon"],
     content: [
       "beijing", "shanghai", "tokyo", "london", "paris", "berlin", "moscow", "riyadh", "dubai", "new york", "san francisco", "chicago", "hong kong", "singapore",
-      "china", "europe", "emea", "latam", "portuguese", "spanish", "german", "french",
+      "china", "europe", "emea", "latam", "portuguese", "spanish", "german", "french", "uk-only", "us-only", "emea-only",
       "success story", "how to", "reading this", "join us", "blog", "article", "news"
     ]
   },
