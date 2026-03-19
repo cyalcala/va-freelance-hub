@@ -77,45 +77,49 @@ export async function harvest() {
   console.log(`[harvest] ${newItems.length} unique after dedup`);
 
   // ── RELEVANCY FILTER & SIFTING ──────────────────────────
-  const relevantItems = newItems.map(item => {
-    // 1. Security Layer: Drop scams out of the gate
-    if (isLikelyScam(item.title, item.description ?? "")) {
-      return null;
-    }
+  const relevantItems = allItems.map(item => {
+    // 1. Security Layer: Drop scams
+    if (isLikelyScam(item.title, item.description ?? "")) return null;
 
     // 2. Intelligent Sifting & Tiering
     const tier = siftOpportunity(item.title, item.company || "", item.description || "");
-    
-    // 3. Automated Kill (Trash Tier)
-    if (tier === OpportunityTier.TRASH) {
-      return null;
-    }
+    if (tier === OpportunityTier.TRASH) return null;
 
-    // 4. Source-level overrides (OnlineJobs blog filter)
+    // 3. Source-level overrides
     if (item.sourcePlatform === "OnlineJobs") {
       const t = (item.title || "").toLowerCase();
       const isJob = ["hire", "hiring", "job", "apply", "career", "opening", "vacancy", "role"].some(k => t.includes(k));
       if (!isJob) return null;
     }
 
-    return { ...item, tier };
+    return { ...item, tier, scrapedAt: new Date() }; // Pulse: new scrapedAt
   }).filter((item): item is NonNullable<typeof item> => item !== null);
 
   console.log(`[harvest] ${relevantItems.length} passed sifter funnel`);
 
-  // ── INSERT ──────────────────────────────────────────────
-  let inserted = 0;
+  // ── UPSERT (INSERT OR REFRESH) ──────────────────────────
+  let processed = 0;
   for (let i = 0; i < relevantItems.length; i += 50) {
     try {
       const batch = relevantItems.slice(i, i + 50);
-      await db.insert(opportunities).values(batch).onConflictDoNothing();
-      inserted += batch.length;
+      // We use onConflictDoUpdate to refresh the 'scrapedAt' and 'isActive' status
+      await db.insert(opportunities)
+        .values(batch)
+        .onConflictDoUpdate({
+          target: [opportunities.contentHash],
+          set: { 
+            scrapedAt: sql`excluded.scraped_at`,
+            isActive: true,
+            tier: sql`excluded.tier`
+          }
+        });
+      processed += batch.length;
     } catch (err) {
       console.error("[harvest] Batch failed:", (err as Error).message);
     }
   }
 
-  console.log(`[harvest] ═══ Complete: ${inserted} new opportunities inserted ═══`);
+  console.log(`[harvest] ═══ Complete: ${processed} signals processed/refreshed ═══`);
 
   // ── CLEANUP: Purge stale records older than 60 days ─────
   try {
@@ -126,8 +130,9 @@ export async function harvest() {
     // Non-critical — cleanup failure shouldn't break the harvest
   }
 
-  return { inserted, skipped: allItems.length - inserted };
+  return { processed, skipped: allItems.length - processed };
 }
+
 
 export const scrapeOpportunitiesTask = schedules.task({
   id: "harvest-opportunities",
