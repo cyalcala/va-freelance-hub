@@ -27,6 +27,15 @@ async function run() {
     // 2. Restore Database
     console.log("-> 2. Formatting Database...");
     const data = JSON.parse(readFileSync(filePath, "utf-8"));
+
+    const hydrateDates = (obj: any, keys: string[]) => {
+      for (const key of keys) {
+        if (obj[key]) {
+          obj[key] = new Date(obj[key]);
+        }
+      }
+      return obj;
+    };
     
     // Wipe
     await db.delete(agencies);
@@ -35,13 +44,14 @@ async function run() {
 
     // Insert
     if (data.agencies && data.agencies.length > 0) {
-      await db.insert(agencies).values(data.agencies);
+      const hydratedAgencies = data.agencies.map((a: any) => hydrateDates(a, ['lastSync', 'verifiedAt', 'createdAt']));
+      await db.insert(agencies).values(hydratedAgencies);
     }
     if (data.opportunities && data.opportunities.length > 0) {
-      // Need to chunk opportunities if it's too large, but for 1,000s it's fine natively
+      const hydratedOpps = data.opportunities.map((o: any) => hydrateDates(o, ['postedAt', 'scrapedAt']));
       const chunk = 100;
-      for (let i = 0; i < data.opportunities.length; i += chunk) {
-        await db.insert(opportunities).values(data.opportunities.slice(i, i + chunk));
+      for (let i = 0; i < hydratedOpps.length; i += chunk) {
+        await db.insert(opportunities).values(hydratedOpps.slice(i, i + chunk));
       }
     }
 
