@@ -16,8 +16,13 @@ function generateName() {
 }
 
 async function run() {
+  const args = process.argv.slice(2);
+  const isAutomated = args.includes("--automated");
+  const customMsg = args.find((_, i) => args[i - 1] === "--msg");
+
   const name = generateName();
-  console.log(`\n🛡️  Initiating System Restore Point: ${name}...`);
+  console.log(`\n🛡️  Initiating ${isAutomated ? "Automated " : ""}System Restore Point: ${name}...`);
+  if (customMsg) console.log(`   [Context]: ${customMsg}`);
 
   const backupDir = ".backups";
   if (!existsSync(backupDir)) {
@@ -40,13 +45,16 @@ async function run() {
     console.log(`   [✓] Database securely saved to ${filePath}`);
 
     // 2. Snapshot Codebase (Git)
-    console.log("-> 2. Locking Codebase State...");
-    
-    try {
-      execSync('git add .', { stdio: 'ignore' });
-      execSync(`git commit -m "Auto-Save: System Restore Point ${name}"`, { stdio: 'ignore' });
-    } catch {
-      // It's perfectly fine if there is nothing new to commit.
+    if (!isAutomated) {
+      console.log("-> 2. Locking Codebase State...");
+      try {
+        execSync('git add .', { stdio: 'ignore' });
+        execSync(`git commit -m "Auto-Save: System Restore Point ${name}"`, { stdio: 'ignore' });
+      } catch {
+        // It's perfectly fine if there is nothing new to commit.
+      }
+    } else {
+      console.log("-> 2. Linking Snapshot to Commit...");
     }
 
     execSync(`git tag -a ${name} -m "System Restore Point"`);

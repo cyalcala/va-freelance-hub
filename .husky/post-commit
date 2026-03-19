@@ -1,1 +1,10 @@
 bun run sync:framework
+
+# Automated Snapshot for major upgrades/fixes
+MSG=$(git log -1 --pretty=%B)
+case "$MSG" in
+  feat:*|fix:*|REFRESH*)
+    echo "🚀 Major detected: Auto-Snapshotting system..."
+    bun run save --automated --msg "$MSG"
+    ;;
+esac
