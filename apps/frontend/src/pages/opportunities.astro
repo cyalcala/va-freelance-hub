@@ -207,60 +207,66 @@ const opportunities = scoredOpps.map((opp) => {
   </main>
 </Layout>
 
-<script>
-  function init() {
-    console.log("[Feed] Initializing Scoped Filters...");
-    const searchInput = document.getElementById('oppSearch') as HTMLInputElement;
+<script is:inline>
+  function initFeed() {
+    const searchInput = document.getElementById('oppSearch');
     const timeFilters = document.getElementById('timeFilters');
     const grid = document.getElementById('oppsGrid');
     const emptyState = document.getElementById('emptyState');
-    
     if (!grid || !timeFilters) return;
 
+    // Always re-query from fresh DOM
     const items = grid.querySelectorAll('.opp-item');
     const filterBtns = timeFilters.querySelectorAll('.time-btn');
-    let currentLimit = Infinity; 
+
+    // Restore persisted filter state
+    let currentLimit = window._feedAgeLimit !== undefined ? window._feedAgeLimit : Infinity;
+
+    // Sync button visual with persisted state
+    filterBtns.forEach(function(btn) {
+      btn.classList.remove('active');
+      const val = btn.getAttribute('data-filter');
+      const btnLimit = val === 'all' ? Infinity : parseFloat(val || 'Infinity');
+      if (btnLimit === currentLimit) btn.classList.add('active');
+    });
 
     function runFilter() {
-      const query = searchInput?.value.trim().toLowerCase() || '';
+      const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
       let hasResults = false;
-      
-      items.forEach((item: any) => {
+      items.forEach(function(item) {
         const searchText = item.getAttribute('data-search') || '';
         const age = parseFloat(item.getAttribute('data-age') || '999');
-        
-        const matchesSearch = searchText.includes(query);
-        const matchesTime = age <= currentLimit;
-
-        const isVisible = matchesSearch && matchesTime;
-        item.style.display = isVisible ? 'flex' : 'none';
-        if (isVisible) hasResults = true;
+        const show = searchText.includes(query) && age <= currentLimit;
+        item.style.display = show ? 'flex' : 'none';
+        if (show) hasResults = true;
       });
-
-      if (emptyState) {
-        emptyState.style.display = hasResults ? 'none' : 'block';
-      }
+      if (emptyState) emptyState.style.display = hasResults ? 'none' : 'block';
     }
 
-    // Event Bindings
-    searchInput?.addEventListener('input', runFilter);
+    if (searchInput) searchInput.addEventListener('input', runFilter);
 
-    filterBtns.forEach(btn => {
-      btn.addEventListener('click', (e) => {
+    filterBtns.forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
         e.preventDefault();
-        filterBtns.forEach(b => b.classList.remove('active'));
+        filterBtns.forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
-        
         const filterValue = btn.getAttribute('data-filter');
         currentLimit = filterValue === 'all' ? Infinity : parseFloat(filterValue || 'Infinity');
+        window._feedAgeLimit = currentLimit;
         runFilter();
       });
     });
+
+    runFilter();
   }
 
-  // Lifecycle Support
-  init();
-  document.addEventListener('astro:after-swap', init);
+  // Register lifecycle listener only once
+  if (!window._feedListenerSet) {
+    document.addEventListener('astro:after-swap', initFeed);
+    window._feedListenerSet = true;
+  }
+
+  initFeed();
 </script>
 
 <style>

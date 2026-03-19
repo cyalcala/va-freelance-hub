@@ -194,47 +194,64 @@ const agencies = rawAgencies.sort((a, b) => {
   </main>
 </Layout>
 
-<script>
-  function init() {
-    const searchInput = document.getElementById('agencySearch') as HTMLInputElement;
+<script is:inline>
+  function initAgencies() {
+    const searchInput = document.getElementById('agencySearch');
     const verifiedBtn = document.getElementById('verifiedFilter');
     const grid = document.getElementById('agenciesGrid');
     const emptyState = document.getElementById('emptyState');
-    const cards = grid?.querySelectorAll('.glass-card');
+    if (!grid) return;
 
-    let activeOnly = false;
+    // Always re-query cards from fresh DOM
+    const cards = grid.querySelectorAll('.glass-card');
+
+    // Restore persisted state or default
+    let activeOnly = window._agencyActiveOnly || false;
+
+    // Sync button visual with persisted state
+    if (verifiedBtn) {
+      verifiedBtn.classList.toggle('bg-blue-500/10', activeOnly);
+      verifiedBtn.classList.toggle('text-blue-500', activeOnly);
+      verifiedBtn.classList.toggle('border-blue-500/30', activeOnly);
+    }
 
     function runFilter() {
-      const query = searchInput?.value.toLowerCase() || '';
+      const query = searchInput ? searchInput.value.toLowerCase() : '';
       let hasResults = false;
-      
-      cards?.forEach((card: any) => {
-        const name = card.getAttribute('data-name') || '';
+      cards.forEach(function(card) {
+        const name = (card.getAttribute('data-name') || '');
         const status = card.getAttribute('data-status');
-        const matchesSearch = name.includes(query);
-        const matchesStatus = !activeOnly || status === 'active';
-        
-        const isVisible = matchesSearch && matchesStatus;
-        card.style.display = isVisible ? 'flex' : 'none';
-        if (isVisible) hasResults = true;
+        const show = name.includes(query) && (!activeOnly || status === 'active');
+        card.style.display = show ? 'flex' : 'none';
+        if (show) hasResults = true;
       });
-
       if (grid) grid.style.display = hasResults ? 'grid' : 'none';
       if (emptyState) emptyState.style.display = hasResults ? 'none' : 'block';
     }
 
-    searchInput?.addEventListener('input', runFilter);
-    verifiedBtn?.addEventListener('click', () => {
-      activeOnly = !activeOnly;
-      verifiedBtn.classList.toggle('bg-blue-500/10', activeOnly);
-      verifiedBtn.classList.toggle('text-blue-500', activeOnly);
-      verifiedBtn.classList.toggle('border-blue-500/30', activeOnly);
-      runFilter();
-    });
+    if (searchInput) searchInput.addEventListener('input', runFilter);
+
+    if (verifiedBtn) {
+      verifiedBtn.addEventListener('click', function() {
+        activeOnly = !activeOnly;
+        window._agencyActiveOnly = activeOnly;
+        verifiedBtn.classList.toggle('bg-blue-500/10', activeOnly);
+        verifiedBtn.classList.toggle('text-blue-500', activeOnly);
+        verifiedBtn.classList.toggle('border-blue-500/30', activeOnly);
+        runFilter();
+      });
+    }
+
+    runFilter();
   }
 
-  init();
-  document.addEventListener('astro:page-load', init);
+  // Register lifecycle listener only once
+  if (!window._agencyListenerSet) {
+    document.addEventListener('astro:after-swap', initAgencies);
+    window._agencyListenerSet = true;
+  }
+
+  initAgencies();
 </script>
 
 <style>
