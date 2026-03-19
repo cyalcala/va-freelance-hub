@@ -95,6 +95,10 @@ const opportunities = scoredOpps.map((opp) => {
   const now = Date.now();
   const postedAt = opp.postedAt ? new Date(opp.postedAt).getTime() : 0;
   const scrapedAt = opp.scrapedAt ? new Date(opp.scrapedAt).getTime() : 0;
+  
+  // Use the freshest signal for the "Just Now" label
+  const latestSignal = new Date(Math.max(postedAt, scrapedAt));
+  
   const ageHours = Math.min(
     postedAt ? (now - postedAt) / (1000 * 60 * 60) : 999,
     (now - scrapedAt) / (1000 * 60 * 60)
@@ -103,7 +107,7 @@ const opportunities = scoredOpps.map((opp) => {
   return {
     title: opp.title,
     company: opp.company || 'Direct Hire',
-    date: formatRelativeTime(opp.postedAt),
+    date: formatRelativeTime(latestSignal),
     url: opp.sourceUrl,
     source: opp.sourcePlatform || 'Web',
     ageHours,
@@ -207,20 +211,23 @@ const opportunities = scoredOpps.map((opp) => {
 
 <script>
   function init() {
+    console.log("[Feed] Initializing Scoped Filters...");
     const searchInput = document.getElementById('oppSearch') as HTMLInputElement;
     const timeFilters = document.getElementById('timeFilters');
     const grid = document.getElementById('oppsGrid');
     const emptyState = document.getElementById('emptyState');
-    const items = grid?.querySelectorAll('.opp-item');
-    const filterBtns = timeFilters?.querySelectorAll('.time-btn');
+    
+    if (!grid || !timeFilters) return;
 
-    let currentLimit = Infinity; // active time filter in hours
+    const items = grid.querySelectorAll('.opp-item');
+    const filterBtns = timeFilters.querySelectorAll('.time-btn');
+    let currentLimit = Infinity; 
 
     function runFilter() {
-      const query = searchInput?.value.toLowerCase() || '';
+      const query = searchInput?.value.trim().toLowerCase() || '';
       let hasResults = false;
       
-      items?.forEach((item: any) => {
+      items.forEach((item: any) => {
         const searchText = item.getAttribute('data-search') || '';
         const age = parseFloat(item.getAttribute('data-age') || '999');
         
@@ -232,13 +239,17 @@ const opportunities = scoredOpps.map((opp) => {
         if (isVisible) hasResults = true;
       });
 
-      if (emptyState) emptyState.style.display = hasResults ? 'none' : 'block';
+      if (emptyState) {
+        emptyState.style.display = hasResults ? 'none' : 'block';
+      }
     }
 
+    // Event Bindings
     searchInput?.addEventListener('input', runFilter);
 
-    filterBtns?.forEach(btn => {
-      btn.addEventListener('click', () => {
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
         filterBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         
@@ -249,13 +260,14 @@ const opportunities = scoredOpps.map((opp) => {
     });
   }
 
+  // Lifecycle Support
   init();
   document.addEventListener('astro:after-swap', init);
 </script>
 
 <style>
   .time-btn {
-    @apply px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all;
+    @apply px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all outline-none;
     @apply text-blueberry-800/40 hover:text-blueberry-900 hover:bg-blueberry-50/50;
   }
   .time-btn.active {

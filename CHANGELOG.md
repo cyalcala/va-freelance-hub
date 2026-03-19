@@ -5,6 +5,21 @@
 **Status: AUTO-PROCESSED**
 
 ### ✨ Major Features
+* feat: implement recency-slicer and hot badges for real-time feed filtering (4bc5077)
+* feat: complete architectural solidification with cross-repository sync manifest update (9d42753)
+
+### 🛡️ Reliability & Fixes
+* fix: ats harvester constraints and date hydration to enable fresh data injection (eee511f)
+* fix: prioritize discovery window in opportunities feed to ensure just-now visibility (443180d)
+* fix: restore.ts date hydration to enable atomic failsafe (9d67e77)
+
+---
+
+
+## [2026-03-19] — [Opportunities: 1155 | Agencies: 95]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
 * feat: complete architectural solidification with cross-repository sync manifest update (9d42753)
 * feat: final integrity layer live with architectural guardrails and one-click failsafe (865155b)
 
