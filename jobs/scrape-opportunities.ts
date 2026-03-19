@@ -18,7 +18,10 @@ function normalizeTitle(title: string): string {
 
 const PH_NATIVE_SOURCES = new Set(["OnlineJobs", "Reddit r/phcareers"]);
 
-export const scrapeOpportunitiesTask = {
+export const scrapeOpportunitiesTask = schedules.task({
+  id: "harvest-opportunities",
+  cron: "0 */2 * * *", // Runs every 2 hours
+  maxDuration: 120,
   run: async () => {
     console.log("[harvest] ═══ Starting Multi-Source Harvest ═══");
     const db = createDb();
@@ -138,4 +141,4 @@ export const scrapeOpportunitiesTask = {
 
     return { inserted, skipped: allItems.length - inserted };
   }
-};
+});
