@@ -13,7 +13,7 @@ const isAbout = currentPath === '/about';
 
     <div class="p-1.5 border bg-white border-blueberry-800/10 rounded-2xl flex items-center gap-1 shadow-sm relative overflow-hidden" transition:persist transition:name="navbar-tabs">
       <div 
-        class={`absolute inset-y-1.5 rounded-xl bg-oat-50 shadow-sm border border-blueberry-800/5 transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isHome ? 'left-1.5 w-[calc(50%-6px)]' : 'left-[calc(50%+1.5px)] w-[calc(50%-6px)]'}`}
+        class={`absolute inset-y-1.5 rounded-xl bg-oat-50 shadow-sm border border-blueberry-800/5 transition-all duration-200 ease-out ${isHome ? 'left-1.5 w-[calc(50%-6px)]' : 'left-[calc(50%+1.5px)] w-[calc(50%-6px)]'}`}
         transition:name="active-pill"
       ></div>
       <a 
