@@ -7,101 +7,283 @@ import { desc } from 'drizzle-orm';
 Astro.response.headers.set('Cache-Control', 'max-age=0, s-maxage=60, stale-while-revalidate=59');
 export const prerender = false;
 
+// Fetch live agencies
 let liveAgencies = [];
 let dbError = null;
 
-try {
-  liveAgencies = await db.select()
-    .from(agenciesTable)
-    .orderBy(
-      agenciesTable.frictionLevel,  
-      desc(agenciesTable.hiringHeat), 
-      desc(agenciesTable.createdAt)
-    )
-    .limit(100);
-} catch (e) {
-  dbError = e.message;
+// Pre-flight: check env vars exist
+if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
+  dbError = `ENV_MISSING: TURSO_DATABASE_URL=${process.env.TURSO_DATABASE_URL ? 'SET' : 'MISSING'}, TURSO_AUTH_TOKEN=${process.env.TURSO_AUTH_TOKEN ? 'SET' : 'MISSING'}. Add these in Vercel Dashboard → Settings → Environment Variables.`;
+} else {
+  try {
+    liveAgencies = await db.select()
+      .from(agenciesTable)
+      .orderBy(
+        agenciesTable.frictionLevel,  // Easiest (1) first
+        desc(agenciesTable.hiringHeat), // Hottest (3) next
+        desc(agenciesTable.createdAt)
+      )
+      .limit(100);
+    
+    if (liveAgencies.length === 0) {
+      console.warn("DB connected but returned 0 agencies — table may be empty.");
+    }
+  } catch (e) {
+    console.error("Database fetch failed:", e);
+    dbError = e.message;
+  }
 }
 
-const agencies = liveAgencies.map((agency) => {
+
+const rawAgencies = liveAgencies.map((agency) => {
   const isNew = agency.createdAt && (new Date().getTime() - new Date(agency.createdAt).getTime()) < 30 * 24 * 60 * 60 * 1000;
   const heatFlame = "🔥".repeat(agency.hiringHeat || 1);
+  const lowerName = agency.name.toLowerCase();
+  const lowerDesc = (agency.description || '').toLowerCase();
+  
+  let relevancyBoost = 0;
+  
+  // Heavily prioritize agencies that start with "virtual" or have it in their name natively
+  if (lowerName.startsWith('virtual')) {
+    relevancyBoost += 1000;
+  } else if (lowerName.includes('virtual')) {
+    relevancyBoost += 500;
+  } else if (lowerDesc.includes('virtual')) {
+    relevancyBoost += 100;
+  }
+  
+  if (lowerDesc.includes('philippines') || lowerDesc.includes('filipino')) {
+    relevancyBoost += 50;
+  }
   return {
-    ...agency,
+    name: agency.name,
     description: agency.description || 'Verified Filipino Agency Partner',
+    status: agency.status || 'active',
+    hiringUrl: agency.hiringUrl || '#',
     sources: (agency.metadata as any)?.source?.split(',') || ['Web'],
     isNew,
     heat: heatFlame,
+    relevancyBoost,
+    heatValue: agency.hiringHeat || 1,
   };
+});
+
+const agencies = rawAgencies.sort((a, b) => {
+  if (a.relevancyBoost !== b.relevancyBoost) return b.relevancyBoost - a.relevancyBoost;
+  return b.heatValue - a.heatValue;
 });
 ---
 
 <Layout title="Agencies | VA.INDEX">
   <main class="max-w-[1200px] mx-auto px-6 py-12">
-    <header class="mb-16">
-      <div class="flex items-center gap-2 mb-6 cursor-default">
+    <header class="mb-16 relative">
+      <div class="flex items-center gap-2 mb-6 group cursor-default">
         <div class="pulse-dot"></div>
-        <span class="text-[10px] font-black text-blue-500 tracking-[0.2em] uppercase">SYSTEM_LIVE</span>
+        <span class="text-[10px] font-black text-blue-500 tracking-[0.2em] uppercase transition-all group-hover:tracking-[0.4em]">V5.2 LIVE SIGNAL CAPTURE</span>
       </div>
       
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-12">
         <div class="max-w-2xl">
-          <h1 class="text-4xl sm:text-6xl font-black text-blueberry-900 mb-6 leading-[0.9] tracking-tighter uppercase">
-            The Hiring Signal, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blueberry-500 to-indigo-500">Automated.</span>
+          <h1 class="text-4xl sm:text-6xl font-black text-blueberry-900 mb-6 leading-[0.9] tracking-tighter uppercase whitespace-pre-line">
+            The Hiring Signal, 
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blueberry-500 to-indigo-500">Automated.</span>
           </h1>
-          <p class="text-lg text-blueberry-800/70 font-medium max-w-xl">
-            Scanning recruitment channels for verified Filipino agency hiring pulses.
+          <p class="text-lg text-blueberry-800/70 font-medium leading-relaxed max-w-xl">
+            We scan recruitment channels every 120 minutes to capture high-fidelity hiring signals from verified Filipino agencies. Zero noise. Only live signals.
           </p>
+        </div>
+        
+        <div class="flex flex-col items-end gap-3 text-right">
         </div>
       </div>
 
       <div class="flex flex-col sm:flex-row items-center gap-4">
-        <input 
-          type="text" 
-          id="agencySearch"
-          placeholder="Filter agencies, niches..." 
-          class="bg-white border border-blueberry-800/10 rounded-2xl px-6 py-4 text-sm w-full max-w-md focus:outline-none focus:border-blueberry-500/40 transition-all font-medium shadow-sm"
-        />
-        <button id="verifiedFilter" data-toggle-hiring class="w-full sm:w-auto px-8 py-4 bg-white border border-blueberry-800/10 rounded-2xl text-[11px] font-black uppercase tracking-widest text-blueberry-800/50 hover:text-blueberry-900 transition-all shadow-sm cursor-pointer">
-          Hiring Now Only
+        <div class="relative w-full max-w-md group">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-800/40 group-focus-within:text-blueberry-500 transition-colors"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          </div>
+          <input 
+            type="text" 
+            id="agencySearch"
+            placeholder="Search agencies, niches, or keywords..." 
+            class="bg-white/80 border border-blueberry-800/10 rounded-3xl pl-12 pr-6 py-4 text-sm text-blueberry-900 focus:outline-none focus:border-blueberry-500/40 focus:bg-white backdrop-blur-xl transition-all font-medium placeholder:text-blueberry-800/40 w-full shadow-sm"
+          />
+        </div>
+        <button id="verifiedFilter" class="w-full sm:w-auto px-8 py-4 bg-white/60 border border-blueberry-800/10 rounded-3xl text-[11px] font-black uppercase tracking-widest text-blueberry-800/50 hover:text-blueberry-900 hover:border-blueberry-500/30 hover:bg-white active:scale-95 transition-all shadow-sm">
+          Verified Hiring Only
         </button>
       </div>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="agenciesGrid">
-      {agencies.map((agency) => (
-        <a 
-          href={agency.hiringUrl || '#'} 
-          target="_blank" 
-          class="glass-card flex flex-col justify-between group h-full relative overflow-hidden active:scale-[0.98] transition-all" 
-          data-name={agency.name.toLowerCase()} 
-          data-status={agency.status}
-        >
-          <div>
-            <div class="flex justify-between items-start mb-6">
-              <div class="text-base font-black text-blueberry-900 tracking-tight group-hover:text-blueberry-500 transition-colors uppercase pr-4">{agency.name}</div>
-              <div class="flex flex-col items-end gap-2 text-[8px] font-black">
-                {agency.status === 'active' ? <span class="text-emerald-500 uppercase">● Hiring</span> : <span class="text-blueberry-800/30 uppercase">Quiet</span>}
-                <span class="grayscale group-hover:grayscale-0">{agency.heat}</span>
+    {dbError ? (
+      <div class="p-8 border border-red-900/10 bg-red-900/5 rounded-3xl text-red-500 text-[10px] font-mono uppercase tracking-[0.1em]">
+        SIGNAL_LOST: {dbError} — DATABASE_CONNECTION_FAILED
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="agenciesGrid">
+        {agencies.map((agency) => (
+          <a 
+            href={agency.hiringUrl} 
+            target="_blank" 
+            class="glass-card flex flex-col justify-between group h-full relative overflow-hidden active:scale-[0.98]" 
+            data-name={agency.name.toLowerCase()} 
+            data-status={agency.status}
+          >
+            <div class="relative z-10">
+              <div class="flex justify-between items-start mb-6">
+                <div class="text-base font-black text-blueberry-900 tracking-tight group-hover:text-blueberry-500 transition-colors uppercase pr-4">
+                  {agency.name}
+                </div>
+                <div class="flex flex-col items-end gap-2">
+                  <div class={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${agency.status === 'active' ? 'bg-blueberry-50 border border-blueberry-500/20 shadow-sm' : 'bg-oat-100/50 border border-blueberry-800/10'}`}>
+                    <div class={agency.status === 'active' ? 'pulse-dot scale-75' : 'w-1.5 h-1.5 rounded-full bg-blueberry-800/30'}></div>
+                    <span class={`text-[9px] font-black uppercase tracking-tighter ${agency.status === 'active' ? 'text-blueberry-500' : 'text-blueberry-800/50'}`}>
+                      {agency.status === 'active' ? 'Hiring Now' : 'Quiet Signal'}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    {agency.isNew && (
+                      <span class="text-[8px] font-black bg-blueberry-600 text-white px-2 py-0.5 rounded-md tracking-widest ">NEW</span>
+                    )}
+                    <span class="text-sm grayscale-[0.5] group-hover:grayscale-0 transition-all drop-shadow-[0_0_5px_rgba(255,100,0,0.1)]">{agency.heat}</span>
+                  </div>
+                </div>
               </div>
+              <p class="text-[12px] text-blueberry-800/70 line-clamp-3 leading-relaxed font-medium">
+                {agency.description}
+              </p>
             </div>
-            <p class="text-[12px] text-blueberry-800/70 line-clamp-3 leading-relaxed font-medium">{agency.description}</p>
-          </div>
-          <div class="mt-8 flex flex-wrap gap-2">
-            {agency.sources.map((s) => <span class="px-2 py-1 bg-oat-100/50 rounded-md text-[8px] font-black uppercase text-blueberry-800/40">{s}</span>)}
-          </div>
-        </a>
-      ))}
+            
+            <div class="mt-8 flex flex-wrap gap-2 relative z-10">
+              {agency.sources.map((source) => (
+                <span class="px-3 py-1 bg-white border border-blueberry-800/10 shadow-sm rounded-lg text-[9px] font-black text-blueberry-800/60 uppercase tracking-wider group-hover:border-blueberry-500/20 group-hover:text-blueberry-500 transition-all">
+                  {source}
+                </span>
+              ))}
+            </div>
+
+            <div class="absolute -right-8 -bottom-8 w-16 h-16 bg-blueberry-400/5 blur-xl rounded-full group-hover:bg-blueberry-400/10 transition-all"></div>
+          </a>
+        ))}
+      </div>
+    )}
+    
+    <div id="emptyState" class="hidden py-32 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div class="w-20 h-20 bg-white border border-blueberry-800/10 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-800/40"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+      </div>
+      <h3 class="text-blueberry-900 font-black text-2xl mb-3 tracking-tight">Zero signals found</h3>
+      <p class="text-blueberry-800/60 font-medium max-w-sm mx-auto leading-relaxed">No agencies matched your search query. Try broadening your discovery keywords or clearing the hiring filter.</p>
     </div>
 
-    <div id="agenciesEmpty" class="hidden py-32 text-center text-blueberry-800/40 italic text-sm">
-      No agencies match your criteria.
-    </div>
+    <footer class="mt-32 pt-12 border-t border-blueberry-800/10 flex flex-col md:flex-row items-center justify-between gap-8 opacity-80 hover:opacity-100 transition-opacity">
+       <div class="flex flex-col gap-2">
+         <p class="text-[10px] font-black uppercase tracking-[0.3em] text-blueberry-800/60">The Filipino Freelance Engine</p>
+         <p class="text-xs text-blueberry-800/40 font-medium italic">Empowering 1M+ remote workers through data transparency.</p>
+       </div>
+       <div class="flex items-center gap-6">
+         <a href="https://www.linkedin.com/in/cyrusalcala/" target="_blank" class="flex items-center gap-3 group">
+           <div class="text-right">
+             <p class="text-[9px] font-black uppercase tracking-widest text-blueberry-800/60 leading-none mb-1">Made with ❤️ by</p>
+             <p class="text-xs font-black text-blueberry-900 group-hover:text-blueberry-500 transition-colors uppercase tracking-widest">Cy Alcala</p>
+           </div>
+           <div class="w-10 h-10 rounded-2xl bg-blueberry-500 flex items-center justify-center font-black text-white text-sm shadow-[0_0_20px_-5px_rgba(63,81,181,0.35)] group-hover:scale-110 transition-transform">C</div>
+         </a>
+       </div>
+    </footer>
   </main>
 </Layout>
 
+<script>
+  function init() {
+    const searchInput = document.getElementById('agencySearch') as HTMLInputElement;
+    const verifiedBtn = document.getElementById('verifiedFilter');
+    const grid = document.getElementById('agenciesGrid');
+    const emptyState = document.getElementById('emptyState');
+    const cards = grid?.querySelectorAll('.glass-card');
+
+    let activeOnly = false;
+
+    function runFilter() {
+      const query = searchInput?.value.toLowerCase() || '';
+      let hasResults = false;
+      
+      cards?.forEach((card: any) => {
+        const name = card.getAttribute('data-name') || '';
+        const status = card.getAttribute('data-status');
+        const matchesSearch = name.includes(query);
+        const matchesStatus = !activeOnly || status === 'active';
+        
+        const isVisible = matchesSearch && matchesStatus;
+        card.style.display = isVisible ? 'flex' : 'none';
+        if (isVisible) hasResults = true;
+      });
+
+      if (grid) grid.style.display = hasResults ? 'grid' : 'none';
+      if (emptyState) emptyState.style.display = hasResults ? 'none' : 'block';
+    }
+
+    searchInput?.addEventListener('input', runFilter);
+    verifiedBtn?.addEventListener('click', () => {
+      activeOnly = !activeOnly;
+      verifiedBtn.classList.toggle('bg-blue-500/10', activeOnly);
+      verifiedBtn.classList.toggle('text-blue-500', activeOnly);
+      verifiedBtn.classList.toggle('border-blue-500/30', activeOnly);
+      runFilter();
+    });
+  }
+
+  init();
+  document.addEventListener('astro:page-load', init);
+</script>
+
 <style>
-  .active-filter {
-    @apply bg-emerald-50 text-emerald-600 border-emerald-500/20 shadow-inner;
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(40, 53, 147, 0.08);
+    border-radius: 20px;
+    padding: 20px;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 4px 20px -5px rgba(40, 53, 147, 0.05);
+    backdrop-filter: blur(12px);
+  }
+
+  @media (min-width: 640px) {
+    .glass-card {
+      border-radius: 24px;
+      padding: 32px;
+    }
+  }
+
+  .glass-card:hover {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(63, 81, 181, 0.2);
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -20px rgba(63, 81, 181, 0.15);
+  }
+
+  .pulse-dot {
+    width: 6px;
+    height: 6px;
+    background-color: #3b82f6;
+    border-radius: 50%;
+    position: relative;
+    box-shadow: 0 0 10px #3b82f6;
+  }
+
+  .pulse-dot::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: inherit;
+    border-radius: inherit;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    70% { transform: scale(4); opacity: 0; }
+    100% { transform: scale(4); opacity: 0; }
   }
 </style>
