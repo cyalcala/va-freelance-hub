@@ -18,7 +18,7 @@ if (!process.env.TURSO_DATABASE_URL || !process.env.TURSO_AUTH_TOKEN) {
     liveOpportunities = await db.select()
       .from(opportunitiesTable)
       .orderBy(desc(opportunitiesTable.scrapedAt))
-      .limit(100);
+      .limit(300);
   } catch (e) {
     console.error("Database fetch failed:", e);
     dbError = e.message;
@@ -53,50 +53,71 @@ function calculateRelevance(opp: any) {
   const ageHours = postedAt ? (now - postedAt) / (1000 * 60 * 60) : 999;
   const discoveryHours = (now - scrapedAt) / (1000 * 60 * 60);
   
-  // 1. Core Penalty (-50,000 Pts)
-  const penaltyKw = ["senior", "vp", "president", "director", "principal", "staff", "head of", "lead", "usa only", "us only", "strictly us", "americas"];
-  if (penaltyKw.some(k => text.includes(k))) score -= 50000;
+  // Flags for Diversification
+  const isVaFriendly = ["virtual assistant", "va", "customer service", "customer support", "executive assistant", "admin", "bookkeeping", "data entry", "philippines", "filipino", "pinoy", "cebu", "manila"].some(k => text.includes(k));
+  const isTech = ["engineer", "developer", "devops", "software", "backend", "frontend", "fullstack", "architect", "data scientist", "machine learning"].some(k => text.includes(k));
+  const isSenior = ["senior", "vp", "president", "director", "principal", "staff", "head of", "lead"].some(k => text.includes(k));
 
-  // 2. Niche Boost (+10,000 Pts)
-  const boostKw = ["virtual assistant", "va", "customer service", "customer support", "sales", "design", "web design", "executive assistant", "marketing", "admin", "bookkeeping", "data entry"];
+  // 1. Core Penalties (-50,000 Pts)
+  const exclusionKw = ["usa only", "us only", "strictly us", "americas"];
+  if (exclusionKw.some(k => text.includes(k))) score -= 100000;
+  if (isSenior) score -= 50000;
+  if (isTech && !isVaFriendly) score -= 5000; // Deprioritize generic tech roles
+
+  // 2. Niche Boosts (+10,000 Pts)
+  const boostKw = ["virtual assistant", "va", "customer service", "customer support", "sales", "design", "web design", "marketing", "copywriting"];
   if (boostKw.some(k => text.includes(k))) score += 10000;
 
   // 3. Native Inclusion Boost (+10,000 Pts)
-  const inclusionKw = ["philippines", "filipino", "pinoy", "manila", "cebu", "worldwide", "global", "anywhere", "any timezone", "international"];
+  const inclusionKw = ["philippines", "filipino", "pinoy", "manila", "cebu", "anywhere", "any timezone", "international"];
   if (inclusionKw.some(k => text.includes(k))) score += 10000;
 
   // 4. Absolute Peak Boost (+20,000 Pts)
   if (text.includes("virtual assistant") || text.includes("filipino")) score += 20000;
   
   // 5. The "JUST NOW" Recency Velocity (+100,000 Pts)
-  // This ensures that either "Just Posted" OR "Just Scraped" signals ALWAYS float to the top
   if (ageHours <= 4 || discoveryHours <= 4) {
     score += 100000; 
   } else if (ageHours <= 24 || discoveryHours <= 24) {
     score += 10000;
   }
 
-  return score;
+  return { score, meta: { isVaFriendly, isTech, isSenior } };
 }
 
-const scoredOpps = liveOpportunities.map(opp => ({
-  ...opp,
-  relevancyScore: calculateRelevance(opp)
-})).sort((a, b) => {
+const rawScored = liveOpportunities.map(opp => {
+  const { score, meta } = calculateRelevance(opp);
+  return { ...opp, relevancyScore: score, meta };
+}).sort((a, b) => {
   if (a.relevancyScore !== b.relevancyScore) return b.relevancyScore - a.relevancyScore;
-  
-  // Secondary: Sort by Discovery Time within the same relevance bracket
   const aTime = Math.max(new Date(a.postedAt || 0).getTime(), new Date(a.scrapedAt).getTime());
   const bTime = Math.max(new Date(b.postedAt || 0).getTime(), new Date(b.scrapedAt).getTime());
   return bTime - aTime;
 });
 
-const opportunities = scoredOpps.map((opp) => {
+// Diversity Engine: Limit company domination
+const companyCount = new Map();
+const diversifiedOpps = [];
+
+for (const opp of rawScored) {
+  const name = (opp.company || 'Direct Hire').toLowerCase().trim();
+  const count = companyCount.get(name) || 0;
+  
+  // Diversification Rules
+  let maxAllowed = 2; // Default for achievable roles
+  if (opp.meta.isTech && !opp.meta.isVaFriendly) maxAllowed = 1; // Limit generic tech roles strictly
+  if (opp.meta.isSenior) maxAllowed = 1; // Limit high-level roles strictly
+
+  if (count < maxAllowed) {
+    diversifiedOpps.push(opp);
+    companyCount.set(name, count + 1);
+  }
+}
+
+const opportunities = diversifiedOpps.slice(0, 100).map((opp) => {
   const now = Date.now();
   const postedAt = opp.postedAt ? new Date(opp.postedAt).getTime() : 0;
   const scrapedAt = opp.scrapedAt ? new Date(opp.scrapedAt).getTime() : 0;
-  
-  // Use the freshest signal for the "Just Now" label
   const latestSignal = new Date(Math.max(postedAt, scrapedAt));
   
   const ageHours = Math.min(
