@@ -37,6 +37,20 @@ export const databaseWatchdogTask = schedules.task({
       const agencyCount = await db.run(sql`SELECT COUNT(*) as cnt FROM agencies`);
       const oppCount = await db.run(sql`SELECT COUNT(*) as cnt FROM opportunities`);
       
+      // 3. Feed Integrity Check (Live URL)
+      const feedUrl = "https://va-freelance-hub-web.vercel.app";
+      try {
+        const response = await fetch(`${feedUrl}?v=${Date.now()}`);
+        const html = await response.text();
+        if (html.includes("No matching signals found.")) {
+          console.error("[watchdog] CRITICAL: Feed is EMPTY on production!");
+          return { status: "FEED_EMPTY", url: feedUrl };
+        }
+        console.log("[watchdog] Feed Integrity: OK");
+      } catch (err) {
+        console.warn("[watchdog] Feed URL unreachable:", (err as Error).message);
+      }
+
       console.log(`[watchdog] Agencies: ${agencyCount.rows[0]?.[0]}, Opportunities: ${oppCount.rows[0]?.[0]}`);
       console.log("[watchdog] Audit Complete: HEALTHY");
       return { status: "HEALTHY", columnsFound: columns.length };
