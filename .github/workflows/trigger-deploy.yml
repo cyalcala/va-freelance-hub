@@ -34,6 +34,7 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b deploy-error-logs
           git add deploy.log || true
           git commit -m "chore: save deploy error log [skip ci]" || true
-          git push || true
+          git push origin deploy-error-logs -f || true
