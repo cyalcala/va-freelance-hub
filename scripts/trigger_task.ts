@@ -1,19 +1,23 @@
-import { tasks, configure } from "@trigger.dev/sdk/v3";
+const key = process.env.TRIGGER_SECRET_KEY;
+if (!key) { console.error("Missing TRIGGER_SECRET_KEY"); process.exit(1); }
 
-configure({
-  secretKey: process.env.TRIGGER_SECRET_KEY,
-});
-
-async function main() {
-  console.log("Attempting to trigger harvest-opportunities via SDK (v3)...");
+async function trigger() {
   try {
-    const run = await tasks.trigger("harvest-opportunities", {});
-    console.log("Trigger success!");
-    console.log("Run ID:", run.id);
-  } catch (error) {
-    console.error("Trigger failed:");
-    console.error(error);
+    const res = await fetch("https://api.trigger.dev/api/v1/tasks/harvest-opportunities/trigger", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        payload: { source: "manual-remediation" }
+      })
+    });
+    console.log("TRIGGER_STATUS:", res.status);
+    const data = await res.json();
+    console.log("TRIGGER_RESPONSE:", JSON.stringify(data));
+  } catch (e: any) {
+    console.error("TRIGGER_FAIL:", e.message);
   }
 }
-
-main();
+trigger();

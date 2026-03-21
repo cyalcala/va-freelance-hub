@@ -121,11 +121,14 @@ export async function harvest() {
   }).from(opportunities);
 
   const existingHashes = new Set(existingItems.map((r: any) => r.hash));
-  const normalizedExisting = new Set(existingItems.map((r: any) => normalizeTitle(r.title)));
+  const normalizedExisting = new Set(existingItems.map((r: any) => 
+    `${normalizeTitle(r.title)}|${(r.company || '').toLowerCase()}`
+  ));
 
   const newItems = allItems.filter((item) => {
     if (!item.contentHash || existingHashes.has(item.contentHash)) return false;
-    if (normalizedExisting.has(normalizeTitle(item.title))) return false;
+    const itemFingerprint = `${normalizeTitle(item.title)}|${(item.company || '').toLowerCase()}`;
+    if (normalizedExisting.has(itemFingerprint)) return false;
     return true;
   });
   const newCount = newItems.length;

@@ -24,3 +24,15 @@
     3. Refactored `jobs/lib/db.ts` with dynamic imports to unblock indexing.
     4. Switched to `bun` runtime in `trigger.config.ts`.
 - **Verification**: GitHub Action Run `23375287104` — SUCCESS. Target Version `20260321.14` live.
+
+## 4. 2026-03-21 — Stale Feed Despite Green Runs (Scene A/B)
+- **Status**: RESOLVED (2026-03-21)
+- **Symptom**: Trigger.dev showed "green" runs with processed > 0 but the website displayed the same listings for 15+ minutes (e.g., ClickGUARD at top).
+- **Root Causes**:
+    - **Scraper Caching**: RSS/API fetches were likely hitting a cache in the runtime or at the source, preventing new signals from being detected.
+    - **Fidelity Gap**: The "processed" count included both new and refreshed items, making the pipeline look active even when no new data was being found.
+- **Resolution**:
+    1. Added `Cache-Control: no-cache` and `Pragma: no-cache` to all scraper fetch calls.
+    2. Appended a timestamp `?t=...` to all scraper URLs to bust intermediate caches.
+    3. Refactored `harvest` task to report `NEW` vs `REFRESHED` items separately.
+- **Verification**: `turso-check.ts` confirmed fresh writes and `health` API confirmed current heartbeat.

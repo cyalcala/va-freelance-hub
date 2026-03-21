@@ -9,6 +9,18 @@
 * fix: refactor system_health recording with deterministic IDs and resilience [v20260321.30] (de37811)
 * fix: mark base libsql package as external to resolve transitive bundling error [v20260321.29] (ab7dd1c)
 * fix: mark native libsql drivers as external to resolve bundling error [v20260321.27] (8f21296)
+
+---
+
+
+## [2026-03-21] — [Opportunities: 415 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: stale feed — Scene A/B added cache-busting to scrapers and improved reporting fidelity [VA.INDEX] (3bc21a2)
+* fix: refactor system_health recording with deterministic IDs and resilience [v20260321.30] (de37811)
+* fix: mark base libsql package as external to resolve transitive bundling error [v20260321.29] (ab7dd1c)
+* fix: mark native libsql drivers as external to resolve bundling error [v20260321.27] (8f21296)
 * fix: remove native libsql dependencies to resolve cloud failure (43bcdcc)
 
 ---
