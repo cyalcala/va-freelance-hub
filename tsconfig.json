@@ -11,8 +11,7 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@va-hub/config": ["packages/config/index.ts"],
-      "@va-hub/sifter-native": ["packages/sifter-native/index.ts"]
+      "@va-hub/config": ["packages/config/index.ts"]
     }
   },
   "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser"]

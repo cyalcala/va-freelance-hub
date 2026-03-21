@@ -22,8 +22,6 @@ const PROTECTED_FILES = [
 const FILES_TO_SYNC = [
   'packages/db/client.ts',
   'packages/db/schema.ts',
-  'packages/sifter-native/sifter.zig',
-  'packages/sifter-native/index.ts',
   'jobs/system-audit.ts',
   'jobs/database-watchdog.ts',
   'jobs/resilience-watchdog.ts',
@@ -64,21 +62,6 @@ for (const p of FILES_TO_SYNC) {
     fs.copyFileSync(srcPath, destPath);
     console.log(`[sync] Core Layer Synced: ${p}`);
   }
-}
-
-// ── NATIVE REBUILD ────────────────────────────────────────────────
-console.log('[sync] Rebuilding Native Sifter in Destination...');
-try {
-  // Use absolute path to the known zig binary for consistency
-  const zigPath = 'C:\\zig\\zig-windows-x86_64-0.13.0\\zig.exe';
-  const buildCmd = `${zigPath} build-lib -dynamic sifter.zig -O ReleaseSafe`;
-  execSync(buildCmd, { 
-    cwd: path.join(DEST, 'packages/sifter-native'),
-    stdio: 'inherit' 
-  });
-  console.log('[sync] Native Sifter Rebuilt Successfully.');
-} catch (err) {
-  console.error('[sync] FAILED to rebuild native sifter in destination:', err);
 }
 
 console.log('[sync] ═══ Core Upgrade Complete ═══');
