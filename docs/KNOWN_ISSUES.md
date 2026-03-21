@@ -36,3 +36,16 @@
     2. Appended a timestamp `?t=...` to all scraper URLs to bust intermediate caches.
     3. Refactored `harvest` task to report `NEW` vs `REFRESHED` items separately.
 - **Verification**: `turso-check.ts` confirmed fresh writes and `health` API confirmed current heartbeat.
+
+## 5. 2026-03-21 — Silent Blockage (Property Mismatch + Sifter Strictness)
+- **Status**: RESOLVED (2026-03-21)
+- **Symptom**: `totalActive` stuck at 415 for 60+ minutes despite "completed" harvest runs. `newest` timestamp stuck at 11:45 UTC.
+- **Root Causes**:
+    - **Property Mismatch**: Deduplication logic compared `title|company` but didn't select `company` from the DB, leading to incomplete/corrupt fingerprints.
+    - **Sifter Hyper-Purity**: Sifter was trashing all "Senior" and "Lead" roles globally, discarding legitimate specialist roles.
+    - **Heartbeat Invisibility**: Upsert was using `sql` excluded syntax that didn't consistently update `scrapedAt` for existing items.
+- **Resolution**:
+    1. Added `company` to DB select in `harvest` task.
+    2. Relaxed sifter to allow Specialist roles (Senior/Lead) matching target signals.
+    3. Switched to explicit `new Date()` for upsert timestamps to ensure heartbeat visibility.
+- **Verification**: `totalActive` increased from 415 to **427** (+12) in next run. `stalenessHrs` dropped to 0.03.

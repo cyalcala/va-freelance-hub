@@ -1,6 +1,17 @@
 # Internal Engineering Changelog
 
 
+## [2026-03-21] — [Opportunities: 427 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: restore feed updates, refine deduplication and relax sifter for specialists [VA.INDEX] (3d7e1f7)
+* fix: feed caching gap — GAP B/C — force fresh data and refine deduplication [VA.INDEX] (472ee79)
+* fix: stale feed — Scene A/B added cache-busting to scrapers and improved reporting fidelity [VA.INDEX] (3bc21a2)
+
+---
+
+
 ## [2026-03-21] — [Opportunities: 415 | Agencies: 57]
 **Status: AUTO-PROCESSED**
 

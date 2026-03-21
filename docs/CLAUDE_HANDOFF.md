@@ -1,9 +1,9 @@
 # VA.INDEX — Complete Claude Handoff Document
 ## Created: 2026-03-21
-## Version: 2.0 — Includes CI/CD Unblock
-## Current Trigger.dev Version: v20260321.30
+## Version: 2.1 — Includes Stale Feed Restoration
+## Current Trigger.dev Version: v20260321.40
 ## System Status at Document Creation: HEALTHY
-## Total Active Listings: 415
+## Total Active Listings: 427
 ## Purpose: Import into new Claude conversation
 
 ---
@@ -285,10 +285,10 @@ NEVER use `tool="browser"`. Use terminal and curl.
 
 ## CURRENT SYSTEM STATE (Captured 2026-03-21)
 
-- **Turso Active Listings**: 415
-- **Gold listings**: 24
-- **Last Heartbeat**: 2026-03-21T11:45:10.000Z
-- **Staleness**: 0.11 hrs
+- **Turso Active Listings**: 427
+- **Gold listings**: 27
+- **Last Heartbeat**: 2026-03-21T13:10:14.000Z
+- **Staleness**: 0.03 hrs
 - **Recent Runs**: Every 15min COMPLETED (harvest-opportunities).
 
 ---
