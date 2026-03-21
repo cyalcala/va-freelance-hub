@@ -23,11 +23,11 @@ jobs:
         run: bun install --frozen-lockfile
         
       - name: Deploy to Trigger.dev
-        run: |
-          bunx trigger.dev@latest deploy \
-          --project-ref proj_hzeuykzmhlzwmqeljfft > deploy.log 2>&1 || (cat deploy.log && exit 1)
+        run: bunx trigger.dev@latest deploy
         env:
           TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
 
       - name: Commit Deploy Log on Failure
         if: failure()
