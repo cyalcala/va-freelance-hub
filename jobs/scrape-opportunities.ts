@@ -80,29 +80,34 @@ export async function harvest() {
     { name: "ATS", status: atsItems.length > 0 ? "OK" : "FAIL", error: atsItems.length > 0 ? null : "No signals found" }
   ];
 
-  for (const log of healthMetrics) {
+  if (healthMetrics.length > 0) {
     try {
-      // Use deterministic ID for upsert stability
-      const healthId = `health:${log.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
-      
-      await db.insert(systemHealth).values({
-        id: healthId,
-        sourceName: log.name,
-        status: log.status,
-        lastSuccess: log.status === "OK" ? new Date() : null,
-        errorMessage: log.error,
-        updatedAt: new Date()
-      }).onConflictDoUpdate({
-        target: [systemHealth.id],
-        set: { 
-          status: log.status, 
-          lastSuccess: log.status === "OK" ? new Date() : undefined, 
-          errorMessage: log.error, 
-          updatedAt: new Date() 
-        }
+      const healthValues = healthMetrics.map(log => {
+        // Use deterministic ID for upsert stability
+        const healthId = `health:${log.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`;
+        return {
+          id: healthId,
+          sourceName: log.name,
+          status: log.status,
+          lastSuccess: log.status === "OK" ? new Date() : null,
+          errorMessage: log.error,
+          updatedAt: new Date()
+        };
       });
+
+      await db.insert(systemHealth)
+        .values(healthValues)
+        .onConflictDoUpdate({
+          target: [systemHealth.id],
+          set: {
+            status: sql`excluded.status`,
+            lastSuccess: sql`COALESCE(excluded.last_success, system_health.last_success)`,
+            errorMessage: sql`excluded.error_message`,
+            updatedAt: sql`excluded.updated_at`
+          }
+        });
     } catch (healthErr) {
-      console.error(`[harvest] Failed to record health for ${log.name}:`, (healthErr as Error).message);
+      console.error(`[harvest] Failed to record batched health metrics:`, (healthErr as Error).message);
       // Non-blocking
     }
   }
