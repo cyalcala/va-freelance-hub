@@ -2,7 +2,6 @@
  * Intelligent Job Sifter (JS Version)
  * Categorizes and filters jobs before they reach the database.
  */
-import { siftNative, OpportunityTier as NativeTier } from "../../packages/sifter-native/index";
 import { config } from "@va-hub/config";
 
 export enum OpportunityTier {
@@ -12,7 +11,6 @@ export enum OpportunityTier {
   TRASH = 4      // Regional-locked / Ultra-Senior Tech / Non-English
 }
 
-const C_LEVEL_KILLS = config.kill_lists.titles; // Shared with tech/exec in config
 const TECH_KILLS = config.kill_lists.titles;   // Simplified for now
 const REGIONAL_KILLS = config.kill_lists.content;
 const SEA_SIGNALS = config.target_signals.region;
@@ -26,10 +24,8 @@ export function siftOpportunity(title: string, company: string, description: str
   const s = (sourcePlatform || "").toLowerCase();
   const body = `${t} ${c} ${d} ${s}`;
 
-  // 0. TITANIUM HARD PURGE (Zig-Powered)
-  // This kills 100% of tech/exec noise before we even run regex.
-  const nativeResult = siftNative(title, company, description || "");
-  if (nativeResult === NativeTier.TRASH) return OpportunityTier.TRASH;
+  // 0. TITANIUM HARD PURGE (Zig-Powered Disabled for Cloud stability)
+  // Native sifter was causing cold-start failures in Bun runtime.
 
   // 1. Target Categories
   const isTargetCategory = ROLE_SIGNALS.some(sig => t.includes(sig));

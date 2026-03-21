@@ -107,8 +107,8 @@ export async function harvest() {
     title: opportunities.title
   }).from(opportunities);
 
-  const existingHashes = new Set(existingItems.map((r) => r.hash));
-  const normalizedExisting = new Set(existingItems.map((r) => normalizeTitle(r.title)));
+  const existingHashes = new Set(existingItems.map((r: any) => r.hash));
+  const normalizedExisting = new Set(existingItems.map((r: any) => normalizeTitle(r.title)));
 
   const newItems = allItems.filter((item) => {
     if (!item.contentHash || existingHashes.has(item.contentHash)) return false;
