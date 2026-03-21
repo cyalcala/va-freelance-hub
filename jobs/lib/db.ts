@@ -62,9 +62,26 @@ export async function createDb() {
   const { createClient } = await import("@libsql/client/http");
   const { drizzle } = await import("drizzle-orm/libsql");
   
+  const url = process.env.TURSO_DATABASE_URL;
+  const token = process.env.TURSO_AUTH_TOKEN;
+
+  if (!url || !token) {
+    const msg = `CRITICAL: Missing Turso Env Vars (URL: ${!!url}, Token: ${!!token})`;
+    console.error(msg);
+    // Try to send to ntfy
+    try {
+      await fetch("https://ntfy.sh/va-freelance-hub-task-log-cyrus", {
+        method: "POST",
+        body: `[DB-INIT] ${msg}`,
+        headers: { "Priority": "5" }
+      });
+    } catch {}
+    throw new Error(msg);
+  }
+
   const client = createClient({
-    url: process.env.TURSO_DATABASE_URL!,
-    authToken: process.env.TURSO_AUTH_TOKEN!,
+    url,
+    authToken: token,
   });
   
   _db = drizzle(client, { schema: { opportunities, agencies, systemHealth } });
