@@ -24,9 +24,6 @@ export function siftOpportunity(title: string, company: string, description: str
   const s = (sourcePlatform || "").toLowerCase();
   const body = `${t} ${c} ${d} ${s}`;
 
-  // 0. TITANIUM HARD PURGE (Zig-Powered Disabled for Cloud stability)
-  // Native sifter was causing cold-start failures in Bun runtime.
-
   // 1. Target Categories
   const isTargetCategory = ROLE_SIGNALS.some(sig => t.includes(sig));
 
