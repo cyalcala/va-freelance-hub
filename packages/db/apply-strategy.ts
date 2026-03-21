@@ -17,7 +17,7 @@ async function applyStrategy() {
     { name: "Virtual Staff Finder", heat: 1, friction: 4, url: "https://virtualstaff.ph" },
   ];
 
-  for (const s of strategy) {
+  await Promise.all(strategy.map(async (s) => {
     await db.update(schema.agencies)
       .set({ 
         hiringHeat: s.heat, 
@@ -27,7 +27,7 @@ async function applyStrategy() {
       })
       .where(eq(schema.agencies.name, s.name));
     console.log(`✅ Strat: ${s.name} (Heat: ${s.heat}, Friction: ${s.friction})`);
-  }
+  }));
 
   console.log("🚀 Strategy Applied.");
 }
