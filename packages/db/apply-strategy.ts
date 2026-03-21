@@ -17,15 +17,20 @@ async function applyStrategy() {
     { name: "Virtual Staff Finder", heat: 1, friction: 4, url: "https://virtualstaff.ph" },
   ];
 
-  for (const s of strategy) {
-    await db.update(schema.agencies)
+  const updates = strategy.map(s =>
+    db.update(schema.agencies)
       .set({ 
         hiringHeat: s.heat, 
         frictionLevel: s.friction, 
         hiringUrl: s.url,
         status: 'active' 
       })
-      .where(eq(schema.agencies.name, s.name));
+      .where(eq(schema.agencies.name, s.name))
+  );
+
+  await db.batch(updates as any);
+
+  for (const s of strategy) {
     console.log(`✅ Strat: ${s.name} (Heat: ${s.heat}, Friction: ${s.friction})`);
   }
 
