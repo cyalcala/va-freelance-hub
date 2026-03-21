@@ -23,7 +23,7 @@ jobs:
         run: bun install --frozen-lockfile
         
       - name: Deploy to Trigger.dev
-        run: bunx trigger.dev@latest deploy
+        run: bun run trigger:deploy
         env:
           TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
