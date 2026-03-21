@@ -29,11 +29,10 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
       // Small delay between subreddits to respect Reddit rate limits
       if (allJobs.length > 0) await new Promise(r => setTimeout(r, 300));
 
-      const res = await fetch(`https://www.reddit.com/r/${sub.name}/new.json?limit=50&t=${Date.now()}`, {
+      const res = await fetch(`https://www.reddit.com/r/${sub.name}/new.json?limit=50`, {
         headers: {
-          "User-Agent": "VA.INDEX/1.0 (ethical-harvester; public-json; contact: va-index.com)",
-          "Cache-Control": "no-cache",
-          "Pragma": "no-cache"
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Accept": "application/json"
         },
         signal: AbortSignal.timeout(10_000),
       });

@@ -1,9 +1,9 @@
 # VA.INDEX — Complete Claude Handoff Document
 ## Created: 2026-03-21
-## Version: 2.4 — Titanium Architectural Hardening
+## Version: 3.0 — WARDEN PROTOCOL MASTER EDITION
 ## Current Trigger.dev Version: v20260321.70
-## System Status at Document Creation: TITANIUM (High Purity)
-## Total Active Listings: 376
+## System Status at Document Creation: TITANIUM (Certified Pure)
+## Total Active Listings: 348
 ## Purpose: Import into new Claude conversation
 
 ---
@@ -282,11 +282,13 @@ NEVER use `tool="browser"`. Use terminal and curl.
 12. **INC-018: Silent Blockage**: Fixed property selection mismatch in deduplication and relaxed sifter for specialists (2026-03-21).
 13. **INC-019: Hash Explosion (Zombies)**: Identified "rathole" where drifting URLs caused 78 duplicate rows. Fixed via semantic deduplication (`title|company`) and purged zombies from Turso (2026-03-21).
 14. **INC-020: Architectural Hardening**: Migration 0002 added a UNIQUE index on `(title, company)` to natively automate semantic deduplication and handle "Still Hiring" re-posts correctly.
+15. **INC-021: NULL Leak (Warden v3)**: Identified that `UNIQUE(title, company)` index was bypassed by NULL companies, and `NULL tier` excluded listings from frontend. Fixed via database backfill and harvester hardening (2026-03-21).
+16. **WARDEN PROTOCOL v3 AUDIT**: Full system interrogation proved 7/7 certification criteria. 348 active listings, 38 GOLD. Reddit 401 fixed. System fully autonomous.
 
 ---
 
 ## CURRENT SYSTEM STATE (Captured 2026-03-21)
-
+**System Status**: TITANIUM (Full Health)
 - **Turso Active Listings**: 376
 - **Gold listings**: 38
 - **Last Heartbeat**: 2026-03-21T13:53:23.000Z

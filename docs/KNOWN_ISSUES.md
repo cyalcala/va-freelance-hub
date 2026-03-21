@@ -42,6 +42,8 @@
 - **Symptom**: `totalActive` stuck at 415 for 60+ minutes despite "completed" harvest runs. `newest` timestamp stuck at 11:45 UTC.
 - **Root Causes**:
     - **Property Mismatch**: Deduplication logic compared `title|company` but didn't select `company` from the DB, leading to incomplete/corrupt fingerprints.
+    -14. **INC-020: Architectural Hardening**: Migration 0002 added a UNIQUE index on `(title, company)` to natively automate semantic deduplication and handle "Still Hiring" re-posts correctly.
+15. **INC-021: NULL Leak (Warden v3)**: Identified that `UNIQUE(title, company)` index was bypassed by NULL companies, and `NULL tier` excluded listings from frontend. Fixed via database backfill and harvester hardening (2026-03-21).
     - **Sifter Hyper-Purity**: Sifter was trashing all "Senior" and "Lead" roles globally, discarding legitimate specialist roles.
     - **Heartbeat Invisibility**: Upsert was using `sql` excluded syntax that didn't consistently update `scrapedAt` for existing items.
 - **Resolution**:

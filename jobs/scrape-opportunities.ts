@@ -160,7 +160,11 @@ export async function harvest() {
     }
 
     processedFingerprints.add(fingerprint);
-    dedupedRelevant.push({ ...item, tier });
+    dedupedRelevant.push({ 
+      ...item, 
+      tier: tier || 3,
+      company: item.company || 'Generic'
+    });
   }
 
   const processedCount = dedupedRelevant.length;
