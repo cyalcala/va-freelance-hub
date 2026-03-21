@@ -22,12 +22,11 @@ function toHash(title: string, url: string) {
 }
 
 export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
-  const allJobs: NewOpportunity[] = [];
-
-  for (const sub of SUBREDDITS) {
+  const jobResults = await Promise.all(SUBREDDITS.map(async (sub, index) => {
+    const subJobs: NewOpportunity[] = [];
     try {
       // Small delay between subreddits to respect Reddit rate limits
-      if (allJobs.length > 0) await new Promise(r => setTimeout(r, 300));
+      if (index > 0) await new Promise(r => setTimeout(r, index * 300));
 
       const res = await fetch(`https://www.reddit.com/r/${sub.name}/new.json?limit=50`, {
         headers: {
@@ -39,7 +38,7 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
 
       if (!res.ok) {
         console.log(`[reddit] ${sub.label}: HTTP ${res.status}`);
-        continue;
+        return [];
       }
 
       const data = await res.json();
@@ -69,7 +68,7 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
 
         const description = (p.selftext || "").slice(0, 500).replace(/\n/g, " ").trim();
 
-        allJobs.push({
+        subJobs.push({
           id: crypto.randomUUID(),
           title: title.replace(/\[hiring\]/gi, "").trim(),
           company: p.author || "Direct Hire",
@@ -87,12 +86,12 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
         } as unknown as NewOpportunity);
       }
 
-      const subCount = allJobs.filter(j => (j.sourcePlatform as string)?.includes(sub.label)).length;
-      console.log(`[reddit] ${sub.label}: ${posts.length} posts → ${subCount} hiring signals`);
+      console.log(`[reddit] ${sub.label}: ${posts.length} posts → ${subJobs.length} hiring signals`);
     } catch (err) {
       console.log(`[reddit] ${sub.label} failed:`, (err as Error).message);
     }
-  }
+    return subJobs;
+  }));
 
-  return allJobs;
+  return jobResults.flat();
 }
