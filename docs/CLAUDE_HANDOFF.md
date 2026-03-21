@@ -1,8 +1,8 @@
 # VA.INDEX — Complete Claude Handoff Document
 ## Created: 2026-03-21
-## Version: 2.3 — Includes Zombie Purge & High-Purity
-## Current Trigger.dev Version: v20260321.60
-## System Status at Document Creation: HEALTHY (High Purity)
+## Version: 2.4 — Titanium Architectural Hardening
+## Current Trigger.dev Version: v20260321.70
+## System Status at Document Creation: TITANIUM (High Purity)
 ## Total Active Listings: 376
 ## Purpose: Import into new Claude conversation
 
@@ -281,6 +281,7 @@ NEVER use `tool="browser"`. Use terminal and curl.
 11. **INC-016: Silent Sifter**: Refined sifter logic to prevent over-filtering of "Virtual Assistant" roles.
 12. **INC-018: Silent Blockage**: Fixed property selection mismatch in deduplication and relaxed sifter for specialists (2026-03-21).
 13. **INC-019: Hash Explosion (Zombies)**: Identified "rathole" where drifting URLs caused 78 duplicate rows. Fixed via semantic deduplication (`title|company`) and purged zombies from Turso (2026-03-21).
+14. **INC-020: Architectural Hardening**: Migration 0002 added a UNIQUE index on `(title, company)` to natively automate semantic deduplication and handle "Still Hiring" re-posts correctly.
 
 ---
 

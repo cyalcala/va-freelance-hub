@@ -133,7 +133,7 @@ export async function harvest() {
     return true;
   });
   const newCount = newItems.length;
-  // 3. Multi-Level Deduplication (Prevent Hash Explosion)
+  // 3. Multi-Level Deduplication (High-Purity Sieve)
   const processedFingerprints = new Set();
   const dedupedRelevant = [];
   
@@ -144,14 +144,9 @@ export async function harvest() {
     // 1. Security Layer: Drop scams
     if (isLikelyScam(itemTitle, item.description ?? "")) continue;
 
-    // 2. Semantic Fingerprint Check
+    // 2. Per-Run Dedup: Don't process the same title|company twice in one run
     const fingerprint = `${normalizeTitle(itemTitle)}|${(item.company || '').toLowerCase()}`;
     if (processedFingerprints.has(fingerprint)) continue;
-    if (normalizedExisting.has(fingerprint) && !existingHashes.has(item.contentHash)) {
-      // If title|company exists but hash is different, it's a "Zombie" (Hash Drift)
-      // We skip it to prevent row explosion.
-      continue;
-    }
     
     // 3. Intelligent Sifting & Tiering
     const tier = siftOpportunity(itemTitle, item.description ?? "", item.sourcePlatform ?? "Generic");
@@ -169,21 +164,25 @@ export async function harvest() {
   }
 
   const processedCount = dedupedRelevant.length;
-  console.log(`[harvest] ${processedCount} passed sifter funnel (${newCount} are brand new)`);
+  console.log(`[harvest] ${processedCount} signals pass purity check (${newCount} are brand new hashes)`);
 
-  // ── UPSERT (INSERT OR REFRESH) ──────────────────────────
+  // ── UPSERT (SEMANTIC MERGE) ─────────────────────────────
   let processed = 0;
   for (let i = 0; i < dedupedRelevant.length; i += 50) {
     try {
       const batch = dedupedRelevant.slice(i, i + 50);
-      // We use onConflictDoUpdate to refresh the 'scrapedAt' and 'isActive' status
+      // We now conflict on (title, company) instead of just contentHash
+      // This automates semantic deduplication and solves the Hash Explosion.
       await db.insert(opportunities)
         .values(batch)
         .onConflictDoUpdate({
-          target: [opportunities.contentHash],
+          target: [opportunities.title, opportunities.company],
           set: { 
+            scrapedAt: new Date(),
             isActive: 1,
-            tier: sql`excluded.tier`
+            tier: sql`excluded.tier`,
+            contentHash: sql`excluded.content_hash`, // Update hash in case it drifted
+            sourceUrl: sql`excluded.source_url` // Update URL in case it drifted
           }
         });
       processed += batch.length;
