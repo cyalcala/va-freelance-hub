@@ -86,9 +86,9 @@ async function fixLinks() {
     }
   ];
 
-  for (const role of freshRoles) {
+  const rolesToInsert = freshRoles.map(role => {
     const id = crypto.randomUUID();
-    await db.insert(schema.opportunities).values({
+    return {
       id,
       ...role,
       type: 'agency',
@@ -96,7 +96,11 @@ async function fixLinks() {
       scrapedAt: new Date(),
       isActive: true,
       contentHash: `fresh-${id.slice(0,8)}`
-    }).onConflictDoNothing();
+    };
+  });
+
+  if (rolesToInsert.length > 0) {
+    await db.insert(schema.opportunities).values(rolesToInsert).onConflictDoNothing();
   }
 
   console.log("🚀 Link Repair & Injection Complete.");
