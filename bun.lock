@@ -1,13 +1,13 @@
 {
   "lockfileVersion": 1,
-  "configVersion": 1,
   "workspaces": {
     "": {
       "name": "va-freelance-hub",
       "dependencies": {
         "@libsql/client": "latest",
         "@trigger.dev/sdk": "4.4.3",
-        "drizzle-orm": "latest",
+        "dotenv": "^17.3.1",
+        "drizzle-orm": "^0.45.1",
         "fast-xml-parser": "^5.5.6",
       },
       "devDependencies": {
