@@ -6,6 +6,8 @@
       "name": "va-freelance-hub",
       "dependencies": {
         "@libsql/client": "latest",
+        "@libsql/linux-x64-gnu": "^0.5.28",
+        "@libsql/linux-x64-musl": "^0.5.28",
         "@trigger.dev/sdk": "4.4.3",
         "drizzle-orm": "latest",
         "fast-xml-parser": "^5.5.6",

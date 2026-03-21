@@ -15,10 +15,5 @@ export default defineConfig({
       factor: 2,
     },
   },
-  build: {
-    external: ["@libsql/linux-x64-gnu", "@libsql/linux-x64-musl"],
-    alias: {
-      "@libsql/client": "@libsql/client/http",
-    },
-  },
+
 });
