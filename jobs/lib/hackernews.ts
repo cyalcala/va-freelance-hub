@@ -37,15 +37,24 @@ async function findWhoIsHiringThread(): Promise<number | null> {
     const user = await res.json();
     const submitted = user?.submitted || [];
 
-    for (const id of submitted.slice(0, 5)) {
-      const itemRes = await fetch(`${HN_API}/item/${id}.json?t=${Date.now()}`, {
-        headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
-        signal: AbortSignal.timeout(5_000),
-      });
-      if (!itemRes.ok) continue;
-      const item = await itemRes.json();
+    const itemPromises = submitted.slice(0, 5).map(async (id: number) => {
+      try {
+        const itemRes = await fetch(`${HN_API}/item/${id}.json?t=${Date.now()}`, {
+          headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
+          signal: AbortSignal.timeout(5_000),
+        });
+        if (!itemRes.ok) return null;
+        return await itemRes.json();
+      } catch (err) {
+        return null;
+      }
+    });
+
+    const items = await Promise.all(itemPromises);
+
+    for (const item of items) {
       if (item?.title?.toLowerCase()?.includes("who is hiring")) {
-        return id;
+        return item.id;
       }
     }
   } catch (err) {
