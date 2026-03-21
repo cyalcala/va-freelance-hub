@@ -5,8 +5,6 @@
   "type": "module",
   "dependencies": {
     "@libsql/client": "latest",
-    "@libsql/linux-x64-gnu": "latest",
-    "@libsql/linux-x64-musl": "latest",
     "@trigger.dev/sdk": "4.4.3",
     "drizzle-orm": "latest",
     "fast-xml-parser": "^5.5.6"
