@@ -106,14 +106,26 @@ export const systemAuditTask = schedules.task({
       sql`SELECT id, title, description FROM opportunities WHERE is_active = 1`
     ) as { id: string, title: string, description: string }[];
     
+    const oppsToScrubIds: string[] = [];
     for (const opp of activeOpps) {
       const textBlock = `${opp.title} ${opp.description}`;
       if (evasionRegex.some(regex => regex.test(textBlock))) {
-        await db.run(sql`UPDATE opportunities SET is_active = 0 WHERE id = ${opp.id}`);
-        report.fakeriesScrubbed++;
+        oppsToScrubIds.push(opp.id);
       }
     }
     
+    if (oppsToScrubIds.length > 0) {
+      // Chunking by 500 to stay safely below generic host parameter limits in SQLite
+      const chunkSize = 500;
+      for (let i = 0; i < oppsToScrubIds.length; i += chunkSize) {
+        const chunk = oppsToScrubIds.slice(i, i + chunkSize);
+        await db.run(
+          sql`UPDATE opportunities SET is_active = 0 WHERE id IN (${sql.join(chunk.map((id) => sql`${id}`), sql`, `)})`
+        );
+      }
+      report.fakeriesScrubbed += oppsToScrubIds.length;
+    }
+
     if (report.fakeriesScrubbed > 0) {
       logger.warn(`[deep-audit] Surgically scrubbed ${report.fakeriesScrubbed} active jobs that evaded initial trust filters.`);
       report.healthScore -= 10;
