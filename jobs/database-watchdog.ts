@@ -22,14 +22,21 @@ export const databaseWatchdogTask = schedules.task({
       if (missing.length > 0) {
         console.error(`[watchdog] CRITICAL: Missing columns detected: ${missing.join(", ")}`);
         
-        for (const col of missing) {
-          try {
-            if (col === "buzz_score") await db.run(sql`ALTER TABLE agencies ADD COLUMN buzz_score INTEGER DEFAULT 0`);
-            if (col === "created_at") await db.run(sql`ALTER TABLE agencies ADD COLUMN created_at INTEGER`);
-            if (col === "hiring_heat") await db.run(sql`ALTER TABLE agencies ADD COLUMN hiring_heat INTEGER DEFAULT 1`);
-            if (col === "friction_level") await db.run(sql`ALTER TABLE agencies ADD COLUMN friction_level INTEGER DEFAULT 3`);
-          } catch { /* column might already exist */ }
+        // Optimize: Send all ALTER TABLE statements concurrently.
+        // This avoids the N+1 sequential waterfall.
+        // Using Promise.allSettled preserves the error isolation of the original code,
+        // so if one column modification fails (e.g. already exists), the rest still succeed.
+        const promises = missing.map(async (col) => {
+          if (col === "buzz_score") return db.run(sql`ALTER TABLE agencies ADD COLUMN buzz_score INTEGER DEFAULT 0`);
+          if (col === "created_at") return db.run(sql`ALTER TABLE agencies ADD COLUMN created_at INTEGER`);
+          if (col === "hiring_heat") return db.run(sql`ALTER TABLE agencies ADD COLUMN hiring_heat INTEGER DEFAULT 1`);
+          if (col === "friction_level") return db.run(sql`ALTER TABLE agencies ADD COLUMN friction_level INTEGER DEFAULT 3`);
+        });
+
+        if (promises.length > 0) {
+          await Promise.allSettled(promises);
         }
+
         return { status: "REPAIRED", missing };
       }
 
