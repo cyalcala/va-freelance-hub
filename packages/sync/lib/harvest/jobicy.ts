@@ -11,7 +11,7 @@ export class JobicyProvider implements HarvestProvider {
       if (!response.ok) return [];
 
       const data = await response.json();
-      const jobs = data.jobs;
+      const jobs = data.jobs || [];
 
       for (const job of jobs) {
         results.push({
