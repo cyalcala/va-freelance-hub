@@ -12,7 +12,7 @@ async function run() {
     // 2. Delete everything else.
     // SQLite doesn't support complex joins in DELETE easily, so we use a subquery.
     
-    const res = await client.execute(\`
+    const res = await client.execute(`
       DELETE FROM opportunities 
       WHERE id NOT IN (
         SELECT id FROM (
@@ -22,7 +22,7 @@ async function run() {
         ) WHERE rn = 1
       )
       AND is_active = 1
-    \`);
+    `);
     
     console.log("PURGE COMPLETE.");
     console.log("Changes:", res.rowsAffected);
