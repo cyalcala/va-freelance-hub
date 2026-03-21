@@ -1,9 +1,15 @@
 import { harvest } from "../jobs/scrape-opportunities";
 
 async function test() {
-  console.log("🚀 Testing Heartbeat Harvest...");
-  const result = await harvest();
-  console.log("Result:", result);
+  try {
+    console.log("TESTING HARVEST...");
+    const start = Date.now();
+    const result = await harvest();
+    const end = Date.now();
+    console.log("RESULT:", JSON.stringify(result, null, 2));
+    console.log(`TIME: ${(end - start) / 1000}s`);
+  } catch (e: any) {
+    console.error("TEST_FAIL:", e.message, e.stack);
+  }
 }
-
 test();

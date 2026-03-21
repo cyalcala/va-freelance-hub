@@ -117,7 +117,8 @@ export async function harvest() {
   // ── DEDUP ───────────────────────────────────────────────
   const existingItems = await db.select({
     hash: opportunities.contentHash,
-    title: opportunities.title
+    title: opportunities.title,
+    company: opportunities.company
   }).from(opportunities);
 
   const existingHashes = new Set(existingItems.map((r: any) => r.hash));
@@ -163,8 +164,8 @@ export async function harvest() {
         .onConflictDoUpdate({
           target: [opportunities.contentHash],
           set: { 
-            scrapedAt: sql`excluded.scraped_at`,
-            isActive: sql`CASE WHEN excluded.tier != 4 THEN 1 ELSE 0 END`,
+            scrapedAt: new Date(),
+            isActive: 1,
             tier: sql`excluded.tier`
           }
         });

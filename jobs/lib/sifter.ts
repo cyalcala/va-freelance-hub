@@ -50,10 +50,10 @@ export function siftOpportunity(title: string, company: string, description: str
   const phFocusedSource = ["reddit", "onlinejobs", "direct", "manual", "pinoy", "filipino"];
   const isPhContext = hasSeaSignal || phFocusedSource.some(src => s.includes(src));
   
-  const isGlobalLeadership = ["senior", "manager", "lead", "specialist"].some(l => t.includes(l)) && !phFocusedSource.some(src => s.includes(src)) && !config.target_signals.role.some(va => t.includes(va));
-
+  const isSpecialistRole = ["senior", "manager", "lead", "specialist"].some(l => t.includes(l));
+  
   if (isTargetCategory && (isPhContext || hasRemoteSignal)) {
-    if (isGlobalLeadership) return OpportunityTier.SILVER;
+    if (isSpecialistRole && !isPhContext) return OpportunityTier.SILVER;
     return isPhContext ? OpportunityTier.GOLD : OpportunityTier.SILVER;
   }
 
