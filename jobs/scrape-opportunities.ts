@@ -19,7 +19,20 @@ function normalizeTitle(title: string): string {
 
 const PH_NATIVE_SOURCES = new Set(["OnlineJobs", "Reddit r/phcareers"]);
 
+async function logToNtfy(message: string, priority: number = 3) {
+  try {
+    await fetch("https://ntfy.sh/va-freelance-hub-task-log-cyrus", {
+      method: "POST",
+      body: `[TASK-LOG] ${message}`,
+      headers: { "Priority": priority.toString() }
+    });
+  } catch {
+    // ignore
+  }
+}
+
 export async function harvest() {
+  await logToNtfy("══Starting Harvest══");
   console.log("[harvest] ═══ Starting Multi-Source Harvest ═══");
   const db = await createDb();
 
@@ -169,5 +182,14 @@ export const scrapeOpportunitiesTask = schedules.task({
     name: "high-purity-scrapers",
     concurrencyLimit: 1,
   },
-  run: harvest
+  run: async () => {
+    try {
+      const result = await harvest();
+      await logToNtfy(`SUCCESS: Processed ${result.processed} items.`);
+      return result;
+    } catch (err: any) {
+      await logToNtfy(`CRITICAL FAILURE: ${err.message}`, 5);
+      throw err;
+    }
+  },
 });
