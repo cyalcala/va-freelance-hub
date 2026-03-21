@@ -22,13 +22,34 @@ export const databaseWatchdogTask = schedules.task({
       if (missing.length > 0) {
         console.error(`[watchdog] CRITICAL: Missing columns detected: ${missing.join(", ")}`);
         
-        for (const col of missing) {
-          try {
-            if (col === "buzz_score") await db.run(sql`ALTER TABLE agencies ADD COLUMN buzz_score INTEGER DEFAULT 0`);
-            if (col === "created_at") await db.run(sql`ALTER TABLE agencies ADD COLUMN created_at INTEGER`);
-            if (col === "hiring_heat") await db.run(sql`ALTER TABLE agencies ADD COLUMN hiring_heat INTEGER DEFAULT 1`);
-            if (col === "friction_level") await db.run(sql`ALTER TABLE agencies ADD COLUMN friction_level INTEGER DEFAULT 3`);
-          } catch { /* column might already exist */ }
+        try {
+          const queries: string[] = [];
+          for (const col of missing) {
+            if (col === "buzz_score") queries.push(`ALTER TABLE agencies ADD COLUMN buzz_score INTEGER DEFAULT 0`);
+            if (col === "created_at") queries.push(`ALTER TABLE agencies ADD COLUMN created_at INTEGER`);
+            if (col === "hiring_heat") queries.push(`ALTER TABLE agencies ADD COLUMN hiring_heat INTEGER DEFAULT 1`);
+            if (col === "friction_level") queries.push(`ALTER TABLE agencies ADD COLUMN friction_level INTEGER DEFAULT 3`);
+          }
+
+          if (queries.length > 0) {
+            const client = db.$client || (db as any).session?.client;
+            if (client && typeof client.batch === "function") {
+              await client.batch(queries);
+            } else {
+              throw new Error("Batch API unavailable on client");
+            }
+          }
+        } catch (err: any) {
+          console.error(`[watchdog] Batch alter failed, falling back to sequential: ${err.message}`);
+
+          for (const col of missing) {
+            try {
+              if (col === "buzz_score") await db.run(sql`ALTER TABLE agencies ADD COLUMN buzz_score INTEGER DEFAULT 0`);
+              if (col === "created_at") await db.run(sql`ALTER TABLE agencies ADD COLUMN created_at INTEGER`);
+              if (col === "hiring_heat") await db.run(sql`ALTER TABLE agencies ADD COLUMN hiring_heat INTEGER DEFAULT 1`);
+              if (col === "friction_level") await db.run(sql`ALTER TABLE agencies ADD COLUMN friction_level INTEGER DEFAULT 3`);
+            } catch { /* column might already exist */ }
+          }
         }
         return { status: "REPAIRED", missing };
       }
