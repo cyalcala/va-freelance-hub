@@ -9,28 +9,7 @@ import { RemotiveProvider } from "../lib/harvest/remotive";
 import { BlueSkyProvider } from "../lib/harvest/bluesky";
 import { JobicyProvider } from "../lib/harvest/jobicy";
 import { RawAgency } from "../lib/harvest/types";
-
-function calculateSimilarity(a: string, b: string): number {
-  if (a.length === 0) return b.length === 0 ? 1 : 0;
-  const matrix = [];
-  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
-        );
-      }
-    }
-  }
-  const dist = matrix[b.length][a.length];
-  return 1 - dist / Math.max(a.length, b.length);
-}
+import { calculateSimilarity } from "../lib/utils/similarity";
 
 export const dailySyncTask = task({
   id: "daily-sync-v5-2",
