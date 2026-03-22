@@ -125,6 +125,34 @@ export const databaseWatchdogTask = schedules.task({
         console.warn("[watchdog] Schedule health check failed:", err.message);
       }
 
+      // ====== 5. AUTOMATED MAINTENANCE (AUDIT V4.0) ======
+      console.log("[watchdog] Starting Automated Maintenance Purge...");
+      
+      // P0: Purge Saturated Fingerprints
+      const purgeInactive = await db.run(sql`
+        DELETE FROM opportunities 
+        WHERE is_active = 0 
+        AND scraped_at < unixepoch('now', '-60 days')
+      `);
+      
+      const purgeTier4 = await db.run(sql`
+        DELETE FROM opportunities 
+        WHERE (tier = 4 OR tier IS NULL)
+        AND scraped_at < unixepoch('now', '-7 days')
+      `);
+
+      // P1: Deactivate Temporal Inversions (Zombies)
+      const deactivateZombies = await db.run(sql`
+        UPDATE opportunities 
+        SET is_active = 0 
+        WHERE is_active = 1 
+        AND posted_at IS NOT NULL 
+        AND posted_at > 0 
+        AND posted_at < unixepoch('now', '-21 days')
+      `);
+
+      console.log(`[watchdog] Maintenance: Purged Inactive: ${purgeInactive.rowsAffected || 0}, Purged Tier4: ${purgeTier4.rowsAffected || 0}, Deactivated Zombies: ${deactivateZombies.rowsAffected || 0}`);
+
       console.log(`[watchdog] Agencies: ${agencyCount.rows[0]?.[0]}, Opportunities: ${oppCount.rows[0]?.[0]}`);
       console.log("[watchdog] Audit Complete: HEALTHY");
       return { status: "HEALTHY", columnsFound: columns.length };
