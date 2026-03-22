@@ -52,3 +52,6 @@ bun-debug.log*
 
 # Mythic Restore Vault
 .backups/
+
+# State
+.triage-state.json
