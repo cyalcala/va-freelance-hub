@@ -66,14 +66,20 @@ const scored = liveOpportunities.map(opp => {
   const safeScraped = opp.scrapedAt ? new Date(opp.scrapedAt).getTime() : Date.now();
   const latestDateMs = Math.max(safePosted, safeScraped);
   
+  // FRESHNESS BIAS: "Just Now" signals (< 30 mins) float higher within tier clusters
+  const isFresh = (Date.now() - latestDateMs) < 30 * 60 * 1000;
+  const tier = getTier(opp);
+  const sortBoost = isFresh ? 1.1 : 0; // Virtual tier boost for extreme freshness
+
   return {
     ...opp,
     latestDateMs,
-    tier: getTier(opp)
+    tier,
+    effectiveTier: tier - sortBoost
   };
 }).sort((a, b) => {
-  if (a.tier !== b.tier) return a.tier - b.tier; // Lower tier (1) wins
-  return b.latestDateMs - a.latestDateMs; // Precise newest wins
+  if (a.effectiveTier !== b.effectiveTier) return a.effectiveTier - b.effectiveTier;
+  return b.latestDateMs - a.latestDateMs;
 });
 
 // 2. Fuzzy Dedup & Company Diversity

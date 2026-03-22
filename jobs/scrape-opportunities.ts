@@ -13,7 +13,6 @@ function normalizeTitle(title: string): string {
   return title
     .toLowerCase()
     .replace(/\bvirtual assistant\b/g, "va")
-    .replace(/[^a-z0-9]/g, "")
     .trim();
 }
 
@@ -149,7 +148,7 @@ export async function harvest() {
     if (processedFingerprints.has(fingerprint)) continue;
     
     // 3. Intelligent Sifting & Tiering
-    const tier = siftOpportunity(itemTitle, item.description ?? "", item.sourcePlatform ?? "Generic");
+    const tier = siftOpportunity(itemTitle, item.company ?? "Generic", item.description ?? "", item.sourcePlatform ?? "Generic");
     if (tier === OpportunityTier.TRASH) continue;
 
     // 4. Source-level overrides
@@ -162,8 +161,9 @@ export async function harvest() {
     processedFingerprints.add(fingerprint);
     dedupedRelevant.push({ 
       ...item, 
-      tier: tier || 3,
-      company: item.company || 'Generic'
+      title: (item.title || '').trim().toLowerCase(), // Case-insensitive merge support
+      company: (item.company || 'Generic').trim().toLowerCase(), // Case-insensitive merge support
+      tier: tier || 3
     });
   }
 
@@ -182,7 +182,7 @@ export async function harvest() {
         .onConflictDoUpdate({
           target: [opportunities.title, opportunities.company],
           set: { 
-            scrapedAt: new Date(),
+            scrapedAt: sql`(unixepoch())`, // Absolute freshness heartbeat
             isActive: 1,
             tier: sql`excluded.tier`,
             contentHash: sql`excluded.content_hash`, // Update hash in case it drifted

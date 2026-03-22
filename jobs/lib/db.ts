@@ -1,4 +1,4 @@
-import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
+import { text, integer, sqliteTable, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const agencies = sqliteTable('agencies', {
   id: text('id').primaryKey(),
@@ -8,7 +8,7 @@ export const agencies = sqliteTable('agencies', {
   hiringUrl: text('hiring_url').notNull(),
   logoUrl: text('logo_url'),
   description: text('description'),
-  status: text('status').default('active'),
+  status: text('status', { enum: ['active', 'quiet'] }).default('active'),
   lastSync: integer('last_sync', { mode: 'timestamp' }).notNull(),
   verifiedAt: integer('verified_at', { mode: 'timestamp' }),
   metadata: text('metadata', { mode: 'json' }),
@@ -35,7 +35,9 @@ export const opportunities = sqliteTable('opportunities', {
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
   tier: integer('tier').default(3),
   contentHash: text('content_hash').unique(),
-});
+}, (table) => ({
+  titleCompanyIdx: uniqueIndex('title_company_idx').on(table.title, table.company),
+}));
 
 export const systemHealth = sqliteTable('system_health', {
   id: text('id').primaryKey(),

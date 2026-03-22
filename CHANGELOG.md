@@ -1,6 +1,21 @@
 # Internal Engineering Changelog
 
 
+## [2026-03-21] — [Opportunities: 336 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
+* feat: titanium architectural hardening — unique (title, company) index active, 376 pure listings [VA.INDEX] (8162f69)
+
+### 🛡️ Reliability & Fixes
+* fix: harden database deduplication against hash drift and zombie rows [VA.INDEX] (0733a50)
+
+### ⚓ Internal Maintenance
+* refactor: prioritize PH-specific signals for GOLD tier and demote general SEA roles to SILVER [VA.INDEX] (f58cd8b)
+
+---
+
+
 ## [2026-03-21] — [Opportunities: 460 | Agencies: 57]
 **Status: AUTO-PROCESSED**
 
