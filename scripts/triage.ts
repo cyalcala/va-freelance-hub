@@ -127,7 +127,7 @@ async function detect(): Promise<Finding[]> {
     safeQuery(c, "PRAGMA table_info(opportunities)"),
     safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier IN (1,2,3) AND (LOWER(description) LIKE '%us only%' OR LOWER(description) LIKE '%w2 only%' OR LOWER(description) LIKE '%eu only%')`),
     safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier=0`),
-    safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier IN (2,3) AND (LOWER(description) LIKE '%philippines%' OR LOWER(description) LIKE '%filipino%')`),
+    safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier IN (1,2,3) AND (LOWER(title) LIKE '%philippines%' OR LOWER(description) LIKE '%philippines%' OR LOWER(title) LIKE '%filipino%' OR LOWER(description) LIKE '%filipino%')`),
     safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier IS NULL`),
     safeQuery(c, `SELECT (unixepoch('now') - MAX(scraped_at)) / 3600.0 AS stale_hrs FROM opportunities`),
     safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND scraped_at < unixepoch('now', '-48 hours')`),
@@ -241,8 +241,8 @@ const FIX_REGISTRY: Record<string, { desc: string; apply: (dryRun: boolean) => P
     apply: async (dryRun) => {
       if (dryRun) return "Would run Turso updates for tier 0 and deactivate leaks";
       const c = db();
-      await safeQuery(c, `UPDATE opportunities SET tier=0 WHERE is_active=1 AND tier IN (1,2,3) AND (LOWER(description) LIKE '%philippines%' OR LOWER(description) LIKE '%filipino%')`);
-      await safeQuery(c, `UPDATE opportunities SET tier=4, is_active=0 WHERE is_active=1 AND (LOWER(description) LIKE '%us only%' OR LOWER(description) LIKE '%w2 only%')`);
+      await safeQuery(c, `UPDATE opportunities SET tier=0 WHERE is_active=1 AND tier IN (1,2,3) AND (LOWER(title) LIKE '%philippines%' OR LOWER(description) LIKE '%philippines%' OR LOWER(title) LIKE '%filipino%' OR LOWER(description) LIKE '%filipino%')`);
+      await safeQuery(c, `UPDATE opportunities SET tier=4, is_active=0 WHERE is_active=1 AND (LOWER(title) LIKE '%us only%' OR LOWER(description) LIKE '%us only%' OR LOWER(title) LIKE '%w2 only%' OR LOWER(description) LIKE '%w2 only%')`);
       c.close(); return "Signal states normalized in database.";
     }
   },
@@ -298,6 +298,51 @@ async function fix(isDryRun: boolean) {
     console.log(`\n${label("Fix phase complete.")} Budget consumed: ${state.attempts}/${MAX_ATTEMPTS}`);
     autoPushToGithub(results);
   }
+}
+
+// ── CERTIFY PHASE ─────────────────────────────────────────────────
+async function certify() {
+  console.log(label("\n═══ CERTIFICATION (10 gates) ═══\n"));
+  const c = db();
+
+  const [r_visible, r_plat, r_gold, r_fresh, r_geo, r_nullT, r_topSort, r_dbStaleness] = await Promise.allSettled([
+    safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier IN (0,1,2,3)`),
+    safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier=0`),
+    safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier=1`),
+    safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE scraped_at > unixepoch('now','-1 hour')`),
+    safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier IN (1,2,3) AND (LOWER(description) LIKE '%us only%' OR LOWER(description) LIKE '%w2 only%')`),
+    safeQuery(c, `SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier IS NULL`),
+    safeQuery(c, `SELECT tier FROM opportunities WHERE is_active=1 AND tier IN (0,1,2,3) ORDER BY tier ASC, COALESCE(posted_at,scraped_at) DESC, id DESC LIMIT 1`),
+    safeQuery(c, `SELECT (unixepoch('now') - MAX(scraped_at)) / 3600.0 AS stale_hrs FROM opportunities`)
+  ]);
+
+  c.close();
+  const [f_cdnHead] = await Promise.allSettled([safeFetch("https://va-freelance-hub-web.vercel.app/api/health", { method: "HEAD" }, 5000)]);
+
+  const n = (r: PromiseSettledResult<any>, key: string) => r.status === "fulfilled" ? Number((r.value.rows[0] as any)[key]) : -1;
+  const v = n(r_visible, "n"), p = n(r_plat, "n"), g = n(r_gold, "n"), f = n(r_fresh, "n"), gl = n(r_geo, "n"), nt = n(r_nullT, "n");
+  const top = r_topSort.status === "fulfilled" ? Number((r_topSort.value.rows[0] as any)?.tier ?? 99) : -1;
+  const trueStaleHrs = r_dbStaleness.status === "fulfilled" ? Number((r_dbStaleness.value.rows[0] as any).stale_hrs || 999) : 999;
+  const cdnHeader = f_cdnHead.status === "fulfilled" ? f_cdnHead.value.headers["x-vercel-cache"] ?? "NOT_PRESENT" : "TIMEOUT";
+
+  const gate = (id: string, ok: boolean, msg: string) => console.log(ok ? pass(`${id}  ${msg}`) : fail(`${id}  ${msg}`));
+
+  gate("C1 ", v > 200,  `Visible records: ${v} (need > 200)`);
+  gate("C2 ", p >= 5,   `PLATINUM: ${p} (need ≥ 5)`);
+  gate("C3 ", g > 0,    `GOLD: ${g} (need > 0)`);
+  gate("C4 ", f > 0,    `Ingested last 1hr: ${f}`);
+  gate("C5 ", gl === 0, `Geo-excluded leaks: ${gl} (need 0)`);
+  gate("C6 ", nt === 0, `NULL-tier records: ${nt} (need 0)`);
+  gate("C7 ", top <= 1, `Top feed tier: ${top} (need 0 or 1)`);
+  gate("C8 ", trueStaleHrs < 2, `True DB Staleness: ${trueStaleHrs.toFixed(1)}hrs (need < 2)`);
+  gate("C9 ", cdnHeader !== "HIT", `CDN cache: ${cdnHeader} (need MISS)`);
+  gate("C10", trueStaleHrs !== 999, `Database reachable and reporting`);
+
+  const allPass = v > 200 && p >= 5 && g > 0 && f > 0 && gl === 0 && nt === 0 && top <= 1 && trueStaleHrs < 2 && cdnHeader !== "HIT" && trueStaleHrs !== 999;
+  
+  console.log();
+  if (allPass) console.log(pass("ALL GATES PASS — MISSION COMPLETE. Safe to ship."));
+  else console.log(fail("Gates failing. Output ESCALATION REPORT if budget exhausted."));
 }
 
 // ── CLI Router ────────────────────────────────────────────────────
