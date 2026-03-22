@@ -61,3 +61,17 @@
     2. Surgical Purge: Deleted 78 redundant rows from Turso using a `ROW_NUMBER()` subquery.
     3. Frontend Hardening: Removed `scrapedAt` updates on every pulse to prevent artificial freshness for old jobs.
 - **Verification**: `totalActive` dropped from 454 to **376** (Purity-Certified). `audit-duplicates.ts` confirmed 0 semantic duplicates remaining.
+
+## 7. 2026-03-22 — Real-Time Delivery Blockage (Constraint Conflict + Index Deficit)
+- **Status**: RESOLVED (2026-03-22)
+- **Symptom**: `harvest-opportunities` runs COMPLETED but `totalActive` and `lastHeartbeat` remained static for 11+ hours.
+- **Root Causes**:
+    - **Constraint Conflict**: A redundant `UNIQUE` constraint on `content_hash` conflicted with the `ON CONFLICT (title, company)` upsert logic when URLs shifted or refreshed.
+    - **Index Deficit**: The database was missing the `title_company_idx` required for high-purity semantic deduplication, causing upsert batches to fail silently.
+    - **Sifter Parameter Mismatch**: `company` was missing from the `siftOpportunity` call, leading to inaccurate filtering.
+- **Resolution**:
+    1. Dropped redundant `content_hash` unique index.
+    2. Created missing `title_company_idx` unique index.
+    3. Corrected `siftOpportunity` signature and call site.
+    4. Synchronized `jobs/lib/db.ts` schema with core.
+- **Verification**: `local-harvest-test.ts` processed **229 signals** (219 NEW). `health` API confirmed **stalenessHrs: 0.03** and **status: HEALTHY**.

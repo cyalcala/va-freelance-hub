@@ -1,6 +1,19 @@
 # Internal Engineering Changelog
 
 
+## [2026-03-22] — [Opportunities: 353 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
+* feat: titanium architectural hardening — unique (title, company) index active, 376 pure listings [VA.INDEX] (8162f69)
+
+### 🛡️ Reliability & Fixes
+* fix: real-time delivery blockage - dropped redundant content_hash unique and created title_company_idx [VA.INDEX] (4daea7a)
+* fix: real-time delivery gap - corrected sifter params and sync'd jobs db schema [VA.INDEX] (76fda00)
+
+---
+
+
 ## [2026-03-22] — [Opportunities: 327 | Agencies: 57]
 **Status: AUTO-PROCESSED**
 

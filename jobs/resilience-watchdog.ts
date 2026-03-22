@@ -17,7 +17,8 @@ export const resilienceWatchdogTask = schedules.task({
     const db = await createDb();
     
     const now = new Date();
-    const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
+    const oneHourAgo = new Date(Date.now() - 1 * 60 * 60 * 1000);
+    const twentyMinsAgo = new Date(Date.now() - 20 * 60 * 1000);
     
     const vitals = {
       pulseOk: false,
@@ -36,10 +37,19 @@ export const resilienceWatchdogTask = schedules.task({
       .limit(1);
     
     vitals.lastPulse = latestSignal[0]?.scrapedAt || null;
-    vitals.pulseOk = vitals.lastPulse ? vitals.lastPulse > fourHoursAgo : false;
+    vitals.pulseOk = vitals.lastPulse ? vitals.lastPulse > oneHourAgo : false;
 
     if (!vitals.pulseOk) {
       logger.error(`[watchdog] CRITICAL: System Pulse is weak. Last job discovered at ${vitals.lastPulse?.toISOString() || "NEVER"}. Scrapers may be stalled.`);
+    }
+
+    // 1.5 REAL-TIME DELIVERY CHECK (20-MIN WINDOW)
+    const recentWrites = await db.run(sql`SELECT COUNT(*) as cnt FROM opportunities WHERE scraped_at > ${Math.floor(twentyMinsAgo.getTime() / 1000)}`);
+    const recentCount = Number(recentWrites.rows[0]?.[0] || 0);
+    if (recentCount === 0) {
+      logger.warn("[watchdog] REAL-TIME GAP DETECTED: No writes in last 20 minutes. Triggering autonomous recovery.");
+      const { tasks } = await import("@trigger.dev/sdk/v3");
+      await tasks.trigger("harvest-opportunities", { source: "watchdog-realtime-recovery" });
     }
 
     // 2. CHECK THE PURITY (Volume)
