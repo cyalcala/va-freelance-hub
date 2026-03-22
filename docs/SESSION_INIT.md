@@ -29,4 +29,8 @@ Before doing anything, output:
 - **Vercel config**: [current vercel.json contents]
 - **Any known issues**: [from KNOWN_ISSUES.md]
 
-Only after completing all 5 steps proceed with the actual mission.
+### Step 6 — Read System Snapshot
+- `cat docs/SYSTEM_SNAPSHOT.md`
+  (Ensures the agent understands the four timestamp axes and current saturation state before modifying the pipeline).
+
+Only after completing all 6 steps proceed with the actual mission.
