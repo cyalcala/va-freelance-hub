@@ -124,6 +124,30 @@ These values work. Do not change them without explicit human instruction and a c
 
 ---
 
+## RULE 9 — THE FOUR TIMESTAMP AXES
+Never conflate processing time with data freshness.
+- **INGESTION_TIME (`created_at`)**: The only true measure of pipeline throughput.
+- **EVENT_TIME (`posted_at`)**: The only true measure of job age.
+- **PROCESSING_TIME (`scraped_at`)**: A heartbeat signal only.
+
+**VIOLATION EXAMPLE**: Reporting "Staleness: 0.25h" because the scraper touched an old record. If `newCount = 0`, the system is functionally STALE regardless of the heartbeat.
+
+---
+
+## RULE 10 — FINGERPRINT SATURATION AWARENESS
+The pipeline operates in a finite fingerprint space (title|company).
+- Always check `saturation` (active/unique) before declaring a harvest "Healthy" if it produced 0 new records.
+- If saturation is 1.0, and `newCount` is 0, you **MUST** purge staleness (Inactive > 60d, Tier 4 > 7d) as the first remediation step.
+
+---
+
+## RULE 11 — ZOMBIE PREVENTION (EVENT HORIZON)
+Listings with `posted_at > 21 days ago` are dead signal.
+- They must be deactivated (`is_active = 0`) to prevent "Just Now" badge deception on the UI.
+- Never resurface a record by updating `scraped_at` if its `posted_at` is beyond the 14-day event horizon.
+
+---
+
 ## EMERGENCY RECOVERY PROCEDURE
 If the site goes down, follow this exact order:
 
