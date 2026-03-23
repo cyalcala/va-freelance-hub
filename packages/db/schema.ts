@@ -35,8 +35,10 @@ export const opportunities = sqliteTable('opportunities', {
   isActive: integer('is_active', { mode: 'boolean' }).default(true),
   tier: integer('tier').default(3), // 1=Gold, 2=Silver, 3=Bronze, 4=Trash
   contentHash: text('content_hash'),
+  latestActivityMs: integer('latest_activity_ms').notNull().default(0), // Indexed for high-performance sorting
 }, (table) => ({
   titleCompanyIdx: uniqueIndex('title_company_idx').on(table.title, table.company),
+  tierLatestIdx: uniqueIndex('tier_latest_idx').on(table.tier, table.latestActivityMs), // Speeds up Astro feed
 }));
 
 export const systemHealth = sqliteTable('system_health', {

@@ -163,7 +163,11 @@ export async function harvest() {
       ...item, 
       title: (item.title || '').trim().toLowerCase(), // Case-insensitive merge support
       company: (item.company || 'Generic').trim().toLowerCase(), // Case-insensitive merge support
-      tier: tier ?? 3
+      tier: tier ?? 3,
+      latestActivityMs: Math.max(
+        item.postedAt ? new Date(item.postedAt).getTime() : 0, 
+        item.scrapedAt ? new Date(item.scrapedAt).getTime() : Date.now()
+      )
     });
   }
 
@@ -186,7 +190,8 @@ export async function harvest() {
             isActive: 1,
             tier: sql`excluded.tier`,
             contentHash: sql`excluded.content_hash`, // Update hash in case it drifted
-            sourceUrl: sql`excluded.source_url` // Update URL in case it drifted
+            sourceUrl: sql`excluded.source_url`, // Update URL in case it drifted
+            latestActivityMs: sql`excluded.latest_activity_ms` // Keep fresh
           }
         });
       processed += batch.length;

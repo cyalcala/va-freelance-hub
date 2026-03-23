@@ -5,10 +5,8 @@ import { db, sql } from '@va-hub/db';
 import { opportunities } from '@va-hub/db/schema';
 import { desc, asc, eq, not, gt, gte, and, or, count } from 'drizzle-orm';
 
-// 1. Force No-Cache
-Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
-Astro.response.headers.set('Pragma', 'no-cache');
-Astro.response.headers.set('Surrogate-Control', 'no-store');
+// 1. Edge-Side Caching (SWR: 60s fresh, 30s stale)
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
 
 // 2. Aggregate Purity Distribution
 
@@ -16,36 +14,13 @@ let liveOpportunities = [];
 let dbError = null;
 
 try {
-  // SQL-Level Time-Decay Tiering (Astro Feed Optimization)
-  // 15-Minute Rule: signals < 15/60 hrs getting -5.0 tier boost
-  // 12-Hour Decay: +0.5 tier penalty per 12 hours of staleness
-  const nowMs = Date.now();
-  
-  liveOpportunities = await db.select({
-    id: opportunities.id,
-    title: opportunities.title,
-    company: opportunities.company,
-    sourceUrl: opportunities.sourceUrl,
-    sourcePlatform: opportunities.sourcePlatform,
-    tier: opportunities.tier,
-    scrapedAt: opportunities.scrapedAt,
-    postedAt: opportunities.postedAt,
-    effectiveTier: sql<number>`
-      tier + (
-        CASE 
-          WHEN (${nowMs} - COALESCE(${opportunities.postedAt}, ${opportunities.scrapedAt})) <= 900000 
-          THEN -5.0 
-          ELSE ((${nowMs} - COALESCE(${opportunities.postedAt}, ${opportunities.scrapedAt})) / 43200000.0) * 0.5 
-        END
-      )
-    `,
-    latestDateMs: sql<number>`COALESCE(${opportunities.postedAt}, ${opportunities.scrapedAt})`
-  })
+  // Ultra-Fast Indexed Sort using tier_latest_idx
+  liveOpportunities = await db.select()
     .from(opportunities)
     .where(not(eq(opportunities.tier, 4)))
     .orderBy(
-      sql`effectiveTier ASC`,
-      sql`latestDateMs DESC`
+      asc(opportunities.tier),
+      desc(opportunities.latestActivityMs)
     )
     .limit(150); 
 } catch (e) {
