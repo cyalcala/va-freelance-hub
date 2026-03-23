@@ -148,7 +148,7 @@ export async function harvest() {
     if (processedFingerprints.has(fingerprint)) continue;
     
     // 3. Intelligent Sifting & Tiering
-    const tier = siftOpportunity(itemTitle, item.company ?? "Generic", item.description ?? "", item.sourcePlatform ?? "Generic");
+    const tier = siftOpportunity(itemTitle, item.description ?? "", item.sourcePlatform ?? "Generic");
     if (tier === OpportunityTier.TRASH) continue;
 
     // 4. Source-level overrides
@@ -163,7 +163,7 @@ export async function harvest() {
       ...item, 
       title: (item.title || '').trim().toLowerCase(), // Case-insensitive merge support
       company: (item.company || 'Generic').trim().toLowerCase(), // Case-insensitive merge support
-      tier: tier || 3
+      tier: tier ?? 3
     });
   }
 
@@ -182,7 +182,7 @@ export async function harvest() {
         .onConflictDoUpdate({
           target: [opportunities.title, opportunities.company],
           set: { 
-            scrapedAt: sql`(unixepoch())`, // Absolute freshness heartbeat
+            scrapedAt: new Date(), // Millisecond precision heartbeat
             isActive: 1,
             tier: sql`excluded.tier`,
             contentHash: sql`excluded.content_hash`, // Update hash in case it drifted
@@ -200,8 +200,8 @@ export async function harvest() {
 
   // ── CLEANUP: Purge stale records older than 60 days ─────
   try {
-    const sixtyDaysAgo = Math.floor((Date.now() - 60 * 24 * 60 * 60 * 1000) / 1000);
-    await db.run(sql`DELETE FROM opportunities WHERE scraped_at < ${sixtyDaysAgo} AND is_active = 0`);
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    await db.run(sql`DELETE FROM opportunities WHERE scraped_at < ${sixtyDaysAgo.getTime()} AND is_active = 0`);
     console.log("[harvest] Stale inactive records purged.");
   } catch {
     // Non-critical — cleanup failure shouldn't break the harvest

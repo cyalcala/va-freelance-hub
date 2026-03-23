@@ -36,7 +36,7 @@ export const resilienceWatchdogTask = schedules.task({
       .orderBy(desc(opportunities.scrapedAt))
       .limit(1);
     
-    vitals.lastPulse = latestSignal[0]?.scrapedAt || null;
+    vitals.lastPulse = latestSignal[0]?.scrapedAt ? new Date(latestSignal[0].scrapedAt) : null;
     vitals.pulseOk = vitals.lastPulse ? vitals.lastPulse > oneHourAgo : false;
 
     if (!vitals.pulseOk) {
@@ -44,7 +44,7 @@ export const resilienceWatchdogTask = schedules.task({
     }
 
     // 1.5 REAL-TIME DELIVERY CHECK (20-MIN WINDOW)
-    const recentWrites = await db.run(sql`SELECT COUNT(*) as cnt FROM opportunities WHERE scraped_at > ${Math.floor(twentyMinsAgo.getTime() / 1000)}`);
+    const recentWrites = await db.run(sql`SELECT COUNT(*) as cnt FROM opportunities WHERE scraped_at > ${twentyMinsAgo.getTime()}`);
     const recentCount = Number(recentWrites.rows[0]?.[0] || 0);
     if (recentCount === 0) {
       logger.warn("[watchdog] REAL-TIME GAP DETECTED: No writes in last 20 minutes. Triggering autonomous recovery.");
@@ -62,7 +62,7 @@ export const resilienceWatchdogTask = schedules.task({
     }
 
     // 2.5 CHECK STAGNATION (Average Freshness of Gold Pool)
-    const goldFreshness = await db.run(sql`SELECT AVG((unixepoch('now') - unixepoch(scraped_at)) / 3600.0) as avg_age FROM opportunities WHERE tier = 1 AND is_active = 1`);
+    const goldFreshness = await db.run(sql`SELECT AVG((unixepoch('now') * 1000 - scraped_at) / (3600.0 * 1000)) as avg_age FROM opportunities WHERE tier = 1 AND is_active = 1`);
     vitals.avgFreshnessHrs = Number(goldFreshness.rows[0]?.[0] || 0);
     vitals.stagnationOk = vitals.avgFreshnessHrs < 6; // Entire feed must be fresh on average < 6h
 
@@ -94,7 +94,7 @@ export const resilienceWatchdogTask = schedules.task({
       logger.info("[watchdog] 🏥 SELF-HEALING: Imbalance detected. Forcing Flag Synchronization...");
       // Logic for sync-flags.ts inside the task
       await db.run(sql`UPDATE opportunities SET is_active = 0 WHERE tier = 4`);
-      await db.run(sql`UPDATE opportunities SET is_active = 1 WHERE tier IN (1, 2, 3)`);
+      await db.run(sql`UPDATE opportunities SET is_active = 1 WHERE tier IN (0, 1, 2, 3)`);
       logger.info("[watchdog] Flags synchronized successfully.");
     }
 

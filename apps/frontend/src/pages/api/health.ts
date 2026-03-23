@@ -29,7 +29,7 @@ export const GET: APIRoute = async () => {
   }).from(opportunities).where(eq(opportunities.isActive, true));
 
   const { total, gold, newToday, maxIngested } = stats[0];
-  const lastHeartbeat = maxIngested ? new Date(maxIngested * 1000) : new Date(0);
+  const lastHeartbeat = maxIngested ? new Date(maxIngested) : new Date(0);
   const stalenessHrs = (Date.now() - lastHeartbeat.getTime()) / (1000 * 60 * 60);
 
   // Success Bias Audit: If zero new jobs today, mark as unfaithful
