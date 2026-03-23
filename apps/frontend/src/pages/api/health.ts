@@ -25,7 +25,7 @@ export const GET: APIRoute = async () => {
     total: sql<number>`count(*)`,
     gold: sql<number>`sum(case when tier = 1 then 1 else 0 end)`,
     newToday: sql<number>`sum(case when created_at > unixepoch('now', '-24 hours') then 1 else 0 end)`,
-    maxIngested: sql<number>`max(created_at)`,
+    maxIngested: sql<number>`max(scraped_at)`,
   }).from(opportunities).where(eq(opportunities.isActive, true));
 
   const { total, gold, newToday, maxIngested } = stats[0];
