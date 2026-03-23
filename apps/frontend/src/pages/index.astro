@@ -1,4 +1,5 @@
 ---
+export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import { db, sql } from '@va-hub/db';
 import { opportunities } from '@va-hub/db/schema';
@@ -10,7 +11,6 @@ Astro.response.headers.set('Pragma', 'no-cache');
 Astro.response.headers.set('Surrogate-Control', 'no-store');
 
 // 2. Aggregate Purity Distribution
-export const prerender = false;
 
 let liveOpportunities = [];
 let dbError = null;
