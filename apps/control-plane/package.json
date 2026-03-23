@@ -1,0 +1,22 @@
+{
+  "name": "control-plane",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.7.6",
+    "date-fns": "^4.1.0",
+    "hono": "^4.12.9",
+    "htmx.org": "^2.0.8",
+    "lucide-react": "^1.0.1",
+    "zod": "^4.3.6"
+  }
+}

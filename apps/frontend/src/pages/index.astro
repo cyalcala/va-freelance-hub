@@ -1,74 +1,4 @@
----
-export const prerender = false;
-import Layout from '../layouts/Layout.astro';
-import { db, sql } from '@va-hub/db';
-import { opportunities } from '@va-hub/db/schema';
-import { desc, asc, eq, not, gt, gte, and, or, count } from 'drizzle-orm';
-
-// 1. Edge-Side Caching (SWR: 60s fresh, 30s stale)
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
-
-// 2. Aggregate Purity Distribution
-
-let liveOpportunities = [];
-let dbError = null;
-
-try {
-  // Balanced Time-Decay Sort (15min Rule + 12h Decay)
-  // Lower score = Top of feed
-  const now = Date.now();
-  liveOpportunities = await db.select()
-    .from(opportunities)
-    .where(not(eq(opportunities.tier, 4)))
-    .orderBy(
-      sql`
-        (tier + 
-          CASE 
-            WHEN (${now} - latest_activity_ms) <= 900000 THEN -5.0 
-            ELSE ((${now} - latest_activity_ms) / 14400000.0) 
-          END
-        ) ASC
-      `,
-      desc(opportunities.latestActivityMs)
-    )
-    .limit(150); 
-} catch (e) {
-  dbError = e.message;
-}
-
-function formatRelativeTime(dateInput: Date | null) {
-  if (!dateInput) return 'Just Now';
-  const now = new Date();
-  const date = new Date(dateInput);
-  const diffMs = now.getTime() - date.getTime();
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-  
-  if (diffMs < 3600000) return 'Just Now'; // < 1 hour
-  if (diffHours < 24) return `${diffHours}h ago`;
-  
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return 'Yesterday';
-  if (diffDays < 7) return `${diffDays}d ago`;
-  
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-}
-
-// Trust the tier from the DB (Purity-Certified by Native Sifter)
-function getTier(opp: any) {
-  return opp.tier;
-}
-
-// 2. Final Output Formatting (Dedup offloaded to DB)
-const finalFeed = liveOpportunities.map(opp => {
-  const latestMs = opp.latestActivityMs || opp.scrapedAt?.getTime() || 0;
-  const ageHrs = (Date.now() - latestMs) / (1000 * 60 * 60);
-  return {
-    ...opp,
-    ageHrs,
-    effectiveTier: opp.tier, // Restore for legacy template check
-    displayDate: formatRelativeTime(new Date(latestMs))
-  };
-});
+// Feed logic offloaded to Hono/HTMX for superior performance
 ---
 
 <Layout title="Feed | VA.INDEX">
@@ -111,41 +41,16 @@ const finalFeed = liveOpportunities.map(opp => {
       </div>
     </header>
 
-    <div class="grid grid-cols-1 gap-3" id="oppsGrid">
-      {finalFeed.map((opp) => (
-        <a 
-          href={opp.sourceUrl} 
-          target="_blank" 
-          class="opp-item flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-5 rounded-2xl bg-[#FDFBF7] border-2 border-oat-200/50 hover:border-oat-200 hover:shadow-md transition-all group relative active:scale-[0.98] shadow-sm gap-4"
-          data-search={`${opp.title} ${opp.company}`.toLowerCase()}
-          data-age={opp.ageHrs}
-        >
-          <div class="flex items-center gap-4 sm:gap-6">
-            <div class="flex sm:flex-col items-center gap-2 sm:gap-0 sm:w-20">
-              <span class="text-[10px] font-black text-blueberry-800/40 uppercase tracking-tighter">{opp.displayDate}</span>
-              {opp.ageHrs < 0.25 ? (
-                <span class="px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase rounded-lg shadow-sm shrink-0">15m New</span>
-              ) : opp.ageHrs < 24 ? (
-                <span class="px-2 py-0.5 bg-oat-100 text-blueberry-500 text-[8px] font-black uppercase rounded-lg border border-oat-200 shrink-0">Recent</span>
-              ) : null}
-            </div>
-            <div class="h-10 w-[1px] bg-oat-200/50 hidden sm:block"></div>
-            <div class="min-w-0 flex-1">
-              <h3 class="text-[15px] font-bold text-blueberry-900/90 group-hover:text-blueberry-600 transition-colors leading-tight mb-0.5 uppercase tracking-tight break-words">{opp.title}</h3>
-              <div class="flex items-center gap-2">
-                <span class="text-[10px] text-blueberry-800/60 font-bold uppercase tracking-widest truncate">{opp.company}</span>
-                {opp.effectiveTier < 0 && <span class="text-[10px]">🔥</span>}
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center justify-between sm:justify-end gap-4 text-blueberry-800/20">
-             <span class="text-[9px] font-black uppercase tracking-[0.2em]">{opp.sourcePlatform}</span>
-             <div class="w-10 h-10 rounded-full bg-oat-100 flex items-center justify-center opacity-0 group-hover:opacity-100 sm:opacity-0 transition-all scale-75 group-hover:scale-100">
-               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-500"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
-             </div>
-          </div>
-        </a>
-      ))}
+    <div 
+      class="grid grid-cols-1 gap-3" 
+      id="oppsGrid"
+      hx-get="/api/control/feed"
+      hx-trigger="load, every 60s"
+      hx-swap="innerHTML"
+    >
+      <div class="py-20 text-center text-blueberry-800/30 font-black uppercase tracking-widest text-sm italic animate-pulse">
+        Synchronizing with Silk Scout...
+      </div>
     </div>
 
     <div id="emptyState" class="hidden py-40 text-center text-blueberry-800/30 font-black uppercase tracking-widest text-sm italic">
@@ -195,13 +100,10 @@ const finalFeed = liveOpportunities.map(opp => {
       });
     });
 
-    run();
+    document.addEventListener('htmx:afterSwap', initFeed);
+    initFeed();
   }
 
-  if (!window._feedInitSet) {
-    document.addEventListener('astro:after-swap', initFeed);
-    window._feedInitSet = true;
-  }
   initFeed();
 </script>
 
