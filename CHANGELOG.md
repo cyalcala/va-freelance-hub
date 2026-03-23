@@ -1,5 +1,21 @@
 # Internal Engineering Changelog
 
+## [2026-03-23] — [Opportunities: 281 | Agencies: 57]
+**Status: HARDENED & CERTIFIED**
+
+### ⚓ SRE Hardening (v20260323.01)
+* feat: upgrade triage script to v10.0 "The Interrogator" (e78b9e3)
+* fix: align health API diagnostics with SRE staleness logic (d3b9eb1)
+* fix: enforce PRERENDER=FALSE and bust edge ghost states
+* chore: reset triage error budget and recover autonomous pipeline
+
+---
+
+## [2026-03-23] — [Opportunities: 281 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+---
+
 
 ## [2026-03-23] — [Opportunities: 281 | Agencies: 57]
 **Status: AUTO-PROCESSED**
