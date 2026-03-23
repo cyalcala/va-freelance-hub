@@ -51,7 +51,7 @@ ${codebaseContext}
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
-        responseMimeType: "application/json",
+        temperature: 0.1, // Conservative output for SRE
       }
     }),
   });
@@ -63,9 +63,16 @@ ${codebaseContext}
 
   const data = await response.json();
   try {
-    const resultText = data.candidates[0].content.parts[0].text;
+    let resultText = data.candidates[0].content.parts[0].text;
+    
+    // Manual JSON Extraction (v1 fallback)
+    const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      resultText = jsonMatch[0];
+    }
+
     return JSON.parse(resultText) as FixProtocol;
   } catch (e) {
-    throw new Error("[Gemini Bridge] Failed to parse AI response into FixProtocol JSON.");
+    throw new Error("[Gemini Bridge] Failed to parse AI response into FixProtocol JSON. Content: " + data?.candidates?.[0]?.content?.parts?.[0]?.text);
   }
 }
