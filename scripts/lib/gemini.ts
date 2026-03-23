@@ -33,15 +33,17 @@ ${codebaseContext}
 
 ### YOUR INSTRUCTIONS:
 1. ANALYZE THE ERROR AGAINST THE CODEBASE.
-2. PROVIDE A STRATEGIC, MINIMAL FIX THAT STAYS WITHIN THE FREE TIER.
-3. IF YOU ARE UNSURE, CHOOSE "ALERT_HUMAN".
-4. RESPOND ONLY WITH A VALID JSON OBJECT IN THIS FORMAT:
+2. **REFLECT**: CROSS-EXAMINE THE PROPOSED FIX AGAINST ARCHITECTURE.MD. DOES IT VIOLATE SIMD PURITY, $0 COST, OR SSR PRINCIPLES?
+3. **CONSERVATIVE BIAS**: IF TWO FIXES ARE POSSIBLE, YOU MUST CHOOSE THE ONE WITH THE FEWEST LINES OF CODE CHANGED.
+4. PROVIDE A STRATEGIC, MINIMAL FIX THAT STAYS WITHIN THE FREE TIER.
+5. IF YOU ARE UNSURE OR IF THE FIX REQUIRES $>5$ LINES OF COMPLEX LOGIC, CHOOSE "ALERT_HUMAN".
+6. RESPOND ONLY WITH A VALID JSON OBJECT IN THIS FORMAT:
 {
   "analysis": "Brief analysis of root cause",
   "confidence": 95,
   "action": "PATCH_CODE",
-  "patches": [{ "path": "apps/frontend/src/pages/index.astro", "content": "Full new content of the file" }],
-  "explanation": "Why this fix works and how it respects the $0 goal"
+  "patches": [{ "path": "path/to/file.ts", "content": "Full new content" }],
+  "explanation": "Why this fix works, how it respects Architecture.md, and confirmation of minimal line count."
 }
 `;
 

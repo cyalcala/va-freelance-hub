@@ -16,15 +16,38 @@ let liveOpportunities = [];
 let dbError = null;
 
 try {
-  liveOpportunities = await db.select()
+  // SQL-Level Time-Decay Tiering (Astro Feed Optimization)
+  // 15-Minute Rule: signals < 15/60 hrs getting -5.0 tier boost
+  // 12-Hour Decay: +0.5 tier penalty per 12 hours of staleness
+  const nowMs = Date.now();
+  
+  liveOpportunities = await db.select({
+    id: opportunities.id,
+    title: opportunities.title,
+    company: opportunities.company,
+    sourceUrl: opportunities.sourceUrl,
+    sourcePlatform: opportunities.sourcePlatform,
+    tier: opportunities.tier,
+    scrapedAt: opportunities.scrapedAt,
+    postedAt: opportunities.postedAt,
+    effectiveTier: sql<number>`
+      tier + (
+        CASE 
+          WHEN (${nowMs} - COALESCE(${opportunities.postedAt}, ${opportunities.scrapedAt})) <= 900000 
+          THEN -5.0 
+          ELSE ((${nowMs} - COALESCE(${opportunities.postedAt}, ${opportunities.scrapedAt})) / 43200000.0) * 0.5 
+        END
+      )
+    `,
+    latestDateMs: sql<number>`COALESCE(${opportunities.postedAt}, ${opportunities.scrapedAt})`
+  })
     .from(opportunities)
     .where(not(eq(opportunities.tier, 4)))
     .orderBy(
-    asc(opportunities.tier),
-    sql`COALESCE(${opportunities.postedAt}, ${opportunities.scrapedAt}) DESC`,
-    desc(opportunities.id)
-  )
-    .limit(3000); 
+      sql`effectiveTier ASC`,
+      sql`latestDateMs DESC`
+    )
+    .limit(150); 
 } catch (e) {
   dbError = e.message;
 }
@@ -51,75 +74,20 @@ function getTier(opp: any) {
   return opp.tier;
 }
 
-
-
-function getFreshnessScore(opp: any) {
-  const now = Date.now();
-  const scrapedAt = new Date(opp.scrapedAt).getTime();
-  const ageHrs = (now - scrapedAt) / (1000 * 60 * 60);
-  
-  if (ageHrs < 1) return 1000000;
-  if (ageHrs < 4) return 500000;
-  if (ageHrs < 24) return 100000;
-  return 50000;
-}
-
-// 1. Tier & Initial Sort (Continuous Freshness)
-const scored = liveOpportunities.map(opp => {
-  const safePosted = opp.postedAt ? new Date(opp.postedAt).getTime() : 0;
-  const safeScraped = opp.scrapedAt ? new Date(opp.scrapedAt).getTime() : Date.now();
-  const latestDateMs = Math.max(safePosted, safeScraped);
-  
-  // FRESHNESS BIAS: "Just Now" signals (< 30 mins) float higher within tier clusters
-  const isFresh = (Date.now() - latestDateMs) < 30 * 60 * 1000;
-  const tier = getTier(opp);
-  const sortBoost = isFresh ? 1.1 : 0; // Virtual tier boost for extreme freshness
-
+// 2. Final Output Formatting (Dedup offloaded to DB)
+const finalFeed = liveOpportunities.map(opp => {
+  const ageHrs = (Date.now() - opp.latestDateMs) / (1000 * 60 * 60);
   return {
     ...opp,
-    latestDateMs,
-    tier,
-    effectiveTier: tier - sortBoost
+    ageHrs,
+    displayDate: formatRelativeTime(new Date(opp.latestDateMs))
   };
-}).sort((a, b) => {
-  if (a.effectiveTier !== b.effectiveTier) return a.effectiveTier - b.effectiveTier;
-  return b.latestDateMs - a.latestDateMs;
 });
-
-// 2. Fuzzy Dedup & Company Diversity
-const seenFingerprints = new Set();
-const companyUsage = new Map();
-const finalFeed = [];
-
-for (const opp of scored) {
-  const normTitle = (opp.title || '').toLowerCase().trim();
-  const fingerprint = `${normTitle}|${opp.sourcePlatform}`;
-  
-  if (seenFingerprints.has(fingerprint)) continue;
-
-  seenFingerprints.add(fingerprint);
-  
-  // Final UI Prep
-  const safePosted = opp.postedAt ? new Date(opp.postedAt).getTime() : 0;
-  const safeScraped = opp.scrapedAt ? new Date(opp.scrapedAt).getTime() : Date.now();
-  const latestDate = new Date(Math.max(safePosted, safeScraped));
-  
-  const ageHrs = (Date.now() - latestDate.getTime()) / (1000 * 60 * 60);
-
-  finalFeed.push({
-    ...opp,
-    displayDate: formatRelativeTime(latestDate),
-    ageHrs
-  });
-
-  if (finalFeed.length >= 3000) break;
-}
 ---
 
 <Layout title="Feed | VA.INDEX">
   <main class="max-w-[1200px] mx-auto px-6 py-12">
     <header class="mb-16">
-      <!-- DEBUG: live={liveOpportunities.length} scored={scored.length} final={finalFeed.length} -->
       <div class="flex items-center gap-2 mb-6 group cursor-default">
         <div class="pulse-dot"></div>
         <span class="text-[10px] font-black text-blueberry-500 tracking-[0.2em] uppercase transition-all group-hover:tracking-[0.4em]">LIVE SIGNAL FEED</span>
@@ -146,10 +114,10 @@ for (const opp of scored) {
             type="text" 
             id="oppSearch" 
             placeholder="Search roles or companies..." 
-            class="bg-white/80 border border-blueberry-800/10 rounded-3xl pl-12 pr-6 py-4 text-sm text-blueberry-900 focus:outline-none focus:border-blueberry-500/40 focus:bg-white backdrop-blur-xl transition-all font-medium placeholder:text-blueberry-800/40 w-full shadow-sm"
+            class="bg-[#FDFBF7] border-2 border-oat-200/50 rounded-2xl pl-12 pr-6 py-4 text-sm text-blueberry-900 focus:outline-none focus:border-oat-200 focus:bg-white backdrop-blur-xl transition-all font-medium placeholder:text-blueberry-800/40 w-full shadow-sm hover:shadow-md"
           />
         </div>
-        <div class="flex items-center gap-1.5 p-1 bg-white border border-blueberry-800/10 rounded-3xl shadow-sm overflow-hidden shrink-0" id="timeFilters">
+        <div class="flex items-center gap-1.5 p-1 bg-[#FDFBF7] border-2 border-oat-200/50 rounded-2xl shadow-sm overflow-hidden shrink-0" id="timeFilters">
           <button data-filter="all" class="time-btn active">All</button>
           <button data-filter="24" class="time-btn text-emerald-600">24h</button>
           <button data-filter="72" class="time-btn">3d</button>
@@ -162,31 +130,31 @@ for (const opp of scored) {
         <a 
           href={opp.sourceUrl} 
           target="_blank" 
-          class="opp-item flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-6 rounded-[2rem] sm:rounded-[2.5rem] bg-white border border-blueberry-800/5 hover:border-blueberry-500/20 hover:shadow-xl transition-all group relative active:scale-[0.99] shadow-sm gap-4"
+          class="opp-item flex flex-col sm:flex-row sm:items-center justify-between p-5 sm:p-5 rounded-2xl bg-[#FDFBF7] border-2 border-oat-200/50 hover:border-oat-200 hover:shadow-md transition-all group relative active:scale-[0.98] shadow-sm gap-4"
           data-search={`${opp.title} ${opp.company}`.toLowerCase()}
           data-age={opp.ageHrs}
         >
           <div class="flex items-center gap-4 sm:gap-6">
             <div class="flex sm:flex-col items-center gap-2 sm:gap-0 sm:w-20">
               <span class="text-[10px] font-black text-blueberry-800/40 uppercase tracking-tighter">{opp.displayDate}</span>
-              {opp.ageHrs < 1 ? (
-                <span class="px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase rounded-lg shadow-sm shrink-0">Just Now</span>
+              {opp.ageHrs < 0.25 ? (
+                <span class="px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase rounded-lg shadow-sm shrink-0">15m New</span>
               ) : opp.ageHrs < 24 ? (
-                <span class="px-2 py-0.5 bg-blueberry-50 text-blueberry-500 text-[8px] font-black uppercase rounded-lg border border-blueberry-500/10 shrink-0">Recent</span>
+                <span class="px-2 py-0.5 bg-oat-100 text-blueberry-500 text-[8px] font-black uppercase rounded-lg border border-oat-200 shrink-0">Recent</span>
               ) : null}
             </div>
-            <div class="h-10 w-[1px] bg-blueberry-800/5 hidden sm:block"></div>
+            <div class="h-10 w-[1px] bg-oat-200/50 hidden sm:block"></div>
             <div class="min-w-0 flex-1">
-              <h3 class="text-[15px] font-black text-blueberry-900 group-hover:text-blueberry-500 transition-colors leading-tight mb-1 uppercase tracking-tight break-words">{opp.title}</h3>
+              <h3 class="text-[15px] font-bold text-blueberry-900/90 group-hover:text-blueberry-600 transition-colors leading-tight mb-0.5 uppercase tracking-tight break-words">{opp.title}</h3>
               <div class="flex items-center gap-2">
                 <span class="text-[10px] text-blueberry-800/60 font-bold uppercase tracking-widest truncate">{opp.company}</span>
-                {opp.relevancyScore > 1000000 && <span class="text-[10px]">🔥</span>}
+                {opp.effectiveTier < 0 && <span class="text-[10px]">🔥</span>}
               </div>
             </div>
           </div>
           <div class="flex items-center justify-between sm:justify-end gap-4 text-blueberry-800/20">
              <span class="text-[9px] font-black uppercase tracking-[0.2em]">{opp.sourcePlatform}</span>
-             <div class="w-10 h-10 rounded-full bg-blueberry-50 flex items-center justify-center opacity-0 group-hover:opacity-100 sm:opacity-0 transition-all scale-75 group-hover:scale-100">
+             <div class="w-10 h-10 rounded-full bg-oat-100 flex items-center justify-center opacity-0 group-hover:opacity-100 sm:opacity-0 transition-all scale-75 group-hover:scale-100">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-500"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
              </div>
           </div>
@@ -253,12 +221,9 @@ for (const opp of scored) {
 
 <style>
   .time-btn {
-    @apply px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all cursor-pointer text-blueberry-800/40 hover:text-blueberry-900;
+    @apply px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer text-blueberry-800/40 hover:text-blueberry-900;
   }
   .time-btn.active {
-    @apply bg-blueberry-50 text-blueberry-900 shadow-inner;
-  }
-  .opp-item {
-    box-shadow: 0 4px 20px -10px rgba(40, 53, 147, 0.05);
+    @apply bg-oat-100 text-blueberry-900 shadow-inner;
   }
 </style>

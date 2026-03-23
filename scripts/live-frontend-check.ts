@@ -1,29 +1,21 @@
 async function run() {
-  try {
-    const res = await fetch("https://va-freelance-hub-web.vercel.app", {
-      headers: { "User-Agent": "Mozilla/5.0", "Cache-Control": "no-cache" }
-    });
-    const html = await res.text();
+  const r = await fetch('https://va-freelance-hub-web.vercel.app/');
+  if (!r.ok) { console.error('Failed to fetch', r.status); return; }
+  const html = await r.text();
+  const titles = [...html.matchAll(/group-hover:text-blueberry-500 .*?>([^<]+)<\/h3>/g)].map(m => m[1]);
+  const companies = [...html.matchAll(/tracking-widest truncate\">([^<]+)<\/span>/g)].map(m => m[1]);
+  const dates = [...html.matchAll(/uppercase tracking-tighter\">([^<]+)<\/span>/g)].map(m => m[1]);
+  const ages = [...html.matchAll(/data-age=\"([0-9.]+)\"/g)].map(m => m[1]);
+  
+  let recentFound = 0;
+  console.log("=== UI FEED TOP 20 ===");
+  for(let i=0; i<Math.min(30, titles.length); i++) {
+    const age = parseFloat(ages[i]);
+    const isNew = age < 2;
+    if (isNew) recentFound++;
     
-    console.log("=== LIVE FRONTEND SIGNAL CAPTURE ===");
-    
-    // Simple regex to extract titles and relative dates
-    const titleMatches = [...html.matchAll(/group-hover:text-blueberry-500 transition-colors leading-tight mb-1 uppercase tracking-tight break-words">(.*?)<\/h3>/g)];
-    const dateMatches = [...html.matchAll(/text-blueberry-800\/40 uppercase tracking-tighter">(.*?)<\/span>/g)];
-
-    for (let i = 0; i < 3; i++) {
-       console.log(`${i+1}. TITLE: ${titleMatches[i]?.[1] || "N/A"}`);
-       console.log(`   TIME:  ${dateMatches[i]?.[1] || "N/A"}`);
-    }
-
-    if (html.includes("No matching signals found")) {
-      console.log("!!! EMERGENCY: FEED STILL EMPTY !!!");
-    } else {
-      console.log("✅ FEED HAS CONTENT.");
-    }
-
-  } catch (e: any) {
-    console.error("CAPTURE FAILED:", e.message);
+    console.log(`[Age: ${ages[i]}h] ${titles[i].substring(0, 40)}... ${isNew ? ' <--- NEWEST BRONZE SIGNAL' : ''}`);
   }
+  console.log(`\nFound ${recentFound} signals under 2 hours old in the top 30.`);
 }
 run();

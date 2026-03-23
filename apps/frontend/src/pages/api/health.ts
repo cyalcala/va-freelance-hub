@@ -24,16 +24,14 @@ export const GET: APIRoute = async () => {
     const stats = await db.select({
       total: sql<number>`count(*)`,
       gold: sql<number>`sum(case when tier = 1 then 1 else 0 end)`,
-      newToday: sql<number>`sum(case when (case when created_at > 9999999999 then created_at/1000 else created_at end) > unixepoch('now', '-24 hours') then 1 else 0 end)`,
+      newToday: sql<number>`sum(case when created_at > unixepoch('now', '-24 hours') * 1000 then 1 else 0 end)`,
       maxScraped: sql<number>`max(scraped_at)`,
     }).from(opportunities).where(eq(opportunities.isActive, true));
 
     const { total, gold, newToday, maxScraped } = stats[0];
     
-    // Normalize timestamp to Date object
-    const lastHeartbeat = maxScraped 
-      ? (maxScraped > 9999999999 ? new Date(maxScraped) : new Date(maxScraped * 1000)) 
-      : new Date(0);
+    // Normalize timestamp to Date object (Strict Milliseconds)
+    const lastHeartbeat = maxScraped ? new Date(maxScraped) : new Date(0);
       
     const stalenessHrs = (Date.now() - lastHeartbeat.getTime()) / (1000 * 60 * 60);
 

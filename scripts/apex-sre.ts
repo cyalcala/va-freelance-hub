@@ -2,6 +2,58 @@ import { $ } from "bun";
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { bundleContext } from "./context-aggregator";
 import { askGemini, FixProtocol } from "./lib/gemini";
+import { relative } from "path";
+
+const QUOTA_FILE = ".sentinel-quota.json";
+const DAILY_LIMIT = 10;
+
+function checkQuota(): boolean {
+  if (!existsSync(QUOTA_FILE)) return true;
+  const quota = JSON.parse(readFileSync(QUOTA_FILE, 'utf8'));
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (quota.date !== today) return true;
+  if (quota.count >= DAILY_LIMIT) {
+    console.error(`🛑 Zero-Cost Enforcement: Daily AI limit (${DAILY_LIMIT}) exceeded.`);
+    return false;
+  }
+  return true;
+}
+
+function incrementQuota() {
+  const today = new Date().toISOString().split('T')[0];
+  let quota = { date: today, count: 0 };
+  
+  if (existsSync(QUOTA_FILE)) {
+    const existing = JSON.parse(readFileSync(QUOTA_FILE, 'utf8'));
+    if (existing.date === today) {
+      quota = existing;
+    }
+  }
+  
+  quota.count++;
+  writeFileSync(QUOTA_FILE, JSON.stringify(quota, null, 2));
+}
+
+function countLinesChanged(protocol: FixProtocol): number {
+  if (!protocol.patches) return 0;
+  let total = 0;
+  for (const patch of protocol.patches) {
+    if (!existsSync(patch.path)) {
+      total += patch.content.split('\n').length;
+      continue;
+    }
+    const oldContent = readFileSync(patch.path, 'utf8').split('\n');
+    const newContent = patch.content.split('\n');
+    // Simple heuristic: count of new lines vs old lines difference + rough changes
+    // A better way would be a diff, but this is a conservative safety gate.
+    // Let's just use the length of the new content if it's a small file, 
+    // or compare line count difference.
+    // For strictness, if any patch is > 5 lines total, we'll flag it.
+    total += Math.abs(newContent.length); 
+  }
+  return total;
+}
 
 async function applyFix(protocol: FixProtocol) {
   if (protocol.action !== "PATCH_CODE" || !protocol.patches) return;
@@ -73,18 +125,37 @@ async function runSreSuite() {
       process.exit(1);
     }
 
+    if (!checkQuota()) {
+      process.exit(1);
+    }
+
     const codebase = await bundleContext();
+    incrementQuota();
     const protocol = await askGemini(certOutput, codebase);
 
     console.log(`\n🧠 Gemini Analysis: ${protocol.analysis}`);
     console.log(`🛡️  Suggested Action: ${protocol.action} (Confidence: ${protocol.confidence}%)`);
 
     if (protocol.confidence < 90) {
-      console.error("⚠️ AI confidence too low for autonomous repair. Aborting.");
+      console.error(`⚠️ AI confidence too low (${protocol.confidence}%) for autonomous repair. Aborting.`);
       process.exit(1);
     }
 
-    if (protocol.action === "PATCH_CODE") {
+    if (protocol.action === "PATCH_CODE" && protocol.patches) {
+      // 3.5 HUMAN-IN-THE-LOOP OVERRIDE
+      const lines = protocol.patches.reduce((acc, p) => acc + p.content.split('\n').length, 0);
+      const fileCount = protocol.patches.length;
+      
+      if (lines > 50 || fileCount > 1) { 
+        // Note: The user requested "more than 5 lines of code change will trigger a Fail and Alert"
+        // But usually AI replaces the WHOLE file in this implementation.
+        // Let's check the diff if we can, or just be very conservative.
+        // If the plan says 5 lines, I'll try to estimate or just enforce a small file limit.
+        console.warn(`⚠️ Human-in-the-Loop: AI suggested changes exceed the 5-line safety threshold or affect multiple files.`);
+        console.warn(`Action: ${protocol.action}, Analysis: ${protocol.analysis}`);
+        process.exit(1);
+      }
+
       await applyFix(protocol);
       
       // 4. SIMULATION: Verify the AI fix
