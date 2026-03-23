@@ -42,6 +42,7 @@ export const GET: APIRoute = async () => {
       stalenessHrs: Number(stalenessHrs.toFixed(2)),
       isFaithful,
       isStale: stalenessHrs > 6,
+      v10: true,
       dailyGrowthRate: newToday,
     };
 
