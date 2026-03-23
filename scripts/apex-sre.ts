@@ -1,81 +1,127 @@
-#!/usr/bin/env bun
-/**
- * Apex SRE Interrogator - Orchestration Script
- * 
- * This script runs the full SLO validation suite by leveraging triage.ts.
- * It is designed to be run from GitHub Actions or locally.
- */
-
 import { $ } from "bun";
+import { writeFileSync, readFileSync, existsSync } from 'fs';
+import { bundleContext } from "./context-aggregator";
+import { askGemini, FixProtocol } from "./lib/gemini";
+
+async function applyFix(protocol: FixProtocol) {
+  if (protocol.action !== "PATCH_CODE" || !protocol.patches) return;
+  
+  for (const patch of protocol.patches) {
+    console.log(`🛠️  Sentinel applying patch to: ${patch.path}`);
+    writeFileSync(patch.path, patch.content);
+  }
+}
+
+async function updateChangelog(protocol: FixProtocol) {
+  const changelogPath = "CHANGELOG.md";
+  if (!existsSync(changelogPath)) return;
+
+  const date = new Date().toISOString().split('T')[0];
+  const auditEntry = `
+### [SENTINEL-FIX] ${date}
+- **Problem**: ${protocol.analysis}
+- **Reasoning**: ${protocol.explanation}
+- **Action**: ${protocol.action}
+- **Status**: AUTONOMOUSLY RESOLVED ✅
+---
+`;
+
+  let content = readFileSync(changelogPath, "utf8");
+  // Prepend to the top after the header if exists
+  content = content.replace("# Internal Engineering Changelog", "# Internal Engineering Changelog\n" + auditEntry);
+  writeFileSync(changelogPath, content);
+}
 
 async function runSreSuite() {
-  console.log("\n🚀 Starting Apex SRE Interrogator Suite...");
+  console.log("\n🚀 Starting Apex SRE Interrogator Suite [AGENTIC MODE]...");
   const startTime = Date.now();
 
-  // 1. Validate Environment
-  const requiredVars = [
-    "TURSO_DATABASE_URL",
-    "TURSO_AUTH_TOKEN",
-    "VERCEL_ACCESS_TOKEN",
-    "TRIGGER_API_KEY",
-  ];
-
+  const requiredVars = ["TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "VERCEL_ACCESS_TOKEN", "TRIGGER_API_KEY", "GEMINI_API_KEY"];
   const missing = requiredVars.filter((v) => !process.env[v]);
   if (missing.length > 0) {
-    console.error(`❌ Missing required environment variables: ${missing.join(", ")}`);
-    // We don't exit(1) immediately to allow potential read-only checks if possible, 
-    // but triage.ts will likely fail if it needs them.
+    console.warn(`⚠️ Warning: Missing environment variables: ${missing.join(", ")}`);
   }
 
   try {
-    // 2. Interrogate Phase (Detect)
-    console.log("\n--- [PHASE 1] INTERROGATION (Zero-Trust Detection) ---");
+    // 1. PHASE 1: STANDARD TRIAGE (Deterministic)
+    console.log("\n--- [PHASE 1] DETERMINISTIC INTERROGATION ---");
     const detectResult = await $`bun run scripts/triage.ts --detect`.quiet();
-    console.log(detectResult.stdout.toString());
-
-    // Check if there are critical findings that require fixing
     const output = detectResult.stdout.toString();
-    const hasCritical = output.includes("[CRITICAL]");
+    console.log(output);
 
-    if (hasCritical) {
-      console.log("\n--- [PHASE 2] REMEDIATION (Applying Fixes) ---");
-      // Run fix phase
-      const fixResult = await $`bun run scripts/triage.ts --fix`.quiet();
-      console.log(fixResult.stdout.toString());
-    } else {
-      console.log("\n✅ No critical anomalies detected. Skipping remediation.");
+    if (output.includes("[CRITICAL]")) {
+      console.log("\n--- [PHASE 2] DETERMINISTIC REMEDIATION ---");
+      await $`bun run scripts/triage.ts --fix`.quiet();
     }
 
-    // 3. Final Certification
-    console.log("\n--- [PHASE 3] CERTIFICATION (10-Gate Validation) ---");
+    // 2. PHASE 2: CERTIFICATION CHECK
+    console.log("\n--- [PHASE 3] CERTIFICATION GATE ---");
     const certifyResult = await $`bun run scripts/triage.ts --certify`.quiet();
     const certOutput = certifyResult.stdout.toString();
     console.log(certOutput);
 
-    const totalTime = ((Date.now() - startTime) / 1000).toFixed(2);
-    
     if (certOutput.includes("ALL GATES PASSED")) {
-      console.log(`\n🎉 Apex SRE Suite COMPLETED SUCCESSFULLY in ${totalTime}s.`);
+      console.log(`\n🎉 System is HEALTHY. Suite completed in ${((Date.now() - startTime) / 1000).toFixed(2)}s.`);
       process.exit(0);
-    } else {
-      console.error(`\n❌ Apex SRE Suite FAILED Certification Gates after ${totalTime}s.`);
+    }
+
+    // 3. PHASE 3: AGENTIC REASONING (The "Brain" Upgrade)
+    console.log("\n❌ Deterministic fixes failed. Entering AGENTIC MODE...");
+    
+    if (!process.env.GEMINI_API_KEY) {
+      console.error("❌ AGENTIC MODE FAILED: No GEMINI_API_KEY detected.");
+      process.exit(1);
+    }
+
+    const codebase = await bundleContext();
+    const protocol = await askGemini(certOutput, codebase);
+
+    console.log(`\n🧠 Gemini Analysis: ${protocol.analysis}`);
+    console.log(`🛡️  Suggested Action: ${protocol.action} (Confidence: ${protocol.confidence}%)`);
+
+    if (protocol.confidence < 90) {
+      console.error("⚠️ AI confidence too low for autonomous repair. Aborting.");
+      process.exit(1);
+    }
+
+    if (protocol.action === "PATCH_CODE") {
+      await applyFix(protocol);
       
-      // Optional: Trigger Vercel Redeploy if we have the webhook and things are still broken
-      if (process.env.VERCEL_DEPLOY_WEBHOOK) {
-        console.log("⚠️ Attempting emergency redeploy via Vercel Webhook...");
-        const resp = await fetch(process.env.VERCEL_DEPLOY_WEBHOOK, { method: "POST" });
-        if (resp.ok) {
-          console.log("✅ Redeploy triggered successfully.");
-        } else {
-          console.error(`❌ Failed to trigger redeploy: ${resp.status} ${await resp.text()}`);
-        }
+      // 4. SIMULATION: Verify the AI fix
+      console.log("\n--- [PHASE 4] AI FIX SIMULATION ---");
+      const simResult = await $`bun run scripts/triage.ts --certify`.quiet();
+      const simOutput = simResult.stdout.toString();
+      
+      if (simOutput.includes("ALL GATES PASSED")) {
+        console.log("✅ AI Fix Verified! Pushing to repository...");
+        await updateChangelog(protocol);
+        
+        // Literal Commit & Push
+        await $`git config user.name "Apex Sentinel"`.quiet();
+        await $`git config user.email "sentinel@va-hub.ai"`.quiet();
+        await $`git add .`.quiet();
+        await $`git commit -m "sentinel(auto-fix): ${protocol.analysis}"`.quiet();
+        await $`git push origin main`.quiet();
+        
+        console.log(`\n🚀 System SELF-HEALED and committed in ${((Date.now() - startTime) / 1000).toFixed(2)}s.`);
+        process.exit(0);
+      } else {
+        console.error("❌ AI Fix failed simulation. Rolling back.");
+        await $`git checkout .`.quiet();
+        process.exit(1);
       }
-      
+    } else {
+      console.log(`⚠️ AI Protocol: ${protocol.action} is not yet automated. Routing to emergency redeploy...`);
+      // Fallback to Vercel redeploy
+      if (process.env.VERCEL_DEPLOY_WEBHOOK) {
+        await fetch(process.env.VERCEL_DEPLOY_WEBHOOK, { method: "POST" });
+        console.log("✅ Emergency redeploy triggered.");
+      }
       process.exit(1);
     }
 
   } catch (error: any) {
-    console.error(`\n💥 FATAL ERROR during SRE Interrogation: ${error.message}`);
+    console.error(`\n💥 AGENTIC ERROR: ${error.message}`);
     process.exit(1);
   }
 }
