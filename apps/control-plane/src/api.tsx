@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { db, schema } from './db.js';
 import { desc, not, eq, sql } from 'drizzle-orm';
 import { SignalCard } from './components/SignalCard.js';
+import { getSortedSignals } from '../../../packages/db/sorting.js';
 import { configure, tasks, runs } from "@trigger.dev/sdk/v3";
 
 const api = new Hono();
@@ -20,32 +21,15 @@ api.get('/debug', (c) => {
 });
 
 api.get('/feed', async (c) => {
-  const now = Date.now();
-  
-  // 1. Fetch top candidates across all tiers using indexed fields
-  // We fetch a larger pool (200) then sort in-memory for the decay algorithm
-  const candidates = await db.select()
-    .from(schema.opportunities)
-    .where(not(eq(schema.opportunities.tier, 4)))
-    .orderBy(desc(schema.opportunities.latestActivityMs))
-    .limit(200);
-
-  // 2. Perform the complex time-decay ranking in-memory (O(N log N) for small N is cheap)
-  const signals = candidates
-    .map(sig => {
-      const ageMs = now - (sig.latestActivityMs || 0);
-      const score = (sig.tier || 3) + (ageMs <= 900000 ? -5.0 : ageMs / 14400000.0);
-      return { ...sig, sortScore: score };
-    })
-    .sort((a, b) => a.sortScore - b.sortScore)
-    .slice(0, 50);
+  // 1. Fetch and Rank signals using the unified PH-First sorting logic
+  const signals = await getSortedSignals(50);
 
   // 3. Set Cache-Control for performance
   c.header('Cache-Control', 'public, max-age=60, s-max-age=60, stale-while-revalidate=30');
 
   return c.html(
     <>
-      {signals.map((sig) => (
+      {signals.map((sig: any) => (
         <SignalCard key={sig.id} signal={sig} />
       ))}
     </>

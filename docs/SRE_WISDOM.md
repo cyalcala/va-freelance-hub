@@ -15,6 +15,7 @@ This file serves as the persistent memory for the APEX SRE autonomous agent. It 
 * **[UI/UX]** Maintain 0px Cumulative Layout Shift (CLS) by always specifying `width` and `height` for images. Monitor asset bloat (>50KB per CSS/JS file) to ensure "Titanium" snappy responses.
 * **[Lightning-Fast SSR]** Always SSR the initial feed state in Astro to eliminate "Synchronizing..." placeholders. Use HTMX only for subsequent polling/updates to achieve ultra-fast first-paints.
 * **[Social Intelligence]** Prioritize Reddit `.json` and HN Algolia API for "early signals." For the Philippines niche, monitor the "PH Gold Standard" subreddits: `r/buhaydigital`, `r/VirtualAssistantPH`, and `r/RemoteWorkPH`.
+* **[PH-First Sorting]** Implement "Tier Gravity" in the decay algorithm. Platinum (PH-specific) jobs must stay above brand new Gold/Silver jobs for at least 24 hours to ensure local priority.
 * **[JSON Probes]** Use internal search APIs (Chalice/MobileXHR) for JobStreet and Indeed to capture rich metadata (logos, salary) without DOM overhead.
 
 ## 📚 Lessons Learned

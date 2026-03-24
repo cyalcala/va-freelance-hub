@@ -111,7 +111,8 @@ const PLATINUM_CITIES = [
 ];
 
 const PLATINUM_PLATFORMS = [
-  "vajobsph","phcareers","buhaydigital","phjobs","onlinejobs","jobs.ph","kalibrr",
+  "vajobsph", "phcareers", "buhaydigital", "phjobs", "onlinejobs", "jobs.ph", "kalibrr",
+  "virtualassistantph", "remoteworkph", "hiringph", "recruitinghiringph", "pinoyprogrammer", "bpoinph",
 ];
 
 const GOLD_SIGNALS = [

@@ -2,27 +2,11 @@
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import SignalCard from '../components/SignalCard.astro';
-import { db, schema } from '../../../../packages/db/client';
-import { desc, not, eq } from 'drizzle-orm';
+import { getSortedSignals } from '../../../../packages/db/sorting';
 
 // Lightning-Fast Feed Logic: SSR the first 50 results immediately.
 // No more "Synchronizing..." placeholders on first load.
-const now = Date.now();
-const candidates = await db.select()
-  .from(schema.opportunities)
-  .where(not(eq(schema.opportunities.tier, 4)))
-  .orderBy(desc(schema.opportunities.latestActivityMs))
-  .limit(100);
-
-// Same decay algorithm as the Hono API for visual consistency
-const initialSignals = candidates
-  .map(sig => {
-    const ageMs = now - (sig.latestActivityMs || 0);
-    const score = (sig.tier || 3) + (ageMs <= 900000 ? -5.0 : ageMs / 14400000.0);
-    return { ...sig, sortScore: score };
-  })
-  .sort((a, b) => a.sortScore - b.sortScore)
-  .slice(0, 50);
+const initialSignals = await getSortedSignals(50);
 ---
 
 <Layout title="Feed | VA.INDEX">
