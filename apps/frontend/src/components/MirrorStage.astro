@@ -1,57 +1,63 @@
 ---
 /**
  * MirrorStage.astro
- * An ultra-lightweight, high-velocity "Latest Signals" stage.
- * [Snap-Fast Protocol]: Injects the first 10 signals via SSR for instant view.
- * Uses HTMX to poll for updates thereafter.
+ * [RAW HTML FALLBACK MODE]
+ * Delivers 10 freshest signals directly, zero network overlay.
  */
-import { getLatestMirror } from '../db-local/sorting';
-import ThinCard from './ThinCard.astro';
+interface Props {
+  signals?: any[];
+}
+const { signals = [] } = Astro.props;
 
-let signals = [];
-try {
-  signals = await getLatestMirror(10);
-  
-  // High-Purity Fallback: If DB is empty or cold, provide 3 "Syncing" signals
-  if (signals.length === 0) {
-    signals = [
-      { id: 'fallback-1', title: 'System Synchronizing Core Intelligence...', company: 'APEX SENTINEL', tier: 1, latestActivityMs: Date.now() },
-      { id: 'fallback-2', title: 'Calibrating PH-First Signal Decay...', company: 'VA.INDEX', tier: 2, latestActivityMs: Date.now() },
-      { id: 'fallback-3', title: 'Harvesting Live Global Opportunities...', company: 'MIRROR ENGINE', tier: 3, latestActivityMs: Date.now() }
-    ];
-  }
-} catch (err) {
-  console.error("[MirrorStage] SSR error:", err);
+let displaySignals = signals;
+
+if (displaySignals.length === 0) {
+  displaySignals = [
+    { id: 'fallback-1', title: 'System Synchronizing Core Intelligence...', company: 'APEX SENTINEL', tier: 1, sourceUrl: '#' },
+    { id: 'fallback-2', title: 'Calibrating PH-First Signal Decay...', company: 'VA.INDEX', tier: 2, sourceUrl: '#' },
+    { id: 'fallback-3', title: 'Harvesting Live Global Opportunities...', company: 'MIRROR ENGINE', tier: 3, sourceUrl: '#' }
+  ];
 }
 ---
-<div class="mb-12 p-1 bg-white/40 backdrop-blur-md border border-oat-200/40 rounded-3xl shadow-sm overflow-hidden group">
-  <div class="flex items-center justify-between px-6 py-3 border-b border-oat-200/30 bg-white/20">
-    <div class="flex items-center gap-3">
-      <div class="relative flex h-3 w-3">
-        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-        <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-      </div>
-      <span class="text-[10px] font-black text-blueberry-900 tracking-[0.2em] uppercase transition-all group-hover:tracking-[0.4em]">Hyperflow Mirror</span>
+<div class="mb-12">
+  <div class="flex items-center gap-3 mb-4 px-2">
+    <div class="relative flex h-3 w-3">
+      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+      <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
     </div>
-    <div class="flex items-center gap-2">
-      <span class="text-[9px] font-bold text-blueberry-800/40 uppercase">streaming 10 freshest signals</span>
-    </div>
+    <span class="text-xs font-black text-blueberry-900 tracking-[0.3em] uppercase">Hyperflow Mirror / Raw Feed</span>
   </div>
   
-  <div 
-    class="px-5 py-2 min-h-[100px]"
-    hx-get="/api/control/mirror"
-    hx-trigger="every 30s"
-    hx-swap="innerHTML"
-  >
-    <div class="flex flex-col w-full divide-y divide-oat-200/30">
-      {signals.map((sig: any) => (
-        <ThinCard key={`mirror-${sig.id}`} signal={sig} />
-      ))}
-    </div>
-  </div>
-
-  <div class="px-6 py-2 bg-oat-50/30 border-t border-oat-200/20 text-center">
-    <span class="text-[8px] font-black text-blueberry-800/20 uppercase tracking-[0.3em]">Titanium-Fast Mirror Engine v1.0</span>
+  <div class="flex overflow-x-auto pb-6 gap-4 snap-x snap-mandatory scrollbar-hide" style="-webkit-overflow-scrolling: touch;">
+    {displaySignals.map((sig) => (
+      <a 
+        href={sig.sourceUrl} 
+        target="_blank" 
+        class="group snap-center shrink-0 w-[280px] sm:w-[320px] bg-white border-[3px] border-blueberry-900 rounded-3xl p-5 hover:bg-emerald-400 hover:text-blueberry-900 hover:-translate-y-1 transition-all shadow-[4px_4px_0_0_#1e3a8a] flex flex-col justify-between min-h-[140px]"
+      >
+        <div>
+          <span class="inline-block px-2 py-1 bg-blueberry-900 text-white text-[9px] font-black uppercase tracking-widest mb-3 rounded-md">LIVE SIGNAL</span>
+          <h3 class="text-sm font-black uppercase leading-snug tracking-tight group-hover:text-blueberry-900 line-clamp-3">
+            {sig.title}
+          </h3>
+        </div>
+        <div class="mt-4 flex items-center justify-between">
+          <span class="text-[10px] font-black uppercase tracking-wider text-blueberry-800/60 group-hover:text-blueberry-900/80 truncate pr-4">
+            {sig.company || 'Direct Client'}
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </div>
+      </a>
+    ))}
   </div>
 </div>
+
+<style>
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>

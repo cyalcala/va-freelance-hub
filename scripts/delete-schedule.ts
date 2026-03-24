@@ -8,7 +8,7 @@ import "dotenv/config";
 
 async function main() {
   const secretKey = process.env.TRIGGER_SECRET_KEY;
-  const scheduleId = "sched_zytgmuykmw2skn1jemq4y";
+  const scheduleId = process.argv[2] || "sched_zytgmuykmw2skn1jemq4y";
 
   if (!secretKey) {
     console.error("❌ ERROR: TRIGGER_SECRET_KEY is not set in .env");
