@@ -4,7 +4,9 @@ import { fetchRSSFeed, rssSources } from "./lib/scraper";
 import { fetchRedditJobs } from "./lib/reddit";
 import { fetchHNJobs } from "./lib/hackernews";
 import { fetchJobicyJobs } from "./lib/jobicy";
+import { fetchJSONFeed } from "./lib/json-harvester";
 import { fetchATSJobs } from "./lib/ats";
+import { config } from "@va-hub/config";
 import { sql } from "drizzle-orm";
 import { isLikelyScam } from "./lib/trust";
 import { siftOpportunity, OpportunityTier } from "./lib/sifter";
@@ -63,8 +65,13 @@ export async function harvest() {
   console.log("[harvest] Layer 5: ATS Direct Harvest...");
   const atsItems = await fetchATSJobs();
 
+  // ── LAYER 6: High-Velocity JSON Probes ───────────────────
+  console.log("[harvest] Layer 6: JSON Probes...");
+  const jsonResults = await Promise.allSettled(config.json_sources.map(s => fetchJSONFeed(s as any)));
+  const jsonItems = jsonResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+
   // ── COMBINE ALL SOURCES ─────────────────────────────────
-  const allItems = [...rssItems, ...redditItems, ...hnItems, ...jobicyItems, ...atsItems];
+  const allItems = [...rssItems, ...redditItems, ...hnItems, ...jobicyItems, ...atsItems, ...jsonItems];
   
   // ── RECORD HEALTH ───────────────────────────────────────
   const healthMetrics: Array<{ name: string; status: "OK" | "FAIL"; error: string | null }> = [

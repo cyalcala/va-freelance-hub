@@ -14,6 +14,8 @@ export interface Source {
   defaultJobType: string;
   tags: string[];
   ethical_note: string;
+  is_json?: boolean;
+  json_type?: "JobStreet" | "Indeed";
 }
 
 export interface NicheConfig {
@@ -37,6 +39,7 @@ export interface NicheConfig {
 
   // 📡 DATA SOURCES
   rss_sources: Source[];
+  json_sources: Source[];
 }
 
 export const defaultConfig: NicheConfig = {
@@ -108,6 +111,31 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "VA",
       tags: ["customer support", "marketing", "va"],
       ethical_note: "Public RSS feed provided by Jobspresso for remote job syndication.",
+    }
+  ],
+
+  json_sources: [
+    {
+      id: "jobstreet-ph-va",
+      name: "JobStreet PH (Virtual Assistant)",
+      url: "https://www.jobstreet.com.ph/api/chalice-search/v4/search?siteKey=PH-Main&where=Philippines&keywords=virtual+assistant",
+      platform: "JobStreet",
+      defaultJobType: "VA",
+      tags: ["philippines", "va"],
+      ethical_note: "Public JSON search endpoint used by the JobStreet/SEEK frontend.",
+      is_json: true,
+      json_type: "JobStreet",
+    },
+    {
+      id: "jobstreet-ph-admin",
+      name: "JobStreet PH (Admin)",
+      url: "https://www.jobstreet.com.ph/api/chalice-search/v4/search?siteKey=PH-Main&where=Philippines&keywords=administrative",
+      platform: "JobStreet",
+      defaultJobType: "VA",
+      tags: ["philippines", "admin"],
+      ethical_note: "Public JSON search endpoint used by the JobStreet/SEEK frontend.",
+      is_json: true,
+      json_type: "JobStreet",
     }
   ]
 };

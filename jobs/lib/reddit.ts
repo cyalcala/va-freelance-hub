@@ -15,6 +15,9 @@ const SUBREDDITS = [
   { name: "phcareers", label: "r/phcareers" },
   { name: "VirtualAssistant", label: "r/VirtualAssistant" },
   { name: "VAjobsPH", label: "r/VAjobsPH" },
+  { name: "digitalnomad", label: "r/digitalnomad" },
+  { name: "freelance", label: "r/freelance" },
+  { name: "BPOPh", label: "r/BPOPh" },
 ];
 
 function toHash(title: string, url: string) {

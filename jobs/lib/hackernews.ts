@@ -130,6 +130,41 @@ export async function fetchHNJobs(): Promise<NewOpportunity[]> {
     }
 
     console.log(`[hn] Harvested ${jobs.length} quality roles from thread #${threadId}`);
+    
+    // --- SECONDARY: SURGICAL SEARCH (NEW) ---
+    // Search across all of HN for "Virtual Assistant" or "Operations" signals
+    try {
+      const searchRes = await fetch(`https://hn.algolia.com/api/v1/search_by_date?query=%22virtual+assistant%22&tags=comment&numericFilters=created_at_i>${Math.floor(Date.now()/1000) - 86400 * 7}`, {
+        signal: AbortSignal.timeout(8_000),
+      });
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        const searchHits = searchData?.hits || [];
+        for (const hit of searchHits) {
+          const text = hit.comment_text?.replace(/<[^>]*>/g, " ") || "";
+          if (text.length < 50) continue;
+          
+          jobs.push({
+            id: crypto.randomUUID(),
+            title: "Remote Assistant Signal",
+            company: hit.author || "HN Signal",
+            type: "freelance",
+            sourceUrl: `https://news.ycombinator.com/item?id=${hit.objectID}`,
+            sourcePlatform: "HackerNews Search",
+            tags: ["hn", "surgical-signal"],
+            locationType: "remote",
+            description: text.slice(0, 500),
+            postedAt: new Date(hit.created_at),
+            scrapedAt: new Date(),
+            isActive: true,
+            contentHash: toHash(hit.objectID, hit.author),
+          } as unknown as NewOpportunity);
+        }
+      }
+    } catch (searchErr) {
+       console.log("[hn-search] Failed surgical sweep:", (searchErr as Error).message);
+    }
+
     return jobs;
   } catch (err) {
     console.log("[hn] Failed to fetch comments:", (err as Error).message);

@@ -13,7 +13,14 @@ export const SignalCard = ({ signal }: { signal: any }) => {
       data-search={`${signal.title} ${signal.company}`.toLowerCase()}
       data-age={ageHrs}
     >
-      <div class="flex items-center gap-4 sm:gap-6">
+      <div class="flex items-center gap-4 sm:gap-6 w-full overflow-hidden">
+        <div class="flex items-center justify-center w-12 h-12 rounded-2xl bg-oat-100/50 border border-oat-200/30 overflow-hidden shrink-0">
+          {signal.companyLogo ? (
+            <img src={signal.companyLogo} alt={signal.company} class="w-full h-full object-cover" loading="lazy" width="48" height="48" />
+          ) : (
+            <span class="text-lg font-black text-blueberry-800/20">{signal.company?.[0]?.toUpperCase() || 'V'}</span>
+          )}
+        </div>
         <div class="flex sm:flex-col items-center gap-2 sm:gap-0 sm:w-20">
           <span class="text-[10px] font-black text-blueberry-800/40 uppercase tracking-tighter">{displayDate}</span>
           {isHot ? (
