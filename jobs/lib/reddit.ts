@@ -10,14 +10,17 @@ import { createHash } from "crypto";
 import type { NewOpportunity } from "./db";
 
 const SUBREDDITS = [
-  { name: "forhire", label: "r/forhire" },
-  { name: "remotejobs", label: "r/remotejobs" },
-  { name: "phcareers", label: "r/phcareers" },
-  { name: "VirtualAssistant", label: "r/VirtualAssistant" },
+  { name: "buhaydigital", label: "r/buhaydigital" },
+  { name: "VirtualAssistantPH", label: "r/VirtualAssistantPH" },
+  { name: "RemoteWorkPH", label: "r/RemoteWorkPH" },
   { name: "VAjobsPH", label: "r/VAjobsPH" },
-  { name: "digitalnomad", label: "r/digitalnomad" },
-  { name: "freelance", label: "r/freelance" },
-  { name: "BPOPh", label: "r/BPOPh" },
+  { name: "phcareers", label: "r/phcareers" },
+  { name: "PHJobs", label: "r/PHJobs" },
+  { name: "HiringPH", label: "r/HiringPH" },
+  { name: "RecruitingHiringPH", label: "r/RecruitingHiringPH" },
+  { name: "PinoyProgrammer", label: "r/PinoyProgrammer" },
+  { name: "BPOinPH", label: "r/BPOinPH" },
+  { name: "forhire", label: "r/forhire" },
 ];
 
 function toHash(title: string, url: string) {

@@ -14,7 +14,7 @@ This file serves as the persistent memory for the APEX SRE autonomous agent. It 
 * **[Astro]** Conflicting `prerender` flags can cause Vercel to serve stale static content; ensure SSR is explicitly set for dynamic feeds.
 * **[UI/UX]** Maintain 0px Cumulative Layout Shift (CLS) by always specifying `width` and `height` for images. Monitor asset bloat (>50KB per CSS/JS file) to ensure "Titanium" snappy responses.
 * **[Lightning-Fast SSR]** Always SSR the initial feed state in Astro to eliminate "Synchronizing..." placeholders. Use HTMX only for subsequent polling/updates to achieve ultra-fast first-paints.
-* **[Social Intelligence]** Prioritize Reddit `.json` and HN Algolia API for "early signals." These sources are raw, high-value, and zero-cost compared to traditional scraping.
+* **[Social Intelligence]** Prioritize Reddit `.json` and HN Algolia API for "early signals." For the Philippines niche, monitor the "PH Gold Standard" subreddits: `r/buhaydigital`, `r/VirtualAssistantPH`, and `r/RemoteWorkPH`.
 * **[JSON Probes]** Use internal search APIs (Chalice/MobileXHR) for JobStreet and Indeed to capture rich metadata (logos, salary) without DOM overhead.
 
 ## 📚 Lessons Learned
