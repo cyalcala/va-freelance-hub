@@ -1,6 +1,18 @@
 # Internal Engineering Changelog
 
 
+## [2026-03-24] — [Opportunities: 295 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: resolve routing 404 and timestamp staleness issues (1c3a7c0)
+
+### ⚓ Internal Maintenance
+* chore: harden triage script for ms timestamps and native astro routing (7b6499d)
+
+---
+
+
 ## [2026-03-23] — [Opportunities: 291 | Agencies: 57]
 **Status: AUTO-PROCESSED**
 
