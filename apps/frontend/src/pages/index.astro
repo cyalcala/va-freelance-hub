@@ -2,6 +2,7 @@
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import SignalCard from '../components/SignalCard.astro';
+import MirrorStage from '../components/MirrorStage.astro';
 import { getSortedSignals } from '../db-local/sorting';
 
 // Lightning-Fast Feed Logic: SSR the first 50 results immediately.
@@ -53,6 +54,8 @@ try {
       </div>
     </header>
 
+    <MirrorStage />
+
     <div 
       class="grid grid-cols-1 gap-3" 
       id="oppsGrid"
@@ -79,26 +82,37 @@ try {
     const empty = document.getElementById('emptyState');
     if (!grid) return;
 
-    const items = grid.querySelectorAll('.opp-item');
+    // Pre-cache item and metadata for extreme search speed
+    let items = Array.from(grid.querySelectorAll('.opp-item')).map(el => ({
+      el,
+      text: el.dataset.search || "",
+      age: parseFloat(el.dataset.age || "999")
+    }));
+
     const btns = filters?.querySelectorAll('.time-btn');
     let q = "";
     let limit = Infinity;
+    let debounceTimer;
 
     function run() {
       let count = 0;
-      items.forEach(el => {
-        const text = el.dataset.search || "";
-        const age = parseFloat(el.dataset.age || "999");
-        const match = text.includes(q) && age <= limit;
-        el.style.display = match ? 'flex' : 'none';
+      // High-performance loop
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const match = item.text.includes(q) && item.age <= limit;
+        // Batching DOM updates
+        item.el.style.display = match ? 'flex' : 'none';
         if (match) count++;
-      });
+      }
       if (empty) empty.style.display = count > 0 ? 'none' : 'block';
     }
 
     search?.addEventListener('input', (e) => {
-      q = e.target.value.toLowerCase().trim();
-      run();
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        q = e.target.value.toLowerCase().trim();
+        run();
+      }, 50); // Minimal debounce for snappy feel
     });
 
     btns?.forEach(btn => {
@@ -112,10 +126,22 @@ try {
       });
     });
 
-    document.addEventListener('htmx:afterSwap', initFeed);
-    initFeed();
+    document.addEventListener('htmx:afterSwap', (e) => {
+      if (e.detail.target.id === 'oppsGrid') {
+        // Refresh cache on HTMX swap
+        items = Array.from(grid.querySelectorAll('.opp-item')).map(el => ({
+          el,
+          text: el.dataset.search || "",
+          age: parseFloat(el.dataset.age || "999")
+        }));
+        run();
+      }
+    });
   }
 
+  // Use DOMContentLoaded to ensure elements are ready
+  document.addEventListener('DOMContentLoaded', initFeed);
+  // Also run immediately if script is loaded late
   initFeed();
 </script>
 

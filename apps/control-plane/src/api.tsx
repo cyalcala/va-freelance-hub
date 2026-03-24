@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { db, schema } from './db.js';
 import { desc, not, eq, sql } from 'drizzle-orm';
 import { SignalCard } from './components/SignalCard.js';
+import { ThinCard } from './components/ThinCard.js';
 import { getSortedSignals } from './db.js';
 import { configure, tasks, runs } from "@trigger.dev/sdk/v3";
 
@@ -38,6 +39,27 @@ api.get('/feed', async (c) => {
         <SignalCard key={sig.id} signal={sig} />
       ))}
     </>
+  );
+});
+
+api.get('/mirror', async (c) => {
+  // 1. Fetch top 10 most recent signals for the Mirror Stage
+  let signals = [];
+  try {
+    signals = await getSortedSignals(10);
+  } catch (err) {
+    console.error("[api/mirror] Error:", err);
+  }
+
+  // 2. Ultra-short cache for high-velocity streaming
+  c.header('Cache-Control', 'public, max-age=15, s-max-age=15');
+
+  return c.html(
+    <div class="flex flex-col w-full divide-y divide-oat-200/30">
+      {signals.map((sig: any) => (
+        <ThinCard key={`mirror-${sig.id}`} signal={sig} />
+      ))}
+    </div>
   );
 });
 
