@@ -16,6 +16,9 @@ This file serves as the persistent memory for the APEX SRE autonomous agent. It 
 * **[Lightning-Fast SSR]** Always SSR the initial feed state in Astro to eliminate "Synchronizing..." placeholders. Use HTMX only for subsequent polling/updates to achieve ultra-fast first-paints.
 * **[Social Intelligence]** Prioritize Reddit `.json` and HN Algolia API for "early signals." For the Philippines niche, monitor the "PH Gold Standard" subreddits: `r/buhaydigital`, `r/VirtualAssistantPH`, and `r/RemoteWorkPH`.
 * **[PH-First Sorting]** Implement "Tier Gravity" in the decay algorithm. Platinum (PH-specific) jobs must stay above brand new Gold/Silver jobs for at least 24 hours to ensure local priority.
+* **[Anti-Stupidity Guardrails]** NEVER push code to `main` without running a full `bun run build` in `apps/frontend`. Use `npm run check-build` for mandatory pre-flight certification.
+* **[Deployment Resilience]** In monorepo environments on Windows, avoid deep-tracing imports from outside the project root during Vercel builds. Localize core DB and schema dependencies to `src/db-local` if `Module.symlink` errors occur.
+* **[Runtime Failsafes]** Always wrap SSR data fetching and API feed calls in `try/catch` blocks. The site MUST remain accessible even if the database layer encounters transient failures.
 * **[JSON Probes]** Use internal search APIs (Chalice/MobileXHR) for JobStreet and Indeed to capture rich metadata (logos, salary) without DOM overhead.
 
 ## 📚 Lessons Learned

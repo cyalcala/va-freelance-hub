@@ -12,6 +12,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@va-hub/db": "workspace:*",
     "@astrojs/tailwind": "latest",
     "@astrojs/vercel": "latest",
     "@libsql/client": "latest",

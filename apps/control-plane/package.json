@@ -12,6 +12,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@va-hub/db": "workspace:*",
     "@hono/zod-validator": "^0.7.6",
     "date-fns": "^4.1.0",
     "hono": "^4.12.9",

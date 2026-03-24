@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { db, schema } from './db.js';
 import { desc, not, eq, sql } from 'drizzle-orm';
 import { SignalCard } from './components/SignalCard.js';
-import { getSortedSignals } from '../../../packages/db/sorting.js';
+import { getSortedSignals } from './db.js';
 import { configure, tasks, runs } from "@trigger.dev/sdk/v3";
 
 const api = new Hono();
@@ -22,7 +22,12 @@ api.get('/debug', (c) => {
 
 api.get('/feed', async (c) => {
   // 1. Fetch and Rank signals using the unified PH-First sorting logic
-  const signals = await getSortedSignals(50);
+  let signals = [];
+  try {
+    signals = await getSortedSignals(50);
+  } catch (err) {
+    console.error("[api] Feed error:", err);
+  }
 
   // 3. Set Cache-Control for performance
   c.header('Cache-Control', 'public, max-age=60, s-max-age=60, stale-while-revalidate=30');

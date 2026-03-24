@@ -19,3 +19,26 @@ const client = createClient({
 
 export const db = drizzle(client, { schema });
 export { schema };
+
+/**
+ * PH-First Decay Algorithm (Local for Build Stability)
+ */
+export async function getSortedSignals(limit = 50) {
+  const now = Date.now();
+  const candidates = await db.select()
+    .from(schema.opportunities)
+    .orderBy(schema.opportunities.latestActivityMs)
+    .limit(200);
+
+  return candidates
+    .filter(sig => sig.tier !== 4)
+    .map((sig: any) => {
+      const ageMs = now - (sig.latestActivityMs || 0);
+      const tierGravity = (sig.tier ?? 3) * 24.0;
+      const agePenalty = ageMs <= 900000 ? -12.0 : ageMs / 3600000.0;
+      const score = tierGravity + agePenalty;
+      return { ...sig, sortScore: score };
+    })
+    .sort((a, b) => a.sortScore - b.sortScore)
+    .slice(0, limit);
+}

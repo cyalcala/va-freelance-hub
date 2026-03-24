@@ -18,6 +18,7 @@
     "resurrect": "bun run scripts/resurrect.ts",
     "audit": "bun run scripts/automation-audit.ts",
     "sync:framework": "bun run scripts/sync-framework.ts",
+    "check-build": "bun run scripts/check-build.ts",
     "prepare": "husky"
   },
   "devDependencies": {

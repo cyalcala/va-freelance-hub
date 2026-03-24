@@ -2,11 +2,15 @@
 export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import SignalCard from '../components/SignalCard.astro';
-import { getSortedSignals } from '../../../../packages/db/sorting';
+import { getSortedSignals } from '../db-local/sorting';
 
 // Lightning-Fast Feed Logic: SSR the first 50 results immediately.
-// No more "Synchronizing..." placeholders on first load.
-const initialSignals = await getSortedSignals(50);
+let initialSignals = [];
+try {
+  initialSignals = await getSortedSignals(50);
+} catch (err) {
+  console.error("[index] Feed error:", err);
+}
 ---
 
 <Layout title="Feed | VA.INDEX">
