@@ -43,11 +43,19 @@ export const opportunities = sqliteTable('opportunities', {
 
 export const systemHealth = sqliteTable('system_health', {
   id: text('id').primaryKey(),
-  sourceName: text('source_name').notNull(), // e.g. 'Upwork', 'Reddit'
-  status: text('status').notNull(), // 'OK', 'FAIL', 'STALE'
+  sourceName: text('source_name').notNull(),
+  status: text('status').notNull(),
   lastSuccess: integer('last_success', { mode: 'timestamp' }),
   errorMessage: text('error_message'),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const vitals = sqliteTable('vitals', {
+  id: text('id').primaryKey(), // 'apex_sre'
+  aiQuotaCount: integer('ai_quota_count').default(0),
+  aiQuotaDate: text('ai_quota_date'), // 'YYYY-MM-DD'
+  lockStatus: text('lock_status').default('IDLE'), // 'IDLE' or 'RUNNING'
+  lockUpdatedAt: integer('lock_updated_at', { mode: 'timestamp' }),
 });
 
 export type Agency = typeof agencies.$inferSelect;
@@ -56,3 +64,5 @@ export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;
 export type SystemHealth = typeof systemHealth.$inferSelect;
 export type NewSystemHealth = typeof systemHealth.$inferInsert;
+export type Vitals = typeof vitals.$inferSelect;
+export type NewVitals = typeof vitals.$inferInsert;

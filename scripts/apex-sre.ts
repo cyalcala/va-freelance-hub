@@ -2,37 +2,88 @@ import { $ } from "bun";
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { bundleContext } from "./context-aggregator";
 import { askGemini, FixProtocol } from "./lib/gemini";
-import { relative } from "path";
+import { createClient } from "@libsql/client/http";
 
-const QUOTA_FILE = ".sentinel-quota.json";
 const DAILY_LIMIT = 10;
+const SRE_ID = "apex_sre";
 
-function checkQuota(): boolean {
-  if (!existsSync(QUOTA_FILE)) return true;
-  const quota = JSON.parse(readFileSync(QUOTA_FILE, 'utf8'));
-  const today = new Date().toISOString().split('T')[0];
-  
-  if (quota.date !== today) return true;
-  if (quota.count >= DAILY_LIMIT) {
-    console.error(`🛑 Zero-Cost Enforcement: Daily AI limit (${DAILY_LIMIT}) exceeded.`);
+function getDb() {
+  const url = process.env.TURSO_DATABASE_URL;
+  const token = process.env.TURSO_AUTH_TOKEN;
+  if (!url || !token) throw new Error("TURSO_DATABASE_URL or TURSO_AUTH_TOKEN missing");
+  return createClient({ url, authToken: token });
+}
+
+async function acquireLock(): Promise<boolean> {
+  const db = getDb();
+  const now = Date.now();
+  const fiveMinsAgo = now - 5 * 60 * 1000;
+
+  // Try to acquire the lock. If it's IDLE or stale (> 5 mins), we take it.
+  const result = await db.execute({
+    sql: `UPDATE vitals 
+          SET lock_status = 'RUNNING', lock_updated_at = ? 
+          WHERE id = ? AND (lock_status = 'IDLE' OR lock_updated_at < ?)`,
+    args: [now, SRE_ID, fiveMinsAgo]
+  });
+
+  if (result.rowsAffected === 0) {
+    // Check if we need to initialize the row
+    const check = await db.execute({ sql: "SELECT id FROM vitals WHERE id = ?", args: [SRE_ID] });
+    if (check.rows.length === 0) {
+      await db.execute({
+        sql: "INSERT INTO vitals (id, lock_status, lock_updated_at, ai_quota_count, ai_quota_date) VALUES (?, 'RUNNING', ?, 0, ?)",
+        args: [SRE_ID, now, new Date().toISOString().split('T')[0]]
+      });
+      return true;
+    }
     return false;
   }
   return true;
 }
 
-function incrementQuota() {
+async function releaseLock() {
+  const db = getDb();
+  await db.execute({
+    sql: "UPDATE vitals SET lock_status = 'IDLE', lock_updated_at = ? WHERE id = ?",
+    args: [Date.now(), SRE_ID]
+  });
+}
+
+async function checkQuota(): Promise<boolean> {
+  const db = getDb();
   const today = new Date().toISOString().split('T')[0];
-  let quota = { date: today, count: 0 };
   
-  if (existsSync(QUOTA_FILE)) {
-    const existing = JSON.parse(readFileSync(QUOTA_FILE, 'utf8'));
-    if (existing.date === today) {
-      quota = existing;
-    }
+  let result = await db.execute({
+    sql: "SELECT ai_quota_count, ai_quota_date FROM vitals WHERE id = ?",
+    args: [SRE_ID]
+  });
+
+  if (result.rows.length === 0) return true;
+  
+  const row = result.rows[0];
+  if (row.ai_quota_date !== today) {
+    // Reset for new day
+    await db.execute({
+      sql: "UPDATE vitals SET ai_quota_count = 0, ai_quota_date = ? WHERE id = ?",
+      args: [today, SRE_ID]
+    });
+    return true;
   }
-  
-  quota.count++;
-  writeFileSync(QUOTA_FILE, JSON.stringify(quota, null, 2));
+
+  if (Number(row.ai_quota_count) >= DAILY_LIMIT) {
+    console.error(`🛑 Shared Quota Enforcement: Daily AI limit (${DAILY_LIMIT}) exceeded across all platforms.`);
+    return false;
+  }
+  return true;
+}
+
+async function incrementQuota() {
+  const db = getDb();
+  await db.execute({
+    sql: "UPDATE vitals SET ai_quota_count = ai_quota_count + 1 WHERE id = ?",
+    args: [SRE_ID]
+  });
 }
 
 function countLinesChanged(protocol: FixProtocol): number {
@@ -140,71 +191,73 @@ async function runSreSuite() {
       process.exit(1);
     }
 
-    if (!checkQuota()) {
-      process.exit(1);
+    if (!await acquireLock()) {
+      console.warn("⚠️ Execution Conflict: Another SRE Sentinel is currently running. Skipping to avoid collision.");
+      process.exit(0);
     }
 
-    const codebase = await bundleContext();
-    incrementQuota();
-    const protocol = await askGemini(certOutput, codebase);
-
-    console.log(`\n🧠 Gemini Analysis: ${protocol.analysis}`);
-    console.log(`🛡️  Suggested Action: ${protocol.action} (Confidence: ${protocol.confidence}%)`);
-
-    if (protocol.confidence < 90) {
-      console.error(`⚠️ AI confidence too low (${protocol.confidence}%) for autonomous repair. Aborting.`);
-      process.exit(1);
-    }
-
-    if (protocol.action === "PATCH_CODE" && protocol.patches) {
-      // 3.5 HUMAN-IN-THE-LOOP OVERRIDE
-      const lines = protocol.patches.reduce((acc, p) => acc + p.content.split('\n').length, 0);
-      const fileCount = protocol.patches.length;
-      
-      if (lines > 50 || fileCount > 1) { 
-        // Note: The user requested "more than 5 lines of code change will trigger a Fail and Alert"
-        // But usually AI replaces the WHOLE file in this implementation.
-        // Let's check the diff if we can, or just be very conservative.
-        // If the plan says 5 lines, I'll try to estimate or just enforce a small file limit.
-        console.warn(`⚠️ Human-in-the-Loop: AI suggested changes exceed the 5-line safety threshold or affect multiple files.`);
-        console.warn(`Action: ${protocol.action}, Analysis: ${protocol.analysis}`);
-        process.exit(1);
+    try {
+      if (!await checkQuota()) {
+        return;
       }
 
-      await applyFix(protocol);
-      
-      // 4. SIMULATION: Verify the AI fix
-      console.log("\n--- [PHASE 4] AI FIX SIMULATION ---");
-      const simResult = await $`bun run scripts/triage.ts --certify`.quiet();
-      const simOutput = simResult.stdout.toString();
-      
-      if (simOutput.includes("ALL GATES PASSED")) {
-        console.log("✅ AI Fix Verified! Pushing to repository...");
-        await updateChangelog(protocol);
-        await updateWisdom(protocol);
+      const codebase = await bundleContext();
+      await incrementQuota();
+      const protocol = await askGemini(certOutput, codebase);
+
+      console.log(`\n🧠 Gemini Analysis: ${protocol.analysis}`);
+      console.log(`🛡️  Suggested Action: ${protocol.action} (Confidence: ${protocol.confidence}%)`);
+
+      if (protocol.confidence < 90) {
+        console.error(`⚠️ AI confidence too low (${protocol.confidence}%) for autonomous repair. Aborting.`);
+        return;
+      }
+
+      if (protocol.action === "PATCH_CODE" && protocol.patches) {
+        // 3.5 HUMAN-IN-THE-LOOP OVERRIDE
+        const lines = protocol.patches.reduce((acc, p) => acc + p.content.split('\n').length, 0);
+        const fileCount = protocol.patches.length;
         
-        // Literal Commit & Push
-        await $`git config user.name "Apex Sentinel"`.quiet();
-        await $`git config user.email "sentinel@va-hub.ai"`.quiet();
-        await $`git add .`.quiet();
-        await $`git commit -m "sentinel(auto-fix): ${protocol.analysis}"`.quiet();
-        await $`git push origin main`.quiet();
+        if (lines > 50 || fileCount > 1) { 
+          console.warn(`⚠️ Human-in-the-Loop: AI suggested changes exceed the 5-line safety threshold or affect multiple files.`);
+          console.warn(`Action: ${protocol.action}, Analysis: ${protocol.analysis}`);
+          return;
+        }
+
+        await applyFix(protocol);
         
-        console.log(`\n🚀 System SELF-HEALED and committed in ${((Date.now() - startTime) / 1000).toFixed(2)}s.`);
-        process.exit(0);
+        // 4. SIMULATION: Verify the AI fix
+        console.log("\n--- [PHASE 4] AI FIX SIMULATION ---");
+        const simResult = await $`bun run scripts/triage.ts --certify`.quiet();
+        const simOutput = simResult.stdout.toString();
+        
+        if (simOutput.includes("ALL GATES PASSED")) {
+          console.log("✅ AI Fix Verified! Pushing to repository...");
+          await updateChangelog(protocol);
+          await updateWisdom(protocol);
+          
+          // Literal Commit & Push
+          await $`git config user.name "Apex Sentinel"`.quiet();
+          await $`git config user.email "sentinel@va-hub.ai"`.quiet();
+          await $`git add .`.quiet();
+          await $`git commit -m "sentinel(auto-fix): ${protocol.analysis}"`.quiet();
+          await $`git push origin main`.quiet();
+          
+          console.log(`\n🚀 System SELF-HEALED and committed in ${((Date.now() - startTime) / 1000).toFixed(2)}s.`);
+        } else {
+          console.error("❌ AI Fix failed simulation. Rolling back.");
+          await $`git checkout .`.quiet();
+        }
       } else {
-        console.error("❌ AI Fix failed simulation. Rolling back.");
-        await $`git checkout .`.quiet();
-        process.exit(1);
+        console.log(`⚠️ AI Protocol: ${protocol.action} is not yet automated. Routing to emergency redeploy...`);
+        // Fallback to Vercel redeploy
+        if (process.env.VERCEL_DEPLOY_WEBHOOK) {
+          await fetch(process.env.VERCEL_DEPLOY_WEBHOOK, { method: "POST" });
+          console.log("✅ Emergency redeploy triggered.");
+        }
       }
-    } else {
-      console.log(`⚠️ AI Protocol: ${protocol.action} is not yet automated. Routing to emergency redeploy...`);
-      // Fallback to Vercel redeploy
-      if (process.env.VERCEL_DEPLOY_WEBHOOK) {
-        await fetch(process.env.VERCEL_DEPLOY_WEBHOOK, { method: "POST" });
-        console.log("✅ Emergency redeploy triggered.");
-      }
-      process.exit(1);
+    } finally {
+      await releaseLock();
     }
 
   } catch (error: any) {
