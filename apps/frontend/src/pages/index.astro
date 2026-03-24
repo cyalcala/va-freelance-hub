@@ -1,7 +1,28 @@
 ---
 export const prerender = false;
-// Freshness priority: SSR enabled to ensure real-time "minutes ago" syncing.
 import Layout from '../layouts/Layout.astro';
+import SignalCard from '../components/SignalCard.astro';
+import { db, schema } from '../../../../packages/db/client';
+import { desc, not, eq } from 'drizzle-orm';
+
+// Lightning-Fast Feed Logic: SSR the first 50 results immediately.
+// No more "Synchronizing..." placeholders on first load.
+const now = Date.now();
+const candidates = await db.select()
+  .from(schema.opportunities)
+  .where(not(eq(schema.opportunities.tier, 4)))
+  .orderBy(desc(schema.opportunities.latestActivityMs))
+  .limit(100);
+
+// Same decay algorithm as the Hono API for visual consistency
+const initialSignals = candidates
+  .map(sig => {
+    const ageMs = now - (sig.latestActivityMs || 0);
+    const score = (sig.tier || 3) + (ageMs <= 900000 ? -5.0 : ageMs / 14400000.0);
+    return { ...sig, sortScore: score };
+  })
+  .sort((a, b) => a.sortScore - b.sortScore)
+  .slice(0, 50);
 ---
 
 <Layout title="Feed | VA.INDEX">
@@ -48,12 +69,12 @@ import Layout from '../layouts/Layout.astro';
       class="grid grid-cols-1 gap-3" 
       id="oppsGrid"
       hx-get="/api/control/feed"
-      hx-trigger="load, every 60s"
+      hx-trigger="every 60s"
       hx-swap="innerHTML"
     >
-      <div class="py-20 text-center text-blueberry-800/30 font-black uppercase tracking-widest text-sm italic animate-pulse">
-        Synchronizing with Silk Scout...
-      </div>
+      {initialSignals.map((sig) => (
+        <SignalCard signal={sig} />
+      ))}
     </div>
 
     <div id="emptyState" class="hidden py-40 text-center text-blueberry-800/30 font-black uppercase tracking-widest text-sm italic">

@@ -13,6 +13,7 @@ This file serves as the persistent memory for the APEX SRE autonomous agent. It 
 * **[Freshness]** Never use `unixepoch()` without `* 1000` if the system expects milliseconds; mixed units cause "Epoch Drift" corruption.
 * **[Astro]** Conflicting `prerender` flags can cause Vercel to serve stale static content; ensure SSR is explicitly set for dynamic feeds.
 * **[UI/UX]** Maintain 0px Cumulative Layout Shift (CLS) by always specifying `width` and `height` for images. Monitor asset bloat (>50KB per CSS/JS file) to ensure "Titanium" snappy responses.
+* **[Lightning-Fast SSR]** Always SSR the initial feed state in Astro to eliminate "Synchronizing..." placeholders. Use HTMX only for subsequent polling/updates to achieve ultra-fast first-paints.
 
 ## 📚 Lessons Learned
 *Initial archive empty. Waiting for first autonomous fix.*
