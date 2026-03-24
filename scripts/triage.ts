@@ -13,6 +13,7 @@
  */
 
 import { readFileSync, writeFileSync, existsSync } from "fs";
+import { $ } from "bun";
 import { createClient } from "@libsql/client/http";
 import * as path from "path";
 
@@ -182,6 +183,24 @@ async function detect(): Promise<Finding[]> {
     if (quota > 8) {
       findings.push({ id: "SRE_QUOTA_FATIGUE", confidence: 90, description: `SRE is approaching daily AI limit (${quota}/10).`, evidence: `High AI burn rate detected.`, fixKey: null });
     }
+  }
+
+  // --- UI/UX LATENCY SWEEP (NEW) ---
+  const astroFiles = await $`find apps/frontend/src -name "*.astro"`.quiet();
+  const astroContent = await Promise.all(astroFiles.stdout.toString().split('\n').filter(Boolean).map((f: string) => fileRead(f)));
+  
+  let layoutShifts = 0;
+  astroContent.forEach((content: string) => {
+    if (content.includes('<img') && !content.includes('width=') && !content.includes('height=')) layoutShifts++;
+  });
+
+  if (layoutShifts > 0) {
+    findings.push({ id: "UI_LAYOUT_SHIFT_RISK", confidence: 85, description: `Images missing dimensions detected.`, evidence: `${layoutShifts} unconstrained images.`, fixKey: "FIX_E_UX" });
+  }
+
+  const cssBloat = await $`find apps/frontend -name "*.css" -size +50k`.quiet();
+  if (cssBloat.stdout.toString().length > 0) {
+    findings.push({ id: "UI_ASSET_BLOAT", confidence: 75, description: `Large CSS files detected (>50KB).`, evidence: cssBloat.stdout.toString().trim(), fixKey: "FIX_E_UX" });
   }
 
   findings.sort((a, b) => b.confidence - a.confidence);

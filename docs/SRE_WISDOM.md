@@ -12,6 +12,7 @@ This file serves as the persistent memory for the APEX SRE autonomous agent. It 
 * **[Performance]** Avoid complex SQL `ORDER BY` calculations on hot paths; fetch a pool and sort in-memory for O(N log N) speed.
 * **[Freshness]** Never use `unixepoch()` without `* 1000` if the system expects milliseconds; mixed units cause "Epoch Drift" corruption.
 * **[Astro]** Conflicting `prerender` flags can cause Vercel to serve stale static content; ensure SSR is explicitly set for dynamic feeds.
+* **[UI/UX]** Maintain 0px Cumulative Layout Shift (CLS) by always specifying `width` and `height` for images. Monitor asset bloat (>50KB per CSS/JS file) to ensure "Titanium" snappy responses.
 
 ## 📚 Lessons Learned
 *Initial archive empty. Waiting for first autonomous fix.*
