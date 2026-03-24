@@ -5,12 +5,21 @@
  * [Snap-Fast Protocol]: Injects the first 10 signals via SSR for instant view.
  * Uses HTMX to poll for updates thereafter.
  */
-import { getSortedSignals } from '../db-local/sorting';
+import { getLatestMirror } from '../db-local/sorting';
 import ThinCard from './ThinCard.astro';
 
 let signals = [];
 try {
-  signals = await getSortedSignals(10);
+  signals = await getLatestMirror(10);
+  
+  // High-Purity Fallback: If DB is empty or cold, provide 3 "Syncing" signals
+  if (signals.length === 0) {
+    signals = [
+      { id: 'fallback-1', title: 'System Synchronizing Core Intelligence...', company: 'APEX SENTINEL', tier: 1, latestActivityMs: Date.now() },
+      { id: 'fallback-2', title: 'Calibrating PH-First Signal Decay...', company: 'VA.INDEX', tier: 2, latestActivityMs: Date.now() },
+      { id: 'fallback-3', title: 'Harvesting Live Global Opportunities...', company: 'MIRROR ENGINE', tier: 3, latestActivityMs: Date.now() }
+    ];
+  }
 } catch (err) {
   console.error("[MirrorStage] SSR error:", err);
 }

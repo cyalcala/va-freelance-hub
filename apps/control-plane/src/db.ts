@@ -42,3 +42,15 @@ export async function getSortedSignals(limit = 50) {
     .sort((a, b) => a.sortScore - b.sortScore)
     .slice(0, limit);
 }
+
+/**
+ * Ultra-Fast Mirror Query
+ * Bypasses decay algorithm for 0ms perceived latency.
+ */
+export async function getLatestMirror(limit = 10) {
+  return await db.select()
+    .from(schema.opportunities)
+    .where(not(eq(schema.opportunities.tier, 4)))
+    .orderBy(desc(schema.opportunities.latestActivityMs))
+    .limit(limit);
+}

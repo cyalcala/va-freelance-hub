@@ -43,10 +43,11 @@ api.get('/feed', async (c) => {
 });
 
 api.get('/mirror', async (c) => {
-  // 1. Fetch top 10 most recent signals for the Mirror Stage
+  // 1. Fetch top 10 most recent signals for the Mirror Stage (Ultra-Fast Path)
   let signals = [];
   try {
-    signals = await getSortedSignals(10);
+    const { getLatestMirror } = await import('./db.js');
+    signals = await getLatestMirror(10);
   } catch (err) {
     console.error("[api/mirror] Error:", err);
   }
