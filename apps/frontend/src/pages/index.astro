@@ -9,6 +9,8 @@ import { getSortedSignals } from '../db-local/sorting';
 let initialSignals = [];
 try {
   initialSignals = await getSortedSignals(50);
+  // [Snap-Fast] Edge Caching: Cache the entire SSR output for 15s
+  Astro.response.headers.set('Cache-Control', 'public, max-age=15, s-max-age=15');
 } catch (err) {
   console.error("[index] Feed error:", err);
 }

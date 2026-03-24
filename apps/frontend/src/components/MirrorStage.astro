@@ -2,8 +2,18 @@
 /**
  * MirrorStage.astro
  * An ultra-lightweight, high-velocity "Latest Signals" stage.
- * Uses HTMX to poll for the absolute freshest jobs without page refreshes.
+ * [Snap-Fast Protocol]: Injects the first 10 signals via SSR for instant view.
+ * Uses HTMX to poll for updates thereafter.
  */
+import { getSortedSignals } from '../db-local/sorting';
+import ThinCard from './ThinCard.astro';
+
+let signals = [];
+try {
+  signals = await getSortedSignals(10);
+} catch (err) {
+  console.error("[MirrorStage] SSR error:", err);
+}
 ---
 <div class="mb-12 p-1 bg-white/40 backdrop-blur-md border border-oat-200/40 rounded-3xl shadow-sm overflow-hidden group">
   <div class="flex items-center justify-between px-6 py-3 border-b border-oat-200/30 bg-white/20">
@@ -12,7 +22,7 @@
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
       </div>
-      <span class="text-[10px] font-black text-blueberry-900 tracking-[0.2em] uppercase">Hyperflow Mirror</span>
+      <span class="text-[10px] font-black text-blueberry-900 tracking-[0.2em] uppercase transition-all group-hover:tracking-[0.4em]">Hyperflow Mirror</span>
     </div>
     <div class="flex items-center gap-2">
       <span class="text-[9px] font-bold text-blueberry-800/40 uppercase">streaming 10 freshest signals</span>
@@ -22,14 +32,13 @@
   <div 
     class="px-5 py-2 min-h-[100px]"
     hx-get="/api/control/mirror"
-    hx-trigger="load, every 30s"
+    hx-trigger="every 30s"
     hx-swap="innerHTML"
   >
-    <!-- Skeleton/Loader -->
-    <div class="animate-pulse flex flex-col gap-4 py-4">
-      <div class="h-4 bg-oat-100/50 rounded w-3/4"></div>
-      <div class="h-4 bg-oat-100/50 rounded w-1/2"></div>
-      <div class="h-4 bg-oat-100/50 rounded w-2/3"></div>
+    <div class="flex flex-col w-full divide-y divide-oat-200/30">
+      {signals.map((sig: any) => (
+        <ThinCard key={`mirror-${sig.id}`} signal={sig} />
+      ))}
     </div>
   </div>
 

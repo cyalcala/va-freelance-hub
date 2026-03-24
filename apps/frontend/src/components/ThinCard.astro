@@ -1,0 +1,34 @@
+---
+import type { Opportunity } from '../db-local/schema';
+
+interface Props {
+  signal: Opportunity;
+}
+
+const { signal } = Astro.props;
+
+// Calculate relative time for the "Snap-Fast" look
+const ageMs = Date.now() - (signal.latestActivityMs || 0);
+const ageMin = Math.floor(ageMs / 60000);
+const timeLabel = ageMin < 1 ? 'Just Now' : ageMin < 60 ? `${ageMin}m` : `${Math.floor(ageMin/60)}h`;
+
+const tierColor = signal.tier === 0 ? 'bg-emerald-500' : signal.tier === 1 ? 'bg-amber-500' : 'bg-blueberry-400';
+---
+
+<div class="flex items-center gap-4 py-2 hover:bg-oat-50/50 transition-colors group cursor-default">
+  <div class={`h-1.5 w-1.5 rounded-full ${tierColor} shrink-0`}></div>
+  <div class="flex flex-col min-w-0 flex-1">
+    <div class="flex items-center gap-2">
+      <span class="text-[11px] font-bold text-blueberry-900 truncate uppercase tracking-tight">{signal.title}</span>
+      <span class="text-[9px] font-black text-blueberry-500/40 uppercase tracking-widest shrink-0">{timeLabel}</span>
+    </div>
+    <span class="text-[9px] font-medium text-blueberry-800/50 truncate uppercase tracking-wider">{signal.company || 'Direct Client'}</span>
+  </div>
+  <a 
+    href={signal.sourceUrl} 
+    target="_blank" 
+    class="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-white rounded-lg"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-blueberry-500"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>
+  </a>
+</div>
