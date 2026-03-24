@@ -222,10 +222,9 @@ export async function harvest() {
   return { processed, newCount, skipped: allItems.length - processed };
 }
 
-
 export const scrapeOpportunitiesTask = schedules.task({
   id: "harvest-opportunities",
-  cron: "*/15 * * * *", // Every 15 minutes
+  cron: "*/30 * * * *", // Reduced to 30m to save execution credits
   queue: {
     name: "high-purity-scrapers",
     concurrencyLimit: 1,
@@ -239,13 +238,5 @@ export const scrapeOpportunitiesTask = schedules.task({
       await logToNtfy(`CRITICAL FAILURE: ${err.message}`, 5);
       throw err;
     }
-  },
-});
-
-export const pingHeartbeat = schedules.task({
-  id: "ping-heartbeat",
-  cron: "*/5 * * * *",
-  run: async () => {
-    await logToNtfy(`PONG: System alive at ${new Date().toISOString()}`);
   },
 });

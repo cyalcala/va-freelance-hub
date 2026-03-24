@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { $ } from "bun";
 import { bundleContext } from "./context-aggregator";
 import { askGemini } from "./lib/gemini";

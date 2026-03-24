@@ -39,34 +39,21 @@ export const apexSreBurstTask = task({
   },
 });
 
-// 2. 15-MINUTE EVOLUTION & HEALTH GUARD (Trigger)
-export const fifteenMinSreTask = schedules.task({
-  id: "apex-sre-15min",
+// 2. CONSOLIDATED SRE EVOLUTION & HEALTH GUARD (15-Minute Cycle)
+export const apexSreTask = schedules.task({
+  id: "apex-sre-sentinel",
   cron: "*/15 * * * *", 
   run: async () => {
-    logger.info("[apex-sre] Initiating Hourly Autonomous Health Audit...");
+    const now = new Date();
+    const isDailyWindow = now.getHours() === 0 && now.getMinutes() < 15;
+    
+    logger.info(`[apex-sre] Initiating ${isDailyWindow ? 'Daily Strategic' : '15-Minute Health'} Audit...`);
+    
     try {
       execSync("bun run scripts/apex-sre.ts");
-      return { status: "HEALTHY" };
+      return { status: "HEALTHY", type: isDailyWindow ? "DAILY" : "HEALTH" };
     } catch (error: any) {
       logger.error(`[apex-sre] Issue detected. Initiating 1-minute Burst Mode...`);
-      await apexSreBurstTask.trigger({ burstCount: 1 }, { delay: new Date(Date.now() + 60000) });
-      return { status: "BURST_INITIATED" };
-    }
-  },
-});
-
-// 3. DAILY PERFORMANCE & GROWTH STRATEGY
-export const dailySreTask = schedules.task({
-  id: "apex-sre-daily",
-  cron: "30 0 * * *", 
-  run: async () => {
-    logger.info("[apex-sre] Initiating Daily Strategic Performance & Growth Audit...");
-    try {
-      execSync("bun run scripts/apex-sre.ts");
-      return { status: "SUCCESS" };
-    } catch (error: any) {
-      logger.error(`[apex-sre] Daily Audit Issue: ${error.message}`);
       await apexSreBurstTask.trigger({ burstCount: 1 }, { delay: new Date(Date.now() + 60000) });
       return { status: "BURST_INITIATED" };
     }
