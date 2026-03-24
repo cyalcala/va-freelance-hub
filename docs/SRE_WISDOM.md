@@ -30,6 +30,7 @@ This file serves as the persistent memory for the APEX SRE autonomous agent. It 
 *   **[Observability-First]** Every autonomous fix must be logged in `CHANGELOG.md` with its root cause analysis (RCA). If a fix fails twice, it must trigger a "Human-in-the-Loop" block.
 *   **[Zero-Hydration Bias]** Treat Client-Side JS as a luxury, not a necessity. If a feature can be done with HTML/CSS or HTMX, never use a React-heavy component.
 *   **[Titanium Edge]** Prefer Edge-caching and SSR over client-side fetching. Content must be visible and interactive within 100ms of the first byte.
+*   **[Burst-Remediation]** During critical downtime (Hyperhealth Fail), the Sentinel MUST switch to a 1-minute "Conditional Burst" frequency. This burst is limited to 7 consecutive runs to prevent infinite loops and quota exhaustion.
 *   **[Anti-Entropy]** Periodically run `scripts/wash-db.ts` and `scripts/ux-audit.ts` to prevent stale data and asset bloat.
 *   **[Security-Is-Built-In]** Never bake secrets into code. Always use runtime injection and audit `.env` regularly.
 

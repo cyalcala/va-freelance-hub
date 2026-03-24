@@ -214,7 +214,7 @@ async function runSreSuite() {
 
     if (certOutput.includes("ALL GATES PASSED")) {
       console.log(`\n🎉 System is HEALTHY. Suite completed in ${((Date.now() - startTime) / 1000).toFixed(2)}s.`);
-      process.exit(0);
+      process.exit(0); // 0 = Healthy (No Burst)
     }
 
     // 3. PHASE 3: AGENTIC REASONING (The "Brain" Upgrade)
@@ -278,9 +278,11 @@ async function runSreSuite() {
           await $`git push origin main`.quiet();
           
           console.log(`\n🚀 System SELF-HEALED and committed in ${((Date.now() - startTime) / 1000).toFixed(2)}s.`);
+          process.exit(2); // 2 = Fixed (Stop Burst)
         } else {
           console.error("❌ AI Fix failed simulation. Rolling back.");
           await $`git checkout .`.quiet();
+          process.exit(3); // 3 = Problematic (Keep Bursting)
         }
       } else {
         console.log(`⚠️ AI Protocol: ${protocol.action} is not yet automated. Routing to emergency redeploy...`);
