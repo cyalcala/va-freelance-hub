@@ -1,4 +1,8 @@
 {
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist/",
+  "framework": "astro",
+  "rootDirectory": "apps/frontend",
   "rewrites": [
     { "source": "/api/control/(.*)", "destination": "https://va-freelance-hub-control-plane.vercel.app/api/$1" }
   ],

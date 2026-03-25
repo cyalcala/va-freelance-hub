@@ -3,7 +3,7 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import SignalCard from '../components/SignalCard.astro';
 import MirrorStage from '../components/MirrorStage.astro';
-import { getSortedSignals } from '../db-local/sorting';
+import { getSortedSignals, getLatestMirror } from '../db-local/sorting';
 
 // Lightning-Fast Feed Logic: SSR the first 50 results immediately.
 let initialSignals = [];
@@ -20,7 +20,7 @@ try {
   // High-Performance Retry: If primary feed is filtered to zero, pull absolute latest records
   if (initialSignals.length === 0) {
     console.warn("[index] Primary feed empty, attempting wide-open fetch...");
-    const { getLatestMirror } = await import('../db-local/sorting');
+
     initialSignals = await getLatestMirror(50);
   }
 } catch (err: any) {
