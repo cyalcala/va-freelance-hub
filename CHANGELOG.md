@@ -1,6 +1,17 @@
 ## [2026-03-25] — [Opportunities: 314 | Agencies: 57]
 **Status: SYSTEM EVOLVED — GLOWING & SNAPSHOTTED**
 
+## [2026-03-25] — [Opportunities: 59 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: remove HackerNews source and implement strict title-based country kills (c116b94)
+* fix: sync feed.ts UI and apply final sifter hardening (f23270a)
+* fix: harden sifter (geo-kills/corp-kills) and resolve logs 404 routing (82c56cf)
+
+---
+
+
 ## [2026-03-25] — [Opportunities: 62 | Agencies: 57]
 **Status: AUTO-PROCESSED**
 

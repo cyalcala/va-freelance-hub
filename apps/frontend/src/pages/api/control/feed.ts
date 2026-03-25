@@ -17,12 +17,36 @@ export const GET: APIRoute = async () => {
     .orderBy(opportunities.tier, desc(opportunities.latestActivityMs))
     .limit(100);
 
-  // In-memory re-sorting to handle the dynamic 15-minute "hot" boost
-  // This keeps the DB query extremely fast (indexed) while maintaining the complex logic
+  // In-memory re-sorting with Source & Role Prioritization
   const signals = rawSignals.sort((a, b) => {
-    const scoreA = (a.tier || 3) + ((now - a.latestActivityMs) <= 900000 ? -5.0 : (now - a.latestActivityMs) / 14400000.0);
-    const scoreB = (b.tier || 3) + ((now - b.latestActivityMs) <= 900000 ? -5.0 : (now - b.latestActivityMs) / 14400000.0);
-    return scoreA - scoreB;
+    const ageHrs = (now - a.latestActivityMs) / 3600000;
+    const ageHrsB = (now - b.latestActivityMs) / 3600000;
+    
+    const isSupport = (title: string) => {
+      const t = title.toLowerCase();
+      return t.includes("customer support") || t.includes("customer service") || t.includes("support specialist");
+    };
+
+    const getScore = (sig: any, age: number) => {
+      let score = (sig.tier || 3);
+      
+      // 1. Ultra Fresh Boost (15 mins)
+      if (age <= 0.25) score -= 10.0;
+      
+      // 2. Source Boost (Reddit & OnlineJobs)
+      if (sig.sourcePlatform?.toLowerCase().includes("reddit")) score -= 2.0;
+      if (sig.sourcePlatform?.toLowerCase().includes("onlinejobs")) score -= 1.5;
+      
+      // 3. Role Boost (Customer Support / CS)
+      if (isSupport(sig.title || "")) score -= 1.0;
+      
+      // 4. Time Decay (Small penalty for age)
+      score += (age / 24.0);
+      
+      return score;
+    };
+
+    return getScore(a, ageHrs) - getScore(b, ageHrsB);
   }).slice(0, 50);
 
   const html = signals.map(sig => renderSignalCard(sig)).join('');
