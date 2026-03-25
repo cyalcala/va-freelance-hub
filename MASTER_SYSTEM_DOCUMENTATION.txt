@@ -41,107 +41,579 @@ The system operates completely decoupled from traditional monolithic backend con
 5. **Storage:** Written to Turso DB via `@libsql/client/http` (to prevent native binary resolution errors). Drizzle ORM manages the schema.
 6. **Delivery:** Vercel API routes (Astro SSR) serve the data to the frontend using Edge-Side Stale-While-Revalidate caching, providing <100ms response times.
 
----
+================================================================================
+================================================================================
 
-## 4. DIRECTORY & FILE MANIFEST
+## SECTION I: ROOT DIRECTORY MARKDOWN & DOCUMENTATION FILES
 
-### / (Root Directory)
-* `README.md`: The main project overview and mission.
-* `ARCHITECTURE.md`: Deep technical breakdown of the autonomous signal-capture platform.
-* `MISSION.md`: The strategic objective to maintain a 100% automated aggregator.
-* `CLAUDE.md`: AI system state handoff document, Wardens Protocol, and system health status.
-* `package.json`: Main Bun workspace configuration. Defines scripts like `dev`, `build`, `trigger:deploy`, `save`, `restore`.
-* `trigger.config.ts`: Trigger.dev configuration specifying the project, runtime (`node`), and build exclusions for libSQL.
-* `bunfig.toml`, `bun.lock`, `tsconfig.json`: TypeScript and Bun configurations.
-* `vercel.json`: The sacred Vercel deployment configuration (`rootDirectory`: `apps/frontend`).
+### README.md
+# The Filipino Agency Index (V5.1)
+A high-performance, self-maintaining aggregator for Filipino VAs.
 
-### /docs (System Documentation & Guardrails)
-* `AI_GUARDRAILS.md`: Non-negotiable rules for AI agents. E.g., Maximum 5 fix attempts, never deploy Trigger.dev from Windows locally, Vercel config is sacred.
-* `KNOWN_ISSUES.md`: History of 21+ incidents (e.g., Hash Explosion, Silent Blockers, PRAGMA 400s) and their resolutions.
-* `SESSION_INIT.md`: The mandatory checklist to run before every AI session (reads guardrails, checks health API).
-* `AI_ANTI_STUPIDITY_MECHANISM.md`: Prevents AI from declaring success when the system is stagnant. Mandates Deception, Saturation, and Zombie checks.
-* `SRE_WISDOM.md`: "wiser and wiser" memory for the APEX SRE autonomous agent. Performance baselines and anti-patterns.
-* `STALENESS_WARDEN_PROTOCOL.md`: Protocol for interrogating where data goes stale across the chain.
-* `STABILITY.md`: Guardrails prioritizing index-first architecture and fail-soft defaults.
-* `SYSTEM_SNAPSHOT.md`: The Titanium Snapshot of ground truth state and the Four Timestamp Axes.
-* `CLAUDE_HANDOFF.md`: Older handoff instructions (superseded by CLAUDE.md).
+## Mission
+Automatically discover, verify, and list VA agencies hiring in the Philippines using a multi-source harvesting strategy.
 
-### /apps (Frontend Applications)
-* `/apps/frontend`: Astro SSR project.
-  * `package.json`: Frontend specific dependencies.
-  * `astro.config.mjs`: Configures output as 'server' and uses `@astrojs/vercel` adapter.
-  * `/src/pages`:
-    * `index.astro`: Main feed dashboard.
-    * `about.astro`, `agencies.astro`: Informational and directory pages.
-    * `/api/health.ts`: The single source of truth endpoint checking system staleness, heartbeat, and active records.
+## Stack
+- **Frontend**: Astro
+- **Runtime**: Bun
+- **Sync**: Trigger.dev v4
+- **Matching**: Zig
+- **DB**: Turso + Drizzle
 
-### /packages (Shared Libraries)
-* `/packages/db`: Drizzle Schema and Turso connection.
-  * `schema.ts`: Defines SQLite tables: `agencies`, `opportunities`, `system_health`, `vitals`, `logs`.
-  * `drizzle.config.ts`: Drizzle configuration pointing to Turso URL.
-  * `/migrations`: SQL migration files.
-  * `client.ts`: Connection factory.
-* `/packages/config`: Defines the "Niche DNA".
-  * `index.ts`: The source of target signals, kill lists, RSS sources, and JSON endpoints.
-* `/packages/scraper`: Source fetchers.
-* `/packages/sifter-native` & `/packages/zig-engine`: Zig binary components for ultra-fast text matching and filtering.
-
-### /jobs (Trigger.dev Background Tasks)
-* `scrape-opportunities.ts`: The Harvester. Orchestrates fetching, deduplicating, tiering, and upserting data to Turso.
-* `resilience-watchdog.ts`: Runs every 6 hours. Detects feed staleness.
-* `database-watchdog.ts`: Runs every 7 hours to check DB connection integrity.
-* `verify-links.ts`: Runs daily to ping URLs and mark dead links.
-* `system-audit.ts` / `deep-system-audit.ts`: Full governance checks.
-* `verify-directory.ts`: Audits agency listings weekly.
-* `apex-sre-autonomous.ts`: Agentic Sentinel logic for auto-fixing errors.
-* `/lib`: Helper scripts for jobs (e.g., `db.ts` for ASYNC db connection generation to prevent Trigger.dev cloud crashes).
-
-### /scripts (CLI & Utility Tools)
-Contains over 50 CLI utilities built to audit and fix the system autonomously.
-* `save.ts` & `restore.ts`: The Mythical Restore Engine. Snapshots the DB to JSON and can restore it.
-* `sync-framework.ts`: Utility for MD5 change detection.
-* Numerous `audit-*.ts` scripts (e.g., `audit-duplicates.ts`, `audit-freshness.ts`) used to diagnose staleness and saturation.
+## Data Sources
+- Reddit
+- Brave Search
+- Jobicy
+- Remotive
+- BlueSky
+- SerpApi
+- Adzuna
 
 ---
 
-## 5. DATABASE SCHEMA (`packages/db/schema.ts`)
-1. **opportunities**:
-   - `id`, `title`, `company`, `type`
-   - `sourceUrl`, `sourcePlatform`, `tags`, `payRange`, `description`
-   - `postedAt` (EVENT_TIME)
-   - `scrapedAt` (PROCESSING_TIME/Heartbeat)
-   - `createdAt` (INGESTION_TIME)
-   - `isActive` (Boolean)
-   - `tier` (1=Gold, 2=Silver, 3=Bronze, 4=Trash)
-   - `latestActivityMs` (Composite index target)
-   - Unique Index on `(title, company)` to enforce semantic deduplication.
-2. **agencies**: Directory of VA agencies, their status, hiring heat, friction level.
-3. **system_health**: Tracks status of scrapers (OK/FAIL) and last success timestamps.
-4. **vitals**: Tracks AI quota limits, lock status, recovery events.
-5. **logs**: Centralized logging table.
+### ARCHITECTURE.md
+# VA.INDEX Architecture & Evolution (v5.2)
+*A Deep Technical Breakdown of the Autonomous Signal-Capture Platform*
+
+## 1. The Core Paradigm & Topology
+The VA.INDEX platform is designed as an indestructible, "set-it-and-forget-it" pipeline. It operates completely decoupled from traditional monolithic backend constraints by leveraging edge SQLite databases, serverless background orchestration, and a statically generated frontend.
+
+The system is highly abstracted. Its core intelligence, scraping arrays, and scam heuristics are externalized into a modular `@va-hub/config` package, enabling the entire codebase to be instantly cloned and mapped to any niche (e.g., Web3 Developers, Cybersecurity, UI/UX Designers) without rewriting business logic.
+
+## 2. Infrastructure & Compute Layers
+### Database Storage (Turso + LibSQL Edge)
+- **Engine:** LibSQL (SQLite fork optimized for low latency edge replication).
+- **ORM Interface:** **Drizzle ORM** is utilized for strict, typesafe SQL query building and schematic migrations.
+- **Relational Schema:**
+  - `agencies`: Stores top-level entity metadata.
+  - `opportunities`: Stores individual job signals extracted dynamically. Contains a cryptographically unique `content_hash` and an indexed `latest_activity_ms` column for hardware-accelerated sorting.
+
+### The Titanium Sieve (Zig Native Engine)
+- **The Sifter (`sifter.zig`):** A high-performance, SIMD-ready binary module that hard-kills Tech/Exec/Blog noise at the hardware level with near-zero latency (~7.9ms per batch).
+- **Bun FFI Bridge:** Native interoperability allows TypeScript to call Zig functions with zero overhead.
+
+### Orchestration Execution (Trigger.dev v3)
+- **Engine Shift:** We explicitly operate on Trigger.dev's V3 architecture. Traditional Vercel Serverless Functions enforce a brutal 10-60 second execution timeout limit, making heavy scraping unviable. V3 background workers pull the compute off the main thread entirely.
+- **Strategic Synchronization:** All harvest tasks populate the `latest_activity_ms` field [Math.max(posted, scraped)]. This allows the frontend to query the DB using a composite index `(tier, latest_activity_ms)`, dropping sorted response times from >500ms to <100ms.
+
+## 3. The Backend Service Workers (Background Jobs)
+All background operations are highly surgical, enforcing O(1) growth caps and strict deduplication constraints.
+
+### The Harvester (`scrape-opportunities.ts`)
+- **Cron Cycle:** `0 */2 * * *` (Every 120 minutes).
+- **RSS Parser Vectors:** Rapidly fetches and extracts payload bodies from Himalayas, WeWorkRemotely, RemoteOK, and ProBlogger.
+- **REST Protocol Vectors:** Directly pings the Jobicy API, HackerNews, and Reddit JSON pipelines.
+- **Cryptographic Deduplication:** Concatenates `title + company + source_platform` into a unified hash array.
+
+### The Scam Shield (`trust.ts`)
+- **RegEx Filtration:** Employs advanced `/(\$?\d+\s*\/.*day)/i` structural regex matching directly onto incoming description payloads to catch scams.
+
+### The Phantom Link Verifier (`verify-links.ts`)
+- **Cron Cycle:** `0 6 * * *` (Daily at 6:00 AM UTC).
+- **ATS Semantic Checking:** Instead of just checking HTTP `404 Not Found` statuses, it fetches HTML to look for ATS ghost-job signatures.
+
+### The Resilience Watchdog (`resilience-watchdog.ts`)
+- **Cron Cycle:** `0 */6 * * *` (Every 6 hours).
+- **Pulse Audit:** Detects 'Silent Blackouts' if no data has been discovered in 4 hours.
+
+## 4. Frontend Rendering (Unified SSR)
+- **Engine Priority:** Both **Astro** (`apps/frontend`) and **Next.js** (`apps/web`) configured for **Strict SSR** (output: 'server').
+- **Cache-Control Shields:** Leverage **Edge-Side Stale-While-Revalidate (SWR)** caching (`s-maxage=60, stale-while-revalidate=30`).
+- **Aesthetic Refinement:** O(1) performance focus with Tailwind CSS and zero-JS hydration (Astro).
+
+## 5. The Failsafe Subsystem
+- **Snapshot CLI (`bun run save`)**: Generates an alphanumeric mythical ID format (`Hydra_2026-03-XX`).
+- **Restoration Hook (`bun run restore`)**: Dynamically rolls Git memory variables back through history.
+
+## 6. The Agentic SRE Sentinel
+The platform is protected by an autonomous "Agentic" sentinel powered by Gemini 1.5 Flash.
+- **Zero-Cost Enforcement**: A strict quota of 10 AI calls/day is tracked in `.sentinel-quota.json`.
+- **Safety Gates**: Any autonomous code change exceeding 5 lines or affecting multiple files triggers a "Human-in-the-Loop" block.
 
 ---
 
-## 6. KEY MECHANICS & INVIOLABLE RULES
-1. **The Four Timestamp Axes**:
-   - `posted_at`: Ground truth age of the job. Used for feed ordering.
-   - `created_at`: Ingestion time. Used to measure pipeline throughput.
-   - `scraped_at`: Processing time heartbeat. Does not equal data freshness.
-2. **LibSQL Async Factory**: Tasks must use `const { client, db } = await createDb();` dynamically inside run cycles. Static imports break native binary resolutions on Trigger.dev.
-3. **Vercel Config is Sacred**: `vercel.json` dictates the deployment. Never run Vercel CLI from the root directory; it lives in `apps/frontend`.
-4. **Semantic Deduplication**: Instead of URL hashing, dedup is performed via `(title, company)`. This fixes the "Hash Explosion" where platforms like RemoteOK rotate URLs for the same job.
-5. **Zombie Horizon**: Jobs older than 14-21 days (`posted_at`) are automatically deactivated.
-6. **Cloud vs Local**: Development is typically Windows, Deploy is Linux (Vercel/Trigger.dev). Local Windows symlink/binary errors do not block pushing to GitHub.
+### MISSION.md
+# The Filipino Agency Index — Self-Updating Engine (V5.2)
+## Strategic Objective
+Maintain a 100% automated, zero-maintenance aggregator that provides real-time hiring signals for Filipino VA agencies.
+
+## Operational Logic
+1. **Harvest (Every 12 Hours)**: Trigger.dev orchestrates a global fetch across specialized providers (Reddit, Brave, Jobicy, Remotive, BlueSky, SerpApi, Adzuna).
+2. **Deduplicate (High-Speed)**: Incoming text signals are normalized and fuzzy-matched using a custom Zig binary to prevent database pollution.
+3. **Verify (Live-Check)**: Automated HEAD requests ensure hiring boards are active before they appear on the dashboard.
+4. **Publish (High-Performance)**: Astro serves an obsidian dark-mode dashboard with source-coded discovery signals.
+
+## Zero-Cost Maintenance
+- **Bun**: Minimal runtime overhead.
+- **Turso**: Edge SQLite for zero-cold-start reads.
+- **Trigger.dev**: Optimized compute usage by keeping Zig matching under 500ms.
+- **Vercel**: Edge-cached Astro static routes.
 
 ---
 
-## 7. DEPLOYMENT PROTOCOL
-* **Environment Variables** exist across 3 distinct zones, do not share them locally:
-  1. Local `.env`
-  2. Vercel Dashboard (Frontend/DB tokens)
-  3. Trigger.dev Dashboard (Background workers)
-* **Trigger.dev Deployments**: Never deploy from local Windows (`npx trigger.dev deploy`). Push to GitHub, where GitHub Actions (`.github/workflows/trigger-deploy.yml`) handles the deployment natively on Linux.
-* **Health Monitoring**: System health is ALWAYS checked at `https://va-freelance-hub-web.vercel.app/api/health`. Look for `status: "HEALTHY"`, `stalenessHrs < 1`, and `totalActive` growth.
+### CLAUDE.md
+# VA.INDEX — Complete Claude Handoff Document
+## Created: 2026-03-21
+## Version: 3.0 — WARDEN PROTOCOL MASTER EDITION
+## Current Trigger.dev Version: v20260321.70
+## System Status at Document Creation: TITANIUM (Certified Pure)
+## Total Active Listings: 348
+## Purpose: Import into new Claude conversation
+
+## HOW TO USE THIS DOCUMENT
+You are Claude in a new conversation.
+The previous conversation became too large and slow. This document contains everything.
+Do not ask clarifying questions before reading this fully. Everything you need is here.
+
+### Your First 3 Commands in Any New Session
+Always run these before touching anything:
+1. Check system health (curl -s https://va-freelance-hub-web.vercel.app/api/health | jq '.')
+2. Check Trigger.dev version (tasks API)
+3. Check recent runs (runs API)
+
+### Interpreting Results
+HEALTHY = status is HEALTHY, stalenessHrs < 1, totalActive > 273, version is 20260321.x, runs show green checkmarks every 15 minutes.
+NOT HEALTHY = paste the Master Warden Protocol found at the bottom of this document.
+
+[Content reflects the core logic duplicated above, ensuring focus on "The complete stack", "The data flow chain", "Gold/Silver/Bronze scoring", "The 8 trigger.dev tasks", "The Health Endpoint", "Governance stack", "Critical Architecture rules", "Incident history", and "Warden protocol reference"].
 
 ---
-*End of Master System Documentation.*
+
+================================================================================
+================================================================================
+
+## SECTION II: DOCS FOLDER MARKDOWN FILES (`/docs/*`)
+
+### AI_GUARDRAILS.md
+# VA.INDEX AI Session Guardrails
+## Version: 1.0 | Last Updated: 2026-03-20
+These rules exist because an AI agent caused 4 hours of production downtime by violating them on 2026-03-20. They are non-negotiable.
+
+## RULE 1 — READ BEFORE ACTING
+Before any file edit or terminal command that modifies the system, read the relevant files first. Never assume project structure.
+ALWAYS run before any Vercel command:
+- `cat apps/frontend/vercel.json`
+- `cat apps/frontend/package.json`
+- `cat apps/frontend/astro.config.mjs`
+
+## RULE 2 — MAXIMUM 5 STEPS BEFORE STOPPING
+If a task is not resolved after 5 attempts, STOP immediately.
+
+## RULE 3 — NEVER SUGGEST NUCLEAR SOLUTIONS
+Forbidden: Flattening monorepo, Rewriting package.json dependencies, Changing build tools.
+
+## RULE 4 — NEVER DECLARE SUCCESS WITHOUT PROOF
+MISSION COMPLETE is only valid when curl returns 200 AND `/api/health` returns HEALTHY AND browser loads.
+
+## RULE 5 — PROTECT THE PIPELINE ABOVE ALL
+Trigger.dev pipeline files (`trigger/*.ts`, `src/lib/db.ts`) are READ ONLY unless explicitly told.
+
+## RULE 6 — ALWAYS CHECK WORKING STATE FIRST
+Find last commit before things broke (`git log --oneline -10`).
+
+## RULE 7 — WINDOWS VS LINUX AWARENESS
+Local build failures caused by symlinks are NOT blockers for cloud deployment. Push to GitHub.
+
+## RULE 8 — VERCEL CONFIGURATION IS SACRED
+`apps/frontend/vercel.json` is the source of truth for Vercel deployment configuration.
+
+## RULE 9 — THE FOUR TIMESTAMP AXES
+Never conflate processing time with data freshness.
+- INGESTION_TIME (`created_at`): True measure of throughput.
+- EVENT_TIME (`posted_at`): True measure of job age.
+- PROCESSING_TIME (`scraped_at`): Heartbeat only.
+
+## RULE 10 — FINGERPRINT SATURATION AWARENESS
+Always check saturation before declaring harvest healthy.
+
+## RULE 11 — ZOMBIE PREVENTION (EVENT HORIZON)
+Listings with `posted_at > 21 days ago` are dead signal. Deactivate them.
+
+## EMERGENCY RECOVERY PROCEDURE
+1. Find last known good commit.
+2. Read `vercel.json` in that commit.
+3. Restore that exact configuration.
+4. Push to origin main.
+5. Check curl.
+
+---
+
+### AI_ANTI_STUPIDITY_MECHANISM.md
+# VA.INDEX AI Anti-Stupidity Mechanism
+## Priority: Critical
+## Purpose: Eliminate "Pulse Deception" and "Status Blindness" in AI-agent interventions.
+
+### 1. THE DECEPTION CHECK (MANDATORY)
+Before reporting "Status: HEALTHY", every agent MUST run:
+`SELECT (unixepoch('now') - MAX(created_at)) / 3600.0 AS true_staleness_hrs, SUM(CASE WHEN created_at > unixepoch('now', '-1 hour') THEN 1 ELSE 0 END) AS new_records_1h FROM opportunities WHERE is_active = 1;`
+
+### 2. THE SATURATION CHECK (MANDATORY)
+If a harvest run yields 0 new records, run:
+`SELECT COUNT(*) AS total, COUNT(DISTINCT title || company) AS unique_fps FROM opportunities WHERE is_active = 1;`
+
+### 3. THE ZOMBIE CHECK (MANDATORY)
+Regularly audit the feed for late arrivals:
+`SELECT COUNT(*) FROM opportunities WHERE is_active = 1 AND posted_at < unixepoch('now', '-21 days');`
+
+---
+
+### KNOWN_ISSUES.md
+# KNOWN ISSUES & RESOLUTIONS
+1. Feed Empty / "No matching signals found" (ReferenceError in astro components).
+2. Trigger.dev Deployment Native Binary Mismatch (Use `@libsql/client/http`).
+3. Silent Blocker / CI/CD Stagnation (Missing secrets in GitHub Actions).
+4. Stale Feed Despite Green Runs (Scraper hitting caches - added no-cache pragmas).
+5. Silent Blockage (Property Mismatch in dedup - fixed `company` selection).
+6. Hash Explosion / Zombie Listings (Sources providing shifting URLs - implemented semantic deduplication checking `title|company`).
+7. Real-Time Delivery Blockage (Constraint Conflict on `content_hash` vs `title, company`).
+
+---
+
+### SESSION_INIT.md
+# VA.INDEX Session Initialization Checklist
+Run these before every session:
+1. Read the rules (AI_GUARDRAILS, KNOWN_ISSUES, CLAUDE.md)
+2. Check System Health (/api/health)
+3. Read Last Working State
+4. Confirm Pipeline Running (Trigger.dev API)
+5. Output Session State
+6. Read System Snapshot (SYSTEM_SNAPSHOT.md)
+
+---
+
+### SRE_WISDOM.md
+# APEX SRE Sentinel Wisdom Bank
+- $0 Infrastructure cost always.
+- Titanium-grade reliability.
+- Hono/Preact Purity: Leverage Hono Middleware for edge-side instrumentation.
+- Avoid complex SQL `ORDER BY` calculations on hot paths; fetch pool and sort in-memory.
+- Never use `unixepoch()` without `* 1000` for millisecond systems.
+- Conflicting `prerender` flags can cause Vercel to serve stale static content; ensure SSR is explicitly set.
+- Maintain 0px Cumulative Layout Shift (CLS).
+- Always SSR initial feed state in Astro.
+- Anti-Stupidity Guardrails: NEVER push code to `main` without running `bun run build`.
+- Monorepo environments on Windows: avoid deep-tracing imports.
+
+---
+
+### STABILITY.md
+# VA.INDEX Stability Guardrails & Performance Ethos
+1. **Engineering Guardrails**: No Dependency Bloat, Index-First Architecture, Fail-Soft Default, Titanium Sifter Authority.
+2. **Heartbeat & Snapshot Integrity**: 1-minute heartbeat, automated snapshots every 15m.
+3. **Data Health Priorities**: Purity, Freshness, Accessibility.
+
+---
+
+### SYSTEM_SNAPSHOT.md
+# VA.INDEX System Snapshot & Best Practices
+## Version: 4.0 — Titanium Snapshot
+## Date: 2026-03-22T10:37:30Z
+Ground Truth State (Last Audit):
+Total Population: 314
+Active Supply: 149
+Late Arrivals (14d+): 0
+Ingestion Latency: 0.01h
+Fingerprint Space: Clean
+[Details Four Timestamp Axes and Error Budgets]
+
+================================================================================
+================================================================================
+
+## SECTION III: CONFIGURATION & PACKAGE MANIFESTS
+
+### package.json (Root Workspace)
+```json
+{
+  "name": "va-freelance-hub",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd apps/frontend dev",
+    "build": "bun run --cwd apps/frontend build",
+    "db:generate": "bun run --cwd packages/db generate",
+    "db:migrate": "bun run --cwd packages/db migrate",
+    "trigger:dev": "bunx trigger.dev@4.4.3 dev",
+    "trigger:deploy": "bunx trigger.dev@4.4.3 deploy",
+    "save": "bun run scripts/save.ts",
+    "restore": "bun run scripts/restore.ts",
+    "resurrect": "bun run scripts/resurrect.ts",
+    "audit": "bun run scripts/automation-audit.ts",
+    "sync:framework": "bun run scripts/sync-framework.ts",
+    "check-build": "bun run scripts/check-build.ts",
+    "ux-audit": "bun run scripts/ux-audit.ts",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "husky": "^9.1.7",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@libsql/client": "latest",
+    "@trigger.dev/sdk": "4.4.3",
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "latest",
+    "fast-xml-parser": "^5.5.6"
+  }
+}
+```
+
+### trigger.config.ts
+```typescript
+import { defineConfig } from "@trigger.dev/sdk/v3";
+
+export default defineConfig({
+  project: "proj_hzeuykzmhlzwmqeljfft",
+  runtime: "node",
+  logLevel: "log",
+  build: {
+    external: ["libsql", "@libsql/linux-x64-gnu", "@libsql/linux-x64-musl"],
+  },
+  dirs: ["./jobs"],
+  maxDuration: 300,
+  retries: {
+    enabledInDev: false,
+    default: {
+      maxAttempts: 3,
+      minTimeoutInMs: 1000,
+      maxTimeoutInMs: 10000,
+      factor: 2,
+    },
+  },
+});
+```
+
+### vercel.json (Root)
+```json
+{
+  "rewrites": [
+    { "source": "/api/control/(.*)", "destination": "https://va-freelance-hub-control-plane.vercel.app/api/$1" }
+  ],
+  "redirects": [
+    { "source": "/logs", "destination": "/terminal", "permanent": true }
+  ]
+}
+```
+
+### apps/frontend/package.json
+```json
+{
+  "name": "frontend",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^10.0.3",
+    "@astrojs/tailwind": "latest",
+    "@astrojs/vercel": "^10.0.2",
+    "@libsql/client": "latest",
+    "@tailwindcss/vite": "^4.2.1",
+    "astro": "^6.0.5",
+    "dotenv": "latest",
+    "drizzle-orm": "latest",
+    "tailwindcss": "3"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}
+```
+
+================================================================================
+================================================================================
+
+## SECTION IV: CORE DATABASE CODE & ORM
+
+### packages/db/client.ts
+```typescript
+import { createClient } from "@libsql/client/http";
+import { drizzle } from "drizzle-orm/libsql";
+import * as schema from "./schema";
+
+const url = process.env.TURSO_DATABASE_URL;
+const authToken = process.env.TURSO_AUTH_TOKEN;
+
+if (!url || !authToken) {
+  console.error(`[va-hub/db] CRITICAL: Missing env vars — TURSO_DATABASE_URL=${url ? 'SET' : 'MISSING'}, TURSO_AUTH_TOKEN=${authToken ? 'SET' : 'MISSING'}`);
+}
+
+const client = createClient({
+  url: url || "file::memory:",  // In-memory fallback
+  authToken: authToken || "",
+});
+
+export const db = drizzle(client, { schema });
+export { schema };
+```
+
+### packages/db/schema.ts
+```typescript
+import { sqliteTable, text, integer, uniqueIndex } from 'drizzle-orm/sqlite-core';
+
+export const agencies = sqliteTable('agencies', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  slug: text('slug').unique().notNull(),
+  websiteUrl: text('website_url'),
+  hiringUrl: text('hiring_url').notNull(),
+  logoUrl: text('logo_url'),
+  description: text('description'),
+  status: text('status', { enum: ['active', 'quiet'] }).default('active'),
+  lastSync: integer('last_sync', { mode: 'timestamp' }).notNull(),
+  verifiedAt: integer('verified_at', { mode: 'timestamp' }),
+  metadata: text('metadata', { mode: 'json' }),
+  score: integer('score'),
+  buzzScore: integer('buzz_score').default(0),
+  hiringHeat: integer('hiring_heat').default(1),
+  frictionLevel: integer('friction_level').default(3),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const opportunities = sqliteTable('opportunities', {
+  id: text('id').primaryKey(),
+  title: text('title').notNull(),
+  company: text('company'),
+  type: text('type').default('agency'),
+  sourceUrl: text('source_url').notNull(),
+  sourcePlatform: text('source_platform'),
+  tags: text('tags', { mode: 'json' }).default('[]'),
+  locationType: text('location_type').default('remote'),
+  payRange: text('pay_range'),
+  description: text('description'),
+  postedAt: integer('posted_at', { mode: 'timestamp' }),
+  scrapedAt: integer('scraped_at', { mode: 'timestamp' }).notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).default(true),
+  tier: integer('tier').default(3),
+  contentHash: text('content_hash'),
+  latestActivityMs: integer('latest_activity_ms').notNull().default(0),
+  companyLogo: text('company_logo'),
+  metadata: text('metadata', { mode: 'json' }).default('{}'),
+}, (table) => ({
+  titleCompanyIdx: uniqueIndex('title_company_idx').on(table.title, table.company),
+  tierLatestIdx: uniqueIndex('tier_latest_idx').on(table.tier, table.latestActivityMs),
+}));
+
+export const systemHealth = sqliteTable('system_health', {
+  id: text('id').primaryKey(),
+  sourceName: text('source_name').notNull(),
+  status: text('status').notNull(),
+  lastSuccess: integer('last_success', { mode: 'timestamp' }),
+  errorMessage: text('error_message'),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const vitals = sqliteTable('vitals', {
+  id: text('id').primaryKey(),
+  aiQuotaCount: integer('ai_quota_count').default(0),
+  aiQuotaDate: text('ai_quota_date'),
+  lockStatus: text('lock_status').default('IDLE'),
+  lockUpdatedAt: integer('lock_updated_at', { mode: 'timestamp' }),
+  successiveFailureCount: integer('successive_failure_count').default(0),
+  lastErrorHash: text('last_error_hash'),
+  lastRecoveryAt: integer('last_recovery_at', { mode: 'timestamp' }),
+});
+
+export const logs = sqliteTable('logs', {
+  id: text('id').primaryKey(),
+  message: text('message').notNull(),
+  level: text('level').default('info'),
+  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+  metadata: text('metadata', { mode: 'json' }).default('{}'),
+});
+```
+
+================================================================================
+================================================================================
+
+## SECTION V: THE ENGINE - CONFIGURATION & PLATFORM DNA (`packages/config/index.ts`)
+
+```typescript
+export interface Source {
+  id: string;
+  name: string;
+  url: string;
+  platform: string;
+  defaultJobType: string;
+  tags: string[];
+  ethical_note: string;
+  is_json?: boolean;
+  json_type?: "JobStreet" | "Indeed";
+}
+
+export interface NicheConfig {
+  name: string;
+  primary_region: string;
+  primary_niche: string;
+  target_signals: { region: string[]; role: string[]; remote: string[]; };
+  kill_lists: { titles: string[]; companies: string[]; content: string[]; };
+  rss_sources: Source[];
+  json_sources: Source[];
+}
+
+export const defaultConfig: NicheConfig = {
+  name: "VA Freelance Hub (Philippines)",
+  primary_region: "Philippines",
+  primary_niche: "Virtual Assistant",
+  target_signals: {
+    region: ["philippines", "filipino", "pinoy", "tagalog", "manila", "cebu", "ph", "sea", "southeast asia"],
+    role: ["virtual assistant", "va", "data entry", "bookkeeping", "executive assistant", "admin assistant", "customer service", "customer support", "sales", "bdr", "sdr", "marketing", "seo", "social media", "copywriter", "video editor", "graphic designer", "moderator", "transcription", "translator", "operations", "clerk", "office", "administrative", "operations specialist", "hr assistant", "recruiter"],
+    remote: ["remote", "global", "worldwide", "anywhere", "work from home", "wfh"]
+  },
+  kill_lists: {
+    titles: ["ceo", "cto", "cfo", "cio", "coo", "vp", "vice president", "director", "president", "head of", "principal", "leadership", "executive", "staff", "researcher", "enterprise", "product manager", "project manager", "program manager", "division manager", "manager,", "manager -", "regional manager", "country manager", "engineer", "developer", "software", "devops", "sre", "data scientist", "programmer", "architect", "fullstack", "backend", "frontend", "coder", "systems", "tech", "technical", "coding", "javascript", "typescript", "python", "java", "react", "vue", "angular", "node", "aws", "cloud", "infrastructure", "cybersecurity", "security", "ai", "machine learning", "ml", "data science"],
+    companies: ["canonical", "gitlab", "google", "meta", "apple", "microsoft", "amazon"],
+    content: ["beijing", "shanghai", "tokyo", "london", "paris", "berlin", "moscow", "riyadh", "dubai", "new york", "san francisco", "chicago", "hong kong", "singapore", "china", "europe", "emea", "latam", "portuguese", "spanish", "german", "french", "uk-only", "us-only", "emea-only", "dach", "nordics", "benelux", "japanese speaker", "french speaker", "german speaker", "spanish speaker", "success story", "how to", "reading this", "join us", "blog", "article", "news"]
+  },
+  rss_sources: [
+    { id: "himalayas", name: "Himalayas", url: "https://himalayas.app/jobs/rss", platform: "Himalayas", defaultJobType: "full-time", tags: ["remote", "global"], ethical_note: "Official public RSS feed." },
+    { id: "we-work-remotely", name: "We Work Remotely", url: "https://weworkremotely.com/remote-jobs.rss", platform: "WeWorkRemotely", defaultJobType: "full-time", tags: ["remote", "global"], ethical_note: "Public RSS feed offered by WWR." },
+    { id: "remote-ok", name: "Remote OK", url: "https://remoteok.com/remote-jobs.rss", platform: "RemoteOK", defaultJobType: "full-time", tags: ["remote", "high-pay"], ethical_note: "Public RSS feed." },
+    { id: "problogger", name: "ProBlogger Jobs", url: "https://problogger.com/jobs/feed/", platform: "ProBlogger", defaultJobType: "freelance", tags: ["writing", "creative", "content"], ethical_note: "Public RSS job board feed." },
+    { id: "jobspresso-support", name: "Jobspresso - Support", url: "https://jobspresso.co/category/marketing-customer-support/feed/", platform: "Jobspresso", defaultJobType: "VA", tags: ["customer support", "marketing", "va"], ethical_note: "Public RSS feed." }
+  ],
+  json_sources: [
+    { id: "jobstreet-ph-va", name: "JobStreet PH (Virtual Assistant)", url: "https://www.jobstreet.com.ph/api/chalice-search/v4/search?siteKey=PH-Main&where=Philippines&keywords=virtual+assistant", platform: "JobStreet", defaultJobType: "VA", tags: ["philippines", "va"], ethical_note: "Public JSON search endpoint.", is_json: true, json_type: "JobStreet" },
+    { id: "jobstreet-ph-admin", name: "JobStreet PH (Admin)", url: "https://www.jobstreet.com.ph/api/chalice-search/v4/search?siteKey=PH-Main&where=Philippines&keywords=administrative", platform: "JobStreet", defaultJobType: "VA", tags: ["philippines", "admin"], ethical_note: "Public JSON search endpoint.", is_json: true, json_type: "JobStreet" }
+  ]
+};
+
+export const config = defaultConfig;
+```
+
+================================================================================
+================================================================================
+
+## SECTION VI: LOGS & SYSTEM STATE SNAPSHOTS
+
+### api_health.json / health.json / health_after.json
+```json
+{
+  "timestamp": "2026-03-22T01:35:08.285Z",
+  "status": "HEALTHY",
+  "vitals": {
+    "totalActive": 353,
+    "tierDistribution": { "gold": 33, "silver": 72, "bronze": 248 },
+    "lastHeartbeat": "2026-03-22T01:33:12.000Z",
+    "stalenessHrs": 0.03,
+    "isFaithful": true,
+    "isStale": false
+  }
+}
+```
+
+### trigger_schedules.json
+```json
+{"data":[{"id":"sched_jvrxkhi6o3mpa6jd1uqvs","type":"DECLARATIVE","task":"isolated-ping","generator":{"type":"CRON","expression":"*/5 * * * *","description":"Every 5 minutes"},"active":true,"nextRun":"2026-03-22T01:30:00.000Z"},{"id":"sched_er5exfgtywm66d72oezo3","type":"DECLARATIVE","task":"ping-heartbeat","generator":{"type":"CRON","expression":"*/5 * * * *","description":"Every 5 minutes"},"active":true,"nextRun":"2026-03-22T01:30:00.000Z"},{"id":"sched_rsyydjhbbn9dn6szqtccw","type":"DECLARATIVE","task":"backup-snapshot","generator":{"type":"CRON","expression":"0 0 * * *","description":"At 12:00 AM"},"active":true,"nextRun":"2026-03-23T00:00:00.000Z"},{"id":"sched_n3jurspxzjb4xhxhrrbrw","type":"DECLARATIVE","task":"resilience-watchdog","generator":{"type":"CRON","expression":"0 */6 * * *","description":"At 0 minutes past the hour, every 6 hours"},"active":true,"nextRun":"2026-03-22T06:00:00.000Z"},{"id":"sched_zdkx4kkj8swp44i5rm74r","type":"DECLARATIVE","task":"deep-system-audit","generator":{"type":"CRON","expression":"0 0 * * *","description":"At 12:00 AM"},"active":true,"nextRun":"2026-03-23T00:00:00.000Z"},{"id":"sched_2zb31wqr7n7w3zbvg6ex3","type":"DECLARATIVE","task":"harvest-opportunities","generator":{"type":"CRON","expression":"*/15 * * * *","description":"Every 15 minutes"},"active":true,"nextRun":"2026-03-22T01:30:00.000Z"},{"id":"sched_d1u6zn21kg5jve39d9m3s","type":"DECLARATIVE","task":"database-watchdog","generator":{"type":"CRON","expression":"0 */7 * * *","description":"At 0 minutes past the hour, every 7 hours"},"active":true,"nextRun":"2026-03-22T07:00:00.000Z"},{"id":"sched_o3i1km19whz61yb6xfign","type":"DECLARATIVE","task":"verify-links","generator":{"type":"CRON","expression":"0 6 * * *","description":"At 06:00 AM"},"active":true,"nextRun":"2026-03-22T06:00:00.000Z"},{"id":"sched_zytgmuykmw2skn1jemq4y","type":"DECLARATIVE","task":"verify-directory","generator":{"type":"CRON","expression":"0 7 * * 1","description":"At 07:00 AM, only on Monday"},"active":true,"nextRun":"2026-03-23T07:00:00.000Z"}]}
+```
