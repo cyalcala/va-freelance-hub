@@ -53,8 +53,7 @@ export async function harvest(db: any) {
   const jsonItems = jsonResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 
   // ── COMBINE ALL SOURCES ─────────────────────────────────
-  // Focused exclusively on high-intent layers (RSS + ATS + Specific JSON Probes)
-  const allItems = [...rssItems, ...atsItems, ...jsonItems];
+  const allItems = [...rssItems, ...redditItems, ...jobicyItems, ...atsItems, ...jsonItems];
   
   // ── DEDUP & SIFT ───────────────────────────────────────────────
   const processedFingerprints = new Set();
