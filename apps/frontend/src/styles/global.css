@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .pulse-dot {
+    @apply w-2 h-2 rounded-full;
+    transform: translateZ(0); /* Force GPU layer */
+  }
+}
+
+/* PERFORMANCE: Use standard hidden class for efficient display switching in the feed */
+.hidden {
+  display: none !important;
+}
+
+/* GPU promotion for glassmorphism to prevent paint lag on scroll */
+.backdrop-blur-sm, .backdrop-blur-md, .backdrop-blur-xl {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+}
+
 @layer base {
   body {
     @apply bg-oat-50 text-blueberry-900 antialiased overflow-x-hidden;

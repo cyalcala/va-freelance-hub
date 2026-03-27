@@ -18,10 +18,16 @@ const { title } = Astro.props;
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet">
+		
+		<!-- Preloading Critical Font Weights for FCP -->
+		<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@700;800;900&display=swap" rel="stylesheet" />
+		
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
-		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+		
+		<!-- Non-blocking HTMX Loading -->
+		<script src="https://unpkg.com/htmx.org@1.9.10" defer></script>
 		<ClientRouter />
 	</head>
 	<body class="selection:bg-blueberry-100 selection:text-blueberry-900 font-['Inter',sans-serif] bg-oat-50 antialiased overflow-x-hidden min-h-screen">

@@ -149,7 +149,8 @@ try {
     const empty = document.getElementById('emptyState');
     if (!grid) return;
 
-    let items = Array.from(grid.querySelectorAll('.opp-item')).map(el => ({
+    // PERFORMANCE: Pre-calculate the item dataset once on load, NOT in the input loop.
+    const items = Array.from(grid.querySelectorAll('.opp-item')).map(el => ({
       el,
       text: el.dataset.search || "",
       age: parseFloat(el.dataset.age || "999")
@@ -162,26 +163,38 @@ try {
 
     function run() {
       let count = 0;
+      
+      // OPTIMIZATION: Bulk layout grouping. 
+      // Avoid querySelectorAll inside the loop. Use the pre-cached 'items' array.
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        // item.age is hours. limit is 24 or 72.
-        const matchesQuery = item.text.includes(q);
-        const matchesTime = item.age <= limit;
-        const isVisible = matchesQuery && matchesTime;
+        const isVisible = item.text.includes(q) && item.age <= limit;
         
-        item.el.style.display = isVisible ? 'flex' : 'none';
-        if (isVisible) count++;
+        // Use classList for better performance over direct style manipulation
+        if (isVisible) {
+          item.el.classList.remove('hidden');
+          item.el.classList.add('flex');
+          count++;
+        } else {
+          item.el.classList.remove('flex');
+          item.el.classList.add('hidden');
+        }
       }
-      if (empty) empty.style.display = count > 0 ? 'none' : 'block';
+      
+      if (empty) {
+        if (count === 0) empty.classList.remove('hidden');
+        else empty.classList.add('hidden');
+      }
     }
 
     if (search) {
       search.addEventListener('input', (e) => {
         clearTimeout(debounceTimer);
+        // debounce slightly for paint cycles, but keep it "Snap-Fast"
         debounceTimer = setTimeout(() => {
           q = e.target.value.toLowerCase().trim();
           run();
-        }, 50); 
+        }, 10); 
       });
     }
 

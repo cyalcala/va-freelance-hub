@@ -80,6 +80,11 @@ const reasoningTags = tags.filter(t => !['ats-sniper', 'agency', 'direct'].inclu
 </a>
 
 <style>
+  .opp-item {
+    content-visibility: auto; /* Skip rendering off-screen cards */
+    contain-intrinsic-size: 100px; /* Estimated height for layout calculation */
+    will-change: transform, opacity; /* Promote to GPU composite layer */
+  }
   .tier-platinum {
     background: linear-gradient(to bottom right, #FFFFFF, #FFFAF0);
     border-color: rgba(255, 215, 0, 0.3);
