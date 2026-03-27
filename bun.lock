@@ -58,6 +58,7 @@
       },
       "devDependencies": {
         "@types/uuid": "^9.0.7",
+        "zod": "^4.3.6",
       },
     },
     "packages/config": {

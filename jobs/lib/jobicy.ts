@@ -7,7 +7,7 @@
  */
 
 import { createHash } from "crypto";
-import type { NewOpportunity } from "./db";
+import type { NewOpportunity } from "@va-hub/db/schema";
 
 function toHash(title: string, url: string) {
   return createHash("sha256").update(`${title}::${url}`).digest("hex").slice(0, 16);
@@ -58,6 +58,7 @@ export async function fetchJobicyJobs(): Promise<NewOpportunity[]> {
       scrapedAt: new Date(),
       isActive: true,
       contentHash: toHash(job.jobTitle || "", job.url || ""),
+      __raw: job,
     }));
 
     console.log(`[jobicy] Fetched ${jobs.length} remote jobs`);

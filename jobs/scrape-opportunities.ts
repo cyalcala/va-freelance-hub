@@ -11,6 +11,7 @@ import { sql } from "drizzle-orm";
 import { isLikelyScam } from "./lib/trust";
 import { siftOpportunity, OpportunityTier } from "./lib/sifter";
 import { v4 as uuidv4 } from "uuid";
+import { healPayloadWithLLM } from "./lib/autonomous-harvester";
 
 function normalizeTitle(title: string): string {
   return title
@@ -66,7 +67,20 @@ export async function harvest(db: any) {
   const now = Date.now();
 
   for (const item of results) {
-    if (!item || !item.title) continue;
+    if (!item || !item.title || !item.sourceUrl) {
+      if (item && (item as any).__raw) {
+         // Potential for healing
+         const healed = await healPayloadWithLLM((item as any).__raw, item.sourcePlatform || "Unknown");
+         if (healed) {
+            Object.assign(item, healed);
+            await recordLog(db, `Successfully healed signal from ${item.sourcePlatform}`, "info", { title: item.title });
+         } else {
+            continue;
+         }
+      } else {
+        continue;
+      }
+    }
     
     // Strict Data Contract: Ignore visual noise, focus on structured data
     if (isLikelyScam(item.title, item.description ?? "")) continue;

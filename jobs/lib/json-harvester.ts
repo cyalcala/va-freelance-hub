@@ -7,7 +7,7 @@
  */
 
 import { createHash } from "crypto";
-import type { NewOpportunity } from "./db";
+import type { NewOpportunity } from "@va-hub/db/schema";
 
 export interface JSONSource {
   id: string;
@@ -82,6 +82,7 @@ function parseJobStreet(data: any, source: JSONSource): NewOpportunity[] {
       contentHash: toHash(title, sourceUrl),
       latestActivityMs: job.listingDate ? new Date(job.listingDate).getTime() : Date.now(),
       companyLogo: job.advertiser?.logo?.url || null,
+      __raw: job,
       metadata: {
         salary: job.salary || null,
         workType: job.workType || null,
@@ -118,6 +119,7 @@ function parseIndeed(data: any, source: JSONSource): NewOpportunity[] {
       contentHash: toHash(title, sourceUrl),
       latestActivityMs: job.pubDate ? new Date(job.pubDate).getTime() : Date.now(),
       companyLogo: job.companyLogoUrl || null,
+      __raw: job,
       metadata: {
         salary: job.salaryText || null,
         formattedLocation: job.formattedLocation || null,

@@ -1,4 +1,4 @@
-import type { NewOpportunity } from "./db";
+import type { NewOpportunity } from "@va-hub/db/schema";
 import { createHash } from "crypto";
 
 /**
@@ -54,6 +54,7 @@ export async function fetchATSJobs(): Promise<NewOpportunity[]> {
         scrapedAt: new Date(),
         postedAt: job.updated_at ? new Date(job.updated_at) : new Date(), 
         tags: job.location?.name ? [job.location.name] : [],
+        __raw: job,
       }));
     } catch (e) {
       return [];

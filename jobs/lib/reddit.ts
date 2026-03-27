@@ -7,7 +7,7 @@
  */
 
 import { createHash } from "crypto";
-import type { NewOpportunity } from "./db";
+import type { NewOpportunity } from "@va-hub/db/schema";
 
 const SUBREDDITS = [
   { name: "buhaydigital", label: "r/buhaydigital" },
@@ -92,6 +92,7 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
           scrapedAt: new Date(),
           isActive: true,
           contentHash: toHash(title, sourceUrl),
+          __raw: p,
         } as unknown as NewOpportunity);
       }
 

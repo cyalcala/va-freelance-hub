@@ -1,6 +1,19 @@
 ## [2026-03-25] — [Opportunities: 314 | Agencies: 57]
 **Status: SYSTEM EVOLVED — GLOWING & SNAPSHOTTED**
 
+## [2026-03-27] — [Opportunities: 67 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
+* feat: implement surgical ATS sniper and agency harvester (92e8d13)
+
+### 🛡️ Reliability & Fixes
+* fix: remove destructive watchdog rathole kill, restore reddit+jobicy in harvest pipeline (5b3e2e7)
+* fix: resolve astro build chain - adapter import, desc import, config exports (a9f0732)
+
+---
+
+
 ## [2026-03-26] — [Opportunities: 47 | Agencies: 57]
 **Status: AUTO-PROCESSED**
 
