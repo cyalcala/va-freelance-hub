@@ -1,36 +1,31 @@
 import { schedules, logger } from "@trigger.dev/sdk/v3";
 import { createDb } from "@va-hub/db/client";
 import { sql } from "drizzle-orm";
+import { opportunities, logs } from "@va-hub/db/schema";
+import { v4 as uuidv4 } from "uuid";
 
 export const databaseWatchdogTask = schedules.task({
   id: "database-watchdog",
-  cron: "0 */7 * * *", 
+  cron: "0 0 * * *", // Daily purification at midnight
   maxDuration: 300, 
   run: async () => {
     const { db, client } = createDb();
     try {
-      logger.info("[watchdog] Starting Deep Schema Audit & Purification...");
+      logger.info("[watchdog] ══ Initiating Data Purification & Governance ══");
       
       const nowMs = Date.now();
       const SEVENTY_TWO_HOURS_MS = 72 * 60 * 60 * 1000;
-      const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
       const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+      const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 
-      // 1. Purge Inactive (60d) — Remove dead weight that's been inactive for 2 months
-      const purgeInactive = await db.run(sql`
+      // 1. Hard-delete "Trash" tier after 7 days
+      const purgeTrash = await db.run(sql`
         DELETE FROM opportunities 
-        WHERE is_active = 0 
-        AND scraped_at < ${nowMs - SIXTY_DAYS_MS}
-      `);
-      
-      // 2. Purge Trash (7d) — Remove TRASH-tier items older than a week
-      const purgeTier4 = await db.run(sql`
-        DELETE FROM opportunities 
-        WHERE (tier = 4 OR tier IS NULL)
+        WHERE (tier = 4 OR tier IS NULL) 
         AND scraped_at < ${nowMs - SEVEN_DAYS_MS}
       `);
 
-      // 3. Deactivate "Watermelons" (Stale for >72h) — Mark stale items as inactive
+      // 2. Soft-delete/Deactivate "Watermelons" (Stale > 72 hours)
       const deactivateWatermelons = await db.run(sql`
         UPDATE opportunities 
         SET is_active = 0 
@@ -38,19 +33,27 @@ export const databaseWatchdogTask = schedules.task({
         AND scraped_at < ${nowMs - SEVENTY_TWO_HOURS_MS}
       `);
 
-      // 4. Purge killed-company data that may have slipped past the sifter
-      const purgeKilledCompanies = await db.run(sql`
+      // 3. Final Purge of Inactive dead-weight (60 days)
+      const finalPurge = await db.run(sql`
         DELETE FROM opportunities 
-        WHERE LOWER(company) IN ('canonical','gitlab','ge healthcare','nextiva')
+        WHERE is_active = 0 
+        AND scraped_at < ${nowMs - SIXTY_DAYS_MS}
       `);
 
-      logger.info(`[watchdog] Maintenance Complete.`, {
-        purged: purgeInactive.rowsAffected + purgeTier4.rowsAffected,
-        watermelons: deactivateWatermelons.rowsAffected,
-        killedCompanies: purgeKilledCompanies.rowsAffected
+      await db.insert(logs).values({
+        id: uuidv4(),
+        message: `System Governance Complete: Purged ${purgeTrash.rowsAffected + finalPurge.rowsAffected} rows; Deactivated ${deactivateWatermelons.rowsAffected} watermelons.`,
+        level: "info",
+        timestamp: new Date()
+      });
+
+      logger.info("[watchdog] Data Purification Complete.", {
+        purgedTrash: purgeTrash.rowsAffected,
+        deactivated: deactivateWatermelons.rowsAffected,
+        finalPurged: finalPurge.rowsAffected
       });
       
-      return { status: "HEALTHY" };
+      return { status: "GOVERNANCE_COMPLETE" };
     } finally {
       await client.close();
     }

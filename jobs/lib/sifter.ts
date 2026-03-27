@@ -1,7 +1,7 @@
-
 /**
- * VA.INDEX Signal Sifter v9.0
+ * VA.INDEX Signal Sifter v10.0
  * Philippine-First Five-Tier Classification
+ * Ruthless Indexing Engine
  */
 
 export enum OpportunityTier {
@@ -24,10 +24,11 @@ const GEO_EXCLUSION_KILLS = [
   "must be in dallas","must be in denver","must be in phoenix",
   "must be in london","must be in toronto",
   "dach","nordics","benelux","latam only","south america only",
-  "(portland)","(atlanta)","(chicago)","(austin)","(seattle)","(boston)",
   "est time zone","pst time zone","cst time zone","mst time zone",
   "et time zone","pt time zone","ct time zone","mt time zone",
   "eastern time zone","pacific time zone","central time zone","mountain time zone",
+  "visa sponsorship is not available", "sponsorship not available",
+  "reside in the following states", "united states of america",
 ];
 
 const TITLE_GEO_KILLS = [
@@ -37,6 +38,7 @@ const TITLE_GEO_KILLS = [
   " belgium", " spain", " italy", " portugal", " greece", " israel", 
   " north america", " south america", " emea", " apac only", " latam",
   "united kingdom", "london-based", "ny-based", "sf-based", "la-based",
+  "atlanta-based", "chicago-based", "austin-based", "seattle-based",
 ];
 
 const LANGUAGE_KILLS = [
@@ -161,15 +163,17 @@ export function siftOpportunity(title: string, description: string, company: str
   const sp = (sourcePlatform || "").toLowerCase();
   const body = `${t} ${d} ${c}`;
 
-  // 1. HARD KILLS (Region/Language/Executive/PH-Negative Companies) - Highest Precedence
-  for (const k of TITLE_GEO_KILLS) if (t.includes(k) && !PLATINUM_DIRECT.some(s => t.includes(s))) return OpportunityTier.TRASH;
+  // 1. HARD KILLS - Highest Precedence
+  // If it's a direct PH match in title, we might bypass some geo kills, but generally we want to be ruthless.
+  const hasDirectPHInTitle = PLATINUM_DIRECT.some(s => t.includes(s));
+  
+  if (!hasDirectPHInTitle) {
+    for (const k of TITLE_GEO_KILLS) if (t.includes(k)) return OpportunityTier.TRASH;
+  }
+  
   for (const k of GEO_EXCLUSION_KILLS) if (body.includes(k)) return OpportunityTier.TRASH;
   for (const k of LANGUAGE_KILLS) if (t.includes(k)) return OpportunityTier.TRASH;
   
-  // PH-Negative or Too-Corporate Companies
-  const COMPANY_KILLS = ["canonical", "gitlab", "ge healthcare", "nextiva"];
-  for (const k of COMPANY_KILLS) if (body.includes(k) && !PLATINUM_DIRECT.some(s => body.includes(s))) return OpportunityTier.TRASH;
-
   // High-level Corporate Kills
   const CORP_KILLS = [
     "chief executive","chief technology","chief operating","chief financial",
@@ -189,7 +193,11 @@ export function siftOpportunity(title: string, description: string, company: str
     if (t.includes(k) && !TECH_ALLOWLIST.some(o => t.includes(o))) return OpportunityTier.TRASH;
   }
 
-  // 3. MANAGER / SENIORITY / ENTERPRISE FILTERING
+  // 3. RUTHLESS COMPANY FILTERING
+  const COMPANY_KILLS = ["canonical", "gitlab", "ge healthcare", "nextiva", "toptal", "upwork", "fiverr"];
+  for (const k of COMPANY_KILLS) if (c.includes(k) && !hasDirectPHInTitle) return OpportunityTier.TRASH;
+
+  // 4. MANAGER / SENIORITY / ENTERPRISE FILTERING
   const isElevationRole = SENIORITY_VA_EXCEPTIONS.some(e => t.includes(e));
   const isAchievableBaseRole = ACHIEVABLE_ROLES.some(r => t.includes(r));
   const isSupportRole = [
@@ -197,7 +205,11 @@ export function siftOpportunity(title: string, description: string, company: str
     "support representative", "support agent", "help desk", "live chat", "chat support",
     "customer experience", "technical support", "it support"
   ].some(s => t.includes(s));
-  const hasPHSignal = PLATINUM_DIRECT.some(s => body.includes(s)) || PLATINUM_CITIES.some(c => body.includes(c)) || PLATINUM_PLATFORMS.some(p => sp.includes(p));
+  
+  const hasPHSignal = hasDirectPHInTitle || 
+                     PLATINUM_DIRECT.some(s => body.includes(s)) || 
+                     PLATINUM_CITIES.some(ci => body.includes(ci)) || 
+                     PLATINUM_PLATFORMS.some(p => sp.includes(p));
 
   // Hard Kill: Enterprise / Regional / Director without PH signal
   if (t.includes("enterprise") || t.includes("regional") || t.includes("director") || t.includes("global head")) {
@@ -206,26 +218,19 @@ export function siftOpportunity(title: string, description: string, company: str
 
   // Manager / Senior / Lead Logic
   if (t.includes("manager") || SENIORITY_SOFT_KILLS.some(k => t.includes(k))) {
-    // Exemptions: Elevation roles (Senior VA) or common VA Manager titles
     const isCommonVAManager = ["social media manager", "community manager", "ads manager", "content manager"].some(m => t.includes(m));
     
     if (isElevationRole || isCommonVAManager) {
-        // These are mostly okay, but if it says "manager" specifically (elevation might not), 
-        // we still prefer a PH signal if it's from a generic source
         if (t.includes("manager") && !hasPHSignal && !isCommonVAManager) return OpportunityTier.TRASH;
     } else {
-        // Not a common VA manager role or elevation role
         if (!hasPHSignal) return OpportunityTier.TRASH;
-        
-        // Even with PH signal, check for high-level corporate manager markers
         if (t.includes("revenue operations") || t.includes("customer success manager") || t.includes("product manager")) {
-             // These are usually corporate even in PH
              if (!body.includes("virtual assistant") && !body.includes(" va ")) return OpportunityTier.TRASH;
         }
     }
   }
 
-  // 4. POSITIVE SIGNAL CHECK (Sanity Check: Must be a VA role or have a PH Signal)
+  // 5. POSITIVE SIGNAL CHECK (Must be a VA role or have a PH Signal)
   const hasSpecificAchievableRole = isAchievableBaseRole || isElevationRole || isSupportRole;
   const hasGenericVARole = body.includes("virtual assistant") || body.includes(" va ");
   
@@ -233,21 +238,16 @@ export function siftOpportunity(title: string, description: string, company: str
      return OpportunityTier.TRASH;
   }
 
-  // 5. TIERING
-  // PLATINUM: PH Signal OR (Global/Regional Support Role)
-  const isRegionalOrGlobalSupport = isSupportRole && (GOLD_SIGNALS.some(s => body.includes(s)) || SILVER_SIGNALS.some(s => body.includes(s)));
-  
-  if (hasPHSignal || isRegionalOrGlobalSupport) {
-    if (isElevationRole || isAchievableBaseRole || isSupportRole) return OpportunityTier.PLATINUM;
+  // 6. TIERING
+  if (hasPHSignal) {
     return OpportunityTier.PLATINUM; 
   }
   
-  // GOLD: Vague APAC/SEA signals
+  const isRegionalOrGlobalSupport = isSupportRole && (GOLD_SIGNALS.some(s => body.includes(s)) || SILVER_SIGNALS.some(s => body.includes(s)));
+  if (isRegionalOrGlobalSupport) return OpportunityTier.GOLD;
+
   if (GOLD_SIGNALS.some(s => body.includes(s))) return OpportunityTier.GOLD;
-  
-  // SILVER: Vague Worldwide/Global signals
   if (SILVER_SIGNALS.some(s => body.includes(s))) return OpportunityTier.SILVER;
   
-  // BRONZE: Catch-all for relevant roles without Geo signals
   return OpportunityTier.BRONZE;
 }

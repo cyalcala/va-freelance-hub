@@ -1,84 +1,72 @@
 import { schedules, logger, tasks } from "@trigger.dev/sdk/v3";
 import { createDb } from "@va-hub/db/client";
-import { systemHealth, opportunities } from "@va-hub/db/schema";
-import { sql, desc, eq, and, gt } from "drizzle-orm";
+import { systemHealth, opportunities, vitals, logs } from "@va-hub/db/schema";
+import { sql, desc, eq } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
 
 export const resilienceWatchdogTask = schedules.task({
   id: "resilience-watchdog",
-  cron: "0 */6 * * *", 
-  maxDuration: 300, // Increased timeout 
+  cron: "0 */2 * * *", // Checked every 2 hours as per "Google Ethos"
+  maxDuration: 300,
   run: async () => {
     const { db, client } = createDb();
     try {
-      logger.info("[watchdog] Initiating Strategic Vitals Audit...");
+      logger.info("[watchdog] ══ Initiating Autonomous Resilience Audit ══");
       
       const nowMs = Date.now();
-      const ONE_HOUR_MS = 60 * 60 * 1000;
-      const TWENTY_MINS_MS = 20 * 60 * 1000;
+      const STALENESS_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2 hours
       
-      const vitals: any = {
-        pulseOk: false,
-        stagnationOk: false,
-        sourcesDegraded: [],
-        goldCount: 0,
-        lastPulse: null,
-      };
-
-      // 1. Check Pulse (Last Scrape)
-      try {
-        const latestSignal = await db.select({ scrapedAt: opportunities.scrapedAt })
-          .from(opportunities)
-          .orderBy(desc(opportunities.scrapedAt))
-          .limit(1);
-        
-        vitals.lastPulse = latestSignal[0]?.scrapedAt ? new Date(latestSignal[0].scrapedAt).getTime() : null;
-        vitals.pulseOk = vitals.lastPulse ? vitals.lastPulse > (nowMs - (2 * 60 * 60 * 1000)) : false;
-
-        if (!vitals.pulseOk) {
-          logger.error("[watchdog] CRITICAL STALENESS DETECTED (>2h). Triggering Burst Mode...");
-          await tasks.trigger("harvest-opportunities", { mode: "BURST_MODE_RECOVERY" });
-        }
-      } catch (err: any) {
-        logger.error("[watchdog] Pulse Check Failed:", err.message);
-      }
-
-      // 2. Real-time Gap Check (Last 20 mins)
-      try {
-        const recentWrites = await db.select({ count: sql<number>`count(*)` })
-          .from(opportunities)
-          .where(gt(opportunities.scrapedAt, new Date(nowMs - TWENTY_MINS_MS)));
-        
-        const recentCount = Number(recentWrites[0]?.count || 0);
-        if (recentCount === 0 && vitals.pulseOk) {
-          logger.warn("[watchdog] REAL-TIME GAP. Triggering minor recovery.");
-          await tasks.trigger("harvest-opportunities", { source: "watchdog-recovery" });
-        }
-      } catch (err: any) {
-        logger.error("[watchdog] Gap Check Failed:", err.message);
-      }
-
-      // 3. Gold Tier Count
-      try {
-        const goldTier = await db.select({ count: sql<number>`count(*)` })
-          .from(opportunities)
-          .where(and(eq(opportunities.tier, 1), eq(opportunities.isActive, true)));
-        vitals.goldCount = Number(goldTier[0]?.count || 0);
-      } catch (err: any) {
-        logger.error("[watchdog] Gold Audit Failed:", err.message);
-      }
-
-      // 4. Source Degradation
-      try {
-        const unhealthySources = await db.select()
-          .from(systemHealth)
-          .where(sql`status = 'FAIL' OR (updatedAt IS NOT NULL AND updatedAt < ${new Date(nowMs - ONE_HOUR_MS).getTime()})`);
-        
-        vitals.sourcesDegraded = unhealthySources.map((s: any) => s.sourceName);
-      } catch (err: any) {
-        logger.error("[watchdog] Source Audit Failed:", err.message);
-      }
+      // 1. Audit Ingestion Pulse
+      const latestSignal = await db.select({ scrapedAt: opportunities.scrapedAt })
+        .from(opportunities)
+        .orderBy(desc(opportunities.scrapedAt))
+        .limit(1);
       
-      return { status: "COMPLETED", vitals };
+      const lastPulse = latestSignal[0]?.scrapedAt ? new Date(latestSignal[0].scrapedAt).getTime() : 0;
+      const isStale = (nowMs - lastPulse) > STALENESS_THRESHOLD_MS;
+
+      if (isStale) {
+        logger.error(`[watchdog] CRITICAL STALENESS DETECTED. Last ingestion: ${Math.round((nowMs - lastPulse) / 60000)} mins ago.`);
+        
+        // SELF-HEALING: Clear potential locks and trigger recovery burst
+        await db.update(vitals)
+          .set({ 
+            lockStatus: 'IDLE', 
+            lockUpdatedAt: new Date(),
+            lastRecoveryAt: new Date() 
+          });
+
+        await db.insert(logs).values({
+          id: uuidv4(),
+          message: "RECOVERY MODE ACTIVATED: Clearing system locks and triggering emergency harvest.",
+          level: "error",
+          timestamp: new Date(),
+          metadata: JSON.stringify({ lastPulse, stalenessMins: Math.round((nowMs - lastPulse) / 60000) })
+        });
+
+        // Trigger burst mode recovery
+        await tasks.trigger("harvest-opportunities", { source: "resilience-watchdog-recovery", mode: "BURST" });
+      } else {
+        logger.info("[watchdog] System pulse within nominal range.");
+        await db.insert(logs).values({
+          id: uuidv4(),
+          message: "System Health: Pulse Nominal.",
+          level: "info",
+          timestamp: new Date()
+        });
+      }
+
+      // 2. Audit Source Degradation
+      const degradedSources = await db.select()
+        .from(systemHealth)
+        .where(eq(systemHealth.status, 'FAIL'));
+      
+      if (degradedSources.length > 0) {
+        logger.warn(`[watchdog] ${degradedSources.length} sources reported as DEGRADED.`);
+        // Note: Specific source recovery is handled by the harvester's per-source try-catch.
+      }
+
+      return { status: "AUDIT_COMPLETE", isStale };
     } finally {
       await client.close();
     }

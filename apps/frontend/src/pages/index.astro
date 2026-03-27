@@ -13,15 +13,16 @@ import staticFallback from '../data/static_fallback.json';
 // Variables initialization
 let initialSignals = [];
 let mirrorSignals = [];
-let healthStats = { status: 'STANDBY', lastHeartbeat: null };
+let healthStats = { status: 'STANDBY', lastHeartbeat: null, isFallback: false };
 let dbError = null;
 
 try {
+  // Cloudflare Ethos: Immediate Fail-Soft if DB is unreachable
   if (process.env.TURSO_DATABASE_URL) {
     initialSignals = await getSortedSignals(50);
     mirrorSignals = await getLatestMirror(10);
     
-    // Quick Health Pulse
+    // Surgical Telemetry: Quick Health Pulse
     const stats = await db.select({
       maxScraped: sql<number>`max(scraped_at)`,
     }).from(schema.opportunities).where(eq(schema.opportunities.isActive, true));
@@ -29,14 +30,22 @@ try {
     if (stats[0]?.maxScraped) {
       healthStats = { 
         status: 'ACTIVE', 
+        isFallback: false,
         lastHeartbeat: new Date(stats[0].maxScraped).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
       };
     }
+  } else {
+    throw new Error("Missing Database Configuration");
   }
 } catch (err: any) {
-  console.warn("⚠️ Fail-Soft Active:", err.message);
+  console.warn("⚠️ Fail-Soft Engaged: Turso Unreachable or Error.", err.message);
   initialSignals = staticFallback;
   mirrorSignals = staticFallback.slice(0, 10);
+  healthStats = { 
+    status: 'SURVIVAL_MODE', 
+    isFallback: true,
+    lastHeartbeat: 'PRE-CACHED' 
+  };
   dbError = 'OFFLINE';
 }
 ---
@@ -46,7 +55,7 @@ try {
     <header class="mb-16">
       <div class="flex items-center gap-6 mb-8 group cursor-default">
         <div class="flex items-center gap-2">
-          <div class="pulse-dot"></div>
+          <div class={`pulse-dot ${healthStats.isFallback ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500'}`}></div>
           <span class="text-[10px] font-black text-blueberry-500 tracking-[0.3em] uppercase transition-all group-hover:tracking-[0.5em]">LIVE SIGNALS</span>
         </div>
         
@@ -54,7 +63,7 @@ try {
 
         <div class="flex items-center gap-2 px-3 py-1 bg-white/50 border border-oat-200/50 rounded-full shadow-sm backdrop-blur-sm">
           <span class="text-[9px] font-black text-blueberry-800/40 uppercase tracking-tighter">System Pulse:</span>
-          <span class="text-[10px] font-black text-emerald-600 uppercase">
+          <span class={`text-[10px] font-black uppercase ${healthStats.isFallback ? 'text-amber-600' : 'text-emerald-600'}`}>
             {healthStats.status}
           </span>
           {healthStats.lastHeartbeat && (
@@ -65,6 +74,18 @@ try {
         </div>
       </div>
       
+      {healthStats.isFallback && (
+        <div class="mb-8 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-1000">
+           <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+           </div>
+           <div>
+             <p class="text-xs font-bold text-amber-900 uppercase tracking-tight">Survival Mode Active</p>
+             <p class="text-[11px] text-amber-800/70 font-medium">Turso edge database is currently unreachable. Serving high-intent pre-cached fallback signals.</p>
+           </div>
+        </div>
+      )}
+
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-8 mb-12">
         <div class="max-w-2xl">
           <h1 class="text-4xl sm:text-6xl font-black text-blueberry-900 mb-6 leading-[0.9] tracking-tighter uppercase whitespace-pre-line font-heading transition-all hover:tracking-tight">
