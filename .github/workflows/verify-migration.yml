@@ -1,0 +1,27 @@
+name: Migration security Guard
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/db/schema.ts'
+      - 'packages/db/migrations/**'
+
+jobs:
+  verify:
+    name: 🛡️ Schema Integrity Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - name: Install dependencies
+        run: bun install
+      - name: Verify Migration Sync
+        run: |
+          cd packages/db
+          # Ensures that the schema in schema.ts matches the migration files
+          # No 'drizzle-kit push' is allowed in CI
+          bunx drizzle-kit check || (echo "::error::Schema and Migrations are desynced. Run 'bun run generate' locally and commit the changes." && exit 1)
