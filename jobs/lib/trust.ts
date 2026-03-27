@@ -25,6 +25,12 @@ const SCAM_PATTERNS = [
   /earn.*php.*day/i,
   /student looking for/i,
   /ways to earn/i,
+  /chat moderator/i,
+  /chat moderation/i,
+  /of chatter/i,
+  /onlyfans chatter/i,
+  /account closer/i,
+  /chatter.*remote/i,
 ];
 
 export function isLikelyScam(title: string, description: string): boolean {
