@@ -4,7 +4,24 @@ import Layout from '../layouts/Layout.astro';
 import { db, logs } from '@va-hub/db';
 import { desc } from 'drizzle-orm';
 
+// --- SECURITY GATE ---
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN;
+const providedToken = Astro.url.searchParams.get('token') || Astro.request.headers.get('x-admin-token');
+
+if (process.env.NODE_ENV === 'production' && (!ADMIN_TOKEN || providedToken !== ADMIN_TOKEN)) {
+  return new Response('401 Unauthorized: Access Denied to VA.INDEX Sentinels', { status: 401 });
+}
+
 const allLogs = await db.select().from(logs).orderBy(desc(logs.timestamp)).limit(100);
+
+function safeJsonParse(data: string | null) {
+  if (!data || data === '{}') return null;
+  try {
+    return JSON.parse(data);
+  } catch {
+    return { error: "Malformed Metadata", raw: data };
+  }
+}
 
 function getLevelColor(level: string) {
   switch (level) {
@@ -24,7 +41,7 @@ function getIndicatorColor(level: string) {
   }
 }
 
-Astro.response.headers.set('Cache-Control', 'public, max-age=5, s-max-age=5');
+Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
 ---
 
 <Layout title="System Logs | VA.INDEX">
@@ -85,7 +102,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=5, s-max-age=5');
                   </p>
                   {log.metadata && log.metadata !== '{}' && (
                     <pre class="mt-2 p-3 bg-blueberry-900/5 rounded-xl text-[10px] text-blueberry-900/60 font-mono overflow-x-auto border-dashed border border-blueberry-900/10">
-                      {JSON.stringify(JSON.parse(log.metadata), null, 2)}
+                      {JSON.stringify(safeJsonParse(log.metadata), null, 2)}
                     </pre>
                   )}
                 </div>

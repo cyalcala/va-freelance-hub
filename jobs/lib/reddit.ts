@@ -1,13 +1,26 @@
-/**
- * Reddit Public JSON Harvester
- * 
- * Uses Reddit's official public JSON endpoints (no API key required).
- * Every subreddit provides .json — this is Reddit's intended public data format.
- * We only harvest posts tagged [Hiring] from career-focused subreddits.
- */
-
+import { z } from "zod";
 import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db/schema";
+
+// --- REDDIT SCHEMAS ---
+
+const RedditPostSchema = z.object({
+  title: z.string(),
+  author: z.string().optional().default("Direct Hire"),
+  selftext: z.string().optional().default(""),
+  url: z.string().url().optional(),
+  permalink: z.string(),
+  link_flair_text: z.string().optional().nullable(),
+  created_utc: z.number(),
+});
+
+const RedditResponseSchema = z.object({
+  data: z.object({
+    children: z.array(z.object({
+      data: RedditPostSchema
+    })).default([])
+  })
+});
 
 const SUBREDDITS = [
   { name: "buhaydigital", label: "r/buhaydigital" },
@@ -32,35 +45,36 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
 
   for (const sub of SUBREDDITS) {
     try {
-      // Small delay between subreddits to respect Reddit rate limits
-      if (allJobs.length > 0) await new Promise(r => setTimeout(r, 300));
+      if (allJobs.length > 0) await new Promise(r => setTimeout(r, 500)); // Increased throttle
 
-      const res = await fetch(`https://www.reddit.com/r/${sub.name}/new.json?limit=50&t=${Date.now()}`, {
+      const res = await fetch(`https://www.reddit.com/r/${sub.name}/new.json?limit=25&t=${Date.now()}`, {
         headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "User-Agent": "VA.INDEX/1.0 (ethical-harvester; public-json)",
           "Accept": "application/json",
-          "Cache-Control": "no-cache",
-          "Pragma": "no-cache"
         },
         signal: AbortSignal.timeout(10_000),
       });
 
       if (!res.ok) {
-        console.log(`[reddit] ${sub.label}: HTTP ${res.status}`);
+        console.error(`[reddit] ${sub.label}: HTTP ${res.status}`);
         continue;
       }
 
-      const data = await res.json();
-      const posts = data?.data?.children || [];
+      const rawData = await res.json();
+      const parsed = RedditResponseSchema.safeParse(rawData);
+      
+      if (!parsed.success) {
+        console.warn(`[reddit] Schema mutation on ${sub.label}.`);
+        continue;
+      }
+
+      const posts = parsed.data.data.children;
 
       for (const post of posts) {
         const p = post.data;
-        if (!p || !p.title) continue;
-
         const title = p.title.trim();
         const titleLower = title.toLowerCase();
 
-        // Only harvest posts that are hiring signals
         const isHiring = 
           titleLower.includes("[hiring]") ||
           titleLower.includes("hiring") ||
@@ -75,12 +89,12 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
           ? p.url 
           : `https://www.reddit.com${p.permalink}`;
 
-        const description = (p.selftext || "").slice(0, 500).replace(/\n/g, " ").trim();
+        const description = p.selftext.slice(0, 500).replace(/\n/g, " ").trim();
 
         allJobs.push({
           id: crypto.randomUUID(),
           title: title.replace(/\[hiring\]/gi, "").trim(),
-          company: p.author || "Direct Hire",
+          company: p.author,
           type: "freelance",
           sourceUrl,
           sourcePlatform: `Reddit ${sub.label}`,
@@ -88,18 +102,16 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
           locationType: "remote",
           payRange: null,
           description: description || null,
-          postedAt: p.created_utc ? new Date(p.created_utc * 1000) : new Date(),
+          postedAt: new Date(p.created_utc * 1000),
           scrapedAt: new Date(),
           isActive: true,
           contentHash: toHash(title, sourceUrl),
-          __raw: p,
-        } as unknown as NewOpportunity);
+        });
       }
 
-      const subCount = allJobs.filter(j => (j.sourcePlatform as string)?.includes(sub.label)).length;
-      console.log(`[reddit] ${sub.label}: ${posts.length} posts → ${subCount} hiring signals`);
+      console.log(`[reddit] ${sub.label}: ${posts.length} posts analyzed`);
     } catch (err) {
-      console.log(`[reddit] ${sub.label} failed:`, (err as Error).message);
+      console.error(`[reddit] ${sub.label} failed:`, (err as Error).message);
     }
   }
 

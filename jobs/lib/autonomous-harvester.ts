@@ -1,88 +1,105 @@
 import { z } from "zod";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /**
  * VA.INDEX Autonomous Harvester (The Schema Healer)
  * Uses Gemini 1.5 Flash to map mutated upstream JSON back to our strict schema.
+ * Now handles both single records and entire batches (polymorphic).
  */
 
-const API_KEY = process.env.GEMINI_API_KEY;
-const MODEL = "gemini-1.5-flash";
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`;
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const model = genAI.getGenerativeModel({ 
+  model: "gemini-1.5-flash",
+  generationConfig: {
+    temperature: 0.1,
+    responseMimeType: "application/json",
+  }
+});
 
-// The strict target schema for an Opportunity
 export const OpportunitySchema = z.object({
-  title: z.string(),
-  company: z.string().optional(),
-  type: z.string().optional().default('agency'),
+  title: z.string().default("Untitled Role"),
+  company: z.string().optional().default("Direct Hire"),
+  type: z.string().optional().default("agency"),
   sourceUrl: z.string().url(),
   sourcePlatform: z.string().optional(),
-  description: z.string().optional(),
-  postedAt: z.string().optional(), // ISO string or similar
-  locationType: z.string().optional().default('remote'),
-  payRange: z.string().optional(),
+  description: z.string().optional().nullable(),
+  postedAt: z.string().optional().nullable(),
+  locationType: z.string().optional().default("remote"),
+  payRange: z.string().optional().nullable(),
 });
 
 export type OpportunityPayload = z.infer<typeof OpportunitySchema>;
 
-export async function healPayloadWithLLM(rawJson: any, sourceName: string): Promise<OpportunityPayload | null> {
-  if (!API_KEY) {
-    console.error("[Healer] GEMINI_API_KEY not set. Falling back to null.");
-    return null;
+/**
+ * Heals an entire batch of mutated data by identifying the list root and mapping items.
+ */
+export async function healBatchWithLLM(db: any, rawJson: any, sourceName: string): Promise<OpportunityPayload[]> {
+  if (!process.env.GEMINI_API_KEY) {
+    console.error("[Healer] GEMINI_API_KEY not set.");
+    return [];
   }
+
+  const { checkAndIncrementAiQuota } = await import("./job-utils.js");
+  const canCallAi = await checkAndIncrementAiQuota(db);
+  if (!canCallAi) return [];
 
   const prompt = `
-YOU ARE THE VA.INDEX SCHEMA HEALER.
-AN UPSTREAM API (${sourceName}) HAS MUTATED ITS JSON PAYLOAD. 
-YOUR MISSION IS TO MAP THIS RAW JSON BACK TO OUR STRICT "OPPORTUNITY" SCHEMA.
+    YOU ARE THE VA.INDEX SCHEMA HEALER.
+    The upstream API "${sourceName}" has mutated its JSON structure.
+    Your task:
+    1. Identify the array containing job listings in the raw JSON below.
+    2. Map EACH item in that array to our target schema.
+    3. Return ONLY a JSON array of objects.
 
-### TARGET SCHEMA:
-{
-  "title": "Job Title (Required)",
-  "company": "Company Name",
-  "sourceUrl": "Direct URL to job post (Required, must be absolute)",
-  "sourcePlatform": "${sourceName}",
-  "description": "Full job description text",
-  "postedAt": "ISO Date String if available",
-  "locationType": "remote | hybrid | onsite",
-  "payRange": "Salary info if available"
-}
-
-### RAW MUTATED JSON:
-${JSON.stringify(rawJson, null, 2)}
-
-### INSTRUCTIONS:
-1. EXTRACT THE DATA ACCURATELY.
-2. IF A FIELD IS MISSING, LEAVE IT NULL OR OMIT IT.
-3. **DO NOT INVENT DATA**.
-4. RESPOND ONLY WITH THE VALID JSON OBJECT. NO MARKDOWN.
-`;
-
-  try {
-    const response = await fetch(ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.1,
-          responseMimeType: "application/json",
-        }
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Gemini API Error: ${response.status} - ${error}`);
+    TARGET SCHEMA (Per Item):
+    {
+      "title": "string",
+      "company": "string",
+      "sourceUrl": "string (absolute URL)",
+      "sourcePlatform": "${sourceName}",
+      "description": "string (extract key details from excerpt/body)",
+      "postedAt": "string (ISO date if found)",
+      "locationType": "remote | hybrid | onsite",
+      "payRange": "string (salary range if found)"
     }
 
-    const data = await response.json();
-    const resultText = data.candidates[0].content.parts[0].text;
-    const healed = JSON.parse(resultText);
+    RAW MUTATED JSON:
+    ${JSON.stringify(rawJson).slice(0, 30000)}
 
-    // Final Zod Validation
-    return OpportunitySchema.parse(healed);
+    INSTRUCTIONS:
+    - If you find multiple potential job arrays, choose the most relevant one.
+    - If no jobs are found, return [].
+    - Extract accurately. Do not invent data.
+  `;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const parsed = JSON.parse(text);
+
+    if (!Array.isArray(parsed)) {
+      console.warn(`[Healer] Gemini returned non-array for ${sourceName}. Attempting to wrap.`);
+      const single = OpportunitySchema.safeParse(parsed);
+      return single.success ? [single.data] : [];
+    }
+
+    const validated = parsed
+      .map(item => OpportunitySchema.safeParse(item))
+      .filter(p => p.success)
+      .map(p => p.data);
+
+    console.log(`[Healer] Successfully healed ${validated.length} records from ${sourceName} mutation.`);
+    return validated;
   } catch (err) {
-    console.error(`[Healer] Failed to heal payload from ${sourceName}:`, err);
-    return null;
+    console.error(`[Healer] Batch healing failed for ${sourceName}:`, err);
+    return [];
   }
+}
+
+/**
+ * @deprecated Use healBatchWithLLM for better resilience.
+ */
+export async function healPayloadWithLLM(db: any, rawJson: any, sourceName: string): Promise<OpportunityPayload | null> {
+  const healed = await healBatchWithLLM(db, rawJson, sourceName);
+  return healed.length > 0 ? healed[0] : null;
 }

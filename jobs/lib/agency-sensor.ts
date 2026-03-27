@@ -1,8 +1,18 @@
+import { z } from "zod";
 import { createHash } from "crypto";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { eq } from "drizzle-orm";
 import { agencies } from "@va-hub/db/schema";
 import type { NewOpportunity } from "@va-hub/db/schema";
+
+// --- SENSOR SCHEMAS ---
+
+const GeminiJobSchema = z.object({
+  title: z.string().default("Untitled Role"),
+  url: z.string(),
+});
+
+const GeminiOutputSchema = z.array(GeminiJobSchema).default([]);
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -25,14 +35,16 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
           ? `https://boards-api.greenhouse.io/v1/boards/${board}/jobs`
           : `https://api.lever.co/v0/postings/${board}?mode=json`;
 
-        const res = await fetch(apiUrl);
+        const res = await fetch(apiUrl, {
+          headers: { "User-Agent": "VA.INDEX/1.0 (ethical-harvester; agency-sensor)" }
+        });
         if (!res.ok) return [];
         const data = await res.json();
-        const jobs = isGreenhouse ? data.jobs : data;
+        const jobs = (isGreenhouse ? data.jobs : data) as any[];
 
         if (!jobs) return [];
 
-        return jobs.map((job: any) => ({
+        return jobs.map((job) => ({
           id: crypto.randomUUID(),
           title: job.title || job.text,
           company: agency.name,
@@ -40,34 +52,36 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
           sourcePlatform: isGreenhouse ? "Greenhouse" : "Lever",
           scrapedAt: new Date(),
           postedAt: new Date(),
-          __raw: job,
-          contentHash: createHash("sha256").update(`${job.title || job.text}::${agency.name}`).digest("hex").slice(0, 16)
+          contentHash: createHash("sha256").update(`${job.title || job.text}::${agency.name}`).digest("hex").slice(0, 16),
+          isActive: true,
+          locationType: "remote",
+          type: "agency",
         }));
       }
 
-  // 2. Agentic Probe for Custom Careers Pages
-      // Optimization: Only probe 15% of agencies per cycle to stay well within Gemini 1,500 RPD free tier.
-      // 30-min cycle * 48 cycles/day * (50 agencies * 0.15) ≈ 360 requests/day (SAFELY UNDER 1,500).
+      // 2. Agentic Probe for Custom Careers Pages
       if (Math.random() > 0.15) {
-        console.log(`[agency-sensor] Skipping ${agency.name} this cycle (Throttled for Free Tier)`);
         return [];
       }
 
-      console.log(`[agency-sensor] Probing custom page: ${agency.name} (${agency.hiringUrl})`);
-      const res = await fetch(agency.hiringUrl, { headers: { "User-Agent": "VA.INDEX/1.0" } });
+      const { checkAndIncrementAiQuota } = await import("./job-utils.js");
+      const canCallAi = await checkAndIncrementAiQuota(db);
+      if (!canCallAi) return [];
+
+      const res = await fetch(agency.hiringUrl, { 
+        headers: { "User-Agent": "VA.INDEX/1.0 (ethical-harvester; agency-sensor-probe)" } 
+      });
       if (!res.ok) return [];
       const html = await res.text();
-      const snippet = html.slice(0, 10000); // 10k chars is usually enough for links
+      const snippet = html.slice(0, 20000); // Increased to 20k for deeper insight
 
-      // Add a 2s delay to respect 15 Requests Per Minute (RPM) free tier limit
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 2000)); // Respect 15 RPM limit
 
       const prompt = `
         You are a structured data extractor. From the following HTML snippet of an agency's career page, 
         extract all current job openings. Return ONLY a JSON array of objects with {title, url}.
-        If no jobs are found, return [].
+        Return [] if none found.
         Agency Name: ${agency.name}
-        Agency Website: ${agency.websiteUrl}
         HTML Snippet:
         ${snippet}
       `;
@@ -75,11 +89,14 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
       const result = await model.generateContent(prompt);
       const output = result.response.text();
       const cleanJson = output.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(cleanJson);
+      
+      const parsed = GeminiOutputSchema.safeParse(JSON.parse(cleanJson));
+      if (!parsed.success) {
+        console.warn(`[agency-sensor] Gemini hallucination or malformed JSON from ${agency.name}`);
+        return [];
+      }
 
-      if (!Array.isArray(parsed)) return [];
-
-      return parsed.map((job: any) => ({
+      return parsed.data.map((job) => ({
         id: crypto.randomUUID(),
         title: job.title,
         company: agency.name,
@@ -87,8 +104,11 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
         sourcePlatform: "Agency Sensor",
         scrapedAt: new Date(),
         postedAt: new Date(),
-        __raw: job,
-        contentHash: createHash("sha256").update(`${job.title}::${agency.name}`).digest("hex").slice(0, 16)
+        contentHash: createHash("sha256").update(`${job.title}::${agency.name}`).digest("hex").slice(0, 16),
+        tags: ["agency-sensor"],
+        isActive: true,
+        locationType: "remote",
+        type: "agency",
       }));
 
     } catch (e) {

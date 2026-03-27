@@ -14,7 +14,8 @@ export const resilienceWatchdogTask = schedules.task({
       logger.info("[watchdog] ══ Initiating Autonomous Resilience Audit ══");
       
       const nowMs = Date.now();
-      const STALENESS_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2 hours
+      const stalenessThresholdHrs = Number(process.env.STALENESS_THRESHOLD_HRS || 2);
+      const STALENESS_THRESHOLD_MS = stalenessThresholdHrs * 60 * 60 * 1000;
       
       // 1. Audit Ingestion Pulse
       const latestSignal = await db.select({ scrapedAt: opportunities.scrapedAt })
@@ -41,7 +42,7 @@ export const resilienceWatchdogTask = schedules.task({
           message: "RECOVERY MODE ACTIVATED: Clearing system locks and triggering emergency harvest.",
           level: "error",
           timestamp: new Date(),
-          metadata: JSON.stringify({ lastPulse, stalenessMins: Math.round((nowMs - lastPulse) / 60000) })
+          metadata: { lastPulse, stalenessMins: Math.round((nowMs - lastPulse) / 60000) }
         });
 
         // Trigger burst mode recovery

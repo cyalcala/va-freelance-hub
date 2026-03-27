@@ -1,13 +1,21 @@
-import { createClient } from "@libsql/client/web";
-import { drizzle } from "drizzle-orm/libsql";
+import { createClient, type Client } from "@libsql/client/web";
+import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import * as schema from "./schema";
 
-export function createDb() {
+export interface DbInstance {
+  db: LibSQLDatabase<typeof schema>;
+  client: Client;
+  schema: typeof schema;
+}
+
+export function createDb(): DbInstance {
   const url = process.env.TURSO_DATABASE_URL;
   const authToken = process.env.TURSO_AUTH_TOKEN;
 
   if (!url || !authToken) {
-    console.error(`[va-hub/db] CRITICAL: Missing env vars — TURSO_DATABASE_URL=${url ? 'SET' : 'MISSING'}, TURSO_AUTH_TOKEN=${authToken ? 'SET' : 'MISSING'}`);
+    if (process.env.NODE_ENV === 'production') {
+      console.error(`[va-hub/db] CRITICAL: Missing env vars — TURSO_DATABASE_URL=${url ? 'SET' : 'MISSING'}`);
+    }
   }
 
   const client = createClient({
@@ -22,8 +30,9 @@ export function createDb() {
   };
 }
 
-// Keep a default instance for Astro (which doesn't need per-run closing as much)
-const defaultDb = createDb();
-export const db = defaultDb.db;
+// Singleton for Astro / Long-running processes
+const defaultInstance = createDb();
+export const db = defaultInstance.db;
+export const client = defaultInstance.client;
 export { schema };
 

@@ -15,6 +15,7 @@
  * Every source below has a public, openly advertised RSS/Atom feed.
  */
 
+import { z } from "zod";
 import { XMLParser } from "fast-xml-parser";
 import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db/schema";
@@ -27,6 +28,20 @@ const parser = new XMLParser({
   htmlEntities: true,
 });
 
+// Strict RSS Item Schema
+const RssItemSchema = z.object({
+  title: z.union([z.string(), z.object({ "#text": z.string() })]),
+  link: z.union([z.string(), z.object({ "@_href": z.string() })]).optional(),
+  id: z.string().optional(),
+  description: z.string().optional().default(""),
+  "dc:creator": z.string().optional(),
+  author: z.string().optional(),
+  pubDate: z.string().optional(),
+  published: z.string().optional(),
+  updated: z.string().optional(),
+  "dc:date": z.string().optional(),
+});
+
 export interface Source {
   id: string;
   name: string;
@@ -34,7 +49,7 @@ export interface Source {
   platform: string;
   defaultJobType: "VA" | "freelance" | "project" | "full-time" | "part-time";
   tags: string[];
-  ethical_note: string; // Why this source is ethical
+  ethical_note: string;
 }
 
 export const rssSources = config.rss_sources;
@@ -44,30 +59,34 @@ function toHash(title: string, url: string) {
 }
 
 function stripHtml(s: string | undefined) {
-  return s?.replace(/<[^>]*>/g, "").trim() ?? "";
+  if (!s) return "";
+  // Robust strip: remove tags and decode common entities
+  return s
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .trim();
 }
 
 export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
   try {
     const res = await fetch(`${source.url}${source.url.includes('?') ? '&' : '?'}t=${Date.now()}`, {
       headers: {
-        "User-Agent": "VA.INDEX/1.0 (https://va-freelance-hub-web.vercel.app; ethical-harvester; public-rss-only)",
-        "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0"
+        "User-Agent": "VA.INDEX/1.0 (ethical-harvester; public-rss-only)",
+        "Accept": "application/rss+xml, application/atom+xml, application/xml",
       },
-      redirect: "follow",
       signal: AbortSignal.timeout(12_000),
     });
 
-    // Respect access control — if a source blocks us, we skip it, not bypass
     if (res.status === 403 || res.status === 401) {
-      console.log(`[harvest] ${source.name}: Access denied (${res.status}) — respecting their policy, skipping.`);
+      console.warn(`[harvest] ${source.name}: Access denied (${res.status}) — respecting policy.`);
       return [];
     }
     if (!res.ok) {
-      console.log(`[harvest] ${source.name}: HTTP ${res.status}`);
+      console.error(`[harvest] ${source.name}: HTTP ${res.status}`);
       return [];
     }
 
@@ -77,43 +96,47 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
     const rawItems = channel?.item ?? channel?.entry ?? [];
     const items = Array.isArray(rawItems) ? rawItems : [rawItems];
 
-    return items
-      .filter((item: any) => item.title && (item.link ?? item.id))
-      .map((item: any) => {
-        const title = stripHtml(
-          typeof item.title === "string" ? item.title : item.title?.["#text"] ?? ""
-        );
-        const link =
-          typeof item.link === "string"
-            ? item.link
-            : (item.link?.["@_href"] ?? item.id ?? "");
-        const sourceUrl = link.trim();
-        if (!title || !sourceUrl) return null;
+    const results: NewOpportunity[] = [];
 
-        return {
-          id: crypto.randomUUID(),
-          title,
-          company: stripHtml(item["dc:creator"] ?? item.author) || null,
-          type: source.defaultJobType,
-          sourceUrl,
-          sourcePlatform: source.platform,
-          tags: source.tags,
-          locationType: "remote" as const,
-          payRange: null,
-          description: stripHtml(item.description ?? "").slice(0, 500) || null,
-          postedAt: (() => {
-            const rawDate = item.pubDate || item.published || item.updated || item["dc:date"];
-            return rawDate ? new Date(rawDate) : new Date();
-          })(),
-          scrapedAt: new Date(),
-          isActive: true,
-          contentHash: toHash(title, sourceUrl),
-          __raw: item, // Audit Fix: Enable Agentic Healing
-        } as unknown as NewOpportunity;
-      })
-      .filter(Boolean) as NewOpportunity[];
+    for (const rawItem of items) {
+      const parsedItem = RssItemSchema.safeParse(rawItem);
+      if (!parsedItem.success) continue;
+
+      const item = parsedItem.data;
+      const rawTitle = typeof item.title === "string" ? item.title : item.title["#text"];
+      const title = stripHtml(rawTitle);
+      
+      const link = typeof item.link === "string" 
+        ? item.link 
+        : (item.link?.["@_href"] ?? item.id ?? "");
+      
+      const sourceUrl = link.trim();
+      if (!title || !sourceUrl) continue;
+
+      results.push({
+        id: crypto.randomUUID(),
+        title,
+        company: stripHtml(item["dc:creator"] ?? item.author) || null,
+        type: source.defaultJobType,
+        sourceUrl,
+        sourcePlatform: source.platform,
+        tags: source.tags,
+        locationType: "remote",
+        payRange: null,
+        description: stripHtml(item.description).slice(0, 500) || null,
+        postedAt: (() => {
+          const rawDate = item.pubDate || item.published || item.updated || item["dc:date"];
+          return rawDate ? new Date(rawDate) : new Date();
+        })(),
+        scrapedAt: new Date(),
+        isActive: true,
+        contentHash: toHash(title, sourceUrl),
+      });
+    }
+
+    return results;
   } catch (err) {
-    console.log(`[harvest] ${source.name} failed:`, (err as Error).message);
+    console.error(`[harvest] ${source.name} failed:`, (err as Error).message);
     return [];
   }
 }

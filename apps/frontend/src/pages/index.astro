@@ -20,7 +20,7 @@ try {
   // Cloudflare Ethos: Immediate Fail-Soft with 2s Hard Timeout
   if (process.env.TURSO_DATABASE_URL) {
     const dbPromise = getSortedSignals(250);
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 5000));
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
     
     initialSignals = await Promise.race([dbPromise, timeoutPromise]) as any;
     mirrorSignals = await getLatestMirror(10);

@@ -57,8 +57,8 @@ export async function harvest(db: any) {
       fn: () => fetchRSSFeed(s as any) 
     })),
     { id: "reddit-json", name: "Reddit JSON", fn: fetchRedditJobs },
-    { id: "jobicy-api", name: "Jobicy API", fn: fetchJobicyJobs },
-    { id: "direct-ats", name: "Direct ATS", fn: fetchATSJobs },
+    { id: "jobicy-api", name: "Jobicy API", fn: () => fetchJobicyJobs(db) },
+    { id: "direct-ats", name: "Direct ATS", fn: () => fetchATSJobs(db) },
     ...config.json_sources.map(s => ({ 
       id: `json-${s.id}`, 
       name: s.name, 
@@ -116,7 +116,7 @@ export async function harvest(db: any) {
     if (!item || !item.title || !item.sourceUrl) {
       if (item && (item as any).__raw) {
          // Potential for healing
-         const healed = await healPayloadWithLLM((item as any).__raw, item.sourcePlatform || "Unknown");
+         const healed = await healPayloadWithLLM(db, (item as any).__raw, item.sourcePlatform || "Unknown");
          if (healed) {
             Object.assign(item, healed);
             await recordLog(db, `Successfully healed signal from ${item.sourcePlatform}`, "info", { title: item.title });

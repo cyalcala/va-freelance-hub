@@ -1,0 +1,1 @@
+ALTER TABLE `opportunities` ADD `created_at` integer NOT NULL;

@@ -26,6 +26,8 @@ export const GET: APIRoute = async () => {
     const ingestionStalenessHrs = (Date.now() - lastIngestion.getTime()) / (1000 * 60 * 60);
     const dbStalenessHrs = (Date.now() - lastHeartbeat.getTime()) / (1000 * 60 * 60);
 
+    const stalenessThreshold = Number(process.env.STALENESS_THRESHOLD_HRS || 2);
+    
     diagnostics.vitals = {
       totalActive: total,
       goldDistribution: gold,
@@ -33,7 +35,7 @@ export const GET: APIRoute = async () => {
       ingestionStalenessHrs: Number(ingestionStalenessHrs.toFixed(2)),
       dbStalenessHrs: Number(dbStalenessHrs.toFixed(2)),
       isFaithful: newToday > 0,
-      isStale: ingestionStalenessHrs > 2,
+      isStale: ingestionStalenessHrs > stalenessThreshold,
       dailyGrowthRate: newToday,
     };
 

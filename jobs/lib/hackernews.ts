@@ -1,13 +1,18 @@
-/**
- * Hacker News "Who is Hiring?" Harvester
- * 
- * Uses HN's free public Firebase API (hacker-news.firebaseio.com).
- * Harvests comments from the monthly "Ask HN: Who is hiring?" threads.
- * These contain 500+ high-value remote tech roles per month.
- */
-
+import { z } from "zod";
 import { createHash } from "crypto";
-import type { NewOpportunity } from "./db";
+import type { NewOpportunity } from "@va-hub/db/schema";
+
+// --- HN SCHEMAS ---
+
+const HNItemSchema = z.object({
+  id: z.number(),
+  text: z.string().optional(),
+  title: z.string().optional(),
+  time: z.number().optional(),
+  kids: z.array(z.number()).optional().default([]),
+  dead: z.boolean().optional().default(false),
+  deleted: z.boolean().optional().default(false),
+});
 
 const HN_API = "https://hacker-news.firebaseio.com/v0";
 
@@ -17,10 +22,8 @@ function toHash(title: string, url: string) {
 
 function isValidTitle(title: string): boolean {
   if (title.length < 10 || title.length > 120) return false;
-  // Must contain at least 2 alpha words
   const words = title.split(/\s+/).filter(w => /^[a-zA-Z]/.test(w));
   if (words.length < 2) return false;
-  // Reject pure locations, filler, or conversational text
   const junk = ["hi all", "looking forward", "thanks", "good luck", "i'm", "we're excited"];
   if (junk.some(j => title.toLowerCase().startsWith(j))) return false;
   return true;
@@ -29,58 +32,54 @@ function isValidTitle(title: string): boolean {
 async function findWhoIsHiringThread(): Promise<number | null> {
   try {
     const res = await fetch(`${HN_API}/user/whoishiring.json?t=${Date.now()}`, {
-      headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
+      headers: { "User-Agent": "VA.INDEX/1.0 (ethical-harvester; hn-firebase)" },
       signal: AbortSignal.timeout(8_000),
     });
     if (!res.ok) return null;
 
     const user = await res.json();
-    const submitted = user?.submitted || [];
+    const submitted = (user?.submitted || []) as number[];
 
     for (const id of submitted.slice(0, 5)) {
-      const itemRes = await fetch(`${HN_API}/item/${id}.json?t=${Date.now()}`, {
-        headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
-        signal: AbortSignal.timeout(5_000),
+      const itemRes = await fetch(`${HN_API}/item/${id}.json`, {
+        headers: { "User-Agent": "VA.INDEX/1.0 (ethical-harvester; hn-firebase)" },
       });
       if (!itemRes.ok) continue;
-      const item = await itemRes.json();
-      if (item?.title?.toLowerCase()?.includes("who is hiring")) {
+      const rawItem = await itemRes.json();
+      const parsed = HNItemSchema.safeParse(rawItem);
+      if (parsed.success && parsed.data.title?.toLowerCase()?.includes("who is hiring")) {
         return id;
       }
     }
   } catch (err) {
-    console.log("[hn] Failed to find hiring thread:", (err as Error).message);
+    console.error("[hn] Failed to find hiring thread:", (err as Error).message);
   }
   return null;
 }
 
 export async function fetchHNJobs(): Promise<NewOpportunity[]> {
   const threadId = await findWhoIsHiringThread();
-  if (!threadId) {
-    console.log("[hn] No active 'Who is hiring?' thread found");
-    return [];
-  }
-
-  console.log(`[hn] Found thread #${threadId}, fetching comments...`);
+  if (!threadId) return [];
 
   try {
-    const threadRes = await fetch(`${HN_API}/item/${threadId}.json?t=${Date.now()}`, {
-      headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
-      signal: AbortSignal.timeout(8_000),
+    const threadRes = await fetch(`${HN_API}/item/${threadId}.json`, {
+      headers: { "User-Agent": "VA.INDEX/1.0 (ethical-harvester; hn-firebase)" },
     });
     if (!threadRes.ok) return [];
-    const thread = await threadRes.json();
-    const kidIds: number[] = (thread.kids || []).slice(0, 100);
+    
+    const rawThread = await threadRes.json();
+    const parsedThread = HNItemSchema.safeParse(rawThread);
+    if (!parsedThread.success) return [];
 
+    const kidIds = parsedThread.data.kids.slice(0, 100);
     const jobs: NewOpportunity[] = [];
 
     for (let i = 0; i < kidIds.length; i += 10) {
       const batch = kidIds.slice(i, i + 10);
       const comments = await Promise.allSettled(
         batch.map(async (id) => {
-          const r = await fetch(`${HN_API}/item/${id}.json?t=${Date.now()}`, {
-            headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" },
-            signal: AbortSignal.timeout(5_000),
+          const r = await fetch(`${HN_API}/item/${id}.json`, {
+            headers: { "User-Agent": "VA.INDEX/1.0 (ethical-harvester; hn-firebase)" },
           });
           return r.ok ? r.json() : null;
         })
@@ -88,25 +87,23 @@ export async function fetchHNJobs(): Promise<NewOpportunity[]> {
 
       for (const result of comments) {
         if (result.status !== "fulfilled" || !result.value) continue;
-        const comment = result.value;
+        const parsedComment = HNItemSchema.safeParse(result.value);
+        if (!parsedComment.success) continue;
+        
+        const comment = parsedComment.data;
         if (!comment.text || comment.dead || comment.deleted) continue;
 
         const text = comment.text.replace(/<[^>]*>/g, " ").replace(/&[^;]+;/g, " ").trim();
         if (text.length < 50) continue;
 
-        // HN convention: "Company | Role | Location | Salary | ..."
         const firstLine = text.split("\n")[0];
         const parts = firstLine.split("|").map((s: string) => s.trim());
-        
-        // Need at least Company | Role
         if (parts.length < 2) continue;
 
         const company = parts[0].slice(0, 80);
         const role = parts[1].slice(0, 120);
 
-        // Quality gate: reject garbage titles
-        if (!isValidTitle(role)) continue;
-        if (!company || company.length < 2) continue;
+        if (!isValidTitle(role) || !company || company.length < 2) continue;
 
         const sourceUrl = `https://news.ycombinator.com/item?id=${comment.id}`;
 
@@ -125,49 +122,13 @@ export async function fetchHNJobs(): Promise<NewOpportunity[]> {
           scrapedAt: new Date(),
           isActive: true,
           contentHash: toHash(role, sourceUrl),
-        } as unknown as NewOpportunity);
+        });
       }
-    }
-
-    console.log(`[hn] Harvested ${jobs.length} quality roles from thread #${threadId}`);
-    
-    // --- SECONDARY: SURGICAL SEARCH (NEW) ---
-    // Search across all of HN for "Virtual Assistant" or "Operations" signals
-    try {
-      const searchRes = await fetch(`https://hn.algolia.com/api/v1/search_by_date?query=%22virtual+assistant%22&tags=comment&numericFilters=created_at_i>${Math.floor(Date.now()/1000) - 86400 * 7}`, {
-        signal: AbortSignal.timeout(8_000),
-      });
-      if (searchRes.ok) {
-        const searchData = await searchRes.json();
-        const searchHits = searchData?.hits || [];
-        for (const hit of searchHits) {
-          const text = hit.comment_text?.replace(/<[^>]*>/g, " ") || "";
-          if (text.length < 50) continue;
-          
-          jobs.push({
-            id: crypto.randomUUID(),
-            title: "Remote Assistant Signal",
-            company: hit.author || "HN Signal",
-            type: "freelance",
-            sourceUrl: `https://news.ycombinator.com/item?id=${hit.objectID}`,
-            sourcePlatform: "HackerNews Search",
-            tags: ["hn", "surgical-signal"],
-            locationType: "remote",
-            description: text.slice(0, 500),
-            postedAt: new Date(hit.created_at),
-            scrapedAt: new Date(),
-            isActive: true,
-            contentHash: toHash(hit.objectID, hit.author),
-          } as unknown as NewOpportunity);
-        }
-      }
-    } catch (searchErr) {
-       console.log("[hn-search] Failed surgical sweep:", (searchErr as Error).message);
     }
 
     return jobs;
   } catch (err) {
-    console.log("[hn] Failed to fetch comments:", (err as Error).message);
+    console.error("[hn] Failed to fetch comments:", (err as Error).message);
     return [];
   }
 }
