@@ -67,6 +67,9 @@ export const resilienceWatchdogTask = schedules.task({
       }
 
       return { status: "AUDIT_COMPLETE", isStale };
+    } catch (err) {
+      logger.error("[watchdog] Resilience Audit Failed (Possible DB Blackout):", { error: (err as Error).message });
+      return { status: "AUDIT_FAILED", error: (err as Error).message };
     } finally {
       await client.close();
     }

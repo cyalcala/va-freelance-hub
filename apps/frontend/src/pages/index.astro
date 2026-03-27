@@ -17,9 +17,12 @@ let healthStats = { status: 'STANDBY', lastHeartbeat: null, isFallback: false };
 let dbError = null;
 
 try {
-  // Cloudflare Ethos: Immediate Fail-Soft if DB is unreachable
+  // Cloudflare Ethos: Immediate Fail-Soft with 2s Hard Timeout
   if (process.env.TURSO_DATABASE_URL) {
-    initialSignals = await getSortedSignals(250); // Increased to 250 for deep harvesting visibility
+    const dbPromise = getSortedSignals(250);
+    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
+    
+    initialSignals = await Promise.race([dbPromise, timeoutPromise]) as any;
     mirrorSignals = await getLatestMirror(10);
     
     // Surgical Telemetry: Quick Health Pulse

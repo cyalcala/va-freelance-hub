@@ -239,9 +239,17 @@ export function siftOpportunity(title: string, description: string, company: str
   }
 
   // 6. TIERING
-  if (hasPHSignal) {
-    return OpportunityTier.PLATINUM; 
-  }
+  const hasStrongPHSignal = hasDirectPHInTitle || 
+                            PLATINUM_PLATFORMS.some(p => sp.includes(p)) ||
+                            (t.includes("philippines") && (t.includes("only") || t.includes("based")));
+
+  if (hasStrongPHSignal) return OpportunityTier.PLATINUM;
+  
+  // Weak signals (description only) get GOLD at best to prevent poisoning
+  const hasWeakPHSignal = PLATINUM_DIRECT.some(s => body.includes(s)) || 
+                          PLATINUM_CITIES.some(ci => body.includes(ci));
+                          
+  if (hasWeakPHSignal) return OpportunityTier.GOLD; 
   
   const isRegionalOrGlobalSupport = isSupportRole && (GOLD_SIGNALS.some(s => body.includes(s)) || SILVER_SIGNALS.some(s => body.includes(s)));
   if (isRegionalOrGlobalSupport) return OpportunityTier.GOLD;

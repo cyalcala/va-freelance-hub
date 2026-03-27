@@ -54,6 +54,9 @@ export const databaseWatchdogTask = schedules.task({
       });
       
       return { status: "GOVERNANCE_COMPLETE" };
+    } catch (err) {
+      logger.error("[watchdog] Purification Failed:", { error: (err as Error).message });
+      return { status: "PURIFICATION_FAILED" };
     } finally {
       await client.close();
     }

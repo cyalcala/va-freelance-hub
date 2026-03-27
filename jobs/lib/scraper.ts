@@ -17,7 +17,7 @@
 
 import { XMLParser } from "fast-xml-parser";
 import { createHash } from "crypto";
-import type { NewOpportunity } from "./db";
+import type { NewOpportunity } from "@va-hub/db/schema";
 import { config } from "@va-hub/config";
 
 const parser = new XMLParser({
@@ -108,6 +108,7 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
           scrapedAt: new Date(),
           isActive: true,
           contentHash: toHash(title, sourceUrl),
+          __raw: item, // Audit Fix: Enable Agentic Healing
         } as unknown as NewOpportunity;
       })
       .filter(Boolean) as NewOpportunity[];

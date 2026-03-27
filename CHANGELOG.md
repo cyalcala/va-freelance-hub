@@ -6,6 +6,15 @@
 
 ### 🛡️ Reliability & Fixes
 * fix: remove destructive watchdog rathole kill, restore reddit+jobicy in harvest pipeline (5b3e2e7)
+
+---
+
+
+## [2026-03-27] — [Opportunities: 202 | Agencies: 57]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: remove destructive watchdog rathole kill, restore reddit+jobicy in harvest pipeline (5b3e2e7)
 * fix: resolve astro build chain - adapter import, desc import, config exports (a9f0732)
 
 ---
