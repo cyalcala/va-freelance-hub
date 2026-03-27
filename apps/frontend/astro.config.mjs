@@ -18,6 +18,10 @@ export default defineConfig({
       alias: {
         '@va-hub/db': path.resolve(__dirname, '../../packages/db')
       }
+    },
+    define: {
+      'process.env.TURSO_AUTH_TOKEN': 'undefined',
+      'process.env.TRIGGER_SECRET_KEY': 'undefined',
     }
   }
 });

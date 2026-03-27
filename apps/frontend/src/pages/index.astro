@@ -17,18 +17,24 @@ let healthStats = { status: 'STANDBY', lastHeartbeat: null, isFallback: false };
 let dbError = null;
 
 try {
-  // Cloudflare Ethos: Immediate Fail-Soft with 2s Hard Timeout
+  // Titanium-Grade Edge Orchestrator: Unified 2s Race-Timeout for ALL SSR Data
   if (process.env.TURSO_DATABASE_URL) {
-    const dbPromise = getSortedSignals(250);
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
+    const dataPromise = Promise.all([
+      getSortedSignals(250),
+      getLatestMirror(10),
+      db.select({ 
+        maxScraped: sql<number>`max(scraped_at)`, 
+      }).from(schema.opportunities).where(eq(schema.opportunities.isActive, true))
+    ]);
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Edge Latency Threshold Exceeded")), 2000)
+    );
     
-    initialSignals = await Promise.race([dbPromise, timeoutPromise]) as any;
-    mirrorSignals = await getLatestMirror(10);
+    const [signals, mirror, stats] = await Promise.race([dataPromise, timeoutPromise]) as any;
     
-    // Surgical Telemetry: Quick Health Pulse
-    const stats = await db.select({
-      maxScraped: sql<number>`max(scraped_at)`,
-    }).from(schema.opportunities).where(eq(schema.opportunities.isActive, true));
+    initialSignals = signals;
+    mirrorSignals = mirror;
     
     if (stats[0]?.maxScraped) {
       healthStats = { 
@@ -38,10 +44,10 @@ try {
       };
     }
   } else {
-    throw new Error("Missing Database Configuration");
+    throw new Error("Edge Configuration Missing");
   }
 } catch (err: any) {
-  console.warn("⚠️ Fail-Soft Engaged: Turso Unreachable or Error.", err.message);
+  console.error("🔴 Edge Architect Alert: Fail-Soft Engaged.", err.message);
   initialSignals = staticFallback;
   mirrorSignals = staticFallback.slice(0, 10);
   healthStats = { 

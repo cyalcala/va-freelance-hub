@@ -34,5 +34,6 @@ export function createDb(): DbInstance {
 const defaultInstance = createDb();
 export const db = defaultInstance.db;
 export const client = defaultInstance.client;
+export const closeDb = () => client.close();
 export { schema };
 
