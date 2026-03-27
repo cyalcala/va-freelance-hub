@@ -45,12 +45,22 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
         }));
       }
 
-      // 2. Agentic Probe for Custom Careers Pages
+  // 2. Agentic Probe for Custom Careers Pages
+      // Optimization: Only probe 15% of agencies per cycle to stay well within Gemini 1,500 RPD free tier.
+      // 30-min cycle * 48 cycles/day * (50 agencies * 0.15) ≈ 360 requests/day (SAFELY UNDER 1,500).
+      if (Math.random() > 0.15) {
+        console.log(`[agency-sensor] Skipping ${agency.name} this cycle (Throttled for Free Tier)`);
+        return [];
+      }
+
       console.log(`[agency-sensor] Probing custom page: ${agency.name} (${agency.hiringUrl})`);
       const res = await fetch(agency.hiringUrl, { headers: { "User-Agent": "VA.INDEX/1.0" } });
       if (!res.ok) return [];
       const html = await res.text();
       const snippet = html.slice(0, 10000); // 10k chars is usually enough for links
+
+      // Add a 2s delay to respect 15 Requests Per Minute (RPM) free tier limit
+      await new Promise(r => setTimeout(r, 2000));
 
       const prompt = `
         You are a structured data extractor. From the following HTML snippet of an agency's career page, 
