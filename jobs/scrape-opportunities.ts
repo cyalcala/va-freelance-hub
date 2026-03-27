@@ -77,7 +77,7 @@ export async function harvest(db: any) {
       // TELEMETRY BRIDGE: Update system_health per source
       await db.insert(require("@va-hub/db/schema").systemHealth)
         .values({
-          id: source.id || source.name.toLowerCase().replace(/\s+/g, '-'),
+          id: source.name,
           sourceName: source.name,
           status: 'OK',
           lastSuccess: new Date(),
@@ -94,7 +94,7 @@ export async function harvest(db: any) {
       
       await db.insert(require("@va-hub/db/schema").systemHealth)
         .values({
-          id: source.id || source.name.toLowerCase().replace(/\s+/g, '-'),
+          id: source.name,
           sourceName: source.name,
           status: 'FAIL',
           errorMessage: err.message,
