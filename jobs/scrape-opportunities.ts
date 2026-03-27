@@ -6,12 +6,15 @@ import { fetchRedditJobs } from "./lib/reddit";
 import { fetchJobicyJobs } from "./lib/jobicy";
 import { fetchATSJobs } from "./lib/ats";
 import { fetchJSONFeed } from "./lib/json-harvester";
+import { probeAgencies } from "./lib/agency-sensor";
 import { config } from "@va-hub/config";
 import { sql } from "drizzle-orm";
 import { isLikelyScam } from "./lib/trust";
 import { siftOpportunity, OpportunityTier } from "./lib/sifter";
 import { v4 as uuidv4 } from "uuid";
 import { healPayloadWithLLM } from "./lib/autonomous-harvester";
+import { agencies as agenciesSchema } from "@va-hub/db/schema";
+import { eq } from "drizzle-orm";
 
 function normalizeTitle(title: string): string {
   return title
@@ -41,12 +44,19 @@ export async function harvest(db: any) {
 
   const results: any[] = [];
   
+  // 1. Fetch Priority Agencies for Sifter
+  const activeAgencies = await db.select({ name: agenciesSchema.name })
+    .from(agenciesSchema)
+    .where(eq(agenciesSchema.status, 'active'));
+  const priorityAgencyNames = activeAgencies.map((a: any) => a.name);
+  
   const sources = [
-    { name: "RSS Feeds", fn: () => Promise.allSettled(rssSources.map(s => fetchRSSFeed(s as any))).then(r => r.flatMap(x => x.status === "fulfilled" ? x.value : [])) },
-    { name: "Reddit JSON", fn: fetchRedditJobs },
-    { name: "Jobicy API", fn: fetchJobicyJobs },
-    { name: "Direct ATS", fn: fetchATSJobs },
-    { name: "JSON Probes", fn: () => Promise.allSettled(config.json_sources.map(s => fetchJSONFeed(s as any))).then(r => r.flatMap(x => x.status === "fulfilled" ? x.value : [])) }
+    { id: "rss-feeds", name: "RSS Feeds", fn: () => Promise.allSettled(rssSources.map(s => fetchRSSFeed(s as any))).then(r => r.flatMap(x => x.status === "fulfilled" ? x.value : [])) },
+    { id: "reddit-json", name: "Reddit JSON", fn: fetchRedditJobs },
+    { id: "jobicy-api", name: "Jobicy API", fn: fetchJobicyJobs },
+    { id: "direct-ats", name: "Direct ATS", fn: fetchATSJobs },
+    { id: "json-probes", name: "JSON Probes", fn: () => Promise.allSettled(config.json_sources.map(s => fetchJSONFeed(s as any))).then(r => r.flatMap(x => x.status === "fulfilled" ? x.value : [])) },
+    { id: "agency-sensor", name: "Agency Sensor", fn: () => probeAgencies(db) }
   ];
 
   for (const source of sources) {
@@ -55,9 +65,37 @@ export async function harvest(db: any) {
       const items = await source.fn();
       const duration = Date.now() - startSource;
       results.push(...(items || []));
+      
+      // TELEMETRY BRIDGE: Update system_health per source
+      await db.insert(require("@va-hub/db/schema").systemHealth)
+        .values({
+          id: source.id || source.name.toLowerCase().replace(/\s+/g, '-'),
+          sourceName: source.name,
+          status: 'OK',
+          lastSuccess: new Date(),
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [require("@va-hub/db/schema").systemHealth.id],
+          set: { status: 'OK', lastSuccess: new Date(), updatedAt: new Date(), errorMessage: null }
+        });
+
       await recordLog(db, `Harvested ${items?.length || 0} signals from ${source.name}`, "info", { durationMs: duration, source: source.name });
     } catch (err: any) {
       await recordLog(db, `Source failure: ${source.name} - ${err.message}`, "error", { source: source.name, error: err.message });
+      
+      await db.insert(require("@va-hub/db/schema").systemHealth)
+        .values({
+          id: source.id || source.name.toLowerCase().replace(/\s+/g, '-'),
+          sourceName: source.name,
+          status: 'FAIL',
+          errorMessage: err.message,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: [require("@va-hub/db/schema").systemHealth.id],
+          set: { status: 'FAIL', errorMessage: err.message, updatedAt: new Date() }
+        });
     }
   }
 
@@ -92,7 +130,8 @@ export async function harvest(db: any) {
       item.title, 
       item.description ?? "", 
       item.company ?? "Generic", 
-      item.sourcePlatform ?? "Generic"
+      item.sourcePlatform ?? "Generic",
+      priorityAgencyNames
     );
 
     if (tier === OpportunityTier.TRASH) continue;

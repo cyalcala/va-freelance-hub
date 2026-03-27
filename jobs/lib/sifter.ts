@@ -156,16 +156,30 @@ const SILVER_SIGNALS = [
   "distributed team","fully distributed","remote only","work from home anywhere",
 ];
 
-export function siftOpportunity(title: string, description: string, company: string, sourcePlatform: string): OpportunityTier {
+export function siftOpportunity(
+  title: string, 
+  description: string, 
+  company: string, 
+  sourcePlatform: string,
+  priorityAgencies: string[] = []
+): OpportunityTier {
   const t  = (title || "").toLowerCase().trim();
   const d  = (description || "").toLowerCase();
   const c  = (company || "").toLowerCase().trim();
+  const co = (company || "").toLowerCase();
   const sp = (sourcePlatform || "").toLowerCase();
   const body = `${t} ${d} ${c}`;
 
+  // 0. PRE-FLIGHT: Absolute PH Intent Check
+  const phKeywords = ["philippines", "filipino", "pinoy", "tagalog", "manila", "cebu", "ph", "sea", "southeast asia"];
+  const hasDirectPHInTitle = phKeywords.some(k => t.includes(k));
+  
+  // 1. AGENCY PRIORITY (Titanium Sensor)
+  const isPriorityAgency = priorityAgencies.some(a => co.includes(a.toLowerCase()) || sp.includes(a.toLowerCase()));
+  if (isPriorityAgency) return OpportunityTier.PLATINUM;
+  
   // 1. HARD KILLS - Highest Precedence
   // If it's a direct PH match in title, we might bypass some geo kills, but generally we want to be ruthless.
-  const hasDirectPHInTitle = PLATINUM_DIRECT.some(s => t.includes(s));
   
   if (!hasDirectPHInTitle) {
     for (const k of TITLE_GEO_KILLS) if (t.includes(k)) return OpportunityTier.TRASH;
