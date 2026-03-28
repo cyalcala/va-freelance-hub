@@ -1,5 +1,5 @@
 import { schedules, logger } from "@trigger.dev/sdk/v3";
-import { createDb } from "@va-hub/db/client";
+import { db, client } from "@va-hub/db/client";
 import { opportunities as opportunitiesSchema, logs as logsSchema, systemHealth as healthSchema } from "@va-hub/db/schema";
 import { fetchRSSFeed, rssSources } from "./lib/scraper";
 import { fetchRedditJobs } from "./lib/reddit";
@@ -8,11 +8,11 @@ import { fetchATSJobs } from "./lib/ats";
 import { fetchJSONFeed } from "./lib/json-harvester";
 import { probeAgencies } from "./lib/agency-sensor";
 import { config } from "@va-hub/config";
-import { sql, eq } from "drizzle-orm";
+import { sql, eq, and, not } from "drizzle-orm";
 import { isLikelyScam } from "./lib/trust";
 import { siftOpportunity, OpportunityTier } from "./lib/sifter";
 import { v4 as uuidv4 } from "uuid";
-import { healPayloadWithLLM } from "./lib/autonomous-harvester";
+import { healBatchWithLLM } from "./lib/autonomous-harvester";
 import { agencies as agenciesSchema } from "@va-hub/db/schema";
 import { OpportunitySchema } from "@va-hub/db/validation";
 
@@ -23,7 +23,7 @@ function normalizeTitle(title: string): string {
     .trim();
 }
 
-async function recordLog(db: any, message: string, level: 'info' | 'warn' | 'error' | 'snapshot' = 'info', metadata: any = {}) {
+async function recordLog(message: string, level: 'info' | 'warn' | 'error' | 'snapshot' = 'info', metadata: any = {}) {
   try {
     await db.insert(logsSchema).values({
       id: uuidv4(),
@@ -38,9 +38,9 @@ async function recordLog(db: any, message: string, level: 'info' | 'warn' | 'err
   }
 }
 
-export async function harvest(db: any) {
+export async function harvest() {
   const startTime = Date.now();
-  await recordLog(db, "══ Starting Multi-Source Signal Harvesting ══", "info");
+  await recordLog("══ Starting Multi-Source Signal Harvesting ══", "info");
 
   const results: any[] = [];
   
@@ -49,6 +49,14 @@ export async function harvest(db: any) {
     .from(agenciesSchema)
     .where(eq(agenciesSchema.status, 'active'));
   const priorityAgencyNames = activeAgencies.map((a: any) => a.name);
+
+  // 2. Fetch Circuit Breaker Status
+  const healthStates = await db.select().from(healthSchema);
+  const openCircuits = new Set(
+    healthStates
+      .filter(s => s.status === 'CIRCUIT_OPEN' || (s.consecutiveFailures ?? 0) >= 5)
+      .map(s => s.sourceName)
+  );
   
   const sources = [
     ...rssSources.map(s => ({ 
@@ -68,6 +76,11 @@ export async function harvest(db: any) {
   ];
 
   for (const source of sources) {
+    if (openCircuits.has(source.name)) {
+      await recordLog(`Skipping throttled source: ${source.name} (Circuit Open)`, "warn");
+      continue;
+    }
+
     try {
       const startSource = Date.now();
       
@@ -80,35 +93,53 @@ export async function harvest(db: any) {
       const duration = Date.now() - startSource;
       results.push(...(items || []));
       
-      // TELEMETRY BRIDGE: Update system_health per source
+      // TELEMETRY BRIDGE: Clear failures on success
       await db.insert(healthSchema)
         .values({
           id: source.name,
           sourceName: source.name,
           status: 'OK',
+          consecutiveFailures: 0,
           lastSuccess: new Date(),
           updatedAt: new Date()
         })
         .onConflictDoUpdate({
           target: [healthSchema.id],
-          set: { status: 'OK', lastSuccess: new Date(), updatedAt: new Date(), errorMessage: null }
+          set: { 
+            status: 'OK', 
+            consecutiveFailures: 0, 
+            lastSuccess: new Date(), 
+            updatedAt: new Date(), 
+            errorMessage: null 
+          }
         });
 
-      await recordLog(db, `Harvested ${items?.length || 0} signals from ${source.name}`, "info", { durationMs: duration, source: source.name });
+      await recordLog(`Harvested ${items?.length || 0} signals from ${source.name}`, "info", { durationMs: duration, source: source.name });
     } catch (err: any) {
-      await recordLog(db, `Source failure: ${source.name} - ${err.message}`, "error", { source: source.name, error: err.message });
+      await recordLog(`Source failure: ${source.name} - ${err.message}`, "error", { source: source.name, error: err.message });
       
+      // Increment Failure Count / Open Circuit
+      const currentHealth = healthStates.find(s => s.sourceName === source.name);
+      const newFailCount = (currentHealth?.consecutiveFailures ?? 0) + 1;
+      const newStatus = newFailCount >= 5 ? 'CIRCUIT_OPEN' : 'FAIL';
+
       await db.insert(healthSchema)
         .values({
           id: source.name,
           sourceName: source.name,
-          status: 'FAIL',
+          status: newStatus,
+          consecutiveFailures: newFailCount,
           errorMessage: err.message,
           updatedAt: new Date()
         })
         .onConflictDoUpdate({
           target: [healthSchema.id],
-          set: { status: 'FAIL', errorMessage: err.message, updatedAt: new Date() }
+          set: { 
+            status: newStatus, 
+            consecutiveFailures: newFailCount, 
+            errorMessage: err.message, 
+            updatedAt: new Date() 
+          }
         });
     }
   }
@@ -121,17 +152,14 @@ export async function harvest(db: any) {
   for (const item of results) {
     if (!item || !item.title || !item.sourceUrl) {
       if (item && (item as any).__raw) {
-         // Potential for healing
-         const healed = await healPayloadWithLLM(db, (item as any).__raw, item.sourcePlatform || "Unknown");
-         if (healed) {
-            Object.assign(item, healed);
-            await recordLog(db, `Successfully healed signal from ${item.sourcePlatform}`, "info", { title: item.title });
-         } else {
-            continue;
-         }
-      } else {
-        continue;
+          const healed = await healBatchWithLLM(db, (item as any).__raw, item.sourcePlatform || "Unknown");
+          if (healed.length > 0) {
+             dedupedRelevant.push(...healed);
+             await recordLog(`Successfully healed signal batch from ${item.sourcePlatform}`, "info");
+             continue;
+          }
       }
+      continue;
     }
     
     // Strict Data Contract: Ignore visual noise, focus on structured data
@@ -169,30 +197,23 @@ export async function harvest(db: any) {
     if (!validationResult.success) {
       // ── AGENTIC HEALING TRIGGER ──
       const rawPayload = (item as any).__raw || JSON.stringify(item);
-      await recordLog(db, `Zod Boundary Breach: ${item.title || 'Unknown'}. Triggering Healer.`, "warn", { 
+      await recordLog(`Zod Boundary Breach: ${item.title || 'Unknown'}. Triggering Healer.`, "warn", { 
         errors: validationResult.error.errors,
         source: item.sourcePlatform 
       });
 
-      const healed = await healPayloadWithLLM(db, rawPayload, item.sourcePlatform || "Unknown");
-      if (healed) {
-        const reValidation = OpportunitySchema.safeParse({
-          ...healed,
-          id: item.id || uuidv4(),
-          scrapedAt: new Date(),
-          latestActivityMs: now
-        });
-        if (reValidation.success) {
-          finalData = reValidation.data;
-          await recordLog(db, `Agentic Healer stabilized signal: ${finalData.title}`, "info");
-        }
+      const healedRecords = await healBatchWithLLM(db, rawPayload, item.sourcePlatform || "Unknown");
+      if (healedRecords.length > 0) {
+        // Just take the first one or all? The loop handles one at a time usually, but healed is a batch.
+        // We push all from healedRecords in future iterations, but let's just use the first for current item compatibility
+        finalData = healedRecords[0];
       }
     } else {
       finalData = validationResult.data;
     }
 
     if (!finalData) {
-      await recordLog(db, `Bounced poisoned signal (Healer failed): ${item.title || 'Unknown'}`, "error", { source: item.sourcePlatform });
+      await recordLog(`Bounced poisoned signal (Healer failed): ${item.title || 'Unknown'}`, "error", { source: item.sourcePlatform });
       continue;
     }
 
@@ -211,7 +232,7 @@ export async function harvest(db: any) {
           target: [opportunitiesSchema.title, opportunitiesSchema.company],
           set: { 
             scrapedAt: new Date(),
-            isActive: 1,
+            isActive: true,
             tier: sql`excluded.tier`,
             contentHash: sql`excluded.content_hash`,
             sourceUrl: sql`excluded.source_url`,
@@ -220,12 +241,12 @@ export async function harvest(db: any) {
         });
       processed += batch.length;
     } catch (err: any) {
-      await recordLog(db, `Batch upsert failure: ${err.message}`, "error", { error: err.message });
+      await recordLog(`Batch upsert failure: ${err.message}`, "error", { error: err.message });
     }
   }
 
   const totalDuration = Date.now() - startTime;
-  await recordLog(db, `Harvest cycle complete. ${processed} signals ingested in ${totalDuration}ms.`, "snapshot", { totalProcessed: processed, durationMs: totalDuration });
+  await recordLog(`Harvest cycle complete. ${processed} signals ingested in ${totalDuration}ms.`, "snapshot", { totalProcessed: processed, durationMs: totalDuration });
 
   return { processed, durationMs: totalDuration };
 }
@@ -235,17 +256,16 @@ export const scrapeOpportunitiesTask = schedules.task({
   cron: "*/30 * * * *",
   queue: { concurrencyLimit: 1 },
   run: async (payload: any, { ctx }: any) => {
-    const { db, client } = createDb();
+    const triggerSource = payload?.source || (ctx as any).trigger?.id || 'schedule';
+    logger.info(`[harvest] Initiating cycle. Trigger source: ${triggerSource}`);
     try {
-      const triggerSource = payload?.source || (ctx as any).trigger?.id || 'schedule';
-      logger.info(`[harvest] Initiating cycle. Trigger source: ${triggerSource}`);
-      const result = await harvest(db);
+      const result = await harvest();
       return result;
     } catch (err: any) {
       logger.error(`[harvest] CRITICAL ENGINE FAILURE: ${err.message}`);
       throw err;
     } finally {
-      await client.close();
+      // Connection reuse handled by singleton in @va-hub/db/client
     }
   },
 });

@@ -22,7 +22,7 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
       - name: Run Invariant Suite
-        run: bun test # Ensure this command exists or use individual test scripts
+        run: bun test
 
   deploy:
     name: 🚀 Production Promotion
@@ -35,7 +35,14 @@ jobs:
           bun-version: latest
       - name: Install dependencies
         run: bun install --frozen-lockfile
-      - name: Deploy to Trigger.dev
+
+      - name: 🗄️ Atomic DB Migration
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: bun run --cwd packages/db migrate
+
+      - name: ⚛️ Deploy to Trigger.dev
         env:
           TRIGGER_ACCESS_TOKEN: ${{ secrets.TRIGGER_ACCESS_TOKEN }}
         run: |
@@ -50,8 +57,7 @@ jobs:
             exit 1
           fi
 
-      - name: ⚛️ Trigger Atomic Vercel Rebuild
-        if: success()
+      - name: ⚛️ Trigger Vercel Synchronization
         env:
           VERCEL_DEPLOY_WEBHOOK: ${{ secrets.VERCEL_DEPLOY_WEBHOOK }}
         run: |
@@ -59,3 +65,14 @@ jobs:
             curl -X POST "$VERCEL_DEPLOY_WEBHOOK"
             echo "Vercel rebuild triggered."
           fi
+
+      - name: 🛡️ Wait for Vercel Health (Edge Consistency)
+        timeout-minutes: 10
+        run: |
+          echo "Waiting for Vercel deployment to reach stability..."
+          URL="https://va-freelance-hub-web.vercel.app"
+          until curl -s --fail "$URL" > /dev/null; do
+            echo "Vercel not ready yet... Retrying in 15s"
+            sleep 15
+          done
+          echo "Vercel is Healthy. Atomic sync complete."

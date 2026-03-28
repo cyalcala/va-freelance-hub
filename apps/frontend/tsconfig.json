@@ -1,5 +1,11 @@
 {
   "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@va-hub/db": ["../../packages/db"]
+    }
+  },
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": ["dist", "../../scripts", "../../jobs", "../../tmp"]
 }

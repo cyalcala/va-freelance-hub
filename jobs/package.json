@@ -11,6 +11,7 @@
     "@va-hub/db": "workspace:*",
     "drizzle-orm": "latest",
     "fast-xml-parser": "^5.5.6",
+    "jsonata": "^2.1.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

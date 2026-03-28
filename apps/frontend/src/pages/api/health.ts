@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db, schema } from '../../../../packages/db/client';
+import { db, schema } from '@va-hub/db';
 import { sql, eq } from 'drizzle-orm';
 
 export const GET: APIRoute = async () => {

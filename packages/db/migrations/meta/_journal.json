@@ -43,6 +43,13 @@
       "when": 1774623478185,
       "tag": "0005_sour_blacklash",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1774655861075,
+      "tag": "0006_careful_lady_deathstrike",
+      "breakpoints": true
     }
   ]
 }

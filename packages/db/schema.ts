@@ -53,7 +53,18 @@ export const systemHealth = sqliteTable('system_health', {
   status: text('status').notNull(),
   lastSuccess: integer('last_success', { mode: 'timestamp' }),
   errorMessage: text('error_message'),
+  consecutiveFailures: integer('consecutive_failures').default(0), // Circuit breaker telemetry
   updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
+export const extractionRules = sqliteTable('extraction_rules', {
+  id: text('id').primaryKey(),
+  sourceName: text('source_name').unique().notNull(),
+  jsonataPattern: text('jsonata_pattern').notNull(), // LLM-generated JSONata
+  confidenceScore: integer('confidence_score').default(0), // 0-100
+  samplePayload: text('sample_payload'), // For debugging/validation
+  lastValidatedAt: integer('last_validated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
 export const vitals = sqliteTable('vitals', {
@@ -83,6 +94,8 @@ export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;
 export type SystemHealth = typeof systemHealth.$inferSelect;
 export type NewSystemHealth = typeof systemHealth.$inferInsert;
+export type ExtractionRule = typeof extractionRules.$inferSelect;
+export type NewExtractionRule = typeof extractionRules.$inferInsert;
 export type Vitals = typeof vitals.$inferSelect;
 export type NewVitals = typeof vitals.$inferInsert;
 export type Log = typeof logs.$inferSelect;
