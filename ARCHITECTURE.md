@@ -25,6 +25,8 @@ VA.INDEX is an autonomous job signal aggregator targeting Filipino-accessible re
 │  opportunities (feed data)   │
 │  agencies (directory)        │
 │  system_health (monitoring)  │
+│  vitals (AI Quota Guard)     │
+│  extraction_rules (Matrix A) │
 │  logs (telemetry)            │
 └──────────────┬───────────────┘
                │ Live SSR query
@@ -54,11 +56,30 @@ Every 30 minutes, `harvest-opportunities` executes:
 | L4 | ATS | Greenhouse/Lever/Zoho API | Via `fetchATSJobs()` |
 | L5 | JSON | Direct fetch | JobStreet PH regional feed |
 
-**Pipeline:** Fetch → Sift (tier classify) → Dedup (title+company fingerprint) → Upsert (onConflictDoUpdate)
+**Pipeline:** Fetch → Sift (tier classify) → Healer (Matrix A recovery) → Dedup → Upsert
 
 ---
 
-## 3. Sifter v9.0 (Signal Classification)
+## 3. Matrix A (Agentic Schema Healer)
+
+Located in `jobs/lib/autonomous-harvester.ts`. This tier handles non-standard and mutated JSON sources via **JSONata + AI Discovery Loop**.
+
+1. **Fast Path** — Uses cached JSONata rules from `extraction_rules` table. 1ms execution.
+2. **Slow Path** — If source mutations detected:
+   - **Gemini 1.5 Flash** analyzes the payload.
+   - **Minification**: Payloads are sampled to <100k chars for efficiency.
+   - **Self-Correction**: AI verifies its own rule; retries if validation fails.
+3. **Telemetry**: Records `failure_reason` and `last_error_log` for failed AI discovery.
+
+---
+
+## 4. AI Quota Guard (Titanium Shield)
+
+To ensure **Gemini 1.5 Flash Free Tier** (15 RPM / 1000 RPD) compliance:
+
+- **RPM Throttling**: 4-second mandatory delay between AI calls stored in `vitals.lockUpdatedAt`.
+- **HARD CAP**: 1,000 requests per day hard limit in `vitals.aiQuotaCount`.
+- **Bypass**: SRE scripts can bypass AI entirely to ensure data-flow restoration during quota exhaustion.
 
 Located in `jobs/lib/sifter.ts`. Five-tier Philippine-First classifier:
 
