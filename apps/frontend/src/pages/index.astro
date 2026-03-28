@@ -10,6 +10,9 @@ import { db, schema } from '../../../../packages/db/client';
 import { sql, eq } from 'drizzle-orm';
 import staticFallback from '../data/static_fallback.json';
 
+// BUST THE CACHE: Break the "3-hour stale" Vercel/CDN lock
+Astro.response.headers.set('Cache-Control', 'public, no-cache, s-maxage=0, must-revalidate');
+
 // Variables initialization
 let initialSignals = [];
 let mirrorSignals = [];

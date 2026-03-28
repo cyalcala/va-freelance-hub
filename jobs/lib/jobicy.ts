@@ -89,10 +89,15 @@ export async function fetchJobicyJobs(db: any): Promise<NewOpportunity[]> {
       };
     });
 
+    if (jobs.length === 0) {
+      throw new Error(`[jobicy] Zero signals returned from API. Possible rate-limit or upstream blackout.`);
+    }
+
     console.log(`[jobicy] Parsed ${jobs.length} jobs with deep validation`);
     return jobs;
   } catch (err) {
-    console.error("[jobicy] Failed:", (err as Error).message);
-    return [];
+    const msg = (err as Error).message;
+    console.error(`[jobicy] Ingestion Failure: ${msg}`);
+    throw new Error(`[jobicy] ${msg}`);
   }
 }

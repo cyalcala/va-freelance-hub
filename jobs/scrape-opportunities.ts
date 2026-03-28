@@ -236,7 +236,7 @@ export async function harvest() {
             tier: sql`excluded.tier`,
             contentHash: sql`excluded.content_hash`,
             sourceUrl: sql`excluded.source_url`,
-            latestActivityMs: sql`excluded.latest_activity_ms`
+            latestActivityMs: Date.now() // COMMANDER'S PATCH: Force freshness on collision
           }
         });
       processed += batch.length;
@@ -246,6 +246,13 @@ export async function harvest() {
   }
 
   const totalDuration = Date.now() - startTime;
+  
+  // SIGNAL INVARIANT: If our primary sources are alive but return 0, we have a Silent Failure.
+  if (processed === 0) {
+    await recordLog("CRITICAL: Harvest cycle returned zero signals. Possible upstream blackout.", "error");
+    throw new Error("Zero Signal Invariant Breach: Total processed signals is 0.");
+  }
+
   await recordLog(`Harvest cycle complete. ${processed} signals ingested in ${totalDuration}ms.`, "snapshot", { totalProcessed: processed, durationMs: totalDuration });
 
   return { processed, durationMs: totalDuration };
