@@ -4,9 +4,8 @@ import Layout from '../layouts/Layout.astro';
 import SignalCard from '../components/SignalCard.astro';
 import MirrorStage from '../components/MirrorStage.astro';
 
-// Use direct relative imports to bypass workspace alias issues if needed
-import { getSortedSignals, getLatestMirror } from '../../../../packages/db/sorting';
-import { db, schema } from '../../../../packages/db/client';
+import { getSortedSignals, getLatestMirror } from '@va-hub/db/sorting';
+import { db, schema } from '@va-hub/db/client';
 import { sql, eq } from 'drizzle-orm';
 import staticFallback from '../data/static_fallback.json';
 

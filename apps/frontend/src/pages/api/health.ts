@@ -9,6 +9,8 @@ export const GET: APIRoute = async () => {
     vitals: {}
   };
 
+  let nonce = Math.random().toString(36).substring(7);
+
   try {
     const stats = await db.select({
       total: sql<number>`count(*)`,
@@ -43,7 +45,6 @@ export const GET: APIRoute = async () => {
       diagnostics.status = "DEGRADED ⚠️";
     }
 
-    const nonce = Math.random().toString(36).substring(7);
     diagnostics.nonce = nonce;
 
   } catch (err: any) {

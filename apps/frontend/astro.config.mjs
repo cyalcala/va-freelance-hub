@@ -16,23 +16,23 @@ export default defineConfig({
   vite: {
     resolve: {
       alias: {
-        '@va-hub/db': path.resolve(__dirname, '../../packages/db')
+        '@va-hub/db': path.resolve(__dirname, '../../packages/db'),
+        '@va-hub/config': path.resolve(__dirname, '../../packages/config'),
+        // 🧬 Titanium Entry Redirect: Map main @libsql/client to absolute web entry
+        // This avoids recursive alias resoution during bundling.
+        '@libsql/client': path.resolve(__dirname, '../../node_modules/@libsql/client/lib-esm/web.js')
       },
-      // Bun-favored resolution for local development and build speed
-      conditions: ['bun', 'node', 'import']
+      // Node-first resolution — Vercel CI runs Node.js, not Bun
+      conditions: ['node', 'import']
     },
-    // 🛡️ SECRET SHIELD: Globally purge server-side credentials from the client module graph
-    define: {
-      'process.env.TURSO_AUTH_TOKEN': 'undefined',
-      'process.env.TRIGGER_SECRET_KEY': 'undefined',
-      'process.env.GEMINI_API_KEY': 'undefined',
-      'process.env.TRIGGER_API_KEY': 'undefined',
-    },
+    // 🛡️ SECRET SHIELD: Astro server-mode already isolates frontmatter from client bundles.
+    // No compile-time `define` needed — it was destructively replacing secrets in SSR code too.
     ssr: {
-      // 🧬 SURGICAL EXTERNALIZATION: Bundle workspace packages only.
-      // Externalize @libsql/client and drizzle-orm to prevent CJS/ESM shim breakage.
-      noExternal: ['@va-hub/db', '@va-hub/config'],
-      external: ['@libsql/client', 'drizzle-orm']
+      // 🧬 TOTAL BUNDLE STRATEGY: Inline EVERYTHING into the serverless function.
+      // 1. Sidesteps Windows EPERM (symlink) issues by not needing runtime node_modules.
+      // 2. The @libsql alias ensures no native binding requirement leaks into the bundle.
+      // 3. Optimal for Vercel's cold-start performance.
+      noExternal: true
     },
     build: {
       rollupOptions: {

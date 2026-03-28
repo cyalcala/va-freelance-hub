@@ -1,10 +1,11 @@
-import { createClient, type Client } from "@libsql/client/web";
+import { createClient, type Client } from "@libsql/client";
 import { drizzle, type LibSQLDatabase } from "drizzle-orm/libsql";
 import * as dbSchema from "./schema";
 
 /**
  * VA.INDEX Titanium Database Client
- * Optimized for serverless edge workers (Trigger.dev / Vercel Edge).
+ * Uses HTTP transport (/web) for universal compatibility — no native bindings needed.
+ * Works in Vercel Serverless, Trigger.dev workers, and local Bun dev.
  */
 
 export interface DbInstance {
@@ -30,10 +31,6 @@ export function createDb(): DbInstance {
   const client = createClient({
     url: url || "file::memory:",
     authToken: authToken || "",
-    // @ts-ignore - Edge-optimized fetching (Injected in DBRE audit)
-    intliant: true, 
-    // @ts-ignore - increase busy_timeout to mitigate SQLITE_BUSY on Turso
-    busy_timeout: 30000, 
   });
 
   const db = drizzle(client, { schema: dbSchema });

@@ -4,6 +4,48 @@
 ## [2026-03-28] — [Opportunities: 170 | Agencies: 59]
 **Status: AUTO-PROCESSED**
 
+---
+
+
+## [2026-03-28] — [Opportunities: 170 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: resolve silent coherency failure (ingestion throw, upsert override, cache bypass) (ee12893)
+
+---
+
+
+## [2026-03-28] — [Opportunities: 170 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: resolve silent coherency failure (ingestion throw, upsert override, cache bypass) (ee12893)
+
+---
+
+
+## [2026-03-28] — [Opportunities: 170 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: resolve silent coherency failure (ingestion throw, upsert override, cache bypass) (ee12893)
+
+---
+
+
+## [2026-03-28] — [Opportunities: 170 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: resolve silent coherency failure (ingestion throw, upsert override, cache bypass) (ee12893)
+
+---
+
+
+## [2026-03-28] — [Opportunities: 170 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
 ### 🛡️ Reliability & Fixes
 * fix: resolve silent coherency failure (ingestion throw, upsert override, cache bypass) (ee12893)
 

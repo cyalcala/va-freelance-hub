@@ -5,11 +5,11 @@
   "type": "module",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
-    "@libsql/client": "latest",
+    "@libsql/client": "^0.17.2",
     "@trigger.dev/sdk": "4.4.3",
     "@va-hub/config": "workspace:*",
     "@va-hub/db": "workspace:*",
-    "drizzle-orm": "latest",
+    "drizzle-orm": "^0.45.1",
     "fast-xml-parser": "^5.5.6",
     "jsonata": "^2.1.0",
     "uuid": "^9.0.1"

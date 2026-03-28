@@ -12,8 +12,8 @@
     "build": "bun run --cwd apps/frontend build",
     "db:generate": "bun run --cwd packages/db generate",
     "db:migrate": "bun run --cwd packages/db migrate",
-    "trigger:dev": "bunx trigger.dev@4.4.3 dev",
-    "trigger:deploy": "bunx trigger.dev@4.4.3 deploy",
+    "trigger:dev": "bunx trigger.dev@4.4.3 dev --config jobs/trigger.config.ts",
+    "trigger:deploy": "bunx trigger.dev@4.4.3 deploy --config jobs/trigger.config.ts",
     "save": "bun run scripts/save.ts",
     "restore": "bun run scripts/restore.ts",
     "resurrect": "bun run scripts/resurrect.ts",
@@ -24,15 +24,17 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/bun": "^1.2.0",
+    "@types/uuid": "^11.0.0",
     "husky": "^9.1.7",
     "typescript": "^5.4.0"
   },
   "dependencies": {
-    "@libsql/client": "latest",
+    "@libsql/client": "^0.17.2",
     "@trigger.dev/sdk": "4.4.3",
     "dotenv": "^17.3.1",
-    "drizzle-orm": "latest",
-    "fast-xml-parser": "^5.5.6"
+    "drizzle-orm": "^0.45.1",
+    "fast-xml-parser": "^5.5.6",
+    "uuid": "^13.0.0"
   }
 }
