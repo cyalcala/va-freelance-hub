@@ -4,10 +4,20 @@ export const OpportunitySchema = z.object({
   id: z.string().uuid().optional(),
   title: z.string().min(3).max(255).trim().transform(v => v.replace(/&amp;/g, '&')),
   company: z.string().min(1).max(255).trim().default("Generic"),
-  type: z.enum(["agency", "direct"]).default("agency"),
+  type: z.preprocess((val) => {
+    if (typeof val === 'string') {
+      const v = val.toLowerCase();
+      if (v.includes('full-time') || v.includes('contract') || v.includes('part-time')) return 'direct';
+    }
+    return val;
+  }, z.enum(["agency", "direct"]).default("agency")),
   sourceUrl: z.string().url(),
   sourcePlatform: z.string().trim().optional(),
-  tags: z.string().optional().default("[]"), // JSON string
+  tags: z.preprocess((val) => {
+    if (Array.isArray(val)) return JSON.stringify(val);
+    if (typeof val === 'string') return val;
+    return "[]";
+  }, z.string().optional().default("[]")), // JSON string
   locationType: z.string().trim().default("remote"),
   payRange: z.string().trim().optional().nullable(),
   description: z.string().trim().optional().nullable(),

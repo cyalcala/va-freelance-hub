@@ -199,7 +199,8 @@ export async function harvest() {
       const rawPayload = (item as any).__raw || JSON.stringify(item);
       await recordLog(`Zod Boundary Breach: ${item.title || 'Unknown'}. Triggering Healer.`, "warn", { 
         errors: validationResult.error.errors,
-        source: item.sourcePlatform 
+        source: item.sourcePlatform,
+        rawPayload: (item as any).__raw || JSON.stringify(item)
       });
 
       const healedRecords = await healBatchWithLLM(db, rawPayload, item.sourcePlatform || "Unknown");
