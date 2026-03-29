@@ -26,12 +26,15 @@ const ageHrs = signal.latestActivityMs ? Math.max(0, (Date.now() - signal.latest
 const isFresh = ageHrs < 1; 
 const displayDate = formatRelativeTime(signal.latestActivityMs);
 
-const tags = (signal.tags || []) as string[];
+// Defensive Tags Parsing: Drizzle mode: 'json' can be a string in some Edge runtimes
+const rawTags = signal.tags || [];
+const tags = (typeof rawTags === 'string' ? JSON.parse(rawTags) : rawTags) as string[];
+
 const tierClass = signal.tier === 0 ? 'tier-platinum' : signal.tier === 1 ? 'tier-gold' : 'tier-silver';
 const tierLabelClass = signal.tier === 0 ? 'bg-[#FFD700] text-black' : signal.tier === 1 ? 'bg-[#50C878] text-white' : 'bg-oat-200 text-blueberry-800/60';
 const tierName = signal.tier === 0 ? 'Platinum' : signal.tier === 1 ? 'Gold' : 'Silver';
 
-const reasoningTags = tags.filter(t => !['ats-sniper', 'agency', 'direct'].includes(t.toLowerCase())).slice(0, 2);
+const reasoningTags = tags.filter((t: string) => !['ats-sniper', 'agency', 'direct'].includes(t.toLowerCase())).slice(0, 2);
 ---
 
 <a 

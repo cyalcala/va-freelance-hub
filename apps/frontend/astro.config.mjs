@@ -28,10 +28,10 @@ export default defineConfig({
     // 🛡️ SECRET SHIELD: Astro server-mode already isolates frontmatter from client bundles.
     // No compile-time `define` needed — it was destructively replacing secrets in SSR code too.
     ssr: {
-      // 🧬 TOTAL BUNDLE STRATEGY: Inline EVERYTHING into the serverless function.
-      // 1. Sidesteps Windows EPERM (symlink) issues by not needing runtime node_modules.
-      // 2. The @libsql alias ensures no native binding requirement leaks into the bundle.
-      // 3. Optimal for Vercel's cold-start performance.
+      // 🧬 TITANIUM BUNDLE STRATEGY: Inline EVERYTHING.
+      // 1. Mandatory for Windows: Avoids 'EPERM: operation not permitted, symlink' failures in the Vercel NFT trace.
+      // 2. Bun Compatibility: Bypasses complex .bun/ symlink trees that often break the Vercel adapter's file tracing.
+      // 3. Optimization: Results in faster cold-starts by including all logic in a single server entrypoint.
       noExternal: true
     },
     build: {
