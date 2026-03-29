@@ -1,4 +1,4 @@
-CREATE TABLE `noteslog` (
+CREATE TABLE IF NOT EXISTS `noteslog` (
 	`id` text PRIMARY KEY NOT NULL,
 	`timestamp` integer NOT NULL,
 	`drift_minutes` integer NOT NULL,
@@ -6,6 +6,3 @@ CREATE TABLE `noteslog` (
 	`status` text NOT NULL,
 	`metadata` text DEFAULT '{}'
 );
---> statement-breakpoint
-ALTER TABLE `extraction_rules` ADD `failure_reason` text;--> statement-breakpoint
-ALTER TABLE `extraction_rules` ADD `last_error_log` text;

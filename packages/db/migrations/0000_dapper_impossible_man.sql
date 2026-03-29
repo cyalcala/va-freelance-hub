@@ -1,4 +1,4 @@
-CREATE TABLE `agencies` (
+CREATE TABLE IF NOT EXISTS `agencies` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
 	`slug` text NOT NULL,
@@ -13,4 +13,4 @@ CREATE TABLE `agencies` (
 	`score` integer
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `agencies_slug_unique` ON `agencies` (`slug`);
+CREATE UNIQUE INDEX IF NOT EXISTS `agencies_slug_unique` ON `agencies` (`slug`);

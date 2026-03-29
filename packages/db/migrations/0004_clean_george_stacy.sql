@@ -1,4 +1,4 @@
-CREATE TABLE `logs` (
+CREATE TABLE IF NOT EXISTS `logs` (
 	`id` text PRIMARY KEY NOT NULL,
 	`message` text NOT NULL,
 	`level` text DEFAULT 'info',
@@ -6,7 +6,7 @@ CREATE TABLE `logs` (
 	`metadata` text DEFAULT '{}'
 );
 --> statement-breakpoint
-CREATE TABLE `vitals` (
+CREATE TABLE IF NOT EXISTS `vitals` (
 	`id` text PRIMARY KEY NOT NULL,
 	`ai_quota_count` integer DEFAULT 0,
 	`ai_quota_date` text,
@@ -16,6 +16,3 @@ CREATE TABLE `vitals` (
 	`last_error_hash` text,
 	`last_recovery_at` integer
 );
---> statement-breakpoint
-ALTER TABLE `opportunities` ADD `company_logo` text;--> statement-breakpoint
-ALTER TABLE `opportunities` ADD `metadata` text DEFAULT '{}';

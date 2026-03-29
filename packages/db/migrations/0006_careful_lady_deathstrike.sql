@@ -1,4 +1,4 @@
-CREATE TABLE `extraction_rules` (
+CREATE TABLE IF NOT EXISTS `extraction_rules` (
 	`id` text PRIMARY KEY NOT NULL,
 	`source_name` text NOT NULL,
 	`jsonata_pattern` text NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE `extraction_rules` (
 --> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS `extraction_rules_source_name_unique` ON `extraction_rules` (`source_name`);--> statement-breakpoint
 PRAGMA foreign_keys=OFF;--> statement-breakpoint
-CREATE TABLE `__new_opportunities` (
+CREATE TABLE IF NOT EXISTS `__new_opportunities` (
 	`id` text PRIMARY KEY NOT NULL,
 	`title` text NOT NULL,
 	`company` text DEFAULT 'Generic' NOT NULL,
@@ -32,8 +32,8 @@ CREATE TABLE `__new_opportunities` (
 	`created_at` integer NOT NULL
 );
 --> statement-breakpoint
-INSERT INTO `__new_opportunities`("id", "title", "company", "type", "source_url", "source_platform", "tags", "location_type", "pay_range", "description", "posted_at", "scraped_at", "is_active", "tier", "content_hash", "latest_activity_ms", "company_logo", "metadata", "created_at") SELECT "id", "title", "company", "type", "source_url", "source_platform", "tags", "location_type", "pay_range", "description", "posted_at", "scraped_at", "is_active", "tier", "content_hash", "latest_activity_ms", "company_logo", "metadata", "created_at" FROM `opportunities`;--> statement-breakpoint
-DROP TABLE `opportunities`;--> statement-breakpoint
+INSERT OR IGNORE INTO `__new_opportunities`("id", "title", "company", "type", "source_url", "source_platform", "tags", "location_type", "pay_range", "description", "posted_at", "scraped_at", "is_active", "tier", "content_hash", "latest_activity_ms", "company_logo", "metadata", "created_at") SELECT "id", "title", "company", "type", "source_url", "source_platform", "tags", "location_type", "pay_range", "description", "posted_at", "scraped_at", "is_active", "tier", "content_hash", "latest_activity_ms", "company_logo", "metadata", "created_at" FROM `opportunities`;--> statement-breakpoint
+DROP TABLE IF EXISTS `opportunities`;--> statement-breakpoint
 ALTER TABLE `__new_opportunities` RENAME TO `opportunities`;--> statement-breakpoint
 PRAGMA foreign_keys=ON;--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS `title_company_idx` ON `opportunities` (`title`,`company`);--> statement-breakpoint

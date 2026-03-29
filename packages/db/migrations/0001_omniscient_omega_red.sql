@@ -1,4 +1,4 @@
-CREATE TABLE `opportunities` (
+CREATE TABLE IF NOT EXISTS `opportunities` (
 	`id` text PRIMARY KEY NOT NULL,
 	`title` text NOT NULL,
 	`company` text,
@@ -15,4 +15,4 @@ CREATE TABLE `opportunities` (
 	`content_hash` text
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `opportunities_content_hash_unique` ON `opportunities` (`content_hash`);
+CREATE UNIQUE INDEX IF NOT EXISTS `opportunities_content_hash_unique` ON `opportunities` (`content_hash`);
