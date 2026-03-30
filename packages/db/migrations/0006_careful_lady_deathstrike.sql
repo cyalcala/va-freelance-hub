@@ -36,8 +36,8 @@ INSERT OR IGNORE INTO `__new_opportunities`("id", "title", "company", "type", "s
 DROP TABLE IF EXISTS `opportunities`;--> statement-breakpoint
 ALTER TABLE `__new_opportunities` RENAME TO `opportunities`;--> statement-breakpoint
 PRAGMA foreign_keys=ON;--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS `title_company_idx` ON `opportunities` (`title`,`company`);--> statement-breakpoint
-CREATE UNIQUE INDEX IF NOT EXISTS `tier_latest_idx` ON `opportunities` (`tier`,`latest_activity_ms`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `title_company_idx` ON `opportunities` (`title`,`company`);--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS `tier_latest_idx` ON `opportunities` (`tier`,`latest_activity_ms`);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `active_idx` ON `opportunities` (`is_active`);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `source_platform_idx` ON `opportunities` (`source_platform`);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `type_idx` ON `opportunities` (`type`);--> statement-breakpoint
