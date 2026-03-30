@@ -266,7 +266,7 @@
             "title",
             "company"
           ],
-          "isUnique": true
+          "isUnique": false
         }
       },
       "foreignKeys": {},

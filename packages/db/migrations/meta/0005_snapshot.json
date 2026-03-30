@@ -336,7 +336,7 @@
             "title",
             "company"
           ],
-          "isUnique": true
+          "isUnique": false
         },
         "tier_latest_idx": {
           "name": "tier_latest_idx",
@@ -344,7 +344,7 @@
             "tier",
             "latest_activity_ms"
           ],
-          "isUnique": true
+          "isUnique": false
         }
       },
       "foreignKeys": {},
