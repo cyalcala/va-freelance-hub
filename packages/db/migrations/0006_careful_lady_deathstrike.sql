@@ -41,5 +41,5 @@ CREATE INDEX IF NOT EXISTS `tier_latest_idx` ON `opportunities` (`tier`,`latest_
 CREATE INDEX IF NOT EXISTS `active_idx` ON `opportunities` (`is_active`);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `source_platform_idx` ON `opportunities` (`source_platform`);--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `type_idx` ON `opportunities` (`type`);--> statement-breakpoint
-ALTER TABLE `system_health` ADD `consecutive_failures` integer DEFAULT 0;--> statement-breakpoint
+-- ALTER TABLE `system_health` ADD `consecutive_failures` integer DEFAULT 0;--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS `timestamp_idx` ON `logs` (`timestamp`);
