@@ -97,10 +97,23 @@ export class GitAgent {
     await $`git config user.email "bot-${this.agentId}@va-hub.ai"`.quiet();
     
     if (this.token) {
-      const repoUrl = (await $`git remote get-url origin`.text()).trim();
-      if (repoUrl.startsWith('https://')) {
-        const authedUrl = repoUrl.replace('https://', `https://x-access-token:${this.token}@`);
-        await $`git remote set-url origin ${authedUrl}`.quiet();
+      try {
+        const repoUrlRaw = await $`git remote get-url origin`.text();
+        const repoUrl = repoUrlRaw.trim();
+        let authedUrl = repoUrl;
+        
+        if (repoUrl.startsWith('https://')) {
+          authedUrl = repoUrl.replace('https://', `https://x-access-token:${this.token}@`);
+        } else if (repoUrl.startsWith('git@github.com:')) {
+          authedUrl = repoUrl.replace('git@github.com:', `https://x-access-token:${this.token}@github.com/`);
+        }
+        
+        if (authedUrl !== repoUrl) {
+          await $`git remote set-url origin ${authedUrl}`.quiet();
+          console.log(`[GitAgent] ✅ Remote 'origin' authenticated with token.`);
+        }
+      } catch (e: any) {
+        console.warn(`[GitAgent] ⚠️ Failed to update remote URL: ${e.message}`);
       }
     }
   }

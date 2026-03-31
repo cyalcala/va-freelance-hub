@@ -2,10 +2,14 @@ name: Apex SRE Interrogator
 
 on:
   schedule:
-    # Runs every 15 minutes
+    # Runs every 15 minutes to ensure "snap-fast" performance and zero-downtime
     - cron: '*/15 * * * *'
   workflow_dispatch: 
-    # This allows you to manually click a "Run workflow" button in the GitHub UI
+
+# Prevent multiple instances of the SRE from conflicting on the same repo state
+concurrency:
+  group: apex-sre-lock
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -14,6 +18,7 @@ jobs:
   interrogate:
     name: Run SLO Validation + Autonomous Remediation
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
       - name: 🛑 Checkout Repository
@@ -27,7 +32,7 @@ jobs:
           bun-version: latest
 
       - name: 📦 Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: ⚡ Execute Apex Interrogator
         env:
@@ -38,5 +43,6 @@ jobs:
           TRIGGER_API_KEY: ${{ secrets.TRIGGER_API_KEY }}
           VERCEL_DEPLOY_WEBHOOK: ${{ secrets.VERCEL_DEPLOY_WEBHOOK }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GITHUB_PAT: ${{ secrets.GITHUB_PAT }}
+          # Fallback to GITHUB_TOKEN if PAT is not provided; critical for GitAgent
+          GITHUB_PAT: ${{ secrets.GITHUB_PAT || secrets.GITHUB_TOKEN }}
         run: bun run scripts/apex-sre.ts

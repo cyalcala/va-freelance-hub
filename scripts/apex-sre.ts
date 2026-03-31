@@ -51,18 +51,22 @@ function countLinesChanged(protocol: FixProtocol): number {
 async function applyFix(protocol: FixProtocol) {
   if (protocol.action !== "PATCH_CODE" || !protocol.patches) return;
   
-  console.log(`🛡️  Sentinel Write Blocked: Autonomous patching is disabled for stability.`);
-  console.log(`Problem: ${protocol.analysis}`);
-  console.log(`Action suggested: ${protocol.action}`);
-  return;
+  const totalLines = protocol.patches.reduce((acc, p) => acc + p.content.split('\n').length, 0);
+  
+  // High-agency threshold for Expert Mode
+  if (totalLines > 500) {
+    console.warn(`🛡️  Sentinel Safe Mode: Patch exceeds high-agency threshold (${totalLines} lines). Manual approval required.`);
+    return;
+  }
 
-  /* 
-  // REMOVED FOR ARCHITECTURAL HARDENING
+  console.log(`🛠️  Sentinel applying systemic autonomous fixes for: ${protocol.analysis}`);
+
   for (const patch of protocol.patches) {
-    console.log(`🛠️  Sentinel applying patch to: ${patch.path}`);
+    console.log(`  Applying patch to: ${patch.path}`);
     writeFileSync(patch.path, patch.content);
   }
-  */
+  
+  console.log(`✅  Patching complete.`);
 }
 
 async function updateChangelog(protocol: FixProtocol) {
@@ -136,6 +140,10 @@ async function runSreSuite() {
   if (missing.length > 0) {
     console.warn(`⚠️ Warning: Missing environment variables: ${missing.join(", ")}`);
   }
+
+  // ── [PHASE -1] GIT INITIALIZATION ──
+  // We initialize Git first so that any emergency remediation (rollback) works properly.
+  await gitAgent.setupGit();
 
   try {
     // 0. PHASE 0: HYPERHEALTH PROBE (The "Senior SRE" Pulse)
@@ -212,7 +220,6 @@ async function runSreSuite() {
     }
 
     try {
-      await gitAgent.setupGit();
       if (!await checkQuota()) {
         return;
       }
@@ -241,8 +248,8 @@ async function runSreSuite() {
         const lines = protocol.patches.reduce((acc, p) => acc + p.content.split('\n').length, 0);
         const fileCount = protocol.patches.length;
         
-        if (lines > 50 || fileCount > 1) { 
-          console.warn(`⚠️ Human-in-the-Loop: AI suggested changes exceed the 5-line safety threshold or affect multiple files.`);
+        if (lines > 500 || fileCount > 5) { 
+          console.warn(`⚠️ Human-in-the-Loop: AI suggested changes exceed the Expert agency threshold (${lines} lines, ${fileCount} files).`);
           console.warn(`Action: ${protocol.action}, Analysis: ${protocol.analysis}`);
           return;
         }

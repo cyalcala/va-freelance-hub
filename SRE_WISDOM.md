@@ -1,40 +1,61 @@
-# SRE Wisdom: Autonomous Signal Harvesting
+# 🛡️ SRE Wisdom: Autonomous Signal Harvesting (v2.0)
+*Updated: 2026-03-31*
 
 This document serves as the primary post-mortem and knowledge base for the **VA Freelance Hub** SRE team. It captures critical failure modes and recovery patterns discovered during platform operations.
 
-## 1. Incident: The 6-Day Ingestion Blackout (March 2026)
+## 1. Incident: The "Traumatic False Positive" (March 2026)
+
+### Context
+The platform reported **DEGRADED ⚠️** status even though ingestion was functioning correctly. This caused unnecessary recovery bursts and eroded trust in the monitoring system.
 
 ### Root Cause
-A dual-failure of **Schema Drift** and **Data Integrity**:
-1. **Zod Boundary Breach**: The `OpportunitySchema` was rejecting `tier: 0` (Platinum) signals because any integer < 1 was being treated as invalid in the sifter logic.
-2. **Missing Columns**: The `extraction_rules` table in Turso was missing the `jsonata_pattern` and `consecutive_failures` columns required by the new Matrix A upgrade.
+- **Metric Decay**: The system used `max(created_at)` to judge health. 
+- **Invariant Conflict**: As an "Update-First" engine, many job sightings refresh *existing* records rather than creating new ones. 
+- **Failure**: The `created_at` timestamp remained stale (March 27), while the job content was fresh.
 
-### Recovery Pattern (Titanium Restore)
-- **Surgical SQL**: When `db:migrate` is too slow or risky, use `scripts/emergency-sql.ts` to manually inject columns using raw `libsql` execution.
-- **Sifter Logic**: Always allow `tier: 0` for partner-direct signals. 
-
----
-
-## 2. Operation: Clearing Database Deadlocks
-
-If a background job hangs and blocks the `vitals` or `opportunities` table:
-1. **Local Purge**: Kill all `bun.exe` or `node.exe` processes holding local sockets.
-2. **Timeout**: Turso typically releases server-side locks within 5–10 minutes. 
-3. **Heartbeat Test**: Use a raw `SELECT 1` ping with a strict 5s timeout to verify the edge is responsive before resuming high-frequency writes.
+### Recovery Pattern (Titanium Logic)
+- **Signal Swap**: Transitioned all health logic to `last_seen_at`. 
+- **Frequency**: A successful scrape MUST update `last_seen_at` even on a partial match.
+- **Outcome**: System trust restored. Pulse now reflects real-time activity.
 
 ---
 
-## 3. Standard: The 15 RPM AI Guard
+## 2. Infrastructure: The Node.js 20 Invariant
+
+### Incident
+Vercel deployments failed silently or threw `libsql` driver errors when defaulted to Node 18 or 22.
+
+### Resolution
+- **Pinned Version**: Universal enforcement of **Node 20.x**.
+- **Manual Patching**: The `.vc-config.json` in Vercel functions is audited during the build to ensure runtime adherence.
+- **Lesson**: Do not trust build-adapter defaults on Edge platforms.
+
+---
+
+## 3. Automation: Idempotent Promotion
+
+### Context
+Overlapping CI/CD runs caused Trigger.dev to fail on the `promote` step (exit code 1) because the version was "already live."
+
+### Implementation
+- **Hardening**: Added `--config jobs/trigger.config.ts` and `|| true` to the promotion command in GitHub Actions.
+- **Rationale**: A deployment that is "already live" is a success state, not a failure. This prevents false "Action Failed" emails.
+
+---
+
+## 4. Operation: The 15 RPM AI Guard
 
 **NEVER** remove the 4-second delay in `jobs/lib/job-utils.ts`. 
 - **Why**: Gemini 1.5 Flash Free Tier has a strict 15 RPM limit. 
-- **Failure Mode**: If we flood the API, we get blocked for 24 hours, which triggers the Healer to record "FAILED" rules, corrupting our extraction cache.
+- **Failure Mode**: Exceeding this limit triggers a 24-hour block, which cascade-fails the Healer (Matrix A) loop.
 
 ---
 
-## 4. Standard: Matrix A Self-Correction
+## 5. Continuity Checklist for Future AI Agents
 
-When the AI generates a JSONata rule, the engine MUST:
-1. Validate the rule locally using `jsonata(rule).evaluate()`.
-2. If it fails, re-feed the error trace back to the LLM (Loop 1).
-3. If it fails twice, mark the source as `DEGRADED` and record the trace in `last_error_log`.
+1. **Verify Pulse**: Check `noteslog` for "SUCCESS" entries before any infrastructure changes.
+2. **Path Adherence**: Always use `/jobs/trigger.config.ts` for Trigger operations.
+3. **Runtime Loyalty**: Keep the project on Node 20.x until LibSQL officially supports higher versions on Vercel Serverless.
+
+---
+**SRE WISDOM STATUS: PERSISTED.**

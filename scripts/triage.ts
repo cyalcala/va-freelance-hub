@@ -344,6 +344,7 @@ async function certify() {
 
   gate("C1 ", v > 200,  `Volume: ${v} records`);
   gate("C2 ", p >= 5,   `Quality: ${p} PLATINUM records`);
+  gate("C3 ", v >= (metrics.visible_prev ?? 150), `Stability: No massive record loss detected.`);
   gate("C4 ", f > 0,    `Velocity: ${f} fresh records (ms calibrated)`);
   gate("C5 ", gl === 0, `Security: ${gl} Geo-leaks`);
   gate("C7 ", top <= 1, `UX: Top feed rank is Tier ${top}`);
@@ -354,7 +355,7 @@ async function certify() {
   gate("C8 ", healthStale < 2, `Freshness: API reports ${healthStale.toFixed(2)}hrs stale`);
   gate("C11", f_health.ok && f_health.text.includes("HEALTHY"), "System: Health Check reported 'HEALTHY'");
   
-  if (v > 200 && p >= 5 && f > 0 && gl === 0 && top <= 1 && healthStale < 2 && f_health.ok) {
+  if (v > 200 && p >= 5 && gl === 0 && top <= 1 && healthStale < 2 && f_health.ok && v >= (metrics.visible_prev ?? 150)) {
     console.log(pass("\nALL GATES PASSED. System is truly healthy."));
     process.exit(0);
   } else {

@@ -15,15 +15,21 @@ export const GET: APIRoute = async () => {
     const stats = await db.select({
       total: sql<number>`count(*)`,
       gold: sql<number>`sum(case when tier = 1 then 1 else 0 end)`,
-      newToday: sql<number>`sum(case when last_seen_at > unixepoch('now', '-24 hours') * 1000 then 1 else 0 end)`,
-      maxScraped: sql<number>`max(last_seen_at)`,
-      maxCreated: sql<number>`max(last_seen_at)`,
+      newToday: sql<number>`sum(case when latest_activity_ms > (unixepoch('now', '-24 hours') * 1000) then 1 else 0 end)`,
+      maxActivity: sql<number>`max(latest_activity_ms)`,
+      maxScraped: sql<number>`max(scraped_at)`,
     }).from(schema.opportunities).where(eq(schema.opportunities.isActive, true));
 
-    const { total, gold, newToday, maxScraped, maxCreated } = stats[0];
+    const { total, gold, newToday, maxActivity, maxScraped } = stats[0];
     
-    const lastIngestion = maxCreated ? new Date(maxCreated) : new Date(0);
-    const lastHeartbeat = maxScraped ? new Date(maxScraped) : new Date(0);
+    // DEFENSE IN DEPTH: Handle both 10-digit (s) and 13-digit (ms) timestamps
+    const normalizeDate = (val: number | null) => {
+      if (!val) return new Date(0);
+      return val < 10000000000 ? new Date(val * 1000) : new Date(val);
+    };
+
+    const lastIngestion = normalizeDate(maxActivity);
+    const lastHeartbeat = normalizeDate(maxScraped);
       
     const ingestionStalenessHrs = (Date.now() - lastIngestion.getTime()) / (1000 * 60 * 60);
     const dbStalenessHrs = (Date.now() - lastHeartbeat.getTime()) / (1000 * 60 * 60);

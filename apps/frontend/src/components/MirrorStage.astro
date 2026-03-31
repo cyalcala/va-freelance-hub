@@ -31,40 +31,95 @@ if (displaySignals.length === 0) {
     <div class="h-px flex-1 bg-gradient-to-r from-blueberry-900/10 to-transparent ml-4 hidden sm:block"></div>
   </div>
   
-  <div class="flex overflow-x-auto pb-8 gap-5 snap-x snap-mandatory scrollbar-hide -mx-2 px-2" style="-webkit-overflow-scrolling: touch;">
-    {displaySignals.map((sig) => (
-      <a 
-        href={sig.sourceUrl} 
-        target="_blank" 
-        class="group snap-center shrink-0 w-[300px] sm:w-[340px] bg-[#FDFBF7] border-2 border-blueberry-900 rounded-[2rem] p-6 hover:bg-blueberry-900 hover:text-white hover:-translate-y-2 transition-all shadow-[8px_8px_0_0_#1e3a8a] flex flex-col justify-between min-h-[160px] relative overflow-hidden"
-      >
-        <div class="relative z-10">
-          <div class="flex items-center gap-2 mb-4">
-            <span class="px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest rounded-full">LIVE</span>
-            <span class="text-[9px] font-bold text-blueberry-900/30 group-hover:text-white/40 uppercase tracking-widest">{sig.sourcePlatform || 'SIGNAL'}</span>
-          </div>
-          <h3 class="text-[15px] font-black uppercase leading-[1.2] tracking-tighter group-hover:text-white line-clamp-2 mb-2">
-            {sig.title}
-          </h3>
-        </div>
-        
-        <div class="mt-auto pt-4 flex items-center justify-between relative z-10">
-          <span class="text-[11px] font-black uppercase tracking-widest text-blueberry-900/60 group-hover:text-white/70 truncate pr-6">
-            {sig.company || 'Direct Client'}
-          </span>
-          <div class="w-8 h-8 rounded-full bg-blueberry-900 group-hover:bg-emerald-400 flex items-center justify-center transition-colors shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-white group-hover:text-blueberry-900"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
-          </div>
-        </div>
+  <div class="relative overflow-hidden -mx-2 px-2 mask-fade-edges">
+    <div class="flex gap-5 animate-marquee hover:pause whitespace-nowrap">
+      {/* Track 1 */}
+      <div class="flex gap-5">
+        {displaySignals.map((sig) => (
+          <a 
+            href={sig.sourceUrl} 
+            target="_blank" 
+            class="group shrink-0 w-[300px] sm:w-[340px] bg-[#FDFBF7] border-2 border-blueberry-900 rounded-[2rem] p-6 hover:bg-blueberry-900 hover:text-white hover:-translate-y-2 transition-all shadow-[8px_8px_0_0_#1e3a8a] flex flex-col justify-between min-h-[160px] relative overflow-hidden"
+          >
+            <div class="relative z-10 whitespace-normal">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest rounded-full">LIVE</span>
+                <span class="text-[9px] font-bold text-blueberry-900/30 group-hover:text-white/40 uppercase tracking-widest">{sig.sourcePlatform || 'SIGNAL'}</span>
+              </div>
+              <h3 class="text-[15px] font-black uppercase leading-[1.2] tracking-tighter group-hover:text-white line-clamp-2 mb-2">
+                {sig.title}
+              </h3>
+            </div>
+            
+            <div class="mt-auto pt-4 flex items-center justify-between relative z-10">
+              <span class="text-[11px] font-black uppercase tracking-widest text-blueberry-900/60 group-hover:text-white/70 truncate pr-6">
+                {sig.company || 'Direct Client'}
+              </span>
+              <div class="w-8 h-8 rounded-full bg-blueberry-900 group-hover:bg-emerald-400 flex items-center justify-center transition-colors shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-white group-hover:text-blueberry-900"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+              </div>
+            </div>
 
-        {/* Decorative Element */}
-        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-blueberry-900/5 group-hover:bg-white/5 rounded-full blur-2xl transition-all"></div>
-      </a>
-    ))}
+            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-blueberry-900/5 group-hover:bg-white/5 rounded-full blur-2xl transition-all"></div>
+          </a>
+        ))}
+      </div>
+      
+      {/* Track 2 - The Duplicate for Infinite Loop */}
+      <div class="flex gap-5" aria-hidden="true">
+        {displaySignals.map((sig) => (
+          <a 
+            href={sig.sourceUrl} 
+            target="_blank" 
+            class="group shrink-0 w-[300px] sm:w-[340px] bg-[#FDFBF7] border-2 border-blueberry-900 rounded-[2rem] p-6 hover:bg-blueberry-900 hover:text-white hover:-translate-y-2 transition-all shadow-[8px_8px_0_0_#1e3a8a] flex flex-col justify-between min-h-[160px] relative overflow-hidden"
+          >
+            <div class="relative z-10 whitespace-normal">
+              <div class="flex items-center gap-2 mb-4">
+                <span class="px-2 py-0.5 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest rounded-full">LIVE</span>
+                <span class="text-[9px] font-bold text-blueberry-900/30 group-hover:text-white/40 uppercase tracking-widest">{sig.sourcePlatform || 'SIGNAL'}</span>
+              </div>
+              <h3 class="text-[15px] font-black uppercase leading-[1.2] tracking-tighter group-hover:text-white line-clamp-2 mb-2">
+                {sig.title}
+              </h3>
+            </div>
+            
+            <div class="mt-auto pt-4 flex items-center justify-between relative z-10">
+              <span class="text-[11px] font-black uppercase tracking-widest text-blueberry-900/60 group-hover:text-white/70 truncate pr-6">
+                {sig.company || 'Direct Client'}
+              </span>
+              <div class="w-8 h-8 rounded-full bg-blueberry-900 group-hover:bg-emerald-400 flex items-center justify-center transition-colors shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" class="text-white group-hover:text-blueberry-900"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+              </div>
+            </div>
+
+            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-blueberry-900/5 group-hover:bg-white/5 rounded-full blur-2xl transition-all"></div>
+          </a>
+        ))}
+      </div>
+    </div>
   </div>
 </div>
 
 <style>
+  @keyframes marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .animate-marquee {
+    animation: marquee 60s linear infinite;
+    width: max-content;
+  }
+
+  .hover\:pause:hover {
+    animation-play-state: paused;
+  }
+
+  .mask-fade-edges {
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }

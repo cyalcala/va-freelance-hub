@@ -1,9 +1,7 @@
-import { fetch } from "undici";
+// VA.INDEX Hyperhealth Check v1.0
+// MISSION: Detect and report site outages or critical performance degradation.
+// Using native Bun fetch (zero-dependency).
 
-/**
- * VA.INDEX Hyperhealth Check v1.0
- * MISSION: Detect and report site outages or critical performance degradation.
- */
 async function checkHealth() {
   const urls = [
     "https://va-freelance-hub-web.vercel.app/",

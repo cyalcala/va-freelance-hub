@@ -186,6 +186,7 @@ export async function harvest() {
       company: (item.company || 'Generic').trim(),
       tier: tier ?? 3,
       scrapedAt: new Date(),
+      lastSeenAt: new Date(),
       latestActivityMs: Math.max(
         item.postedAt ? new Date(item.postedAt).getTime() : 0, 
         item.scrapedAt ? new Date(item.scrapedAt).getTime() : now
@@ -233,6 +234,7 @@ export async function harvest() {
           target: [opportunitiesSchema.title, opportunitiesSchema.company],
           set: { 
             scrapedAt: new Date(),
+            lastSeenAt: new Date(), // COMMANDER'S PATCH: Force freshness on collision
             isActive: true,
             tier: sql`excluded.tier`,
             contentHash: sql`excluded.content_hash`,
