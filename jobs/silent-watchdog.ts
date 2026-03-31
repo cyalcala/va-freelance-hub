@@ -1,7 +1,8 @@
 import { schedules, logger, tasks } from "@trigger.dev/sdk/v3";
 import { createDb } from "@va-hub/db/client";
-import { noteslog } from "@va-hub/db/schema";
+import { noteslog, systemHealth } from "@va-hub/db/schema";
 import { v4 as uuidv4 } from "uuid";
+import { eq, not } from "drizzle-orm";
 
 /**
  * 🕵️ SILENT AUTO-HEALER (WATCHDOG)
@@ -46,6 +47,14 @@ export const silentWatchdogTask = schedules.task({
       const data = await response.json();
       metadata.auditResponse = data;
       
+      // Pillar 1.5: Granular System Health Awareness
+      const unhealthySources = await db.select()
+        .from(systemHealth)
+        .where(not(eq(systemHealth.status, "OK")));
+      
+      metadata.unhealthySourcesCount = unhealthySources.length;
+      metadata.unhealthySources = unhealthySources.map(s => s.sourceName);
+
       const stalenessHrs = data.vitals?.ingestionStalenessHrs ?? 0;
       driftMinutes = Math.round(stalenessHrs * 60);
 
@@ -74,7 +83,8 @@ export const silentWatchdogTask = schedules.task({
         try {
           await tasks.trigger("harvest-opportunities", { 
             source: "silent-watchdog-remediation",
-            driftMinutes 
+            driftMinutes,
+            unhealthySources: metadata.unhealthySources 
           });
           actionsTaken.push("ENGINE_KICKSTART");
           logger.info("[watchdog] Harvester task kickstarted out-of-band.");
@@ -82,8 +92,16 @@ export const silentWatchdogTask = schedules.task({
           logger.error(`[watchdog] Harvester kickstart failed: ${taskErr.message}`);
           actionsTaken.push("ENGINE_KICKSTART_FAILED");
         }
+      } else if (metadata.unhealthySourcesCount > 0) {
+        // Targeted Healing for degraded/failed sources even without drift
+        logger.warn(`[watchdog] 🕵️ HEALTH BREACH: ${metadata.unhealthySourcesCount} sources degraded. Initiating targeted heal.`);
+        await tasks.trigger("harvest-opportunities", { 
+           source: "silent-watchdog-target-heal",
+           unhealthySources: metadata.unhealthySources 
+        });
+        actionsTaken.push("HEALTH_KICKSTART");
       } else {
-        logger.info("[watchdog] Data freshness verified. No action required.");
+        logger.info("[watchdog] Data freshness and source health verified. No action required.");
         actionsTaken.push("VERIFIED_IDENTITY_FRESH");
       }
 

@@ -1,5 +1,5 @@
 # VA.INDEX Architecture (v7.0 — Post Drift Remediation)
-*Updated: 2026-03-31*
+*Updated: 2026-03-31 (Strict Hierarchy Alignment)*
 
 ---
 
@@ -35,7 +35,9 @@ VA.INDEX is an autonomous job signal aggregator targeting Filipino-accessible re
 │    Auto-deploy from GitHub   │
 │    Runtime: Node 20.x (Pinned) │
 │                              │
-│  / (feed) → sorted by tier   │
+│  / (feed) → sorted by tier (Platinum > Gold > Silver) 
+             secondary sort by recency (latest_activity_ms)
+
 │  /api/health → Real-time Pulse │
 └──────────────────────────────┘
 ```
@@ -49,6 +51,8 @@ The system has transitioned from `created_at` to `last_seen_at` as the primary s
 - **Ingestion**: Every harvester updates `last_seen_at` on every successful scrape, even if the content hasn't changed.
 - **Monitoring**: The `/api/health` endpoint and the `resilience-watchdog` now calculate staleness using `max(last_seen_at)`.
 - **Threshold**: Staleness > 2 hours triggers an autonomous recovery burst.
+- **Sorting**: System uses strict `ORDER BY tier ASC, latest_activity_ms DESC`. Legacy "Decay Algorithm" was retired in v7.1 to prevent tier interleaving.
+- **Indexing**: `uniqueJobIdx` on `(title, company, sourceUrl)` prevents signal collisions while allowing legitimate multi-source duplicates.
 
 ---
 

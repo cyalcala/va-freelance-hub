@@ -1,7 +1,7 @@
 # VA.INDEX — AI Context File
 
-> **Last updated:** 2026-03-27 (post-major-health-check)
-> **System status:** HEALTHY, fully autonomous, all tasks live
+> **Last updated:** 2026-03-31 (Post-Hierarchy Alignment)
+> **System status:** HEALTHY, Strict Hierarchy Active, De-Duplication Hardened
 
 ## MANDATORY: Read Before Any Action
 
@@ -72,8 +72,8 @@ Every 30 minutes (Trigger.dev cron):
     Layer 4: Direct ATS (fetchATSJobs via Greenhouse/Lever)
     Layer 5: JSON Probes (JobStreet PH)
   → Sifter v9.0 classifies into Platinum/Gold/Silver/Bronze/Trash
-  → Dedup by title+company fingerprint
-  → Upsert to Turso DB
+  → Dedup by title+company+source_url fingerprint
+  → Upsert to Turso DB (unique index target: [title, company, source_url])
   → ntfy.sh notification (success/failure)
 
 Every 6 hours:
@@ -104,8 +104,8 @@ location_type, pay_range, description, posted_at, scraped_at, is_active,
 tier (0=Platinum,1=Gold,2=Silver,3=Bronze,4=Trash), content_hash, 
 latest_activity_ms (indexed), company_logo, metadata (JSON), created_at`
 
-Unique index: `(title, company)` — prevents duplicates
-Composite index: `(tier, latest_activity_ms)` — fast feed sorting
+Unique index: `(title, company, source_url)` — Prevents signal collisions
+Composite index: `(tier, latest_activity_ms)` — Supports strict `tier ASC, latest_activity_ms DESC` sorting
 
 ### `agencies` (directory)
 `id, name, slug, website_url, hiring_url, logo_url, description, status, 

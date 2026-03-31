@@ -16,13 +16,7 @@ export async function getSortedSignals(limit = 50) {
   const query = db.select()
   .from(schema.opportunities)
   .where(not(eq(schema.opportunities.tier, 4)))
-  .orderBy(sql`
-    (${schema.opportunities.tier} * 24.0) + 
-    CASE 
-      WHEN (${now} - ${schema.opportunities.latestActivityMs}) <= 900000 THEN -12.0 
-      ELSE (${now} - ${schema.opportunities.latestActivityMs}) / 3600000.0 
-    END ASC
-  `)
+  .orderBy(schema.opportunities.tier, desc(schema.opportunities.latestActivityMs))
   .limit(limit);
 
   return await query;

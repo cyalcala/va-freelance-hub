@@ -71,6 +71,13 @@
       "when": 1774949609392,
       "tag": "0009_serious_hannibal_king",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1774991248428,
+      "tag": "0010_pale_nemesis",
+      "breakpoints": true
     }
   ]
 }

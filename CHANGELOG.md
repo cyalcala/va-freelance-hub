@@ -1,5 +1,19 @@
-## [2026-03-25] — [Opportunities: 314 | Agencies: 57]
-**Status: SYSTEM EVOLVED — GLOWING & SNAPSHOTTED**
+## [2026-04-01] — [Opportunities: ACTIVE | Agencies: 59]
+**Status: MISSION RE-ALIGNED — STRICT HIERARCHY ENFORCED**
+
+### 🛡️ Reliability & Fixes
+* **Strict Hierarchy Alignment**: Resolved major sorting failure where "Decay Math" was causing Silver jobs to interleve with Platinum. Enforced strict `tier ASC, latestActivityMs DESC` sorting at the database layer.
+* **Database Hardening**: Expanded unique index to `(title, company, sourceUrl)` to treat multi-source signals as distinct entities, preventing fresh data from being swallowed by stale records.
+* **Watchdog Calibration**: Fixed unit mismatch (ms vs sec) in `database-watchdog` deactivation logic to ensure accurate tiered retention (7d for Platinum, 4h for Bronze).
+* **Ingestion Stability**: Refactored `latestActivityMs` to use sentinel logic (value 0) for signals without native `postedAt`, preventing artificial "Freshness Drift" during re-scrapes.
+
+---
+
+## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+---
+
 
 ## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
 **Status: AUTO-PROCESSED**

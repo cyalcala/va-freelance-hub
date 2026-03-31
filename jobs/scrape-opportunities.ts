@@ -23,6 +23,25 @@ function normalizeTitle(title: string): string {
     .trim();
 }
 
+function normalizePlatform(name: string): string {
+  let n = name.trim();
+  if (n.startsWith('reddit/')) return n; // Already normalized
+  if (n.toLowerCase().includes('greenhouse')) return "Greenhouse";
+  if (n.toLowerCase().includes('lever')) return "Lever";
+  if (n.toLowerCase().startsWith('reddit')) {
+    return n.replace(/\br\//i, "").replace(/\s+/g, "/");
+  }
+  return n;
+}
+
+function normalizeLocation(loc: string): string {
+  if (!loc) return "Remote";
+  return loc
+    .replace(/^remote\s*-\s*/i, "")
+    .replace(/\(\s*remote\s*\)/i, "")
+    .trim() || "Remote";
+}
+
 async function recordLog(message: string, level: 'info' | 'warn' | 'error' | 'snapshot' = 'info', metadata: any = {}) {
   try {
     await db.insert(logsSchema).values({
@@ -38,9 +57,15 @@ async function recordLog(message: string, level: 'info' | 'warn' | 'error' | 'sn
   }
 }
 
-export async function harvest() {
+export async function harvest(options?: { unhealthySources?: string[] }) {
+  const targetSources = options?.unhealthySources || [];
   const startTime = Date.now();
-  await recordLog("══ Starting Multi-Source Signal Harvesting ══", "info");
+  
+  if (targetSources.length > 0) {
+    await recordLog(`🕵️ Targeted SRE Healing Initiated for: ${targetSources.join(", ")}`, "warn");
+  } else {
+    await recordLog("══ Starting Multi-Source Signal Harvesting ══", "info");
+  }
 
   const results: any[] = [];
   
@@ -76,6 +101,11 @@ export async function harvest() {
   ];
 
   for (const source of sources) {
+    // SRE FILTER: If targeting specific unhealthy sources, skip all others
+    if (targetSources.length > 0 && !targetSources.some(t => t.toLowerCase() === source.name.toLowerCase())) {
+        continue;
+    }
+
     if (openCircuits.has(source.name)) {
       await recordLog(`Skipping throttled source: ${source.name} (Circuit Open)`, "warn");
       continue;
@@ -165,7 +195,7 @@ export async function harvest() {
     // Strict Data Contract: Ignore visual noise, focus on structured data
     if (isLikelyScam(item.title, item.description ?? "")) continue;
 
-    const fingerprint = `${normalizeTitle(item.title)}|${(item.company || '').toLowerCase()}`;
+    const fingerprint = `${normalizeTitle(item.title)}|${(item.company || '').toLowerCase()}|${item.sourceUrl}`;
     if (processedFingerprints.has(fingerprint)) continue;
     
     const tier = siftOpportunity(
@@ -184,13 +214,13 @@ export async function harvest() {
       id: item.id || uuidv4(),
       title: item.title.trim(), 
       company: (item.company || 'Generic').trim(),
+      sourcePlatform: normalizePlatform(item.sourcePlatform || "Generic"),
+      tags: item.tags || [],
+      locationType: normalizeLocation(item.locationType || "remote"),
       tier: tier ?? 3,
       scrapedAt: new Date(),
       lastSeenAt: new Date(),
-      latestActivityMs: Math.max(
-        item.postedAt ? new Date(item.postedAt).getTime() : 0, 
-        item.scrapedAt ? new Date(item.scrapedAt).getTime() : now
-      )
+      latestActivityMs: item.postedAt ? new Date(item.postedAt).getTime() : 0 // Sentinel 0 if no posted date
     });
 
     let finalData = null;
@@ -231,7 +261,7 @@ export async function harvest() {
       await db.insert(opportunitiesSchema)
         .values(batch)
         .onConflictDoUpdate({
-          target: [opportunitiesSchema.title, opportunitiesSchema.company],
+          target: [opportunitiesSchema.title, opportunitiesSchema.company, opportunitiesSchema.sourceUrl],
           set: { 
             scrapedAt: new Date(),
             lastSeenAt: new Date(), // COMMANDER'S PATCH: Force freshness on collision
@@ -239,7 +269,10 @@ export async function harvest() {
             tier: sql`excluded.tier`,
             contentHash: sql`excluded.content_hash`,
             sourceUrl: sql`excluded.source_url`,
-            latestActivityMs: Date.now() // COMMANDER'S PATCH: Force freshness on collision
+            latestActivityMs: sql`CASE 
+              WHEN excluded.latest_activity_ms > 0 THEN excluded.latest_activity_ms 
+              ELSE ${opportunitiesSchema.latestActivityMs} 
+            END` 
           }
         });
       processed += batch.length;
@@ -269,7 +302,7 @@ export const scrapeOpportunitiesTask = schedules.task({
     const triggerSource = payload?.source || (ctx as any).trigger?.id || 'schedule';
     logger.info(`[harvest] Initiating cycle. Trigger source: ${triggerSource}`);
     try {
-      const result = await harvest();
+      const result = await harvest({ unhealthySources: payload?.unhealthySources });
       return result;
     } catch (err: any) {
       logger.error(`[harvest] CRITICAL ENGINE FAILURE: ${err.message}`);

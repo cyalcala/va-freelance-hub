@@ -25,12 +25,18 @@ export const databaseWatchdogTask = schedules.task({
         AND scraped_at < ${nowMs - SEVEN_DAYS_MS}
       `);
 
-      // 2. Soft-delete/Deactivate "Watermelons" (Stale > 72 hours)
+      // 2. Soft-delete/Deactivate "Watermelons" with Tiered Retention
+      // Platinum (0): 7 Days | Gold (1): 4 Days | Silver (2): 48h | Others: 24h
       const deactivateWatermelons = await db.run(sql`
         UPDATE opportunities 
         SET is_active = 0 
         WHERE is_active = 1 
-        AND scraped_at < ${nowMs - SEVENTY_TWO_HOURS_MS}
+        AND scraped_at < CASE 
+          WHEN tier = 0 THEN ${nowMs - 168 * 3600 * 1000}
+          WHEN tier = 1 THEN ${nowMs - 96 * 3600 * 1000}
+          WHEN tier = 2 THEN ${nowMs - 48 * 3600 * 1000}
+          ELSE ${nowMs - 24 * 3600 * 1000}
+        END
       `);
 
       // 3. Final Purge of Inactive dead-weight (60 days)

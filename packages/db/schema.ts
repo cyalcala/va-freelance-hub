@@ -35,14 +35,14 @@ export const opportunities = sqliteTable('opportunities', {
   scrapedAt: integer('scraped_at', { mode: 'timestamp' }).notNull(),
   lastSeenAt: integer('last_seen_at', { mode: 'timestamp' }),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
-  tier: integer('tier').notNull().default(3), // 1=Gold, 2=Silver, 3=Bronze, 4=Trash
+  tier: integer('tier').notNull().default(3), // 0=Platinum, 1=Gold, 2=Silver, 3=Bronze, 4=Trash
   contentHash: text('content_hash'),
   latestActivityMs: integer('latest_activity_ms').notNull().default(0), // Indexed for high-performance sorting
   companyLogo: text('company_logo'), // External logo URL
   metadata: text('metadata', { mode: 'json' }).notNull().default('{}'), // Extended JSON (salary, tags, etc.)
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 }, (table) => ({
-  titleCompanyIdx: uniqueIndex('title_company_unique_idx').on(table.title, table.company),
+  uniqueJobIdx: uniqueIndex('unique_job_idx').on(table.title, table.company, table.sourceUrl),
   tierLatestIdx: index('tier_latest_idx').on(table.tier, table.latestActivityMs), // Speeds up Astro feed
   activeIdx: index('active_idx').on(table.isActive), // Eliminates full scans on the "Live" toggle
   sourcePlatformIdx: index('source_platform_idx').on(table.sourcePlatform), // Janitor's primary filter

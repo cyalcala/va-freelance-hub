@@ -3,11 +3,22 @@ import { db } from "@va-hub/db/client";
 import { systemHealth, opportunities, vitals, logs } from "@va-hub/db/schema";
 import { sql, desc, eq, and, lt } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { checkAndIncrementAiQuota } from "./lib/job-utils";
 
 /**
  * VA.INDEX Resilience Watchdog (The Auditor)
  * Audits pulse, staleness, and manages circuit-breaker transitions.
  */
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const auditModel = genAI.getGenerativeModel({ 
+  model: "gemini-1.5-flash",
+  generationConfig: {
+    temperature: 0.1,
+    responseMimeType: "application/json",
+  }
+});
 
 export const resilienceWatchdogTask = schedules.task({
   id: "resilience-watchdog",
@@ -68,23 +79,79 @@ export const resilienceWatchdogTask = schedules.task({
           .where(eq(systemHealth.id, circuit.id));
       }
 
-      // 3. Signal Density Check
+      // 3. AI-DRIVEN ANOMALY DETECTION (The Sentinel Audit)
+      // Audit one sample signal from each source to catch silent data drift
+      const activeSources = await db.select().from(systemHealth).where(eq(systemHealth.status, 'OK'));
+      let auditedSourceCount = 0;
+      let anomaliesFound = 0;
+
+      for (const source of activeSources) {
+        try {
+          const sample = await db.select()
+            .from(opportunities)
+            .where(eq(opportunities.sourcePlatform, source.sourceName))
+            .orderBy(desc(opportunities.lastSeenAt))
+            .limit(1);
+
+          if (sample.length === 0) continue;
+
+          const { title, company, description } = sample[0];
+          const canCallAi = await checkAndIncrementAiQuota(db);
+          if (!canCallAi) break;
+
+          const auditResult = await auditModel.generateContent(`
+            EVALUATE THIS JOB SIGNAL FOR VALIDITY.
+            Is this structured job data or junk/noise/error messages?
+            TITLE: ${title}
+            COMPANY: ${company}
+            DESCRIPTION: ${description?.slice(0, 500)}
+            
+            RESPOND WITH JSON: { "is_valid": boolean, "reason": string }
+          `);
+
+          const audit = JSON.parse(auditResult.response.text());
+          auditedSourceCount++;
+
+          if (!audit.is_valid) {
+            anomaliesFound++;
+            logger.error(`[watchdog] ANOMALY DETECTED for ${source.sourceName}: ${audit.reason}`);
+            await db.update(systemHealth)
+              .set({ 
+                status: 'FAIL', 
+                errorMessage: `Sentinel Audit Failed: ${audit.reason}`,
+                updatedAt: new Date() 
+              })
+              .where(eq(systemHealth.id, source.id));
+            
+            await db.insert(logs).values({
+              id: uuidv4(),
+              message: `SENTINEL AUDIT CRITICAL: ${source.sourceName} is returning invalid data. Reason: ${audit.reason}`,
+              level: "error",
+              timestamp: new Date()
+            });
+          }
+        } catch (auditErr) {
+          logger.warn(`[watchdog] Audit failed for ${source.sourceName}: ${ (auditErr as Error).message }`);
+        }
+      }
+
+      // 4. Signal Density Check
       const signalCountResult = await db.run(sql`SELECT COUNT(*) as total FROM opportunities WHERE is_active = 1`);
       const totalSignals = (signalCountResult.rows[0]?.total as number) ?? 0;
 
       const healthEntries = await db.select().from(systemHealth);
       const healthySources = healthEntries.filter(s => s.status === 'OK');
 
-      const isTitaniumHealthy = !isStale && totalSignals > 100 && healthySources.length > 5;
+      const isTitaniumHealthy = !isStale && anomaliesFound === 0 && totalSignals > 100 && healthySources.length > 5;
 
       if (isTitaniumHealthy) {
-        logger.info(`[watchdog] 🛡️ TITANIUM SHIELD: ACTIVE. [Signals: ${totalSignals} | Sources: ${healthySources.length}]`);
+        logger.info(`[watchdog] 🛡️ TITANIUM SHIELD: ACTIVE. [Signals: ${totalSignals} | Sources: ${healthySources.length} | Audits: ${auditedSourceCount}]`);
       } else if (totalSignals < 50) {
         logger.warn(`[watchdog] Low signal count detected (${totalSignals}). Triggering discovery burst.`);
         await tasks.trigger("harvest-opportunities", { source: "low-density-recovery", mode: "FULL_AUDIT" });
       }
 
-      return { status: "TITANIUM_AUDIT_COMPLETE", isStale, totalSignals, healthySources: healthySources.length, circuitsReset: openCircuits.length };
+      return { status: "TITANIUM_AUDIT_COMPLETE", isStale, totalSignals, healthySources: healthySources.length, audited: auditedSourceCount, anomalies: anomaliesFound, circuitsReset: openCircuits.length };
     } catch (err) {
       logger.error("[watchdog] Resilience Audit Failed:", { error: (err as Error).message });
       return { status: "AUDIT_FAILED", error: (err as Error).message };

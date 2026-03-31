@@ -97,7 +97,7 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
           company: p.author,
           type: "freelance",
           sourceUrl,
-          sourcePlatform: `Reddit ${sub.label}`,
+          sourcePlatform: `Reddit/${sub.name}`,
           tags: ["reddit", sub.name],
           locationType: "remote",
           payRange: null,

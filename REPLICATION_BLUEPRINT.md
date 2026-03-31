@@ -44,12 +44,13 @@ The project is pinned to **Node 20.x**. Vercel deployments will fail if defaulte
 Freshness is no longer calculated by `createdAt`.
 - **Logic**: Use `max(last_seen_at)` to determine if the harvester is alive.
 - **Threshold**: System is considered "HEALTHY" if data is seen within the last 2 hours.
+- **Strict Sorting**: Tier Grouping (Platinum > Gold > Silver) MUST take priority over recency. Mixed "Decay Functions" are strictly prohibited to prevent tier interleaving.
 
 ## 🛡️ AI Governance & Guardrails
 
 To ensure continuity, any AI agent managing this system must adhere to:
 - **Rate Limiting**: Maximum 15 RPM for all harvesting tasks to prevent IP bans.
-- **Idempotency**: All database inserts MUST use `onConflictUpdate` on the `[title, company]` composite index.
+- **Idempotency**: All database inserts MUST use `onConflictUpdate` on the `[title, company, sourceUrl]` unique index.
 - **Deep Monitoring**: Always check `noteslog` before taking corrective action. Do not trust cached UI states; verify via DB.
 
 ## 📈 Success Metric Snapshot (March 31, 2026)
