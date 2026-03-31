@@ -5,6 +5,16 @@
 **Status: AUTO-PROCESSED**
 
 ### ✨ Major Features
+* feat: upgrade 15-min sentinel to hierarchy-aware zero-trust interrogation (d49699b)
+* feat: enforce strict hierarchy sorting and hardened deduplication (214ac91)
+
+---
+
+
+## [2026-03-31] — [Opportunities: 78 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
 * feat: enforce strict hierarchy sorting and hardened deduplication (214ac91)
 
 ---
