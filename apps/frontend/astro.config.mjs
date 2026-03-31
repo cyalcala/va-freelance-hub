@@ -11,6 +11,8 @@ export default defineConfig({
   adapter: vercel({
     webAnalytics: { enabled: true },
     speedInsights: { enabled: true },
+    edgeMiddleware: false,
+    maxDuration: 60, // SRE requirement
   }),
   integrations: [tailwind()],
   vite: {

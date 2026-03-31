@@ -57,6 +57,20 @@
       "when": 1774664204679,
       "tag": "0007_fat_richard_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1774949136318,
+      "tag": "0008_mixed_silver_sable",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1774949609392,
+      "tag": "0009_serious_hannibal_king",
+      "breakpoints": true
     }
   ]
 }

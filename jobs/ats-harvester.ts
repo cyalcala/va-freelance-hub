@@ -15,9 +15,8 @@ import { sql } from "drizzle-orm";
 /**
  * 🛰️ ATS SITEMAP SNIPER - CORE LOGIC
  */
-export async function runAtsSniper() {
+export async function runAtsSniper(db: any) {
   logger.info("Starting Surgical ATS Sniper Run...");
-  const { db, client } = createDb();
   
   try {
     let totalCaptured = 0;
@@ -123,20 +122,35 @@ export async function runAtsSniper() {
 
     logger.info(`[sniper] Audit Complete. Captured ${totalCaptured}/${totalSifted} signals.`);
     return { totalCaptured, totalSifted };
-  } finally {
-    client.close();
+  } catch (err: any) {
+    logger.error(`[sniper] Fatal error in runAtsSniper: ${err.message}`);
+    throw err;
   }
 }
 
 export const atsSniperTask = task({
   id: "ats-sniper",
   run: async () => {
-    return await runAtsSniper();
+    const { db, client } = createDb();
+    try {
+      return await runAtsSniper(db);
+    } finally {
+      client.close();
+    }
   },
 });
 
 // --- LOCAL EXECUTION (DEBUG ONLY) ---
 if (process.env.RUN_LOCAL === 'true') {
     logger.info("Local run detected. Executing sniper...");
-    runAtsSniper().then(res => console.log("Final Report:", res)).catch(err => console.error(err));
+    const { db, client } = createDb();
+    runAtsSniper(db)
+      .then(res => {
+        console.log("Final Report:", res);
+        client.close();
+      })
+      .catch(err => {
+        console.error(err);
+        client.close();
+      });
 }

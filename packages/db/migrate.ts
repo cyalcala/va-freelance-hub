@@ -1,6 +1,6 @@
 import { config } from "dotenv";
 import { resolve } from "path";
-config({ path: resolve(__dirname, "../../.env") });
+config({ path: resolve(__dirname, "../../.env.local") });
 
 import { createClient } from "@libsql/client/http";
 import { drizzle } from "drizzle-orm/libsql";

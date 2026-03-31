@@ -20,7 +20,7 @@ async function main() {
 
     // 2. Execute Harvester Logic
     console.log("🛰️ Triggering ATS Sniper...");
-    const result = await runAtsSniper();
+    const result = await runAtsSniper(db);
     console.log("✅ Sniper Result:", result);
 
     // 3. Verify Coherency (lastSeenAt update)
