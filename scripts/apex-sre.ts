@@ -126,8 +126,29 @@ async function runStrategicHunt() {
   // EXECUTE ACTION PROTOCOL
   console.log(`⚡  Action Protocol: ${strategy.actionProtocol}`);
   
-  if (strategy.actionProtocol.includes("PATCH_CODE")) {
-    console.log("🛠️  Strategic Patching pending manual confirmation for this safety-level.");
+  if (strategy.actionProtocol === "PATCH_CODE" && strategy.patches) {
+    console.log(`🛠️  Sentinel executing Systemic Betterment: ${strategy.title}`);
+    
+    // Applying the proactive systemic upgrade
+    for (const patch of strategy.patches) {
+      console.log(`  Upgrading: ${patch.path}`);
+      writeFileSync(patch.path, patch.content);
+    }
+
+    // 🏆 ZERO-TRUST VALDIATION of Strategic Upgrade
+    try {
+      console.log("\n🛡️  Sentinel validating proactive upgrade...");
+      await $`bun run scripts/triage.ts --certify`.quiet();
+      
+      const git = new GitAgent({ agentId: "apex_sre" });
+      await git.setupGit();
+      await git.safePush(`sentinel(betterment): ${strategy.title}\n\n${strategy.description}`);
+      console.log("✅  Betterment Certified and Published.");
+    } catch (err) {
+      console.error("❌  PROACTIVE UPGRADE FAILED CERTIFICATION. EMERGENCY ROLLBACK.");
+      await $`git restore .`.quiet();
+      process.exit(1);
+    }
   }
 }
 

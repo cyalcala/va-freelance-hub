@@ -355,7 +355,12 @@ async function certify() {
   gate("C8 ", healthStale < 2, `Freshness: API reports ${healthStale.toFixed(2)}hrs stale`);
   gate("C11", f_health.ok && f_health.text.includes("HEALTHY"), "System: Health Check reported 'HEALTHY'");
   
-  if (v > 200 && p >= 5 && gl === 0 && top <= 1 && healthStale < 2 && f_health.ok && v >= (metrics.visible_prev ?? 150)) {
+  // 🛡️ NEW: ENVIRONMENTAL INTEGRITY GATE
+  const hasEnvExample = existsSync(".env.example");
+  const hasArch = existsSync("ARCHITECTURE.md");
+  gate("C12", hasEnvExample && hasArch, "Arch: Environmental Integrity Preserved");
+
+  if (v > 200 && p >= 5 && gl === 0 && top <= 1 && healthStale < 2 && f_health.ok && v >= (metrics.visible_prev ?? 150) && hasEnvExample && hasArch) {
     console.log(pass("\nALL GATES PASSED. System is truly healthy."));
     process.exit(0);
   } else {

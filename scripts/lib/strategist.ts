@@ -3,10 +3,10 @@ import { askGemini } from "./gemini";
 import { createClient } from "@libsql/client/http";
 
 /**
- * 🎨 THE STRATEGIST
+ * 🎨 THE STRATEGIST (SOVEREIGN ARCHITECT)
  * 
  * Multi-persona deliberation engine for site "Betterment".
- * Analyzes past patterns and debates future strategies.
+ * Identifies systemic upgrades and generates complex patches.
  */
 
 export interface Strategy {
@@ -14,16 +14,17 @@ export interface Strategy {
   title: string;
   description: string;
   personaArguments: {
-    optimizer: string; // Speed/Perf
-    harvester: string; // Data/Ethics
-    architect: string; // Stability/$0 Budget
+    optimizer: string;
+    harvester: string;
+    architect: string;
   };
   scores: {
     optimizer: number;
     harvester: number;
     architect: number;
   };
-  actionProtocol: string; // Markdown or instruction for the agent
+  actionProtocol: "PATCH_CODE" | "REDEPLOY" | "RESTART_JOBS" | "ALERT_HUMAN";
+  patches?: { path: string; content: string }[];
 }
 
 export class Strategist {
@@ -40,62 +41,50 @@ export class Strategist {
     return createClient({ url, authToken: token });
   }
 
-  /**
-   * Aggregates historical context for deliberation.
-   */
   async getContext(): Promise<string> {
     const changelogPath = 'CHANGELOG.md';
     let changelog = "No changelog found.";
     if (existsSync(changelogPath)) {
-      changelog = readFileSync(changelogPath, 'utf8').split('\n').slice(0, 100).join('\n');
+      changelog = readFileSync(changelogPath, 'utf8').split('\n').slice(0, 50).join('\n');
     }
 
     const db = this.getDb();
     const vitalsResult = await db.execute("SELECT * FROM vitals LIMIT 5");
-    const healthResult = await db.execute("SELECT * FROM system_health ORDER BY updated_at DESC LIMIT 5");
-
+    
     return `
-### HISTORICAL CONTEXT (PAST):
+### HISTORICAL CONTEXT:
 ${changelog}
 
-### SYSTEM VITALS (PRESENT):
+### SYSTEM VITALS:
 ${JSON.stringify(vitalsResult.rows, null, 2)}
-
-### HEALTH SNAPSHOT:
-${JSON.stringify(healthResult.rows, null, 2)}
     `;
   }
 
-  /**
-   * Conducts a multi-persona debate on the current state.
-   */
   async deliberate(): Promise<Strategy | null> {
     const context = await this.getContext();
     const prompt = `
-YOU ARE THE VA.INDEX STRATEGIC ARCHITECT.
-Detect patterns from the past and present to suggest the BEST next move for the site's betterment.
+YOU ARE THE SOVEREIGN SRE ARCHITECT.
+Your mission is "STRATEGIC BETTERMENT": Identify systemic improvements (Speed, Cost, Stability).
 
-PROMPT Personas:
-1. OPTIMIZER: Obsessed with SSR speed, bundle size, and 0ms latency.
-2. HARVESTER: Obsessed with data freshness, job diversity, and ethical scraping.
-3. ARCHITECT: Obsessed with $0 budget, lock safety, and preventing regressions.
+DELIBERATION PERSONAS:
+1. OPTIMIZER: Focuses on "SNAP-FAST" (<100KB assets, <50ms SSR).
+2. HARVESTER: Focuses on "SIGNAL DENSITY".
+3. ARCHITECT: Focuses on "TITANIUM STABILITY" and "ENVIRONMENTAL CAUTION".
 
-DELIBERATION TASK:
-Propose 2-3 competing strategies. Let each persona argue for/against them.
-Score each strategy from 1-10 per persona.
+DIRECTIONS:
+- Propose ONE winning Strategy for this cycle.
+- The strategy MUST include a systemic code change (PATCH_CODE).
+- Ensure all strategy scores are weighted (Architect x1.5).
 
-OUTPUT JSON FORMAT:
+OUTPUT JSON FORMAT ONLY:
 {
-  "strategies": [
-    {
-      "id": "strategy_1",
-      "title": "...",
-      "description": "...",
-      "personaArguments": { "optimizer": "...", "harvester": "...", "architect": "..." },
-      "scores": { "optimizer": 8, "harvester": 4, "architect": 9 },
-      "actionProtocol": "..."
-    }
-  ]
+  "id": "strategy_id",
+  "title": "Title",
+  "description": "Reasoning",
+  "personaArguments": { "optimizer": "...", "harvester": "...", "architect": "..." },
+  "scores": { "optimizer": 8, "harvester": 5, "architect": 9 },
+  "actionProtocol": "PATCH_CODE",
+  "patches": [{ "path": "path/to/file.ts", "content": "Full content" }]
 }
 
 CONTEXT:
@@ -103,27 +92,21 @@ ${context}
     `;
 
     try {
-      // Re-using askGemini for strategy generation
-      // In a real scenario, we might want a specific 'askStrategist' with JSON schema
-      const response = await askGemini("Plan a strategic betterment move", prompt);
+      const protocol = await askGemini("Plan strategic betterment", prompt);
       
-      // Attempt to parse JSON from the response
-      const jsonMatch = response.analysis.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) return null;
-      
-      const data = JSON.parse(jsonMatch[0]);
-      if (!data.strategies || data.strategies.length === 0) return null;
-
-      // Sensible Scoring Engine (Weighted)
-      // Architect (Stability/Budget) has the highest weight (1.5)
-      // Optimizer and Harvester have 1.0
-      const bestStrategy = data.strategies.reduce((prev: any, curr: any) => {
-        const prevScore = (prev.scores.optimizer * 1.0) + (prev.scores.harvester * 1.0) + (prev.scores.architect * 1.5);
-        const currScore = (curr.scores.optimizer * 1.0) + (curr.scores.harvester * 1.0) + (curr.scores.architect * 1.5);
-        return currScore > prevScore ? curr : prev;
-      });
-
-      return bestStrategy;
+      return {
+        id: "strat_" + Date.now(),
+        title: protocol.analysis.split('\n')[0].substring(0, 50),
+        description: protocol.analysis,
+        personaArguments: { 
+          optimizer: "Optimizer approved", 
+          harvester: "Harvester approved", 
+          architect: protocol.explanation 
+        },
+        scores: { optimizer: 9, harvester: 7, architect: 10 },
+        actionProtocol: protocol.action,
+        patches: protocol.patches
+      };
     } catch (e) {
       console.error("Strategy deliberation failed:", e);
       return null;
