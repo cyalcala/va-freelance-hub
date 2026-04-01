@@ -1,19 +1,19 @@
-# VA.INDEX Architecture (v7.0 — Post Drift Remediation)
-*Updated: 2026-03-31 (Strict Hierarchy Alignment)*
+# VA.INDEX Architecture (v8.0 — Master Directory Transition)
+*Updated: 2026-04-01 (Functional Silos & Gravity Ranking)*
 
 ---
 
 ## 1. System Overview
 
-VA.INDEX is an autonomous job signal aggregator targeting Filipino-accessible remote/VA opportunities. It operates as a "set-and-forget" pipeline with self-healing capabilities and real-time freshness tracking.
+VA.INDEX is an autonomous job signal aggregator targeting Filipino-accessible remote/VA opportunities. It operates as a "Master Directory" rather than a flat feed, using a functional taxonomy to organize signals into 10 high-signal domains.
 
 ```
 ┌────────────────────────────────┐
-│    TRIGGER.DEV CLOUD (v3)      │
+│    TRIGGER.DEV CLOUD (v4)      │
 │                                │
 │  */30  harvest-opportunities   │──→ RSS + Reddit + Jobicy + ATS + JSON
-│  */2h  resilience-watchdog     │──→ Staleness detection + burst recovery
-│  */7h  database-watchdog       │──→ Cleanup + killed-company purge
+│  */2h  resilience-watchdog     │──→ 10-Domain Taxonomy + AI Sifter
+│  */7h  database-watchdog       │──→ Multi-Silo Cleaner + Blacklist
 │  on-demand  ats-sniper         │──→ Surgical Greenhouse/Lever targeting
 └──────────────┬─────────────────┘
                │ Drizzle ORM
@@ -22,72 +22,67 @@ VA.INDEX is an autonomous job signal aggregator targeting Filipino-accessible re
 │    TURSO (LibSQL Edge DB)    │
 │    Region: ap-northeast-1    │
 │                              │
-│  opportunities (feed data)   │
-│  agencies (directory)        │
-│  noteslog (telemetry)        │
-│  system_health (monitoring)  │
-│  vitals (AI Quota Guard)     │
+│  opportunities (Ranked Feed) │──→ relevance_score + display_tags
+│  agencies (Directory)        │──→ functional_domain
+│  noteslog (Telemetry)        │──→ system_pulse
+│  system_health (Monitoring)  │──→ circuit_breaker
 └──────────────┬───────────────┘
                │ Live SSR query
                ▼
 ┌──────────────────────────────┐
 │    VERCEL (Astro 4 SSR)      │
 │    Auto-deploy from GitHub   │
-│    Runtime: Node 20.x (Pinned) │
 │                              │
-│  / (feed) → sorted by tier (Platinum > Gold > Silver) 
-             secondary sort by recency (latest_activity_ms)
-
+│  / (Master Directory) →      │──→ Organized by Functional Domain
+│                                  1. VA & Support
+│                                  2. Design & UX
+│                                  3. Writing & Content (etc.)
+│
 │  /api/health → Real-time Pulse │
 └──────────────────────────────┘
 ```
 
 ---
 
-## 2. Real-Time Freshness (lastSeenAt)
+## 2. Taxonomy & Ranking (Gravity)
 
-The system has transitioned from `created_at` to `last_seen_at` as the primary signal of life. This prevents "Staleness False Positives" during periods where existing jobs are being refreshed rather than new ones created.
+The system has transitioned from a flat list to a functional directory. Every signal is passed through the **Titanium Taxonomy Engine** during ingestion.
 
-- **Ingestion**: Every harvester updates `last_seen_at` on every successful scrape, even if the content hasn't changed.
-- **Monitoring**: The `/api/health` endpoint and the `resilience-watchdog` now calculate staleness using `max(last_seen_at)`.
-- **Threshold**: Staleness > 2 hours triggers an autonomous recovery burst.
-- **Sorting**: System uses strict `ORDER BY tier ASC, latest_activity_ms DESC`. Legacy "Decay Algorithm" was retired in v7.1 to prevent tier interleaving.
-- **Indexing**: `uniqueJobIdx` on `(title, company, sourceUrl)` prevents signal collisions while allowing legitimate multi-source duplicates.
+- **Domain Categorization**: Signals are mapped to 10 functional domains (silos) based on keywords and role intent.
+- **Gravity Scoring**: Jobs are ranked within their silo using a composite score:
+  1. **Tier (Primary)**: Platinum > Gold > Silver > Bronze.
+  2. **Relevance (Secondary)**: Higher scores for "PH-Direct", "Premium", and "Urgent" signals.
+  3. **Freshness (Tertiary)**: `latest_activity_ms` descending.
+- **Badging**: `displayTags` (JSON) are injected for rapid UI scannability (e.g., *HIGH PAY*, *PH-TIME*).
 
 ---
 
-## 3. Infrastructure Invariants
+## 3. Freshness & Invariants
 
-### Node.js 20.x Pinning
-The Vercel environment and local Bun runtime are pinned to **Node 20.x**. This is mandatory to maintain compatibility with the `@libsql/client` driver and bypass Vercel serverless runtime drift.
-
-### Idempotent Trigger.dev Promotion
-The CI/CD pipeline in `.github/workflows/trigger-deploy.yml` is hardened with explicit config paths and idempotency:
-`bunx trigger.dev@4.4.3 promote $VERSION --env prod --config jobs/trigger.config.ts || true`
+- **lastSeenAt**: Primary signal of life. Staleness > 2 hours triggers autonomous recovery.
+- **Indexing**: `uniqueJobIdx` on `(title, company, sourceUrl)` prevents signal collisions.
+- **Node.js 20.x Pinning**: Mandatory for Vercel/LibSQL compatibility.
+- **Idempotent Deployments**: Pre-commit hooks enforce `sync-framework.ts` to maintain coherency across Edge runtimes.
 
 ---
 
 ## 4. Resilience & Self-Healing
 
 ### Resilience Watchdog (`jobs/resilience-watchdog.ts`)
-Runs every 2 hours (hardened from 6h):
-1. **Pulse Check** — Audits `max(last_seen_at)`.
-2. **Auto-Trigger** — If stale, triggers `harvest-opportunities` in `BURST` mode.
-3. **Lock Cleanup** — Resets stale `vitals` locks to prevent ingestion deadlocks.
+- **Pulse Audit**: Monitors `max(last_seen_at)` across all silos.
+- **AI Sentinel**: Periodically audits signal validity using Gemini 1.5 Flash to detect silent drift or junk data.
 
 ### Database Watchdog (`jobs/database-watchdog.ts`)
-Runs every 7 hours:
-1. **Purge Inactive** — Deletes jobs not seen for >60 days.
-2. **Watermelon Deactivation** — Deactivates jobs stale for >72 hours.
-3. **Blacklist Enforcement** — Purges "Killed Companies" (e.g., Nextiva, GE).
+- **Tier-Aware Retention**: Custom retention periods for different tiers (e.g., 7d for Platinum, 4h for Bronze/Trash).
+- **Domain Balancing**: Ensures no single silo is overwhelmed by noise.
 
 ---
 
 ## 5. Monitoring & Vitals
 
-- **`/api/health`** — Real-time JSON vitals pulling from the database.
-- **`noteslog` Table** — Central audit log for all autonomous actions and drift corrections.
-- **System Pulse** — A client-side UI component (`Welcome.astro`) that visualizes database freshness localized to the visitor's timezone.
+- **`/api/health`** — Real-time JSON vitals.
+- **`noteslog` Table** — Central audit log for all Master Directory updates.
+- **System Pulse** — UI component visualizing database freshness localized to the visitor.
 
 ---
-**TITANIUM STATUS: ACTIVE.**
+**MASTER DIRECTORY STATUS: ACTIVE & SYNCHRONIZED.**

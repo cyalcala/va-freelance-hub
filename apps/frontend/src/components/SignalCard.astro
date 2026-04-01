@@ -21,7 +21,7 @@ const tierClass = signal.tier === 0
 <a 
   href={signal.sourceUrl} 
   target="_blank" 
-  class={`opp-item flex items-start gap-3 p-3 rounded-xl border transition-all group relative active:scale-[0.98] hover:bg-white hover:shadow-md hover:border-blueberry-900/10 ${tierClass}`}
+  class={`opp-item flex items-start gap-3 p-3.5 rounded-xl border transition-all duration-300 group relative active:scale-[0.98] hover:bg-white hover:shadow-xl hover:border-blueberry-900/15 hover:-translate-y-1 ${tierClass}`}
   data-search={`${signal.title} ${signal.company} ${tags.join(' ')}`.toLowerCase()}
   data-age={ageHrs}
 >

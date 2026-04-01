@@ -55,13 +55,23 @@ try {
 }
 
 // ── DOMAIN ORCHESTRATION ──
+const priorityDomains = [JobDomain.BPO_SERVICES, JobDomain.SALES_GROWTH];
+
 const domains = DOMAIN_MANIFEST.map(d => ({
   ...d,
   signals: initialSignals.filter(sig => {
       const tags = typeof sig.tags === 'string' ? JSON.parse(sig.tags) : sig.tags;
       return tags.includes(d.domain);
   })
-})).filter(d => d.signals.length > 0);
+})).filter(d => d.signals.length > 0)
+   .sort((a, b) => {
+      const aIdx = priorityDomains.indexOf(a.domain);
+      const bIdx = priorityDomains.indexOf(b.domain);
+      if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+      if (aIdx !== -1) return -1;
+      if (bIdx !== -1) return 1;
+      return 0; // Maintain original manifest order for others
+   });
 
 // Add "General" for everything else
 const mappedIds = new Set(domains.flatMap(d => d.signals.map(s => s.id)));
@@ -126,19 +136,22 @@ if (generalSignals.length > 0) {
     <MirrorStage signals={mirrorSignals} />
 
     <!-- ── DIRECTORY GRID ── -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-12" id="directoryGrid">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 items-start" id="directoryGrid">
       {domains.map((domain) => (
-        <section class="domain-column flex flex-col bg-white/40 border border-oat-200/40 rounded-3xl p-1 shadow-sm hover:shadow-md transition-shadow">
-           <div class="p-6 pb-4">
-              <h2 class="text-lg font-black text-blueberry-900 uppercase tracking-tight leading-none mb-1">
+        <section class={`domain-column flex flex-col bg-white/60 border border-oat-200/50 rounded-3xl p-1 shadow-sm hover:shadow-md transition-all duration-300 ${priorityDomains.includes(domain.domain) ? 'ring-2 ring-emerald-500/10 border-emerald-500/20' : ''}`}>
+           <div class="p-6 pb-4 relative">
+              {priorityDomains.includes(domain.domain) && (
+                <span class="absolute top-4 right-6 px-1.5 py-0.5 bg-emerald-100 text-emerald-700 text-[8px] font-black uppercase rounded tracking-tighter">Priority</span>
+              )}
+              <h2 class="text-xl font-black text-blueberry-900 uppercase tracking-tight leading-none mb-1">
                 {domain.domain}
               </h2>
-              <p class="text-[10px] font-bold text-blueberry-800/40 uppercase tracking-widest">
+              <p class="text-[10px] font-bold text-blueberry-800/40 uppercase tracking-widest leading-normal">
                 {domain.description}
               </p>
            </div>
            
-           <div class="flex flex-col gap-1 p-2">
+           <div class="flex flex-col gap-2.5 p-2">
               {domain.signals.map((sig, idx) => (
                 <SignalCard signal={sig} index={idx + 1} />
               ))}
