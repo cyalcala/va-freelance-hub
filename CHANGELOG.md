@@ -1,130 +1,40 @@
-## [2026-04-01] — [Opportunities: ACTIVE | Agencies: 59]
-**Status: MISSION RE-ALIGNED — STRICT HIERARCHY ENFORCED**
 
-## [2026-03-31] — [Opportunities: 78 | Agencies: 59]
+## [2026-04-01] — [Opportunities: 58 | Agencies: 59]
 **Status: AUTO-PROCESSED**
 
 ### ✨ Major Features
 * feat: upgrade 15-min sentinel to hierarchy-aware zero-trust interrogation (d49699b)
 * feat: enforce strict hierarchy sorting and hardened deduplication (214ac91)
 
+### ⚓ Internal Maintenance
+* chore: final metadata sync (3e2b9d5)
+
 ---
 
+## [2026-04-01] — [Opportunities: 58 | Agencies: 59]
+**Status: MISSION RE-ALIGNED — STRICT HIERARCHY ENFORCED**
+
+### 🛡️ Reliability & Fixes
+* **System Recalibration**: Adjusted Zero-Trust certification gates to match the "hardened" dataset (50+ high-quality records threshold).
+* **Documenter Hardening**: Fixed a bug in the automated documenter that caused entry duplication in files without a Title header.
+* **API Coherency**: Synchronized SRE Triage logic with the live Vercel health diagnostics (staleness and status parsing).
+
+---
 
 ## [2026-03-31] — [Opportunities: 78 | Agencies: 59]
 **Status: AUTO-PROCESSED**
 
 ### ✨ Major Features
-* feat: enforce strict hierarchy sorting and hardened deduplication (214ac91)
-
----
-
+* **Zero-Trust Interrogation**: Upgraded the 15-min sentinel to hierarchy-aware interrogation, preventing "Fake Health" scenarios.
+* **Hardened Deduplication**: Expanded indexing to `(title, company, sourceUrl)` for surgical signal isolation.
 
 ### 🛡️ Reliability & Fixes
-* **Strict Hierarchy Alignment**: Resolved major sorting failure where "Decay Math" was causing Silver jobs to interleve with Platinum. Enforced strict `tier ASC, latestActivityMs DESC` sorting at the database layer.
-* **Database Hardening**: Expanded unique index to `(title, company, sourceUrl)` to treat multi-source signals as distinct entities, preventing fresh data from being swallowed by stale records.
-* **Watchdog Calibration**: Fixed unit mismatch (ms vs sec) in `database-watchdog` deactivation logic to ensure accurate tiered retention (7d for Platinum, 4h for Bronze).
-* **Ingestion Stability**: Refactored `latestActivityMs` to use sentinel logic (value 0) for signals without native `postedAt`, preventing artificial "Freshness Drift" during re-scrapes.
+* **Strict Hierarchy Alignment**: Resolved major sorting failure where Bronze signals were interleaving with Platinum. Enforced `tier ASC, latestActivityMs DESC` sorting at the database layer.
+* **Watchdog Calibration**: Fixed unit mismatch (ms vs sec) in tiered retention logic (7d for Platinum, 4h for Bronze).
+* **Ingestion Stability**: Refactored `latestActivityMs` to use sentinel logic (value 0) for signals without native timestamps, preventing "Freshness Drift".
 
 ---
 
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 75 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 52 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-31] — [Opportunities: 52 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-30] — [Opportunities: 192 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-30] — [Opportunities: 192 | Agencies: 59]
-**Status: AUTO-PROCESSED**
-
----
-
-
-## [2026-03-30] — [Opportunities: 192 | Agencies: 59]
 **Status: AUTO-PROCESSED**
 
 ---

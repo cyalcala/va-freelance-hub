@@ -57,26 +57,24 @@ async function run() {
 
     newEntry += `---\n`;
 
-    // 4. Atomic Update: Prepend strictly after the Title
+    // 4. Atomic Update: Prepend at the top (preserving title if exists)
     const content = readFileSync(changelogPath, "utf-8");
     const lines = content.split('\n');
     
-    // Find where the first H2 or H1 ends
-    let insertIndex = lines.findIndex(l => l.startsWith('## ')) || 2;
-    if (insertIndex === -1) insertIndex = 2; // Default after Title
-
-    // Deduplication: Don't add if the exact same commit-set was just added
+    // Deduplication check: Has this exact commit log entry been recorded?
     if (content.includes(log[0])) {
       console.log("   [i] Most recent commit already documented. Skipping update.");
       return;
     }
 
-    const updatedContent = [
-      lines[0], // Keep # Title
-      lines[1] || "",
-      newEntry,
-      ...lines.slice(2)
-    ].join('\n');
+    let updatedContent = "";
+    if (lines[0].startsWith("# ")) {
+      // Keep H1 Title and the newline after it
+      updatedContent = [lines[0], lines[1] || "", newEntry, ...lines.slice(2)].join('\n');
+    } else {
+      // No H1 Title, prepend at the very top
+      updatedContent = [newEntry, ...lines].join('\n');
+    }
 
     writeFileSync(changelogPath, updatedContent);
     console.log(`   [✓] CHANGELOG.md updated with live metrics: ${stats}`);
