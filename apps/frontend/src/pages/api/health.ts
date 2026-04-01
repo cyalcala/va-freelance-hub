@@ -34,7 +34,8 @@ export const GET: APIRoute = async () => {
     const ingestionStalenessHrs = (Date.now() - lastIngestion.getTime()) / (1000 * 60 * 60);
     const dbStalenessHrs = (Date.now() - lastHeartbeat.getTime()) / (1000 * 60 * 60);
 
-    const stalenessThreshold = Number(process.env.STALENESS_THRESHOLD_HRS || 2);
+    const dbStalenessThreshold = 4.0;
+    const ingestionStalenessThreshold = 24.0;
     
     diagnostics.vitals = {
       totalActive: total,
@@ -43,11 +44,11 @@ export const GET: APIRoute = async () => {
       ingestionStalenessHrs: Number(ingestionStalenessHrs.toFixed(2)),
       dbStalenessHrs: Number(dbStalenessHrs.toFixed(2)),
       isFaithful: newToday > 0,
-      isStale: ingestionStalenessHrs > stalenessThreshold,
+      isStale: dbStalenessHrs > dbStalenessThreshold || ingestionStalenessHrs > ingestionStalenessThreshold,
       dailyGrowthRate: newToday,
     };
 
-    if (!diagnostics.vitals.isFaithful || diagnostics.vitals.isStale) {
+    if (diagnostics.vitals.isStale) {
       diagnostics.status = "DEGRADED ⚠️";
     }
 
