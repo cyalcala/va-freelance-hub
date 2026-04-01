@@ -6,28 +6,30 @@ const isAbout = currentPath === '/about';
 ---
 <nav class="fixed top-0 left-0 right-0 z-50 border-b border-blueberry-800/10 bg-white/70 backdrop-blur-2xl">
   <div class="max-w-[1200px] mx-auto px-6 h-20 flex items-center justify-between">
-    <a href="/" class="flex flex-col group hover:scale-[1.01] transition-all duration-300">
-      <div class="flex items-center gap-3">
-        <!-- Iconic Play Button - Updated to Workbound Scale -->
-        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-[0_8px_25px_-8px_rgba(37,99,235,0.5)] group-hover:rotate-12 transition-transform duration-500">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="translate-x-0.5"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
+    <!-- Primary Logo & Subtitle Group -->
+    <div class="flex flex-col items-start group">
+      <a href="/" class="flex items-center gap-3 hover:scale-[1.01] transition-transform duration-300">
+        <!-- Icon (Workbound Scale) -->
+        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center shadow-[0_8px_25px_-8px_rgba(37,99,235,0.5)] group-hover:rotate-6 transition-transform duration-500">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2.5" class="translate-x-0.5"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>
         </div>
-        <!-- Title: Va Index - Using Title Case for Modern Feel -->
-        <span class="text-[32px] tracking-[-0.05em] font-black text-blueberry-900 leading-none font-heading uppercase">VA INDEX</span>
-      </div>
-      <!-- Subtext: Strategic alignment beneath the icon-title block -->
-      <div class="flex items-center gap-2 mt-2 ml-0.5">
-        <span class="text-[10px] text-blueberry-400 font-bold uppercase tracking-[0.18em]">Real-Time Jobs Directory</span>
+        <!-- Title: VA INDEX (Workbound Boldness) -->
+        <span class="text-[32px] tracking-[-0.06em] font-[900] text-blueberry-900 leading-none uppercase font-heading">VA INDEX</span>
+      </a>
+      
+      <!-- Subtitle Layer (Aligned under icon) -->
+      <div class="flex items-center gap-2 mt-1 ml-0.5 whitespace-nowrap">
+        <span class="text-[10px] text-blueberry-400 font-bold uppercase tracking-[0.2em]">Real-Time Jobs Directory</span>
         <span class="text-[8px] text-blueberry-300 font-black opacity-30">•</span>
         <a 
           href="https://www.linkedin.com/in/cyrusalcala/" 
           target="_blank" 
-          class="text-[10px] text-blueberry-400/40 font-bold uppercase tracking-[0.18em] hover:text-blue-600 transition-colors"
+          class="text-[10px] text-blueberry-400/40 font-bold uppercase tracking-[0.2em] hover:text-blue-600 transition-colors"
         >
           MADE WITH ❤️ BY CY ALCALA
         </a>
       </div>
-    </a>
+    </div>
 
     <div class="p-1 bg-oat-100/50 border border-oat-200/50 rounded-2xl flex items-center gap-1 shadow-inner relative overflow-hidden" transition:name="navbar-tabs">
       <div 
