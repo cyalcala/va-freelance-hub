@@ -15,7 +15,7 @@ const GeminiJobSchema = z.object({
 const GeminiOutputSchema = z.array(GeminiJobSchema).default([]);
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
 export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
   const allAgencies = await db.select().from(agencies).where(eq(agencies.status, 'active'));

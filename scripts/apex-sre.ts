@@ -7,7 +7,7 @@ import { GitAgent } from "./lib/git-agent";
 import { BudgetShield } from "./lib/budget-shield";
 import { Strategist } from "./lib/strategist";
 
-const DAILY_LIMIT = 10;
+const DAILY_LIMIT = 50;
 const SRE_ID = "apex_sre";
 const gitAgent = new GitAgent({ agentId: SRE_ID });
 const budgetShield = new BudgetShield({ agentId: SRE_ID, dailyAiLimit: DAILY_LIMIT });

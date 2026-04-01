@@ -33,20 +33,22 @@ export class BudgetShield {
 
   /**
    * Check if the agent is within its daily AI budget.
+   * Aligned with Global "Titanium Central" Quota.
    */
   async checkAiQuota(): Promise<boolean> {
     const db = this.getDb();
+    const GLOBAL_ID = "titanium_central";
     const today = new Date().toISOString().split('T')[0];
     
     let result = await db.execute({
-      sql: "SELECT ai_quota_count, ai_quota_date FROM vitals WHERE id = ?",
-      args: [this.agentId]
+      sql: "SELECT ai_quota_count, ai_quota_date, lock_updated_at FROM vitals WHERE id = ?",
+      args: [GLOBAL_ID]
     });
 
     if (result.rows.length === 0) {
       await db.execute({
-        sql: "INSERT INTO vitals (id, ai_quota_count, ai_quota_date, successive_failure_count) VALUES (?, 0, ?, 0)",
-        args: [this.agentId, today]
+        sql: "INSERT INTO vitals (id, ai_quota_count, ai_quota_date, successive_failure_count, lock_updated_at) VALUES (?, 1, ?, 0, ?)",
+        args: [GLOBAL_ID, today, Date.now()]
       });
       return true;
     }
@@ -54,24 +56,44 @@ export class BudgetShield {
     const row = result.rows[0];
     if (row.ai_quota_date !== today) {
       await db.execute({
-        sql: "UPDATE vitals SET ai_quota_count = 0, ai_quota_date = ? WHERE id = ?",
-        args: [today, this.agentId]
+        sql: "UPDATE vitals SET ai_quota_count = 1, ai_quota_date = ?, lock_updated_at = ? WHERE id = ?",
+        args: [today, Date.now(), GLOBAL_ID]
       });
       return true;
     }
 
-    if (Number(row.ai_quota_count) >= this.dailyLimit) {
-      console.error(`🛑 BUDGET EXCEEDED: ${this.agentId} reached daily AI limit (${this.dailyLimit}).`);
+    // RPM Throttle (4s)
+    if (row.lock_updated_at) {
+      const last = Number(row.lock_updated_at);
+      const diff = Date.now() - last;
+      if (diff < 4000) {
+        const wait = 4000 - diff;
+        console.log(`[budget-shield] Throttling for ${wait}ms...`);
+        await new Promise(r => setTimeout(r, wait));
+      }
+    }
+
+    // Daily Cap (Using the individual agent's limit check against global progress)
+    if (Number(row.ai_quota_count) >= 1000) { // Global safety
+      console.error(`🛑 GLOBAL BUDGET EXCEEDED: Reached 1,000 daily AI limit.`);
       return false;
     }
+    
+    // Also respect per-agent limit for conservative behavior if requested
+    if (this.dailyLimit < 1000 && Number(row.ai_quota_count) >= this.dailyLimit) {
+        console.warn(`⚠️ AGENT BUDGET REACHED: ${this.agentId} limited to ${this.dailyLimit} calls.`);
+        return false;
+    }
+
     return true;
   }
 
   async incrementAiQuota() {
     const db = this.getDb();
+    const GLOBAL_ID = "titanium_central";
     await db.execute({
-      sql: "UPDATE vitals SET ai_quota_count = ai_quota_count + 1 WHERE id = ?",
-      args: [this.agentId]
+      sql: "UPDATE vitals SET ai_quota_count = ai_quota_count + 1, lock_updated_at = ? WHERE id = ?",
+      args: [Date.now(), GLOBAL_ID]
     });
   }
 

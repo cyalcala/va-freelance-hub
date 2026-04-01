@@ -13,7 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ 
-  model: "gemini-1.5-flash",
+  model: "gemini-2.5-flash-lite",
   systemInstruction: `
     YOU ARE THE VA.INDEX SIGNAL EXTRACTION ARCHITECT.
     Your mission is to generate robust JSONata transformation rules that map mutated source JSON into our strict schema.
