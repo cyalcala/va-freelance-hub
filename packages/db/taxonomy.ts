@@ -20,12 +20,14 @@ export interface DomainMapping {
   domain: JobDomain;
   keywords: string[];
   description: string;
+  symbol: string;
 }
 
 export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.VA_SUPPORT,
     description: "The most accessible entry-point remote roles globally.",
+    symbol: "🎧",
     keywords: [
       "virtual assistant", " va ", "customer support", "customer service", 
       "customer success", "client support", "support specialist", "support agent",
@@ -36,6 +38,7 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.WRITING_CONTENT,
     description: "Content creation, blogging, and technical writing.",
+    symbol: "✍️",
     keywords: [
       "writer", "copywriter", "editor", "scriptwriter", "script writer", 
       "proofreader", "technical writer", "content manager", "content creator",
@@ -45,6 +48,7 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.DESIGN_UX,
     description: "Visual design, UX/UI, and creative opportunities.",
+    symbol: "🎨",
     keywords: [
       "designer", "ux", "ui", "graphic design", "animator", "motion graphics",
       "video editor", "reel editor", "brand designer", "logo designer", "canva",
@@ -54,6 +58,7 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.ADMIN_OPS,
     description: "Business operations, HR, and administrative backbone.",
+    symbol: "🏢",
     keywords: [
       "office coordinator", "operations", "hr assistant", "recruiter", 
       "talent acquisition", "sourcing", "procurement", "administrative", 
@@ -64,6 +69,7 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.SALES_GROWTH,
     description: "Revenue generation and business development.",
+    symbol: "📈",
     keywords: [
       "sales", "account executive", "business development", " bdm ", " sdr ",
       "lead generation", "outreach", "growth manager", "marketing", "ads specialist"
@@ -72,6 +78,7 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.FINANCE_ACCOUNTS,
     description: "Accounting, bookkeeping, and financial specialists.",
+    symbol: "💰",
     keywords: [
       "accountant", "bookkeeper", "payroll", "invoice", "billing", 
       "accounts payable", "accounts receivable", "quickbooks", "xero", "finance"
@@ -80,6 +87,7 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.SPECIALIZED,
     description: "Licensed and niche professionals (Medical, Legal, Research).",
+    symbol: "⚖️",
     keywords: [
       "pharmacist", "pharmacy", "medical", "clinical", "legal", "lawyer",
       "veterinary", "research analyst", "vulnerability researcher", "compliance",
@@ -89,6 +97,7 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.AI_DATA,
     description: "AI training and data optimization signals.",
+    symbol: "🧠",
     keywords: [
       "ai trainer", "ai training", "data annotator", "data analyst", "video annotator",
       "labeling", "data entry", "dataset", "machine learning ops", "rlhf", "prompt tuning"
@@ -97,6 +106,7 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
     domain: JobDomain.BPO_SERVICES,
     description: "Voice, backoffice, and scaled outsourcing roles.",
+    symbol: "📞",
     keywords: [
       "csr", "call center", "voice", "non-voice", "backoffice", "blended",
       "telemarketing", "bpo", "customer service representative"
