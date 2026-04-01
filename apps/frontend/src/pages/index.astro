@@ -96,9 +96,6 @@ if (generalSignals.length > 0) {
           <span class="text-[10px] font-black text-blueberry-900/40 uppercase tracking-widest leading-none">
             {healthStats.status}
           </span>
-          <span id="syncClock" data-sync={healthStats.lastHeartbeat} class="text-[9px] font-bold text-blueberry-900/30 border-l border-oat-200 pl-2 ml-1">
-            Synced --:--
-          </span>
         </div>
       </div>
 
@@ -264,17 +261,7 @@ if (generalSignals.length > 0) {
       });
     }
 
-    // System Sync Clock
-    const clock = document.getElementById('syncClock');
-    if (clock && clock.dataset.sync) {
-      const date = new Date(clock.dataset.sync);
-      const update = () => {
-          const formatter = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', hour12: true });
-          clock.innerText = `Synced ${formatter.format(date)}`;
-      };
-      update();
-      setInterval(update, 60000);
-    }
+    // System Sync Clock logic removed
   }
 
   document.addEventListener('DOMContentLoaded', initDirectory);
