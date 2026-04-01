@@ -22,12 +22,12 @@ describe("VA.INDEX Mission-Critical Invariants", () => {
     const trashCompany = "US Tech Corp";
     const tier = siftOpportunity(trashTitle, "Only US citizens may apply.", trashCompany, "LinkedIn");
     
-    expect(tier).toBe(OpportunityTier.TRASH);
+    expect(tier.tier).toBe(OpportunityTier.TRASH);
   });
 
   test("Sifter Invariant: Killer Exclusion of Blacklisted Companies", () => {
     const canonicalJob = siftOpportunity("Software Engineer", "Remote", "Canonical", "Greenhouse");
-    expect(canonicalJob).toBe(OpportunityTier.TRASH);
+    expect(canonicalJob.tier).toBe(OpportunityTier.TRASH);
   });
 
   /**
