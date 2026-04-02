@@ -91,7 +91,7 @@ export const activeTriage = task({
         // Respect the Fleet's Temporal Pacing (prevent rate limits)
         await wait.for({ seconds: 2 });
       } catch (err) {
-        logger.error(`[Triage] Failed to check ${opp.id}:`, (err as Error).message);
+        logger.error(`[Triage] Failed to check ${opp.id}`, { error: (err as Error).message });
       }
     }
 

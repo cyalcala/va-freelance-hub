@@ -1,0 +1,22 @@
+name: Phantom Harrier (Scout Ship)
+on:
+  schedule:
+    - cron: "0 */4 * * *" # Every 4 hours
+  workflow_dispatch:
+
+jobs:
+  phantom-harrier:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install
+      - name: Phantom Harrier Execute
+        run: bun run scripts/phantom-harrier.ts --local
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          NODE_ENV: production

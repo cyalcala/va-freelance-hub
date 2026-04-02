@@ -1,88 +1,64 @@
-# VA.INDEX Architecture (v8.0 — Master Directory Transition)
-*Updated: 2026-04-01 (Functional Silos & Gravity Ranking)*
-
----
+# VA.INDEX Architecture (v8.5 — Omni-Stack Fleet)
+*Updated: 2026-04-03 (Agentic Normalization & Phantom Harrier)*
 
 ## 1. System Overview
 
-VA.INDEX is an autonomous job signal aggregator targeting Filipino-accessible remote/VA opportunities. It operates as a "Master Directory" rather than a flat feed, using a functional taxonomy to organize signals into 10 high-signal domains.
+VA.INDEX is an autonomous job signal aggregator targeting Filipino-accessible remote/VA opportunities. It operates as an "Omni-Stack" fleet, using 6 distinct vectors to ensure data freshness, schema flexibility, and temporal consistency.
 
-```
-┌────────────────────────────────┐
-│    TRIGGER.DEV CLOUD (v4)      │
-│                                │
-│  */30  harvest-opportunities   │──→ RSS + Reddit + Jobicy + ATS + JSON
-│  */2h  resilience-watchdog     │──→ 10-Domain Taxonomy + AI Sifter
-│  */7h  database-watchdog       │──→ Multi-Silo Cleaner + Blacklist
-│  on-demand  ats-sniper         │──→ Surgical Greenhouse/Lever targeting
-└──────────────┬─────────────────┘
-               │ Drizzle ORM
-               ▼
-┌──────────────────────────────┐
-│    TURSO (LibSQL Edge DB)    │
-│    Region: ap-northeast-1    │
-│                              │
-│  opportunities (Ranked Feed) │──→ relevance_score + display_tags
-│  agencies (Directory)        │──→ functional_domain
-│  noteslog (Telemetry)        │──→ system_pulse
-│  system_health (Monitoring)  │──→ circuit_breaker
-└──────────────┬───────────────┘
-               │ Live SSR query
-               ▼
-┌──────────────────────────────┐
-│    VERCEL (Astro 4 SSR)      │
-│    Auto-deploy from GitHub   │
-│                              │
-│  / (Master Directory) →      │──→ Organized by Functional Domain
-│                                  1. VA & Support
-│                                  2. Design & UX
-│                                  3. Writing & Content (etc.)
-│
-│  /api/health → Real-time Pulse │
-└──────────────────────────────┘
+```mermaid
+graph TD
+    A[Scrapers / Sources] --> B{Fleet Vectors}
+    
+    subgraph "Ingestion Fleet"
+    B --> V1[V1: Agentic XML Mapping]
+    B --> V2[V2: Phantom Harrier GHA]
+    B --> V3[V3: Standard RSS/API]
+    end
+    
+    subgraph "Normalization Layer"
+    V1 & V2 & V3 --> V4[V4: Universal Translator]
+    V4 --> V6[V6: Chronos Normalization]
+    end
+    
+    subgraph "SRE Watchdogs"
+    V6 --> V5[V5: Chronos Heartbeat]
+    V5 --> T[Turso DB]
+    end
+    
+    T --> F[Astro Frontend]
 ```
 
----
+## 2. The 6 Vectors of Autonomy
 
-## 2. Taxonomy & Ranking (Gravity)
+### Vector 1: Agentic XML Mapping (`jobs/lib/xml-mapper.ts`)
+- **Mandate**: Handles non-standard XML/RSS feeds from obscure job boards.
+- **Mechanism**: Cerebras Qwen 3 235B infers schema mappings on-the-fly, bypassing brittle parsers.
 
-The system has transitioned from a flat list to a functional directory. Every signal is passed through the **Titanium Taxonomy Engine** during ingestion.
+### Vector 2: Phantom Harrier (`scripts/phantom-harrier.ts`)
+- **Mandate**: "Blind Extraction" from legacy job boards (e.g., OnlineJobs.ph).
+- **Mechanism**: Scheduled GitHub Actions fetch raw HTML; LLMs extract signals into structured JSON.
 
-- **Domain Categorization**: Signals are mapped to 10 functional domains (silos) based on keywords and role intent.
-- **Gravity Scoring**: Jobs are ranked within their silo using a composite score:
-  1. **Tier (Primary)**: Platinum > Gold > Silver > Bronze.
-  2. **Relevance (Secondary)**: Higher scores for "PH-Direct", "Premium", and "Urgent" signals.
-  3. **Freshness (Tertiary)**: `latest_activity_ms` descending.
-- **Badging**: `displayTags` (JSON) are injected for rapid UI scannability (e.g., *HIGH PAY*, *PH-TIME*).
+### Vector 3: Standard Ingestion (`jobs/scrape-opportunities.ts`)
+- **Mandate**: High-throughput harvesting from trusted APIs (Jobicy, Reddit, etc.).
+- **Mechanism**: Drizzle-based upserts with strict schema validation.
 
----
+### Vector 4: Universal Translator (`apps/frontend/src/middleware.ts`)
+- **Mandate**: Inbound/Outbound signal normalization.
+- **Mechanism**: Edge Middleware handles `/go` redirects and ensures `X-VA-Hub-Origin` headers are preserved for attribution.
+
+### Vector 5: Chronos Heartbeat (`jobs/active-triage.ts`)
+- **Mandate**: Fight architectural entropy and staleness.
+- **Mechanism**: LLM-driven "Semantic Heartbeat" to verify if listings are still active/relevant.
+
+### Vector 6: Chronos Normalization (`packages/db/utils.ts`)
+- **Mandate**: Eliminate "Epoch Hallucination."
+- **Mechanism**: All timestamps (10-digit, 13-digit, ISO) are normalized to 13-digit milliseconds for universal comparisons.
 
 ## 3. Freshness & Invariants
 
 - **lastSeenAt**: Primary signal of life. Staleness > 2 hours triggers autonomous recovery.
 - **Indexing**: `uniqueJobIdx` on `(title, company, sourceUrl)` prevents signal collisions.
-- **Node.js 20.x Pinning**: Mandatory for Vercel/LibSQL compatibility.
-- **Idempotent Deployments**: Pre-commit hooks enforce `sync-framework.ts` to maintain coherency across Edge runtimes.
+- **Titanium Quota Guard**: 15 RPM throttling across all Gemini/Cerebras integrations to stay within Free Tier limits.
 
 ---
-
-## 4. Resilience & Self-Healing
-
-### Resilience Watchdog (`jobs/resilience-watchdog.ts`)
-- **Pulse Audit**: Monitors `max(last_seen_at)` across all silos.
-- **AI Sentinel**: Periodically audits signal validity using Gemini 1.5 Flash to detect silent drift or junk data.
-
-### Database Watchdog (`jobs/database-watchdog.ts`)
-- **Tier-Aware Retention**: Custom retention periods for different tiers (e.g., 7d for Platinum, 4h for Bronze/Trash).
-- **Domain Balancing**: Ensures no single silo is overwhelmed by noise.
-
----
-
-## 5. Monitoring & Vitals
-
-- **`/api/health`** — Real-time JSON vitals.
-- **`noteslog` Table** — Central audit log for all Master Directory updates.
-- **System Pulse** — UI component visualizing database freshness localized to the visitor.
-
----
-**MASTER DIRECTORY STATUS: ACTIVE & SYNCHRONIZED.**
+**FLEET STATUS: 🟢 FULLY OPERATIONAL. VECTOR 1-6 ENGAGED.**
