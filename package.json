@@ -2,14 +2,14 @@
   "name": "va-freelance-hub",
   "private": true,
   "version": "0.1.0",
+  "engines": {
+    "node": "22.x"
+  },
   "workspaces": [
     "apps/*",
     "packages/*",
     "jobs"
   ],
-  "engines": {
-    "node": "20.x"
-  },
   "scripts": {
     "dev": "bun run --cwd apps/frontend dev",
     "build": "bun run --cwd apps/frontend build",
