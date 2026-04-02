@@ -5,6 +5,7 @@ import { atsSources } from "@va-hub/config/ats-sources";
 import { siftOpportunity, OpportunityTier } from "@va-hub/core/sieve";
 import { v4 as uuidv4 } from 'uuid';
 import { sql } from "drizzle-orm";
+import { normalizeDate } from "@va-hub/db";
 
 /**
  * 🛰️ ATS SITEMAP SNIPER
@@ -55,7 +56,7 @@ export async function runAtsSniper(db: any) {
 
         logger.info(`[sniper] ${source.name}: Processing ${rawJobs.length} raw signals...`);
         const batch: NewOpportunity[] = [];
-        const now = new Date();
+        const now = normalizeDate(new Date());
 
         for (const raw of rawJobs) {
           let title = "", url = "", description = "";
@@ -133,8 +134,8 @@ export async function runAtsSniper(db: any) {
         id: "ATS_SNIPER",
         sourceName: "ATS Sniper (Engine A)",
         status: "HEALTHY",
-        lastSuccess: new Date(),
-        updatedAt: new Date(),
+        lastSuccess: normalizeDate(new Date()),
+        updatedAt: normalizeDate(new Date()),
         consecutiveFailures: 0
       })
       .onConflictDoUpdate({
