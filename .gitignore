@@ -60,3 +60,4 @@ bun-debug.log*
 .env.production
 .env.vercel
 tmp/
+.vercel
