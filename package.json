@@ -7,6 +7,9 @@
     "packages/*",
     "jobs"
   ],
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "bun run --cwd apps/frontend dev",
     "build": "bun run --cwd apps/frontend build",
