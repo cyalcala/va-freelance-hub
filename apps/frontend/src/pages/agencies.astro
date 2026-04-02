@@ -57,6 +57,21 @@ const rawAgencies = liveAgencies.map((agency) => {
 });
 
 const agencies = rawAgencies.sort((a, b) => {
+  const getSortPriority = (name: string) => {
+    const n = name.toLowerCase();
+    if (n === 'outsource angel') return 1;
+    if (n === 'pearl talent') return 2;
+    if (n === 'virtual elves') return 3;
+    if (n.includes('virtual')) return 4;
+    if (n.includes('va')) return 5;
+    return 6;
+  };
+
+  const pA = getSortPriority(a.name);
+  const pB = getSortPriority(b.name);
+
+  if (pA !== pB) return pA - pB;
+
   // 1. Prioritize "Hiring Heat" (Visibly Hiring) first
   if (a.heatValue !== b.heatValue) return b.heatValue - a.heatValue;
   // 2. Secondary sort by alphabetical name
