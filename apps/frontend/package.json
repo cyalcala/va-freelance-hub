@@ -2,8 +2,9 @@
   "name": "frontend",
   "type": "module",
   "version": "0.0.1",
+  "nodeVersion": "20.x",
   "engines": {
-    "node": "22.x"
+    "node": "20.x"
   },
   "scripts": {
     "dev": "astro dev",
@@ -14,7 +15,7 @@
   "dependencies": {
     "@astrojs/node": "^8.3.4",
     "@astrojs/tailwind": "^5.1.2",
-    "@astrojs/vercel": "^10.0.4",
+    "@astrojs/vercel": "7.8.2",
     "@libsql/client": "^0.17.2",
     "astro": "^4.16.18",
     "dotenv": "^17.3.1",

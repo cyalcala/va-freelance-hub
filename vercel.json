@@ -3,7 +3,7 @@
   "installCommand": "bun install",
   "buildCommand": "cd apps/frontend && bun run build",
   "outputDirectory": "apps/frontend/.vercel/output",
-  "nodeVersion": "22.x",
+  "nodeVersion": "20.x",
   "redirects": [
     { "source": "/logs", "destination": "/terminal", "permanent": true }
   ]
