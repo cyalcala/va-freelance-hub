@@ -5,6 +5,23 @@ import { opportunities } from "../packages/db/schema";
 import { desc } from "drizzle-orm";
 import staticFallback from "../apps/frontend/src/data/static_fallback.json";
 
+/**
+ * 🛡️ DEFENSE IN DEPTH: Temporal Normalization
+ * Standardizes both 10-digit (seconds) and 13-digit (milliseconds) timestamps.
+ */
+const normalizeDate = (val: any): Date => {
+  if (!val) return new Date(0);
+  const num = typeof val === 'number' ? val : new Date(val).getTime();
+  
+  // 🛰️ HEAL Hallucination: If year > 10000 (approx 2.5e14 ms), Drizzle likely hydrated ms as s.
+  if (num > 250000000000000) { 
+    return new Date(num / 1000);
+  }
+  
+  // Standard: If < 10B, it's seconds (UNIX default).
+  return num < 10000000000 ? new Date(num * 1000) : new Date(num);
+};
+
 const { db, client } = createDb();
 
 describe("VA.INDEX Mission-Critical Invariants", () => {
@@ -41,7 +58,8 @@ describe("VA.INDEX Mission-Critical Invariants", () => {
       .limit(1);
 
     if (latest.length > 0 && latest[0].scrapedAt) {
-      const diffMs = Date.now() - new Date(latest[0].scrapedAt).getTime();
+      const lastScrape = normalizeDate(latest[0].scrapedAt);
+      const diffMs = Date.now() - lastScrape.getTime();
       const diffHours = diffMs / (1000 * 60 * 60);
       console.log(`[Pulse] Current Data Lag: ${diffHours.toFixed(2)} hours`);
       // We expect < 12 hours for a healthy pulse in this environment (adjusting from 2h for CI stability)
@@ -72,7 +90,8 @@ describe("VA.INDEX Mission-Critical Invariants", () => {
       .limit(1);
 
     if (latestLog.length > 0) {
-      console.log(`[Watchdog] Last telemetry: ${latestLog[0].timestamp} (${latestLog[0].status})`);
+      const logDate = normalizeDate(latestLog[0].timestamp);
+      console.log(`[Watchdog] Last telemetry: ${logDate.toUTCString()} (${latestLog[0].status})`);
       const drift = latestLog[0].driftMinutes;
       expect(drift).toBeGreaterThanOrEqual(0);
     }
