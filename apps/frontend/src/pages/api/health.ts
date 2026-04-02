@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { db, schema } from '@va-hub/db';
+import { db, schema, normalizeDate } from '@va-hub/db';
 import { sql, eq } from 'drizzle-orm';
 
 export const GET: APIRoute = async () => {
@@ -22,12 +22,6 @@ export const GET: APIRoute = async () => {
 
     const { total, gold, newToday, maxActivity, maxScraped } = stats[0];
     
-    // DEFENSE IN DEPTH: Handle both 10-digit (s) and 13-digit (ms) timestamps
-    const normalizeDate = (val: number | null) => {
-      if (!val) return new Date(0);
-      return val < 10000000000 ? new Date(val * 1000) : new Date(val);
-    };
-
     const lastIngestion = normalizeDate(maxActivity);
     const lastHeartbeat = normalizeDate(maxScraped);
       

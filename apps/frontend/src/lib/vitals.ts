@@ -1,5 +1,4 @@
-import { db } from '@va-hub/db/client';
-import { opportunities } from '@va-hub/db/schema';
+import { db, schema, normalizeDate } from '@va-hub/db';
 import { sql, eq } from 'drizzle-orm';
 
 export async function getSystemHealth() {
@@ -16,12 +15,12 @@ export async function getSystemHealth() {
       newToday: sql<number>`sum(case when created_at > unixepoch('now', '-24 hours') * 1000 then 1 else 0 end)`,
       maxScraped: sql<number>`max(scraped_at)`,
       maxCreated: sql<number>`max(created_at)`,
-    }).from(opportunities).where(eq(opportunities.isActive, true));
+    }).from(schema.opportunities).where(eq(schema.opportunities.isActive, true));
 
     const { total, gold, newToday, maxScraped, maxCreated } = stats[0];
     
-    const lastIngestion = maxCreated ? new Date(maxCreated) : new Date(0);
-    const lastHeartbeat = maxScraped ? new Date(maxScraped) : new Date(0);
+    const lastIngestion = normalizeDate(maxCreated);
+    const lastHeartbeat = normalizeDate(maxScraped);
       
     const ingestionStalenessHrs = (Date.now() - lastIngestion.getTime()) / (1000 * 60 * 60);
     const dbStalenessHrs = (Date.now() - lastHeartbeat.getTime()) / (1000 * 60 * 60);

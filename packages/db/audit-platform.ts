@@ -1,4 +1,4 @@
-import { db, schema } from './client';
+import { db, schema, normalizeDate } from './index';
 import { sql, eq, and } from 'drizzle-orm';
 
 async function majorHealthCheck() {
@@ -38,7 +38,7 @@ async function majorHealthCheck() {
         id: w.id, 
         title: w.title, 
         company: w.company, 
-        ageHrs: ((Date.now() - (w.latestActivityMs || 0)) / 3600000).toFixed(1) 
+        ageHrs: ((Date.now() - normalizeDate(w.latestActivityMs || 0).getTime()) / 3600000).toFixed(1) 
     }));
 
     // 3. Scraper Yield Audit (Rathole Detection)
@@ -63,8 +63,8 @@ async function majorHealthCheck() {
     }).from(schema.opportunities);
 
     audit.pulse = {
-      ingestionLagHrs: ((Date.now() - (timingPulse[0].lastCreated || 0)) / 3600000).toFixed(1),
-      scraperLagHrs: ((Date.now() - (timingPulse[0].lastScraped || 0)) / 3600000).toFixed(1)
+      ingestionLagHrs: ((Date.now() - normalizeDate(timingPulse[0].lastCreated || 0).getTime()) / 3600000).toFixed(1),
+      scraperLagHrs: ((Date.now() - normalizeDate(timingPulse[0].lastScraped || 0).getTime()) / 3600000).toFixed(1)
     };
 
     console.log("\n--- AUDIT RESULTS ---");

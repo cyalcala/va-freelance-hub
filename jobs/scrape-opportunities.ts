@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from "uuid";
 import { healBatchWithLLM } from "./lib/autonomous-harvester";
 import { agencies as agenciesSchema } from "@va-hub/db/schema";
 import { OpportunitySchema } from "@va-hub/db/validation";
+import { normalizeDate } from "@va-hub/db";
 
 function normalizeTitle(title: string): string {
   return title
@@ -222,7 +223,7 @@ export async function harvest(options?: { unhealthySources?: string[] }) {
       displayTags: siftResult.displayTags,
       scrapedAt: new Date(),
       lastSeenAt: new Date(),
-      latestActivityMs: item.postedAt ? new Date(item.postedAt).getTime() : 0 // Sentinel 0 if no posted date
+      latestActivityMs: item.postedAt ? normalizeDate(item.postedAt).getTime() : 0 // 🛡️ Normalized Sentinel
     });
 
     let finalData = null;

@@ -1,4 +1,4 @@
-import { db } from "../packages/db/client";
+import { db, normalizeDate } from "../packages/db";
 import { opportunities, systemHealth } from "../packages/db/schema";
 import { desc, eq, sql } from "drizzle-orm";
 
@@ -13,8 +13,9 @@ async function expertAudit() {
     .limit(1);
   
   const ts = latestOpp[0]?.scrapedAt;
-  const isMs = ts && ts.getTime() > 1000000000000;
-  console.log(`[Vitals] Latest ScrapedAt: ${ts?.toISOString()}`);
+  const normalized = normalizeDate(ts);
+  const isMs = normalized.getTime() > 1000000000000;
+  console.log(`[Vitals] Latest ScrapedAt: ${normalized.toISOString()}`);
   console.log(`[Vitals] Precision: ${isMs ? "Milliseconds ✅" : "Seconds (Potential Issue ⚠️)"}`);
 
   // 2. IS_ACTIVE FIELD CONSISTENCY
@@ -36,7 +37,7 @@ async function expertAudit() {
   const healthStats = await db.select().from(systemHealth).orderBy(desc(systemHealth.updatedAt));
   console.log("\n[Pipeline] Source Health Status:");
   healthStats.forEach(h => {
-    const staleness = (Date.now() - new Date(h.updatedAt).getTime()) / (1000 * 60 * 60);
+    const staleness = (Date.now() - normalizeDate(h.updatedAt).getTime()) / (1000 * 60 * 60);
     console.log(`  → ${h.sourceName}: ${h.status} (${staleness.toFixed(1)}h ago) ${staleness < 4 ? "✅" : "⚠️ STALE"}`);
   });
 

@@ -1,4 +1,5 @@
 import { createClient } from "@libsql/client/http";
+import { normalizeDate } from "../packages/db";
 const client = createClient({
   url: process.env.TURSO_DATABASE_URL!,
   authToken: process.env.TURSO_AUTH_TOKEN!,
@@ -35,7 +36,7 @@ try {
       tier: r.tier,
       age_mins: Math.round(
         (Date.now() -
-        (r.created_at * 1000))
+        normalizeDate(r.created_at).getTime())
         / 60000
       )
     })

@@ -2,25 +2,9 @@ import { expect, test, describe, mock, afterAll } from "bun:test";
 import { siftOpportunity, OpportunityTier } from "@va-hub/core/sieve";
 import { createDb } from "../packages/db/client";
 import { opportunities } from "../packages/db/schema";
+import { normalizeDate } from "../packages/db";
 import { desc } from "drizzle-orm";
 import staticFallback from "../apps/frontend/src/data/static_fallback.json";
-
-/**
- * 🛡️ DEFENSE IN DEPTH: Temporal Normalization
- * Standardizes both 10-digit (seconds) and 13-digit (milliseconds) timestamps.
- */
-const normalizeDate = (val: any): Date => {
-  if (!val) return new Date(0);
-  const num = typeof val === 'number' ? val : new Date(val).getTime();
-  
-  // 🛰️ HEAL Hallucination: If year > 10000 (approx 2.5e14 ms), Drizzle likely hydrated ms as s.
-  if (num > 250000000000000) { 
-    return new Date(num / 1000);
-  }
-  
-  // Standard: If < 10B, it's seconds (UNIX default).
-  return num < 10000000000 ? new Date(num * 1000) : new Date(num);
-};
 
 const { db, client } = createDb();
 

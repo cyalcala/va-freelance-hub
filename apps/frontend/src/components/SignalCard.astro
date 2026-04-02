@@ -1,4 +1,5 @@
 ---
+import { normalizeDate } from '@va-hub/db';
 const { signal, index } = Astro.props;
 
 // Defensive Tags Parsing
@@ -8,7 +9,7 @@ const tags = (typeof rawTags === 'string' ? JSON.parse(rawTags) : rawTags) as st
 const rawDisplayTags = signal.displayTags || [];
 const displayTags = (typeof rawDisplayTags === 'string' ? JSON.parse(rawDisplayTags) : rawDisplayTags) as string[];
 
-const ageHrs = signal.latestActivityMs ? Math.max(0, (Date.now() - signal.latestActivityMs) / 3600000) : 0;
+const ageHrs = signal.latestActivityMs ? Math.max(0, (Date.now() - normalizeDate(signal.latestActivityMs).getTime()) / 3600000) : 0;
 const isFresh = ageHrs < 4; 
 
 const tierClass = signal.tier === 0 

@@ -4,6 +4,7 @@ import { systemHealth, opportunities, vitals, logs } from "@va-hub/db/schema";
 import { sql, desc, eq, and, lt } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { normalizeDate } from "@va-hub/db";
 import { checkAndIncrementAiQuota } from "./lib/job-utils";
 
 /**
@@ -38,7 +39,7 @@ export const resilienceWatchdogTask = schedules.task({
         .orderBy(desc(opportunities.lastSeenAt))
         .limit(1);
       
-      const lastPulse = latestSignal[0]?.lastSeenAt ? new Date(latestSignal[0].lastSeenAt).getTime() : 0;
+      const lastPulse = latestSignal[0]?.lastSeenAt ? normalizeDate(latestSignal[0].lastSeenAt).getTime() : 0;
       const isStale = (nowMs - lastPulse) > STALENESS_THRESHOLD_MS;
 
       if (isStale) {
