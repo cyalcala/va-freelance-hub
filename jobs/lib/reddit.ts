@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db/schema";
+import { normalizeDate } from "@va-hub/db";
 
 // --- REDDIT SCHEMAS ---
 
@@ -102,8 +103,8 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
           locationType: "remote",
           payRange: null,
           description: description || null,
-          postedAt: new Date(p.created_utc * 1000),
-          scrapedAt: new Date(),
+          postedAt: normalizeDate(p.created_utc),
+          scrapedAt: normalizeDate(new Date()),
           isActive: true,
           contentHash: toHash(title, sourceUrl),
           __raw: JSON.stringify(p)

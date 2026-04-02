@@ -20,6 +20,7 @@ import { XMLParser } from "fast-xml-parser";
 import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db/schema";
 import { config } from "@va-hub/config";
+import { normalizeDate } from "@va-hub/db";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -126,9 +127,9 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
         description: stripHtml(item.description).slice(0, 500) || null,
         postedAt: (() => {
           const rawDate = item.pubDate || item.published || item.updated || item["dc:date"];
-          return rawDate ? new Date(rawDate) : new Date();
+          return normalizeDate(rawDate);
         })(),
-        scrapedAt: new Date(),
+        scrapedAt: normalizeDate(new Date()),
         isActive: true,
         contentHash: toHash(title, sourceUrl),
         __raw: JSON.stringify(rawItem)

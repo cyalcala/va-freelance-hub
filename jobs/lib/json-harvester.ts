@@ -8,6 +8,7 @@
 
 import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db/schema";
+import { normalizeDate } from "@va-hub/db";
 
 export interface JSONSource {
   id: string;
@@ -76,11 +77,11 @@ function parseJobStreet(data: any, source: JSONSource): NewOpportunity[] {
       tags: [...source.tags, ...(job.classifications?.[0]?.description ? [job.classifications[0].description] : [])],
       locationType: "remote",
       description: job.teaser || job.bulletPoints?.join(". ") || null,
-      postedAt: job.listingDate ? new Date(job.listingDate) : new Date(),
-      scrapedAt: new Date(),
+      postedAt: normalizeDate(job.listingDate),
+      scrapedAt: normalizeDate(new Date()),
       isActive: true,
       contentHash: toHash(title, sourceUrl),
-      latestActivityMs: job.listingDate ? new Date(job.listingDate).getTime() : Date.now(),
+      latestActivityMs: normalizeDate(job.listingDate).getTime(),
       companyLogo: job.advertiser?.logo?.url || null,
       __raw: job,
       metadata: {
@@ -113,11 +114,11 @@ function parseIndeed(data: any, source: JSONSource): NewOpportunity[] {
       tags: source.tags,
       locationType: "remote",
       description: job.snippet || null,
-      postedAt: job.pubDate ? new Date(job.pubDate) : new Date(),
-      scrapedAt: new Date(),
+      postedAt: normalizeDate(job.pubDate),
+      scrapedAt: normalizeDate(new Date()),
       isActive: true,
       contentHash: toHash(title, sourceUrl),
-      latestActivityMs: job.pubDate ? new Date(job.pubDate).getTime() : Date.now(),
+      latestActivityMs: normalizeDate(job.pubDate).getTime(),
       companyLogo: job.companyLogoUrl || null,
       __raw: job,
       metadata: {

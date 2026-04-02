@@ -50,7 +50,7 @@ async function recordLog(message: string, level: 'info' | 'warn' | 'error' | 'sn
       message,
       level,
       metadata: JSON.stringify(metadata),
-      timestamp: new Date()
+      timestamp: normalizeDate(new Date())
     });
     console.log(`[${level.toUpperCase()}] ${message}`);
   } catch (err) {
@@ -131,16 +131,16 @@ export async function harvest(options?: { unhealthySources?: string[] }) {
           sourceName: source.name,
           status: 'OK',
           consecutiveFailures: 0,
-          lastSuccess: new Date(),
-          updatedAt: new Date()
+          lastSuccess: normalizeDate(new Date()),
+          updatedAt: normalizeDate(new Date())
         })
         .onConflictDoUpdate({
           target: [healthSchema.id],
           set: { 
             status: 'OK', 
             consecutiveFailures: 0, 
-            lastSuccess: new Date(), 
-            updatedAt: new Date(), 
+            lastSuccess: normalizeDate(new Date()), 
+            updatedAt: normalizeDate(new Date()), 
             errorMessage: null 
           }
         });
@@ -161,7 +161,7 @@ export async function harvest(options?: { unhealthySources?: string[] }) {
           status: newStatus,
           consecutiveFailures: newFailCount,
           errorMessage: err.message,
-          updatedAt: new Date()
+          updatedAt: normalizeDate(new Date())
         })
         .onConflictDoUpdate({
           target: [healthSchema.id],
@@ -169,7 +169,7 @@ export async function harvest(options?: { unhealthySources?: string[] }) {
             status: newStatus, 
             consecutiveFailures: newFailCount, 
             errorMessage: err.message, 
-            updatedAt: new Date() 
+            updatedAt: normalizeDate(new Date()) 
           }
         });
     }
@@ -226,9 +226,9 @@ export async function harvest(options?: { unhealthySources?: string[] }) {
       tier: siftResult.tier ?? 3,
       relevanceScore: siftResult.relevanceScore,
       displayTags: siftResult.displayTags,
-      scrapedAt: new Date(),
-      lastSeenAt: new Date(),
-      latestActivityMs: item.postedAt ? normalizeDate(item.postedAt).getTime() : 0 // 🛡️ Normalized Sentinel
+      scrapedAt: normalizeDate(new Date()),
+      lastSeenAt: normalizeDate(new Date()),
+      latestActivityMs: item.postedAt ? normalizeDate(item.postedAt).getTime() : normalizeDate(new Date()).getTime() // 🛡️ Normalized Sentinel
     });
 
     let finalData = null;
@@ -271,8 +271,8 @@ export async function harvest(options?: { unhealthySources?: string[] }) {
         .onConflictDoUpdate({
           target: [opportunitiesSchema.title, opportunitiesSchema.company, opportunitiesSchema.sourceUrl],
           set: { 
-            scrapedAt: new Date(),
-            lastSeenAt: new Date(), // COMMANDER'S PATCH: Force freshness on collision
+            scrapedAt: normalizeDate(new Date()),
+            lastSeenAt: normalizeDate(new Date()), // COMMANDER'S PATCH: Force freshness on collision
             isActive: true,
             tier: sql`excluded.tier`,
             relevanceScore: sql`excluded.relevance_score`,

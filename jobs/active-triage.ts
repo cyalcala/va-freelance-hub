@@ -1,7 +1,8 @@
 import { logger, task, wait } from "@trigger.dev/sdk/v3";
 import { createDb } from "../packages/db/client";
-import { opportunities } from "../packages/db/schema";
+import { opportunities } from "@va-hub/db/schema";
 import { eq, and, isNotNull } from "drizzle-orm";
+import { normalizeDate } from "@va-hub/db";
 import * as cheerio from "cheerio";
 
 /**
@@ -75,11 +76,11 @@ export const activeTriage = task({
 
         if (triage.result === "stale") {
           logger.warn(`[Triage] STALE Detected: ${triage.reason}. Archiving ${opp.id}.`);
-          const currentMetadata = typeof opp.metadata === "string" ? JSON.parse(opp.metadata) : opp.metadata;
+          const currentMetadata = typeof opp.metadata === "string" ? JSON.parse(opp.metadata) : (opp.metadata as Record<string, unknown> || {});
           await db.update(opportunities)
             .set({ 
               isActive: false, 
-              metadata: { ...currentMetadata, triageReason: triage.reason, triagedAt: new Date().toISOString() } 
+              metadata: { ...currentMetadata, triageReason: triage.reason, triagedAt: normalizeDate(new Date()).toISOString() } 
             })
             .where(eq(opportunities.id, opp.id));
           staleCount++;

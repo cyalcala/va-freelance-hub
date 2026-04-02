@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { vitals } from "@va-hub/db/schema";
+import { normalizeDate } from "@va-hub/db";
 
 /**
  * Titanium Quota Guard
@@ -24,23 +25,23 @@ export async function checkAndIncrementAiQuota(db: any): Promise<boolean> {
         aiQuotaCount: 1,
         aiQuotaDate: today,
         lockStatus: "IDLE",
-        lockUpdatedAt: new Date(),
+        lockUpdatedAt: normalizeDate(new Date()),
       };
 
       if (!vital) {
         await db.insert(vitals).values(initialValues);
       } else {
         await db.update(vitals)
-          .set({ aiQuotaCount: 1, aiQuotaDate: today, lockUpdatedAt: new Date() })
+          .set({ aiQuotaCount: 1, aiQuotaDate: today, lockUpdatedAt: normalizeDate(new Date()) })
           .where(eq(vitals.id, GLOBAL_ID));
       }
       return true;
     }
 
     // 3. Enforce RPM Throttling (15 RPM = ~4s per request)
-    const now = new Date();
+    const now = normalizeDate(new Date());
     if (vital.lockUpdatedAt) {
-      const msSinceLast = now.getTime() - new Date(vital.lockUpdatedAt).getTime();
+      const msSinceLast = now.getTime() - normalizeDate(vital.lockUpdatedAt).getTime();
       const THROTTLE_MS = 4000; // 4 seconds buffer
       if (msSinceLast < THROTTLE_MS) {
         const waitMs = THROTTLE_MS - msSinceLast;
@@ -59,7 +60,7 @@ export async function checkAndIncrementAiQuota(db: any): Promise<boolean> {
     await db.update(vitals)
       .set({ 
         aiQuotaCount: (vital.aiQuotaCount || 0) + 1,
-        lockUpdatedAt: new Date()
+        lockUpdatedAt: normalizeDate(new Date())
       })
       .where(eq(vitals.id, GLOBAL_ID));
 
