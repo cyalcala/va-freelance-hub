@@ -17,28 +17,24 @@ export const GET: APIRoute = async () => {
       gold: sql<number>`sum(case when tier = 1 then 1 else 0 end)`,
       newToday: sql<number>`sum(case when latest_activity_ms > (unixepoch('now', '-24 hours') * 1000) then 1 else 0 end)`,
       maxActivity: sql<number>`max(latest_activity_ms)`,
-      maxScraped: sql<number>`max(scraped_at)`,
+      maxSeenAt: sql<number>`max(last_seen_at)`,
     }).from(schema.opportunities).where(eq(schema.opportunities.isActive, true));
 
-    const { total, gold, newToday, maxActivity, maxScraped } = stats[0];
+    const { total, gold, newToday, maxActivity, maxSeenAt } = stats[0];
     
     const lastIngestion = normalizeDate(maxActivity);
-    const lastHeartbeat = normalizeDate(maxScraped);
+    const lastHeartbeat = normalizeDate(maxSeenAt);
       
-    const ingestionStalenessHrs = (Date.now() - lastIngestion.getTime()) / (1000 * 60 * 60);
-    const dbStalenessHrs = (Date.now() - lastHeartbeat.getTime()) / (1000 * 60 * 60);
-
-    const dbStalenessThreshold = 4.0;
-    const ingestionStalenessThreshold = 24.0;
+    const stalenessHrs = (Date.now() - lastHeartbeat.getTime()) / (1000 * 60 * 60);
+    const stalenessThreshold = 2.0;
     
     diagnostics.vitals = {
       totalActive: total,
       goldDistribution: gold,
-      lastIngestion: lastIngestion.toISOString(),
-      ingestionStalenessHrs: Number(ingestionStalenessHrs.toFixed(2)),
-      dbStalenessHrs: Number(dbStalenessHrs.toFixed(2)),
+      lastHeartbeat: lastHeartbeat.toISOString(),
+      stalenessHrs: Number(stalenessHrs.toFixed(2)),
       isFaithful: newToday > 0,
-      isStale: dbStalenessHrs > dbStalenessThreshold || ingestionStalenessHrs > ingestionStalenessThreshold,
+      isStale: stalenessHrs > stalenessThreshold,
       dailyGrowthRate: newToday,
     };
 
