@@ -17,12 +17,14 @@ async function fixLinks() {
     { name: "Boldly", hiringUrl: "https://boldly.com/jobs" },
   ];
 
-  for (const fix of corrections) {
-    await db.update(schema.agencies)
-      .set({ hiringUrl: fix.hiringUrl, status: 'active' })
-      .where(eq(schema.agencies.name, fix.name));
-    console.log(`✅ Fixed ${fix.name} -> ${fix.hiringUrl}`);
-  }
+  await Promise.all(
+    corrections.map(async (fix) => {
+      await db.update(schema.agencies)
+        .set({ hiringUrl: fix.hiringUrl, status: 'active' })
+        .where(eq(schema.agencies.name, fix.name));
+      console.log(`✅ Fixed ${fix.name} -> ${fix.hiringUrl}`);
+    })
+  );
 
   // Add Freshest Roles (V5.2 Manual Injection for immediate health)
   console.log("🔥 Injecting 7 Freshest Roles...");
@@ -86,9 +88,9 @@ async function fixLinks() {
     }
   ];
 
-  for (const role of freshRoles) {
+  const freshRolesValues = freshRoles.map((role) => {
     const id = crypto.randomUUID();
-    await db.insert(schema.opportunities).values({
+    return {
       id,
       ...role,
       type: 'agency',
@@ -96,7 +98,11 @@ async function fixLinks() {
       scrapedAt: new Date(),
       isActive: true,
       contentHash: `fresh-${id.slice(0,8)}`
-    }).onConflictDoNothing();
+    };
+  });
+
+  if (freshRolesValues.length > 0) {
+    await db.insert(schema.opportunities).values(freshRolesValues).onConflictDoNothing();
   }
 
   console.log("🚀 Link Repair & Injection Complete.");
