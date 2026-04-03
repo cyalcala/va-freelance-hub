@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { NewOpportunity } from "@va-hub/db/schema";
 import { createHash } from "crypto";
+import { proxyFetch } from "./proxy-fetch";
 
 // --- ATS SCHEMAS ---
 
@@ -45,8 +46,8 @@ export async function fetchATSJobs(db: any): Promise<NewOpportunity[]> {
   // 1. Fetch Greenhouse
   const ghPromises = GREENHOUSE_BOARDS.map(async (board) => {
     try {
-      const res = await fetch(`https://boards-api.greenhouse.io/v1/boards/${board}/jobs?t=${Date.now()}`, {
-        headers: { "Cache-Control": "no-cache", "Accept": "application/json" },
+      const res = await proxyFetch(`https://boards-api.greenhouse.io/v1/boards/${board}/jobs?t=${Date.now()}`, {
+        headers: { "Accept": "application/json" },
         signal: AbortSignal.timeout(15000)
       });
       if (!res.ok) return [];
@@ -101,8 +102,8 @@ export async function fetchATSJobs(db: any): Promise<NewOpportunity[]> {
   // 2. Fetch Lever
   const leverPromises = LEVER_BOARDS.map(async (board) => {
     try {
-      const res = await fetch(`https://api.lever.co/v0/postings/${board}?mode=json&t=${Date.now()}`, {
-        headers: { "Cache-Control": "no-cache", "Accept": "application/json" },
+      const res = await proxyFetch(`https://api.lever.co/v0/postings/${board}?mode=json&t=${Date.now()}`, {
+        headers: { "Accept": "application/json" },
         signal: AbortSignal.timeout(15000)
       });
       if (!res.ok) return [];

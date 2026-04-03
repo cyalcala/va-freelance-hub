@@ -2,10 +2,11 @@ import { task, logger } from "@trigger.dev/sdk/v3";
 import { createDb } from "@va-hub/db/client";
 import { opportunities as opportunitiesSchema, type NewOpportunity } from "@va-hub/db/schema";
 import { atsSources } from "@va-hub/config/ats-sources";
-import { siftOpportunity, OpportunityTier } from "@va-hub/core/sieve";
+import { siftOpportunity, OpportunityTier, generateIdempotencyHash } from "@va-hub/core/sieve";
 import { v4 as uuidv4 } from 'uuid';
 import { sql } from "drizzle-orm";
 import { normalizeDate } from "@va-hub/db";
+import { proxyFetch } from "./lib/proxy-fetch";
 
 /**
  * 🛰️ ATS SITEMAP SNIPER
@@ -24,23 +25,27 @@ export async function runAtsSniper(db: any) {
     let totalSifted = 0;
 
     for (const source of atsSources) {
+      // 🔱 ANTI-OOM & RPM THROTTLE [v9.0]
+      // Sequential processing with a 2s gap to respect LLM RPM limits during failover.
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       try {
         logger.info(`[sniper] Target: ${source.name} (${source.type})`);
         let rawJobs: any[] = [];
 
         if (source.type === "greenhouse") {
-          const res = await fetch(`https://boards-api.greenhouse.io/v1/boards/${source.token}/jobs`);
+          const res = await proxyFetch(`https://boards-api.greenhouse.io/v1/boards/${source.token}/jobs`);
           const data = await res.json();
           rawJobs = data.jobs || [];
         } else if (source.type === "lever") {
-          const res = await fetch(`https://api.lever.co/v0/postings/${source.token}?mode=json`);
+          const res = await proxyFetch(`https://api.lever.co/v0/postings/${source.token}?mode=json`);
           rawJobs = await res.json();
         } else if (source.type === "zoho") {
-          const res = await fetch(`https://recruit.zoho.eu/recruit/v2/PublicPostings?board_url=${source.token}`);
+          const res = await proxyFetch(`https://recruit.zoho.eu/recruit/v2/PublicPostings?board_url=${source.token}`);
           const data = await res.json();
           rawJobs = data.data || [];
         } else if (source.type === "rss") {
-          const res = await fetch(source.token);
+          const res = await proxyFetch(source.token);
           const xml = await res.text();
           const { XMLParser } = await import("fast-xml-parser");
           const parser = new XMLParser();
@@ -73,6 +78,11 @@ export async function runAtsSniper(db: any) {
             title = raw.title; url = raw.link; description = raw.description || "";
           }
 
+          if (!title || !url) continue;
+
+          // 🧬 THE TITANIUM IDEMPOTENCY SHIELD: MD5(JobTitle + Company)
+          const idempotencyHash = generateIdempotencyHash(title, source.name);
+
           const siftResult = siftOpportunity(title, description || "", source.name, source.type);
           totalSifted++;
 
@@ -89,7 +99,7 @@ export async function runAtsSniper(db: any) {
             type: "direct",
             sourceUrl: url,
             sourcePlatform: source.type,
-            tags: JSON.stringify([...(source.tags || []), siftResult.domain, "ats-sniper"]), // Inject Domain
+            tags: [...(source.tags || []), siftResult.domain, "ats-sniper"], // Changed to array, Drizzle handles JSON stringify
             description: (description || "").substring(0, 500),
             scrapedAt: now,
             lastSeenAt: now,
@@ -97,16 +107,17 @@ export async function runAtsSniper(db: any) {
             isActive: true,
             tier: siftResult.tier,
             relevanceScore: siftResult.relevanceScore,
-            displayTags: JSON.stringify(siftResult.displayTags),
+            displayTags: siftResult.displayTags, // Changed to array
+            contentHash: idempotencyHash,
             latestActivityMs: now.getTime()
-          });
+          } as any);
         }
 
         if (batch.length > 0) {
           await db.insert(opportunitiesSchema)
             .values(batch)
             .onConflictDoUpdate({
-              target: [opportunitiesSchema.title, opportunitiesSchema.company],
+              target: [opportunitiesSchema.title, opportunitiesSchema.company, opportunitiesSchema.sourceUrl],
               set: { 
                 scrapedAt: now,
                 lastSeenAt: now,

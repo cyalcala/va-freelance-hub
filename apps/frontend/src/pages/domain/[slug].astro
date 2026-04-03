@@ -5,7 +5,7 @@ import SignalCard from '../../components/SignalCard.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 
 import { getSortedSignals } from '@va-hub/db/sorting';
-import { JobDomain, DOMAIN_MANIFEST, getDomainBySlug } from '@va-hub/db/taxonomy';
+import { JobDomain, DOMAIN_MANIFEST, getDomainBySlug, getDomainLabel } from '@va-hub/db/taxonomy';
 import staticFallback from '../../data/static_fallback.json';
 
 const { slug } = Astro.params;
@@ -36,9 +36,9 @@ try {
 }
 ---
 
-<Layout title={`${domain} | VA.INDEX`}>
+<Layout title={`${getDomainLabel(domain)} | VA.INDEX`}>
   <main class="max-w-[1200px] mx-auto px-6 py-10">
-    <Breadcrumbs domain={domain} />
+    <Breadcrumbs domain={getDomainLabel(domain)} />
 
     <header class="mb-12">
       <div class="flex items-center gap-6 mb-6">
@@ -47,7 +47,7 @@ try {
         </div>
         <div>
           <h1 class="text-4xl sm:text-5xl font-black text-blueberry-900 uppercase tracking-tight leading-none mb-2">
-            {domain}
+            {getDomainLabel(domain)}
           </h1>
           <p class="text-lg text-blueberry-800/60 font-medium max-w-2xl">
             {manifest?.description}

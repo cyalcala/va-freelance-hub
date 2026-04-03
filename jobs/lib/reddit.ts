@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db/schema";
 import { normalizeDate } from "@va-hub/db";
+import { proxyFetch } from "./proxy-fetch";
 
 // --- REDDIT SCHEMAS ---
 
@@ -48,9 +49,8 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
     try {
       if (allJobs.length > 0) await new Promise(r => setTimeout(r, 500)); // Increased throttle
 
-      const res = await fetch(`https://www.reddit.com/r/${sub.name}/new.json?limit=25&t=${Date.now()}`, {
+      const res = await proxyFetch(`https://www.reddit.com/r/${sub.name}/new.json?limit=25&t=${Date.now()}`, {
         headers: {
-          "User-Agent": "VA.INDEX/1.0 (ethical-harvester; public-json)",
           "Accept": "application/json",
         },
         signal: AbortSignal.timeout(10_000),

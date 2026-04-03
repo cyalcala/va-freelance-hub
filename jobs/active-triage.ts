@@ -4,6 +4,7 @@ import { opportunities } from "@va-hub/db/schema";
 import { eq, and, isNotNull } from "drizzle-orm";
 import { normalizeDate } from "@va-hub/db";
 import * as cheerio from "cheerio";
+import { proxyFetch } from "./lib/proxy-fetch";
 
 /**
  * CHRONOS HEARTBEAT: Active Triage (Staleness Fighting)
@@ -35,8 +36,7 @@ export const activeTriage = task({
         logger.info(`[Triage] Checking: ${opp.title} (${opp.company})`);
         
         // 2. Fetch raw text (The Stealth Lane)
-        const response = await fetch(opp.sourceUrl!, { 
-          headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) VA-Index-Bot/8.3" },
+        const response = await proxyFetch(opp.sourceUrl!, { 
           signal: AbortSignal.timeout(10000)
         });
 

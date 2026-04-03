@@ -4,13 +4,27 @@
  */
 
 export enum JobDomain {
-  VA_SUPPORT = "Virtual Assistants & Support",
-  BPO_SERVICES = "BPO & Professional Services",
-  SALES_GROWTH = "Sales & Growth",
-  TECH_ENGINEERING = "Tech & Engineering",
-  CREATIVE_MEDIA = "Creative & Media",
-  SPECIALIZED_SERVICES = "Specialized Services",
-  GENERAL = "General Opportunities",
+  VA_SUPPORT = "VA_SUPPORT",
+  BPO_SERVICES = "BPO_SERVICES",
+  SALES_GROWTH = "SALES_GROWTH",
+  TECH_ENGINEERING = "TECH_ENGINEERING",
+  CREATIVE_MEDIA = "CREATIVE_MEDIA",
+  SPECIALIZED_SERVICES = "SPECIALIZED_SERVICES",
+  GENERAL = "GENERAL",
+}
+
+export const JobDomainLabels: Record<JobDomain, string> = {
+  [JobDomain.VA_SUPPORT]: "Virtual Assistants & Support",
+  [JobDomain.BPO_SERVICES]: "BPO & Professional Services",
+  [JobDomain.SALES_GROWTH]: "Sales & Growth",
+  [JobDomain.TECH_ENGINEERING]: "Tech & Engineering",
+  [JobDomain.CREATIVE_MEDIA]: "Creative & Media",
+  [JobDomain.SPECIALIZED_SERVICES]: "Specialized Services",
+  [JobDomain.GENERAL]: "General Opportunities",
+};
+
+export function getDomainLabel(domain: JobDomain | string): string {
+  return JobDomainLabels[domain as JobDomain] || domain;
 }
 
 export interface DomainMapping {
@@ -42,7 +56,8 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
       "blogger", "newsletter", "ghostwriter",
       "designer", "ux", "ui", "graphic design", "animator", "motion graphics",
       "video editor", "reel editor", "brand designer", "logo designer", "canva",
-      "photoshop", "illustrator", "creative director", "product design"
+      "photoshop", "illustrator", "creative director", "product design",
+      "multimedia producer", "podcast editor", "shorts editor", "tiktok editor"
     ]
   },
   {
@@ -61,7 +76,9 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
     keywords: [
       "software engineer", "developer", "backend", "frontend", "fullstack",
       "devops", "cloud", "infrastructure", "site reliability", " sre ",
-      "qa engineer", "mobile engineer", "ios engineer", "android engineer"
+      "qa engineer", "mobile engineer", "ios engineer", "android engineer",
+      "systems administrator", "database administrator", "security engineer",
+      "platform engineer", "sre engineer", "ops engineer", "automation engineer"
     ]
   },
   {
@@ -136,6 +153,7 @@ export function getDomainSlug(domain: string): string {
     .toLowerCase()
     .replace(/ & /g, '-')
     .replace(/ /g, '-')
+    .replace(/_/g, '-')
     .replace(/[^\w-]/g, '');
 }
 

@@ -29,10 +29,14 @@ const model = genAI.getGenerativeModel({
 });
 
 /**
- * Tier 1 (The Macro-Sieve & Sanitizer) - Cerebras API
- * Validates intent, niche, and geography before deep reasoning.
+ * Macro-Sieve (The Bouncer)
+ * Tier 1: Cerebras (Turbo-fast, cheap Qwen-3).
+ * Fallback: Gemini (The Resilient Backup).
  */
-async function callCerebrasTier1(payload: any): Promise<{ pass_to_tier2: boolean; extracted_payload: any }> {
+export async function callMacroSieve(payload: any, db: any): Promise<{ pass_to_tier2: boolean; extracted_payload: any; throttle_expanded: boolean }> {
+  const SYSTEM_PROMPT = "You are the macro-sieve. Extract (Intent, Niche, Geography). Return ONLY JSON: { pass_to_tier2: boolean, extracted_payload: object }. Set pass_to_tier2: true ONLY if the job is remote/Filipino-friendly.";
+  
+  // 1. Attempt Tier 1 (Cerebras)
   try {
     const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
       method: "POST",
@@ -43,22 +47,44 @@ async function callCerebrasTier1(payload: any): Promise<{ pass_to_tier2: boolean
       body: JSON.stringify({
         model: "qwen-3-235b-a22b-instruct-2507",
         messages: [
-          {
-            role: "system",
-            content: "You are the macro-sieve. Extract (Intent, Niche, Geography). Return ONLY JSON: { pass_to_tier2: boolean, extracted_payload: object }. Set pass_to_tier2: true ONLY if the job is remote/Filipino-friendly."
-          },
-          { role: "user", content: JSON.stringify(payload) }
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: JSON.stringify(payload).slice(0, 50000) } // Safety slice
         ],
         response_format: { type: "json_object" }
       }),
     });
 
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error?.message || "Cerebras API Error");
-    return JSON.parse(data.choices[0].message.content);
+    if (response.ok) {
+      const data = await response.json();
+      const content = JSON.parse(data.choices[0].message.content);
+      return { ...content, throttle_expanded: false };
+    }
+    
+    if (response.status === 429 || response.status >= 500) {
+      throw new Error(`Cerebras Sieve Downtime: ${response.status}`);
+    }
   } catch (err) {
-    console.error("[Cerebras Tier 1] Failure:", (err as Error).message);
-    return { pass_to_tier2: false, extracted_payload: null };
+    console.warn(`[MacroSieve] Cerebras failed (${(err as Error).message}). Activating Gemini Failover...`);
+  }
+
+  // 2. Fallback: Gemini assumes "Bouncer" duties
+  try {
+    const { checkAndIncrementAiQuota } = await import("./job-utils.js");
+    const canCallAi = await checkAndIncrementAiQuota(db);
+    if (!canCallAi) return { pass_to_tier2: false, extracted_payload: null, throttle_expanded: false };
+
+    const aiResult = await model.generateContent(`
+      ROLE: FALLBACK MACRO-SIEVE
+      TASK: ${SYSTEM_PROMPT}
+      PAYLOAD: ${JSON.stringify(payload).slice(0, 100000)}
+    `);
+    
+    const content = JSON.parse(aiResult.response.text());
+    console.log("[MacroSieve] Gemini Failover Successful. Throttle Expansion Triggered.");
+    return { ...content, throttle_expanded: true };
+  } catch (err) {
+    console.error("[MacroSieve] Critical Failover Failure:", (err as Error).message);
+    return { pass_to_tier2: false, extracted_payload: null, throttle_expanded: false };
   }
 }
 
@@ -128,10 +154,17 @@ export async function healBatchWithLLM(db: any, rawJson: any, sourceName: string
     console.warn(`[Healer] Rule Engine Error (skipping to LLM):`, (cacheErr as Error).message);
   }
 
-  // 2. TIER 1: Cerebras Sanitizer (Macro-Sieve)
-  const tier1 = await callCerebrasTier1(rawJson);
-  if (!tier1.pass_to_tier2) {
-    console.log(`[Healer] Tier 1 rejected data for ${sourceName}. Reasons: Non-Philippine or High Noise.`);
+  // 2. TIER 1/FALLBACK: Macro-Sieve (The Bouncer)
+  const sieveResult = await callMacroSieve(rawJson, db);
+  
+  // Signal Throttle Expansion if failover was active
+  if (sieveResult.throttle_expanded) {
+    const { signalThrottleExpansion } = await import("./job-utils.js");
+    await signalThrottleExpansion(db);
+  }
+
+  if (!sieveResult.pass_to_tier2) {
+    console.log(`[Healer] Macro-Sieve rejected data for ${sourceName}. Reasons: Non-Philippine or High Noise.`);
     return [];
   }
 
@@ -144,7 +177,7 @@ export async function healBatchWithLLM(db: any, rawJson: any, sourceName: string
   let currentPrompt = `
     Source "${sourceName}" validated by Tier 1. 
     Analyze this minified payload (extracted from Sanitizer) and generate a JSONata rule.
-    Extracted Metadata: ${JSON.stringify(tier1.extracted_payload)}
+    Extracted Metadata: ${JSON.stringify(sieveResult.extracted_payload)}
     
     PAYLOAD: ${minified}
   `;

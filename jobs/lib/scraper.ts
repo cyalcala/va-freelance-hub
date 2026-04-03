@@ -22,6 +22,7 @@ import type { NewOpportunity } from "@va-hub/db/schema";
 import { config } from "@va-hub/config";
 import { normalizeDate } from "@va-hub/db";
 import { mapXmlWithCerebras } from "./xml-mapper";
+import { proxyFetch } from "./proxy-fetch";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -75,9 +76,8 @@ function stripHtml(s: string | undefined) {
 
 export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
   try {
-    const res = await fetch(`${source.url}${source.url.includes('?') ? '&' : '?'}t=${Date.now()}`, {
+    const res = await proxyFetch(`${source.url}${source.url.includes('?') ? '&' : '?'}t=${Date.now()}`, {
       headers: {
-        "User-Agent": "VA.INDEX/1.0 (ethical-harvester; public-rss-only)",
         "Accept": "application/rss+xml, application/atom+xml, application/xml",
       },
       signal: AbortSignal.timeout(12_000),

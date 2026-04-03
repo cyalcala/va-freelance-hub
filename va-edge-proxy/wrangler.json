@@ -1,0 +1,11 @@
+{
+  "name": "va-edge-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-04-03",
+  "vars": {
+    "VA_PROXY_SECRET": "Cy-Shield-April-2026kaamulan"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

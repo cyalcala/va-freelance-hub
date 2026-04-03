@@ -40,6 +40,10 @@ export interface NicheConfig {
   // 📡 DATA SOURCES
   rss_sources: Source[];
   json_sources: Source[];
+
+  // 🛡️ EDGE SHIELD
+  edge_proxy_url?: string;
+  proxy_secret?: string;
 }
 
 export const defaultConfig: NicheConfig = {
@@ -139,7 +143,10 @@ export const defaultConfig: NicheConfig = {
       is_json: true,
       json_type: "JobStreet",
     }
-  ]
+  ],
+
+  edge_proxy_url: process.env.EDGE_PROXY_URL || "https://va-edge-proxy.cyrusalcala-agency.workers.dev",
+  proxy_secret: process.env.VA_PROXY_SECRET
 };
 
 export const config = defaultConfig; // In production, we can use a dynamic loader here

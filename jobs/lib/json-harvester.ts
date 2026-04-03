@@ -9,6 +9,7 @@
 import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db/schema";
 import { normalizeDate } from "@va-hub/db";
+import { proxyFetch } from "./proxy-fetch";
 
 export interface JSONSource {
   id: string;
@@ -26,12 +27,9 @@ function toHash(title: string, url: string) {
 
 export async function fetchJSONFeed(source: JSONSource): Promise<NewOpportunity[]> {
   try {
-    const res = await fetch(`${source.url}${source.url.includes('?') ? '&' : '?'}t=${Date.now()}`, {
+    const res = await proxyFetch(`${source.url}${source.url.includes('?') ? '&' : '?'}t=${Date.now()}`, {
       headers: {
-        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_8 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1",
         "Accept": "application/json",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
       },
       signal: AbortSignal.timeout(15_000),
     });
