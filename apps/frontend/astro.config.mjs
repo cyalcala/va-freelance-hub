@@ -13,25 +13,4 @@ export default defineConfig({
     maxDuration: 60,
   }),
   integrations: [tailwind()],
-  vite: {
-    resolve: {
-      alias: {
-        '@va-hub/db': path.resolve(__dirname, '../../packages/db'),
-        '@va-hub/config': path.resolve(__dirname, '../../packages/config'),
-        '@libsql/client': path.resolve(__dirname, '../../node_modules/@libsql/client/lib-esm/web.js')
-      },
-      conditions: ['node', 'import']
-    },
-    ssr: {
-      noExternal: ['@va-hub/db', '@va-hub/config']
-    },
-    plugins: [
-      {
-        name: 'require-polyfill',
-        renderChunk(code) {
-          return `import { createRequire as __cr } from 'node:module';\nconst require = __cr(import.meta.url);\n${code}`;
-        }
-      }
-    ]
-  }
 });
