@@ -7,7 +7,7 @@ import MirrorStage from '../components/MirrorStage.astro';
 import { getSortedSignals, getLatestMirror } from '@va-hub/db/sorting';
 import { db, schema } from '@va-hub/db/client';
 import { sql, eq } from 'drizzle-orm';
-import { JobDomain, DOMAIN_MANIFEST, getDomainSlug, getDomainLabel } from '@va-hub/db/taxonomy';
+import { JobDomain, DOMAIN_MANIFEST, getDomainSlug, getDomainLabel, mapTitleToDomain } from '@va-hub/db/taxonomy';
 import staticFallback from '../data/static_fallback.json';
 
 // BUST THE CACHE
@@ -57,9 +57,16 @@ try {
 // ── DOMAIN ORCHESTRATION ──
 const topDomains = [JobDomain.VA_SUPPORT, JobDomain.BPO_SERVICES, JobDomain.SALES_GROWTH];
 
+// ── ADAPTIVE BRIDGE: MAP LEGACY DATA TO V10 NICHE TAXONOMY ──
+const processedSignals = (initialSignals || []).map(sig => ({
+  ...sig,
+  niche: sig.niche || mapTitleToDomain(sig.title, (sig.description || '')),
+  url: sig.url || (sig.sourceUrl as string)
+}));
+
 const domains = DOMAIN_MANIFEST.map(d => ({
   ...d,
-  signals: initialSignals.filter(sig => sig.niche === d.domain)
+  signals: processedSignals.filter(sig => sig.niche === d.domain)
 })).filter(d => d.signals.length > 0)
    .sort((a, b) => {
       const aIdx = topDomains.indexOf(a.domain);
@@ -72,7 +79,7 @@ const domains = DOMAIN_MANIFEST.map(d => ({
 
 // Add "General" for everything else
 const mappedIds = new Set(domains.flatMap(d => d.signals.map(s => s.id)));
-const generalSignals = initialSignals.filter(s => !mappedIds.has(s.id));
+const generalSignals = processedSignals.filter(s => !mappedIds.has(s.id));
 if (generalSignals.length > 0) {
     domains.push({
         domain: JobDomain.GENERAL,
