@@ -1,3 +1,4 @@
+console.log("V12_FUNCTIONS_EVALUATING");
 import { inngest } from "./client";
 import { db } from "../../../../../packages/db"; // Root packages/db
 import { opportunities } from "../../../../../packages/db/schema";
