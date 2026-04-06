@@ -16,7 +16,9 @@
       "@va-hub/db/client": ["packages/db/client.ts"],
       "@va-hub/db/schema": ["packages/db/schema.ts"],
       "@va-hub/db/sorting": ["packages/db/sorting.ts"],
-      "@va-hub/core/*": ["src/core/*"]
+      "@va-hub/core/*": ["src/core/*"],
+      "@va-hub/pulse": ["apps/frontend/src/lib/inngest/client.ts"],
+      "@va-hub/ai/*": ["apps/frontend/src/lib/ai/*"]
     }
   },
   "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser"]
