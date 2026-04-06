@@ -20,6 +20,7 @@ export const jobHarvested = inngest.createFunction(
   },
   async ({ event, step }) => {
     const { raw_title, raw_company, raw_url, raw_html } = event.data;
+    console.log(`🚜 [REAL_WORKER] Executing job.harvested for: ${raw_title} (${raw_company})`);
 
     // 1. Calculate MD5 Shield
     const md5_hash = crypto

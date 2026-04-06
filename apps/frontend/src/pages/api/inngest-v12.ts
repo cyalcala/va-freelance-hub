@@ -25,13 +25,34 @@ const v12Ping = inngest.createFunction(
   }
 );
 
+/**
+ * 🚜 JOB HARVESTED WORKER (V12)
+ * Lazy-loaded to ensure discovery stability.
+ */
+const jobHarvestedWorker = inngest.createFunction(
+  { 
+    id: "job-harvested", 
+    name: "Job Harvested (V12)",
+    triggers: [{ event: "job.harvested" }] 
+  },
+  async (args) => {
+    console.log("🧬 [V12] Invoking Lazy-Load Proxy for job.harvested...");
+    // Dynamic import to prevent circular dependency at Discovery time
+    const { jobHarvested } = await import("../../lib/inngest/functions");
+    // @ts-ignore - The internal fn expects the same args Inngest provides
+    return jobHarvested.fn(args);
+  }
+);
+
 // 🛡️ NATIVE EXPORTS: Use the SDK's built-in Astro handlers
 const handler = serve({
   client: inngest,
   functions: [
     v12Ping,
+    jobHarvestedWorker,
   ],
 });
+
 
 export const GET = async (ctx: any) => handler.GET(ctx);
 export const POST = async (ctx: any) => handler.POST(ctx);
