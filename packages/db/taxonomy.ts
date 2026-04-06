@@ -1,25 +1,25 @@
 /**
- * VA.INDEX — Titanium Taxonomy Engine v1.0
+ * VA.INDEX — Titanium Taxonomy Engine v1.0 (V10 ALIGNED)
  * Functional Silos for the Organized Master Directory
  */
 
 export enum JobDomain {
-  VA_SUPPORT = "VA_SUPPORT",
-  BPO_SERVICES = "BPO_SERVICES",
-  SALES_GROWTH = "SALES_GROWTH",
   TECH_ENGINEERING = "TECH_ENGINEERING",
-  CREATIVE_MEDIA = "CREATIVE_MEDIA",
-  SPECIALIZED_SERVICES = "SPECIALIZED_SERVICES",
+  MARKETING = "MARKETING",
+  SALES = "SALES",
+  ADMIN_SUPPORT = "ADMIN_SUPPORT",
+  CREATIVE_MULTIMEDIA = "CREATIVE_MULTIMEDIA",
+  CUSTOMER_SERVICE = "CUSTOMER_SERVICE",
   GENERAL = "GENERAL",
 }
 
 export const JobDomainLabels: Record<JobDomain, string> = {
-  [JobDomain.VA_SUPPORT]: "Virtual Assistants & Support",
-  [JobDomain.BPO_SERVICES]: "BPO & Professional Services",
-  [JobDomain.SALES_GROWTH]: "Sales & Growth",
   [JobDomain.TECH_ENGINEERING]: "Tech & Engineering",
-  [JobDomain.CREATIVE_MEDIA]: "Creative & Media",
-  [JobDomain.SPECIALIZED_SERVICES]: "Specialized Services",
+  [JobDomain.MARKETING]: "Marketing & Growth",
+  [JobDomain.SALES]: "Sales & Business Dev",
+  [JobDomain.ADMIN_SUPPORT]: "Admin & VA Support",
+  [JobDomain.CREATIVE_MULTIMEDIA]: "Creative & Multimedia",
+  [JobDomain.CUSTOMER_SERVICE]: "Customer Service & BPO",
   [JobDomain.GENERAL]: "General Opportunities",
 };
 
@@ -36,24 +36,32 @@ export interface DomainMapping {
 
 export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
-    domain: JobDomain.VA_SUPPORT,
+    domain: JobDomain.ADMIN_SUPPORT,
     description: "The most accessible entry-point remote roles globally.",
-    symbol: "🎧",
+    symbol: "📋",
     keywords: [
-      "virtual assistant", " va ", "customer support", "customer service", 
-      "customer success", "client support", "support specialist", "support agent",
-      "help desk", "live chat", "chat support", "community manager", "moderator",
-      "appointment setter", "scheduling", "inbox manager"
+      "virtual assistant", " va ", "appointment setter", "scheduling", "inbox manager",
+      "data entry", "administrative", "assistant", "personal assistant"
     ]
   },
   {
-    domain: JobDomain.CREATIVE_MEDIA,
-    description: "Creative content, video editing, design, and copywriting.",
-    symbol: "🎭",
+    domain: JobDomain.CUSTOMER_SERVICE,
+    description: "Customer support, community management, and BPO operations.",
+    symbol: "🎧",
+    keywords: [
+      "customer support", "customer service", "customer success", "client support",
+      "support specialist", "support agent", "help desk", "live chat", "chat support",
+      "community manager", "moderator", "csr", "call center", "voice", "non-voice",
+      "backoffice", "telemarketing", "bpo"
+    ]
+  },
+  {
+    domain: JobDomain.CREATIVE_MULTIMEDIA,
+    description: "Creative content, video editing, design, and multimedia.",
+    symbol: "🎨",
     keywords: [
       "writer", "copywriter", "editor", "scriptwriter", "script writer", 
-      "proofreader", "technical writer", "content manager", "content creator",
-      "blogger", "newsletter", "ghostwriter",
+      "proofreader", "content manager", "content creator", "blogger", "newsletter",
       "designer", "ux", "ui", "graphic design", "animator", "motion graphics",
       "video editor", "reel editor", "brand designer", "logo designer", "canva",
       "photoshop", "illustrator", "creative director", "product design",
@@ -61,12 +69,21 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
     ]
   },
   {
-    domain: JobDomain.SALES_GROWTH,
-    description: "Revenue generation and business development.",
-    symbol: "📈",
+    domain: JobDomain.MARKETING,
+    description: "Growth, advertising, and digital marketing strategies.",
+    symbol: "📣",
     keywords: [
-      "sales", "account executive", "business development", " bdm ", " sdr ",
-      "lead generation", "outreach", "growth manager", "marketing", "ads specialist"
+      "marketing", "ads specialist", "seo", "sem", "social media manager", 
+      "digital marketing", "growth manager", "performance marketing"
+    ]
+  },
+  {
+    domain: JobDomain.SALES,
+    description: "Revenue generation and business development.",
+    symbol: "💰",
+    keywords: [
+       "sales", "account executive", "business development", " bdm ", " sdr ",
+       "lead generation", "outreach"
     ]
   },
   {
@@ -80,44 +97,15 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
       "systems administrator", "database administrator", "security engineer",
       "platform engineer", "sre engineer", "ops engineer", "automation engineer"
     ]
-  },
-  {
-    domain: JobDomain.SPECIALIZED_SERVICES,
-    description: "Licensed professionals, medical, legal, and finance.",
-    symbol: "⚖️",
-    keywords: [
-      "pharmacist", "pharmacy", "medical", "clinical", "legal", "lawyer",
-      "veterinary", "research analyst", "vulnerability researcher", "compliance",
-      "audit", "policy", "attorney",
-      "accountant", "bookkeeper", "payroll", "invoice", "billing", 
-      "accounts payable", "accounts receivable", "quickbooks", "xero", "finance",
-      "ai trainer", "ai training", "data annotator", "data analyst", "video annotator",
-      "labeling", "data entry", "dataset", "machine learning ops", "rlhf", "prompt tuning"
-    ]
-  },
-  {
-    domain: JobDomain.BPO_SERVICES,
-    description: "Voice, backoffice, and scaled outsourcing roles.",
-    symbol: "📞",
-    keywords: [
-      "csr", "call center", "voice", "non-voice", "backoffice", "blended",
-      "telemarketing", "bpo", "customer service representative"
-    ]
   }
 ];
 
-/**
- * Maps a job title to its most relevant functional domain.
- */
 export function mapTitleToDomain(title: string, description: string = ""): JobDomain {
   const content = `${title} ${description}`.toLowerCase();
   
-  // High-priority exact matches or specific complex roles
-  if (content.includes("product design") || content.includes("ux researcher")) return JobDomain.CREATIVE_MEDIA;
-  if (content.includes("vulnerability researcher") || content.includes("clinical research")) return JobDomain.SPECIALIZED_SERVICES;
-  if (content.includes("account executive") || content.includes("sales director")) return JobDomain.SALES_GROWTH;
-  if (content.includes("customer service representative")) return JobDomain.BPO_SERVICES;
-  if (content.includes("ai training") || content.includes("ai trainer")) return JobDomain.SPECIALIZED_SERVICES;
+  if (content.includes("product design") || content.includes("ux researcher")) return JobDomain.CREATIVE_MULTIMEDIA;
+  if (content.includes("customer service representative")) return JobDomain.CUSTOMER_SERVICE;
+  if (content.includes("software engineer") || content.includes("developer")) return JobDomain.TECH_ENGINEERING;
 
   for (const mapping of DOMAIN_MANIFEST) {
     if (mapping.keywords.some(k => content.includes(k))) {
@@ -128,10 +116,6 @@ export function mapTitleToDomain(title: string, description: string = ""): JobDo
   return JobDomain.GENERAL;
 }
 
-/**
- * Metadata Badging Logic (Workbound Style)
- * Extracts descriptive "Display Tags" from the content.
- */
 export function extractDisplayTags(title: string, description: string): string[] {
   const content = `${title} ${description}`.toLowerCase();
   const badges: string[] = [];
@@ -145,9 +129,6 @@ export function extractDisplayTags(title: string, description: string): string[]
   return [...new Set(badges)];
 }
 
-/**
- * Converts a JobDomain to a URL-friendly slug.
- */
 export function getDomainSlug(domain: string): string {
   return domain
     .toLowerCase()
@@ -157,9 +138,6 @@ export function getDomainSlug(domain: string): string {
     .replace(/[^\w-]/g, '');
 }
 
-/**
- * Reverse lookup for JobDomain by its slug.
- */
 export function getDomainBySlug(slug: string): JobDomain | null {
   for (const domain of Object.values(JobDomain)) {
     if (getDomainSlug(domain) === slug) {

@@ -1,5 +1,16 @@
 import { sqliteTable, text, integer, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
 
+export const VA_NICHES = [
+  'TECH_ENGINEERING',
+  'MARKETING',
+  'SALES',
+  'ADMIN_SUPPORT',
+  'CREATIVE_MULTIMEDIA',
+  'CUSTOMER_SERVICE'
+] as const;
+
+export type VaNiche = typeof VA_NICHES[number];
+
 export const agencies = sqliteTable('agencies', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -22,34 +33,32 @@ export const agencies = sqliteTable('agencies', {
 
 export const opportunities = sqliteTable('opportunities', {
   id: text('id').primaryKey(),
+  md5_hash: text('md5_hash').unique().notNull(), // The Idempotency Shield
   title: text('title').notNull(),
-  company: text('company').notNull().default('Generic'),
+  company: text('company').notNull(),
+  url: text('url').notNull(),
+  salary: text('salary'), // Nullable
+  description: text('description').notNull(),
+  niche: text('niche', { enum: VA_NICHES }).notNull(),
   type: text('type').notNull().default('agency'), // e.g., 'agency', 'direct'
-  sourceUrl: text('source_url').notNull(),
-  sourcePlatform: text('source_platform').notNull().default('Generic'),
+  sourcePlatform: text('source_platform').default('Generic'),
   tags: text('tags', { mode: 'json' }).notNull().default('[]'),
   locationType: text('location_type').notNull().default('remote'),
-  payRange: text('pay_range'),
-  description: text('description'),
   postedAt: integer('posted_at', { mode: 'timestamp' }),
-  scrapedAt: integer('scraped_at', { mode: 'timestamp' }).notNull(),
+  scrapedAt: integer('scraped_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
   lastSeenAt: integer('last_seen_at', { mode: 'timestamp' }),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
   tier: integer('tier').notNull().default(3), // 0=Platinum, 1=Gold, 2=Silver, 3=Bronze, 4=Trash
-  relevanceScore: integer('relevance_score').notNull().default(0), // Domain-specific ranking
-  displayTags: text('display_tags', { mode: 'json' }).notNull().default('[]'), // UI badges
-  contentHash: text('content_hash'),
-  latestActivityMs: integer('latest_activity_ms').notNull().default(0), // Indexed for high-performance sorting
-  companyLogo: text('company_logo'), // External logo URL
-  metadata: text('metadata', { mode: 'json' }).notNull().default('{}'), // Extended JSON (salary, tags, etc.)
+  relevanceScore: integer('relevance_score').notNull().default(0), 
+  latestActivityMs: integer('latest_activity_ms').notNull().default(0), 
+  companyLogo: text('company_logo'), 
+  metadata: text('metadata', { mode: 'json' }).notNull().default('{}'), 
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
 }, (table) => ({
-  uniqueJobIdx: uniqueIndex('unique_job_idx').on(table.title, table.company, table.sourceUrl),
-  tierLatestIdx: index('tier_latest_idx').on(table.tier, table.latestActivityMs), // Speeds up Astro feed
-  domainRankIdx: index('domain_rank_idx').on(table.relevanceScore, table.tier), // Speeds up Master Directory
-  activeIdx: index('active_idx').on(table.isActive), // Eliminates full scans on the "Live" toggle
-  sourcePlatformIdx: index('source_platform_idx').on(table.sourcePlatform), // Janitor's primary filter
-  typeIdx: index('type_idx').on(table.type), // Speeds up agency/direct filtering
+  nicheIdx: index('niche_idx').on(table.niche),
+  md5Idx: index('md5_idx').on(table.md5_hash),
+  tierLatestIdx: index('tier_latest_idx').on(table.tier, table.latestActivityMs),
+  domainRankIdx: index('domain_rank_idx').on(table.relevanceScore, table.tier),
 }));
 
 export const systemHealth = sqliteTable('system_health', {

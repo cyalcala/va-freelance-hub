@@ -1,13 +1,11 @@
 ---
 import { normalizeDate } from '@va-hub/db';
+import { getDomainLabel } from '@va-hub/db/taxonomy';
 const { signal, index } = Astro.props;
 
 // Defensive Tags Parsing
 const rawTags = signal.tags || [];
 const tags = (typeof rawTags === 'string' ? JSON.parse(rawTags) : rawTags) as string[];
-
-const rawDisplayTags = signal.displayTags || [];
-const displayTags = (typeof rawDisplayTags === 'string' ? JSON.parse(rawDisplayTags) : rawDisplayTags) as string[];
 
 const ageHrs = signal.latestActivityMs ? Math.max(0, (Date.now() - normalizeDate(signal.latestActivityMs).getTime()) / 3600000) : 0;
 const isFresh = ageHrs < 4; 
@@ -20,10 +18,10 @@ const tierClass = signal.tier === 0
 ---
 
 <a 
-  href={signal.sourceUrl} 
+  href={signal.url} 
   target="_blank" 
   class={`opp-item flex items-start gap-3 p-3.5 rounded-xl border transition-all duration-300 group relative active:scale-[0.98] hover:bg-white hover:shadow-xl hover:border-blueberry-900/15 hover:-translate-y-1 ${tierClass}`}
-  data-search={`${signal.title} ${signal.company} ${tags.join(' ')}`.toLowerCase()}
+  data-search={`${signal.title} ${signal.company} ${signal.niche || ''} ${tags.join(' ')}`.toLowerCase()}
   data-age={ageHrs}
 >
   <div class="flex items-center gap-2 shrink-0 mt-0.5">
@@ -50,15 +48,17 @@ const tierClass = signal.tier === 0
         {signal.company || 'Direct'}
       </span>
       
-      {displayTags.slice(0, 2).map((tag: string) => (
-        <span class={`px-1.5 py-0.5 text-[7px] font-black uppercase rounded shadow-sm border border-black/5 ${
-          tag === 'PREMIUM' ? 'bg-amber-100 text-amber-700' : 
-          tag === 'HIGH PAY' ? 'bg-emerald-100 text-emerald-700' : 
-          'bg-oat-100 text-blueberry-800/50'
-        }`}>
-          {tag}
+      {signal.niche && (
+        <span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded shadow-sm border border-black/5 bg-blueberry-50 text-blueberry-600">
+          {getDomainLabel(signal.niche)}
         </span>
-      ))}
+      )}
+
+      {signal.salary && (
+        <span class="px-1.5 py-0.5 text-[7px] font-black uppercase rounded shadow-sm border border-black/5 bg-emerald-50 text-emerald-700">
+          💰 {signal.salary}
+        </span>
+      )}
     </div>
   </div>
 

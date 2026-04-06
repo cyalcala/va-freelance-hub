@@ -24,7 +24,7 @@ try {
       getSortedSignals(400), // Fetch more for the directory
       getLatestMirror(10),
       db.select({ 
-        maxSync: sql<number>`max(last_seen_at)`, 
+        maxSync: sql<number>`max(scraped_at)`, 
       }).from(schema.opportunities).where(eq(schema.opportunities.isActive, true))
     ]);
 
@@ -59,10 +59,7 @@ const topDomains = [JobDomain.VA_SUPPORT, JobDomain.BPO_SERVICES, JobDomain.SALE
 
 const domains = DOMAIN_MANIFEST.map(d => ({
   ...d,
-  signals: initialSignals.filter(sig => {
-      const tags = typeof sig.tags === 'string' ? JSON.parse(sig.tags) : sig.tags;
-      return tags.includes(d.domain);
-  })
+  signals: initialSignals.filter(sig => sig.niche === d.domain)
 })).filter(d => d.signals.length > 0)
    .sort((a, b) => {
       const aIdx = topDomains.indexOf(a.domain);
