@@ -1,0 +1,36 @@
+[2026-04-06T12:52:31.335Z] AUDIT RESULT: {
+  "status": "inserted_fallback",
+  "md5_hash": "4107804a2875be6deb6130b1f39585a1"
+}
+[2026-04-06T12:53:51.334Z] AI FAILURE - FELL BACK TO HEURISTIC
+[2026-04-06T12:53:51.333Z] AUDIT RESULT: {
+  "status": "dropped",
+  "reason": "duplicate_md5",
+  "md5_hash": "4107804a2875be6deb6130b1f39585a1"
+}
+
+======================================================================
+
+[2026-04-06T12:59:46.318Z] AFK DIAGNOSTIC AUDIT — Priority 3
+
+======================================================================
+
+PHASE 1 — AI WATERFALL:
+  Status: SUCCESS
+  Model: cerebras-llama-3.1-8b
+  Company: "Elite firm"
+  Tier: 0
+  PH Compatible: true
+  Relevance: 100
+  Niche: TECH_ENGINEERING
+
+PHASE 2 — V12 SIFTER:
+  Result: {
+  "status": "dropped",
+  "reason": "duplicate_md5",
+  "md5_hash": "4107804a2875be6deb6130b1f39585a1"
+}
+
+VERDICT: ⚠️ DUPLICATE (already in vault from prior run)
+
+======================================================================

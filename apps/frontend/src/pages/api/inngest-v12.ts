@@ -2,10 +2,10 @@ import { Inngest } from "inngest";
 import { serve } from "inngest/astro";
 
 // 1. Initialize Inngest client with zero local/external config imports
-const inngest = new Inngest({ id: "v12-sifter" });
+export const inngestClient = new Inngest({ id: "va-freelance-hub" });
 
 // 2. Define jobHarvested function with direct event trigger
-const jobHarvested = inngest.createFunction(
+const jobHarvested = inngestClient.createFunction(
   { id: "v12-job-harvested" },
   { event: "v12/job.harvested" },
   async ({ event, step }) => {
@@ -16,12 +16,9 @@ const jobHarvested = inngest.createFunction(
   }
 );
 
-// 4. Export the GET, POST, and PUT serve handlers explicitly
-const handler = serve({
-  client: inngest,
-  functions: [jobHarvested],
+// 4. Export the GET, POST, and PUT serve handlers explicitly for Astro/Vercel
+export const { GET, POST, PUT } = serve({ 
+  client: inngestClient, 
+  functions: [jobHarvested] 
 });
 
-export const GET = handler;
-export const POST = handler;
-export const PUT = handler;
