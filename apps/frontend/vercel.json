@@ -1,9 +1,0 @@
-{
-  "version": 2,
-  "buildCommand": "bun run build",
-  "outputDirectory": "dist",
-  "framework": "astro",
-  "installCommand": "bun install",
-  "cleanUrls": true,
-  "trailingSlash": false
-}

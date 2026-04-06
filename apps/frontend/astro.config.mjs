@@ -12,7 +12,11 @@ export default defineConfig({
     edgeMiddleware: false,
     maxDuration: 60,
   }),
+  redirects: {
+    '/logs': '/terminal'
+  },
   integrations: [tailwind()],
+
   vite: {
     resolve: {
       alias: {

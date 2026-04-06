@@ -2,9 +2,5 @@
   "framework": "astro",
   "installCommand": "bun install",
   "buildCommand": "cd apps/frontend && bun run build",
-  "outputDirectory": "apps/frontend/.vercel/output",
-
-  "redirects": [
-    { "source": "/logs", "destination": "/terminal", "permanent": true }
-  ]
+  "outputDirectory": "apps/frontend/.vercel/output"
 }
