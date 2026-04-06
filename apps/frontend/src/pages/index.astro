@@ -37,7 +37,12 @@ try {
     initialSignals = signals;
     mirrorSignals = mirror;
     
-    if (stats[0]?.maxSync) {
+    // Cold Start Recovery: If DB is empty, use fallback but remain in a 'WARMING' status
+    if (!initialSignals || initialSignals.length === 0) {
+      initialSignals = staticFallback;
+      mirrorSignals = staticFallback.slice(0, 10);
+      healthStats.status = 'ACTIVE:COLD_START';
+    } else if (stats[0]?.maxSync) {
       healthStats = { 
         status: 'ACTIVE', 
         isFallback: false,
@@ -58,7 +63,8 @@ try {
 const topDomains = [JobDomain.VA_SUPPORT, JobDomain.BPO_SERVICES, JobDomain.SALES_GROWTH];
 
 // ── ADAPTIVE BRIDGE: MAP LEGACY DATA TO V10 NICHE TAXONOMY ──
-const processedSignals = (initialSignals || []).map(sig => ({
+const rawList = (initialSignals && initialSignals.length > 0) ? initialSignals : staticFallback;
+const processedSignals = rawList.map(sig => ({
   ...sig,
   niche: sig.niche || mapTitleToDomain(sig.title, (sig.description || '')),
   url: sig.url || (sig.sourceUrl as string)
