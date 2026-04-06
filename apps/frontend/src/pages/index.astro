@@ -77,18 +77,6 @@ const domains = DOMAIN_MANIFEST.map(d => ({
       return 0; // Maintain original manifest order for others
    });
 
-// Add "General" for everything else
-const mappedIds = new Set(domains.flatMap(d => d.signals.map(s => s.id)));
-const generalSignals = processedSignals.filter(s => !mappedIds.has(s.id));
-if (generalSignals.length > 0) {
-    domains.push({
-        domain: JobDomain.GENERAL,
-        symbol: "🌐",
-        description: "Uncategorized high-intent signals.",
-        signals: generalSignals,
-        keywords: []
-    });
-}
 ---
 
 <Layout title="Master Directory | VA.INDEX">

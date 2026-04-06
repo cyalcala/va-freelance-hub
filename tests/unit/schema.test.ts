@@ -41,22 +41,31 @@ describe("Drizzle Schema & Border Patrol Invariants", () => {
         }
     });
 
-    it("GREEN: Should successfully validate a perfect V10 payload", () => {
+    it("GREEN: Should successfully validate a Virtual Assistant payload", () => {
         const payload = {
-            title: "Senior SRE",
-            company: "V10 Global",
-            url: "https://v10.ai/jobs/1",
-            md5_hash: "a1b2c3d4e5f67890",
-            description: "Distributed systems management.",
-            niche: "TECH_ENGINEERING"
+            title: "General VA",
+            company: "VA Hub",
+            url: "https://v10.ai/jobs/va1",
+            md5_hash: "va_hash_1234567890",
+            description: "General support.",
+            niche: "VA_SUPPORT"
         };
-        
         const result = OpportunitySchema.safeParse(payload);
-        
-        // This should pass perfectly.
-        if (!result.success) {
-            console.error(result.error.errors);
-        }
+        if (!result.success) console.error(result.error);
+        expect(result.success).toBe(true);
+    });
+
+    it("GREEN: Should successfully validate an Admin/Backoffice payload", () => {
+        const payload = {
+            title: "Junior Accountant",
+            company: "FinCorp",
+            url: "https://v10.ai/jobs/acc1",
+            md5_hash: "acc_hash_6789012345",
+            description: "Invoice and CRM management.",
+            niche: "ADMIN_BACKOFFICE"
+        };
+        const result = OpportunitySchema.safeParse(payload);
+        if (!result.success) console.error(result.error);
         expect(result.success).toBe(true);
     });
 });

@@ -6,21 +6,21 @@
 export enum JobDomain {
   TECH_ENGINEERING = "TECH_ENGINEERING",
   MARKETING = "MARKETING",
-  SALES = "SALES",
-  ADMIN_SUPPORT = "ADMIN_SUPPORT",
+  SALES_GROWTH = "SALES_GROWTH",
+  VA_SUPPORT = "VA_SUPPORT",
+  ADMIN_BACKOFFICE = "ADMIN_BACKOFFICE",
   CREATIVE_MULTIMEDIA = "CREATIVE_MULTIMEDIA",
-  CUSTOMER_SERVICE = "CUSTOMER_SERVICE",
-  GENERAL = "GENERAL",
+  BPO_SERVICES = "BPO_SERVICES",
 }
 
 export const JobDomainLabels: Record<JobDomain, string> = {
   [JobDomain.TECH_ENGINEERING]: "Tech & Engineering",
   [JobDomain.MARKETING]: "Marketing & Growth",
-  [JobDomain.SALES]: "Sales & Business Dev",
-  [JobDomain.ADMIN_SUPPORT]: "Admin & VA Support",
+  [JobDomain.SALES_GROWTH]: "Sales & Business Growth",
+  [JobDomain.VA_SUPPORT]: "Virtual Assistant & Support",
+  [JobDomain.ADMIN_BACKOFFICE]: "Admin & Backoffice",
   [JobDomain.CREATIVE_MULTIMEDIA]: "Creative & Multimedia",
-  [JobDomain.CUSTOMER_SERVICE]: "Customer Service & BPO",
-  [JobDomain.GENERAL]: "General Opportunities",
+  [JobDomain.BPO_SERVICES]: "BPO & Customer Service",
 };
 
 export function getDomainLabel(domain: JobDomain | string): string {
@@ -36,23 +36,33 @@ export interface DomainMapping {
 
 export const DOMAIN_MANIFEST: DomainMapping[] = [
   {
-    domain: JobDomain.ADMIN_SUPPORT,
-    description: "The most accessible entry-point remote roles globally.",
-    symbol: "📋",
+    domain: JobDomain.VA_SUPPORT,
+    description: "Multi-functional Virtual Assistants and general support roles.",
+    symbol: "🤝",
     keywords: [
       "virtual assistant", " va ", "appointment setter", "scheduling", "inbox manager",
-      "data entry", "administrative", "assistant", "personal assistant"
+      "assistant", "personal assistant", "executive assistant"
     ]
   },
   {
-    domain: JobDomain.CUSTOMER_SERVICE,
+    domain: JobDomain.ADMIN_BACKOFFICE,
+    description: "Backoffice, accounting, CRM management, and invoicing.",
+    symbol: "🏢",
+    keywords: [
+      "accounting", "bookkeeper", "bookkeeping", "invoice", "invoicing", "billing",
+      "crm administrator", "crm manager", "data entry", "administrative", "backoffice",
+      "reconcile", "tax specialist", "payroll"
+    ]
+  },
+  {
+    domain: JobDomain.BPO_SERVICES,
     description: "Customer support, community management, and BPO operations.",
     symbol: "🎧",
     keywords: [
       "customer support", "customer service", "customer success", "client support",
       "support specialist", "support agent", "help desk", "live chat", "chat support",
       "community manager", "moderator", "csr", "call center", "voice", "non-voice",
-      "backoffice", "telemarketing", "bpo"
+      "telemarketing", "bpo"
     ]
   },
   {
@@ -78,12 +88,12 @@ export const DOMAIN_MANIFEST: DomainMapping[] = [
     ]
   },
   {
-    domain: JobDomain.SALES,
+    domain: JobDomain.SALES_GROWTH,
     description: "Revenue generation and business development.",
     symbol: "💰",
     keywords: [
        "sales", "account executive", "business development", " bdm ", " sdr ",
-       "lead generation", "outreach"
+       "lead generation", "outreach", "closer"
     ]
   },
   {
@@ -104,8 +114,9 @@ export function mapTitleToDomain(title: string, description: string = ""): JobDo
   const content = `${title} ${description}`.toLowerCase();
   
   if (content.includes("product design") || content.includes("ux researcher")) return JobDomain.CREATIVE_MULTIMEDIA;
-  if (content.includes("customer service representative")) return JobDomain.CUSTOMER_SERVICE;
+  if (content.includes("customer service representative")) return JobDomain.BPO_SERVICES;
   if (content.includes("software engineer") || content.includes("developer")) return JobDomain.TECH_ENGINEERING;
+  if (content.includes("accountant") || content.includes("accounting") || content.includes("bookkeeper")) return JobDomain.ADMIN_BACKOFFICE;
 
   for (const mapping of DOMAIN_MANIFEST) {
     if (mapping.keywords.some(k => content.includes(k))) {
@@ -113,7 +124,7 @@ export function mapTitleToDomain(title: string, description: string = ""): JobDo
     }
   }
 
-  return JobDomain.GENERAL;
+  return JobDomain.VA_SUPPORT;
 }
 
 export function extractDisplayTags(title: string, description: string): string[] {
