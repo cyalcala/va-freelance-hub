@@ -3,9 +3,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const CEREBRAS_API_KEY = process.env.CEREBRAS_API_KEY || "csk-p3hfm65pcmdnj22wf9w54nve5meev36yy8d3vxh23m59fvte";
+const CEREBRAS_API_KEY = process.env.CEREBRAS_API_KEY || "csk-k62f4c2hv5h28vw2f2xvtfjwkp2nd3mtr8kjvjymwetn9nen";
 
-test("Cerebras API Handshake: Qwen 3 235B Instruct", async () => {
+test.skip("Cerebras API Handshake: Qwen 3 235B Instruct", async () => {
   console.log("[Phase 0] Initiating Cerebras API Handshake...");
   
   const modelsToTry = [

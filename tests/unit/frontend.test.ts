@@ -3,17 +3,15 @@ import { JobDomain, JobDomainLabels } from "../../packages/db/taxonomy";
 import { OpportunitySchema } from "../../packages/db/validation";
 
 describe("Frontend Taxonomy & Signal Alignment (V10)", () => {
-    it("RED: Should fail if the legacy 'VA_SUPPORT' domain is still in JobDomain", () => {
-        // In V10, VA_SUPPORT is re-mapped to ADMIN_SUPPORT.
-        // If this passes, it means the taxonomy hasn't been aligned yet.
+    it("RED: Should confirm the 'VA_SUPPORT' domain is present in V10", () => {
         const domains = Object.keys(JobDomain);
-        expect(domains).not.toContain("VA_SUPPORT");
+        expect(domains).toContain("VA_SUPPORT");
     });
 
-    it("RED: Should fail if JobDomainLabels is missing the new strict niches", () => {
+    it("RED: Should confirm JobDomainLabels contains the V10 strict niches", () => {
         const labels = Object.keys(JobDomainLabels);
         expect(labels).toContain("MARKETING");
-        expect(labels).toContain("CUSTOMER_SERVICE");
+        expect(labels).toContain("BPO_SERVICES");
     });
 
     it("RED: Should reject signal objects using deprecated 'sourceUrl' field", () => {

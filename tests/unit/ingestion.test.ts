@@ -52,7 +52,7 @@ describe("Nervous System: Ingestion & Sifter Alignment (V10)", () => {
             company: "Revenue Inc",
             url: "https://revenue.com/jobs/lead",
             description: "High performance sales role.",
-            niche: "SALES",
+            niche: "SALES_GROWTH",
             tier: 1,
             relevanceScore: 85,
             scrapedAt: new Date(),
