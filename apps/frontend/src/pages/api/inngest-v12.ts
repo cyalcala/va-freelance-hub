@@ -3,56 +3,32 @@ export const prerender = false;
 import { serve } from "inngest/astro";
 import { Inngest } from "inngest";
 
-// 🧬 NUCLEAR ISOLATION: Local Client
-// This prevents circular dependency crashes during Inngest Discovery
+// 🧬 ATOMIC STABILIZATION: Zero-Import Handshake
+// This is the absolute minimum Inngest handler for Astro v4.
 const inngest = new Inngest({ 
   id: "va-freelance-hub-v12",
   eventKey: process.env.INNGEST_EVENT_KEY,
 });
 
 /**
- * 🛰️ V12 DISCOVERY PROBE
- * This function is defined locally to ensure the Handshake always succeeds.
+ * 🛰️ V12 PING
+ * Atomic function to verify the "Baton Pass" from the cloud to the serverless function.
  */
-const v12DiscoveryProbe = inngest.createFunction(
+const v12Ping = inngest.createFunction(
   { 
-    id: "v12-discovery-probe", 
-    name: "V12 Discovery Probe",
-    triggers: [{ event: "v12/probe.ping" }] 
+    id: "v12-ping", 
+    name: "V12 Handshake Ping",
+    triggers: [{ event: "v12/ping" }] 
   },
   async ({ event, step }) => {
-    await step.run("log-handshake", async () => {
-      console.log("V12 Handshake Successful at", new Date().toISOString());
-      return { status: "online", version: "12.0.0-titanium" };
-    });
+    return { status: "success", timestamp: new Date().toISOString(), hello: "world" };
   }
 );
 
-// 🧪 DIAGNOSTIC WORKER: Lazy-loaded for runtime stability
-const jobHarvestedProxy = async (args: any) => {
-  const { jobHarvested } = await import("../../lib/inngest/functions");
-  return jobHarvested.fn(args);
-};
-
-// We create a wrapper function for discovery that handles the triggers correctly
-const jobHarvestedWorker = inngest.createFunction(
-  { 
-    id: "job-harvested", 
-    name: "Job Harvested (V12)",
-    triggers: [{ event: "job.harvested" }] 
-  },
-  jobHarvestedProxy as any
-);
-
-
-const handler = serve({
+// 🛡️ NATIVE EXPORTS: Use the SDK's built-in Astro handlers
+export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
-    v12DiscoveryProbe,
-    jobHarvestedWorker,
+    v12Ping,
   ],
 });
-
-export const GET = async (context: any) => handler.GET(context);
-export const POST = async (context: any) => handler.POST(context);
-export const PUT = async (context: any) => handler.PUT(context);
