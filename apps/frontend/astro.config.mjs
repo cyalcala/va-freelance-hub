@@ -13,4 +13,16 @@ export default defineConfig({
     maxDuration: 60,
   }),
   integrations: [tailwind()],
+  vite: {
+    resolve: {
+      alias: {
+        '@va-hub/db': path.resolve(__dirname, '../../packages/db'),
+        '@va-hub/config': path.resolve(__dirname, '../../packages/config'),
+      },
+      conditions: ['node', 'import']
+    },
+    ssr: {
+      noExternal: ['@va-hub/db', '@va-hub/config']
+    }
+  }
 });
