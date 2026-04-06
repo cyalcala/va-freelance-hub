@@ -2,14 +2,10 @@
   "version": 2,
   "framework": "astro",
   "installCommand": "BUN_INSTALL_BACKEND=copyfile HUSKY=0 bun install",
-  "buildCommand": "bun run build",
+  "buildCommand": "bun run build && bun run ../../scripts/patch-vercel-runtime.ts",
   "outputDirectory": ".vercel/output",
   "cleanUrls": true,
-  "trailingSlash": false,
-  "functions": {
-    "**": {
-      "runtime": "nodejs22.x"
-    }
-  }
+  "trailingSlash": false
 }
+
 
