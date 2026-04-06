@@ -7,9 +7,9 @@
  */
 
 import { createHash } from "crypto";
-import type { NewOpportunity } from "@va-hub/db/schema";
 import { normalizeDate } from "@va-hub/db";
 import { proxyFetch } from "./proxy-fetch";
+import { logger } from "@trigger.dev/sdk/v3";
 
 export interface JSONSource {
   id: string;
@@ -25,7 +25,7 @@ function toHash(title: string, url: string) {
   return createHash("sha256").update(`${title}::${url}`).digest("hex").slice(0, 16);
 }
 
-export async function fetchJSONFeed(source: JSONSource): Promise<NewOpportunity[]> {
+export async function fetchJSONFeed(source: JSONSource): Promise<any[]> {
   try {
     const res = await proxyFetch(`${source.url}${source.url.includes('?') ? '&' : '?'}t=${Date.now()}`, {
       headers: {
@@ -35,7 +35,7 @@ export async function fetchJSONFeed(source: JSONSource): Promise<NewOpportunity[
     });
 
     if (!res.ok) {
-      console.log(`[json-harvest] ${source.name}: HTTP ${res.status}`);
+      logger.error(`[json-harvest] ${source.name}: HTTP ${res.status}`);
       return [];
     }
 
@@ -49,12 +49,12 @@ export async function fetchJSONFeed(source: JSONSource): Promise<NewOpportunity[
 
     return [];
   } catch (err) {
-    console.log(`[json-harvest] ${source.name} failed:`, (err as Error).message);
+    logger.error(`[json-harvest] ${source.name} failed:`, { error: (err as Error).message });
     return [];
   }
 }
 
-function parseJobStreet(data: any, source: JSONSource): NewOpportunity[] {
+function parseJobStreet(data: any, source: JSONSource): any[] {
   // JobStreet Chalice v4 response structure
   const jobs = data?.results || data?.data || [];
   return jobs.map((job: any) => {
@@ -91,7 +91,7 @@ function parseJobStreet(data: any, source: JSONSource): NewOpportunity[] {
   }).filter(Boolean);
 }
 
-function parseIndeed(data: any, source: JSONSource): NewOpportunity[] {
+function parseIndeed(data: any, source: JSONSource): any[] {
   // Indeed Mobile XHR/JSON structure
   const results = data?.results || data?.jobs || [];
   return results.map((job: any) => {

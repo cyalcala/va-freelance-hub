@@ -1,8 +1,8 @@
 import { z } from "zod";
 import { createHash } from "crypto";
-import type { NewOpportunity } from "@va-hub/db/schema";
 import { normalizeDate } from "@va-hub/db";
 import { proxyFetch } from "./proxy-fetch";
+import { logger } from "@trigger.dev/sdk/v3";
 
 // --- REDDIT SCHEMAS ---
 
@@ -42,8 +42,8 @@ function toHash(title: string, url: string) {
   return createHash("sha256").update(`${title}::${url}`).digest("hex").slice(0, 16);
 }
 
-export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
-  const allJobs: NewOpportunity[] = [];
+export async function fetchRedditJobs(): Promise<any[]> {
+  const allJobs: any[] = [];
 
   for (const sub of SUBREDDITS) {
     try {
@@ -111,7 +111,7 @@ export async function fetchRedditJobs(): Promise<NewOpportunity[]> {
         } as any);
       }
 
-      console.log(`[reddit] ${sub.label}: ${posts.length} posts analyzed`);
+      logger.info(`[reddit] ${sub.label}: ${posts.length} posts analyzed`);
     } catch (err) {
       console.error(`[reddit] ${sub.label} failed:`, (err as Error).message);
     }

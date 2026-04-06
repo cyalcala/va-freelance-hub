@@ -21,8 +21,8 @@ import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db/schema";
 import { config } from "@va-hub/config";
 import { normalizeDate } from "@va-hub/db";
-import { mapXmlWithCerebras } from "./xml-mapper";
 import { proxyFetch } from "./proxy-fetch";
+import { logger } from "@trigger.dev/sdk/v3";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -135,31 +135,6 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
         contentHash: toHash(title, sourceUrl),
         __raw: JSON.stringify(rawItem)
       } as any);
-    }
-
-    // ── VECTOR 1 FALLBACK (Agentic XML Mapping) ──
-    if (results.length === 0 && xml.length > 500) {
-      console.log(`[harvest] ${source.name}: Standard RSS Schema failed. Triggering Agentic XML Mapping.`);
-      const inferred = await mapXmlWithCerebras(xml);
-      if (inferred?.extracted_payload) {
-         const p = inferred.extracted_payload;
-         results.push({
-           id: crypto.randomUUID(),
-           title: p.title,
-           company: p.company,
-           type: source.defaultJobType,
-           sourceUrl: p.originalSourceUrl || source.url,
-           sourcePlatform: source.platform,
-           tags: [...source.tags, "INFERRED"],
-           locationType: p.location || "remote",
-           description: p.description,
-           postedAt: normalizeDate(new Date()), // Inferred signal is assumed live
-           scrapedAt: normalizeDate(new Date()),
-           isActive: true,
-           contentHash: toHash(p.title, p.originalSourceUrl || source.url),
-           __raw: xml.slice(0, 1000)
-         } as any);
-      }
     }
 
     return results;

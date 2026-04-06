@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { createHash } from "crypto";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { eq } from "drizzle-orm";
 import { agencies } from "@va-hub/db/schema";
-import type { NewOpportunity } from "@va-hub/db/schema";
+import { logger } from "@trigger.dev/sdk/v3";
+import { normalizeDate } from "@va-hub/db";
 
 // --- SENSOR SCHEMAS ---
 
@@ -17,9 +17,13 @@ const GeminiOutputSchema = z.array(GeminiJobSchema).default([]);
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
-export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
+/**
+ * V12 DISCOVERY PROBE: Agency Sensor
+ * Pulses raw signals from custom career pages to the Intelligence Mesh.
+ */
+export async function probeAgencies(db: any): Promise<any[]> {
   const allAgencies = await db.select().from(agencies).where(eq(agencies.status, 'active'));
-  const results: NewOpportunity[] = [];
+  const results: any[] = [];
 
   for (const agency of allAgencies) {
     if (!agency.hiringUrl) continue;
@@ -37,7 +41,7 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
 
         const res = await fetch(apiUrl, {
           headers: { "User-Agent": "VA.INDEX/1.0 (ethical-harvester; agency-sensor)" },
-          signal: AbortSignal.timeout(10000) // SRE Force-Timeout
+          signal: AbortSignal.timeout(10000)
         });
         if (!res.ok) continue;
         const data = await res.json();
@@ -51,18 +55,18 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
           company: agency.name,
           sourceUrl: job.absolute_url || job.hostedUrl,
           sourcePlatform: isGreenhouse ? "Greenhouse" : "Lever",
-          scrapedAt: new Date(),
-          postedAt: new Date(),
-          contentHash: createHash("sha256").update(`${job.title || job.text}::${agency.name}`).digest("hex").slice(0, 16),
           isActive: true,
           locationType: "remote",
           type: "agency",
+          postedAt: normalizeDate(new Date()),
+          scrapedAt: normalizeDate(new Date()),
+          __raw: JSON.stringify(job)
         }));
         results.push(...mapped);
         continue;
       }
 
-      // 2. Agentic Probe for Custom Careers Pages (Probabilistic & Rate-Limited)
+      // 2. Agentic Probe for Custom Careers Pages (Probabilistic Detection)
       if (Math.random() > 0.15) continue;
 
       const { checkAndIncrementAiQuota } = await import("./job-utils.js");
@@ -77,7 +81,7 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
       const html = await res.text();
       const snippet = html.slice(0, 20000);
 
-      // SRE Sync: Sequential processing handles the delay naturally, but we reinforce it
+      // Respect the Fleet's Temporal Pacing
       await new Promise(r => setTimeout(r, 2000)); 
 
       const prompt = `
@@ -95,7 +99,7 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
       
       const parsed = GeminiOutputSchema.safeParse(JSON.parse(cleanJson));
       if (!parsed.success) {
-        console.warn(`[agency-sensor] Gemini hallucination or malformed JSON from ${agency.name}`);
+        logger.error(`[agency-sensor] Gemini mapping failed for ${agency.name}`);
         continue;
       }
 
@@ -105,18 +109,17 @@ export async function probeAgencies(db: any): Promise<NewOpportunity[]> {
         company: agency.name,
         sourceUrl: job.url.startsWith('http') ? job.url : new URL(job.url, agency.websiteUrl).href,
         sourcePlatform: "Agency Sensor",
-        scrapedAt: new Date(),
-        postedAt: new Date(),
-        contentHash: createHash("sha256").update(`${job.title}::${agency.name}`).digest("hex").slice(0, 16),
-        tags: ["agency-sensor"],
+        type: "agency",
+        postedAt: normalizeDate(new Date()),
+        scrapedAt: normalizeDate(new Date()),
         isActive: true,
         locationType: "remote",
-        type: "agency",
+        __raw: JSON.stringify(job)
       }));
       results.push(...probes);
 
-    } catch (e) {
-      console.error(`[agency-sensor] Probe failed for ${agency.name}:`, e);
+    } catch (e: any) {
+      logger.error(`[agency-sensor] Probe failed for ${agency.name}: ${e.message}`);
     }
   }
 

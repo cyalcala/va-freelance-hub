@@ -1,8 +1,7 @@
 import { z } from "zod";
 import { createHash } from "crypto";
-import type { NewOpportunity } from "@va-hub/db/schema";
-import { healPayloadWithLLM, OpportunitySchema } from "./autonomous-harvester.js";
 import { proxyFetch } from "./proxy-fetch";
+import { logger } from "@trigger.dev/sdk/v3";
 
 // Strict API Response Schema
 const JobicyResponseSchema = z.object({
@@ -21,52 +20,39 @@ function toHash(title: string, url: string) {
   return createHash("sha256").update(`${title}::${url}`).digest("hex").slice(0, 16);
 }
 
-export async function fetchJobicyJobs(db: any): Promise<NewOpportunity[]> {
+/**
+ * V12 SIGNAL EMITTER: Jobicy
+ * Note: Returns 'any[]' to allow RAW signals to flow into the Intelligence Mesh 
+ * without satisfying strict Drizzle 'NewOpportunity' requirements (niche, md5_hash).
+ */
+export async function fetchJobicyJobs(): Promise<any[]> {
   const sourceName = "Jobicy";
   try {
     const res = await proxyFetch(`https://jobicy.com/api/v2/remote-jobs?count=50&t=${Date.now()}`, {
       headers: {
         "Accept": "application/json",
       },
-      signal: AbortSignal.timeout(10_000), // Internal timeout remains for large payload, but caller may race
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!res.ok) {
-      console.error(`[jobicy] HTTP ${res.status}`);
+      logger.error(`[jobicy] HTTP ${res.status}`);
       return [];
     }
 
     const rawData = await res.json();
-    
-    // 1. ATTEMPT AUTO-HEALING IF SCHEMA BREAKS
     const parsed = JobicyResponseSchema.safeParse(rawData);
     
     if (!parsed.success) {
-      console.warn(`[jobicy] Schema mutation detected. Engaging Agentic Batch Healer.`);
-      const { healBatchWithLLM } = await import("./autonomous-harvester.js");
-      const healedJobs = await healBatchWithLLM(db, rawData, sourceName);
-      
-      return healedJobs.map((job) => ({
-        id: crypto.randomUUID(),
-        title: job.title,
-        company: job.company,
-        type: "agency",
-        sourceUrl: job.sourceUrl,
-        sourcePlatform: sourceName,
-        tags: ["remote", "jobicy", "healed"],
-        locationType: "remote",
-        payRange: job.payRange,
-        description: job.description,
-        postedAt: job.postedAt ? new Date(job.postedAt) : new Date(),
-        scrapedAt: new Date(),
-        isActive: true,
-        contentHash: toHash(job.title, job.sourceUrl),
-      }));
+      logger.error(`[jobicy] Schema mutation detected. Dropping signal batch.`, { 
+        errors: parsed.error.issues 
+      });
+      return [];
     }
 
     const listings = parsed.data.jobs;
 
-    const jobs: NewOpportunity[] = listings.map((job) => {
+    const jobs = listings.map((job) => {
       const salary = job.annualSalaryMin && job.annualSalaryMax 
         ? `$${job.annualSalaryMin}-$${job.annualSalaryMax}`
         : null;
@@ -75,7 +61,7 @@ export async function fetchJobicyJobs(db: any): Promise<NewOpportunity[]> {
         id: crypto.randomUUID(),
         title: job.jobTitle,
         company: job.companyName,
-        type: "agency", // Defaulting to agency as per VA.INDEX ethos for high-intent
+        type: "agency",
         sourceUrl: job.url,
         sourcePlatform: sourceName,
         tags: ["remote", "jobicy"],
@@ -86,18 +72,14 @@ export async function fetchJobicyJobs(db: any): Promise<NewOpportunity[]> {
         scrapedAt: new Date(),
         isActive: true,
         contentHash: toHash(job.jobTitle, job.url),
+        __raw: JSON.stringify(job)
       };
     });
 
-    if (jobs.length === 0) {
-      throw new Error(`[jobicy] Zero signals returned from API. Possible rate-limit or upstream blackout.`);
-    }
-
-    console.log(`[jobicy] Parsed ${jobs.length} jobs with deep validation`);
+    logger.info(`[jobicy] Pulsed ${jobs.length} signals`);
     return jobs;
   } catch (err) {
-    const msg = (err as Error).message;
-    console.error(`[jobicy] Ingestion Failure: ${msg}`);
-    throw new Error(`[jobicy] ${msg}`);
+    logger.error(`[jobicy] Ingestion Failure: ${(err as Error).message}`);
+    return [];
   }
 }
