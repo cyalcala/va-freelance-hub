@@ -2,6 +2,12 @@
   "framework": "astro",
   "installCommand": "BUN_INSTALL_BACKEND=copyfile HUSKY=0 bun install",
   "buildCommand": "if [ -d 'apps/frontend' ]; then cd apps/frontend && bun run build; else bun run build; fi",
-  "outputDirectory": "apps/frontend/.vercel/output"
+  "outputDirectory": "apps/frontend/.vercel/output",
+  "functions": {
+    "**": {
+      "runtime": "nodejs22.x"
+    }
+  }
 }
+
 

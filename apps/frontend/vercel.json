@@ -5,5 +5,11 @@
   "buildCommand": "bun run build",
   "outputDirectory": ".vercel/output",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "functions": {
+    "**": {
+      "runtime": "nodejs22.x"
+    }
+  }
 }
+
