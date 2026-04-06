@@ -3,6 +3,19 @@
 **Status: AUTO-PROCESSED**
 
 ### 🛡️ Reliability & Fixes
+* fix: V12 Pathing Alignment - Restore sub-package config and universal build command (27ec439)
+* fix: Restoration Phase B - Eliminate configuration conflicts and migrate redirects (6d03498)
+* fix: Restoration Phase A - Re-enable internal monorepo aliases (37e6764)
+* fix: SRE NUCLEAR PURGE - Barebones Astro config for build isolation (5093f2c)
+* fix: hard-reset vercel adapter config and sync tsconfig paths (cb722e3)
+
+---
+
+
+## [2026-04-06] — [Opportunities: 0 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
 * fix: Restoration Phase B - Eliminate configuration conflicts and migrate redirects (6d03498)
 * fix: Restoration Phase A - Re-enable internal monorepo aliases (37e6764)
 * fix: SRE NUCLEAR PURGE - Barebones Astro config for build isolation (5093f2c)

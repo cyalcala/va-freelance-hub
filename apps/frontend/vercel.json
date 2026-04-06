@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": "astro",
-  "installCommand": "bun install",
+  "installCommand": "npm install --legacy-peer-deps",
   "buildCommand": "bun run build",
   "outputDirectory": ".vercel/output",
   "cleanUrls": true,

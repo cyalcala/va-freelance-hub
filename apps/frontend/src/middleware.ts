@@ -7,7 +7,13 @@ import { defineMiddleware } from "astro:middleware";
 export const onRequest = defineMiddleware(async (context, next) => {
   const url = new URL(context.request.url);
 
+  // 0. SRE STABILITY: Legacy Redirects
+  if (url.pathname === "/logs") {
+    return Response.redirect(new URL("/terminal", url.origin), 302);
+  }
+
   // 1. OUTBOUND REDIRECTION (The "Go" Proxy)
+
   // Usage: /go?url=https://jobstreet.com.ph...
   if (url.pathname === "/go") {
     const targetUrl = url.searchParams.get("url");
