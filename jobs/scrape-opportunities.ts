@@ -32,6 +32,15 @@ async function recordLog(message: string, level: 'info' | 'warn' | 'error' | 'sn
 }
 
 export async function harvest(options?: { unhealthySources?: string[] }) {
+  const { getTriggerStatus, setTriggerExhausted } = await import("../packages/db/governance");
+  
+  // 1. V12 CIRCUIT BREAKER: Check if Scout is Allowed to Fly
+  const status = await getTriggerStatus();
+  if (!status.ok) {
+    console.warn("🚫 [CIRCUIT BREAKER] Trigger.dev Scouting PAUSED until next Month.");
+    return { status: "paused_by_governance", emitted: 0 };
+  }
+
   const targetSources = options?.unhealthySources || [];
   const startTime = Date.now();
   
@@ -104,8 +113,23 @@ export const scrapeOpportunitiesTask = schedules.task({
   cron: "*/10 * * * *",
   queue: { concurrencyLimit: 1 },
   run: async (payload: any, { ctx }: any) => {
+    const { setTriggerExhausted } = await import("../packages/db/governance");
     const triggerSource = payload?.source || ctx.trigger?.id || 'schedule';
     logger.info(`[harvest] Initiating signal pulse. Source: ${triggerSource}`);
-    return await harvest({ unhealthySources: payload?.unhealthySources });
+    
+    try {
+      return await harvest({ unhealthySources: payload?.unhealthySources });
+    } catch (err: any) {
+      // 🕵️ Autonomous Detection: If the platform is screaming about credits/usage
+      const isExhaustion = 
+        err.message?.toLowerCase().includes("credit") || 
+        err.message?.toLowerCase().includes("usage limit") ||
+        err.message?.toLowerCase().includes("rate limit");
+
+      if (isExhaustion) {
+        await setTriggerExhausted(`Platform Error: ${err.message}`);
+      }
+      throw err; // Re-throw to inform the dashboard
+    }
   },
 });

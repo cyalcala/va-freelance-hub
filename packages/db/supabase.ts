@@ -86,6 +86,7 @@ export async function claimRawJob(workerId: string, limit: number = 15): Promise
       updated_at: new Date().toISOString() 
     })
     .in('id', ids)
+    .is('locked_by', null) // 🛡️ Titanium Protection: Only lock if someone else didn't beat us to it
     .select();
 
   if (lockError) {

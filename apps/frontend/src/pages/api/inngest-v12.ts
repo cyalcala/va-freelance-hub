@@ -173,9 +173,40 @@ const syncSweep = inngestClient.createFunction(
   }
 );
 
+/**
+ * Recovery Function: Trigger.dev Reset
+ * Wakes up on the 1st of every month to reset the circuit breaker.
+ */
+const triggerReset = inngestClient.createFunction(
+  { id: "v12-governance-reset", name: "V12 Governance: Trigger Reset", triggers: [{ cron: "0 0 1 * *" }] },
+  async ({ step }) => {
+    await step.run("reset-governance-flag", async () => {
+      const { resetTriggerCredits } = await import("../../../../../packages/db/governance");
+      await resetTriggerCredits();
+    });
+    return { status: "governance_restored" };
+  }
+);
+
+/**
+ * Scout Function: The Harrier Failover
+ * A 10-minute cron that runs the harvest sequence.
+ * This is our "Zero-Credit" bridge that ensures we keep finding jobs if Trigger.dev is paused.
+ */
+const scoutFailover = inngestClient.createFunction(
+  { id: "v12-scout-failover", name: "V12 Scout: Harrier Failover", triggers: [{ cron: "*/10 * * * *" }] },
+  async ({ step }) => {
+    const { harvest } = await import("../../../../../jobs/scrape-opportunities");
+    const result = await step.run("execute-harvest", async () => {
+      return await harvest();
+    });
+    return { status: "harvest_cycle_complete", result };
+  }
+);
+
 // 4. Export endpoint serve handlers
 export const { GET, POST, PUT } = serve({ 
   client: inngestClient, 
-  functions: [pantryPoll, syncSweep] 
+  functions: [pantryPoll, syncSweep, triggerReset, scoutFailover] 
 });
 

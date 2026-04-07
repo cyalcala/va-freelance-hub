@@ -85,7 +85,7 @@ export const extractionRules = sqliteTable('extraction_rules', {
 });
 
 export const vitals = sqliteTable('vitals', {
-  id: text('id').primaryKey(),
+  id: text('id').primaryKey(), // Single-row record ('GLOBAL')
   aiQuotaCount: integer('ai_quota_count').default(0),
   aiQuotaDate: text('ai_quota_date'),
   lockStatus: text('lock_status').default('IDLE'),
@@ -93,6 +93,10 @@ export const vitals = sqliteTable('vitals', {
   successiveFailureCount: integer('successive_failure_count').default(0),
   lastErrorHash: text('last_error_hash'),
   lastRecoveryAt: integer('last_recovery_at', { mode: 'timestamp' }),
+  
+  // ⚡ V12 Governance: Autonomous Circuit Breaker
+  triggerCreditsOk: integer('trigger_credits_ok', { mode: 'boolean' }).default(true),
+  triggerLastExhaustion: integer('trigger_last_exhaustion', { mode: 'timestamp' }),
 });
 
 export const logs = sqliteTable('logs', {
