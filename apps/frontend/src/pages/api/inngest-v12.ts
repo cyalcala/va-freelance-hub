@@ -1,11 +1,11 @@
-/**
  * V12 SIFTER: Intelligent "Kitchen Brigade" Orchestrator
  * This route manages the asynchronous processing of raw jobs from the Supabase pantry
- * AND plates the results into the Turso Gold Vault for the frontend.
+ * AND the batched synchronization (Sweep) to the Turso Gold Vault.
  */
 
 import { Inngest } from "inngest";
 import { serve } from "inngest/astro";
+import crypto from "crypto";
 
 // 1. Initialize Inngest client
 export const inngestClient = new Inngest({ id: "va-freelance-hub" });
@@ -29,13 +29,9 @@ const pantryPoll = inngestClient.createFunction(
 
     if (!jobs || jobs.length === 0) return { status: "empty_pantry" };
 
-    // 3. Process + Plate
-    const processingResults = await step.run("extract-and-plate", async () => {
+    // 3. Process + Prep (Plate to Supabase Staging)
+    const processingResults = await step.run("extract-and-prep", async () => {
       const { AIMesh } = await import("../../../../../packages/ai/ai-mesh");
-      const { db } = await import("../../../../../packages/db");
-      const { opportunities } = await import("../../../../../packages/db/schema");
-      const { eq } = await import("drizzle-orm");
-      const crypto = await import("crypto");
       const results = [];
 
       for (const job of jobs) {
@@ -63,48 +59,18 @@ const pantryPoll = inngestClient.createFunction(
             continue;
           }
 
-          // C. PLATING: Write to Turso Gold Vault (THE MISSING LINK)
-          const md5_hash = crypto
-            .createHash("md5")
-            .update((extraction.title || '') + (extraction.company || ''))
-            .digest("hex");
-
-          // Idempotency check
-          const existing = await db
-            .select()
-            .from(opportunities)
-            .where(eq(opportunities.md5_hash, md5_hash));
-
-          if (existing.length === 0) {
-            await db.insert(opportunities).values({
-              id: crypto.randomUUID(),
-              md5_hash,
-              title: extraction.title,
-              company: extraction.company || 'Confidential',
-              url: job.source_url,
-              description: extraction.description,
-              salary: extraction.salary || null,
-              niche: extraction.niche,
-              type: extraction.type || 'direct',
-              locationType: extraction.locationType || 'remote',
-              sourcePlatform: `V12 Mesh (${job.source_platform})`,
-              scrapedAt: new Date(),
-              isActive: true,
-              tier: extraction.tier,
-              relevanceScore: extraction.relevanceScore,
-              latestActivityMs: Date.now(),
-              metadata: JSON.stringify(extraction.metadata || {}),
-            });
-            results.push({ id: job.id, status: 'plated', title: extraction.title });
-          } else {
-            results.push({ id: job.id, status: 'duplicate' });
-          }
-
-          // D. Mark as PLATED in Supabase
+          // C. PREP: Mark as PLATED with the extraction payload
           await supabase
             .from('raw_job_harvests')
-            .update({ status: 'PLATED', triage_status: 'PASSED' })
+            .update({ 
+               status: 'PLATED', 
+               triage_status: 'PASSED',
+               mapped_payload: extraction,
+               updated_at: new Date().toISOString() 
+            })
             .eq('id', job.id);
+
+          results.push({ id: job.id, status: 'plated', title: extraction.title });
 
         } catch (err: any) {
           const errorMsg = err.message || JSON.stringify(err);
@@ -124,9 +90,92 @@ const pantryPoll = inngestClient.createFunction(
   }
 );
 
+/**
+ * Sweep Function: The Dumb Conveyor Belt
+ * Wakes up every 15 minutes, grabs PLATED jobs from Supabase, moves them to Turso, and PURGES.
+ */
+const syncSweep = inngestClient.createFunction(
+  { id: "v12-sync-sweep", name: "V12 Sync Sweep", triggers: [{ cron: "*/15 * * * *" }] },
+  async ({ step }) => {
+    const { supabase } = await import("../../../../../packages/db/supabase");
+    
+    // 1. Fetch PLATED jobs with mapped data
+    const batch = await step.run("fetch-plated-batch", async () => {
+      const { data } = await supabase
+        .from('raw_job_harvests')
+        .select('*')
+        .eq('status', 'PLATED')
+        .not('mapped_payload', 'is', null)
+        .limit(50); // Safe batch size for serverless timeouts
+      return data || [];
+    });
+
+    if (batch.length === 0) return { status: "sweep_idle" };
+
+    // 2. Translocate to Turso Gold Vault
+    const translocationResult = await step.run("translocate-to-turso", async () => {
+      const { db } = await import("../../../../../packages/db");
+      const { opportunities } = await import("../../../../../packages/db/schema");
+      const results = { successful_ids: [], skipped_ids: [] };
+
+      for (const job of batch) {
+        const mapped = job.mapped_payload;
+        
+        // Generate MD5 for idempotency check
+        const md5_hash = crypto
+            .createHash("md5")
+            .update((mapped.title || '') + (mapped.company || ''))
+            .digest("hex");
+
+        try {
+          await db.insert(opportunities).values({
+            id: crypto.randomUUID(),
+            md5_hash,
+            title: mapped.title,
+            company: mapped.company || 'Confidential',
+            url: job.source_url,
+            description: mapped.description,
+            salary: mapped.salary || null,
+            niche: mapped.niche,
+            type: mapped.type || 'direct',
+            locationType: mapped.locationType || 'remote',
+            sourcePlatform: `V12 Mesh (${job.source_platform})`,
+            scrapedAt: new Date(job.created_at),
+            isActive: true,
+            tier: mapped.tier,
+            relevanceScore: mapped.relevanceScore,
+            latestActivityMs: Date.now(),
+            metadata: JSON.stringify(mapped.metadata || {}),
+          }).onConflictDoNothing(); // The Idempotency Shield
+
+          results.successful_ids.push(job.id);
+        } catch (err) {
+          console.error(`🔴 [SWEEP] Failed job ${job.id}:`, err);
+        }
+      }
+      return results;
+    });
+
+    // 3. GC: Atomic Purge from Supabase (Only what was moved)
+    if (translocationResult.successful_ids.length > 0) {
+      await step.run("purge-from-pantry", async () => {
+        await supabase
+          .from('raw_job_harvests')
+          .delete()
+          .in('id', translocationResult.successful_ids);
+      });
+    }
+
+    return { 
+      status: "sweep_complete", 
+      moved: translocationResult.successful_ids.length 
+    };
+  }
+);
+
 // 4. Export endpoint serve handlers
 export const { GET, POST, PUT } = serve({ 
   client: inngestClient, 
-  functions: [pantryPoll] 
+  functions: [pantryPoll, syncSweep] 
 });
 

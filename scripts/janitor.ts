@@ -12,14 +12,18 @@ import { supabase } from '../packages/db/supabase';
 async function purgeStaleData() {
   console.log('🧹 [JANITOR] Starting garbage collection...');
 
-  // 1. Delete PLATED records (Safe to Purge)
+  // 1. Delete Stale PLATED records (Safety Net for jobs that failed to sync)
+  const oneDayAgo = new Date();
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+  
   const { data: platedData, error: platedError } = await supabase
     .from('raw_job_harvests')
     .delete()
-    .eq('status', 'PLATED');
+    .eq('status', 'PLATED')
+    .lt('updated_at', oneDayAgo.toISOString());
 
-  if (platedError) console.error('🧹 [JANITOR] Error purging PLATED jobs:', platedError);
-  else console.log('🧹 [JANITOR] Purged all PLATED jobs.');
+  if (platedError) console.error('🧹 [JANITOR] Error purging stale PLATED jobs:', platedError);
+  else console.log('🧹 [JANITOR] Purged stuck PLATED jobs older than 24h.');
 
   // 2. Delete Stale Jobs (3+ days old)
   const threeDaysAgo = new Date();

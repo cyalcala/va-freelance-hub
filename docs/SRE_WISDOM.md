@@ -40,6 +40,7 @@ This file serves as the persistent memory for the APEX SRE autonomous agent. It 
 *   **[2026-03-24]** **Hydration Lag Awareness**: HTMX `load` triggers can cause perceived slowness on first-paints. For "Titanium-Fast" experiences, the initial state MUST be injected via SSR. 
 *   **[2026-03-24]** **Self-Healing Burst**: Downtime remediation is 15x more effective when using 1-minute high-velocity "Burst Cycles" (limit 7) rather than standard 15-minute wait periods.
 *   **[2026-03-31]** **The Interleaved Tier Crisis**: Resolved a major UX regression where fresh Silver jobs were leapfrogging older Platinum jobs due to mixed-priority "Decay Math." Lessons learned: Strict Sort (`tier ASC, latestActivityMs DESC`) is the only way to guarantee Platinum > Gold > Silver hierarchy.
+*   **[2026-04-08]** **Manual Handoff / Pause**: The Apex SRE was manually paused by the user to prevent autonomous code modification during high-velocity manual development. **Lesson learned**: Even the best autonomous agents should have a clear "Dev-Mode" override to avoid clashing with human intuition during active coding sessions.
 
 ## ⚡ Performance Baselines
 - API Health Response: < 500ms

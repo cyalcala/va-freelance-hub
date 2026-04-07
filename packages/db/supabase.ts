@@ -18,6 +18,7 @@ export interface RawJobHarvest {
   source_platform: string;
   status: HarvestStatus;
   triage_status: TriageStatus;
+  mapped_payload: any | null; // Mapped JSON for Turso Plating
   locked_by: string | null;
   error_log: string | null;
   created_at: string;
