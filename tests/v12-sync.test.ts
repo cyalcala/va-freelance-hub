@@ -35,8 +35,13 @@ describe("V12 Sync: The Dumb Conveyor Belt", () => {
     };
 
     beforeAll(async () => {
-        // Cleanup Turso if previous test crashed
-        await db.delete(opportunities).where(eq(opportunities.md5_hash, testMd5));
+        // Cleanup Turso if possible, but don't crash the Supabase bridge tests if Turso is timing out in CI
+        try {
+            console.log(`[TDD] Attempting Turso cleanup for: ${testMd5}`);
+            await db.delete(opportunities).where(eq(opportunities.md5_hash, testMd5));
+        } catch (err) {
+            console.warn(`[TDD] ⚠️ Turso Cleanup SKIPPED (Connection failure in CI). Proceeding to Supabase tests...`);
+        }
     });
 
     /**
