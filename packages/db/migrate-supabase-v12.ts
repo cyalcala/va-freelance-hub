@@ -34,8 +34,20 @@ async function migrate() {
             ADD COLUMN IF NOT EXISTS mapped_payload JSONB;
         `;
         console.log("✅ [MIGRATION] 'mapped_payload' column ensured (using IF NOT EXISTS).");
+        
+        // 2. V12 Governance: Autonomous Circuit Breaker Columns
+        console.log("🛠️ [MIGRATION] Checking schema for 'vitals'...");
+        await sql`
+            ALTER TABLE vitals 
+            ADD COLUMN IF NOT EXISTS trigger_credits_ok BOOLEAN DEFAULT TRUE;
+        `;
+        await sql`
+            ALTER TABLE vitals 
+            ADD COLUMN IF NOT EXISTS trigger_last_exhaustion TIMESTAMP;
+        `;
+        console.log("✅ [MIGRATION] V12 Governance columns ensured.");
 
-        // 2. Index for Performance (Speed up the Sweep sync)
+        // 3. Index for Performance (Speed up the Sweep sync)
         await sql`
             CREATE INDEX IF NOT EXISTS idx_raw_jobs_plated_mapped 
             ON raw_job_harvests (status, (mapped_payload IS NOT NULL)) 
