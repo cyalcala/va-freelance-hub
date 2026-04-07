@@ -114,6 +114,32 @@ export const noteslog = sqliteTable('noteslog', {
   metadata: text('metadata', { mode: 'json' }).default('{}'),
 });
 
+// --- V12 CORE: THE SWARM ---
+
+export const hunterQueue = sqliteTable('hunter_queue', {
+  id: text('id').primaryKey(),
+  url: text('url').unique().notNull(),
+  host: text('host').notNull(), // e.g. 'weworkremotely.com'
+  platform: text('platform').notNull(),
+  status: text('status', { enum: ['READY', 'HUNTING', 'CAPTURED', 'EXHAUSTED', 'FAILED'] }).default('READY'),
+  priority: integer('priority').default(0),
+  locked_by: text('locked_by'), // Worker ID
+  leasedAt: integer('leased_at', { mode: 'timestamp' }),
+  lastScrapedAt: integer('last_scraped_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+}, (table) => ({
+  statusIdx: index('status_idx').on(table.status),
+  hostIdx: index('host_idx').on(table.host),
+}));
+
+export const aiCooldowns = sqliteTable('ai_cooldowns', {
+  providerName: text('provider_name').primaryKey(),
+  isBlocked: integer('is_blocked', { mode: 'boolean' }).default(false),
+  errorCount: integer('error_count').default(0),
+  lastError: text('last_error'),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
 export type Agency = typeof agencies.$inferSelect;
 export type NewAgency = typeof agencies.$inferInsert;
 export type Opportunity = typeof opportunities.$inferSelect;

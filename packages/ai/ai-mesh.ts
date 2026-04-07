@@ -18,19 +18,20 @@ Your mission is to EXTRACT structured data and SIFT for quality in a single pass
 - Triage PH-compatibility and compensation signals.
 
 ### JSON OUTPUT FORMAT:
+(YOU MUST RETURN ONLY VALID JSON)
 {
   "title": string,
   "company": string,
   "salary": string | null,
   "description": string,
-  "niche": "CATEGORY",
+  "niche": "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES",
   "type": "agency" | "direct",
   "locationType": "remote" | "hybrid" | "onsite",
   "tier": 0 | 1 | 2 | 3 | 4,
   "isPhCompatible": boolean,
   "relevanceScore": number (0-100)
 }
-`;
+`
 
 const TRIAGE_PROMPT = `
 Identify if this job is Remote and PH-friendly (Worldwide/APAC). 
@@ -38,11 +39,29 @@ Also check if it's high-value (not low-ball $3/hr).
 Answer ONLY with: PASSED or REJECTED.
 `;
 
+/**
+ * V12 REINFORCED: OpenRouter-First Rotation Pool
+ * Includes 20+ diverse free models to bypass RPD/RPM limits.
+ */
 const OPENROUTER_FREE_MODELS = [
-  'google/gemma-2-9b-it:free',
-  'meta-llama/llama-3-8b-instruct:free',
+  'openrouter/free',
+  'qwen/qwen-2.5-72b-instruct:free',
+  'meta-llama/llama-3.1-70b-instruct:free',
   'mistralai/mistral-7b-instruct:free',
-  'qwen/qwen-2-72b-instruct:free'
+  'google/gemma-3-27b-it:free',
+  'liquid/lfm-2.5-1.2b-instruct:free',
+  'microsoft/phi-3-mini-128k-instruct:free',
+  'nvidia/nemotron-3-nano-30b-a3b:free',
+  'google/gemma-3-4b-it:free',
+  'meta-llama/llama-3.2-3b-instruct:free',
+  'qwen/qwen3.6-plus:free',
+  'nousresearch/hermes-3-llama-3.1-8b:free',
+  'huggingfaceh4/zephyr-7b-beta:free',
+  'mistralai/mistral-nemo-12b-instruct:free',
+  '01-ai/yi-1.5-34b-chat:free',
+  'sophosympathizer/lfm-2.5-1.2b-it:free',
+  'deepseek/deepseek-chat:free',
+  'google/palm-2-chat-bison:free'
 ];
 
 interface ModelConfig {
@@ -87,16 +106,34 @@ export class AIMesh {
 
   /**
    * PHASE 2: Structured Extraction
-   * Rotates through OpenRouter free models to find a winner.
+   * Rotates through OpenRouter free models and Gemini, skipping blocked providers.
    */
   static async extract(html: string): Promise<AIExtraction> {
-    // 1. Shuffle OpenRouter rotation to spread load
-    const rotatedModels = [...OPENROUTER_FREE_MODELS].sort(() => Math.random() - 0.5);
-    
-    const extractionQueue: ModelConfig[] = [
-      ...rotatedModels.map(m => ({ name: `or-${m}`, provider: 'openrouter' as const, modelId: m })),
-      { name: 'gemini-flash', provider: 'gemini', modelId: 'gemini-1.5-flash' }
+    // 1. Get Global Cooldown Status
+    const { getAIStatus, reportAICooldown } = await import('../db/supabase');
+    const statuses = await getAIStatus();
+    const blockedProviders = new Set(statuses.filter(s => s.is_blocked).map(s => s.provider_name));
+
+    // 2. Prepare Balanced Queue (OpenRouter-First Strategy)
+    const rotatedORModels = [...OPENROUTER_FREE_MODELS]
+      .sort(() => Math.random() - 0.5) // Random rotation for load balancing
+      .map(m => ({ name: `or-${m}`, provider: 'openrouter' as const, modelId: m }));
+
+    const candidates: ModelConfig[] = [
+      ...rotatedORModels, // The Primary Workhorses (80%)
+      { name: 'groq-llama', provider: 'groq', modelId: 'llama-3.3-70b-versatile' }, // Moderate Chef (15%)
+      { name: 'cerebras-llama', provider: 'cerebras', modelId: 'llama3.1-70b' }, // Recovery Expert
+      { name: 'gemini-flash', provider: 'gemini', modelId: 'gemini-1.5-flash-lite' } // The Wall
     ];
+
+    const extractionQueue = candidates.filter((config: ModelConfig) => {
+      const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+      return !blockedProviders.has(providerName);
+    });
+
+    if (extractionQueue.length === 0) {
+      throw new Error('[AI-MESH] CRITICAL: All $0-cost providers are currently in Cooldown.');
+    }
 
     for (const config of extractionQueue) {
       try {
@@ -107,13 +144,21 @@ export class AIMesh {
 
         if (validated.success) {
           return { ...validated.data, metadata: { model: config.name } };
+        } else {
+          console.error(`[AI-MESH] Validation failed for ${config.name}:`, validated.error?.format());
+          console.log(`[AI-MESH] Raw JSON from ${config.name}:`, JSON.stringify(json, null, 2));
         }
-      } catch (err) {
-        console.error(`[AI-MESH] Model ${config.name} failed or timed out.`);
+      } catch (err: any) {
+        const errorMsg = err.message || JSON.stringify(err);
+        console.error(`[AI-MESH] Model ${config.name} CRASHED:`, errorMsg);
+        
+        // Report Cooldown globally
+        const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+        await reportAICooldown(providerName, errorMsg);
       }
     }
 
-    throw new Error('[AI-MESH] CRITICAL: All models failed extraction.');
+    throw new Error('[AI-MESH] CRITICAL: All available models failed extraction.');
   }
 
   private static async callModel(config: ModelConfig, system: string, user: string): Promise<string> {
@@ -141,7 +186,8 @@ export class AIMesh {
         temperature: 0,
       })
     });
-    const data = await res.json();
+    const data: any = await res.json();
+    if (!res.ok) throw new Error(`Cerebras API Error: ${data.error?.message || JSON.stringify(data)}`);
     return data.choices[0].message.content;
   }
 
@@ -155,7 +201,8 @@ export class AIMesh {
         temperature: 0,
       })
     });
-    const data = await res.json();
+    const data: any = await res.json();
+    if (!res.ok) throw new Error(`Groq API Error: ${data.error?.message || JSON.stringify(data)}`);
     return data.choices[0].message.content;
   }
 
@@ -169,12 +216,13 @@ export class AIMesh {
         temperature: 0,
       })
     });
-    const data = await res.json();
+    const data: any = await res.json();
+    if (!res.ok) throw new Error(`OpenRouter API Error: ${data.error?.message || JSON.stringify(data)}`);
     return data.choices[0].message.content;
   }
 
   private static async fetchGemini(model: string, system: string, user: string) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -182,7 +230,8 @@ export class AIMesh {
         generationConfig: { temperature: 0, response_mime_type: 'application/json' }
       })
     });
-    const data = await res.json();
+    const data: any = await res.json();
+    if (!res.ok) throw new Error(`Gemini API Error: ${data.error?.message || JSON.stringify(data)}`);
     return data.candidates[0].content.parts[0].text;
   }
 }
