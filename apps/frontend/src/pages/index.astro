@@ -38,30 +38,42 @@ try {
     
     const [signals, mirror, stats] = await Promise.race([dataPromise, timeoutPromise]) as any;
     
-    initialSignals = signals;
-    mirrorSignals = mirror;
+    initialSignals = signals || [];
+    mirrorSignals = mirror || [];
     
-    // Cold Start Recovery: If DB is empty, use fallback but remain in a 'WARMING' status
-    if (!initialSignals || initialSignals.length === 0) {
+    // 🔍 SRE DATA CUSTODY: Determine Status
+    if (initialSignals.length > 0) {
+      healthStats = { 
+        status: 'LIT', 
+        isFallback: false,
+        lastHeartbeat: stats[0]?.maxSync ? new Date(stats[0].maxSync).toISOString() : new Date().toISOString()
+      };
+    } else {
+      console.warn("[SRE_CUSTODY] Turso Vault is EMPTY. Engaging Fallback...");
       initialSignals = staticFallback;
       mirrorSignals = staticFallback.slice(0, 10);
-      healthStats.status = 'ACTIVE:COLD_START';
-    } else if (stats[0]?.maxSync) {
       healthStats = { 
-        status: 'ACTIVE', 
-        isFallback: false,
-        lastHeartbeat: new Date(stats[0].maxSync).toISOString()
+        status: 'FALLBACK:EMPTY_VAULT', 
+        isFallback: true, 
+        lastHeartbeat: 'PRE-CACHED' 
       };
     }
   } else {
-    throw new Error("Edge Configuration Missing");
+    throw new Error("Edge Configuration Missing (TURSO_URL)");
   }
 } catch (err: any) {
+  const isTimeout = err.message.includes("Latency");
   console.error(`[SRE_CUSTODY] Frontend Data Fetch Failure: ${err.message}`);
+  
   initialSignals = staticFallback;
   mirrorSignals = staticFallback.slice(0, 10);
-  healthStats = { status: 'SURVIVAL_MODE', isFallback: true, lastHeartbeat: 'PRE-CACHED' };
-  dbError = err.message === "Edge Latency Threshold Exceeded (5s)" ? 'LATENCY_TIMEOUT' : 'OFFLINE';
+  
+  healthStats = { 
+    status: isTimeout ? 'FALLBACK:EDGE_LATENCY' : 'FALLBACK:CONNECTION_ERROR', 
+    isFallback: true, 
+    lastHeartbeat: 'PRE-CACHED' 
+  };
+  dbError = isTimeout ? 'LATENCY_TIMEOUT' : 'OFFLINE';
 }
 
 // ── DOMAIN ORCHESTRATION ──
@@ -116,6 +128,13 @@ const domains = DOMAIN_MANIFEST.map(d => ({
             {healthStats.status}
           </span>
         </div>
+        {!healthStats.isFallback && (
+          <div class="flex items-center gap-2 px-3 py-1 bg-emerald-50/50 border border-emerald-100 rounded-full">
+            <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">
+              {initialSignals.length} Active Signals
+            </span>
+          </div>
+        )}
       </div>
 
       <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10">

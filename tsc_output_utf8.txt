@@ -1,0 +1,162 @@
+﻿apps/frontend/src/lib/ai/waterfall.ts(252,36): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }): SQLiteInsertBase<...>', gave the following error.
+    Type 'string | null | undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+      Type 'undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+  Overload 2 of 2, '(values: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]): SQLiteInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'id' does not exist in type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]'.
+apps/frontend/src/lib/inngest/functions.ts(55,40): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }): SQLiteInsertBase<...>', gave the following error.
+    Type 'string | null | undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+      Type 'undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+  Overload 2 of 2, '(values: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]): SQLiteInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'id' does not exist in type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]'.
+apps/frontend/src/pages/api/inngest-v12.ts(19,3): error TS2554: Expected 2 arguments, but got 3.
+apps/frontend/src/pages/api/inngest-v12.ts(19,12): error TS7031: Binding element 'step' implicitly has an 'any' type.
+apps/frontend/tests/inngest-catcher.test.ts(47,24): error TS2341: Property 'fn' is private and only accessible within class 'InngestFunction<TFnOpts, THandler, TFailureHandler, TClient, TTriggers>'.
+jobs/lib/hackernews.ts(115,11): error TS2353: Object literal may only specify known properties, and 'sourceUrl' does not exist in type '{ url: string; id: string; description: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 14 more ...; companyLogo?: string | ... 1 more ... | undefined; }'.
+jobs/scrape-opportunities.ts(47,71): error TS2554: Expected 0 arguments, but got 1.
+jobs/scrape-opportunities.ts(48,68): error TS2554: Expected 0 arguments, but got 1.
+packages/db/audit-drift.ts(2,10): error TS2305: Module '"./schema"' has no exported member 'schema'.
+packages/db/check-logs.ts(20,30): error TS18047: 'log.level' is possibly 'null'.
+packages/db/drizzle.config.ts(11,5): error TS1360: Type '{ schema: string; out: string; dialect: "sqlite"; dbCredentials: { url: string; authToken: string | undefined; }; }' does not satisfy the expected type 'Config'.
+  Types of property 'dbCredentials' are incompatible.
+    Object literal may only specify known properties, and 'authToken' does not exist in type '{ url: string; } | { accountId: string; databaseId: string; token: string; }'.
+packages/db/drop-tables.ts(22,51): error TS18046: 'e' is of type 'unknown'.
+packages/db/dry-run.ts(1,41): error TS2307: Cannot find module '../../jobs/lib/db' or its corresponding type declarations.
+packages/db/dry-run.ts(22,62): error TS2345: Argument of type '(source: Source) => Promise<{ url: string; id: string; description: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 14 more ...; companyLogo?: string | ... 1 more ... |...' is not assignable to parameter of type '(value: Source, index: number, array: Source[]) => Promise<{ url: string; id: string; description: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | ... 5 more ... | "BPO_SERVICES"; ... 14 more ...; companyLogo?: string | ... 1 more ... | undefined; }[]>'.
+  Types of parameters 'source' and 'value' are incompatible.
+    Type 'import("C:/Users/admin/Desktop/freelance-directory/va-freelance-hub/packages/config/index").Source' is not assignable to type 'import("C:/Users/admin/Desktop/freelance-directory/va-freelance-hub/jobs/lib/scraper").Source'.
+      Types of property 'defaultJobType' are incompatible.
+        Type 'string' is not assignable to type '"VA" | "full-time" | "freelance" | "project" | "part-time"'.
+packages/db/dry-run.ts(46,53): error TS7006: Parameter 'r' implicitly has an 'any' type.
+packages/db/dry-run.ts(47,57): error TS7006: Parameter 'r' implicitly has an 'any' type.
+packages/db/fix-links.ts(91,43): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }): SQLiteInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'contentHash' does not exist in type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }'.
+  Overload 2 of 2, '(values: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]): SQLiteInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'type' does not exist in type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]'.
+packages/db/force-fix-cloud.ts(27,34): error TS18046: 'e' is of type 'unknown'.
+packages/db/logger.ts(17,43): error TS18046: 'e' is of type 'unknown'.
+packages/db/seed.ts(7,10): error TS2305: Module '"./schema"' has no exported member 'vaDirectory'.
+packages/db/test-scrape.ts(5,25): error TS2339: Property 'run' does not exist on type 'Task<"harvest-opportunities", { type: "DECLARATIVE" | "IMPERATIVE"; timestamp: Date; timezone: string; scheduleId: string; upcoming: Date[]; externalId?: string | undefined; lastTimestamp?: Date | undefined; }, { ...; }>'.
+packages/db/test-scrape.ts(6,9): error TS7006: Parameter 'res' implicitly has an 'any' type.
+packages/db/test-scrape.ts(7,10): error TS7006: Parameter 'err' implicitly has an 'any' type.
+packages/db/tmp_check_sniper.ts(1,26): error TS2307: Cannot find module './packages/db/client' or its corresponding type declarations.
+packages/db/tmp_check_sniper.ts(2,31): error TS2307: Cannot find module './packages/db/schema' or its corresponding type declarations.
+packages/db/tmp_dump_agencies.ts(1,26): error TS2307: Cannot find module './packages/db/client' or its corresponding type declarations.
+packages/db/tmp_dump_agencies.ts(2,26): error TS2307: Cannot find module './packages/db/schema' or its corresponding type declarations.
+packages/db/tmp_dump_agencies.ts(8,45): error TS7006: Parameter 'r' implicitly has an 'any' type.
+packages/db/tmp_fix_watermelons.ts(1,28): error TS2307: Cannot find module './packages/db/client' or its corresponding type declarations.
+packages/db/tmp_migrate_ms.ts(1,26): error TS2307: Cannot find module './packages/db/client' or its corresponding type declarations.
+packages/db/tmp_migrate_ms.ts(2,31): error TS2307: Cannot find module './packages/db/schema' or its corresponding type declarations.
+packages/db/tmp_test_heartbeat.ts(1,26): error TS2307: Cannot find module './packages/db/client' or its corresponding type declarations.
+packages/db/tmp_test_heartbeat.ts(2,31): error TS2307: Cannot find module './packages/db/schema' or its corresponding type declarations.
+packages/db/tmp_verify_signals.ts(1,26): error TS2307: Cannot find module './packages/db/client' or its corresponding type declarations.
+packages/db/tmp_verify_signals.ts(2,31): error TS2307: Cannot find module './packages/db/schema' or its corresponding type declarations.
+packages/db/tmp_verify_signals.ts(11,26): error TS7006: Parameter 'p' implicitly has an 'any' type.
+packages/db/tmp_watermelon_audit.ts(1,26): error TS2307: Cannot find module './packages/db/client' or its corresponding type declarations.
+packages/db/tmp_watermelon_audit.ts(2,31): error TS2307: Cannot find module './packages/db/schema' or its corresponding type declarations.
+packages/db/tmp_watermelon_audit.ts(20,77): error TS7006: Parameter 'r' implicitly has an 'any' type.
+packages/scraper/html.ts(48,18): error TS18048: 'proc.stdin' is possibly 'undefined'.
+packages/scraper/html.ts(48,29): error TS2339: Property 'getWriter' does not exist on type 'number | FileSink'.
+  Property 'getWriter' does not exist on type 'number'.
+packages/scraper/html.ts(52,37): error TS2345: Argument of type 'number | ReadableStream<Uint8Array<ArrayBuffer>> | undefined' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'number' is not assignable to type 'BodyInit | null | undefined'.
+packages/scraper/html.ts(56,39): error TS2345: Argument of type 'number | ReadableStream<Uint8Array<ArrayBuffer>> | undefined' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'number' is not assignable to type 'BodyInit | null | undefined'.
+packages/scraper/html.ts(95,9): error TS2322: Type '{ title: string; company: string | null; type: "VA" | "full-time" | "freelance" | "project" | "part-time"; sourceUrl: string; sourcePlatform: string; tags: string[]; locationType: "remote"; ... 4 more ...; contentHash: string; }[]' is not assignable to type '{ url: string; id: string; description: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 14 more ...; companyLogo?: string | ... 1 more ... | undefined; }[]'.
+  Type '{ title: string; company: string | null; type: "VA" | "full-time" | "freelance" | "project" | "part-time"; sourceUrl: string; sourcePlatform: string; tags: string[]; locationType: "remote"; ... 4 more ...; contentHash: string; }' is missing the following properties from type '{ url: string; id: string; description: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 14 more ...; companyLogo?: string | ... 1 more ... | undefined; }': url, id, md5_hash, niche
+packages/scraper/rss.ts(63,9): error TS2322: Type '{ title: string; company: string | null; type: "VA" | "full-time" | "freelance" | "project" | "part-time"; sourceUrl: any; sourcePlatform: string; tags: string[]; locationType: "remote"; ... 4 more ...; contentHash: string; }[]' is not assignable to type '{ url: string; id: string; description: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 14 more ...; companyLogo?: string | ... 1 more ... | undefined; }[]'.
+  Type '{ title: string; company: string | null; type: "VA" | "full-time" | "freelance" | "project" | "part-time"; sourceUrl: any; sourcePlatform: string; tags: string[]; locationType: "remote"; ... 4 more ...; contentHash: string; }' is missing the following properties from type '{ url: string; id: string; description: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 14 more ...; companyLogo?: string | ... 1 more ... | undefined; }': url, id, md5_hash, niche
+packages/scraper/rss.ts(64,56): error TS2339: Property 'id' does not exist on type 'RawRSSItem'.
+packages/scraper/rss.ts(72,39): error TS7053: Element implicitly has an 'any' type because expression of type '"id"' can't be used to index type 'RawRSSItem'.
+  Property 'id' does not exist on type 'RawRSSItem'.
+packages/scraper/rss.ts(86,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+packages/scraper/rss.ts(93,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+packages/scraper/rss.ts(94,40): error TS2339: Property 'published' does not exist on type 'RawRSSItem'.
+packages/sync/tasks/heartbeat.ts(3,14): error TS2305: Module '"../../db/client"' has no exported member 'vitals'.
+packages/sync/tasks/heartbeat.ts(23,49): error TS18046: 'e' is of type 'unknown'.
+packages/sync/tasks/snapshots.ts(21,43): error TS18046: 'e' is of type 'unknown'.
+scripts/analyze-runs.ts(1,7): error TS2451: Cannot redeclare block-scoped variable 'key'.
+scripts/audit-db.ts(1,26): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/audit-sifter.ts(1,33): error TS2307: Cannot find module './jobs/lib/sifter.ts' or its corresponding type declarations.
+scripts/audit-sifterv4.ts(1,33): error TS2307: Cannot find module './jobs/lib/sifter.ts' or its corresponding type declarations.
+scripts/audit-silver-age.ts(12,9): error TS2488: Type 'SQLiteSelectBuilder<{ val: SQLiteCountBuilder<SQLiteSession<"async", ResultSet, typeof import("C:/Users/admin/Desktop/freelance-directory/va-freelance-hub/packages/db/schema"), ExtractTablesWithRelations<typeof import("C:/Users/admin/Desktop/freelance-directory/va-freelance-hub/packages/db/schema")>>>; }, "async", R...' must have a '[Symbol.iterator]()' method that returns an iterator.
+scripts/audit-silver-age.ts(13,9): error TS2488: Type 'SQLiteSelectBuilder<{ val: SQLiteCountBuilder<SQLiteSession<"async", ResultSet, typeof import("C:/Users/admin/Desktop/freelance-directory/va-freelance-hub/packages/db/schema"), ExtractTablesWithRelations<typeof import("C:/Users/admin/Desktop/freelance-directory/va-freelance-hub/packages/db/schema")>>>; }, "async", R...' must have a '[Symbol.iterator]()' method that returns an iterator.
+scripts/audit-silver-age.ts(13,107): error TS2339: Property 'gt' does not exist on type 'LibSQLDatabase<typeof import("C:/Users/admin/Desktop/freelance-directory/va-freelance-hub/packages/db/schema")>'.
+scripts/audit-sourcecachev4.ts(1,7): error TS2451: Cannot redeclare block-scoped variable 'sources'.
+scripts/audit-sourcecachev4.ts(9,16): error TS2393: Duplicate function implementation.
+scripts/benchmark-sifter.ts(1,45): error TS2307: Cannot find module '../packages/sifter-native/index' or its corresponding type declarations.
+scripts/capture-live-state-v2.ts(43,42): error TS18046: 'e' is of type 'unknown'.
+scripts/capture-live-state-v2.ts(60,41): error TS18046: 'e' is of type 'unknown'.
+scripts/check-global-freshness.ts(1,16): error TS2393: Duplicate function implementation.
+scripts/check_health.ts(1,40): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/check_turso.ts(3,3): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+scripts/coroner.ts(18,50): error TS18046: 'e' is of type 'unknown'.
+scripts/coroner.ts(56,49): error TS18046: 'e' is of type 'unknown'.
+scripts/debug-ranking.ts(1,26): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/diagnose-tiers.ts(1,26): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/force-migrate.ts(1,26): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/force-sync.ts(2,40): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/inspect-trash.ts(3,20): error TS2305: Module '"drizzle-orm"' has no exported member 'limit'.
+scripts/lib/gemini.ts(185,7): error TS2353: Object literal may only specify known properties, and 'sourceUrl' does not exist in type 'Partial<{ url: string; id: string; description: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 14 more ...; companyLogo?: string | ... 1 more ... | undefined; }>'.
+scripts/live-frontend-check.ts(1,16): error TS2393: Duplicate function implementation.
+scripts/live-source-audit.ts(1,16): error TS2393: Duplicate function implementation.
+scripts/phantom-harrier.ts(115,100): error TS2339: Property 'sourceUrl' does not exist on type 'SQLiteTableWithColumns<{ name: "opportunities"; schema: undefined; columns: { id: SQLiteColumn<{ name: "id"; tableName: "opportunities"; dataType: "string"; columnType: "SQLiteText"; data: string; driverParam: string; notNull: true; ... 7 more ...; generated: undefined; }, {}, { ...; }>; ... 20 more ...; createdAt: ...'.
+scripts/plater.ts(75,45): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }): SQLiteInsertBase<...>', gave the following error.
+    Argument of type '{ url: string; description: string; lastSeenAt: Date; metadata: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 12 more ...; companyLogo?: string | ... 1 more ... | und...' is not assignable to parameter of type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }'.
+      Types of property 'id' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+          Type 'undefined' is not assignable to type 'string | SQL<unknown> | Placeholder<string, any>'.
+  Overload 2 of 2, '(values: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]): SQLiteInsertBase<...>', gave the following error.
+    Argument of type '{ url: string; description: string; lastSeenAt: Date; metadata: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 12 more ...; companyLogo?: string | ... 1 more ... | und...' is not assignable to parameter of type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]'.
+      Type '{ url: string; description: string; lastSeenAt: Date; metadata: string; md5_hash: string; title: string; company: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 12 more ...; companyLogo?: string | ... 1 more ... | und...' is missing the following properties from type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]': length, pop, push, concat, and 35 more.
+scripts/processed-lie.ts(1,16): error TS2393: Duplicate function implementation.
+scripts/purge-blogs.ts(1,41): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/purge-trigger-backlog.ts(2,7): error TS2451: Cannot redeclare block-scoped variable 'SECRET_KEY'.
+scripts/purge-trigger-backlog.ts(3,7): error TS2451: Cannot redeclare block-scoped variable 'PROJECT_ID'.
+scripts/purge-trigger-backlog.ts(4,7): error TS2451: Cannot redeclare block-scoped variable 'BASE_URL'.
+scripts/re-sift-all.ts(27,11): error TS2353: Object literal may only specify known properties, and 'displayTags' does not exist in type '{ url?: string | SQL<unknown> | SQLiteColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; id?: string | SQL<unknown> | SQLiteColumn<...> | undefined; ... 19 more ...; companyLogo?: string | ... 3 more ... | undefined; }'.
+scripts/re-sift.ts(22,11): error TS2353: Object literal may only specify known properties, and 'displayTags' does not exist in type '{ url?: string | SQL<unknown> | SQLiteColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | undefined; id?: string | SQL<unknown> | SQLiteColumn<...> | undefined; ... 19 more ...; companyLogo?: string | ... 3 more ... | undefined; }'.
+scripts/semantic-heartbeat.ts(28,74): error TS2339: Property 'sourceUrl' does not exist on type 'SQLiteTableWithColumns<{ name: "opportunities"; schema: undefined; columns: { id: SQLiteColumn<{ name: "id"; tableName: "opportunities"; dataType: "string"; columnType: "SQLiteText"; data: string; driverParam: string; notNull: true; ... 7 more ...; generated: undefined; }, {}, { ...; }>; ... 20 more ...; createdAt: ...'.
+scripts/semantic-heartbeat.ts(40,40): error TS2339: Property 'sourceUrl' does not exist on type '{ id: string; md5_hash: string; title: string; company: string; url: string; salary: string | null; description: string; niche: "TECH_ENGINEERING" | "MARKETING" | "SALES_GROWTH" | "VA_SUPPORT" | "ADMIN_BACKOFFICE" | "CREATIVE_MULTIMEDIA" | "BPO_SERVICES"; ... 13 more ...; createdAt: Date; }'.
+scripts/sifter-audit.ts(1,33): error TS2307: Cannot find module './jobs/lib/sifter.ts' or its corresponding type declarations.
+scripts/source-freshness.ts(1,7): error TS2451: Cannot redeclare block-scoped variable 'sources'.
+scripts/source-freshness.ts(8,16): error TS2393: Duplicate function implementation.
+scripts/source-poison.ts(1,7): error TS2451: Cannot redeclare block-scoped variable 'sources'.
+scripts/source-poison.ts(9,16): error TS2393: Duplicate function implementation.
+scripts/test-harness.ts(3,30): error TS2307: Cannot find module '../jobs/ats-harvester' or its corresponding type declarations.
+scripts/test-harness.ts(46,41): error TS18046: 'error' is of type 'unknown'.
+scripts/test-hono.ts(1,22): error TS2307: Cannot find module 'hono' or its corresponding type declarations.
+scripts/test-hono.ts(4,19): error TS7006: Parameter 'c' implicitly has an 'any' type.
+scripts/test_sifter.ts(1,50): error TS2307: Cannot find module './jobs/lib/sifter' or its corresponding type declarations.
+scripts/test_sifter.ts(2,30): error TS2307: Cannot find module './jobs/lib/trust' or its corresponding type declarations.
+scripts/trigger-audit.ts(1,16): error TS2393: Duplicate function implementation.
+scripts/trigger-dashboard-cleanup.ts(2,7): error TS2451: Cannot redeclare block-scoped variable 'SECRET_KEY'.
+scripts/trigger-dashboard-cleanup.ts(3,7): error TS2451: Cannot redeclare block-scoped variable 'PROJECT_ID'.
+scripts/trigger-dashboard-cleanup.ts(4,7): error TS2451: Cannot redeclare block-scoped variable 'BASE_URL'.
+scripts/trigger_task.ts(1,7): error TS2451: Cannot redeclare block-scoped variable 'key'.
+scripts/vercel-source-audit.ts(1,16): error TS2393: Duplicate function implementation.
+scripts/verify-html.ts(26,46): error TS18046: 'e' is of type 'unknown'.
+scripts/verify-refinement.ts(1,26): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/wash-db.ts(1,26): error TS2307: Cannot find module '../jobs/lib/db' or its corresponding type declarations.
+scripts/wash-db.ts(9,125): error TS7006: Parameter 'r' implicitly has an 'any' type.
+tmp/check-vitals.ts(9,90): error TS2345: Argument of type 'SQLiteColumn<{ name: "is_active"; tableName: "opportunities"; dataType: "boolean"; columnType: "SQLiteBoolean"; data: boolean; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: false; ... 5 more ...; generated: undefined; }, {}, {}>' is not assignable to parameter of type 'SQL<unknown> | ((aliases: { count: SQL<number>; }) => SQL<unknown> | undefined) | undefined'.
+  Type 'SQLiteColumn<{ name: "is_active"; tableName: "opportunities"; dataType: "boolean"; columnType: "SQLiteBoolean"; data: boolean; driverParam: number; notNull: true; hasDefault: true; isPrimaryKey: false; ... 5 more ...; generated: undefined; }, {}, {}>' is missing the following properties from type 'SQL<unknown>': queryChunks, shouldInlineParams, append, toQuery, and 6 more.
+tmp/diag-healer.ts(1,34): error TS2307: Cannot find module '../jobs/lib/autonomous-harvester.ts' or its corresponding type declarations.
+tmp/diag-healer.ts(2,26): error TS2307: Cannot find module './packages/db/client' or its corresponding type declarations.
+tmp/migrate-uniformity.ts(34,43): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+tmp/verify-fix.ts(24,9): error TS2538: Type 'null' cannot be used as an index type.
+tmp/verify-fix.ts(24,19): error TS2538: Type 'null' cannot be used as an index type.
+tmp/verify-retention.ts(22,50): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }): SQLiteInsertBase<...>', gave the following error.
+    Argument of type '{ id: string; title: string; tier: number; sourceUrl: string; latestActivityMs: number; scrapedAt: Date; isActive: boolean; }' is not assignable to parameter of type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }'.
+      Type '{ id: string; title: string; tier: number; sourceUrl: string; latestActivityMs: number; scrapedAt: Date; isActive: boolean; }' is missing the following properties from type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }': url, description, md5_hash, company, niche
+  Overload 2 of 2, '(values: { url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<...>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]): SQLiteInsertBase<...>', gave the following error.
+    Argument of type '{ id: string; title: string; tier: number; sourceUrl: string; latestActivityMs: number; scrapedAt: Date; isActive: boolean; }' is not assignable to parameter of type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]'.
+      Type '{ id: string; title: string; tier: number; sourceUrl: string; latestActivityMs: number; scrapedAt: Date; isActive: boolean; }' is missing the following properties from type '{ url: string | SQL<unknown> | Placeholder<string, any>; id: string | SQL<unknown> | Placeholder<string, any>; description: string | SQL<unknown> | Placeholder<string, any>; ... 18 more ...; companyLogo?: string | ... 3 more ... | undefined; }[]': length, pop, push, concat, and 35 more.
