@@ -70,6 +70,13 @@ const processedSignals = rawList.map(sig => ({
   url: sig.url || (sig.sourceUrl as string)
 }));
 
+const rawMirror = (mirrorSignals && mirrorSignals.length > 0) ? mirrorSignals : staticFallback.slice(0, 10);
+const processedMirror = rawMirror.map(sig => ({
+  ...sig,
+  url: sig.url || (sig.sourceUrl as string)
+}));
+
+
 const domains = DOMAIN_MANIFEST.map(d => ({
   ...d,
   signals: processedSignals.filter(sig => sig.niche === d.domain)
@@ -129,7 +136,7 @@ const domains = DOMAIN_MANIFEST.map(d => ({
       </div>
     </header>
 
-    <MirrorStage signals={mirrorSignals} />
+    <MirrorStage signals={processedMirror} />
 
     <!-- ── DIRECTORY GRID ── -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 items-start" id="directoryGrid">
