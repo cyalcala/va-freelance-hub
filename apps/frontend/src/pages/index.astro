@@ -11,7 +11,11 @@ import { JobDomain, DOMAIN_MANIFEST, getDomainSlug, getDomainLabel, mapTitleToDo
 import staticFallback from '../data/static_fallback.json';
 
 // BUST THE CACHE
-Astro.response.headers.set('Cache-Control', 'public, no-cache, s-maxage=0, must-revalidate');
+Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
+Astro.response.headers.set('CDN-Cache-Control', 'no-store');
+Astro.response.headers.set('Vercel-CDN-Cache-Control', 'no-store');
+Astro.response.headers.set('Pragma', 'no-cache');
+Astro.response.headers.set('Expires', '0');
 
 let initialSignals = [];
 let mirrorSignals = [];
@@ -29,7 +33,7 @@ try {
     ]);
 
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Edge Latency Threshold Exceeded")), 3000)
+      setTimeout(() => reject(new Error("Edge Latency Threshold Exceeded (5s)")), 5000)
     );
     
     const [signals, mirror, stats] = await Promise.race([dataPromise, timeoutPromise]) as any;
@@ -53,10 +57,11 @@ try {
     throw new Error("Edge Configuration Missing");
   }
 } catch (err: any) {
+  console.error(`[SRE_CUSTODY] Frontend Data Fetch Failure: ${err.message}`);
   initialSignals = staticFallback;
   mirrorSignals = staticFallback.slice(0, 10);
   healthStats = { status: 'SURVIVAL_MODE', isFallback: true, lastHeartbeat: 'PRE-CACHED' };
-  dbError = 'OFFLINE';
+  dbError = err.message === "Edge Latency Threshold Exceeded (5s)" ? 'LATENCY_TIMEOUT' : 'OFFLINE';
 }
 
 // ── DOMAIN ORCHESTRATION ──
@@ -64,11 +69,20 @@ const topDomains = [JobDomain.VA_SUPPORT, JobDomain.BPO_SERVICES, JobDomain.SALE
 
 // ── ADAPTIVE BRIDGE: MAP LEGACY DATA TO V10 NICHE TAXONOMY ──
 const rawList = (initialSignals && initialSignals.length > 0) ? initialSignals : staticFallback;
-const processedSignals = rawList.map(sig => ({
-  ...sig,
-  niche: sig.niche || mapTitleToDomain(sig.title, (sig.description || '')),
-  url: sig.url || (sig.sourceUrl as string)
-}));
+const processedSignals = rawList.map(sig => {
+  const niche = sig.niche || mapTitleToDomain(sig.title, (sig.description || ''));
+  
+  // SRE LOGGING: Identify drifting niches in production
+  if (!Object.values(JobDomain).includes(niche as any)) {
+    console.warn(`[SRE_CUSTODY] Invalid Niche detected: "${niche}" for job "${sig.title}". This job will be hidden from the UI.`);
+  }
+
+  return {
+    ...sig,
+    niche,
+    url: sig.url || (sig.sourceUrl as string)
+  };
+});
 
 const rawMirror = (mirrorSignals && mirrorSignals.length > 0) ? mirrorSignals : staticFallback.slice(0, 10);
 const processedMirror = rawMirror.map(sig => ({
