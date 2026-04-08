@@ -7,6 +7,8 @@ import { eq } from "drizzle-orm";
 import { createHash, randomUUID } from "crypto";
 import { siftOpportunity, OpportunityTier } from "../src/core/sieve";
 const GHOST_SENTINEL = "||V12_GHOST_LEAD||";
+const EDGE_PROXY_URL = process.env.EDGE_PROXY_URL || "https://va-edge-proxy.cyrusalcala-agency.workers.dev";
+const EDGE_PROXY_SECRET = process.env.VA_PROXY_SECRET;
 
 function htmlToText(html: string): string {
   return html
@@ -23,9 +25,15 @@ async function getCookablePayload(job: { raw_payload?: string; source_url?: stri
   }
   if (!job.source_url) throw new Error("Missing source_url for ghost hydration");
 
-  const res = await fetch(job.source_url, {
+  const proxiedUrl = new URL(EDGE_PROXY_URL);
+  proxiedUrl.searchParams.set("url", job.source_url);
+  const useEdgeProxy = Boolean(EDGE_PROXY_URL && EDGE_PROXY_SECRET);
+
+  const res = await fetch(useEdgeProxy ? proxiedUrl.toString() : job.source_url, {
     signal: AbortSignal.timeout(15000),
-    headers: { "user-agent": "VAHubSousChef/1.0 (+ghost-hydration)" },
+    headers: useEdgeProxy
+      ? { "X-VA-Proxy-Secret": EDGE_PROXY_SECRET as string, "user-agent": "VAHubSousChef/1.0 (+ghost-hydration)" }
+      : { "user-agent": "VAHubSousChef/1.0 (+ghost-hydration)" },
   });
   if (!res.ok) throw new Error(`Hydration fetch failed: ${res.status}`);
 

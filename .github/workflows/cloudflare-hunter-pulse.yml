@@ -19,10 +19,12 @@ jobs:
             exit 0
           fi
 
+          PROBE_URL="${CLOUDFLARE_HUNTER_URL}?url=https%3A%2F%2Fexample.com"
+
           if [ -n "$CLOUDFLARE_HUNTER_TOKEN" ]; then
             curl --fail --silent --show-error \
-              -H "Authorization: Bearer $CLOUDFLARE_HUNTER_TOKEN" \
-              "$CLOUDFLARE_HUNTER_URL"
+              -H "X-VA-Proxy-Secret: $CLOUDFLARE_HUNTER_TOKEN" \
+              "$PROBE_URL"
           else
-            curl --fail --silent --show-error "$CLOUDFLARE_HUNTER_URL"
+            curl --fail --silent --show-error "$PROBE_URL"
           fi
