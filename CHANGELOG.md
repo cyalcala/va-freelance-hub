@@ -6,6 +6,23 @@
 * feat: harmonize hunter sources and always render all domains (06c733e)
 
 ### 🛡️ Reliability & Fixes
+* fix: correct freshness timestamps and audit windowing (0f49949)
+* fix: keep all seven domains visible on live directory (9f9de64)
+* fix: enforce deterministic sieve gate and sane cadence (66de81c)
+
+### ⚓ Internal Maintenance
+* chore: update automated changelog snapshot (235480d)
+
+---
+
+
+## [2026-04-08] — [Opportunities: 3 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
+* feat: harmonize hunter sources and always render all domains (06c733e)
+
+### 🛡️ Reliability & Fixes
 * fix: keep all seven domains visible on live directory (9f9de64)
 * fix: enforce deterministic sieve gate and sane cadence (66de81c)
 * fix: add AI request timeouts to prevent kitchen stalls (3c2336b)

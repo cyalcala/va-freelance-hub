@@ -12,7 +12,7 @@ jobs:
       - name: Ping Cloudflare hunter endpoint
         env:
           CLOUDFLARE_HUNTER_URL: ${{ secrets.CLOUDFLARE_HUNTER_URL }}
-          CLOUDFLARE_HUNTER_TOKEN: ${{ secrets.CLOUDFLARE_HUNTER_TOKEN }}
+          CLOUDFLARE_HUNTER_TOKEN: ${{ secrets.CLOUDFLARE_HUNTER_TOKEN || secrets.VA_PROXY_SECRET }}
         run: |
           if [ -z "$CLOUDFLARE_HUNTER_URL" ]; then
             echo "CLOUDFLARE_HUNTER_URL is not set. Skipping."
