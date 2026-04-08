@@ -263,10 +263,13 @@ const domains = DOMAIN_MANIFEST.map(d => ({
         }
       }
       
-      // Column Pruning
+      // Column Pruning:
+      // Keep all domain columns visible by default so users always see all 7 lanes.
+      // Only prune columns while an active search/time filter is applied.
+      const shouldPruneColumns = q.length > 0 || limit !== Infinity;
       for (let i = 0; i < columns.length; i++) {
         const col = columns[i];
-        if (columnVisibility.get(col)) {
+        if (!shouldPruneColumns || columnVisibility.get(col)) {
           col.classList.remove('hidden');
         } else {
           col.classList.add('hidden');
