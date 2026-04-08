@@ -28,6 +28,28 @@ async function migrate() {
     console.log("🛠️ [MIGRATION] Checking schema for 'raw_job_harvests'...");
 
     try {
+        // 0. Ensure governance table exists for greenfield environments.
+        // Some Supabase projects may not have run earlier bootstrap migrations.
+        await sql`
+            CREATE TABLE IF NOT EXISTS vitals (
+                id TEXT PRIMARY KEY,
+                ai_quota_count INTEGER DEFAULT 0,
+                ai_quota_date TEXT,
+                lock_status TEXT DEFAULT 'IDLE',
+                lock_updated_at TIMESTAMPTZ,
+                successive_failure_count INTEGER DEFAULT 0,
+                last_error_hash TEXT,
+                last_recovery_at TIMESTAMPTZ,
+                trigger_credits_ok BOOLEAN DEFAULT TRUE,
+                trigger_last_exhaustion TIMESTAMPTZ
+            );
+        `;
+        await sql`
+            INSERT INTO vitals (id, trigger_credits_ok)
+            VALUES ('GLOBAL', TRUE)
+            ON CONFLICT (id) DO NOTHING;
+        `;
+
         // 1. Idempotent Column Creation
         await sql`
             ALTER TABLE raw_job_harvests 
