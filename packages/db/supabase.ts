@@ -64,11 +64,13 @@ export const supabase = createClient(
  * Prevents multiple workers from grabbing the same RAW job.
  */
 export async function claimRawJob(workerId: string, limit: number = 15): Promise<RawJobHarvest[]> {
-  // 1. Fetch RAW or LEAD jobs that aren't locked
+  // 1. Fetch actionable RAW jobs that aren't locked.
+  // Skip ghost placeholders so kitchen workers don't endlessly churn unscripted leads.
   const { data, error } = await supabase
     .from('raw_job_harvests')
     .select('*')
-    .or('status.eq.RAW,status.eq.LEAD') // Unified Queue
+    .eq('status', 'RAW')
+    .neq('raw_payload', '||V12_GHOST_LEAD||')
     .is('locked_by', null)
     .order('created_at', { ascending: true })
     .limit(limit);

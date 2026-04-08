@@ -18,7 +18,7 @@ const pantryPoll = inngestClient.createFunction(
   { 
     id: "v12-pantry-chef", 
     name: "V12 Pantry Chef",
-    triggers: [{ cron: "*/15 * * * *" }] 
+    triggers: [{ cron: "*/15 * * * *" }, { event: "pantry.poll" }] 
   },
   async ({ step }) => {
     // 2. Atomic Claim from Staging Buffer
@@ -95,7 +95,7 @@ const pantryPoll = inngestClient.createFunction(
  * Wakes up every 15 minutes, grabs PLATED jobs from Supabase, moves them to Turso, and PURGES.
  */
 const syncSweep = inngestClient.createFunction(
-  { id: "v12-sync-sweep", name: "V12 Sync Sweep", triggers: [{ cron: "*/15 * * * *" }] },
+  { id: "v12-sync-sweep", name: "V12 Sync Sweep", triggers: [{ cron: "*/15 * * * *" }, { event: "pantry.sweep" }] },
   async ({ step }) => {
     const { supabase } = await import("../../../../../packages/db/supabase");
     

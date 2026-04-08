@@ -70,6 +70,13 @@ interface ModelConfig {
   modelId: string;
 }
 
+const PROVIDER_DB_NAME: Record<ModelConfig['provider'], string> = {
+  cerebras: 'Cerebras',
+  groq: 'Groq',
+  openrouter: 'OpenRouter',
+  gemini: 'Gemini',
+};
+
 export class AIMesh {
   private static extractJson(text: string): any {
     try {
@@ -112,7 +119,11 @@ export class AIMesh {
     // 1. Get Global Cooldown Status
     const { getAIStatus, reportAICooldown } = await import('../db/supabase');
     const statuses = await getAIStatus();
-    const blockedProviders = new Set(statuses.filter(s => s.is_blocked).map(s => s.provider_name));
+    const blockedProviders = new Set(
+      statuses
+        .filter(s => s.is_blocked)
+        .map(s => String(s.provider_name || '').trim().toLowerCase())
+    );
 
     // 2. Prepare Balanced Queue (OpenRouter-First Strategy)
     const rotatedORModels = [...OPENROUTER_FREE_MODELS]
@@ -122,12 +133,12 @@ export class AIMesh {
     const candidates: ModelConfig[] = [
       ...rotatedORModels, // The Primary Workhorses (80%)
       { name: 'groq-llama', provider: 'groq', modelId: 'llama-3.3-70b-versatile' }, // Moderate Chef (15%)
-      { name: 'cerebras-llama', provider: 'cerebras', modelId: 'llama3.1-70b' }, // Recovery Expert
-      { name: 'gemini-flash', provider: 'gemini', modelId: 'gemini-1.5-flash-lite' } // The Wall
+      { name: 'cerebras-llama', provider: 'cerebras', modelId: 'llama3.1-8b' }, // Recovery Expert
+      { name: 'gemini-flash', provider: 'gemini', modelId: 'gemini-1.5-flash' } // The Wall
     ];
 
     const extractionQueue = candidates.filter((config: ModelConfig) => {
-      const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+      const providerName = PROVIDER_DB_NAME[config.provider].toLowerCase();
       return !blockedProviders.has(providerName);
     });
 
@@ -153,7 +164,7 @@ export class AIMesh {
         console.error(`[AI-MESH] Model ${config.name} CRASHED:`, errorMsg);
         
         // Report Cooldown globally
-        const providerName = config.provider.charAt(0).toUpperCase() + config.provider.slice(1);
+        const providerName = PROVIDER_DB_NAME[config.provider];
         await reportAICooldown(providerName, errorMsg);
       }
     }
@@ -222,12 +233,12 @@ export class AIMesh {
   }
 
   private static async fetchGemini(model: string, system: string, user: string) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: `${system}\n\nCONTENT:\n${user}` }] }],
-        generationConfig: { temperature: 0, response_mime_type: 'application/json' }
+        generationConfig: { temperature: 0, responseMimeType: 'application/json' }
       })
     });
     const data: any = await res.json();

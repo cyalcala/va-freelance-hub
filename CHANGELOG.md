@@ -1,4 +1,14 @@
 
+## [2026-04-08] — [Opportunities: 4 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### 🛡️ Reliability & Fixes
+* fix: harden V12 failover and restore manual kitchen controls (a49e51e)
+* fix: V12 Sifter Nuclear Reset & Frontend Hardening (Priority 4.3) (0b0d559)
+
+---
+
+
 ## [2026-04-07] — [Opportunities: 3 | Agencies: 59]
 **Status: AUTO-PROCESSED**
 

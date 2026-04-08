@@ -1,5 +1,5 @@
-import { db } from "./packages/db/client";
-import { opportunities } from "./packages/db/schema";
+import { db } from "../packages/db/client";
+import { opportunities } from "../packages/db/schema";
 import { count } from "drizzle-orm";
 
 async function verify() {

@@ -7,7 +7,7 @@
 
 export default {
   async fetch(request, env) {
-    const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = env;
+    const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, INNGEST_EVENT_KEY } = env;
 
     try {
       // 1. PULL 'GHOST LEAD' FROM UNIFIED PANTRY
@@ -73,19 +73,21 @@ export default {
 
       // 4. NOTIFY THE CHEFS (Inngest)
       // This is the 'Bell' that tells the AI to start cooking.
-      await fetch(`https://innge.st/e/${INNGEST_EVENT_KEY}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: "job.harvested",
-          data: {
-            raw_title: "Cloud Scraped Job", // AI will extract real title from rawHtml
-            raw_company: "Cloud Scraped Co",
-            raw_url: job.url,
-            raw_html: rawHtml.slice(0, 15000) // Safety buffer for Inngest payload limits
-          }
-        })
-      });
+      if (INNGEST_EVENT_KEY) {
+        await fetch(`https://innge.st/e/${INNGEST_EVENT_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "job.harvested",
+            data: {
+              raw_title: "Cloud Scraped Job", // AI will extract real title from rawHtml
+              raw_company: "Cloud Scraped Co",
+              raw_url: job.url,
+              raw_html: rawHtml.slice(0, 15000) // Safety buffer for Inngest payload limits
+            }
+          })
+        });
+      }
 
       return new Response(JSON.stringify({ status: "captured", lead: job.url }));
 
