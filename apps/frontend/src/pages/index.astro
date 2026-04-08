@@ -8,7 +8,7 @@ import { getSortedSignals, getLatestMirror } from '@va-hub/db/sorting';
 import { db, schema } from '@va-hub/db/client';
 import { sql, eq } from 'drizzle-orm';
 import { JobDomain, DOMAIN_MANIFEST, getDomainSlug, getDomainLabel, mapTitleToDomain } from '@va-hub/db/taxonomy';
-import staticFallback from '../data/static_fallback.json';
+// SRE: staticFallback import removed - no phantom data fallback
 
 // BUST THE CACHE
 Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
@@ -52,31 +52,16 @@ try {
         lastHeartbeat: stats[0]?.maxSync ? new Date(stats[0].maxSync).toISOString() : new Date().toISOString()
       };
     } else {
-      console.warn("[SRE_CUSTODY] Turso Vault is EMPTY. Engaging Fallback...");
-      initialSignals = staticFallback;
-      mirrorSignals = staticFallback.slice(0, 10);
-      healthStats = { 
-        status: 'FALLBACK:EMPTY_VAULT', 
-        isFallback: true, 
-        lastHeartbeat: 'PRE-CACHED' 
-      };
+      // SRE CRITICAL: No phantom data. Fail loudly.
+      throw new Error('[SRE_CUSTODY] CRITICAL: Turso vault is EMPTY. No fallback data served. Investigate scraper health.');
     }
   } else {
     throw new Error("Edge Configuration Missing (TURSO_URL)");
   }
 } catch (err: any) {
-  const isTimeout = err.message.includes("Latency");
-  console.error(`[SRE_CUSTODY] Frontend Data Fetch Failure: ${err.message}`);
-  
-  initialSignals = staticFallback;
-  mirrorSignals = staticFallback.slice(0, 10);
-  
-  healthStats = { 
-    status: isTimeout ? 'FALLBACK:EDGE_LATENCY' : 'FALLBACK:CONNECTION_ERROR', 
-    isFallback: true, 
-    lastHeartbeat: 'PRE-CACHED' 
-  };
-  dbError = isTimeout ? 'LATENCY_TIMEOUT' : 'OFFLINE';
+  // SRE CRITICAL: Turso connection failed. Fail loudly - no phantom data.
+  console.error(`[SRE_CUSTODY] CRITICAL: Frontend Data Fetch Failure: ${err.message}`);
+  throw new Error(`[SRE_CUSTODY] DATABASE_CUSTODY_LOST: ${err.message}. Cannot serve stale phantom data.`);
 }
 
 // ── DOMAIN ORCHESTRATION ──
@@ -91,8 +76,8 @@ const topDomains = [
 ];
 
 // ── ADAPTIVE BRIDGE: MAP LEGACY DATA TO V10 NICHE TAXONOMY ──
-const rawList = (initialSignals && initialSignals.length > 0) ? initialSignals : staticFallback;
-const processedSignals = rawList.map(sig => {
+// SRE: No fallback - if initialSignals is empty, we already threw above
+const processedSignals = initialSignals.map(sig => {
   const niche = sig.niche || mapTitleToDomain(sig.title, (sig.description || ''));
   
   // SRE LOGGING: Identify drifting niches in production
@@ -107,8 +92,8 @@ const processedSignals = rawList.map(sig => {
   };
 });
 
-const rawMirror = (mirrorSignals && mirrorSignals.length > 0) ? mirrorSignals : staticFallback.slice(0, 10);
-const processedMirror = rawMirror.map(sig => ({
+// SRE: No fallback - if mirrorSignals is empty, we already threw above
+const processedMirror = mirrorSignals.map(sig => ({
   ...sig,
   url: sig.url || (sig.sourceUrl as string)
 }));
