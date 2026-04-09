@@ -218,6 +218,11 @@ const syncSweep = inngestClient.createFunction(
       const { opportunities } = await import("../../../../../packages/db/schema");
       const results: { successful_ids: string[]; skipped_ids: string[] } = { successful_ids: [], skipped_ids: [] };
 
+      if (batch.length === 0) return results;
+
+      const valuesToInsert = [];
+      const idMap = new Map(); // To track which job ID belongs to which MD5 for cleanup
+
       for (const job of batch) {
         const mapped = job.mapped_payload;
         const fallbackHeuristic = siftOpportunity(
@@ -233,39 +238,63 @@ const syncSweep = inngestClient.createFunction(
           relevanceScore: typeof mapped.relevanceScore === "number" ? mapped.relevanceScore : fallbackHeuristic.relevanceScore,
         };
         
-        // Generate MD5 for idempotency check
         const md5_hash = createHash("md5")
             .update((finalMapped.title || '') + (finalMapped.company || ''))
             .digest("hex");
 
-        try {
-          await db.insert(opportunities).values({
-            id: randomUUID(),
-            md5_hash,
-            title: finalMapped.title,
-            company: finalMapped.company || 'Confidential',
-            url: job.source_url,
-            description: finalMapped.description,
-            salary: finalMapped.salary || null,
-            niche: finalMapped.niche,
-            type: finalMapped.type || 'direct',
-            locationType: finalMapped.locationType || 'remote',
-            sourcePlatform: `V12 Mesh (${job.source_platform})`,
-            region: finalMapped.metadata?.region || "Philippines", 
-            // Use current plating time; job.created_at can be much older due URL upsert semantics.
-            scrapedAt: new Date(),
-            isActive: true,
-            tier: finalMapped.tier,
-            relevanceScore: finalMapped.relevanceScore,
-            latestActivityMs: Date.now(),
-            metadata: JSON.stringify(finalMapped.metadata || {}),
-          }).onConflictDoNothing(); // The Idempotency Shield
+        valuesToInsert.push({
+          id: randomUUID(),
+          md5_hash,
+          title: finalMapped.title,
+          company: finalMapped.company || 'Confidential',
+          url: job.source_url,
+          description: finalMapped.description,
+          salary: finalMapped.salary || null,
+          niche: finalMapped.niche,
+          type: finalMapped.type || 'direct',
+          locationType: finalMapped.locationType || 'remote',
+          sourcePlatform: `V12 Mesh (${job.source_platform})`,
+          region: finalMapped.metadata?.region || "Philippines", 
+          scrapedAt: new Date(),
+          isActive: true,
+          tier: finalMapped.tier,
+          relevanceScore: finalMapped.relevanceScore,
+          latestActivityMs: Date.now(),
+          metadata: JSON.stringify(finalMapped.metadata || {}),
+        });
+        idMap.set(md5_hash, job.id);
+      }
 
-          results.successful_ids.push(job.id);
-        } catch (err) {
-          console.error(`🔴 [SWEEP] Failed job ${job.id}:`, err);
+      try {
+        // BATCH UPSERT: Refreshes timestamps if job already exists (The Freshness Shield)
+        await db.insert(opportunities).values(valuesToInsert).onConflictDoUpdate({
+          target: opportunities.md5_hash,
+          set: {
+            lastSeenAt: sql`excluded.last_seen_at`,
+            latestActivityMs: sql`excluded.latest_activity_ms`
+          }
+        });
+        
+        results.successful_ids = batch.map(j => j.id);
+      } catch (err) {
+        console.error(`🔴 [SWEEP] Batch translocation failed:`, err);
+        // Fallback to sequential if batch fails
+        for (const job of valuesToInsert) {
+           try {
+             await db.insert(opportunities).values(job).onConflictDoUpdate({
+               target: opportunities.md5_hash,
+               set: {
+                 lastSeenAt: job.lastSeenAt,
+                 latestActivityMs: job.latestActivityMs
+               }
+             });
+             results.successful_ids.push(idMap.get(job.md5_hash));
+           } catch (e) {
+             console.error(`🔴 [SWEEP] Individual fallback failed for ${idMap.get(job.md5_hash)}:`, e);
+           }
         }
       }
+      
       return results;
     });
 
@@ -321,7 +350,8 @@ const scoutFailover = inngestClient.createFunction(
   async ({ step }) => {
     const { harvest } = await import("../../../../../jobs/scrape-opportunities");
     const result = await step.run("execute-harvest", async () => {
-      return await harvest();
+      // Pass runnerId to bypass Trigger.dev circuit breaker
+      return await harvest({ runnerId: 'inngest' });
     });
     return { status: "harvest_cycle_complete", result };
   }

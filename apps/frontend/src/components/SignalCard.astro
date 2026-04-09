@@ -33,6 +33,7 @@ const tierClass = signal.tier === 0
   class={`opp-item flex items-start gap-3 p-3.5 rounded-xl border transition-all duration-300 group relative active:scale-[0.98] hover:bg-white hover:shadow-xl hover:border-blueberry-900/15 hover:-translate-y-1 ${tierClass} ${isCold ? 'opacity-50 saturate-[0.1] grayscale-[0.5]' : ''}`}
   data-search={`${signal.title} ${signal.company} ${signal.niche || ''} ${tags.join(' ')}`.toLowerCase()}
   data-age={ageHrs}
+  data-job-id={signal.id}
 >
   {isCold && (
     <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">

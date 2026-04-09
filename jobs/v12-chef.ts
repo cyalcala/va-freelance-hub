@@ -57,7 +57,7 @@ export const v12Chef = schedules.task({
     const { getTriggerStatus, setTriggerExhausted } = await import("../packages/db/governance");
     
     // 1. V12 CIRCUIT BREAKER: Check if Scout is Allowed to Fly
-    const status = await getTriggerStatus();
+    const status = await getTriggerStatus('trigger');
     if (!status.ok) {
       console.warn("🚫 [CIRCUIT BREAKER] Trigger.dev Sous-Chef PAUSED until next Month.");
       return { status: "paused_by_governance" };

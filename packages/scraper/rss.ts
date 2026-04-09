@@ -97,6 +97,11 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
       } satisfies NewOpportunity;
     });
 
+  // DRIFT DETECTION: If we got valid XML but zero parseable items, the feed structure may have changed
+  if (items.length > 0 && opportunities.length === 0) {
+    console.warn(`⚠️ [DRIFT_ALERT] ${source.name}: Feed returned ${items.length} raw items but 0 passed validation. Possible structure change.`);
+  }
+
   console.log(`[rss] ${source.name}: ${opportunities.length} items`);
   return opportunities;
 }

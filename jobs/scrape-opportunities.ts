@@ -31,11 +31,12 @@ async function recordLog(message: string, level: 'info' | 'warn' | 'error' | 'sn
   }
 }
 
-export async function harvest(options?: { unhealthySources?: string[], targetRegion?: string }) {
+export async function harvest(options?: { unhealthySources?: string[], targetRegion?: string, runnerId?: string }) {
   const { getTriggerStatus, setTriggerExhausted } = await import("../packages/db/governance");
   
   // 1. V12 CIRCUIT BREAKER: Check if Scout is Allowed to Fly
-  const status = await getTriggerStatus();
+  const runnerId = options?.runnerId || 'trigger';
+  const status = await getTriggerStatus(runnerId);
   if (!status.ok) {
     console.warn("🚫 [CIRCUIT BREAKER] Trigger.dev Scouting PAUSED until next Month.");
     return { status: "paused_by_governance", emitted: 0 };
@@ -86,25 +87,26 @@ export async function harvest(options?: { unhealthySources?: string[], targetReg
 
       logger.info(`[Emitter] Emitting ${items.length} signals from ${source.name}`);
 
-      for (const item of items) {
-        // V12 TOKEN GUARD: Sanitize raw HTML before emission to reduce pulse payload
+      // BATCH EMIT: Send all items in a single HTTP call to Inngest (fixes N+1 bottleneck)
+      const events = items.map(item => {
         const rawContent = item.description || (item as any).__raw || "";
         const sanitizedHtml = stripJunk(rawContent);
-
-        // 🧬 EMIT TO PULSE: The V12 Intelligence Mesh (Inngest)
-        await inngest.send({
-          name: "job.harvested",
+        return {
+          name: "job.harvested" as const,
           data: {
             raw_title: item.title,
             raw_company: item.company || "Generic",
             raw_url: item.sourceUrl,
             raw_html: sanitizedHtml,
             source: source.name,
-            region: (source as any).region || "Global" // Default to Global if untagged
+            region: (source as any).region || "Global",
+            harvested_at: Date.now()
           }
-        });
-        totalEmitted++;
-      }
+        };
+      });
+
+      await inngest.send(events);
+      totalEmitted += events.length;
 
       await recordLog(`Pulsed ${items.length} signals from ${source.name}`, "info");
     } catch (err: any) {

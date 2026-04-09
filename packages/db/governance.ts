@@ -9,7 +9,20 @@ import { eq } from 'drizzle-orm';
  * based on credit exhaustion telemetry.
  */
 
-export async function getTriggerStatus() {
+/**
+ * Runner-aware credit check.
+ * @param runnerId - Which engine is asking: 'trigger' | 'inngest' | 'gha' | 'cf-worker'
+ *   Only 'trigger' (or omitted) respects the circuit breaker.
+ *   All fallback engines bypass the credit gate.
+ */
+export async function getTriggerStatus(runnerId?: string) {
+  // Fallback engines are NEVER blocked by the Trigger.dev circuit breaker
+  const BYPASS_RUNNERS = ['inngest', 'gha', 'cf-worker'];
+  if (runnerId && BYPASS_RUNNERS.includes(runnerId)) {
+    console.log(`✅ [GOVERNANCE] Bypass granted for runner: ${runnerId}`);
+    return { ok: true, bypassed: true };
+  }
+
   try {
     const [record] = await db.select().from(vitals).limit(1);
     

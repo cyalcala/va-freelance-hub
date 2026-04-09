@@ -19,8 +19,9 @@ export const jobHarvested = inngest.createFunction(
     triggers: [{ event: "job.harvested" }]
   },
   async ({ event, step }) => {
-    const { raw_title, raw_company, raw_url, raw_html } = event.data;
-    console.log(`🚜 [REAL_WORKER] Executing job.harvested for: ${raw_title} (${raw_company})`);
+    const { raw_title, raw_company, raw_url, raw_html, trace_id } = event.data;
+    const harvested_at = event.data.harvested_at || Date.now();
+    console.log(`🚜 [REAL_WORKER] Executing job.harvested for: ${raw_title} (${raw_company})${trace_id ? ` [TRACE:${trace_id}]` : ''}`);
 
     // 1. Calculate MD5 Shield
     const md5_hash = crypto
@@ -38,7 +39,23 @@ export const jobHarvested = inngest.createFunction(
     });
 
     if (existing) {
-      return { status: "dropped", reason: "duplicate_md5", md5_hash };
+      // 🚥 REFRESH SIGNAL: If the job exists, we refresh its pulse without re-running AI
+      console.log(`🚥 [REFRESH] Job exists. Updating pulse for: ${raw_title} [${md5_hash}]`);
+      
+      await step.run("refresh-pulse", async () => {
+        return await db.update(opportunities)
+          .set({ 
+            lastSeenAt: new Date(), 
+            latestActivityMs: Date.now() 
+          })
+          .where(eq(opportunities.md5_hash, md5_hash));
+      });
+
+      // Emit heartbeat to signal active pipeline pulse
+      const { emitIngestionHeartbeat } = await import("../../../../../packages/db/governance");
+      await emitIngestionHeartbeat("v12-mesh-refresh", existing.region || "Philippines");
+
+      return { status: "refreshed", md5_hash };
     }
 
     // 3. V12 One-Pass Intelligence (The Agentic Sifter)
@@ -98,9 +115,14 @@ export const jobHarvested = inngest.createFunction(
           metadata: JSON.stringify({ 
             ...extraction.metadata, 
             raw_title, 
-            raw_company 
+            raw_company,
+            ...(trace_id ? { trace_id, harvested_at, cooked_at: Date.now(), plated_at: Date.now() } : {})
           }),
         });
+
+        // 5. Signal Success (The Goldilocks Heartbeat)
+        const { emitIngestionHeartbeat } = await import("../../../../../packages/db/governance");
+        await emitIngestionHeartbeat("v12-mesh-direct", extraction.metadata?.region || "Philippines");
 
         return { status: "inserted", md5_hash, model: extraction.metadata?.model };
       } catch (err: any) {
@@ -131,7 +153,8 @@ export const jobHarvested = inngest.createFunction(
             fallback: true, 
             reason: err.message,
             raw_title, 
-            raw_company 
+            raw_company,
+            ...(trace_id ? { trace_id, harvested_at, cooked_at: Date.now(), plated_at: Date.now() } : {})
           }),
         });
 
