@@ -65,45 +65,76 @@ const pantryPoll = inngestClient.createFunction(
       return await claimRawJob("inngest-chef-v12", 15);
     });
 
-    if (!jobs || jobs.length === 0) return { status: "empty_pantry" };
+    if (!jobs || jobs.length === 0) {
+      await step.run("emit-idle-heartbeat", async () => {
+        const { emitProcessingHeartbeat } = await import("../../../../../packages/db/governance");
+        await emitProcessingHeartbeat("v12-chef-idle");
+      });
+      return { status: "empty_pantry" };
+    }
 
     // 3. Process + Prep (Plate to Supabase Staging)
     const processingResults = await step.run("extract-and-prep", async () => {
       const { AIMesh } = await import("../../../../../packages/ai/ai-mesh");
       const results = [];
 
-      for (const job of jobs) {
-        try {
-          const cookablePayload = await getCookablePayload(job);
-          if (cookablePayload !== job.raw_payload) {
-            await supabase
-              .from("raw_job_harvests")
-              .update({ raw_payload: cookablePayload, updated_at: new Date().toISOString() })
-              .eq("id", job.id);
-          }
+          // A. PH-Compatibility Gate & Regional Isolation
+          const { config } = await import("../../../../../packages/config");
+          const jobRegion = (job as any).region || "Global";
+          const isPrimary = jobRegion === config.primary_region;
 
-          // A. AI Extraction
-          const extraction = await AIMesh.extract(cookablePayload);
-          const heuristic = siftOpportunity(
-            extraction.title,
-            extraction.description,
-            extraction.company || "Generic",
-            job.source_platform || "V12 Mesh"
-          );
-          const finalExtraction = {
-            ...extraction,
-            niche: heuristic.domain,
-            tier: heuristic.tier,
-            relevanceScore: Math.max(extraction.relevanceScore ?? 0, heuristic.relevanceScore),
-            metadata: {
-              ...(extraction.metadata || {}),
-              sieveTier: heuristic.tier,
-              sieveDomain: heuristic.domain,
-            },
-          };
+          let finalExtraction;
           
-          // B. PH-Compatibility Gate
-          if (!extraction.isPhCompatible || heuristic.tier === OpportunityTier.TRASH) {
+          if (isPrimary) {
+            const cookablePayload = await getCookablePayload(job);
+            if (cookablePayload !== job.raw_payload) {
+              await supabase
+                .from("raw_job_harvests")
+                .update({ raw_payload: cookablePayload, updated_at: new Date().toISOString() })
+                .eq("id", job.id);
+            }
+
+            // High-Fidelity AI Extraction
+            const extraction = await AIMesh.extract(cookablePayload);
+            const heuristic = siftOpportunity(
+              extraction.title,
+              extraction.description,
+              extraction.company || "Generic",
+              job.source_platform || "V12 Mesh"
+            );
+            finalExtraction = {
+              ...extraction,
+              niche: heuristic.domain,
+              tier: heuristic.tier,
+              relevanceScore: Math.max(extraction.relevanceScore ?? 0, heuristic.relevanceScore),
+              metadata: {
+                ...(extraction.metadata || {}),
+                sieveTier: heuristic.tier,
+                sieveDomain: heuristic.domain,
+                region: jobRegion
+              },
+            };
+          } else {
+            // Metadata-Only Skeleton
+            console.log(`🚥 [GOLDILOCKS] Metadata-Only sifting in Pantry for ${jobRegion}`);
+            const heuristic = siftOpportunity(job.title || "Unknown", job.raw_payload || "", job.source_platform || "V12", "Metadata Only");
+            finalExtraction = {
+               title: job.title || "Job Opportunity",
+               company: "Confidential",
+               description: "Metadata-only signal sync.",
+               salary: null,
+               niche: heuristic.domain,
+               type: 'direct',
+               locationType: 'remote',
+               tier: heuristic.tier,
+               relevanceScore: 0,
+               isPhCompatible: true,
+               metadata: { meta_only: true, region: jobRegion }
+            };
+          }
+          
+          // B. Sifter Guard
+          if (isPrimary && (!finalExtraction.isPhCompatible || finalExtraction.tier === OpportunityTier.TRASH)) {
             await supabase
               .from('raw_job_harvests')
               .update({
@@ -144,6 +175,11 @@ const pantryPoll = inngestClient.createFunction(
       return results;
     });
 
+    await step.run("emit-processing-heartbeat", async () => {
+      const { emitProcessingHeartbeat } = await import("../../../../../packages/db/governance");
+      await emitProcessingHeartbeat("v12-chef-cycle");
+    });
+
     return { status: "cycle_complete", processed: processingResults.length, results: processingResults };
   }
 );
@@ -168,7 +204,13 @@ const syncSweep = inngestClient.createFunction(
       return data || [];
     });
 
-    if (batch.length === 0) return { status: "sweep_idle" };
+    if (batch.length === 0) {
+      await step.run("emit-idle-heartbeat", async () => {
+        const { emitProcessingHeartbeat } = await import("../../../../../packages/db/governance");
+        await emitProcessingHeartbeat("v12-sweep-idle");
+      });
+      return { status: "sweep_idle" };
+    }
 
     // 2. Translocate to Turso Gold Vault
     const translocationResult = await step.run("translocate-to-turso", async () => {
@@ -209,6 +251,7 @@ const syncSweep = inngestClient.createFunction(
             type: finalMapped.type || 'direct',
             locationType: finalMapped.locationType || 'remote',
             sourcePlatform: `V12 Mesh (${job.source_platform})`,
+            region: finalMapped.metadata?.region || "Philippines", 
             // Use current plating time; job.created_at can be much older due URL upsert semantics.
             scrapedAt: new Date(),
             isActive: true,
@@ -233,6 +276,16 @@ const syncSweep = inngestClient.createFunction(
           .from('raw_job_harvests')
           .delete()
           .in('id', translocationResult.successful_ids);
+      });
+    }
+
+    if (translocationResult.successful_ids.length > 0) {
+      await step.run("emit-ingestion-heartbeat", async () => {
+        const { emitIngestionHeartbeat } = await import("../../../../../packages/db/governance");
+        const { config } = await import("../../../../../packages/config");
+        // We use primary_region for the main sweep signal, or we could aggregate.
+        // For simplicity, we signal the primary region's availability.
+        await emitIngestionHeartbeat("v12-sweep-success", config.primary_region);
       });
     }
 

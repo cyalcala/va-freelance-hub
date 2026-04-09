@@ -31,7 +31,7 @@ async function recordLog(message: string, level: 'info' | 'warn' | 'error' | 'sn
   }
 }
 
-export async function harvest(options?: { unhealthySources?: string[] }) {
+export async function harvest(options?: { unhealthySources?: string[], targetRegion?: string }) {
   const { getTriggerStatus, setTriggerExhausted } = await import("../packages/db/governance");
   
   // 1. V12 CIRCUIT BREAKER: Check if Scout is Allowed to Fly
@@ -42,32 +42,41 @@ export async function harvest(options?: { unhealthySources?: string[] }) {
   }
 
   const targetSources = options?.unhealthySources || [];
+  const targetRegion = options?.targetRegion;
   const startTime = Date.now();
   
-  await recordLog("══ Starting V12 Signal Harvesting Sequence ══", "info");
+  await recordLog(`══ Starting V12 Signal Harvesting Sequence ${targetRegion ? `(${targetRegion})` : '(ALL)'} ══`, "info");
 
   const sources = [
     ...rssSources.map(s => ({ 
       id: `rss-${s.id}`, 
       name: s.name, 
+      region: (s as any).region || "Global",
       fn: () => fetchRSSFeed(s as any) 
     })),
-    { id: "reddit-json", name: "Reddit JSON", fn: fetchRedditJobs },
-    { id: "jobicy-api", name: "Jobicy API", fn: () => fetchJobicyJobs(db) },
-    { id: "direct-ats", name: "Direct ATS", fn: () => fetchATSJobs(db) },
+    { id: "reddit-json", name: "Reddit JSON", region: "Global", fn: fetchRedditJobs },
+    { id: "jobicy-api", name: "Jobicy API", region: "Global", fn: () => fetchJobicyJobs(db) },
+    { id: "direct-ats", name: "Direct ATS", region: "Global", fn: () => fetchATSJobs(db) },
     ...config.json_sources.map(s => ({ 
       id: `json-${s.id}`, 
-      name: s.name, 
+      name: s.name,
+      region: (s as any).region || "Global", 
       fn: () => fetchJSONFeed(s as any) 
     })),
-    { id: "agency-sensor", name: "Agency Sensor", fn: () => probeAgencies(db) },
-    { id: "weworkremotely", name: "We Work Remotely", fn: fetchWeWorkRemotelyJobs }
+    { id: "agency-sensor", name: "Agency Sensor", region: "Philippines", fn: () => probeAgencies(db) },
+    { id: "weworkremotely", name: "We Work Remotely", region: "Global", fn: fetchWeWorkRemotelyJobs }
   ];
 
   let totalEmitted = 0;
 
   for (const source of sources) {
+    // Audit Gate 1: Source Filter
     if (targetSources.length > 0 && !targetSources.some(t => t.toLowerCase() === source.name.toLowerCase())) {
+        continue;
+    }
+
+    // Audit Gate 2: Regional Filter (Surgical Remediation)
+    if (targetRegion && source.region !== targetRegion) {
         continue;
     }
 
@@ -90,7 +99,8 @@ export async function harvest(options?: { unhealthySources?: string[] }) {
             raw_company: item.company || "Generic",
             raw_url: item.sourceUrl,
             raw_html: sanitizedHtml,
-            source: source.name
+            source: source.name,
+            region: (source as any).region || "Global" // Default to Global if untagged
           }
         });
         totalEmitted++;
@@ -118,7 +128,10 @@ export const scrapeOpportunitiesTask = schedules.task({
     logger.info(`[harvest] Initiating signal pulse. Source: ${triggerSource}`);
     
     try {
-      return await harvest({ unhealthySources: payload?.unhealthySources });
+      return await harvest({ 
+        unhealthySources: payload?.unhealthySources,
+        targetRegion: payload?.region || payload?.targetRegion
+      });
     } catch (err: any) {
       // 🕵️ Autonomous Detection: If the platform is screaming about credits/usage
       const isExhaustion = 

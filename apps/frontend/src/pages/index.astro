@@ -3,12 +3,13 @@ export const prerender = false;
 import Layout from '../layouts/Layout.astro';
 import SignalCard from '../components/SignalCard.astro';
 import MirrorStage from '../components/MirrorStage.astro';
+import RegionalHealth from '../components/RegionalHealth.astro';
 
 import { getSortedSignals, getLatestMirror } from '@va-hub/db/sorting';
-import { db, schema } from '@va-hub/db/client';
+import { db, schema, normalizeDate } from '@va-hub/db/client';
 import { sql, eq } from 'drizzle-orm';
 import { JobDomain, getDomainSlug, getDomainLabel, mapTitleToDomain } from '@va-hub/db/taxonomy';
-// SRE: staticFallback import removed - no phantom data fallback
+import { config } from '@va-hub/config';
 
 // BUST THE CACHE
 Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
@@ -19,7 +20,6 @@ Astro.response.headers.set('Expires', '0');
 
 let initialSignals = [];
 let mirrorSignals = [];
-let healthStats = { status: 'STANDBY', lastHeartbeat: null, isFallback: false };
 let dbError = null;
 const CACHE_BUST = Date.now();
 
@@ -28,9 +28,6 @@ try {
     const dataPromise = Promise.all([
       getSortedSignals(400), // Fetch more for the directory
       getLatestMirror(10),
-      db.select({ 
-        maxSync: sql<number>`max(scraped_at)`, 
-      }).from(schema.opportunities).where(eq(schema.opportunities.isActive, true)),
       // CACHE BUST PULSE: Forces Turso to evaluate a fresh timestamp
       db.run(sql`SELECT ${CACHE_BUST} as pulse`)
     ]);
@@ -39,29 +36,20 @@ try {
       setTimeout(() => reject(new Error("Edge Latency Threshold Exceeded (5s)")), 5000)
     );
     
-    const [signals, mirror, stats] = await Promise.race([dataPromise, timeoutPromise]) as any;
+    const [signals, mirror] = await Promise.race([dataPromise, timeoutPromise]) as any;
     
     initialSignals = signals || [];
     mirrorSignals = mirror || [];
     
-    // 🔍 SRE DATA CUSTODY: Determine Status
-    if (initialSignals.length > 0) {
-      healthStats = { 
-        status: 'LIT', 
-        isFallback: false,
-        lastHeartbeat: stats[0]?.maxSync ? new Date(stats[0].maxSync).toISOString() : new Date().toISOString()
-      };
-    } else {
-      // SRE CRITICAL: No phantom data. Fail loudly.
-      throw new Error('[SRE_CUSTODY] CRITICAL: Turso vault is EMPTY. No fallback data served. Investigate scraper health.');
+    if (initialSignals.length === 0) {
+      throw new Error('[SRE_CUSTODY] CRITICAL: Turso vault is EMPTY. No fallback data served.');
     }
   } else {
     throw new Error("Edge Configuration Missing (TURSO_URL)");
   }
 } catch (err: any) {
-  // SRE CRITICAL: Turso connection failed. Fail loudly - no phantom data.
   console.error(`[SRE_CUSTODY] CRITICAL: Frontend Data Fetch Failure: ${err.message}`);
-  throw new Error(`[SRE_CUSTODY] DATABASE_CUSTODY_LOST: ${err.message}. Cannot serve stale phantom data.`);
+  throw new Error(`[SRE_CUSTODY] DATABASE_CUSTODY_LOST: ${err.message}.`);
 }
 
 // ── DOMAIN ORCHESTRATION ──
@@ -130,6 +118,15 @@ const processedMirror = mirrorSignals.map(sig => ({
 }));
 
 
+import { getRegionalHealth } from '@va-hub/db/health-utils';
+
+const regionalHealth = await getRegionalHealth();
+const staleRegions = new Set(
+  regionalHealth
+    .filter(r => r.state === 'STALE' || r.state === 'SUSPECT_HEARTBEAT')
+    .map(r => r.name)
+);
+
 const domains = topDomains.map((domain) => ({
   domain,
   description: DOMAIN_META[domain].description,
@@ -139,23 +136,36 @@ const domains = topDomains.map((domain) => ({
 
 ---
 
+// ── HEALTH INTELLIGENCE ──
+const healthStats = {
+  status: regionalHealth.every(r => r.state === 'FRESH') ? 'SYSTEM NOMINAL' : 'DEGRADED PERFORMANCE',
+  isFallback: regionalHealth.some(r => r.state === 'STALE'),
+  pulseAge: Math.min(...regionalHealth.map(r => r.pAge))
+};
+
+---
+
 <Layout title="Master Directory | VA.INDEX">
   <main class="max-w-[1400px] mx-auto px-4 sm:px-8 py-10">
     <header class="mb-12">
-      <div class="flex items-center gap-4 mb-6">
-        <div class="flex items-center gap-2 px-3 py-1 bg-white border border-oat-200 rounded-full shadow-sm">
-          <div class={`w-2 h-2 rounded-full ${healthStats.isFallback ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`}></div>
-          <span class="text-[10px] font-black text-blueberry-900/40 uppercase tracking-widest leading-none">
-            {healthStats.status}
-          </span>
-        </div>
-        {!healthStats.isFallback && (
-          <div class="flex items-center gap-2 px-3 py-1 bg-emerald-50/50 border border-emerald-100 rounded-full">
-            <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">
-              {initialSignals.length} Active Signals
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-2 px-3 py-1 bg-white border border-oat-200 rounded-2xl shadow-sm">
+            <div class={`w-2 h-2 rounded-full ${healthStats.isFallback ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`}></div>
+            <span class="text-[10px] font-black text-blueberry-900/40 uppercase tracking-widest leading-none">
+              {healthStats.status}
             </span>
           </div>
-        )}
+          
+          <div class="hidden md:flex items-center gap-2 px-3 py-1 bg-blueberry-900 border border-blueberry-800 rounded-2xl shadow-lg ring-1 ring-white/10">
+            <span class="text-[9px] font-black text-amber-400 uppercase tracking-[0.2em] leading-none">
+              Goldilocks Edition 3.0
+            </span>
+            <div class="w-1 h-1 rounded-full bg-amber-400/50"></div>
+          </div>
+        </div>
+
+        <RegionalHealth />
       </div>
 
       <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-10">
@@ -219,7 +229,7 @@ const domains = topDomains.map((domain) => ({
              
              <div class="flex flex-col gap-2.5 p-2">
                 {visibleSignals.map((sig, idx) => (
-                  <SignalCard signal={sig} index={idx + 1} />
+                  <SignalCard signal={sig} index={idx + 1} isCold={staleRegions.has(sig.region)} />
                 ))}
 
                 {totalSignals === 0 && (

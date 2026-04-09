@@ -1,25 +1,27 @@
 import { schedules, logger, tasks } from "@trigger.dev/sdk/v3";
 import { createDb } from "@va-hub/db/client";
-import { noteslog, systemHealth } from "@va-hub/db/schema";
+import { noteslog } from "@va-hub/db/schema";
+import { config } from "@va-hub/config";
 import { v4 as uuidv4 } from "uuid";
-import { eq, not } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 /**
- * 🕵️ SILENT AUTO-HEALER (WATCHDOG)
+ * 🕵️ SILENT AUTO-HEALER (WATCHDOG: GOLDILOCKS EDITION)
  * 
- * Pillar 1: Live Edge Audit (Fetch /api/health)
- * Pillar 2: Vercel Defibrillator (POST to Hook URL)
- * Pillar 3: Engine Kickstart (Trigger Harvester)
+ * Pillar 1: Health API Audit (Prefer data-layer truth)
+ * Pillar 2: Engine Kickstart (Trigger Harvester - Low Cost)
+ * Pillar 3: Vercel Defibrillator (POST Hook - High Cost/Fallback)
  * Pillar 4: Silent Ledger (Write to noteslog)
  */
 export const silentWatchdogTask = schedules.task({
   id: "silent-watchdog",
-  cron: "*/15 * * * *", // Surgically monitor every 15 minutes
+  cron: "*/15 * * * *", 
   maxDuration: 300,
   run: async () => {
     const { db, client } = createDb();
     const siteUrl = process.env.PUBLIC_SITE_URL || "https://va-freelance-hub-web.vercel.app";
     const deployHook = process.env.VERCEL_DEPLOY_HOOK_URL;
+    const { slo } = config;
     
     let driftMinutes = 0;
     let actionsTaken: string[] = [];
@@ -30,13 +32,13 @@ export const silentWatchdogTask = schedules.task({
     };
 
     try {
-      logger.info(`[watchdog] Initiating Live Edge Audit: ${siteUrl}/api/health`);
+      logger.info(`[watchdog] Initiating Goldilocks Audit: ${siteUrl}/api/health`);
 
-      // Pillar 1: Live Edge Audit (Force cache bypass with timestamp)
+      // Pillar 1: Live Edge Audit (Force cache bypass)
       const response = await fetch(`${siteUrl}/api/health?t=${Date.now()}`, {
         headers: { 
           "Cache-Control": "no-cache",
-          "User-Agent": "VA-Hub-Watchdog/2.0 (Autonomous)"
+          "User-Agent": "VA-Hub-Watchdog/3.0 (Goldilocks)"
         }
       });
       
@@ -44,74 +46,106 @@ export const silentWatchdogTask = schedules.task({
         throw new Error(`Edge Audit HTTP Error: ${response.status} ${response.statusText}`);
       }
       
-      const data = await response.json();
-      metadata.auditResponse = data;
+      const healthData = await response.json();
+      metadata.auditResponse = healthData;
       
-      // Pillar 1.5: Granular System Health Awareness
-      const unhealthySources = await db.select()
-        .from(systemHealth)
-        .where(not(eq(systemHealth.status, "OK")));
+      const heartbeat = healthData.vitals?.heartbeat;
+      const heartbeatState = heartbeat?.state || "UNKNOWN";
+      driftMinutes = Math.round((healthData.vitals?.ingestionStalenessHrs || 0) * 60);
       
-      metadata.unhealthySourcesCount = unhealthySources.length;
-      metadata.unhealthySources = unhealthySources.map(s => s.sourceName);
+      metadata.heartbeatState = heartbeatState;
+      metadata.ingestionAgeMinutes = heartbeat?.ingestionAgeMinutes;
+      metadata.processingAgeMinutes = heartbeat?.processingAgeMinutes;
 
-      const stalenessHrs = data.vitals?.ingestionStalenessHrs ?? 0;
-      driftMinutes = Math.round(stalenessHrs * 60);
+      logger.info(`[watchdog] State: ${heartbeatState}. Drift: ${driftMinutes}m. Processing Age: ${heartbeat?.processingAgeMinutes}m.`);
 
-      logger.info(`[watchdog] Current Signal Drift: ${driftMinutes} minutes.`);
+      // Step 2: Cooldown Detection
+      const [latestRemediation] = await db.select()
+        .from(noteslog)
+        .orderBy(desc(noteslog.timestamp))
+        .where(eq(noteslog.status, "success"))
+        .limit(1);
 
-      // Level 2 Autonomous Remediation Threshold (45 Minutes)
-      if (driftMinutes > 45) {
-        logger.warn(`[watchdog] ⚠️ DRIFT BREACH: ${driftMinutes}m. Initiating Remediation.`);
+      let cooldownActive = false;
+      if (latestRemediation) {
+        const lastActionMs = new Date(latestRemediation.timestamp).getTime();
+        const elapsedMin = (Date.now() - lastActionMs) / 60000;
+        cooldownActive = elapsedMin < slo.remediation_cooldown_minutes;
+        metadata.lastRemediationMinutesAgo = Math.round(elapsedMin);
         
-        // Pillar 2: Vercel Defibrillator (Cache Bust)
-        if (deployHook) {
+        // Only consider it a relevant cooldown if an actual remediation action was taken
+        const wasRealAction = latestRemediation.actionsTaken.includes("ENGINE_KICKSTART") || 
+                             latestRemediation.actionsTaken.includes("VERCEL_CACHE_BUST");
+        
+        if (!wasRealAction) cooldownActive = false;
+      }
+      metadata.cooldownActive = cooldownActive;
+
+      // Level 2: Regional Remediation (The Goldilocks surgical path)
+      const regions = healthData.vitals?.regions || {};
+      let remediationTriggers = 0;
+
+      for (const [regionName, regionData] of Object.entries(regions) as any) {
+        const isRegionStale = regionData.state === "STALE" || regionData.state === "SUSPECT_HEARTBEAT";
+        
+        if (isRegionStale && !cooldownActive) {
+          logger.warn(`[watchdog] ⚠️ REGIONAL BREACH detected for ${regionName}. Triggering surgical restart.`);
+          try {
+            await tasks.trigger("harvest-opportunities", { 
+              source: `watchdog-recovery-${regionName.toLowerCase()}`,
+              region: regionName,
+              heartbeatState: regionData.state
+            });
+            actionsTaken.push(`ENGINE_KICKSTART_${regionName.toUpperCase()}`);
+            remediationTriggers++;
+          } catch (taskErr: any) {
+             logger.error(`[watchdog] Kickstart failed for ${regionName}: ${taskErr.message}`);
+             actionsTaken.push(`KICKSTART_${regionName.toUpperCase()}_FAILED`);
+          }
+        }
+      }
+
+      // Level 3: Global Remediation (Fallback / Severe)
+      // Only if global heartbeat is STALE or all regional restarts failed
+      const needsGlobalHealing = (heartbeatState === "STALE" || driftMinutes > 120) && !cooldownActive;
+      
+      if (needsGlobalHealing) {
+        // If we haven't triggered any specific regional restarts yet, try a global one
+        if (remediationTriggers === 0) {
+          try {
+            await tasks.trigger("harvest-opportunities", { source: "watchdog-global-kickstart" });
+            actionsTaken.push("ENGINE_KICKSTART_GLOBAL");
+          } catch (err: any) {
+            actionsTaken.push("KICKSTART_GLOBAL_FAILED");
+          }
+        }
+
+        // VERCEL DEFIBRILLATOR (Final fallback)
+        if (deployHook && (heartbeatState === "STALE" || actionsTaken.includes("KICKSTART_GLOBAL_FAILED"))) {
           try {
             await fetch(deployHook, { method: "POST" });
             actionsTaken.push("VERCEL_CACHE_BUST");
-            logger.info("[watchdog] Vercel cache bust triggered via Deploy Hook.");
+            logger.info("[watchdog] Vercel cache bust triggered.");
           } catch (hookErr: any) {
             logger.error(`[watchdog] Cache bust failed: ${hookErr.message}`);
             actionsTaken.push("VERCEL_CACHE_BUST_FAILED");
           }
-        } else {
-          logger.warn("[watchdog] VERCEL_DEPLOY_HOOK_URL not configured. Skipping cache bust.");
-          actionsTaken.push("CACHE_BUST_SKIPPED");
         }
-
-        // Pillar 3: Engine Kickstart (Out-of-band Harvester Trigger)
-        try {
-          await tasks.trigger("harvest-opportunities", { 
-            source: "silent-watchdog-remediation",
-            driftMinutes,
-            unhealthySources: metadata.unhealthySources 
-          });
-          actionsTaken.push("ENGINE_KICKSTART");
-          logger.info("[watchdog] Harvester task kickstarted out-of-band.");
-        } catch (taskErr: any) {
-          logger.error(`[watchdog] Harvester kickstart failed: ${taskErr.message}`);
-          actionsTaken.push("ENGINE_KICKSTART_FAILED");
-        }
-      } else if (metadata.unhealthySourcesCount > 0) {
-        // Targeted Healing for degraded/failed sources even without drift
-        logger.warn(`[watchdog] 🕵️ HEALTH BREACH: ${metadata.unhealthySourcesCount} sources degraded. Initiating targeted heal.`);
-        await tasks.trigger("harvest-opportunities", { 
-           source: "silent-watchdog-target-heal",
-           unhealthySources: metadata.unhealthySources 
-        });
-        actionsTaken.push("HEALTH_KICKSTART");
-      } else {
-        logger.info("[watchdog] Data freshness and source health verified. No action required.");
+      } else if (cooldownActive && (heartbeatState !== "FRESH" || driftMinutes > 60)) {
+        logger.info(`[watchdog] Remediation suppressed by ${slo.remediation_cooldown_minutes}m cooldown.`);
+        actionsTaken.push("REMEDIATION_COOLDOWN_ACTIVE");
+      } else if (actionsTaken.length === 0) {
+        logger.info("[watchdog] System within SLOs. Verification successful.");
         actionsTaken.push("VERIFIED_IDENTITY_FRESH");
       }
 
     } catch (err: any) {
       status = "failure";
       metadata.criticalError = err.message;
-      logger.error(`[watchdog] 🛑 Silent failure in remediation cycle: ${err.message}`);
+      logger.error(`[watchdog] 🛑 Watchdog failure: ${err.message}`);
     } finally {
       try {
-        // Pillar 4: Silent Ledger (/noteslog)
+        // Pillar 4: Silent Ledger
         await db.insert(noteslog).values({
           id: uuidv4(),
           driftMinutes,
@@ -120,19 +154,12 @@ export const silentWatchdogTask = schedules.task({
           metadata: JSON.stringify(metadata),
           timestamp: new Date()
         });
-        logger.info("[watchdog] 📝 Telemetry committed to /noteslog.");
       } catch (logErr: any) {
-        logger.error(`[watchdog] Failed to write to /noteslog: ${logErr.message}`);
+        logger.error(`[watchdog] Failed to write to noteslog: ${logErr.message}`);
       }
-      
       await client.close();
     }
 
-    return { 
-      driftMinutes, 
-      actionsTaken, 
-      status,
-      triggeredAt: metadata.timestamp 
-    };
+    return { driftMinutes, actionsTaken, status };
   },
 });

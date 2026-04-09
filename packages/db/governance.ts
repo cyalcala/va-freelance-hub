@@ -56,3 +56,65 @@ export async function resetTriggerCredits() {
     console.error('🚫 [GOVERNANCE] Failed to reset Trigger credits:', err);
   }
 }
+
+export async function emitProcessingHeartbeat(source: string, region: string = 'GLOBAL') {
+  console.log(`🚥 [HEARTBEAT] Processing heartbeat: ${source} (${region})`);
+  try {
+    await db.insert(vitals).values({
+      id: `HEARTBEAT_${region}`,
+      region,
+      lastProcessingHeartbeatMs: Date.now(),
+      heartbeatSource: source,
+      lockUpdatedAt: new Date(),
+    }).onConflictDoUpdate({
+      target: [vitals.id],
+      set: {
+        lastProcessingHeartbeatMs: Date.now(),
+        heartbeatSource: source,
+        lockUpdatedAt: new Date(),
+      }
+    });
+
+    // Also update legacy GLOBAL pulse for backward compatibility
+    await db.update(vitals)
+      .set({ 
+        lastProcessingHeartbeatMs: Date.now(), 
+        heartbeatSource: source,
+        lockUpdatedAt: new Date()
+      })
+      .where(eq(vitals.id, 'GLOBAL'));
+  } catch (err) {
+    console.error('🚫 [HEARTBEAT] Failed to emit processing heartbeat:', err);
+  }
+}
+
+export async function emitIngestionHeartbeat(source: string, region: string = 'GLOBAL') {
+  console.log(`🚥 [HEARTBEAT] Ingestion heartbeat: ${source} (${region})`);
+  try {
+    await db.insert(vitals).values({
+      id: `HEARTBEAT_${region}`,
+      region,
+      lastIngestionHeartbeatMs: Date.now(),
+      heartbeatSource: source,
+      lockUpdatedAt: new Date(),
+    }).onConflictDoUpdate({
+      target: [vitals.id],
+      set: {
+        lastIngestionHeartbeatMs: Date.now(),
+        heartbeatSource: source,
+        lockUpdatedAt: new Date(),
+      }
+    });
+
+    // Also update legacy GLOBAL pulse
+    await db.update(vitals)
+      .set({ 
+        lastIngestionHeartbeatMs: Date.now(), 
+        heartbeatSource: source,
+        lockUpdatedAt: new Date()
+      })
+      .where(eq(vitals.id, 'GLOBAL'));
+  } catch (err) {
+    console.error('🚫 [HEARTBEAT] Failed to emit ingestion heartbeat:', err);
+  }
+}

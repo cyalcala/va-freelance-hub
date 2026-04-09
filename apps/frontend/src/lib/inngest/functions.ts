@@ -43,11 +43,36 @@ export const jobHarvested = inngest.createFunction(
 
     // 3. V12 One-Pass Intelligence (The Agentic Sifter)
     const result = await step.run("ai-extraction-and-sift", async () => {
+      const { config } = await import("../../../../../packages/config");
+      const isPrimary = event.data.region === config.primary_region;
+
       try {
-        const extraction = await runAIWaterfall(raw_html);
+        let extraction;
         
-        // 🛡️ Fail-Closed: If not PH Compatible, discard
-        if (!extraction.isPhCompatible || extraction.tier === 4) {
+        if (isPrimary) {
+           // 🧪 HIGH-FIDELITY: AI extraction for primary region
+           extraction = await runAIWaterfall(raw_html);
+        } else {
+           // 🚥 METADATA-ONLY: Skeleton extraction for secondary regions (Credit Saver)
+           console.log(`🚥 [GOLDILOCKS] Metadata-Only sync for ${event.data.region} signal.`);
+           const heuristic = siftOpportunity(raw_title, raw_html, raw_company, "Metadata Only");
+           extraction = {
+             title: raw_title,
+             company: raw_company,
+             description: "Metadata-only signal. Visit source URL for details.",
+             salary: null,
+             niche: heuristic.domain,
+             type: 'direct',
+             locationType: 'remote',
+             tier: heuristic.tier,
+             relevanceScore: 0,
+             isPhCompatible: true, // secondary signals are always passive-accept
+             metadata: { meta_only: true, region: event.data.region }
+           };
+        }
+        
+        // 🛡️ Fail-Closed: If not PH Compatible or Trash, discard (Primary Only)
+        if (isPrimary && (!extraction.isPhCompatible || extraction.tier === 4)) {
           return { status: "dropped", reason: "not_ph_compatible", md5_hash };
         }
 
@@ -64,6 +89,7 @@ export const jobHarvested = inngest.createFunction(
           type: extraction.type,
           locationType: extraction.locationType,
           sourcePlatform: "V12 Intelligence Mesh",
+          region: extraction.metadata?.region || "Philippines", 
           scrapedAt: new Date(),
           isActive: true,
           tier: extraction.tier,

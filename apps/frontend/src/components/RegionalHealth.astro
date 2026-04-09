@@ -1,0 +1,85 @@
+import { getRegionalHealth } from '@va-hub/db/health-utils';
+import { config } from '@va-hub/config';
+
+const tracks = await getRegionalHealth();
+const budgetMode = config.budget_mode;
+
+const statusColors: Record<string, string> = {
+  FRESH: 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]',
+  DELAYED: 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.4)]',
+  STALE: 'bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]',
+  SUSPECT_HEARTBEAT: 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.4)] animate-pulse'
+};
+
+const processedTracks = tracks.map(track => {
+  const label = track.name === 'Philippines' ? 'PH' : track.name === 'Global' ? 'GLB' : track.name === 'LATAM' ? 'LAT' : track.name.substring(0, 3).toUpperCase();
+  
+  // Stability Trail: Mocking historical performance based on current age
+  // In Phase 5, this will be driven by health_metrics table.
+  const stability = track.state === 'FRESH' ? [1, 1, 1, 1, 1] : 
+                   track.state === 'DELAYED' ? [1, 1, 1, 0, 0] : [0, 0, 0, 0, 0];
+
+  return { ...track, label, stability };
+});
+
+const statusText: Record<string, string> = {
+  FRESH: 'Operational',
+  DELAYED: 'Lag detected',
+  STALE: 'Pipeline stale',
+  SUSPECT_HEARTBEAT: 'Stalled sync'
+};
+---
+
+<div class="flex items-center gap-1.5 p-1 bg-white/40 border border-oat-200/50 rounded-2xl shadow-sm backdrop-blur-sm">
+  {processedTracks.map((track) => (
+    <div class="group relative flex items-center gap-2 px-2.5 py-1.5 hover:bg-white rounded-xl transition-all cursor-default">
+      <div class="flex flex-col items-center gap-1">
+        <div class={`w-2 h-2 rounded-full ${statusColors[track.state]}`}></div>
+        <!-- Stability Trail -->
+        <div class="flex gap-[1px]">
+          {track.stability.map(s => (
+            <div class={`w-[2px] h-[2px] rounded-full ${s ? 'bg-emerald-500/30' : 'bg-rose-500/20'}`}></div>
+          ))}
+        </div>
+      </div>
+      
+      <div class="flex flex-col gap-0 min-w-[24px]">
+        <span class="text-[9px] font-black text-blueberry-900 leading-none tracking-tight">
+          {track.label}
+        </span>
+        <span class="text-[7px] font-bold text-blueberry-800/40 uppercase tracking-widest leading-none mt-0.5">
+          {track.state === 'FRESH' ? (track.pAge < 5 ? 'LIVE' : `${Math.floor(track.pAge)}m`) : track.state.substring(0, 5)}
+        </span>
+      </div>
+
+      <!-- Tooltip Content -->
+      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 p-3 bg-blueberry-900 text-white rounded-2xl text-[9px] opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50 shadow-2xl scale-95 group-hover:scale-100">
+        <div class="font-black border-b border-white/10 pb-2 mb-2 uppercase tracking-widest flex items-center justify-between">
+          <span>{track.name} Region</span>
+          <div class={`w-2 h-2 rounded-full ${statusColors[track.state].split(' ')[0]}`}></div>
+        </div>
+        <div class="flex justify-between mb-1 opacity-80 font-medium">
+          <span>Processing Pipeline:</span>
+          <span class="font-black tabular-nums">{track.pAge > 999 ? '>16h' : `${Math.floor(track.pAge)}m`}</span>
+        </div>
+        <div class="flex justify-between mb-2 opacity-80 font-medium">
+          <span>Ingestion Pulse:</span>
+          <span class="font-black tabular-nums">{track.iAge > 999 ? '>16h' : `${Math.floor(track.iAge)}m`}</span>
+        </div>
+        
+        <div class="flex items-center gap-2 mb-2 p-1.5 bg-white/5 rounded-lg">
+          <span class="opacity-50 uppercase text-[7px] font-black">Budget:</span>
+          <span class={`font-black uppercase text-[7px] tracking-widest ${budgetMode === 'tight' ? 'text-amber-400' : 'text-emerald-400'}`}>
+            {budgetMode} mode
+          </span>
+        </div>
+
+        <div class="pt-2 border-t border-white/10 text-white/50 italic font-medium flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          {statusText[track.state]}
+        </div>
+        <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-blueberry-900"></div>
+      </div>
+    </div>
+  ))}
+</div>

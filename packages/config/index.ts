@@ -22,6 +22,7 @@ export interface NicheConfig {
   name: string;
   primary_region: string;
   primary_niche: string;
+  budget_mode: "normal" | "tight";
   
   // 🎯 TARGET SIGNALS: Positive patterns that identify this niche
   target_signals: {
@@ -41,6 +42,16 @@ export interface NicheConfig {
   rss_sources: Source[];
   json_sources: Source[];
 
+  // 🚥 OBSERVABILITY SLOs (Goldilocks)
+  slo: {
+    heartbeat_stale_minutes: number;
+    heartbeat_delayed_minutes: number;
+    heartbeat_suspect_window_minutes: number;
+    ingestion_staleness_threshold_hrs: number;
+    db_staleness_threshold_hrs: number;
+    remediation_cooldown_minutes: number;
+  };
+
   // 🛡️ EDGE SHIELD
   edge_proxy_url?: string;
   proxy_secret?: string;
@@ -48,8 +59,19 @@ export interface NicheConfig {
 
 export const defaultConfig: NicheConfig = {
   name: "VA Freelance Hub (Philippines)",
+  regions: ["Philippines", "LATAM", "Global"],
   primary_region: "Philippines",
   primary_niche: "Virtual Assistant",
+  budget_mode: (process.env.BUDGET_MODE as any) || "normal",
+
+  slo: {
+    heartbeat_stale_minutes: Number(process.env.HEARTBEAT_STALE_MINUTES || 120),
+    heartbeat_delayed_minutes: Number(process.env.HEARTBEAT_DELAYED_MINUTES || 45),
+    heartbeat_suspect_window_minutes: Number(process.env.HEARTBEAT_SUSPECT_WINDOW_MINUTES || 120),
+    ingestion_staleness_threshold_hrs: Number(process.env.INGESTION_STALENESS_THRESHOLD || 24),
+    db_staleness_threshold_hrs: Number(process.env.DB_STALENESS_THRESHOLD || 4),
+    remediation_cooldown_minutes: Number(process.env.WATCHDOG_REMEDIATION_COOLDOWN_MIN || 90),
+  },
 
   target_signals: {
     region: ["philippines", "filipino", "pinoy", "tagalog", "manila", "cebu", "ph", "sea", "southeast asia"],
@@ -81,6 +103,7 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Official public RSS feed provided by Himalayas for job syndication.",
+      region: "Global"
     },
     {
       id: "we-work-remotely",
@@ -90,6 +113,7 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Public RSS feed offered by WWR since 2013. Companies pay to post.",
+      region: "Global"
     },
     {
       id: "remote-ok",
@@ -99,6 +123,7 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "high-pay"],
       ethical_note: "Public RSS feed. RemoteOK openly provides this for syndication.",
+      region: "Global"
     },
     {
       id: "problogger",
@@ -108,6 +133,7 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "freelance",
       tags: ["writing", "creative", "content"],
       ethical_note: "Public RSS job board feed. Companies pay to list writing/creative roles.",
+      region: "Global"
     },
     {
       id: "jobspresso-support",
@@ -117,6 +143,7 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "VA",
       tags: ["customer support", "marketing", "va"],
       ethical_note: "Public RSS feed provided by Jobspresso for remote job syndication.",
+      region: "Global"
     },
     {
       id: "remotive",
@@ -126,6 +153,7 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Public RSS feed provided by Remotive for job syndication.",
+      region: "Global"
     },
     {
       id: "working-nomads",
@@ -135,6 +163,7 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Public RSS feed provided by Working Nomads for job syndication.",
+      region: "Global"
     },
     {
       id: "daily-remote",
@@ -144,6 +173,7 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Public RSS feed provided by DailyRemote for job syndication.",
+      region: "Global"
     }
   ],
 
@@ -158,6 +188,7 @@ export const defaultConfig: NicheConfig = {
       ethical_note: "Public JSON search endpoint used by the JobStreet/SEEK frontend.",
       is_json: true,
       json_type: "JobStreet",
+      region: "Philippines"
     },
     {
       id: "jobstreet-ph-admin",
@@ -169,6 +200,7 @@ export const defaultConfig: NicheConfig = {
       ethical_note: "Public JSON search endpoint used by the JobStreet/SEEK frontend.",
       is_json: true,
       json_type: "JobStreet",
+      region: "Philippines"
     }
   ],
 

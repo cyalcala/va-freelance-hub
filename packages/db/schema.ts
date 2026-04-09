@@ -52,6 +52,7 @@ export const opportunities = sqliteTable('opportunities', {
   tier: integer('tier').notNull().default(3), // 0=Platinum, 1=Gold, 2=Silver, 3=Bronze, 4=Trash
   relevanceScore: integer('relevance_score').notNull().default(0), 
   latestActivityMs: integer('latest_activity_ms').notNull().default(0), 
+  region: text('region').notNull().default('Philippines'), // Goldilocks Region
   companyLogo: text('company_logo'), 
   metadata: text('metadata', { mode: 'json' }).notNull().default('{}'), 
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
@@ -60,6 +61,7 @@ export const opportunities = sqliteTable('opportunities', {
   md5Idx: index('md5_idx').on(table.md5_hash),
   tierLatestIdx: index('tier_latest_idx').on(table.tier, table.latestActivityMs),
   domainRankIdx: index('domain_rank_idx').on(table.relevanceScore, table.tier),
+  regionIdx: index('region_idx').on(table.region),
 }));
 
 export const systemHealth = sqliteTable('system_health', {
@@ -97,6 +99,12 @@ export const vitals = sqliteTable('vitals', {
   // ⚡ V12 Governance: Autonomous Circuit Breaker
   triggerCreditsOk: integer('trigger_credits_ok', { mode: 'boolean' }).default(true),
   triggerLastExhaustion: integer('trigger_last_exhaustion', { mode: 'timestamp' }),
+
+  // 🚥 Goldilocks: Heartbeat Signal
+  region: text('region').default('GLOBAL'), // Grouping identifier
+  lastIngestionHeartbeatMs: integer('last_ingestion_heartbeat_ms'),
+  lastProcessingHeartbeatMs: integer('last_processing_heartbeat_ms'),
+  heartbeatSource: text('heartbeat_source'),
 });
 
 export const logs = sqliteTable('logs', {

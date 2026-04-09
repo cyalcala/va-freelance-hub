@@ -85,6 +85,20 @@
       "when": 1775037253690,
       "tag": "0011_glamorous_madame_hydra",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1775734358521,
+      "tag": "0012_goldilocks_heartbeat",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1775734607116,
+      "tag": "0013_regional_schema_updates",
+      "breakpoints": true
     }
   ]
 }
