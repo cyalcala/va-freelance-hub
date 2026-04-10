@@ -11,10 +11,9 @@ import { sql, eq } from 'drizzle-orm';
 import { JobDomain, getDomainSlug, getDomainLabel, mapTitleToDomain } from '@va-hub/db/taxonomy';
 import { config } from '@va-hub/config';
 
-// BUST THE CACHE
-Astro.response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0');
-Astro.response.headers.set('CDN-Cache-Control', 'no-store');
-Astro.response.headers.set('Vercel-CDN-Cache-Control', 'no-store');
+// BUST THE CACHE: Ultra-Fresh Delivery Protocol
+Astro.response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
+Astro.response.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=3600'); // Hourly CDN persistence for edge safety
 Astro.response.headers.set('Pragma', 'no-cache');
 Astro.response.headers.set('Expires', '0');
 

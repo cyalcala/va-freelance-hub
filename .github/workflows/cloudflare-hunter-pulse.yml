@@ -2,7 +2,7 @@ name: Cloudflare Hunter Pulse
 
 on:
   schedule:
-    - cron: "*/30 * * * *" # Every 30 minutes (Staggered Discovery Pulse)
+    - cron: "15 * * * *" # Staggered Discovery Pulse (Hourly offset)
   workflow_dispatch:
 
 jobs:

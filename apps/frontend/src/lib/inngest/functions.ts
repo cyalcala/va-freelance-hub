@@ -26,7 +26,7 @@ export const jobHarvested = inngest.createFunction(
     // 1. Calculate MD5 Shield
     const md5_hash = crypto
       .createHash("md5")
-      .update(raw_title + raw_company)
+      .update((raw_title + raw_company).toLowerCase().trim())
       .digest("hex");
 
     // 2. Check for existing record (Idempotency Shield)
@@ -83,7 +83,7 @@ export const jobHarvested = inngest.createFunction(
         
         if (isPrimary) {
            // 🧪 HIGH-FIDELITY: Full AI extraction for primary region
-           extraction = await runAIWaterfall(raw_html);
+           extraction = await AIMesh.extract(raw_html || raw_title);
         } else {
            // 🚥 METADATA-ONLY: Skeleton extraction for secondary regions (Credit Saver)
            console.log(`🚥 [GOLDILOCKS] Metadata-Only sync for ${event.data.region} signal.`);
