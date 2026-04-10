@@ -116,9 +116,11 @@ export async function claimRawJob(workerId: string, limit: number = 15): Promise
  * Returns the current blocklist of providers to avoid $0-cost rate-limit waste.
  */
 export async function getAIStatus(): Promise<AICooldown[]> {
+  const now = new Date().toISOString();
   const { data, error } = await supabase
     .from('ai_cooldowns')
-    .select('*');
+    .select('*')
+    .or(`is_blocked.eq.false,retry_at.lte.${now}`);
   
   if (error || !data) return [];
   return data as AICooldown[];
@@ -130,11 +132,13 @@ export async function getAIStatus(): Promise<AICooldown[]> {
  */
 export async function reportAICooldown(provider: string, errorMsg: string) {
   const isRateLimit = errorMsg.includes('429') || errorMsg.toLowerCase().includes('rate limit');
+  const retryAt = isRateLimit ? new Date(Date.now() + 15 * 60 * 1000).toISOString() : null;
   
   await supabase
     .from('ai_cooldowns')
     .update({ 
       is_blocked: isRateLimit, 
+      retry_at: retryAt,
       last_error: errorMsg,
       updated_at: new Date().toISOString()
     })

@@ -23,6 +23,13 @@ async function checkVault() {
     const res = await client.execute("SELECT count(*) as n FROM opportunities");
     console.log(`Total Opportunities: ${res.rows[0].n}`);
     
+    console.log("\n--- AI COOLDOWN STATUS ---");
+    const cooldowns = await client.execute("SELECT * FROM ai_cooldowns");
+    cooldowns.rows.forEach(r => {
+      console.log(`- ${r.provider_name}: ${r.is_blocked ? '🔴 BLOCKED' : '🟢 READY'} (${r.error_count} errors) | Last: ${r.last_error?.substring(0, 50)}...`);
+    });
+
+    console.log("\n--- SYSTEM VITALS ---");
     const vitals = await client.execute("SELECT * FROM vitals");
     console.log(`Vitals Count: ${vitals.rows.length}`);
     vitals.rows.forEach(r => console.log(`- ${r.id}: ${r.region} | ${r.last_ingestion_heartbeat_ms}`));

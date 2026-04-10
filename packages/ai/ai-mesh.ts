@@ -44,9 +44,13 @@ Answer ONLY with: PASSED or REJECTED.
  * Includes 20+ diverse free models to bypass RPD/RPM limits.
  */
 const OPENROUTER_FREE_MODELS = [
-  // Keep this list intentionally short and vetted to reduce timeout churn.
-  'openrouter/free',
-  'nvidia/nemotron-3-nano-30b-a3b:free',
+  'openrouter/auto', // Smart free router
+  'meta-llama/llama-3.2-3b-instruct:free',
+  'meta-llama/llama-3.1-8b-instruct:free',
+  'mistralai/mistral-7b-instruct:free',
+  'google/gemma-2-9b-it:free',
+  'qwen/qwen-2-7b-instruct:free',
+  'microsoft/phi-3-mini-128k-instruct:free',
 ];
 
 interface ModelConfig {
@@ -64,6 +68,16 @@ const PROVIDER_DB_NAME: Record<ModelConfig['provider'], string> = {
 
 export class AIMesh {
   private static readonly REQUEST_TIMEOUT_MS = 20000;
+  private static cleanPayload(html: string): string {
+    return html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 8000); // 8k chars is usually enough for sifting
+  }
+
   private static extractJson(text: string): any {
     try {
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -132,10 +146,12 @@ export class AIMesh {
       throw new Error('[AI-MESH] CRITICAL: All $0-cost providers are currently in Cooldown.');
     }
 
+    const cleanContent = this.cleanPayload(html);
+
     for (const config of extractionQueue) {
       try {
         console.log(`[AI-MESH] Attempting extraction with ${config.name}...`);
-        const rawResult = await this.callModel(config, SYSTEM_PROMPT, html.slice(0, 10000));
+        const rawResult = await this.callModel(config, SYSTEM_PROMPT, cleanContent);
         const json = this.extractJson(rawResult);
         const validated = AIExtractionSchema.safeParse(json);
 
