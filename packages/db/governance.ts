@@ -103,17 +103,20 @@ export async function emitProcessingHeartbeat(source: string, region: string = '
 
 export async function emitIngestionHeartbeat(source: string, region: string = 'GLOBAL') {
   console.log(`🚥 [HEARTBEAT] Ingestion heartbeat: ${source} (${region})`);
+  const now = Date.now();
   try {
     await db.insert(vitals).values({
       id: `HEARTBEAT_${region}`,
       region,
-      lastIngestionHeartbeatMs: Date.now(),
+      lastIngestionHeartbeatMs: now,
+      lastProcessingHeartbeatMs: now, // 🚥 Sync: Ingestion implies a processing cycle in V12
       heartbeatSource: source,
       lockUpdatedAt: new Date(),
     }).onConflictDoUpdate({
       target: [vitals.id],
       set: {
-        lastIngestionHeartbeatMs: Date.now(),
+        lastIngestionHeartbeatMs: now,
+        lastProcessingHeartbeatMs: now,
         heartbeatSource: source,
         lockUpdatedAt: new Date(),
       }
@@ -122,7 +125,8 @@ export async function emitIngestionHeartbeat(source: string, region: string = 'G
     // Also update legacy GLOBAL pulse
     await db.update(vitals)
       .set({ 
-        lastIngestionHeartbeatMs: Date.now(), 
+        lastIngestionHeartbeatMs: now, 
+        lastProcessingHeartbeatMs: now,
         heartbeatSource: source,
         lockUpdatedAt: new Date()
       })

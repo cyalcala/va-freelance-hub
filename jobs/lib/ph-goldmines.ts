@@ -84,12 +84,11 @@ export async function fetchGoldmineJobs(sourceName: string): Promise<GoldmineSig
   console.log(`[goldmines] Scouting ${sourceName}...`);
   
   try {
-    const res = await fetch(source.url, {
-      headers: { "User-Agent": "VA.INDEX/1.0 (Titanium SRE; ph-goldmines)" }
-    });
-    
     // NATIVE REDDIT HANDOR (JSON)
     if (source.type === 'social' && source.url.endsWith('.json')) {
+        const res = await fetch(source.url, {
+            headers: { "User-Agent": "VA.INDEX/1.0 (Titanium SRE; ph-goldmines)" }
+        });
         const data = await res.json();
         const posts = data.data?.children || [];
         return posts.map((p: any) => ({
@@ -100,6 +99,7 @@ export async function fetchGoldmineJobs(sourceName: string): Promise<GoldmineSig
         })).slice(0, 15);
     }
 
+    const res = await proxyFetch(source.url);
     const html = await res.text();
     const $ = cheerio.load(html);
     const signals: GoldmineSignal[] = [];
