@@ -29,6 +29,51 @@ export const goldmineSources = [
     name: "Outsource Access",
     url: "https://outsourceaccess.com/careers/",
     type: "agency"
+  },
+  {
+    name: "Cyberbacker",
+    url: "https://cyberbacker.ph/careers/",
+    type: "agency"
+  },
+  {
+    name: "Virtudesk",
+    url: "https://www.virtudesk.com/careers/",
+    type: "agency"
+  },
+  {
+    name: "BruntWork",
+    url: "https://bruntwork.co/careers/",
+    type: "agency"
+  },
+  {
+    name: "GoTeam",
+    url: "https://go.team/careers/",
+    type: "agency"
+  },
+  {
+    name: "MultiplyMii",
+    url: "https://jobs.multiplymii.com/",
+    type: "agency"
+  },
+  {
+    name: "Shepherd",
+    url: "https://www.supportshepherd.com/jobs",
+    type: "agency"
+  },
+  {
+    name: "Reddit: buhaydigital",
+    url: "https://www.reddit.com/r/buhaydigital/new.json",
+    type: "social"
+  },
+  {
+    name: "Reddit: VirtualAssistantPH",
+    url: "https://www.reddit.com/r/VirtualAssistantPH/new.json",
+    type: "social"
+  },
+  {
+    name: "Reddit: RemoteWorkPH",
+    url: "https://www.reddit.com/r/RemoteWorkPH/new.json",
+    type: "social"
   }
 ];
 
@@ -40,19 +85,33 @@ export async function fetchGoldmineJobs(sourceName: string): Promise<GoldmineSig
   
   try {
     const res = await fetch(source.url, {
-      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36" }
+      headers: { "User-Agent": "VA.INDEX/1.0 (Titanium SRE; ph-goldmines)" }
     });
     
+    // NATIVE REDDIT HANDOR (JSON)
+    if (source.type === 'social' && source.url.endsWith('.json')) {
+        const data = await res.json();
+        const posts = data.data?.children || [];
+        return posts.map((p: any) => ({
+            title: p.data.title,
+            company: `Reddit: ${p.data.author}`,
+            sourceUrl: `https://reddit.com${p.data.permalink}`,
+            description: p.data.selftext?.slice(0, 500)
+        })).slice(0, 15);
+    }
+
     const html = await res.text();
     const $ = cheerio.load(html);
     const signals: GoldmineSignal[] = [];
 
-    // GENERIC EXTRACTION (Enhanced by AI in later mesh stages)
-    // Here we just grab potential links and titles to "Pulse" to the mesh.
+    // GENERIC EXTRACTION
     $('a').each((_, el) => {
         const text = $(el).text().trim();
         const href = $(el).attr('href');
         
+        // Anti-Pollution Gate: Reject HTML debris
+        if (text.includes('<') || text.includes('{') || text.length < 10) return;
+
         const isJobLink = href && (
             href.includes('/job/') || 
             href.includes('/careers/') || 

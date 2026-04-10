@@ -11,6 +11,7 @@ import { config } from "@va-hub/config";
 import { v4 as uuidv4 } from "uuid";
 import { normalizeDate } from "@va-hub/db";
 import { fetchWeWorkRemotelyJobs } from "./lib/weworkremotely";
+import { fetchGoldmineJobs, goldmineSources } from "./lib/ph-goldmines";
 
 // V10/V12 Intelligence Bridge
 import { inngest } from "@va-hub/pulse";
@@ -65,7 +66,13 @@ export async function harvest(options?: { unhealthySources?: string[], targetReg
       fn: () => fetchJSONFeed(s as any) 
     })),
     { id: "agency-sensor", name: "Agency Sensor", region: "Philippines", fn: () => probeAgencies(db) },
-    { id: "weworkremotely", name: "We Work Remotely", region: "Global", fn: fetchWeWorkRemotelyJobs }
+    { id: "weworkremotely", name: "We Work Remotely", region: "Global", fn: fetchWeWorkRemotelyJobs },
+    ...goldmineSources.map(s => ({
+      id: `goldmine-${s.name.toLowerCase()}`,
+      name: s.name,
+      region: "Philippines",
+      fn: () => fetchGoldmineJobs(s.name)
+    }))
   ];
 
   let totalEmitted = 0;
