@@ -131,3 +131,44 @@ export async function emitIngestionHeartbeat(source: string, region: string = 'G
     console.error('🚫 [HEARTBEAT] Failed to emit ingestion heartbeat:', err);
   }
 }
+
+/**
+ * 🛡️ THE ETHICAL FLEET: Respect the Seat
+ * Checks if another engine has performed a discovery run in the last X minutes.
+ * Prevents DDoS-like behavior from overlapping GHA/CF/Trigger runs.
+ */
+export async function shouldSkipDiscovery(engineId: string, windowMinutes: number = 7) {
+  try {
+    const [record] = await db.select().from(vitals).where(eq(vitals.id, 'GLOBAL')).limit(1);
+    if (!record || !record.lastHarvestAt) return false;
+
+    const lastHarvestAt = new Date(record.lastHarvestAt).getTime();
+    const diffMs = Date.now() - lastHarvestAt;
+    const isWithinWindow = diffMs < (windowMinutes * 60 * 1000);
+
+    if (isWithinWindow && record.lastHarvestEngine !== engineId) {
+      console.log(`🚥 [FLEET] Respecting the Seat: Engine '${record.lastHarvestEngine}' harvested ${Math.floor(diffMs / 60000)}m ago. '${engineId}' is Backing Off.`);
+      return true;
+    }
+
+    return false;
+  } catch (err) {
+    console.error('🚫 [FLEET] Failed to check harvest lockout:', err);
+    return false; // Fail-open
+  }
+}
+
+/**
+ * 🛰️ Record a successful Fleet Discovery run.
+ */
+export async function recordHarvestSuccess(engineId: string) {
+  try {
+    await db.update(vitals).set({ 
+      lastHarvestAt: new Date(), 
+      lastHarvestEngine: engineId 
+    }).where(eq(vitals.id, 'GLOBAL'));
+    console.log(`🛰️ [FLEET] Leadership recorded: '${engineId}' successfully harvested.`);
+  } catch (err) {
+    console.error('🚫 [FLEET] Failed to record harvest success:', err);
+  }
+}

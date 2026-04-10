@@ -1,7 +1,7 @@
 name: Phantom Harrier (Scout Ship)
 on:
   schedule:
-    - cron: "*/30 * * * *" # Every 30 minutes
+    - cron: "0 * * * *" # Every 1 hour (Staggered Friction Lifting)
   workflow_dispatch:
 
 jobs:

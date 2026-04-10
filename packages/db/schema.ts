@@ -62,6 +62,7 @@ export const opportunities = sqliteTable('opportunities', {
   tierLatestIdx: index('tier_latest_idx').on(table.tier, table.latestActivityMs),
   domainRankIdx: index('domain_rank_idx').on(table.relevanceScore, table.tier),
   regionIdx: index('region_idx').on(table.region),
+  latestActivityIdx: index('latest_activity_idx').on(table.latestActivityMs),
 }));
 
 export const systemHealth = sqliteTable('system_health', {
@@ -105,6 +106,10 @@ export const vitals = sqliteTable('vitals', {
   lastIngestionHeartbeatMs: integer('last_ingestion_heartbeat_ms'),
   lastProcessingHeartbeatMs: integer('last_processing_heartbeat_ms'),
   heartbeatSource: text('heartbeat_source'),
+
+  // 🛡️ Ethical Fleet Coordination (Respect the Seat)
+  lastHarvestAt: integer('last_harvest_at', { mode: 'timestamp' }),
+  lastHarvestEngine: text('last_harvest_engine'), // 'gha' | 'cloudflare' | 'trigger'
 });
 
 export const logs = sqliteTable('logs', {

@@ -122,18 +122,30 @@ export async function harvest(options?: { unhealthySources?: string[], targetReg
 
 export const scrapeOpportunitiesTask = schedules.task({
   id: "harvest-opportunities",
-  cron: "*/10 * * * *",
+  cron: "*/12 * * * *", // Staggered: 12-min cadence (The Goldilocks Rule)
   queue: { concurrencyLimit: 1 },
   run: async (payload: any, { ctx }: any) => {
-    const { setTriggerExhausted } = await import("../packages/db/governance");
+    const { getTriggerStatus, setTriggerExhausted, shouldSkipDiscovery, recordHarvestSuccess } = await import("../packages/db/governance");
     const triggerSource = payload?.source || ctx.trigger?.id || 'schedule';
     logger.info(`[harvest] Initiating signal pulse. Source: ${triggerSource}`);
     
+    // 🛡️ ETHICAL FLEET: Respect the Seat
+    if (await shouldSkipDiscovery('trigger')) {
+      return { status: "skipped_by_fleet_coordination", emitted: 0 };
+    }
+
     try {
-      return await harvest({ 
+      const result = await harvest({ 
         unhealthySources: payload?.unhealthySources,
-        targetRegion: payload?.region || payload?.targetRegion
+        targetRegion: payload?.region || payload?.targetRegion,
+        runnerId: 'trigger'
       });
+
+      if (result.emitted > 0) {
+        await recordHarvestSuccess('trigger');
+      }
+
+      return result;
     } catch (err: any) {
       // 🕵️ Autonomous Detection: If the platform is screaming about credits/usage
       const isExhaustion = 

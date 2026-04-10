@@ -26,6 +26,9 @@ export async function proxyFetch(targetUrl: string, options: RequestInit = {}): 
 
     const headers = new Headers(options.headers || {});
     headers.set("X-VA-Proxy-Secret", proxySecret);
+    
+    // 🛡️ ETHICAL IDENTITY: Transparent Identification
+    headers.set("User-Agent", "VA-Hub-Harvester/3.0 (Ethical Career Pulse; filipino-freelancer-support; +https://va-freelance-hub.com/ethics)");
 
     const res = await fetch(url.toString(), {
       ...options,

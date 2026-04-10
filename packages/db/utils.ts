@@ -19,3 +19,21 @@ export const normalizeDate = (val: any): Date => {
   // 10,000,000,000 corresponds to Sat Nov 20 2286 17:46:40 UTC
   return num < 10000000000 ? new Date(num * 1000) : new Date(num);
 };
+
+/**
+ * 🔒 THE IDEMPOTENCY SHIELD: Discovery Hash
+ * Unifies signal identification across GHA, Cloudflare, and Inngest.
+ * Prevents signal overlap by creating a deterministic 16-char identifier.
+ */
+import { createHash } from "crypto";
+
+export function generateDiscoveryHash(title: string, url: string, company: string = "Generic"): string {
+  const normalizedTitle = title.toLowerCase().trim();
+  const normalizedUrl = url.split('?')[0].toLowerCase().trim(); // Strip UTMs/Query params
+  const normalizedCompany = company.toLowerCase().trim();
+  
+  return createHash("sha256")
+    .update(`${normalizedTitle}::${normalizedCompany}::${normalizedUrl}`)
+    .digest("hex")
+    .slice(0, 16);
+}

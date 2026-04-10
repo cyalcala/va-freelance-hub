@@ -47,6 +47,14 @@ async function extractWithCerebras(html: string, url: string) {
 
 async function runHarrier() {
   console.log("═══ PHANTOM HARRIER (Vector 2) INITIATED ═══");
+  
+  const { shouldSkipDiscovery, recordHarvestSuccess } = await import("../packages/db/governance");
+
+  // 🛡️ ETHICAL FLEET: Respect the Seat
+  if (await shouldSkipDiscovery('gha', 15)) { // Harrier is heavy, give it a 15-min window
+    console.log("🚥 [FLEET] Harrier is backing off to respect existing harvest seat.");
+    return;
+  }
 
   const targets = [
     {
@@ -112,11 +120,13 @@ async function runHarrier() {
           await db.insert(opportunitiesSchema)
             .values(validation.data as any) // Cast to bypass Drizzle's strictness on optional id vs required primary key
             .onConflictDoUpdate({
-              target: [opportunitiesSchema.title, opportunitiesSchema.company, opportunitiesSchema.sourceUrl],
+              target: [opportunitiesSchema.title, opportunitiesSchema.company, opportunitiesSchema.url],
               set: { lastSeenAt: normalizeDate(new Date()), isActive: true }
             });
         }
       }
+
+      await recordHarvestSuccess('gha');
     } catch (err: any) {
       console.error(`[harrier] Failure on ${target.name}:`, err.message);
     }

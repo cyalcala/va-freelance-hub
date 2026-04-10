@@ -1,5 +1,7 @@
 export interface Env {
   VA_PROXY_SECRET: string;
+  SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
 }
 
 const USER_AGENTS = [
@@ -47,8 +49,48 @@ export default {
         redirect: "follow",
       });
 
-      // 3. Payload Sieve (HTML Rewriting to reduce OOM risk in Trigger.dev)
+      // 3. Active Scout: Identify and Emit Signals
       const contentType = response.headers.get("Content-Type") || "";
+      if (contentType.includes("text/html") && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY) {
+        
+        // Clone for inspection to avoid consuming the original body prematurely
+        const clonedResponse = response.clone();
+        
+        // Background the sifting process to avoid blocking the user request
+        ctx.waitUntil((async () => {
+          try {
+            const html = await clonedResponse.text();
+            
+            // Simple Pattern Discovery (Heuristic)
+            const isJobBoard = html.includes("Apply") || html.includes("Salary") || html.includes("Remote");
+            
+            if (isJobBoard) {
+               // EMIT TO SUPABASE: Direct High-Velocity Lead Generation
+               await fetch(`${env.SUPABASE_URL}/rest/v1/raw_job_harvests`, {
+                 method: 'POST',
+                 headers: {
+                   'Authorization': `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+                   'apikey': env.SUPABASE_SERVICE_ROLE_KEY,
+                   'Content-Type': 'application/json',
+                   'Prefer': 'return=minimal'
+                 },
+                 body: JSON.stringify({
+                   source_url: targetUrl,
+                   raw_payload: html.substring(0, 50000), // Cap payload for edge limits
+                   source_platform: "Cloudflare Edge Scout",
+                   status: "RAW",
+                   triage_status: "PENDING",
+                   created_at: new Date().toISOString()
+                 })
+               });
+            }
+          } catch (scoutErr) {
+            console.error("Scout Ingestion Error:", scoutErr);
+          }
+        })());
+      }
+
+      // 4. Payload Sieve (HTML Rewriting to reduce OOM risk in Trigger.dev)
       if (contentType.includes("text/html")) {
         return new HTMLRewriter()
           .on("script", { element(el) { el.remove(); } })
