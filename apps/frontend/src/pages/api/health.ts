@@ -168,6 +168,11 @@ export const GET: APIRoute = async () => {
           ? normalizeDate(vitalsRow.triggerLastExhaustion).toISOString()
           : null,
       },
+      sentinel: {
+        lastInterventionAt: vitalsRow?.lastInterventionAt ? normalizeDate(vitalsRow.lastInterventionAt).toISOString() : null,
+        lastInterventionReason: vitalsRow?.lastInterventionReason || "NONE",
+        state: vitalsRow?.sentinelState ? JSON.parse(vitalsRow.sentinelState) : {}
+      }
     };
 
     if (diagnostics.vitals.isStale || heartbeatState === "STALE" || heartbeatState === "SUSPECT_HEARTBEAT") {

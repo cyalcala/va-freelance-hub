@@ -16,6 +16,7 @@ export interface Source {
   ethical_note: string;
   is_json?: boolean;
   json_type?: "JobStreet" | "Indeed";
+  trustLevel: "native" | "global"; // 'native' = PH-specific, 'global' = Worldwide/Noisy
 }
 
 export interface NicheConfig {
@@ -103,7 +104,8 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Official public RSS feed provided by Himalayas for job syndication.",
-      region: "Global"
+      region: "Global",
+      trustLevel: "global"
     },
     {
       id: "we-work-remotely",
@@ -113,7 +115,8 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Public RSS feed offered by WWR since 2013. Companies pay to post.",
-      region: "Global"
+      region: "Global",
+      trustLevel: "global"
     },
     {
       id: "remote-ok",
@@ -123,7 +126,8 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "high-pay"],
       ethical_note: "Public RSS feed. RemoteOK openly provides this for syndication.",
-      region: "Global"
+      region: "Global",
+      trustLevel: "global"
     },
     {
       id: "problogger",
@@ -133,7 +137,8 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "freelance",
       tags: ["writing", "creative", "content"],
       ethical_note: "Public RSS job board feed. Companies pay to list writing/creative roles.",
-      region: "Global"
+      region: "Global",
+      trustLevel: "global"
     },
     {
       id: "jobspresso-support",
@@ -143,7 +148,8 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "VA",
       tags: ["customer support", "marketing", "va"],
       ethical_note: "Public RSS feed provided by Jobspresso for remote job syndication.",
-      region: "Global"
+      region: "Global",
+      trustLevel: "global"
     },
     {
       id: "remotive",
@@ -153,7 +159,8 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Public RSS feed provided by Remotive for job syndication.",
-      region: "Global"
+      region: "Global",
+      trustLevel: "global"
     },
     {
       id: "working-nomads",
@@ -163,7 +170,8 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Public RSS feed provided by Working Nomads for job syndication.",
-      region: "Global"
+      region: "Global",
+      trustLevel: "global"
     },
     {
       id: "daily-remote",
@@ -173,7 +181,8 @@ export const defaultConfig: NicheConfig = {
       defaultJobType: "full-time",
       tags: ["remote", "global"],
       ethical_note: "Public RSS feed provided by DailyRemote for job syndication.",
-      region: "Global"
+      region: "Global",
+      trustLevel: "global"
     }
   ],
 
@@ -188,7 +197,8 @@ export const defaultConfig: NicheConfig = {
       ethical_note: "Public JSON search endpoint used by the JobStreet/SEEK frontend.",
       is_json: true,
       json_type: "JobStreet",
-      region: "Philippines"
+      region: "Philippines",
+      trustLevel: "native"
     },
     {
       id: "jobstreet-ph-admin",
@@ -200,7 +210,8 @@ export const defaultConfig: NicheConfig = {
       ethical_note: "Public JSON search endpoint used by the JobStreet/SEEK frontend.",
       is_json: true,
       json_type: "JobStreet",
-      region: "Philippines"
+      region: "Philippines",
+      trustLevel: "native"
     }
   ],
 

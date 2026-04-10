@@ -62,12 +62,27 @@ export const jobHarvested = inngest.createFunction(
     const result = await step.run("ai-extraction-and-sift", async () => {
       const { config } = await import("../../../../../packages/config");
       const isPrimary = event.data.region === config.primary_region;
+      
+      // 🛡️ THE FORTRESS: Identify Source Trust
+      const source = config.rss_sources.find(s => s.id === event.data.source_id) || 
+                     config.json_sources.find(s => s.id === event.data.source_id);
+      const isGlobalSource = source?.trustLevel === 'global';
 
       try {
         let extraction;
+        const { AIMesh } = await import("../../../../../packages/ai/ai-mesh");
+
+        // 🚧 GLOBAL BOUNCER: If source is global, we MANDATE a fast triage pulse
+        if (isGlobalSource) {
+          const triage = await AIMesh.triage(raw_html || raw_title);
+          if (triage === 'REJECTED') {
+            console.warn(`🚥 [BOUNCER] Rejected global signal: ${raw_title} (${raw_company}) is likely region-locked.`);
+            return { status: "dropped", reason: "global_triage_reject", md5_hash };
+          }
+        }
         
         if (isPrimary) {
-           // 🧪 HIGH-FIDELITY: AI extraction for primary region
+           // 🧪 HIGH-FIDELITY: Full AI extraction for primary region
            extraction = await runAIWaterfall(raw_html);
         } else {
            // 🚥 METADATA-ONLY: Skeleton extraction for secondary regions (Credit Saver)
@@ -83,7 +98,7 @@ export const jobHarvested = inngest.createFunction(
              locationType: 'remote',
              tier: heuristic.tier,
              relevanceScore: 0,
-             isPhCompatible: true, // secondary signals are always passive-accept
+             isPhCompatible: !isGlobalSource, // Global sources MUST fail-closed if skipping full AI
              metadata: { meta_only: true, region: event.data.region }
            };
         }
@@ -160,6 +175,31 @@ export const jobHarvested = inngest.createFunction(
 
         return { status: "inserted_fallback", md5_hash };
       }
+    });
+
+    return result;
+  }
+);
+
+/**
+ * 🛰️ SENTINEL PULSE: Level-4 Autonomous Audit
+ * Runs every 4 hours to perform deep system maintenance.
+ */
+export const sentinelPulse = inngest.createFunction(
+  { 
+    id: "sentinel-pulse", 
+    name: "Sentinel Pulse (Project Aegis)",
+    triggers: [{ cron: "0 */4 * * *" }] // Every 4 hours
+  },
+  async ({ step }) => {
+    console.log("🛡️ [AEGIS] Sentinel Pulse initiating autonomous audit...");
+    
+    // Perform Surgical SRE Audit
+    const result = await step.run("sentinel-audit", async () => {
+      const { sentinel } = await import("../../../../../packages/db/sentinel");
+      await sentinel.diagnoseAndRepair("autonomous-cron-pulse");
+      
+      return { status: "COMPLETED", timestamp: Date.now() };
     });
 
     return result;

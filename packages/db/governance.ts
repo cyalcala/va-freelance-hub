@@ -139,6 +139,11 @@ export async function emitIngestionHeartbeat(source: string, region: string = 'G
  */
 export async function shouldSkipDiscovery(engineId: string, windowMinutes: number = 7) {
   try {
+    // 🛡️ THE APEX SENTINEL: Triage Pulse
+    // Before we even check the seat, let the Sentinel perform a surgical audit.
+    const { sentinel } = await import('./sentinel');
+    await sentinel.diagnoseAndRepair(engineId);
+
     const [record] = await db.select().from(vitals).where(eq(vitals.id, 'GLOBAL')).limit(1);
     if (!record || !record.lastHarvestAt) return false;
 

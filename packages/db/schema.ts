@@ -109,7 +109,12 @@ export const vitals = sqliteTable('vitals', {
 
   // 🛡️ Ethical Fleet Coordination (Respect the Seat)
   lastHarvestAt: integer('last_harvest_at', { mode: 'timestamp' }),
-  lastHarvestEngine: text('last_harvest_engine'), // 'gha' | 'cloudflare' | 'trigger'
+  lastHarvestEngine: text('last_harvest_engine'),
+
+  // 🛡️ THE TITANIUM SENTINEL: Autonomous Governance
+  lastInterventionAt: integer('last_intervention_at', { mode: 'timestamp' }),
+  lastInterventionReason: text('last_intervention_reason'),
+  sentinelState: text('sentinel_state'), // JSON: { drift_score, total_purged, ai_quota_override }
 });
 
 export const logs = sqliteTable('logs', {

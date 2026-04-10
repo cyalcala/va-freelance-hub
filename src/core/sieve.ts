@@ -34,11 +34,14 @@ const GEO_EXCLUSION_KILLS = [
   "must be authorized to work in the us","us work authorization required",
   "must be based in the us","must reside in the us","must be a us resident",
   "must live in the us","us citizen or permanent resident",
-  "w-2 employee","w2 only","w2 employee",
+  "w-2 employee","w2 only","w2 employee","must have a ssn","social security number",
+  "1099 only","c2c only","no c2c","no 1099","w2 applicants only",
   "uk only","uk citizens only","must be based in the uk","must have right to work in the uk",
   "eu only","eu citizens only","eea only","must be based in europe",
   "emea only","emea-based","north america only",
   "canada only","must be in canada","australia only","must be in australia",
+  "authorized to work in the us","authorized to work in canada","authorized to work in the uk",
+  "us work authorization","eligible to work in the us",
   "must have right to work in australia","new zealand only",
   "must be in new york","must be in california","must be in portland","must be in atlanta",
   "must be in chicago","must be in austin","must be in seattle","must be in boston",
@@ -50,6 +53,7 @@ const GEO_EXCLUSION_KILLS = [
   "eastern time zone","pacific time zone","central time zone","mountain time zone",
   "visa sponsorship is not available", "sponsorship not available",
   "reside in the following states", "united states of america",
+  "us time zone","uk time zone","canada time zone",
 ];
 
 const TITLE_GEO_KILLS = [
@@ -60,8 +64,8 @@ const TITLE_GEO_KILLS = [
   " north america", " south america", " emea", " apac only", " latam",
   "united kingdom", "london-based", "ny-based", "sf-based", "la-based",
   "atlanta-based", "chicago-based", "austin-based", "seattle-based",
-  "atlanta-based", "chicago-based", "austin-based", "seattle-based",
   "dallas-based", "denver-based", "phoenix-based",
+  "us context", "uk context", "canada context", "us-only", "uk-only"
 ];
 
 const LANGUAGE_KILLS = [
