@@ -15,8 +15,8 @@ const GHOST_SENTINEL = "||V12_GHOST_LEAD||";
 const EDGE_PROXY_URL = process.env.EDGE_PROXY_URL || "https://va-edge-proxy.cyrusalcala-agency.workers.dev";
 const EDGE_PROXY_SECRET = process.env.VA_PROXY_SECRET;
 
-import { chronosHeartbeat } from "../../../lib/inngest/heartbeat";
-import { sentinelPulse, jobHarvested } from "../../../lib/inngest/functions";
+import { chronosHeartbeat } from "../../lib/inngest/heartbeat";
+import { sentinelPulse, jobHarvested } from "../../lib/inngest/functions";
 
 function htmlToText(html: string): string {
   return html

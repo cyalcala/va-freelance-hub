@@ -56,7 +56,7 @@ export const AIExtractionSchema = z.object({
     if (normalized.includes('MARKETING') || normalized.includes('SOCIAL_MEDIA') || normalized.includes('SEO')) return 'MARKETING';
     if (normalized.includes('SALES') || normalized.includes('GROWTH') || normalized.includes('BUSINESS_DEVELOPMENT')) return 'SALES_GROWTH';
     if (normalized.includes('DESIGN') || normalized.includes('EDITOR') || normalized.includes('CREATIVE') || normalized.includes('VIDEO')) return 'CREATIVE_MULTIMEDIA';
-    if (normalized.includes('CUSTOMER') || normalized.includes('SUPPORT') || normalized.includes('BPO') || normalized.includes('HELP_DESK')) return 'BPO_SERVICES';
+    if (normalized.includes('CUSTOMER') || normalized.includes('SUPPORT') || normalized.includes('BPO') || normalized.includes('HELP_DESK') || normalized.includes('MODERATOR') || normalized.includes('CSR') || normalized.includes('CALL_CENTER') || normalized.includes('VOICE')) return 'BPO_SERVICES';
     if (normalized.includes('VIRTUAL_ASSISTANT') || normalized.includes('VA') || normalized.includes('EXECUTIVE') || normalized.includes('ADMIN')) return 'VA_SUPPORT';
 
     // 🛡️ AEGIS FALLBACK: Instead of erroring out, map to VA_SUPPORT to maintain UI visibility

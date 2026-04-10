@@ -212,6 +212,19 @@ export const defaultConfig: NicheConfig = {
       json_type: "JobStreet",
       region: "Philippines",
       trustLevel: "native"
+    },
+    {
+      id: "jobstreet-ph-customer-service",
+      name: "JobStreet PH (Customer Service)",
+      url: "https://www.jobstreet.com.ph/api/chalice-search/v4/search?siteKey=PH-Main&where=Philippines&keywords=customer+service",
+      platform: "JobStreet",
+      defaultJobType: "BPO",
+      tags: ["philippines", "bpo", "customer service"],
+      ethical_note: "Public JSON search endpoint used by the JobStreet/SEEK frontend.",
+      is_json: true,
+      json_type: "JobStreet",
+      region: "Philippines",
+      trustLevel: "native"
     }
   ],
 

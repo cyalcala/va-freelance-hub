@@ -137,6 +137,7 @@ export class AIMesh {
     const candidates: ModelConfig[] = [
       ...rotatedORModels, // The Primary Workhorses (80%)
       { name: 'groq-llama', provider: 'groq', modelId: 'llama-3.3-70b-versatile' }, // Moderate Chef
+      { name: 'groq-llama-instant', provider: 'groq', modelId: 'llama-3.1-8b-instant' }, // High-Limit Backup
       { name: 'cerebras-llama', provider: 'cerebras', modelId: 'llama3.1-8b' }, // Recovery Expert
     ];
 
@@ -252,10 +253,9 @@ export class AIMesh {
       signal: AbortSignal.timeout(this.REQUEST_TIMEOUT_MS),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `${system}\n\nCONTENT:\n${user}` }] }],
+        contents: [{ parts: [{ text: `${system}\n\nIMPORTANT: YOU MUST RETURN ONLY VALID JSON.\n\nCONTENT:\n${user}` }] }],
         generationConfig: { 
-          temperature: 0, 
-          responseMimeType: 'application/json' 
+          temperature: 0
         }
       })
     });
