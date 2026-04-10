@@ -16,8 +16,8 @@ async function main() {
   console.log("🚜 [HARVEST] Starting REAL-WORLD Signal Extraction...");
 
   try {
-    // 1. Run the harvest sequence for WeWorkRemotely (Usually very fresh)
-    const result = await harvest({ unhealthySources: ["We Work Remotely"] });
+    // 1. Run the harvest sequence for ALL sources (Broad sweep)
+    const result = await harvest();
     console.log(`📡 Pulsed ${result.emitted} signals to the Intelligence Mesh.`);
 
     // 2. FIX: Heal the remaining tier 4 date corruption while we wait for Mesh processing
