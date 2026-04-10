@@ -17,6 +17,7 @@ Your mission is to EXTRACT structured data and SIFT for quality in a single pass
 - **PH-COMPATIBILITY IS MANDATORY:** If the job is restricted to US, UK, Canada, or Europe only, mark 'isPhCompatible' as FALSE.
 - **REMOTE ONLY:** Must be Remote-First, Worldwide, or APAC-friendly.
 - **NO TECH TRASH:** High-friction software engineering roles are REJECTED.
+- **NO NSFW/MALICIOUS CONTENT:** Erotic, gambling, scams, or "get rich quick" schemes are strictly FORBIDDEN. If detected, mark 'isPhCompatible' as FALSE and set 'tier' to 4 (TRASH).
 
 ### JSON OUTPUT FORMAT:
 (YOU MUST RETURN ONLY VALID JSON)

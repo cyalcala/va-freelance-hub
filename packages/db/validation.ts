@@ -36,7 +36,13 @@ export const OpportunitySchema = z.object({
   latestActivityMs: z.coerce.number().int().default(() => Date.now()),
   companyLogo: z.string().url().trim().optional().nullable().or(z.literal("")),
   metadata: z.string().optional().default("{}")
-}).strip();
+}).strip().refine(data => {
+  const nsfw = ["onlyfans", "pornhub", "sex", "escort", "erotic", "porn", "gambling", "casino"];
+  const content = `${data.title} ${data.description}`.toLowerCase();
+  return !nsfw.some(kw => content.includes(kw));
+}, {
+  message: "Content contains prohibited NSFW keywords"
+});
 
 export const AIExtractionSchema = z.object({
   title: z.string().min(2).max(255).trim(),

@@ -86,6 +86,18 @@ const TECH_HARD_KILLS = [
   "database administrator"," dba","qa engineer"," sdet","test automation",
 ];
 
+const NSFW_KILLS = [
+  "onlyfans", "pornhub", "adult industry", "escort service", "erotic", 
+  "sex work", "cam girl", "cam boy", "fetish", "nsfw", "dating site",
+  "gambling", "casino", "betting", "poker", "slots", "sportsbook"
+];
+
+const MALICIOUS_KILLS = [
+  "earn $1000 a week", "easy money", "no experience needed", "click here",
+  "whatsapp reach out", "telegram reach out", "investment opportunity",
+  "crypto trading", "forex signals", "binary options", "pyramid scheme"
+];
+
 const TECH_ALLOWLIST = [
   "technical support","technical writer","technical recruiter",
   "no-code","prompt engineer","it support","help desk",
@@ -241,6 +253,10 @@ function calculateTier(
   
   for (const k of GEO_EXCLUSION_KILLS) if (body.includes(k)) return OpportunityTier.TRASH;
   for (const k of LANGUAGE_KILLS) if (t.includes(k)) return OpportunityTier.TRASH;
+  
+  // 🔞 NSFW & MALICIOUS SHIELDS
+  for (const k of NSFW_KILLS) if (body.includes(k)) return OpportunityTier.TRASH;
+  for (const k of MALICIOUS_KILLS) if (body.includes(k)) return OpportunityTier.TRASH;
   
   // 🛡️ SECURITY SHIELD: Negative Guardrails
   const videoAudioKeywords = ["video", "audio", "reel", "youtube", "tiktok", "podcast", "editor", "animator"];
