@@ -6,6 +6,44 @@ import { eq } from "drizzle-orm";
 import crypto from "crypto";
 import { supabase } from "../packages/db/supabase";
 
+const GHOST_SENTINEL = "||V12_GHOST_LEAD||";
+const EDGE_PROXY_URL = process.env.EDGE_PROXY_URL || "https://va-edge-proxy.cyrusalcala-agency.workers.dev";
+const EDGE_PROXY_SECRET = process.env.VA_PROXY_SECRET;
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function getCookablePayload(job: { raw_payload?: string; source_url?: string | null }): Promise<string> {
+  if (job.raw_payload && job.raw_payload !== GHOST_SENTINEL && job.raw_payload.length >= 120) {
+    return job.raw_payload;
+  }
+  if (!job.source_url) throw new Error("Missing source_url for ghost hydration");
+
+  const proxiedUrl = new URL(EDGE_PROXY_URL);
+  proxiedUrl.searchParams.set("url", job.source_url);
+  const useEdgeProxy = Boolean(EDGE_PROXY_URL && EDGE_PROXY_SECRET);
+
+  console.log(`📡 [HYDRATE] Fetching content for: ${job.source_url}`);
+  const res = await fetch(useEdgeProxy ? proxiedUrl.toString() : job.source_url, {
+    signal: AbortSignal.timeout(15000),
+    headers: useEdgeProxy
+      ? { "X-VA-Proxy-Secret": EDGE_PROXY_SECRET as string, "user-agent": "VAHubSousChef/1.0 (+ghost-hydration)" }
+      : { "user-agent": "VAHubSousChef/1.0 (+ghost-hydration)" },
+  });
+  if (!res.ok) throw new Error(`Hydration fetch failed: ${res.status}`);
+
+  const html = await res.text();
+  const text = htmlToText(html);
+  if (!text || text.length < 120) throw new Error("Hydration yielded insufficient content");
+  return text.slice(0, 20000);
+}
+
 async function forceCook() {
   console.log("👨‍🍳 [FORCE-COOK] Attempting manual job processing...");
 
@@ -20,9 +58,10 @@ async function forceCook() {
   console.log(`👨‍🍳 [FORCE-COOK] Claimed Job: ${job.id} (${job.source_platform})`);
 
   try {
-    // 2. AI Extraction
+    // 2. Hydration & AI Extraction
+    const cookablePayload = await getCookablePayload(job);
     console.log("🧠 Processing with AI Mesh...");
-    const extraction = await AIMesh.extract(job.raw_payload);
+    const extraction = await AIMesh.extract(cookablePayload);
     console.log("✨ AI Result:", JSON.stringify(extraction, null, 2));
 
     // 3. Logic Check

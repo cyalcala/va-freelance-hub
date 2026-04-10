@@ -16,6 +16,7 @@ import { readFileSync, writeFileSync, existsSync } from "fs";
 import { $ } from "bun";
 import { createClient } from "@libsql/client/http";
 import * as path from "path";
+import { Glob } from "bun";
 
 // ── Bootstrap ─────────────────────────────────────────────────────
 const envPath = path.join(process.cwd(), ".env.local");
@@ -53,10 +54,18 @@ function db() {
   return createClient({ url, authToken: token });
 }
 
+function getBaseUrl() {
+  return process.env.LOCAL_TEST_URL || "https://va-freelance-hub-web.vercel.app";
+}
+
 async function fetchWithCrossExamination(url: string, opts: RequestInit = {}, timeoutMs = 8000) {
+  const targetUrl = url.startsWith("https://va-freelance-hub-web.vercel.app") 
+    ? url.replace("https://va-freelance-hub-web.vercel.app", getBaseUrl()) 
+    : url;
+    
   const start = performance.now();
   try {
-    const resp = await fetch(url, {
+    const resp = await fetch(targetUrl, {
       ...opts,
       headers: { ...opts.headers, "Cache-Control": "no-cache", "Pragma": "no-cache" }
     });
@@ -110,8 +119,8 @@ async function detect(): Promise<Finding[]> {
     c.execute(`SELECT 
       COUNT(*) as new_last_24h,
       COUNT(CASE WHEN created_at IS NULL THEN 1 END) as missing_lineage
-      FROM opportunities WHERE scraped_at > unixepoch('now', '-24 hours')`),
-    c.execute(`SELECT COUNT(*) AS n FROM opportunities WHERE scraped_at > unixepoch('now', '-15 minutes') AND created_at < unixepoch('now', '-48 hours')`),
+      FROM opportunities WHERE scraped_at > (unixepoch('now', '-24 hours') * 1000)`),
+    c.execute(`SELECT COUNT(*) AS n FROM opportunities WHERE scraped_at > (unixepoch('now', '-15 minutes') * 1000) AND created_at < (unixepoch('now', '-48 hours') * 1000)`),
     c.execute(`SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1 AND tier IN (1,2,3) AND (LOWER(description) LIKE '%us only%' OR LOWER(description) LIKE '%w2 only%')`),
     c.execute(`SELECT 
       tier, 
@@ -205,21 +214,29 @@ async function detect(): Promise<Finding[]> {
   }
 
   // --- UI/UX LATENCY SWEEP (NEW) ---
-  const astroFiles = await $`find apps/frontend/src -name "*.astro"`.quiet();
-  const astroContent = await Promise.all(astroFiles.stdout.toString().split('\n').filter(Boolean).map((f: string) => fileRead(f)));
+  const astroGlob = new Glob("apps/frontend/src/**/*.astro");
+  const astroFiles = Array.from(astroGlob.scanSync("."));
+  const astroContent = await Promise.all(astroFiles.map((f: string) => fileRead(f)));
   
   let layoutShifts = 0;
   astroContent.forEach((content: string) => {
     if (content.includes('<img') && !content.includes('width=') && !content.includes('height=')) layoutShifts++;
   });
-
   if (layoutShifts > 0) {
     findings.push({ id: "UI_LAYOUT_SHIFT_RISK", confidence: 85, description: `Images missing dimensions detected.`, evidence: `${layoutShifts} unconstrained images.`, fixKey: "FIX_E_UX" });
   }
 
-  const cssBloat = await $`find apps/frontend -name "*.css" -size +50k`.quiet();
-  if (cssBloat.stdout.toString().length > 0) {
-    findings.push({ id: "UI_ASSET_BLOAT", confidence: 75, description: `Large CSS files detected (>50KB).`, evidence: cssBloat.stdout.toString().trim(), fixKey: "FIX_E_UX" });
+  const cssGlob = new Glob("apps/frontend/**/*.css");
+  let cssBloatFiles = [];
+  for (const file of cssGlob.scanSync(".")) {
+    const stats = require("fs").statSync(file);
+    if (stats.size > 50 * 1024) {
+      cssBloatFiles.push(`${file} (${(stats.size / 1024).toFixed(1)}KB)`);
+    }
+  }
+
+  if (cssBloatFiles.length > 0) {
+    findings.push({ id: "UI_ASSET_BLOAT", confidence: 75, description: `Large CSS files detected (>50KB).`, evidence: cssBloatFiles.join(", "), fixKey: "FIX_E_UX" });
   }
 
   findings.sort((a, b) => b.confidence - a.confidence);

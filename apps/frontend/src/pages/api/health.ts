@@ -132,6 +132,8 @@ export const GET: APIRoute = async () => {
     diagnostics.vitals = {
       totalActive: total,
       isStale: dbStalenessHrs > slo.db_staleness_threshold_hrs || ingestionStalenessHrs > slo.ingestion_staleness_threshold_hrs,
+      dbStalenessHrs: Number(dbStalenessHrs.toFixed(2)),
+      ingestionStalenessHrs: Number(ingestionStalenessHrs.toFixed(2)),
       regions: regionalHealth,
       heartbeat: {
         state: heartbeatState,

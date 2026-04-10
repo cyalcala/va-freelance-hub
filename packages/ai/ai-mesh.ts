@@ -166,7 +166,15 @@ export class AIMesh {
         const validated = AIExtractionSchema.safeParse(json);
 
         if (validated.success) {
-          return { ...validated.data, metadata: { model: config.name } };
+          const data = validated.data;
+          
+          // 🛡️ ANTI-GHOST GUARDRAIL: Prevent marker leak into production
+          if (data.title?.includes("V12_GHOST_LEAD") || data.title?.includes("Ghost Lead")) {
+            console.error(`[AI-MESH] GHOST LEAK DETECTED in ${config.name} output! Rejecting...`);
+            continue;
+          }
+
+          return { ...data, metadata: { model: config.name } };
         } else {
           console.error(`[AI-MESH] Validation failed for ${config.name}:`, validated.error?.format());
           console.log(`[AI-MESH] Raw JSON from ${config.name}:`, JSON.stringify(json, null, 2));

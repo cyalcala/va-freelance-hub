@@ -19,8 +19,8 @@ async function audit() {
   const stats = await db.run(sql`
     SELECT 
       CASE 
-        WHEN datetime(scraped_at, 'unixepoch') > datetime('now', '-2 hours') THEN 'Last 2 Hours (Fresh)'
-        WHEN datetime(scraped_at, 'unixepoch') > datetime('now', '-24 hours') THEN 'Last 24 Hours'
+        WHEN scraped_at > (unixepoch('now', '-2 hours') * 1000) THEN 'Last 2 Hours (Fresh)'
+        WHEN scraped_at > (unixepoch('now', '-24 hours') * 1000) THEN 'Last 24 Hours'
         ELSE 'Older'
       END as freshness,
       COUNT(*) as count

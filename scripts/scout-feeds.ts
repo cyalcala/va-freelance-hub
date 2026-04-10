@@ -19,6 +19,7 @@ type FeedType = "xml" | "json";
 type ScoutFeed = { name: string; url: string; host: string; type: FeedType };
 
 const REDDIT_FEEDS: ScoutFeed[] = [
+  { name: "r/BPOinPH", url: "https://www.reddit.com/r/BPOinPH/new.json?limit=25", host: "reddit.com", type: "json" },
   { name: "r/BPOph", url: "https://www.reddit.com/r/BPOph/new.json?limit=25", host: "reddit.com", type: "json" },
   { name: "r/VAjobsPH", url: "https://www.reddit.com/r/VAjobsPH/new.json?limit=25", host: "reddit.com", type: "json" },
   { name: "r/phcareers", url: "https://www.reddit.com/r/phcareers/new.json?limit=25", host: "reddit.com", type: "json" },
@@ -96,8 +97,11 @@ async function scout() {
         const title = (item.title || '').toLowerCase();
         const description = (item.description || item.content || '').toLowerCase();
         
-        // 🛡️ HEURISTIC GEO-FENCE: Drop obvious non-PH signals immediately
-        const TOXIC_PATTERNS = ["us only", "uk only", "canada only", "w2 only", "usa only", "reside in the us"];
+        // 🛡️ HEURISTIC GEO-FENCE & NSFW SHIELD: Drop obvious foreign or offensive signals immediately
+        const TOXIC_PATTERNS = [
+          "us only", "uk only", "canada only", "w2 only", "usa only", "reside in the us",
+          "onlyfans", "of chatter", "nsfw", "sugar baby", "sugar daddy", "feet pics"
+        ];
         const isToxic = TOXIC_PATTERNS.some(p => title.includes(p) || description.includes(p));
 
         if (isToxic) {
