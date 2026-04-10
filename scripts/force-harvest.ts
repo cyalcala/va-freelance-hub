@@ -1,5 +1,8 @@
 import { harvest } from "../jobs/scrape-opportunities";
 import { client } from "../packages/db/client";
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 /**
  * 🚜 FORCE HARVEST v1.0

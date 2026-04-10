@@ -12,11 +12,8 @@ const { signals = [] } = Astro.props;
 let displaySignals = signals;
 
 if (displaySignals.length === 0) {
-  displaySignals = [
-    { id: 'fallback-1', title: 'System Synchronizing Core Intelligence...', company: 'APEX SENTINEL', tier: 1, url: '#' },
-    { id: 'fallback-2', title: 'Calibrating PH-First Signal Decay...', company: 'VA.INDEX', tier: 2, url: '#' },
-    { id: 'fallback-3', title: 'Harvesting Live Global Opportunities...', company: 'MIRROR ENGINE', tier: 3, url: '#' }
-  ];
+  // SRE: No more ghost jobs. Fail quietly with an empty array or scanning state handled by the component.
+  displaySignals = [];
 }
 ---
 <div class="mb-16 relative">
@@ -37,7 +34,7 @@ if (displaySignals.length === 0) {
       <div class="flex gap-5">
         {displaySignals.map((sig) => (
           <a 
-            href={sig.url || sig.sourceUrl || '#'} 
+            href={sig.url} 
             target="_blank" 
             class="group shrink-0 w-[300px] sm:w-[340px] bg-[#FDFBF7] border-2 border-blueberry-900 rounded-[2rem] p-6 hover:bg-blueberry-900 hover:text-white hover:-translate-y-2 transition-all shadow-[8px_8px_0_0_#1e3a8a] flex flex-col justify-between min-h-[160px] relative overflow-hidden"
           >

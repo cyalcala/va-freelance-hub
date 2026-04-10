@@ -222,13 +222,16 @@ export class AIMesh {
   }
 
   private static async fetchGemini(model: string, system: string, user: string) {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       signal: AbortSignal.timeout(this.REQUEST_TIMEOUT_MS),
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: `${system}\n\nCONTENT:\n${user}` }] }],
-        generationConfig: { temperature: 0, responseMimeType: 'application/json' }
+        generationConfig: { 
+          temperature: 0, 
+          responseMimeType: 'application/json' 
+        }
       })
     });
     const data: any = await res.json();

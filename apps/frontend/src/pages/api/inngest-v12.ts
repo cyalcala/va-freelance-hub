@@ -77,6 +77,8 @@ const pantryPoll = inngestClient.createFunction(
     const processingResults = await step.run("extract-and-prep", async () => {
       const { AIMesh } = await import("../../../../../packages/ai/ai-mesh");
       const results = [];
+      for (const job of jobs) {
+        try {
 
           // A. PH-Compatibility Gate & Regional Isolation
           const { config } = await import("../../../../../packages/config");

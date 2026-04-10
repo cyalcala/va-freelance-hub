@@ -32,7 +32,6 @@ async function restore() {
         .from('raw_job_harvests')
         .select('id, mapped_payload')
         .eq('status', 'PLATED')
-        .not('mapped_payload', 'is', null)
         .range(from, from + step - 1);
 
       if (error) throw error;
@@ -49,16 +48,20 @@ async function restore() {
 
     // 2. Hydrate and Upsert into Turso
     console.log("-> 2. Re-hydrating Gold Vault...");
+    const crypto = await import("node:crypto");
     let successCount = 0;
     const chunk = 50;
 
     for (let i = 0; i < allJobs.length; i += chunk) {
-      const batch = allJobs.slice(i, i + chunk);
+      const batch = allJobs.filter(j => !!j.mapped_payload).slice(i, i + chunk);
+      if (batch.length === 0) continue;
+
       const values = batch.map(j => {
         const payload = j.mapped_payload;
         return {
           ...payload,
           id: payload.id || uuidv4(),
+          md5_hash: payload.md5_hash || crypto.createHash('md5').update(payload.url + payload.title).digest('hex'),
           scrapedAt: new Date(payload.scrapedAt || Date.now()),
           postedAt: payload.postedAt ? new Date(payload.postedAt) : null,
           createdAt: new Date(payload.createdAt || Date.now()),

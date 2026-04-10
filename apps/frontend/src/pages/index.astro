@@ -42,7 +42,7 @@ try {
     mirrorSignals = mirror || [];
     
     if (initialSignals.length === 0) {
-      throw new Error('[SRE_CUSTODY] CRITICAL: Turso vault is EMPTY. No fallback data served.');
+      console.warn('[SRE_CUSTODY] Turso vault is currently empty. Serving domain shell.');
     }
   } else {
     throw new Error("Edge Configuration Missing (TURSO_URL)");
@@ -106,16 +106,12 @@ const processedSignals = initialSignals.map(sig => {
 
   return {
     ...sig,
-    niche,
-    url: sig.url || (sig.sourceUrl as string)
+    niche
   };
 });
 
 // SRE: No fallback - if mirrorSignals is empty, we already threw above
-const processedMirror = mirrorSignals.map(sig => ({
-  ...sig,
-  url: sig.url || (sig.sourceUrl as string)
-}));
+const processedMirror = mirrorSignals;
 
 
 import { getRegionalHealth } from '@va-hub/db/health-utils';
@@ -134,7 +130,6 @@ const domains = topDomains.map((domain) => ({
   signals: processedSignals.filter((sig) => sig.niche === domain),
 }));
 
----
 
 // ── HEALTH INTELLIGENCE ──
 const healthStats = {
@@ -233,8 +228,13 @@ const healthStats = {
                 ))}
 
                 {totalSignals === 0 && (
-                  <div class="mt-2 flex items-center justify-center py-6 rounded-xl border border-dashed border-oat-200 text-[10px] font-black text-blueberry-800/25 uppercase tracking-[0.2em]">
-                    No live signals yet
+                  <div class="mt-2 flex items-center justify-center py-10 rounded-2xl border-2 border-dashed border-oat-200/50 bg-oat-50/30 group-hover:border-blueberry-900/10 transition-colors">
+                    <div class="flex flex-col items-center gap-2">
+                       <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                       <span class="text-[9px] font-black text-blueberry-800/20 uppercase tracking-[0.25em]">
+                         Deep Scanning...
+                       </span>
+                    </div>
                   </div>
                 )}
                 

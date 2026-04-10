@@ -6,7 +6,6 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 
 import { getSortedSignals } from '@va-hub/db/sorting';
 import { JobDomain, DOMAIN_MANIFEST, getDomainBySlug, getDomainLabel } from '@va-hub/db/taxonomy';
-import staticFallback from '../../data/static_fallback.json';
 
 const { slug } = Astro.params;
 const domain = getDomainBySlug(slug || '');
@@ -28,11 +27,9 @@ try {
   } else {
     throw new Error("Edge Configuration Missing");
   }
-} catch (err) {
-  signals = staticFallback.filter(sig => {
-      const tags = typeof sig.tags === 'string' ? JSON.parse(sig.tags) : sig.tags;
-      return tags.includes(domain);
-  });
+} catch (err: any) {
+  console.error(`[SRE_CUSTODY] CRITICAL: Sector Data Fetch Failure: ${err.message}`);
+  throw new Error(`[SRE_CUSTODY] DATABASE_CUSTODY_LOST: ${err.message}.`);
 }
 ---
 
