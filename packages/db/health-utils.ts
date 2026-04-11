@@ -33,7 +33,8 @@ export async function getRegionalHealth() {
         name: regionName,
         state,
         pAge,
-        iAge
+        iAge,
+        lastHarvestEngine: regionVitals?.lastHarvestEngine || 'Waiting'
       };
     });
   } catch (err: any) {

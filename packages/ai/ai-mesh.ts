@@ -57,7 +57,7 @@ const OPENROUTER_FREE_MODELS = [
 
 interface ModelConfig {
   name: string;
-  provider: 'cerebras' | 'groq' | 'openrouter' | 'gemini';
+  provider: 'cerebras' | 'groq' | 'openrouter' | 'gemini' | 'cloudflare';
   modelId: string;
 }
 
@@ -66,6 +66,7 @@ const PROVIDER_DB_NAME: Record<ModelConfig['provider'], string> = {
   groq: 'Groq',
   openrouter: 'OpenRouter',
   gemini: 'Gemini',
+  cloudflare: 'Cloudflare',
 };
 
 export class AIMesh {
@@ -140,6 +141,7 @@ export class AIMesh {
       { name: 'groq-llama', provider: 'groq', modelId: 'llama-3.3-70b-versatile' }, // Moderate Chef
       { name: 'groq-llama-instant', provider: 'groq', modelId: 'llama-3.1-8b-instant' }, // High-Limit Backup
       { name: 'cerebras-llama', provider: 'cerebras', modelId: 'llama3.1-8b' }, // Recovery Expert
+      { name: 'cf-llama', provider: 'cloudflare' as const, modelId: '@cf/meta/llama-3.1-8b-instruct' }, // The Edge Shield (Apex)
     ];
 
     if (!isTightBudget) {
@@ -153,7 +155,8 @@ export class AIMesh {
     });
 
     if (extractionQueue.length === 0) {
-      console.warn('⚠️ [AI-MESH] BUDGET EXHAUSTED: Falling back to Emergency Gemini Pulse.');
+      console.warn('⚠️ [AI-MESH] BUDGET EXHAUSTED: Falling back to Apex Edge Pulse (CF).');
+      extractionQueue.push({ name: 'cf-llama', provider: 'cloudflare', modelId: '@cf/meta/llama-3.1-8b-instruct' });
       extractionQueue.push({ name: 'flash-shield', provider: 'gemini', modelId: 'gemini-1.5-flash' });
     }
 
@@ -203,6 +206,8 @@ export class AIMesh {
         return this.fetchOpenRouter(config.modelId, system, user);
       case 'gemini':
         return this.fetchGemini(config.modelId, system, user);
+      case 'cloudflare':
+        return this.fetchCloudflare(config.modelId, system, user);
       default:
         throw new Error(`Unknown provider: ${config.provider}`);
     }
@@ -271,5 +276,25 @@ export class AIMesh {
     const data: any = await res.json();
     if (!res.ok) throw new Error(`Gemini API Error: ${data.error?.message || JSON.stringify(data)}`);
     return data.candidates[0].content.parts[0].text;
+  }
+
+  private static async fetchCloudflare(model: string, system: string, user: string) {
+    const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/ai/run/${model}`, {
+      method: "POST",
+      signal: AbortSignal.timeout(this.REQUEST_TIMEOUT_MS),
+      headers: {
+        "Authorization": `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+      }),
+    });
+    const data: any = await res.json();
+    if (!res.ok) throw new Error(`Cloudflare AI Error: ${data.errors?.[0]?.message || JSON.stringify(data)}`);
+    return data.result.response;
   }
 }

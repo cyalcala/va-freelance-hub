@@ -229,3 +229,42 @@ export const sentinelPulse = inngest.createFunction(
     return result;
   }
 );
+
+/**
+ * 🛰️ SCHEDULED HARVESTER: The Secondary Heart
+ * Runs every 30 minutes to ensure data freshness even if Trigger.dev is paused.
+ */
+export const scheduledHarvester = inngest.createFunction(
+  { 
+    id: "scheduled-harvester", 
+    name: "Scheduled Harvester (Redundant Pulse)",
+    triggers: [{ cron: "*/30 * * * *" }] // Every 30 minutes
+  },
+  async ({ step }) => {
+    console.log("🚜 [INNGST] Initiating redundant harvest pulse...");
+
+    const result = await step.run("execute-harvest", async () => {
+      const { harvest } = await import("../../../../../jobs/scrape-opportunities");
+      const { shouldSkipDiscovery, recordHarvestSuccess } = await import("../../../../../packages/db/governance");
+
+      // Check Atomic Seat
+      const isStale = await shouldSkipDiscovery("inngest", "Philippines");
+      if (isStale) {
+        return { status: "skipped", reason: "seat_held" };
+      }
+
+      const harvestResult = await harvest({ 
+        runnerId: "inngest",
+        targetRegion: "Philippines" 
+      });
+
+      if (harvestResult.emitted > 0) {
+        await recordHarvestSuccess("inngest", "Philippines");
+      }
+
+      return harvestResult;
+    });
+
+    return result;
+  }
+);

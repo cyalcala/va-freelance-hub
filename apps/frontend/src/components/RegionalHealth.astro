@@ -67,6 +67,11 @@ const statusText: Record<string, string> = {
           <span>Ingestion Pulse:</span>
           <span class="font-bold tabular-nums">{track.iAge > 999 ? '>16h' : `${Math.floor(track.iAge)}m`}</span>
         </div>
+
+        <div class="flex justify-between mb-3 opacity-80 font-medium">
+          <span>Consensus Engine:</span>
+          <span class="font-bold uppercase tracking-wider text-sky-400">{track.lastHarvestEngine || 'Waiting'}</span>
+        </div>
         
         <div class="flex items-center gap-2 mb-3 p-2 bg-white/5 rounded-lg border border-white/5">
           <span class="opacity-40 uppercase text-[7px] font-bold tracking-widest">Budget State:</span>

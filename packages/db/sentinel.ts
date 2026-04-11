@@ -133,12 +133,13 @@ export class ApexSentinel {
       if (diff > GHOST_LOCK_THRESHOLD_MS) {
         console.warn(`👻 [SENTINEL] Ghost lock detected from engine '${record.lastHarvestEngine}' (${Math.floor(diff / 60000)}m ago). Purging...`);
         
+        const { releaseLease } = await import('./governance');
+        await releaseLease(record.id.replace('HEARTBEAT_', ''));
+
         await db.update(vitals).set({
-          lastHarvestAt: null, // Release the seat
-          lastHarvestEngine: null,
           lastInterventionAt: new Date(),
           lastInterventionReason: `Ghost Lock Purge: Released seat from '${record.lastHarvestEngine}'`
-        }).where(eq(vitals.id, 'GLOBAL'));
+        }).where(eq(vitals.id, record.id));
       }
     } catch (err: any) {
       console.error(`👻 [SENTINEL] Lock purge failure: ${err.message}`);

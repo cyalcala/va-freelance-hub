@@ -167,6 +167,12 @@ export const aiCooldowns = sqliteTable('ai_cooldowns', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
+export const selectorOverrides = sqliteTable('selector_overrides', {
+  id: text('id').primaryKey(), // source_id
+  selectors: text('selectors', { mode: 'json' }).notNull(), // { title, company, url, container }
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().$defaultFn(() => new Date()),
+});
+
 export type Agency = typeof agencies.$inferSelect;
 export type NewAgency = typeof agencies.$inferInsert;
 export type Opportunity = typeof opportunities.$inferSelect;

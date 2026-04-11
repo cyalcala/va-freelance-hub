@@ -140,7 +140,7 @@ export const scrapeOpportunitiesTask = schedules.task({
   cron: "*/20 * * * *", // Staggered: 20-min cadence (The Goldilocks Rule)
   queue: { concurrencyLimit: 1 },
   run: async (payload: any, { ctx }: any) => {
-    const { getTriggerStatus, setTriggerExhausted, shouldSkipDiscovery, recordHarvestSuccess } = await import("../packages/db/governance");
+    const { getTriggerStatus, setTriggerExhausted, acquireLease, recordHarvestSuccess } = await import("../packages/db/governance");
     const triggerSource = payload?.source || ctx.trigger?.id || 'schedule';
     logger.info(`[harvest] Initiating signal pulse. Source: ${triggerSource}`);
     
@@ -149,7 +149,7 @@ export const scrapeOpportunitiesTask = schedules.task({
     const pulse = await getAdaptiveCadence(payload?.region || 'Philippines');
     logger.info(`[PULSE] Current Cadence: ${pulse.cadence} (Interval: ${pulse.intervalMin}m)`);
 
-    if (await shouldSkipDiscovery('trigger', payload?.region || 'Philippines', pulse.intervalMin)) {
+    if (!(await acquireLease('trigger', payload?.region || 'Philippines', pulse.intervalMin))) {
       return { status: "skipped_by_fleet_coordination", emitted: 0, pulse: pulse.cadence };
     }
 

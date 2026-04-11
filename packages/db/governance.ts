@@ -138,33 +138,69 @@ export async function emitIngestionHeartbeat(source: string, region: string = 'G
 }
 
 /**
- * 🛡️ THE ETHICAL FLEET: Respect the Seat
- * Checks if another engine has performed a discovery run in the last X minutes.
- * Prevents DDoS-like behavior from overlapping GHA/CF/Trigger runs.
+ * 🛡️ THE ATOMIC SEAT: Sovereign Consensus
+ * Uses a single atomic SQL update to ensure only one engine is in the cockpit.
+ * @returns true if lease was ACQUIRED, false if already held.
  */
-export async function shouldSkipDiscovery(engineId: string, region: string = 'GLOBAL', windowMinutes: number = 7) {
+export async function acquireLease(engineId: string, region: string = 'GLOBAL', windowMinutes: number = 25) {
+  const now = Date.now();
+  const windowMs = windowMinutes * 60 * 1000;
+  const cutoff = new Date(now - windowMs);
+
   try {
-    // 🛡️ THE APEX SENTINEL: Triage Pulse
-    const { sentinel } = await import('./sentinel');
-    await sentinel.diagnoseAndRepair(engineId);
+     // ATOMIC OPERATION: Update ONLY if last_harvest_at is old or NULL
+     const result = await db.run(sql`
+        UPDATE vitals 
+        SET 
+          last_harvest_at = ${now}, 
+          last_harvest_engine = ${engineId},
+          lock_status = 'BUSY',
+          lock_updated_at = ${now}
+        WHERE 
+          id = ${`HEARTBEAT_${region}`} 
+          AND (last_harvest_at < ${cutoff.getTime()} OR last_harvest_at IS NULL)
+     `);
 
-    const [record] = await db.select().from(vitals).where(eq(vitals.id, `HEARTBEAT_${region}`)).limit(1);
-    if (!record || !record.lastHarvestAt) return false;
+     // In LibSQL result.rowsAffected or similar indicates if the update happened
+     // Since result format varies by driver, we check record count
+     if (result.rowsAffected === 1) {
+        console.log(`📡 [APEX] Lease ACQUIRED by '${engineId}' for ${region}.`);
+        return true;
+     }
 
-    const lastHarvestAt = new Date(record.lastHarvestAt).getTime();
-    const diffMs = Date.now() - lastHarvestAt;
-    const isWithinWindow = diffMs < (windowMinutes * 60 * 1000);
-
-    if (isWithinWindow && record.lastHarvestEngine !== engineId) {
-      console.log(`🚥 [FLEET] Respecting the Seat (${region}): Engine '${record.lastHarvestEngine}' harvested ${Math.floor(diffMs / 60000)}m ago. '${engineId}' is Backing Off.`);
-      return true;
-    }
-
-    return false;
+     console.log(`🚥 [APEX] Lease DENIED for '${engineId}'. Seat currently held.`);
+     return false;
   } catch (err) {
-    console.error(`🚫 [FLEET] Failed to check harvest lockout for ${region}:`, err);
-    return false; // Fail-open
+     console.error(`🚫 [APEX] Atomic lease failure:`, err);
+     return false; 
   }
+}
+
+/**
+ * 🛡️ FORCE RELEASE: Used by Sentinel to prune dead engines.
+ */
+export async function releaseLease(region: string = 'GLOBAL') {
+  try {
+    await db.update(vitals)
+      .set({ 
+        lockStatus: 'IDLE',
+        lastHarvestAt: null,
+        lastHarvestEngine: null 
+      })
+      .where(eq(vitals.id, `HEARTBEAT_${region}`));
+    console.log(`🛰️ [APEX] Lease RELEASED for ${region}.`);
+  } catch (err) {
+    console.error(`🚫 [APEX] Lease release failure:`, err);
+  }
+}
+
+/**
+ * 🛡️ THE ETHICAL FLEET: Respect the Seat
+ * (Legacy wrapper, now uses Atomic Seat)
+ */
+export async function shouldSkipDiscovery(engineId: string, region: string = 'GLOBAL') {
+  const hasLease = await acquireLease(engineId, region);
+  return !hasLease; // Skip if we failed to acquire lease
 }
 
 /**
