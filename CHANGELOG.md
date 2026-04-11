@@ -1,16 +1,26 @@
 
-## [2026-04-11] — [V12 SOVEREIGN | PH-FIRST HARDENING]
-**Status: QUALITY SOVEREIGNTY SECURED**
+## [2026-04-11] — [Opportunities: 54 | Agencies: 59]
+**Status: AUTO-PROCESSED**
+
+### ✨ Major Features
+* feat: V12 Sovereign Quality & Hypervisor Hardening - PH-First Sovereignty Secured (58eb4f7)
+* feat: Project AEON (Operational Immortality Layer) - Phase 1 Complete (b387d67)
+* feat: VA.INDEX Ultimate Resilience (Sovereign Harvester + Fidelity Gate v2 + SRE Escalation) (14d924e)
+* feat: reorder domains and remove freshness toast (d801c0d)
+
+---
+
+
+## [2026-04-11] — [V12.10 SOVEREIGN | SOURCE DIVERSITY]
+**Status: QUALITY & VARIETY SECURED**
 
 ### 🛡️ Hypervisor Hardening
-*   fix: **Artificial Pulse Suppression** — Resolved the "Sticky Staleness" bug where signal refreshes were erroneously updating sorting priority.
-*   fix: **Idempotency Shield 2.0** — Standardized MD5 hashing across all harvesters (Title + Company normalization) to prevent signal drift.
-*   fix: **Source Uniformity** — Standardized naming for `V12 Chef` and `Intelligence Mesh` platforms.
+*   fix: **Intelligent Failover [Shield Bypass]** — Whitelisted Direct ATS APIs (Greenhouse/Lever/Workable) for direct fetch failover. This ensures high-value signals reach the vault even if proxy nodes are congested.
+*   fix: **Gravity Trust Bias** — Implemented mathematical trust bonuses in `sorting.ts`. Direct corporate signals now decay **2x slower** than social signals, naturally anchoring "Valued Links" at the top.
 
-### 🧪 Phosphorus Shield (The Elite Gate)
-*   feat: **The Elite Gabriel Gate** — Implemented strict geographic and quality boundaries for all incoming signals. 
-*   feat: **Sovereign Sweep** — Executed a surgical purge of **425 low-quality signals** (Non-PH-friendly, high-friction, and language-restricted roles).
-*   feat: **Taxonomy Calibration** — Map Recruiters to Admin; implemented negative guards for Creative niche purity.
+### 🎯 Diversity & UX
+*   feat: **Source Interleaving** — Implemented an in-memory round-robin algorithm to prevent "Platform Clustering." No single source (e.g. Reddit) can now appear more than twice consecutively.
+*   feat: **Phosphorus Shield 12.0** — Verified full compliance of all remaining active signals with Philippines-remote gate.
 
 ### 🛰️ Discovery Expansion
 *   feat: **The Great Harvest** — Expanded Greenhouse and Lever discovery coverage with **30+ new verified tokens** (Canva, Maya, GCash, Wise, etc.).

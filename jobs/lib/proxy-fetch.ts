@@ -8,8 +8,9 @@ import { config } from "@va-hub/config";
  * 2. Pre-clean HTML (HTML Sieve)
  * 3. Browser Mimicry (Rotating User-Agents)
  * 
- * 🔱 SHIELD FAILOVER [v9.0]: If the proxy fails, fallback to direct fetch
- * ONLY for high-priority RSS/XML vectors to protect IP reputation.
+ * 🔱 SHIELD FAILOVER [v12.5]: If the proxy fails, fallback to direct fetch
+ * for high-trust JSON APIs and RSS feeds to protect IP reputation while
+ * ensuring the "Great Harvest" of Direct ATS signals.
  */
 export async function proxyFetch(targetUrl: string, options: RequestInit = {}): Promise<Response> {
   const proxyUrl = config.edge_proxy_url;
@@ -42,7 +43,15 @@ export async function proxyFetch(targetUrl: string, options: RequestInit = {}): 
   } catch (err) {
     console.warn(`[Shield Failover] Proxy down for ${targetUrl}. Checking eligibility for direct fetch...`);
     
-    const isPriorityVector = targetUrl.includes('/rss') || targetUrl.includes('/feed') || targetUrl.endsWith('.xml') || targetUrl.includes('api.jobstreet.com');
+    // 🏹 ELIGIBLE VECTORS: JSON APIs and standardized feeds (Low bandwidth, High trust)
+    const isPriorityVector = 
+      targetUrl.includes('/rss') || 
+      targetUrl.includes('/feed') || 
+      targetUrl.endsWith('.xml') || 
+      targetUrl.includes('api.jobstreet.com') ||
+      targetUrl.includes('boards-api.greenhouse.io') ||
+      targetUrl.includes('api.lever.co') ||
+      targetUrl.includes('workable.com');
     
     if (isPriorityVector) {
       console.log(`[Shield Failover] ELIGIBLE: Executing direct fetch for high-priority vector: ${targetUrl}`);

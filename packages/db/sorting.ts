@@ -11,9 +11,9 @@ import { desc, not, eq, sql, and } from 'drizzle-orm';
 export async function getSortedSignals(limit = 100) {
   const staleBoundary = Date.now() - (48 * 60 * 60 * 1000); // 48 Hours
 
-  // GRAVITY RANKING LOGIC (V12): 
-  // Score = (Tier * 24) + (Age in Hours)
-  // Ensures fresh Gold signals flow above stale Platinum ones.
+  // GRAVITY RANKING LOGIC (V12.5): 
+  // Score = (Tier * 24) + (Age_In_Hours / TrustFactor)
+  // TrustFactor: 2.0 for Direct ATS (Slow Decay), 1.0 for Others.
   const query = db.select()
   .from(schema.opportunities)
   .where(
@@ -23,12 +23,41 @@ export async function getSortedSignals(limit = 100) {
     )
   )
   .orderBy(
-    sql`(tier * 24) + ((unixepoch('now') - (latest_activity_ms / 1000)) / 3600.0) ASC`,
+    sql`(tier * 24) + ((unixepoch('now') - (latest_activity_ms / 1000)) / (CASE 
+      WHEN source_platform LIKE '%Greenhouse%' OR source_platform LIKE '%Lever%' OR source_platform LIKE '%Workable%' THEN 2.0 
+      ELSE 1.0 
+    END * 3600.0)) ASC`,
     desc(schema.opportunities.relevanceScore)
   )
   .limit(limit);
 
-  return await query;
+  const results = await query;
+  if (results.length === 0) return [];
+
+  // 🎯 DIVERSITY INTERLEAVING (V12.10): Prevent source-platform clusters
+  const groups: Record<string, typeof results> = {};
+  for (const job of results) {
+    const key = job.sourcePlatform || "Unknown";
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(job);
+  }
+
+  const interspersed: typeof results = [];
+  const keys = Object.keys(groups);
+  let hasItems = true;
+
+  while (hasItems) {
+    hasItems = false;
+    for (const key of keys) {
+      const job = groups[key].shift();
+      if (job) {
+        interspersed.push(job);
+        hasItems = true;
+      }
+    }
+  }
+
+  return interspersed.slice(0, limit);
 }
 
 /**
