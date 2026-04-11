@@ -211,15 +211,15 @@ const healthStats = {
 
     <MirrorStage signals={processedMirror} />
 
-    <!-- ── DIRECTORY GRID ── -->
-    <div class="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6 mt-12 w-full" id="directoryGrid">
+    <!-- ── DIRECTORY GRID (Grid Flow for Horizontal Sequence) ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-12 w-full" id="directoryGrid">
       {domains.map((domain) => {
         const slug = getDomainSlug(domain.domain);
         const totalSignals = domain.signals.length;
         const visibleSignals = domain.signals.slice(0, 15);
         
         return (
-          <article class="domain-column break-inside-avoid bg-white rounded-3xl p-6 shadow-sm border border-blueberry-900/10 hover:shadow-md transition-all duration-300 flex flex-col">
+          <article class="domain-column bg-white rounded-3xl p-6 shadow-sm border border-blueberry-900/10 hover:shadow-md transition-all duration-300 flex flex-col h-full">
              <div class="text-center mb-3">
                 <a href={`/domain/${slug}`} class="group/header block">
                   <h2 class="text-sm font-bold text-blueberry-900 uppercase tracking-widest group-hover/header:text-blue-600 transition-colors">
