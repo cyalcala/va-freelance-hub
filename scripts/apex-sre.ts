@@ -211,6 +211,18 @@ async function handleCertificationSuccess() {
   }
 }
 
+async function createArchivalSeed() {
+  console.log("\n--- [AEON] GENERATING ARCHIVAL SEED ---");
+  try {
+    const filename = `snapshots/aeon_seed_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+    await $`mkdir -p snapshots`.quiet();
+    await $`bun run scripts/save.ts --output ${filename}`.quiet();
+    console.log(`✅ Archival seed created: ${filename}`);
+  } catch (err) {
+    console.error(`⚠️ Archival seeding failed: ${err}`);
+  }
+}
+
 async function runSreSuite() {
   console.log("\n🚀 Starting Apex SRE Interrogator Suite [AGENTIC MODE]...");
   const startTime = Date.now();
@@ -281,6 +293,9 @@ async function runSreSuite() {
       console.log(`\n🎉 System is HEALTHY. Suite completed in ${((Date.now() - startTime) / 1000).toFixed(2)}s.`);
       await handleCertificationSuccess();
       
+      // 🏛️ AEON: ARCHIVAL SEEDING
+      await createArchivalSeed();
+
       // 4. PHASE 4: CHRONOS HEARTBEAT (Vector 5: Active Triage)
       // New: Maintenance Ship Triage for stale signals
       console.log("\n--- [PHASE 4] CHRONOS HEARTBEAT (VECTOR 5) ---");

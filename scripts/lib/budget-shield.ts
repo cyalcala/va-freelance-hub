@@ -138,4 +138,38 @@ export class BudgetShield {
       args: [Date.now(), this.agentId]
     });
   }
+  async getPreferredProvider(): Promise<ModelConfig> {
+    const db = this.getDb();
+    const statuses = await db.execute("SELECT id, is_blocked, last_error FROM vitals WHERE id LIKE 'provider_%'");
+    
+    const providers: ModelConfig[] = [
+      { name: 'flash-shield', provider: 'gemini', modelId: 'gemini-1.5-flash' },
+      { name: 'macro-sieve-cerebras', provider: 'cerebras', modelId: 'qwen-3-235b-a22b-instruct-2507' },
+      { name: 'groq-llama', provider: 'groq', modelId: 'llama-3.3-70b-versatile' }
+    ];
+
+    const blocked = new Set(statuses.rows.filter(r => r.is_blocked).map(r => r.id.replace('provider_', '')));
+    
+    for (const p of providers) {
+      if (!blocked.has(p.provider)) return p;
+    }
+
+    // Default to Gemini (Primary Resilience)
+    return providers[0];
+  }
+
+  async reportAICooldown(provider: string, error: string) {
+    const db = this.getDb();
+    const id = `provider_${provider.toLowerCase()}`;
+    await db.execute({
+      sql: "INSERT INTO vitals (id, is_blocked, last_error, lock_updated_at) VALUES (?, 1, ?, ?) ON CONFLICT(id) DO UPDATE SET is_blocked=1, last_error=?, lock_updated_at=?",
+      args: [id, error, Date.now(), error, Date.now()]
+    });
+  }
+}
+
+export interface ModelConfig {
+  name: string;
+  provider: 'cerebras' | 'groq' | 'openrouter' | 'gemini';
+  modelId: string;
 }
