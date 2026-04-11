@@ -113,6 +113,8 @@ async function scout() {
           url: url,
           host: feed.host,
           platform: feed.name,
+          region: feed.region || "Global",
+          trustLevel: feed.trustLevel || "global",
           status: 'READY'
         };
       }).filter(l => l && l.url && l.url.startsWith('http'));
@@ -125,6 +127,10 @@ async function scout() {
         raw_payload: '||V12_GHOST_LEAD||', 
         source_platform: l.platform,
         status: 'RAW', 
+        mapped_payload: { 
+          ingestionRegion: l.region, 
+          trustLevel: l.trustLevel 
+        },
         updated_at: new Date().toISOString()
       }));
 

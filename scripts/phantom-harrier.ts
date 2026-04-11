@@ -56,7 +56,7 @@ async function runHarrier() {
   const { shouldSkipDiscovery, recordHarvestSuccess, emitIngestionHeartbeat } = await import("../packages/db/governance");
 
   // 🛡️ ETHICAL FLEET: Respect the Seat
-  if (await shouldSkipDiscovery('harrier', 5)) { 
+  if (await shouldSkipDiscovery('harrier', 'Philippines', 5)) { 
     console.log("🚥 [FLEET] Harrier is backing off to respect existing harvest seat.");
     return;
   }
@@ -157,7 +157,7 @@ async function runHarrier() {
         }
       }
 
-      await recordHarvestSuccess('harrier');
+      await recordHarvestSuccess('harrier', 'Philippines');
     } catch (err: any) {
       console.error(`[harrier] Failure on ${target.name}:`, err.message);
     }

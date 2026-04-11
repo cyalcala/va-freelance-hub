@@ -87,28 +87,35 @@ export const v12Chef = schedules.task({
           }
 
           // 2. High-Precision AI Extraction
-          console.log(`👨‍🍳 [SOUS-CHEF] Sifting Job ${job.id}...`);
-          const extraction = await AIMesh.extract(cookablePayload);
-          const heuristic = siftOpportunity(
-            extraction.title,
-            extraction.description,
-            extraction.company || "Generic",
-            job.source_platform || "Trigger Sifter"
-          );
-          const finalExtraction = {
-            ...extraction,
-            niche: heuristic.domain,
-            tier: heuristic.tier,
-            relevanceScore: Math.max(extraction.relevanceScore ?? 0, heuristic.relevanceScore),
-            metadata: {
-              ...(extraction.metadata || {}),
-              sieveTier: heuristic.tier,
-              sieveDomain: heuristic.domain,
-            },
+          console.log(`👨‍🍳 [SOUS-CHEF] Sifting Job ${job.id} (${job.region || "Global"})...`);
+          
+          const ingestionMeta = job.mapped_payload || {};
+          const metadata = {
+            source_platform: job.source_platform,
+            region: ingestionMeta.ingestionRegion || job.region || 'Global',
+            trustLevel: ingestionMeta.trustLevel || 'global',
+            ...ingestionMeta
           };
 
+          const sifterResult = await siftWithDualLLM(cookablePayload, metadata);
+
+          if (!sifterResult || sifterResult.tier === OpportunityTier.TRASH) {
+            await supabase
+              .from('raw_job_harvests')
+              .update({
+                status: 'PROCESSED',
+                triage_status: 'REJECTED',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', job.id);
+            results.push({ id: job.id, status: 'rejected_sifter' });
+            continue;
+          }
+
+          const finalExtraction = sifterResult;
+
           // 3. Gatekeeper: PH-Compatibility check
-          if (!extraction.isPhCompatible || heuristic.tier === OpportunityTier.TRASH) {
+          if (finalExtraction.tier === OpportunityTier.TRASH) {
             await supabase
               .from('raw_job_harvests')
               .update({
@@ -140,12 +147,7 @@ export const v12Chef = schedules.task({
             type: finalExtraction.type || 'direct',
             locationType: finalExtraction.locationType || 'remote',
             sourcePlatform: `Trigger Sifter (${job.source_platform})`,
-            scrapedAt: new Date(),
-            isActive: true,
-            tier: finalExtraction.tier,
-            relevanceScore: finalExtraction.relevanceScore,
-            latestActivityMs: nowMs,
-            lastSeenAt: new Date(),
+            region: job.region || finalExtraction.region || 'Global',
             metadata: JSON.stringify(finalExtraction.metadata || {}),
           }).onConflictDoUpdate({
             target: opportunities.md5_hash,

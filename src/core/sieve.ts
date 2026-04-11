@@ -201,6 +201,8 @@ export function siftOpportunity(
  * Tier 2: Gemini (Deep Reasoning & Mapping)
  */
 export async function siftWithDualLLM(rawText: string, metadata: any = {}): Promise<SiftResult | null> {
+  const isNativePH = metadata.trustLevel === 'native' || metadata.region === 'Philippines';
+
   // PHASE 1: Cerebras Macro-Sieve (The Tier 1 Sieve)
   const tier1 = await extractMacroSieve(rawText, metadata);
 
@@ -211,18 +213,39 @@ export async function siftWithDualLLM(rawText: string, metadata: any = {}): Prom
 
   const payload = tier1.extracted_payload;
 
-  // PHASE 2: Check for PH Compatibility (Fail-Closed)
+  // PHASE 2.1: Geographic Boundary Breach (General)
   if (!payload.is_ph_compatible) {
-    console.warn(`[Tier 1] Bounced Signal: Geographic Boundary breach.`);
+    console.warn(`[Tier 1] Bounced Signal: Geographic Boundary breach (PH incompatible).`);
     return null;
   }
 
+  // PHASE 2.2: THE ELITE GABRIEL GATE (Global-to-PH Check)
+  // If not a native PH source, we must be extra certain about "Worldwide" or "APAC/SEA" availability.
+  if (!isNativePH) {
+    const text = (payload.description || rawText).toLowerCase();
+    const isExplicitlyWorldwide = text.includes("worldwide") || text.includes("work from anywhere") || text.includes("location independent");
+    const isExplicitlyAPAC = text.includes("apac") || text.includes("southeast asia") || text.includes("asean") || text.includes("philippines");
+    
+    // Hard rejection if it mentions "Region-Only" or "US-Only" in a way that excludes PH
+    const restrictivePatterns = ["us only", "usa only", "uk only", "north america only", "canada only", "eea only", "eu only"];
+    const hasRestriction = restrictivePatterns.some(p => text.includes(p));
+
+    if (hasRestriction && !isExplicitlyAPAC) {
+      console.warn(`[Elite Gate] Rejected Global Signal: Restrictive pattern detected without APAC/PH bypass.`);
+      return null;
+    }
+
+    if (!isExplicitlyWorldwide && !isExplicitlyAPAC) {
+       // Suspect: Mark for lower tier or reject if relevance is low
+       console.log(`[Elite Gate] Suspect Global Signal: No explicit PH/APAC/Worldwide affinity.`);
+       // We'll allow it through but it will likely get BRONZE/TRASH in the next phase
+    }
+  }
+
   // PHASE 3: Tier 2 Polish & Mapping (Gemini)
-  // Strictly polish and map to Drizzle ORM schemas.
   const polished = await polishOpportunity(payload);
 
   // PHASE 4: Heuristic Enrichment & Scoring
-  // Final scoring based on the polished data.
   const heuristic = siftOpportunity(
     polished.title || payload.title,
     polished.description || payload.description,
@@ -232,7 +255,7 @@ export async function siftWithDualLLM(rawText: string, metadata: any = {}): Prom
 
   return {
     ...heuristic,
-    ...polished, // Override with polished fields
+    ...polished,
     md5_hash: generateIdempotencyHash(polished.title || payload.title, polished.company || payload.company || "Generic"),
   } as SiftResult;
 }

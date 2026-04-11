@@ -32,6 +32,12 @@ async function main() {
     console.log("\n🚀 [3/4] Plating finished meals to Turso...");
     await $`bun run scripts/plater.ts`.quiet();
 
+    // 🏆 V12 HEARTBEAT SYNC
+    console.log("\n🚥 [HEARTBEAT] Syncing Regional Vitality...");
+    const { emitIngestionHeartbeat } = await import("../packages/db/governance");
+    await emitIngestionHeartbeat('Fallback Pulse', 'Global');
+    await emitIngestionHeartbeat('Fallback Pulse', 'LATAM');
+
     // 4. Sentinel Audit
     console.log("\n🚀 [4/4] Final SRE Sentinel Audit...");
     const { sentinel } = await import("../packages/db/sentinel");

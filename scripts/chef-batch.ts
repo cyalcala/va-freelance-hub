@@ -2,7 +2,45 @@ import { claimRawJob, supabase } from "../packages/db/supabase";
 import { AIMesh } from "../packages/ai/ai-mesh";
 import { db } from "../packages/db";
 import { opportunities } from "../packages/db/schema";
+import { siftWithDualLLM, OpportunityTier } from "../src/core/sieve";
 import crypto from "crypto";
+
+const GHOST_SENTINEL = "||V12_GHOST_LEAD||";
+const EDGE_PROXY_URL = process.env.EDGE_PROXY_URL || "https://va-edge-proxy.cyrusalcala-agency.workers.dev";
+const EDGE_PROXY_SECRET = process.env.VA_PROXY_SECRET;
+
+function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function getCookablePayload(job: { raw_payload?: string; source_url?: string | null }): Promise<string> {
+  if (job.raw_payload && job.raw_payload !== GHOST_SENTINEL && job.raw_payload.length >= 120) {
+    return job.raw_payload;
+  }
+  if (!job.source_url) throw new Error("Missing source_url for ghost hydration");
+
+  const proxiedUrl = new URL(EDGE_PROXY_URL);
+  proxiedUrl.searchParams.set("url", job.source_url);
+  const useEdgeProxy = Boolean(EDGE_PROXY_URL && EDGE_PROXY_SECRET);
+
+  const res = await fetch(useEdgeProxy ? proxiedUrl.toString() : job.source_url, {
+    signal: AbortSignal.timeout(15000),
+    headers: useEdgeProxy
+      ? { "X-VA-Proxy-Secret": EDGE_PROXY_SECRET as string, "user-agent": "VAHubBatchChef/1.0 (+ghost-hydration)" }
+      : { "user-agent": "VAHubBatchChef/1.0 (+ghost-hydration)" },
+  });
+  if (!res.ok) throw new Error(`Hydration fetch failed: ${res.status}`);
+
+  const html = await res.text();
+  const text = htmlToText(html);
+  if (!text || text.length < 120) throw new Error("Hydration yielded insufficient content");
+  return text.slice(0, 20000);
+}
 
 /**
  * 👨‍🍳 V12 PANTRY CHEF (Batch Edition)
@@ -27,14 +65,28 @@ async function runChef(batchSize: number = 10) {
 
   for (const job of jobs) {
     try {
-      console.log(`\n--- Processing: ${job.source_platform} [${job.id}] ---`);
+      console.log(`\n--- Processing: ${job.source_platform} [${job.id}] (${job.region || 'Global'}) ---`);
       
-      // AI Extraction (Bypasses Trigger.dev limit)
-      const extraction = await AIMesh.extract(job.raw_payload);
+      const ingestionMeta = job.mapped_payload || {};
+      const metadata = {
+        source_platform: job.source_platform,
+        region: ingestionMeta.ingestionRegion || job.region || 'Global',
+        trustLevel: ingestionMeta.trustLevel || 'global',
+        ...ingestionMeta
+      };
+
+      // Hydration Phase (Ghost Support)
+      const cookablePayload = await getCookablePayload(job);
+      if (cookablePayload !== job.raw_payload) {
+         await supabase.from('raw_job_harvests').update({ raw_payload: cookablePayload }).eq('id', job.id);
+      }
+
+      // AI Extraction + Sieve with DualLLM (Vector 1 + Vector 2 / Gemini)
+      const extraction = await siftWithDualLLM(cookablePayload, metadata);
       
       // 🛡️ PHOSPHORUS SHIELD
-      if (!extraction.isPhCompatible || extraction.tier === 4) {
-        console.log(`🛡️ [SHIELD] Dropped: ${extraction.title} (Reason: ${!extraction.isPhCompatible ? 'Geo' : 'Quality'})`);
+      if (!extraction || extraction.tier === OpportunityTier.TRASH) {
+        console.log(`🛡️ [SHIELD] Dropped: ${job.source_url} (Reason: Quality/Geo)`);
         await supabase
           .from('raw_job_harvests')
           .update({ 
@@ -47,10 +99,7 @@ async function runChef(batchSize: number = 10) {
       }
 
       // 📀 PLATING
-      const md5_hash = crypto
-        .createHash("md5")
-        .update((extraction.title || '') + (extraction.company || ''))
-        .digest("hex");
+      const md5_hash = extraction.md5_hash;
 
       await db.insert(opportunities).values({
         id: crypto.randomUUID(),
@@ -60,17 +109,35 @@ async function runChef(batchSize: number = 10) {
         url: job.source_url,
         description: extraction.description,
         salary: extraction.salary || null,
-        niche: extraction.niche,
+        niche: extraction.domain,
         type: extraction.type || 'direct',
         locationType: extraction.locationType || 'remote',
-        sourcePlatform: `V12 Chef (${job.source_platform})`,
+        sourcePlatform: `Batch Chef (${job.source_platform})`,
         scrapedAt: new Date(),
         isActive: true,
         tier: extraction.tier,
         relevanceScore: extraction.relevanceScore,
         latestActivityMs: Date.now(),
+        region: job.region || extraction.region || 'Global',
         metadata: JSON.stringify(extraction.metadata || {}),
-      }).onConflictDoNothing();
+      }).onConflictDoUpdate({
+        target: opportunities.md5_hash,
+        set: {
+            lastSeenAt: new Date(),
+            latestActivityMs: Date.now()
+        }
+      });
+
+      await supabase
+        .from('raw_job_harvests')
+        .update({ 
+          status: 'PLATED', 
+          triage_status: 'PASSED',
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', job.id);
+      
+      console.log(`✅ [PLATED] ${extraction.title}`);
 
       await supabase
         .from('raw_job_harvests')

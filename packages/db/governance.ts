@@ -141,14 +141,13 @@ export async function emitIngestionHeartbeat(source: string, region: string = 'G
  * Checks if another engine has performed a discovery run in the last X minutes.
  * Prevents DDoS-like behavior from overlapping GHA/CF/Trigger runs.
  */
-export async function shouldSkipDiscovery(engineId: string, windowMinutes: number = 7) {
+export async function shouldSkipDiscovery(engineId: string, region: string = 'GLOBAL', windowMinutes: number = 7) {
   try {
     // 🛡️ THE APEX SENTINEL: Triage Pulse
-    // Before we even check the seat, let the Sentinel perform a surgical audit.
     const { sentinel } = await import('./sentinel');
     await sentinel.diagnoseAndRepair(engineId);
 
-    const [record] = await db.select().from(vitals).where(eq(vitals.id, 'GLOBAL')).limit(1);
+    const [record] = await db.select().from(vitals).where(eq(vitals.id, `HEARTBEAT_${region}`)).limit(1);
     if (!record || !record.lastHarvestAt) return false;
 
     const lastHarvestAt = new Date(record.lastHarvestAt).getTime();
@@ -156,13 +155,13 @@ export async function shouldSkipDiscovery(engineId: string, windowMinutes: numbe
     const isWithinWindow = diffMs < (windowMinutes * 60 * 1000);
 
     if (isWithinWindow && record.lastHarvestEngine !== engineId) {
-      console.log(`🚥 [FLEET] Respecting the Seat: Engine '${record.lastHarvestEngine}' harvested ${Math.floor(diffMs / 60000)}m ago. '${engineId}' is Backing Off.`);
+      console.log(`🚥 [FLEET] Respecting the Seat (${region}): Engine '${record.lastHarvestEngine}' harvested ${Math.floor(diffMs / 60000)}m ago. '${engineId}' is Backing Off.`);
       return true;
     }
 
     return false;
   } catch (err) {
-    console.error('🚫 [FLEET] Failed to check harvest lockout:', err);
+    console.error(`🚫 [FLEET] Failed to check harvest lockout for ${region}:`, err);
     return false; // Fail-open
   }
 }
@@ -170,14 +169,14 @@ export async function shouldSkipDiscovery(engineId: string, windowMinutes: numbe
 /**
  * 🛰️ Record a successful Fleet Discovery run.
  */
-export async function recordHarvestSuccess(engineId: string) {
+export async function recordHarvestSuccess(engineId: string, region: string = 'GLOBAL') {
   try {
     await db.update(vitals).set({ 
       lastHarvestAt: new Date(), 
       lastHarvestEngine: engineId 
-    }).where(eq(vitals.id, 'GLOBAL'));
-    console.log(`🛰️ [FLEET] Leadership recorded: '${engineId}' successfully harvested.`);
+    }).where(eq(vitals.id, `HEARTBEAT_${region}`));
+    console.log(`🛰️ [FLEET] Leadership recorded: '${engineId}' successfully harvested ${region}.`);
   } catch (err) {
-    console.error('🚫 [FLEET] Failed to record harvest success:', err);
+    console.error(`🚫 [FLEET] Failed to record harvest success for ${region}:`, err);
   }
 }
