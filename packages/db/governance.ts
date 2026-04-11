@@ -1,6 +1,6 @@
 import { db } from './client';
-import { vitals } from './schema';
-import { eq } from 'drizzle-orm';
+import { vitals, opportunities } from './schema';
+import { eq, sql, desc, and, gte } from 'drizzle-orm';
 
 /**
  * V12 GOVERNANCE: Trigger.dev Circuit Breaker
@@ -179,5 +179,40 @@ export async function recordHarvestSuccess(engineId: string, region: string = 'G
     console.log(`🛰️ [FLEET] Leadership recorded: '${engineId}' successfully harvested ${region}.`);
   } catch (err) {
     console.error(`🚫 [FLEET] Failed to record harvest success for ${region}:`, err);
+  }
+}
+
+/**
+ * 🛰️ ADAPTIVE PULSE LOGIC (The Pulse)
+ * Calculates the optimal harvesting frequency based on recent signal density.
+ */
+export async function getAdaptiveCadence(region: string = 'Philippines'): Promise<{ cadence: 'BURST' | 'NORMAL' | 'CALM', intervalMin: number }> {
+  try {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    
+    // Count high-value signals in the last 24h
+    const [stats] = await db
+      .select({ 
+        count: sql<number>`count(*)` 
+      })
+      .from(opportunities)
+      .where(and(
+        eq(opportunities.region, region),
+        gte(opportunities.createdAt, twentyFourHoursAgo),
+        sql`${opportunities.tier} <= 1` // Platinum or Gold
+      ));
+
+    const density = stats?.count || 0;
+
+    if (density < 10) {
+      return { cadence: 'BURST', intervalMin: 10 }; // Drought: Hunt harder
+    } else if (density > 50) {
+      return { cadence: 'CALM', intervalMin: 30 }; // Overflow: Conserve credits
+    } else {
+      return { cadence: 'NORMAL', intervalMin: 15 }; // Balanced
+    }
+  } catch (err) {
+    console.error('🚫 [PULSE] Failed to calculate adaptive cadence:', err);
+    return { cadence: 'NORMAL', intervalMin: 15 };
   }
 }

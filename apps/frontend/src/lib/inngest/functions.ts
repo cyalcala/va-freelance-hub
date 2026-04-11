@@ -148,6 +148,20 @@ export const jobHarvested = inngest.createFunction(
         const { emitIngestionHeartbeat } = await import("../../../../../packages/db/governance");
         await emitIngestionHeartbeat("v12-mesh-direct", event.data.region || "Philippines");
 
+        // 🧠 HEURISTIC BACK-PROPAGATION: Emit sifted event for the learning bridge
+        await inngest.send({
+          name: "job.sifted",
+          data: {
+            md5_hash,
+            tier: extraction.tier,
+            score: extraction.relevanceScore,
+            is_compatible: extraction.isPhCompatible,
+            company: extraction.company,
+            title: extraction.title,
+            source: event.data.source || "Unknown"
+          }
+        });
+
         return { status: "inserted", md5_hash };
       } catch (err: any) {
         console.error(`[Waterfall ERROR] ${err.message}. Triggering Heuristic Fallback...`);

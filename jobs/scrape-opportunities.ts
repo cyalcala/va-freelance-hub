@@ -143,9 +143,13 @@ export const scrapeOpportunitiesTask = schedules.task({
     const triggerSource = payload?.source || ctx.trigger?.id || 'schedule';
     logger.info(`[harvest] Initiating signal pulse. Source: ${triggerSource}`);
     
-    // 🛡️ ETHICAL FLEET: Respect the Seat
-    if (await shouldSkipDiscovery('trigger')) {
-      return { status: "skipped_by_fleet_coordination", emitted: 0 };
+    // 🛡️ ETHICAL FLEET: Respect the Seat with Adaptive Pulse
+    const { getAdaptiveCadence } = await import("../packages/db/governance");
+    const pulse = await getAdaptiveCadence(payload?.region || 'Philippines');
+    logger.info(`[PULSE] Current Cadence: ${pulse.cadence} (Interval: ${pulse.intervalMin}m)`);
+
+    if (await shouldSkipDiscovery('trigger', payload?.region || 'Philippines', pulse.intervalMin)) {
+      return { status: "skipped_by_fleet_coordination", emitted: 0, pulse: pulse.cadence };
     }
 
     try {

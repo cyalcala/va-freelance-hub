@@ -1,7 +1,7 @@
 import { $ } from "bun";
 import { writeFileSync, readFileSync, existsSync } from 'fs';
 import { bundleContext } from "./context-aggregator";
-import { askGemini, FixProtocol } from "./lib/gemini";
+import { AgenticBridge, FixProtocol } from "@va-hub/bridge";
 import { createClient } from "@libsql/client/http";
 import { GitAgent } from "./lib/git-agent";
 import { BudgetShield } from "./lib/budget-shield";
@@ -240,11 +240,6 @@ async function runSreSuite() {
     // 3. PHASE 3: AGENTIC REASONING (The "Brain" Upgrade)
     console.log("\n❌ Deterministic fixes failed. Entering AGENTIC MODE...");
     
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("❌ AGENTIC MODE FAILED: No GEMINI_API_KEY detected.");
-      process.exit(1);
-    }
-
     if (!await gitAgent.acquireLock()) {
       console.warn("⚠️ Execution Conflict: Another SRE Sentinel is currently running. Skipping to avoid collision.");
       process.exit(0);
@@ -264,7 +259,7 @@ async function runSreSuite() {
       }
 
       await incrementQuota();
-      const protocol = await askGemini(certOutput, codebase);
+      const protocol = await AgenticBridge.reason(certOutput, codebase);
 
       console.log(`\n🧠 Gemini Analysis: ${protocol.analysis}`);
       console.log(`🛡️  Suggested Action: ${protocol.action} (Confidence: ${protocol.confidence}%)`);

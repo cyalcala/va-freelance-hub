@@ -22,7 +22,8 @@
       "@va-hub/ai/mesh": ["packages/ai/ai-mesh.ts"],
       "@va-hub/core/*": ["src/core/*"],
       "@va-hub/pulse": ["apps/frontend/src/lib/inngest/client.ts"],
-      "@va-hub/ai/*": ["apps/frontend/src/lib/ai/*"]
+      "@va-hub/ai/*": ["apps/frontend/src/lib/ai/*"],
+      "@va-hub/bridge": ["packages/bridge/index.ts"]
     }
   },
   "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser"]

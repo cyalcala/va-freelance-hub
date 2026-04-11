@@ -193,7 +193,7 @@ export class AIMesh {
     throw new Error('[AI-MESH] CRITICAL: All available models failed extraction.');
   }
 
-  private static async callModel(config: ModelConfig, system: string, user: string): Promise<string> {
+  public static async callModel(config: ModelConfig, system: string, user: string): Promise<string> {
     switch (config.provider) {
       case 'cerebras':
         return this.fetchCerebras(config.modelId, system, user);

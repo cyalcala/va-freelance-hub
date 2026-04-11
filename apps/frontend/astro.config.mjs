@@ -25,7 +25,8 @@ export default defineConfig({
       conditions: ['node', 'import']
     },
     ssr: {
-      noExternal: ['@va-hub/db', '@va-hub/config', '@va-hub/pulse', '@va-hub/ai']
+      noExternal: ['@va-hub/db', '@va-hub/config', '@va-hub/pulse', '@va-hub/ai'],
+      external: ['drizzle-orm']
     }
   }
 });

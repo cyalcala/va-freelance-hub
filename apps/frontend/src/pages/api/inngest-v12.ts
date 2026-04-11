@@ -17,6 +17,7 @@ const EDGE_PROXY_SECRET = process.env.VA_PROXY_SECRET;
 
 import { chronosHeartbeat } from "../../lib/inngest/heartbeat";
 import { sentinelPulse, jobHarvested } from "../../lib/inngest/functions";
+import { heuristicLearner } from "../../lib/inngest/learning";
 
 function htmlToText(html: string): string {
   return html
@@ -366,6 +367,6 @@ const scoutFailover = inngestClient.createFunction(
 // 4. Export endpoint serve handlers
 export const { GET, POST, PUT } = serve({ 
   client: inngestClient, 
-  functions: [pantryPoll, syncSweep, triggerReset, scoutFailover, chronosHeartbeat, sentinelPulse, jobHarvested] 
+  functions: [pantryPoll, syncSweep, triggerReset, scoutFailover, chronosHeartbeat, sentinelPulse, jobHarvested, heuristicLearner] 
 });
 
