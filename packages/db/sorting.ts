@@ -8,7 +8,8 @@ import { desc, not, eq, sql, and } from 'drizzle-orm';
  * 3. Gravity Calculation: (Tier * 24.0) + (Age in Hours)
  * 4. Freshness Boost: -12.0h if < 15min old.
  */
-export async function getSortedSignals(limit = 100) {
+export async function getSortedSignals(limit = 100, nowMs?: number) {
+  const now = nowMs ? Math.floor(nowMs / 1000) : null;
   const staleBoundary = Date.now() - (48 * 60 * 60 * 1000); // 48 Hours
 
   // GRAVITY RANKING LOGIC (V12.5): 
@@ -23,7 +24,7 @@ export async function getSortedSignals(limit = 100) {
     )
   )
   .orderBy(
-    sql`(tier * 24) + ((unixepoch('now') - (latest_activity_ms / 1000)) / (CASE 
+    sql`(tier * 24) + ((${now ? now : "unixepoch('now')"} - (latest_activity_ms / 1000)) / (CASE 
       WHEN source_platform LIKE '%Greenhouse%' OR source_platform LIKE '%Lever%' OR source_platform LIKE '%Workable%' THEN 2.0 
       ELSE 1.0 
     END * 3600.0)) ASC`,

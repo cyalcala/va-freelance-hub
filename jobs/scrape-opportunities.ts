@@ -1,4 +1,5 @@
 import { schedules, logger } from "@trigger.dev/sdk/v3";
+import "dotenv/config";
 import { db } from "@va-hub/db/client";
 import { logs as logsSchema, systemHealth as healthSchema } from "@va-hub/db/schema";
 import { fetchRSSFeed, rssSources } from "./lib/scraper";

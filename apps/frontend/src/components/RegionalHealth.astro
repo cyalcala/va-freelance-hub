@@ -48,8 +48,8 @@ const statusText: Record<string, string> = {
         <span class="text-[10px] font-bold text-blueberry-900 leading-none tracking-tight">
           {track.label}
         </span>
-        <span class="text-[8px] font-semibold text-blueberry-800/40 uppercase tracking-widest leading-none mt-0.5">
-          {track.state === 'FRESH' ? (track.pAge < 5 ? 'LIVE' : `${Math.floor(track.pAge)}m`) : track.state.substring(0, 5)}
+        <span class="text-[8px] font-semibold text-blueberry-800/40 uppercase tracking-widest leading-none mt-0.5 pulse-display" data-region={track.name} data-last-processing={track.pAge * 60000}>
+          {track.state === 'FRESH' ? (track.pAge < 2 ? 'LIVE' : `${Math.floor(track.pAge)}m`) : track.state.substring(0, 5)}
         </span>
       </div>
 

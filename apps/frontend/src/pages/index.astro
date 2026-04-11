@@ -12,10 +12,12 @@ import { JobDomain, getDomainSlug, getDomainLabel, mapTitleToDomain } from '@va-
 import { config } from '@va-hub/config';
 
 // BUST THE CACHE: Ultra-Fresh Delivery Protocol
-Astro.response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
-Astro.response.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=300'); // 5-minute CDN refresh for high signal agility
+Astro.response.headers.set('Cache-Control', 'private, no-cache, no-store, max-age=0, must-revalidate');
+Astro.response.headers.set('CDN-Cache-Control', 'no-store'); // Force Vercel Edge bypass
 Astro.response.headers.set('Pragma', 'no-cache');
 Astro.response.headers.set('Expires', '0');
+
+const RENDER_TIME_MS = Date.now();
 
 let initialSignals = [];
 let mirrorSignals = [];
@@ -25,10 +27,9 @@ const CACHE_BUST = Date.now();
 try {
   if (process.env.TURSO_DATABASE_URL) {
     const dataPromise = Promise.all([
-      getSortedSignals(400), // Fetch more for the directory
+      getSortedSignals(400, RENDER_TIME_MS), // Pass render time for dynamic aging
       getLatestMirror(10),
-      // CACHE BUST PULSE: Forces Turso to evaluate a fresh timestamp
-      db.run(sql`SELECT ${CACHE_BUST} as pulse`)
+      // Pulse verified via RENDER_TIME_MS
     ]);
 
     const timeoutPromise = new Promise((_, reject) => 
@@ -147,6 +148,7 @@ const healthStats = {
 ---
 
 <Layout title="Master Directory | VA.INDEX">
+  <div id="titanium-pulse-sync" data-snapshot-ms={RENDER_TIME_MS} class="hidden"></div>
   <main class="max-w-[1400px] mx-auto px-4 sm:px-8 py-10">
     <header class="mb-16 text-center lg:text-left">
       <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-12">
@@ -317,7 +319,6 @@ const healthStats = {
       let totalVisible = 0;
       const columnVisibility = new Map();
 
-      // Individual Item Sifting
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const isVisible = !q || item.text.includes(q);
@@ -331,7 +332,6 @@ const healthStats = {
         }
       }
       
-      // Column Pruning: only hide columns while search is active.
       const shouldPruneColumns = q.length > 0;
       for (let i = 0; i < columns.length; i++) {
         const col = columns[i];
@@ -358,7 +358,6 @@ const healthStats = {
       });
     }
 
-    // --- Inline Expansion Engine ---
     document.querySelectorAll('.expand-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const container = btn.closest('.domain-signals-container');
@@ -370,19 +369,76 @@ const healthStats = {
            w.style.animation = 'slideUp 0.3s ease-out forwards';
         });
 
-        // Toggle state
         btn.classList.add('hidden');
         const detailLink = container.querySelector('.detail-link');
         if (detailLink) detailLink.classList.replace('hidden', 'flex');
       });
     });
-
-    // System Sync Clock logic removed
   }
 
-  document.addEventListener('DOMContentLoaded', initDirectory);
-  document.addEventListener('astro:after-swap', initDirectory);
-  initDirectory();
+  // --- Phase 2: Titanium Freshness Guard ---
+  function initFreshnessGuard() {
+    const syncDot = document.getElementById('titanium-pulse-sync');
+    if (!syncDot) return;
+    const snapshotMs = parseInt(syncDot.getAttribute('data-snapshot-ms') || '0');
+    
+    let isChecking = false;
+    
+    async function checkPulse() {
+      if (isChecking) return;
+      isChecking = true;
+      try {
+        const res = await fetch('/api/v12-status');
+        const data = await res.json();
+        
+        if (data.latestHeartbeat > snapshotMs) {
+          console.log("🚥 [TITANIUM] New jobs detected in database. Triggering UI Sync.");
+          showSyncToast();
+        }
+      } catch (err) {
+        // Silently retry next cycle
+      } finally {
+        isChecking = false;
+      }
+    }
+
+    function showSyncToast() {
+      const existing = document.getElementById('sync-toast');
+      if (existing) return;
+
+      const toast = document.createElement('div');
+      toast.id = 'sync-toast';
+      toast.className = 'fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] bg-blue-600 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-8 duration-500 cursor-pointer hover:bg-blue-700 active:scale-95 transition-all w-[90%] max-w-sm border border-white/20';
+      toast.innerHTML = `
+        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+          <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+        </div>
+        <div class="flex-1">
+          <div class="text-xs font-black uppercase tracking-widest leading-none mb-1">Live Signals Detected</div>
+          <div class="text-[10px] font-medium opacity-80 leading-tight">Fresh opportunities have just arrived. Tap to see them now.</div>
+        </div>
+      `;
+      
+      toast.onclick = () => window.location.reload();
+      document.body.appendChild(toast);
+    }
+
+    // Initial check after 30s
+    setTimeout(() => {
+      checkPulse();
+      // Then check every 60s
+      setInterval(checkPulse, 60000);
+    }, 30000);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initDirectory();
+    initFreshnessGuard();
+  });
+  document.addEventListener('astro:after-swap', () => {
+    initDirectory();
+    initFreshnessGuard();
+  });
 
   // Freshness poller removed per user request
 </script>
