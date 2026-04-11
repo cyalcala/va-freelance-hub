@@ -223,16 +223,19 @@ const healthStats = {
         
         return (
           <article class="domain-column break-inside-avoid bg-white rounded-3xl p-6 shadow-sm border border-blueberry-900/10 hover:shadow-md transition-all duration-300 flex flex-col">
-             <div class="text-center mb-4 group/header">
-                <h2 class="text-xl font-black text-blueberry-900 uppercase tracking-tight group-hover/header:text-blue-600 transition-colors">
-                  {getDomainLabel(domain.domain)}
-                </h2>
-                <p class="text-[10px] font-bold text-blueberry-800/40 uppercase tracking-[0.15em] leading-relaxed mt-1 px-2">
-                  {domain.description}
-                </p>
+             <div class="text-center mb-4">
+                <a href={`/domain/${slug}`} class="group/header block">
+                  <h2 class="text-xl font-black text-blueberry-900 uppercase tracking-tight group-hover/header:text-blue-600 transition-colors">
+                    {getDomainLabel(domain.domain)}
+                  </h2>
+                  <p class="text-[10px] font-bold text-blueberry-800/40 uppercase tracking-[0.15em] leading-relaxed mt-1 px-2">
+                    {domain.description}
+                  </p>
+                </a>
              </div>
              
              <hr class="border-blueberry-900/5 my-4" />
+
              
               <div class="domain-signals-container">
                 <ol class="list-decimal list-inside space-y-1.5 text-sm font-bold tracking-tight text-blueberry-900/30 marker:text-blueberry-900/20 marker:font-black">
@@ -257,18 +260,30 @@ const healthStats = {
                 {totalSignals > 15 && (
                   <div class="flex flex-col gap-2 mt-6">
                     <button 
-                      class="expand-btn w-full py-4 rounded-2xl bg-gradient-to-b from-oat-50/30 to-blueberry-900/5 border border-blueberry-900/10 text-[10px] font-black text-blueberry-900/40 uppercase tracking-[0.2em] hover:text-blueberry-900 hover:border-blueberry-900/20 transition-all flex items-center justify-center gap-2"
+                      class="expand-btn w-full py-3.5 rounded-2xl bg-gradient-to-b from-oat-50/30 to-blueberry-900/5 border border-blueberry-900/10 text-[10px] font-black text-blueberry-900/40 uppercase tracking-[0.2em] hover:text-blueberry-900 hover:border-blueberry-900/20 transition-all flex items-center justify-center gap-2"
                       data-count={totalSignals}
                     >
-                      SEE ALL {totalSignals} SITES
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-1 transition-transform"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+                      <span class="btn-label">SEE ALL {totalSignals} SITES</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
                     </button>
                     
                     <a 
                       href={`/domain/${slug}`}
-                      class="hidden detail-link items-center justify-center py-3 text-[9px] font-black text-blueberry-800/30 uppercase tracking-widest hover:text-blueberry-900 transition-colors"
+                      class="detail-link w-full py-3 rounded-xl border border-blueberry-900/10 bg-white text-[9px] font-black text-blueberry-800/40 uppercase tracking-[0.18em] hover:text-blue-600 hover:border-blue-600/30 transition-all flex items-center justify-center gap-1.5"
                     >
-                      Enter Detailed Domain Directory →
+                      Open Full Directory + Search
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+                    </a>
+                  </div>
+                )}
+                {totalSignals <= 15 && totalSignals > 0 && (
+                  <div class="mt-6">
+                    <a 
+                      href={`/domain/${slug}`}
+                      class="w-full py-3 rounded-xl border border-blueberry-900/10 bg-white text-[9px] font-black text-blueberry-800/40 uppercase tracking-[0.18em] hover:text-blue-600 hover:border-blue-600/30 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      Open Full Directory + Search
+                      <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
                     </a>
                   </div>
                 )}
