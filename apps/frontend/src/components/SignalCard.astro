@@ -9,7 +9,6 @@ const tags = (typeof rawTags === 'string' ? JSON.parse(rawTags) : rawTags) as st
 const getFavicon = (url: string) => {
   try {
     const u = new URL(url);
-    // Use DuckDuckGo favicon service for cleaner results or Google as fallback
     return `https://www.google.com/s2/favicons?domain=${u.hostname}&sz=32`;
   } catch {
     return '';
@@ -19,55 +18,55 @@ const getFavicon = (url: string) => {
 const favicon = getFavicon(signal.url);
 ---
 
-<li class="relative overflow-hidden group/item list-item ml-4">
-  <div class="inline-flex items-center gap-2 pl-2 flex-1 w-full align-middle pt-1 pb-1">
+<li class="relative group/item py-1.5 px-1 rounded-lg hover:bg-blueberry-900/[0.03] transition-colors">
+  <a
+    href={signal.url}
+    target="_blank"
+    class="flex items-center gap-2.5 min-w-0 relative"
+  >
+    <!-- Stretched link overlay -->
+    <span class="absolute inset-0 z-10"></span>
+
     <!-- Favicon -->
-    <div class="w-4 h-4 rounded-sm bg-white flex items-center justify-center overflow-hidden shrink-0 border border-blueberry-900/5">
+    <div class="w-4 h-4 rounded-sm flex items-center justify-center overflow-hidden shrink-0 border border-blueberry-900/8 bg-white">
       {favicon ? (
         <img src={favicon} alt="" class="w-full h-full object-contain" loading="lazy" />
       ) : (
-        <div class="w-full h-full bg-blueberry-100 flex items-center justify-center text-[6px] font-bold">
+        <div class="w-full h-full bg-blueberry-100 flex items-center justify-center text-[7px] font-semibold text-blueberry-900/50">
           {signal.company.charAt(0)}
         </div>
       )}
     </div>
-    
-    <!-- Title Area -->
-    <a 
-      href={signal.url} 
-      target="_blank" 
-      class="text-blueberry-900 hover:text-blue-600 font-bold flex items-center gap-2 flex-1 min-w-0 text-[13px] tracking-tight relative"
-    >
-      <!-- Stretched link for full-row clickability within the LI content area -->
-      <span class="absolute inset-0 z-10"></span>
-      
-      <span class="truncate block max-w-[60%] shrink-0 transition-colors">
-        {signal.title}
-      </span>
 
-      <!-- Inline Tags -->
-      <div class="flex gap-1 overflow-hidden pointer-events-none relative z-20">
-        {tags.slice(0, 2).map((tag) => (
-          <span class="inline-flex whitespace-nowrap px-1.5 py-0.5 rounded text-[8px] font-extrabold tracking-wider border border-blueberry-900/10 uppercase bg-oat-100/50 text-blueberry-800/60 transition-all group-hover/item:border-blueberry-900/20">
-            {tag}
-          </span>
-        ))}
-        {signal.salary && (
-           <span class="inline-flex whitespace-nowrap px-1.5 py-0.5 rounded text-[8px] font-extrabold tracking-wider border border-emerald-200 uppercase bg-emerald-50 text-emerald-700">
-             💰 {signal.salary}
-           </span>
-        )}
-      </div>
-    </a>
-  </div>
+    <!-- Job Title -->
+    <span class="flex-1 min-w-0 text-[13px] font-semibold text-blueberry-900 leading-snug truncate group-hover/item:text-blue-600 transition-colors">
+      {signal.title}
+    </span>
+
+    <!-- Tags (right side) -->
+    <div class="flex gap-1 shrink-0 pointer-events-none relative z-20">
+      {tags.slice(0, 2).map((tag) => (
+        <span class="whitespace-nowrap px-2 py-0.5 rounded-md text-[10px] font-medium border border-blueberry-900/10 bg-oat-50 text-blueberry-900/50 leading-none">
+          {tag}
+        </span>
+      ))}
+      {signal.salary && (
+        <span class="whitespace-nowrap px-2 py-0.5 rounded-md text-[10px] font-medium border border-emerald-200 bg-emerald-50 text-emerald-700 leading-none">
+          {signal.salary}
+        </span>
+      )}
+    </div>
+  </a>
 </li>
 
 <style>
   li::marker {
-    @apply text-blueberry-900/30 font-bold text-[12px];
+    color: rgba(15, 23, 42, 0.2);
+    font-size: 11px;
+    font-weight: 500;
   }
-  .list-item {
+  li {
     content-visibility: auto;
-    contain-intrinsic-size: 32px;
+    contain-intrinsic-size: 36px;
   }
 </style>

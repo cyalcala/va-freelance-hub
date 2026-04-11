@@ -45,37 +45,37 @@ const statusText: Record<string, string> = {
       </div>
       
       <div class="flex flex-col gap-0 min-w-[24px]">
-        <span class="text-[9px] font-black text-blueberry-900 leading-none tracking-tight">
+        <span class="text-[10px] font-bold text-blueberry-900 leading-none tracking-tight">
           {track.label}
         </span>
-        <span class="text-[7px] font-bold text-blueberry-800/40 uppercase tracking-widest leading-none mt-0.5">
+        <span class="text-[8px] font-semibold text-blueberry-800/40 uppercase tracking-widest leading-none mt-0.5">
           {track.state === 'FRESH' ? (track.pAge < 5 ? 'LIVE' : `${Math.floor(track.pAge)}m`) : track.state.substring(0, 5)}
         </span>
       </div>
 
       <!-- Tooltip Content -->
-      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 p-3 bg-blueberry-900 text-white rounded-2xl text-[9px] opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50 shadow-2xl scale-95 group-hover:scale-100">
-        <div class="font-black border-b border-white/10 pb-2 mb-2 uppercase tracking-widest flex items-center justify-between">
-          <span>{track.name} Region</span>
+      <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-44 p-4 bg-blueberry-900 text-white rounded-2xl text-[10px] opacity-0 group-hover:opacity-100 transition-all pointer-events-none z-50 shadow-2xl scale-95 group-hover:scale-100 backdrop-blur-xl">
+        <div class="font-bold border-b border-white/10 pb-2 mb-3 uppercase tracking-wider flex items-center justify-between">
+          <span class="text-[9px]">{track.name} Region</span>
           <div class={`w-2 h-2 rounded-full ${statusColors[track.state].split(' ')[0]}`}></div>
         </div>
-        <div class="flex justify-between mb-1 opacity-80 font-medium">
+        <div class="flex justify-between mb-1.5 opacity-80 font-medium">
           <span>Processing Pipeline:</span>
-          <span class="font-black tabular-nums">{track.pAge > 999 ? '>16h' : `${Math.floor(track.pAge)}m`}</span>
+          <span class="font-bold tabular-nums">{track.pAge > 999 ? '>16h' : `${Math.floor(track.pAge)}m`}</span>
         </div>
-        <div class="flex justify-between mb-2 opacity-80 font-medium">
+        <div class="flex justify-between mb-3 opacity-80 font-medium">
           <span>Ingestion Pulse:</span>
-          <span class="font-black tabular-nums">{track.iAge > 999 ? '>16h' : `${Math.floor(track.iAge)}m`}</span>
+          <span class="font-bold tabular-nums">{track.iAge > 999 ? '>16h' : `${Math.floor(track.iAge)}m`}</span>
         </div>
         
-        <div class="flex items-center gap-2 mb-2 p-1.5 bg-white/5 rounded-lg">
-          <span class="opacity-50 uppercase text-[7px] font-black">Budget:</span>
-          <span class={`font-black uppercase text-[7px] tracking-widest ${budgetMode === 'tight' ? 'text-amber-400' : 'text-emerald-400'}`}>
+        <div class="flex items-center gap-2 mb-3 p-2 bg-white/5 rounded-lg border border-white/5">
+          <span class="opacity-40 uppercase text-[7px] font-bold tracking-widest">Budget State:</span>
+          <span class={`font-bold uppercase text-[7px] tracking-widest ${budgetMode === 'tight' ? 'text-amber-400' : 'text-emerald-400'}`}>
             {budgetMode} mode
           </span>
         </div>
 
-        <div class="pt-2 border-t border-white/10 text-white/50 italic font-medium flex items-center gap-2">
+        <div class="pt-2 border-t border-white/10 text-white/40 italic font-medium flex items-center gap-2 text-[9px]">
           <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           {statusText[track.state]}
         </div>

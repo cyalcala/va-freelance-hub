@@ -170,7 +170,7 @@ const healthStats = {
 
       <div class="flex flex-col items-center justify-center gap-10">
         <div class="max-w-4xl mx-auto text-center">
-          <h1 class="text-4xl md:text-6xl font-black text-blueberry-900 mb-6 leading-[0.95] tracking-tighter uppercase font-heading">
+          <h1 class="text-4xl md:text-6xl font-black text-blueberry-900 mb-6 leading-[1.05] tracking-tight uppercase font-heading">
             The master directory <br class="hidden md:block"/>
             <span class="text-blue-600">of global remote work.</span>
           </h1>
@@ -192,7 +192,7 @@ const healthStats = {
               type="text" 
               id="oppSearch" 
               placeholder="Search 100+ sites..." 
-              class="block w-full pl-16 pr-8 py-5 rounded-2xl border-2 border-transparent bg-white shadow-card text-blueberry-900 placeholder-blueberry-900/20 focus:outline-none focus:border-blue-600/20 focus:ring-4 focus:ring-blue-600/5 transition-all duration-300 text-xl font-medium tracking-tight"
+              class="block w-full pl-16 pr-8 py-5 rounded-2xl border-2 border-transparent bg-white shadow-card text-blueberry-900 placeholder-blueberry-900/30 focus:outline-none focus:border-blue-600/20 focus:ring-4 focus:ring-blue-600/5 transition-all duration-300 text-xl font-semibold tracking-tight"
             />
           </div>
 
@@ -204,7 +204,7 @@ const healthStats = {
              <button class="w-14 h-14 rounded-full bg-white shadow-card border border-oat-200 flex items-center justify-center text-blueberry-800/40 hover:text-blue-600 hover:border-blue-600/30 transition-all group">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
              </button>
-             <button class="px-8 h-14 rounded-full bg-blueberry-900 text-white font-black tracking-widest uppercase text-[11px] shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all whitespace-nowrap">
+             <button class="px-8 h-14 rounded-full bg-blueberry-900 text-white font-bold tracking-[0.2em] uppercase text-[10px] shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-95 transition-all whitespace-nowrap">
                 Unlock VIP
              </button>
           </div>
@@ -223,12 +223,12 @@ const healthStats = {
         
         return (
           <article class="domain-column break-inside-avoid bg-white rounded-3xl p-6 shadow-sm border border-blueberry-900/10 hover:shadow-md transition-all duration-300 flex flex-col">
-             <div class="text-center mb-4">
+             <div class="text-center mb-3">
                 <a href={`/domain/${slug}`} class="group/header block">
-                  <h2 class="text-xl font-black text-blueberry-900 uppercase tracking-tight group-hover/header:text-blue-600 transition-colors">
+                  <h2 class="text-sm font-bold text-blueberry-900 uppercase tracking-widest group-hover/header:text-blue-600 transition-colors">
                     {getDomainLabel(domain.domain)}
                   </h2>
-                  <p class="text-[10px] font-bold text-blueberry-800/40 uppercase tracking-[0.15em] leading-relaxed mt-1 px-2">
+                  <p class="text-[11px] font-normal text-blueberry-900/40 leading-relaxed mt-1.5 px-2">
                     {domain.description}
                   </p>
                 </a>
@@ -238,7 +238,7 @@ const healthStats = {
 
              
               <div class="domain-signals-container">
-                <ol class="list-decimal list-inside space-y-1.5 text-sm font-bold tracking-tight text-blueberry-900/30 marker:text-blueberry-900/20 marker:font-black">
+                <ol class="list-decimal list-outside ml-4 space-y-0.5">
                   {domain.signals.map((sig, idx) => (
                     <div class={`signal-wrapper ${idx >= 15 ? 'hidden' : ''}`} data-index={idx}>
                       <SignalCard signal={sig} />
