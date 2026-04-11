@@ -53,11 +53,12 @@ ${codebaseContext}
 }
 `;
 
-    // 🛡️ Strategic Borrowing: Try Gemini Pro (The Architect) first, then fallback to OpenRouter (The Coder)
+    // 🛡️ BudgetShield: Strictly using $0 Free models for reasoning
     const models = [
-      { name: 'gemini-pro', provider: 'gemini' as const, modelId: 'gemini-1.5-pro' },
-      { name: 'deepseek-coder', provider: 'openrouter' as const, modelId: 'deepseek/deepseek-coder' },
-      { name: 'claude-sonnet', provider: 'openrouter' as const, modelId: 'anthropic/claude-3.5-sonnet' }
+      { name: 'gemini-pro', provider: 'gemini' as const, modelId: 'gemini-1.5-pro' }, // Primary Goal (Free Tier)
+      { name: 'llama-3.1-405b-free', provider: 'openrouter' as const, modelId: 'meta-llama/llama-3.1-405b-instruct:free' },
+      { name: 'deepseek-chat-free', provider: 'openrouter' as const, modelId: 'deepseek/deepseek-chat:free' },
+      { name: 'qwen-72b-free', provider: 'openrouter' as const, modelId: 'qwen/qwen-2-72b-instruct:free' }
     ];
 
     for (const config of models) {
