@@ -38,9 +38,52 @@ export class ApexSentinel {
 
       // 4. Chronos Reaping (The Scythe)
       await this.reapStaleOpportunities();
+      
+      // 5. Hard Pruning (The Insurance)
+      await this.pruneLegacyData();
 
     } catch (err: any) {
       console.error(`🚫 [SENTINEL] Triage failure: ${err.message}`);
+    }
+  }
+
+  /**
+   * 💀 THE PERPETUAL REAPER
+   * Hard deletes signals > 60 days to enforce the 1GB Storage Mandate.
+   */
+  private async pruneLegacyData() {
+    console.log("💀 [SENTINEL] Pruning legacy signals (>60 days)...");
+    const SIXTY_DAYS_AGO = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+    const NINETY_DAYS_AGO = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    const { opportunities } = await import('./schema');
+    const { and, lte, or } = await import('drizzle-orm');
+
+    try {
+      // Rule 1: Delete all signals > 60d that are already inactive
+      const prune60 = await db.delete(opportunities)
+        .where(
+          and(
+            lte(opportunities.createdAt, SIXTY_DAYS_AGO),
+            eq(opportunities.isActive, false)
+          )
+        );
+
+      // Rule 2: Hard prune ALL signals > 90d (Insurance Policy)
+      const prune90 = await db.delete(opportunities)
+        .where(lte(opportunities.createdAt, NINETY_DAYS_AGO));
+
+      const totalDeleted = (prune60.rowsAffected || 0) + (prune90.rowsAffected || 0);
+
+      if (totalDeleted > 0) {
+        console.log(`🔪 [SENTINEL] Storage Insurance: Removed ${totalDeleted} legacy signals.`);
+        await db.update(vitals).set({
+          totalPurged: sql`total_purged + ${totalDeleted}`,
+          lastInterventionAt: new Date(),
+          lastInterventionReason: `Storage Insurance: Pruned ${totalDeleted} legacy signals.`
+        }).where(eq(vitals.id, 'GLOBAL'));
+      }
+    } catch (err: any) {
+      console.error(`💀 [SENTINEL] Pruning failure: ${err.message}`);
     }
   }
 

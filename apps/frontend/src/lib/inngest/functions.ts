@@ -47,8 +47,7 @@ export const jobHarvested = inngest.createFunction(
         return await db.update(opportunities)
           .set({ 
             lastSeenAt: new Date(), 
-            // V12 PERPETUITY FIX: latestActivityMs must only be updated for TRUE new signals, 
-            // not for artificial pulses. Removing: latestActivityMs: Date.now() 
+            latestActivityMs: Date.now() 
           })
           .where(eq(opportunities.md5_hash, md5_hash));
       });
