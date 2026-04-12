@@ -11,8 +11,8 @@ import { desc, not, eq, sql, and, gte } from 'drizzle-orm';
 export async function getSortedSignals(limit = 100, nowMs?: number) {
   const staleBoundary = Date.now() - (48 * 60 * 60 * 1000); // 48 Hours
 
-  // 🎯 V12.11 CANDIDATE REACH: Fetch more candidates to ensure variety for interleaving
-  const candidateLimit = Math.max(limit * 3, 300);
+  // 🎯 V12.15 CANDIDATE REACH: Increase depth to ensure variety for interleaving
+  const candidateLimit = Math.max(limit * 5, 1000);
 
   const query = db.select()
   .from(schema.opportunities)
@@ -31,46 +31,62 @@ export async function getSortedSignals(limit = 100, nowMs?: number) {
   const candidates = await query;
   if (candidates.length === 0) return [];
 
-  // 🎯 SOURCE FIDELITY BOOST (V12.11)
-  // We prioritize 'High Fidelity' sources in the slotting phase
-  const HIGH_FIDELITY_SOURCES = ['Direct ATS', 'Agency Sensor', 'JobStreet PH', 'Himalayas', 'We Work Remotely'];
+  // 🎯 BUCKET CLASSIFICATION (V12.15 Intelligent Interleaving)
+  const HIGH_FIDELITY_ATS = ['Direct ATS', 'Agency Sensor', 'JobStreet PH', 'Himalayas', 'We Work Remotely', 'SimplyHired', 'AngelList'];
+  
+  const buckets: { VERIFIED: typeof candidates, SOCIAL: typeof candidates } = {
+    VERIFIED: [],
+    SOCIAL: []
+  };
 
-  const groups: Record<string, typeof candidates> = {};
   for (const job of candidates) {
-    const key = job.sourcePlatform || "Unknown";
-    if (!groups[key]) groups[key] = [];
-    groups[key].push(job);
-  }
+    const source = (job.sourcePlatform || "Unknown").toLowerCase();
+    const isSocial = source.includes('reddit') || source.includes('facebook') || source.includes('twitter');
+    const isHighFidelity = HIGH_FIDELITY_ATS.some(s => source.includes(s.toLowerCase()));
 
-  // Sort groups: High fidelity sources first
-  const keys = Object.keys(groups).sort((a, b) => {
-    const aIsHigh = HIGH_FIDELITY_SOURCES.some(s => a.includes(s)) ? 0 : 1;
-    const bIsHigh = HIGH_FIDELITY_SOURCES.some(s => b.includes(s)) ? 0 : 1;
-    return aIsHigh - bIsHigh;
-  });
+    if (isSocial && !isHighFidelity) {
+      buckets.SOCIAL.push(job);
+    } else {
+      buckets.VERIFIED.push(job);
+    }
+  }
 
   const interspersed: typeof candidates = [];
   const sourceCount: Record<string, number> = {};
-  const SATURATION_CAP = 6; // Max 6 signals per source in a single view
+  const SOURCE_SATURATION_CAP = 4; // Tighter cap per source in top feed
 
-  let hasItems = true;
-  while (hasItems && interspersed.length < limit) {
-    hasItems = false;
-    for (const key of keys) {
-      // 🛡️ SATURATION CAP: Prevent any single source from dominating the Top Feed
-      if ((sourceCount[key] || 0) >= SATURATION_CAP && interspersed.length < limit / 2) {
-         continue; 
+  // 🔄 THE BUCKET BRIGADE (2:1 Ratio)
+  // Logic: 2 Verified/Direct -> 1 Social -> Repeat
+  while (interspersed.length < limit && (buckets.VERIFIED.length > 0 || buckets.SOCIAL.length > 0)) {
+    // 1. Pull 2 Verified
+    for (let i = 0; i < 2; i++) {
+      if (buckets.VERIFIED.length > 0 && interspersed.length < limit) {
+        const job = buckets.VERIFIED.shift();
+        if (job) {
+          const sKey = job.sourcePlatform || "Unknown";
+          if ((sourceCount[sKey] || 0) < SOURCE_SATURATION_CAP) {
+            interspersed.push(job);
+            sourceCount[sKey] = (sourceCount[sKey] || 0) + 1;
+          }
+        }
       }
-
-      const job = groups[key].shift();
-      if (job) {
-        interspersed.push(job);
-        sourceCount[key] = (sourceCount[key] || 0) + 1;
-        hasItems = true;
-      }
-
-      if (interspersed.length >= limit) break;
     }
+
+    // 2. Pull 1 Social
+    if (buckets.SOCIAL.length > 0 && interspersed.length < limit) {
+      const job = buckets.SOCIAL.shift();
+      if (job) {
+        // Normalize Reddit subreddits for saturation cap
+        const sKey = job.sourcePlatform?.toLowerCase().includes('reddit') ? 'REDDIT_GROUP' : (job.sourcePlatform || "Unknown");
+        if ((sourceCount[sKey] || 0) < SOURCE_SATURATION_CAP) {
+           interspersed.push(job);
+           sourceCount[sKey] = (sourceCount[sKey] || 0) + 1;
+        }
+      }
+    }
+
+    // Secondary safety - if one bucket is empty, fill with the other
+    if (buckets.VERIFIED.length === 0 && buckets.SOCIAL.length === 0) break;
   }
 
   return interspersed;
