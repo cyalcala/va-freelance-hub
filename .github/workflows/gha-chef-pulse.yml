@@ -38,12 +38,12 @@ jobs:
         working-directory: ./va-freelance-hub
         run: bun run scripts/gha/chef-emergency.ts
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           VA_PROXY_SECRET: ${{ secrets.VA_PROXY_SECRET }}
-          EDGE_PROXY_URL: ${{ secrets.EDGE_PROXY_URL }}
+          EDGE_PROXY_URL: ${{ secrets.CLOUDFLARE_HUNTER_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
