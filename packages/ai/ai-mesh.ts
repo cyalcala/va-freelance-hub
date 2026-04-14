@@ -135,7 +135,7 @@ export class AIMesh {
       { name: 'flash-shield', provider: 'gemini' as const, modelId: 'gemini-1.5-flash' }, 
       { name: 'groq-llama-high', provider: 'groq' as const, modelId: 'llama-3.3-70b-versatile' },
       { name: 'cerebras-llama', provider: 'cerebras' as const, modelId: 'llama3.1-8b' },
-      { name: 'cf-llama', provider: 'cloudflare' as const, modelId: '@cf/meta/llama-3.1-8b-instruct' },
+      // { name: 'cf-llama', provider: 'cloudflare' as const, modelId: '@cf/meta/llama-3.1-8b-instruct' }, // PAUSED: Enforcing GHA intelligence isolation
     ];
 
     if (!isTightBudget) {
@@ -149,8 +149,8 @@ export class AIMesh {
     });
 
     if (extractionQueue.length === 0) {
-      console.warn('⚠️ [AI-MESH] BUDGET EXHAUSTED: Falling back to Apex Edge Pulse (CF).');
-      extractionQueue.push({ name: 'cf-llama', provider: 'cloudflare', modelId: '@cf/meta/llama-3.1-8b-instruct' });
+      console.warn('⚠️ [AI-MESH] BUDGET EXHAUSTED: Falling back to Gemini Flash.');
+      // extractionQueue.push({ name: 'cf-llama', provider: 'cloudflare', modelId: '@cf/meta/llama-3.1-8b-instruct' }); // PAUSED
       extractionQueue.push({ name: 'flash-shield', provider: 'gemini', modelId: 'gemini-1.5-flash' });
     }
 

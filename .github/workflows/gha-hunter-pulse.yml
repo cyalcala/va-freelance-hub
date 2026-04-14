@@ -1,0 +1,50 @@
+name: Sovereign Hunter Pulse
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 minutes
+  workflow_dispatch: 
+
+# Prevent overlaps: If a hunter is still running, do not start another.
+concurrency:
+  group: gha-hunter-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  hunt:
+    name: Execute Signal Safari (Hunter)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 🛑 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🥟 Setup Bun Runtime
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Dependencies
+        working-directory: ./va-freelance-hub
+        run: bun install --frozen-lockfile
+
+      - name: 🏹 Deploy the Hunter
+        working-directory: ./va-freelance-hub
+        run: bun run scripts/gha/harvest-emergency.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          VA_PROXY_SECRET: ${{ secrets.VA_PROXY_SECRET }}
+          EDGE_PROXY_URL: ${{ secrets.EDGE_PROXY_URL }}
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USERNAME: ${{ secrets.REDDIT_USERNAME }}
+          REDDIT_PASSWORD: ${{ secrets.REDDIT_PASSWORD }}

@@ -1,0 +1,50 @@
+name: Sovereign Chef Pulse
+
+on:
+  schedule:
+    - cron: '15,45 * * * *' # Every 30 minutes, offset by 15 mins from the Hunter
+  workflow_dispatch: 
+
+# Prevent overlaps: Serial processing prevents DB connection exhaustion.
+concurrency:
+  group: gha-chef-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  cook:
+    name: Execute Bodega Processing (Chef)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25 # Allow ample time for LLM calls over 45 items
+    
+    steps:
+      - name: 🛑 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🥟 Setup Bun Runtime
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Dependencies
+        working-directory: ./va-freelance-hub
+        run: bun install --frozen-lockfile
+
+      - name: 👨‍🍳 Deploy the Chef
+        working-directory: ./va-freelance-hub
+        run: bun run scripts/gha/chef-emergency.ts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          VA_PROXY_SECRET: ${{ secrets.VA_PROXY_SECRET }}
+          EDGE_PROXY_URL: ${{ secrets.EDGE_PROXY_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CEREBRAS_API_KEY: ${{ secrets.CEREBRAS_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
