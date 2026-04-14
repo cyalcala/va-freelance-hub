@@ -8,6 +8,8 @@ const GHOST_SENTINEL = "||V12_GHOST_LEAD||";
 const EDGE_PROXY_URL = process.env.EDGE_PROXY_URL || "https://va-edge-proxy.cyrusalcala-agency.workers.dev";
 const EDGE_PROXY_SECRET = process.env.VA_PROXY_SECRET;
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 function htmlToText(html: string): string {
   return html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
@@ -27,25 +29,33 @@ async function getCookablePayload(job: { raw_payload?: string; source_url?: stri
   proxiedUrl.searchParams.set("url", job.source_url);
   const useEdgeProxy = Boolean(EDGE_PROXY_URL && EDGE_PROXY_SECRET);
 
-  const res = await fetch(useEdgeProxy ? proxiedUrl.toString() : job.source_url, {
-    signal: AbortSignal.timeout(15000),
-    headers: useEdgeProxy
-      ? { "X-VA-Proxy-Secret": EDGE_PROXY_SECRET as string, "user-agent": "VAHubGhaChef/1.0 (+ghost-hydration)" }
-      : { "user-agent": "VAHubGhaChef/1.0 (+ghost-hydration)" },
-  });
-  if (!res.ok) throw new Error(`Hydration fetch failed: ${res.status}`);
+  let tries = 0;
+  while (tries < 2) {
+    try {
+      const res = await fetch(useEdgeProxy ? proxiedUrl.toString() : job.source_url, {
+        signal: AbortSignal.timeout(15000),
+        headers: useEdgeProxy
+          ? { "X-VA-Proxy-Secret": EDGE_PROXY_SECRET as string, "user-agent": "VAHubGhaChef/1.0 (+ghost-hydration)" }
+          : { "user-agent": "VAHubGhaChef/1.0 (+ghost-hydration)" },
+      });
+      if (!res.ok) throw new Error(`Hydration fetch failed: ${res.status}`);
 
-  const html = await res.text();
-  const text = htmlToText(html);
-  if (!text || text.length < 120) throw new Error("Hydration yielded insufficient content");
-  return text.slice(0, 20000);
+      const html = await res.text();
+      const text = htmlToText(html);
+      if (!text || text.length < 120) throw new Error("Hydration yielded insufficient content");
+      return text.slice(0, 20000);
+    } catch (err) {
+      tries++;
+      if (tries >= 2) throw err;
+      console.warn(`⚠️ [CHEF] Hydration failed. Retrying...`);
+      await sleep(2000);
+    }
+  }
+  throw new Error("Hydration exhausted");
 }
 
 /**
  * 👨‍🍳 GHA CHEF: The Executive Serverless Cook
- * 
- * Claims RAW jobs from the Bodega, applies AI Mesh logic,
- * and Plates them to the Turso Gold Vault.
  */
 async function runEmergencyChef(batchSize: number = 15) {
   console.log(`👨‍🍳 [CHEF] Opening Kitchen. Checking Bodega for un-cooked tasks (Limit: ${batchSize})...`);
@@ -61,15 +71,17 @@ async function runEmergencyChef(batchSize: number = 15) {
   console.log(`👨‍🍳 [CHEF] Claimed ${jobs.length} raw ingredients. Starting extraction...`);
 
   for (const job of jobs) {
+    const meta = (job.mapped_payload as any) || {};
+    const retries = meta.retry_count || 0;
+
     try {
-      console.log(`\n--- Cooking: ${job.source_platform} [${job.id}] (${(job.mapped_payload as any)?.region || 'Global'}) ---`);
+      console.log(`\n--- Cooking: ${job.source_platform} [${job.id}] (Retry: ${retries}) ---`);
       
-      const ingestionMeta = job.mapped_payload || {};
       const metadata = {
         source_platform: job.source_platform,
-        region: ingestionMeta.region || 'Global',
-        trustLevel: ingestionMeta.trustLevel || 'global',
-        ...ingestionMeta
+        region: meta.region || 'Global',
+        trustLevel: meta.trustLevel || 'global',
+        ...meta
       };
 
       // 2. Hydration Phase (Ghost Lead Support)
@@ -83,7 +95,7 @@ async function runEmergencyChef(batchSize: number = 15) {
       
       // 4. Quality Guardrails
       if (!extraction || extraction.tier === OpportunityTier.TRASH) {
-        console.log(`🛡️ [CHEF] Sieve rejected standard. Sweeping into bin (Quality/Geo).`);
+        console.log(`🛡️ [CHEF] Sieve rejected standard. Sweeping into bin.`);
         await supabase
           .from('raw_job_harvests')
           .update({ 
@@ -134,7 +146,7 @@ async function runEmergencyChef(batchSize: number = 15) {
         .update({ 
           status: 'PLATED', 
           triage_status: 'PASSED',
-          mapped_payload: extraction, // Store final state
+          mapped_payload: { ...meta, ...extraction, retry_count: 0 }, 
           locked_by: null,
           updated_at: new Date().toISOString() 
         })
@@ -145,18 +157,38 @@ async function runEmergencyChef(batchSize: number = 15) {
     } catch (err: any) {
       console.error(`❌ [CHEF] Burnt dish ${job.id}:`, err.message);
       
-      // If we hit Rate Limits or crashes, release the lock so next run can try again
       const isRateLimit = err.message.includes('429');
-      
-      await supabase
-        .from('raw_job_harvests')
-        .update({ 
-          status: isRateLimit ? 'RAW' : 'FAILED', 
-          locked_by: null, 
-          error_log: err.message,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', job.id);
+      const nextRetry = retries + 1;
+
+      if (isRateLimit) {
+        console.warn(`🛑 [CHEF] Provider throttle detected. Backing off...`);
+        await sleep(5000); 
+      }
+
+      if (nextRetry >= 3) {
+        console.error(`🚫 [CHEF] Job ${job.id} exhausted. Giving up after 3 attempts.`);
+        await supabase
+          .from('raw_job_harvests')
+          .update({ 
+            status: 'FAILED', 
+            locked_by: null, 
+            error_log: `Exhausted 3 retries. Last Error: ${err.message}`,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', job.id);
+      } else {
+        // Recycle back to RAW for another chef to try later
+        await supabase
+          .from('raw_job_harvests')
+          .update({ 
+            status: 'RAW', 
+            locked_by: null, 
+            mapped_payload: { ...meta, retry_count: nextRetry },
+            error_log: `Retry ${nextRetry}/3: ${err.message}`,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', job.id);
+      }
     }
   }
 
