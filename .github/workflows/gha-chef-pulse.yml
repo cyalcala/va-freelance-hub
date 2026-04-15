@@ -13,6 +13,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   cook:
     name: Execute Bodega Processing (Chef)
@@ -31,12 +34,20 @@ jobs:
           bun-version: latest
 
       - name: 📦 Install Dependencies
-        working-directory: ./va-freelance-hub
         run: bun install --frozen-lockfile
 
       - name: 👨‍🍳 Deploy the Chef
-        working-directory: ./va-freelance-hub
-        run: bun run scripts/gha/chef-emergency.ts
+        run: |
+          bun run scripts/gha/chef-emergency.ts 2>&1 | tee chef.log
+          
+          # Extract stats for summary
+          PLATED=$(grep -c '\[PLATED\]' chef.log || echo "0")
+          FAILED=$(grep -c '\[CHEF\] Burnt dish' chef.log || echo "0")
+          echo "### 👨‍🍳 Sovereign Chef Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Kitchen Service Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dishes Plated**: $PLATED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dishes Burnt**: $FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

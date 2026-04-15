@@ -58,10 +58,14 @@ async function getCookablePayload(job: { raw_payload?: string; source_url?: stri
  * 👨‍🍳 GHA CHEF: The Executive Serverless Cook
  */
 async function runEmergencyChef(batchSize: number = 15) {
+  const runnerId = 'gha-chef';
   console.log(`👨‍🍳 [CHEF] Opening Kitchen. Checking Bodega for un-cooked tasks (Limit: ${batchSize})...`);
 
+  const { emitProcessingHeartbeat } = await import("../../packages/db/governance");
+  await emitProcessingHeartbeat(runnerId, 'Global');
+
   // 1. Claim Jobs securely
-  const jobs = await claimRawJob("gha-chef-" + crypto.randomUUID().slice(0, 8), batchSize);
+  const jobs = await claimRawJob(runnerId + "-" + crypto.randomUUID().slice(0, 8), batchSize);
   
   if (!jobs || jobs.length === 0) {
     console.log("📭 [CHEF] Kitchen Closed. The Bodega is empty.");

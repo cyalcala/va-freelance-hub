@@ -13,6 +13,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   hunt:
     name: Execute Signal Safari (Hunter)
@@ -31,12 +34,18 @@ jobs:
           bun-version: latest
 
       - name: 📦 Install Dependencies
-        working-directory: ./va-freelance-hub
         run: bun install --frozen-lockfile
 
       - name: 🏹 Deploy the Hunter
-        working-directory: ./va-freelance-hub
-        run: bun run scripts/gha/harvest-emergency.ts
+        run: |
+          bun run scripts/gha/harvest-emergency.ts 2>&1 | tee harvest.log
+          
+          # Extract stats for summary
+          TOTAL=$(grep -oP 'Total signals: \K\d+' harvest.log || echo "0")
+          echo "### 🏹 Sovereign Hunter Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Signal Safari Concluded" >> $GITHUB_STEP_SUMMARY
+          echo "- **Signals Harvested**: $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

@@ -49,12 +49,8 @@ async function runEmergencyHarvest() {
   const runnerId = 'gha';
   console.log("🏹 [HUNTER] Starting Sovereign Hardened Execution...");
 
-  // 1. Check Atomic Lease
-  const { acquireLease } = await import("../../packages/db/governance");
-  if (!(await acquireLease(runnerId, 'Global'))) {
-    console.log("🚥 [HUNTER] Skipped: Lease currently held by another worker.");
-    process.exit(0);
-  }
+  const { emitIngestionHeartbeat } = await import("../../packages/db/governance");
+  await emitIngestionHeartbeat(runnerId, 'Global');
 
   const startTime = Date.now();
   await recordLog(`══ Starting Hardened GHA Signal Harvesting Sequence ══`, "info");
@@ -133,9 +129,13 @@ async function runEmergencyHarvest() {
         const finalPayload = sanitizedHtml.length > 50 
           ? sanitizedHtml.slice(0, 16000) // Increase buffer slightly for better AI context
           : "||V12_GHOST_LEAD||";
+
+        return {
+          source_url: item.link || item.url || `ghost-${uuidv4()}`,
+          raw_payload: finalPayload,
           source_platform: source.name,
-          status: 'RAW',
-          triage_status: 'PENDING',
+          status: 'RAW' as const,
+          triage_status: 'PENDING' as const,
           mapped_payload: {
             raw_title: item.title,
             raw_company: item.company || "Generic",
@@ -153,7 +153,10 @@ async function runEmergencyHarvest() {
       });
 
       // BATCH UPSERT into Supabase
-      const { error } = await supabase.from('raw_job_harvests').upsert(uploads, { onConflict: 'source_url' });
+      // 🛡️ DE-DUPLICATION: Ensure unique source_url per batch
+      const uniqueUploads = Array.from(new Map(uploads.map(u => [u.source_url, u])).values());
+
+      const { error } = await supabase.from('raw_job_harvests').upsert(uniqueUploads, { onConflict: 'source_url' });
       if (error) {
         console.error(`❌ [HUNTER] Bodega Reject for ${source.name}:`, error.message);
       } else {
