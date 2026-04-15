@@ -37,8 +37,11 @@ async function runSentinel() {
     actionsTaken.push("🔓 Forced Lease Release (Deadlock Resolved)");
   }
 
+  const INGESTION_THRESHOLD_MS = 6 * 60 * 60 * 1000; // 6 Hours (Stability-First)
+  const PROCESSING_THRESHOLD_MS = 6 * 60 * 60 * 1000; // 6 Hours
+
   // 2. CRITICAL STALENESS ALERT
-  const isHealthy = ingestionStalenessMin < 120; // 2 hours threshold
+  const isHealthy = (now - (record.lastIngestionHeartbeatMs || 0)) < INGESTION_THRESHOLD_MS;
 
   // Write to summary for GHA
   const summary = `

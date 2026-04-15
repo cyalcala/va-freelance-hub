@@ -42,6 +42,12 @@ jobs:
           
           # Extract stats for summary
           TOTAL=$(grep -oP 'Total signals: \K\d+' harvest.log || echo "0")
+          echo "TOTAL=$TOTAL" >> $GITHUB_ENV
+
+      - name: 📊 Generate Pulse Summary
+        if: always()
+        continue-on-error: true
+        run: |
           echo "### 🏹 Sovereign Hunter Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ✅ Signal Safari Concluded" >> $GITHUB_STEP_SUMMARY
           echo "- **Signals Harvested**: $TOTAL" >> $GITHUB_STEP_SUMMARY

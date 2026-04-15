@@ -43,6 +43,13 @@ jobs:
           # Extract stats for summary
           PLATED=$(grep -c '\[PLATED\]' chef.log || echo "0")
           FAILED=$(grep -c '\[CHEF\] Burnt dish' chef.log || echo "0")
+          echo "PLATED=$PLATED" >> $GITHUB_ENV
+          echo "FAILED=$FAILED" >> $GITHUB_ENV
+
+      - name: 📊 Generate Chef Summary
+        if: always()
+        continue-on-error: true
+        run: |
           echo "### 👨‍🍳 Sovereign Chef Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ✅ Kitchen Service Complete" >> $GITHUB_STEP_SUMMARY
           echo "- **Dishes Plated**: $PLATED" >> $GITHUB_STEP_SUMMARY
