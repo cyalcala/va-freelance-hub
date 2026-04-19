@@ -69,7 +69,7 @@ export class ApexSentinel {
       // Identify providers that have been blocked for more than 15 minutes
       const result = await db.delete(aiCooldowns)
         .where(
-          lte(aiCooldowns.blockedAt, new Date(now - DEFROST_THRESHOLD_MS))
+          lte(aiCooldowns.updatedAt, new Date(now - DEFROST_THRESHOLD_MS))
         );
 
       if (result.rowsAffected > 0) {
@@ -207,7 +207,7 @@ export class ApexSentinel {
       const [record] = await db.select().from(vitals).where(eq(vitals.id, 'GLOBAL')).limit(1);
       if (!record || !record.lastHarvestAt) return;
 
-      const lastHarvest = new Date(record.lastHarvestAt).getTime();
+      const lastHarvest = new Date(Number(record.lastHarvestAt)).getTime();
       const diff = now - lastHarvest;
 
       if (diff > GHOST_LOCK_THRESHOLD_MS) {
@@ -250,6 +250,8 @@ export class ApexSentinel {
     } catch (err: any) {
       console.error(`💰 [SENTINEL] Economic guardrail failure: ${err.message}`);
     }
+  }
+
   /**
    * 🏮 SHADOW VAULT SYNCHRONIZATION
    * Recover processed leads that were "staged" in Supabase due to Turso downtime.
