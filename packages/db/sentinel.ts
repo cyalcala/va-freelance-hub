@@ -207,7 +207,7 @@ export class ApexSentinel {
       const [record] = await db.select().from(vitals).where(eq(vitals.id, 'GLOBAL')).limit(1);
       if (!record || !record.lastHarvestAt) return;
 
-      const lastHarvest = new Date(record.lastHarvestAt).getTime();
+      const lastHarvest = new Date(Number(record.lastHarvestAt)).getTime();
       const diff = now - lastHarvest;
 
       if (diff > GHOST_LOCK_THRESHOLD_MS) {
