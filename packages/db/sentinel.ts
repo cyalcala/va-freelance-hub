@@ -250,6 +250,8 @@ export class ApexSentinel {
     } catch (err: any) {
       console.error(`💰 [SENTINEL] Economic guardrail failure: ${err.message}`);
     }
+  }
+
   /**
    * 🏮 SHADOW VAULT SYNCHRONIZATION
    * Recover processed leads that were "staged" in Supabase due to Turso downtime.
