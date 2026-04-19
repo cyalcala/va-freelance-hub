@@ -69,7 +69,7 @@ export class ApexSentinel {
       // Identify providers that have been blocked for more than 15 minutes
       const result = await db.delete(aiCooldowns)
         .where(
-          lte(aiCooldowns.blockedAt, new Date(now - DEFROST_THRESHOLD_MS))
+          lte(aiCooldowns.updatedAt, new Date(now - DEFROST_THRESHOLD_MS))
         );
 
       if (result.rowsAffected > 0) {
