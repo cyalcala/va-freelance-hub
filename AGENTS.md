@@ -8,12 +8,12 @@ A collection of skills for Claude.ai and Claude Code for senior software enginee
 
 ## OpenCode Integration
 
-OpenCode uses a **skill-driven execution model** powered by the `skill` tool and this repository's `/skills` directory.
+OpenCode uses a **skill-driven execution model** powered by the `skill` tool and this repository's `.antigravity/skills` directory.
 
 ### Core Rules
 
 - If a task matches a skill, you MUST invoke it
-- Skills are located in `skills/<skill-name>/SKILL.md`
+- Skills are located in `.antigravity/skills/<skill-name>/SKILL.md`
 - Never implement directly if a skill applies
 - Always follow the skill instructions exactly (do not partially apply them)
 
@@ -70,7 +70,7 @@ This ensures OpenCode behaves similarly to Claude Code with full workflow enforc
 ### Directory Structure
 
 ```
-skills/
+.antigravity/skills/
   {skill-name}/           # kebab-case directory name
     SKILL.md              # Required: skill definition
     scripts/              # Required: executable scripts
@@ -150,7 +150,7 @@ Skills are loaded on-demand — only the skill name and description are loaded a
 After creating or updating a skill:
 
 ```bash
-cd skills
+cd .antigravity/skills
 zip -r {skill-name}.zip {skill-name}/
 ```
 
@@ -160,7 +160,7 @@ Document these two installation methods for users:
 
 **Claude Code:**
 ```bash
-cp -r skills/{skill-name} ~/.claude/skills/
+cp -r .antigravity/skills/{skill-name} ~/.claude/skills/
 ```
 
 **claude.ai:**

@@ -17,7 +17,7 @@ import crypto from "node:crypto";
  * 🧬 THE IDEMPOTENCY SHIELD: MD5(JobTitle + Company)
  */
 export function generateIdempotencyHash(title: string, company: string): string {
-  const norm = (title + company).toLowerCase().replace(/[^a-z0-t]/g, '').trim();
+  const norm = (title + company).toLowerCase().replace(/[^a-z0-9]/g, '').trim();
   return crypto.createHash("md5").update(norm).digest("hex");
 }
 

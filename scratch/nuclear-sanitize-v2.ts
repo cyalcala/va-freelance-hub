@@ -12,7 +12,11 @@ async function nuclearSanitizeV2() {
       like(opportunities.title, "%schema.org%"),
       like(opportunities.title, "%Himalayas logo%"),
       like(opportunities.title, "%<!DOCTYPE%"),
-      sql`length(title) > 150`,
+      like(opportunities.title, "%&nbsp;%"),
+      like(opportunities.title, "%&amp;%"),
+      like(opportunities.title, "%@context%"),
+      like(opportunities.title, "%@type%"),
+      sql`length(title) > 120`,
       sql`length(title) < 5`
     )
   );

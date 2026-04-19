@@ -1,13 +1,14 @@
 # VA.INDEX — AI Context File
 
-> **Last updated:** 2026-03-31 (Post-Hierarchy Alignment)
-> **System status:** HEALTHY, Strict Hierarchy Active, De-Duplication Hardened
+> **Last updated:** 2026-04-19 (Agent-Skills Refresh)
+> **System status:** HEALTHY, Agent-Skills Methodology Active, Nuclear Resurrection Mode
 
 ## MANDATORY: Read Before Any Action
 
 1. `docs/AI_GUARDRAILS.md` — what you must never do
-2. `docs/KNOWN_ISSUES.md` — what has broken before
-3. This file — current system state
+2. `docs/SKILLS_HEALTH.md` — Agent-Skills methodology status
+3. `.cursorrules` — The Supreme Directive (Mandatory)
+4. This file — current system state
 
 ---
 
@@ -29,8 +30,9 @@ sifts them through a Philippine-First classifier, and serves them via SSR on Ver
 | Frontend | **Astro 4** (SSR, `apps/frontend/`) |
 | Styling | Tailwind CSS 3 |
 | Database | Turso (LibSQL/SQLite edge) via Drizzle ORM |
-| Scheduled jobs | **Trigger.dev v3** Cloud (`jobs/`) |
+| Scheduled jobs | **GHA / Fallback Pulse** (Trigger.dev offline, `scripts/fallback-pulse.ts`) |
 | Hosting | Vercel (Git auto-deploy from `main`) |
+| Skills | **Agent-Skills v1.0** (`va-freelance-hub/.antigravity/skills`) |
 | Notifications | ntfy.sh push notifications |
 | Repo | GitHub `cyalcala/va-freelance-hub` (public) |
 
@@ -64,32 +66,13 @@ scripts/               → save, restore, resurrect, sync-framework
 ## Autonomous Loop (How It Works)
 
 ```
-Every 30 minutes (Trigger.dev cron):
-  harvest-opportunities runs →
-    Layer 1: RSS (Himalayas, WWR, RemoteOK, ProBlogger, Jobspresso)
-    Layer 2: Reddit JSON (r/VAjobsPH, r/forhire, r/remotejobs, r/phcareers)
-    Layer 3: Jobicy API
-    Layer 4: Direct ATS (fetchATSJobs via Greenhouse/Lever)
-    Layer 5: JSON Probes (JobStreet PH)
-  → Sifter v9.0 classifies into Platinum/Gold/Silver/Bronze/Trash
-  → Dedup by title+company+source_url fingerprint
-  → Upsert to Turso DB (unique index target: [title, company, source_url])
-  → ntfy.sh notification (success/failure)
-
-Every 6 hours:
-  resilience-watchdog runs →
-    If data stale >2h → triggers burst harvest recovery
-    If 20min gap → triggers minor recovery
-    Audits source degradation
-
-Every 7 hours:
-  database-watchdog runs →
-    Purges inactive >60d
-    Purges TRASH tier >7d
-    Deactivates stale >72h ("watermelons")
-    Purges killed-company data (Canonical, GitLab, etc)
-
-On every page request:
+Every 12 hours (GHA Cron / Manual Fallback):
+  fallback-pulse.ts runs →
+    Triggers targeted harvest pulses for specific regions (PH-First)
+  chef-batch.ts runs →
+    Processes AI classification for RAW pantry jobs in Turso
+  
+Every page request:
   Astro SSR queries Turso live → serves fresh data
   /api/health returns JSON diagnostics (staleness, counts, growth)
 ```
