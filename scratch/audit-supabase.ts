@@ -1,54 +1,27 @@
-import { supabase } from "../packages/db/supabase";
-import crypto from "crypto";
+import { supabase } from '../packages/db/supabase';
 
-async function auditSupabase() {
-  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-  const { data: supabaseJobs, error } = await supabase
-    .from("raw_job_harvests")
-    .select("*")
-    .in("status", ["PLATED", "PROCESSED"])
-    .gte("updated_at", yesterday);
+async function audit() {
+  console.log("🔍 [SUPABASE] Deep Audit...");
 
-  if (error || !supabaseJobs) {
-    console.error("Error:", error);
+  const { data, error } = await supabase
+    .from('raw_job_harvests')
+    .select('source_url, created_at, updated_at, status, source_platform')
+    .order('updated_at', { ascending: false })
+    .limit(20);
+
+  if (error) {
+    console.error("❌ Error:", error.message);
     return;
   }
 
-  console.log(`📡 Total Supabase Jobs: ${supabaseJobs.length}`);
-  
-  const hashes = new Set();
-  const urls = new Set();
-  supabaseJobs.forEach(job => {
-      let payload;
-      let raw_title = "Unknown";
-      let raw_company = "Unknown";
-      try {
-          if (job.mapped_payload) {
-             payload = job.mapped_payload;
-             raw_title = payload.title || payload.raw_title || "Unknown";
-             raw_company = payload.company || payload.raw_company || "Unknown";
-          } else {
-             payload = JSON.parse(job.raw_payload);
-             raw_title = payload.title || payload.raw_title || "Unknown";
-             raw_company = payload.company || payload.raw_company || "Unknown";
-          }
-      } catch (e) {
-          raw_title = job.raw_payload?.split('|')[0]?.trim() || "Unknown";
-          raw_company = job.source_platform || "Staged Signal";
-      }
+  console.table(data.map(d => ({
+    ...d,
+    created_age: ((Date.now() - new Date(d.created_at).getTime()) / (1000 * 60 * 60)).toFixed(2) + 'h',
+    updated_age: ((Date.now() - new Date(d.updated_at).getTime()) / (1000 * 60 * 60)).toFixed(2) + 'h'
+  })));
 
-      const md5_hash = crypto
-        .createHash("md5")
-        .update((raw_title + raw_company).toLowerCase().trim())
-        .digest("hex");
-      
-      hashes.add(md5_hash);
-      if (job.source_url) urls.add(job.source_url.split('?')[0].toLowerCase().trim());
-  });
-
-  console.log(`💎 Unique Recovery Hashes: ${hashes.size}`);
-  console.log(`🔗 Unique URLs: ${urls.size}`);
-  process.exit(0);
+  const { count: rawCount } = await supabase.from('raw_job_harvests').select('*', { count: 'exact', head: true }).eq('status', 'RAW');
+  console.log(`\nRAW Jobs: ${rawCount}`);
 }
 
-auditSupabase();
+audit();

@@ -25,8 +25,9 @@ export function createDb(): DbInstance {
 
   if (!url || !authToken) {
     if (process.env.NODE_ENV === 'production') {
-      console.error(`[va-hub/db] 🔴 CRITICAL: Missing database credentials.`);
+      throw new Error(`[va-hub/db] 🔴 CRITICAL: Missing database credentials in production. Aborting to prevent ghost state.`);
     }
+    console.warn(`[va-hub/db] 🟡 WARNING: Database credentials missing. Falling back to in-memory database.`);
   }
 
   const client = createClient({

@@ -8,6 +8,11 @@ async function check() {
   latestLogs.forEach(l => {
     console.log(`[${l.timestamp.toISOString()}] [${l.level}] ${l.message}`);
   });
+  const chefLogs = await db.select().from(logs).where(sql`message LIKE '%CHEF%' OR message LIKE '%Kitchen%'`).orderBy(desc(logs.timestamp)).limit(10);
+  console.log("\n--- LATEST CHEF LOGS ---");
+  chefLogs.forEach(l => {
+    console.log(`[${l.timestamp.toISOString()}] [${l.level}] ${l.message}`);
+  });
 
   console.log("\n--- OPPORTUNITIES STATS ---");
   const totalResult = await db.run(sql`SELECT count(*) as n FROM opportunities`);
