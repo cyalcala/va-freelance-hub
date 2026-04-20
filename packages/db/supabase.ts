@@ -84,7 +84,7 @@ export async function claimRawJob(workerId: string, limit: number = 15): Promise
     .select('*')
     .eq('status', 'RAW')
     .is('locked_by', null)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(limit);
 
   if (error || !data || data.length === 0) return [];
