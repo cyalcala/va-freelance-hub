@@ -4,7 +4,7 @@ import { defineMiddleware } from "astro:middleware";
  * VECTOR 4: THE UNIVERSAL TRANSLATOR (Edge Proxy)
  * Mandate: Normalize inbound signals and handle outbound job redirection.
  */
-export const onRequest = defineMiddleware(async (context: any, next: any) => {
+export const onRequest = defineMiddleware(async (context, next) => {
   const url = new URL(context.request.url);
 
   // 0. SRE STABILITY: Legacy Redirects
@@ -19,12 +19,12 @@ export const onRequest = defineMiddleware(async (context: any, next: any) => {
     const targetUrl = url.searchParams.get("url");
     if (targetUrl) {
       console.log(`[Universal Translator] Redirecting to: ${targetUrl}`);
-      
+
       // TITANIUM HEADER INJECTION: Standardize the origin for the job board.
       const headers = new Headers();
       headers.set("Location", targetUrl);
       headers.set("X-VA-Hub-Origin", "Autonomous-Agent/8.3");
-      
+
       return new Response(null, {
         status: 302,
         headers
@@ -44,7 +44,7 @@ export const onRequest = defineMiddleware(async (context: any, next: any) => {
   // [Optional] Block non-PH traffic for specific sensitive POST endpoints.
   /*
   if (url.pathname.startsWith("/api/control") && context.request.method === "POST") {
-    const country = context.locals.runtime?.vercel?.country || "PH"; 
+    const country = context.locals.runtime?.vercel?.country || "PH";
     if (country !== "PH") {
       return new Response("UNAUTHORIZED_REGION", { status: 403 });
     }
