@@ -1,5 +1,5 @@
-import { db } from "../../packages/db";
-import { vitals, logs } from "../../packages/db/schema";
+import { db } from "@va-hub/db";
+import { vitals, logs } from "@va-hub/db/schema";
 import { desc, eq } from "drizzle-orm";
 
 export const prerender = false;
