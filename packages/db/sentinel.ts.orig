@@ -5,13 +5,13 @@ import { config } from '@va-hub/config';
 
 /**
  * 🛡️ APEX SRE SENTINEL (Project Aegis)
- * 
+ *
  * The autonomous governor for the V12 Sifter.
  * Designed for Perpetuity: Self-Healing, Self-Evolution, and Economic Survival.
  */
 export class ApexSentinel {
   private static instance: ApexSentinel;
-  
+
   public static getInstance(): ApexSentinel {
     if (!ApexSentinel.instance) {
       ApexSentinel.instance = new ApexSentinel();
@@ -25,7 +25,7 @@ export class ApexSentinel {
    */
   public async diagnoseAndRepair(context: string) {
     console.log(`🛡️ [SENTINEL] Triage pulse initiated from: ${context}`);
-    
+
     try {
       // 1. Surgical Schema Evolution (The Medic)
       await this.ensureSchemaResilience();
@@ -41,7 +41,7 @@ export class ApexSentinel {
 
       // 5. Chronos Reaping (The Scythe)
       await this.reapStaleOpportunities();
-      
+
       // 6. Hard Pruning (The Insurance)
       await this.pruneLegacyData();
 
@@ -69,7 +69,7 @@ export class ApexSentinel {
       // Identify providers that have been blocked for more than 15 minutes
       const result = await db.delete(aiCooldowns)
         .where(
-          lte(aiCooldowns.updatedAt, new Date(now - DEFROST_THRESHOLD_MS))
+          lte(aiCooldowns.blockedAt, new Date(now - DEFROST_THRESHOLD_MS))
         );
 
       if (result.rowsAffected > 0) {
@@ -130,7 +130,7 @@ export class ApexSentinel {
    */
   private async ensureSchemaResilience() {
     console.log("🧬 [SENTINEL] Verifying schema integrity...");
-    
+
     const REQUIRED_COLUMNS = [
       { name: "last_intervention_at", type: "INTEGER" },
       { name: "last_intervention_reason", type: "TEXT" },
@@ -151,7 +151,7 @@ export class ApexSentinel {
         if (!existingColumns.includes(col.name)) {
           console.warn(`🧨 [SENTINEL] Drift detected! Missing column: ${col.name}. Repairing...`);
           await db.run(sql.raw(`ALTER TABLE vitals ADD COLUMN ${col.name} ${col.type} DEFAULT ${col.type === 'INTEGER' ? 0 : 'NULL'};`));
-          
+
           await db.update(vitals).set({
             lastInterventionAt: new Date(),
             lastInterventionReason: `Surgical Repair: Added missing column '${col.name}'`
@@ -182,7 +182,7 @@ export class ApexSentinel {
             lte(opportunities.lastSeenAt, FORTY_EIGHT_HOURS_AGO)
           )
         );
-      
+
       if (result.rowsAffected > 0) {
         console.log(`✅ [SENTINEL] Reaped ${result.rowsAffected} stale signals.`);
         await db.update(vitals).set({
@@ -212,7 +212,7 @@ export class ApexSentinel {
 
       if (diff > GHOST_LOCK_THRESHOLD_MS) {
         console.warn(`👻 [SENTINEL] Ghost lock detected from engine '${record.lastHarvestEngine}' (${Math.floor(diff / 60000)}m ago). Purging...`);
-        
+
         const { releaseLease } = await import('./governance');
         await releaseLease(record.id.replace('HEARTBEAT_', ''));
 
@@ -236,11 +236,11 @@ export class ApexSentinel {
       if (!record) return;
 
       const aiQuota = record.aiQuotaCount || 0;
-      
+
       // If AI credits are low, switch to TIGHT budget mode autonomously
       if (aiQuota < 50 && config.budget_mode !== 'tight') {
         console.warn(`💰 [SENTINEL] Critical budget detected (${aiQuota} reqs left). Enforcing TIGHT mode.`);
-        
+
         await db.update(vitals).set({
             sentinelState: JSON.stringify({ ai_quota_override: 'tight', threshold: 50 }),
             lastInterventionAt: new Date(),
@@ -257,7 +257,7 @@ export class ApexSentinel {
    */
   private async synchronizeShadowVault() {
     console.log("🏮 [SENTINEL] Checking Shadow Vault for staged signals...");
-    
+
     try {
       const { supabase } = await import('./supabase');
       const { data: stagedJobs } = await supabase

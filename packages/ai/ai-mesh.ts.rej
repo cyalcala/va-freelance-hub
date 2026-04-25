@@ -1,0 +1,13 @@
+--- ai-mesh.ts
++++ ai-mesh.ts
+@@ -125,11 +125,11 @@
+     });
+
+     const statuses = await checkProviderStatus(Object.values(PROVIDER_DB_NAME));
+-    const isTightBudget = statuses.some(s => s.providerName === 'Sentinel' && s.lastError?.includes('tight'));
++    const isTightBudget = statuses.some((s: any) => s.providerName === 'Sentinel' && s.lastError?.includes('tight'));
+
+     const blockedProviders = new Set(
+-      statuses.filter(s => s.isBlocked).map(s => s.providerName.toLowerCase())
++      statuses.filter((s: any) => s.isBlocked).map((s: any) => s.providerName.toLowerCase())
+     );

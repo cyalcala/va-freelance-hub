@@ -182,7 +182,7 @@ ${JSON.stringify(tier1Payload, null, 2)}
     return {
       title: tier1Payload.title,
       company: tier1Payload.company || "Generic",
-      sourceUrl: tier1Payload.originalSourceUrl || "",
+      url: tier1Payload.originalSourceUrl || "",
       sourcePlatform: tier1Payload.sourcePlatform || "Generic",
       description: tier1Payload.description,
       locationType: tier1Payload.location || "remote",

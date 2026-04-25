@@ -1,7 +1,7 @@
 /**
  * 🧬 NICHE DNA CONFIGURATION
- * 
- * This file centralizes all the parameters that define a specific niche. 
+ *
+ * This file centralizes all the parameters that define a specific niche.
  * By modifying this config, the same "Titanium" engine can power any niche
  * (e.g., PH VAs, Web3 Devs, LATAM Designers).
  */
@@ -23,10 +23,9 @@ export interface Source {
 export interface NicheConfig {
   name: string;
   primary_region: string;
-  regions?: string[];
   primary_niche: string;
   budget_mode: "normal" | "tight";
-  
+
   // 🎯 TARGET SIGNALS: Positive patterns that identify this niche
   target_signals: {
     region: string[];

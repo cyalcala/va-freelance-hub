@@ -1,10 +1,11 @@
---- tsconfig.json
-+++ tsconfig.json
-@@ -21,6 +21,6 @@
-       "@va-hub/ai/*": ["apps/frontend/src/lib/ai/*"],
-       "@va-hub/bridge": ["packages/bridge/index.ts"]
-     }
-   },
--  "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser", "scripts", "tmp", "scratch", "dist"]
-+  "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser", "scripts", "tmp", "scratch", "dist", "packages", "jobs", "apps"]
- }
+--- scripts/lib/gemini.ts
++++ scripts/lib/gemini.ts
+@@ -182,7 +182,7 @@
+     return {
+       title: tier1Payload.title,
+       company: tier1Payload.company || "Generic",
+-      sourceUrl: tier1Payload.originalSourceUrl || "",
++      url: tier1Payload.originalSourceUrl || "",
+       sourcePlatform: tier1Payload.sourcePlatform || "Generic",
+       description: tier1Payload.description,
+       locationType: tier1Payload.location || "remote",
