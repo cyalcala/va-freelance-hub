@@ -1,0 +1,10 @@
+--- tsconfig.json
++++ tsconfig.json
+@@ -21,6 +21,6 @@
+       "@va-hub/ai/*": ["apps/frontend/src/lib/ai/*"],
+       "@va-hub/bridge": ["packages/bridge/index.ts"]
+     }
+   },
+-  "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser", "scripts", "tmp", "scratch", "dist"]
++  "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser", "scripts", "tmp", "scratch", "dist", "packages", "jobs", "apps"]
+ }

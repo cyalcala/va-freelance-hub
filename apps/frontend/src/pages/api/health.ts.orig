@@ -38,13 +38,13 @@ export const GET: APIRoute = async () => {
     // 2. Heartbeat Signal Audit (Goldilocks Regional)
     const allVitals = await db.select().from(schema.vitals);
     const globalVitals = allVitals.find(v => v.id === 'GLOBAL');
-    
+
     const regionalHealth: Record<string, any> = {};
     const trackedRegions = config.regions || ['Philippines'];
 
     for (const regionName of trackedRegions) {
-      const regionVitals = globalVitals;
-      
+      const regionVitals = allVitals.find(v => v.region === regionName) || globalVitals;
+
       const processingHeartbeatMs = regionVitals?.lastProcessingHeartbeatMs || (regionVitals?.lockUpdatedAt ? normalizeDate(regionVitals.lockUpdatedAt).getTime() : 0);
       const ingestionHeartbeatMs = regionVitals?.lastIngestionHeartbeatMs || 0;
 
@@ -57,7 +57,7 @@ export const GET: APIRoute = async () => {
       } else if (pAge >= slo.heartbeat_delayed_minutes || iAge >= slo.heartbeat_delayed_minutes) {
         state = "DELAYED";
       }
-      
+
       if (pAge <= slo.heartbeat_delayed_minutes && iAge >= slo.heartbeat_suspect_window_minutes) {
         state = "SUSPECT_HEARTBEAT";
       }
