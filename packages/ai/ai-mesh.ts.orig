@@ -2,7 +2,7 @@ import { AIExtractionSchema, type AIExtraction } from '../db/validation';
 
 /**
  * V12 SIFTER: Intelligent AI Mesh
- * 
+ *
  * Features:
  * 1. Fast-Triage (Cerebras/Groq) to drop trash quickly.
  * 2. Intelligent Rotation (OpenRouter Free Models) to bypass rate limits.
@@ -126,13 +126,13 @@ export class AIMesh {
     const blockedProviders = new Set(
       statuses
         .filter(s => s.is_blocked)
-        .map(s => String(s.provider_name || '').trim().toLowerCase())
+        .map(s => String(s.providerName || '').trim().toLowerCase())
     );
 
     const isTightBudget = statuses.some(s => (s as any).provider_name === 'Sentinel' && (s as any).lastError?.includes('tight'));
 
     const candidates: ModelConfig[] = [
-      { name: 'flash-shield', provider: 'gemini' as const, modelId: 'gemini-1.5-flash' }, 
+      { name: 'flash-shield', provider: 'gemini' as const, modelId: 'gemini-1.5-flash' },
       { name: 'groq-llama-high', provider: 'groq' as const, modelId: 'llama-3.3-70b-versatile' },
       { name: 'cerebras-llama', provider: 'cerebras' as const, modelId: 'llama3.1-8b' },
       // { name: 'cf-llama', provider: 'cloudflare' as const, modelId: '@cf/meta/llama-3.1-8b-instruct' }, // PAUSED: Enforcing GHA intelligence isolation
@@ -143,8 +143,8 @@ export class AIMesh {
     }
 
     const extractionQueue = candidates.filter((config: ModelConfig) => {
-      const provider_name = PROVIDER_DB_NAME[config.provider].toLowerCase();
-      if (blockedProviders.has(provider_name)) return false;
+      const providerName = PROVIDER_DB_NAME[config.provider].toLowerCase();
+      if (blockedProviders.has(providerName)) return false;
       return true;
     });
 
@@ -165,7 +165,7 @@ export class AIMesh {
 
         if (validated.success) {
           const data = validated.data;
-          
+
           // 🛡️ ANTI-GHOST GUARDRAIL: Prevent marker leak into production
           if (data.title?.includes("V12_GHOST_LEAD") || data.title?.includes("Ghost Lead")) {
             console.error(`[AI-MESH] GHOST LEAK DETECTED in ${config.name} output! Rejecting...`);
@@ -180,10 +180,10 @@ export class AIMesh {
       } catch (err: any) {
         const errorMsg = err.message || JSON.stringify(err);
         console.error(`[AI-MESH] Model ${config.name} CRASHED:`, errorMsg);
-        
+
         // Report Cooldown globally
-        const provider_name = PROVIDER_DB_NAME[config.provider];
-        await reportAICooldown(provider_name, errorMsg);
+        const providerName = PROVIDER_DB_NAME[config.provider];
+        await reportAICooldown(providerName, errorMsg);
       }
     }
 
@@ -204,7 +204,7 @@ export class AIMesh {
          const cleanUrl = url.replace(/\/$/, "");
          const segments = cleanUrl.split('/');
          const slug = segments.pop() || "";
-         
+
          // Handle both dashes and underscores
          title = slug
            .split(/[-_]/)
@@ -217,7 +217,7 @@ export class AIMesh {
          title = "New Freelance Opportunity";
        }
     }
-    
+
     // Cleanup title (remove common site suffixes)
     title = title.split(' | ')[0].split(' - ')[0].split(' at ')[0].split(' (')[0];
 
@@ -228,7 +228,7 @@ export class AIMesh {
       company: "Verified Source",
       description: "Automated extraction. Source signal suggests a high-quality career match. Click title to view original posting.",
       salary: null,
-      niche: niche as any,
+      niche,
       type: "direct",
       locationType: "remote",
       tier: 4,
@@ -240,14 +240,14 @@ export class AIMesh {
 
   private static detectNiche(title: string): string {
     const t = title.toLowerCase();
-    
+
     if (t.includes('developer') || t.includes('engineer') || t.includes('coder') || t.includes('software') || t.includes('data') || t.includes('qa')) return 'TECH_ENGINEERING';
     if (t.includes('marketing') || t.includes('seo') || t.includes('advertising') || t.includes('social media') || t.includes('growth')) return 'MARKETING';
     if (t.includes('sales') || t.includes('sdr') || t.includes('bdr') || t.includes('appointment') || t.includes('outreach')) return 'SALES_GROWTH';
     if (t.includes('designer') || t.includes('video') || t.includes('editor') || t.includes('creative') || t.includes('graphic')) return 'CREATIVE_MULTIMEDIA';
     if (t.includes('customer service') || t.includes('support') || t.includes('csr') || t.includes('call center') || t.includes('bpo')) return 'BPO_SERVICES';
     if (t.includes('admin') || t.includes('finance') || t.includes('bookkeeper') || t.includes('accountant') || t.includes('data entry')) return 'ADMIN_BACKOFFICE';
-    
+
     return 'VA_SUPPORT'; // Default
   }
 
@@ -324,7 +324,7 @@ export class AIMesh {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: `${system}\n\nIMPORTANT: YOU MUST RETURN ONLY VALID JSON.\n\nCONTENT:\n${user}` }] }],
-        generationConfig: { 
+        generationConfig: {
           temperature: 0
         }
       })

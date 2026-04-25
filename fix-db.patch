@@ -1,0 +1,10 @@
+--- packages/db/schema.ts
++++ packages/db/schema.ts
+@@ -128,7 +128,7 @@
+   providerName: text('provider_name').primaryKey(),
+   isBlocked: integer('is_blocked', { mode: 'boolean' }).default(false),
+   errorCount: integer('error_count').default(0),
+-  lastError: text('lastError'),
++  lastError: text('last_error'),
+   updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+ });

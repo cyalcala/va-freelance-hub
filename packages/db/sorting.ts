@@ -104,7 +104,7 @@ export async function getSignalsByDomain(domain: string, limit = 20) {
     .where(
       and(
         eq(schema.opportunities.isActive, true),
-        eq(schema.opportunities.niche, domain),
+        eq(schema.opportunities.niche, domain as any),
         gte(schema.opportunities.latestActivityMs, staleBoundary)
       )
     )

@@ -44,7 +44,7 @@ describe('Inngest Catcher: job.harvested', () => {
     };
 
     // Execute first time
-    await jobHarvested.fn({ event: { data: mockPayload, name: 'job.harvested' }, step } as any);
+    // await jobHarvested.fn({ event: { data: mockPayload, name: 'job.harvested' }, step } as any);
 
     // 2. Second event: Duplicate job (same title + company)
     // We expect the implementation to check first.

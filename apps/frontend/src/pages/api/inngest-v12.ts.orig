@@ -25,10 +25,10 @@ import { sql } from "drizzle-orm";
  * Wakes up every 10 minutes, claims RAW jobs, processes them, and PLATES to Turso.
  */
 const pantryPoll = inngestClient.createFunction(
-  { 
-    id: "v12-pantry-chef", 
+  {
+    id: "v12-pantry-chef",
     name: "V12 Pantry Chef",
-    triggers: [{ cron: "*/10 * * * *" }, { event: "pantry.poll" }] 
+    triggers: [{ cron: "*/10 * * * *" }, { event: "pantry.poll" }]
   },
   async ({ step }) => {
     // 2. Atomic Claim from Staging Buffer
@@ -49,7 +49,7 @@ const pantryPoll = inngestClient.createFunction(
     const processingResults = await step.run("executive-cook", async () => {
       const results = [];
       const { config } = await import("../../../../../packages/config");
-      
+
       for (const job of jobs) {
         try {
           const jobRegion = (job as any).region || "Global";
@@ -57,7 +57,7 @@ const pantryPoll = inngestClient.createFunction(
 
           // PREP: Get cookable payload
           const cookablePayload = await getCookablePayload(job);
-          
+
           let finalExtraction;
           if (isPrimary) {
              // COOK & STRATEGIZE (Dual LLM)
@@ -82,7 +82,7 @@ const pantryPoll = inngestClient.createFunction(
                 metadata: { meta_only: true, region: jobRegion }
              };
           }
-          
+
           // B. Sifter Guard: THE PHOSPHORUS SHIELD
           if (!finalExtraction.isPhCompatible || (finalExtraction.tier !== undefined && finalExtraction.tier >= OpportunityTier.TRASH)) {
             console.warn(`🛡️ [PHOSPHORUS] Pantry Chef dropped signal: ${!finalExtraction.isPhCompatible ? 'Geo Boundary breach' : 'Tier 4 Quality Reject'}`);
@@ -102,11 +102,11 @@ const pantryPoll = inngestClient.createFunction(
           // C. PREP: Mark as PLATED with the extraction payload
           await supabase
             .from('raw_job_harvests')
-            .update({ 
-               status: 'PLATED', 
+            .update({
+               status: 'PLATED',
                triage_status: 'PASSED',
                mapped_payload: finalExtraction,
-               updated_at: new Date().toISOString() 
+               updated_at: new Date().toISOString()
             })
             .eq('id', job.id);
 
@@ -115,7 +115,7 @@ const pantryPoll = inngestClient.createFunction(
         } catch (err: any) {
           const errorMsg = err.message || JSON.stringify(err);
           console.error(`👨‍🍳 [CHEF] Failed ${job.id}:`, errorMsg);
-          
+
           await supabase
             .from('raw_job_harvests')
             .update({ status: 'FAILED', locked_by: null, error_log: errorMsg })
@@ -143,7 +143,7 @@ const syncSweep = inngestClient.createFunction(
   { id: "v12-sync-sweep", name: "V12 Sync Sweep", triggers: [{ cron: "*/15 * * * *" }, { event: "pantry.sweep" }] },
   async ({ step }) => {
     const { supabase } = await import("../../../../../packages/db/supabase");
-    
+
     // 1. Fetch PLATED jobs with mapped data
     const batch = await step.run("fetch-plated-batch", async () => {
       const { data } = await supabase
@@ -188,7 +188,7 @@ const syncSweep = inngestClient.createFunction(
           tier: typeof mapped.tier === "number" ? mapped.tier : fallbackHeuristic.tier,
           relevanceScore: typeof mapped.relevanceScore === "number" ? mapped.relevanceScore : fallbackHeuristic.relevanceScore,
         };
-        
+
         const md5_hash = generateMd5Hash(finalMapped.title || "", finalMapped.company || "Generic");
 
         valuesToInsert.push({
@@ -203,7 +203,7 @@ const syncSweep = inngestClient.createFunction(
           type: finalMapped.type || 'direct',
           locationType: finalMapped.locationType || 'remote',
           sourcePlatform: `V12 Mesh (${job.source_platform})`,
-          region: finalMapped.metadata?.region || "Philippines", 
+          region: finalMapped.metadata?.region || "Philippines",
           scrapedAt: new Date(),
           isActive: true,
           tier: finalMapped.tier,
@@ -223,7 +223,7 @@ const syncSweep = inngestClient.createFunction(
             latestActivityMs: sql`excluded.latest_activity_ms`
           }
         });
-        
+
         results.successful_ids = batch.map(j => j.id);
       } catch (err) {
         console.error(`🔴 [SWEEP] Batch translocation failed:`, err);
@@ -233,8 +233,8 @@ const syncSweep = inngestClient.createFunction(
              await db.insert(opportunities).values(job).onConflictDoUpdate({
                target: opportunities.md5_hash,
                set: {
-                 lastSeenAt: new Date(),
-                 latestActivityMs: Date.now()
+                 lastSeenAt: job.lastSeenAt,
+                 latestActivityMs: job.latestActivityMs
                }
              });
              results.successful_ids.push(idMap.get(job.md5_hash));
@@ -243,7 +243,7 @@ const syncSweep = inngestClient.createFunction(
            }
         }
       }
-      
+
       return results;
     });
 
@@ -267,9 +267,9 @@ const syncSweep = inngestClient.createFunction(
       });
     }
 
-    return { 
-      status: "sweep_complete", 
-      moved: translocationResult.successful_ids.length 
+    return {
+      status: "sweep_complete",
+      moved: translocationResult.successful_ids.length
     };
   }
 );
@@ -296,9 +296,8 @@ const triggerReset = inngestClient.createFunction(
  */
 
 // 4. Export endpoint serve handlers with Signature Security
-export const { GET, POST, PUT } = serve({ 
-  client: inngestClient, 
-
-  functions: [pantryPoll, syncSweep, triggerReset, chronosHeartbeat, sentinelPulse, jobHarvested, heuristicLearner] 
+export const { GET, POST, PUT } = serve({
+  client: inngestClient,
+  signingKey: process.env.INNGEST_SIGNING_KEY,
+  functions: [pantryPoll, syncSweep, triggerReset, chronosHeartbeat, sentinelPulse, jobHarvested, heuristicLearner]
 });
-
