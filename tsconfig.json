@@ -26,5 +26,5 @@
       "@va-hub/bridge": ["packages/bridge/index.ts"]
     }
   },
-  "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser", "scripts", "tmp", "scratch", "dist"]
+  "exclude": ["node_modules", "apps/web/.next", "packages/zig-parser", "scripts", "tmp", "scratch", "dist", "packages/db/tmp_*"]
 }
