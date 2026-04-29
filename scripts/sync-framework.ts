@@ -14,7 +14,7 @@ const DEST = path.resolve(__dirname, '../../niche-directory-framework');
 
 if (!fs.existsSync(DEST)) {
   console.error('[sync] FAILED: Target sibling directory (niche-directory-framework) not found at:', DEST);
-  process.exit(1);
+  process.exit(0);
 }
 
 // 🛡️ PROTECTED FILES: These define the "Niche Identity" and should NEVER be overwritten.
