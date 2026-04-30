@@ -9,6 +9,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "paths": {
       "@va-hub/config": ["packages/config/index.ts"],
