@@ -1,0 +1,51 @@
+name: Warden Protocol
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 minutes indefinitely
+  workflow_dispatch:
+
+concurrency:
+  group: gha-warden-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  warden:
+    name: Execute Warden Protocol
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 🛑 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🛡️ Run Warden Script
+        env:
+          TRIGGER_SECRET_KEY: ${{ secrets.TRIGGER_SECRET_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          chmod +x scripts/warden.sh
+          ./scripts/warden.sh
+
+      - name: 📝 Commit Warden Log
+        run: |
+          git config --global user.name "Sovereign Warden"
+          git config --global user.email "warden@va-freelance-hub.local"
+          git add docs/warden-log.md
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "chore(sre): update warden log [skip ci]"
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
