@@ -23,6 +23,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          persist-credentials: true
 
       - name: 🛡️ Run Warden Script
         env:
@@ -37,11 +38,15 @@ jobs:
         run: |
           git config --global user.name "Sovereign Warden"
           git config --global user.email "warden@va-freelance-hub.local"
-          git add docs/warden-log.md
-          if ! git diff-index --quiet HEAD; then
-            git commit -m "chore(sre): update warden log [skip ci]"
+          if [ -f "docs/warden-log.md" ]; then
+            git add docs/warden-log.md
+            if ! git diff-index --quiet HEAD; then
+              git commit -m "chore(sre): update warden log [skip ci]"
+            else
+              echo "No changes to commit"
+            fi
           else
-            echo "No changes to commit"
+             echo "No docs/warden-log.md created to commit"
           fi
 
       - name: Push changes
