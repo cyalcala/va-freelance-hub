@@ -1,0 +1,70 @@
+name: Warden Protocol Check
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  warden_check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up jq and awk
+        run: sudo apt-get install -y jq gawk
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run Warden Check
+        env:
+          TRIGGER_SECRET_KEY: ${{ secrets.TRIGGER_SECRET_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          chmod +x scripts/warden.sh
+          ./scripts/warden.sh
+
+      - name: Check commit criteria and Commit Warden Log
+        run: |
+          STATUS_MSG=$(cat /tmp/warden_status.txt || echo "OK")
+
+          # Only commit once per day or when fixes are applied / issues found
+          # We'll check if the log file has been modified today, if we are at a specific hour,
+          # or if the status is not OK (meaning a fix/warning occurred).
+
+          # Remove leading zeros to prevent octal evaluation in bash
+          CURRENT_HOUR=$(date -u +%H | sed 's/^0*//')
+          CURRENT_HOUR=${CURRENT_HOUR:-0}
+
+          SHOULD_COMMIT=false
+          if [ "$STATUS_MSG" != "OK" ]; then
+              SHOULD_COMMIT=true
+              echo "Committing because status is $STATUS_MSG"
+          # Only commit routine logs once a day, e.g., at midnight
+          elif [ "$CURRENT_HOUR" -eq 0 ]; then
+              # Commit at least once during the midnight hour regardless of GHA cron delays
+              SHOULD_COMMIT=true
+              echo "Committing daily log"
+          fi
+
+          if [ "$SHOULD_COMMIT" = true ]; then
+              git config --global user.name "Warden Bot"
+              git config --global user.email "warden@bot.local"
+              if [[ $(git status --porcelain docs/warden-log.md) ]]; then
+                git add docs/warden-log.md
+                git commit -m "chore: update warden log [skip ci]"
+                git push origin main
+              fi
+          else
+              echo "Skipping commit per frequency rules"
+          fi
