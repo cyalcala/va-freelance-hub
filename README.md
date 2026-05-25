@@ -1,131 +1,103 @@
-# VA Freelance Hub
+# VA Freelance Hub (RemotePH) 🇵🇭
 
-A self-updating aggregator of remote freelance and VA job opportunities for Filipino freelancers. Built as a portfolio project demonstrating agentic engineering skills.
+A self-updating, `$0` FinOps aggregator of remote freelance and VA job opportunities specifically tailored for Filipino freelancers. Built as a portfolio project demonstrating advanced agentic engineering, headless data pipelines, and serverless edge architecture.
 
-- Curated VA-friendly company directory
-- Automated job scraping from RSS feeds and job boards
-- Every-2-hour cron refresh via Trigger.dev
-- Built with Next.js 14 App Router, Turso, Drizzle ORM, and Bun
+## 🔗 Live Site
+**[https://remoteph-jobs.pages.dev](https://remoteph-jobs.pages.dev)**
 
-## Live Site
+---
 
-[remote-ph.vercel.app](https://remote-ph.vercel.app)
+## 💡 Rationale
+The freelance market is highly saturated, and finding legitimate, high-quality VA jobs can be exhausting. Many aggregation platforms charge premium fees, run slow, or require expensive backend scraping infrastructure (like Apify) to stay up to date.
 
-## Stack
+The goal was to build a **blazing-fast, self-maintaining resource hub** that operates completely autonomously at exactly **$0/month**. By combining the power of Edge networks (Cloudflare) with infinite free CI/CD compute (GitHub Actions) and Generative AI (Gemini), we created a fully decoupled "Hybrid Architecture" that scales infinitely without costing a dime.
 
-| Layer | Technology |
-|---|---|
-| Runtime | [Bun](https://bun.sh) |
-| Frontend | Next.js 14 App Router, Tailwind CSS, shadcn/ui |
-| Database | [Turso](https://turso.tech) (LibSQL/SQLite) + Drizzle ORM |
-| Scheduled jobs | [Trigger.dev](https://trigger.dev) v3 (cron every 2 hours) |
-| HTML parsing | Zig binary called as Bun subprocess |
-| Hosting | Vercel (Hobby) |
+---
 
-## Architecture
+## ✨ Key Features
+- **Curated VA Directory**: A carefully filtered list of high-quality, VA-friendly remote companies.
+- **Automated Job Scraping ("The Hunter")**: Background workflows automatically scrape remote job boards (RSS & HTML) every 30 minutes, filter out noise, and push clean JSON payloads directly to the edge database.
+- **AI-Powered Influencer Digests ("The Chef")**: An automated Gemini 2.5 Flash pipeline that consumes video transcripts and generates strict, actionable JSON action plans for our users.
+- **$0 FinOps Guarantee**: No Vercel, no Trigger.dev, no Apify, no expensive databases. Completely reliant on Cloudflare's free tier and GitHub Actions' generously free CI/CD compute minutes.
 
+---
+
+## 🏗️ The Hybrid Architecture (Cloudflare + GitHub Actions)
+
+We moved away from legacy paradigms (Vercel/Next.js + heavy backend cron jobs) and adopted a strictly decoupled edge architecture.
+
+### The Storage Engine (Cloudflare Edge)
+- **Frontend Framework**: [Astro](https://astro.build/) (Blazing fast, zero-JS by default)
+- **Database**: Cloudflare D1 (Serverless SQLite at the edge)
+- **Hosting**: Cloudflare Pages
+- **APIs**: Secure, secret-guarded ingest endpoints (`/api/ingest`, `/api/ingest-digest`) living on the edge.
+
+### The Heavy Lifter (GitHub Actions)
+Since Cloudflare's free tier has strict 10ms CPU limits, we offloaded all heavy processing (scraping, AI parsing, DOM walking) to GitHub.
+- **GitHub Actions (Cron)**: Spins up an Ubuntu runner every 30 minutes.
+- **Scraper Scripts**: Fetches massive RSS feeds and DOM structures, processes the data, hashes it for deduplication, and securely `POST`s it to the Astro Edge API.
+- **AI Processing**: Connects to the Gemini AI Studio API to generate rich JSON digests.
+
+---
+
+## 🗄️ Project Structure
+
+```text
+├── apps/web/                  # Astro UI, D1 Database APIs, & Components
+├── scripts/gha/
+│   ├── harvest.ts             # "The Hunter" - RSS scraping pipeline
+│   └── chef.ts                # "The Chef" - Gemini 2.5 Flash AI transcription pipeline
+├── .github/workflows/
+│   ├── gha-hunter-pulse.yml   # 30-min scraping cron job
+│   ├── gha-chef-pulse.yml     # AI digest cron job
+│   └── ci-guardrail.yml       # Production protection via `astro check`
+└── packages/db/               # Drizzle Schema definitions
 ```
-GitHub → Vercel auto-deploys Next.js app
 
-Trigger.dev Cloud (cron: every 2 hours)
-  └─ Bun TS scraper fetches RSS + HTML sources
-      └─ Zig binary parses raw HTML → clean JSON
-  └─ Deduplicates + writes to Turso via Drizzle
-  └─ Calls Vercel revalidation webhook → ISR pages refresh
+---
 
-Next.js App (Vercel)
-  └─ Server Components → Turso (Drizzle ORM)
-  └─ ISR: revalidates on webhook trigger (revalidate = 3600)
-```
-
-## Project Structure
-
-```
-apps/web           → Next.js 14 App Router
-packages/db        → Drizzle schema + migrations (shared)
-packages/scraper   → Bun TS scrapers (RSS + HTML)
-packages/zig-parser → Zig HTML parser binary
-jobs/              → Trigger.dev v3 job definitions
-```
-
-## Pages
-
-| Path | Description |
-|---|---|
-| `/` | Hero, live stats, latest 9 opportunities |
-| `/opportunities` | Full paginated freelance feed |
-| `/directory` | VA-friendly company directory |
-
-## Getting Started
+## 🚀 Getting Started Locally
 
 ### Prerequisites
-
-- [Bun](https://bun.sh) >= 1.x
-- A [Turso](https://turso.tech) database
-- A [Trigger.dev](https://trigger.dev) project (free tier)
+- Node.js (`pnpm` recommended)
+- A Google AI Studio API Key (`GEMINI_API_KEY`)
+- A local Cloudflare D1 configuration
 
 ### Setup
 
 ```bash
-# Clone the repo
+# Clone the repository
 git clone https://github.com/cyalcala/va-freelance-hub.git
 cd va-freelance-hub
 
-# Install dependencies
-bun install
+# Install all dependencies
+pnpm install
 
 # Copy environment variables
 cp .env.example .env
-# Fill in your Turso credentials, Trigger.dev key, and ISR secret
+# Make sure to add your PROXY_SECRET and GEMINI_API_KEY
 ```
 
-### Environment Variables
-
-| Variable | Description |
-|---|---|
-| `TURSO_DATABASE_URL` | Turso LibSQL connection URL |
-| `TURSO_AUTH_TOKEN` | Turso auth token |
-| `TRIGGER_SECRET_KEY` | Trigger.dev API key |
-| `TRIGGER_PROJECT_ID` | Trigger.dev project ID |
-| `ISR_SECRET` | Random string for revalidation webhook auth |
-| `NEXT_PUBLIC_APP_URL` | App URL (localhost for dev, Vercel URL for prod) |
-
-### Push Schema & Seed
+### Local Development
 
 ```bash
-# Push database schema
-bun run packages/db/push.ts
+# Start the local Astro Edge Server (Port 4321)
+npx astro dev --port 4321
 
-# Seed VA directory
-bun run packages/db/seed.ts
+# In a separate terminal, test the Scraping Pipeline
+pnpm tsx scripts/gha/harvest.ts
+
+# Test the AI Digest Pipeline
+pnpm tsx scripts/gha/chef.ts
 ```
 
-### Development
+---
 
-```bash
-# Start Next.js dev server
-bun run dev
+## 📜 Historical Context (The Vercel Era)
+*Note: This project was originally built on Next.js 14, Turso, and Trigger.dev (Vercel hosting). While that stack was powerful, it was ultimately deprecated in favor of our current Cloudflare/GitHub Actions architecture to strictly adhere to our $0 FinOps mandate and overcome serverless timeout limitations.*
 
-# Run Trigger.dev jobs locally
-bun run trigger:dev
-```
+## 👨‍💻 Credits
+Built by **[cyalcala](https://github.com/cyalcala)** — Filipino freelance technical writer and agentic engineer.
 
-### Build Zig Parser (optional — for HTML scraping)
-
-```bash
-cd packages/zig-parser
-zig build
-```
-
-## Data Sources
-
-- **RSS**: We Work Remotely, Remotive, ProBlogger, Remote.co, Authentic Jobs, Dribbble
-- **HTML**: OnlineJobs.ph (via Zig parser)
-
-## Credits
-
-Built by [cyalcala](https://github.com/cyalcala) — Filipino freelance technical writer and agentic engineer.
-
-## License
-
+## 📄 License
 MIT
