@@ -18,7 +18,11 @@ const feeds = [
 
 async function harvest() {
   console.log("🏹 Starting Sovereign Hunter Pulse...");
-  const parser = new XMLParser({ ignoreAttributes: false });
+  const parser = new XMLParser({ 
+    ignoreAttributes: false,
+    processEntities: false, 
+    ignoreDeclaration: true 
+  });
   const allOpportunities: any[] = [];
 
   for (const feed of feeds) {
