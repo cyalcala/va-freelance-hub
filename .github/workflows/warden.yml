@@ -1,0 +1,29 @@
+name: Warden Protocol
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  run-warden:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Create Dummy Env Local
+        run: |
+          echo "TRIGGER_SECRET_KEY=${{ secrets.TRIGGER_SECRET_KEY }}" > .env.local
+          echo "TURSO_DATABASE_URL=${{ secrets.TURSO_DATABASE_URL }}" >> .env.local
+          echo "TURSO_AUTH_TOKEN=${{ secrets.TURSO_AUTH_TOKEN }}" >> .env.local
+
+      - name: Run Warden
+        run: |
+          chmod +x scripts/warden.sh
+          ./scripts/warden.sh
