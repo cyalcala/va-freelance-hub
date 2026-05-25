@@ -1,5 +1,12 @@
 # VA Freelance Hub (RemotePH) 🇵🇭
 
+![Astro](https://img.shields.io/badge/Astro-0C1120?style=for-the-badge&logo=astro&logoColor=white)
+![Cloudflare Pages](https://img.shields.io/badge/Cloudflare%20Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
+![Cloudflare D1](https://img.shields.io/badge/Cloudflare%20D1-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+![Gemini AI](https://img.shields.io/badge/Gemini%202.5-8E75B2?style=for-the-badge&logo=google-gemini&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+
 A self-updating, `$0` FinOps aggregator of remote freelance and VA job opportunities specifically tailored for Filipino freelancers. Built as a portfolio project demonstrating advanced agentic engineering, headless data pipelines, and serverless edge architecture.
 
 ## 🔗 Live Site
