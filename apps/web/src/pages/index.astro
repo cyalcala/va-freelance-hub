@@ -1,0 +1,88 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getDb, opportunities, vaDirectory } from '@va-hub/db';
+import { eq, desc, count } from 'drizzle-orm';
+import { OpportunityCard } from '@/components/opportunity-card';
+
+export const prerender = false;
+
+let stats = { opportunities: 0, companies: 0 };
+let latest = [];
+
+try {
+  const db = getDb(Astro.locals.runtime.env);
+  
+  const [oppCount] = await db.select({ count: count() }).from(opportunities).where(eq(opportunities.isActive, true));
+  const [dirCount] = await db.select({ count: count() }).from(vaDirectory);
+  
+  stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
+  
+  latest = await db
+    .select()
+    .from(opportunities)
+    .where(eq(opportunities.isActive, true))
+    .orderBy(desc(opportunities.scrapedAt))
+    .limit(9);
+} catch (e) {
+  console.error("DB error:", e);
+}
+---
+
+<Layout 
+  title="Remote PH — Freelance & VA Opportunities for Filipinos"
+  description="Self-updating directory of remote job opportunities and VA-friendly companies that hire Filipinos. Updated every 2 hours automatically."
+>
+  <div class="max-w-5xl mx-auto px-4 py-16">
+    <div class="mb-16 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-mono mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+        Auto-updates twice daily
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
+        Remote jobs for <span class="text-accent">Filipino freelancers</span>
+      </h1>
+      <p class="text-zinc-400 text-lg max-w-xl mx-auto">
+        A self-updating directory of VA and freelance opportunities — curated
+        from the best remote job boards and refreshed automatically.
+      </p>
+      <div class="flex gap-8 justify-center mt-8">
+        <div class="text-center">
+          <div class="text-3xl font-bold font-mono text-zinc-100">{stats.opportunities.toLocaleString()}</div>
+          <div class="text-xs text-zinc-500 mt-1">Active Opportunities</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold font-mono text-zinc-100">{stats.companies.toLocaleString()}</div>
+          <div class="text-xs text-zinc-500 mt-1">VA-Friendly Companies</div>
+        </div>
+      </div>
+      <div class="flex gap-3 justify-center mt-8">
+        <a href="/opportunities" class="px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors text-sm">
+          Browse Jobs
+        </a>
+        <a href="/directory" class="px-5 py-2.5 border border-border hover:border-zinc-600 text-zinc-300 rounded-lg font-medium transition-colors text-sm">
+          VA Directory
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-lg font-semibold text-zinc-100">Latest Opportunities</h2>
+        <a href="/opportunities" class="text-sm text-accent hover:text-accent-hover transition-colors">
+          View all →
+        </a>
+      </div>
+      {latest.length === 0 ? (
+        <div class="border border-border rounded-xl p-10 text-center text-zinc-500 text-sm">
+          No opportunities yet — the scraper will populate this soon.
+        </div>
+      ) : (
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {latest.map((opp) => (
+            <OpportunityCard key={opp.id} opportunity={opp} client:load />
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</Layout>

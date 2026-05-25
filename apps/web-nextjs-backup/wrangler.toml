@@ -1,0 +1,16 @@
+name = "va-freelance-hub"
+pages_build_output_dir = ".open-next"
+main = "./entry.ts"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "remoteph-jobs-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[ai]
+binding = "AI"
+
+[triggers]
+crons = ["0 6,18 * * *", "0 1 * * *", "0 2 * * 0"]

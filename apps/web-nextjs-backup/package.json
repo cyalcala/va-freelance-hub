@@ -1,0 +1,37 @@
+{
+  "name": "@va-hub/web-nextjs-backup",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "build:cf": "opennextjs-cloudflare",
+    "start": "next start",
+    "lint": "next lint",
+    "deploy": "bun run build:cf && wrangler pages deploy .open-next"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.0",
+    "@va-hub/db": "file:../../packages/db",
+    "@va-hub/scraper": "file:../../packages/scraper",
+    "drizzle-orm": "^0.30.0",
+    "next": "14.2.3",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240512.0",
+    "@opennextjs/cloudflare": "^0.3.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.0",
+    "critters": "^0.0.25",
+    "jimp": "^1.6.1",
+    "postcss": "^8.4.0",
+    "probe-image-size": "^7.3.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.4.0",
+    "wrangler": "^3.57.1"
+  }
+}

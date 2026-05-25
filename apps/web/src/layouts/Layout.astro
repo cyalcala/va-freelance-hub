@@ -1,0 +1,26 @@
+---
+import '../styles/globals.css';
+import { Nav } from '@/components/nav';
+import { Footer } from '@/components/footer';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body class="min-h-screen bg-background text-zinc-100 flex flex-col">
+    <Nav client:load />
+    <main class="flex-1"><slot /></main>
+    <Footer client:load />
+  </body>
+</html>

@@ -3,14 +3,16 @@
  * of companies known to hire Filipino VAs.
  * Run with: bun run packages/db/seed.ts
  */
-import { db } from "./client";
+import { getDb } from "./client";
 import { vaDirectory } from "./schema";
+
+const db = getDb();
 
 const seedData = [
   {
     companyName: "Time Etc",
     website: "https://web.timeetc.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "admin" as const,
     hiringPageUrl: "https://web.timeetc.com/become-a-va",
     notes: "US-based VA platform, hires globally including Philippines",
@@ -18,7 +20,7 @@ const seedData = [
   {
     companyName: "Boldly",
     website: "https://boldly.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "admin" as const,
     hiringPageUrl: "https://boldly.com/jobs",
     notes: "Premium VA service, hires remote workers globally",
@@ -26,7 +28,7 @@ const seedData = [
   {
     companyName: "Virtual Staff Finder",
     website: "https://virtualstafffinder.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "admin" as const,
     hiringPageUrl: "https://virtualstafffinder.com",
     notes: "Specializes exclusively in Filipino VAs",
@@ -34,7 +36,7 @@ const seedData = [
   {
     companyName: "Magic",
     website: "https://getmagic.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "admin" as const,
     hiringPageUrl: "https://getmagic.com/careers",
     notes: "24/7 assistant service, strong Philippines presence",
@@ -42,7 +44,7 @@ const seedData = [
   {
     companyName: "Remote CoWorker",
     website: "https://remotecoworker.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "customer-support" as const,
     hiringPageUrl: "https://remotecoworker.com/careers",
     notes: "Focuses heavily on Philippines-based staff",
@@ -50,7 +52,7 @@ const seedData = [
   {
     companyName: "TaskUs",
     website: "https://taskus.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "customer-support" as const,
     hiringPageUrl: "https://taskus.com/careers",
     notes: "Large BPO with major operations in the Philippines",
@@ -58,7 +60,7 @@ const seedData = [
   {
     companyName: "Outsource Access",
     website: "https://outsourceaccess.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "admin" as const,
     hiringPageUrl: "https://outsourceaccess.com/careers",
     notes: "Philippines-first outsourcing company",
@@ -66,7 +68,7 @@ const seedData = [
   {
     companyName: "BELAY",
     website: "https://belaysolutions.com",
-    hiresFilipinosf: false,
+    hiresFilipinos: false,
     niche: "admin" as const,
     hiringPageUrl: "https://belaysolutions.com/join-our-team",
     notes: "US contractors only — listed for reference",
@@ -74,7 +76,7 @@ const seedData = [
   {
     companyName: "Fancy Hands",
     website: "https://fancyhands.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "admin" as const,
     hiringPageUrl: "https://fancyhands.com/jobs",
     notes: "US-based but open to international applicants",
@@ -82,7 +84,7 @@ const seedData = [
   {
     companyName: "OnlineJobs.ph",
     website: "https://onlinejobs.ph",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "other" as const,
     hiringPageUrl: "https://onlinejobs.ph",
     notes: "Job board specifically for Filipino remote workers — not a direct employer",
@@ -90,7 +92,7 @@ const seedData = [
   {
     companyName: "VirtualStaff.ph",
     website: "https://virtualstaff.ph",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "other" as const,
     hiringPageUrl: "https://virtualstaff.ph",
     notes: "Philippine-focused VA hiring platform",
@@ -98,7 +100,7 @@ const seedData = [
   {
     companyName: "Invedus",
     website: "https://invedus.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "tech" as const,
     hiringPageUrl: "https://invedus.com/careers",
     notes: "Outsourcing firm with tech VA roles",
@@ -106,7 +108,7 @@ const seedData = [
   {
     companyName: "Wing Assistant",
     website: "https://wingassistant.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "admin" as const,
     hiringPageUrl: "https://wingassistant.com/careers",
     notes: "Dedicated VA service with Philippines talent",
@@ -114,7 +116,7 @@ const seedData = [
   {
     companyName: "Prialto",
     website: "https://prialto.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "admin" as const,
     hiringPageUrl: "https://prialto.com/careers",
     notes: "Managed VA service, significant Philippines team",
@@ -122,7 +124,7 @@ const seedData = [
   {
     companyName: "Toptal",
     website: "https://toptal.com",
-    hiresFilipinosf: true,
+    hiresFilipinos: true,
     niche: "tech" as const,
     hiringPageUrl: "https://toptal.com/talent",
     notes: "Top 3% freelancer network, open to Philippines applicants",

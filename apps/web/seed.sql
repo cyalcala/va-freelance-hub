@@ -1,0 +1,16 @@
+INSERT INTO va_directory (company_name, website, hires_filipinos, niche, hiring_page_url, notes) VALUES
+  ('Time Etc', 'https://web.timeetc.com', 1, 'admin', 'https://web.timeetc.com/become-a-va', 'US-based VA platform, hires globally including Philippines'),
+  ('Boldly', 'https://boldly.com', 1, 'admin', 'https://boldly.com/jobs', 'Premium VA service, hires remote workers globally'),
+  ('Virtual Staff Finder', 'https://virtualstafffinder.com', 1, 'admin', 'https://virtualstafffinder.com', 'Specializes exclusively in Filipino VAs'),
+  ('Magic', 'https://getmagic.com', 1, 'admin', 'https://getmagic.com/careers', '24/7 assistant service, strong Philippines presence'),
+  ('Remote CoWorker', 'https://remotecoworker.com', 1, 'customer-support', 'https://remotecoworker.com/careers', 'Focuses heavily on Philippines-based staff'),
+  ('TaskUs', 'https://taskus.com', 1, 'customer-support', 'https://taskus.com/careers', 'Large BPO with major operations in the Philippines'),
+  ('Outsource Access', 'https://outsourceaccess.com', 1, 'admin', 'https://outsourceaccess.com/careers', 'Philippines-first outsourcing company'),
+  ('BELAY', 'https://belaysolutions.com', 0, 'admin', 'https://belaysolutions.com/join-our-team', 'US contractors only — listed for reference'),
+  ('Fancy Hands', 'https://fancyhands.com', 1, 'admin', 'https://fancyhands.com/jobs', 'US-based but open to international applicants'),
+  ('OnlineJobs.ph', 'https://onlinejobs.ph', 1, 'other', 'https://onlinejobs.ph', 'Job board specifically for Filipino remote workers — not a direct employer'),
+  ('VirtualStaff.ph', 'https://virtualstaff.ph', 1, 'other', 'https://virtualstaff.ph', 'Philippine-focused VA hiring platform'),
+  ('Invedus', 'https://invedus.com', 1, 'tech', 'https://invedus.com/careers', 'Outsourcing firm with tech VA roles'),
+  ('Wing Assistant', 'https://wingassistant.com', 1, 'admin', 'https://wingassistant.com/careers', 'Dedicated VA service with Philippines talent'),
+  ('Prialto', 'https://prialto.com', 1, 'admin', 'https://prialto.com/careers', 'Managed VA service, significant Philippines team'),
+  ('Toptal', 'https://toptal.com', 1, 'tech', 'https://toptal.com/talent', 'Top 3% freelancer network, open to Philippines applicants');

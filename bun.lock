@@ -17,6 +17,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@libsql/client": "^0.17.0",
+        "@va-hub/db": "workspace:*",
         "drizzle-orm": "^0.30.0",
         "next": "14.2.3",
         "react": "^18.3.0",
@@ -30,6 +31,13 @@
         "postcss": "^8.4.0",
         "tailwindcss": "^3.4.0",
         "typescript": "^5.4.0",
+      },
+    },
+    "jobs": {
+      "name": "@va-hub/jobs",
+      "version": "0.1.0",
+      "dependencies": {
+        "@trigger.dev/sdk": "4.4.3",
       },
     },
     "packages/db": {
@@ -263,6 +271,8 @@
     "@types/ws": ["@types/ws@8.18.1", "", { "dependencies": { "@types/node": "*" } }, "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg=="],
 
     "@va-hub/db": ["@va-hub/db@workspace:packages/db"],
+
+    "@va-hub/jobs": ["@va-hub/jobs@workspace:jobs"],
 
     "@va-hub/scraper": ["@va-hub/scraper@workspace:packages/scraper"],
 

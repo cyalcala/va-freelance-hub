@@ -1,17 +1,20 @@
 import { XMLParser } from "fast-xml-parser";
-import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: "@_",
+  processEntities: false,
+  htmlEntities: true,
 });
 
 interface RawRSSItem {
-  title?: string;
-  link?: string;
+  title?: string | { "#text"?: string };
+  link?: string | { "@_href"?: string };
+  id?: string;
   pubDate?: string;
+  published?: string;
   description?: string;
   "dc:creator"?: string;
   author?: string;
@@ -25,10 +28,17 @@ function normalizeText(raw: string | undefined): string {
 }
 
 function toContentHash(title: string, sourceUrl: string): string {
-  return createHash("sha256")
-    .update(`${title}::${sourceUrl}`)
-    .digest("hex")
-    .slice(0, 16);
+  const str = `${title}::${sourceUrl}`;
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return ((h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0")).slice(0, 16);
 }
 
 export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {

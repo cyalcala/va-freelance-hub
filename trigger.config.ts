@@ -1,7 +1,7 @@
 import { defineConfig } from "@trigger.dev/sdk/v3";
 
 export default defineConfig({
-  project: "proj_hzeuykzmhlzwmqeljfft",
+  project: process.env.TRIGGER_PROJECT_ID ?? "proj_hzeuykzmhlzwmqeljfft",
   runtime: "bun",
   logLevel: "log",
   dirs: ["./jobs"],

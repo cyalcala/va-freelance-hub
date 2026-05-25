@@ -4,7 +4,8 @@
   "version": "0.1.0",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "jobs"
   ],
   "scripts": {
     "dev": "bun run --cwd apps/web dev",
@@ -19,6 +20,8 @@
     "typescript": "^5.4.0"
   },
   "dependencies": {
-    "@trigger.dev/sdk": "4.4.3"
+    "@google/genai": "^2.6.0",
+    "@trigger.dev/sdk": "4.4.3",
+    "fast-xml-parser": "^4.3.0"
   }
 }

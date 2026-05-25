@@ -36,7 +36,7 @@ export const vaDirectory = sqliteTable("va_directory", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   companyName: text("company_name").notNull(),
   website: text("website"),
-  hiresFilipinosf: integer("hires_filipinos", { mode: "boolean" }).notNull().default(true),
+  hiresFilipinos: integer("hires_filipinos", { mode: "boolean" }).notNull().default(true),
   niche: text("niche", {
     enum: ["admin", "creative", "tech", "social-media", "customer-support", "finance", "other"],
   }).default("admin"),

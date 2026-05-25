@@ -1,0 +1,60 @@
+name: Sovereign Chef Pulse
+
+on:
+  schedule:
+    - cron: '15,45 * * * *' # Every 30 minutes, offset by 15 mins from the Hunter
+  workflow_dispatch: 
+
+concurrency:
+  group: gha-chef-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  cook:
+    name: Execute AI Transcript Digest (Chef)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25 
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      INGEST_DIGEST_API_URL: ${{ secrets.INGEST_DIGEST_API_URL }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+    
+    steps:
+      - name: 🛑 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🥟 Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 👨‍🍳 Deploy the Chef
+        run: |
+          bun run scripts/gha/chef.ts 2>&1 | tee chef.log
+          
+          # Extract stats for summary
+          PLATED=$(grep -c '\[PLATED\]' chef.log || echo "0")
+          FAILED=$(grep -c '\[CHEF\] Burnt dish' chef.log || echo "0")
+          echo "PLATED=$PLATED" >> $GITHUB_ENV
+          echo "FAILED=$FAILED" >> $GITHUB_ENV
+
+      - name: 📊 Generate Chef Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "### 👨‍🍳 Sovereign Chef Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Kitchen Service Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dishes Plated**: $PLATED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dishes Burnt**: $FAILED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY

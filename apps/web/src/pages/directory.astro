@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getDb, vaDirectory } from '@va-hub/db';
+import { desc } from 'drizzle-orm';
+import { DirectoryCard } from '@/components/directory-card';
+
+export const prerender = false;
+
+let entries = [];
+let filipinoFriendly = [];
+
+try {
+  const db = getDb(Astro.locals.runtime.env);
+  entries = await db
+    .select()
+    .from(vaDirectory)
+    .orderBy(desc(vaDirectory.createdAt));
+
+  filipinoFriendly = entries.filter((e) => e.hiresFilipinos);
+} catch (e) {
+  console.error("DB error:", e);
+}
+---
+
+<Layout 
+  title="VA Directory — Remote PH"
+  description="Curated list of companies known to hire Filipino virtual assistants."
+>
+  <div class="max-w-5xl mx-auto px-4 py-12">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold tracking-tight mb-2">VA Directory</h1>
+      <p class="text-zinc-400 text-sm">
+        {filipinoFriendly.length} companies that hire Filipino VAs •{" "}
+        {entries.length} total listed
+      </p>
+    </div>
+
+    {entries.length === 0 ? (
+      <div class="border border-border rounded-xl p-16 text-center text-zinc-500 text-sm">
+        Directory is being populated. Check back soon.
+      </div>
+    ) : (
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {entries.map((entry) => (
+          <DirectoryCard key={entry.id} entry={entry} client:load />
+        ))}
+      </div>
+    )}
+  </div>
+</Layout>

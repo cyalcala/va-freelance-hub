@@ -1,13 +1,5 @@
-import { join } from "path";
-import { createHash } from "crypto";
 import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
-
-// Path to compiled Zig parser binary (built in packages/zig-parser)
-const ZIG_PARSER_BIN = join(
-  import.meta.dir,
-  "../zig-parser/zig-out/bin/zig-parser"
-);
 
 interface ParsedJobItem {
   title?: string;
@@ -18,53 +10,58 @@ interface ParsedJobItem {
 }
 
 function toContentHash(title: string, sourceUrl: string): string {
-  return createHash("sha256")
-    .update(`${title}::${sourceUrl}`)
-    .digest("hex")
-    .slice(0, 16);
+  const str = `${title}::${sourceUrl}`;
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return ((h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0")).slice(0, 16);
 }
 
 /**
- * Calls the Zig binary as a subprocess.
- * Pipes raw HTML to stdin, reads newline-delimited JSON from stdout.
- * Falls back to empty array if binary doesn't exist yet (Phase 0).
+ * Pure TypeScript parser that matches OnlineJobs.ph HTML list structure.
+ * Extract job listings by finding links with class/id containing "job_title".
  */
-async function parseHtmlWithZig(html: string): Promise<ParsedJobItem[]> {
-  let proc: ReturnType<typeof Bun.spawn>;
-
-  try {
-    proc = Bun.spawn([ZIG_PARSER_BIN], {
-      stdin: "pipe",
-      stdout: "pipe",
-      stderr: "pipe",
-    });
-  } catch {
-    console.warn("[html] Zig parser binary not found — skipping HTML scrape. Build it in packages/zig-parser first.");
-    return [];
-  }
-
-  // Write HTML to stdin and close
-  const encoder = new TextEncoder();
-  const writer = proc.stdin.getWriter();
-  await writer.write(encoder.encode(html));
-  await writer.close();
-
-  const output = await new Response(proc.stdout).text();
-  const exitCode = await proc.exited;
-
-  if (exitCode !== 0) {
-    const stderr = await new Response(proc.stderr).text();
-    console.error(`[html] Zig parser exited with ${exitCode}: ${stderr}`);
-    return [];
-  }
-
+function parseHtmlWithTS(html: string): ParsedJobItem[] {
   const items: ParsedJobItem[] = [];
-  for (const line of output.split("\n")) {
-    if (!line.trim()) continue;
-    try {
-      items.push(JSON.parse(line));
-    } catch {
-      // skip malformed lines
+  const tagRegex = /<a([^>]+)>([\s\S]*?)<\/a>/gi;
+  let match;
+  let count = 0;
+  const maxItems = 100;
+
+  while ((match = tagRegex.exec(html)) !== null && count < maxItems) {
+    const attrs = match[1];
+    const content = match[2];
+
+    if (attrs.includes("job_title")) {
+      const hrefMatch = /href=["']([^"']+)["']/i.exec(attrs);
+      if (hrefMatch) {
+        const href = hrefMatch[1];
+        const title = content
+          .replace(/<[^>]*>/g, "") // remove nested html
+          .replace(/\s+/g, " ")    // collapse whitespaces
+          .trim();
+
+        if (!title) continue;
+
+        const url = href.startsWith("http")
+          ? href
+          : `https://www.onlinejobs.ph${href.startsWith("/") ? "" : "/"}${href}`;
+
+        items.push({
+          title,
+          url,
+          company: "OnlineJobs.ph Client",
+          date: new Date().toISOString(),
+          description: "OnlineJobs.ph remote role.",
+        });
+        count++;
+      }
     }
   }
 
@@ -90,7 +87,7 @@ export async function fetchHTMLSource(source: Source): Promise<NewOpportunity[]>
     return [];
   }
 
-  const parsed = await parseHtmlWithZig(html);
+  const parsed = parseHtmlWithTS(html);
 
   const opportunities: NewOpportunity[] = parsed
     .filter((item) => item.title && item.url)

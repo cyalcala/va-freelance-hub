@@ -1,19 +1,23 @@
 import { schedules } from "@trigger.dev/sdk/v3";
 import { eq } from "drizzle-orm";
-import { createDb, opportunities } from "./lib/db";
-import { fetchRSSFeed, rssSources } from "./lib/scraper";
+import { db, opportunities } from "@va-hub/db";
+import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource } from "@va-hub/scraper";
 
 export const scrapeOpportunitiesTask = schedules.task({
   id: "scrape-opportunities",
-  cron: "0 */2 * * *", // every 2 hours
+  cron: "0 */2 * * *",
   maxDuration: 120,
   run: async () => {
-    const db = createDb();
     console.log("[scrape] Starting opportunity scrape...");
 
-    const results = await Promise.allSettled(rssSources.map(fetchRSSFeed));
-    const allItems = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-    console.log(`[scrape] Fetched ${allItems.length} items`);
+    const rssResults = await Promise.allSettled(rssSources.map(fetchRSSFeed));
+    const rssItems = rssResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+
+    const htmlResults = await Promise.allSettled(htmlSources.map(fetchHTMLSource));
+    const htmlItems = htmlResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+
+    const allItems = [...rssItems, ...htmlItems];
+    console.log(`[scrape] Fetched ${allItems.length} items (${rssItems.length} RSS, ${htmlItems.length} HTML)`);
 
     if (allItems.length === 0) return { inserted: 0, skipped: 0 };
 
@@ -43,12 +47,20 @@ export const scrapeOpportunitiesTask = schedules.task({
 async function revalidate() {
   const secret = process.env.ISR_SECRET;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
-  if (!secret || !appUrl) return;
+  if (!secret || !appUrl) {
+    console.warn("[scrape] Skipping revalidation — ISR_SECRET or NEXT_PUBLIC_APP_URL not set");
+    return;
+  }
   try {
-    await fetch(`${appUrl}/api/revalidate`, {
+    const res = await fetch(`${appUrl}/api/revalidate`, {
       method: "POST",
       headers: { "x-revalidate-secret": secret },
       signal: AbortSignal.timeout(10_000),
     });
-  } catch {}
+    if (!res.ok) {
+      console.error(`[scrape] Revalidation failed: HTTP ${res.status}`);
+    }
+  } catch (err) {
+    console.error("[scrape] Revalidation error:", err);
+  }
 }

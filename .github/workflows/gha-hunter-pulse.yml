@@ -1,0 +1,57 @@
+name: 🏹 Sovereign Hunter Pulse
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 minutes
+  workflow_dispatch: 
+
+concurrency:
+  group: gha-hunter-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  hunt:
+    name: Execute Signal Safari (Hunter)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      # URL of our deployed Astro App
+      INGEST_API_URL: ${{ secrets.INGEST_API_URL }} 
+    
+    steps:
+      - name: 🛑 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🥟 Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: 🏹 Deploy the Hunter
+        run: |
+          bun run scripts/gha/harvest.ts 2>&1 | tee harvest.log
+          
+          # Extract stats for summary
+          TOTAL=$(grep -oP 'Total signals: \K\d+' harvest.log || echo "0")
+          echo "TOTAL=$TOTAL" >> $GITHUB_ENV
+
+      - name: 📊 Generate Pulse Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "### 🏹 Sovereign Hunter Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Signal Safari Concluded" >> $GITHUB_STEP_SUMMARY
+          echo "- **Signals Harvested**: $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
