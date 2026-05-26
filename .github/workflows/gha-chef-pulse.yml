@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 25 
     env:
       PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
-      INGEST_DIGEST_API_URL: ${{ secrets.INGEST_DIGEST_API_URL }}
+      INGEST_DIGEST_API_URL: "https://remoteph-jobs.pages.dev/api/ingest-digest"
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     
     steps:
@@ -37,7 +37,7 @@ jobs:
           bun-version: latest
 
       - name: 📦 Install Dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: 👨‍🍳 Deploy the Chef
         run: |

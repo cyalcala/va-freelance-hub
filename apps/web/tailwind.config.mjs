@@ -7,18 +7,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0a0a0a",
-        surface: "#111111",
-        border: "#1f1f1f",
-        accent: "#6366f1", // indigo/violet
-        "accent-hover": "#818cf8",
-        muted: "#52525b",
-        subtle: "#27272a",
+        parchment: "#FAF9F6",
+        ink: "#1C1917",
+        accent: "#E05D3A",
+        "accent-hover": "#C54E2D",
       },
       fontFamily: {
+        sans: ["Outfit", "Inter", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "JetBrains Mono", "Fira Code", "monospace"],
-        sans: ["var(--font-sans)", "Inter", "system-ui", "sans-serif"],
       },
+      boxShadow: {
+        card: "0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.02)",
+      }
     },
   },
   plugins: [],

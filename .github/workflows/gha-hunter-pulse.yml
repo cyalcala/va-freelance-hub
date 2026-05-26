@@ -23,7 +23,7 @@ jobs:
     env:
       PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
       # URL of our deployed Astro App
-      INGEST_API_URL: ${{ secrets.INGEST_API_URL }} 
+      INGEST_API_URL: "https://remoteph-jobs.pages.dev/api/ingest" 
     
     steps:
       - name: 🛑 Checkout Repository
@@ -37,7 +37,7 @@ jobs:
           bun-version: latest
 
       - name: 📦 Install Dependencies
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: 🏹 Deploy the Hunter
         run: |
