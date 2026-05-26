@@ -29,60 +29,61 @@ try {
 ---
 
 <Layout 
-  title="Remote PH — Freelance & VA Opportunities for Filipinos"
-  description="Self-updating directory of remote job opportunities and VA-friendly companies that hire Filipinos. Updated every 2 hours automatically."
+  title="VA Freelance Hub — Remote Jobs for Filipinos"
+  description="Self-updating directory of remote job opportunities and VA-friendly companies that hire Filipinos. Updated every 30 minutes automatically."
 >
-  <div class="max-w-5xl mx-auto px-4 py-16">
-    <div class="mb-16 text-center">
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-accent/30 bg-accent/10 text-accent text-xs font-mono mb-6">
-        <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-        Auto-updates twice daily
+  <div class="mb-24 text-center max-w-4xl mx-auto">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/30 bg-accent/5 text-accent text-xs sm:text-sm font-bold tracking-widest uppercase mb-8 shadow-sm">
+      <span class="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(224,93,58,0.6)]"></span>
+      Autonomous Pipeline Active
+    </div>
+    <h2 class="text-5xl sm:text-7xl font-extrabold tracking-tighter mb-8 leading-[1.1] text-ink">
+      Premium Remote Jobs for <br class="hidden sm:block" />
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover italic pr-2">Filipino Talents</span>
+    </h2>
+    <p class="text-ink/60 text-lg sm:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
+      A self-updating directory of VA and freelance opportunities — curated
+      from the best remote job boards and refreshed automatically at <strong class="text-ink/80 font-bold">$0 cost</strong>.
+    </p>
+    
+    <div class="flex gap-12 justify-center mt-12 mb-12">
+      <div class="text-center group">
+        <div class="text-5xl font-extrabold text-ink group-hover:text-accent transition-colors duration-300">{stats.opportunities.toLocaleString()}</div>
+        <div class="text-xs text-ink/50 mt-2 font-bold tracking-widest uppercase">Active Opportunities</div>
       </div>
-      <h1 class="text-4xl sm:text-5xl font-bold tracking-tight mb-4">
-        Remote jobs for <span class="text-accent">Filipino freelancers</span>
-      </h1>
-      <p class="text-zinc-400 text-lg max-w-xl mx-auto">
-        A self-updating directory of VA and freelance opportunities — curated
-        from the best remote job boards and refreshed automatically.
-      </p>
-      <div class="flex gap-8 justify-center mt-8">
-        <div class="text-center">
-          <div class="text-3xl font-bold font-mono text-zinc-100">{stats.opportunities.toLocaleString()}</div>
-          <div class="text-xs text-zinc-500 mt-1">Active Opportunities</div>
-        </div>
-        <div class="text-center">
-          <div class="text-3xl font-bold font-mono text-zinc-100">{stats.companies.toLocaleString()}</div>
-          <div class="text-xs text-zinc-500 mt-1">VA-Friendly Companies</div>
-        </div>
-      </div>
-      <div class="flex gap-3 justify-center mt-8">
-        <a href="/opportunities" class="px-5 py-2.5 bg-accent hover:bg-accent-hover text-white rounded-lg font-medium transition-colors text-sm">
-          Browse Jobs
-        </a>
-        <a href="/directory" class="px-5 py-2.5 border border-border hover:border-zinc-600 text-zinc-300 rounded-lg font-medium transition-colors text-sm">
-          VA Directory
-        </a>
+      <div class="text-center group">
+        <div class="text-5xl font-extrabold text-ink group-hover:text-accent transition-colors duration-300">{stats.companies.toLocaleString()}</div>
+        <div class="text-xs text-ink/50 mt-2 font-bold tracking-widest uppercase">VA-Friendly Companies</div>
       </div>
     </div>
+    
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+      <a href="/opportunities" class="w-full sm:w-auto px-8 py-4 bg-ink hover:bg-accent text-parchment rounded-xl font-bold tracking-wide transition-all duration-300 shadow-xl hover:shadow-accent/20 hover:-translate-y-0.5 text-center">
+        Browse Jobs Library
+      </a>
+      <a href="/directory" class="w-full sm:w-auto px-8 py-4 border-2 border-ink/10 hover:border-ink/30 text-ink/80 rounded-xl font-bold tracking-wide transition-all duration-300 bg-white/50 backdrop-blur-sm text-center">
+        View VA Directory
+      </a>
+    </div>
+  </div>
 
-    <div>
-      <div class="flex items-center justify-between mb-6">
-        <h2 class="text-lg font-semibold text-zinc-100">Latest Opportunities</h2>
-        <a href="/opportunities" class="text-sm text-accent hover:text-accent-hover transition-colors">
-          View all →
-        </a>
-      </div>
-      {latest.length === 0 ? (
-        <div class="border border-border rounded-xl p-10 text-center text-zinc-500 text-sm">
-          No opportunities yet — the scraper will populate this soon.
-        </div>
-      ) : (
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {latest.map((opp) => (
-            <OpportunityCard key={opp.id} opportunity={opp} client:load />
-          ))}
-        </div>
-      )}
+  <div>
+    <div class="flex items-center justify-between mb-8 pb-4 border-b border-ink/10">
+      <h3 class="text-2xl font-extrabold text-ink tracking-tight">Latest Intelligence</h3>
+      <a href="/opportunities" class="text-sm font-bold tracking-widest uppercase text-accent hover:text-accent-hover transition-colors flex items-center gap-1 group">
+        View all <span class="group-hover:translate-x-1 transition-transform">→</span>
+      </a>
     </div>
+    {latest.length === 0 ? (
+      <div class="border border-ink/10 bg-white/50 backdrop-blur-sm rounded-2xl p-16 text-center shadow-sm">
+        <p class="text-ink/50 text-lg font-medium">No opportunities yet — The Hunter is currently on a safari.</p>
+      </div>
+    ) : (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {latest.map((opp) => (
+          <OpportunityCard key={opp.id} opportunity={opp} client:load />
+        ))}
+      </div>
+    )}
   </div>
 </Layout>
