@@ -66,25 +66,32 @@ async function harvest() {
   console.log(`Total signals parsed: ${allOpportunities.length}`);
 
   if (allOpportunities.length > 0) {
-    console.log("Sending payload to ingest API...");
-    const result = await fetch(INGEST_API_URL as string, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${PROXY_SECRET}`
-      },
-      body: JSON.stringify({ items: allOpportunities })
-    });
+    console.log("Sending payload to ingest API in chunks...");
+    const CHUNK_SIZE = 10;
+    let totalInserted = 0;
+    for (let i = 0; i < allOpportunities.length; i += CHUNK_SIZE) {
+      const chunk = allOpportunities.slice(i, i + CHUNK_SIZE);
+      const result = await fetch(INGEST_API_URL as string, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${PROXY_SECRET}`
+        },
+        body: JSON.stringify({ items: chunk })
+      });
 
-    if (!result.ok) {
-      const errorText = await result.text();
-      console.error(`Ingest API rejected payload: ${result.status} ${errorText}`);
-      process.exit(1);
+      if (!result.ok) {
+        const errorText = await result.text();
+        console.error(`Ingest API rejected payload for chunk ${i}: ${result.status} ${errorText}`);
+        continue;
+      }
+
+      const data = await result.json();
+      totalInserted += data.inserted || 0;
+      console.log(`✅ Chunk ${i}: Successfully inserted ${data.inserted} new signals out of ${data.totalReceived}.`);
     }
-
-    const data = await result.json();
-    console.log(`✅ Successfully inserted ${data.inserted} new signals out of ${data.totalReceived} total.`);
-    console.log(`Total signals: ${data.inserted}`); // For GHA summary
+    
+    console.log(`Total signals: ${totalInserted}`); // For GHA summary
   } else {
     console.log("Total signals: 0");
   }

@@ -33,15 +33,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const db = getDb(locals.runtime?.env);
     
-    // Insert with deduplication based on sourceUrl
-    const result = await db.insert(opportunities)
-      .values(items)
-      .onConflictDoNothing({ target: opportunities.sourceUrl })
-      .returning({ id: opportunities.id });
+    // Insert with deduplication based on sourceUrl, chunked to avoid SQLite limits
+    const CHUNK_SIZE = 10;
+    let insertedCount = 0;
+    for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+      const chunk = items.slice(i, i + CHUNK_SIZE);
+      const result = await db.insert(opportunities)
+        .values(chunk)
+        .onConflictDoNothing({ target: opportunities.sourceUrl })
+        .returning({ id: opportunities.id });
+      insertedCount += result.length;
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      inserted: result.length,
+      inserted: insertedCount,
       totalReceived: items.length
     }), { 
       status: 200,
