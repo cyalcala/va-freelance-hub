@@ -23,7 +23,7 @@ jobs:
     env:
       PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
       # URL of our deployed Astro App
-      INGEST_API_URL: "https://remoteph-jobs.pages.dev/api/ingest" 
+      INGEST_API_URL: "https://remotejobs-ph.pages.dev/api/ingest" 
     
     steps:
       - name: 🛑 Checkout Repository
