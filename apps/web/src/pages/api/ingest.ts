@@ -9,7 +9,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     
     // Resolve secret from Cloudflare env or Astro env fallback
     const env = locals.runtime?.env ?? (import.meta as any).env;
-    const proxySecret = env?.PROXY_SECRET || "vfh_AwPG8WkUrZlmcHjNhJdgSqbsLz023vE1";
+    const proxySecret = env?.PROXY_SECRET;
 
     if (!proxySecret) {
       console.error("PROXY_SECRET not configured in environment");
