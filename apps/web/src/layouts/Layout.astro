@@ -23,14 +23,21 @@ const { title, description } = Astro.props;
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   </head>
-  <body class="min-h-screen bg-parchment text-ink selection:bg-accent selection:text-white pb-12 flex flex-col">
-    <div class="max-w-[90rem] mx-auto w-full px-4 sm:px-8 lg:px-12 pt-16 flex-1">
-      <!-- Cinematic Header -->
-      <header class="mb-24 border-b border-ink/10 pb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+  <body class="min-h-screen bg-gradient-to-br from-parchment via-[#f8f9fa] to-[#e9ecef] text-ink selection:bg-accent selection:text-white pb-12 flex flex-col font-['Outfit',sans-serif]">
+    
+    <!-- Ambient Background Blur Elements -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+      <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-accent/5 blur-[120px]"></div>
+      <div class="absolute top-[20%] -right-[10%] w-[30%] h-[50%] rounded-full bg-blue-500/5 blur-[120px]"></div>
+    </div>
+
+    <!-- Cinematic Sticky Header with Glassmorphism -->
+    <header class="sticky top-0 z-50 w-full bg-parchment/70 backdrop-blur-md border-b border-ink/5 shadow-sm transition-all">
+      <div class="max-w-[90rem] mx-auto w-full px-4 sm:px-8 lg:px-12 py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <a href="/" class="block group">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tighter text-ink flex items-center gap-3 group-hover:text-accent transition-colors duration-200">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-accent group-hover:rotate-45 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <h1 class="text-3xl md:text-4xl font-extrabold tracking-tighter text-ink flex items-center gap-3 group-hover:text-accent transition-colors duration-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-accent group-hover:rotate-45 transition-transform duration-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="5"/>
                 <line x1="12" y1="1" x2="12" y2="3"/>
                 <line x1="12" y1="21" x2="12" y2="23"/>
@@ -44,11 +51,11 @@ const { title, description } = Astro.props;
               VA Freelance Hub
             </h1>
           </a>
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2">
-            <p class="text-xs text-ink/50 font-bold tracking-[0.2em] uppercase">Premium Remote & VA Roles for Filipinos</p>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-1">
+            <p class="text-[10px] sm:text-xs text-ink/50 font-bold tracking-[0.2em] uppercase">Premium Remote Jobs</p>
             <span class="hidden sm:block w-1 h-1 bg-ink/20 rounded-full"></span>
-            <p class="text-[10px] sm:text-[11px] text-ink/40 font-bold tracking-widest uppercase flex items-center gap-1">
-              Made with <span class="text-red-500 mx-0.5">❤️</span> by 
+            <p class="text-[9px] sm:text-[10px] text-ink/40 font-bold tracking-widest uppercase flex items-center gap-1">
+              Made with <span class="text-red-500 mx-0.5 animate-pulse">❤️</span> by 
               <a href="https://www.linkedin.com/in/cyrusalcala/" target="_blank" rel="noopener noreferrer" class="text-ink/60 hover:text-accent hover:underline decoration-accent/50 underline-offset-4 transition-all">
                 CY ALCALA
               </a>
@@ -57,11 +64,12 @@ const { title, description } = Astro.props;
         </div>
         <nav class="flex gap-6 md:gap-8 text-sm font-bold tracking-widest uppercase text-ink/70">
           <a href="/opportunities" class="hover:text-accent transition-colors duration-200">Find a Job</a>
-          <a href="/directory" class="hover:text-accent transition-colors duration-200">VA Directory</a>
         </nav>
-      </header>
+      </div>
+    </header>
 
-      <main class="w-full">
+    <div class="max-w-[90rem] mx-auto w-full px-4 sm:px-8 lg:px-12 pt-12 flex-1">
+      <main class="w-full animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
         <slot />
       </main>
     </div>

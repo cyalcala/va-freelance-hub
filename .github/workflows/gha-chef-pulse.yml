@@ -1,8 +1,6 @@
 name: Sovereign Chef Pulse
 
 on:
-  schedule:
-    - cron: '15,45 * * * *' # Every 30 minutes, offset by 15 mins from the Hunter
   workflow_dispatch: 
 
 concurrency:
@@ -22,7 +20,7 @@ jobs:
     timeout-minutes: 25 
     env:
       PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
-      INGEST_DIGEST_API_URL: "https://remoteph-jobs.pages.dev/api/ingest-digest"
+      INGEST_DIGEST_API_URL: "https://remotejobs-ph.pages.dev/api/ingest-digest"
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
     
     steps:

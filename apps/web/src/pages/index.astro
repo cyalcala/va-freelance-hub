@@ -3,11 +3,12 @@ import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities, vaDirectory } from '@va-hub/db';
 import { eq, desc, count } from 'drizzle-orm';
 import { OpportunityCard } from '@/components/opportunity-card';
+import { DirectorySearch } from '@/components/DirectorySearch';
 
 export const prerender = false;
 
 let stats = { opportunities: 0, companies: 0 };
-let latest = [];
+let allAgencies = [];
 
 try {
   const db = getDb(Astro.locals.runtime.env);
@@ -17,12 +18,7 @@ try {
   
   stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
   
-  latest = await db
-    .select()
-    .from(opportunities)
-    .where(eq(opportunities.isActive, true))
-    .orderBy(desc(opportunities.scrapedAt))
-    .limit(9);
+  allAgencies = await db.select().from(vaDirectory);
 } catch (e) {
   console.error("DB error:", e);
 }
@@ -32,58 +28,33 @@ try {
   title="VA Freelance Hub — Remote Jobs for Filipinos"
   description="Self-updating directory of remote job opportunities and VA-friendly companies that hire Filipinos. Updated every 30 minutes automatically."
 >
-  <div class="mb-24 text-center max-w-4xl mx-auto">
-    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/30 bg-accent/5 text-accent text-xs sm:text-sm font-bold tracking-widest uppercase mb-8 shadow-sm">
+  <div class="mb-24 text-center max-w-4xl mx-auto pt-8 md:pt-16 animate-in slide-in-from-bottom-8 fade-in duration-1000 ease-out fill-mode-both">
+    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/30 bg-accent/5 text-accent text-xs sm:text-sm font-bold tracking-widest uppercase mb-10 shadow-sm hover:shadow-md transition-shadow">
       <span class="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_rgba(224,93,58,0.6)]"></span>
-      Autonomous Pipeline Active
+      Auto-updates twice daily
     </div>
-    <h2 class="text-5xl sm:text-7xl font-extrabold tracking-tighter mb-8 leading-[1.1] text-ink">
+    <h2 class="text-5xl sm:text-7xl font-extrabold tracking-tighter mb-8 leading-[1.1] text-ink drop-shadow-sm">
       Premium Remote Jobs for <br class="hidden sm:block" />
-      <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent to-accent-hover italic pr-2">Filipino Talents</span>
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent via-[#ff784f] to-accent-hover italic pr-2">Filipino Talents</span>
     </h2>
     <p class="text-ink/60 text-lg sm:text-xl max-w-2xl mx-auto font-medium leading-relaxed">
       A self-updating directory of VA and freelance opportunities — curated
-      from the best remote job boards and refreshed automatically at <strong class="text-ink/80 font-bold">$0 cost</strong>.
+      from the best remote job boards and refreshed automatically.
     </p>
     
-    <div class="flex gap-12 justify-center mt-12 mb-12">
-      <div class="text-center group">
-        <div class="text-5xl font-extrabold text-ink group-hover:text-accent transition-colors duration-300">{stats.opportunities.toLocaleString()}</div>
-        <div class="text-xs text-ink/50 mt-2 font-bold tracking-widest uppercase">Active Opportunities</div>
+    <div class="flex gap-16 justify-center mt-16 mb-12 animate-in fade-in zoom-in-95 duration-1000 delay-300 fill-mode-both">
+      <div class="text-center group cursor-default">
+        <div class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-ink to-ink/60 group-hover:from-accent group-hover:to-accent-hover transition-all duration-300 transform group-hover:scale-105">{stats.opportunities.toLocaleString()}</div>
+        <div class="text-xs text-ink/50 mt-3 font-extrabold tracking-widest uppercase">Active Opportunities</div>
       </div>
-      <div class="text-center group">
-        <div class="text-5xl font-extrabold text-ink group-hover:text-accent transition-colors duration-300">{stats.companies.toLocaleString()}</div>
-        <div class="text-xs text-ink/50 mt-2 font-bold tracking-widest uppercase">VA-Friendly Companies</div>
+      <div class="text-center group cursor-default">
+        <div class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-br from-ink to-ink/60 group-hover:from-accent group-hover:to-accent-hover transition-all duration-300 transform group-hover:scale-105">{stats.companies.toLocaleString()}</div>
+        <div class="text-xs text-ink/50 mt-3 font-extrabold tracking-widest uppercase">VA-Friendly Companies</div>
       </div>
-    </div>
-    
-    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-      <a href="/opportunities" class="w-full sm:w-auto px-8 py-4 bg-ink hover:bg-accent text-parchment rounded-xl font-bold tracking-wide transition-all duration-300 shadow-xl hover:shadow-accent/20 hover:-translate-y-0.5 text-center">
-        Browse Jobs Library
-      </a>
-      <a href="/directory" class="w-full sm:w-auto px-8 py-4 border-2 border-ink/10 hover:border-ink/30 text-ink/80 rounded-xl font-bold tracking-wide transition-all duration-300 bg-white/50 backdrop-blur-sm text-center">
-        View VA Directory
-      </a>
     </div>
   </div>
 
-  <div>
-    <div class="flex items-center justify-between mb-8 pb-4 border-b border-ink/10">
-      <h3 class="text-2xl font-extrabold text-ink tracking-tight">Latest Intelligence</h3>
-      <a href="/opportunities" class="text-sm font-bold tracking-widest uppercase text-accent hover:text-accent-hover transition-colors flex items-center gap-1 group">
-        View all <span class="group-hover:translate-x-1 transition-transform">→</span>
-      </a>
-    </div>
-    {latest.length === 0 ? (
-      <div class="border border-ink/10 bg-white/50 backdrop-blur-sm rounded-2xl p-16 text-center shadow-sm">
-        <p class="text-ink/50 text-lg font-medium">No opportunities yet — The Hunter is currently on a safari.</p>
-      </div>
-    ) : (
-      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {latest.map((opp) => (
-          <OpportunityCard key={opp.id} opportunity={opp} client:load />
-        ))}
-      </div>
-    )}
+  <div class="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
+    <DirectorySearch client:load directory={allAgencies} />
   </div>
 </Layout>

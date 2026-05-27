@@ -11,9 +11,10 @@ if (!INGEST_API_URL || !PROXY_SECRET) {
 
 // Feeds to scrape
 const feeds = [
-  { url: "https://weworkremotely.com/categories/remote-customer-support-jobs.rss", platform: "WeWorkRemotely", type: "VA" },
-  { url: "https://weworkremotely.com/categories/remote-design-jobs.rss", platform: "WeWorkRemotely", type: "freelance" },
-  { url: "https://weworkremotely.com/categories/remote-sales-and-marketing-jobs.rss", platform: "WeWorkRemotely", type: "VA" }
+  { format: "xml", url: "https://weworkremotely.com/categories/remote-customer-support-jobs.rss", platform: "WeWorkRemotely", type: "VA" },
+  { format: "xml", url: "https://weworkremotely.com/categories/remote-design-jobs.rss", platform: "WeWorkRemotely", type: "freelance" },
+  { format: "xml", url: "https://weworkremotely.com/categories/remote-sales-and-marketing-jobs.rss", platform: "WeWorkRemotely", type: "VA" },
+  { format: "json", url: "https://remotive.com/api/remote-jobs?limit=100", platform: "Remotive", type: "VA" }
 ];
 
 async function harvest() {
@@ -29,34 +30,72 @@ async function harvest() {
     try {
       console.log(`Fetching ${feed.url}...`);
       const response = await fetch(feed.url);
-      const xml = await response.text();
-      const jsonObj = parser.parse(xml);
       
-      const items = jsonObj?.rss?.channel?.item || [];
-      const parsedItems = Array.isArray(items) ? items : [items];
-
-      for (const item of parsedItems) {
-        const title = item.title || "";
-        const sourceUrl = item.link || "";
+      if (feed.format === "xml") {
+        const xml = await response.text();
+        const jsonObj = parser.parse(xml);
         
-        // Skip empty or invalid items
-        if (!title || !sourceUrl) continue;
-        
-        // Create deterministic deduplication hash
-        const contentHash = crypto.createHash('sha256').update(`${title}${sourceUrl}`).digest('hex');
+        const items = jsonObj?.rss?.channel?.item || [];
+        const parsedItems = Array.isArray(items) ? items : [items];
 
-        allOpportunities.push({
-          title,
-          company: item["dc:creator"] || "Unknown",
-          type: feed.type,
-          sourceUrl,
-          sourcePlatform: feed.platform,
-          locationType: "remote",
-          description: item.description || "",
-          postedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
-          isActive: true,
-          contentHash
-        });
+        for (const item of parsedItems) {
+          const title = item.title || "";
+          const sourceUrl = item.link || "";
+          
+          // Skip empty or invalid items
+          if (!title || !sourceUrl) continue;
+          
+          // Create deterministic deduplication hash
+          const contentHash = crypto.createHash('sha256').update(`${title}${sourceUrl}`).digest('hex');
+
+          allOpportunities.push({
+            title,
+            company: item["dc:creator"] || "Unknown",
+            type: feed.type,
+            sourceUrl,
+            sourcePlatform: feed.platform,
+            locationType: "remote",
+            description: item.description || "",
+            postedAt: item.pubDate ? new Date(item.pubDate).toISOString() : new Date().toISOString(),
+            isActive: true,
+            contentHash
+          });
+        }
+      } else if (feed.format === "json" && feed.platform === "Remotive") {
+        const json = await response.json();
+        const items = json.jobs || [];
+
+        for (const item of items) {
+          const title = item.title || "";
+          const sourceUrl = item.url || "";
+          const requiredLocation = (item.candidate_required_location || "").toLowerCase();
+          
+          if (!title || !sourceUrl) continue;
+          
+          // 🛡️ The Bouncer: Strict Location Filtering
+          const isWorldwide = requiredLocation.includes("worldwide") || requiredLocation.includes("anywhere") || requiredLocation.includes("global");
+          const includesAsia = requiredLocation.includes("asia") || requiredLocation.includes("philippines");
+          
+          // Reject if it is not open to Worldwide or explicitly Asia/Philippines
+          if (!isWorldwide && !includesAsia) {
+             continue; // Toss it out!
+          }
+          
+          const contentHash = crypto.createHash('sha256').update(`${title}${sourceUrl}`).digest('hex');
+
+          allOpportunities.push({
+            title,
+            company: item.company_name || "Unknown",
+            type: feed.type,
+            sourceUrl,
+            sourcePlatform: feed.platform,
+            locationType: "remote",
+            description: item.description || "",
+            postedAt: item.publication_date ? new Date(item.publication_date).toISOString() : new Date().toISOString(),
+            isActive: true,
+            contentHash
+          });
+        }
       }
     } catch (e) {
       console.error(`Failed to process feed ${feed.url}:`, e);
@@ -67,7 +106,7 @@ async function harvest() {
 
   if (allOpportunities.length > 0) {
     console.log("Sending payload to ingest API in chunks...");
-    const CHUNK_SIZE = 10;
+    const CHUNK_SIZE = 5;
     let totalInserted = 0;
     for (let i = 0; i < allOpportunities.length; i += CHUNK_SIZE) {
       const chunk = allOpportunities.slice(i, i + CHUNK_SIZE);

@@ -38,12 +38,16 @@ export const vaDirectory = sqliteTable("va_directory", {
   website: text("website"),
   hiresFilipinos: integer("hires_filipinos", { mode: "boolean" }).notNull().default(true),
   niche: text("niche", {
-    enum: ["admin", "creative", "tech", "social-media", "customer-support", "finance", "other"],
-  }).default("admin"),
+    enum: ["australian-dayshift", "global-va", "bpo", "job-boards", "ecommerce", "tech"],
+  }).notNull().default("australian-dayshift"),
   hiringPageUrl: text("hiring_page_url"),
   verifiedAt: text("verified_at"),
   notes: text("notes"),
   rating: integer("rating"), // 1-5, optional
+  isDayshift: integer("is_dayshift", { mode: "boolean" }).notNull().default(false),
+  isVerified: integer("is_verified", { mode: "boolean" }).notNull().default(false),
+  isRemote: integer("is_remote", { mode: "boolean" }).notNull().default(true),
+  isMarketplace: integer("is_marketplace", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),
