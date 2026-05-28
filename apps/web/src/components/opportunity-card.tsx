@@ -83,7 +83,7 @@ export function OpportunityCard({ opportunity: opp }: Props) {
               {typeLabel}
             </span>
             {postedDate && (
-              <span className="text-[9px] font-bold tracking-widest uppercase text-ink/40 ml-1 py-0.5 hidden sm:inline-block">
+              <span className="text-[9px] font-bold tracking-widest uppercase text-ink/40 ml-1 py-0.5 inline-block">
                 {postedDate}
               </span>
             )}
