@@ -2,13 +2,12 @@
 import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities, vaDirectory } from '@va-hub/db';
 import { eq, desc, count } from 'drizzle-orm';
-import { OpportunityCard } from '@/components/opportunity-card';
-import { DirectorySearch } from '@/components/DirectorySearch';
+import { OpportunitySearch } from '@/components/OpportunitySearch';
 
 export const prerender = false;
 
 let stats = { opportunities: 0, companies: 0 };
-let allAgencies = [];
+let allOpportunities = [];
 
 try {
   const db = getDb(Astro.locals.runtime.env);
@@ -18,7 +17,12 @@ try {
   
   stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
   
-  allAgencies = await db.select().from(vaDirectory);
+  allOpportunities = await db
+    .select()
+    .from(opportunities)
+    .where(eq(opportunities.isActive, true))
+    .orderBy(desc(opportunities.scrapedAt))
+    .limit(100);
 } catch (e) {
   console.error("DB error:", e);
 }
@@ -55,6 +59,6 @@ try {
   </div>
 
   <div class="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
-    <DirectorySearch client:load directory={allAgencies} />
+    <OpportunitySearch client:load opportunities={allOpportunities} />
   </div>
 </Layout>
