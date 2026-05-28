@@ -15,6 +15,13 @@
       "when": 1779795407907,
       "tag": "0001_true_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1779990096776,
+      "tag": "0002_dashing_microchip",
+      "breakpoints": true
     }
   ]
 }

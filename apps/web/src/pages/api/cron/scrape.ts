@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
-import { getDb, opportunities } from "@va-hub/db";
-import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, triageJob } from "@va-hub/scraper";
+import { getDb, opportunities, vaDirectory } from "@va-hub/db";
+import { isNotNull, and } from "drizzle-orm";
+import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob } from "@va-hub/scraper";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   console.log("[api/cron/scrape] Starting execution...");
@@ -24,8 +25,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const htmlResults = await Promise.allSettled(htmlSources.map(fetchHTMLSource));
     const htmlItems = htmlResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 
-    const allItems = [...rssItems, ...htmlItems];
-    console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML)`);
+    const atsAgencies = await db.select().from(vaDirectory).where(
+      and(
+        isNotNull(vaDirectory.atsPlatform),
+        isNotNull(vaDirectory.atsToken)
+      )
+    );
+    
+    console.log(`[api/cron/scrape] Found ${atsAgencies.length} ATS-enabled agencies in the directory.`);
+    
+    const atsResults = await Promise.allSettled(
+      atsAgencies.map((agency) => 
+        fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
+      )
+    );
+    const atsItems = atsResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+
+    const allItems = [...rssItems, ...htmlItems, ...atsItems];
+    console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML, ${atsItems.length} ATS)`);
 
     if (allItems.length === 0) {
       return new Response(JSON.stringify({ inserted: 0, skipped: 0, message: "No jobs scraped" }), { status: 200, headers: { "Content-Type": "application/json" } });

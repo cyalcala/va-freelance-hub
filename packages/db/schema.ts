@@ -48,6 +48,8 @@ export const vaDirectory = sqliteTable("va_directory", {
   isVerified: integer("is_verified", { mode: "boolean" }).notNull().default(false),
   isRemote: integer("is_remote", { mode: "boolean" }).notNull().default(true),
   isMarketplace: integer("is_marketplace", { mode: "boolean" }).notNull().default(false),
+  atsPlatform: text("ats_platform", { enum: ["lever", "greenhouse", "workable", "breezy"] }),
+  atsToken: text("ats_token"),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),
