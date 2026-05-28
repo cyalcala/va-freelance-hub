@@ -22,8 +22,8 @@ jobs:
     timeout-minutes: 15
     env:
       PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
-      # URL of our deployed Astro App
       INGEST_API_URL: "https://remotejobs-ph.pages.dev/api/ingest" 
+      SCRAPE_API_URL: "https://remotejobs-ph.pages.dev/api/cron/scrape"
     
     steps:
       - name: 🛑 Checkout Repository
@@ -39,12 +39,16 @@ jobs:
       - name: 📦 Install Dependencies
         run: bun install
 
-      - name: 🏹 Deploy the Hunter
+      - name: 🏹 Deploy the ATS Engine (Layer 2)
         run: |
-          bun run scripts/gha/harvest.ts 2>&1 | tee harvest.log
+          curl -X POST "$SCRAPE_API_URL" \
+            -H "x-cron-secret: $PROXY_SECRET" \
+            -H "Content-Type: application/json" \
+            -s > harvest.log
           
-          # Extract stats for summary
-          TOTAL=$(grep -oP 'Total signals: \K\d+' harvest.log || echo "0")
+          cat harvest.log
+          
+          TOTAL=$(grep -oP '"inserted":\s*\K\d+' harvest.log || echo "0")
           echo "TOTAL=$TOTAL" >> $GITHUB_ENV
 
       - name: 📊 Generate Pulse Summary
