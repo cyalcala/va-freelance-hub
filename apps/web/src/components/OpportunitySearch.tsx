@@ -35,12 +35,12 @@ function JobCategoryCard({ category, jobs }: { category: string, jobs: Opportuni
   const hiddenCount = jobs.length - INITIAL_VISIBLE_COUNT;
 
   return (
-    <div className={`mb-8 break-inside-avoid bg-white/70 backdrop-blur-sm rounded-3xl border ${info.color} shadow-lg shadow-ink/5 overflow-hidden flex flex-col transition-all hover:shadow-xl duration-300`}>
+    <div className={`mb-8 break-inside-avoid bg-white/70 backdrop-blur-sm rounded-3xl border ${info.color} shadow-lg shadow-ink/5 overflow-hidden flex flex-col transition-all hover:-translate-y-1 hover:shadow-xl duration-300`}>
       <div className="bg-gradient-to-r from-ink/5 to-transparent border-b border-ink/5 py-4 px-5 flex items-center justify-between">
         <h3 className="font-extrabold text-sm tracking-widest uppercase text-ink/80">{info.title}</h3>
         <span className="text-[10px] font-black uppercase tracking-widest opacity-40 bg-ink/10 px-2 py-0.5 rounded-full">{jobs.length} JOBS</span>
       </div>
-      <div className="p-3 flex flex-col gap-3">
+      <div className="p-3 flex flex-col gap-1">
         {visibleJobs.map(opp => (
           <OpportunityCard key={opp.id} opportunity={opp} />
         ))}
@@ -48,7 +48,7 @@ function JobCategoryCard({ category, jobs }: { category: string, jobs: Opportuni
         {!expanded && hiddenCount > 0 && (
           <button 
             onClick={() => setExpanded(true)}
-            className="mt-1 mx-2 mb-1 py-3 bg-ink/5 rounded-xl text-xs font-bold tracking-widest uppercase text-ink/50 hover:text-ink hover:bg-ink/10 transition-all text-center group"
+            className="mt-3 mx-2 mb-2 py-3 bg-ink/5 rounded-xl text-xs font-bold tracking-widest uppercase text-ink/50 hover:text-ink hover:bg-ink/10 transition-all text-center group"
           >
             See all {hiddenCount} jobs <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
           </button>
@@ -107,14 +107,14 @@ export function OpportunitySearch({ opportunities }: { opportunities: Opportunit
         </div>
       </div>
 
-      {/* Masonry Grid */}
+      {/* Grid Layout to force left-to-right order instead of columns */}
       {filtered.length === 0 ? (
         <div className="text-center py-32 bg-white/40 backdrop-blur-md rounded-3xl border border-ink/5 animate-in fade-in zoom-in-95 duration-500">
           <p className="text-ink/40 font-semibold text-xl tracking-tight">No opportunities found matching "{query}"</p>
           <button onClick={() => setQuery('')} className="mt-4 text-accent font-bold hover:underline underline-offset-4">Clear search</button>
         </div>
       ) : (
-        <div className="columns-1 lg:columns-2 xl:columns-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
           {Object.entries(JOB_CATEGORY_MAP).map(([key, _], index) => {
             if (!grouped[key] || grouped[key].length === 0) return null;
             return (
