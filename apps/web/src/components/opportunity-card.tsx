@@ -32,7 +32,12 @@ export function OpportunityCard({ opportunity: opp }: Props) {
     : null;
 
   return (
-    <div className="border border-ink/10 rounded-2xl p-5 bg-white/60 backdrop-blur-sm hover:bg-white hover:border-accent hover:shadow-card transition-all duration-300 flex flex-col gap-4 group">
+    <a 
+      href={opp.sourceUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block border border-ink/10 rounded-2xl p-5 bg-white/60 backdrop-blur-sm hover:bg-white hover:border-accent hover:shadow-card transition-all duration-300 flex flex-col gap-4 group cursor-pointer"
+    >
       {/* Platform + type badges */}
       <div className="flex items-center gap-2 flex-wrap">
         <span
@@ -74,15 +79,12 @@ export function OpportunityCard({ opportunity: opp }: Props) {
         {postedDate && (
           <span className="text-[10px] font-bold tracking-widest uppercase text-ink/40">{postedDate}</span>
         )}
-        <a
-          href={opp.sourceUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ml-auto text-xs font-bold tracking-widest uppercase text-accent hover:text-accent-hover transition-colors flex items-center gap-1 group-hover:translate-x-1"
+        <span
+          className="ml-auto text-xs font-bold tracking-widest uppercase text-accent group-hover:text-accent-hover transition-colors flex items-center gap-1 group-hover:translate-x-1"
         >
           Apply Now <span className="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-        </a>
+        </span>
       </div>
-    </div>
+    </a>
   );
 }
