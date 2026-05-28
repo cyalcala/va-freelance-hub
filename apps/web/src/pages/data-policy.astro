@@ -1,0 +1,50 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Nav } from '../components/nav';
+import { Footer } from '../components/footer';
+---
+
+<Layout title="Data Collection Policy - VA Freelance Hub">
+  <Nav client:load />
+  
+  <main className="min-h-screen pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+    <div className="bg-white/70 backdrop-blur-md rounded-3xl border border-ink/10 p-8 sm:p-12 shadow-xl shadow-ink/5 prose prose-zinc max-w-none">
+      <h1 className="text-3xl font-black text-ink mb-2 uppercase tracking-tight">Data Collection Policy</h1>
+      <p className="text-sm font-bold text-ink/50 uppercase tracking-widest mb-8">Last Updated: May 2026</p>
+      
+      <p>
+        At VA Freelance Hub, our core mission is to connect Filipino Virtual Assistants and remote workers with legitimate agencies and career opportunities. To achieve this, we operate as an aggregator of publicly available data. This Data Collection Policy explains how we source, aggregate, and display job listings and agency information.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">1. How We Source Information</h2>
+      <p>
+        VA Freelance Hub collects information via public aggregation. We use automated scripts (scrapers) and APIs to index publicly available job postings from global job boards, applicant tracking systems (ATS), and publicly accessible career pages.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">2. Purpose of Data Aggregation</h2>
+      <p>
+        The sole purpose of aggregating this public data is to act as a centralized search engine and gateway. We do not host or process job applications natively. Instead, every job listing and agency profile on our platform contains direct links driving traffic <strong>back to the original source</strong> (the agency's website or ATS platform). We operate on the principle that indexing public job data benefits the agencies by providing them with free visibility and a wider pool of qualified applicants.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">3. Ethical Guidelines & The "Opt-Out" Standard</h2>
+      <p>
+        We strictly adhere to ethical aggregation practices. We do not scrape private data, user profiles, or data behind authenticated login walls. All data indexed by VA Freelance Hub is intended by its original publisher to be public and widely distributed (such as a public job posting).
+      </p>
+      <p>
+        <strong>Opt-Out Mechanism:</strong> We respect the rights of business owners and agencies. If you are an authorized representative of an agency or company listed on VA Freelance Hub and you wish for your public job postings or directory listing to be removed from our aggregator, please contact us immediately. We maintain a strict, no-questions-asked "Opt-Out" policy and will remove your data from our index promptly.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">4. Accuracy of Information</h2>
+      <p>
+        Because we aggregate data from third-party sources, VA Freelance Hub cannot guarantee the absolute accuracy, completeness, or timeliness of every job listing. Job openings may close, and links may expire on the source website before our index updates. We encourage all users to verify the status of a job opening directly on the employer's official website.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">5. Contact Us</h2>
+      <p>
+        If you have any questions about this Data Collection Policy, or if you need to submit an Opt-Out request for your agency, please contact the repository maintainer through our official GitHub repository.
+      </p>
+    </div>
+  </main>
+
+  <Footer client:load />
+</Layout>

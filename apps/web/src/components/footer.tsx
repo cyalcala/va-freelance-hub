@@ -33,6 +33,20 @@ export function Footer() {
           >
             Source
           </a>
+          {" "}·{" "}
+          <a
+            href="/privacy"
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Privacy
+          </a>
+          {" "}·{" "}
+          <a
+            href="/data-policy"
+            className="text-zinc-400 hover:text-zinc-200 transition-colors"
+          >
+            Data Policy
+          </a>
         </p>
       </div>
     </footer>

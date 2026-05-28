@@ -1,0 +1,51 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { Nav } from '../components/nav';
+import { Footer } from '../components/footer';
+---
+
+<Layout title="Privacy Policy - VA Freelance Hub">
+  <Nav client:load />
+  
+  <main className="min-h-screen pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+    <div className="bg-white/70 backdrop-blur-md rounded-3xl border border-ink/10 p-8 sm:p-12 shadow-xl shadow-ink/5 prose prose-zinc max-w-none">
+      <h1 className="text-3xl font-black text-ink mb-2 uppercase tracking-tight">Privacy Policy</h1>
+      <p className="text-sm font-bold text-ink/50 uppercase tracking-widest mb-8">Last Updated: May 2026</p>
+      
+      <p>
+        At VA Freelance Hub, accessible from remotejobs-ph.pages.dev, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by VA Freelance Hub and how we use it.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">1. Information We Collect</h2>
+      <p>
+        <strong>Log Files:</strong> VA Freelance Hub follows a standard procedure of using log files. These files log visitors when they visit websites. The information collected by log files include internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any information that is personally identifiable.
+      </p>
+      <p>
+        <strong>Cookies and Web Beacons:</strong> Like any other website, VA Freelance Hub uses "cookies". These cookies are used to store information including visitors' preferences, and the pages on the website that the visitor accessed or visited. The information is used to optimize the users' experience by customizing our web page content based on visitors' browser type and/or other information.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">2. Third-Party Privacy Policies</h2>
+      <p>
+        VA Freelance Hub's Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt-out of certain options.
+      </p>
+      <p>
+        You can choose to disable cookies through your individual browser options. To know more detailed information about cookie management with specific web browsers, it can be found at the browsers' respective websites.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">3. Children's Information</h2>
+      <p>
+        Another part of our priority is adding protection for children while using the internet. We encourage parents and guardians to observe, participate in, and/or monitor and guide their online activity.
+      </p>
+      <p>
+        VA Freelance Hub does not knowingly collect any Personal Identifiable Information from children under the age of 13. If you think that your child provided this kind of information on our website, we strongly encourage you to contact us immediately and we will do our best efforts to promptly remove such information from our records.
+      </p>
+
+      <h2 className="text-xl font-bold mt-8 mb-4">4. Consent</h2>
+      <p>
+        By using our website, you hereby consent to our Privacy Policy and agree to its Terms and Conditions.
+      </p>
+    </div>
+  </main>
+
+  <Footer client:load />
+</Layout>
