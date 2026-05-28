@@ -87,7 +87,7 @@ export function OpportunitySearch({ opportunities }: { opportunities: Opportunit
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
       
       {/* Search Bar - Sticky & Glassmorphic */}
-      <div className="sticky top-24 z-40 max-w-3xl mx-auto mb-16 pt-2 pb-4 backdrop-blur-md bg-parchment/60 rounded-3xl px-2">
+      <div className="sticky top-40 md:top-24 z-40 max-w-3xl mx-auto mb-16 pt-2 pb-4 backdrop-blur-md bg-parchment/60 rounded-3xl px-2">
         <div className="relative group">
           <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none transition-transform group-focus-within:scale-110">
             <Search className="h-5 w-5 text-accent" />
