@@ -32,16 +32,34 @@ export function OpportunityCard({ opportunity: opp }: Props) {
       })
     : null;
 
+  let hostname = "";
+  try {
+    hostname = new URL(opp.sourceUrl).hostname;
+  } catch (e) {
+    hostname = "";
+  }
+
   return (
     <a 
       href={opp.sourceUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-start justify-between group p-3 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent"
+      className="flex items-start justify-between group p-3 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent hover:border-accent/10"
     >
       <div className="flex items-center gap-4 w-full">
-        <div className="w-10 h-10 rounded-full bg-ink/5 flex items-center justify-center shrink-0 border border-ink/5 group-hover:scale-110 group-hover:shadow-md transition-all duration-300">
-          <Briefcase className="w-4 h-4 text-ink/30" />
+        <div className="w-10 h-10 rounded-full bg-ink/5 flex items-center justify-center shrink-0 border border-ink/5 group-hover:scale-110 group-hover:shadow-md transition-all duration-300 overflow-hidden bg-white">
+          {hostname ? (
+            <img 
+              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`} 
+              alt={opp.sourcePlatform}
+              className="w-5 h-5 object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+              }}
+            />
+          ) : null}
+          <Briefcase className={`w-4 h-4 text-ink/30 ${hostname ? 'hidden' : ''}`} />
         </div>
         
         <div className="flex-1 transform group-hover:translate-x-1 transition-transform duration-300">
