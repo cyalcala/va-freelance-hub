@@ -21,12 +21,14 @@ export const scrapeOpportunitiesTask = schedules.task({
 
     if (allItems.length === 0) return { inserted: 0, skipped: 0 };
 
-    const existingHashes = new Set(
-      (await db.select({ hash: opportunities.contentHash }).from(opportunities)).map((r) => r.hash)
+    const existingUrls = new Set(
+      (await db.select({ sourceUrl: opportunities.sourceUrl }).from(opportunities))
+        .map((r) => r.sourceUrl)
+        .filter(Boolean)
     );
 
-    const newItems = allItems.filter((item) => item.contentHash && !existingHashes.has(item.contentHash));
-    console.log(`[scrape] ${newItems.length} new after dedup`);
+    const newItems = allItems.filter((item) => item.sourceUrl && !existingUrls.has(item.sourceUrl));
+    console.log(`[scrape] ${newItems.length} new after URL dedup`);
 
     let inserted = 0;
     for (let i = 0; i < newItems.length; i += 50) {

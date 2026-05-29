@@ -147,11 +147,25 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
 }
 
 async function fetchBreezy(token: string, companyName: string): Promise<NewOpportunity[]> {
-  const res = await fetch(`https://breezy.hr/v3/companies/${token}/positions`, {
+  const res = await fetch(`https://${token}.breezy.hr/json`, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    },
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`Breezy HTTP ${res.status}`);
+  
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    console.warn(`[ats] Breezy feed for ${companyName} (${token}) returned non-JSON response (possibly redirected or disabled)`);
+    return [];
+  }
+
   const data = await res.json() as any[];
+  if (!Array.isArray(data)) {
+    console.warn(`[ats] Breezy feed for ${companyName} (${token}) did not return an array`);
+    return [];
+  }
   
   return data
     .filter((job: any) => job && job.name && job.url)

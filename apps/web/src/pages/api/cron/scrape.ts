@@ -48,70 +48,110 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ inserted: 0, skipped: 0, message: "No jobs scraped" }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
-    // 3. De-duplicate against existing database entries
-    const existingHashes = new Set(
-      (await db.select({ hash: opportunities.contentHash }).from(opportunities)).map((r: any) => r.hash)
+    // 3. De-duplicate against existing database entries by source URL (more robust than content hash)
+    const existingUrls = new Set(
+      (await db.select({ sourceUrl: opportunities.sourceUrl }).from(opportunities))
+        .map((r: any) => r.sourceUrl)
+        .filter(Boolean)
     );
 
-    const newItems = allItems.filter((item) => item.contentHash && !existingHashes.has(item.contentHash));
-    console.log(`[api/cron/scrape] ${newItems.length} new items found after hash dedup`);
+    const newItems = allItems.filter((item) => item.sourceUrl && !existingUrls.has(item.sourceUrl));
+    console.log(`[api/cron/scrape] ${newItems.length} new items found after URL dedup`);
 
     if (newItems.length === 0) {
       return new Response(JSON.stringify({ inserted: 0, skipped: allItems.length, message: "Zero new jobs after dedup" }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
-    // 4. Triage and classify each new item
+    // 4. Triage and classify new items (with limit and concurrency to prevent Cloudflare execution timeouts)
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get("limit") || "15", 10);
+    const itemsToProcess = newItems.slice(0, limit);
+    console.log(`[api/cron/scrape] Processing ${itemsToProcess.length} out of ${newItems.length} new items (limit: ${limit})`);
+
     const triagedItems: typeof opportunities.$inferInsert[] = [];
-    for (const item of newItems) {
-      console.log(`[api/cron/scrape] Triaging: "${item.title}"`);
-      const triage = await triageJob(item.title, item.description || "", env);
+    const concurrency = 3;
 
-      if (!triage.eligibleForFilipinos) {
-        console.log(`[api/cron/scrape] Filtering out ineligible job: "${item.title}". Reason: ${triage.reason}`);
-        continue; // Skip the job completely
+    for (let i = 0; i < itemsToProcess.length; i += concurrency) {
+      const chunk = itemsToProcess.slice(i, i + concurrency);
+      const results = await Promise.all(
+        chunk.map(async (item) => {
+          console.log(`[api/cron/scrape] Triaging: "${item.title}"`);
+          try {
+            const triage = await triageJob(item.title, item.description || "", env);
+            return { item, triage };
+          } catch (err) {
+            console.error(`[api/cron/scrape] Triage failed for "${item.title}":`, err);
+            return { item, triage: null };
+          }
+        })
+      );
+
+      for (const { item, triage } of results) {
+        if (!triage) continue;
+
+        if (!triage.eligibleForFilipinos) {
+          console.log(`[api/cron/scrape] Filtering out ineligible job: "${item.title}". Reason: ${triage.reason}`);
+          continue;
+        }
+
+        // Merge tags: combine scraper sources tags, LLM category, and LLM skills/tags
+        const mergedTags = Array.from(
+          new Set([
+            ...(item.tags || []),
+            triage.category,
+            ...(triage.tags || []),
+          ])
+        )
+          .filter(Boolean)
+          .map((t) => typeof t === 'string' ? t.toLowerCase().trim() : t);
+
+        triagedItems.push({
+          ...item,
+          tags: mergedTags,
+          payRange: triage.payRange,
+        });
       }
-
-      // Merge tags: combine scraper sources tags, LLM category, and LLM skills/tags
-      const mergedTags = Array.from(
-        new Set([
-          ...(item.tags || []),
-          triage.category,
-          ...(triage.tags || []),
-        ])
-      )
-        .filter(Boolean)
-        .map((t) => typeof t === 'string' ? t.toLowerCase().trim() : t);
-
-      triagedItems.push({
-        ...item,
-        tags: mergedTags,
-        payRange: triage.payRange,
-      });
     }
 
     console.log(`[api/cron/scrape] ${triagedItems.length} jobs approved after AI triaging`);
 
     if (triagedItems.length === 0) {
-      return new Response(JSON.stringify({ inserted: 0, skipped: allItems.length, message: "No jobs passed AI triage" }), { status: 200, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({
+        inserted: 0,
+        processed: itemsToProcess.length,
+        backlogRemaining: newItems.length - itemsToProcess.length,
+        skipped: allItems.length,
+        message: "No jobs passed AI triage in this batch"
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     // 5. Batch insert into D1
     let inserted = 0;
+    let actualChanges = 0;
     for (let i = 0; i < triagedItems.length; i += 5) {
       const batch = triagedItems.slice(i, i + 5);
       try {
-        await db.insert(opportunities).values(batch).onConflictDoNothing();
+        console.log(`[api/cron/scrape] Inserting batch of ${batch.length} items:`, batch.map(b => `${b.title} (${b.sourceUrl})`));
+        const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
+        console.log(`[api/cron/scrape] D1 insert result:`, JSON.stringify(res));
         inserted += batch.length;
+        if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
+          actualChanges += (res as any).meta.changes;
+        }
       } catch (err) {
         console.error(`[api/cron/scrape] Batch insert failed (index ${i}):`, err);
       }
     }
 
-    console.log(`[api/cron/scrape] Finished. Inserted ${inserted} items`);
+    console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, batch inserted ${inserted} (actual DB changes: ${actualChanges})`);
     return new Response(JSON.stringify({
       inserted,
-      filteredOut: newItems.length - triagedItems.length,
+      actualChanges,
+      filteredOut: itemsToProcess.length - triagedItems.length,
+      processed: itemsToProcess.length,
+      backlogRemaining: newItems.length - itemsToProcess.length,
       skipped: allItems.length - inserted,
+      triagedItems,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);
