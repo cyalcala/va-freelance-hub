@@ -53,6 +53,7 @@ This document records the comprehensive audit, database safety, SEO, and mobile 
 * **Solution**: 
   1. Set the main site header to be sticky **exclusively on desktop viewports** (`md:sticky top-0 z-50`). On mobile screens, it behaves as a static element and scrolls out of the way naturally, freeing up maximum screen space for reading job cards.
   2. Aligned the search bar sticky offsets across all routes to `top-2 md:top-24 z-40`. When scrolling on mobile, once the main header moves out of view, the glassmorphic search bar docks cleanly to the top of the viewport with a tiny 8px margin (`top-2`), remaining fully visible and accessible.
+  3. Resolved the desktop viewport anchor scroll overlapping bug where clicking the "Find a Job Now" CTA scrolled the search container underneath the sticky header. Added `id="search"` and `scroll-mt-24 md:scroll-mt-32` classes to offset the anchor target's final scroll position to account for the sticky desktop header size.
 * **Files Modified**:
   * [Layout.astro](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/layouts/Layout.astro)
   * [OpportunitySearch.tsx](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/components/OpportunitySearch.tsx)
