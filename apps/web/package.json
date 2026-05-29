@@ -6,7 +6,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "pnpm run build && wrangler pages deploy dist"
+    "deploy": "pnpm run build && wrangler pages deploy dist --project-name remotejobs-ph"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^10.2.2",
