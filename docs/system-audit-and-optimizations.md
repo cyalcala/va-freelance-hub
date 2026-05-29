@@ -48,12 +48,17 @@ This document records the comprehensive audit, database safety, SEO, and mobile 
 
 ## 3. Mobile UI/UX Optimizations
 
-### A. Sticky Search Header Offset Spacing
-* **Problem**: The search bar was set to be sticky with a large mobile offset of `top-40`. On smaller viewports (e.g. mobile screens under 640px wide), this pushed the sticky search input halfway down the viewport, blocking underlying job card content.
-* **Solution**: Shifted the mobile sticky position to `top-20 md:top-24`, placing the search bar neatly below the navigation bar across all screen widths.
+### A. Sticky Header and Search Bar Offsets
+* **Problem**: The main site header takes up considerable vertical space on mobile screens (~140px-160px due to stacked logos, slogans, and navigation links). Because the header was configured as `sticky top-0 z-50` and the search bar was sticky at `top-20`, scrolling down the page forced the search input to slide underneath the header text, making the input and action buttons completely obscured and invisible.
+* **Solution**: 
+  1. Set the main site header to be sticky **exclusively on desktop viewports** (`md:sticky top-0 z-50`). On mobile screens, it behaves as a static element and scrolls out of the way naturally, freeing up maximum screen space for reading job cards.
+  2. Aligned the search bar sticky offsets across all routes to `top-2 md:top-24 z-40`. When scrolling on mobile, once the main header moves out of view, the glassmorphic search bar docks cleanly to the top of the viewport with a tiny 8px margin (`top-2`), remaining fully visible and accessible.
 * **Files Modified**:
+  * [Layout.astro](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/layouts/Layout.astro)
   * [OpportunitySearch.tsx](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/components/OpportunitySearch.tsx)
   * [CategoryOpportunitySearch.tsx](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/components/CategoryOpportunitySearch.tsx)
+  * [DirectorySearch.tsx](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/components/DirectorySearch.tsx)
+
 
 ### B. Hero Section Word Wrapping & Fluid Typography
 * **Problem**: The primary hero text (`text-4xl sm:text-5xl md:text-7xl`) was oversized on 320px screens (e.g. iPhone SE), causing awkward text overflows and layout breaks.
