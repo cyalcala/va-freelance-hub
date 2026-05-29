@@ -1,0 +1,53 @@
+name: 🛡️ Sovereign Warden Pulse
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Every 30 minutes
+  workflow_dispatch:
+
+concurrency:
+  group: gha-warden-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  patrol:
+    name: Execute System Patrol (Warden)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: 🛑 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: 🥟 Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 🛡️ Run Warden Script
+        env:
+          TRIGGER_SECRET_KEY: ${{ secrets.TRIGGER_SECRET_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+        run: |
+          chmod +x scripts/warden.sh
+          # Create dummy .env.local for script parsing since it extracts vars from there
+          echo "TRIGGER_SECRET_KEY=$TRIGGER_SECRET_KEY" > .env.local
+          echo "TURSO_DATABASE_URL=$TURSO_DATABASE_URL" >> .env.local
+          echo "TURSO_AUTH_TOKEN=$TURSO_AUTH_TOKEN" >> .env.local
+
+          mkdir -p docs
+          ./scripts/warden.sh
+
+      - name: 💾 Commit Logs
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: [Warden] update logs"
+          file_pattern: "docs/warden-log.md"
+          commit_user_name: "Sovereign Warden"
+          commit_user_email: "warden@va-freelance-hub"
