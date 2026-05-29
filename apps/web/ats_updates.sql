@@ -1,0 +1,9 @@
+UPDATE va_directory SET ats_platform = 'workable', ats_token = 'coconutva' WHERE id = 268;
+UPDATE va_directory SET ats_platform = 'lever', ats_token = 'elasticpath' WHERE id = 277;
+UPDATE va_directory SET ats_platform = 'workable', ats_token = 'myoutdesk' WHERE id = 308;
+UPDATE va_directory SET ats_platform = 'workable', ats_token = 'outsource-access' WHERE id = 318;
+UPDATE va_directory SET ats_platform = 'workable', ats_token = 'remoteraven' WHERE id = 339;
+UPDATE va_directory SET ats_platform = 'workable', ats_token = 'staff-domain-inc' WHERE id = 352;
+UPDATE va_directory SET ats_platform = 'workable', ats_token = 'superstaff' WHERE id = 358;
+UPDATE va_directory SET ats_platform = 'workable', ats_token = 'connectos' WHERE id = 429;
+UPDATE va_directory SET ats_platform = 'breezy', ats_token = 'hammerjack' WHERE id = 431;

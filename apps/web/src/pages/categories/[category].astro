@@ -7,6 +7,11 @@ import { getJobCategory, JOB_CATEGORY_MAP } from '@/lib/categories';
 
 export const prerender = false;
 
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+);
+
 const { category } = Astro.params;
 
 if (!category || !JOB_CATEGORY_MAP[category]) {
@@ -22,7 +27,8 @@ try {
     .select()
     .from(opportunities)
     .where(eq(opportunities.isActive, true))
-    .orderBy(desc(opportunities.postedAt));
+    .orderBy(desc(opportunities.postedAt))
+    .limit(1000);
     
   categoryJobs = allJobs.filter(opp => getJobCategory(opp) === category);
 } catch (e) {

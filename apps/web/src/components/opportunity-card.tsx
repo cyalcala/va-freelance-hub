@@ -51,7 +51,7 @@ export function OpportunityCard({ opportunity: opp }: Props) {
       href={opp.sourceUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-start justify-between group p-3 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent hover:border-accent/10"
+      className="flex items-start justify-between group p-4 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent hover:border-accent/10 active:scale-[0.99] active:bg-ink/5"
     >
       <div className="flex items-center gap-4 w-full">
         <div className="w-10 h-10 rounded-full bg-ink/5 flex items-center justify-center shrink-0 border border-ink/5 group-hover:scale-110 group-hover:shadow-md transition-all duration-300 overflow-hidden bg-white">
