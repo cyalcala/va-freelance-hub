@@ -41,6 +41,17 @@ function toContentHash(title: string, sourceUrl: string): string {
   return ((h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0")).slice(0, 16);
 }
 
+function normalizeDate(rawDate: string | undefined): string | null {
+  if (!rawDate) return null;
+  try {
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+  } catch (e) {
+    return null;
+  }
+}
+
 export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
   console.log(`[rss] Fetching ${source.name}...`);
 
@@ -91,6 +102,8 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
           : []),
       ].slice(0, 10);
 
+      const rawDate = item.pubDate ?? item.published;
+
       return {
         title,
         company: normalizeText(item["dc:creator"] ?? item.author) || null,
@@ -101,7 +114,7 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
         locationType: "remote" as const,
         payRange: null,
         description: normalizeText(item.description).slice(0, 500) || null,
-        postedAt: item.pubDate ?? item.published ?? null,
+        postedAt: normalizeDate(rawDate),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
       } satisfies NewOpportunity;

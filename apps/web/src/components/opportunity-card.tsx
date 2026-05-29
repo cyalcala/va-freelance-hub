@@ -21,16 +21,23 @@ const TYPE_LABELS: Record<string, string> = {
   "part-time": "Part-time",
 };
 
+function formatDate(isoString: string | null | undefined): string | null {
+  if (!isoString) return null;
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return null;
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return `${months[d.getUTCMonth()]} ${d.getUTCDate()}`;
+  } catch (e) {
+    return null;
+  }
+}
+
 export function OpportunityCard({ opportunity: opp }: Props) {
   const platformColor =
     PLATFORM_COLORS[opp.sourcePlatform] ?? "text-ink/60 bg-ink/5";
   const typeLabel = TYPE_LABELS[opp.type] ?? opp.type;
-  const postedDate = opp.postedAt
-    ? new Date(opp.postedAt).toLocaleDateString("en-PH", {
-        month: "short",
-        day: "numeric",
-      })
-    : null;
+  const postedDate = formatDate(opp.postedAt);
 
   let hostname = "";
   try {

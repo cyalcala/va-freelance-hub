@@ -21,8 +21,8 @@ try {
     .select()
     .from(opportunities)
     .where(eq(opportunities.isActive, true))
-    .orderBy(desc(opportunities.scrapedAt))
-    .limit(100);
+    .orderBy(desc(opportunities.postedAt))
+    .limit(500);
 } catch (e) {
   console.error("DB error:", e);
 }
