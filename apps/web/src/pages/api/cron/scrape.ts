@@ -9,13 +9,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const env = locals.runtime.env as any;
   const db = getDb(env);
 
-  // 1. Authorization Check
-  const secret = request.headers.get("x-cron-secret") || new URL(request.url).searchParams.get("secret");
+  // 1. Rate Limiting Check
+  const rateLimiter = env?.API_RATE_LIMITER;
+  if (rateLimiter) {
+    const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
+    const { success } = await rateLimiter.limit({ key: clientIp });
+    if (!success) {
+      console.warn(`[api/cron/scrape] Rate limit exceeded for IP: ${clientIp}`);
+      return new Response(JSON.stringify({ error: "Too Many Requests" }), { 
+        status: 429, 
+        headers: { "Content-Type": "application/json" } 
+      });
+    }
+  }
+
+  // 2. Authorization Check (Header-Only)
+  const secret = request.headers.get("x-cron-secret");
   const expectedSecret = env?.CRON_SECRET || process.env?.CRON_SECRET;
-  if (expectedSecret && secret !== expectedSecret) {
+  if (!secret || (expectedSecret && secret !== expectedSecret)) {
     console.warn("[api/cron/scrape] Unauthorized access attempt");
     return new Response("Unauthorized", { status: 401 });
   }
+
 
   try {
     // 2. Fetch all raw items

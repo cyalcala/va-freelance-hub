@@ -83,7 +83,40 @@ To aid with ATS mappings and database cleanup, several auxiliary scripts were de
 
 ---
 
-## 5. Upgrade and Testing Guide
+## 5. Security & Rate-Limiting Hardening
+
+To safeguard our edge endpoints and prevent resource abuse (such as flooding writes or triggering excessive scraper instances), we implemented programmatic security controls and Wrangler rate limiter bindings:
+
+### A. Wrangler Programmatic Rate Limiting
+* **Problem**: Publicly accessible API routes like `/api/ingest` and `/api/cron/scrape` could be targeted by denial-of-service (DoS) floods, exhausting Cloudflare CPU execution allocations even when unauthorized.
+* **Solution**: Registered a Cloudflare Worker rate limiting binding using Wrangler.
+  * Added rate limit bindings to `wrangler.toml` and `wrangler.jsonc` under the name `API_RATE_LIMITER` (configured for a limit of 60 requests per 60 seconds per key).
+  * Programmatically evaluated the client IP address (`cf-connecting-ip`) inside each API route against `API_RATE_LIMITER`. Excess requests return a `429 Too Many Requests` status instantly.
+* **Files Modified**:
+  * [wrangler.toml](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/wrangler.toml)
+  * [wrangler.jsonc](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/wrangler.jsonc)
+  * [ingest.ts](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/api/ingest.ts)
+  * [ingest-digest.ts](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/api/ingest-digest.ts)
+  * [scrape.ts](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/api/cron/scrape.ts)
+
+### B. Header-Only Authentication
+* **Problem**: The cron scraper allowed the access secret to be passed via the URL query parameter (`?secret=xxxx`). This was a security risk as URLs are frequently logged in plain text by intermediate proxy servers, DNS records, and browser histories.
+* **Solution**: Disabled query parameter checks. Authentication is now enforced **exclusively through HTTP headers** using the `x-cron-secret` header.
+* **Files Modified**:
+  * [scrape.ts](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/api/cron/scrape.ts)
+
+### C. Payload Validation & Ingestion Boundaries
+* **Problem**: Malicious users could send gigantic payloads to `/api/ingest` to flood the serverless worker memory, leading to edge timeouts.
+* **Solution**:
+  1. Enforced a **2MB payload limit** by parsing the `Content-Length` header and returning a `413 Payload Too Large` error early.
+  2. Enforced an **items array count constraint** (max 200 items per request). If a batch contains more than 200 elements, it is rejected with a `400 Bad Request` code.
+* **Files Modified**:
+  * [ingest.ts](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/api/ingest.ts)
+  * [ingest-digest.ts](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/api/ingest-digest.ts)
+
+---
+
+## 6. Upgrade and Testing Guide
 
 When planning future upgrades, optimizations, or testing, follow this checklist:
 
@@ -101,3 +134,4 @@ When planning future upgrades, optimizations, or testing, follow this checklist:
 
 ### B. Deployment
 * Deployment is configured to Cloudflare Pages. Code changes pushed to the `main` branch on GitHub automatically trigger a Cloudflare Pages CI/CD pipeline build and edge deployment.
+
