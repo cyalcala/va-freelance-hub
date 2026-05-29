@@ -47,7 +47,8 @@ export function CategoryOpportunitySearch({ opportunities, category }: Props) {
       </div>
 
       {/* Search Bar - Sticky & Glassmorphic */}
-      <div className="sticky top-2 md:top-24 z-40 mb-12 pt-2 pb-4 backdrop-blur-md bg-parchment/60 rounded-3xl">
+      <div id="search" className="scroll-mt-24 md:scroll-mt-32 sticky top-2 md:top-24 z-40 mb-12 pt-2 pb-4 backdrop-blur-md bg-parchment/60 rounded-3xl">
+
 
         <div className="relative group">
           <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none transition-transform group-focus-within:scale-110">
