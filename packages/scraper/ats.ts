@@ -5,6 +5,17 @@ function normalizeText(raw: string | undefined): string {
   return raw.replace(/<[^>]*>/g, "").trim();
 }
 
+function safeNormalizeDate(rawDate: any): string | null {
+  if (!rawDate) return null;
+  try {
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+  } catch (e) {
+    return null;
+  }
+}
+
 function toContentHash(title: string, sourceUrl: string): string {
   const str = `${title}::${sourceUrl}`;
   let h1 = 0xdeadbeef;
@@ -53,23 +64,25 @@ async function fetchLever(token: string, companyName: string): Promise<NewOpport
   if (!res.ok) throw new Error(`Lever HTTP ${res.status}`);
   const data = await res.json() as any[];
   
-  return data.map((job) => {
-    const title = normalizeText(job.text);
-    const sourceUrl = job.hostedUrl;
-    return {
-      title,
-      company: companyName,
-      type: "full-time",
-      sourceUrl,
-      sourcePlatform: companyName, // Use company name as platform for ATS jobs
-      tags: [companyName.toLowerCase()],
-      locationType: "remote",
-      description: normalizeText(job.descriptionPlain || job.description).slice(0, 500) || null,
-      postedAt: job.createdAt ? new Date(job.createdAt).toISOString() : null,
-      isActive: true,
-      contentHash: toContentHash(title, sourceUrl),
-    };
-  });
+  return data
+    .filter((job) => job && job.text && job.hostedUrl)
+    .map((job) => {
+      const title = normalizeText(job.text);
+      const sourceUrl = job.hostedUrl;
+      return {
+        title,
+        company: companyName,
+        type: "full-time",
+        sourceUrl,
+        sourcePlatform: companyName, // Use company name as platform for ATS jobs
+        tags: [companyName.toLowerCase()],
+        locationType: "remote",
+        description: normalizeText(job.descriptionPlain || job.description).slice(0, 500) || null,
+        postedAt: safeNormalizeDate(job.createdAt),
+        isActive: true,
+        contentHash: toContentHash(title, sourceUrl),
+      };
+    });
 }
 
 async function fetchGreenhouse(token: string, companyName: string): Promise<NewOpportunity[]> {
@@ -80,23 +93,25 @@ async function fetchGreenhouse(token: string, companyName: string): Promise<NewO
   const data = await res.json() as any;
   
   const jobs = data.jobs || [];
-  return jobs.map((job: any) => {
-    const title = normalizeText(job.title);
-    const sourceUrl = job.absolute_url;
-    return {
-      title,
-      company: companyName,
-      type: "full-time",
-      sourceUrl,
-      sourcePlatform: companyName,
-      tags: [companyName.toLowerCase()],
-      locationType: "remote",
-      description: null, // Greenhouse board API doesn't return description by default
-      postedAt: job.updated_at ? new Date(job.updated_at).toISOString() : null,
-      isActive: true,
-      contentHash: toContentHash(title, sourceUrl),
-    };
-  });
+  return jobs
+    .filter((job: any) => job && job.title && job.absolute_url)
+    .map((job: any) => {
+      const title = normalizeText(job.title);
+      const sourceUrl = job.absolute_url;
+      return {
+        title,
+        company: companyName,
+        type: "full-time",
+        sourceUrl,
+        sourcePlatform: companyName,
+        tags: [companyName.toLowerCase()],
+        locationType: "remote",
+        description: null, // Greenhouse board API doesn't return description by default
+        postedAt: safeNormalizeDate(job.updated_at),
+        isActive: true,
+        contentHash: toContentHash(title, sourceUrl),
+      };
+    });
 }
 
 async function fetchWorkable(token: string, companyName: string): Promise<NewOpportunity[]> {
@@ -110,23 +125,25 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
   const data = await res.json() as any;
   
   const jobs = data.results || [];
-  return jobs.map((job: any) => {
-    const title = normalizeText(job.title);
-    const sourceUrl = `https://apply.workable.com/${token}/j/${job.shortcode}/`;
-    return {
-      title,
-      company: companyName,
-      type: "full-time",
-      sourceUrl,
-      sourcePlatform: companyName,
-      tags: [companyName.toLowerCase()],
-      locationType: "remote",
-      description: null,
-      postedAt: job.published_on ? new Date(job.published_on).toISOString() : null,
-      isActive: true,
-      contentHash: toContentHash(title, sourceUrl),
-    };
-  });
+  return jobs
+    .filter((job: any) => job && job.title && job.shortcode)
+    .map((job: any) => {
+      const title = normalizeText(job.title);
+      const sourceUrl = `https://apply.workable.com/${token}/j/${job.shortcode}/`;
+      return {
+        title,
+        company: companyName,
+        type: "full-time",
+        sourceUrl,
+        sourcePlatform: companyName,
+        tags: [companyName.toLowerCase()],
+        locationType: "remote",
+        description: null,
+        postedAt: safeNormalizeDate(job.published_on),
+        isActive: true,
+        contentHash: toContentHash(title, sourceUrl),
+      };
+    });
 }
 
 async function fetchBreezy(token: string, companyName: string): Promise<NewOpportunity[]> {
@@ -136,21 +153,23 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
   if (!res.ok) throw new Error(`Breezy HTTP ${res.status}`);
   const data = await res.json() as any[];
   
-  return data.map((job: any) => {
-    const title = normalizeText(job.name);
-    const sourceUrl = job.url;
-    return {
-      title,
-      company: companyName,
-      type: "full-time",
-      sourceUrl,
-      sourcePlatform: companyName,
-      tags: [companyName.toLowerCase()],
-      locationType: "remote",
-      description: null,
-      postedAt: job.published_date ? new Date(job.published_date).toISOString() : null,
-      isActive: true,
-      contentHash: toContentHash(title, sourceUrl),
-    };
-  });
+  return data
+    .filter((job: any) => job && job.name && job.url)
+    .map((job: any) => {
+      const title = normalizeText(job.name);
+      const sourceUrl = job.url;
+      return {
+        title,
+        company: companyName,
+        type: "full-time",
+        sourceUrl,
+        sourcePlatform: companyName,
+        tags: [companyName.toLowerCase()],
+        locationType: "remote",
+        description: null,
+        postedAt: safeNormalizeDate(job.published_date),
+        isActive: true,
+        contentHash: toContentHash(title, sourceUrl),
+      };
+    });
 }
