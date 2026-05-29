@@ -2,42 +2,24 @@ import React, { useState, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import type { Opportunity } from '@/lib/db';
 import { OpportunityCard } from './opportunity-card';
-
-const JOB_CATEGORY_MAP: Record<string, { title: string, color: string }> = {
-  'customer-service': { title: 'CUSTOMER SERVICE', color: 'border-yellow-500/30' },
-  'admin': { title: 'ADMIN & OPERATIONS', color: 'border-emerald-500/30' },
-  'marketing': { title: 'MARKETING & SALES', color: 'border-orange-500/30' },
-  'design': { title: 'DESIGN & CREATIVE', color: 'border-purple-500/30' },
-  'tech': { title: 'ENGINEERING & IT', color: 'border-blue-500/30' },
-  'other': { title: 'GENERAL & OTHER', color: 'border-ink/10' },
-};
-
-function getJobCategory(opp: Opportunity): string {
-  const text = `${opp.title} ${Array.isArray(opp.tags) ? opp.tags.join(' ') : ''}`.toLowerCase();
-  
-  if (text.match(/developer|engineer|programmer|software|web|full stack|backend|frontend|react|node|tech|data|python/)) return 'tech';
-  if (text.match(/marketing|seo|social media|content|sales|copywriter|growth|outreach/)) return 'marketing';
-  if (text.match(/design|ui|ux|graphic|illustrator|video|animat|creative/)) return 'design';
-  if (text.match(/customer|support|chat|ticket|csr|client/)) return 'customer-service';
-  if (text.match(/admin|virtual assistant|data entry|hr|recruiter|operation|executive|management/)) return 'admin';
-  return 'other';
-}
+import { JOB_CATEGORY_MAP, getJobCategory } from '@/lib/categories';
 
 const INITIAL_VISIBLE_COUNT = 5;
 
 function JobCategoryCard({ category, jobs }: { category: string, jobs: Opportunity[] }) {
-  const [expanded, setExpanded] = useState(false);
   const info = JOB_CATEGORY_MAP[category] || { title: category, color: 'border-ink/10' };
   
   if (jobs.length === 0) return null;
 
-  const visibleJobs = expanded ? jobs : jobs.slice(0, INITIAL_VISIBLE_COUNT);
-  const hiddenCount = jobs.length - INITIAL_VISIBLE_COUNT;
+  const visibleJobs = jobs.slice(0, INITIAL_VISIBLE_COUNT);
+  const hasMore = jobs.length > INITIAL_VISIBLE_COUNT;
 
   return (
     <div className={`mb-8 break-inside-avoid bg-white/70 backdrop-blur-sm rounded-3xl border ${info.color} shadow-lg shadow-ink/5 overflow-hidden flex flex-col transition-all hover:-translate-y-1 hover:shadow-xl duration-300`}>
       <div className="bg-gradient-to-r from-ink/5 to-transparent border-b border-ink/5 py-4 px-5 flex items-center justify-between">
-        <h3 className="font-extrabold text-sm tracking-widest uppercase text-ink/80">{info.title}</h3>
+        <h3 className="font-extrabold text-sm tracking-widest uppercase text-ink/80 hover:text-accent transition-colors">
+          <a href={`/categories/${category}`}>{info.title}</a>
+        </h3>
         <span className="text-[10px] font-black uppercase tracking-widest opacity-40 bg-ink/10 px-2 py-0.5 rounded-full">{jobs.length} JOBS</span>
       </div>
       <div className="p-3 flex flex-col gap-1">
@@ -45,13 +27,13 @@ function JobCategoryCard({ category, jobs }: { category: string, jobs: Opportuni
           <OpportunityCard key={opp.id} opportunity={opp} />
         ))}
         
-        {!expanded && hiddenCount > 0 && (
-          <button 
-            onClick={() => setExpanded(true)}
-            className="mt-3 mx-2 mb-2 py-3 bg-ink/5 rounded-xl text-xs font-bold tracking-widest uppercase text-ink/50 hover:text-ink hover:bg-ink/10 transition-all text-center group"
+        {hasMore && (
+          <a 
+            href={`/categories/${category}`}
+            className="mt-3 mx-2 mb-2 py-3 bg-ink/5 rounded-xl text-xs font-bold tracking-widest uppercase text-ink/50 hover:text-accent hover:bg-accent/5 transition-all text-center group block"
           >
-            See all {hiddenCount} jobs <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
-          </button>
+            See all {jobs.length} jobs <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
+          </a>
         )}
       </div>
     </div>
@@ -107,7 +89,7 @@ export function OpportunitySearch({ opportunities }: { opportunities: Opportunit
         </div>
       </div>
 
-      {/* Grid Layout to force left-to-right order instead of columns */}
+      {/* Grid Layout */}
       {filtered.length === 0 ? (
         <div className="text-center py-32 bg-white/40 backdrop-blur-md rounded-3xl border border-ink/5 animate-in fade-in zoom-in-95 duration-500">
           <p className="text-ink/40 font-semibold text-xl tracking-tight">No opportunities found matching "{query}"</p>

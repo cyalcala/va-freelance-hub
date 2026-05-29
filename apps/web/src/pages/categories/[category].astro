@@ -1,0 +1,42 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getDb, opportunities } from '@va-hub/db';
+import { eq, desc } from 'drizzle-orm';
+import { CategoryOpportunitySearch } from '@/components/CategoryOpportunitySearch';
+import { getJobCategory, JOB_CATEGORY_MAP } from '@/lib/categories';
+
+export const prerender = false;
+
+const { category } = Astro.params;
+
+if (!category || !JOB_CATEGORY_MAP[category]) {
+  return Astro.redirect('/');
+}
+
+const info = JOB_CATEGORY_MAP[category];
+let categoryJobs = [];
+
+try {
+  const db = getDb(Astro.locals.runtime.env);
+  const allJobs = await db
+    .select()
+    .from(opportunities)
+    .where(eq(opportunities.isActive, true))
+    .orderBy(desc(opportunities.postedAt));
+    
+  categoryJobs = allJobs.filter(opp => getJobCategory(opp) === category);
+} catch (e) {
+  console.error("DB Error in category page:", e);
+}
+---
+
+<Layout 
+  title={`${info.title} Remote Jobs for Filipinos — VA Freelance Hub`}
+  description={`Browse and search all active ${info.title.toLowerCase()} remote jobs and virtual assistant opportunities open to Filipino talents. Updated automatically.`}
+>
+  <CategoryOpportunitySearch 
+    client:load 
+    opportunities={categoryJobs} 
+    category={category} 
+  />
+</Layout>
