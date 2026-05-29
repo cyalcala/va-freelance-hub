@@ -72,7 +72,17 @@ This document records the comprehensive audit, database safety, SEO, and mobile 
 * **Files Modified**:
   * [opportunity-card.tsx](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/components/opportunity-card.tsx)
 
+### D. Two-Tier Navigation CTA Hierarchy
+* **Problem**: Mobile users had to scroll or search blindly to find the primary job search board. The navigation header only included a single "Find an Agency Job" link.
+* **Solution**: 
+  1. Added a prominent, high-contrast primary call-to-action button: **"Find a Job Now"** (styled as an orange pill button). It sits side-by-side with a secondary text link for **"Find an Agency Job"** in the mobile navigation bar.
+  2. Applied an anchor target `id="search"` to the search bar container in `OpportunitySearch.tsx`. Clicking "Find a Job Now" instantly scrolls/targets the main search input on the home page.
+* **Files Modified**:
+  * [Layout.astro](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/layouts/Layout.astro)
+  * [OpportunitySearch.tsx](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/components/OpportunitySearch.tsx)
+
 ---
+
 
 ## 4. Scraper & ATS Resolution Helpers
 

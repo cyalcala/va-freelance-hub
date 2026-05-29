@@ -76,10 +76,15 @@ const { title, description } = Astro.props;
               </a>
             </p>
           </div>
-        </div>
-        <nav class="flex gap-6 md:gap-8 text-sm font-bold tracking-widest uppercase text-ink/70">
-          <a href="/directory" class="hover:text-accent transition-colors duration-200">Find an Agency Job</a>
+        <nav class="flex items-center gap-4 sm:gap-6 text-xs sm:text-sm font-bold tracking-widest uppercase mt-2 md:mt-0">
+          <a href="/directory" class="text-ink/60 hover:text-accent transition-colors duration-200 text-[10px] sm:text-xs">
+            Find an Agency Job
+          </a>
+          <a href="/#search" class="bg-accent hover:bg-accent-hover hover:scale-105 active:scale-95 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs tracking-wider transition-all shadow-sm hover:shadow-accent/20">
+            Find a Job Now
+          </a>
         </nav>
+
       </div>
     </header>
 
