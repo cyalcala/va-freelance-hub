@@ -1,0 +1,53 @@
+name: 🧹 Sovereign Database Pruning (Deduplication)
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Run daily at midnight UTC
+  workflow_dispatch: 
+
+concurrency:
+  group: gha-prune-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  prune:
+    name: Execute Duplicate Pruning
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 🚀 Trigger Prune API
+        run: |
+          RESPONSE=$(curl -s -w "\\n%{http_code}" -X POST "https://remotejobs-ph.pages.dev/api/cron/prune" \
+            -H "Authorization: Bearer ${{ secrets.PROXY_SECRET }}" \
+            -H "Content-Type: application/json")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          echo "Response Code: $HTTP_CODE"
+          echo "Response Body: $BODY"
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Pruning failed with status $HTTP_CODE"
+            exit 1
+          fi
+          
+          PRUNED_HASH=$(echo $BODY | jq -r '.prunedHashDuplicates')
+          PRUNED_URL=$(echo $BODY | jq -r '.prunedUrlDuplicates')
+          
+          echo "PRUNED_HASH=$PRUNED_HASH" >> $GITHUB_ENV
+          echo "PRUNED_URL=$PRUNED_URL" >> $GITHUB_ENV
+
+      - name: 📊 Generate Prune Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "### 🧹 Sovereign Database Pruning Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Pruning Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cross-Platform Duplicates Removed (Hash)**: $PRUNED_HASH" >> $GITHUB_STEP_SUMMARY
+          echo "- **Exact Duplicates Removed (URL)**: $PRUNED_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
