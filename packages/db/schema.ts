@@ -27,6 +27,9 @@ export const opportunities = sqliteTable("opportunities", {
     .default(sql`(datetime('now'))`),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
   contentHash: text("content_hash").notNull(), // sha256 of title+sourceUrl for dedup
+  updatedAt: text("updated_at"),
+  lastSeenInFeedAt: text("last_seen_in_feed_at"),
+  failedVerificationCount: integer("failed_verification_count").notNull().default(0),
 });
 
 // ─── VA Directory ─────────────────────────────────────────────────────────────

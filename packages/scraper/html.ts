@@ -38,11 +38,20 @@ function parseHtmlWithTS(html: string): ParsedJobItem[] {
     const attrs = match[1];
     const content = match[2];
 
-    if (attrs.includes("job_title")) {
-      const hrefMatch = /href=["']([^"']+)["']/i.exec(attrs);
-      if (hrefMatch) {
-        const href = hrefMatch[1];
-        const title = content
+    const hrefMatch = /href=["']([^"']+)["']/i.exec(attrs);
+    if (hrefMatch) {
+      const href = hrefMatch[1];
+      
+      // Match job links and exclude the "See More" links
+      if (href.includes("/jobseekers/job/") && !content.includes("See More")) {
+        const titleMatch = /<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i.exec(content);
+        
+        let titleText = content;
+        if (titleMatch) {
+          titleText = titleMatch[1];
+        }
+
+        const title = titleText
           .replace(/<[^>]*>/g, "") // remove nested html
           .replace(/\s+/g, " ")    // collapse whitespaces
           .trim();

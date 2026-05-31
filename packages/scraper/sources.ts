@@ -68,20 +68,11 @@ export const sources: Source[] = [
   {
     id: "onlinejobs-ph",
     name: "OnlineJobs.ph",
-    url: "https://www.onlinejobs.ph/jobseekers/joblist",
+    url: "https://www.onlinejobs.ph/jobseekers/jobsearch",
     type: "html",
     platform: "OnlineJobsPH",
     defaultJobType: "VA",
     tags: ["VA", "filipino", "remote", "admin"],
-  },
-  {
-    id: "working-nomads",
-    name: "Working Nomads",
-    url: "https://www.workingnomads.com/jobsfeed",
-    type: "rss",
-    platform: "WorkingNomads",
-    defaultJobType: "full-time",
-    tags: ["remote", "tech", "design", "marketing"],
   },
   {
     id: "jobspresso",

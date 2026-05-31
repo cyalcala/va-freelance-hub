@@ -1,5 +1,5 @@
 import { schedules } from "@trigger.dev/sdk/v3";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db, opportunities } from "@va-hub/db";
 import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource } from "@va-hub/scraper";
 
@@ -21,20 +21,35 @@ export const scrapeOpportunitiesTask = schedules.task({
 
     if (allItems.length === 0) return { inserted: 0, skipped: 0 };
 
-    const existingUrls = new Set(
-      (await db.select({ sourceUrl: opportunities.sourceUrl }).from(opportunities))
-        .map((r) => r.sourceUrl)
-        .filter(Boolean)
-    );
-
-    const newItems = allItems.filter((item) => item.sourceUrl && !existingUrls.has(item.sourceUrl));
-    console.log(`[scrape] ${newItems.length} new after URL dedup`);
+    const newItems = allItems.filter((item) => item.sourceUrl);
+    console.log(`[scrape] ${newItems.length} valid items to process`);
 
     let inserted = 0;
     for (let i = 0; i < newItems.length; i += 50) {
       try {
-        await db.insert(opportunities).values(newItems.slice(i, i + 50)).onConflictDoNothing();
-        inserted += Math.min(50, newItems.length - i);
+        const batch = newItems.slice(i, i + 50);
+        await db
+          .insert(opportunities)
+          .values(batch)
+          .onConflictDoUpdate({
+            target: opportunities.sourceUrl,
+            set: {
+              lastSeenInFeedAt: sql`(datetime('now'))`,
+              updatedAt: sql`case when excluded.content_hash != opportunities.content_hash then (datetime('now')) else opportunities.updated_at end`,
+              title: sql`excluded.title`,
+              description: sql`excluded.description`,
+              company: sql`excluded.company`,
+              type: sql`excluded.type`,
+              sourcePlatform: sql`excluded.source_platform`,
+              tags: sql`excluded.tags`,
+              locationType: sql`excluded.location_type`,
+              payRange: sql`excluded.pay_range`,
+              contentHash: sql`excluded.content_hash`,
+              isActive: sql`1`,
+              failedVerificationCount: sql`0`,
+            },
+          });
+        inserted += batch.length;
       } catch (err) {
         console.error("[scrape] Batch failed:", err);
       }
