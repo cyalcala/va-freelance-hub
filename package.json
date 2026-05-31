@@ -4,8 +4,7 @@
   "version": "0.1.0",
   "workspaces": [
     "apps/*",
-    "packages/*",
-    "jobs"
+    "packages/*"
   ],
   "scripts": {
     "dev": "bun run --cwd apps/web dev",
