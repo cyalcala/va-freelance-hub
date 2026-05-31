@@ -131,11 +131,11 @@ Requirements for output JSON schema:
   "reason": "string", // Brief explanation of eligibility or location rules.
   "category": "admin" | "creative" | "tech" | "social-media" | "customer-support" | "finance" | "other", // Pick the most relevant.
   "tags": ["string"], // Array of 2 to 4 technical skills or tools needed.
-  "payRange": "string", // Extract pay rate (e.g. "$15 - $20/hr" or "$3000/mo") if mentioned, else null.
-  "clientTimezone": "string", // The timezone or region the client requires (e.g. "EST", "AEST", "Australian Dayshift"), else null.
+  "payRange": "string", // ONLY extract if explicitly stated in text, otherwise return null. Do NOT guess.
+  "clientTimezone": "string", // ONLY extract if explicitly stated (e.g. "EST", "AEST", "Australian Dayshift"), otherwise return null. Do NOT guess.
   "applicationUrl": "string", // Direct email address or apply link found within the description text, else null.
   "employmentType": "full-time" | "part-time" | "contract" | "freelance" | null, // Extract the type of employment if mentioned.
-  "companyName": "string" // Extract the name of the hiring company if mentioned in the description, else null.
+  "companyName": "string" // Extract the name of the hiring company if explicitly mentioned in the description, otherwise return null.
 }
 
 Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not write any conversational text.

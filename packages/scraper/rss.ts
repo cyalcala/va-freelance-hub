@@ -23,8 +23,12 @@ interface RawRSSItem {
 
 function normalizeText(raw: string | undefined): string {
   if (!raw) return "";
-  // Strip HTML tags for plain text
-  return raw.replace(/<[^>]*>/g, "").trim();
+  // Strip both raw HTML tags and encoded HTML tags (common in RSS) for plain text
+  return raw
+    .replace(/&lt;[^&]*&gt;/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function toContentHash(title: string, sourceUrl: string): string {
@@ -104,9 +108,21 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
 
       const rawDate = item.pubDate ?? item.published;
 
+      let finalTitle = title;
+      let extractedCompany = normalizeText(item["dc:creator"] ?? item.author) || null;
+
+      // Pre-process missing company names from "Company: Job Title" format (e.g. WeWorkRemotely)
+      if (!extractedCompany && finalTitle.includes(":")) {
+        const parts = finalTitle.split(":");
+        if (parts[0].length < 40) { // Safety check to ensure it's actually a company name
+          extractedCompany = parts[0].trim();
+          finalTitle = parts.slice(1).join(":").trim();
+        }
+      }
+
       return {
-        title,
-        company: normalizeText(item["dc:creator"] ?? item.author) || null,
+        title: finalTitle,
+        company: extractedCompany,
         type: source.defaultJobType,
         sourceUrl,
         sourcePlatform: source.platform,
@@ -116,7 +132,7 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
         description: normalizeText(item.description).slice(0, 500) || null,
         postedAt: normalizeDate(rawDate),
         isActive: true,
-        contentHash: toContentHash(title, sourceUrl),
+        contentHash: toContentHash(finalTitle, sourceUrl),
       } satisfies NewOpportunity;
     });
 
