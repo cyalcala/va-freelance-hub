@@ -133,74 +133,90 @@ Requirements for output JSON schema:
 Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not write any conversational text.
   `.trim();
 
-  try {
-    const response = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
-      messages: [
-        {
-          role: "system",
-          content: "You are a precise JSON generator. Output only valid JSON objects.",
-        },
-        { role: "user", content: prompt },
-      ],
-      // We parse the string response. Cloudflare Workers AI also supports JSON mode.
-    });
+  const modelsToTry = env?.AI_MODEL
+    ? [env.AI_MODEL]
+    : [
+        "@cf/meta/llama-3.1-8b-instruct",
+        "@cf/meta/llama-3-8b-instruct",
+        "@cf/mistral/mistral-7b-instruct-v0.1"
+      ];
 
-    let jsonText = "";
-    if (typeof response === "string") {
-      jsonText = response;
-    } else if (response && response.response) {
-      jsonText = response.response;
-    } else if (response && response.text) {
-      jsonText = response.text;
-    } else {
-      jsonText = JSON.stringify(response);
-    }
+  let lastError: Error | null = null;
 
-    // Clean up markdown wrapper if LLM returned it anyway
-    jsonText = jsonText.trim();
-    if (jsonText.startsWith("```json")) {
-      jsonText = jsonText.slice(7);
-    }
-    if (jsonText.startsWith("```")) {
-      jsonText = jsonText.slice(3);
-    }
-    if (jsonText.endsWith("```")) {
-      jsonText = jsonText.slice(0, -3);
-    }
-    jsonText = jsonText.trim();
+  for (const model of modelsToTry) {
+    try {
+      const response = await env.AI.run(model, {
+        messages: [
+          {
+            role: "system",
+            content: "You are a precise JSON generator. Output only valid JSON objects.",
+          },
+          { role: "user", content: prompt },
+        ],
+        // We parse the string response. Cloudflare Workers AI also supports JSON mode.
+      });
 
-    const parsed: TriageResult = JSON.parse(jsonText);
-    
-    // Validate fields and provide safe fallbacks
-    return {
-      eligibleForFilipinos: typeof parsed.eligibleForFilipinos === "boolean" ? parsed.eligibleForFilipinos : true,
-      reason: parsed.reason || "AI classified",
-      category: [
-        "admin",
-        "creative",
-        "tech",
-        "social-media",
-        "customer-support",
-        "finance",
-        "other",
-      ].includes(parsed.category)
-        ? parsed.category
-        : "other",
-      tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
-      payRange: typeof parsed.payRange === "string" ? parsed.payRange : null,
-      clientTimezone: typeof parsed.clientTimezone === "string" ? parsed.clientTimezone : null,
-      applicationUrl: typeof parsed.applicationUrl === "string" ? parsed.applicationUrl : null,
-    };
-  } catch (error) {
-    console.error(`[triage] Workers AI call failed for "${title}":`, error);
-    return {
-      eligibleForFilipinos: true,
-      reason: `Workers AI error fallback: ${(error as Error).message}`,
-      category: "other",
-      tags: ["remote"],
-      payRange: null,
-      clientTimezone: null,
-      applicationUrl: null,
-    };
+      let jsonText = "";
+      if (typeof response === "string") {
+        jsonText = response;
+      } else if (response && response.response) {
+        jsonText = response.response;
+      } else if (response && response.text) {
+        jsonText = response.text;
+      } else {
+        jsonText = JSON.stringify(response);
+      }
+
+      // Clean up markdown wrapper if LLM returned it anyway
+      jsonText = jsonText.trim();
+      if (jsonText.startsWith("```json")) {
+        jsonText = jsonText.slice(7);
+      }
+      if (jsonText.startsWith("```")) {
+        jsonText = jsonText.slice(3);
+      }
+      if (jsonText.endsWith("```")) {
+        jsonText = jsonText.slice(0, -3);
+      }
+      jsonText = jsonText.trim();
+
+      const parsed: TriageResult = JSON.parse(jsonText);
+      
+      // Validate fields and provide safe fallbacks
+      return {
+        eligibleForFilipinos: typeof parsed.eligibleForFilipinos === "boolean" ? parsed.eligibleForFilipinos : true,
+        reason: parsed.reason || "AI classified",
+        category: [
+          "admin",
+          "creative",
+          "tech",
+          "social-media",
+          "customer-support",
+          "finance",
+          "other",
+        ].includes(parsed.category)
+          ? parsed.category
+          : "other",
+        tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
+        payRange: typeof parsed.payRange === "string" ? parsed.payRange : null,
+        clientTimezone: typeof parsed.clientTimezone === "string" ? parsed.clientTimezone : null,
+        applicationUrl: typeof parsed.applicationUrl === "string" ? parsed.applicationUrl : null,
+      };
+    } catch (error) {
+      console.warn(`[triage] Workers AI model ${model} failed for "${title}":`, error);
+      lastError = error as Error;
+      // Continue to the next fallback model
+    }
   }
+
+  console.error(`[triage] ALL Workers AI models failed for "${title}". Last error:`, lastError);
+  return {
+    eligibleForFilipinos: true,
+    reason: `Workers AI error fallback (all models failed): ${lastError?.message}`,
+    category: "other",
+    tags: ["remote"],
+    payRange: null,
+    clientTimezone: null,
+    applicationUrl: null,
+  };
 }
