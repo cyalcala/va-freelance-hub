@@ -29,5 +29,5 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          bunx wrangler d1 execute remoteph-jobs-db --remote --file=../../packages/db/migrations/0010_thankful_shadowcat.sql || true
-          bunx wrangler d1 migrations apply remoteph-jobs-db --remote --mark-applied
+          bunx wrangler d1 execute remoteph-jobs-db --remote --file=../../packages/db/sync_migrations.sql
+          bunx wrangler d1 migrations apply remoteph-jobs-db --remote
