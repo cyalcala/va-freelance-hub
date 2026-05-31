@@ -5,7 +5,9 @@
     "jsxImportSource": "react",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@va-hub/*": ["../../packages/*"]
     }
-  }
+  },
+  "exclude": ["dist", "node_modules", ".astro"]
 }
