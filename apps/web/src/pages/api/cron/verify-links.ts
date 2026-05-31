@@ -2,6 +2,8 @@ import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { eq, sql, inArray, asc } from "drizzle-orm";
 
+export const prerender = false;
+
 export const POST: APIRoute = async ({ request, locals }) => {
   console.log("[api/cron/verify-links] Starting verification...");
   
@@ -9,9 +11,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const db = getDb(env);
 
   // Authorization Check
-  const secret = request.headers.get("x-cron-secret");
-  const expectedSecret = env?.CRON_SECRET || process.env.CRON_SECRET;
-  if (expectedSecret && secret !== expectedSecret) {
+  const authHeader = request.headers.get("Authorization");
+  const proxySecret = env?.PROXY_SECRET;
+  if (!proxySecret || authHeader !== `Bearer ${proxySecret}`) {
     console.warn("[api/cron/verify-links] Unauthorized access attempt");
     return new Response("Unauthorized", { status: 401 });
   }

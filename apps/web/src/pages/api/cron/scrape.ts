@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, vaDirectory } from "@va-hub/db";
-import { isNotNull, and } from "drizzle-orm";
+import { isNotNull, and, inArray, sql } from "drizzle-orm";
+
+export const prerender = false;
 import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
@@ -43,10 +45,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
   }
 
-  // 2. Authorization Check (Header-Only)
-  const secret = request.headers.get("x-cron-secret");
-  const expectedSecret = env?.CRON_SECRET || process.env?.CRON_SECRET;
-  if (!secret || (expectedSecret && secret !== expectedSecret)) {
+  // 2. Authorization Check
+  const authHeader = request.headers.get("Authorization");
+  const proxySecret = env?.PROXY_SECRET;
+  if (!proxySecret || authHeader !== `Bearer ${proxySecret}`) {
     console.warn("[api/cron/scrape] Unauthorized access attempt");
     return new Response("Unauthorized", { status: 401 });
   }
@@ -113,12 +115,29 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
-    // 4. De-duplicate against existing database entries by source URL
-    const existingUrls = new Set(
-      (await db.select({ sourceUrl: opportunities.sourceUrl }).from(opportunities))
-        .map((r: any) => r.sourceUrl)
-        .filter(Boolean)
-    );
+    // 4. De-duplicate against existing database entries by source URL (batch check, not full-table scan)
+    const allScrapedUrls = allItems.map(item => item.sourceUrl).filter(Boolean);
+    const BATCH_SIZE = 50;
+    const existingUrls = new Set<string>();
+    for (let i = 0; i < allScrapedUrls.length; i += BATCH_SIZE) {
+      const batch = allScrapedUrls.slice(i, i + BATCH_SIZE);
+      const found = await db.select({ sourceUrl: opportunities.sourceUrl })
+        .from(opportunities)
+        .where(inArray(opportunities.sourceUrl, batch));
+      found.forEach((r: any) => existingUrls.add(r.sourceUrl));
+    }
+
+    // Update lastSeenInFeedAt for jobs still in feeds (prevents false stale archiving)
+    if (existingUrls.size > 0) {
+      const existingUrlArray = Array.from(existingUrls);
+      for (let i = 0; i < existingUrlArray.length; i += BATCH_SIZE) {
+        const batch = existingUrlArray.slice(i, i + BATCH_SIZE);
+        await db.update(opportunities)
+          .set({ lastSeenInFeedAt: sql`(datetime('now'))` })
+          .where(inArray(opportunities.sourceUrl, batch));
+      }
+      console.log(`[api/cron/scrape] Updated lastSeenInFeedAt for ${existingUrls.size} existing jobs`);
+    }
 
     const newItems = allItems.filter((item) => item.sourceUrl && !existingUrls.has(item.sourceUrl));
     console.log(`[api/cron/scrape] ${newItems.length} new items found after URL dedup`);
@@ -230,7 +249,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       backlogRemaining: newItems.length - itemsToProcess.length,
       skipped: allItems.length - inserted,
       failedSources,
-      triagedItems,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);

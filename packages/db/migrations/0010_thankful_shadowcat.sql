@@ -1,0 +1,1 @@
+CREATE INDEX `description_hash_idx` ON `opportunities` (`description_hash`);

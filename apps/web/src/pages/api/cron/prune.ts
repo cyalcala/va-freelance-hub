@@ -41,7 +41,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       WHERE \`id\` NOT IN (
         SELECT MIN(\`id\`)
         FROM \`opportunities\`
-        GROUP BY \`url\`
+        GROUP BY \`source_url\`
       )
     `);
 

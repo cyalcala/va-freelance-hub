@@ -44,6 +44,7 @@ export const opportunities = sqliteTable("opportunities", {
   lastVerifiedIdx: index("last_verified_idx").on(table.lastVerifiedAt),
   contentHashIdx: uniqueIndex("content_hash_idx").on(table.contentHash),
   categoryIdx: index("category_idx").on(table.category),
+  descriptionHashIdx: index("description_hash_idx").on(table.descriptionHash),
 }));
 
 // ─── VA Directory ─────────────────────────────────────────────────────────────
