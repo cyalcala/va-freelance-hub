@@ -1,0 +1,32 @@
+name: 🚀 Deploy Database Migrations
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/db/migrations/**'
+
+jobs:
+  migrate:
+    name: Apply D1 Migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🛑 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: 🥟 Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 📦 Install Dependencies
+        run: bun install
+
+      - name: 🚀 Apply D1 Migrations to Production
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply remoteph-jobs-db --remote
+          workingDirectory: apps/web-nextjs-backup

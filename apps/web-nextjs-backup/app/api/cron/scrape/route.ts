@@ -106,6 +106,8 @@ export async function POST(request: Request) {
             payRange: triage.payRange,
             clientTimezone: triage.clientTimezone,
             applicationUrl: triage.applicationUrl,
+            type: triage.employmentType || item.type,
+            company: triage.companyName || item.company,
           };
         })
       );

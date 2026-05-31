@@ -5,6 +5,8 @@ export interface TriageResult {
   payRange: string | null;
   clientTimezone: string | null;
   applicationUrl: string | null;
+  employmentType: "full-time" | "part-time" | "contract" | "freelance" | null;
+  companyName: string | null;
 }
 
 // Simple regex list for obvious geo-exclusion checks before running LLM (saves tokens)
@@ -69,6 +71,8 @@ export async function triageJob(
       payRange: null,
       clientTimezone: null,
       applicationUrl: null,
+      employmentType: null,
+      companyName: null,
     };
   }
 
@@ -107,6 +111,8 @@ export async function triageJob(
       payRange: null,
       clientTimezone: null,
       applicationUrl: null,
+      employmentType: null,
+      companyName: null,
     };
   }
 
@@ -127,7 +133,9 @@ Requirements for output JSON schema:
   "tags": ["string"], // Array of 2 to 4 technical skills or tools needed.
   "payRange": "string", // Extract pay rate (e.g. "$15 - $20/hr" or "$3000/mo") if mentioned, else null.
   "clientTimezone": "string", // The timezone or region the client requires (e.g. "EST", "AEST", "Australian Dayshift"), else null.
-  "applicationUrl": "string" // Direct email address or apply link found within the description text, else null.
+  "applicationUrl": "string", // Direct email address or apply link found within the description text, else null.
+  "employmentType": "full-time" | "part-time" | "contract" | "freelance" | null, // Extract the type of employment if mentioned.
+  "companyName": "string" // Extract the name of the hiring company if mentioned in the description, else null.
 }
 
 Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not write any conversational text.
@@ -201,6 +209,8 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
         payRange: typeof parsed.payRange === "string" ? parsed.payRange : null,
         clientTimezone: typeof parsed.clientTimezone === "string" ? parsed.clientTimezone : null,
         applicationUrl: typeof parsed.applicationUrl === "string" ? parsed.applicationUrl : null,
+        employmentType: ["full-time", "part-time", "contract", "freelance"].includes(parsed.employmentType as any) ? parsed.employmentType : null,
+        companyName: typeof parsed.companyName === "string" ? parsed.companyName : null,
       };
     } catch (error) {
       console.warn(`[triage] Workers AI model ${model} failed for "${title}":`, error);
@@ -218,5 +228,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
     payRange: null,
     clientTimezone: null,
     applicationUrl: null,
+    employmentType: null,
+    companyName: null,
   };
 }
