@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb, opportunities } from "@va-hub/db";
+import { inArray, sql } from "drizzle-orm";
 import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, triageJob } from "@va-hub/scraper";
 
 export async function POST(request: Request) {
@@ -36,6 +37,24 @@ export async function POST(request: Request) {
     const existingHashes = new Set(
       (await db.select({ hash: opportunities.contentHash }).from(opportunities)).map((r: any) => r.hash)
     );
+
+    const allFoundHashes = allItems.map(i => i.contentHash).filter(Boolean) as string[];
+    const hashesToUpdate = allFoundHashes.filter(h => existingHashes.has(h));
+    
+    // Fix Staleness: Update lastSeenInFeedAt for existing jobs so they aren't auto-archived
+    if (hashesToUpdate.length > 0) {
+      for (let i = 0; i < hashesToUpdate.length; i += 100) {
+        const batchHashes = hashesToUpdate.slice(i, i + 100);
+        await db.update(opportunities)
+          .set({ 
+            lastSeenInFeedAt: sql`(datetime('now'))`, 
+            isActive: true, 
+            failedVerificationCount: 0 
+          })
+          .where(inArray(opportunities.contentHash, batchHashes));
+      }
+      console.log(`[api/cron/scrape] Updated lastSeenInFeedAt for ${hashesToUpdate.length} existing items`);
+    }
 
     const newItems = allItems.filter((item) => item.contentHash && !existingHashes.has(item.contentHash));
     console.log(`[api/cron/scrape] ${newItems.length} new items found after hash dedup`);

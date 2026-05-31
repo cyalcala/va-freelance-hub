@@ -1,9 +1,0 @@
-{
-  "name": "@va-hub/jobs",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "@trigger.dev/sdk": "4.4.3"
-  }
-}

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb, opportunities } from "@va-hub/db";
-import { eq } from "drizzle-orm";
+import { eq, sql, inArray } from "drizzle-orm";
 
 export async function POST(request: Request) {
   console.log("[api/cron/verify-links] Starting verification...");
@@ -18,8 +18,25 @@ export async function POST(request: Request) {
   }
 
   try {
+    // 1. Auto-archive stale jobs that haven't been seen in feeds for 30 days
+    const stale = await db.select({ id: opportunities.id })
+      .from(opportunities)
+      .where(sql`${opportunities.isActive} = 1 AND COALESCE(${opportunities.lastSeenInFeedAt}, ${opportunities.scrapedAt}) < datetime('now', '-30 days')`);
+      
+    if (stale.length > 0) {
+      await db.update(opportunities)
+        .set({ isActive: false })
+        .where(inArray(opportunities.id, stale.map(s => s.id)));
+      console.log(`[api/cron/verify-links] Auto-archived ${stale.length} stale jobs older than 30 days`);
+    }
+
+    // 2. Verify remaining active links
     const active = await db
-      .select({ id: opportunities.id, sourceUrl: opportunities.sourceUrl })
+      .select({ 
+        id: opportunities.id, 
+        sourceUrl: opportunities.sourceUrl,
+        failedCount: opportunities.failedVerificationCount
+      })
       .from(opportunities)
       .where(eq(opportunities.isActive, true));
 
@@ -30,7 +47,7 @@ export async function POST(request: Request) {
     for (let i = 0; i < active.length; i += 10) {
       const batch = active.slice(i, i + 10);
       const results = await Promise.allSettled(
-        batch.map(async ({ id, sourceUrl }) => {
+        batch.map(async ({ id, sourceUrl, failedCount }) => {
           try {
             const res = await fetch(sourceUrl, {
               method: "HEAD",
@@ -41,10 +58,19 @@ export async function POST(request: Request) {
               redirect: "follow",
             });
             
-            if (res.status === 404 || res.status === 410) {
-              await db.update(opportunities).set({ isActive: false }).where(eq(opportunities.id, id));
-              console.log(`[api/cron/verify-links] Deactivated: ${sourceUrl}`);
-              return 1;
+            if (res.status === 404 || res.status === 410 || res.status === 403 || res.status === 401) {
+              const newFailCount = (failedCount || 0) + 1;
+              if (newFailCount >= 3) {
+                await db.update(opportunities).set({ isActive: false }).where(eq(opportunities.id, id));
+                console.log(`[api/cron/verify-links] Deactivated: ${sourceUrl} (failed 3 times)`);
+                return 1;
+              } else {
+                await db.update(opportunities).set({ failedVerificationCount: newFailCount }).where(eq(opportunities.id, id));
+                console.log(`[api/cron/verify-links] Transient error (${res.status}): ${sourceUrl} (strike ${newFailCount})`);
+              }
+            } else if (failedCount && failedCount > 0) {
+              // Reset on success
+              await db.update(opportunities).set({ failedVerificationCount: 0 }).where(eq(opportunities.id, id));
             }
           } catch (err) {
             // Log warning but don't deactivate on network issues or timeouts to avoid false positives
@@ -57,8 +83,8 @@ export async function POST(request: Request) {
       deactivated += results.reduce((sum, r) => (r.status === "fulfilled" ? sum + r.value : sum), 0);
     }
 
-    console.log(`[api/cron/verify-links] Completed. Checked ${active.length}, deactivated ${deactivated} dead links.`);
-    return NextResponse.json({ checked: active.length, deactivated });
+    console.log(`[api/cron/verify-links] Completed. Checked ${active.length}, auto-archived ${stale.length}, deactivated ${deactivated} dead links.`);
+    return NextResponse.json({ checked: active.length, autoArchived: stale.length, deactivated });
   } catch (error) {
     console.error("[api/cron/verify-links] Error during link verification:", error);
     return NextResponse.json({ error: (error as Error).message }, { status: 500 });
