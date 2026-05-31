@@ -27,7 +27,7 @@ function toContentHash(title: string, sourceUrl: string): string {
  * Pure TypeScript parser that matches OnlineJobs.ph HTML list structure.
  * Extract job listings by finding links with class/id containing "job_title".
  */
-function parseHtmlWithTS(html: string): ParsedJobItem[] {
+function parseHtmlWithTS(html: string, source: Source): ParsedJobItem[] {
   const items: ParsedJobItem[] = [];
   const tagRegex = /<a([^>]+)>([\s\S]*?)<\/a>/gi;
   let match;
@@ -80,7 +80,7 @@ function parseHtmlWithTS(html: string): ParsedJobItem[] {
     // Fallback: match any link that contains 'job' in the href and has some content text
     const fallbackRegex = /<a[^>]+href=["']([^"']*\/job[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
     let fallbackMatch;
-    while ((fallbackMatch = fallbackRegex.exec(htmlText)) !== null) {
+    while ((fallbackMatch = fallbackRegex.exec(html)) !== null) {
       const href = fallbackMatch[1];
       const content = fallbackMatch[2];
       
@@ -129,7 +129,7 @@ export async function fetchHTMLSource(source: Source): Promise<NewOpportunity[]>
     throw new Error(`[html] Failed to fetch ${source.name}: ${(err as Error).message}`);
   }
 
-  const parsed = parseHtmlWithTS(html);
+  const parsed = parseHtmlWithTS(html, source);
 
   const opportunities: NewOpportunity[] = parsed
     .filter((item) => item.title && item.url)
