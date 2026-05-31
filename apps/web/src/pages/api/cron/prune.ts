@@ -9,9 +9,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const env = locals.runtime?.env ?? (import.meta as any).env;
 
     const authHeader = request.headers.get("Authorization");
-    const proxySecret = env.PROXY_SECRET;
+    const cronSecretHeader = request.headers.get("x-cron-secret");
+    const proxySecret = env.PROXY_SECRET || env.CRON_SECRET;
+    const providedSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cronSecretHeader;
 
-    if (!proxySecret || authHeader !== `Bearer ${proxySecret}`) {
+    if (!proxySecret || !providedSecret || providedSecret !== proxySecret) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 

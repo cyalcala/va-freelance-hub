@@ -45,10 +45,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
   }
 
-  // 2. Authorization Check
+  // 2. Authorization Check — supports both header formats and env var names for compatibility
+  const proxySecret = env?.PROXY_SECRET || env?.CRON_SECRET;
   const authHeader = request.headers.get("Authorization");
-  const proxySecret = env?.PROXY_SECRET;
-  if (!proxySecret || authHeader !== `Bearer ${proxySecret}`) {
+  const cronSecretHeader = request.headers.get("x-cron-secret");
+  const providedSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cronSecretHeader;
+  if (!proxySecret || !providedSecret || providedSecret !== proxySecret) {
     console.warn("[api/cron/scrape] Unauthorized access attempt");
     return new Response("Unauthorized", { status: 401 });
   }

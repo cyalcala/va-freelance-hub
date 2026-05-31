@@ -1,1 +1,1 @@
-CREATE INDEX `description_hash_idx` ON `opportunities` (`description_hash`);
+CREATE INDEX IF NOT EXISTS `description_hash_idx` ON `opportunities` (`description_hash`);

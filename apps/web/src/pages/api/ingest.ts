@@ -27,14 +27,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const authHeader = request.headers.get("Authorization");
-    const proxySecret = env?.PROXY_SECRET;
+    const cronSecretHeader = request.headers.get("x-cron-secret");
+    const proxySecret = env?.PROXY_SECRET || env?.CRON_SECRET;
 
     if (!proxySecret) {
-      console.error("PROXY_SECRET not configured in environment");
+      console.error("PROXY_SECRET/CRON_SECRET not configured in environment");
       return new Response(JSON.stringify({ error: "Server misconfiguration" }), { status: 500 });
     }
 
-    if (authHeader !== `Bearer ${proxySecret}`) {
+    const providedSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cronSecretHeader;
+    if (!providedSecret || providedSecret !== proxySecret) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 

@@ -43,30 +43,39 @@ jobs:
         run: |
           TOTAL=0
           BACKLOG=1
+          MAX_LOOPS=10
+          LOOP_COUNT=0
           
           echo "{}" > harvest.log
           
-          while [ "$BACKLOG" -gt 0 ]; do
-            echo "Calling Scraper API..."
-            curl -f -X POST "$SCRAPE_API_URL" \
+          while [ "$BACKLOG" -gt 0 ] && [ "$LOOP_COUNT" -lt "$MAX_LOOPS" ]; do
+            LOOP_COUNT=$((LOOP_COUNT + 1))
+            echo "=== Batch $LOOP_COUNT ==="
+            
+            HTTP_CODE=$(curl -s -w "%{http_code}" -o temp_harvest.log -X POST "$SCRAPE_API_URL" \
               -H "Authorization: Bearer $PROXY_SECRET" \
-              -H "Content-Type: application/json" \
-              -s > temp_harvest.log || {
-                echo "::error::Scraper API failed!"
-                cat temp_harvest.log
-                exit 1
-              }
+              -H "x-cron-secret: $PROXY_SECRET" \
+              -H "Content-Type: application/json")
+            
+            echo "HTTP Status: $HTTP_CODE"
+            cat temp_harvest.log
+            echo ""
+            
+            if [ "$HTTP_CODE" -ge 400 ]; then
+              echo "::error::Scraper API returned HTTP $HTTP_CODE"
+              exit 1
+            fi
             
             mv temp_harvest.log harvest.log
-            cat harvest.log
             
             NEW_INSERTED=$(jq -r '.inserted // 0' harvest.log)
             BACKLOG=$(jq -r '.backlogRemaining // 0' harvest.log)
             
             TOTAL=$((TOTAL + NEW_INSERTED))
+            echo "Inserted this batch: $NEW_INSERTED, Total: $TOTAL, Backlog: $BACKLOG"
             
             if [ "$BACKLOG" -gt 0 ]; then
-              echo "Backlog remaining: $BACKLOG. Sleeping for 2 seconds before next batch..."
+              echo "Sleeping 2s before next batch..."
               sleep 2
             fi
           done
