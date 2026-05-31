@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb, opportunities } from "@va-hub/db";
-import { eq, sql, inArray } from "drizzle-orm";
+import { eq, sql, inArray, asc } from "drizzle-orm";
 
 export async function POST(request: Request) {
   console.log("[api/cron/verify-links] Starting verification...");
@@ -38,9 +38,11 @@ export async function POST(request: Request) {
         failedCount: opportunities.failedVerificationCount
       })
       .from(opportunities)
-      .where(eq(opportunities.isActive, true));
+      .where(eq(opportunities.isActive, true))
+      .orderBy(asc(opportunities.lastVerifiedAt))
+      .limit(50);
 
-    console.log(`[api/cron/verify-links] Checking ${active.length} links...`);
+    console.log(`[api/cron/verify-links] Checking ${active.length} oldest unverified links...`);
     let deactivated = 0;
 
     // Check in batches of 10
@@ -61,16 +63,16 @@ export async function POST(request: Request) {
             if (res.status === 404 || res.status === 410 || res.status === 403 || res.status === 401) {
               const newFailCount = (failedCount || 0) + 1;
               if (newFailCount >= 3) {
-                await db.update(opportunities).set({ isActive: false }).where(eq(opportunities.id, id));
+                await db.update(opportunities).set({ isActive: false, lastVerifiedAt: sql`(datetime('now'))` }).where(eq(opportunities.id, id));
                 console.log(`[api/cron/verify-links] Deactivated: ${sourceUrl} (failed 3 times)`);
                 return 1;
               } else {
-                await db.update(opportunities).set({ failedVerificationCount: newFailCount }).where(eq(opportunities.id, id));
+                await db.update(opportunities).set({ failedVerificationCount: newFailCount, lastVerifiedAt: sql`(datetime('now'))` }).where(eq(opportunities.id, id));
                 console.log(`[api/cron/verify-links] Transient error (${res.status}): ${sourceUrl} (strike ${newFailCount})`);
               }
-            } else if (failedCount && failedCount > 0) {
-              // Reset on success
-              await db.update(opportunities).set({ failedVerificationCount: 0 }).where(eq(opportunities.id, id));
+            } else {
+              // Success! Reset fail count and update verified timestamp
+              await db.update(opportunities).set({ failedVerificationCount: 0, lastVerifiedAt: sql`(datetime('now'))` }).where(eq(opportunities.id, id));
             }
           } catch (err) {
             // Log warning but don't deactivate on network issues or timeouts to avoid false positives

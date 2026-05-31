@@ -43,6 +43,16 @@ export function OpportunityCard({ opportunity: opp }: Props) {
         <span className="text-[10px] font-mono px-2 py-0.5 rounded-full text-zinc-400 bg-zinc-400/10">
           {typeLabel}
         </span>
+        {opp.clientTimezone && (
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full text-blue-400 bg-blue-400/10 border border-blue-400/20">
+            🕒 {opp.clientTimezone}
+          </span>
+        )}
+        {opp.payRange && (
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full text-green-400 bg-green-400/10 border border-green-400/20">
+            💰 {opp.payRange}
+          </span>
+        )}
       </div>
 
       {/* Title */}
@@ -75,12 +85,12 @@ export function OpportunityCard({ opportunity: opp }: Props) {
           <span className="text-[10px] font-mono text-zinc-600">{postedDate}</span>
         )}
         <a
-          href={opp.sourceUrl}
+          href={opp.applicationUrl || opp.sourceUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-auto text-xs text-accent hover:text-accent-hover transition-colors font-medium"
+          className="ml-auto text-xs text-accent hover:text-accent-hover transition-colors font-medium flex items-center gap-1"
         >
-          Apply →
+          {opp.applicationUrl ? "Direct Apply" : "Apply"} →
         </a>
       </div>
     </div>

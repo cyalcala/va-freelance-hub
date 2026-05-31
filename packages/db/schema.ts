@@ -33,9 +33,11 @@ export const opportunities = sqliteTable("opportunities", {
   contentHash: text("content_hash").notNull(), // sha256 of title+sourceUrl for dedup
   updatedAt: text("updated_at"),
   lastSeenInFeedAt: text("last_seen_in_feed_at"),
+  lastVerifiedAt: text("last_verified_at"),
   failedVerificationCount: integer("failed_verification_count").notNull().default(0),
 }, (table) => ({
   activeScrapedIdx: index("active_scraped_idx").on(table.isActive, table.scrapedAt),
+  lastVerifiedIdx: index("last_verified_idx").on(table.lastVerifiedAt),
   contentHashIdx: uniqueIndex("content_hash_idx").on(table.contentHash),
 }));
 
