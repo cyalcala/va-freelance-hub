@@ -1,12 +1,8 @@
-import { schedules } from "@trigger.dev/sdk/v3";
+
 import { eq, sql } from "drizzle-orm";
 import { db, opportunities } from "@va-hub/db";
 
-export const verifyLinksTask = schedules.task({
-  id: "verify-links",
-  cron: "0 6 * * *",
-  maxDuration: 300,
-  run: async () => {
+export async function verifyLinks() {
     const stale = await db.select({ id: opportunities.id })
       .from(opportunities)
       .where(sql`${opportunities.isActive} = 1 AND COALESCE(${opportunities.lastSeenInFeedAt}, ${opportunities.scrapedAt}) < datetime('now', '-30 days')`);
@@ -82,5 +78,4 @@ export const verifyLinksTask = schedules.task({
 
     console.log(`[verify-links] Deactivated ${deactivated}`);
     return { checked: active.length, autoArchived: stale.length, deactivated };
-  },
-});
+}

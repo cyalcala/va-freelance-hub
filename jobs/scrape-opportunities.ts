@@ -1,20 +1,35 @@
-import { schedules } from "@trigger.dev/sdk/v3";
+
 import { eq, sql } from "drizzle-orm";
 import { db, opportunities } from "@va-hub/db";
 import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource } from "@va-hub/scraper";
+import { sendAlert } from "./alert";
 
-export const scrapeOpportunitiesTask = schedules.task({
-  id: "scrape-opportunities",
-  cron: "0 */2 * * *",
-  maxDuration: 120,
-  run: async () => {
+export async function scrapeOpportunities() {
     console.log("[scrape] Starting opportunity scrape...");
 
     const rssResults = await Promise.allSettled(rssSources.map(fetchRSSFeed));
-    const rssItems = rssResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+    const rssItems = rssResults.flatMap((r, index) => {
+      if (r.status === "fulfilled") {
+        if (r.value.length === 0) {
+          sendAlert(`⚠️ RSS Source ${rssSources[index].name} returned 0 items. It might be broken or the URL changed.`);
+        }
+        return r.value;
+      }
+      sendAlert(`❌ RSS Source ${rssSources[index].name} failed to fetch: ${r.reason}`);
+      return [];
+    });
 
     const htmlResults = await Promise.allSettled(htmlSources.map(fetchHTMLSource));
-    const htmlItems = htmlResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+    const htmlItems = htmlResults.flatMap((r, index) => {
+      if (r.status === "fulfilled") {
+        if (r.value.length === 0) {
+          sendAlert(`⚠️ HTML Source ${htmlSources[index].name} returned 0 items. The site layout or URL likely changed.`);
+        }
+        return r.value;
+      }
+      sendAlert(`❌ HTML Source ${htmlSources[index].name} failed to fetch: ${r.reason}`);
+      return [];
+    });
 
     const allItems = [...rssItems, ...htmlItems];
     console.log(`[scrape] Fetched ${allItems.length} items (${rssItems.length} RSS, ${htmlItems.length} HTML)`);
@@ -58,8 +73,7 @@ export const scrapeOpportunitiesTask = schedules.task({
     if (inserted > 0) await revalidate();
     console.log(`[scrape] Done. Inserted ${inserted}`);
     return { inserted, skipped: allItems.length - inserted };
-  },
-});
+}
 
 async function revalidate() {
   const secret = process.env.ISR_SECRET;

@@ -74,6 +74,39 @@ function parseHtmlWithTS(html: string): ParsedJobItem[] {
     }
   }
 
+  // Fallback if the strict regex found absolutely nothing
+  if (count === 0) {
+    console.warn(`[html] Strict parsing failed for ${source.name}, attempting fallback...`);
+    // Fallback: match any link that contains 'job' in the href and has some content text
+    const fallbackRegex = /<a[^>]+href=["']([^"']*\/job[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi;
+    let fallbackMatch;
+    while ((fallbackMatch = fallbackRegex.exec(htmlText)) !== null) {
+      const href = fallbackMatch[1];
+      const content = fallbackMatch[2];
+      
+      if (!href.includes("/jobseekers/job/") || content.includes("See More") || content.includes("<img")) {
+        continue;
+      }
+
+      const title = content.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+      if (!title || title.length < 5) continue;
+
+      const url = href.startsWith("http")
+        ? href
+        : `https://${new URL(source.url).hostname}${href.startsWith("/") ? "" : "/"}${href}`;
+
+      items.push({
+        title,
+        url,
+        company: "Fallback Scrape Client",
+        date: new Date().toISOString(),
+        description: "Remote role.",
+      });
+      count++;
+    }
+  }
+
+  console.log(`[html] ${source.name}: ${count} items`);
   return items;
 }
 
