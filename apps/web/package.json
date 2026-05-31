@@ -9,14 +9,14 @@
     "deploy": "pnpm run build && wrangler pages deploy dist --project-name remotejobs-ph"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^10.2.2",
-    "@astrojs/react": "^3.3.4",
-    "@astrojs/tailwind": "^5.1.0",
+    "@astrojs/cloudflare": "10.2.2",
+    "@astrojs/react": "3.3.4",
+    "@astrojs/tailwind": "5.1.0",
     "@types/react": "^18.3.2",
     "@types/react-dom": "^18.3.0",
     "@va-hub/db": "workspace:*",
     "@va-hub/scraper": "workspace:*",
-    "astro": "^4.8.6",
+    "astro": "4.8.6",
     "clsx": "^2.1.1",
     "date-fns": "^4.3.0",
     "drizzle-orm": "^0.30.0",
