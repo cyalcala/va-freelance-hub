@@ -1,8 +1,3 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { getDb, schema } from "@va-hub/db";
-
-const cfCtx = await getCloudflareContext().catch(() => null);
-export const db = getDb(cfCtx?.env);
-
+import { schema } from "@va-hub/db";
 export const { opportunities, vaDirectory, contentDigests } = schema;
 export type { Opportunity, NewOpportunity, VADirectoryEntry, NewVADirectoryEntry, ContentDigest, NewContentDigest } from "@va-hub/db";

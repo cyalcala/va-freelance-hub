@@ -69,7 +69,7 @@ async function harvest() {
           });
         }
       } else if (feed.format === "json") {
-        const json = await response.json();
+        const json: any = await response.json();
         
         let items: any[] = [];
         
@@ -173,9 +173,9 @@ async function harvest() {
         continue;
       }
 
-      const data = await result.json();
+      const data: any = await result.json();
       totalInserted += data.inserted || 0;
-      console.log(`✅ Chunk ${i}: Successfully inserted ${data.inserted} new signals out of ${data.totalReceived}.`);
+      console.log(`✅ [FARMER] Successfully inserted ${data.inserted} items out of ${data.totalReceived} total.`);
     }
     
     console.log(`Total signals: ${totalInserted}`); // For GHA summary

@@ -8,7 +8,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const env = locals.runtime?.env ?? (import.meta as any).env;
 
     // 1. Rate Limiting Check
-    const rateLimiter = env?.API_RATE_LIMITER;
+    const rateLimiter = env?.API_RATE_LIMITER as any;
     if (rateLimiter) {
       const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
       const { success } = await rateLimiter.limit({ key: clientIp });
@@ -38,7 +38,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
-    const payload = await request.json();
+    const payload = await request.json() as any;
     const { items } = payload;
 
     if (!items || !Array.isArray(items)) {

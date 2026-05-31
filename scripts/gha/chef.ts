@@ -79,7 +79,7 @@ async function cook() {
       process.exit(1);
     }
 
-    const data = await result.json();
+    const data: any = await result.json();
     console.log(`✅ [PLATED] Successfully inserted ${data.inserted} new digests out of ${data.totalReceived} total.`);
     
   } catch (e) {
