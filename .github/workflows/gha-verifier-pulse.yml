@@ -1,0 +1,49 @@
+name: 🩺 Sovereign Verifier Pulse
+
+on:
+  schedule:
+    - cron: '0 */12 * * *' # Every 12 hours
+  workflow_dispatch: 
+
+concurrency:
+  group: gha-verifier-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  verify:
+    name: Execute Link & Age Audit (Verifier)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      VERIFY_API_URL: "https://remotejobs-ph.pages.dev/api/cron/verify-links"
+    
+    steps:
+      - name: 🩺 Execute Link Verification API
+        run: |
+          curl -X POST "$VERIFY_API_URL" \
+            -H "x-cron-secret: $PROXY_SECRET" \
+            -H "Content-Type: application/json" \
+            -s > verify.log
+          
+          cat verify.log
+          
+      - name: 📊 Generate Verifier Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          CHECKED=$(jq -r '.checked // 0' verify.log || echo "0")
+          ARCHIVED=$(jq -r '.autoArchived // 0' verify.log || echo "0")
+          DEACTIVATED=$(jq -r '.deactivated // 0' verify.log || echo "0")
+          echo "### 🩺 Sovereign Verifier Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Verification Audit Concluded" >> $GITHUB_STEP_SUMMARY
+          echo "- **Links Checked**: $CHECKED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dead Links Pruned**: $DEACTIVATED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Stale Jobs Archived (>30d)**: $ARCHIVED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY

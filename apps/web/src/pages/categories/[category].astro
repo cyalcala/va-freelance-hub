@@ -1,9 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getDb, opportunities } from '@va-hub/db';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
 import { CategoryOpportunitySearch } from '@/components/CategoryOpportunitySearch';
-import { getJobCategory, JOB_CATEGORY_MAP } from '@/lib/categories';
+import { JOB_CATEGORY_MAP } from '@/lib/categories';
 
 export const prerender = false;
 
@@ -23,14 +23,17 @@ let categoryJobs = [];
 
 try {
   const db = getDb(Astro.locals.runtime.env);
-  const allJobs = await db
+  categoryJobs = await db
     .select()
     .from(opportunities)
-    .where(eq(opportunities.isActive, true))
+    .where(
+      and(
+        eq(opportunities.isActive, true),
+        eq(opportunities.category, category)
+      )
+    )
     .orderBy(desc(opportunities.postedAt))
     .limit(1000);
-    
-  categoryJobs = allJobs.filter(opp => getJobCategory(opp) === category);
 } catch (e) {
   console.error("DB Error in category page:", e);
 }

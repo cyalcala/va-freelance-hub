@@ -20,6 +20,7 @@ export const opportunities = sqliteTable("opportunities", {
   sourceUrl: text("source_url").notNull().unique(),
   sourcePlatform: text("source_platform").notNull(), // e.g. "WeWorkRemotely", "Remotive", "OnlineJobs"
   tags: text("tags", { mode: "json" }).$type<string[]>().default([]),
+  category: text("category").notNull().default("other"),
   locationType: text("location_type", { enum: ["remote", "hybrid", "onsite"] }).default("remote"),
   clientTimezone: text("client_timezone"),
   payRange: text("pay_range"),
@@ -39,6 +40,7 @@ export const opportunities = sqliteTable("opportunities", {
   activeScrapedIdx: index("active_scraped_idx").on(table.isActive, table.scrapedAt),
   lastVerifiedIdx: index("last_verified_idx").on(table.lastVerifiedAt),
   contentHashIdx: uniqueIndex("content_hash_idx").on(table.contentHash),
+  categoryIdx: index("category_idx").on(table.category),
 }));
 
 // ─── VA Directory ─────────────────────────────────────────────────────────────

@@ -9,7 +9,8 @@
     {
       "binding": "DB",
       "database_name": "remoteph-jobs-db",
-      "database_id": "08072f16-d3d1-436a-9104-b057a162db7c"
+      "database_id": "08072f16-d3d1-436a-9104-b057a162db7c",
+      "migrations_dir": "../../packages/db/migrations"
     }
   ],
   "ai": {

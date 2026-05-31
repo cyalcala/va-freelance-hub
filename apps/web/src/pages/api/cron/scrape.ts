@@ -3,6 +3,18 @@ import { getDb, opportunities, vaDirectory } from "@va-hub/db";
 import { isNotNull, and } from "drizzle-orm";
 import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob } from "@va-hub/scraper";
 
+function mapTriageCategoryToUiCategory(cat: string): string {
+  switch (cat) {
+    case "admin": return "admin";
+    case "creative": return "design";
+    case "tech": return "tech";
+    case "social-media": return "marketing";
+    case "customer-support": return "customer-service";
+    case "finance": return "other";
+    default: return "other";
+  }
+}
+
 export const POST: APIRoute = async ({ request, locals }) => {
   console.log("[api/cron/scrape] Starting execution...");
   
@@ -31,14 +43,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response("Unauthorized", { status: 401 });
   }
 
-
   try {
-    // 2. Fetch all raw items
+    const failedSources: string[] = [];
+
+    // 3. Fetch all raw items
     const rssResults = await Promise.allSettled(rssSources.map(fetchRSSFeed));
-    const rssItems = rssResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+    const rssItems = rssResults.flatMap((r, idx) => {
+      if (r.status === "fulfilled") {
+        return r.value;
+      } else {
+        const sourceName = rssSources[idx]?.name || "Unknown RSS";
+        failedSources.push(`${sourceName} (RSS): ${r.reason?.message || r.reason}`);
+        return [];
+      }
+    });
 
     const htmlResults = await Promise.allSettled(htmlSources.map(fetchHTMLSource));
-    const htmlItems = htmlResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+    const htmlItems = htmlResults.flatMap((r, idx) => {
+      if (r.status === "fulfilled") {
+        return r.value;
+      } else {
+        const sourceName = htmlSources[idx]?.name || "Unknown HTML";
+        failedSources.push(`${sourceName} (HTML): ${r.reason?.message || r.reason}`);
+        return [];
+      }
+    });
 
     const atsAgencies = await db.select().from(vaDirectory).where(
       and(
@@ -54,16 +83,29 @@ export const POST: APIRoute = async ({ request, locals }) => {
         fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
       )
     );
-    const atsItems = atsResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+    const atsItems = atsResults.flatMap((r, idx) => {
+      if (r.status === "fulfilled") {
+        return r.value;
+      } else {
+        const sourceName = atsAgencies[idx]?.companyName || "Unknown ATS";
+        failedSources.push(`${sourceName} (ATS): ${r.reason?.message || r.reason}`);
+        return [];
+      }
+    });
 
     const allItems = [...rssItems, ...htmlItems, ...atsItems];
     console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML, ${atsItems.length} ATS)`);
 
     if (allItems.length === 0) {
-      return new Response(JSON.stringify({ inserted: 0, skipped: 0, message: "No jobs scraped" }), { status: 200, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ 
+        inserted: 0, 
+        skipped: 0, 
+        failedSources, 
+        message: "No jobs scraped" 
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
-    // 3. De-duplicate against existing database entries by source URL (more robust than content hash)
+    // 4. De-duplicate against existing database entries by source URL
     const existingUrls = new Set(
       (await db.select({ sourceUrl: opportunities.sourceUrl }).from(opportunities))
         .map((r: any) => r.sourceUrl)
@@ -74,10 +116,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.log(`[api/cron/scrape] ${newItems.length} new items found after URL dedup`);
 
     if (newItems.length === 0) {
-      return new Response(JSON.stringify({ inserted: 0, skipped: allItems.length, message: "Zero new jobs after dedup" }), { status: 200, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ 
+        inserted: 0, 
+        skipped: allItems.length, 
+        failedSources, 
+        message: "Zero new jobs after dedup" 
+      }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
-    // 4. Triage and classify new items (with limit and concurrency to prevent Cloudflare execution timeouts)
+    // 5. Triage and classify new items
     const url = new URL(request.url);
     const limit = parseInt(url.searchParams.get("limit") || "15", 10);
     const itemsToProcess = newItems.slice(0, limit);
@@ -124,6 +171,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           ...item,
           tags: mergedTags,
           payRange: triage.payRange,
+          category: mapTriageCategoryToUiCategory(triage.category),
         });
       }
     }
@@ -136,11 +184,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         processed: itemsToProcess.length,
         backlogRemaining: newItems.length - itemsToProcess.length,
         skipped: allItems.length,
+        failedSources,
         message: "No jobs passed AI triage in this batch"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
-    // 5. Batch insert into D1
+    // 6. Batch insert into D1
     let inserted = 0;
     let actualChanges = 0;
     for (let i = 0; i < triagedItems.length; i += 5) {
@@ -166,10 +215,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       processed: itemsToProcess.length,
       backlogRemaining: newItems.length - itemsToProcess.length,
       skipped: allItems.length - inserted,
+      failedSources,
       triagedItems,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);
     return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
-}
+};
