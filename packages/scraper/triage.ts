@@ -2,6 +2,7 @@ export interface TriageResult {
   eligibleForFilipinos: boolean;
   reason: string;
   category: "admin" | "creative" | "tech" | "social-media" | "customer-support" | "finance" | "other";
+  tags: string[];
   payRange: string | null;
   clientTimezone: string | null;
   applicationUrl: string | null;
