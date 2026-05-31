@@ -2,7 +2,7 @@ import { db, opportunities } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
 import { OpportunityCard } from "@/components/opportunity-card";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900; // ISR cache for 15 minutes
 
 export const metadata = {
   title: "Opportunities — Remote PH",

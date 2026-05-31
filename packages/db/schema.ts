@@ -3,6 +3,8 @@ import {
   text,
   integer,
   sqliteTable,
+  index,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
 // ─── Opportunities ────────────────────────────────────────────────────────────
@@ -32,7 +34,10 @@ export const opportunities = sqliteTable("opportunities", {
   updatedAt: text("updated_at"),
   lastSeenInFeedAt: text("last_seen_in_feed_at"),
   failedVerificationCount: integer("failed_verification_count").notNull().default(0),
-});
+}, (table) => ({
+  activeScrapedIdx: index("active_scraped_idx").on(table.isActive, table.scrapedAt),
+  contentHashIdx: uniqueIndex("content_hash_idx").on(table.contentHash),
+}));
 
 // ─── VA Directory ─────────────────────────────────────────────────────────────
 // Curated list of companies known to hire Filipino VAs

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb, opportunities } from "@va-hub/db";
 import { inArray, sql } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, triageJob } from "@va-hub/scraper";
 
 export async function POST(request: Request) {
@@ -69,10 +70,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ inserted: 0, skipped: allItems.length, failedSources, message: "Zero new jobs after dedup" });
     }
 
+    // Cap at 15 items per run to avoid Cloudflare Edge 30s timeouts. 
+    // The rest will be picked up on the next 30-min cron run.
+    const cappedItems = newItems.slice(0, 15);
+    console.log(`[api/cron/scrape] Processing ${cappedItems.length} items out of ${newItems.length} new items.`);
+
     // 4. Triage and classify each new item in batches of 3 to prevent latency timeouts
     const triagedItems: typeof opportunities.$inferInsert[] = [];
-    for (let i = 0; i < newItems.length; i += 3) {
-      const batch = newItems.slice(i, i + 3);
+    for (let i = 0; i < cappedItems.length; i += 3) {
+      const batch = cappedItems.slice(i, i + 3);
       const batchResults = await Promise.all(
         batch.map(async (item) => {
           console.log(`[api/cron/scrape] Triaging: "${item.title}"`);
@@ -127,11 +133,19 @@ export async function POST(request: Request) {
     }
 
     console.log(`[api/cron/scrape] Finished. Inserted ${inserted} items`);
+    
+    if (inserted > 0) {
+      // Trigger Next.js Incremental Static Regeneration immediately in the background
+      revalidatePath("/");
+      revalidatePath("/opportunities");
+    }
+    
     return NextResponse.json({
       inserted,
-      filteredOut: newItems.length - triagedItems.length,
+      filteredOut: cappedItems.length - triagedItems.length,
       skipped: allItems.length - inserted,
       failedSources,
+      cappedTotal: newItems.length
     });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);

@@ -3,7 +3,7 @@ import { eq, desc, count } from "drizzle-orm";
 import Link from "next/link";
 import { OpportunityCard } from "@/components/opportunity-card";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 900; // ISR cache for 15 minutes
 
 async function getStats() {
   const [oppCount] = await db.select({ count: count() }).from(opportunities).where(eq(opportunities.isActive, true));
