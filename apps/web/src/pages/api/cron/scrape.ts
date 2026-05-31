@@ -153,7 +153,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 5. Triage and classify new items
     const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get("limit") || "15", 10);
+    const limit = parseInt(url.searchParams.get("limit") || "25", 10);
     const itemsToProcess = newItems.slice(0, limit);
     console.log(`[api/cron/scrape] Processing ${itemsToProcess.length} out of ${newItems.length} new items (limit: ${limit})`);
 

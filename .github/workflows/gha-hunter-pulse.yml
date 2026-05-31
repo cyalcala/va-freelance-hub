@@ -41,14 +41,36 @@ jobs:
 
       - name: 🏹 Deploy the ATS Engine (Layer 2)
         run: |
-          curl -X POST "$SCRAPE_API_URL" \
-            -H "x-cron-secret: $PROXY_SECRET" \
-            -H "Content-Type: application/json" \
-            -s > harvest.log
+          TOTAL=0
+          BACKLOG=1
           
-          cat harvest.log
+          echo "{}" > harvest.log
           
-          TOTAL=$(grep -oP '"inserted":\s*\K\d+' harvest.log || echo "0")
+          while [ "$BACKLOG" -gt 0 ]; do
+            echo "Calling Scraper API..."
+            curl -f -X POST "$SCRAPE_API_URL" \
+              -H "Authorization: Bearer $PROXY_SECRET" \
+              -H "Content-Type: application/json" \
+              -s > temp_harvest.log || {
+                echo "::error::Scraper API failed!"
+                cat temp_harvest.log
+                exit 1
+              }
+            
+            mv temp_harvest.log harvest.log
+            cat harvest.log
+            
+            NEW_INSERTED=$(jq -r '.inserted // 0' harvest.log)
+            BACKLOG=$(jq -r '.backlogRemaining // 0' harvest.log)
+            
+            TOTAL=$((TOTAL + NEW_INSERTED))
+            
+            if [ "$BACKLOG" -gt 0 ]; then
+              echo "Backlog remaining: $BACKLOG. Sleeping for 2 seconds before next batch..."
+              sleep 2
+            fi
+          done
+          
           echo "TOTAL=$TOTAL" >> $GITHUB_ENV
 
       - name: 🚨 Auto-Document Failures (Self-Healing Log)

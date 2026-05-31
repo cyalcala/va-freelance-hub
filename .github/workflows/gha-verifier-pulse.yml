@@ -27,8 +27,8 @@ jobs:
     steps:
       - name: 🩺 Execute Link Verification API
         run: |
-          curl -X POST "$VERIFY_API_URL" \
-            -H "x-cron-secret: $PROXY_SECRET" \
+          curl -f -X POST "$VERIFY_API_URL" \
+            -H "Authorization: Bearer $PROXY_SECRET" \
             -H "Content-Type: application/json" \
             -s > verify.log
           
