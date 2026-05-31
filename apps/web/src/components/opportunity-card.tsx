@@ -48,7 +48,7 @@ export function OpportunityCard({ opportunity: opp }: Props) {
 
   return (
     <a 
-      href={opp.sourceUrl}
+      href={`/api/click/${opp.id}?url=${encodeURIComponent(opp.sourceUrl)}`}
       target="_blank"
       rel="noopener noreferrer"
       className="flex items-start justify-between group p-4 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent hover:border-accent/10 active:scale-[0.99] active:bg-ink/5"
@@ -89,6 +89,11 @@ export function OpportunityCard({ opportunity: opp }: Props) {
             <span className="text-[9px] px-2 py-0.5 rounded-full bg-ink/5 text-ink/60 font-black uppercase tracking-wider border border-ink/5">
               {typeLabel}
             </span>
+            {opp.experienceLevel && opp.experienceLevel !== 'any' && (
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-black uppercase tracking-wider border border-accent/10">
+                {opp.experienceLevel}
+              </span>
+            )}
             {postedDate && (
               <span className="text-[9px] font-bold tracking-widest uppercase text-ink/40 ml-1 py-0.5 inline-block">
                 {postedDate}

@@ -36,6 +36,9 @@ export const opportunities = sqliteTable("opportunities", {
   lastSeenInFeedAt: text("last_seen_in_feed_at"),
   lastVerifiedAt: text("last_verified_at"),
   failedVerificationCount: integer("failed_verification_count").notNull().default(0),
+  experienceLevel: text("experience_level", { enum: ["entry", "mid", "senior", "any"] }),
+  descriptionHash: text("description_hash"),
+  clickCount: integer("click_count").notNull().default(0),
 }, (table) => ({
   activeScrapedIdx: index("active_scraped_idx").on(table.isActive, table.scrapedAt),
   lastVerifiedIdx: index("last_verified_idx").on(table.lastVerifiedAt),

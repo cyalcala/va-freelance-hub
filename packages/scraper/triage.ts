@@ -7,6 +7,7 @@ export interface TriageResult {
   clientTimezone: string | null;
   applicationUrl: string | null;
   employmentType: "full-time" | "part-time" | "contract" | "freelance" | null;
+  experienceLevel: "entry" | "mid" | "senior" | "any" | null;
   companyName: string | null;
 }
 
@@ -73,6 +74,7 @@ export async function triageJob(
       clientTimezone: null,
       applicationUrl: null,
       employmentType: null,
+      experienceLevel: null,
       companyName: null,
     };
   }
@@ -113,6 +115,7 @@ export async function triageJob(
       clientTimezone: null,
       applicationUrl: null,
       employmentType: null,
+      experienceLevel: null,
       companyName: null,
     };
   }
@@ -136,6 +139,7 @@ Requirements for output JSON schema:
   "clientTimezone": "string", // ONLY extract if explicitly stated (e.g. "EST", "AEST", "Australian Dayshift"), otherwise return null. Do NOT guess.
   "applicationUrl": "string", // Direct email address or apply link found within the description text, else null.
   "employmentType": "full-time" | "part-time" | "contract" | "freelance" | null, // Extract the type of employment if mentioned.
+  "experienceLevel": "entry" | "mid" | "senior" | "any" | null, // Extract the required experience level if mentioned.
   "companyName": "string" // Extract the name of the hiring company if explicitly mentioned in the description, otherwise return null.
 }
 
@@ -211,6 +215,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
         clientTimezone: typeof parsed.clientTimezone === "string" ? parsed.clientTimezone : null,
         applicationUrl: typeof parsed.applicationUrl === "string" ? parsed.applicationUrl : null,
         employmentType: ["full-time", "part-time", "contract", "freelance"].includes(parsed.employmentType as any) ? parsed.employmentType : null,
+        experienceLevel: ["entry", "mid", "senior", "any"].includes(parsed.experienceLevel as any) ? parsed.experienceLevel : null,
         companyName: typeof parsed.companyName === "string" ? parsed.companyName : null,
       };
     } catch (error) {
@@ -230,6 +235,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
     clientTimezone: null,
     applicationUrl: null,
     employmentType: null,
+    experienceLevel: null,
     companyName: null,
   };
 }

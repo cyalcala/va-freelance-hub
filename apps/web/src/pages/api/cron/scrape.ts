@@ -3,6 +3,14 @@ import { getDb, opportunities, vaDirectory } from "@va-hub/db";
 import { isNotNull, and } from "drizzle-orm";
 import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob } from "@va-hub/scraper";
 
+async function generateHash(message: string) {
+  const msgUint8 = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return hashHex;
+}
+
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
     case "admin": return "admin";
@@ -167,11 +175,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
           .filter(Boolean)
           .map((t) => typeof t === 'string' ? t.toLowerCase().trim() : t);
 
+        const cleanDesc = (item.description || "").slice(0, 1500);
+        const descriptionHash = await generateHash(item.title + cleanDesc);
+
         triagedItems.push({
           ...item,
           tags: mergedTags,
           payRange: triage.payRange,
           category: mapTriageCategoryToUiCategory(triage.category),
+          experienceLevel: triage.experienceLevel,
+          type: triage.employmentType === "contract" ? "freelance" : (triage.employmentType || "freelance"),
+          descriptionHash,
         });
       }
     }
