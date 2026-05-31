@@ -65,7 +65,7 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
     xml = await res.text();
   } catch (err) {
     console.error(`[rss] Failed to fetch ${source.name}:`, err);
-    return [];
+    throw new Error(`[rss] Failed to fetch ${source.name}: ${(err as Error).message}`);
   }
 
   let parsed: any;
@@ -73,7 +73,7 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
     parsed = parser.parse(xml);
   } catch (err) {
     console.error(`[rss] Failed to parse XML from ${source.name}:`, err);
-    return [];
+    throw new Error(`[rss] Failed to parse XML from ${source.name}: ${(err as Error).message}`);
   }
 
   // Handle both RSS 2.0 and Atom formats

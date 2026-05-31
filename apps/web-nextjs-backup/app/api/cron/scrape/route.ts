@@ -26,11 +26,17 @@ export async function POST(request: Request) {
     const htmlResults = await Promise.allSettled(htmlSources.map(fetchHTMLSource));
     const htmlItems = htmlResults.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 
+    // Track silent errors that broke at the source level
+    const failedSources = [
+      ...rssResults.filter(r => r.status === "rejected").map(r => (r as PromiseRejectedResult).reason.message),
+      ...htmlResults.filter(r => r.status === "rejected").map(r => (r as PromiseRejectedResult).reason.message)
+    ];
+
     const allItems = [...rssItems, ...htmlItems];
     console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML)`);
 
     if (allItems.length === 0) {
-      return NextResponse.json({ inserted: 0, skipped: 0, message: "No jobs scraped" });
+      return NextResponse.json({ inserted: 0, skipped: 0, failedSources, message: "No jobs scraped" });
     }
 
     // 3. De-duplicate against existing database entries
@@ -60,42 +66,52 @@ export async function POST(request: Request) {
     console.log(`[api/cron/scrape] ${newItems.length} new items found after hash dedup`);
 
     if (newItems.length === 0) {
-      return NextResponse.json({ inserted: 0, skipped: allItems.length, message: "Zero new jobs after dedup" });
+      return NextResponse.json({ inserted: 0, skipped: allItems.length, failedSources, message: "Zero new jobs after dedup" });
     }
 
-    // 4. Triage and classify each new item
+    // 4. Triage and classify each new item in batches of 3 to prevent latency timeouts
     const triagedItems: typeof opportunities.$inferInsert[] = [];
-    for (const item of newItems) {
-      console.log(`[api/cron/scrape] Triaging: "${item.title}"`);
-      const triage = await triageJob(item.title, item.description || "", env);
+    for (let i = 0; i < newItems.length; i += 3) {
+      const batch = newItems.slice(i, i + 3);
+      const batchResults = await Promise.all(
+        batch.map(async (item) => {
+          console.log(`[api/cron/scrape] Triaging: "${item.title}"`);
+          const triage = await triageJob(item.title, item.description || "", env);
+          
+          if (!triage.eligibleForFilipinos) {
+            console.log(`[api/cron/scrape] Filtering out ineligible job: "${item.title}". Reason: ${triage.reason}`);
+            return null;
+          }
 
-      if (!triage.eligibleForFilipinos) {
-        console.log(`[api/cron/scrape] Filtering out ineligible job: "${item.title}". Reason: ${triage.reason}`);
-        continue; // Skip the job completely
-      }
+          // Merge tags: combine scraper sources tags, LLM category, and LLM skills/tags
+          const mergedTags = Array.from(
+            new Set([
+              ...(item.tags || []),
+              triage.category,
+              ...(triage.tags || []),
+            ])
+          )
+            .filter(Boolean)
+            .map((t) => t.toLowerCase().trim());
 
-      // Merge tags: combine scraper sources tags, LLM category, and LLM skills/tags
-      const mergedTags = Array.from(
-        new Set([
-          ...(item.tags || []),
-          triage.category,
-          ...(triage.tags || []),
-        ])
-      )
-        .filter(Boolean)
-        .map((t) => t.toLowerCase().trim());
+          return {
+            ...item,
+            tags: mergedTags,
+            payRange: triage.payRange,
+            clientTimezone: triage.clientTimezone,
+            applicationUrl: triage.applicationUrl,
+          };
+        })
+      );
 
-      triagedItems.push({
-        ...item,
-        tags: mergedTags,
-        payRange: triage.payRange,
-      });
+      // Add valid results from the batch
+      triagedItems.push(...batchResults.filter((r) => r !== null) as typeof opportunities.$inferInsert[]);
     }
 
     console.log(`[api/cron/scrape] ${triagedItems.length} jobs approved after AI triaging`);
 
     if (triagedItems.length === 0) {
-      return NextResponse.json({ inserted: 0, skipped: allItems.length, message: "No jobs passed AI triage" });
+      return NextResponse.json({ inserted: 0, skipped: allItems.length, failedSources, message: "No jobs passed AI triage" });
     }
 
     // 5. Batch insert into D1
@@ -115,6 +131,7 @@ export async function POST(request: Request) {
       inserted,
       filteredOut: newItems.length - triagedItems.length,
       skipped: allItems.length - inserted,
+      failedSources,
     });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);

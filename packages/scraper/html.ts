@@ -126,7 +126,7 @@ export async function fetchHTMLSource(source: Source): Promise<NewOpportunity[]>
     html = await res.text();
   } catch (err) {
     console.error(`[html] Failed to fetch ${source.name}:`, err);
-    return [];
+    throw new Error(`[html] Failed to fetch ${source.name}: ${(err as Error).message}`);
   }
 
   const parsed = parseHtmlWithTS(html);

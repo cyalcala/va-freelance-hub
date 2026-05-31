@@ -29,6 +29,20 @@
       "when": 1780194486536,
       "tag": "0003_yielding_maelstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1780196390117,
+      "tag": "0004_solid_valeria_richards",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1780196446042,
+      "tag": "0005_harsh_punisher",
+      "breakpoints": true
     }
   ]
 }

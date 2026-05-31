@@ -19,8 +19,10 @@ export const opportunities = sqliteTable("opportunities", {
   sourcePlatform: text("source_platform").notNull(), // e.g. "WeWorkRemotely", "Remotive", "OnlineJobs"
   tags: text("tags", { mode: "json" }).$type<string[]>().default([]),
   locationType: text("location_type", { enum: ["remote", "hybrid", "onsite"] }).default("remote"),
+  clientTimezone: text("client_timezone"),
   payRange: text("pay_range"),
   description: text("description"),
+  applicationUrl: text("application_url"),
   postedAt: text("posted_at"),
   scrapedAt: text("scraped_at")
     .notNull()

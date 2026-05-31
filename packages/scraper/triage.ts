@@ -2,8 +2,9 @@ export interface TriageResult {
   eligibleForFilipinos: boolean;
   reason: string;
   category: "admin" | "creative" | "tech" | "social-media" | "customer-support" | "finance" | "other";
-  tags: string[];
   payRange: string | null;
+  clientTimezone: string | null;
+  applicationUrl: string | null;
 }
 
 // Simple regex list for obvious geo-exclusion checks before running LLM (saves tokens)
@@ -66,6 +67,8 @@ export async function triageJob(
       category: "other",
       tags: [],
       payRange: null,
+      clientTimezone: null,
+      applicationUrl: null,
     };
   }
 
@@ -102,6 +105,8 @@ export async function triageJob(
       category,
       tags: tags.length ? tags : ["remote"],
       payRange: null,
+      clientTimezone: null,
+      applicationUrl: null,
     };
   }
 
@@ -120,7 +125,9 @@ Requirements for output JSON schema:
   "reason": "string", // Brief explanation of eligibility or location rules.
   "category": "admin" | "creative" | "tech" | "social-media" | "customer-support" | "finance" | "other", // Pick the most relevant.
   "tags": ["string"], // Array of 2 to 4 technical skills or tools needed.
-  "payRange": "string" // Extract pay rate (e.g. "$15 - $20/hr" or "$3000/mo") if mentioned, else null.
+  "payRange": "string", // Extract pay rate (e.g. "$15 - $20/hr" or "$3000/mo") if mentioned, else null.
+  "clientTimezone": "string", // The timezone or region the client requires (e.g. "EST", "AEST", "Australian Dayshift"), else null.
+  "applicationUrl": "string" // Direct email address or apply link found within the description text, else null.
 }
 
 Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not write any conversational text.
@@ -181,6 +188,8 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
         : "other",
       tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
       payRange: typeof parsed.payRange === "string" ? parsed.payRange : null,
+      clientTimezone: typeof parsed.clientTimezone === "string" ? parsed.clientTimezone : null,
+      applicationUrl: typeof parsed.applicationUrl === "string" ? parsed.applicationUrl : null,
     };
   } catch (error) {
     console.error(`[triage] Workers AI call failed for "${title}":`, error);
@@ -190,6 +199,8 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       category: "other",
       tags: ["remote"],
       payRange: null,
+      clientTimezone: null,
+      applicationUrl: null,
     };
   }
 }

@@ -54,14 +54,31 @@ jobs:
       - name: 🚨 Auto-Document Failures (Self-Healing Log)
         if: always()
         run: |
+          HAS_CHANGES=false
+          mkdir -p docs
+          if [ ! -f docs/scraper-alerts.md ]; then
+            echo -e "# Scraper Alerts Log\n\nThis file automatically logs scraper failures so the AI has a trail of what broke without needing to bother the human.\n\n" > docs/scraper-alerts.md
+          fi
+          
+          # 1. Total Failure Check (0 jobs scraped)
           if grep -q '"inserted":\s*0' harvest.log && grep -q '"skipped":\s*0' harvest.log; then
             echo "Critical failure or 0 jobs found."
-            mkdir -p docs
-            if [ ! -f docs/scraper-alerts.md ]; then
-              echo -e "# Scraper Alerts Log\n\nThis file automatically logs scraper failures so the AI has a trail of what broke without needing to bother the human.\n\n" > docs/scraper-alerts.md
-            fi
-            echo "- **[$(date -u +"%Y-%m-%dT%H:%M:%SZ")]**: 🚨 Scraper API returned 0 inserted and 0 skipped. Possible source breakage or Cloudflare error." >> docs/scraper-alerts.md
-            
+            echo "- **[$(date -u +"%Y-%m-%dT%H:%M:%SZ")]**: 🚨 Scraper API returned 0 inserted and 0 skipped. Possible global source breakage or Cloudflare error." >> docs/scraper-alerts.md
+            HAS_CHANGES=true
+          fi
+          
+          # 2. Individual Source Failure Check (Silent Errors)
+          FAILED_SOURCES=$(jq -r '.failedSources[]?' harvest.log || true)
+          if [ ! -z "$FAILED_SOURCES" ]; then
+            echo "Individual sources failed."
+            while IFS= read -r source_error; do
+              echo "- **[$(date -u +"%Y-%m-%dT%H:%M:%SZ")]**: ⚠️ Partial Scrape Failure: $source_error" >> docs/scraper-alerts.md
+            done <<< "$FAILED_SOURCES"
+            HAS_CHANGES=true
+          fi
+          
+          # 3. Commit to GitHub
+          if [ "$HAS_CHANGES" = true ]; then
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git add docs/scraper-alerts.md
