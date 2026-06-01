@@ -28,12 +28,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     
     const result = await db.run(sql`
       DELETE FROM \`opportunities\`
-      WHERE \`descriptionHash\` IS NOT NULL
+      WHERE \`description_hash\` IS NOT NULL
       AND \`id\` NOT IN (
         SELECT MIN(\`id\`)
         FROM \`opportunities\`
-        WHERE \`descriptionHash\` IS NOT NULL
-        GROUP BY \`descriptionHash\`
+        WHERE \`description_hash\` IS NOT NULL
+        GROUP BY \`description_hash\`
       )
     `);
 
