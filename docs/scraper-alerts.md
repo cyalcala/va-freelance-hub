@@ -24,3 +24,5 @@ This file automatically logs scraper failures so the AI has a trail of what brok
 - **[2026-06-04T07:02:04Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
 - **[2026-06-04T10:47:00Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
 - **[2026-06-04T13:56:39Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
+- **[2026-06-04T16:54:21Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
+- **[2026-06-04T16:54:21Z]**: ⚠️ Partial Scrape Failure: Dribbble Jobs (RSS): [rss] Failed to fetch Dribbble Jobs: The operation was aborted due to timeout
