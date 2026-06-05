@@ -1,127 +1,156 @@
-# VA Freelance Hub — Project Context
+# VA Freelance Hub - Agent Context
 
 ## What This Is
-A personal portfolio project and public resource site for Filipino freelancers.
-Self-updating aggregator of VA job opportunities, a curated VA-friendly company
-directory, and a daily AI digest of actionable content from freelance influencers.
-Built to demonstrate agentic engineering skills.
 
-## Owner
-Filipino freelance technical writer + agentic engineer (github: cyalcala).
-GitHub repo is public — this is a living portfolio piece.
-Footer should credit the builder and link to source.
+VA Freelance Hub is a public portfolio project and resource site for Filipino
+freelancers. It indexes public remote and VA-friendly opportunities, maintains a
+VA-friendly company directory, and demonstrates agentic engineering through a
+self-maintaining ingestion and verification system.
 
-## Core Stack
-- Runtime: Bun
-- Frontend: Next.js 14 App Router
-- Styling: Tailwind CSS + shadcn/ui
-- Database: Turso (LibSQL/SQLite) via Drizzle ORM
-- Scheduled jobs: Trigger.dev v3 (Cloud, free tier)
-- HTML parsing: Zig binary (called as subprocess from Bun)
-- Hosting: Vercel (Hobby tier, personal/non-commercial)
-- Versioning: GitHub (cyalcala/va-freelance-hub)
+Owner: Filipino freelance technical writer and agentic engineer
+GitHub: `cyalcala`
+Repository: `cyalcala/va-freelance-hub`
 
-## Architecture
-```
-GitHub → Vercel auto-deploys Next.js app
+## Current Production Reality
 
-Trigger.dev Cloud (cron: every 2 hours)
-  └─ Bun TS scraper fetches RSS + HTML sources
-      └─ Zig binary parses raw HTML → clean JSON
-  └─ Deduplicates + writes to Turso via Drizzle
-  └─ Calls Vercel revalidation webhook → ISR pages refresh
+The active system is the Cloudflare/Astro implementation. Older Next.js,
+Vercel, Turso, Trigger.dev, and Zig-parser assets remain in the repo as backup
+or historical work, but do not represent the current production path.
 
-Next.js App (Vercel Edge)
-  └─ Server Components → Turso (Drizzle ORM)
-  └─ ISR: revalidates on webhook trigger (revalidate = 3600)
-  └─ UI: Tailwind + shadcn/ui
-```
+Current active stack:
 
-## Monorepo Structure
-```
-apps/web           → Next.js 14 App Router
-packages/db        → Drizzle schema + migrations (shared)
-packages/scraper   → Bun TS scrapers (RSS + HTML)
-packages/zig-parser → Zig HTML parser binary
-jobs/              → Trigger.dev v3 job definitions
-trigger.config.ts
-bunfig.toml
-package.json       (Bun workspaces)
+- Runtime and package manager: Bun workspaces
+- Frontend: Astro in `apps/web`
+- UI: Tailwind CSS with React islands where needed
+- Hosting: Cloudflare Pages
+- Database: Cloudflare D1, SQLite-compatible
+- Scheduled jobs: GitHub Actions pulse workflows
+- Ingestion API: Astro API routes under `apps/web/src/pages/api`
+- Scrapers: TypeScript packages under `packages/scraper`
+- AI/category helpers: Workers AI / Gemini experiments where explicitly wired
+- Versioning and backup: GitHub commits, pushes, workflow run evidence
+
+## Active Architecture
+
+```text
+GitHub Actions pulse workflows
+  -> scraper scripts fetch allowed RSS/API/public sources
+  -> triage filters and normalizes jobs
+  -> authenticated POST to Cloudflare Pages API
+  -> Astro API route writes to Cloudflare D1
+  -> Cloudflare Pages serves public job board and directory
+
+Daily/periodic maintenance
+  -> verify links
+  -> prune stale jobs
+  -> record source health and operational evidence
 ```
 
-## Database Schema
+## Current Core Pages
 
-### opportunities
-id, title, company, type (VA/freelance/project),
-source_url, source_platform, tags (JSON array),
-location_type (remote/hybrid), pay_range,
-posted_at, scraped_at, is_active (bool)
-
-### va_directory
-id, company_name, website, hires_filipinos (bool),
-niche (admin/creative/tech/etc), hiring_page_url,
-verified_at, notes
-
-### content_digests (Phase 2)
-id, creator_name, video_id, video_title, video_url,
-transcript_raw, action_plan (JSON array of steps),
-published_at, processed_at, tags[]
-
-## Site Pages
-```
-/               → Hero, live stats, latest 10 opportunities
-/opportunities  → Full paginated freelance feed (filterable by type, platform, recency)
-/directory      → VA-friendly company directory (searchable by name/niche)
-/digest         → Daily action plans from Nate Herk + Nick Saraev (Phase 2)
+```text
+/                    Home and current job board surface
+/directory           VA-friendly company directory
+/categories/[slug]   Category-specific job pages
+/data-policy         Data and public-source policy
+/privacy             Privacy page
+/opportunities       Planned; currently a known gap from the audit
 ```
 
-## Design Direction
-- Dark background: #0a0a0a
-- Accent: electric blue or violet
-- Monospace font for data/badges
-- Clean card layouts
-- Reference: Linear.app meets a job board
+## Current Audit Baseline
 
-## Data Sources
+Read `docs/major-audit-2026-06-06.md` before doing substantial work. The latest
+accepted audit baseline found:
 
-### RSS (Phase 1)
-- We Work Remotely
-- Remotive.io
-- ProBlogger job board
-- Remote.co
-- OnlineJobs.ph (HTML scrape, not RSS)
+- GitHub Actions are currently green, but green runs can hide source-level
+  failures.
+- Production has 635 active opportunities, 238 companies, and 0 content digests.
+- `/opportunities` returns 404.
+- Homepage HTML is too large at roughly 1.75 MB.
+- Hot D1 queries need ordering-aligned indexes.
+- Date fields are mixed-format text and need normalization.
+- ATS and batch insert paths can fail silently or report misleading counts.
+- Remote.co alerts are noisy and should become daily/source-health rollups.
+- Source compliance must be treated as a first-class requirement, not an
+  assumption based only on public visibility.
 
-### Influencer Digest (Phase 2)
-- Nate Herk (YouTube)
-- Nick Saraev (YouTube)
-Fetched via `youtube-transcript` npm package,
-summarized via Codex API (Sonnet) into 5-7 action steps.
+## Recovery-Driven Methodology
 
-## Environment Variables
-```
-TURSO_DATABASE_URL=libsql://your-db.turso.io
-TURSO_AUTH_TOKEN=your-token
-TRIGGER_SECRET_KEY=tr_dev_xxxxx
-ISR_SECRET=random-string-you-generate
-NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
-ANTHROPIC_API_KEY=sk-ant-xxxxx  # Phase 2 only
-```
+This repo adopts the techwriter-bot style operating loop, adapted to this
+project's scope:
 
-## Self-Maintenance Jobs (Phase 4)
-- `verify-links.ts` — runs daily, pings each source_url, marks is_active=false if 404
-- `verify-directory.ts` — runs weekly, checks hiring_page_url, updates verified_at
+1. Make the smallest useful slice.
+2. Run the narrowest meaningful verification.
+3. Commit the behavior or documentation slice.
+4. Push to GitHub.
+5. Watch GitHub Actions for the pushed commit.
+6. Record the checkpoint with percentage, commit hash, verification, workflow
+   run ID, and next task.
+7. Push acceptance documentation when the evidence is known.
 
-## Build Phases
-- **Phase 0** — Monorepo scaffold + tooling (current)
-- **Phase 1** — DB schema + RSS scraper + Trigger.dev cron + basic frontend
-- **Phase 2** — Influencer digest (YouTube transcript + Codex API)
-- **Phase 3** — Frontend polish, filters, search
-- **Phase 4** — Self-maintenance jobs (dead link detection, auto-archive)
+Canonical recovery docs:
 
-## Key Constraints
-- Vercel Hobby tier (personal/non-commercial — do not add monetization without upgrading)
-- Free tier across ALL services
-- Zig binary role: HTML parsing only, called via Bun.spawn, outputs newline-delimited JSON to stdout
-- Trigger.dev free tier: 750 runs/month — cron set to every 2 hours (~360 runs) to leave room for retries
-- No auth, no payments, no user accounts in scope
-- TypeScript strict mode everywhere
+- `docs/MASTER_EXECUTION_PLAN.md`
+- `docs/IMPLEMENTATION_STATUS.md`
+- `docs/AI_RECOVERY_TRAIL.md`
+- `docs/SYSTEM_SAVEPOINT.md`
+- `docs/major-audit-2026-06-06.md`
+- `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+
+## Percent-Based Roadmap
+
+Progress percentages are weighted checkpoints, not vibes.
+
+| Phase | Weight | Focus |
+| --- | ---: | --- |
+| P0 | 5% | Recovery docs and methodology |
+| P1 | 15% | Product surface and homepage payload |
+| P2 | 15% | D1 indexes and datetime foundation |
+| P3 | 20% | Ingestion observability and silent-error removal |
+| P4 | 15% | Source compliance and source portfolio cleanup |
+| P5 | 15% | Data quality backfill and triage improvements |
+| P6 | 10% | Reporting, backup hygiene, and alert rollups |
+| P7 | 5% | Final acceptance audit and portfolio polish |
+
+## Compliance Policy
+
+The project should be framed and implemented as public job indexing, not
+unrestricted scraping.
+
+Rules:
+
+- Prefer official APIs, RSS feeds, and source-supported access paths.
+- Do not bypass logins, paywalls, CAPTCHAs, robots.txt, rate limits, or explicit
+  anti-automation terms.
+- Store minimal factual metadata needed for discovery.
+- Link users back to the original source to apply.
+- Avoid copying full descriptions unless the source license or terms allow it.
+- Keep a clear data policy and provide an opt-out/correction path.
+- Pause or mark sources as `needs_review` when terms are unclear or hostile to
+  automated collection.
+
+Public visibility alone does not make automated collection, storage, and
+republishing automatically compliant.
+
+## Do Not Build Unless Strategy Changes
+
+- No auth, payments, subscriptions, resumes, or user accounts.
+- No monetization while relying on personal/free-tier constraints.
+- No auto-apply tooling.
+- No hidden scraping of restricted or login-gated sources.
+- No large dashboard platform when a compact public job board solves the job.
+- No new paid service unless explicitly approved and documented.
+
+## Engineering Preferences
+
+- Keep the Cloudflare/Astro/D1 path as the active production path.
+- Make vertical slices that leave the site deployable after each commit.
+- Add observability before increasing ingestion complexity.
+- Prefer data-source configuration and source status tables over hard-coded
+  one-off decisions.
+- Treat "green outside, red inside" CI as a watermelon risk: CI success is not
+  acceptance unless source-level health is also recorded.
+- Avoid ratholes by time-boxing source-specific fixes; pause a source when it
+  repeatedly fails or has compliance uncertainty.
+- Keep future agents oriented by updating the recovery docs after meaningful
+  changes.
