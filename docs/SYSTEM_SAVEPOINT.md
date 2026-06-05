@@ -27,8 +27,16 @@ Current accepted work:
 
 Next pending work:
 
-- P1 Slice 1: add `/opportunities` as the canonical paginated opportunity board
-  and reduce homepage data volume.
+- Work is paused by user request.
+- P1 Slice 1 remains the next implementation task when resumed: add
+  `/opportunities` as the canonical paginated opportunity board and reduce
+  homepage data volume.
+
+Current handoff files:
+
+- `docs/DOCS_INDEX.md`
+- `docs/HANDOFF.md`
+- `CLAUDE.md`
 
 ## Production Baseline From Audit
 

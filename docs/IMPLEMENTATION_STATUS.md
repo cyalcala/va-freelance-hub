@@ -13,11 +13,10 @@ When starting a new chat or work session, read these in order:
 
 ## Current Focus
 
-Phase P0: Recovery docs and methodology.
+Paused by user request.
 
-The goal is to adopt a techwriter-bot-style execution process: small slices,
-evidence gates, GitHub-backed checkpoints, and percentage progress after each
-accepted slice.
+No implementation work is currently active. P1 exploration started, but no code
+changes were made. Resume only when the user asks to continue.
 
 ## Overall Completion
 
@@ -41,6 +40,20 @@ checkpoint.
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### Pause And Recovery Handoff
+
+- Date: 2026-06-06
+- Status: pending commit, push, and GitHub Actions acceptance
+- Reason: user asked to stop everything for now and back up all progress/plans.
+- Scope: docs-only handoff; no P1 implementation files changed.
+- Evidence target:
+  - `docs/DOCS_INDEX.md`
+  - `docs/HANDOFF.md`
+  - `CLAUDE.md`
+  - `docs/AI_RECOVERY_TRAIL.md`
+  - `docs/IMPLEMENTATION_STATUS.md`
+  - `docs/SYSTEM_SAVEPOINT.md`
 
 ### P0 Recovery Methodology
 
@@ -71,8 +84,8 @@ checkpoint.
 
 ## Next Task After P0
 
-P1 Slice 1: add `/opportunities` as the canonical paginated opportunity board
-and reduce homepage data volume.
+When the user resumes, P1 Slice 1 remains the next task: add `/opportunities` as
+the canonical paginated opportunity board and reduce homepage data volume.
 
 Acceptance criteria:
 

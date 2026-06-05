@@ -15,15 +15,17 @@ handoff after every important move.
 
 Read these first when starting a new work session:
 
-1. `AGENTS.md`
-2. `docs/MASTER_EXECUTION_PLAN.md`
+1. `docs/DOCS_INDEX.md`
+2. `AGENTS.md`
 3. `docs/IMPLEMENTATION_STATUS.md`
-4. `docs/AI_RECOVERY_TRAIL.md`
-5. `docs/SYSTEM_SAVEPOINT.md`
-6. `docs/major-audit-2026-06-06.md`
-7. `docs/scraper-alerts.md`
-8. `docs/scraper-troubleshooting.md`
-9. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+4. `docs/HANDOFF.md`
+5. `docs/MASTER_EXECUTION_PLAN.md`
+6. `docs/AI_RECOVERY_TRAIL.md`
+7. `docs/SYSTEM_SAVEPOINT.md`
+8. `docs/major-audit-2026-06-06.md`
+9. `docs/scraper-alerts.md`
+10. `docs/scraper-troubleshooting.md`
+11. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
 
 ## Required Backup Loop
 
@@ -109,3 +111,15 @@ record why, and keep the rest of the ingestion system healthy.
   daily rollup/source-health table.
 
 Do not bury important decisions only in commit messages or chat.
+
+## Pause And Handoff Protocol
+
+When the user asks to stop, pause, or only back up progress:
+
+1. Stop implementation immediately.
+2. Confirm whether the working tree has code changes.
+3. If no code changes exist, do not invent a code checkpoint.
+4. Update `docs/HANDOFF.md`, `docs/IMPLEMENTATION_STATUS.md`, and
+   `docs/SYSTEM_SAVEPOINT.md` with the exact pause point.
+5. Commit, push, and watch CI for the docs-only recovery checkpoint.
+6. Record the checkpoint evidence before ending the turn.
