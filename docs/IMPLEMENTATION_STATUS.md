@@ -21,16 +21,17 @@ accepted slice.
 
 ## Overall Completion
 
-Current status before CI acceptance of this methodology checkpoint: 0%.
+Current accepted completion: 5%.
 
-Target after this checkpoint is committed, pushed, and accepted by GitHub
-Actions: 5%.
+P0 is accepted. The repository now has recovery docs, a weighted roadmap,
+agent context, an ADR, and GitHub Actions evidence for the methodology
+checkpoint.
 
 ## Phase Status
 
 | Phase | Weight | Current accepted % | Status | Next acceptance evidence |
 | --- | ---: | ---: | --- | --- |
-| P0 Recovery docs and methodology | 5% | 0% | In progress | Docs commit, push, GitHub Actions success |
+| P0 Recovery docs and methodology | 5% | 5% | Accepted | Complete |
 | P1 Product surface and payload | 15% | 0% | Not started | `/opportunities` 200 and homepage payload reduction |
 | P2 Indexing and datetime foundation | 15% | 0% | Not started | D1 migration and query-plan evidence |
 | P3 Ingestion observability | 20% | 0% | Not started | Structured per-source status and insert accounting |
@@ -41,6 +42,24 @@ Actions: 5%.
 
 ## Latest Accepted Checkpoint
 
+### P0 Recovery Methodology
+
+- Date: 2026-06-06
+- Commit: `9657c4a`
+- Message: `docs: adopt recovery-driven execution plan`
+- Local verification: `git diff --check` passed with only normal Windows
+  LF/CRLF warnings.
+- GitHub Actions run: `27040684807`
+- Result: success
+- Evidence:
+  - `AGENTS.md`
+  - `docs/MASTER_EXECUTION_PLAN.md`
+  - `docs/IMPLEMENTATION_STATUS.md`
+  - `docs/AI_RECOVERY_TRAIL.md`
+  - `docs/SYSTEM_SAVEPOINT.md`
+  - `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+- Accepted completion after this checkpoint: 5%.
+
 ### Major Audit Baseline
 
 - Date: 2026-06-06
@@ -49,16 +68,6 @@ Actions: 5%.
 - GitHub Actions run: `27039365056`
 - Result: success
 - Evidence: `docs/major-audit-2026-06-06.md`
-
-## Pending Checkpoint
-
-### P0 Recovery Methodology
-
-- Status: pending commit, push, and GitHub Actions acceptance
-- Planned commit: `docs: adopt recovery-driven execution plan`
-- Local verification target: `git diff --check`
-- CI acceptance target: latest `ci-guardrail` success for pushed commit
-- Expected completion after acceptance: 5%
 
 ## Next Task After P0
 

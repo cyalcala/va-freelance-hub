@@ -8,15 +8,27 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted commit:
 
+- `9657c4a` - `docs: adopt recovery-driven execution plan`
+- GitHub Actions run: `27040684807`
+- Result: success
+
+Previous accepted audit commit:
+
 - `74c0416` - `docs: add major audit and agent instructions`
 - GitHub Actions run: `27039365056`
 - Result: success
 
-Current pending work:
+Current accepted work:
 
 - Adopt recovery-driven execution methodology.
 - Add master roadmap, implementation status, recovery trail, and ADR.
 - Update agent context to the active Cloudflare/Astro/D1 architecture.
+- Accepted completion: 5%.
+
+Next pending work:
+
+- P1 Slice 1: add `/opportunities` as the canonical paginated opportunity board
+  and reduce homepage data volume.
 
 ## Production Baseline From Audit
 
