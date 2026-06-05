@@ -25,6 +25,12 @@ Accepted P0 evidence:
 - Acceptance docs commit: `a6fcf70`
 - CI run: `27040764996`
 
+Accepted pause handoff evidence:
+
+- Commit: `431ab60`
+- CI run: `27041163556`
+- Scope: docs-only recovery trail; no implementation files changed.
+
 ## What Was Started But Not Changed
 
 P1 was started only as exploration. No implementation files were edited.
