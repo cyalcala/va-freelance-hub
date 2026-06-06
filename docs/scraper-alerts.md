@@ -39,3 +39,4 @@ This file automatically logs scraper failures so the AI has a trail of what brok
 - **[2026-06-05T21:07:41Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
 - **[2026-06-05T22:40:28Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
 - **[2026-06-06T00:03:18Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
+- **[2026-06-06T04:35:06Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
