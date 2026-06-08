@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, vaDirectory } from "@va-hub/db";
-import { isNotNull, and, inArray, sql } from "drizzle-orm";
+import { isNotNull, and, inArray } from "drizzle-orm";
+import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
 import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob } from "@va-hub/scraper";
@@ -30,6 +31,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   
   const env = locals.runtime.env as any;
   const db = getDb(env);
+  const observedAt = nowUtcIso();
 
   // 1. Rate Limiting Check
   const rateLimiter = env?.API_RATE_LIMITER;
@@ -135,7 +137,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       for (let i = 0; i < existingUrlArray.length; i += BATCH_SIZE) {
         const batch = existingUrlArray.slice(i, i + BATCH_SIZE);
         await db.update(opportunities)
-          .set({ lastSeenInFeedAt: sql`(datetime('now'))` })
+          .set({ lastSeenInFeedAt: observedAt, updatedAt: observedAt })
           .where(inArray(opportunities.sourceUrl, batch));
       }
       console.log(`[api/cron/scrape] Updated lastSeenInFeedAt for ${existingUrls.size} existing jobs`);
@@ -207,6 +209,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
           experienceLevel: triage.experienceLevel,
           type: triage.employmentType === "contract" ? "freelance" : (triage.employmentType || "freelance"),
           descriptionHash,
+          postedAt: normalizeUtcIso(item.postedAt),
+          scrapedAt: observedAt,
+          lastSeenInFeedAt: observedAt,
+          updatedAt: observedAt,
         });
       }
     }

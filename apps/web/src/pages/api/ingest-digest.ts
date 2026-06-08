@@ -1,7 +1,16 @@
 import type { APIRoute } from "astro";
 import { getDb, contentDigests } from "@va-hub/db";
+import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
+
+function normalizeDigestForInsert(item: any, processedAt: string) {
+  return {
+    ...item,
+    publishedAt: normalizeUtcIso(item.publishedAt),
+    processedAt: normalizeUtcIso(item.processedAt) ?? processedAt,
+  };
+}
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -57,10 +66,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 
     const db = getDb(locals.runtime?.env);
+    const processedAt = nowUtcIso();
+    const normalizedItems = items.map((item) => normalizeDigestForInsert(item, processedAt));
     
     // Insert with deduplication based on videoId
     const result = await db.insert(contentDigests)
-      .values(items)
+      .values(normalizedItems)
       .onConflictDoNothing({ target: contentDigests.videoId })
       .returning({ id: contentDigests.id });
 

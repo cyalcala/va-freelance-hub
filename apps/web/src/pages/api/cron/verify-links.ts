@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { eq, sql, inArray, asc } from "drizzle-orm";
+import { daysAgoUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
 
@@ -9,6 +10,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   
   const env = locals.runtime.env as any;
   const db = getDb(env);
+  const startedAt = nowUtcIso();
 
   // Authorization Check — supports both header formats and env var names for compatibility
   const proxySecret = env?.PROXY_SECRET || env?.CRON_SECRET;
@@ -22,13 +24,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     // 1. Auto-archive stale jobs that haven't been seen in feeds for 30 days
+    const staleCutoff = daysAgoUtcIso(30);
     const stale = await db.select({ id: opportunities.id })
       .from(opportunities)
-      .where(sql`${opportunities.isActive} = 1 AND COALESCE(${opportunities.lastSeenInFeedAt}, ${opportunities.scrapedAt}) < datetime('now', '-30 days')`);
+      .where(sql`${opportunities.isActive} = 1 AND unixepoch(COALESCE(${opportunities.lastSeenInFeedAt}, ${opportunities.scrapedAt})) < unixepoch(${staleCutoff})`);
       
     if (stale.length > 0) {
       await db.update(opportunities)
-        .set({ isActive: false })
+        .set({ isActive: false, updatedAt: startedAt })
         .where(inArray(opportunities.id, stale.map(s => s.id)));
       console.log(`[api/cron/verify-links] Auto-archived ${stale.length} stale jobs older than 30 days`);
     }
@@ -65,17 +68,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
             
             if (res.status === 404 || res.status === 410 || res.status === 403 || res.status === 401) {
               const newFailCount = (failedCount || 0) + 1;
+              const checkedAt = nowUtcIso();
               if (newFailCount >= 3) {
-                await db.update(opportunities).set({ isActive: false, lastVerifiedAt: sql`(datetime('now'))` }).where(eq(opportunities.id, id));
+                await db.update(opportunities).set({ isActive: false, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
                 console.log(`[api/cron/verify-links] Deactivated: ${sourceUrl} (failed 3 times)`);
                 return 1;
               } else {
-                await db.update(opportunities).set({ failedVerificationCount: newFailCount, lastVerifiedAt: sql`(datetime('now'))` }).where(eq(opportunities.id, id));
+                await db.update(opportunities).set({ failedVerificationCount: newFailCount, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
                 console.log(`[api/cron/verify-links] Transient error (${res.status}): ${sourceUrl} (strike ${newFailCount})`);
               }
             } else {
               // Success! Reset fail count and update verified timestamp
-              await db.update(opportunities).set({ failedVerificationCount: 0, lastVerifiedAt: sql`(datetime('now'))` }).where(eq(opportunities.id, id));
+              const checkedAt = nowUtcIso();
+              await db.update(opportunities).set({ failedVerificationCount: 0, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
             }
           } catch (err) {
             // Log warning but don't deactivate on network issues or timeouts to avoid false positives

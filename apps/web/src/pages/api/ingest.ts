@@ -1,7 +1,19 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
+import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
+
+function normalizeOpportunityForInsert(item: any, observedAt: string) {
+  return {
+    ...item,
+    postedAt: normalizeUtcIso(item.postedAt),
+    scrapedAt: normalizeUtcIso(item.scrapedAt) ?? observedAt,
+    updatedAt: observedAt,
+    lastSeenInFeedAt: normalizeUtcIso(item.lastSeenInFeedAt) ?? observedAt,
+    lastVerifiedAt: normalizeUtcIso(item.lastVerifiedAt),
+  };
+}
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -57,12 +69,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 
     const db = getDb(locals.runtime?.env);
+    const observedAt = nowUtcIso();
+    const normalizedItems = items.map((item) => normalizeOpportunityForInsert(item, observedAt));
     
     // Insert with deduplication based on sourceUrl, chunked to avoid SQLite limits
     const CHUNK_SIZE = 10;
     let insertedCount = 0;
-    for (let i = 0; i < items.length; i += CHUNK_SIZE) {
-      const chunk = items.slice(i, i + CHUNK_SIZE);
+    for (let i = 0; i < normalizedItems.length; i += CHUNK_SIZE) {
+      const chunk = normalizedItems.slice(i, i + CHUNK_SIZE);
       const result = await db.insert(opportunities)
         .values(chunk)
         .onConflictDoNothing({ target: opportunities.sourceUrl })
