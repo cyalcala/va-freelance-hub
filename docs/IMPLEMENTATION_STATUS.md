@@ -15,16 +15,15 @@ When starting a new chat or work session, read these in order:
 
 Phase P2: Indexing and datetime foundation.
 
-P1 is accepted. The public site now has a canonical `/opportunities` board,
-server-side pagination/filtering, and a smaller homepage preview.
+P2 Slice 1 is accepted. The hot opportunity and verifier query paths now have
+ordering-aligned indexes in production D1.
 
 ## Overall Completion
 
-Current accepted completion: 20%.
+Current accepted completion: 27.5%.
 
-P0 and P1 are accepted. The repository has recovery docs, a weighted roadmap,
-agent context, a live `/opportunities` board, and production smoke evidence for
-the product-surface fix.
+P0, P1, and the indexing half of P2 are accepted. The remaining P2 work is date
+normalization for future writes and stale/freshness comparisons.
 
 ## Phase Status
 
@@ -32,7 +31,7 @@ the product-surface fix.
 | --- | ---: | ---: | --- | --- |
 | P0 Recovery docs and methodology | 5% | 5% | Accepted | Complete |
 | P1 Product surface and payload | 15% | 15% | Accepted | Complete |
-| P2 Indexing and datetime foundation | 15% | 0% | Not started | D1 migration and query-plan evidence |
+| P2 Indexing and datetime foundation | 15% | 7.5% | Indexes accepted; date normalization pending | Canonical timestamp writes and stale-query evidence |
 | P3 Ingestion observability | 20% | 0% | Not started | Structured per-source status and insert accounting |
 | P4 Source compliance and portfolio | 15% | 0% | Not started | Source status config and data-policy update |
 | P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics and better category distribution |
@@ -40,6 +39,37 @@ the product-surface fix.
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P2 Slice 1 - Query-Aligned Indexes
+
+- Date: 2026-06-08
+- Status: accepted
+- Commit: `be3d646`
+- Rebased local commit: `c255f17`
+- Message: `feat: add query aligned opportunity indexes`
+- Scope:
+  - added migration `packages/db/migrations/0011_query_aligned_indexes.sql`;
+  - added `active_posted_idx` on `(is_active, posted_at DESC)`;
+  - added `category_active_posted_idx` on `(category, is_active, posted_at DESC)`;
+  - added `active_last_verified_idx` on `(is_active, last_verified_at ASC)`;
+  - aligned `packages/db/schema.ts`.
+- Pre-migration evidence:
+  - `PRAGMA index_list('opportunities')` showed only older indexes such as
+    `active_scraped_idx`, `category_idx`, and `last_verified_idx`;
+  - homepage query used `active_scraped_idx` plus `USE TEMP B-TREE FOR ORDER BY`;
+  - category query used `category_idx` plus `USE TEMP B-TREE FOR ORDER BY`;
+  - verifier query used `active_scraped_idx` plus `USE TEMP B-TREE FOR ORDER BY`.
+- Verification:
+  - `npm.cmd run build --workspace apps/web` passed.
+  - Migration workflow `27155847940` passed.
+  - CI guardrail `27155847992` passed.
+- Post-migration evidence:
+  - `PRAGMA index_list('opportunities')` shows `active_posted_idx`,
+    `category_active_posted_idx`, and `active_last_verified_idx`.
+  - Homepage query uses `active_posted_idx` with no temp B-tree.
+  - Category query uses `category_active_posted_idx` with no temp B-tree.
+  - Verifier query uses `active_last_verified_idx` with no temp B-tree.
+- Accepted completion after this checkpoint: 27.5%.
 
 ### P1 Product Surface And Homepage Payload
 
@@ -124,15 +154,17 @@ the product-surface fix.
 
 ## Next Task
 
-P2 Slice 1: add query-aligned D1 indexes and capture query-plan evidence.
+P2 Slice 2: normalize timestamp writes going forward.
 
 Acceptance criteria:
 
-- Add indexes for the hot opportunity and verifier query shapes.
-- Run migration against production D1 only after it is committed.
-- Capture before/after query plans where possible.
+- Decide and document the canonical timestamp format.
+- Ensure ingestion and verification writes use that format consistently.
+- Avoid adding new mixed-format `datetime('now')` values where TypeScript owns
+  the write path.
 - Build/CI remains green.
-- Update docs with migration and query-plan evidence.
+- Record any remaining historical date backfill as P5 if not repaired in this
+  slice.
 
 ## Open Risks To Keep Visible
 

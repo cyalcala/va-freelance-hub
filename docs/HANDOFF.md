@@ -3,13 +3,14 @@
 ## Current State
 
 Date: 2026-06-08
-Status: P1 accepted, P2 next
-Overall accepted completion: 20%
+Status: P2 indexes accepted, timestamp normalization next
+Overall accepted completion: 27.5%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
 P1 was implemented, pushed, passed CI, manually deployed, and smoked in
-production.
+production. P2 Slice 1 indexes were implemented, pushed, migrated, and verified
+against production query plans.
 
 ## What Was Completed
 
@@ -19,6 +20,7 @@ production.
 - Roadmap, status, recovery trail, savepoint, and ADR were added.
 - P0 is accepted at 5%.
 - P1 is accepted at 20% overall.
+- P2 Slice 1 is accepted at 27.5% overall.
 
 Accepted P0 evidence:
 
@@ -76,11 +78,19 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P2 Slice 1: add query-aligned D1 indexes and capture before/after query-plan
-evidence.
+P2 Slice 2: normalize timestamp writes going forward.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1 needed
 a manual Wrangler deployment even after CI passed.
+
+P2 Slice 1 evidence:
+
+- Commit: `be3d646`
+- Migration workflow: `27155847940`
+- CI run: `27155847992`
+- Before: hot queries used temp B-trees.
+- After: hot queries use `active_posted_idx`,
+  `category_active_posted_idx`, and `active_last_verified_idx`.
 
 ## Stop Rule
 

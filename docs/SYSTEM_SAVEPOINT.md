@@ -8,6 +8,13 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted product commit:
 
+- `be3d646` - `feat: add query aligned opportunity indexes`
+- Migration workflow: `27155847940`
+- GitHub Actions run: `27155847992`
+- Result: success
+
+Previous accepted product commit:
+
 - `2475103` - `feat: add paginated opportunities board`
 - GitHub Actions run: `27141658140`
 - Result: success
@@ -40,11 +47,13 @@ Current accepted work:
 - Add `/opportunities` as the canonical paginated board.
 - Reduce homepage payload from a 500-row hydrated board to a 60-row preview.
 - Deploy and smoke production.
-- Accepted completion: 20%.
+- Add production D1 indexes for active posted order, category active posted
+  order, and active verification order.
+- Accepted completion: 27.5%.
 
 Next pending work:
 
-- P2 Slice 1: add query-aligned D1 indexes and capture query-plan evidence.
+- P2 Slice 2: normalize timestamp writes going forward.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed.
 
@@ -72,6 +81,19 @@ Accepted P1 implementation:
   - `/`: 200, about 183 KB.
   - `/opportunities`: 200, about 97 KB.
   - `/directory`: 200.
+
+Accepted P2 index implementation:
+
+- Commit: `be3d646`
+- Migration: `packages/db/migrations/0011_query_aligned_indexes.sql`
+- Migration workflow: `27155847940`
+- CI run: `27155847992`
+- Before: three hot query plans used temp B-trees for ordering.
+- After:
+  - homepage query uses `active_posted_idx`;
+  - category query uses `category_active_posted_idx`;
+  - verifier query uses `active_last_verified_idx`;
+  - no temp B-tree appears in the sampled hot query plans.
 
 ## Production Baseline From Audit
 
@@ -112,7 +134,6 @@ Accepted P1 implementation:
 - ATS failures can collapse into zero-item successes.
 - Batch insert failures can be logged while route response stays 200.
 - Insert count can over-report compared with actual D1 changes.
-- Hot queries need ordering-aligned indexes.
 - Dates need normalization.
 - Source compliance states are not yet explicit enough.
 
