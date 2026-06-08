@@ -26,6 +26,7 @@ Read these first when starting a new work session:
 9. `docs/scraper-alerts.md`
 10. `docs/scraper-troubleshooting.md`
 11. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+12. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
 ## Required Backup Loop
 

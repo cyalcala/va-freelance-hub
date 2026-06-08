@@ -19,6 +19,8 @@ Read these in order:
 7. `docs/major-audit-2026-06-06.md` - latest major audit findings.
 8. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
+9. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+   timestamp normalization decision.
 
 ## Agent Entry Points
 
@@ -45,6 +47,7 @@ Read these in order:
 
 ## Current Resume Rule
 
-If the repo is clean and `docs/HANDOFF.md` still says work is paused, do not
-start implementation until the user asks to resume. If the user resumes, start
-with P1 Slice 1 from `docs/IMPLEMENTATION_STATUS.md`.
+If the repo is clean, resume from the current focus in
+`docs/IMPLEMENTATION_STATUS.md` and the next safe task in `docs/HANDOFF.md`.
+If the user says stop, pause, or backup, only update the recovery docs and push
+that checkpoint.

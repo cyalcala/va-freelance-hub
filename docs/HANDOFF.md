@@ -2,15 +2,17 @@
 
 ## Current State
 
-Date: 2026-06-08
-Status: P2 indexes accepted, timestamp normalization next
-Overall accepted completion: 27.5%
+Date: 2026-06-09
+Status: P2 accepted, P3 ingestion observability next
+Overall accepted completion: 35%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
 P1 was implemented, pushed, passed CI, manually deployed, and smoked in
-production. P2 Slice 1 indexes were implemented, pushed, migrated, and verified
-against production query plans.
+production. P2 indexes were implemented, pushed, migrated, and verified against
+production query plans. P2 timestamp normalization was implemented, pushed,
+deployed, and verified against production route smoke plus read-only D1 parsing
+evidence.
 
 ## What Was Completed
 
@@ -20,7 +22,7 @@ against production query plans.
 - Roadmap, status, recovery trail, savepoint, and ADR were added.
 - P0 is accepted at 5%.
 - P1 is accepted at 20% overall.
-- P2 Slice 1 is accepted at 27.5% overall.
+- P2 is accepted at 35% overall.
 
 Accepted P0 evidence:
 
@@ -78,10 +80,11 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P2 Slice 2: normalize timestamp writes going forward.
+P3 Slice 1: expose structured per-source ingestion results from
+`/api/cron/scrape`.
 
-Known follow-up: CI currently builds but does not deploy automatically. P1 needed
-a manual Wrangler deployment even after CI passed.
+Known follow-up: CI currently builds but does not deploy automatically. P1 and P2
+needed manual Wrangler deployments after CI passed.
 
 P2 Slice 1 evidence:
 
@@ -91,6 +94,31 @@ P2 Slice 1 evidence:
 - Before: hot queries used temp B-trees.
 - After: hot queries use `active_posted_idx`,
   `category_active_posted_idx`, and `active_last_verified_idx`.
+
+P2 Slice 2 evidence:
+
+- Commit: `e32e580`
+- CI run: `27165936753`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Deploy: `https://4bb0cf93.remotejobs-ph.pages.dev`
+- Public smoke: `/`, `/opportunities`, `/opportunities?page=2`, and
+  `/directory` returned 200.
+- Protected API smoke: `/api/cron/scrape`, `/api/cron/verify-links`,
+  `/api/ingest`, and `/api/ingest-digest` returned 401 without credentials.
+- D1 read-only evidence: 672 active opportunities and 0 unparseable active
+  values for `scraped_at`, `last_seen_in_feed_at`, and `last_verified_at` when
+  parsed through SQLite `unixepoch`.
+- ADR: `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+
+P3 Slice 1 suggested scope:
+
+- Keep the scraper behavior intact.
+- Add per-source result records with source name, type, ok state, count,
+  durationMs, and error text.
+- Preserve existing response fields so current GitHub Actions parsing does not
+  break.
+- Do not add a source-health table yet unless the simple response-level telemetry
+  proves insufficient.
 
 ## Stop Rule
 

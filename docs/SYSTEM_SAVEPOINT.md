@@ -2,18 +2,26 @@
 
 ## Current Savepoint
 
-Date: 2026-06-06
+Date: 2026-06-09
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
 Last accepted product commit:
+
+- `e32e580` - `feat: normalize app timestamp writes`
+- GitHub Actions run: `27165936753`
+- Result: success
+- Deployment: `https://4bb0cf93.remotejobs-ph.pages.dev`
+- Public alias: `https://remotejobs-ph.pages.dev`
+
+Previous accepted product commit:
 
 - `be3d646` - `feat: add query aligned opportunity indexes`
 - Migration workflow: `27155847940`
 - GitHub Actions run: `27155847992`
 - Result: success
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `2475103` - `feat: add paginated opportunities board`
 - GitHub Actions run: `27141658140`
@@ -49,13 +57,16 @@ Current accepted work:
 - Deploy and smoke production.
 - Add production D1 indexes for active posted order, category active posted
   order, and active verification order.
-- Accepted completion: 27.5%.
+- Normalize app-owned opportunity and digest timestamp writes to UTC ISO.
+- Change stale comparisons to parse historical SQLite timestamps and new ISO
+  timestamps through SQLite `unixepoch`.
+- Accepted completion: 35%.
 
 Next pending work:
 
-- P2 Slice 2: normalize timestamp writes going forward.
+- P3 Slice 1: expose structured per-source ingestion results.
 - CI deploy automation remains a known follow-up because P1 required manual
-  Wrangler deployment after CI passed.
+  Wrangler deployment after CI passed and P2 required the same.
 
 Current handoff files:
 
@@ -95,10 +106,29 @@ Accepted P2 index implementation:
   - verifier query uses `active_last_verified_idx`;
   - no temp B-tree appears in the sampled hot query plans.
 
+Accepted P2 timestamp implementation:
+
+- Commit: `e32e580`
+- ADR: `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- GitHub Actions: `27165936753` passed.
+- Cloudflare deploy: `https://4bb0cf93.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/`: 200, about 181 KB.
+  - `/opportunities`: 200, about 96 KB.
+  - `/opportunities?page=2`: 200, about 97 KB.
+  - `/directory`: 200.
+  - protected cron/ingest routes returned 401 without credentials.
+- D1 evidence:
+  - active opportunity count: 672 at verification time.
+  - `unixepoch` parsed active `scraped_at`, `last_seen_in_feed_at`, and
+    `last_verified_at` rows with 0 unparseable values.
+  - read-only D1 evidence changed 0 rows.
+
 ## Production Baseline From Audit
 
 - Public site: `https://remotejobs-ph.pages.dev`
-- `/`: 200, roughly 183 KB HTML after P1
+- `/`: 200, roughly 181 KB HTML after P2 timestamp deploy
 - `/directory`: 200
 - `/categories/tech`: 200
 - `/opportunities`: 200
@@ -134,7 +164,8 @@ Accepted P2 index implementation:
 - ATS failures can collapse into zero-item successes.
 - Batch insert failures can be logged while route response stays 200.
 - Insert count can over-report compared with actual D1 changes.
-- Dates need normalization.
+- Historical dates still need P5 backfill/default cleanup, but new app-owned
+  opportunity and digest writes use UTC ISO.
 - Source compliance states are not yet explicit enough.
 
 ## Recovery Command Hints

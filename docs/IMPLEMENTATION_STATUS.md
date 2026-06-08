@@ -13,17 +13,17 @@ When starting a new chat or work session, read these in order:
 
 ## Current Focus
 
-Phase P2: Indexing and datetime foundation.
+Phase P3: Ingestion observability and silent-error removal.
 
-P2 Slice 1 is accepted. The hot opportunity and verifier query paths now have
-ordering-aligned indexes in production D1.
+P2 is accepted. The next roadmap work is making ingestion source health and
+write accounting explicit enough that green GitHub Actions runs cannot hide
+source-level failures.
 
 ## Overall Completion
 
-Current accepted completion: 27.5%.
+Current accepted completion: 35%.
 
-P0, P1, and the indexing half of P2 are accepted. The remaining P2 work is date
-normalization for future writes and stale/freshness comparisons.
+P0, P1, and P2 are accepted.
 
 ## Phase Status
 
@@ -31,7 +31,7 @@ normalization for future writes and stale/freshness comparisons.
 | --- | ---: | ---: | --- | --- |
 | P0 Recovery docs and methodology | 5% | 5% | Accepted | Complete |
 | P1 Product surface and payload | 15% | 15% | Accepted | Complete |
-| P2 Indexing and datetime foundation | 15% | 7.5% | Indexes accepted; date normalization pending | Canonical timestamp writes and stale-query evidence |
+| P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
 | P3 Ingestion observability | 20% | 0% | Not started | Structured per-source status and insert accounting |
 | P4 Source compliance and portfolio | 15% | 0% | Not started | Source status config and data-policy update |
 | P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics and better category distribution |
@@ -39,6 +39,52 @@ normalization for future writes and stale/freshness comparisons.
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P2 Slice 2 - Canonical Timestamp Writes
+
+- Date: 2026-06-09
+- Status: accepted
+- Commit: `e32e580`
+- Message: `feat: normalize app timestamp writes`
+- Scope:
+  - added `apps/web/src/lib/time.ts` for app-owned UTC ISO timestamp helpers;
+  - normalized opportunity timestamps in `/api/cron/scrape`;
+  - normalized opportunity timestamps in `/api/ingest`;
+  - normalized digest timestamps in `/api/ingest-digest`;
+  - changed `/api/cron/verify-links` to write ISO `lastVerifiedAt` and
+    `updatedAt` values;
+  - changed stale comparisons to parse both historical SQLite timestamps and
+    new ISO timestamps through SQLite `unixepoch`;
+  - documented the decision in
+    `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`.
+- Local verification:
+  - `npm.cmd run build --workspace apps/web` passed.
+  - `git diff --check` passed with only normal CRLF warnings.
+  - `rg` found no remaining `datetime('now')` writes under `apps/web/src`.
+- GitHub:
+  - pushed to `origin/main`;
+  - GitHub Actions run `27165936753` passed.
+- Deployment:
+  - manually deployed `apps/web/dist` with Wrangler because CI currently builds
+    but does not deploy;
+  - Cloudflare preview URL: `https://4bb0cf93.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/` returned 200 at about 181 KB;
+  - `/opportunities` returned 200 at about 96 KB;
+  - `/opportunities?page=2` returned 200 at about 97 KB;
+  - `/directory` returned 200;
+  - unauthenticated POST requests to `/api/cron/scrape`,
+    `/api/cron/verify-links`, `/api/ingest`, and `/api/ingest-digest` all
+    returned 401.
+- D1 evidence:
+  - active opportunity count at verification time: 672;
+  - `unixepoch(scraped_at)`, `unixepoch(last_seen_in_feed_at)`, and
+    `unixepoch(last_verified_at)` had 0 unparseable active rows;
+  - read-only D1 query changed 0 rows.
+- Remaining debt:
+  - production table defaults still use SQLite `datetime('now')` as fallback;
+  - historical timestamp backfill and any table-default rebuild remain P5 work.
+- Accepted completion after this checkpoint: 35%.
 
 ### P2 Slice 1 - Query-Aligned Indexes
 
@@ -154,24 +200,27 @@ normalization for future writes and stale/freshness comparisons.
 
 ## Next Task
 
-P2 Slice 2: normalize timestamp writes going forward.
+P3 Slice 1: expose structured per-source ingestion results.
 
 Acceptance criteria:
 
-- Decide and document the canonical timestamp format.
-- Ensure ingestion and verification writes use that format consistently.
-- Avoid adding new mixed-format `datetime('now')` values where TypeScript owns
-  the write path.
+- `/api/cron/scrape` response includes source-level records with source name,
+  source type, ok/error state, item count, duration, and error text where
+  applicable.
+- ATS zero-item successes are distinguishable from ATS failures.
+- Existing GitHub Actions remain green.
+- Production smoke still shows public routes and protected API auth are intact.
+- Record any remaining workflow annotation or source-health table work as later
+  P3/P6 slices.
 - Build/CI remains green.
-- Record any remaining historical date backfill as P5 if not repaired in this
-  slice.
 
 ## Open Risks To Keep Visible
 
 - Green workflows can hide source failures unless source status is captured.
 - Some sources may be public but not automation-friendly under their terms.
-- Date strings are mixed format and can make stale comparisons unreliable.
+- Historical date strings remain mixed until the P5 backfill/default-rebuild
+  work, though new app-owned writes are canonical UTC ISO.
 - CI currently builds but does not deploy automatically; P1 required manual
-  Wrangler deployment.
+  Wrangler deployment and P2 required the same.
 - `other` category dominance makes browsing weaker than the raw job count
   suggests.
