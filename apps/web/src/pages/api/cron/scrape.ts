@@ -38,6 +38,16 @@ interface SourceFetchResult {
   error?: string;
 }
 
+interface InsertError {
+  batchStart: number;
+  batchSize: number;
+  error: string;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function sourceStatus(result: SourceFetchResult) {
   const { items: _items, ...status } = result;
   return status;
@@ -148,6 +158,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (allItems.length === 0) {
       return new Response(JSON.stringify({ 
         inserted: 0, 
+        actualChanges: 0,
+        acceptedForInsert: 0,
+        attemptedInsert: 0,
+        insertFailedBatches: 0,
+        insertErrors: [],
         skipped: 0, 
         failedSources, 
         sourceResults,
@@ -185,6 +200,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (newItems.length === 0) {
       return new Response(JSON.stringify({ 
         inserted: 0, 
+        actualChanges: 0,
+        acceptedForInsert: 0,
+        attemptedInsert: 0,
+        insertFailedBatches: 0,
+        insertErrors: [],
         skipped: allItems.length, 
         failedSources, 
         sourceResults,
@@ -259,6 +279,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (triagedItems.length === 0) {
       return new Response(JSON.stringify({
         inserted: 0,
+        actualChanges: 0,
+        acceptedForInsert: 0,
+        attemptedInsert: 0,
+        insertFailedBatches: 0,
+        insertErrors: [],
         processed: itemsToProcess.length,
         backlogRemaining: newItems.length - itemsToProcess.length,
         skipped: allItems.length,
@@ -269,31 +294,49 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // 6. Batch insert into D1
-    let inserted = 0;
     let actualChanges = 0;
+    let attemptedInsert = 0;
+    let insertFailedBatches = 0;
+    const insertErrors: InsertError[] = [];
     for (let i = 0; i < triagedItems.length; i += 5) {
       const batch = triagedItems.slice(i, i + 5);
+      attemptedInsert += batch.length;
       try {
         console.log(`[api/cron/scrape] Inserting batch of ${batch.length} items:`, batch.map(b => `${b.title} (${b.sourceUrl})`));
         const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
         console.log(`[api/cron/scrape] D1 insert result:`, JSON.stringify(res));
-        inserted += batch.length;
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
           actualChanges += (res as any).meta.changes;
+        } else {
+          insertErrors.push({
+            batchStart: i,
+            batchSize: batch.length,
+            error: "D1 insert metadata did not include meta.changes",
+          });
         }
       } catch (err) {
+        insertFailedBatches += 1;
+        insertErrors.push({
+          batchStart: i,
+          batchSize: batch.length,
+          error: errorMessage(err),
+        });
         console.error(`[api/cron/scrape] Batch insert failed (index ${i}):`, err);
       }
     }
 
-    console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, batch inserted ${inserted} (actual DB changes: ${actualChanges})`);
+    console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}`);
     return new Response(JSON.stringify({
-      inserted,
+      inserted: actualChanges,
       actualChanges,
+      acceptedForInsert: triagedItems.length,
+      attemptedInsert,
+      insertFailedBatches,
+      insertErrors,
       filteredOut: itemsToProcess.length - triagedItems.length,
       processed: itemsToProcess.length,
       backlogRemaining: newItems.length - itemsToProcess.length,
-      skipped: allItems.length - inserted,
+      skipped: allItems.length - actualChanges,
       failedSources,
       sourceResults,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
