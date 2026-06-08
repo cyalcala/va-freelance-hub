@@ -41,6 +41,9 @@ export const opportunities = sqliteTable("opportunities", {
   clickCount: integer("click_count").notNull().default(0),
 }, (table) => ({
   activeScrapedIdx: index("active_scraped_idx").on(table.isActive, table.scrapedAt),
+  activePostedIdx: index("active_posted_idx").on(table.isActive, table.postedAt),
+  categoryActivePostedIdx: index("category_active_posted_idx").on(table.category, table.isActive, table.postedAt),
+  activeLastVerifiedIdx: index("active_last_verified_idx").on(table.isActive, table.lastVerifiedAt),
   lastVerifiedIdx: index("last_verified_idx").on(table.lastVerifiedAt),
   contentHashIdx: uniqueIndex("content_hash_idx").on(table.contentHash),
   categoryIdx: index("category_idx").on(table.category),
