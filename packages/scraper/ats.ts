@@ -48,12 +48,12 @@ export async function fetchATSFeed(
       case "breezy":
         return await fetchBreezy(token, companyName);
       default:
-        console.warn(`[ats] Unknown platform: ${platform}`);
-        return [];
+        throw new Error(`Unknown ATS platform: ${platform}`);
     }
   } catch (err) {
-    console.error(`[ats] Failed to fetch ${platform} feed for ${companyName}:`, err);
-    return [];
+    const message = `[ats] Failed to fetch ${platform} feed for ${companyName}: ${(err as Error).message}`;
+    console.error(message);
+    throw new Error(message);
   }
 }
 
@@ -157,14 +157,12 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
   
   const contentType = res.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
-    console.warn(`[ats] Breezy feed for ${companyName} (${token}) returned non-JSON response (possibly redirected or disabled)`);
-    return [];
+    throw new Error(`Breezy feed for ${companyName} (${token}) returned non-JSON response`);
   }
 
   const data = await res.json() as any[];
   if (!Array.isArray(data)) {
-    console.warn(`[ats] Breezy feed for ${companyName} (${token}) did not return an array`);
-    return [];
+    throw new Error(`Breezy feed for ${companyName} (${token}) did not return an array`);
   }
   
   return data

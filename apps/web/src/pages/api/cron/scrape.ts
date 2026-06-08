@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getDb, opportunities, vaDirectory } from "@va-hub/db";
+import { getDb, opportunities, vaDirectory, type NewOpportunity } from "@va-hub/db";
 import { isNotNull, and, inArray } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
@@ -23,6 +23,52 @@ function mapTriageCategoryToUiCategory(cat: string): string {
     case "customer-support": return "customer-service";
     case "finance": return "other";
     default: return "other";
+  }
+}
+
+type SourceType = "RSS" | "HTML" | "ATS";
+
+interface SourceFetchResult {
+  sourceName: string;
+  sourceType: SourceType;
+  ok: boolean;
+  count: number;
+  durationMs: number;
+  items: NewOpportunity[];
+  error?: string;
+}
+
+function sourceStatus(result: SourceFetchResult) {
+  const { items: _items, ...status } = result;
+  return status;
+}
+
+async function fetchSourceWithStatus(
+  sourceName: string,
+  sourceType: SourceType,
+  fetcher: () => Promise<NewOpportunity[]>
+): Promise<SourceFetchResult> {
+  const startedAt = Date.now();
+  try {
+    const items = await fetcher();
+    return {
+      sourceName,
+      sourceType,
+      ok: true,
+      count: items.length,
+      durationMs: Date.now() - startedAt,
+      items,
+    };
+  } catch (error) {
+    return {
+      sourceName,
+      sourceType,
+      ok: false,
+      count: 0,
+      durationMs: Date.now() - startedAt,
+      items: [],
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
@@ -58,30 +104,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    const failedSources: string[] = [];
-
     // 3. Fetch all raw items
-    const rssResults = await Promise.allSettled(rssSources.map(fetchRSSFeed));
-    const rssItems = rssResults.flatMap((r, idx) => {
-      if (r.status === "fulfilled") {
-        return r.value;
-      } else {
-        const sourceName = rssSources[idx]?.name || "Unknown RSS";
-        failedSources.push(`${sourceName} (RSS): ${r.reason?.message || r.reason}`);
-        return [];
-      }
-    });
+    const rssResults = await Promise.all(
+      rssSources.map((source) =>
+        fetchSourceWithStatus(source.name, "RSS", () => fetchRSSFeed(source))
+      )
+    );
+    const rssItems = rssResults.flatMap((result) => result.items);
 
-    const htmlResults = await Promise.allSettled(htmlSources.map(fetchHTMLSource));
-    const htmlItems = htmlResults.flatMap((r, idx) => {
-      if (r.status === "fulfilled") {
-        return r.value;
-      } else {
-        const sourceName = htmlSources[idx]?.name || "Unknown HTML";
-        failedSources.push(`${sourceName} (HTML): ${r.reason?.message || r.reason}`);
-        return [];
-      }
-    });
+    const htmlResults = await Promise.all(
+      htmlSources.map((source) =>
+        fetchSourceWithStatus(source.name, "HTML", () => fetchHTMLSource(source))
+      )
+    );
+    const htmlItems = htmlResults.flatMap((result) => result.items);
 
     const atsAgencies = await db.select().from(vaDirectory).where(
       and(
@@ -92,20 +128,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     
     console.log(`[api/cron/scrape] Found ${atsAgencies.length} ATS-enabled agencies in the directory.`);
     
-    const atsResults = await Promise.allSettled(
-      atsAgencies.map((agency) => 
-        fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
+    const atsResults = await Promise.all(
+      atsAgencies.map((agency) =>
+        fetchSourceWithStatus(agency.companyName, "ATS", () =>
+          fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
+        )
       )
     );
-    const atsItems = atsResults.flatMap((r, idx) => {
-      if (r.status === "fulfilled") {
-        return r.value;
-      } else {
-        const sourceName = atsAgencies[idx]?.companyName || "Unknown ATS";
-        failedSources.push(`${sourceName} (ATS): ${r.reason?.message || r.reason}`);
-        return [];
-      }
-    });
+    const atsItems = atsResults.flatMap((result) => result.items);
+
+    const sourceResults = [...rssResults, ...htmlResults, ...atsResults].map(sourceStatus);
+    const failedSources = sourceResults
+      .filter((result) => !result.ok)
+      .map((result) => `${result.sourceName} (${result.sourceType}): ${result.error}`);
 
     const allItems = [...rssItems, ...htmlItems, ...atsItems];
     console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML, ${atsItems.length} ATS)`);
@@ -115,6 +150,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         inserted: 0, 
         skipped: 0, 
         failedSources, 
+        sourceResults,
         message: "No jobs scraped" 
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -151,6 +187,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         inserted: 0, 
         skipped: allItems.length, 
         failedSources, 
+        sourceResults,
         message: "Zero new jobs after dedup" 
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -226,6 +263,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         backlogRemaining: newItems.length - itemsToProcess.length,
         skipped: allItems.length,
         failedSources,
+        sourceResults,
         message: "No jobs passed AI triage in this batch"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -257,6 +295,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       backlogRemaining: newItems.length - itemsToProcess.length,
       skipped: allItems.length - inserted,
       failedSources,
+      sourceResults,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);
