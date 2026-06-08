@@ -1,0 +1,253 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getDb, opportunities } from '@va-hub/db';
+import { and, asc, count, desc, eq, like, or, type SQL } from 'drizzle-orm';
+import { OpportunityCard } from '@/components/opportunity-card';
+import { JOB_CATEGORY_MAP } from '@/lib/categories';
+
+export const prerender = false;
+
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+);
+
+const PAGE_SIZE = 30;
+const TYPE_OPTIONS = ['VA', 'freelance', 'project', 'full-time', 'part-time'];
+
+const searchParams = Astro.url.searchParams;
+const query = (searchParams.get('q') || '').trim();
+const category = searchParams.get('category') || '';
+const type = searchParams.get('type') || '';
+const platform = searchParams.get('platform') || '';
+const requestedPage = Number.parseInt(searchParams.get('page') || '1', 10);
+const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+const offset = (currentPage - 1) * PAGE_SIZE;
+
+let pageJobs = [];
+let platformOptions: string[] = [];
+let totalJobs = 0;
+
+function buildPageUrl(page: number) {
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (category) params.set('category', category);
+  if (type) params.set('type', type);
+  if (platform) params.set('platform', platform);
+  if (page > 1) params.set('page', String(page));
+  const qs = params.toString();
+  return qs ? `/opportunities?${qs}` : '/opportunities';
+}
+
+try {
+  const db = getDb(Astro.locals.runtime.env);
+  const filters: SQL[] = [eq(opportunities.isActive, true)];
+
+  if (category && JOB_CATEGORY_MAP[category]) {
+    filters.push(eq(opportunities.category, category));
+  }
+
+  if (type && TYPE_OPTIONS.includes(type)) {
+    filters.push(eq(opportunities.type, type));
+  }
+
+  if (platform) {
+    filters.push(eq(opportunities.sourcePlatform, platform));
+  }
+
+  if (query) {
+    const term = `%${query}%`;
+    filters.push(
+      or(
+        like(opportunities.title, term),
+        like(opportunities.company, term),
+        like(opportunities.sourcePlatform, term)
+      )
+    );
+  }
+
+  const whereClause = and(...filters);
+
+  const [totalResult] = await db
+    .select({ total: count() })
+    .from(opportunities)
+    .where(whereClause);
+
+  totalJobs = totalResult?.total ?? 0;
+
+  pageJobs = await db
+    .select()
+    .from(opportunities)
+    .where(whereClause)
+    .orderBy(desc(opportunities.postedAt))
+    .limit(PAGE_SIZE)
+    .offset(offset);
+
+  const platforms = await db
+    .select({ name: opportunities.sourcePlatform })
+    .from(opportunities)
+    .where(eq(opportunities.isActive, true))
+    .groupBy(opportunities.sourcePlatform)
+    .orderBy(asc(opportunities.sourcePlatform));
+
+  platformOptions = platforms.map((item) => item.name).filter(Boolean);
+} catch (e) {
+  console.error('DB Error in opportunities page:', e);
+}
+
+const totalPages = Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
+const hasPrevious = currentPage > 1;
+const hasNext = currentPage < totalPages;
+const resultStart = totalJobs === 0 ? 0 : offset + 1;
+const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
+---
+
+<Layout
+  title="Remote Jobs for Filipinos - VA Freelance Hub"
+  description="Browse, search, and filter active VA and freelance opportunities open to Filipino remote workers. Updated automatically."
+>
+  <section class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+    <div class="mb-10">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-sm font-extrabold tracking-widest uppercase text-ink/50 hover:text-accent transition-colors group mb-6"
+      >
+        <span class="inline-block group-hover:-translate-x-1 transition-transform">&larr;</span>
+        Home
+      </a>
+
+      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-ink/10 pb-8">
+        <div>
+          <p class="text-xs font-black uppercase tracking-widest text-accent mb-3">Full job board</p>
+          <h2 class="text-3xl sm:text-5xl font-black tracking-tight text-ink">
+            Remote jobs for Filipino talents
+          </h2>
+          <p class="text-ink/55 text-base sm:text-lg font-medium max-w-2xl mt-4 leading-relaxed">
+            Search the active opportunity index without loading the whole board into the homepage.
+          </p>
+        </div>
+        <div class="text-xs sm:text-sm font-black uppercase tracking-widest text-accent bg-accent/5 border border-accent/20 px-4 py-2 rounded-full self-start lg:self-auto">
+          {totalJobs.toLocaleString()} {totalJobs === 1 ? 'job' : 'jobs'}
+        </div>
+      </div>
+    </div>
+
+    <form
+      id="search"
+      method="get"
+      action="/opportunities"
+      class="scroll-mt-24 md:scroll-mt-32 sticky top-2 md:top-24 z-40 mb-10 bg-parchment/80 backdrop-blur-md border border-ink/5 rounded-3xl p-3 sm:p-4 shadow-lg shadow-ink/5"
+    >
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,0.8fr))_auto] gap-3">
+        <label class="sr-only" for="q">Search jobs</label>
+        <input
+          id="q"
+          type="search"
+          name="q"
+          value={query}
+          placeholder="Search roles, companies, or platforms..."
+          class="w-full px-5 py-4 bg-white/85 border border-ink/10 rounded-2xl text-ink font-semibold shadow-sm focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10 transition-all placeholder:text-ink/30"
+        />
+
+        <label class="sr-only" for="category">Category</label>
+        <select
+          id="category"
+          name="category"
+          class="w-full px-4 py-4 bg-white/85 border border-ink/10 rounded-2xl text-sm text-ink font-bold focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
+        >
+          <option value="">All categories</option>
+          {Object.entries(JOB_CATEGORY_MAP).map(([key, info]) => (
+            <option value={key} selected={category === key}>{info.title}</option>
+          ))}
+        </select>
+
+        <label class="sr-only" for="type">Type</label>
+        <select
+          id="type"
+          name="type"
+          class="w-full px-4 py-4 bg-white/85 border border-ink/10 rounded-2xl text-sm text-ink font-bold focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
+        >
+          <option value="">All types</option>
+          {TYPE_OPTIONS.map((option) => (
+            <option value={option} selected={type === option}>{option}</option>
+          ))}
+        </select>
+
+        <label class="sr-only" for="platform">Platform</label>
+        <select
+          id="platform"
+          name="platform"
+          class="w-full px-4 py-4 bg-white/85 border border-ink/10 rounded-2xl text-sm text-ink font-bold focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
+        >
+          <option value="">All platforms</option>
+          {platformOptions.map((option) => (
+            <option value={option} selected={platform === option}>{option}</option>
+          ))}
+        </select>
+
+        <button
+          type="submit"
+          class="bg-accent hover:bg-accent-hover text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-accent/20 active:scale-95"
+        >
+          Search
+        </button>
+      </div>
+    </form>
+
+    <div class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-black uppercase tracking-widest text-ink/40">
+      <p>
+        Showing {resultStart.toLocaleString()}-{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
+      </p>
+      {(query || category || type || platform) && (
+        <a href="/opportunities" class="text-accent hover:underline underline-offset-4">
+          Clear filters
+        </a>
+      )}
+    </div>
+
+    {pageJobs.length === 0 ? (
+      <div class="text-center py-24 bg-white/40 backdrop-blur-md rounded-3xl border border-ink/5">
+        <p class="text-ink/40 font-semibold text-xl tracking-tight">No opportunities matched the current filters.</p>
+        <a href="/opportunities" class="inline-block mt-4 text-accent font-bold hover:underline underline-offset-4">Reset filters</a>
+      </div>
+    ) : (
+      <div class="bg-white/50 backdrop-blur-sm border border-ink/5 rounded-3xl p-4 sm:p-6 shadow-xl shadow-ink/5 flex flex-col gap-2">
+        {pageJobs.map((opp) => (
+          <OpportunityCard opportunity={opp} />
+        ))}
+      </div>
+    )}
+
+    <nav class="mt-8 flex items-center justify-between gap-4" aria-label="Opportunity pagination">
+      {hasPrevious ? (
+        <a
+          href={buildPageUrl(currentPage - 1)}
+          class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/70 border border-ink/10 text-xs font-black uppercase tracking-widest text-ink/60 hover:text-accent hover:border-accent/30 transition-colors"
+        >
+          Previous
+        </a>
+      ) : (
+        <span class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-ink/5 border border-ink/5 text-xs font-black uppercase tracking-widest text-ink/25">
+          Previous
+        </span>
+      )}
+
+      <span class="text-xs font-black uppercase tracking-widest text-ink/40">
+        Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
+      </span>
+
+      {hasNext ? (
+        <a
+          href={buildPageUrl(currentPage + 1)}
+          class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/70 border border-ink/10 text-xs font-black uppercase tracking-widest text-ink/60 hover:text-accent hover:border-accent/30 transition-colors"
+        >
+          Next
+        </a>
+      ) : (
+        <span class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-ink/5 border border-ink/5 text-xs font-black uppercase tracking-widest text-ink/25">
+          Next
+        </span>
+      )}
+    </nav>
+  </section>
+</Layout>

@@ -40,7 +40,13 @@ function JobCategoryCard({ category, jobs }: { category: string, jobs: Opportuni
   );
 }
 
-export function OpportunitySearch({ opportunities }: { opportunities: Opportunity[] }) {
+export function OpportunitySearch({
+  opportunities,
+  showSearch = true,
+}: {
+  opportunities: Opportunity[];
+  showSearch?: boolean;
+}) {
   const [query, setQuery] = useState('');
 
   const filtered = useMemo(() => {
@@ -68,7 +74,7 @@ export function OpportunitySearch({ opportunities }: { opportunities: Opportunit
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
       
-      {/* Search Bar - Sticky & Glassmorphic */}
+      {showSearch && (
       <div id="search" className="scroll-mt-24 md:scroll-mt-32 sticky top-2 md:top-24 z-40 max-w-3xl mx-auto mb-16 pt-2 pb-4 backdrop-blur-md bg-parchment/60 rounded-3xl px-2">
 
 
@@ -91,6 +97,7 @@ export function OpportunitySearch({ opportunities }: { opportunities: Opportunit
           </div>
         </div>
       </div>
+      )}
 
       {/* Grid Layout */}
       {filtered.length === 0 ? (

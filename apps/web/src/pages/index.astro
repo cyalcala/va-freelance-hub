@@ -12,7 +12,7 @@ Astro.response.headers.set(
 );
 
 let stats = { opportunities: 0, companies: 0 };
-let allOpportunities = [];
+let latestOpportunities = [];
 
 try {
   const db = getDb(Astro.locals.runtime.env);
@@ -22,12 +22,12 @@ try {
   
   stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
   
-  allOpportunities = await db
+  latestOpportunities = await db
     .select()
     .from(opportunities)
     .where(eq(opportunities.isActive, true))
     .orderBy(desc(opportunities.postedAt))
-    .limit(500);
+    .limit(60);
 } catch (e) {
   console.error("DB error:", e);
 }
@@ -64,6 +64,21 @@ try {
   </div>
 
   <div class="animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500 fill-mode-both">
-    <OpportunitySearch client:load opportunities={allOpportunities} />
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div>
+        <p class="text-xs font-black uppercase tracking-widest text-accent mb-2">Latest preview</p>
+        <h3 class="text-2xl sm:text-3xl font-black tracking-tight text-ink">Fresh opportunities by category</h3>
+        <p class="text-sm text-ink/50 font-medium mt-2 max-w-2xl">
+          Showing a compact preview of the newest roles. Use the full board for search, filters, and pagination.
+        </p>
+      </div>
+      <a
+        href="/opportunities"
+        class="inline-flex items-center justify-center bg-accent hover:bg-accent-hover text-white px-5 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-accent/20"
+      >
+        Browse all jobs
+      </a>
+    </div>
+    <OpportunitySearch client:load opportunities={latestOpportunities} showSearch={false} />
   </div>
 </Layout>
