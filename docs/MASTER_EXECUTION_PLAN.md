@@ -77,7 +77,7 @@ project unethical; it means source policy must be explicit and conservative.
 | Phase | Weight | Status | Goal |
 | --- | ---: | --- | --- |
 | P0 Recovery docs and methodology | 5% | Accepted | Adopt recovery docs, percent roadmap, ADR, and agent context |
-| P1 Product surface and payload | 15% | Not started | Add `/opportunities` and reduce homepage payload |
+| P1 Product surface and payload | 15% | Accepted | Add `/opportunities` and reduce homepage payload |
 | P2 Indexing and datetime foundation | 15% | Not started | Add hot-query indexes and normalize dates |
 | P3 Ingestion observability | 20% | Not started | Remove silent ATS/write/source failures |
 | P4 Source compliance and portfolio | 15% | Not started | Classify sources and pause risky/unproductive ones |

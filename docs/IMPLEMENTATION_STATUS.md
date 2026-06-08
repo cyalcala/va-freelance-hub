@@ -13,25 +13,25 @@ When starting a new chat or work session, read these in order:
 
 ## Current Focus
 
-Paused by user request.
+Phase P2: Indexing and datetime foundation.
 
-No implementation work is currently active. P1 exploration started, but no code
-changes were made. Resume only when the user asks to continue.
+P1 is accepted. The public site now has a canonical `/opportunities` board,
+server-side pagination/filtering, and a smaller homepage preview.
 
 ## Overall Completion
 
-Current accepted completion: 5%.
+Current accepted completion: 20%.
 
-P0 is accepted. The repository now has recovery docs, a weighted roadmap,
-agent context, an ADR, and GitHub Actions evidence for the methodology
-checkpoint.
+P0 and P1 are accepted. The repository has recovery docs, a weighted roadmap,
+agent context, a live `/opportunities` board, and production smoke evidence for
+the product-surface fix.
 
 ## Phase Status
 
 | Phase | Weight | Current accepted % | Status | Next acceptance evidence |
 | --- | ---: | ---: | --- | --- |
 | P0 Recovery docs and methodology | 5% | 5% | Accepted | Complete |
-| P1 Product surface and payload | 15% | 0% | Not started | `/opportunities` 200 and homepage payload reduction |
+| P1 Product surface and payload | 15% | 15% | Accepted | Complete |
 | P2 Indexing and datetime foundation | 15% | 0% | Not started | D1 migration and query-plan evidence |
 | P3 Ingestion observability | 20% | 0% | Not started | Structured per-source status and insert accounting |
 | P4 Source compliance and portfolio | 15% | 0% | Not started | Source status config and data-policy update |
@@ -40,6 +40,40 @@ checkpoint.
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P1 Product Surface And Homepage Payload
+
+- Date: 2026-06-08
+- Status: accepted
+- Commit: `2475103`
+- Message: `feat: add paginated opportunities board`
+- Scope:
+  - added `apps/web/src/pages/opportunities.astro`;
+  - reduced homepage job payload from 500 rows to a 60-row preview;
+  - made the homepage preview use `OpportunitySearch` without the search bar;
+  - moved the global "Find a Job Now" CTA to `/opportunities`.
+- Local verification:
+  - `npm.cmd run build --workspace apps/web` passed.
+  - Local Astro dev server route smoke passed:
+    - `/` returned 200;
+    - `/opportunities` returned 200;
+    - `/opportunities?page=2` returned 200;
+    - `/opportunities?category=tech` returned 200;
+    - `/directory` returned 200.
+- GitHub:
+  - pushed to `origin/main`;
+  - GitHub Actions run `27141658140` passed.
+- Deployment:
+  - manually deployed `apps/web/dist` with Wrangler because CI currently builds
+    but does not deploy;
+  - Cloudflare preview URL: `https://68b1259d.remotejobs-ph.pages.dev`;
+  - public alias updated: `https://remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/` returned 200 at about 183 KB;
+  - `/opportunities` returned 200 at about 97 KB;
+  - `/opportunities?page=2` returned 200 on preview;
+  - `/directory` returned 200.
+- Accepted completion after this checkpoint: 20%.
 
 ### Pause And Recovery Handoff
 
@@ -88,27 +122,24 @@ checkpoint.
 - Result: success
 - Evidence: `docs/major-audit-2026-06-06.md`
 
-## Next Task After P0
+## Next Task
 
-When the user resumes, P1 Slice 1 remains the next task: add `/opportunities` as
-the canonical paginated opportunity board and reduce homepage data volume.
+P2 Slice 1: add query-aligned D1 indexes and capture query-plan evidence.
 
 Acceptance criteria:
 
-- `/opportunities` builds locally and returns 200 after deploy.
-- Homepage renders a limited latest-opportunities preview rather than shipping
-  the full active jobs dataset.
-- `bun run build` passes.
-- GitHub Actions run ID is recorded.
-- Production smoke evidence is recorded for `/`, `/opportunities`, and
-  `/directory`.
+- Add indexes for the hot opportunity and verifier query shapes.
+- Run migration against production D1 only after it is committed.
+- Capture before/after query plans where possible.
+- Build/CI remains green.
+- Update docs with migration and query-plan evidence.
 
 ## Open Risks To Keep Visible
 
 - Green workflows can hide source failures unless source status is captured.
 - Some sources may be public but not automation-friendly under their terms.
 - Date strings are mixed format and can make stale comparisons unreliable.
-- Homepage payload will keep growing if the board remains a fully hydrated
-  all-jobs surface.
+- CI currently builds but does not deploy automatically; P1 required manual
+  Wrangler deployment.
 - `other` category dominance makes browsing weaker than the raw job count
   suggests.

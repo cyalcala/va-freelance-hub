@@ -2,13 +2,14 @@
 
 ## Current State
 
-Date: 2026-06-06
-Status: paused by user request
-Overall accepted completion: 5%
+Date: 2026-06-08
+Status: P1 accepted, P2 next
+Overall accepted completion: 20%
 Active branch: `main`
 
-The user asked to stop implementation work and back up all progress, plans, and
-doc trails so any future AI can recover and continue safely.
+The user resumed the original roadmap and approved continuing slice by slice.
+P1 was implemented, pushed, passed CI, manually deployed, and smoked in
+production.
 
 ## What Was Completed
 
@@ -17,6 +18,7 @@ doc trails so any future AI can recover and continue safely.
 - Active architecture was corrected in `AGENTS.md`.
 - Roadmap, status, recovery trail, savepoint, and ADR were added.
 - P0 is accepted at 5%.
+- P1 is accepted at 20% overall.
 
 Accepted P0 evidence:
 
@@ -31,9 +33,23 @@ Accepted pause handoff evidence:
 - CI run: `27041163556`
 - Scope: docs-only recovery trail; no implementation files changed.
 
-## What Was Started But Not Changed
+## What Was Completed In P1
 
-P1 was started only as exploration. No implementation files were edited.
+- Added `apps/web/src/pages/opportunities.astro`.
+- Reused existing opportunity cards and visual styling.
+- Added server-side search/filtering and pagination to `/opportunities`.
+- Changed homepage query limit from 500 to 60.
+- Made the homepage a preview rather than the full search surface.
+- Moved the global "Find a Job Now" CTA to `/opportunities`.
+- Build passed with `npm.cmd run build --workspace apps/web`.
+- Local route smoke passed for `/`, `/opportunities`, paginated/filter URLs,
+  and `/directory`.
+- Pushed commit `2475103`.
+- GitHub Actions run `27141658140` passed.
+- Deployed with Wrangler to `https://68b1259d.remotejobs-ph.pages.dev`.
+- Public alias `https://remotejobs-ph.pages.dev/opportunities` returned 200.
+
+## P1 Exploration Notes
 
 Files read during P1 exploration:
 
@@ -60,22 +76,11 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-Resume with P1 Slice 1 only:
+P2 Slice 1: add query-aligned D1 indexes and capture before/after query-plan
+evidence.
 
-1. Add `apps/web/src/pages/opportunities.astro`.
-2. Reuse existing opportunity search/list components where practical.
-3. Change homepage query limit from 500 to a compact preview count.
-4. Point homepage CTA/search affordance to `/opportunities` if the full board
-   moves there.
-5. Run `bun run build`.
-6. Run local route smoke checks if a local server is started.
-7. Commit and push the slice.
-8. Watch GitHub Actions.
-9. Update `docs/IMPLEMENTATION_STATUS.md` and `docs/SYSTEM_SAVEPOINT.md` with
-   commit hash, run ID, and progress percentage.
-
-Do not begin P2 indexing, P3 ingestion observability, or source compliance
-changes until P1 Slice 1 is accepted or the user explicitly reprioritizes.
+Known follow-up: CI currently builds but does not deploy automatically. P1 needed
+a manual Wrangler deployment even after CI passed.
 
 ## Stop Rule
 

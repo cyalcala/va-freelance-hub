@@ -6,7 +6,15 @@ Date: 2026-06-06
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
-Last accepted commit:
+Last accepted product commit:
+
+- `2475103` - `feat: add paginated opportunities board`
+- GitHub Actions run: `27141658140`
+- Result: success
+- Deployment: `https://68b1259d.remotejobs-ph.pages.dev`
+- Public alias: `https://remotejobs-ph.pages.dev`
+
+Last accepted docs commit:
 
 - `431ab60` - `docs: add paused ai recovery handoff`
 - GitHub Actions run: `27041163556`
@@ -29,14 +37,16 @@ Current accepted work:
 - Adopt recovery-driven execution methodology.
 - Add master roadmap, implementation status, recovery trail, and ADR.
 - Update agent context to the active Cloudflare/Astro/D1 architecture.
-- Accepted completion: 5%.
+- Add `/opportunities` as the canonical paginated board.
+- Reduce homepage payload from a 500-row hydrated board to a 60-row preview.
+- Deploy and smoke production.
+- Accepted completion: 20%.
 
 Next pending work:
 
-- Work is paused by user request.
-- P1 Slice 1 remains the next implementation task when resumed: add
-  `/opportunities` as the canonical paginated opportunity board and reduce
-  homepage data volume.
+- P2 Slice 1: add query-aligned D1 indexes and capture query-plan evidence.
+- CI deploy automation remains a known follow-up because P1 required manual
+  Wrangler deployment after CI passed.
 
 Current handoff files:
 
@@ -50,13 +60,26 @@ Pause acceptance:
 - GitHub Actions run: `27041163556`
 - Result: success
 
+Accepted P1 implementation:
+
+- Commit: `2475103`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Local smoke: `/`, `/opportunities`, `/opportunities?page=2`,
+  `/opportunities?category=tech`, and `/directory` returned 200 on local Astro.
+- GitHub Actions: `27141658140` passed.
+- Cloudflare deploy: `https://68b1259d.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/`: 200, about 183 KB.
+  - `/opportunities`: 200, about 97 KB.
+  - `/directory`: 200.
+
 ## Production Baseline From Audit
 
 - Public site: `https://remotejobs-ph.pages.dev`
-- `/`: 200, roughly 1.75 MB HTML
+- `/`: 200, roughly 183 KB HTML after P1
 - `/directory`: 200
 - `/categories/tech`: 200
-- `/opportunities`: 404
+- `/opportunities`: 200
 - Authenticated cron/API routes reject unauthenticated calls with 401
 
 ## Data Baseline From Audit
@@ -84,6 +107,8 @@ Pause acceptance:
 
 - GitHub Actions can be green while individual sources fail.
 - Source failures are committed too noisily into `docs/scraper-alerts.md`.
+- CI guardrail builds but does not deploy; manual Wrangler deploy was needed for
+  P1.
 - ATS failures can collapse into zero-item successes.
 - Batch insert failures can be logged while route response stays 200.
 - Insert count can over-report compared with actual D1 changes.
