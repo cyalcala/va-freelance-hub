@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P2 accepted, P3 ingestion observability next
-Overall accepted completion: 35%
+Status: P3 source-status slice accepted, insert accounting next
+Overall accepted completion: 40%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -12,7 +12,8 @@ P1 was implemented, pushed, passed CI, manually deployed, and smoked in
 production. P2 indexes were implemented, pushed, migrated, and verified against
 production query plans. P2 timestamp normalization was implemented, pushed,
 deployed, and verified against production route smoke plus read-only D1 parsing
-evidence.
+evidence. P3 Slice 1 added structured source results to the scrape route,
+deployed it, and verified it through a manual Hunter workflow run.
 
 ## What Was Completed
 
@@ -23,6 +24,7 @@ evidence.
 - P0 is accepted at 5%.
 - P1 is accepted at 20% overall.
 - P2 is accepted at 35% overall.
+- P3 Slice 1 is accepted at 40% overall.
 
 Accepted P0 evidence:
 
@@ -80,11 +82,11 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P3 Slice 1: expose structured per-source ingestion results from
+P3 Slice 2: make insert accounting honest and expose failed insert batches from
 `/api/cron/scrape`.
 
-Known follow-up: CI currently builds but does not deploy automatically. P1 and P2
-needed manual Wrangler deployments after CI passed.
+Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
+and P3 needed manual Wrangler deployments after CI passed.
 
 P2 Slice 1 evidence:
 
@@ -110,15 +112,36 @@ P2 Slice 2 evidence:
   parsed through SQLite `unixepoch`.
 - ADR: `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
-P3 Slice 1 suggested scope:
+P3 Slice 1 evidence:
 
-- Keep the scraper behavior intact.
-- Add per-source result records with source name, type, ok state, count,
-  durationMs, and error text.
-- Preserve existing response fields so current GitHub Actions parsing does not
-  break.
-- Do not add a source-health table yet unless the simple response-level telemetry
-  proves insufficient.
+- Commit: `27794d8`
+- CI run: `27166648567`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Deploy: `https://44501583.remotejobs-ph.pages.dev`
+- Manual Hunter run: `27166770708`
+- Hunter result: success.
+- Live response:
+  - HTTP 200;
+  - inserted 11 jobs;
+  - `actualChanges: 11`;
+  - `backlogRemaining: 0`;
+  - included `sourceResults` for RSS, HTML, and ATS sources;
+  - preserved `failedSources`;
+  - Remote.co was visible as `ok: false` with HTTP 520;
+  - zero-count sources were visible as `ok: true`.
+- Workflow follow-up: bot committed `ca1f06d` to
+  `docs/scraper-alerts.md` for the Remote.co failure.
+- D1 read-only evidence: active opportunities count was 683 after the manual
+  Hunter run.
+
+P3 Slice 2 suggested scope:
+
+- Keep response fields backward-compatible for `.github/workflows/gha-hunter-pulse.yml`.
+- Treat `actualChanges` as the primary database insert count or clearly separate
+  accepted rows from actual row changes.
+- Add `insertFailedBatches` and `insertErrors` fields.
+- Keep batch-insert resilience, but make partial failure visible in the API
+  response and workflow logs.
 
 ## Stop Rule
 

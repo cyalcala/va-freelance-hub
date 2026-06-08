@@ -15,15 +15,14 @@ When starting a new chat or work session, read these in order:
 
 Phase P3: Ingestion observability and silent-error removal.
 
-P2 is accepted. The next roadmap work is making ingestion source health and
-write accounting explicit enough that green GitHub Actions runs cannot hide
-source-level failures.
+P3 Slice 1 is accepted. The scrape route now returns structured source-level
+status records while preserving the existing `failedSources` workflow contract.
 
 ## Overall Completion
 
-Current accepted completion: 35%.
+Current accepted completion: 40%.
 
-P0, P1, and P2 are accepted.
+P0, P1, P2, and the first 5% slice of P3 are accepted.
 
 ## Phase Status
 
@@ -32,13 +31,61 @@ P0, P1, and P2 are accepted.
 | P0 Recovery docs and methodology | 5% | 5% | Accepted | Complete |
 | P1 Product surface and payload | 15% | 15% | Accepted | Complete |
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
-| P3 Ingestion observability | 20% | 0% | Not started | Structured per-source status and insert accounting |
+| P3 Ingestion observability | 20% | 5% | Source status accepted; insert accounting pending | Actual-change insert accounting and failed batch reporting |
 | P4 Source compliance and portfolio | 15% | 0% | Not started | Source status config and data-policy update |
 | P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics and better category distribution |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P3 Slice 1 - Structured Source Status
+
+- Date: 2026-06-09
+- Status: accepted
+- Commit: `27794d8`
+- Message: `feat: report source scrape status`
+- Scope:
+  - added structured `sourceResults` to `/api/cron/scrape` responses;
+  - preserved the existing `failedSources` array used by
+    `.github/workflows/gha-hunter-pulse.yml`;
+  - each source result includes `sourceName`, `sourceType`, `ok`, `count`,
+    `durationMs`, and `error` when failed;
+  - changed ATS fetch errors to throw so broken ATS sources become failed source
+    records instead of silent zero-item successes.
+- Local verification:
+  - `npm.cmd run build --workspace apps/web` passed.
+  - `git diff --check` passed with only normal CRLF warnings.
+  - Static check confirmed `sourceResults` is returned by all successful scrape
+    response branches.
+- GitHub:
+  - pushed to `origin/main`;
+  - GitHub Actions run `27166648567` passed.
+- Deployment:
+  - manually deployed `apps/web/dist` with Wrangler;
+  - Cloudflare preview URL: `https://44501583.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/` returned 200 at about 181 KB;
+  - `/opportunities` returned 200 at about 96 KB;
+  - `/directory` returned 200;
+  - unauthenticated POST to `/api/cron/scrape` returned 401.
+- Live ingestion evidence:
+  - manual Hunter workflow run `27166770708` passed;
+  - authenticated production scrape response returned HTTP 200;
+  - response inserted 11 jobs, reported `actualChanges: 11`, and left
+    `backlogRemaining: 0`;
+  - response included `sourceResults` for RSS, HTML, and ATS sources;
+  - Remote.co was explicitly reported as
+    `ok: false`, `count: 0`, `error: "[rss] Failed to fetch Remote.co: HTTP 520"`;
+  - zero-count successful sources such as ProBlogger, Jobspresso,
+    OnlineJobs.ph, MyOutDesk, and others were distinguishable from failures via
+    `ok: true`;
+  - the workflow produced scraper-alert commit `ca1f06d` for the Remote.co
+    failure.
+- D1 evidence:
+  - active opportunity count after the manual Hunter run: 683;
+  - read-only D1 count query changed 0 rows.
+- Accepted completion after this checkpoint: 40%.
 
 ### P2 Slice 2 - Canonical Timestamp Writes
 
@@ -200,18 +247,17 @@ P0, P1, and P2 are accepted.
 
 ## Next Task
 
-P3 Slice 1: expose structured per-source ingestion results.
+P3 Slice 2: make insert accounting honest and expose failed insert batches.
 
 Acceptance criteria:
 
-- `/api/cron/scrape` response includes source-level records with source name,
-  source type, ok/error state, item count, duration, and error text where
-  applicable.
-- ATS zero-item successes are distinguishable from ATS failures.
+- `/api/cron/scrape` reports `actualChanges` as the primary inserted count or
+  clearly separates accepted rows from database changes.
+- Batch insert exceptions are captured in response fields such as
+  `insertFailedBatches` and `insertErrors`.
+- Existing GitHub Actions parsing remains backward-compatible.
 - Existing GitHub Actions remain green.
 - Production smoke still shows public routes and protected API auth are intact.
-- Record any remaining workflow annotation or source-health table work as later
-  P3/P6 slices.
 - Build/CI remains green.
 
 ## Open Risks To Keep Visible
@@ -222,5 +268,7 @@ Acceptance criteria:
   work, though new app-owned writes are canonical UTC ISO.
 - CI currently builds but does not deploy automatically; P1 required manual
   Wrangler deployment and P2 required the same.
+- The Hunter workflow still commits noisy alert entries for repeated Remote.co
+  failures; P6 should replace that with a daily rollup.
 - `other` category dominance makes browsing weaker than the raw job count
   suggests.
