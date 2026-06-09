@@ -4,7 +4,7 @@ import { isNotNull, and, inArray } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob } from "@va-hub/scraper";
+import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob, type CollectionMethod, type ComplianceStatus } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -31,6 +31,8 @@ type SourceType = "RSS" | "HTML" | "ATS";
 interface SourceFetchResult {
   sourceName: string;
   sourceType: SourceType;
+  collectionMethod: CollectionMethod | "public_ats_json";
+  complianceStatus: ComplianceStatus;
   ok: boolean;
   count: number;
   durationMs: number;
@@ -56,6 +58,8 @@ function sourceStatus(result: SourceFetchResult) {
 async function fetchSourceWithStatus(
   sourceName: string,
   sourceType: SourceType,
+  collectionMethod: SourceFetchResult["collectionMethod"],
+  complianceStatus: ComplianceStatus,
   fetcher: () => Promise<NewOpportunity[]>
 ): Promise<SourceFetchResult> {
   const startedAt = Date.now();
@@ -64,6 +68,8 @@ async function fetchSourceWithStatus(
     return {
       sourceName,
       sourceType,
+      collectionMethod,
+      complianceStatus,
       ok: true,
       count: items.length,
       durationMs: Date.now() - startedAt,
@@ -73,6 +79,8 @@ async function fetchSourceWithStatus(
     return {
       sourceName,
       sourceType,
+      collectionMethod,
+      complianceStatus,
       ok: false,
       count: 0,
       durationMs: Date.now() - startedAt,
@@ -117,14 +125,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // 3. Fetch all raw items
     const rssResults = await Promise.all(
       rssSources.map((source) =>
-        fetchSourceWithStatus(source.name, "RSS", () => fetchRSSFeed(source))
+        fetchSourceWithStatus(source.name, "RSS", source.collectionMethod, source.complianceStatus, () => fetchRSSFeed(source))
       )
     );
     const rssItems = rssResults.flatMap((result) => result.items);
 
     const htmlResults = await Promise.all(
       htmlSources.map((source) =>
-        fetchSourceWithStatus(source.name, "HTML", () => fetchHTMLSource(source))
+        fetchSourceWithStatus(source.name, "HTML", source.collectionMethod, source.complianceStatus, () => fetchHTMLSource(source))
       )
     );
     const htmlItems = htmlResults.flatMap((result) => result.items);
@@ -140,7 +148,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     
     const atsResults = await Promise.all(
       atsAgencies.map((agency) =>
-        fetchSourceWithStatus(agency.companyName, "ATS", () =>
+        fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", "needs_review", () =>
           fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
         )
       )
