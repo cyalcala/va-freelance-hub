@@ -15,15 +15,14 @@ When starting a new chat or work session, read these in order:
 
 Phase P5: Data quality and triage improvements.
 
-P5 Slice 1 is ready for acceptance. A read-only production data-quality snapshot
-now records missing fields, stale-risk buckets, category distribution, source
-distribution, and now-paused source history.
+P5 Slice 2 is ready for acceptance. A no-mutation stale/source policy dry run
+now separates keep, hold, review, and classify buckets without archiving rows.
 
 ## Overall Completion
 
-Current accepted completion: 75%.
+Current accepted completion: 80%.
 
-P0, P1, P2, P3, P4, and the first 5% of P5 are accepted.
+P0, P1, P2, P3, P4, and the first 10% of P5 are accepted.
 
 ## Phase Status
 
@@ -34,11 +33,34 @@ P0, P1, P2, P3, P4, and the first 5% of P5 are accepted.
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
 | P3 Ingestion observability | 20% | 20% | Accepted | Complete |
 | P4 Source compliance and portfolio | 15% | 15% | Accepted | Complete |
-| P5 Data quality and triage | 15% | 5% | Data-quality metrics accepted; stale policy/action pending | Dry-run stale/paused-source candidate policy |
+| P5 Data quality and triage | 15% | 10% | Metrics and stale dry-run accepted; implementation pending | One reversible data-quality improvement |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P5 Slice 2 - Stale Policy Dry Run
+
+- Date: 2026-06-09
+- Status: accepted after docs CI
+- Dry-run report: `docs/stale-policy-dry-run-2026-06-09.md`
+- Scope:
+  - defined source states: `enabled`, `paused`, and `unclassified`;
+  - defined no-mutation dry-run actions for keep, hold, review, and classify;
+  - ran read-only D1 candidate queries against production;
+  - made no production row mutations.
+- Dry-run action counts:
+  - `keep_enabled_source`: 497 rows;
+  - `hold_paused_recently_seen`: 175 rows;
+  - `review_paused_missing_last_seen`: 10 rows;
+  - `classify_source_before_action`: 5 rows.
+- Review buckets:
+  - paused-source rows missing `last_seen_in_feed_at`: 10;
+  - unclassified `RemoteOK` rows: 5.
+- Verification:
+  - all D1 checks were read-only and reported `changed_db: false`;
+  - `git diff --check` passed with only normal CRLF warnings.
+- Accepted completion after this checkpoint: 80%.
 
 ### P5 Slice 1 - Data Quality Snapshot
 
@@ -490,16 +512,15 @@ P0, P1, P2, P3, P4, and the first 5% of P5 are accepted.
 
 ## Next Task
 
-P5 Slice 2: define stale/paused-source policy and dry-run candidate report.
+P5 Slice 3: implement one reversible data-quality improvement.
 
 Acceptance criteria:
 
-- Produce a no-mutation candidate report for rows that could be archived,
-  demoted, or held.
-- Separate rules for currently enabled sources, now-paused sources, and
-  unclassified sources such as `RemoteOK`.
-- Do not mutate production rows until the dry-run candidate list and policy are
-  documented.
+- Prefer a low-risk field improvement such as deriving `application_url` from
+  `source_url`, or add a reproducible stale-candidate script/endpoint.
+- If mutating production data, use a tiny reversible migration or API path with
+  before/after row counts.
+- Do not archive production rows until the pause grace-window policy is reviewed.
 - The app build remains green.
 - Existing GitHub Actions remain green.
 

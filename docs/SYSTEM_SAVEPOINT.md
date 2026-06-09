@@ -125,11 +125,12 @@ Current accepted work:
 - De-duplicate ATS source fetches and pause Workable-backed ATS sources after
   repeated HTTP 429s.
 - Capture a read-only production data-quality snapshot for P5 Slice 1.
-- Accepted completion: 75%.
+- Define a no-mutation stale/source dry-run policy for P5 Slice 2.
+- Accepted completion: 80%.
 
 Next pending work:
 
-- P5 Slice 2: define stale/paused-source policy and dry-run candidate report.
+- P5 Slice 3: implement one reversible data-quality improvement.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 
@@ -349,6 +350,22 @@ Accepted P5 data-quality snapshot:
   - currently enabled source rows: 497.
   - now-paused source rows: 185.
   - unclassified source rows: 5 (`RemoteOK`).
+
+Accepted P5 stale policy dry run:
+
+- Dry-run report: `docs/stale-policy-dry-run-2026-06-09.md`
+- Verification:
+  - D1 queries were read-only and returned `changed_db: false`.
+  - `git diff --check` passed with only normal CRLF warnings.
+- Dry-run action counts:
+  - `keep_enabled_source`: 497 rows.
+  - `hold_paused_recently_seen`: 175 rows.
+  - `review_paused_missing_last_seen`: 10 rows.
+  - `classify_source_before_action`: 5 rows.
+- Decision:
+  - no rows should be archived immediately;
+  - now-paused sources get a grace window;
+  - `RemoteOK` must be classified before action.
 
 ## Production Baseline From Audit
 

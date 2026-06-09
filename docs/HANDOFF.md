@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P5 data quality snapshot accepted, stale policy dry-run next
-Overall accepted completion: 75%
+Status: P5 stale policy dry-run accepted, reversible data-quality improvement next
+Overall accepted completion: 80%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -23,7 +23,9 @@ paused risky or unproductive sources, and kept paused sources visible as skipped
 records in live scrape results. P4 Slice 3 de-duplicated ATS source fetches,
 paused Workable-backed ATS rows after repeated HTTP 429s, and verified the live
 Hunter workflow with no failed sources. P5 Slice 1 captured a read-only
-production data-quality snapshot and made no production row mutations.
+production data-quality snapshot and made no production row mutations. P5 Slice
+2 defined a no-mutation stale/source dry-run policy and found no immediate
+archive action.
 
 ## What Was Completed
 
@@ -41,6 +43,7 @@ production data-quality snapshot and made no production row mutations.
 - P4 Slice 2 is accepted at 65% overall.
 - P4 is accepted at 70% overall.
 - P5 Slice 1 is accepted at 75% overall.
+- P5 Slice 2 is accepted at 80% overall.
 
 Accepted P0 evidence:
 
@@ -98,7 +101,7 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P5 Slice 2: define stale/paused-source policy and dry-run candidate report.
+P5 Slice 3: implement one reversible data-quality improvement.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
@@ -311,13 +314,30 @@ P5 Slice 1 evidence:
   - now-paused source rows: 185;
   - unclassified source rows: 5 (`RemoteOK`).
 
-P5 Slice 2 suggested scope:
+P5 Slice 2 evidence:
 
-- Define source-specific stale rules for currently enabled, now-paused, and
-  unclassified sources.
-- Produce a dry-run candidate report for archive/demote/hold actions.
-- Do not mutate/archive production rows until the dry-run report is committed,
-  pushed, and accepted.
+- Dry-run report: `docs/stale-policy-dry-run-2026-06-09.md`
+- D1 query mode: read-only; all sampled queries returned `changed_db: false`.
+- Dry-run actions:
+  - `keep_enabled_source`: 497 rows;
+  - `hold_paused_recently_seen`: 175 rows;
+  - `review_paused_missing_last_seen`: 10 rows;
+  - `classify_source_before_action`: 5 rows.
+- Candidate buckets:
+  - paused-source rows missing `last_seen_in_feed_at`: 10;
+  - unclassified `RemoteOK` rows: 5.
+- Decision: no immediate production archival; hold recently seen paused-source
+  rows through a grace window and classify `RemoteOK` first.
+
+P5 Slice 3 suggested scope:
+
+- Implement one reversible data-quality improvement.
+- Good low-risk candidates:
+  - derive `application_url` from `source_url` with before/after counts; or
+  - add a repeatable stale-candidate script/endpoint; or
+  - improve category triage for the highest-volume `other` source path.
+- Do not archive production rows until the pause grace-window policy is
+  reviewed.
 
 ## Stop Rule
 
