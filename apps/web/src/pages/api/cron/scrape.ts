@@ -88,27 +88,80 @@ interface AtsAgency {
   atsToken: string | null;
 }
 
+type AtsPlatform = "lever" | "greenhouse" | "workable" | "breezy";
+
+interface AtsPlatformPolicy {
+  enabled: boolean;
+  complianceStatus: ComplianceStatus;
+  complianceNotes: string;
+}
+
+const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
+  breezy: {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Directory-configured Breezy public JSON endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.",
+  },
+  workable: {
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes:
+      "Paused 2026-06-09: Workable returned HTTP 429 even after sequential polling; re-enable only with a supported access path or explicit permission.",
+  },
+  greenhouse: {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Directory-configured Greenhouse public board endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.",
+  },
+  lever: {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Directory-configured Lever public postings endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.",
+  },
+};
+
 interface DuplicateAtsAgency {
   agency: AtsAgency;
   primaryCompanyName: string;
+}
+
+interface SkippedAtsAgency {
+  agency: AtsAgency;
+  policy: AtsPlatformPolicy;
+  skipReason: string;
 }
 
 function atsSourceKey(agency: AtsAgency): string {
   return `${agency.atsPlatform}:${agency.atsToken}`;
 }
 
-function atsComplianceNotes(agency: AtsAgency): string {
-  return `Directory-configured ${agency.atsPlatform} public ATS JSON endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.`;
+function atsPlatformPolicy(agency: AtsAgency): AtsPlatformPolicy {
+  const platform = agency.atsPlatform as AtsPlatform | null;
+  if (platform && platform in ATS_PLATFORM_POLICIES) {
+    return ATS_PLATFORM_POLICIES[platform];
+  }
+
+  return {
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: `Paused 2026-06-09: unknown ATS platform "${agency.atsPlatform}" is not configured for safe collection.`,
+  };
 }
 
-function skippedDuplicateAtsResult({ agency, primaryCompanyName }: DuplicateAtsAgency): SourceFetchResult {
-  const skipReason = `Duplicate ATS token already fetched for ${primaryCompanyName}; skipped to avoid duplicate requests and duplicate source URLs.`;
+function atsComplianceNotes(agency: AtsAgency): string {
+  return atsPlatformPolicy(agency).complianceNotes;
+}
+
+function skippedAtsResult({ agency, policy, skipReason }: SkippedAtsAgency): SourceFetchResult {
   return {
     sourceName: agency.companyName,
     sourceType: "ATS",
     collectionMethod: "public_ats_json",
-    complianceStatus: "needs_review",
-    complianceNotes: atsComplianceNotes(agency),
+    complianceStatus: policy.complianceStatus,
+    complianceNotes: policy.complianceNotes,
     ok: true,
     count: 0,
     durationMs: 0,
@@ -116,6 +169,14 @@ function skippedDuplicateAtsResult({ agency, primaryCompanyName }: DuplicateAtsA
     skipped: true,
     skipReason,
   };
+}
+
+function skippedDuplicateAtsResult({ agency, primaryCompanyName }: DuplicateAtsAgency): SourceFetchResult {
+  return skippedAtsResult({
+    agency,
+    policy: atsPlatformPolicy(agency),
+    skipReason: `Duplicate ATS token already fetched for ${primaryCompanyName}; skipped to avoid duplicate requests and duplicate source URLs.`,
+  });
 }
 
 async function fetchSourceWithStatus(
@@ -219,8 +280,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const primaryAtsCompanies = new Map<string, string>();
     const uniqueAtsAgencies: AtsAgency[] = [];
     const duplicateAtsAgencies: DuplicateAtsAgency[] = [];
+    const policySkippedAtsAgencies: SkippedAtsAgency[] = [];
 
     for (const agency of sortedAtsAgencies) {
+      const policy = atsPlatformPolicy(agency);
+      if (!policy.enabled) {
+        policySkippedAtsAgencies.push({
+          agency,
+          policy,
+          skipReason: policy.complianceNotes,
+        });
+        continue;
+      }
+
       const sourceKey = atsSourceKey(agency);
       const primaryCompanyName = primaryAtsCompanies.get(sourceKey);
       if (primaryCompanyName) {
@@ -236,11 +308,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
         `[api/cron/scrape] Skipping ${duplicateAtsAgencies.length} duplicate ATS director${duplicateAtsAgencies.length === 1 ? "y" : "ies"}.`
       );
     }
+    if (policySkippedAtsAgencies.length > 0) {
+      console.warn(
+        `[api/cron/scrape] Skipping ${policySkippedAtsAgencies.length} ATS director${policySkippedAtsAgencies.length === 1 ? "y" : "ies"} due to platform policy.`
+      );
+    }
     
     const atsResults: SourceFetchResult[] = [];
     for (const agency of uniqueAtsAgencies) {
+      const policy = atsPlatformPolicy(agency);
       atsResults.push(
-        await fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", "needs_review", atsComplianceNotes(agency), () =>
+        await fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", policy.complianceStatus, policy.complianceNotes, () =>
           fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
         )
       );
@@ -252,7 +330,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const atsItems = atsResults.flatMap((result) => result.items);
 
     const skippedResults = disabledSources.map(skippedSourceResult);
-    const skippedAtsResults = duplicateAtsAgencies.map(skippedDuplicateAtsResult);
+    const skippedAtsResults = [
+      ...policySkippedAtsAgencies.map(skippedAtsResult),
+      ...duplicateAtsAgencies.map(skippedDuplicateAtsResult),
+    ];
     const sourceResults = [...rssResults, ...htmlResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
     const failedSources = sourceResults
       .filter((result) => !result.ok)
