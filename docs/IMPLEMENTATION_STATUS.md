@@ -11,34 +11,40 @@ When starting a new chat or work session, read these in order:
 5. `docs/SYSTEM_SAVEPOINT.md`
 6. `docs/major-audit-2026-06-06.md`
 
-## Current Focus
+### Current Focus
 
-Roadmap complete. Future work should start from a new roadmap or optional
-maintenance phase.
-
-P7 is accepted. The final audit re-checked production routes, D1 metrics, query
-plans, workflow health, source-health rollup, and the README/portfolio narrative.
+Lens 2 Complete. The repository has been transitioned to Lens 2 (Sourcing Expansion and Data Quality). Future work can build on this staggered ATS architecture and refined category taxonomy.
 
 ## Overall Completion
 
-Current accepted completion: 100%.
+Current accepted completion: 100% of Lens 2.
 
-P0, P1, P2, P3, P4, P5, P6, and P7 are accepted.
-
-## Phase Status
+## Phase Status (Lens 2)
 
 | Phase | Weight | Current accepted % | Status | Next acceptance evidence |
 | --- | ---: | ---: | --- | --- |
-| P0 Recovery docs and methodology | 5% | 5% | Accepted | Complete |
-| P1 Product surface and payload | 15% | 15% | Accepted | Complete |
-| P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
-| P3 Ingestion observability | 20% | 20% | Accepted | Complete |
-| P4 Source compliance and portfolio | 15% | 15% | Accepted | Complete |
-| P5 Data quality and triage | 15% | 15% | Accepted | Complete |
-| P6 Reporting and backup hygiene | 10% | 10% | Accepted | Complete |
-| P7 Final acceptance and polish | 5% | 5% | Accepted | Complete |
+| L1 Category Alignment & AI Triage | 35% | 35% | Accepted | Complete |
+| L2 Staggered Workable Polling | 35% | 35% | Accepted | Complete |
+| L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Lens 2 - Sourcing Expansion & Data Quality
+
+- Date: 2026-06-09
+- Status: accepted after local build, D1 SQL backfill, staggered Workable setup, and CI validation success
+- Commit: `f5b9827`
+- Message: `feat: implement Lens 2 roadmap (category alignment, SQL backfill, staggered Workable rotation, and auto-deploy)`
+- Scope:
+  - Added `finance` category and updated triage prompts/regex mappings.
+  - Increased description extraction slice to 1500 characters.
+  - Implemented staggered Workable ATS rotation polling (fetching 2 agencies per run) and tracking via `verifiedAt`.
+  - Added auto-deploy to Cloudflare Pages on `main` push to CI workflow.
+- Key evidence:
+  - Local build passed.
+  - GitHub Actions run `27207069121` passed, deploying the app to Cloudflare Pages.
+  - D1 category counts updated, reducing `other` from 532 to 47.
+  - Live page loading correctly with the new categories.
 
 ### P7 - Final Acceptance Audit
 

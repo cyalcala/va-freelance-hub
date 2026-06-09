@@ -418,6 +418,18 @@ Accepted P5 stale policy dry run:
   - now-paused sources get a grace window;
   - `RemoteOK` must be classified before action.
 
+Accepted Lens 2 implementation:
+
+- Final commit: `f5b9827`
+- Build: `bun run build` passed.
+- GitHub Actions: run `27207069121` passed, deploying to Cloudflare Pages automatically.
+- Production smoke:
+  - `/` returned 200, renders the new `FINANCE & ACCOUNTING` card.
+  - `/opportunities` and `/directory` returned 200.
+- D1 evidence:
+  - Backfilled D1 categories, reducing `other` jobs count from 532 to 47.
+  - Staggered Workable rotation polling correctly saves `verifiedAt` timestamps in D1.
+
 ## Production Baseline From Audit
 
 - Public site: `https://remotejobs-ph.pages.dev`
