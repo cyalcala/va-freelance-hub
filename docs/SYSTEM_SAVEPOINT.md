@@ -8,6 +8,17 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted implementation commit:
 
+- Final acceptance audit and README update
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Production smoke: `/`, `/opportunities`, `/directory`, `/data-policy`,
+  `/privacy`, and `/categories/tech` returned 200.
+- D1 snapshot: 688 active rows, 0 missing `application_url`, 0 unparseable
+  freshness dates.
+- Source-health rollup: `docs/source-health-latest.md` reports 0 failed
+  sources for run `27204417574`.
+
+Previous accepted implementation commit:
+
 - `0ba92d2` - `ci: add source health rollup`
 - GitHub Actions run: `27204381138`
 - Hunter workflow run: `27204417574`
@@ -17,7 +28,7 @@ Last accepted implementation commit:
 - Artifact ID: `7506838648`
 - Repo-readable rollup: `docs/source-health-latest.md`
 
-Previous accepted implementation commit:
+Earlier accepted implementation commit:
 
 - `f8fadfb` - `ci: stop hunter alert commit spam`
 - GitHub Actions run: `27204009191`
@@ -164,11 +175,13 @@ Current accepted work:
   source-health evidence as artifacts instead.
 - Add guarded daily/manual source-health rollup in
   `docs/source-health-latest.md`.
-- Accepted completion: 95%.
+- Complete final acceptance audit and align README with current production
+  architecture.
+- Accepted completion: 100%.
 
 Next pending work:
 
-- P7 Slice 1: final acceptance audit and production/documentation polish.
+- Optional future roadmap only. No required recovery-roadmap work remains.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 

@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P6 accepted, P7 final acceptance audit next
-Overall accepted completion: 95%
+Status: Recovery roadmap complete
+Overall accepted completion: 100%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -31,6 +31,8 @@ proved the next Hunter insertion kept `application_url` populated. P6 Slice 1
 removed Hunter's per-run alert commit/push path and now stores per-run
 `harvest.log` plus `source-health-summary.md` artifacts. P6 Slice 2 added a
 guarded daily/manual repo-readable rollup at `docs/source-health-latest.md`.
+P7 completed the final acceptance audit and updated the README to match the
+current production architecture and public-source policy.
 
 ## What Was Completed
 
@@ -52,6 +54,7 @@ guarded daily/manual repo-readable rollup at `docs/source-health-latest.md`.
 - P5 Slice 3 is accepted at 85% overall.
 - P6 Slice 1 is accepted at 90% overall.
 - P6 Slice 2 is accepted at 95% overall.
+- P7 is accepted at 100% overall.
 
 Accepted P0 evidence:
 
@@ -109,10 +112,33 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P7 Slice 1: final acceptance audit and production/documentation polish.
+No required recovery-roadmap work remains. Start a new optional roadmap for
+future data quality, source portfolio, or deploy automation work.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
+
+P7 evidence:
+
+- Final audit report: `docs/final-acceptance-audit-2026-06-09.md`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Production smoke:
+  - `/`, `/opportunities`, `/directory`, `/data-policy`, `/privacy`, and
+    `/categories/tech` returned 200;
+  - unauthenticated POST to `/api/cron/scrape` returned 401.
+- D1 snapshot:
+  - 688 active opportunities;
+  - 0 missing `application_url`;
+  - 0 unparseable freshness dates.
+- Query plans:
+  - homepage query uses `active_posted_idx`;
+  - category query uses `category_active_posted_idx`.
+- Source health:
+  - `docs/source-health-latest.md` reports 0 failed sources for run
+    `27204417574`.
+- README:
+  - replaced stale Next/old-source/pnpm language with current Bun,
+    Astro/Cloudflare/D1, public-source indexing, and recovery-doc language.
 
 P6 Slice 2 evidence:
 

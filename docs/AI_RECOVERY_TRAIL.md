@@ -31,10 +31,11 @@ Read these first when starting a new work session:
 14. `docs/hunter-health-artifacts-2026-06-09.md`
 15. `docs/source-health-rollup-2026-06-09.md`
 16. `docs/source-health-latest.md`
-17. `docs/scraper-alerts.md`
-18. `docs/scraper-troubleshooting.md`
-19. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
-20. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+17. `docs/final-acceptance-audit-2026-06-09.md`
+18. `docs/scraper-alerts.md`
+19. `docs/scraper-troubleshooting.md`
+20. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+21. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
 ## Required Backup Loop
 

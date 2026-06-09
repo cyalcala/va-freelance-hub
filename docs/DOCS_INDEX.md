@@ -31,9 +31,11 @@ Read these in order:
 14. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
    checkpoint.
 15. `docs/source-health-latest.md` - current repo-readable source-health state.
-16. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+16. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
+   acceptance audit.
+17. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-17. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+18. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -63,6 +65,8 @@ Read these in order:
 - `docs/source-health-rollup-2026-06-09.md` records the P6 Slice 2 rollup job
   and generated `docs/source-health-latest.md` proof.
 - `docs/source-health-latest.md` is the compact current source-health rollup.
+- `docs/final-acceptance-audit-2026-06-09.md` records the P7 final acceptance
+  audit.
 - `docs/scraper-troubleshooting.md` contains useful history but may reference
   older Trigger.dev-era assumptions.
 - `docs/system-audit-and-optimizations.md` contains earlier optimization notes;

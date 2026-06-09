@@ -1,125 +1,134 @@
-<div align="center">
-  <h1>VA Freelance Hub 🇵🇭</h1>
-  <p><strong>A headless, self-updating job aggregation engine designed specifically for the global Filipino workforce.</strong></p>
+# VA Freelance Hub
 
-  <p>
-    <img src="https://img.shields.io/badge/Astro-0C1120?style=for-the-badge&logo=astro&logoColor=white" alt="Astro" />
-    <img src="https://img.shields.io/badge/Cloudflare_Pages-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare Pages" />
-    <img src="https://img.shields.io/badge/Cloudflare_D1-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare D1" />
-    <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white" alt="GitHub Actions" />
-    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-  </p>
-  
-  <h3><a href="https://remotejobs-ph.pages.dev">View Live Platform</a></h3>
-</div>
+VA Freelance Hub is a public job index and portfolio project for Filipino
+freelancers. It collects allowed public remote and VA-friendly opportunities,
+keeps a VA-friendly company directory, and demonstrates a recovery-driven
+agentic engineering loop with GitHub-backed evidence.
 
-<br />
+Live site: [remotejobs-ph.pages.dev](https://remotejobs-ph.pages.dev)
 
-## 💡 The Problem
+## Current Production Stack
 
-The global freelance market is saturated, fragmented, and exhausting to navigate. For remote professionals—particularly Virtual Assistants and engineers in the Philippines—hunting for legitimate work involves three major pain points:
+- Runtime and package manager: Bun workspaces
+- Frontend: Astro in `apps/web`
+- Hosting: Cloudflare Pages
+- Database: Cloudflare D1
+- Scheduled jobs: GitHub Actions pulse workflows
+- Ingestion API: Astro API routes under `apps/web/src/pages/api`
+- Collection and triage: TypeScript packages under `packages/scraper`
+- Backup and recovery: Git commits, workflow run evidence, and recovery docs
 
-1. **Geo-Fenced "Remote" Jobs**: Major job boards are cluttered with listings tagged as "Remote" that secretly require the candidate to be based in the US, UK, or EU.
-2. **Predatory Aggregators**: Many job hubs charge exorbitant membership fees or lock premium opportunities behind paywalls.
-3. **Bloated Infrastructure**: From an engineering standpoint, running a constantly updating web scraper is incredibly expensive, often requiring heavy server clusters or paid services like Apify.
+Older Next.js, Vercel, Turso, Trigger.dev, and parser experiments remain in the
+repo as historical backup paths. They are not the current production path.
 
-## 🚀 The Solution
+## What It Does
 
-VA Freelance Hub solves this by decoupling the scraping infrastructure from the front-end display, creating a **blazing-fast, self-maintaining resource hub** that operates completely autonomously at exactly **$0/month**.
+- Shows a public board of remote and VA-friendly opportunities.
+- Provides category pages and a company directory.
+- Attributes listings and routes users back to original public sources.
+- Records source health, skipped sources, insert counts, stale-data policy, and
+  recovery checkpoints.
+- Keeps the project intentionally small: no auth, accounts, payments, resumes,
+  auto-apply tooling, or hidden restricted-source collection.
 
-We built a custom algorithm known as **"The Bouncer"**. This algorithm intercepts thousands of raw JSON and XML payloads from global API endpoints, scans the text for hidden residency requirements, and instantly rejects any job that isn't explicitly open to the global workforce or specifically the Philippines.
+## Public-Source Policy
 
----
+This project is framed as public job indexing, not unrestricted scraping.
 
-## 🛠️ How It Works (The Architecture)
+The operating rules are:
 
-This platform relies on a modern, highly decoupled Edge Architecture, entirely eliminating legacy servers (and their costs).
+- Prefer official APIs, RSS feeds, and source-supported public access paths.
+- Do not bypass logins, paywalls, CAPTCHAs, robots.txt, rate limits, or explicit
+  anti-automation terms.
+- Store minimal factual metadata needed for discovery.
+- Link users back to the original source to apply.
+- Pause sources when terms, technical behavior, or usefulness are unclear.
+- Keep opt-out and correction language visible in the data policy.
 
-*   **The Frontend (Cloudflare Pages + Astro):** A lightning-fast, zero-JS-by-default user interface boasting a pristine, glassmorphic 2026-grade design.
-*   **The Database (Cloudflare D1):** A serverless SQLite database living on the edge, ensuring sub-millisecond query times.
-*   **The Engine ("The Hunter"):** Since Cloudflare has strict CPU limits, we offloaded the heavy lifting to **GitHub Actions**. Every 30 minutes, an Ubuntu runner spins up, fetches raw APIs from RemoteOK, Remotive, Reddit, and WeWorkRemotely, filters the data through the Bouncer, securely hashes the entries to prevent duplicates, and POSTs the clean payload directly to the Edge API.
+Public visibility by itself is not treated as blanket permission to automate
+collection, store records, and republish them.
 
----
+## Current Recovery Status
 
-## 👨‍💻 For HR, Clients & Investors
+The recovery-driven roadmap is documented in:
 
-**Why this project matters:** 
-This repository serves as a live demonstration of advanced technical writing, API integration, and product empathy. 
-*   **API Mastery:** Demonstrates the ability to parse wildly different payload structures—from messy nested JSON (Reddit) to legacy XML (RSS feeds)—and normalize them into a unified, strongly-typed relational database.
-*   **Security & DX:** Employs secure bearer-token API routes and defensive programming to protect the database from unauthorized manipulation.
-*   **User-Centric Documentation:** I don't just document what engineers build; I understand the underlying CI/CD pipelines, cron jobs, and database architectures, allowing me to translate deeply complex backend logic into crystal clear, human-readable documentation.
+- `docs/MASTER_EXECUTION_PLAN.md`
+- `docs/IMPLEMENTATION_STATUS.md`
+- `docs/AI_RECOVERY_TRAIL.md`
+- `docs/SYSTEM_SAVEPOINT.md`
+- `docs/DOCS_INDEX.md`
+- `docs/major-audit-2026-06-06.md`
 
----
+As of the final June 9, 2026 checkpoint, the project has:
 
-## 📖 How to Use the Site
+- a working `/opportunities` route;
+- a reduced homepage payload;
+- query-aligned D1 indexes;
+- normalized app-owned timestamps;
+- source-level Hunter health reporting;
+- paused high-risk or unproductive sources;
+- populated `application_url` for active rows;
+- a guarded source-health rollup in `docs/source-health-latest.md`.
 
-Using VA Freelance Hub is designed to be frictionless.
+## Architecture
 
-1. **Browse the Board:** Visit the live site to immediately view the latest, deeply-filtered remote opportunities. No login or sign-up required.
-2. **Filter by Niche:** Use the dynamic category buttons (e.g., *Customer Support, Engineering, Marketing*) to instantly filter the masonry grid.
-3. **Apply Directly:** Every card contains a verified link taking you directly to the source of the job posting (Reddit, RemoteOK, Remotive), bypassing middle-men entirely.
+```text
+GitHub Actions pulse workflows
+  -> allowed public RSS/API/ATS sources
+  -> triage and normalize jobs
+  -> authenticated POST to Cloudflare Pages API
+  -> Astro API route writes to Cloudflare D1
+  -> Cloudflare Pages serves the job board and directory
+```
 
----
+Daily and periodic maintenance verifies links, prunes stale jobs, and records
+operational evidence.
 
-## 💻 Developer Guide: Getting Started Locally
+## Local Development
 
-Want to fork this project or contribute? Getting the local environment running is simple.
-
-### Prerequisites
-*   Node.js (`pnpm` highly recommended)
-*   A Cloudflare account (for D1 local simulation)
-
-### 1. Installation
+Install dependencies from the repo root:
 
 ```bash
-# Clone the repository
-git clone https://github.com/cyalcala/va-freelance-hub.git
-cd va-freelance-hub
-
-# Install dependencies via monorepo workspace
-pnpm install
+bun install
 ```
 
-### 2. Environment Variables
-
-Create a `.env` file in the root directory. You will need a secure proxy secret to allow the local scraper to talk to your local API.
-
-```env
-# .env
-PROXY_SECRET="your_secure_random_string_here"
-```
-
-### 3. Spin Up the Environment
-
-Start the local Astro edge server (which simulates Cloudflare Pages and D1):
+Run the active Astro app:
 
 ```bash
-cd apps/web
-pnpm run dev
+bun --cwd apps/web dev
 ```
 
-The site will now be running at `http://localhost:4321`.
-
-### 4. Trigger the Scraper (The Hunter)
-
-To populate your local database with live jobs, open a new terminal tab and manually trigger the GitHub Action scraper script locally:
+Build the active app:
 
 ```bash
-# Make sure you are in the root directory
-export INGEST_API_URL="http://localhost:4321/api/ingest"
-export PROXY_SECRET="your_secure_random_string_here"
-
-# Execute the scraper
-pnpm tsx scripts/gha/harvest.ts
+npm run build --workspace apps/web
 ```
 
-Watch the console as it fetches, filters, and securely POSTs dozens of jobs directly into your local UI in real-time.
+The production API routes require `PROXY_SECRET` or `CRON_SECRET` for ingestion
+and scheduled maintenance calls.
 
----
+## Operational Checks
 
-## 👨‍💼 Credits
+Useful production checks:
 
-Architected and documented by **[cyalcala](https://github.com/cyalcala)** — Filipino freelance technical writer and developer advocate.
+```bash
+gh run list --repo cyalcala/va-freelance-hub --limit 10
+```
 
-## 📄 License
+```bash
+node_modules/.bin/wrangler d1 execute remoteph-jobs-db --remote --command "SELECT COUNT(*) FROM opportunities WHERE is_active = 1;"
+```
+
+```bash
+gh workflow run gha-hunter-pulse.yml --repo cyalcala/va-freelance-hub --ref main
+```
+
+For the latest compact source-health state, read:
+
+```text
+docs/source-health-latest.md
+```
+
+## License
+
 MIT License

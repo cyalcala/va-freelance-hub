@@ -13,16 +13,17 @@ When starting a new chat or work session, read these in order:
 
 ## Current Focus
 
-Phase P7: Final acceptance and polish.
+Roadmap complete. Future work should start from a new roadmap or optional
+maintenance phase.
 
-P6 is accepted. Hunter now keeps per-run artifacts and also writes a guarded
-repo-readable `docs/source-health-latest.md` rollup.
+P7 is accepted. The final audit re-checked production routes, D1 metrics, query
+plans, workflow health, source-health rollup, and the README/portfolio narrative.
 
 ## Overall Completion
 
-Current accepted completion: 95%.
+Current accepted completion: 100%.
 
-P0, P1, P2, P3, P4, P5, and P6 are accepted.
+P0, P1, P2, P3, P4, P5, P6, and P7 are accepted.
 
 ## Phase Status
 
@@ -35,9 +36,34 @@ P0, P1, P2, P3, P4, P5, and P6 are accepted.
 | P4 Source compliance and portfolio | 15% | 15% | Accepted | Complete |
 | P5 Data quality and triage | 15% | 15% | Accepted | Complete |
 | P6 Reporting and backup hygiene | 10% | 10% | Accepted | Complete |
-| P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
+| P7 Final acceptance and polish | 5% | 5% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### P7 - Final Acceptance Audit
+
+- Date: 2026-06-09
+- Status: accepted after local build, production smoke, D1 checks, query-plan
+  checks, README update, docs checkpoint, and CI
+- Evidence report: `docs/final-acceptance-audit-2026-06-09.md`
+- Scope:
+  - re-ran active app build;
+  - smoked production routes;
+  - checked protected scrape endpoint;
+  - captured D1 active-row, missing-field, source-state, category, and query
+    plan evidence;
+  - verified latest workflow and source-health rollup state;
+  - replaced stale README language with the current production architecture,
+    public-source policy, and recovery docs.
+- Key evidence:
+  - `npm.cmd run build --workspace apps/web` passed;
+  - `/`, `/opportunities`, `/directory`, `/data-policy`, `/privacy`, and
+    `/categories/tech` returned 200;
+  - unauthenticated POST to `/api/cron/scrape` returned 401;
+  - D1 reported 688 active opportunities and 0 missing `application_url`;
+  - query plans use `active_posted_idx` and `category_active_posted_idx`;
+  - `docs/source-health-latest.md` reports 0 failed sources.
+- Accepted completion after this checkpoint: 100%.
 
 ### P6 Slice 2 - Source Health Rollup
 
