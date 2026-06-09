@@ -24,10 +24,11 @@ Read these first when starting a new work session:
 7. `docs/SYSTEM_SAVEPOINT.md`
 8. `docs/major-audit-2026-06-06.md`
 9. `docs/source-review-2026-06-09.md`
-10. `docs/scraper-alerts.md`
-11. `docs/scraper-troubleshooting.md`
-12. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
-13. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+10. `docs/ats-source-review-2026-06-09.md`
+11. `docs/scraper-alerts.md`
+12. `docs/scraper-troubleshooting.md`
+13. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+14. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
 ## Required Backup Loop
 

@@ -8,6 +8,15 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted product commit:
 
+- `95e6665` - `fix: pause rate limited workable ats sources`
+- GitHub Actions run: `27202145473`
+- Hunter workflow run: `27202221523`
+- Result: success
+- Deployment: `https://6b3bc9b2.remotejobs-ph.pages.dev`
+- Public alias: `https://remotejobs-ph.pages.dev`
+
+Previous accepted product commit:
+
 - `1143798` - `feat: enforce source compliance pauses`
 - GitHub Actions run: `27200812470`
 - Hunter workflow run: `27200899849`
@@ -15,7 +24,7 @@ Last accepted product commit:
 - Deployment: `https://1a74a454.remotejobs-ph.pages.dev`
 - Public alias: `https://remotejobs-ph.pages.dev`
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `fa2d6eb` - `feat: add source compliance metadata`
 - GitHub Actions run: `27199810692`
@@ -113,11 +122,13 @@ Current accepted work:
   to avoid treating public visibility as blanket permission.
 - Review RSS/HTML source evidence, pause risky or unproductive sources, and
   report paused sources as skipped in live scrape results.
-- Accepted completion: 65%.
+- De-duplicate ATS source fetches and pause Workable-backed ATS sources after
+  repeated HTTP 429s.
+- Accepted completion: 70%.
 
 Next pending work:
 
-- P4 Slice 3: classify ATS/source-portfolio policy and replacement candidates.
+- P5 Slice 1: add data-quality and stale-source metrics.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 
@@ -286,10 +297,39 @@ Accepted P4 source pause enforcement:
   - active opportunity count after latest Hunter run: 687.
   - read-only D1 count query changed 0 rows.
 
+Accepted P4 ATS source policy implementation:
+
+- Final commit: `95e6665`
+- Supporting commits:
+  - `e3714d8` - `fix: dedupe duplicate ats source fetches`
+  - `3256127` - `fix: throttle ats source polling`
+- ATS source review evidence: `docs/ats-source-review-2026-06-09.md`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- GitHub Actions: `27202145473` passed.
+- Cloudflare deploy: `https://6b3bc9b2.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/`: 200, about 187 KB.
+  - `/opportunities`: 200, about 96 KB.
+  - `/directory`: 200, about 272 KB.
+  - `/api/cron/scrape` returned 401 without credentials.
+- Live Hunter workflow:
+  - run `27202221523` passed.
+  - response reported `failedSources: []`.
+  - Breezy ATS results included `20Four7VA` with 61 items, `Sourcefit` with 67
+    items, and `VAA Philippines` with 0 items.
+  - 11 Workable-backed directory rows were skipped as `paused` after repeated
+    HTTP 429s.
+  - `24/7 Virtual Assistant` was skipped because `breezy:20four7va` was already
+    fetched for `20Four7VA`.
+  - `insertFailedBatches: 0` and `insertErrors: []`.
+- D1 evidence:
+  - active opportunity count after latest Hunter run: 687.
+  - read-only D1 count query changed 0 rows.
+
 ## Production Baseline From Audit
 
 - Public site: `https://remotejobs-ph.pages.dev`
-- `/`: 200, roughly 187 KB HTML after P4 source pause deploy
+- `/`: 200, roughly 187 KB HTML after final P4 source policy deploy
 - `/directory`: 200
 - `/categories/tech`: 200
 - `/opportunities`: 200

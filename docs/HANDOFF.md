@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P4 source pause enforcement accepted, ATS/source portfolio review next
-Overall accepted completion: 65%
+Status: P4 accepted, P5 data quality and triage metrics next
+Overall accepted completion: 70%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -20,7 +20,9 @@ and summary metrics for partial source failures, zero-count sources, and insert
 accounting. P4 Slice 1 added conservative source compliance metadata and updated
 the public data policy language. P4 Slice 2 reviewed RSS/HTML source evidence,
 paused risky or unproductive sources, and kept paused sources visible as skipped
-records in live scrape results.
+records in live scrape results. P4 Slice 3 de-duplicated ATS source fetches,
+paused Workable-backed ATS rows after repeated HTTP 429s, and verified the live
+Hunter workflow with no failed sources.
 
 ## What Was Completed
 
@@ -36,6 +38,7 @@ records in live scrape results.
 - P3 is accepted at 55% overall.
 - P4 Slice 1 is accepted at 60% overall.
 - P4 Slice 2 is accepted at 65% overall.
+- P4 is accepted at 70% overall.
 
 Accepted P0 evidence:
 
@@ -93,7 +96,7 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P4 Slice 3: classify ATS/source-portfolio policy and replacement candidates.
+P5 Slice 1: add data-quality and stale-source metrics.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
@@ -241,15 +244,46 @@ P4 Slice 2 evidence:
 - D1 read-only evidence: active opportunities count was 687 after the latest
   manual Hunter run, with 0 row changes.
 
-P4 Slice 3 suggested scope:
+P4 Slice 3 evidence:
 
-- Classify ATS-derived source results with directory-level policy metadata or
-  explicit `needs_review` reasons.
-- De-duplicate duplicate ATS tokens or document why both fetches are necessary.
-- Document replacement candidates for paused RSS/HTML sources without adding
-  risky collection.
-- Keep the public data policy and source metadata aligned if public claims
-  change.
+- Final commit: `95e6665`
+- Supporting commits:
+  - `e3714d8` - de-duplicated duplicate ATS token fetches.
+  - `3256127` - throttled ATS polling after first Workable 429 proof.
+- CI run: `27202145473`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Deploy: `https://6b3bc9b2.remotejobs-ph.pages.dev`
+- Manual Hunter run: `27202221523`
+- Hunter result: success with no partial-failure annotation.
+- ATS source review doc: `docs/ats-source-review-2026-06-09.md`
+- Live response:
+  - HTTP 200;
+  - `failedSources: []`;
+  - Breezy ATS fetched `20Four7VA` with 61 items, `Sourcefit` with 67 items,
+    and `VAA Philippines` with 0 items;
+  - 11 Workable-backed directory rows returned `skipped: true` with
+    `complianceStatus: "paused"`;
+  - `24/7 Virtual Assistant` returned `skipped: true` because the
+    `breezy:20four7va` token was already fetched for `20Four7VA`;
+  - `inserted: 0`;
+  - `actualChanges: 0`;
+  - `insertFailedBatches: 0`;
+  - `insertErrors: []`.
+- Public smoke:
+  - `/`, `/opportunities`, and `/directory` returned 200;
+  - `/api/cron/scrape` returned 401 without credentials.
+- D1 read-only evidence: active opportunities count was 687 after the latest
+  manual Hunter run, with 0 row changes.
+
+P5 Slice 1 suggested scope:
+
+- Add or document a repeatable data-quality snapshot for missing company, pay,
+  timezone, application URL, experience level, posted date, description hash,
+  and stale source/platform distribution.
+- Separate historical rows from now-paused sources from currently enabled
+  ingestion sources.
+- Do not mutate/archive production rows until the metrics and stale policy are
+  documented.
 
 ## Stop Rule
 

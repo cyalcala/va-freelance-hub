@@ -13,17 +13,17 @@ When starting a new chat or work session, read these in order:
 
 ## Current Focus
 
-Phase P4: Source compliance and portfolio cleanup.
+Phase P5: Data quality and triage improvements.
 
-P4 Slice 2 is accepted. RSS/HTML sources now have conservative keep/pause
-decisions, and paused sources are reported as skipped instead of fetched or
-hidden.
+P4 is accepted. RSS/HTML and ATS sources now have conservative keep/pause
+decisions, risky/noisy sources are skipped with visible reasons, and the live
+Hunter workflow reports no failed sources.
 
 ## Overall Completion
 
-Current accepted completion: 65%.
+Current accepted completion: 70%.
 
-P0, P1, P2, P3, and the first 10% of P4 are accepted.
+P0, P1, P2, P3, and P4 are accepted.
 
 ## Phase Status
 
@@ -33,12 +33,62 @@ P0, P1, P2, P3, and the first 10% of P4 are accepted.
 | P1 Product surface and payload | 15% | 15% | Accepted | Complete |
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
 | P3 Ingestion observability | 20% | 20% | Accepted | Complete |
-| P4 Source compliance and portfolio | 15% | 10% | RSS/HTML source pauses accepted; ATS/source portfolio review pending | Classify ATS sources and replacement candidates |
-| P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics and better category distribution |
+| P4 Source compliance and portfolio | 15% | 15% | Accepted | Complete |
+| P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics, stale-source handling, and triage distribution |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P4 Slice 3 - ATS Source Policy And Duplicate Control
+
+- Date: 2026-06-09
+- Status: accepted
+- Final commit: `95e6665`
+- Message: `fix: pause rate limited workable ats sources`
+- Supporting commits:
+  - `e3714d8` - `fix: dedupe duplicate ats source fetches`
+  - `3256127` - `fix: throttle ats source polling`
+- ATS source review evidence: `docs/ats-source-review-2026-06-09.md`
+- Scope:
+  - added ATS platform policy notes to scrape `sourceResults`;
+  - de-duplicated directory rows that share the same ATS platform/token;
+  - reported duplicate ATS rows as `skipped: true` with reasons;
+  - paused Workable ATS polling after repeated HTTP 429s, including after
+    sequential polling;
+  - kept Breezy ATS JSON enabled as `needs_review`.
+- Verification:
+  - production D1 read-only query found 15 ATS-enabled rows and one duplicate
+    token: `breezy:20four7va` for `20Four7VA` and
+    `24/7 Virtual Assistant`.
+  - `npm.cmd run build --workspace apps/web` passed.
+  - `git diff --check` passed with only normal CRLF warnings.
+  - GitHub Actions run `27202145473` passed for the final Workable pause
+    commit.
+- Deployment:
+  - manually deployed `apps/web/dist` with Wrangler;
+  - final Cloudflare preview URL: `https://6b3bc9b2.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/` returned 200 at about 187 KB;
+  - `/opportunities` returned 200 at about 96 KB;
+  - `/directory` returned 200 at about 272 KB;
+  - unauthenticated POST to `/api/cron/scrape` returned 401.
+- Live workflow evidence:
+  - final manual Hunter workflow run `27202221523` passed;
+  - response reported `failedSources: []`;
+  - Breezy ATS results included `20Four7VA` with 61 items, `Sourcefit` with 67
+    items, and `VAA Philippines` with 0 items;
+  - 11 Workable-backed directory rows were reported as `skipped: true` with
+    `complianceStatus: "paused"`;
+  - `24/7 Virtual Assistant` was reported as `skipped: true` because the
+    `20four7va` Breezy token was already fetched for `20Four7VA`;
+  - response reported `inserted: 0`, `actualChanges: 0`,
+    `acceptedForInsert: 0`, `attemptedInsert: 0`,
+    `insertFailedBatches: 0`, and `insertErrors: []`.
+- D1 evidence:
+  - active opportunity count after the latest Hunter run: 687;
+  - read-only D1 count query changed 0 rows.
+- Accepted completion after this checkpoint: 70%.
 
 ### P4 Slice 2 - Source Review And Pause Enforcement
 
@@ -411,18 +461,18 @@ P0, P1, P2, P3, and the first 10% of P4 are accepted.
 
 ## Next Task
 
-P4 Slice 3: classify ATS/source-portfolio policy and replacement candidates.
+P5 Slice 1: add data-quality and stale-source metrics.
 
 Acceptance criteria:
 
-- ATS-derived source results have directory-level policy metadata or explicit
-  `needs_review` reasons.
-- Duplicate ATS tokens are de-duplicated or documented with a reason to keep
-  both fetches.
-- Replacement candidates for paused RSS/HTML sources are documented without
-  adding risky collection.
+- Produce a repeatable data-quality snapshot for missing company, pay,
+  timezone, application URL, experience level, posted date, description hash,
+  and stale source/platform distribution.
+- Separate historical rows from now-paused sources from currently enabled
+  ingestion sources.
+- Do not archive or mutate production rows until the metrics and policy are
+  documented.
 - The app build remains green.
-- Data policy/source docs are updated if source metadata changes public claims.
 - Existing GitHub Actions remain green.
 
 ## Open Risks To Keep Visible
