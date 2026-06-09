@@ -8,6 +8,13 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted product commit:
 
+- `e0a32fb` - `ci: surface hunter scrape health`
+- GitHub Actions run: `27198767290`
+- Hunter workflow run: `27198807621`
+- Result: success
+
+Previous accepted product commit:
+
 - `e86b854` - `fix: report actual scrape inserts`
 - GitHub Actions run: `27167396371`
 - Hunter workflow run: `27198077806`
@@ -15,7 +22,7 @@ Last accepted product commit:
 - Deployment: `https://cde106a3.remotejobs-ph.pages.dev`
 - Public alias: `https://remotejobs-ph.pages.dev`
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `27794d8` - `feat: report source scrape status`
 - GitHub Actions run: `27166648567`
@@ -82,12 +89,14 @@ Current accepted work:
   visible as failed source records.
 - Report actual D1 changes as the primary scrape `inserted` count and expose
   insert batch errors in the scrape response.
-- Accepted completion: 45%.
+- Add Hunter workflow warning annotations and summary metrics for source
+  failures, zero-count sources, insert counts, and insert errors.
+- Accepted completion: 55%.
 
 Next pending work:
 
-- P3 Slice 3: add workflow annotations and summary fields for partial scrape
-  failures and insert errors.
+- P4 Slice 1: add explicit source compliance/status metadata to configured
+  sources.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 
@@ -192,6 +201,24 @@ Accepted P3 insert-accounting implementation:
   - active opportunity count after later scheduled/manual ingestion: 686.
   - read-only D1 count query changed 0 rows.
 
+Accepted P3 workflow annotation implementation:
+
+- Commit: `e0a32fb`
+- GitHub Actions: `27198767290` passed.
+- Live Hunter workflow:
+  - run `27198807621` passed.
+  - warning annotation emitted:
+    `1 source(s) failed. See sourceResults in harvest.log.`
+  - response reported `inserted: 1`, `actualChanges: 1`,
+    `acceptedForInsert: 1`, `attemptedInsert: 1`,
+    `insertFailedBatches: 0`, and `insertErrors: []`.
+  - summary step wrote source failure, zero-count source, and insert accounting
+    metrics.
+  - workflow produced scraper-alert commit `baf2bd8`.
+- D1 evidence:
+  - active opportunity count after latest Hunter run: 687.
+  - read-only D1 count query changed 0 rows.
+
 ## Production Baseline From Audit
 
 - Public site: `https://remotejobs-ph.pages.dev`
@@ -224,15 +251,13 @@ Accepted P3 insert-accounting implementation:
 
 ## Known Weak Controls
 
-- GitHub Actions can be green while individual sources fail.
 - Source failures are committed too noisily into `docs/scraper-alerts.md`.
 - Source status is now visible in scrape responses, but not yet persisted in a
   source-health table or summarized in daily rollups.
 - CI guardrail builds but does not deploy; manual Wrangler deploy was needed for
   P1, P2, and P3.
-- Batch insert failures can be logged while route response stays 200.
-- Insert batch failures are now visible in scrape responses, but the workflow
-  does not yet annotate or threshold them.
+- Batch insert failures now surface in scrape responses and workflow annotations,
+  but are not yet persisted outside workflow logs and alert commits.
 - Historical dates still need P5 backfill/default cleanup, but new app-owned
   opportunity and digest writes use UTC ISO.
 - Source compliance states are not yet explicit enough.

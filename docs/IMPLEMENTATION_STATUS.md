@@ -13,16 +13,17 @@ When starting a new chat or work session, read these in order:
 
 ## Current Focus
 
-Phase P3: Ingestion observability and silent-error removal.
+Phase P4: Source compliance and portfolio cleanup.
 
-P3 Slice 2 is accepted. The scrape route now reports actual D1 changes as the
-primary `inserted` count and exposes failed insert batches/errors.
+P3 is accepted. The scrape workflow now exposes source failures, zero-count
+sources, actual inserts, attempted inserts, failed insert batches, and insert
+errors in the API response and GitHub workflow UI.
 
 ## Overall Completion
 
-Current accepted completion: 45%.
+Current accepted completion: 55%.
 
-P0, P1, P2, and the first 10% of P3 are accepted.
+P0, P1, P2, and P3 are accepted.
 
 ## Phase Status
 
@@ -31,13 +32,45 @@ P0, P1, P2, and the first 10% of P3 are accepted.
 | P0 Recovery docs and methodology | 5% | 5% | Accepted | Complete |
 | P1 Product surface and payload | 15% | 15% | Accepted | Complete |
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
-| P3 Ingestion observability | 20% | 10% | Source status and insert accounting accepted | Workflow annotations/thresholds for partial failures |
+| P3 Ingestion observability | 20% | 20% | Accepted | Complete |
 | P4 Source compliance and portfolio | 15% | 0% | Not started | Source status config and data-policy update |
 | P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics and better category distribution |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P3 Slice 3 - Hunter Workflow Annotations
+
+- Date: 2026-06-09
+- Status: accepted
+- Commit: `e0a32fb`
+- Message: `ci: surface hunter scrape health`
+- Scope:
+  - added Hunter workflow totals for accepted rows, attempted inserts, failed
+    insert batches, and insert errors;
+  - added warning annotations for partial source failures;
+  - added insert-error warning annotations and threshold behavior;
+  - expanded the GitHub step summary with source failure, zero-count source, and
+    insert accounting metrics;
+  - preserved existing scraper-alert commit behavior until P6 rollups replace it.
+- Verification:
+  - `git diff --check` passed with only normal CRLF warnings.
+  - GitHub Actions run `27198767290` passed.
+- Live workflow evidence:
+  - manual Hunter workflow run `27198807621` passed;
+  - run emitted a warning annotation:
+    `1 source(s) failed. See sourceResults in harvest.log.`;
+  - final response reported `inserted: 1`, `actualChanges: 1`,
+    `acceptedForInsert: 1`, `attemptedInsert: 1`,
+    `insertFailedBatches: 0`, and `insertErrors: []`;
+  - summary step wrote failed-source, zero-count source, and insert accounting
+    metrics;
+  - workflow produced scraper-alert commit `baf2bd8` for the Remote.co failure.
+- D1 evidence:
+  - active opportunity count after the latest Hunter run: 687;
+  - read-only D1 count query changed 0 rows.
+- Accepted completion after this checkpoint: 55%.
 
 ### P3 Slice 2 - Honest Insert Accounting
 
@@ -289,31 +322,27 @@ P0, P1, P2, and the first 10% of P3 are accepted.
 
 ## Next Task
 
-P3 Slice 3: add GitHub workflow annotations/summary fields for partial scrape
-failures and insert errors.
+P4 Slice 1: add explicit source compliance/status metadata to configured
+sources.
 
 Acceptance criteria:
 
-- Hunter workflow summary surfaces failed source count, zero-count source count,
-  inserted/actual/attempted insert counts, failed insert batch count, and
-  insert error count.
-- Workflow emits warning annotations for partial source failures or insert
-  errors without failing the whole run unless a configured threshold is crossed.
-- Existing scraper-alert commit behavior remains intact until P6 rollups replace
-  it.
+- Every configured RSS/HTML source has a collection method and compliance status
+  such as `allowed`, `needs_review`, or `paused`.
+- Source metadata is conservative and does not claim legal approval beyond known
+  evidence.
+- The app build remains green.
+- Data policy/source docs are updated if source metadata changes public claims.
 - Existing GitHub Actions remain green.
-- Production smoke still shows public routes and protected API auth are intact.
-- Build/CI remains green.
 
 ## Open Risks To Keep Visible
 
-- Green workflows can hide source failures unless source status is captured.
 - Some sources may be public but not automation-friendly under their terms.
 - Historical date strings remain mixed until the P5 backfill/default-rebuild
   work, though new app-owned writes are canonical UTC ISO.
 - CI currently builds but does not deploy automatically; P1 required manual
   Wrangler deployment and P2 required the same.
-- The Hunter workflow still commits noisy alert entries for repeated Remote.co
+- The Hunter workflow still commits noisy alert entries for repeated source
   failures; P6 should replace that with a daily rollup.
 - `other` category dominance makes browsing weaker than the raw job count
   suggests.

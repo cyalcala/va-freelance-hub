@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P3 insert-accounting slice accepted, workflow annotations next
-Overall accepted completion: 45%
+Status: P3 accepted, source compliance metadata next
+Overall accepted completion: 55%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -15,7 +15,9 @@ deployed, and verified against production route smoke plus read-only D1 parsing
 evidence. P3 Slice 1 added structured source results to the scrape route,
 deployed it, and verified it through a manual Hunter workflow run. P3 Slice 2
 made `inserted` reflect actual D1 changes and exposed failed insert batches and
-insert errors in the scrape response.
+insert errors in the scrape response. P3 Slice 3 added Hunter workflow warnings
+and summary metrics for partial source failures, zero-count sources, and insert
+accounting.
 
 ## What Was Completed
 
@@ -28,6 +30,7 @@ insert errors in the scrape response.
 - P2 is accepted at 35% overall.
 - P3 Slice 1 is accepted at 40% overall.
 - P3 Slice 2 is accepted at 45% overall.
+- P3 is accepted at 55% overall.
 
 Accepted P0 evidence:
 
@@ -85,8 +88,8 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P3 Slice 3: add GitHub workflow annotations/summary fields for partial scrape
-failures and insert errors.
+P4 Slice 1: add explicit source compliance/status metadata to configured
+sources.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
@@ -137,8 +140,6 @@ P3 Slice 1 evidence:
 - D1 read-only evidence: active opportunities count was 683 after the manual
   Hunter run.
 
-P3 Slice 2 suggested scope:
-
 P3 Slice 2 evidence:
 
 - Commit: `e86b854`
@@ -161,15 +162,37 @@ P3 Slice 2 evidence:
 - D1 read-only evidence: active opportunities count was 686 after later
   scheduled/manual ingestion.
 
-P3 Slice 3 suggested scope:
+P3 Slice 3 evidence:
 
-- Keep response fields backward-compatible for `.github/workflows/gha-hunter-pulse.yml`.
-- Use `jq` in the Hunter workflow to compute failed source count, zero-count
-  source count, attempted inserts, actual changes, failed insert batches, and
-  insert error count.
-- Add warning annotations for partial scrape failures and insert errors.
-- Keep the existing scraper-alert commit behavior until P6 replaces it with
-  daily rollups.
+- Commit: `e0a32fb`
+- CI run: `27198767290`
+- Manual Hunter run: `27198807621`
+- Hunter result: success.
+- Annotation evidence: warning emitted with
+  `1 source(s) failed. See sourceResults in harvest.log.`
+- Live response:
+  - HTTP 200;
+  - `inserted: 1`;
+  - `actualChanges: 1`;
+  - `acceptedForInsert: 1`;
+  - `attemptedInsert: 1`;
+  - `insertFailedBatches: 0`;
+  - `insertErrors: []`.
+- Summary evidence: workflow wrote failed-source, zero-count source, failed
+  insert batch, and insert error metrics to the GitHub step summary.
+- Workflow follow-up: bot committed `baf2bd8` to
+  `docs/scraper-alerts.md` for the Remote.co failure.
+- D1 read-only evidence: active opportunities count was 687 after the latest
+  manual Hunter run.
+
+P4 Slice 1 suggested scope:
+
+- Add source metadata fields in `packages/scraper/sources.ts` for collection
+  method and compliance status.
+- Use conservative statuses: `allowed`, `needs_review`, `paused`, or
+  `deprecated`.
+- Do not claim legal approval unless there is direct source evidence.
+- Keep public data policy aligned with the source metadata.
 
 ## Stop Rule
 
