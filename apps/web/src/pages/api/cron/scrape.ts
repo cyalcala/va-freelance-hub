@@ -53,6 +53,10 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function sourceStatus(result: SourceFetchResult) {
   const { items: _items, ...status } = result;
   return status;
@@ -233,13 +237,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
     
-    const atsResults = await Promise.all(
-      uniqueAtsAgencies.map((agency) =>
-        fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", "needs_review", atsComplianceNotes(agency), () =>
+    const atsResults: SourceFetchResult[] = [];
+    for (const agency of uniqueAtsAgencies) {
+      atsResults.push(
+        await fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", "needs_review", atsComplianceNotes(agency), () =>
           fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
         )
-      )
-    );
+      );
+
+      if (agency.atsPlatform === "workable") {
+        await sleep(1_000);
+      }
+    }
     const atsItems = atsResults.flatMap((result) => result.items);
 
     const skippedResults = disabledSources.map(skippedSourceResult);
