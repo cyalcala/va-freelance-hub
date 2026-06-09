@@ -7,6 +7,7 @@ export const prerender = false;
 function normalizeOpportunityForInsert(item: any, observedAt: string) {
   return {
     ...item,
+    applicationUrl: item.applicationUrl || item.sourceUrl || null,
     postedAt: normalizeUtcIso(item.postedAt),
     scrapedAt: normalizeUtcIso(item.scrapedAt) ?? observedAt,
     updatedAt: observedAt,

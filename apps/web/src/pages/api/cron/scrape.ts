@@ -447,6 +447,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         triagedItems.push({
           ...item,
+          applicationUrl: triage.applicationUrl || item.applicationUrl || item.sourceUrl,
           tags: mergedTags,
           payRange: triage.payRange,
           category: mapTriageCategoryToUiCategory(triage.category),
