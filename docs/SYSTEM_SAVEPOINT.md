@@ -8,6 +8,17 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted implementation commit:
 
+- `0ba92d2` - `ci: add source health rollup`
+- GitHub Actions run: `27204381138`
+- Hunter workflow run: `27204417574`
+- Generated rollup commit: `d4b33a7` - `docs: update daily source health`
+- Result: success
+- Artifact: `hunter-health-27204417574`
+- Artifact ID: `7506838648`
+- Repo-readable rollup: `docs/source-health-latest.md`
+
+Previous accepted implementation commit:
+
 - `f8fadfb` - `ci: stop hunter alert commit spam`
 - GitHub Actions run: `27204009191`
 - Hunter workflow run: `27204051068`
@@ -17,7 +28,7 @@ Last accepted implementation commit:
 - Result: Hunter uploaded `harvest.log` and `source-health-summary.md` without
   creating a bot alert commit.
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `2754740` - `fix: derive application urls from source urls`
 - GitHub Actions run: `27203416725`
@@ -151,11 +162,13 @@ Current accepted work:
   ingest/scrape writes populate `application_url`.
 - Stop Hunter from committing per-run scraper alerts and preserve per-run
   source-health evidence as artifacts instead.
-- Accepted completion: 90%.
+- Add guarded daily/manual source-health rollup in
+  `docs/source-health-latest.md`.
+- Accepted completion: 95%.
 
 Next pending work:
 
-- P6 Slice 2: add a compact repo-readable daily or latest source-health report.
+- P7 Slice 1: final acceptance audit and production/documentation polish.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 

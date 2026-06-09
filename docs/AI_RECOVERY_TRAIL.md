@@ -29,10 +29,12 @@ Read these first when starting a new work session:
 12. `docs/stale-policy-dry-run-2026-06-09.md`
 13. `docs/application-url-backfill-2026-06-09.md`
 14. `docs/hunter-health-artifacts-2026-06-09.md`
-15. `docs/scraper-alerts.md`
-16. `docs/scraper-troubleshooting.md`
-17. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
-18. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+15. `docs/source-health-rollup-2026-06-09.md`
+16. `docs/source-health-latest.md`
+17. `docs/scraper-alerts.md`
+18. `docs/scraper-troubleshooting.md`
+19. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+20. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
 ## Required Backup Loop
 
@@ -116,7 +118,7 @@ record why, and keep the rest of the ingestion system healthy.
 - Raw audit evidence and findings live in `docs/major-audit-2026-06-06.md`.
 - Source failure history previously lived in `docs/scraper-alerts.md`; Hunter
   now uploads per-run `harvest.log` and `source-health-summary.md` artifacts.
-  P6 should add a compact daily/latest repo-readable rollup next.
+  The latest repo-readable rollup lives in `docs/source-health-latest.md`.
 
 Do not bury important decisions only in commit messages or chat.
 

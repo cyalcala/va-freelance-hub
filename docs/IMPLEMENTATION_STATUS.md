@@ -13,17 +13,16 @@ When starting a new chat or work session, read these in order:
 
 ## Current Focus
 
-Phase P6: Reporting and backup hygiene.
+Phase P7: Final acceptance and polish.
 
-P6 Slice 1 is accepted. Hunter no longer commits per-run scraper alerts, and
-each run now preserves `harvest.log` plus `source-health-summary.md` as an
-artifact.
+P6 is accepted. Hunter now keeps per-run artifacts and also writes a guarded
+repo-readable `docs/source-health-latest.md` rollup.
 
 ## Overall Completion
 
-Current accepted completion: 90%.
+Current accepted completion: 95%.
 
-P0, P1, P2, P3, P4, P5, and the first 5% of P6 are accepted.
+P0, P1, P2, P3, P4, P5, and P6 are accepted.
 
 ## Phase Status
 
@@ -35,10 +34,46 @@ P0, P1, P2, P3, P4, P5, and the first 5% of P6 are accepted.
 | P3 Ingestion observability | 20% | 20% | Accepted | Complete |
 | P4 Source compliance and portfolio | 15% | 15% | Accepted | Complete |
 | P5 Data quality and triage | 15% | 15% | Accepted | Complete |
-| P6 Reporting and backup hygiene | 10% | 5% | Hunter artifact reporting accepted; repo-readable rollup pending | Daily/latest source-health report |
+| P6 Reporting and backup hygiene | 10% | 10% | Accepted | Complete |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P6 Slice 2 - Source Health Rollup
+
+- Date: 2026-06-09
+- Status: accepted after CI, manual Hunter, generated rollup commit, and
+  repo-readable rollup verification
+- Workflow commit: `0ba92d2`
+- Message: `ci: add source health rollup`
+- Generated rollup commit: `d4b33a7`
+- Message: `docs: update daily source health`
+- Evidence report: `docs/source-health-rollup-2026-06-09.md`
+- Scope:
+  - added manual `write_rollup` workflow input for acceptance testing;
+  - added `daily-rollup` job that downloads the Hunter artifact and writes
+    `docs/source-health-latest.md`;
+  - guarded scheduled rollups to at most one commit per UTC date;
+  - kept the main Hunter job read-only and isolated write permission to the
+    rollup job.
+- Verification:
+  - `git diff --check` passed with only normal CRLF warnings;
+  - GitHub Actions run `27204381138` passed for the workflow change;
+  - manual Hunter workflow run `27204417574` passed with
+    `write_rollup=true`;
+  - Hunter artifact `hunter-health-27204417574` uploaded with artifact ID
+    `7506838648`;
+  - `Update Source Health Rollup` job created commit `d4b33a7`;
+  - local repo fast-forwarded to include `docs/source-health-latest.md`.
+- Hunter evidence:
+  - response reported HTTP 200;
+  - response reported `failedSources: []`;
+  - response reported `inserted: 0`, `actualChanges: 0`,
+    `acceptedForInsert: 0`, `attemptedInsert: 0`,
+    `insertFailedBatches: 0`, and `insertErrors: []`;
+  - rollup reports 0 failed sources, 1 zero-count successful source, and 18
+    skipped sources.
+- Accepted completion after this checkpoint: 95%.
 
 ### P6 Slice 1 - Hunter Health Artifacts
 

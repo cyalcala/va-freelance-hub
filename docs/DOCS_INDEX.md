@@ -28,9 +28,12 @@ Read these in order:
    quality improvement.
 13. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
    and backup-hygiene checkpoint.
-14. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+14. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
+   checkpoint.
+15. `docs/source-health-latest.md` - current repo-readable source-health state.
+16. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-15. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+17. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -57,6 +60,9 @@ Read these in order:
   reversible application URL backfill and ingestion write-path evidence.
 - `docs/hunter-health-artifacts-2026-06-09.md` records the P6 Slice 1 Hunter
   artifact-reporting change and no-bot-commit proof.
+- `docs/source-health-rollup-2026-06-09.md` records the P6 Slice 2 rollup job
+  and generated `docs/source-health-latest.md` proof.
+- `docs/source-health-latest.md` is the compact current source-health rollup.
 - `docs/scraper-troubleshooting.md` contains useful history but may reference
   older Trigger.dev-era assumptions.
 - `docs/system-audit-and-optimizations.md` contains earlier optimization notes;

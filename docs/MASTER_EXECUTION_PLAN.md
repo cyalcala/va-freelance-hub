@@ -82,7 +82,7 @@ project unethical; it means source policy must be explicit and conservative.
 | P3 Ingestion observability | 20% | Accepted | Remove silent ATS/write/source failures |
 | P4 Source compliance and portfolio | 15% | Accepted | Classify sources and pause risky/unproductive ones |
 | P5 Data quality and triage | 15% | Accepted | Improve missing fields, categories, freshness, and stale policy |
-| P6 Reporting and backup hygiene | 10% | In progress (5/10%) | Replace noisy alert commits with rollups and status reports |
+| P6 Reporting and backup hygiene | 10% | Accepted | Replace noisy alert commits with rollups and status reports |
 | P7 Final acceptance and polish | 5% | Not started | Re-audit, verify production, and align portfolio docs |
 
 ## Phase Details

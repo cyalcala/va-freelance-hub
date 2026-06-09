@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P6 Hunter artifact reporting accepted, repo-readable rollup next
-Overall accepted completion: 90%
+Status: P6 accepted, P7 final acceptance audit next
+Overall accepted completion: 95%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -29,7 +29,8 @@ archive action. P5 Slice 3 backfilled `application_url` from `source_url`,
 updated future ingest/scrape writes to populate it, deployed the write path, and
 proved the next Hunter insertion kept `application_url` populated. P6 Slice 1
 removed Hunter's per-run alert commit/push path and now stores per-run
-`harvest.log` plus `source-health-summary.md` artifacts.
+`harvest.log` plus `source-health-summary.md` artifacts. P6 Slice 2 added a
+guarded daily/manual repo-readable rollup at `docs/source-health-latest.md`.
 
 ## What Was Completed
 
@@ -50,6 +51,7 @@ removed Hunter's per-run alert commit/push path and now stores per-run
 - P5 Slice 2 is accepted at 80% overall.
 - P5 Slice 3 is accepted at 85% overall.
 - P6 Slice 1 is accepted at 90% overall.
+- P6 Slice 2 is accepted at 95% overall.
 
 Accepted P0 evidence:
 
@@ -107,10 +109,38 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P6 Slice 2: add a compact repo-readable daily or latest source-health report.
+P7 Slice 1: final acceptance audit and production/documentation polish.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
+
+P6 Slice 2 evidence:
+
+- Workflow commit: `0ba92d2`
+- CI run: `27204381138`
+- Manual Hunter run: `27204417574` with `write_rollup=true`
+- Hunter result: success.
+- Artifact:
+  - name: `hunter-health-27204417574`;
+  - ID: `7506838648`.
+- Generated rollup commit:
+  - `d4b33a7` - `docs: update daily source health`;
+  - created `docs/source-health-latest.md`.
+- Live response:
+  - HTTP 200;
+  - `failedSources: []`;
+  - `inserted: 0`;
+  - `actualChanges: 0`;
+  - `acceptedForInsert: 0`;
+  - `attemptedInsert: 0`;
+  - `insertFailedBatches: 0`;
+  - `insertErrors: []`.
+- Repo-readable rollup:
+  - date: 2026-06-09;
+  - run: `https://github.com/cyalcala/va-freelance-hub/actions/runs/27204417574`;
+  - 0 failed sources;
+  - 1 zero-count successful source;
+  - 18 skipped sources.
 
 P6 Slice 1 evidence:
 
