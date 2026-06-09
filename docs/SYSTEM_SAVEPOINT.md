@@ -8,6 +8,15 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted product commit:
 
+- `1143798` - `feat: enforce source compliance pauses`
+- GitHub Actions run: `27200812470`
+- Hunter workflow run: `27200899849`
+- Result: success
+- Deployment: `https://1a74a454.remotejobs-ph.pages.dev`
+- Public alias: `https://remotejobs-ph.pages.dev`
+
+Previous accepted product commit:
+
 - `fa2d6eb` - `feat: add source compliance metadata`
 - GitHub Actions run: `27199810692`
 - Hunter workflow run: `27199890298`
@@ -15,7 +24,7 @@ Last accepted product commit:
 - Deployment: `https://1896b637.remotejobs-ph.pages.dev`
 - Public alias: `https://remotejobs-ph.pages.dev`
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `e0a32fb` - `ci: surface hunter scrape health`
 - GitHub Actions run: `27198767290`
@@ -102,12 +111,13 @@ Current accepted work:
   failures, zero-count sources, insert counts, and insert errors.
 - Add conservative source compliance metadata and update the public data policy
   to avoid treating public visibility as blanket permission.
-- Accepted completion: 60%.
+- Review RSS/HTML source evidence, pause risky or unproductive sources, and
+  report paused sources as skipped in live scrape results.
+- Accepted completion: 65%.
 
 Next pending work:
 
-- P4 Slice 2: review source terms/robots signals and pause or keep sources based
-  on conservative evidence.
+- P4 Slice 3: classify ATS/source-portfolio policy and replacement candidates.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 
@@ -251,10 +261,35 @@ Accepted P4 source metadata implementation:
   - active opportunity count after latest Hunter run: 687.
   - read-only D1 count query changed 0 rows.
 
+Accepted P4 source pause enforcement:
+
+- Commit: `1143798`
+- Source review evidence: `docs/source-review-2026-06-09.md`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- GitHub Actions: `27200812470` passed.
+- Cloudflare deploy: `https://1a74a454.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/`: 200, about 187 KB.
+  - `/opportunities`: 200, about 96 KB.
+  - `/directory`: 200, about 272 KB.
+  - `/data-policy`: 200.
+  - `/api/cron/scrape` returned 401 without credentials.
+- Live Hunter workflow:
+  - run `27200899849` passed.
+  - response reported `failedSources: []`.
+  - We Work Remotely fetched as `allowed` with 100 RSS items.
+  - Remotive fetched as `allowed` with 29 RSS items.
+  - ProBlogger, Remote.co, Authentic Jobs, Dribbble Jobs, OnlineJobs.ph, and
+    Jobspresso were visible as `skipped: true` with pause reasons.
+  - `insertFailedBatches: 0` and `insertErrors: []`.
+- D1 evidence:
+  - active opportunity count after latest Hunter run: 687.
+  - read-only D1 count query changed 0 rows.
+
 ## Production Baseline From Audit
 
 - Public site: `https://remotejobs-ph.pages.dev`
-- `/`: 200, roughly 187 KB HTML after P4 source metadata deploy
+- `/`: 200, roughly 187 KB HTML after P4 source pause deploy
 - `/directory`: 200
 - `/categories/tech`: 200
 - `/opportunities`: 200

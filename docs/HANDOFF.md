@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P4 source metadata accepted, source review/enforcement next
-Overall accepted completion: 60%
+Status: P4 source pause enforcement accepted, ATS/source portfolio review next
+Overall accepted completion: 65%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -18,7 +18,9 @@ made `inserted` reflect actual D1 changes and exposed failed insert batches and
 insert errors in the scrape response. P3 Slice 3 added Hunter workflow warnings
 and summary metrics for partial source failures, zero-count sources, and insert
 accounting. P4 Slice 1 added conservative source compliance metadata and updated
-the public data policy language.
+the public data policy language. P4 Slice 2 reviewed RSS/HTML source evidence,
+paused risky or unproductive sources, and kept paused sources visible as skipped
+records in live scrape results.
 
 ## What Was Completed
 
@@ -33,6 +35,7 @@ the public data policy language.
 - P3 Slice 2 is accepted at 45% overall.
 - P3 is accepted at 55% overall.
 - P4 Slice 1 is accepted at 60% overall.
+- P4 Slice 2 is accepted at 65% overall.
 
 Accepted P0 evidence:
 
@@ -90,8 +93,7 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P4 Slice 2: review source terms/robots signals and pause or keep sources based
-on conservative evidence.
+P4 Slice 3: classify ATS/source-portfolio policy and replacement candidates.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
@@ -209,14 +211,45 @@ P4 Slice 1 evidence:
 - D1 read-only evidence: active opportunities count was 687 after the latest
   manual Hunter run.
 
-P4 Slice 2 suggested scope:
+P4 Slice 2 evidence:
 
-- Review terms/robots/source-supported access signals for each configured
-  RSS/HTML source.
-- Mark clear source-supported feeds as `allowed` only when evidence supports it.
-- Mark repeated failures or unclear/non-source-supported sources as
-  `needs_review` or `paused`.
-- Keep the public data policy and source metadata aligned.
+- Commit: `1143798`
+- CI run: `27200812470`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Deploy: `https://1a74a454.remotejobs-ph.pages.dev`
+- Manual Hunter run: `27200899849`
+- Hunter result: success.
+- Source review doc: `docs/source-review-2026-06-09.md`
+- Source decisions:
+  - We Work Remotely and Remotive remain enabled as `allowed` RSS sources with
+    attribution/linkback notes;
+  - ProBlogger, Remote.co, Authentic Jobs, Dribbble Jobs, OnlineJobs.ph, and
+    Jobspresso are paused.
+- Live response:
+  - HTTP 200;
+  - `failedSources: []`;
+  - We Work Remotely returned 100 RSS items;
+  - Remotive returned 29 RSS items;
+  - six paused sources returned `skipped: true` with pause reasons;
+  - `inserted: 0`;
+  - `actualChanges: 0`;
+  - `insertFailedBatches: 0`;
+  - `insertErrors: []`.
+- Public smoke:
+  - `/`, `/opportunities`, `/directory`, and `/data-policy` returned 200;
+  - `/api/cron/scrape` returned 401 without credentials.
+- D1 read-only evidence: active opportunities count was 687 after the latest
+  manual Hunter run, with 0 row changes.
+
+P4 Slice 3 suggested scope:
+
+- Classify ATS-derived source results with directory-level policy metadata or
+  explicit `needs_review` reasons.
+- De-duplicate duplicate ATS tokens or document why both fetches are necessary.
+- Document replacement candidates for paused RSS/HTML sources without adding
+  risky collection.
+- Keep the public data policy and source metadata aligned if public claims
+  change.
 
 ## Stop Rule
 

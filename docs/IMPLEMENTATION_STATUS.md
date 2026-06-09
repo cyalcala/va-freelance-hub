@@ -15,15 +15,15 @@ When starting a new chat or work session, read these in order:
 
 Phase P4: Source compliance and portfolio cleanup.
 
-P4 Slice 1 is accepted. Configured sources now carry conservative compliance
-metadata, and the public data policy no longer treats public visibility as
-blanket permission.
+P4 Slice 2 is accepted. RSS/HTML sources now have conservative keep/pause
+decisions, and paused sources are reported as skipped instead of fetched or
+hidden.
 
 ## Overall Completion
 
-Current accepted completion: 60%.
+Current accepted completion: 65%.
 
-P0, P1, P2, P3, and the first 5% slice of P4 are accepted.
+P0, P1, P2, P3, and the first 10% of P4 are accepted.
 
 ## Phase Status
 
@@ -33,12 +33,59 @@ P0, P1, P2, P3, and the first 5% slice of P4 are accepted.
 | P1 Product surface and payload | 15% | 15% | Accepted | Complete |
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
 | P3 Ingestion observability | 20% | 20% | Accepted | Complete |
-| P4 Source compliance and portfolio | 15% | 5% | Source metadata accepted; source review/enforcement pending | Review terms/robots and pause risky or unproductive sources |
+| P4 Source compliance and portfolio | 15% | 10% | RSS/HTML source pauses accepted; ATS/source portfolio review pending | Classify ATS sources and replacement candidates |
 | P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics and better category distribution |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P4 Slice 2 - Source Review And Pause Enforcement
+
+- Date: 2026-06-09
+- Status: accepted
+- Commit: `1143798`
+- Message: `feat: enforce source compliance pauses`
+- Source review evidence: `docs/source-review-2026-06-09.md`
+- Scope:
+  - marked We Work Remotely and Remotive as enabled `allowed` RSS sources with
+    attribution/linkback notes;
+  - paused ProBlogger, Remote.co, Authentic Jobs, Dribbble Jobs,
+    OnlineJobs.ph, and Jobspresso with source-specific reasons;
+  - changed `rssSources` and `htmlSources` to include only enabled sources;
+  - kept disabled sources visible in scrape `sourceResults` as `skipped: true`
+    with `skipReason`;
+  - updated the Hunter workflow summary to count skipped sources separately from
+    failed and zero-count successful sources.
+- Verification:
+  - current source evidence was reviewed via source pages, robots files, terms
+    pages, and live feed probes.
+  - `npm.cmd run build --workspace apps/web` passed.
+  - `git diff --check` passed with only normal CRLF warnings.
+  - GitHub Actions run `27200812470` passed.
+- Deployment:
+  - manually deployed `apps/web/dist` with Wrangler;
+  - Cloudflare preview URL: `https://1a74a454.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/` returned 200 at about 187 KB;
+  - `/opportunities` returned 200 at about 96 KB;
+  - `/directory` returned 200 at about 272 KB;
+  - `/data-policy` returned 200;
+  - unauthenticated POST to `/api/cron/scrape` returned 401.
+- Live workflow evidence:
+  - manual Hunter workflow run `27200899849` passed;
+  - final response reported `failedSources: []`;
+  - We Work Remotely fetched as `allowed` with 100 RSS items;
+  - Remotive fetched as `allowed` with 29 RSS items;
+  - ProBlogger, Remote.co, Authentic Jobs, Dribbble Jobs, OnlineJobs.ph, and
+    Jobspresso were reported as `skipped: true` with pause reasons;
+  - response reported `inserted: 0`, `actualChanges: 0`,
+    `acceptedForInsert: 0`, `attemptedInsert: 0`,
+    `insertFailedBatches: 0`, and `insertErrors: []`.
+- D1 evidence:
+  - active opportunity count after the latest Hunter run: 687;
+  - read-only D1 count query changed 0 rows.
+- Accepted completion after this checkpoint: 65%.
 
 ### P4 Slice 1 - Conservative Source Metadata
 
@@ -364,16 +411,16 @@ P0, P1, P2, P3, and the first 5% slice of P4 are accepted.
 
 ## Next Task
 
-P4 Slice 2: review source terms/robots signals and pause or keep sources based
-on conservative evidence.
+P4 Slice 3: classify ATS/source-portfolio policy and replacement candidates.
 
 Acceptance criteria:
 
-- Capture source-review evidence for each configured RSS/HTML source.
-- Mark repeatedly broken or non-source-supported sources as `paused` when
-  appropriate.
-- Keep source metadata conservative: `allowed` only with clear source-supported
-  evidence; otherwise `needs_review` or `paused`.
+- ATS-derived source results have directory-level policy metadata or explicit
+  `needs_review` reasons.
+- Duplicate ATS tokens are de-duplicated or documented with a reason to keep
+  both fetches.
+- Replacement candidates for paused RSS/HTML sources are documented without
+  adding risky collection.
 - The app build remains green.
 - Data policy/source docs are updated if source metadata changes public claims.
 - Existing GitHub Actions remain green.

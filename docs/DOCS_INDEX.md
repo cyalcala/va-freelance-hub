@@ -17,9 +17,11 @@ Read these in order:
 5. `docs/AI_RECOVERY_TRAIL.md` - backup loop and evidence requirements.
 6. `docs/SYSTEM_SAVEPOINT.md` - current saved state and operational baseline.
 7. `docs/major-audit-2026-06-06.md` - latest major audit findings.
-8. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+8. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
+   evidence.
+9. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-9. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+10. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -33,6 +35,8 @@ Read these in order:
 
 - `docs/scraper-alerts.md` records source failure history, but it is currently
   noisy and should be replaced by daily rollups in P6.
+- `docs/source-review-2026-06-09.md` records the current RSS/HTML source
+  compliance and usefulness review behind P4 Slice 2.
 - `docs/scraper-troubleshooting.md` contains useful history but may reference
   older Trigger.dev-era assumptions.
 - `docs/system-audit-and-optimizations.md` contains earlier optimization notes;

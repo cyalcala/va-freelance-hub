@@ -23,10 +23,11 @@ Read these first when starting a new work session:
 6. `docs/AI_RECOVERY_TRAIL.md`
 7. `docs/SYSTEM_SAVEPOINT.md`
 8. `docs/major-audit-2026-06-06.md`
-9. `docs/scraper-alerts.md`
-10. `docs/scraper-troubleshooting.md`
-11. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
-12. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+9. `docs/source-review-2026-06-09.md`
+10. `docs/scraper-alerts.md`
+11. `docs/scraper-troubleshooting.md`
+12. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+13. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
 ## Required Backup Loop
 
@@ -65,7 +66,7 @@ Record the evidence that matches the type of change:
 | Frontend route/UI | `bun run build`, route smoke check, GitHub Actions run ID |
 | Database/indexing | migration file, query plan before/after, D1 count sanity check |
 | Ingestion | source-level counts, failed-source list, insert accounting, workflow run ID |
-| Compliance/source policy | source config status, reason, policy note, opt-out path |
+| Compliance/source policy | source config status, reason, policy note, source-review evidence, opt-out path |
 | Production acceptance | immutable commit, deployed URL/status, smoke response evidence |
 
 ## Percentage Rules
