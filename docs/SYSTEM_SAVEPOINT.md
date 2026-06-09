@@ -8,12 +8,21 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted product commit:
 
+- `fa2d6eb` - `feat: add source compliance metadata`
+- GitHub Actions run: `27199810692`
+- Hunter workflow run: `27199890298`
+- Result: success
+- Deployment: `https://1896b637.remotejobs-ph.pages.dev`
+- Public alias: `https://remotejobs-ph.pages.dev`
+
+Previous accepted product commit:
+
 - `e0a32fb` - `ci: surface hunter scrape health`
 - GitHub Actions run: `27198767290`
 - Hunter workflow run: `27198807621`
 - Result: success
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `e86b854` - `fix: report actual scrape inserts`
 - GitHub Actions run: `27167396371`
@@ -91,12 +100,14 @@ Current accepted work:
   insert batch errors in the scrape response.
 - Add Hunter workflow warning annotations and summary metrics for source
   failures, zero-count sources, insert counts, and insert errors.
-- Accepted completion: 55%.
+- Add conservative source compliance metadata and update the public data policy
+  to avoid treating public visibility as blanket permission.
+- Accepted completion: 60%.
 
 Next pending work:
 
-- P4 Slice 1: add explicit source compliance/status metadata to configured
-  sources.
+- P4 Slice 2: review source terms/robots signals and pause or keep sources based
+  on conservative evidence.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 
@@ -219,10 +230,31 @@ Accepted P3 workflow annotation implementation:
   - active opportunity count after latest Hunter run: 687.
   - read-only D1 count query changed 0 rows.
 
+Accepted P4 source metadata implementation:
+
+- Commit: `fa2d6eb`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- GitHub Actions: `27199810692` passed.
+- Cloudflare deploy: `https://1896b637.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/`: 200, about 187 KB.
+  - `/opportunities`: 200, about 96 KB.
+  - `/data-policy`: 200 with June 2026/public-visibility caution text.
+  - `/api/cron/scrape` returned 401 without credentials.
+- Live Hunter workflow:
+  - run `27199890298` passed.
+  - response included `collectionMethod` and `complianceStatus` for RSS, HTML,
+    and ATS source results.
+  - configured sources and ATS results are conservatively `needs_review`.
+  - workflow produced scraper-alert commit `3174068`.
+- D1 evidence:
+  - active opportunity count after latest Hunter run: 687.
+  - read-only D1 count query changed 0 rows.
+
 ## Production Baseline From Audit
 
 - Public site: `https://remotejobs-ph.pages.dev`
-- `/`: 200, roughly 186 KB HTML after P3 insert-accounting deploy
+- `/`: 200, roughly 187 KB HTML after P4 source metadata deploy
 - `/directory`: 200
 - `/categories/tech`: 200
 - `/opportunities`: 200

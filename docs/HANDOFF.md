@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P3 accepted, source compliance metadata next
-Overall accepted completion: 55%
+Status: P4 source metadata accepted, source review/enforcement next
+Overall accepted completion: 60%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -17,7 +17,8 @@ deployed it, and verified it through a manual Hunter workflow run. P3 Slice 2
 made `inserted` reflect actual D1 changes and exposed failed insert batches and
 insert errors in the scrape response. P3 Slice 3 added Hunter workflow warnings
 and summary metrics for partial source failures, zero-count sources, and insert
-accounting.
+accounting. P4 Slice 1 added conservative source compliance metadata and updated
+the public data policy language.
 
 ## What Was Completed
 
@@ -31,6 +32,7 @@ accounting.
 - P3 Slice 1 is accepted at 40% overall.
 - P3 Slice 2 is accepted at 45% overall.
 - P3 is accepted at 55% overall.
+- P4 Slice 1 is accepted at 60% overall.
 
 Accepted P0 evidence:
 
@@ -88,8 +90,8 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P4 Slice 1: add explicit source compliance/status metadata to configured
-sources.
+P4 Slice 2: review source terms/robots signals and pause or keep sources based
+on conservative evidence.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
@@ -185,14 +187,36 @@ P3 Slice 3 evidence:
 - D1 read-only evidence: active opportunities count was 687 after the latest
   manual Hunter run.
 
-P4 Slice 1 suggested scope:
+P4 Slice 1 evidence:
 
-- Add source metadata fields in `packages/scraper/sources.ts` for collection
-  method and compliance status.
-- Use conservative statuses: `allowed`, `needs_review`, `paused`, or
-  `deprecated`.
-- Do not claim legal approval unless there is direct source evidence.
-- Keep public data policy aligned with the source metadata.
+- Commit: `fa2d6eb`
+- CI run: `27199810692`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Deploy: `https://1896b637.remotejobs-ph.pages.dev`
+- Manual Hunter run: `27199890298`
+- Hunter result: success.
+- Live response:
+  - included `collectionMethod` and `complianceStatus` for RSS, HTML, and ATS
+    source results;
+  - all configured sources and ATS results are conservatively `needs_review`;
+  - Remote.co remained visible as a partial source failure.
+- Public smoke:
+  - `/data-policy` returned 200;
+  - page included the June 2026 update and public-visibility caution text;
+  - `/api/cron/scrape` returned 401 without credentials.
+- Workflow follow-up: bot committed `3174068` to
+  `docs/scraper-alerts.md` for the Remote.co failure.
+- D1 read-only evidence: active opportunities count was 687 after the latest
+  manual Hunter run.
+
+P4 Slice 2 suggested scope:
+
+- Review terms/robots/source-supported access signals for each configured
+  RSS/HTML source.
+- Mark clear source-supported feeds as `allowed` only when evidence supports it.
+- Mark repeated failures or unclear/non-source-supported sources as
+  `needs_review` or `paused`.
+- Keep the public data policy and source metadata aligned.
 
 ## Stop Rule
 

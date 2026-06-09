@@ -15,15 +15,15 @@ When starting a new chat or work session, read these in order:
 
 Phase P4: Source compliance and portfolio cleanup.
 
-P3 is accepted. The scrape workflow now exposes source failures, zero-count
-sources, actual inserts, attempted inserts, failed insert batches, and insert
-errors in the API response and GitHub workflow UI.
+P4 Slice 1 is accepted. Configured sources now carry conservative compliance
+metadata, and the public data policy no longer treats public visibility as
+blanket permission.
 
 ## Overall Completion
 
-Current accepted completion: 55%.
+Current accepted completion: 60%.
 
-P0, P1, P2, and P3 are accepted.
+P0, P1, P2, P3, and the first 5% slice of P4 are accepted.
 
 ## Phase Status
 
@@ -33,12 +33,54 @@ P0, P1, P2, and P3 are accepted.
 | P1 Product surface and payload | 15% | 15% | Accepted | Complete |
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
 | P3 Ingestion observability | 20% | 20% | Accepted | Complete |
-| P4 Source compliance and portfolio | 15% | 0% | Not started | Source status config and data-policy update |
+| P4 Source compliance and portfolio | 15% | 5% | Source metadata accepted; source review/enforcement pending | Review terms/robots and pause risky or unproductive sources |
 | P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics and better category distribution |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P4 Slice 1 - Conservative Source Metadata
+
+- Date: 2026-06-09
+- Status: accepted
+- Commit: `fa2d6eb`
+- Message: `feat: add source compliance metadata`
+- Scope:
+  - added `collectionMethod`, `complianceStatus`, and `complianceNotes` to
+    configured RSS/HTML scraper sources;
+  - exported `CollectionMethod` and `ComplianceStatus` types from
+    `@va-hub/scraper`;
+  - exposed `collectionMethod` and `complianceStatus` in scrape
+    `sourceResults`;
+  - defaulted ATS-derived source results to `public_ats_json` and
+    `needs_review` until directory-level source policy exists;
+  - updated `/data-policy` to use public-indexing language and explicitly state
+    that public visibility is not blanket permission.
+- Verification:
+  - `npm.cmd run build --workspace apps/web` passed.
+  - `git diff --check` passed with only normal CRLF warnings.
+  - GitHub Actions run `27199810692` passed.
+- Deployment:
+  - manually deployed `apps/web/dist` with Wrangler;
+  - Cloudflare preview URL: `https://1896b637.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/` returned 200 at about 187 KB;
+  - `/opportunities` returned 200 at about 96 KB;
+  - `/data-policy` returned 200 and included the June 2026 update plus the
+    public-visibility caution;
+  - unauthenticated POST to `/api/cron/scrape` returned 401.
+- Live workflow evidence:
+  - manual Hunter workflow run `27199890298` passed;
+  - response included `collectionMethod` and `complianceStatus` on RSS, HTML,
+    and ATS source results;
+  - configured sources and ATS results were conservatively marked
+    `needs_review`;
+  - workflow produced scraper-alert commit `3174068` for the Remote.co failure.
+- D1 evidence:
+  - active opportunity count after the latest Hunter run: 687;
+  - read-only D1 count query changed 0 rows.
+- Accepted completion after this checkpoint: 60%.
 
 ### P3 Slice 3 - Hunter Workflow Annotations
 
@@ -322,15 +364,16 @@ P0, P1, P2, and P3 are accepted.
 
 ## Next Task
 
-P4 Slice 1: add explicit source compliance/status metadata to configured
-sources.
+P4 Slice 2: review source terms/robots signals and pause or keep sources based
+on conservative evidence.
 
 Acceptance criteria:
 
-- Every configured RSS/HTML source has a collection method and compliance status
-  such as `allowed`, `needs_review`, or `paused`.
-- Source metadata is conservative and does not claim legal approval beyond known
-  evidence.
+- Capture source-review evidence for each configured RSS/HTML source.
+- Mark repeatedly broken or non-source-supported sources as `paused` when
+  appropriate.
+- Keep source metadata conservative: `allowed` only with clear source-supported
+  evidence; otherwise `needs_review` or `paused`.
 - The app build remains green.
 - Data policy/source docs are updated if source metadata changes public claims.
 - Existing GitHub Actions remain green.
