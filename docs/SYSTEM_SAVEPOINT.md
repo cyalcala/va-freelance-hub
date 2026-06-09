@@ -8,6 +8,15 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted product commit:
 
+- `e86b854` - `fix: report actual scrape inserts`
+- GitHub Actions run: `27167396371`
+- Hunter workflow run: `27198077806`
+- Result: success
+- Deployment: `https://cde106a3.remotejobs-ph.pages.dev`
+- Public alias: `https://remotejobs-ph.pages.dev`
+
+Previous accepted product commit:
+
 - `27794d8` - `feat: report source scrape status`
 - GitHub Actions run: `27166648567`
 - Hunter workflow run: `27166770708`
@@ -15,7 +24,7 @@ Last accepted product commit:
 - Deployment: `https://44501583.remotejobs-ph.pages.dev`
 - Public alias: `https://remotejobs-ph.pages.dev`
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `e32e580` - `feat: normalize app timestamp writes`
 - GitHub Actions run: `27165936753`
@@ -71,11 +80,14 @@ Current accepted work:
   timestamps through SQLite `unixepoch`.
 - Add structured `sourceResults` to the scrape route and make ATS fetch errors
   visible as failed source records.
-- Accepted completion: 40%.
+- Report actual D1 changes as the primary scrape `inserted` count and expose
+  insert batch errors in the scrape response.
+- Accepted completion: 45%.
 
 Next pending work:
 
-- P3 Slice 2: make insert accounting honest and expose failed insert batches.
+- P3 Slice 3: add workflow annotations and summary fields for partial scrape
+  failures and insert errors.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 
@@ -158,10 +170,32 @@ Accepted P3 source-status implementation:
   - active opportunity count after Hunter: 683.
   - read-only D1 count query changed 0 rows.
 
+Accepted P3 insert-accounting implementation:
+
+- Commit: `e86b854`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- GitHub Actions: `27167396371` passed.
+- Cloudflare deploy: `https://cde106a3.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/`: 200, about 186 KB.
+  - `/opportunities`: 200, about 96 KB.
+  - `/directory`: 200.
+  - `/api/cron/scrape` returned 401 without credentials.
+- Live Hunter workflow:
+  - run `27198077806` passed.
+  - response reported `inserted: 1`, `actualChanges: 1`,
+    `acceptedForInsert: 1`, `attemptedInsert: 1`,
+    `insertFailedBatches: 0`, and `insertErrors: []`.
+  - Remote.co remained explicitly visible as a partial source failure.
+  - workflow produced scraper-alert commit `bc255c8`.
+- D1 evidence:
+  - active opportunity count after later scheduled/manual ingestion: 686.
+  - read-only D1 count query changed 0 rows.
+
 ## Production Baseline From Audit
 
 - Public site: `https://remotejobs-ph.pages.dev`
-- `/`: 200, roughly 181 KB HTML after P3 source-status deploy
+- `/`: 200, roughly 186 KB HTML after P3 insert-accounting deploy
 - `/directory`: 200
 - `/categories/tech`: 200
 - `/opportunities`: 200
@@ -197,7 +231,8 @@ Accepted P3 source-status implementation:
 - CI guardrail builds but does not deploy; manual Wrangler deploy was needed for
   P1, P2, and P3.
 - Batch insert failures can be logged while route response stays 200.
-- Insert count can over-report compared with actual D1 changes.
+- Insert batch failures are now visible in scrape responses, but the workflow
+  does not yet annotate or threshold them.
 - Historical dates still need P5 backfill/default cleanup, but new app-owned
   opportunity and digest writes use UTC ISO.
 - Source compliance states are not yet explicit enough.

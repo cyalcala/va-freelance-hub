@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P3 source-status slice accepted, insert accounting next
-Overall accepted completion: 40%
+Status: P3 insert-accounting slice accepted, workflow annotations next
+Overall accepted completion: 45%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -13,7 +13,9 @@ production. P2 indexes were implemented, pushed, migrated, and verified against
 production query plans. P2 timestamp normalization was implemented, pushed,
 deployed, and verified against production route smoke plus read-only D1 parsing
 evidence. P3 Slice 1 added structured source results to the scrape route,
-deployed it, and verified it through a manual Hunter workflow run.
+deployed it, and verified it through a manual Hunter workflow run. P3 Slice 2
+made `inserted` reflect actual D1 changes and exposed failed insert batches and
+insert errors in the scrape response.
 
 ## What Was Completed
 
@@ -25,6 +27,7 @@ deployed it, and verified it through a manual Hunter workflow run.
 - P1 is accepted at 20% overall.
 - P2 is accepted at 35% overall.
 - P3 Slice 1 is accepted at 40% overall.
+- P3 Slice 2 is accepted at 45% overall.
 
 Accepted P0 evidence:
 
@@ -82,8 +85,8 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P3 Slice 2: make insert accounting honest and expose failed insert batches from
-`/api/cron/scrape`.
+P3 Slice 3: add GitHub workflow annotations/summary fields for partial scrape
+failures and insert errors.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
@@ -136,12 +139,37 @@ P3 Slice 1 evidence:
 
 P3 Slice 2 suggested scope:
 
+P3 Slice 2 evidence:
+
+- Commit: `e86b854`
+- CI run: `27167396371`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Deploy: `https://cde106a3.remotejobs-ph.pages.dev`
+- Manual Hunter run: `27198077806`
+- Hunter result: success.
+- Live response:
+  - HTTP 200;
+  - `inserted: 1`;
+  - `actualChanges: 1`;
+  - `acceptedForInsert: 1`;
+  - `attemptedInsert: 1`;
+  - `insertFailedBatches: 0`;
+  - `insertErrors: []`;
+  - Remote.co remained visible as a partial source failure.
+- Workflow follow-up: bot committed `bc255c8` to
+  `docs/scraper-alerts.md` for the Remote.co failure.
+- D1 read-only evidence: active opportunities count was 686 after later
+  scheduled/manual ingestion.
+
+P3 Slice 3 suggested scope:
+
 - Keep response fields backward-compatible for `.github/workflows/gha-hunter-pulse.yml`.
-- Treat `actualChanges` as the primary database insert count or clearly separate
-  accepted rows from actual row changes.
-- Add `insertFailedBatches` and `insertErrors` fields.
-- Keep batch-insert resilience, but make partial failure visible in the API
-  response and workflow logs.
+- Use `jq` in the Hunter workflow to compute failed source count, zero-count
+  source count, attempted inserts, actual changes, failed insert batches, and
+  insert error count.
+- Add warning annotations for partial scrape failures and insert errors.
+- Keep the existing scraper-alert commit behavior until P6 replaces it with
+  daily rollups.
 
 ## Stop Rule
 

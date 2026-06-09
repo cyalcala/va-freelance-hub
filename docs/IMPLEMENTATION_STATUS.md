@@ -15,14 +15,14 @@ When starting a new chat or work session, read these in order:
 
 Phase P3: Ingestion observability and silent-error removal.
 
-P3 Slice 1 is accepted. The scrape route now returns structured source-level
-status records while preserving the existing `failedSources` workflow contract.
+P3 Slice 2 is accepted. The scrape route now reports actual D1 changes as the
+primary `inserted` count and exposes failed insert batches/errors.
 
 ## Overall Completion
 
-Current accepted completion: 40%.
+Current accepted completion: 45%.
 
-P0, P1, P2, and the first 5% slice of P3 are accepted.
+P0, P1, P2, and the first 10% of P3 are accepted.
 
 ## Phase Status
 
@@ -31,13 +31,55 @@ P0, P1, P2, and the first 5% slice of P3 are accepted.
 | P0 Recovery docs and methodology | 5% | 5% | Accepted | Complete |
 | P1 Product surface and payload | 15% | 15% | Accepted | Complete |
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
-| P3 Ingestion observability | 20% | 5% | Source status accepted; insert accounting pending | Actual-change insert accounting and failed batch reporting |
+| P3 Ingestion observability | 20% | 10% | Source status and insert accounting accepted | Workflow annotations/thresholds for partial failures |
 | P4 Source compliance and portfolio | 15% | 0% | Not started | Source status config and data-policy update |
 | P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics and better category distribution |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P3 Slice 2 - Honest Insert Accounting
+
+- Date: 2026-06-09
+- Status: accepted
+- Commit: `e86b854`
+- Message: `fix: report actual scrape inserts`
+- Scope:
+  - changed `/api/cron/scrape` so `inserted` equals D1 `meta.changes`;
+  - added `acceptedForInsert` for rows that passed triage;
+  - added `attemptedInsert` for rows submitted to D1;
+  - added `insertFailedBatches` and `insertErrors` response fields;
+  - preserved backward compatibility for `.github/workflows/gha-hunter-pulse.yml`
+    because it still reads `.inserted`.
+- Local verification:
+  - `npm.cmd run build --workspace apps/web` passed.
+  - `git diff --check` passed with only normal CRLF warnings.
+  - Static check confirmed the new response fields are present in no-data,
+    no-new-job, no-triage-pass, and successful-insert branches.
+- GitHub:
+  - pushed to `origin/main`;
+  - GitHub Actions run `27167396371` passed.
+- Deployment:
+  - manually deployed `apps/web/dist` with Wrangler;
+  - Cloudflare preview URL: `https://cde106a3.remotejobs-ph.pages.dev`.
+- Production smoke:
+  - `/` returned 200 at about 186 KB;
+  - `/opportunities` returned 200 at about 96 KB;
+  - `/directory` returned 200;
+  - unauthenticated POST to `/api/cron/scrape` returned 401.
+- Live ingestion evidence:
+  - manual Hunter workflow run `27198077806` passed;
+  - authenticated production scrape response returned HTTP 200;
+  - response reported `inserted: 1`, `actualChanges: 1`,
+    `acceptedForInsert: 1`, `attemptedInsert: 1`,
+    `insertFailedBatches: 0`, and `insertErrors: []`;
+  - Remote.co remained visible in `failedSources` and `sourceResults`;
+  - workflow produced scraper-alert commit `bc255c8` for the Remote.co failure.
+- D1 evidence:
+  - active opportunity count after later scheduled/manual ingestion: 686;
+  - read-only D1 count query changed 0 rows.
+- Accepted completion after this checkpoint: 45%.
 
 ### P3 Slice 1 - Structured Source Status
 
@@ -247,15 +289,18 @@ P0, P1, P2, and the first 5% slice of P3 are accepted.
 
 ## Next Task
 
-P3 Slice 2: make insert accounting honest and expose failed insert batches.
+P3 Slice 3: add GitHub workflow annotations/summary fields for partial scrape
+failures and insert errors.
 
 Acceptance criteria:
 
-- `/api/cron/scrape` reports `actualChanges` as the primary inserted count or
-  clearly separates accepted rows from database changes.
-- Batch insert exceptions are captured in response fields such as
-  `insertFailedBatches` and `insertErrors`.
-- Existing GitHub Actions parsing remains backward-compatible.
+- Hunter workflow summary surfaces failed source count, zero-count source count,
+  inserted/actual/attempted insert counts, failed insert batch count, and
+  insert error count.
+- Workflow emits warning annotations for partial source failures or insert
+  errors without failing the whole run unless a configured threshold is crossed.
+- Existing scraper-alert commit behavior remains intact until P6 rollups replace
+  it.
 - Existing GitHub Actions remain green.
 - Production smoke still shows public routes and protected API auth are intact.
 - Build/CI remains green.

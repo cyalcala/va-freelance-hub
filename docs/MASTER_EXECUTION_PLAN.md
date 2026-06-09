@@ -79,7 +79,7 @@ project unethical; it means source policy must be explicit and conservative.
 | P0 Recovery docs and methodology | 5% | Accepted | Adopt recovery docs, percent roadmap, ADR, and agent context |
 | P1 Product surface and payload | 15% | Accepted | Add `/opportunities` and reduce homepage payload |
 | P2 Indexing and datetime foundation | 15% | Accepted | Add hot-query indexes and normalize dates |
-| P3 Ingestion observability | 20% | In progress (5/20%) | Remove silent ATS/write/source failures |
+| P3 Ingestion observability | 20% | In progress (10/20%) | Remove silent ATS/write/source failures |
 | P4 Source compliance and portfolio | 15% | Not started | Classify sources and pause risky/unproductive ones |
 | P5 Data quality and triage | 15% | Not started | Improve missing fields, categories, freshness, and stale policy |
 | P6 Reporting and backup hygiene | 10% | Not started | Replace noisy alert commits with rollups and status reports |
