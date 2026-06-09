@@ -26,9 +26,11 @@ Read these in order:
    dry run.
 12. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
    quality improvement.
-13. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+13. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
+   and backup-hygiene checkpoint.
+14. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-14. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+15. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -40,8 +42,9 @@ Read these in order:
 
 ## Operational Docs
 
-- `docs/scraper-alerts.md` records source failure history, but it is currently
-  noisy and should be replaced by daily rollups in P6.
+- `docs/scraper-alerts.md` records historical source failure commits. P6 Slice
+  1 stopped new per-run alert commits; use Hunter artifacts for current per-run
+  evidence until the repo-readable rollup lands.
 - `docs/source-review-2026-06-09.md` records the current RSS/HTML source
   compliance and usefulness review behind P4 Slice 2.
 - `docs/ats-source-review-2026-06-09.md` records the ATS duplicate-token and
@@ -52,6 +55,8 @@ Read these in order:
   stale/source candidate policy.
 - `docs/application-url-backfill-2026-06-09.md` records the P5 Slice 3
   reversible application URL backfill and ingestion write-path evidence.
+- `docs/hunter-health-artifacts-2026-06-09.md` records the P6 Slice 1 Hunter
+  artifact-reporting change and no-bot-commit proof.
 - `docs/scraper-troubleshooting.md` contains useful history but may reference
   older Trigger.dev-era assumptions.
 - `docs/system-audit-and-optimizations.md` contains earlier optimization notes;

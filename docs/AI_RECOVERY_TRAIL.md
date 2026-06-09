@@ -28,10 +28,11 @@ Read these first when starting a new work session:
 11. `docs/data-quality-snapshot-2026-06-09.md`
 12. `docs/stale-policy-dry-run-2026-06-09.md`
 13. `docs/application-url-backfill-2026-06-09.md`
-14. `docs/scraper-alerts.md`
-15. `docs/scraper-troubleshooting.md`
-16. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
-17. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+14. `docs/hunter-health-artifacts-2026-06-09.md`
+15. `docs/scraper-alerts.md`
+16. `docs/scraper-troubleshooting.md`
+17. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+18. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
 ## Required Backup Loop
 
@@ -113,8 +114,9 @@ record why, and keep the rest of the ingestion system healthy.
   `docs/IMPLEMENTATION_STATUS.md`.
 - Durable architectural decisions live in `docs/decisions/`.
 - Raw audit evidence and findings live in `docs/major-audit-2026-06-06.md`.
-- Source failure history lives in `docs/scraper-alerts.md` until replaced by a
-  daily rollup/source-health table.
+- Source failure history previously lived in `docs/scraper-alerts.md`; Hunter
+  now uploads per-run `harvest.log` and `source-health-summary.md` artifacts.
+  P6 should add a compact daily/latest repo-readable rollup next.
 
 Do not bury important decisions only in commit messages or chat.
 

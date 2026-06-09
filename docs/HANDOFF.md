@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P5 accepted, P6 reporting and backup hygiene next
-Overall accepted completion: 85%
+Status: P6 Hunter artifact reporting accepted, repo-readable rollup next
+Overall accepted completion: 90%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -27,7 +27,9 @@ production data-quality snapshot and made no production row mutations. P5 Slice
 2 defined a no-mutation stale/source dry-run policy and found no immediate
 archive action. P5 Slice 3 backfilled `application_url` from `source_url`,
 updated future ingest/scrape writes to populate it, deployed the write path, and
-proved the next Hunter insertion kept `application_url` populated.
+proved the next Hunter insertion kept `application_url` populated. P6 Slice 1
+removed Hunter's per-run alert commit/push path and now stores per-run
+`harvest.log` plus `source-health-summary.md` artifacts.
 
 ## What Was Completed
 
@@ -47,6 +49,7 @@ proved the next Hunter insertion kept `application_url` populated.
 - P5 Slice 1 is accepted at 75% overall.
 - P5 Slice 2 is accepted at 80% overall.
 - P5 Slice 3 is accepted at 85% overall.
+- P6 Slice 1 is accepted at 90% overall.
 
 Accepted P0 evidence:
 
@@ -104,11 +107,38 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P6 Slice 1: replace noisy per-run scraper-alert commits with daily/source-health
-rollups or equivalent compact reporting.
+P6 Slice 2: add a compact repo-readable daily or latest source-health report.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
+
+P6 Slice 1 evidence:
+
+- Commit: `f8fadfb`
+- CI run: `27204009191`
+- Manual Hunter run: `27204051068`
+- Hunter result: success.
+- Artifact:
+  - name: `hunter-health-27204051068`;
+  - ID: `7506687492`;
+  - files: `harvest.log` and `source-health-summary.md`.
+- Verification:
+  - `git diff --check` passed with only normal CRLF warnings;
+  - `rg` confirmed Hunter no longer contains `contents: write`, `git commit`,
+    `git push`, or `scraper-alerts` references;
+  - downloaded artifact summary reported 0 failed sources, 1 zero-count
+    successful source, and 18 skipped sources;
+  - after fetching `origin/main`, branch status was `## main...origin/main`,
+    confirming no bot alert commit was created.
+- Live response:
+  - HTTP 200;
+  - `failedSources: []`;
+  - `inserted: 0`;
+  - `actualChanges: 0`;
+  - `acceptedForInsert: 0`;
+  - `attemptedInsert: 0`;
+  - `insertFailedBatches: 0`;
+  - `insertErrors: []`.
 
 P5 Slice 3 evidence:
 

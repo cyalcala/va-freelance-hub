@@ -6,7 +6,18 @@ Date: 2026-06-09
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
-Last accepted product commit:
+Last accepted implementation commit:
+
+- `f8fadfb` - `ci: stop hunter alert commit spam`
+- GitHub Actions run: `27204009191`
+- Hunter workflow run: `27204051068`
+- Result: success
+- Artifact: `hunter-health-27204051068`
+- Artifact ID: `7506687492`
+- Result: Hunter uploaded `harvest.log` and `source-health-summary.md` without
+  creating a bot alert commit.
+
+Previous accepted product commit:
 
 - `2754740` - `fix: derive application urls from source urls`
 - GitHub Actions run: `27203416725`
@@ -16,7 +27,7 @@ Last accepted product commit:
 - Deployment: `https://936f10a7.remotejobs-ph.pages.dev`
 - Public alias: `https://remotejobs-ph.pages.dev`
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `95e6665` - `fix: pause rate limited workable ats sources`
 - GitHub Actions run: `27202145473`
@@ -138,12 +149,13 @@ Current accepted work:
 - Define a no-mutation stale/source dry-run policy for P5 Slice 2.
 - Backfill missing `application_url` values from `source_url` and ensure future
   ingest/scrape writes populate `application_url`.
-- Accepted completion: 85%.
+- Stop Hunter from committing per-run scraper alerts and preserve per-run
+  source-health evidence as artifacts instead.
+- Accepted completion: 90%.
 
 Next pending work:
 
-- P6 Slice 1: replace repeated per-run alert commits with daily/source-health
-  rollups or equivalent compact reporting.
+- P6 Slice 2: add a compact repo-readable daily or latest source-health report.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 

@@ -15,15 +15,15 @@ When starting a new chat or work session, read these in order:
 
 Phase P6: Reporting and backup hygiene.
 
-P5 is accepted. The latest slice backfilled missing application URLs from
-source URLs and proved that new ingestion writes continue to populate
-`application_url` without changing the public source-attribution surface.
+P6 Slice 1 is accepted. Hunter no longer commits per-run scraper alerts, and
+each run now preserves `harvest.log` plus `source-health-summary.md` as an
+artifact.
 
 ## Overall Completion
 
-Current accepted completion: 85%.
+Current accepted completion: 90%.
 
-P0, P1, P2, P3, P4, and P5 are accepted.
+P0, P1, P2, P3, P4, P5, and the first 5% of P6 are accepted.
 
 ## Phase Status
 
@@ -35,10 +35,47 @@ P0, P1, P2, P3, P4, and P5 are accepted.
 | P3 Ingestion observability | 20% | 20% | Accepted | Complete |
 | P4 Source compliance and portfolio | 15% | 15% | Accepted | Complete |
 | P5 Data quality and triage | 15% | 15% | Accepted | Complete |
-| P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
+| P6 Reporting and backup hygiene | 10% | 5% | Hunter artifact reporting accepted; repo-readable rollup pending | Daily/latest source-health report |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P6 Slice 1 - Hunter Health Artifacts
+
+- Date: 2026-06-09
+- Status: accepted after CI, manual Hunter, artifact download, and no-bot-commit
+  verification
+- Commit: `f8fadfb`
+- Message: `ci: stop hunter alert commit spam`
+- Evidence report: `docs/hunter-health-artifacts-2026-06-09.md`
+- Scope:
+  - changed Hunter workflow permissions from `contents: write` to
+    `contents: read`;
+  - removed the per-run `docs/scraper-alerts.md` append/commit/push path;
+  - kept warning/error annotations for source failures and insert errors;
+  - added `source-health-summary.md`;
+  - uploaded `harvest.log` and `source-health-summary.md` as run artifacts.
+- Verification:
+  - `git diff --check` passed with only normal CRLF warnings;
+  - `rg` confirmed no `contents: write`, `git commit`, `git push`, or
+    `scraper-alerts` references remain in Hunter;
+  - GitHub Actions run `27204009191` passed;
+  - manual Hunter workflow run `27204051068` passed;
+  - artifact `hunter-health-27204051068` uploaded with artifact ID
+    `7506687492`;
+  - downloaded artifact contained `harvest.log` and
+    `source-health-summary.md`;
+  - `git status --short --branch` after fetching `origin/main` reported
+    `## main...origin/main`, confirming Hunter did not create a bot commit.
+- Hunter evidence:
+  - response reported HTTP 200;
+  - response reported `failedSources: []`;
+  - response reported `inserted: 0`, `actualChanges: 0`,
+    `acceptedForInsert: 0`, `attemptedInsert: 0`,
+    `insertFailedBatches: 0`, and `insertErrors: []`;
+  - artifact summary reported 0 failed sources, 1 zero-count successful source,
+    and 18 skipped sources.
+- Accepted completion after this checkpoint: 90%.
 
 ### P5 Slice 3 - Application URL Backfill
 
