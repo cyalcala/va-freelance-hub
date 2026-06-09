@@ -8,6 +8,16 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted product commit:
 
+- `2754740` - `fix: derive application urls from source urls`
+- GitHub Actions run: `27203416725`
+- D1 migration workflow: `27203416643`
+- Hunter workflow run: `27203556963`
+- Result: success
+- Deployment: `https://936f10a7.remotejobs-ph.pages.dev`
+- Public alias: `https://remotejobs-ph.pages.dev`
+
+Previous accepted product commit:
+
 - `95e6665` - `fix: pause rate limited workable ats sources`
 - GitHub Actions run: `27202145473`
 - Hunter workflow run: `27202221523`
@@ -15,7 +25,7 @@ Last accepted product commit:
 - Deployment: `https://6b3bc9b2.remotejobs-ph.pages.dev`
 - Public alias: `https://remotejobs-ph.pages.dev`
 
-Previous accepted product commit:
+Earlier accepted product commit:
 
 - `1143798` - `feat: enforce source compliance pauses`
 - GitHub Actions run: `27200812470`
@@ -126,11 +136,14 @@ Current accepted work:
   repeated HTTP 429s.
 - Capture a read-only production data-quality snapshot for P5 Slice 1.
 - Define a no-mutation stale/source dry-run policy for P5 Slice 2.
-- Accepted completion: 80%.
+- Backfill missing `application_url` values from `source_url` and ensure future
+  ingest/scrape writes populate `application_url`.
+- Accepted completion: 85%.
 
 Next pending work:
 
-- P5 Slice 3: implement one reversible data-quality improvement.
+- P6 Slice 1: replace repeated per-run alert commits with daily/source-health
+  rollups or equivalent compact reporting.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 

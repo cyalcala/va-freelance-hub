@@ -13,16 +13,17 @@ When starting a new chat or work session, read these in order:
 
 ## Current Focus
 
-Phase P5: Data quality and triage improvements.
+Phase P6: Reporting and backup hygiene.
 
-P5 Slice 2 is ready for acceptance. A no-mutation stale/source policy dry run
-now separates keep, hold, review, and classify buckets without archiving rows.
+P5 is accepted. The latest slice backfilled missing application URLs from
+source URLs and proved that new ingestion writes continue to populate
+`application_url` without changing the public source-attribution surface.
 
 ## Overall Completion
 
-Current accepted completion: 80%.
+Current accepted completion: 85%.
 
-P0, P1, P2, P3, P4, and the first 10% of P5 are accepted.
+P0, P1, P2, P3, P4, and P5 are accepted.
 
 ## Phase Status
 
@@ -33,11 +34,52 @@ P0, P1, P2, P3, P4, and the first 10% of P5 are accepted.
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
 | P3 Ingestion observability | 20% | 20% | Accepted | Complete |
 | P4 Source compliance and portfolio | 15% | 15% | Accepted | Complete |
-| P5 Data quality and triage | 15% | 10% | Metrics and stale dry-run accepted; implementation pending | One reversible data-quality improvement |
+| P5 Data quality and triage | 15% | 15% | Accepted | Complete |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P5 Slice 3 - Application URL Backfill
+
+- Date: 2026-06-09
+- Status: accepted after product CI, D1 migration, deploy, production smoke,
+  and Hunter evidence
+- Product commit: `2754740`
+- Message: `fix: derive application urls from source urls`
+- Evidence report: `docs/application-url-backfill-2026-06-09.md`
+- Scope:
+  - normalized manual ingest writes so `applicationUrl` falls back to
+    `sourceUrl`;
+  - normalized cron scrape writes so triage-discovered `applicationUrl` wins,
+    then scraper-provided `applicationUrl`, then `sourceUrl`;
+  - added D1 migration `0012_application_url_backfill.sql`;
+  - did not change the visible job-card routing, which still links through
+    `sourceUrl`.
+- Verification:
+  - `git diff --check` passed with only normal CRLF warnings;
+  - `npm.cmd run build --workspace apps/web` passed;
+  - GitHub Actions run `27203416725` passed;
+  - D1 migration workflow run `27203416643` passed;
+  - migration applied `0012_application_url_backfill.sql`;
+  - deployed `apps/web/dist` with Wrangler to
+    `https://936f10a7.remotejobs-ph.pages.dev`;
+  - production `/`, `/opportunities`, and `/directory` returned 200;
+  - unauthenticated POST to `/api/cron/scrape` returned 401;
+  - sample click redirect for job `2135` returned 302 to the validated source
+    URL.
+- D1 evidence:
+  - after migration and before Hunter: 687 active rows, 0 missing
+    `application_url`, 687 rows where `application_url = source_url`;
+  - after Hunter: 688 active rows, 0 missing `application_url`, 687 rows where
+    `application_url = source_url`, and 1 row with a distinct application URL.
+- Live workflow evidence:
+  - manual Hunter workflow run `27203556963` passed;
+  - response reported `failedSources: []`;
+  - response reported `inserted: 1`, `actualChanges: 1`,
+    `acceptedForInsert: 1`, `attemptedInsert: 1`,
+    `insertFailedBatches: 0`, and `insertErrors: []`.
+- Accepted completion after this checkpoint: 85%.
 
 ### P5 Slice 2 - Stale Policy Dry Run
 

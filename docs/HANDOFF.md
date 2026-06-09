@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P5 stale policy dry-run accepted, reversible data-quality improvement next
-Overall accepted completion: 80%
+Status: P5 accepted, P6 reporting and backup hygiene next
+Overall accepted completion: 85%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -25,7 +25,9 @@ paused Workable-backed ATS rows after repeated HTTP 429s, and verified the live
 Hunter workflow with no failed sources. P5 Slice 1 captured a read-only
 production data-quality snapshot and made no production row mutations. P5 Slice
 2 defined a no-mutation stale/source dry-run policy and found no immediate
-archive action.
+archive action. P5 Slice 3 backfilled `application_url` from `source_url`,
+updated future ingest/scrape writes to populate it, deployed the write path, and
+proved the next Hunter insertion kept `application_url` populated.
 
 ## What Was Completed
 
@@ -44,6 +46,7 @@ archive action.
 - P4 is accepted at 70% overall.
 - P5 Slice 1 is accepted at 75% overall.
 - P5 Slice 2 is accepted at 80% overall.
+- P5 Slice 3 is accepted at 85% overall.
 
 Accepted P0 evidence:
 
@@ -101,10 +104,38 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P5 Slice 3: implement one reversible data-quality improvement.
+P6 Slice 1: replace noisy per-run scraper-alert commits with daily/source-health
+rollups or equivalent compact reporting.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
+
+P5 Slice 3 evidence:
+
+- Commit: `2754740`
+- CI run: `27203416725`
+- Migration workflow: `27203416643`
+- Build: `npm.cmd run build --workspace apps/web` passed.
+- Deploy: `https://936f10a7.remotejobs-ph.pages.dev`
+- Manual Hunter run: `27203556963`
+- Hunter result: success.
+- D1 evidence:
+  - after migration: 687 active rows and 0 missing `application_url`;
+  - after Hunter: 688 active rows and 0 missing `application_url`;
+  - newest Hunter row `2138` preserved a distinct application URL from triage.
+- Live response:
+  - HTTP 200;
+  - `failedSources: []`;
+  - `inserted: 1`;
+  - `actualChanges: 1`;
+  - `acceptedForInsert: 1`;
+  - `attemptedInsert: 1`;
+  - `insertFailedBatches: 0`;
+  - `insertErrors: []`.
+- Public smoke:
+  - `/`, `/opportunities`, and `/directory` returned 200;
+  - `/api/cron/scrape` returned 401 without credentials;
+  - `/api/click/2135` with the validated source URL returned 302.
 
 P2 Slice 1 evidence:
 

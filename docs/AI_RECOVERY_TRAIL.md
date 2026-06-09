@@ -27,10 +27,11 @@ Read these first when starting a new work session:
 10. `docs/ats-source-review-2026-06-09.md`
 11. `docs/data-quality-snapshot-2026-06-09.md`
 12. `docs/stale-policy-dry-run-2026-06-09.md`
-13. `docs/scraper-alerts.md`
-14. `docs/scraper-troubleshooting.md`
-15. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
-16. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+13. `docs/application-url-backfill-2026-06-09.md`
+14. `docs/scraper-alerts.md`
+15. `docs/scraper-troubleshooting.md`
+16. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+17. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
 ## Required Backup Loop
 

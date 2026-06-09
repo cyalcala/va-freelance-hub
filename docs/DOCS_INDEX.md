@@ -24,9 +24,11 @@ Read these in order:
    metrics.
 11. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
    dry run.
-12. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+12. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
+   quality improvement.
+13. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-13. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+14. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -48,6 +50,8 @@ Read these in order:
   production data-quality baseline.
 - `docs/stale-policy-dry-run-2026-06-09.md` records the P5 Slice 2 no-mutation
   stale/source candidate policy.
+- `docs/application-url-backfill-2026-06-09.md` records the P5 Slice 3
+  reversible application URL backfill and ingestion write-path evidence.
 - `docs/scraper-troubleshooting.md` contains useful history but may reference
   older Trigger.dev-era assumptions.
 - `docs/system-audit-and-optimizations.md` contains earlier optimization notes;
