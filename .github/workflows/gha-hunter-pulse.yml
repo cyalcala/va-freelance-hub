@@ -14,6 +14,8 @@ permissions:
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  SOURCE_FAILURE_FAIL_THRESHOLD: "999"
+  INSERT_ERROR_FAIL_THRESHOLD: "0"
 
 jobs:
   hunt:
@@ -42,6 +44,10 @@ jobs:
       - name: 🏹 Deploy the ATS Engine (Layer 2)
         run: |
           TOTAL=0
+          TOTAL_ACCEPTED=0
+          TOTAL_ATTEMPTED=0
+          TOTAL_INSERT_FAILED_BATCHES=0
+          TOTAL_INSERT_ERRORS=0
           BACKLOG=1
           MAX_LOOPS=10
           LOOP_COUNT=0
@@ -69,10 +75,18 @@ jobs:
             mv temp_harvest.log harvest.log
             
             NEW_INSERTED=$(jq -r '.inserted // 0' harvest.log)
+            NEW_ACCEPTED=$(jq -r '.acceptedForInsert // 0' harvest.log)
+            NEW_ATTEMPTED=$(jq -r '.attemptedInsert // 0' harvest.log)
+            NEW_INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // 0' harvest.log)
+            NEW_INSERT_ERRORS=$(jq -r '[.insertErrors[]?] | length' harvest.log)
             BACKLOG=$(jq -r '.backlogRemaining // 0' harvest.log)
             
             TOTAL=$((TOTAL + NEW_INSERTED))
-            echo "Inserted this batch: $NEW_INSERTED, Total: $TOTAL, Backlog: $BACKLOG"
+            TOTAL_ACCEPTED=$((TOTAL_ACCEPTED + NEW_ACCEPTED))
+            TOTAL_ATTEMPTED=$((TOTAL_ATTEMPTED + NEW_ATTEMPTED))
+            TOTAL_INSERT_FAILED_BATCHES=$((TOTAL_INSERT_FAILED_BATCHES + NEW_INSERT_FAILED_BATCHES))
+            TOTAL_INSERT_ERRORS=$((TOTAL_INSERT_ERRORS + NEW_INSERT_ERRORS))
+            echo "Inserted this batch: $NEW_INSERTED, Accepted: $NEW_ACCEPTED, Attempted: $NEW_ATTEMPTED, Total inserted: $TOTAL, Backlog: $BACKLOG"
             
             if [ "$BACKLOG" -gt 0 ]; then
               echo "Sleeping 2s before next batch..."
@@ -81,11 +95,16 @@ jobs:
           done
           
           echo "TOTAL=$TOTAL" >> $GITHUB_ENV
+          echo "TOTAL_ACCEPTED=$TOTAL_ACCEPTED" >> $GITHUB_ENV
+          echo "TOTAL_ATTEMPTED=$TOTAL_ATTEMPTED" >> $GITHUB_ENV
+          echo "TOTAL_INSERT_FAILED_BATCHES=$TOTAL_INSERT_FAILED_BATCHES" >> $GITHUB_ENV
+          echo "TOTAL_INSERT_ERRORS=$TOTAL_INSERT_ERRORS" >> $GITHUB_ENV
 
       - name: 🚨 Auto-Document Failures (Self-Healing Log)
         if: always()
         run: |
           HAS_CHANGES=false
+          SHOULD_FAIL=false
           mkdir -p docs
           if [ ! -f docs/scraper-alerts.md ]; then
             echo -e "# Scraper Alerts Log\n\nThis file automatically logs scraper failures so the AI has a trail of what broke without needing to bother the human.\n\n" > docs/scraper-alerts.md
@@ -102,10 +121,28 @@ jobs:
           FAILED_SOURCES=$(jq -r '.failedSources[]?' harvest.log || true)
           if [ ! -z "$FAILED_SOURCES" ]; then
             echo "Individual sources failed."
+            FAILED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' harvest.log || echo 0)
+            echo "::warning title=Partial scrape failure::$FAILED_SOURCE_COUNT source(s) failed. See sourceResults in harvest.log."
             while IFS= read -r source_error; do
               echo "- **[$(date -u +"%Y-%m-%dT%H:%M:%SZ")]**: ⚠️ Partial Scrape Failure: $source_error" >> docs/scraper-alerts.md
             done <<< "$FAILED_SOURCES"
             HAS_CHANGES=true
+            if [ "$FAILED_SOURCE_COUNT" -gt "$SOURCE_FAILURE_FAIL_THRESHOLD" ]; then
+              echo "::error title=Source failure threshold exceeded::$FAILED_SOURCE_COUNT source failures exceeded threshold $SOURCE_FAILURE_FAIL_THRESHOLD."
+              SHOULD_FAIL=true
+            fi
+          fi
+
+          INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // 0' harvest.log || echo 0)
+          INSERT_ERROR_COUNT=$(jq -r '[.insertErrors[]?] | length' harvest.log || echo 0)
+          if [ "$INSERT_FAILED_BATCHES" -gt 0 ] || [ "$INSERT_ERROR_COUNT" -gt 0 ]; then
+            echo "::warning title=Insert accounting warning::$INSERT_FAILED_BATCHES failed batch(es), $INSERT_ERROR_COUNT insert error(s)."
+            echo "- **[$(date -u +"%Y-%m-%dT%H:%M:%SZ")]**: Insert Warning: $INSERT_FAILED_BATCHES failed batch(es), $INSERT_ERROR_COUNT insert error(s)." >> docs/scraper-alerts.md
+            HAS_CHANGES=true
+            if [ "$INSERT_ERROR_COUNT" -gt "$INSERT_ERROR_FAIL_THRESHOLD" ]; then
+              echo "::error title=Insert error threshold exceeded::$INSERT_ERROR_COUNT insert errors exceeded threshold $INSERT_ERROR_FAIL_THRESHOLD."
+              SHOULD_FAIL=true
+            fi
           fi
           
           # 3. Commit to GitHub
@@ -121,11 +158,35 @@ jobs:
             fi
           fi
 
+          if [ "$SHOULD_FAIL" = true ]; then
+            exit 1
+          fi
+
       - name: 📊 Generate Pulse Summary
         if: always()
         continue-on-error: true
         run: |
+          FAILED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' harvest.log || echo 0)
+          ZERO_COUNT_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == true and .count == 0)] | length' harvest.log || echo 0)
+          INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // 0' harvest.log || echo 0)
+          INSERT_ERROR_COUNT=$(jq -r '[.insertErrors[]?] | length' harvest.log || echo 0)
           echo "### 🏹 Sovereign Hunter Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ✅ Signal Safari Concluded" >> $GITHUB_STEP_SUMMARY
-          echo "- **Signals Harvested**: $TOTAL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Signals Harvested**: ${TOTAL:-0}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Accepted For Insert**: ${TOTAL_ACCEPTED:-0}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Attempted Inserts**: ${TOTAL_ATTEMPTED:-0}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failed Insert Batches**: ${TOTAL_INSERT_FAILED_BATCHES:-0}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Insert Errors**: ${TOTAL_INSERT_ERRORS:-0}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failed Sources**: $FAILED_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Zero-Count Successful Sources**: $ZERO_COUNT_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
+          if [ "$FAILED_SOURCE_COUNT" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "#### Failed Sources" >> $GITHUB_STEP_SUMMARY
+            jq -r '.sourceResults[]? | select(.ok == false) | "- \(.sourceName) (\(.sourceType)): \(.error)"' harvest.log >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "$INSERT_FAILED_BATCHES" -gt 0 ] || [ "$INSERT_ERROR_COUNT" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "#### Insert Errors" >> $GITHUB_STEP_SUMMARY
+            jq -r '.insertErrors[]? | "- batchStart=\(.batchStart), batchSize=\(.batchSize): \(.error)"' harvest.log >> $GITHUB_STEP_SUMMARY
+          fi
           echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
