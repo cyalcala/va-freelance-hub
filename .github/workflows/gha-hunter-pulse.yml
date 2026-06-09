@@ -3,7 +3,13 @@ name: 🏹 Sovereign Hunter Pulse
 on:
   schedule:
     - cron: '*/30 * * * *' # Every 30 minutes
-  workflow_dispatch: 
+  workflow_dispatch:
+    inputs:
+      write_rollup:
+        description: "Commit docs/source-health-latest.md for manual acceptance testing"
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: gha-hunter-pipeline
@@ -225,3 +231,63 @@ jobs:
             harvest.log
             source-health-summary.md
           retention-days: 14
+
+  daily-rollup:
+    name: Update Source Health Rollup
+    needs: hunt
+    if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.write_rollup == 'true') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download Hunter Evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: hunter-health-${{ github.run_id }}
+          path: .hunter-health
+
+      - name: Commit Daily Source Health
+        run: |
+          set -euo pipefail
+
+          git pull --ff-only origin main
+
+          if [ ! -f .hunter-health/source-health-summary.md ]; then
+            echo "::error title=Missing source-health artifact::source-health-summary.md was not found."
+            exit 1
+          fi
+
+          TODAY=$(date -u +"%Y-%m-%d")
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          if [ "${GITHUB_EVENT_NAME}" = "schedule" ] && [ -f docs/source-health-latest.md ] && grep -q "^Date: ${TODAY}$" docs/source-health-latest.md; then
+            echo "Source health rollup already exists for ${TODAY}; skipping scheduled commit."
+            exit 0
+          fi
+
+          {
+            echo "# Source Health Latest"
+            echo ""
+            echo "Date: ${TODAY}"
+            echo "Workflow run: ${RUN_URL}"
+            echo "Commit: ${GITHUB_SHA}"
+            echo ""
+            cat .hunter-health/source-health-summary.md
+          } > docs/source-health-latest.md
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/source-health-latest.md
+
+          if git diff --cached --quiet; then
+            echo "No source-health rollup changes to commit."
+            exit 0
+          fi
+
+          git commit -m "docs: update daily source health"
+          git push origin HEAD:main
