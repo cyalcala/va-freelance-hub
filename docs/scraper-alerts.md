@@ -83,3 +83,4 @@ This file automatically logs scraper failures so the AI has a trail of what brok
 - **[2026-06-08T23:44:50Z]**: ⚠️ Partial Scrape Failure: SuperStaff (ATS): [ats] Failed to fetch workable feed for SuperStaff: Workable HTTP 429
 - **[2026-06-08T23:44:50Z]**: ⚠️ Partial Scrape Failure: Global Strategic (ATS): [ats] Failed to fetch workable feed for Global Strategic: Workable HTTP 429
 - **[2026-06-08T23:44:50Z]**: ⚠️ Partial Scrape Failure: ConnectOS (ATS): [ats] Failed to fetch workable feed for ConnectOS: Workable HTTP 429
+- **[2026-06-09T02:41:51Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
