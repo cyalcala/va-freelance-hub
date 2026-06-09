@@ -124,11 +124,12 @@ Current accepted work:
   report paused sources as skipped in live scrape results.
 - De-duplicate ATS source fetches and pause Workable-backed ATS sources after
   repeated HTTP 429s.
-- Accepted completion: 70%.
+- Capture a read-only production data-quality snapshot for P5 Slice 1.
+- Accepted completion: 75%.
 
 Next pending work:
 
-- P5 Slice 1: add data-quality and stale-source metrics.
+- P5 Slice 2: define stale/paused-source policy and dry-run candidate report.
 - CI deploy automation remains a known follow-up because P1 required manual
   Wrangler deployment after CI passed and P2/P3 required the same.
 
@@ -325,6 +326,29 @@ Accepted P4 ATS source policy implementation:
 - D1 evidence:
   - active opportunity count after latest Hunter run: 687.
   - read-only D1 count query changed 0 rows.
+
+Accepted P5 data-quality snapshot:
+
+- Snapshot: `docs/data-quality-snapshot-2026-06-09.md`
+- Verification:
+  - D1 queries were read-only and returned `changed_db: false`.
+  - `git diff --check` passed with only normal CRLF warnings.
+- Key production metrics:
+  - active opportunities: 687.
+  - duplicate `source_url`, `content_hash`, and non-empty `description_hash`
+    groups: 0 each.
+  - missing `company`: 95.
+  - missing `pay_range`: 524.
+  - missing `client_timezone`: 687.
+  - missing `application_url`: 687.
+  - missing `experience_level`: 522.
+  - missing `posted_at`: 62.
+  - missing `description_hash`: 507.
+  - category `other`: 531.
+  - posted older than 30 days: 247.
+  - currently enabled source rows: 497.
+  - now-paused source rows: 185.
+  - unclassified source rows: 5 (`RemoteOK`).
 
 ## Production Baseline From Audit
 

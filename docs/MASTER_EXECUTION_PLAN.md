@@ -81,7 +81,7 @@ project unethical; it means source policy must be explicit and conservative.
 | P2 Indexing and datetime foundation | 15% | Accepted | Add hot-query indexes and normalize dates |
 | P3 Ingestion observability | 20% | Accepted | Remove silent ATS/write/source failures |
 | P4 Source compliance and portfolio | 15% | Accepted | Classify sources and pause risky/unproductive ones |
-| P5 Data quality and triage | 15% | Not started | Improve missing fields, categories, freshness, and stale policy |
+| P5 Data quality and triage | 15% | In progress (5/15%) | Improve missing fields, categories, freshness, and stale policy |
 | P6 Reporting and backup hygiene | 10% | Not started | Replace noisy alert commits with rollups and status reports |
 | P7 Final acceptance and polish | 5% | Not started | Re-audit, verify production, and align portfolio docs |
 

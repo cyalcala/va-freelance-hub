@@ -15,15 +15,15 @@ When starting a new chat or work session, read these in order:
 
 Phase P5: Data quality and triage improvements.
 
-P4 is accepted. RSS/HTML and ATS sources now have conservative keep/pause
-decisions, risky/noisy sources are skipped with visible reasons, and the live
-Hunter workflow reports no failed sources.
+P5 Slice 1 is ready for acceptance. A read-only production data-quality snapshot
+now records missing fields, stale-risk buckets, category distribution, source
+distribution, and now-paused source history.
 
 ## Overall Completion
 
-Current accepted completion: 70%.
+Current accepted completion: 75%.
 
-P0, P1, P2, P3, and P4 are accepted.
+P0, P1, P2, P3, P4, and the first 5% of P5 are accepted.
 
 ## Phase Status
 
@@ -34,11 +34,40 @@ P0, P1, P2, P3, and P4 are accepted.
 | P2 Indexing and datetime foundation | 15% | 15% | Accepted | Complete |
 | P3 Ingestion observability | 20% | 20% | Accepted | Complete |
 | P4 Source compliance and portfolio | 15% | 15% | Accepted | Complete |
-| P5 Data quality and triage | 15% | 0% | Not started | Missing-field metrics, stale-source handling, and triage distribution |
+| P5 Data quality and triage | 15% | 5% | Data-quality metrics accepted; stale policy/action pending | Dry-run stale/paused-source candidate policy |
 | P6 Reporting and backup hygiene | 10% | 0% | Not started | Daily rollup replaces noisy repeated alert commits |
 | P7 Final acceptance and polish | 5% | 0% | Not started | Re-audit and production acceptance |
 
 ## Latest Accepted Checkpoint
+
+### P5 Slice 1 - Data Quality Snapshot
+
+- Date: 2026-06-09
+- Status: accepted after docs CI
+- Snapshot: `docs/data-quality-snapshot-2026-06-09.md`
+- Scope:
+  - captured read-only production D1 data quality metrics;
+  - separated currently enabled source rows, now-paused source rows, and
+    unclassified source rows;
+  - recorded category, source, stale-risk, missing-field, duplicate-key, and
+    last-seen gap metrics;
+  - made no production row mutations.
+- Key findings:
+  - active opportunities: 687;
+  - duplicate `source_url`, `content_hash`, and non-empty `description_hash`
+    groups: 0 each;
+  - missing `application_url` and `client_timezone`: 687 rows each;
+  - missing `pay_range`: 524 rows;
+  - missing `experience_level`: 522 rows;
+  - category `other`: 531 rows;
+  - posted older than 30 days: 247 rows;
+  - rows from currently enabled sources: 497;
+  - historical rows from now-paused sources: 185;
+  - unclassified source rows: 5 (`RemoteOK`).
+- Verification:
+  - all D1 checks were read-only and reported `changed_db: false`;
+  - `git diff --check` passed with only normal CRLF warnings.
+- Accepted completion after this checkpoint: 75%.
 
 ### P4 Slice 3 - ATS Source Policy And Duplicate Control
 
@@ -461,16 +490,15 @@ P0, P1, P2, P3, and P4 are accepted.
 
 ## Next Task
 
-P5 Slice 1: add data-quality and stale-source metrics.
+P5 Slice 2: define stale/paused-source policy and dry-run candidate report.
 
 Acceptance criteria:
 
-- Produce a repeatable data-quality snapshot for missing company, pay,
-  timezone, application URL, experience level, posted date, description hash,
-  and stale source/platform distribution.
-- Separate historical rows from now-paused sources from currently enabled
-  ingestion sources.
-- Do not archive or mutate production rows until the metrics and policy are
+- Produce a no-mutation candidate report for rows that could be archived,
+  demoted, or held.
+- Separate rules for currently enabled sources, now-paused sources, and
+  unclassified sources such as `RemoteOK`.
+- Do not mutate production rows until the dry-run candidate list and policy are
   documented.
 - The app build remains green.
 - Existing GitHub Actions remain green.

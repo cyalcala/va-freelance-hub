@@ -3,8 +3,8 @@
 ## Current State
 
 Date: 2026-06-09
-Status: P4 accepted, P5 data quality and triage metrics next
-Overall accepted completion: 70%
+Status: P5 data quality snapshot accepted, stale policy dry-run next
+Overall accepted completion: 75%
 Active branch: `main`
 
 The user resumed the original roadmap and approved continuing slice by slice.
@@ -22,7 +22,8 @@ the public data policy language. P4 Slice 2 reviewed RSS/HTML source evidence,
 paused risky or unproductive sources, and kept paused sources visible as skipped
 records in live scrape results. P4 Slice 3 de-duplicated ATS source fetches,
 paused Workable-backed ATS rows after repeated HTTP 429s, and verified the live
-Hunter workflow with no failed sources.
+Hunter workflow with no failed sources. P5 Slice 1 captured a read-only
+production data-quality snapshot and made no production row mutations.
 
 ## What Was Completed
 
@@ -39,6 +40,7 @@ Hunter workflow with no failed sources.
 - P4 Slice 1 is accepted at 60% overall.
 - P4 Slice 2 is accepted at 65% overall.
 - P4 is accepted at 70% overall.
+- P5 Slice 1 is accepted at 75% overall.
 
 Accepted P0 evidence:
 
@@ -96,7 +98,7 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-P5 Slice 1: add data-quality and stale-source metrics.
+P5 Slice 2: define stale/paused-source policy and dry-run candidate report.
 
 Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
 and P3 needed manual Wrangler deployments after CI passed.
@@ -275,15 +277,47 @@ P4 Slice 3 evidence:
 - D1 read-only evidence: active opportunities count was 687 after the latest
   manual Hunter run, with 0 row changes.
 
-P5 Slice 1 suggested scope:
+P5 Slice 1 evidence:
 
-- Add or document a repeatable data-quality snapshot for missing company, pay,
-  timezone, application URL, experience level, posted date, description hash,
-  and stale source/platform distribution.
-- Separate historical rows from now-paused sources from currently enabled
-  ingestion sources.
-- Do not mutate/archive production rows until the metrics and stale policy are
-  documented.
+- Snapshot doc: `docs/data-quality-snapshot-2026-06-09.md`
+- D1 query mode: read-only; all sampled queries returned `changed_db: false`.
+- Active opportunities: 687.
+- Duplicate `source_url`, `content_hash`, and non-empty `description_hash`
+  groups: 0 each.
+- Missing fields:
+  - `company`: 95;
+  - `pay_range`: 524;
+  - `client_timezone`: 687;
+  - `application_url`: 687;
+  - `experience_level`: 522;
+  - `posted_at`: 62;
+  - `description_hash`: 507;
+  - `last_seen_in_feed_at`: 124.
+- Freshness:
+  - `posted_at` unparseable: 0;
+  - posted older than 30 days: 247;
+  - posted older than 60 days: 111;
+  - posted older than 90 days: 81;
+  - last seen in feed older than 30 days: 0.
+- Category distribution:
+  - `other`: 531;
+  - `tech`: 86;
+  - `admin`: 31;
+  - `customer-service`: 20;
+  - `design`: 18;
+  - `marketing`: 1.
+- Source policy split:
+  - currently enabled source rows: 497;
+  - now-paused source rows: 185;
+  - unclassified source rows: 5 (`RemoteOK`).
+
+P5 Slice 2 suggested scope:
+
+- Define source-specific stale rules for currently enabled, now-paused, and
+  unclassified sources.
+- Produce a dry-run candidate report for archive/demote/hold actions.
+- Do not mutate/archive production rows until the dry-run report is committed,
+  pushed, and accepted.
 
 ## Stop Rule
 

@@ -20,9 +20,11 @@ Read these in order:
 8. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
    evidence.
 9. `docs/ats-source-review-2026-06-09.md` - latest ATS source policy evidence.
-10. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+10. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
+   metrics.
+11. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-11. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+12. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -40,6 +42,8 @@ Read these in order:
   compliance and usefulness review behind P4 Slice 2.
 - `docs/ats-source-review-2026-06-09.md` records the ATS duplicate-token and
   Workable pause decisions behind P4 Slice 3.
+- `docs/data-quality-snapshot-2026-06-09.md` records the read-only P5 Slice 1
+  production data-quality baseline.
 - `docs/scraper-troubleshooting.md` contains useful history but may reference
   older Trigger.dev-era assumptions.
 - `docs/system-audit-and-optimizations.md` contains earlier optimization notes;
