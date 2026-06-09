@@ -89,3 +89,14 @@ This file automatically logs scraper failures so the AI has a trail of what brok
 - **[2026-06-09T10:04:39Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
 - **[2026-06-09T10:25:56Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
 - **[2026-06-09T10:32:06Z]**: ⚠️ Partial Scrape Failure: Remote.co (RSS): [rss] Failed to fetch Remote.co: HTTP 520
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: Coconut VA (ATS): [ats] Failed to fetch workable feed for Coconut VA: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: ConnectOS (ATS): [ats] Failed to fetch workable feed for ConnectOS: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: CrewBloom (ATS): [ats] Failed to fetch workable feed for CrewBloom: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: Global Strategic (ATS): [ats] Failed to fetch workable feed for Global Strategic: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: Hello Rache (ATS): [ats] Failed to fetch workable feed for Hello Rache: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: MyOutDesk (ATS): [ats] Failed to fetch workable feed for MyOutDesk: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: Outsource Access (ATS): [ats] Failed to fetch workable feed for Outsource Access: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: Pearl Talent (ATS): [ats] Failed to fetch workable feed for Pearl Talent: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: Pineapple Staffing (ATS): [ats] Failed to fetch workable feed for Pineapple Staffing: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: Staff Domain (ATS): [ats] Failed to fetch workable feed for Staff Domain: Workable HTTP 429
+- **[2026-06-09T10:59:00Z]**: ⚠️ Partial Scrape Failure: SuperStaff (ATS): [ats] Failed to fetch workable feed for SuperStaff: Workable HTTP 429
