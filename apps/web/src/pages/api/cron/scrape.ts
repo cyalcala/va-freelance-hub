@@ -33,6 +33,7 @@ interface SourceFetchResult {
   sourceType: SourceType;
   collectionMethod: CollectionMethod | "public_ats_json";
   complianceStatus: ComplianceStatus;
+  complianceNotes?: string;
   ok: boolean;
   count: number;
   durationMs: number;
@@ -67,6 +68,7 @@ function skippedSourceResult(source: Source): SourceFetchResult {
     sourceType: toSourceType(source),
     collectionMethod: source.collectionMethod,
     complianceStatus: source.complianceStatus,
+    complianceNotes: source.complianceNotes,
     ok: true,
     count: 0,
     durationMs: 0,
@@ -76,11 +78,48 @@ function skippedSourceResult(source: Source): SourceFetchResult {
   };
 }
 
+interface AtsAgency {
+  companyName: string;
+  atsPlatform: string | null;
+  atsToken: string | null;
+}
+
+interface DuplicateAtsAgency {
+  agency: AtsAgency;
+  primaryCompanyName: string;
+}
+
+function atsSourceKey(agency: AtsAgency): string {
+  return `${agency.atsPlatform}:${agency.atsToken}`;
+}
+
+function atsComplianceNotes(agency: AtsAgency): string {
+  return `Directory-configured ${agency.atsPlatform} public ATS JSON endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.`;
+}
+
+function skippedDuplicateAtsResult({ agency, primaryCompanyName }: DuplicateAtsAgency): SourceFetchResult {
+  const skipReason = `Duplicate ATS token already fetched for ${primaryCompanyName}; skipped to avoid duplicate requests and duplicate source URLs.`;
+  return {
+    sourceName: agency.companyName,
+    sourceType: "ATS",
+    collectionMethod: "public_ats_json",
+    complianceStatus: "needs_review",
+    complianceNotes: atsComplianceNotes(agency),
+    ok: true,
+    count: 0,
+    durationMs: 0,
+    items: [],
+    skipped: true,
+    skipReason,
+  };
+}
+
 async function fetchSourceWithStatus(
   sourceName: string,
   sourceType: SourceType,
   collectionMethod: SourceFetchResult["collectionMethod"],
   complianceStatus: ComplianceStatus,
+  complianceNotes: string | undefined,
   fetcher: () => Promise<NewOpportunity[]>
 ): Promise<SourceFetchResult> {
   const startedAt = Date.now();
@@ -91,6 +130,7 @@ async function fetchSourceWithStatus(
       sourceType,
       collectionMethod,
       complianceStatus,
+      complianceNotes,
       ok: true,
       count: items.length,
       durationMs: Date.now() - startedAt,
@@ -102,6 +142,7 @@ async function fetchSourceWithStatus(
       sourceType,
       collectionMethod,
       complianceStatus,
+      complianceNotes,
       ok: false,
       count: 0,
       durationMs: Date.now() - startedAt,
@@ -146,14 +187,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // 3. Fetch all raw items
     const rssResults = await Promise.all(
       rssSources.map((source) =>
-        fetchSourceWithStatus(source.name, "RSS", source.collectionMethod, source.complianceStatus, () => fetchRSSFeed(source))
+        fetchSourceWithStatus(source.name, "RSS", source.collectionMethod, source.complianceStatus, source.complianceNotes, () => fetchRSSFeed(source))
       )
     );
     const rssItems = rssResults.flatMap((result) => result.items);
 
     const htmlResults = await Promise.all(
       htmlSources.map((source) =>
-        fetchSourceWithStatus(source.name, "HTML", source.collectionMethod, source.complianceStatus, () => fetchHTMLSource(source))
+        fetchSourceWithStatus(source.name, "HTML", source.collectionMethod, source.complianceStatus, source.complianceNotes, () => fetchHTMLSource(source))
       )
     );
     const htmlItems = htmlResults.flatMap((result) => result.items);
@@ -166,10 +207,35 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
     
     console.log(`[api/cron/scrape] Found ${atsAgencies.length} ATS-enabled agencies in the directory.`);
+
+    const sortedAtsAgencies = [...atsAgencies].sort((a, b) =>
+      atsSourceKey(a).localeCompare(atsSourceKey(b)) ||
+      a.companyName.localeCompare(b.companyName)
+    );
+    const primaryAtsCompanies = new Map<string, string>();
+    const uniqueAtsAgencies: AtsAgency[] = [];
+    const duplicateAtsAgencies: DuplicateAtsAgency[] = [];
+
+    for (const agency of sortedAtsAgencies) {
+      const sourceKey = atsSourceKey(agency);
+      const primaryCompanyName = primaryAtsCompanies.get(sourceKey);
+      if (primaryCompanyName) {
+        duplicateAtsAgencies.push({ agency, primaryCompanyName });
+      } else {
+        primaryAtsCompanies.set(sourceKey, agency.companyName);
+        uniqueAtsAgencies.push(agency);
+      }
+    }
+
+    if (duplicateAtsAgencies.length > 0) {
+      console.warn(
+        `[api/cron/scrape] Skipping ${duplicateAtsAgencies.length} duplicate ATS director${duplicateAtsAgencies.length === 1 ? "y" : "ies"}.`
+      );
+    }
     
     const atsResults = await Promise.all(
-      atsAgencies.map((agency) =>
-        fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", "needs_review", () =>
+      uniqueAtsAgencies.map((agency) =>
+        fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", "needs_review", atsComplianceNotes(agency), () =>
           fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
         )
       )
@@ -177,7 +243,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const atsItems = atsResults.flatMap((result) => result.items);
 
     const skippedResults = disabledSources.map(skippedSourceResult);
-    const sourceResults = [...rssResults, ...htmlResults, ...skippedResults, ...atsResults].map(sourceStatus);
+    const skippedAtsResults = duplicateAtsAgencies.map(skippedDuplicateAtsResult);
+    const sourceResults = [...rssResults, ...htmlResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
     const failedSources = sourceResults
       .filter((result) => !result.ok)
       .map((result) => `${result.sourceName} (${result.sourceType}): ${result.error}`);
