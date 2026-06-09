@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, vaDirectory, type NewOpportunity } from "@va-hub/db";
-import { isNotNull, and, inArray } from "drizzle-orm";
+import { isNotNull, and, inArray, eq } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
@@ -17,11 +17,14 @@ async function generateHash(message: string) {
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
     case "admin": return "admin";
+    case "design":
     case "creative": return "design";
     case "tech": return "tech";
+    case "marketing":
     case "social-media": return "marketing";
+    case "customer-service":
     case "customer-support": return "customer-service";
-    case "finance": return "other";
+    case "finance": return "finance";
     default: return "other";
   }
 }
@@ -83,9 +86,11 @@ function skippedSourceResult(source: Source): SourceFetchResult {
 }
 
 interface AtsAgency {
+  id: number;
   companyName: string;
   atsPlatform: string | null;
   atsToken: string | null;
+  verifiedAt: string | null;
 }
 
 type AtsPlatform = "lever" | "greenhouse" | "workable" | "breezy";
@@ -104,10 +109,10 @@ const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
       "Directory-configured Breezy public JSON endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.",
   },
   workable: {
-    enabled: false,
-    complianceStatus: "paused",
+    enabled: true,
+    complianceStatus: "needs_review",
     complianceNotes:
-      "Paused 2026-06-09: Workable returned HTTP 429 even after sequential polling; re-enable only with a supported access path or explicit permission.",
+      "Directory-configured Workable public API endpoint; fetched using a staggered rotating schedule (1-2 per cron run) to prevent HTTP 429 rate limiting.",
   },
   greenhouse: {
     enabled: true,
@@ -273,10 +278,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
     
     console.log(`[api/cron/scrape] Found ${atsAgencies.length} ATS-enabled agencies in the directory.`);
 
-    const sortedAtsAgencies = [...atsAgencies].sort((a, b) =>
+        const sortedAtsAgencies = [...atsAgencies].sort((a, b) =>
       atsSourceKey(a).localeCompare(atsSourceKey(b)) ||
       a.companyName.localeCompare(b.companyName)
     );
+
+    // Staggered Workable Polling: Select only the 2 oldest/unscraped Workable agencies
+    const workableAgencies = sortedAtsAgencies.filter(a => a.atsPlatform === "workable");
+    workableAgencies.sort((a, b) => {
+      if (!a.verifiedAt && b.verifiedAt) return -1;
+      if (a.verifiedAt && !b.verifiedAt) return 1;
+      if (!a.verifiedAt && !b.verifiedAt) return 0;
+      return a.verifiedAt!.localeCompare(b.verifiedAt!);
+    });
+    const allowedWorkableTokens = new Set(workableAgencies.slice(0, 2).map(a => a.atsToken));
+
     const primaryAtsCompanies = new Map<string, string>();
     const uniqueAtsAgencies: AtsAgency[] = [];
     const duplicateAtsAgencies: DuplicateAtsAgency[] = [];
@@ -289,6 +305,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
           agency,
           policy,
           skipReason: policy.complianceNotes,
+        });
+        continue;
+      }
+
+      // Skip Workable agencies not in the current active rotation slice
+      if (agency.atsPlatform === "workable" && !allowedWorkableTokens.has(agency.atsToken)) {
+        policySkippedAtsAgencies.push({
+          agency,
+          policy,
+          skipReason: "Skipped Workable rotation slice to prevent rate limiting (scheduled for later runs)."
         });
         continue;
       }
@@ -310,18 +336,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
     if (policySkippedAtsAgencies.length > 0) {
       console.warn(
-        `[api/cron/scrape] Skipping ${policySkippedAtsAgencies.length} ATS director${policySkippedAtsAgencies.length === 1 ? "y" : "ies"} due to platform policy.`
+        `[api/cron/scrape] Skipping ${policySkippedAtsAgencies.length} ATS director${policySkippedAtsAgencies.length === 1 ? "y" : "ies"} due to platform policy or rotation.`
       );
     }
     
     const atsResults: SourceFetchResult[] = [];
     for (const agency of uniqueAtsAgencies) {
       const policy = atsPlatformPolicy(agency);
-      atsResults.push(
-        await fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", policy.complianceStatus, policy.complianceNotes, () =>
-          fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
-        )
+      const result = await fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", policy.complianceStatus, policy.complianceNotes, () =>
+        fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
       );
+      atsResults.push(result);
+
+      if (result.ok && agency.atsPlatform === "workable") {
+        try {
+          await db.update(vaDirectory)
+            .set({ verifiedAt: observedAt })
+            .where(eq(vaDirectory.id, agency.id));
+          console.log(`[api/cron/scrape] Updated verifiedAt to ${observedAt} for Workable agency: ${agency.companyName}`);
+        } catch (error) {
+          console.error(`[api/cron/scrape] Failed to update verifiedAt for Workable agency: ${agency.companyName}`, error);
+        }
+      }
 
       if (agency.atsPlatform === "workable") {
         await sleep(1_000);

@@ -1,7 +1,7 @@
 export interface TriageResult {
   eligibleForFilipinos: boolean;
   reason: string;
-  category: "admin" | "creative" | "tech" | "social-media" | "customer-support" | "finance" | "other";
+  category: "admin" | "design" | "tech" | "marketing" | "customer-service" | "finance" | "other";
   tags: string[];
   payRange: string | null;
   clientTimezone: string | null;
@@ -93,13 +93,13 @@ export async function triageJob(
       category = "tech";
       tags.push("software-development", "tech");
     } else if (text.includes("design") || text.includes("writer") || text.includes("creative") || text.includes("copywriter")) {
-      category = "creative";
+      category = "design";
       tags.push("creative", "content");
     } else if (text.includes("social") || text.includes("instagram") || text.includes("facebook") || text.includes("marketing")) {
-      category = "social-media";
+      category = "marketing";
       tags.push("marketing", "social-media");
     } else if (text.includes("support") || text.includes("customer") || text.includes("chat")) {
-      category = "customer-support";
+      category = "customer-service";
       tags.push("customer-support", "helpdesk");
     } else if (text.includes("bookkeeper") || text.includes("accounting") || text.includes("finance")) {
       category = "finance";
@@ -133,7 +133,14 @@ Requirements for output JSON schema:
 {
   "eligibleForFilipinos": boolean, // Must be true unless the job specifies only US, UK, Canada, Europe, or other specific locations/citizenship exclusions. If the job is open "globally" or "worldwide" or "remote", it is true.
   "reason": "string", // Brief explanation of eligibility or location rules.
-  "category": "admin" | "creative" | "tech" | "social-media" | "customer-support" | "finance" | "other", // Pick the most relevant.
+  "category": "admin" | "design" | "tech" | "marketing" | "customer-service" | "finance" | "other", // Classify based on these guidelines:
+  // - "admin": virtual assistant, data entry, calendar/email management, HR, recruiting, executive assistant, scheduling, office operations.
+  // - "design": UI/UX, product design, graphic design, branding, illustration, copywriting, content writing, video editing, motion design, creative producer.
+  // - "tech": software engineering, web development, QA, devops, IT support, technical support, data analyst, product manager, scrum master.
+  // - "marketing": sales, business development, marketing coordinator, SEO, social media management, lead generation, CRM management, email marketing, growth.
+  // - "customer-service": customer support, chat support, email support, helpdesk, ticketing, customer service representative.
+  // - "finance": accounting, bookkeeping, financial analysis, billing, payroll, collections.
+  // - "other": any general roles that do not fit the above categories.
   "tags": ["string"], // Array of 2 to 4 technical skills or tools needed.
   "payRange": "string", // ONLY extract if explicitly stated in text, otherwise return null. Do NOT guess.
   "clientTimezone": "string", // ONLY extract if explicitly stated (e.g. "EST", "AEST", "Australian Dayshift"), otherwise return null. Do NOT guess.
@@ -201,10 +208,10 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
         reason: parsed.reason || "AI classified",
         category: [
           "admin",
-          "creative",
+          "design",
           "tech",
-          "social-media",
-          "customer-support",
+          "marketing",
+          "customer-service",
           "finance",
           "other",
         ].includes(parsed.category)

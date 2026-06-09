@@ -6,6 +6,7 @@ export const JOB_CATEGORY_MAP: Record<string, { title: string, color: string }> 
   'marketing': { title: 'MARKETING & SALES', color: 'border-orange-500/30' },
   'design': { title: 'DESIGN & CREATIVE', color: 'border-purple-500/30' },
   'tech': { title: 'ENGINEERING & IT', color: 'border-blue-500/30' },
+  'finance': { title: 'FINANCE & ACCOUNTING', color: 'border-amber-600/30' },
   'other': { title: 'GENERAL & OTHER', color: 'border-ink/10' },
 };
 
@@ -21,6 +22,7 @@ export function getJobCategory(opp: Opportunity): string {
   if (text.match(/design|ui|ux|graphic|illustrator|video|animat|creative/)) return 'design';
   if (text.match(/customer|support|chat|ticket|csr|client/)) return 'customer-service';
   if (text.match(/admin|virtual assistant|data entry|hr|recruiter|operation|executive|management/)) return 'admin';
+  if (text.match(/bookkeeper|accounting|finance|audit|billing|collections|payroll/)) return 'finance';
   
   return opp.category || 'other';
 }

@@ -142,7 +142,7 @@ export async function fetchHTMLSource(source: Source): Promise<NewOpportunity[]>
       tags: source.tags,
       locationType: "remote" as const,
       payRange: null,
-      description: item.description?.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim().slice(0, 500) ?? null,
+      description: item.description?.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim().slice(0, 1500) ?? null,
       postedAt: item.date ?? null,
       isActive: true,
       contentHash: toContentHash(item.title!, item.url!),

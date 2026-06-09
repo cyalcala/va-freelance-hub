@@ -129,7 +129,7 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
         tags,
         locationType: "remote" as const,
         payRange: null,
-        description: normalizeText(item.description).slice(0, 500) || null,
+        description: normalizeText(item.description).slice(0, 1500) || null,
         postedAt: normalizeDate(rawDate),
         isActive: true,
         contentHash: toContentHash(finalTitle, sourceUrl),
