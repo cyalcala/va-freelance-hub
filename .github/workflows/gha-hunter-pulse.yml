@@ -167,7 +167,8 @@ jobs:
         continue-on-error: true
         run: |
           FAILED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' harvest.log || echo 0)
-          ZERO_COUNT_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == true and .count == 0)] | length' harvest.log || echo 0)
+          ZERO_COUNT_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == true and .count == 0 and (.skipped != true))] | length' harvest.log || echo 0)
+          SKIPPED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.skipped == true)] | length' harvest.log || echo 0)
           INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // 0' harvest.log || echo 0)
           INSERT_ERROR_COUNT=$(jq -r '[.insertErrors[]?] | length' harvest.log || echo 0)
           echo "### 🏹 Sovereign Hunter Report" >> $GITHUB_STEP_SUMMARY
@@ -179,10 +180,16 @@ jobs:
           echo "- **Insert Errors**: ${TOTAL_INSERT_ERRORS:-0}" >> $GITHUB_STEP_SUMMARY
           echo "- **Failed Sources**: $FAILED_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
           echo "- **Zero-Count Successful Sources**: $ZERO_COUNT_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Skipped Sources**: $SKIPPED_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
           if [ "$FAILED_SOURCE_COUNT" -gt 0 ]; then
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "#### Failed Sources" >> $GITHUB_STEP_SUMMARY
             jq -r '.sourceResults[]? | select(.ok == false) | "- \(.sourceName) (\(.sourceType)): \(.error)"' harvest.log >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "$SKIPPED_SOURCE_COUNT" -gt 0 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "#### Skipped Sources" >> $GITHUB_STEP_SUMMARY
+            jq -r '.sourceResults[]? | select(.skipped == true) | "- \(.sourceName) (\(.sourceType), \(.complianceStatus)): \(.skipReason)"' harvest.log >> $GITHUB_STEP_SUMMARY
           fi
           if [ "$INSERT_FAILED_BATCHES" -gt 0 ] || [ "$INSERT_ERROR_COUNT" -gt 0 ]; then
             echo "" >> $GITHUB_STEP_SUMMARY

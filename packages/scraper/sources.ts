@@ -22,8 +22,8 @@ export const sources: Source[] = [
     url: "https://weworkremotely.com/remote-jobs.rss",
     type: "rss",
     collectionMethod: "rss_feed",
-    complianceStatus: "needs_review",
-    complianceNotes: "Public RSS feed. Terms/robots review still required before marking allowed.",
+    complianceStatus: "allowed",
+    complianceNotes: "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
     platform: "WeWorkRemotely",
     defaultJobType: "full-time",
     tags: ["remote", "tech", "design", "marketing"],
@@ -34,8 +34,8 @@ export const sources: Source[] = [
     url: "https://remotive.com/remote-jobs/feed",
     type: "rss",
     collectionMethod: "rss_feed",
-    complianceStatus: "needs_review",
-    complianceNotes: "Public RSS feed. Terms/robots review still required before marking allowed.",
+    complianceStatus: "allowed",
+    complianceNotes: "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
     platform: "Remotive",
     defaultJobType: "full-time",
     tags: ["remote", "tech", "sales", "marketing"],
@@ -46,8 +46,8 @@ export const sources: Source[] = [
     url: "https://problogger.com/jobs/feed/",
     type: "rss",
     collectionMethod: "rss_feed",
-    complianceStatus: "needs_review",
-    complianceNotes: "Public RSS feed currently returns zero items; review terms and usefulness before relying on it.",
+    complianceStatus: "paused",
+    complianceNotes: "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
     platform: "ProBlogger",
     defaultJobType: "freelance",
     tags: ["writing", "content", "blogging", "creative"],
@@ -58,8 +58,8 @@ export const sources: Source[] = [
     url: "https://remote.co/remote-jobs/feed/",
     type: "rss",
     collectionMethod: "rss_feed",
-    complianceStatus: "needs_review",
-    complianceNotes: "Public RSS feed, but repeated HTTP 520 failures make it a pause candidate pending review.",
+    complianceStatus: "paused",
+    complianceNotes: "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
     platform: "RemoteCo",
     defaultJobType: "full-time",
     tags: ["remote", "customer-support", "admin", "VA"],
@@ -70,8 +70,8 @@ export const sources: Source[] = [
     url: "https://authenticjobs.com/feed/",
     type: "rss",
     collectionMethod: "rss_feed",
-    complianceStatus: "needs_review",
-    complianceNotes: "Public RSS feed. Terms/robots review still required before marking allowed.",
+    complianceStatus: "paused",
+    complianceNotes: "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
     platform: "AuthenticJobs",
     defaultJobType: "freelance",
     tags: ["design", "creative", "web", "freelance"],
@@ -82,8 +82,8 @@ export const sources: Source[] = [
     url: "https://dribbble.com/jobs.rss",
     type: "rss",
     collectionMethod: "rss_feed",
-    complianceStatus: "needs_review",
-    complianceNotes: "Public RSS feed. Terms/robots review still required before marking allowed.",
+    complianceStatus: "paused",
+    complianceNotes: "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
     platform: "Dribbble",
     defaultJobType: "freelance",
     tags: ["design", "creative", "UI", "UX"],
@@ -94,8 +94,8 @@ export const sources: Source[] = [
     url: "https://www.onlinejobs.ph/jobseekers/jobsearch",
     type: "html",
     collectionMethod: "public_html",
-    complianceStatus: "needs_review",
-    complianceNotes: "Public HTML listing page, not a source-supported feed. Keep conservative and pause if terms/robots disallow automation.",
+    complianceStatus: "paused",
+    complianceNotes: "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
     platform: "OnlineJobsPH",
     defaultJobType: "VA",
     tags: ["VA", "filipino", "remote", "admin"],
@@ -106,13 +106,19 @@ export const sources: Source[] = [
     url: "https://jobspresso.co/feed/",
     type: "rss",
     collectionMethod: "rss_feed",
-    complianceStatus: "needs_review",
-    complianceNotes: "Public RSS feed currently returns zero items; review terms and usefulness before relying on it.",
+    complianceStatus: "paused",
+    complianceNotes: "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
     platform: "Jobspresso",
     defaultJobType: "full-time",
     tags: ["remote", "tech", "sales", "marketing"],
   },
 ];
 
-export const rssSources = sources.filter((s) => s.type === "rss");
-export const htmlSources = sources.filter((s) => s.type === "html");
+export function isEnabledSource(source: Source): boolean {
+  return source.complianceStatus !== "paused" && source.complianceStatus !== "deprecated";
+}
+
+export const enabledSources = sources.filter(isEnabledSource);
+export const disabledSources = sources.filter((s) => !isEnabledSource(s));
+export const rssSources = enabledSources.filter((s) => s.type === "rss");
+export const htmlSources = enabledSources.filter((s) => s.type === "html");

@@ -4,7 +4,7 @@ import { isNotNull, and, inArray } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob, type CollectionMethod, type ComplianceStatus } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -37,6 +37,8 @@ interface SourceFetchResult {
   count: number;
   durationMs: number;
   items: NewOpportunity[];
+  skipped?: boolean;
+  skipReason?: string;
   error?: string;
 }
 
@@ -53,6 +55,25 @@ function errorMessage(error: unknown): string {
 function sourceStatus(result: SourceFetchResult) {
   const { items: _items, ...status } = result;
   return status;
+}
+
+function toSourceType(source: Source): SourceType {
+  return source.type === "rss" ? "RSS" : "HTML";
+}
+
+function skippedSourceResult(source: Source): SourceFetchResult {
+  return {
+    sourceName: source.name,
+    sourceType: toSourceType(source),
+    collectionMethod: source.collectionMethod,
+    complianceStatus: source.complianceStatus,
+    ok: true,
+    count: 0,
+    durationMs: 0,
+    items: [],
+    skipped: true,
+    skipReason: source.complianceNotes,
+  };
 }
 
 async function fetchSourceWithStatus(
@@ -155,7 +176,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
     const atsItems = atsResults.flatMap((result) => result.items);
 
-    const sourceResults = [...rssResults, ...htmlResults, ...atsResults].map(sourceStatus);
+    const skippedResults = disabledSources.map(skippedSourceResult);
+    const sourceResults = [...rssResults, ...htmlResults, ...skippedResults, ...atsResults].map(sourceStatus);
     const failedSources = sourceResults
       .filter((result) => !result.ok)
       .map((result) => `${result.sourceName} (${result.sourceType}): ${result.error}`);
