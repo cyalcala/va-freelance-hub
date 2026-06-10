@@ -29,6 +29,22 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### P5 Debt - Historical Datetime Backfill & Major Health Audit
+
+- Date: 2026-06-10
+- Status: accepted after read-only D1 audit, D1 migration, and GitHub documentation push
+- Commit: `4336de4`
+- Message: `docs: add 2026-06-10 major audit report`
+- Supporting commit: `6a9fd40` (`fix: backfill historical datetimes to ISO UTC`)
+- Scope:
+  - Validated that Lens 1 and Lens 2 successfully cleared prior technical debt (indexing, `/opportunities` route, noisy GitHub action scraper alerts).
+  - Executed a major D1 health audit which revealed 704 total jobs with drastically improved category signal (`other` reduced to 48).
+  - Executed remaining P5 technical debt: backfilled and normalized thousands of legacy `YYYY-MM-DD HH:MM:SS` timestamps across the database into canonical UTC ISO strings using `0013_historical_datetime_backfill.sql`.
+  - Exported the complete audit report into `docs/major-audit-2026-06-10.md` for the next AI agent.
+- Key evidence:
+  - D1 migration `0013` successfully applied remotely.
+  - `docs/major-audit-2026-06-10.md` pushed to `main`.
+
 ### Lens 2 - Sourcing Expansion & Data Quality
 
 - Date: 2026-06-09

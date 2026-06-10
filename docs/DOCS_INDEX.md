@@ -71,6 +71,7 @@ Read these in order:
   older Trigger.dev-era assumptions.
 - `docs/system-audit-and-optimizations.md` contains earlier optimization notes;
   check against `docs/major-audit-2026-06-06.md` before treating it as current.
+- `docs/major-audit-2026-06-10.md` is the latest health audit showing post-Lens 2 readiness and the final timestamp normalization completion.
 
 ## Historical Or Backup Code Paths
 
