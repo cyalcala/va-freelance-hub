@@ -85,6 +85,8 @@ function skippedSourceResult(source: Source): SourceFetchResult {
   };
 }
 
+const D1_INSERT_BATCH_SIZE = 3;
+
 interface AtsAgency {
   id: number;
   companyName: string;
@@ -522,8 +524,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let attemptedInsert = 0;
     let insertFailedBatches = 0;
     const insertErrors: InsertError[] = [];
-    for (let i = 0; i < triagedItems.length; i += 5) {
-      const batch = triagedItems.slice(i, i + 5);
+    for (let i = 0; i < triagedItems.length; i += D1_INSERT_BATCH_SIZE) {
+      const batch = triagedItems.slice(i, i + D1_INSERT_BATCH_SIZE);
       attemptedInsert += batch.length;
       try {
         console.log(`[api/cron/scrape] Inserting batch of ${batch.length} items:`, batch.map(b => `${b.title} (${b.sourceUrl})`));
