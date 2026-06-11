@@ -111,22 +111,22 @@ const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
       "Directory-configured Breezy public JSON endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.",
   },
   workable: {
-    enabled: true,
-    complianceStatus: "needs_review",
+    enabled: false,
+    complianceStatus: "paused",
     complianceNotes:
-      "Directory-configured Workable public API endpoint; fetched using a staggered rotating schedule (1-2 per cron run) to prevent HTTP 429 rate limiting.",
+      "Paused 2026-06-12: repeated Workable HTTP 429s and no reviewed source-supported access path; do not fetch until permission or supported API terms are confirmed.",
   },
   greenhouse: {
-    enabled: true,
-    complianceStatus: "needs_review",
+    enabled: false,
+    complianceStatus: "paused",
     complianceNotes:
-      "Directory-configured Greenhouse public board endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.",
+      "Paused 2026-06-12: no current reviewed directory source uses Greenhouse; require source-specific review before enabling.",
   },
   lever: {
-    enabled: true,
-    complianceStatus: "needs_review",
+    enabled: false,
+    complianceStatus: "paused",
     complianceNotes:
-      "Directory-configured Lever public postings endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.",
+      "Paused 2026-06-12: no current reviewed directory source uses Lever; require source-specific review before enabling.",
   },
 };
 
