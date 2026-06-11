@@ -11,6 +11,23 @@ Active branch: `main`
 Latest health audit and repair checkpoint:
 
 - ATS follow-up report: `docs/ats-policy-follow-up-2026-06-12.md`
+- Latest product commit:
+  - `6304ea4` - requires token-specific review for Breezy ATS sources.
+- Latest generated rollup commit:
+  - `14db966` - refreshed `docs/source-health-latest.md`.
+- Verification:
+  - `bun run --cwd apps/web build` passed.
+  - CI/deploy run `27372929451` passed.
+  - Direct probes for current Breezy JSON endpoints returned 200.
+  - Hunter run `27372988265` had one transient `20Four7VA` timeout; retry run
+    `27373090226` passed with 0 failed sources, 0 failed insert batches, and
+    0 insert errors.
+  - Rollup-writing Hunter run `27373196600` passed.
+  - Future unknown Breezy tokens now default to `paused`.
+
+Previous health audit and repair checkpoint:
+
+- ATS follow-up report: `docs/ats-policy-follow-up-2026-06-12.md`
 - Product commit:
   - `aa670ee` - paused unreviewed/noisy ATS platforms by default.
 - Generated rollup commit:
@@ -169,7 +186,8 @@ Known follow-up: local direct D1 audits now work with Wrangler v4. Use
 `bunx wrangler d1 info remoteph-jobs-db` for remote metadata and
 `bunx wrangler d1 execute remoteph-jobs-db --remote --command "..."` for
 read-only SQL probes. Continue ATS/source policy review for current Breezy
-sources that remain `needs_review`.
+sources that remain `needs_review`; unknown future Breezy tokens now pause by
+default.
 
 P7 evidence:
 

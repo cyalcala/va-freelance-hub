@@ -20,7 +20,8 @@ major audit fixed Hunter D1 insert batching, reduced category page payloads, and
 removed tracked local Wrangler state. The 2026-06-12 follow-up also restored
 local direct D1 audit capability and upgraded active Wrangler tooling for the
 current Cloudflare Pages config. The latest ATS follow-up pauses unreviewed or
-noisy ATS platforms by default and refreshed the source-health rollup.
+noisy ATS platforms by default, requires token-specific review for Breezy, and
+refreshed the source-health rollup.
 
 ## Overall Completion
 
@@ -35,6 +36,32 @@ Current accepted completion: 100% of Lens 2.
 | L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Post-Audit F-06 - Breezy ATS Token Allowlist
+
+- Date: 2026-06-12
+- Status: accepted after local build, CI/deploy, direct endpoint probes, manual
+  Hunter retry, and source-health rollup refresh
+- Evidence report: `docs/ats-policy-follow-up-2026-06-12.md`
+- Product commit:
+  - `6304ea4` - `fix: require token review for breezy ats`
+- Generated rollup commit:
+  - `14db966` - `docs: update daily source health`
+- Scope:
+  - changed Breezy from platform-wide enabled to token-specific policy;
+  - kept current tokens `breezy:20four7va`, `breezy:sourcefit`, and
+    `breezy:vaaphilippines-recruitment` enabled as `needs_review`;
+  - paused unknown future Breezy tokens by default until source-specific review.
+- Verification:
+  - `bun run --cwd apps/web build` passed;
+  - CI/deploy run `27372929451` passed;
+  - direct probes for the three current Breezy JSON endpoints returned 200;
+  - Hunter run `27372988265` showed one transient `20Four7VA` timeout, followed
+    by healthy direct probes;
+  - retry Hunter run `27373090226` passed with 0 failed sources, 0 failed insert
+    batches, and 0 insert errors;
+  - rollup-writing Hunter run `27373196600` passed and updated
+    `docs/source-health-latest.md`.
 
 ### Post-Audit F-05 - ATS Policy Fail-Closed Hardening
 
