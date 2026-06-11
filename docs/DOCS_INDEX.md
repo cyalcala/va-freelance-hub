@@ -16,26 +16,31 @@ Read these in order:
 4. `docs/MASTER_EXECUTION_PLAN.md` - full roadmap and acceptance strategy.
 5. `docs/AI_RECOVERY_TRAIL.md` - backup loop and evidence requirements.
 6. `docs/SYSTEM_SAVEPOINT.md` - current saved state and operational baseline.
-7. `docs/major-audit-2026-06-06.md` - latest major audit findings.
-8. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
+7. `docs/major-audit-2026-06-11.md` - latest major health audit and hotfix
    evidence.
-9. `docs/ats-source-review-2026-06-09.md` - latest ATS source policy evidence.
-10. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
+8. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
+   backfill evidence.
+9. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
+   findings.
+10. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
+   evidence.
+11. `docs/ats-source-review-2026-06-09.md` - latest ATS source policy evidence.
+12. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
    metrics.
-11. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
+13. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
    dry run.
-12. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
+14. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
    quality improvement.
-13. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
+15. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
    and backup-hygiene checkpoint.
-14. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
+16. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
    checkpoint.
-15. `docs/source-health-latest.md` - current repo-readable source-health state.
-16. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
+17. `docs/source-health-latest.md` - current repo-readable source-health state.
+18. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
    acceptance audit.
-17. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+19. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-18. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+20. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -67,11 +72,15 @@ Read these in order:
 - `docs/source-health-latest.md` is the compact current source-health rollup.
 - `docs/final-acceptance-audit-2026-06-09.md` records the P7 final acceptance
   audit.
+- `docs/major-audit-2026-06-11.md` records the latest health audit, Hunter D1
+  insert recovery, category payload reduction, repo hygiene cleanup, and
+  post-fix verification evidence.
 - `docs/scraper-troubleshooting.md` contains useful history but may reference
   older Trigger.dev-era assumptions.
 - `docs/system-audit-and-optimizations.md` contains earlier optimization notes;
   check against `docs/major-audit-2026-06-06.md` before treating it as current.
-- `docs/major-audit-2026-06-10.md` is the latest health audit showing post-Lens 2 readiness and the final timestamp normalization completion.
+- `docs/major-audit-2026-06-10.md` is the post-Lens 2 health audit showing
+  readiness and the final timestamp normalization completion.
 
 ## Historical Or Backup Code Paths
 

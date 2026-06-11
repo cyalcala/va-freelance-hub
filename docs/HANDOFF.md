@@ -2,10 +2,29 @@
 
 ## Current State
 
-Date: 2026-06-09
-Status: Recovery roadmap complete
+Date: 2026-06-11
+Status: Recovery roadmap complete; post-audit health repairs complete
 Overall accepted completion: 100%
 Active branch: `main`
+
+Latest health audit and repair checkpoint:
+
+- Audit report: `docs/major-audit-2026-06-11.md`
+- Fix commits:
+  - `e861071` - reduced scrape insert batch size after D1
+    `too many SQL variables` failures.
+  - `45e2f2d` - paginated category pages server-side and removed the large
+    hydrated category payload.
+  - `ae72998` - stopped tracking local `.wrangler` runtime state.
+- Generated rollup commit:
+  - `6e76c67` - refreshed `docs/source-health-latest.md`.
+- Verification:
+  - CI/deploy runs `27353756293`, `27353939869`, and `27354017177` passed.
+  - Manual Hunter run `27354089629` passed with 35 accepted/attempted inserts,
+    0 failed insert batches, 0 insert errors, and 0 failed sources.
+  - Rollup-writing Hunter run `27354219672` passed with 0 failed sources and
+    0 insert errors.
+  - Production `/categories/tech` dropped from about 980 KB to about 94 KB.
 
 The user resumed the original roadmap and approved continuing slice by slice.
 P1 was implemented, pushed, passed CI, manually deployed, and smoked in
@@ -115,8 +134,10 @@ Observed P1 facts:
 No required recovery-roadmap work remains. Start a new optional roadmap for
 future data quality, source portfolio, or deploy automation work.
 
-Known follow-up: CI currently builds but does not deploy automatically. P1, P2,
-and P3 needed manual Wrangler deployments after CI passed.
+Known follow-up: direct local D1 audits currently fail from this machine with
+Cloudflare API error `7403`. Refresh local Cloudflare/Wrangler auth before the
+next database-heavy audit. Also plan a Wrangler v4 compatibility pass for the
+current local config warnings.
 
 P7 evidence:
 

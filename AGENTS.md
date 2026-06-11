@@ -59,8 +59,20 @@ Daily/periodic maintenance
 
 ## Current Audit Baseline
 
-Read `docs/major-audit-2026-06-06.md` before doing substantial work. The latest
-accepted audit baseline found:
+Read `docs/major-audit-2026-06-11.md` before doing substantial work, then use
+`docs/major-audit-2026-06-10.md` and `docs/major-audit-2026-06-06.md` as
+historical baselines. The original accepted audit baseline found:
+
+Latest 2026-06-11 health state:
+
+- Production routes are healthy after smoke checks.
+- Hunter ingestion recovered from D1 `too many SQL variables` insert failures.
+- `/categories/tech` was reduced from about 980 KB to about 94 KB by
+  server-side pagination.
+- Local `.wrangler` runtime state is no longer tracked in Git.
+- Direct local Wrangler D1 reads currently fail with Cloudflare API error 7403;
+  use GitHub workflow evidence or refresh local Cloudflare auth for database
+  audits.
 
 - GitHub Actions are currently green, but green runs can hide source-level
   failures.

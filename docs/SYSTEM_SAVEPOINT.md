@@ -2,11 +2,39 @@
 
 ## Current Savepoint
 
-Date: 2026-06-09
+Date: 2026-06-11
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
 Last accepted implementation commit:
+
+- `ae72998` - `chore: stop tracking local wrangler state (F-03)`
+- Supporting commits:
+  - `e861071` - `fix: reduce D1 scrape insert batch size (F-01)`
+  - `45e2f2d` - `fix: paginate category pages server-side (F-02)`
+- Generated rollup commit:
+  - `6e76c67` - `docs: update daily source health`
+- Audit report: `docs/major-audit-2026-06-11.md`
+- Build: `bun run --cwd apps/web build` passed.
+- CI/deploy runs: `27353756293`, `27353939869`, and `27354017177` passed.
+- Production smoke: `/`, `/opportunities`, `/opportunities?page=2`,
+  `/directory`, `/data-policy`, `/privacy`, `/categories/tech`, and
+  `/categories/tech?page=2` returned 200.
+- Category payload: `/categories/tech` dropped from about 980 KB to about
+  94 KB after server-side pagination.
+- Protected scrape route: unauthenticated `POST /api/cron/scrape` returned 401.
+- Hunter recovery evidence:
+  - manual run `27354089629` passed with 35 accepted/attempted inserts, 0 failed
+    insert batches, 0 insert errors, and 0 failed sources;
+  - rollup-writing run `27354219672` passed and refreshed
+    `docs/source-health-latest.md`.
+- Source-health rollup: `docs/source-health-latest.md` reports 0 failed sources
+  and 0 insert errors for run `27354219672`.
+- Verification limit: local direct Wrangler D1 reads fail with Cloudflare API
+  error `7403`; use GitHub workflow evidence until local Cloudflare
+  auth/account configuration is refreshed.
+
+Previous accepted implementation commit:
 
 - Final acceptance audit and README update
 - Build: `npm.cmd run build --workspace apps/web` passed.
@@ -177,13 +205,20 @@ Current accepted work:
   `docs/source-health-latest.md`.
 - Complete final acceptance audit and align README with current production
   architecture.
+- Fix Hunter D1 insert batching after scheduled runs failed with
+  `too many SQL variables`.
+- Paginate category pages server-side to avoid hydrating large all-category job
+  payloads.
+- Stop tracking local `.wrangler` D1 runtime state.
+- Refresh the source-health latest rollup after Hunter recovery.
 - Accepted completion: 100%.
 
 Next pending work:
 
 - Optional future roadmap only. No required recovery-roadmap work remains.
-- CI deploy automation remains a known follow-up because P1 required manual
-  Wrangler deployment after CI passed and P2/P3 required the same.
+- Refresh local Cloudflare/Wrangler access so direct read-only D1 audits can run
+  from this machine.
+- Plan Wrangler v4 compatibility work for the current local config warnings.
 
 Current handoff files:
 
@@ -462,16 +497,14 @@ Accepted Lens 2 implementation:
 
 ## Known Weak Controls
 
-- Source failures are committed too noisily into `docs/scraper-alerts.md`.
-- Source status is now visible in scrape responses, but not yet persisted in a
-  source-health table or summarized in daily rollups.
-- CI guardrail builds but does not deploy; manual Wrangler deploy was needed for
-  P1, P2, and P3.
-- Batch insert failures now surface in scrape responses and workflow annotations,
-  but are not yet persisted outside workflow logs and alert commits.
-- Historical dates still need P5 backfill/default cleanup, but new app-owned
-  opportunity and digest writes use UTC ISO.
-- Source compliance states are not yet explicit enough.
+- Local direct D1 audit commands fail with Cloudflare API error `7403` from this
+  machine.
+- Local Wrangler is v3 and warns about the top-level `ratelimits` field; plan a
+  Wrangler v4 compatibility pass.
+- Source health is visible in scrape responses, workflow artifacts, and the
+  latest rollup, but not yet persisted as long-term D1 history.
+- Several ATS sources remain `needs_review` and need source-specific policy
+  review before being treated as fully approved.
 
 ## Recovery Command Hints
 

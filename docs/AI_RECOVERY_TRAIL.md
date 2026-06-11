@@ -22,20 +22,22 @@ Read these first when starting a new work session:
 5. `docs/MASTER_EXECUTION_PLAN.md`
 6. `docs/AI_RECOVERY_TRAIL.md`
 7. `docs/SYSTEM_SAVEPOINT.md`
-8. `docs/major-audit-2026-06-06.md`
-9. `docs/source-review-2026-06-09.md`
-10. `docs/ats-source-review-2026-06-09.md`
-11. `docs/data-quality-snapshot-2026-06-09.md`
-12. `docs/stale-policy-dry-run-2026-06-09.md`
-13. `docs/application-url-backfill-2026-06-09.md`
-14. `docs/hunter-health-artifacts-2026-06-09.md`
-15. `docs/source-health-rollup-2026-06-09.md`
-16. `docs/source-health-latest.md`
-17. `docs/final-acceptance-audit-2026-06-09.md`
-18. `docs/scraper-alerts.md`
-19. `docs/scraper-troubleshooting.md`
-20. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
-21. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+8. `docs/major-audit-2026-06-11.md`
+9. `docs/major-audit-2026-06-10.md`
+10. `docs/major-audit-2026-06-06.md`
+11. `docs/source-review-2026-06-09.md`
+12. `docs/ats-source-review-2026-06-09.md`
+13. `docs/data-quality-snapshot-2026-06-09.md`
+14. `docs/stale-policy-dry-run-2026-06-09.md`
+15. `docs/application-url-backfill-2026-06-09.md`
+16. `docs/hunter-health-artifacts-2026-06-09.md`
+17. `docs/source-health-rollup-2026-06-09.md`
+18. `docs/source-health-latest.md`
+19. `docs/final-acceptance-audit-2026-06-09.md`
+20. `docs/scraper-alerts.md`
+21. `docs/scraper-troubleshooting.md`
+22. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
+23. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
 
 ## Required Backup Loop
 
@@ -117,6 +119,7 @@ record why, and keep the rest of the ingestion system healthy.
   `docs/IMPLEMENTATION_STATUS.md`.
 - Durable architectural decisions live in `docs/decisions/`.
 - Raw audit evidence and findings live in `docs/major-audit-2026-06-06.md`.
+- Latest health repair evidence lives in `docs/major-audit-2026-06-11.md`.
 - Source failure history previously lived in `docs/scraper-alerts.md`; Hunter
   now uploads per-run `harvest.log` and `source-health-summary.md` artifacts.
   The latest repo-readable rollup lives in `docs/source-health-latest.md`.

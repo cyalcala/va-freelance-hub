@@ -9,11 +9,15 @@ When starting a new chat or work session, read these in order:
 3. `docs/IMPLEMENTATION_STATUS.md`
 4. `docs/AI_RECOVERY_TRAIL.md`
 5. `docs/SYSTEM_SAVEPOINT.md`
-6. `docs/major-audit-2026-06-06.md`
+6. `docs/major-audit-2026-06-11.md`
+7. `docs/major-audit-2026-06-10.md`
+8. `docs/major-audit-2026-06-06.md`
 
 ### Current Focus
 
-Lens 2 Complete. The repository has been transitioned to Lens 2 (Sourcing Expansion and Data Quality). Future work can build on this staggered ATS architecture and refined category taxonomy.
+Post-audit health repairs complete. The system is healthy after the 2026-06-11
+major audit fixed Hunter D1 insert batching, reduced category page payloads, and
+removed tracked local Wrangler state.
 
 ## Overall Completion
 
@@ -28,6 +32,44 @@ Current accepted completion: 100% of Lens 2.
 | L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Major Health Audit - Hunter Recovery, Category Payload, Repo Hygiene
+
+- Date: 2026-06-11
+- Status: accepted after local build, production route smoke, CI/deploy runs,
+  manual Hunter recovery, and source-health rollup refresh
+- Evidence report: `docs/major-audit-2026-06-11.md`
+- Product commits:
+  - `e861071` - `fix: reduce D1 scrape insert batch size (F-01)`
+  - `45e2f2d` - `fix: paginate category pages server-side (F-02)`
+  - `ae72998` - `chore: stop tracking local wrangler state (F-03)`
+- Generated rollup commit:
+  - `6e76c67` - `docs: update daily source health`
+- Scope:
+  - fixed repeated scheduled Hunter failures caused by D1
+    `too many SQL variables` insert errors;
+  - reduced category pages from a hydrated all-category payload to
+    server-side pagination;
+  - removed committed local `.wrangler` D1 runtime state and ignored it going
+    forward;
+  - refreshed `docs/source-health-latest.md` with post-fix Hunter evidence.
+- Verification:
+  - `bun run --cwd apps/web build` passed after F-01 and after F-02;
+  - `git diff --check` passed with only normal CRLF warnings;
+  - CI/deploy runs `27353756293`, `27353939869`, and `27354017177` passed;
+  - production route smoke passed for `/`, `/opportunities`,
+    `/opportunities?page=2`, `/directory`, `/data-policy`, `/privacy`,
+    `/categories/tech`, and `/categories/tech?page=2`;
+  - `/categories/tech` dropped from about 980 KB to about 94 KB;
+  - unauthenticated `POST /api/cron/scrape` returned 401;
+  - manual Hunter run `27354089629` passed with 35 accepted/attempted inserts,
+    0 failed insert batches, 0 insert errors, and 0 failed sources;
+  - rollup-writing Hunter run `27354219672` passed and wrote
+    `docs/source-health-latest.md` with 0 failed sources and 0 insert errors.
+- Verification limit:
+  - local direct Wrangler D1 reads failed with Cloudflare API error `7403`;
+    production write health was verified through GitHub Hunter workflow
+    evidence instead.
 
 ### P5 Debt - Historical Datetime Backfill & Major Health Audit
 
@@ -674,26 +716,16 @@ Current accepted completion: 100% of Lens 2.
 
 ## Next Task
 
-P5 Slice 3: implement one reversible data-quality improvement.
-
-Acceptance criteria:
-
-- Prefer a low-risk field improvement such as deriving `application_url` from
-  `source_url`, or add a reproducible stale-candidate script/endpoint.
-- If mutating production data, use a tiny reversible migration or API path with
-  before/after row counts.
-- Do not archive production rows until the pause grace-window policy is reviewed.
-- The app build remains green.
-- Existing GitHub Actions remain green.
+Optional future hardening only. Recommended next slice: refresh local
+Cloudflare/Wrangler access and run a read-only D1 audit, then plan a Wrangler v4
+compatibility pass for the current config warnings.
 
 ## Open Risks To Keep Visible
 
 - Some sources may be public but not automation-friendly under their terms.
-- Historical date strings remain mixed until the P5 backfill/default-rebuild
-  work, though new app-owned writes are canonical UTC ISO.
-- CI currently builds but does not deploy automatically; P1 required manual
-  Wrangler deployment and P2 required the same.
-- The Hunter workflow still commits noisy alert entries for repeated source
-  failures; P6 should replace that with a daily rollup.
-- `other` category dominance makes browsing weaker than the raw job count
-  suggests.
+- Local direct D1 audit commands currently fail with Cloudflare API error `7403`
+  from this machine, though production GitHub workflow credentials are working.
+- Local Wrangler is still v3 and warns about the top-level `ratelimits` config;
+  plan a Wrangler v4 compatibility pass before this becomes urgent.
+- ATS sources marked `needs_review` still need source-specific policy review
+  before being considered fully compliant.
