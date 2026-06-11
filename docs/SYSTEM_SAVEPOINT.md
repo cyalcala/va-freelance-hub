@@ -2,11 +2,31 @@
 
 ## Current Savepoint
 
-Date: 2026-06-11
+Date: 2026-06-12
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
 Last accepted implementation commit:
+
+- `ad03990` - `chore: upgrade wrangler for current cloudflare config`
+- Audit report: `docs/wrangler-d1-audit-2026-06-12.md`
+- Build: `bun run --cwd apps/web build` passed.
+- Install integrity: `bun install --frozen-lockfile` passed.
+- CI/deploy run: `27371741236` passed.
+- Wrangler: active local CLI reports `4.100.0`.
+- D1 local audit:
+  - `bunx wrangler d1 info remoteph-jobs-db` passed with no `ratelimits`
+    config warning;
+  - active opportunities: 748;
+  - homepage query plan uses `active_posted_idx`;
+  - category query plan uses `category_active_posted_idx`;
+  - read-only probes returned `changed_db: false`.
+- Production smoke: `/`, `/opportunities`, `/opportunities?page=2`,
+  `/directory`, `/data-policy`, `/privacy`, `/categories/tech`, and
+  `/categories/tech?page=2` returned 200.
+- Protected scrape route: unauthenticated `POST /api/cron/scrape` returned 401.
+
+Previous accepted implementation commit:
 
 - `ae72998` - `chore: stop tracking local wrangler state (F-03)`
 - Supporting commits:
@@ -30,9 +50,8 @@ Last accepted implementation commit:
     `docs/source-health-latest.md`.
 - Source-health rollup: `docs/source-health-latest.md` reports 0 failed sources
   and 0 insert errors for run `27354219672`.
-- Verification limit: local direct Wrangler D1 reads fail with Cloudflare API
-  error `7403`; use GitHub workflow evidence until local Cloudflare
-  auth/account configuration is refreshed.
+- Verification limit resolved by the 2026-06-12 follow-up: local direct
+  Wrangler D1 reads now work with Wrangler v4.
 
 Previous accepted implementation commit:
 
@@ -211,14 +230,15 @@ Current accepted work:
   payloads.
 - Stop tracking local `.wrangler` D1 runtime state.
 - Refresh the source-health latest rollup after Hunter recovery.
+- Upgrade active Wrangler tooling to v4 and restore local direct D1 audits.
 - Accepted completion: 100%.
 
 Next pending work:
 
 - Optional future roadmap only. No required recovery-roadmap work remains.
-- Refresh local Cloudflare/Wrangler access so direct read-only D1 audits can run
-  from this machine.
-- Plan Wrangler v4 compatibility work for the current local config warnings.
+- Continue optional source policy, data quality, and reporting hardening.
+- For local D1 audits, use Wrangler v4 command shapes recorded in
+  `docs/wrangler-d1-audit-2026-06-12.md`.
 
 Current handoff files:
 
@@ -497,10 +517,8 @@ Accepted Lens 2 implementation:
 
 ## Known Weak Controls
 
-- Local direct D1 audit commands fail with Cloudflare API error `7403` from this
-  machine.
-- Local Wrangler is v3 and warns about the top-level `ratelimits` field; plan a
-  Wrangler v4 compatibility pass.
+- Local direct D1 audit commands now work with Wrangler v4; keep using the
+  command shapes documented in `docs/wrangler-d1-audit-2026-06-12.md`.
 - Source health is visible in scrape responses, workflow artifacts, and the
   latest rollup, but not yet persisted as long-term D1 history.
 - Several ATS sources remain `needs_review` and need source-specific policy

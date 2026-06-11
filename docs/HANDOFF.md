@@ -2,12 +2,28 @@
 
 ## Current State
 
-Date: 2026-06-11
-Status: Recovery roadmap complete; post-audit health repairs complete
+Date: 2026-06-12
+Status: Recovery roadmap complete; post-audit health repairs and Wrangler/D1
+audit hardening complete
 Overall accepted completion: 100%
 Active branch: `main`
 
 Latest health audit and repair checkpoint:
+
+- Follow-up report: `docs/wrangler-d1-audit-2026-06-12.md`
+- Commit:
+  - `ad03990` - upgraded active Wrangler tooling to v4 and refreshed the Bun
+    lockfile for the current Astro workspace graph.
+- Verification:
+  - `bun install --frozen-lockfile` passed.
+  - `bun run --cwd apps/web build` passed.
+  - CI/deploy run `27371741236` passed.
+  - Local Wrangler reports `4.100.0`.
+  - Local read-only D1 audit works and reported 748 active opportunities.
+  - Query plans use `active_posted_idx` and `category_active_posted_idx`.
+  - Production routes smoked green and unauthenticated scrape POST returned 401.
+
+Previous health audit and repair checkpoint:
 
 - Audit report: `docs/major-audit-2026-06-11.md`
 - Fix commits:
@@ -134,10 +150,11 @@ Observed P1 facts:
 No required recovery-roadmap work remains. Start a new optional roadmap for
 future data quality, source portfolio, or deploy automation work.
 
-Known follow-up: direct local D1 audits currently fail from this machine with
-Cloudflare API error `7403`. Refresh local Cloudflare/Wrangler auth before the
-next database-heavy audit. Also plan a Wrangler v4 compatibility pass for the
-current local config warnings.
+Known follow-up: local direct D1 audits now work with Wrangler v4. Use
+`bunx wrangler d1 info remoteph-jobs-db` for remote metadata and
+`bunx wrangler d1 execute remoteph-jobs-db --remote --command "..."` for
+read-only SQL probes. Continue ATS/source policy review for sources marked
+`needs_review`.
 
 P7 evidence:
 

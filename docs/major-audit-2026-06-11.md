@@ -20,6 +20,11 @@ repairs:
 The latest manual Hunter evidence shows no failed sources, no failed insert
 batches, and no insert errors.
 
+2026-06-12 follow-up: the local Wrangler/D1 verification limit from this audit
+has been resolved. See `docs/wrangler-d1-audit-2026-06-12.md` for the Wrangler
+v4 upgrade, restored local read-only D1 audit evidence, and CI/deploy run
+`27371741236`.
+
 ## Findings And Fixes
 
 ### F-01 - Hunter accepted jobs but D1 rejected every insert batch
@@ -154,6 +159,12 @@ usefulness, duplicate-token, or Workable rotation reasons.
 
 ## Verification Limits
 
+2026-06-12 update: this limit has been resolved by commit `ad03990`. Local
+Wrangler now reports `4.100.0`, `bunx wrangler d1 info remoteph-jobs-db`
+succeeds without the `ratelimits` warning, and read-only D1 query-plan audits
+work from this machine. The original limit is preserved below for historical
+context.
+
 Direct local D1 read-only queries could not be completed from this machine:
 
 - Command attempted: `bunx wrangler d1 execute remoteph-jobs-db --remote ...`
@@ -167,11 +178,8 @@ production D1 write path.
 
 ## Remaining Improvements
 
-- Update local Cloudflare/Wrangler auth or account configuration so future
-  agents can run direct read-only D1 audits without relying on workflow
-  artifacts.
-- Plan a Wrangler v4 compatibility pass, including the current `ratelimits`
-  config warning.
+- Completed 2026-06-12: Wrangler v4 compatibility pass and local D1 audit
+  recovery are documented in `docs/wrangler-d1-audit-2026-06-12.md`.
 - Continue ATS source policy review for sources marked `needs_review`.
 - Consider persisting source-health history in D1 if workflow artifacts and the
   latest rollup are not enough for longer-term operational reporting.

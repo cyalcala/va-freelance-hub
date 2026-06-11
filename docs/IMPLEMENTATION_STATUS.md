@@ -17,7 +17,9 @@ When starting a new chat or work session, read these in order:
 
 Post-audit health repairs complete. The system is healthy after the 2026-06-11
 major audit fixed Hunter D1 insert batching, reduced category page payloads, and
-removed tracked local Wrangler state.
+removed tracked local Wrangler state. The 2026-06-12 follow-up also restored
+local direct D1 audit capability and upgraded active Wrangler tooling for the
+current Cloudflare Pages config.
 
 ## Overall Completion
 
@@ -32,6 +34,37 @@ Current accepted completion: 100% of Lens 2.
 | L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Post-Audit F-04 - Wrangler v4 And Local D1 Audit Recovery
+
+- Date: 2026-06-12
+- Status: accepted after local frozen install, active app build, read-only D1
+  audit, CI/deploy, and production route smoke
+- Evidence report: `docs/wrangler-d1-audit-2026-06-12.md`
+- Commit:
+  - `ad03990` - `chore: upgrade wrangler for current cloudflare config`
+- Scope:
+  - upgraded active root and `apps/web` Wrangler dev dependencies to
+    `^4.100.0`;
+  - refreshed `bun.lock` so it matches the active Astro workspace dependency
+    graph;
+  - confirmed Wrangler v4 accepts the current `ratelimits` Pages Functions
+    config without the Wrangler v3 warning;
+  - restored local direct read-only D1 audits from this machine.
+- Verification:
+  - `bun install --frozen-lockfile` passed;
+  - `bun run --cwd apps/web build` passed;
+  - `bunx wrangler --version` returned `4.100.0`;
+  - `bunx wrangler d1 info remoteph-jobs-db` passed with no `ratelimits`
+    warning;
+  - D1 read-only audit reported 748 active opportunities and `changed_db:
+    false`;
+  - query plans use `active_posted_idx` and `category_active_posted_idx`;
+  - CI/deploy run `27371741236` passed;
+  - production route smoke passed for `/`, `/opportunities`,
+    `/opportunities?page=2`, `/directory`, `/data-policy`, `/privacy`,
+    `/categories/tech`, and `/categories/tech?page=2`;
+  - unauthenticated `POST /api/cron/scrape` returned 401.
 
 ### Major Health Audit - Hunter Recovery, Category Payload, Repo Hygiene
 
@@ -66,7 +99,7 @@ Current accepted completion: 100% of Lens 2.
     0 failed insert batches, 0 insert errors, and 0 failed sources;
   - rollup-writing Hunter run `27354219672` passed and wrote
     `docs/source-health-latest.md` with 0 failed sources and 0 insert errors.
-- Verification limit:
+- Verification limit at the time, resolved by F-04 above:
   - local direct Wrangler D1 reads failed with Cloudflare API error `7403`;
     production write health was verified through GitHub Hunter workflow
     evidence instead.
@@ -716,16 +749,13 @@ Current accepted completion: 100% of Lens 2.
 
 ## Next Task
 
-Optional future hardening only. Recommended next slice: refresh local
-Cloudflare/Wrangler access and run a read-only D1 audit, then plan a Wrangler v4
-compatibility pass for the current config warnings.
+Optional future hardening only. Recommended next slice: continue ATS/source
+policy review or choose a new data-quality/reporting improvement.
 
 ## Open Risks To Keep Visible
 
 - Some sources may be public but not automation-friendly under their terms.
-- Local direct D1 audit commands currently fail with Cloudflare API error `7403`
-  from this machine, though production GitHub workflow credentials are working.
-- Local Wrangler is still v3 and warns about the top-level `ratelimits` config;
-  plan a Wrangler v4 compatibility pass before this becomes urgent.
+- Local direct D1 audit commands now work with Wrangler v4; keep using the
+  command shapes documented in `docs/wrangler-d1-audit-2026-06-12.md`.
 - ATS sources marked `needs_review` still need source-specific policy review
   before being considered fully compliant.
