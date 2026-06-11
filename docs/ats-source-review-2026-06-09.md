@@ -3,6 +3,11 @@
 This review records the P4 Slice 3 ATS source-policy decisions. It is an
 operational compliance and reliability review, not legal advice.
 
+2026-06-12 follow-up: Workable, Lever, and Greenhouse now fail closed as
+`paused` by default. See `docs/ats-policy-follow-up-2026-06-12.md` for commit
+`aa670ee`, Hunter runs `27372436554` and `27372521005`, and the refreshed
+`docs/source-health-latest.md` evidence.
+
 ## Production ATS Baseline
 
 Production D1 had 15 directory rows with `ats_platform` and `ats_token`.

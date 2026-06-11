@@ -8,6 +8,22 @@ Repository: `cyalcala/va-freelance-hub`
 
 Last accepted implementation commit:
 
+- `aa670ee` - `fix: pause unreviewed ats platforms`
+- Generated rollup commit:
+  - `f635f3f` - `docs: update daily source health`
+- Audit report: `docs/ats-policy-follow-up-2026-06-12.md`
+- Build: `bun run --cwd apps/web build` passed.
+- CI/deploy run: `27372355271` passed.
+- Hunter evidence:
+  - manual run `27372436554` passed with 0 failed sources, 0 failed insert
+    batches, and 0 insert errors;
+  - rollup-writing run `27372521005` passed and refreshed
+    `docs/source-health-latest.md`;
+  - Workable ATS rows now report `complianceStatus: "paused"`;
+  - Breezy remains enabled as `needs_review`.
+
+Previous accepted implementation commit:
+
 - `ad03990` - `chore: upgrade wrangler for current cloudflare config`
 - Audit report: `docs/wrangler-d1-audit-2026-06-12.md`
 - Build: `bun run --cwd apps/web build` passed.
@@ -231,12 +247,17 @@ Current accepted work:
 - Stop tracking local `.wrangler` D1 runtime state.
 - Refresh the source-health latest rollup after Hunter recovery.
 - Upgrade active Wrangler tooling to v4 and restore local direct D1 audits.
+- Pause unreviewed/noisy ATS platforms by default and refresh
+  `docs/source-health-latest.md`.
 - Accepted completion: 100%.
 
 Next pending work:
 
 - Optional future roadmap only. No required recovery-roadmap work remains.
 - Continue optional source policy, data quality, and reporting hardening.
+- Next source-policy target: review current Breezy-backed sources one by one
+  and decide whether they should remain `needs_review`, become `allowed`, or be
+  paused.
 - For local D1 audits, use Wrangler v4 command shapes recorded in
   `docs/wrangler-d1-audit-2026-06-12.md`.
 

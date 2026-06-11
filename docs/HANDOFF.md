@@ -3,12 +3,27 @@
 ## Current State
 
 Date: 2026-06-12
-Status: Recovery roadmap complete; post-audit health repairs and Wrangler/D1
-audit hardening complete
+Status: Recovery roadmap complete; post-audit health repairs, Wrangler/D1 audit
+hardening, and ATS policy hardening complete
 Overall accepted completion: 100%
 Active branch: `main`
 
 Latest health audit and repair checkpoint:
+
+- ATS follow-up report: `docs/ats-policy-follow-up-2026-06-12.md`
+- Product commit:
+  - `aa670ee` - paused unreviewed/noisy ATS platforms by default.
+- Generated rollup commit:
+  - `f635f3f` - refreshed `docs/source-health-latest.md`.
+- Verification:
+  - `bun run --cwd apps/web build` passed.
+  - CI/deploy run `27372355271` passed.
+  - Manual Hunter run `27372436554` passed with 0 failed sources, 0 failed
+    insert batches, and 0 insert errors.
+  - Rollup-writing Hunter run `27372521005` passed.
+  - Latest source-health rollup reports Workable ATS rows as `paused`.
+
+Previous health audit and repair checkpoint:
 
 - Follow-up report: `docs/wrangler-d1-audit-2026-06-12.md`
 - Commit:
@@ -153,8 +168,8 @@ future data quality, source portfolio, or deploy automation work.
 Known follow-up: local direct D1 audits now work with Wrangler v4. Use
 `bunx wrangler d1 info remoteph-jobs-db` for remote metadata and
 `bunx wrangler d1 execute remoteph-jobs-db --remote --command "..."` for
-read-only SQL probes. Continue ATS/source policy review for sources marked
-`needs_review`.
+read-only SQL probes. Continue ATS/source policy review for current Breezy
+sources that remain `needs_review`.
 
 P7 evidence:
 

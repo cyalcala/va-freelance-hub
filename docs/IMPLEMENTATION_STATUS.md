@@ -19,7 +19,8 @@ Post-audit health repairs complete. The system is healthy after the 2026-06-11
 major audit fixed Hunter D1 insert batching, reduced category page payloads, and
 removed tracked local Wrangler state. The 2026-06-12 follow-up also restored
 local direct D1 audit capability and upgraded active Wrangler tooling for the
-current Cloudflare Pages config.
+current Cloudflare Pages config. The latest ATS follow-up pauses unreviewed or
+noisy ATS platforms by default and refreshed the source-health rollup.
 
 ## Overall Completion
 
@@ -34,6 +35,34 @@ Current accepted completion: 100% of Lens 2.
 | L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Post-Audit F-05 - ATS Policy Fail-Closed Hardening
+
+- Date: 2026-06-12
+- Status: accepted after local build, CI/deploy, manual Hunter evidence, and
+  source-health rollup refresh
+- Evidence report: `docs/ats-policy-follow-up-2026-06-12.md`
+- Product commit:
+  - `aa670ee` - `fix: pause unreviewed ats platforms`
+- Generated rollup commit:
+  - `f635f3f` - `docs: update daily source health`
+- Scope:
+  - paused Workable ATS collection after repeated HTTP 429 history and no
+    reviewed source-supported access path;
+  - paused Lever and Greenhouse by default because no current production
+    directory rows use them and future rows need source-specific review first;
+  - kept Breezy enabled as `needs_review` while preserving linkback to original
+    ATS-hosted URLs.
+- Verification:
+  - `bun run --cwd apps/web build` passed;
+  - `git diff --check` passed with only expected CRLF warnings;
+  - CI/deploy run `27372355271` passed;
+  - manual Hunter run `27372436554` passed with 0 failed sources, 0 failed
+    insert batches, and 0 insert errors;
+  - rollup-writing Hunter run `27372521005` passed and updated
+    `docs/source-health-latest.md`;
+  - latest source-health rollup reports 18 skipped sources, including Workable
+    ATS rows as `paused`.
 
 ### Post-Audit F-04 - Wrangler v4 And Local D1 Audit Recovery
 
