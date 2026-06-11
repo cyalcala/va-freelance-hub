@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getDb, opportunities } from '@va-hub/db';
-import { eq, desc, and } from 'drizzle-orm';
-import { CategoryOpportunitySearch } from '@/components/CategoryOpportunitySearch';
+import { eq, desc, and, count } from 'drizzle-orm';
+import { OpportunityCard } from '@/components/opportunity-card';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
 
 export const prerender = false;
@@ -19,33 +19,134 @@ if (!category || !JOB_CATEGORY_MAP[category]) {
 }
 
 const info = JOB_CATEGORY_MAP[category];
+const PAGE_SIZE = 30;
+const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') || '1', 10);
+const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+const offset = (currentPage - 1) * PAGE_SIZE;
+
 let categoryJobs = [];
+let totalJobs = 0;
+
+function buildPageUrl(page: number) {
+  const params = new URLSearchParams();
+  if (page > 1) params.set('page', String(page));
+  const qs = params.toString();
+  return qs ? `/categories/${category}?${qs}` : `/categories/${category}`;
+}
 
 try {
   const db = getDb(Astro.locals.runtime.env);
+  const whereClause = and(
+    eq(opportunities.isActive, true),
+    eq(opportunities.category, category)
+  );
+
+  const [totalResult] = await db
+    .select({ total: count() })
+    .from(opportunities)
+    .where(whereClause);
+
+  totalJobs = totalResult?.total ?? 0;
+
   categoryJobs = await db
     .select()
     .from(opportunities)
-    .where(
-      and(
-        eq(opportunities.isActive, true),
-        eq(opportunities.category, category)
-      )
-    )
+    .where(whereClause)
     .orderBy(desc(opportunities.postedAt))
-    .limit(1000);
+    .limit(PAGE_SIZE)
+    .offset(offset);
 } catch (e) {
   console.error("DB Error in category page:", e);
 }
+
+const totalPages = Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
+const hasPrevious = currentPage > 1;
+const hasNext = currentPage < totalPages;
+const resultStart = totalJobs === 0 ? 0 : offset + 1;
+const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
 ---
 
 <Layout 
   title={`${info.title} Remote Jobs for Filipinos — VA Freelance Hub`}
   description={`Browse and search all active ${info.title.toLowerCase()} remote jobs and virtual assistant opportunities open to Filipino talents. Updated automatically.`}
 >
-  <CategoryOpportunitySearch 
-    client:load 
-    opportunities={categoryJobs} 
-    category={category} 
-  />
+  <section class="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+    <div class="mb-12">
+      <a
+        href="/"
+        class="inline-flex items-center gap-2 text-sm font-extrabold tracking-widest uppercase text-ink/50 hover:text-accent transition-colors group mb-6"
+      >
+        <span class="inline-block group-hover:-translate-x-1 transition-transform">&larr;</span>
+        Back to categories
+      </a>
+
+      <div class="flex flex-col md:flex-row md:items-baseline justify-between gap-4 border-b border-ink/10 pb-6">
+        <div>
+          <h2 class="text-3xl sm:text-5xl font-black tracking-tight text-ink">
+            {info.title}
+          </h2>
+          <p class="text-ink/55 text-base font-medium max-w-2xl mt-4 leading-relaxed">
+            Browse active {info.title.toLowerCase()} opportunities without loading the entire category into the page.
+          </p>
+        </div>
+        <span class="text-xs sm:text-sm font-black uppercase tracking-widest text-accent bg-accent/5 border border-accent/20 px-4 py-1.5 rounded-full self-start">
+          {totalJobs.toLocaleString()} {totalJobs === 1 ? 'Job' : 'Jobs'} Found
+        </span>
+      </div>
+    </div>
+
+    <div class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-black uppercase tracking-widest text-ink/40">
+      <p>
+        Showing {resultStart.toLocaleString()}-{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
+      </p>
+      <a href={`/opportunities?category=${category}#search`} class="text-accent hover:underline underline-offset-4">
+        Search this category
+      </a>
+    </div>
+
+    {categoryJobs.length === 0 ? (
+      <div class="text-center py-24 bg-white/40 backdrop-blur-md rounded-3xl border border-ink/5">
+        <p class="text-ink/40 font-semibold text-xl tracking-tight">No active openings found in this category.</p>
+        <a href="/opportunities" class="inline-block mt-4 text-accent font-bold hover:underline underline-offset-4">Browse all opportunities</a>
+      </div>
+    ) : (
+      <div class="bg-white/50 backdrop-blur-sm border border-ink/5 rounded-3xl p-4 sm:p-6 shadow-xl shadow-ink/5 flex flex-col gap-2">
+        {categoryJobs.map((opp) => (
+          <OpportunityCard opportunity={opp} />
+        ))}
+      </div>
+    )}
+
+    <nav class="mt-8 flex items-center justify-between gap-4" aria-label={`${info.title} pagination`}>
+      {hasPrevious ? (
+        <a
+          href={buildPageUrl(currentPage - 1)}
+          class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/70 border border-ink/10 text-xs font-black uppercase tracking-widest text-ink/60 hover:text-accent hover:border-accent/30 transition-colors"
+        >
+          Previous
+        </a>
+      ) : (
+        <span class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-ink/5 border border-ink/5 text-xs font-black uppercase tracking-widest text-ink/25">
+          Previous
+        </span>
+      )}
+
+      <span class="text-xs font-black uppercase tracking-widest text-ink/40">
+        Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
+      </span>
+
+      {hasNext ? (
+        <a
+          href={buildPageUrl(currentPage + 1)}
+          class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/70 border border-ink/10 text-xs font-black uppercase tracking-widest text-ink/60 hover:text-accent hover:border-accent/30 transition-colors"
+        >
+          Next
+        </a>
+      ) : (
+        <span class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-ink/5 border border-ink/5 text-xs font-black uppercase tracking-widest text-ink/25">
+          Next
+        </span>
+      )}
+    </nav>
+  </section>
 </Layout>
