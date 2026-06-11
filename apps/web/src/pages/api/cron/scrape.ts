@@ -105,10 +105,10 @@ interface AtsPlatformPolicy {
 
 const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
   breezy: {
-    enabled: true,
-    complianceStatus: "needs_review",
+    enabled: false,
+    complianceStatus: "paused",
     complianceNotes:
-      "Directory-configured Breezy public JSON endpoint; source terms are not individually reviewed yet, so route users to original ATS-hosted URLs.",
+      "Paused 2026-06-12: Breezy ATS tokens require source-specific review before fetching.",
   },
   workable: {
     enabled: false,
@@ -130,6 +130,27 @@ const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
   },
 };
 
+const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
+  "breezy:20four7va": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Reviewed 2026-06-12: current Breezy public JSON endpoint is useful and routes users to original ATS-hosted URLs; source terms still need final review.",
+  },
+  "breezy:sourcefit": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Reviewed 2026-06-12: current Breezy public JSON endpoint is useful and routes users to original ATS-hosted URLs; source terms still need final review.",
+  },
+  "breezy:vaaphilippines-recruitment": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Reviewed 2026-06-12: current Breezy public JSON endpoint is reachable but currently returns zero jobs; source terms still need final review.",
+  },
+};
+
 interface DuplicateAtsAgency {
   agency: AtsAgency;
   primaryCompanyName: string;
@@ -147,6 +168,11 @@ function atsSourceKey(agency: AtsAgency): string {
 
 function atsPlatformPolicy(agency: AtsAgency): AtsPlatformPolicy {
   const platform = agency.atsPlatform as AtsPlatform | null;
+  const sourceKey = platform && agency.atsToken ? `${platform}:${agency.atsToken}` : null;
+  if (sourceKey && sourceKey in ATS_TOKEN_POLICIES) {
+    return ATS_TOKEN_POLICIES[sourceKey];
+  }
+
   if (platform && platform in ATS_PLATFORM_POLICIES) {
     return ATS_PLATFORM_POLICIES[platform];
   }
