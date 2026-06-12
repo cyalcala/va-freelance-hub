@@ -94,6 +94,22 @@ export const contentDigests = sqliteTable("content_digests", {
     .default(sql`(datetime('now'))`),
 });
 
+// Source fetch state keeps source-supported feeds on their requested cadence.
+export const sourceFetchState = sqliteTable("source_fetch_state", {
+  sourceId: text("source_id").primaryKey().notNull(),
+  sourceName: text("source_name").notNull(),
+  sourceType: text("source_type").notNull(),
+  collectionMethod: text("collection_method").notNull(),
+  complianceStatus: text("compliance_status").notNull(),
+  lastAttemptAt: text("last_attempt_at"),
+  lastSuccessAt: text("last_success_at"),
+  lastCount: integer("last_count").notNull().default(0),
+  lastError: text("last_error"),
+  updatedAt: text("updated_at").notNull(),
+}, (table) => ({
+  lastAttemptIdx: index("source_fetch_state_last_attempt_idx").on(table.lastAttemptAt),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Opportunity = typeof opportunities.$inferSelect;
@@ -102,3 +118,5 @@ export type VADirectoryEntry = typeof vaDirectory.$inferSelect;
 export type NewVADirectoryEntry = typeof vaDirectory.$inferInsert;
 export type ContentDigest = typeof contentDigests.$inferSelect;
 export type NewContentDigest = typeof contentDigests.$inferInsert;
+export type SourceFetchState = typeof sourceFetchState.$inferSelect;
+export type NewSourceFetchState = typeof sourceFetchState.$inferInsert;

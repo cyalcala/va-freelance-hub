@@ -32,7 +32,7 @@ function parseHtmlWithTS(html: string, source: Source): ParsedJobItem[] {
   const tagRegex = /<a([^>]+)>([\s\S]*?)<\/a>/gi;
   let match;
   let count = 0;
-  const maxItems = 100;
+  const maxItems = source.maxItems ?? 100;
 
   while ((match = tagRegex.exec(html)) !== null && count < maxItems) {
     const attrs = match[1];

@@ -21,10 +21,21 @@ interface RawRSSItem {
   category?: string | string[];
 }
 
+function decodeHtmlEntities(raw: string): string {
+  return raw
+    .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_match, code) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, " ");
+}
+
 function normalizeText(raw: string | undefined): string {
   if (!raw) return "";
   // Strip both raw HTML tags and encoded HTML tags (common in RSS) for plain text
-  return raw
+  return decodeHtmlEntities(raw)
     .replace(/&lt;[^&]*&gt;/gi, " ")
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
@@ -84,8 +95,12 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
   const channel = parsed?.rss?.channel ?? parsed?.feed;
   const rawItems: RawRSSItem[] = channel?.item ?? channel?.entry ?? [];
   const items = Array.isArray(rawItems) ? rawItems : [rawItems];
+  const cappedItems = typeof source.maxItems === "number" ? items.slice(0, source.maxItems) : items;
+  if (cappedItems.length < items.length) {
+    console.log(`[rss] ${source.name}: capped ${items.length} raw items to ${cappedItems.length}`);
+  }
 
-  const opportunities: NewOpportunity[] = items
+  const opportunities: NewOpportunity[] = cappedItems
     .filter((item) => item.title && (item.link ?? item.id))
     .map((item) => {
       const title = normalizeText(

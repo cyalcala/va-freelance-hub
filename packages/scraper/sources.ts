@@ -13,6 +13,8 @@ export interface Source {
   platform: string;
   defaultJobType: "VA" | "freelance" | "project" | "full-time" | "part-time";
   tags: string[];
+  maxItems?: number;
+  minFetchIntervalMinutes?: number;
 }
 
 export const sources: Source[] = [
@@ -27,6 +29,7 @@ export const sources: Source[] = [
     platform: "WeWorkRemotely",
     defaultJobType: "full-time",
     tags: ["remote", "tech", "design", "marketing"],
+    maxItems: 100,
   },
   {
     id: "remotive",
@@ -39,6 +42,35 @@ export const sources: Source[] = [
     platform: "Remotive",
     defaultJobType: "full-time",
     tags: ["remote", "tech", "sales", "marketing"],
+    maxItems: 100,
+  },
+  {
+    id: "real-work-from-anywhere",
+    name: "Real Work From Anywhere",
+    url: "https://www.realworkfromanywhere.com/rss.xml",
+    type: "rss",
+    collectionMethod: "rss_feed",
+    complianceStatus: "allowed",
+    complianceNotes: "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+    platform: "RealWorkFromAnywhere",
+    defaultJobType: "full-time",
+    tags: ["remote", "work-from-anywhere", "global"],
+    maxItems: 50,
+    minFetchIntervalMinutes: 60,
+  },
+  {
+    id: "jobicy-admin-support-apac",
+    name: "Jobicy Admin Support APAC",
+    url: "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+    type: "rss",
+    collectionMethod: "rss_feed",
+    complianceStatus: "allowed",
+    complianceNotes: "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+    platform: "Jobicy",
+    defaultJobType: "full-time",
+    tags: ["remote", "admin", "VA", "apac"],
+    maxItems: 40,
+    minFetchIntervalMinutes: 60,
   },
   {
     id: "problogger",

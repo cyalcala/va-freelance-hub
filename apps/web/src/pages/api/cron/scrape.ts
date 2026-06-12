@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getDb, opportunities, vaDirectory, type NewOpportunity } from "@va-hub/db";
+import { getDb, opportunities, sourceFetchState, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
 import { isNotNull, and, inArray, eq } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
@@ -32,6 +32,7 @@ function mapTriageCategoryToUiCategory(cat: string): string {
 type SourceType = "RSS" | "HTML" | "ATS";
 
 interface SourceFetchResult {
+  sourceId?: string;
   sourceName: string;
   sourceType: SourceType;
   collectionMethod: CollectionMethod | "public_ats_json";
@@ -52,6 +53,8 @@ interface InsertError {
   error: string;
 }
 
+type AppDb = ReturnType<typeof getDb>;
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -69,8 +72,9 @@ function toSourceType(source: Source): SourceType {
   return source.type === "rss" ? "RSS" : "HTML";
 }
 
-function skippedSourceResult(source: Source): SourceFetchResult {
+function skippedSourceResult(source: Source, skipReason = source.complianceNotes): SourceFetchResult {
   return {
+    sourceId: source.id,
     sourceName: source.name,
     sourceType: toSourceType(source),
     collectionMethod: source.collectionMethod,
@@ -81,7 +85,7 @@ function skippedSourceResult(source: Source): SourceFetchResult {
     durationMs: 0,
     items: [],
     skipped: true,
-    skipReason: source.complianceNotes,
+    skipReason,
   };
 }
 
@@ -190,6 +194,7 @@ function atsComplianceNotes(agency: AtsAgency): string {
 
 function skippedAtsResult({ agency, policy, skipReason }: SkippedAtsAgency): SourceFetchResult {
   return {
+    sourceId: atsSourceKey(agency),
     sourceName: agency.companyName,
     sourceType: "ATS",
     collectionMethod: "public_ats_json",
@@ -218,12 +223,14 @@ async function fetchSourceWithStatus(
   collectionMethod: SourceFetchResult["collectionMethod"],
   complianceStatus: ComplianceStatus,
   complianceNotes: string | undefined,
-  fetcher: () => Promise<NewOpportunity[]>
+  fetcher: () => Promise<NewOpportunity[]>,
+  sourceId?: string
 ): Promise<SourceFetchResult> {
   const startedAt = Date.now();
   try {
     const items = await fetcher();
     return {
+      sourceId,
       sourceName,
       sourceType,
       collectionMethod,
@@ -236,6 +243,7 @@ async function fetchSourceWithStatus(
     };
   } catch (error) {
     return {
+      sourceId,
       sourceName,
       sourceType,
       collectionMethod,
@@ -248,6 +256,92 @@ async function fetchSourceWithStatus(
       error: error instanceof Error ? error.message : String(error),
     };
   }
+}
+
+async function loadSourceFetchStates(db: AppDb): Promise<Map<string, SourceFetchState>> {
+  try {
+    const rows = await db.select().from(sourceFetchState);
+    return new Map(rows.map((row) => [row.sourceId, row]));
+  } catch (error) {
+    console.warn("[api/cron/scrape] Source fetch state unavailable; cadence guards will be skipped for this run:", errorMessage(error));
+    return new Map();
+  }
+}
+
+function sourceCadenceSkipReason(
+  source: Source,
+  state: SourceFetchState | undefined,
+  observedAt: string
+): string | null {
+  if (!source.minFetchIntervalMinutes || !state?.lastAttemptAt) return null;
+
+  const lastAttemptMs = Date.parse(state.lastAttemptAt);
+  const observedMs = Date.parse(observedAt);
+  if (!Number.isFinite(lastAttemptMs) || !Number.isFinite(observedMs)) return null;
+
+  const intervalMs = source.minFetchIntervalMinutes * 60_000;
+  const nextAllowedMs = lastAttemptMs + intervalMs;
+  if (observedMs >= nextAllowedMs) return null;
+
+  return `Skipped cadence guard: last attempted at ${state.lastAttemptAt}; ${source.minFetchIntervalMinutes}-minute minimum interval.`;
+}
+
+async function recordSourceFetchState(
+  db: AppDb,
+  source: Source,
+  result: SourceFetchResult,
+  observedAt: string
+): Promise<void> {
+  const updateValues = {
+    sourceName: source.name,
+    sourceType: toSourceType(source),
+    collectionMethod: source.collectionMethod,
+    complianceStatus: source.complianceStatus,
+    lastAttemptAt: observedAt,
+    lastCount: result.count,
+    lastError: result.ok ? null : result.error ?? "Unknown source fetch error",
+    updatedAt: observedAt,
+    ...(result.ok ? { lastSuccessAt: observedAt } : {}),
+  };
+
+  try {
+    await db.insert(sourceFetchState).values({
+      sourceId: source.id,
+      ...updateValues,
+      lastSuccessAt: result.ok ? observedAt : null,
+    }).onConflictDoUpdate({
+      target: sourceFetchState.sourceId,
+      set: updateValues,
+    });
+  } catch (error) {
+    console.warn(`[api/cron/scrape] Failed to record source fetch state for ${source.name}:`, errorMessage(error));
+  }
+}
+
+async function fetchConfiguredSourceWithStatus(
+  db: AppDb,
+  source: Source,
+  sourceType: SourceType,
+  sourceFetchStates: Map<string, SourceFetchState>,
+  observedAt: string,
+  fetcher: () => Promise<NewOpportunity[]>
+): Promise<SourceFetchResult> {
+  const skipReason = sourceCadenceSkipReason(source, sourceFetchStates.get(source.id), observedAt);
+  if (skipReason) {
+    return skippedSourceResult(source, skipReason);
+  }
+
+  const result = await fetchSourceWithStatus(
+    source.name,
+    sourceType,
+    source.collectionMethod,
+    source.complianceStatus,
+    source.complianceNotes,
+    fetcher,
+    source.id
+  );
+  await recordSourceFetchState(db, source, result, observedAt);
+  return result;
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -283,16 +377,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     // 3. Fetch all raw items
+    const sourceFetchStates = await loadSourceFetchStates(db);
+
     const rssResults = await Promise.all(
       rssSources.map((source) =>
-        fetchSourceWithStatus(source.name, "RSS", source.collectionMethod, source.complianceStatus, source.complianceNotes, () => fetchRSSFeed(source))
+        fetchConfiguredSourceWithStatus(db, source, "RSS", sourceFetchStates, observedAt, () => fetchRSSFeed(source))
       )
     );
     const rssItems = rssResults.flatMap((result) => result.items);
 
     const htmlResults = await Promise.all(
       htmlSources.map((source) =>
-        fetchSourceWithStatus(source.name, "HTML", source.collectionMethod, source.complianceStatus, source.complianceNotes, () => fetchHTMLSource(source))
+        fetchConfiguredSourceWithStatus(db, source, "HTML", sourceFetchStates, observedAt, () => fetchHTMLSource(source))
       )
     );
     const htmlItems = htmlResults.flatMap((result) => result.items);
@@ -371,8 +467,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const atsResults: SourceFetchResult[] = [];
     for (const agency of uniqueAtsAgencies) {
       const policy = atsPlatformPolicy(agency);
-      const result = await fetchSourceWithStatus(agency.companyName, "ATS", "public_ats_json", policy.complianceStatus, policy.complianceNotes, () =>
-        fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName)
+      const result = await fetchSourceWithStatus(
+        agency.companyName,
+        "ATS",
+        "public_ats_json",
+        policy.complianceStatus,
+        policy.complianceNotes,
+        () => fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName),
+        atsSourceKey(agency)
       );
       atsResults.push(result);
 
