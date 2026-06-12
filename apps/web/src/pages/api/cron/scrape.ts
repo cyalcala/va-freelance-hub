@@ -495,7 +495,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
     const atsItems = atsResults.flatMap((result) => result.items);
 
-    const skippedResults = disabledSources.map(skippedSourceResult);
+    const skippedResults = disabledSources.map((source) => skippedSourceResult(source));
     const skippedAtsResults = [
       ...policySkippedAtsAgencies.map(skippedAtsResult),
       ...duplicateAtsAgencies.map(skippedDuplicateAtsResult),
