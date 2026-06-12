@@ -24,12 +24,11 @@ current Cloudflare Pages config. The latest ATS follow-up pauses unreviewed or
 noisy ATS platforms by default, requires token-specific review for Breezy, and
 refreshed the source-health rollup.
 
-The latest user-requested handoff is
-`docs/goldilocks-source-expansion-handoff-2026-06-12.md`. It documents the
-balanced "Goldilocks" source-compliance posture, source candidates already
-reviewed, and the next safe plan for source caps, fetch cadence, JSON ingestion,
-and query/indexing checks. No new source expansion is accepted until those
-guards are implemented and Hunter evidence is captured.
+The latest user-requested source-expansion slice is accepted in
+`docs/source-expansion-2026-06-12.md`. It implements the first Goldilocks
+source-expansion step: capped RSS ingestion, durable source cadence tracking,
+two new allowed RSS sources, source-state D1 evidence, and refreshed Hunter
+rollup evidence. Remote OK remains deferred until a JSON adapter exists.
 
 ## Overall Completion
 
@@ -44,6 +43,44 @@ Current accepted completion: 100% of Lens 2.
 | L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Post-Audit F-07 - Cadence-Guarded RSS Source Expansion
+
+- Date: 2026-06-12
+- Status: accepted after local build, D1 migration, CI, production deploy
+  recovery, manual Hunter evidence, read-only D1 checks, and source-health
+  rollup refresh
+- Evidence report: `docs/source-expansion-2026-06-12.md`
+- Product commits:
+  - `686e312` - `feat: add cadence guarded rss sources`
+  - `b948828` - `fix: preserve paused source skip reasons`
+- Generated rollup commit:
+  - `79e46f8` - `docs: update daily source health`
+- Scope:
+  - added source-level `maxItems`;
+  - added durable `source_fetch_state` cadence tracking;
+  - enabled Real Work From Anywhere RSS and Jobicy Admin Support APAC RSS with
+    caps and 60-minute minimum fetch intervals;
+  - preserved paused-source visibility with readable skip reasons;
+  - kept Remote OK deferred until a JSON adapter exists.
+- Verification:
+  - `bun run --cwd apps/web build` passed;
+  - `git diff --check` passed;
+  - CI/deploy run `27422527473` passed;
+  - D1 migration workflow `27422527574` passed;
+  - CI run `27422888691` passed for the skip-reason fix;
+  - manual production deployment
+    `8863383f-2f01-4c64-8110-51b8e8d5f222` recovered production after an async
+    Cloudflare Pages deployment failure for `b948828`;
+  - Hunter run `27422685577` passed with 25 accepted/attempted inserts, 0 failed
+    source records, 0 failed insert batches, and 0 insert errors;
+  - Hunter run `27423455086` passed with cadence skips for the new hourly
+    sources and readable paused-source skip reasons;
+  - rollup-writing Hunter run `27423574670` passed and updated
+    `docs/source-health-latest.md`;
+  - read-only D1 checks reported 797 active opportunities, four healthy
+    `source_fetch_state` rows, and use of
+    `source_fetch_state_last_attempt_idx`.
 
 ### Post-Audit F-06 - Breezy ATS Token Allowlist
 
@@ -814,10 +851,9 @@ Current accepted completion: 100% of Lens 2.
 ## Next Task
 
 Optional future hardening only. Recommended next slice: follow
-`docs/goldilocks-source-expansion-handoff-2026-06-12.md` and implement bounded
-source expansion with `maxItems`, durable cadence enforcement, source probes,
-manual Hunter evidence, and a rollup-writing Hunter run after the manual run is
-healthy.
+`docs/source-expansion-2026-06-12.md`; add a JSON adapter before considering
+Remote OK, continue Breezy source-specific review, and add longer-retention
+source-health history only if trend reporting becomes important.
 
 ## Open Risks To Keep Visible
 

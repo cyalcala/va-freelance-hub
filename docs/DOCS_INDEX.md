@@ -16,37 +16,39 @@ Read these in order:
 4. `docs/MASTER_EXECUTION_PLAN.md` - full roadmap and acceptance strategy.
 5. `docs/AI_RECOVERY_TRAIL.md` - backup loop and evidence requirements.
 6. `docs/SYSTEM_SAVEPOINT.md` - current saved state and operational baseline.
-7. `docs/goldilocks-source-expansion-handoff-2026-06-12.md` - latest takeover
-   plan for balanced source expansion, ingestion caps, cadence, and indexing.
-8. `docs/ats-policy-follow-up-2026-06-12.md` - latest ATS source policy
+7. `docs/source-expansion-2026-06-12.md` - latest accepted source-expansion
+   implementation evidence, D1 source-state snapshot, and next safe work.
+8. `docs/goldilocks-source-expansion-handoff-2026-06-12.md` - source-expansion
+   plan for balanced compliance, ingestion caps, cadence, and indexing.
+9. `docs/ats-policy-follow-up-2026-06-12.md` - latest ATS source policy
    hardening and Hunter evidence.
-9. `docs/wrangler-d1-audit-2026-06-12.md` - latest Wrangler v4 and local D1
+10. `docs/wrangler-d1-audit-2026-06-12.md` - latest Wrangler v4 and local D1
    audit recovery evidence.
-10. `docs/major-audit-2026-06-11.md` - major health audit and hotfix evidence.
-11. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
+11. `docs/major-audit-2026-06-11.md` - major health audit and hotfix evidence.
+12. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
    backfill evidence.
-12. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
+13. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
    findings.
-13. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
+14. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
    evidence.
-14. `docs/ats-source-review-2026-06-09.md` - earlier ATS source policy
+15. `docs/ats-source-review-2026-06-09.md` - earlier ATS source policy
    evidence.
-15. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
+16. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
    metrics.
-16. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
+17. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
    dry run.
-17. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
+18. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
    quality improvement.
-18. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
+19. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
    and backup-hygiene checkpoint.
-19. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
+20. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
    checkpoint.
-20. `docs/source-health-latest.md` - current repo-readable source-health state.
-21. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
+21. `docs/source-health-latest.md` - current repo-readable source-health state.
+22. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
    acceptance audit.
-22. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+23. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-23. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+24. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -70,6 +72,9 @@ Read these in order:
 - `docs/goldilocks-source-expansion-handoff-2026-06-12.md` records the latest
   balanced source-expansion posture, candidate source evidence, and next
   implementation plan.
+- `docs/source-expansion-2026-06-12.md` records the accepted bounded RSS source
+  expansion, durable cadence tracking, source-state D1 evidence, production
+  deployment recovery, and next safe source work.
 - `docs/data-quality-snapshot-2026-06-09.md` records the read-only P5 Slice 1
   production data-quality baseline.
 - `docs/stale-policy-dry-run-2026-06-09.md` records the P5 Slice 2 no-mutation

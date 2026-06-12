@@ -4,19 +4,30 @@
 
 Date: 2026-06-12
 Status: Recovery roadmap complete; post-audit health repairs, Wrangler/D1 audit
-hardening, ATS policy hardening, and Goldilocks source-expansion handoff complete
+hardening, ATS policy hardening, Goldilocks source-expansion handoff, and first
+bounded RSS source-expansion slice complete
 Overall accepted completion: 100%
 Active branch: `main`
 
-Latest takeover note:
+Latest implementation checkpoint:
+
+- `docs/source-expansion-2026-06-12.md`
+- Purpose: records the accepted bounded RSS source expansion, source fetch
+  caps, durable cadence tracking, source-state D1 evidence, deployment recovery,
+  Hunter evidence, and next safe source work.
+- Important state: Real Work From Anywhere and Jobicy Admin Support APAC are now
+  enabled as capped, cadence-guarded `allowed` RSS sources. Remote OK remains
+  deferred until a JSON adapter exists.
+
+Previous takeover note:
 
 - `docs/goldilocks-source-expansion-handoff-2026-06-12.md`
 - Purpose: captures the balanced source-compliance posture, source candidates,
   source evidence gathered so far, ingestion/cadence safeguards, performance
   indexing plan, and the next safe implementation sequence.
-- Important state: no new candidate sources are accepted or enabled yet; the
-  handoff intentionally keeps Jobicy, Real Work From Anywhere, and Remote OK as
-  planned sources until cadence/caps/adapters are implemented and verified.
+- Important state: this plan has now been partially executed. Jobicy and Real
+  Work From Anywhere are enabled with caps and cadence. Remote OK still requires
+  a JSON adapter before enabling.
 
 Current Goldilocks policy wording:
 
@@ -26,6 +37,33 @@ Current Goldilocks policy wording:
   back to ATS-hosted URLs, and pause on objection or clarified hostile terms.
 
 Latest health audit and repair checkpoint:
+
+- Source expansion report: `docs/source-expansion-2026-06-12.md`
+- Product commits:
+  - `686e312` - added capped/cadence-guarded RSS sources and D1 source fetch
+    state.
+  - `b948828` - fixed paused-source skip reasons after discovering array-index
+    leakage in disabled source reporting.
+- Generated rollup commit:
+  - `79e46f8` - refreshed `docs/source-health-latest.md`.
+- Verification:
+  - `bun run --cwd apps/web build` passed.
+  - `git diff --check` passed.
+  - CI/deploy run `27422527473` passed.
+  - D1 migration workflow `27422527574` passed.
+  - CI run `27422888691` passed for the skip-reason fix.
+  - Manual Cloudflare Pages deployment `8863383f-2f01-4c64-8110-51b8e8d5f222`
+    recovered production after an async Pages deployment failure for `b948828`.
+  - Hunter run `27422685577` passed with 25 accepted/attempted inserts, 0
+    failed source records, 0 failed insert batches, and 0 insert errors.
+  - Hunter run `27423455086` passed with new hourly sources skipped by cadence
+    and paused sources reporting readable skip reasons.
+  - Rollup-writing Hunter run `27423574670` passed and updated
+    `docs/source-health-latest.md`.
+  - Production D1 reports 797 active opportunities and four healthy
+    `source_fetch_state` rows.
+
+Previous health audit and repair checkpoint:
 
 - ATS follow-up report: `docs/ats-policy-follow-up-2026-06-12.md`
 - Latest product commit:
@@ -197,18 +235,18 @@ Observed P1 facts:
 ## Next Safe Resume Task
 
 No required recovery-roadmap work remains. Start from
-`docs/goldilocks-source-expansion-handoff-2026-06-12.md` for the next optional
-source portfolio, ingestion efficiency, and indexing slice.
+`docs/source-expansion-2026-06-12.md` for the next optional source portfolio,
+ingestion efficiency, and indexing slice.
 
-Recommended first source-expansion slice:
+Recommended next source-expansion slice:
 
-1. Add source-level `maxItems` and enforce it in RSS/HTML fetchers.
-2. Add durable source cadence tracking before enabling hourly-advised feeds.
-3. Enable Real Work From Anywhere RSS and Jobicy APAC admin-support RSS only
-   after cadence is enforced.
-4. Add a JSON adapter before enabling Remote OK.
-5. Verify with local build, direct source probes, manual Hunter, then rollup
-   Hunter.
+1. Add a JSON adapter before considering Remote OK.
+2. Add longer-retention source-health history if source trends need to be
+   audited beyond the latest state row and rollup artifacts.
+3. Continue source-specific Breezy review and decide whether each current token
+   remains `needs_review`, becomes `allowed`, or is paused.
+4. Re-run query/index audits if homepage, category, or source-health query
+   shapes change.
 
 Known follow-up: local direct D1 audits now work with Wrangler v4. Use
 `bunx wrangler d1 info remoteph-jobs-db` for remote metadata and

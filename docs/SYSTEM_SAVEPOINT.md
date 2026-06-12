@@ -6,18 +6,52 @@ Date: 2026-06-12
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
-Latest handoff document:
+Latest source-expansion evidence:
+
+- `docs/source-expansion-2026-06-12.md`
+- Captures the accepted bounded RSS source expansion, source fetch caps,
+  durable cadence tracking, production D1 source-state snapshot, deployment
+  recovery note, Hunter evidence, and next safe source work.
+- Real Work From Anywhere and Jobicy Admin Support APAC are now enabled as
+  capped, cadence-guarded `allowed` RSS sources. Remote OK remains deferred
+  until a JSON adapter exists.
+
+Previous handoff document:
 
 - `docs/goldilocks-source-expansion-handoff-2026-06-12.md`
 - Captures the current balanced source-compliance posture, source evidence,
   candidate source plan, ingestion cadence/cap requirements, and indexing
   follow-up plan.
-- No new source candidates are accepted/enabled at this savepoint. Jobicy, Real
-  Work From Anywhere, and Remote OK remain planned candidates until caps,
-  cadence enforcement, adapters, local build, manual Hunter, and source-health
-  rollup evidence are complete.
+- This plan has now been partially executed: Jobicy and Real Work From Anywhere
+  are enabled with caps and cadence; Remote OK still requires a JSON adapter.
 
 Last accepted implementation commit:
+
+- `b948828` - `fix: preserve paused source skip reasons`
+- Supporting product commit:
+  - `686e312` - `feat: add cadence guarded rss sources`
+- Generated rollup commit:
+  - `79e46f8` - `docs: update daily source health`
+- Evidence report: `docs/source-expansion-2026-06-12.md`
+- Build: `bun run --cwd apps/web build` passed.
+- D1 migration workflow: `27422527574` passed.
+- CI/deploy run: `27422527473` passed.
+- Skip-reason CI run: `27422888691` passed.
+- Production deploy recovery:
+  - manual Cloudflare Pages deployment
+    `8863383f-2f01-4c64-8110-51b8e8d5f222` successfully deployed `b948828`
+    after Cloudflare marked the async Pages deployment as failed.
+- Hunter evidence:
+  - run `27422685577` passed with 25 accepted/attempted inserts, 0 failed
+    sources, 0 failed insert batches, and 0 insert errors;
+  - run `27423455086` passed with cadence skips for Real Work From Anywhere and
+    Jobicy plus readable paused-source skip reasons;
+  - rollup-writing run `27423574670` passed and refreshed
+    `docs/source-health-latest.md`;
+  - read-only D1 reports 797 active opportunities and four healthy
+    `source_fetch_state` rows.
+
+Previous accepted implementation commit:
 
 - `6304ea4` - `fix: require token review for breezy ats`
 - Generated rollup commit:
@@ -280,19 +314,20 @@ Current accepted work:
 - Require source-token review before fetching future Breezy ATS tokens.
 - Document the Goldilocks source-expansion posture and next safe plan for any
   future AI handoff.
+- Add capped/cadence-guarded RSS ingestion for Real Work From Anywhere and
+  Jobicy Admin Support APAC, backed by D1 source fetch state and Hunter rollup
+  evidence.
 - Accepted completion: 100%.
 
 Next pending work:
 
 - Optional future roadmap only. No required recovery-roadmap work remains.
 - Continue optional source policy, data quality, reporting, and source-expansion
-  hardening from `docs/goldilocks-source-expansion-handoff-2026-06-12.md`.
+  hardening from `docs/source-expansion-2026-06-12.md`.
 - Next source-policy target: finish source-specific terms review for current
   Breezy-backed sources and decide whether they should remain `needs_review`,
   become `allowed`, or be paused.
-- Next source-expansion target: implement source caps and cadence first, then
-  add Real Work From Anywhere RSS and Jobicy RSS, then add Remote OK only after
-  a JSON adapter exists.
+- Next source-expansion target: add a JSON adapter before considering Remote OK.
 - For local D1 audits, use Wrangler v4 command shapes recorded in
   `docs/wrangler-d1-audit-2026-06-12.md`.
 
