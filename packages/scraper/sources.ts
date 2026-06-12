@@ -1,5 +1,5 @@
-export type SourceType = "rss" | "html";
-export type CollectionMethod = "rss_feed" | "public_html";
+export type SourceType = "rss" | "html" | "json";
+export type CollectionMethod = "rss_feed" | "public_html" | "public_json_api";
 export type ComplianceStatus = "allowed" | "needs_review" | "paused" | "deprecated";
 
 export interface Source {
@@ -71,6 +71,20 @@ export const sources: Source[] = [
     tags: ["remote", "admin", "VA", "apac"],
     maxItems: 40,
     minFetchIntervalMinutes: 60,
+  },
+  {
+    id: "remote-ok",
+    name: "Remote OK",
+    url: "https://remoteok.com/api",
+    type: "json",
+    collectionMethod: "public_json_api",
+    complianceStatus: "allowed",
+    complianceNotes: "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+    platform: "RemoteOK",
+    defaultJobType: "full-time",
+    tags: ["remote", "global", "digital-nomad"],
+    maxItems: 50,
+    minFetchIntervalMinutes: 120,
   },
   {
     id: "problogger",
@@ -154,3 +168,4 @@ export const enabledSources = sources.filter(isEnabledSource);
 export const disabledSources = sources.filter((s) => !isEnabledSource(s));
 export const rssSources = enabledSources.filter((s) => s.type === "rss");
 export const htmlSources = enabledSources.filter((s) => s.type === "html");
+export const jsonSources = enabledSources.filter((s) => s.type === "json");

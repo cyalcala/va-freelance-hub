@@ -8,9 +8,18 @@ interface Props {
 const PLATFORM_COLORS: Record<string, string> = {
   WeWorkRemotely: "text-emerald-700 bg-emerald-500/10",
   Remotive: "text-sky-700 bg-sky-500/10",
+  Jobicy: "text-cyan-700 bg-cyan-500/10",
+  RealWorkFromAnywhere: "text-indigo-700 bg-indigo-500/10",
+  RemoteOK: "text-purple-700 bg-purple-500/10",
   ProBlogger: "text-orange-700 bg-orange-500/10",
   RemoteCo: "text-purple-700 bg-purple-500/10",
   OnlineJobsPH: "text-yellow-700 bg-yellow-500/10",
+};
+
+const PLATFORM_LABELS: Record<string, string> = {
+  WeWorkRemotely: "We Work Remotely",
+  RealWorkFromAnywhere: "Real Work From Anywhere",
+  RemoteOK: "Remote OK",
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -36,8 +45,14 @@ function formatDate(isoString: string | null | undefined): string | null {
 export function OpportunityCard({ opportunity: opp }: Props) {
   const platformColor =
     PLATFORM_COLORS[opp.sourcePlatform] ?? "text-ink/60 bg-ink/5";
+  const platformLabel = PLATFORM_LABELS[opp.sourcePlatform] ?? opp.sourcePlatform;
   const typeLabel = TYPE_LABELS[opp.type] ?? opp.type;
   const postedDate = formatDate(opp.postedAt);
+  const isRemoteOk = opp.sourcePlatform === "RemoteOK";
+  const href = isRemoteOk
+    ? opp.sourceUrl
+    : `/api/click/${opp.id}?url=${encodeURIComponent(opp.sourceUrl)}`;
+  const rel = isRemoteOk ? "noopener" : "noopener noreferrer";
 
   let hostname = "";
   try {
@@ -48,9 +63,9 @@ export function OpportunityCard({ opportunity: opp }: Props) {
 
   return (
     <a 
-      href={`/api/click/${opp.id}?url=${encodeURIComponent(opp.sourceUrl)}`}
+      href={href}
       target="_blank"
-      rel="noopener noreferrer"
+      rel={rel}
       className="flex items-start justify-between group p-4 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent hover:border-accent/10 active:scale-[0.99] active:bg-ink/5"
     >
       <div className="flex items-center gap-4 w-full">
@@ -58,7 +73,7 @@ export function OpportunityCard({ opportunity: opp }: Props) {
           {hostname ? (
             <img 
               src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`} 
-              alt={opp.sourcePlatform}
+              alt={platformLabel}
               className="w-5 h-5 object-contain"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = 'none';
@@ -84,7 +99,7 @@ export function OpportunityCard({ opportunity: opp }: Props) {
           
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider ${platformColor}`}>
-              {opp.sourcePlatform}
+              {platformLabel}
             </span>
             <span className="text-[9px] px-2 py-0.5 rounded-full bg-ink/5 text-ink/60 font-black uppercase tracking-wider border border-ink/5">
               {typeLabel}

@@ -4,7 +4,7 @@ import { isNotNull, and, inArray, eq } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, fetchRSSFeed, fetchHTMLSource, fetchATSFeed, triageJob, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -29,7 +29,7 @@ function mapTriageCategoryToUiCategory(cat: string): string {
   }
 }
 
-type SourceType = "RSS" | "HTML" | "ATS";
+type SourceType = "RSS" | "HTML" | "JSON" | "ATS";
 
 interface SourceFetchResult {
   sourceId?: string;
@@ -69,7 +69,9 @@ function sourceStatus(result: SourceFetchResult) {
 }
 
 function toSourceType(source: Source): SourceType {
-  return source.type === "rss" ? "RSS" : "HTML";
+  if (source.type === "rss") return "RSS";
+  if (source.type === "html") return "HTML";
+  return "JSON";
 }
 
 function skippedSourceResult(source: Source, skipReason = source.complianceNotes): SourceFetchResult {
@@ -393,6 +395,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
     const htmlItems = htmlResults.flatMap((result) => result.items);
 
+    const jsonResults = await Promise.all(
+      jsonSources.map((source) =>
+        fetchConfiguredSourceWithStatus(db, source, "JSON", sourceFetchStates, observedAt, () => fetchJSONSource(source))
+      )
+    );
+    const jsonItems = jsonResults.flatMap((result) => result.items);
+
     const atsAgencies = await db.select().from(vaDirectory).where(
       and(
         isNotNull(vaDirectory.atsPlatform),
@@ -500,13 +509,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       ...policySkippedAtsAgencies.map(skippedAtsResult),
       ...duplicateAtsAgencies.map(skippedDuplicateAtsResult),
     ];
-    const sourceResults = [...rssResults, ...htmlResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
+    const sourceResults = [...rssResults, ...htmlResults, ...jsonResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
     const failedSources = sourceResults
       .filter((result) => !result.ok)
       .map((result) => `${result.sourceName} (${result.sourceType}): ${result.error}`);
 
-    const allItems = [...rssItems, ...htmlItems, ...atsItems];
-    console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML, ${atsItems.length} ATS)`);
+    const allItems = [...rssItems, ...htmlItems, ...jsonItems, ...atsItems];
+    console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML, ${jsonItems.length} JSON, ${atsItems.length} ATS)`);
 
     if (allItems.length === 0) {
       return new Response(JSON.stringify({ 
