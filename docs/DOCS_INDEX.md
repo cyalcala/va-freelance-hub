@@ -16,35 +16,37 @@ Read these in order:
 4. `docs/MASTER_EXECUTION_PLAN.md` - full roadmap and acceptance strategy.
 5. `docs/AI_RECOVERY_TRAIL.md` - backup loop and evidence requirements.
 6. `docs/SYSTEM_SAVEPOINT.md` - current saved state and operational baseline.
-7. `docs/ats-policy-follow-up-2026-06-12.md` - latest ATS source policy
+7. `docs/goldilocks-source-expansion-handoff-2026-06-12.md` - latest takeover
+   plan for balanced source expansion, ingestion caps, cadence, and indexing.
+8. `docs/ats-policy-follow-up-2026-06-12.md` - latest ATS source policy
    hardening and Hunter evidence.
-8. `docs/wrangler-d1-audit-2026-06-12.md` - latest Wrangler v4 and local D1
+9. `docs/wrangler-d1-audit-2026-06-12.md` - latest Wrangler v4 and local D1
    audit recovery evidence.
-9. `docs/major-audit-2026-06-11.md` - major health audit and hotfix evidence.
-10. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
+10. `docs/major-audit-2026-06-11.md` - major health audit and hotfix evidence.
+11. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
    backfill evidence.
-11. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
+12. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
    findings.
-12. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
+13. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
    evidence.
-13. `docs/ats-source-review-2026-06-09.md` - earlier ATS source policy
+14. `docs/ats-source-review-2026-06-09.md` - earlier ATS source policy
    evidence.
-14. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
+15. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
    metrics.
-15. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
+16. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
    dry run.
-16. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
+17. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
    quality improvement.
-17. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
+18. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
    and backup-hygiene checkpoint.
-18. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
+19. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
    checkpoint.
-19. `docs/source-health-latest.md` - current repo-readable source-health state.
-20. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
+20. `docs/source-health-latest.md` - current repo-readable source-health state.
+21. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
    acceptance audit.
-21. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+22. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-22. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+23. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points
@@ -65,6 +67,9 @@ Read these in order:
   Workable pause decisions behind P4 Slice 3.
 - `docs/ats-policy-follow-up-2026-06-12.md` records the follow-up that pauses
   unreviewed/noisy ATS platforms by default and verifies Hunter source health.
+- `docs/goldilocks-source-expansion-handoff-2026-06-12.md` records the latest
+  balanced source-expansion posture, candidate source evidence, and next
+  implementation plan.
 - `docs/data-quality-snapshot-2026-06-09.md` records the read-only P5 Slice 1
   production data-quality baseline.
 - `docs/stale-policy-dry-run-2026-06-09.md` records the P5 Slice 2 no-mutation

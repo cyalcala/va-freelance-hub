@@ -4,9 +4,26 @@
 
 Date: 2026-06-12
 Status: Recovery roadmap complete; post-audit health repairs, Wrangler/D1 audit
-hardening, and ATS policy hardening complete
+hardening, ATS policy hardening, and Goldilocks source-expansion handoff complete
 Overall accepted completion: 100%
 Active branch: `main`
+
+Latest takeover note:
+
+- `docs/goldilocks-source-expansion-handoff-2026-06-12.md`
+- Purpose: captures the balanced source-compliance posture, source candidates,
+  source evidence gathered so far, ingestion/cadence safeguards, performance
+  indexing plan, and the next safe implementation sequence.
+- Important state: no new candidate sources are accepted or enabled yet; the
+  handoff intentionally keeps Jobicy, Real Work From Anywhere, and Remote OK as
+  planned sources until cadence/caps/adapters are implemented and verified.
+
+Current Goldilocks policy wording:
+
+- Current reviewed Breezy tokens remain enabled as `needs_review`.
+- Notes now say these are public, robots-allowed, CORS-readable Breezy career
+  endpoints where the project should collect minimal factual metadata, link
+  back to ATS-hosted URLs, and pause on objection or clarified hostile terms.
 
 Latest health audit and repair checkpoint:
 
@@ -179,8 +196,19 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-No required recovery-roadmap work remains. Start a new optional roadmap for
-future data quality, source portfolio, or deploy automation work.
+No required recovery-roadmap work remains. Start from
+`docs/goldilocks-source-expansion-handoff-2026-06-12.md` for the next optional
+source portfolio, ingestion efficiency, and indexing slice.
+
+Recommended first source-expansion slice:
+
+1. Add source-level `maxItems` and enforce it in RSS/HTML fetchers.
+2. Add durable source cadence tracking before enabling hourly-advised feeds.
+3. Enable Real Work From Anywhere RSS and Jobicy APAC admin-support RSS only
+   after cadence is enforced.
+4. Add a JSON adapter before enabling Remote OK.
+5. Verify with local build, direct source probes, manual Hunter, then rollup
+   Hunter.
 
 Known follow-up: local direct D1 audits now work with Wrangler v4. Use
 `bunx wrangler d1 info remoteph-jobs-db` for remote metadata and

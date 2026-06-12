@@ -6,6 +6,17 @@ Date: 2026-06-12
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
+Latest handoff document:
+
+- `docs/goldilocks-source-expansion-handoff-2026-06-12.md`
+- Captures the current balanced source-compliance posture, source evidence,
+  candidate source plan, ingestion cadence/cap requirements, and indexing
+  follow-up plan.
+- No new source candidates are accepted/enabled at this savepoint. Jobicy, Real
+  Work From Anywhere, and Remote OK remain planned candidates until caps,
+  cadence enforcement, adapters, local build, manual Hunter, and source-health
+  rollup evidence are complete.
+
 Last accepted implementation commit:
 
 - `6304ea4` - `fix: require token review for breezy ats`
@@ -267,15 +278,21 @@ Current accepted work:
 - Pause unreviewed/noisy ATS platforms by default and refresh
   `docs/source-health-latest.md`.
 - Require source-token review before fetching future Breezy ATS tokens.
+- Document the Goldilocks source-expansion posture and next safe plan for any
+  future AI handoff.
 - Accepted completion: 100%.
 
 Next pending work:
 
 - Optional future roadmap only. No required recovery-roadmap work remains.
-- Continue optional source policy, data quality, and reporting hardening.
+- Continue optional source policy, data quality, reporting, and source-expansion
+  hardening from `docs/goldilocks-source-expansion-handoff-2026-06-12.md`.
 - Next source-policy target: finish source-specific terms review for current
   Breezy-backed sources and decide whether they should remain `needs_review`,
   become `allowed`, or be paused.
+- Next source-expansion target: implement source caps and cadence first, then
+  add Real Work From Anywhere RSS and Jobicy RSS, then add Remote OK only after
+  a JSON adapter exists.
 - For local D1 audits, use Wrangler v4 command shapes recorded in
   `docs/wrangler-d1-audit-2026-06-12.md`.
 

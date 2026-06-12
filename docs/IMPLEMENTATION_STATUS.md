@@ -9,9 +9,10 @@ When starting a new chat or work session, read these in order:
 3. `docs/IMPLEMENTATION_STATUS.md`
 4. `docs/AI_RECOVERY_TRAIL.md`
 5. `docs/SYSTEM_SAVEPOINT.md`
-6. `docs/major-audit-2026-06-11.md`
-7. `docs/major-audit-2026-06-10.md`
-8. `docs/major-audit-2026-06-06.md`
+6. `docs/goldilocks-source-expansion-handoff-2026-06-12.md`
+7. `docs/major-audit-2026-06-11.md`
+8. `docs/major-audit-2026-06-10.md`
+9. `docs/major-audit-2026-06-06.md`
 
 ### Current Focus
 
@@ -22,6 +23,13 @@ local direct D1 audit capability and upgraded active Wrangler tooling for the
 current Cloudflare Pages config. The latest ATS follow-up pauses unreviewed or
 noisy ATS platforms by default, requires token-specific review for Breezy, and
 refreshed the source-health rollup.
+
+The latest user-requested handoff is
+`docs/goldilocks-source-expansion-handoff-2026-06-12.md`. It documents the
+balanced "Goldilocks" source-compliance posture, source candidates already
+reviewed, and the next safe plan for source caps, fetch cadence, JSON ingestion,
+and query/indexing checks. No new source expansion is accepted until those
+guards are implemented and Hunter evidence is captured.
 
 ## Overall Completion
 
@@ -805,8 +813,11 @@ Current accepted completion: 100% of Lens 2.
 
 ## Next Task
 
-Optional future hardening only. Recommended next slice: continue ATS/source
-policy review or choose a new data-quality/reporting improvement.
+Optional future hardening only. Recommended next slice: follow
+`docs/goldilocks-source-expansion-handoff-2026-06-12.md` and implement bounded
+source expansion with `maxItems`, durable cadence enforcement, source probes,
+manual Hunter evidence, and a rollup-writing Hunter run after the manual run is
+healthy.
 
 ## Open Risks To Keep Visible
 

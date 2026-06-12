@@ -135,19 +135,19 @@ const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
     enabled: true,
     complianceStatus: "needs_review",
     complianceNotes:
-      "Reviewed 2026-06-12: current Breezy public JSON endpoint is useful and routes users to original ATS-hosted URLs; source terms still need final review.",
+      "Goldilocks review 2026-06-12: public Breezy career endpoint is robots-allowed and CORS-readable; collect minimal factual metadata only, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
   },
   "breezy:sourcefit": {
     enabled: true,
     complianceStatus: "needs_review",
     complianceNotes:
-      "Reviewed 2026-06-12: current Breezy public JSON endpoint is useful and routes users to original ATS-hosted URLs; source terms still need final review.",
+      "Goldilocks review 2026-06-12: public Breezy career endpoint is robots-allowed and CORS-readable; collect minimal factual metadata only, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
   },
   "breezy:vaaphilippines-recruitment": {
     enabled: true,
     complianceStatus: "needs_review",
     complianceNotes:
-      "Reviewed 2026-06-12: current Breezy public JSON endpoint is reachable but currently returns zero jobs; source terms still need final review.",
+      "Goldilocks review 2026-06-12: public Breezy career endpoint is robots-allowed and CORS-readable but currently returns zero jobs; keep minimal monitored access and pause on objection or clarified hostile terms.",
   },
 };
 

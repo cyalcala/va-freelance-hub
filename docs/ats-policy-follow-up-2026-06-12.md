@@ -11,9 +11,10 @@ ATS collection now fails closed for unreviewed or noisy platforms:
   source-supported access path.
 - Lever and Greenhouse are paused by default because no current production
   directory rows use them and future rows need source-specific review first.
-- Breezy remains enabled as `needs_review` because current public endpoints are
-  useful and route users back to ATS-hosted URLs, but source-specific terms still
-  need review before upgrading it to `allowed`.
+- Breezy remains enabled as `needs_review` for current reviewed tokens under a
+  Goldilocks posture: the public career endpoints are robots-allowed and
+  CORS-readable, users are routed back to ATS-hosted URLs, and collection should
+  stay minimal while pausing on objection or clarified hostile terms.
 
 ## Fix
 
@@ -32,6 +33,15 @@ Follow-up hardening:
   - `breezy:sourcefit`: enabled as `needs_review`
   - `breezy:vaaphilippines-recruitment`: enabled as `needs_review`
   - unknown future Breezy tokens: `paused` until source-specific review
+
+Goldilocks note update:
+
+- The current token policy notes now state that the reviewed public Breezy
+  career endpoints are robots-allowed and CORS-readable.
+- The notes explicitly require minimal factual metadata, ATS-hosted linkback,
+  and pause-on-objection behavior.
+- This is intentionally not an upgrade to `allowed`; current tokens remain
+  `needs_review`.
 
 ## Verification
 
@@ -89,5 +99,8 @@ Breezy token allowlist verification:
 
 - Review current Breezy-backed sources source-by-source and decide whether each
   should remain `needs_review`, become `allowed`, or be paused.
+- Continue optional source expansion from
+  `docs/goldilocks-source-expansion-handoff-2026-06-12.md`; do not enable new
+  sources until caps, cadence, adapters, and Hunter evidence are in place.
 - Historical opportunity rows from now-paused ATS sources remain visible until a
   separate stale/data-quality policy archives or marks them inactive.
