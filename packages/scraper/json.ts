@@ -92,8 +92,12 @@ function isLikelyPlaceholderTitle(title: string): boolean {
 const HUB_RELEVANT_ROLE_REGEX =
   /\b(admin|assistant|virtual assistant|customer|support|success|marketing|sales|seo|content|writer|copywriter|editor|designer|design|developer|engineer|software|data|analyst|bookkeeper|accounting|finance|operations|recruiter|hr|project manager|product manager|qa|tester|testing|e-?commerce|shopify|community|technical|devops|it support)\b/i;
 
+const PHYSICAL_OR_LOGISTICS_ROLE_REGEX =
+  /\b(courier|mail carrier|driver|delivery|warehouse|forklift|photographer|civil engineer|logistics|fulfillment operations)\b/i;
+
 function isRelevantForHub(title: string, description: string): boolean {
-  return HUB_RELEVANT_ROLE_REGEX.test(`${title} ${description.slice(0, 500)}`);
+  const searchableText = `${title} ${description.slice(0, 500)}`;
+  return HUB_RELEVANT_ROLE_REGEX.test(searchableText) && !PHYSICAL_OR_LOGISTICS_ROLE_REGEX.test(searchableText);
 }
 
 export async function fetchJSONSource(source: Source): Promise<NewOpportunity[]> {
