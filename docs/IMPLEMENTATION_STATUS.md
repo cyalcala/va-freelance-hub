@@ -9,10 +9,11 @@ When starting a new chat or work session, read these in order:
 3. `docs/IMPLEMENTATION_STATUS.md`
 4. `docs/AI_RECOVERY_TRAIL.md`
 5. `docs/SYSTEM_SAVEPOINT.md`
-6. `docs/goldilocks-source-expansion-handoff-2026-06-12.md`
-7. `docs/major-audit-2026-06-11.md`
-8. `docs/major-audit-2026-06-10.md`
-9. `docs/major-audit-2026-06-06.md`
+6. `docs/gemini-masterplan-handoff-2026-06-13.md`
+7. `docs/goldilocks-source-expansion-handoff-2026-06-12.md`
+8. `docs/major-audit-2026-06-11.md`
+9. `docs/major-audit-2026-06-10.md`
+10. `docs/major-audit-2026-06-06.md`
 
 ### Current Focus
 
@@ -25,10 +26,17 @@ noisy ATS platforms by default, requires token-specific review for Breezy, and
 refreshed the source-health rollup.
 
 The latest user-requested stop-point is
+`docs/gemini-masterplan-handoff-2026-06-13.md`. It records the verified
+post-Gemini/post-Codex-QA baseline at `e719a2c`, confirms CI now runs unit
+tests, and gives Gemini an ordered masterplan for source-health history, Breezy
+review, data-quality refresh, query/index audit, bounded source expansion, and
+portfolio polish.
+
+The previous source-specific stop-point is
 `docs/remote-ok-json-source-handoff-2026-06-13.md`. It records the accepted
 Remote OK JSON ingestion slice, direct-link compliance posture, physical-role
 quality filter, cleanup migration, workflow evidence, and production D1
-snapshot. The user asked to stop feature work and hand off to another AI.
+snapshot.
 
 ## Overall Completion
 
@@ -43,6 +51,38 @@ Current accepted completion: 100% of Lens 2.
 | L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Post-QA F-10 - Gemini Masterplan And CI Test Guardrail
+
+- Date: 2026-06-13
+- Status: accepted after Codex QA, local build/test verification, CI guardrail,
+  production deploy, production smoke, read-only D1 checks, and docs handoff
+- Handoff:
+  - `docs/gemini-masterplan-handoff-2026-06-13.md`
+- Product/CI commits:
+  - `8d499df` - `feat: reduce payload size by slimming DB projections, add Remote OK unit tests`
+  - `3036a53` - `docs: update implementation status and system savepoint with F-09 post-handoff details`
+  - `e719a2c` - `ci: run unit tests in guardrail`
+- Scope:
+  - QA reviewed Gemini's projection slimming and Remote OK tests.
+  - Added `bun test` to the CI guardrail so unit tests are enforced on every
+    push and PR.
+  - Created a Gemini-ready masterplan that prioritizes compact source-health
+    history before more source expansion, then Breezy policy review, data
+    quality, query/index audit, bounded source expansion, and portfolio polish.
+- Verification:
+  - `bun test packages/scraper/json.test.ts` passed with 54/54 tests.
+  - `bun test` passed.
+  - `bun run --cwd apps/web build` passed.
+  - `git diff --check` passed.
+  - CI guardrail `27461079903` passed for `e719a2c`.
+  - Production deployment
+    `2bbecd9c-1247-4805-b017-70574afa6e37` completed for `e719a2c`.
+  - Production smoke returned 200 for `/`, `/directory`, `/opportunities`, and
+    `/categories/tech`.
+  - Read-only D1 snapshot reported 878 active opportunities, 38 active RemoteOK
+    rows, 4 inactive RemoteOK cleanup rows, and 0 active RemoteOK
+    physical/logistics outliers.
 
 ### Post-Handoff F-09 - Payload Reduction & Remote OK Tests
 
@@ -903,9 +943,10 @@ Current accepted completion: 100% of Lens 2.
 ## Next Task
 
 Stopped by user request. Next AI should start from
-`docs/remote-ok-json-source-handoff-2026-06-13.md`, run
-`git status --short --branch`, and avoid adding more sources until Remote OK has
-at least one more healthy rollup day.
+`docs/gemini-masterplan-handoff-2026-06-13.md`, run
+`git status --short --branch`, and implement one small vertical slice from the
+masterplan. Prefer compact source-health history first unless fresh evidence
+shows a higher-priority issue.
 
 ## Open Risks To Keep Visible
 

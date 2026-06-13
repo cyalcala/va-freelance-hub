@@ -2,13 +2,25 @@
 
 ## Current State
 
-Date: 2026-06-12
-Status: Stopped by user request after Remote OK JSON source slice was backed up
-and documented
+Date: 2026-06-13
+Status: Stopped by user request after Codex QA and Gemini-ready masterplan
+handoff
 Overall accepted completion: 100%
 Active branch: `main`
 
 Latest stop-point handoff:
+
+- `docs/gemini-masterplan-handoff-2026-06-13.md`
+- Purpose: records the current verified baseline after Gemini's payload/test
+  work and Codex's CI guardrail QA, then gives Gemini an ordered masterplan for
+  source-health history, Breezy review, data-quality refresh, query/index
+  audit, bounded source expansion, and portfolio polish.
+- Important state: current real checkpoint before this docs update is
+  `e719a2c` (`ci: run unit tests in guardrail`). CI guardrail `27461079903`
+  passed, and Cloudflare production deployment
+  `2bbecd9c-1247-4805-b017-70574afa6e37` deployed it.
+
+Previous stop-point handoff:
 
 - `docs/remote-ok-json-source-handoff-2026-06-13.md`
 - Purpose: records the accepted Remote OK JSON ingestion slice, source evidence,
@@ -46,6 +58,25 @@ Current Goldilocks policy wording:
   back to ATS-hosted URLs, and pause on objection or clarified hostile terms.
 
 Latest health audit and repair checkpoint:
+
+- Gemini/Codex QA checkpoint:
+  - `8d499df` - reduced homepage and directory DB projections and added 54
+    Remote OK scraper tests.
+  - `3036a53` - updated implementation/savepoint docs for F-09.
+  - `e719a2c` - added `bun test` to CI guardrail.
+- Verification:
+  - `bun test packages/scraper/json.test.ts` passed.
+  - `bun test` passed.
+  - `bun run --cwd apps/web build` passed.
+  - `git diff --check` passed.
+  - CI guardrail `27461079903` passed.
+  - Production deployment
+    `2bbecd9c-1247-4805-b017-70574afa6e37` completed for `e719a2c`.
+  - Production smoke returned 200 for `/`, `/directory`, `/opportunities`, and
+    `/categories/tech`.
+  - Read-only D1 snapshot remained healthy: 878 active opportunities, 38 active
+    RemoteOK rows, 4 inactive RemoteOK cleanup rows, and 0 active RemoteOK
+    physical/logistics outliers.
 
 - Remote OK handoff: `docs/remote-ok-json-source-handoff-2026-06-13.md`
 - Product commits:
@@ -271,20 +302,21 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-No required recovery-roadmap work remains. The user explicitly asked to stop
-and hand off. Start from `docs/remote-ok-json-source-handoff-2026-06-13.md`.
+No required recovery-roadmap work remains. The user explicitly asked for a
+Gemini-ready masterplan and handoff. Start from
+`docs/gemini-masterplan-handoff-2026-06-13.md`.
 
-Recommended next source-expansion slice:
+Recommended next slice:
 
 1. Run `git status --short --branch`.
-2. Let the Remote OK source run for at least one more healthy rollup day before
-   adding more sources.
-3. Add longer-retention source-health history if source trends need to be
-   audited beyond the latest state row and rollup artifacts.
+2. Read `docs/gemini-masterplan-handoff-2026-06-13.md`.
+3. Prefer Workstream 1: compact source-health history, unless fresh CI/source
+   evidence shows a more urgent issue.
 4. Continue source-specific Breezy review and decide whether each current token
    remains `needs_review`, becomes `allowed`, or is paused.
-5. Re-run query/index audits if homepage, category, or source-health query
-   shapes change.
+5. Re-run query/index audits before adding indexes or enabling more sources.
+6. Add at most one new source per slice, only after source-health evidence is
+   green and the source has documented caps, cadence, and linkback posture.
 
 Known follow-up: local direct D1 audits now work with Wrangler v4. Use
 `bunx wrangler d1 info remoteph-jobs-db` for remote metadata and

@@ -8,6 +8,16 @@ Repository: `cyalcala/va-freelance-hub`
 
 Latest stop-point handoff:
 
+- `docs/gemini-masterplan-handoff-2026-06-13.md`
+- Captures the current Gemini-ready masterplan after Gemini's payload/test work
+  and Codex's QA follow-up. It records the `e719a2c` CI-test guardrail
+  checkpoint, current source posture, ordered next workstreams, verification
+  commands, and stop conditions.
+- User asked to document a masterplan so Gemini can implement and Codex can QA
+  at the end.
+
+Previous stop-point handoff:
+
 - `docs/remote-ok-json-source-handoff-2026-06-13.md`
 - Captures the accepted Remote OK JSON adapter, direct-link compliance posture,
   source-specific quality filter, cleanup migration, workflow evidence, and
@@ -34,6 +44,32 @@ Previous handoff document:
   are enabled with caps and cadence; Remote OK still requires a JSON adapter.
 
 Last accepted implementation commit:
+
+- `e719a2c` - `ci: run unit tests in guardrail`
+- Supporting Gemini commits:
+  - `3036a53` - `docs: update implementation status and system savepoint with F-09 post-handoff details`
+  - `8d499df` - `feat: reduce payload size by slimming DB projections, add Remote OK unit tests`
+- Evidence:
+  - `8d499df` slimmed homepage and directory DB projections.
+  - `8d499df` added 54 Remote OK unit tests.
+  - `e719a2c` added `bun test` to `.github/workflows/ci-guardrail.yml`.
+- Verification:
+  - `bun test packages/scraper/json.test.ts` passed.
+  - `bun test` passed.
+  - `bun run --cwd apps/web build` passed.
+  - `git diff --check` passed.
+  - CI guardrail `27460886103` passed for `8d499df`.
+  - CI guardrail `27460911453` passed for `3036a53`.
+  - CI guardrail `27461079903` passed for `e719a2c`.
+  - Production deployment
+    `2bbecd9c-1247-4805-b017-70574afa6e37` completed for `e719a2c`.
+  - Production smoke returned 200 for `/`, `/directory`, `/opportunities`, and
+    `/categories/tech`.
+  - Read-only D1 snapshot reported 878 active opportunities, 38 active RemoteOK
+    rows, 4 inactive RemoteOK cleanup rows, and 0 active RemoteOK
+    physical/logistics outliers.
+
+Previous accepted implementation commit:
 
 - `8d499df` - `feat: reduce payload size by slimming DB projections, add Remote OK unit tests`
 - Supporting product commit:
@@ -361,14 +397,16 @@ Current accepted work:
 Next pending work:
 
 - Optional future roadmap only. No required recovery-roadmap work remains.
-- User requested a stop. Continue optional source policy, data quality,
-  reporting, and source-expansion hardening from
-  `docs/remote-ok-json-source-handoff-2026-06-13.md`.
-- Next source-policy target: finish source-specific terms review for current
+- User requested a Gemini-ready masterplan and handoff. Continue optional
+  source policy, data quality, reporting, indexing, and bounded
+  source-expansion work from `docs/gemini-masterplan-handoff-2026-06-13.md`.
+- First recommended target: add compact longer-retention source-health history
+  before expanding sources further.
+- Next source-policy target: finish source-specific review for current
   Breezy-backed sources and decide whether they should remain `needs_review`,
   become `allowed`, or be paused.
-- Next source-expansion target: wait for at least one more healthy Remote OK
-  rollup day before adding more sources.
+- Next source-expansion target: add at most one reviewed source per slice after
+  current source-health evidence is green.
 - For local D1 audits, use Wrangler v4 command shapes recorded in
   `docs/wrangler-d1-audit-2026-06-12.md`.
 
@@ -376,6 +414,7 @@ Current handoff files:
 
 - `docs/DOCS_INDEX.md`
 - `docs/HANDOFF.md`
+- `docs/gemini-masterplan-handoff-2026-06-13.md`
 - `CLAUDE.md`
 
 Pause acceptance:
