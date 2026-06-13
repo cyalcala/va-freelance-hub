@@ -12,7 +12,7 @@ Astro.response.headers.set(
 );
 
 let stats = { opportunities: 0, companies: 0 };
-let latestOpportunities = [];
+let latestOpportunities: any[] = [];
 
 try {
   const db = getDb(Astro.locals.runtime.env);
@@ -22,8 +22,24 @@ try {
   
   stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
   
+  // Only select the fields used by OpportunityCard and OpportunitySearch
+  // to keep the hydration payload small. Excludes description (~1500 chars
+  // per row), contentHash, descriptionHash, applicationUrl, scrapedAt,
+  // lastSeenInFeedAt, lastVerifiedAt, updatedAt, failedVerificationCount,
+  // clickCount, isActive, clientTimezone, locationType, and payRange.
   latestOpportunities = await db
-    .select()
+    .select({
+      id: opportunities.id,
+      title: opportunities.title,
+      company: opportunities.company,
+      type: opportunities.type,
+      sourceUrl: opportunities.sourceUrl,
+      sourcePlatform: opportunities.sourcePlatform,
+      tags: opportunities.tags,
+      category: opportunities.category,
+      experienceLevel: opportunities.experienceLevel,
+      postedAt: opportunities.postedAt,
+    })
     .from(opportunities)
     .where(eq(opportunities.isActive, true))
     .orderBy(desc(opportunities.postedAt))

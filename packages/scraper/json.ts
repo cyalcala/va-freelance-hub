@@ -25,7 +25,7 @@ function decodeHtmlEntities(raw: string): string {
     .replace(/&nbsp;/g, " ");
 }
 
-function normalizeText(raw: unknown): string {
+export function normalizeText(raw: unknown): string {
   if (typeof raw !== "string") return "";
   return decodeHtmlEntities(raw)
     .replace(/<br\s*\/?>/gi, " ")
@@ -41,7 +41,7 @@ function normalizeDate(rawDate: unknown): string | null {
   return parsed.toISOString();
 }
 
-function normalizeRemoteOkUrl(rawUrl: unknown): string | null {
+export function normalizeRemoteOkUrl(rawUrl: unknown): string | null {
   if (typeof rawUrl !== "string" || !rawUrl.trim()) return null;
   try {
     const url = new URL(rawUrl.trim());
@@ -54,7 +54,7 @@ function normalizeRemoteOkUrl(rawUrl: unknown): string | null {
   }
 }
 
-function normalizePayRange(min: unknown, max: unknown): string | null {
+export function normalizePayRange(min: unknown, max: unknown): string | null {
   const minSalary = typeof min === "number" ? min : 0;
   const maxSalary = typeof max === "number" ? max : 0;
   if (minSalary <= 0 && maxSalary <= 0) return null;
@@ -82,20 +82,20 @@ function isRemoteOkJob(value: unknown): value is RemoteOkJob {
   return Boolean(job.position && (job.url || job.apply_url));
 }
 
-function isLikelyPlaceholderTitle(title: string): boolean {
+export function isLikelyPlaceholderTitle(title: string): boolean {
   const normalized = title.toLowerCase().trim();
   if (!normalized) return true;
   if (["test", "sdf", "asdffd", "sadfsdf", "sdsfda"].includes(normalized)) return true;
   return false;
 }
 
-const HUB_RELEVANT_ROLE_REGEX =
+export const HUB_RELEVANT_ROLE_REGEX =
   /\b(admin|assistant|virtual assistant|customer|support|success|marketing|sales|seo|content|writer|copywriter|editor|designer|design|developer|engineer|software|data|analyst|bookkeeper|accounting|finance|operations|recruiter|hr|project manager|product manager|qa|tester|testing|e-?commerce|shopify|community|technical|devops|it support)\b/i;
 
-const PHYSICAL_OR_LOGISTICS_ROLE_REGEX =
+export const PHYSICAL_OR_LOGISTICS_ROLE_REGEX =
   /\b(courier|mail carrier|driver|delivery|warehouse|forklift|photographer|civil engineer|logistics|fulfillment operations)\b/i;
 
-function isRelevantForHub(title: string, description: string): boolean {
+export function isRelevantForHub(title: string, description: string): boolean {
   const searchableText = `${title} ${description.slice(0, 500)}`;
   return HUB_RELEVANT_ROLE_REGEX.test(searchableText) && !PHYSICAL_OR_LOGISTICS_ROLE_REGEX.test(searchableText);
 }

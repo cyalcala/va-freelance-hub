@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getDb, vaDirectory } from '@va-hub/db';
 import { DirectorySearch } from '@/components/DirectorySearch';
+import { asc } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -10,11 +11,26 @@ Astro.response.headers.set(
   'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
 );
 
-let allAgencies = [];
+let allAgencies: any[] = [];
 
 try {
   const db = getDb(Astro.locals.runtime.env);
-  allAgencies = await db.select().from(vaDirectory);
+  // Only select the fields used by DirectorySearch/CategoryCard to keep
+  // the hydration payload small. Drops notes, hiringPageUrl, verifiedAt,
+  // createdAt, rating, atsToken, atsPlatform, and hiresFilipinos.
+  allAgencies = await db
+    .select({
+      id: vaDirectory.id,
+      companyName: vaDirectory.companyName,
+      website: vaDirectory.website,
+      niche: vaDirectory.niche,
+      isDayshift: vaDirectory.isDayshift,
+      isVerified: vaDirectory.isVerified,
+      isRemote: vaDirectory.isRemote,
+      isMarketplace: vaDirectory.isMarketplace,
+    })
+    .from(vaDirectory)
+    .orderBy(asc(vaDirectory.companyName));
 } catch (e) {
   console.error("DB error:", e);
 }
