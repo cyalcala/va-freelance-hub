@@ -45,12 +45,45 @@ const GEOGRAPHIC_EXCLUSION_REGEX = new RegExp(
   "i"
 );
 
+const LOCAL_OR_NON_ENGLISH_REGEX = new RegExp(
+  "\\b(" +
+  [
+    "m/w/d",
+    "w/m/d",
+    "m/w/x",
+    "d/m/w",
+    "h/f",
+    "werkstudent",
+    "werkstudenten",
+    "alternance",
+    "apprentissage",
+    "cdd",
+    "cdi",
+    "praktikum",
+    "praktikant",
+    "stagiaire",
+    "stellenangebot",
+    "vollzeit",
+    "teilzeit"
+  ].join("|") +
+  ")\\b",
+  "i"
+);
+
 /**
  * Perform a fast, low-cost regex/heuristic check for geo-restrictions
  */
 export function isObviousGeoRestriction(title: string, description: string): boolean {
   const content = `${title} ${description}`.toLowerCase();
   return GEOGRAPHIC_EXCLUSION_REGEX.test(content);
+}
+
+/**
+ * Perform a fast check for non-English or localized EU-only terms
+ */
+export function isObviousNonEnglishOrLocalOnly(title: string, description: string): boolean {
+  const content = `${title} ${description}`.toLowerCase();
+  return LOCAL_OR_NON_ENGLISH_REGEX.test(content);
 }
 
 /**
@@ -68,6 +101,21 @@ export async function triageJob(
     return {
       eligibleForFilipinos: false,
       reason: "Obvious geo-restriction detected by heuristic keyword filter.",
+      category: "other",
+      tags: [],
+      payRange: null,
+      clientTimezone: null,
+      applicationUrl: null,
+      employmentType: null,
+      experienceLevel: null,
+      companyName: null,
+    };
+  }
+
+  if (isObviousNonEnglishOrLocalOnly(title, cleanDescription)) {
+    return {
+      eligibleForFilipinos: false,
+      reason: "Obvious non-English or localized EU-only role (e.g. m/w/d, Werkstudent, Alternance) detected by heuristic pre-filter.",
       category: "other",
       tags: [],
       payRange: null,
@@ -131,7 +179,7 @@ ${cleanDescription}
 
 Requirements for output JSON schema:
 {
-  "eligibleForFilipinos": boolean, // Must be true unless the job specifies only US, UK, Canada, Europe, or other specific locations/citizenship exclusions. If the job is open "globally" or "worldwide" or "remote", it is true.
+  "eligibleForFilipinos": boolean, // Set to false if: 1) the job requires residency/citizenship in specific non-PH regions (like US only, Europe only), 2) the job is written in a non-English language (German, French, etc.), 3) it requires local university enrollment or national student/apprentice schemes (like German Werkstudent, French Alternance/Apprentissage), or 4) it contains localized legal gender abbreviations (like m/w/d, H/F). Otherwise, if the job is open globally, remote, or to the Philippines, set to true.
   "reason": "string", // Brief explanation of eligibility or location rules.
   "category": "admin" | "design" | "tech" | "marketing" | "customer-service" | "finance" | "other", // Classify based on these guidelines:
   // - "admin": virtual assistant, data entry, calendar/email management, HR, recruiting, executive assistant, scheduling, office operations.
