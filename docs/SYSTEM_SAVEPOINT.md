@@ -1,8 +1,8 @@
 # System Savepoint
 
-## Current Savepoint
+### Current Savepoint
 
-Date: 2026-06-12
+Date: 2026-06-13
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
@@ -35,13 +35,15 @@ Previous handoff document:
 
 Last accepted implementation commit:
 
-- `4c2374b` - `fix: filter remote ok physical roles`
+- `8d499df` - `feat: reduce payload size by slimming DB projections, add Remote OK unit tests`
 - Supporting product commit:
+  - `4c2374b` - `fix: filter remote ok physical roles`
   - `92ca443` - `feat: add remote ok json source`
 - Generated rollup commit:
   - `562355e` - `docs: update daily source health`
 - Evidence report: `docs/remote-ok-json-source-handoff-2026-06-13.md`
 - Build: `bun run --cwd apps/web build` passed.
+- Tests: `bun test packages/scraper/json.test.ts` passed.
 - CI guardrail: `27435140046` passed for `92ca443`.
 - Production deployment: `b8b04c38-2b56-42e6-89df-2b980c6a6266`.
 - D1 migration workflow: `27435636177` passed for

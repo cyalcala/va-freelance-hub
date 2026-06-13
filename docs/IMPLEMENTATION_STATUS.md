@@ -44,6 +44,22 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-09 - Payload Reduction & Remote OK Tests
+
+- Date: 2026-06-13
+- Status: accepted after local build, Bun test runner verification, git commit/push, and manual D1 database query plan checks
+- Product commit:
+  - `8d499df` - `feat: reduce payload size by slimming DB projections, add Remote OK unit tests`
+- Scope:
+  - Slimmed DB projections for homepage `/` (from 22 columns to 10 fields used by `OpportunityCard`/`OpportunitySearch`). This reduces payload size by omitting heavy columns like `description`, `contentHash`, etc.
+  - Slimmed DB projections for directory page `/directory` (from all columns to 8 fields used by `DirectorySearch`/`CategoryCard`), reducing payload size by dropping `notes`, `hiringPageUrl`, `verifiedAt`, `createdAt`, `rating`, `atsToken`, `atsPlatform`.
+  - Added comprehensive unit tests for the Remote OK JSON scraper in `packages/scraper/json.test.ts` verifying placeholder title detection, role regex filters, hub-relevance rules, URL normalization, HTML entity decoding, and pay range normalization.
+  - Investigated the zero-count successful source signal (`breezy:vaaphilippines-recruitment` returning 0 jobs successfully) and confirmed no references to `echojobs` or `dynamite-jobs` exist in the codebase except for the "Dynamite Jobs" directory entry.
+- Verification:
+  - `bun test packages/scraper/json.test.ts` passed (54/54 tests passing);
+  - `bun run --cwd apps/web build` completed successfully;
+  - `git diff --check` passed.
+
 ### Post-Audit F-08 - Remote OK JSON Source
 
 - Date: 2026-06-13
