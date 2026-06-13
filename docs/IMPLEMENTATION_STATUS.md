@@ -52,6 +52,23 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-11 - Source-Health History
+
+- Date: 2026-06-13
+- Status: accepted after local build, Bun test runner verification, git commit/push, and Wrangler D1 local/remote migrations
+- Product commit:
+  - `2b91c68` - `feat: add compact source-health history logs, database schema and migration`
+- Scope:
+  - Added the `source_fetch_events` table in the database to record historical logs for each scraper cron attempt (timestamp, ok/skipped, counts, duration, error, skip reason).
+  - Wrote SQL migration `0016_source_fetch_events.sql` and applied it to local and remote D1 databases.
+  - Implemented the `recordSourceFetchEvents` helper in `scrape.ts` that maps and inserts scraper run metrics in a single database batch transaction.
+  - Created `docs/source-health-audit.md` documenting key database queries for auditing scraper trends, latencies, success rates, and errors.
+- Verification:
+  - `bun test` passed (54/54 tests);
+  - `bun run --cwd apps/web build` passed;
+  - `bunx wrangler d1 migrations apply remoteph-jobs-db --local` & `--remote` executed successfully;
+  - `git diff --check` passed.
+
 ### Post-QA F-10 - Gemini Masterplan And CI Test Guardrail
 
 - Date: 2026-06-13

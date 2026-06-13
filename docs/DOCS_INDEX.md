@@ -59,6 +59,10 @@ Read these in order:
 ## Agent Entry Points
 
 - `AGENTS.md` is the main cross-agent instruction file.
+
+## Agent Entry Points
+
+- `AGENTS.md` is the main cross-agent instruction file.
 - `CLAUDE.md` is a pointer back to the canonical recovery trail.
 - Future agent-specific files should point back here instead of duplicating
   architecture details.
@@ -68,6 +72,7 @@ Read these in order:
 - `docs/scraper-alerts.md` records historical source failure commits. P6 Slice
   1 stopped new per-run alert commits; use Hunter artifacts for current per-run
   evidence until the repo-readable rollup lands.
+- `docs/source-health-audit.md` contains operational SQL queries for auditing recent scraper trends, latencies, success rates, and errors.
 - `docs/source-review-2026-06-09.md` records the current RSS/HTML source
   compliance and usefulness review behind P4 Slice 2.
 - `docs/ats-source-review-2026-06-09.md` records the ATS duplicate-token and

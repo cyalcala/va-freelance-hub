@@ -1,14 +1,18 @@
 # Handoff
 
-## Current State
+### Current State
 
 Date: 2026-06-13
-Status: Stopped by user request after Codex QA and Gemini-ready masterplan
-handoff
-Overall accepted completion: 100%
+Status: Workstream 1 (Source-health history) completed; ready for Workstream 2 (Breezy source review).
+Overall accepted completion: 100% of Workstream 1.
 Active branch: `main`
 
 Latest stop-point handoff:
+
+- `docs/source-health-audit.md` (Commit: `2b91c68`)
+- Purpose: records the completed Workstream 1 (Source-Health History), creating the `source_fetch_events` table to log each scraper attempt in a single batch D1 write, applying migrations locally and remotely, and providing query logs for auditing.
+
+Previous stop-point handoff:
 
 - `docs/gemini-masterplan-handoff-2026-06-13.md`
 - Purpose: records the current verified baseline after Gemini's payload/test

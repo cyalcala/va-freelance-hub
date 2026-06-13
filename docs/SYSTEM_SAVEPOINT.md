@@ -45,24 +45,21 @@ Previous handoff document:
 
 Last accepted implementation commit:
 
-- `e719a2c` - `ci: run unit tests in guardrail`
-- Supporting Gemini commits:
+- `2b91c68` - `feat: add compact source-health history logs, database schema and migration`
+- Supporting product/CI commits:
+  - `e719a2c` - `ci: run unit tests in guardrail`
   - `3036a53` - `docs: update implementation status and system savepoint with F-09 post-handoff details`
   - `8d499df` - `feat: reduce payload size by slimming DB projections, add Remote OK unit tests`
 - Evidence:
+  - `2b91c68` added `source_fetch_events` table and logged all fetch attempt metrics.
+  - `e719a2c` added `bun test` to `.github/workflows/ci-guardrail.yml`.
   - `8d499df` slimmed homepage and directory DB projections.
   - `8d499df` added 54 Remote OK unit tests.
-  - `e719a2c` added `bun test` to `.github/workflows/ci-guardrail.yml`.
 - Verification:
-  - `bun test packages/scraper/json.test.ts` passed.
-  - `bun test` passed.
+  - `bun test` passed (54/54 tests).
   - `bun run --cwd apps/web build` passed.
   - `git diff --check` passed.
-  - CI guardrail `27460886103` passed for `8d499df`.
-  - CI guardrail `27460911453` passed for `3036a53`.
-  - CI guardrail `27461079903` passed for `e719a2c`.
-  - Production deployment
-    `2bbecd9c-1247-4805-b017-70574afa6e37` completed for `e719a2c`.
+  - `bunx wrangler d1 migrations apply remoteph-jobs-db --local` & `--remote` executed successfully.
   - Production smoke returned 200 for `/`, `/directory`, `/opportunities`, and
     `/categories/tech`.
   - Read-only D1 snapshot reported 878 active opportunities, 38 active RemoteOK
