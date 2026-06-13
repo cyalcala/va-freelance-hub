@@ -74,7 +74,9 @@ export const vaDirectory = sqliteTable("va_directory", {
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),
-});
+}, (table) => ({
+  companyNameIdx: index("company_name_idx").on(table.companyName),
+}));
 
 // ─── Content Digests ──────────────────────────────────────────────────────────
 // Phase 2: AI-summarized action plans from YouTube influencer content

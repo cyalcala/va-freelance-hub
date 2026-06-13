@@ -52,6 +52,21 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-14 - Query and Indexing Audit
+
+- Date: 2026-06-13
+- Status: accepted after running query plans, adding database migration, and verifying index utilization
+- Scope:
+  - Audited hot queries on homepage, opportunities filters, and directory pages.
+  - Added `company_name_idx` on `va_directory(company_name)` to eliminate a `SCAN va_directory` + `USE TEMP B-TREE FOR ORDER BY` sorting overhead on the directory page.
+  - Verified that query plan for `va_directory` now successfully uses the index: `SCAN va_directory USING INDEX company_name_idx`.
+  - Documented findings and plans in `docs/query-indexing-audit-2026-06-13.md`.
+- Verification:
+  - `bun test` passed (54/54 tests);
+  - `bun run --cwd apps/web build` passed;
+  - Local and remote D1 migrations applied cleanly;
+  - Query plan verified using `EXPLAIN QUERY PLAN`.
+
 ### Post-Handoff F-13 - Data Quality and Stale Policy Refresh
 
 - Date: 2026-06-13

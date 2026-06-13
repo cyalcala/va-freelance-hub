@@ -45,8 +45,9 @@ Previous handoff document:
 
 Last accepted implementation commit:
 
-- `0f522fe` - `feat: complete data quality snapshot and stale policy pruning for 2026-06-13`
+- `0ac3907` - `feat: optimize directory query with company name index, run audit for 2026-06-13`
 - Supporting product/CI commits:
+  - `0f522fe` - `feat: complete data quality snapshot and stale policy pruning for 2026-06-13`
   - `020ba7d` - `docs: add breezy source review findings`
   - `2b91c68` - `feat: add compact source-health history logs, database schema and migration`
   - `e719a2c` - `ci: run unit tests in guardrail`
