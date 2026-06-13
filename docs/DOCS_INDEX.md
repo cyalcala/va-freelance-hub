@@ -73,6 +73,9 @@ Read these in order:
   1 stopped new per-run alert commits; use Hunter artifacts for current per-run
   evidence until the repo-readable rollup lands.
 - `docs/source-health-audit.md` contains operational SQL queries for auditing recent scraper trends, latencies, success rates, and errors.
+- `docs/breezy-source-review-2026-06-13.md` contains the fresh compliance and operational review of currently configured Breezy ATS subdomains.
+- `docs/data-quality-snapshot-2026-06-13.md` contains the active opportunities data quality snapshot.
+- `docs/stale-policy-report-2026-06-13.md` contains the stale policy report and pruning logs.
 - `docs/source-review-2026-06-09.md` records the current RSS/HTML source
   compliance and usefulness review behind P4 Slice 2.
 - `docs/ats-source-review-2026-06-09.md` records the ATS duplicate-token and

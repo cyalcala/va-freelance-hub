@@ -45,12 +45,15 @@ Previous handoff document:
 
 Last accepted implementation commit:
 
-- `2b91c68` - `feat: add compact source-health history logs, database schema and migration`
+- `0f522fe` - `feat: complete data quality snapshot and stale policy pruning for 2026-06-13`
 - Supporting product/CI commits:
+  - `020ba7d` - `docs: add breezy source review findings`
+  - `2b91c68` - `feat: add compact source-health history logs, database schema and migration`
   - `e719a2c` - `ci: run unit tests in guardrail`
   - `3036a53` - `docs: update implementation status and system savepoint with F-09 post-handoff details`
   - `8d499df` - `feat: reduce payload size by slimming DB projections, add Remote OK unit tests`
 - Evidence:
+  - `020ba7d` documented compliance and operational findings for 20Four7VA, Sourcefit, VAA Philippines.
   - `2b91c68` added `source_fetch_events` table and logged all fetch attempt metrics.
   - `e719a2c` added `bun test` to `.github/workflows/ci-guardrail.yml`.
   - `8d499df` slimmed homepage and directory DB projections.

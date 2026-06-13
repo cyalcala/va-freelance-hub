@@ -52,6 +52,37 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-13 - Data Quality and Stale Policy Refresh
+
+- Date: 2026-06-13
+- Status: accepted after running SQL audit queries, deactivating stale rows from paused sources, deduplicating description hashes, and documentation updates
+- Scope:
+  - Ran a fresh read-only D1 snapshot of active opportunities, duplicate url/content/description hashes, and missing fields.
+  - Found that the `other` category has been significantly reduced to 14.48% (down from 77.3% on June 9), showing excellent triage improvement.
+  - Deactivated 10 stale active opportunities from paused sources (Dribbble, Pearl Talent, Coconut VA, CrewBloom) that had no `last_seen_in_feed_at` timestamp and were scraped more than 14 days ago.
+  - Deduplicated 2 pairs (4 rows) of active opportunities from Passion.io via RealWorkFromAnywhere with identical title/company/description hashes by deactivating the older scraped row.
+  - Documented findings, SQL queries, and before/after counts in `docs/data-quality-snapshot-2026-06-13.md` and `docs/stale-policy-report-2026-06-13.md`.
+- Verification:
+  - `bun test` passed (54/54 tests);
+  - Remote D1 count queries confirmed active job count decreased from 884 to 872;
+  - `git diff --check` passed.
+
+### Post-Handoff F-12 - Breezy Source Review
+
+- Date: 2026-06-13
+- Status: accepted after fresh endpoint probing, robots.txt compliance analysis, and documentation updates
+- Product commit:
+  - `020ba7d` - `docs: add breezy source review findings`
+- Scope:
+  - Re-probed all configured Breezy ATS endpoints (`20Four7VA` returning 60 jobs, `Sourcefit` returning 65 jobs, and `VAA Philippines` returning 0 jobs).
+  - Audited standard `robots.txt` rules for Breezy subdomains and confirmed automated access to the `/json` feed path is allowed.
+  - Formulated the compliance decision to maintain these subdomains in `needs_review` status to enforce Goldilocks safety constraints (minimal metadata, direct apply links, immediate pause on objection).
+  - Documented findings, probe counts, duplicate skip rules, and the policy decision in `docs/breezy-source-review-2026-06-13.md`.
+- Verification:
+  - `bun test` passed (54/54 tests);
+  - `bun run --cwd apps/web build` completed successfully;
+  - `git diff --check` passed.
+
 ### Post-Handoff F-11 - Source-Health History
 
 - Date: 2026-06-13
