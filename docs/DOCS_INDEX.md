@@ -77,6 +77,7 @@ Read these in order:
 - `docs/data-quality-snapshot-2026-06-13.md` contains the active opportunities data quality snapshot.
 - `docs/stale-policy-report-2026-06-13.md` contains the stale policy report and pruning logs.
 - `docs/query-indexing-audit-2026-06-13.md` contains the query performance audit and index optimization results.
+- `docs/source-expansion-2026-06-13.md` contains the details of the Jobicy Customer Support APAC source expansion.
 - `docs/source-review-2026-06-09.md` records the current RSS/HTML source
   compliance and usefulness review behind P4 Slice 2.
 - `docs/ats-source-review-2026-06-09.md` records the ATS duplicate-token and

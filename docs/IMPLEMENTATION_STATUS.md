@@ -52,6 +52,21 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-15 - Bounded Source Expansion
+
+- Date: 2026-06-13
+- Status: accepted after evaluating, compliance-auditing, and local probing of the new Jobicy Customer Support APAC RSS feed
+- Scope:
+  - Added `jobicy-supporting-apac` source feed targeting the `supporting` (customer support) category for the `apac` region.
+  - Implemented Goldilocks compliance limits (`maxItems: 40`, `minFetchIntervalMinutes: 60`) in `packages/scraper/sources.ts`.
+  - Audited robots.txt and `<legalNotice>` feed parameters to ensure compliance.
+  - Probed feed locally and verified successful retrieval of 26 relevant jobs (e.g. Technical Customer Support Specialist, Customer Care Specialist).
+  - Documented findings in `docs/source-expansion-2026-06-13.md`.
+- Verification:
+  - `bun test` passed (54/54 tests);
+  - `bun run --cwd apps/web build` passed;
+  - Local script successfully executed feed parsing.
+
 ### Post-Handoff F-14 - Query and Indexing Audit
 
 - Date: 2026-06-13
