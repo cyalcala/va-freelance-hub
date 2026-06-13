@@ -52,6 +52,19 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-16 - Non-English and Local European Pre-Filter
+
+- Date: 2026-06-13
+- Status: accepted after adding regex pre-filters for non-English languages and localized student/apprentice schemes, and adding unit tests
+- Scope:
+  - Addressed the issue where German job listings (like "Werkstudent (m/w/d) SAP-Consulting im Kundenservice") were incorrectly ingested.
+  - Implemented `LOCAL_OR_NON_ENGLISH_REGEX` pre-filter matching localized gender classifications (e.g., m/w/d, H/F) and local university/national programs (e.g., German Werkstudent, French Alternance/Apprentissage).
+  - Updated LLM triage prompt to explicitly instruct the AI model to mark non-English listings and regional student/apprentice programs as ineligible.
+  - Added comprehensive unit tests in `packages/scraper/triage.test.ts`.
+- Verification:
+  - `bun test` passed (61/61 tests);
+  - `bun run --cwd apps/web build` passed.
+
 ### Post-Handoff F-15 - Bounded Source Expansion
 
 - Date: 2026-06-13

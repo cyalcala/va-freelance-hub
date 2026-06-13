@@ -45,8 +45,9 @@ Previous handoff document:
 
 Last accepted implementation commit:
 
-- `0ebaa67` - `docs: finalize README and handoff docs for Masterplan completion`
+- `f9f9a43` - `fix: pre-filter obvious non-English and local European roles during triage`
 - Supporting product/CI commits:
+  - `b360d29` - `docs: finalize README and handoff docs for Masterplan completion`
   - `70ff8cf` - `feat: add Jobicy Customer Support APAC RSS source feed`
   - `0ac3907` - `feat: optimize directory query with company name index, run audit for 2026-06-13`
   - `0f522fe` - `feat: complete data quality snapshot and stale policy pruning for 2026-06-13`
