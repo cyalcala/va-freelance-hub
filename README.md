@@ -57,18 +57,18 @@ The recovery-driven roadmap is documented in:
 - `docs/AI_RECOVERY_TRAIL.md`
 - `docs/SYSTEM_SAVEPOINT.md`
 - `docs/DOCS_INDEX.md`
-- `docs/major-audit-2026-06-06.md`
+- `docs/gemini-masterplan-handoff-2026-06-13.md`
 
-As of the final June 9, 2026 checkpoint, the project has:
+As of the latest June 13, 2026 checkpoint, the project has:
 
 - a working `/opportunities` route;
-- a reduced homepage payload;
-- query-aligned D1 indexes;
+- a reduced homepage payload (roughly 130 KB);
+- query-aligned D1 indexes, including optimized directory page indexing (`company_name_idx`);
 - normalized app-owned timestamps;
-- source-level Hunter health reporting;
+- source-level Hunter health reporting and scraper attempt metrics logging (`source_fetch_events`);
 - paused high-risk or unproductive sources;
-- populated `application_url` for active rows;
-- a guarded source-health rollup in `docs/source-health-latest.md`.
+- a cleaned database, with stale paused source rows and duplicate listings archived;
+- a new allowed source feed (`jobicy-supporting-apac`) successfully integrated.
 
 ## Architecture
 

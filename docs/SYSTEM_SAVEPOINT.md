@@ -45,8 +45,9 @@ Previous handoff document:
 
 Last accepted implementation commit:
 
-- `e0c71b0` - `feat: add Jobicy Customer Support APAC RSS source feed`
+- `0ebaa67` - `docs: finalize README and handoff docs for Masterplan completion`
 - Supporting product/CI commits:
+  - `70ff8cf` - `feat: add Jobicy Customer Support APAC RSS source feed`
   - `0ac3907` - `feat: optimize directory query with company name index, run audit for 2026-06-13`
   - `0f522fe` - `feat: complete data quality snapshot and stale policy pruning for 2026-06-13`
   - `020ba7d` - `docs: add breezy source review findings`

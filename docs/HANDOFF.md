@@ -3,26 +3,30 @@
 ### Current State
 
 Date: 2026-06-13
-Status: Workstream 1 (Source-health history) completed; ready for Workstream 2 (Breezy source review).
-Overall accepted completion: 100% of Workstream 1.
+Status: All 6 workstreams of the Gemini Masterplan completed successfully.
+Overall accepted completion: 100% of Masterplan.
 Active branch: `main`
 
-Latest stop-point handoff:
+Latest stop-point handoffs:
 
+- `docs/source-expansion-2026-06-13.md` (Commit: `70ff8cf`)
+  - Purpose: records the completed Workstream 5 (Bounded Source Expansion), adding the `jobicy-supporting-apac` RSS feed with appropriate caps and cadence.
+- `docs/query-indexing-audit-2026-06-13.md` (Commit: `80f2075`)
+  - Purpose: records the completed Workstream 4 (Query and Indexing Audit), adding the `company_name_idx` index to `va_directory` to eliminate sorting overhead.
+- `docs/stale-policy-report-2026-06-13.md` & `docs/data-quality-snapshot-2026-06-13.md` (Commit: `fe57510`)
+  - Purpose: records the completed Workstream 3 (Data Quality & Stale Policy), archiving 12 stale/duplicate opportunities in D1.
+- `docs/breezy-source-review-2026-06-13.md` (Commit: `020ba7d`)
+  - Purpose: records the completed Workstream 2 (Breezy Source Review), auditing robots.txt and compliance notes.
 - `docs/source-health-audit.md` (Commit: `2b91c68`)
-- Purpose: records the completed Workstream 1 (Source-Health History), creating the `source_fetch_events` table to log each scraper attempt in a single batch D1 write, applying migrations locally and remotely, and providing query logs for auditing.
+  - Purpose: records the completed Workstream 1 (Source-Health History), logging scraper attempts to `source_fetch_events`.
 
 Previous stop-point handoff:
 
 - `docs/gemini-masterplan-handoff-2026-06-13.md`
-- Purpose: records the current verified baseline after Gemini's payload/test
-  work and Codex's CI guardrail QA, then gives Gemini an ordered masterplan for
-  source-health history, Breezy review, data-quality refresh, query/index
-  audit, bounded source expansion, and portfolio polish.
-- Important state: current real checkpoint before this docs update is
-  `e719a2c` (`ci: run unit tests in guardrail`). CI guardrail `27461079903`
-  passed, and Cloudflare production deployment
-  `2bbecd9c-1247-4805-b017-70574afa6e37` deployed it.
+  - Purpose: records the current verified baseline after Gemini's payload/test
+    work and Codex's CI guardrail QA, then gives Gemini an ordered masterplan for
+    source-health history, Breezy review, data-quality refresh, query/index
+    audit, bounded source expansion, and portfolio polish.
 
 Previous stop-point handoff:
 
