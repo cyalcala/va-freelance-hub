@@ -25,6 +25,9 @@ jobs:
       - name: 📦 Install Dependencies
         run: bun install
 
+      - name: 🧪 Run Unit Tests
+        run: bun test
+
       - name: 🏗️ Build App (Astro check + build)
         run: bun run build
 
