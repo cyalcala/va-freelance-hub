@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { getDb, opportunities, sourceFetchState, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
+import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
 import { isNotNull, and, inArray, eq } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
@@ -320,6 +320,36 @@ async function recordSourceFetchState(
   }
 }
 
+async function recordSourceFetchEvents(
+  db: AppDb,
+  results: any[],
+  observedAt: string
+): Promise<void> {
+  const events = results.map(r => ({
+    sourceId: r.sourceId ?? r.sourceName,
+    sourceName: r.sourceName,
+    sourceType: r.sourceType,
+    collectionMethod: r.collectionMethod,
+    complianceStatus: r.complianceStatus,
+    timestamp: observedAt,
+    ok: r.ok ?? false,
+    skipped: r.skipped ?? false,
+    count: r.count ?? 0,
+    durationMs: r.durationMs ?? 0,
+    error: r.error ?? null,
+    skipReason: r.skipReason ?? null,
+  }));
+
+  if (events.length === 0) return;
+
+  try {
+    await db.insert(sourceFetchEvents).values(events);
+    console.log(`[api/cron/scrape] Recorded ${events.length} source fetch events in history.`);
+  } catch (error) {
+    console.warn(`[api/cron/scrape] Failed to record source fetch events:`, errorMessage(error));
+  }
+}
+
 async function fetchConfiguredSourceWithStatus(
   db: AppDb,
   source: Source,
@@ -510,6 +540,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       ...duplicateAtsAgencies.map(skippedDuplicateAtsResult),
     ];
     const sourceResults = [...rssResults, ...htmlResults, ...jsonResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
+    await recordSourceFetchEvents(db, sourceResults, observedAt);
     const failedSources = sourceResults
       .filter((result) => !result.ok)
       .map((result) => `${result.sourceName} (${result.sourceType}): ${result.error}`);

@@ -110,6 +110,26 @@ export const sourceFetchState = sqliteTable("source_fetch_state", {
   lastAttemptIdx: index("source_fetch_state_last_attempt_idx").on(table.lastAttemptAt),
 }));
 
+// Source fetch events logs each fetch attempt for monitoring and trend analysis.
+export const sourceFetchEvents = sqliteTable("source_fetch_events", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceId: text("source_id").notNull(),
+  sourceName: text("source_name").notNull(),
+  sourceType: text("source_type").notNull(),
+  collectionMethod: text("collection_method").notNull(),
+  complianceStatus: text("compliance_status").notNull(),
+  timestamp: text("timestamp").notNull(),
+  ok: integer("ok", { mode: "boolean" }).notNull(),
+  skipped: integer("skipped", { mode: "boolean" }).notNull(),
+  count: integer("count").notNull().default(0),
+  durationMs: integer("duration_ms").notNull().default(0),
+  error: text("error"),
+  skipReason: text("skip_reason"),
+}, (table) => ({
+  sourceIdIdx: index("source_fetch_events_source_id_idx").on(table.sourceId),
+  timestampIdx: index("source_fetch_events_timestamp_idx").on(table.timestamp),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Opportunity = typeof opportunities.$inferSelect;
@@ -120,3 +140,5 @@ export type ContentDigest = typeof contentDigests.$inferSelect;
 export type NewContentDigest = typeof contentDigests.$inferInsert;
 export type SourceFetchState = typeof sourceFetchState.$inferSelect;
 export type NewSourceFetchState = typeof sourceFetchState.$inferInsert;
+export type SourceFetchEvent = typeof sourceFetchEvents.$inferSelect;
+export type NewSourceFetchEvent = typeof sourceFetchEvents.$inferInsert;
