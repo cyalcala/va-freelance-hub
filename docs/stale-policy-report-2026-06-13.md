@@ -31,18 +31,32 @@ These rows represent duplicate postings from Passion.io via RealWorkFromAnywhere
 - **ID 2246** (duplicate of 2325): "Creator Success Manager (Business & Monetisation)..." (RealWorkFromAnywhere)
 - **ID 2249** (duplicate of 2326): "Technical Customer Success Manager (Creator Economy)..." (RealWorkFromAnywhere)
 
-## Mutation Command
+### 3. User-Requested Non-English/Local Row Archival (1 row)
 
-The following SQL update statement was executed against `remoteph-jobs-db` to archive these 12 rows:
+This listing was identified as a German-localized student trainee role with no eligibility or readability for Filipino freelancers:
 
+- **ID 2281**: "Werkstudent (m/w/d) SAP-Consulting im Kundenservice" (WeWorkRemotely)
+
+## Mutation Commands
+
+The following SQL update statements were executed against `remoteph-jobs-db` to archive these 13 rows:
+
+1. **Stale/Duplicate Batch Cleanup**:
 ```sql
 UPDATE opportunities
 SET is_active = 0, updated_at = '2026-06-13T08:31:00.000Z'
 WHERE id IN (1411, 1452, 1454, 1455, 1458, 1460, 1692, 1707, 1718, 1720, 2246, 2249);
 ```
 
+2. **User-Requested Manual Deactivation**:
+```sql
+UPDATE opportunities
+SET is_active = 0, updated_at = datetime('now')
+WHERE id = 2281;
+```
+
 ## Before/After Counts
 
 - **Before Active Count**: 884
-- **Archived Count**: 12
-- **After Active Count**: 872
+- **Archived Count**: 13
+- **After Active Count**: 871

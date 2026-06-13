@@ -58,12 +58,14 @@ Current accepted completion: 100% of Lens 2.
 - Status: accepted after adding regex pre-filters for non-English languages and localized student/apprentice schemes, and adding unit tests
 - Scope:
   - Addressed the issue where German job listings (like "Werkstudent (m/w/d) SAP-Consulting im Kundenservice") were incorrectly ingested.
-  - Implemented `LOCAL_OR_NON_ENGLISH_REGEX` pre-filter matching localized gender classifications (e.g., m/w/d, H/F) and local university/national programs (e.g., German Werkstudent, French Alternance/Apprentissage).
+  - Implemented `LOCAL_OR_NON_ENGLISH_REGEX` pre-filter matching localized gender classifications (e.g., m/w/d, w/m/d) and local university/national programs (e.g., German Werkstudent, French Alternance/Apprentissage).
   - Updated LLM triage prompt to explicitly instruct the AI model to mark non-English listings and regional student/apprentice programs as ineligible.
   - Added comprehensive unit tests in `packages/scraper/triage.test.ts`.
+  - Manually deactivated/archived the active German job listing (ID 2281) in the remote D1 database to immediately remove it from the website.
 - Verification:
   - `bun test` passed (61/61 tests);
-  - `bun run --cwd apps/web build` passed.
+  - `bun run --cwd apps/web build` passed;
+  - Verified remote D1 database opportunity ID 2281 is successfully set to `is_active = 0`.
 
 ### Post-Handoff F-15 - Bounded Source Expansion
 
@@ -107,7 +109,7 @@ Current accepted completion: 100% of Lens 2.
   - Documented findings, SQL queries, and before/after counts in `docs/data-quality-snapshot-2026-06-13.md` and `docs/stale-policy-report-2026-06-13.md`.
 - Verification:
   - `bun test` passed (54/54 tests);
-  - Remote D1 count queries confirmed active job count decreased from 884 to 872;
+  - Remote D1 count queries confirmed active job count decreased from 884 to 871 (after deactivating stale/duplicate listings and the German job);
   - `git diff --check` passed.
 
 ### Post-Handoff F-12 - Breezy Source Review
