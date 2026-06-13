@@ -6,7 +6,15 @@ Date: 2026-06-12
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
-Latest source-expansion evidence:
+Latest stop-point handoff:
+
+- `docs/remote-ok-json-source-handoff-2026-06-13.md`
+- Captures the accepted Remote OK JSON adapter, direct-link compliance posture,
+  source-specific quality filter, cleanup migration, workflow evidence, and
+  production D1 snapshot.
+- User asked to stop feature work and let another AI take over.
+
+Previous source-expansion evidence:
 
 - `docs/source-expansion-2026-06-12.md`
 - Captures the accepted bounded RSS source expansion, source fetch caps,
@@ -26,6 +34,33 @@ Previous handoff document:
   are enabled with caps and cadence; Remote OK still requires a JSON adapter.
 
 Last accepted implementation commit:
+
+- `4c2374b` - `fix: filter remote ok physical roles`
+- Supporting product commit:
+  - `92ca443` - `feat: add remote ok json source`
+- Generated rollup commit:
+  - `562355e` - `docs: update daily source health`
+- Evidence report: `docs/remote-ok-json-source-handoff-2026-06-13.md`
+- Build: `bun run --cwd apps/web build` passed.
+- CI guardrail: `27435140046` passed for `92ca443`.
+- Production deployment: `b8b04c38-2b56-42e6-89df-2b980c6a6266`.
+- D1 migration workflow: `27435636177` passed for
+  `0015_remote_ok_quality_filter.sql`.
+- Hunter evidence:
+  - manual Hunter `27435248150` passed with Remote OK JSON count 33 in the
+    first loop, 25 accepted/attempted inserts total, 0 failed sources, 0 failed
+    insert batches, and 0 insert errors;
+  - source-health rollup `27450540244` passed and refreshed
+    `docs/source-health-latest.md`;
+  - later scheduled Hunter `27457196402` passed on `562355e`.
+- Read-only D1:
+  - 878 active opportunities;
+  - 38 active RemoteOK rows;
+  - 4 inactive RemoteOK cleanup rows;
+  - 0 active RemoteOK physical/logistics outliers;
+  - `source_fetch_state.remote-ok` has last count 26 and no last error.
+
+Previous accepted implementation commit:
 
 - `b948828` - `fix: preserve paused source skip reasons`
 - Supporting product commit:
@@ -317,17 +352,21 @@ Current accepted work:
 - Add capped/cadence-guarded RSS ingestion for Real Work From Anywhere and
   Jobicy Admin Support APAC, backed by D1 source fetch state and Hunter rollup
   evidence.
+- Add Remote OK through the public JSON API, direct-link Remote OK cards, filter
+  physical/logistics outliers, and archive the initial bad RemoteOK rows.
 - Accepted completion: 100%.
 
 Next pending work:
 
 - Optional future roadmap only. No required recovery-roadmap work remains.
-- Continue optional source policy, data quality, reporting, and source-expansion
-  hardening from `docs/source-expansion-2026-06-12.md`.
+- User requested a stop. Continue optional source policy, data quality,
+  reporting, and source-expansion hardening from
+  `docs/remote-ok-json-source-handoff-2026-06-13.md`.
 - Next source-policy target: finish source-specific terms review for current
   Breezy-backed sources and decide whether they should remain `needs_review`,
   become `allowed`, or be paused.
-- Next source-expansion target: add a JSON adapter before considering Remote OK.
+- Next source-expansion target: wait for at least one more healthy Remote OK
+  rollup day before adding more sources.
 - For local D1 audits, use Wrangler v4 command shapes recorded in
   `docs/wrangler-d1-audit-2026-06-12.md`.
 

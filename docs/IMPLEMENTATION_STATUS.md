@@ -24,11 +24,11 @@ current Cloudflare Pages config. The latest ATS follow-up pauses unreviewed or
 noisy ATS platforms by default, requires token-specific review for Breezy, and
 refreshed the source-health rollup.
 
-The latest user-requested source-expansion slice is accepted in
-`docs/source-expansion-2026-06-12.md`. It implements the first Goldilocks
-source-expansion step: capped RSS ingestion, durable source cadence tracking,
-two new allowed RSS sources, source-state D1 evidence, and refreshed Hunter
-rollup evidence. Remote OK remains deferred until a JSON adapter exists.
+The latest user-requested stop-point is
+`docs/remote-ok-json-source-handoff-2026-06-13.md`. It records the accepted
+Remote OK JSON ingestion slice, direct-link compliance posture, physical-role
+quality filter, cleanup migration, workflow evidence, and production D1
+snapshot. The user asked to stop feature work and hand off to another AI.
 
 ## Overall Completion
 
@@ -43,6 +43,42 @@ Current accepted completion: 100% of Lens 2.
 | L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Post-Audit F-08 - Remote OK JSON Source
+
+- Date: 2026-06-13
+- Status: accepted and stopped after local build/probe, CI, production deploy,
+  D1 migration, Hunter evidence, source-health rollup, and read-only D1 checks
+- Evidence report: `docs/remote-ok-json-source-handoff-2026-06-13.md`
+- Product commits:
+  - `92ca443` - `feat: add remote ok json source`
+  - `4c2374b` - `fix: filter remote ok physical roles`
+- Generated rollup commit:
+  - `562355e` - `docs: update daily source health`
+- Scope:
+  - added JSON source support;
+  - enabled Remote OK through `https://remoteok.com/api`;
+  - enforced caps and 120-minute cadence;
+  - linked Remote OK cards directly to Remote OK job URLs;
+  - added source-specific relevance and physical/logistics filters;
+  - archived four already-inserted RemoteOK physical/logistics outliers.
+- Verification:
+  - `bun run --cwd apps/web build` passed;
+  - `git diff --check` passed;
+  - CI guardrail `27435140046` passed for `92ca443`;
+  - production deployment `b8b04c38-2b56-42e6-89df-2b980c6a6266` deployed
+    `92ca443`;
+  - manual Hunter `27435248150` passed with Remote OK JSON count 33 in the first
+    loop, 25 accepted/attempted inserts total, 0 failed sources, 0 failed insert
+    batches, and 0 insert errors;
+  - CI guardrail `27435636180` passed for `4c2374b`;
+  - D1 migration workflow `27435636177` passed;
+  - source-health rollup `27450540244` passed with 0 failed sources and 0 insert
+    errors;
+  - later scheduled Hunter `27457196402` passed on `562355e`;
+  - read-only D1 snapshot reported 878 active opportunities, 38 active RemoteOK
+    rows, 4 inactive RemoteOK cleanup rows, and 0 active RemoteOK
+    physical/logistics outliers.
 
 ### Post-Audit F-07 - Cadence-Guarded RSS Source Expansion
 
@@ -850,10 +886,10 @@ Current accepted completion: 100% of Lens 2.
 
 ## Next Task
 
-Optional future hardening only. Recommended next slice: follow
-`docs/source-expansion-2026-06-12.md`; add a JSON adapter before considering
-Remote OK, continue Breezy source-specific review, and add longer-retention
-source-health history only if trend reporting becomes important.
+Stopped by user request. Next AI should start from
+`docs/remote-ok-json-source-handoff-2026-06-13.md`, run
+`git status --short --branch`, and avoid adding more sources until Remote OK has
+at least one more healthy rollup day.
 
 ## Open Risks To Keep Visible
 

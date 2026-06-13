@@ -3,13 +3,22 @@
 ## Current State
 
 Date: 2026-06-12
-Status: Recovery roadmap complete; post-audit health repairs, Wrangler/D1 audit
-hardening, ATS policy hardening, Goldilocks source-expansion handoff, and first
-bounded RSS source-expansion slice complete
+Status: Stopped by user request after Remote OK JSON source slice was backed up
+and documented
 Overall accepted completion: 100%
 Active branch: `main`
 
-Latest implementation checkpoint:
+Latest stop-point handoff:
+
+- `docs/remote-ok-json-source-handoff-2026-06-13.md`
+- Purpose: records the accepted Remote OK JSON ingestion slice, source evidence,
+  direct-link compliance posture, quality filter, cleanup migration, workflow
+  evidence, production D1 snapshot, and next safe work.
+- Important state: Remote OK is enabled as a capped, cadence-guarded JSON
+  source. Physical/logistics outliers from the first run were archived by D1
+  migration `0015_remote_ok_quality_filter.sql`.
+
+Previous implementation checkpoint:
 
 - `docs/source-expansion-2026-06-12.md`
 - Purpose: records the accepted bounded RSS source expansion, source fetch
@@ -37,6 +46,34 @@ Current Goldilocks policy wording:
   back to ATS-hosted URLs, and pause on objection or clarified hostile terms.
 
 Latest health audit and repair checkpoint:
+
+- Remote OK handoff: `docs/remote-ok-json-source-handoff-2026-06-13.md`
+- Product commits:
+  - `92ca443` - added Remote OK JSON source support.
+  - `4c2374b` - tightened Remote OK physical/logistics filtering and added the
+    cleanup migration.
+- Generated rollup commit:
+  - `562355e` - refreshed `docs/source-health-latest.md`.
+- Verification:
+  - `bun run --cwd apps/web build` passed.
+  - `git diff --check` passed.
+  - CI guardrail `27435140046` passed for `92ca443`.
+  - Production deployment `b8b04c38-2b56-42e6-89df-2b980c6a6266` deployed
+    `92ca443`.
+  - Manual Hunter `27435248150` passed with Remote OK JSON count 33 in the
+    first loop, 25 accepted/attempted inserts total, 0 failed sources, 0 failed
+    insert batches, and 0 insert errors.
+  - CI guardrail `27435636180` passed for `4c2374b`.
+  - D1 migration workflow `27435636177` passed for
+    `0015_remote_ok_quality_filter.sql`.
+  - Source-health rollup `27450540244` passed with 8 accepted/attempted inserts,
+    0 failed sources, 0 failed insert batches, and 0 insert errors.
+  - Later scheduled Hunter `27457196402` passed on rollup commit `562355e`.
+  - Read-only D1 snapshot: 878 active opportunities, 38 active RemoteOK rows, 4
+    inactive RemoteOK cleanup rows, and 0 active RemoteOK physical/logistics
+    outliers.
+
+Previous health audit and repair checkpoint:
 
 - Source expansion report: `docs/source-expansion-2026-06-12.md`
 - Product commits:
@@ -234,18 +271,19 @@ Observed P1 facts:
 
 ## Next Safe Resume Task
 
-No required recovery-roadmap work remains. Start from
-`docs/source-expansion-2026-06-12.md` for the next optional source portfolio,
-ingestion efficiency, and indexing slice.
+No required recovery-roadmap work remains. The user explicitly asked to stop
+and hand off. Start from `docs/remote-ok-json-source-handoff-2026-06-13.md`.
 
 Recommended next source-expansion slice:
 
-1. Add a JSON adapter before considering Remote OK.
-2. Add longer-retention source-health history if source trends need to be
+1. Run `git status --short --branch`.
+2. Let the Remote OK source run for at least one more healthy rollup day before
+   adding more sources.
+3. Add longer-retention source-health history if source trends need to be
    audited beyond the latest state row and rollup artifacts.
-3. Continue source-specific Breezy review and decide whether each current token
+4. Continue source-specific Breezy review and decide whether each current token
    remains `needs_review`, becomes `allowed`, or is paused.
-4. Re-run query/index audits if homepage, category, or source-health query
+5. Re-run query/index audits if homepage, category, or source-health query
    shapes change.
 
 Known follow-up: local direct D1 audits now work with Wrangler v4. Use
