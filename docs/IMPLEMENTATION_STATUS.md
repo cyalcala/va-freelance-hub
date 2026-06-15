@@ -52,6 +52,18 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-18 - Dayshift Directory Imports & ATS Expansion
+
+- Date: 2026-06-15
+- Status: completed dayshift directory updates, new inserts, and mapped ATS expansion opportunities
+- Scope:
+  - Imported and updated 8 Australian Dayshift companies in `va_directory` (Cloudstaff, Flat Planet, Virtual Staff 365, RocketAMS, Vault Outsourcing, OneWorld Business Solutions, Stantaro, and Hunt St), bringing total dayshift count from 16 to 24.
+  - Configured Workable ATS tokens (`rocketams`, `virtualstaff365`, `hunt-st`) and Lever ATS token (`vaultoutsourcing`) in the database entries.
+  - Documented expansion opportunities: (1) token-specific Workable slow rotation allowances to circumvent global 429 locks for RocketAMS, Virtual Staff 365, and Hunt St, and (2) enabling Lever platform scraper specifically for the new Vault Outsourcing token under Goldilocks guidelines.
+- Verification:
+  - Remote D1 database verification complete. Count of `niche = 'australian-dayshift'` is 24.
+  - ATS platform/token mappings for the inserted companies verified.
+
 ### Post-Handoff F-17 - Major Debugging and Audit
 
 - Date: 2026-06-15
