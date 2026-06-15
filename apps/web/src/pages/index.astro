@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities, vaDirectory } from '@va-hub/db';
-import { eq, desc, count } from 'drizzle-orm';
+import { eq, desc, count, sql } from 'drizzle-orm';
 import { OpportunitySearch } from '@/components/OpportunitySearch';
 
 export const prerender = false;
@@ -42,7 +42,7 @@ try {
     })
     .from(opportunities)
     .where(eq(opportunities.isActive, true))
-    .orderBy(desc(opportunities.postedAt))
+    .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
     .limit(60);
 } catch (e) {
   console.error("DB error:", e);

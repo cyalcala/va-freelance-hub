@@ -52,6 +52,23 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-17 - Major Debugging and Audit
+
+- Date: 2026-06-15
+- Status: completed major debugging, sort order fix, limit and cadence tuning, and work777.xlsx directory imports
+- Scope:
+  - Fixed the "silent freshness bug" where new jobs were hidden by sorting by `posted_at DESC`. SQLite sorted NULLs first, and past posting dates made same-day scrapes look stale. Changed sort order to `desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`)` in [index.astro](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/index.astro), [opportunities.astro](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/opportunities.astro), and [\[category\].astro](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/categories/%5Bcategory%5D.astro).
+  - Reduced Remote OK min fetch interval from 120 minutes to 60 minutes in [sources.ts](file:///c:/Users/admin/Desktop/va-freelance-hub/packages/scraper/sources.ts) to capture same-day jobs faster.
+  - Increased scraper default processing limit from 25 to 50 jobs per run in [scrape.ts](file:///c:/Users/admin/Desktop/va-freelance-hub/apps/web/src/pages/api/cron/scrape.ts) to process backlogs faster.
+  - Audited and verified `source_fetch_events` Drizzle schema, TypeScript types, and database schema using local test insertions.
+  - Cross-referenced `work777.xlsx` against the existing directory and successfully imported 22 new companies into the production `va_directory` table, bringing the total from 238 to 260.
+  - Updated existing `Support Shepherd` directory entry website from `somewhere.com` to `https://supportshepherd.com`.
+- Verification:
+  - `bun run build` passed.
+  - Remote D1 import of 22 new companies verified by `SELECT count(*) FROM va_directory;` returning `260`.
+  - `Support Shepherd` website update verified by querying `va_directory`.
+  - Local test script for Drizzle insertion succeeded.
+
 ### Post-Handoff F-16 - Non-English and Local European Pre-Filter
 
 - Date: 2026-06-13

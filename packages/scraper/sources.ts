@@ -98,7 +98,7 @@ export const sources: Source[] = [
     defaultJobType: "full-time",
     tags: ["remote", "global", "digital-nomad"],
     maxItems: 50,
-    minFetchIntervalMinutes: 120,
+    minFetchIntervalMinutes: 60,
   },
   {
     id: "problogger",

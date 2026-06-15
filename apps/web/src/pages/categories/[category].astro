@@ -1,7 +1,7 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { getDb, opportunities } from '@va-hub/db';
-import { eq, desc, and, count } from 'drizzle-orm';
+import { eq, desc, and, count, sql } from 'drizzle-orm';
 import { OpportunityCard } from '@/components/opportunity-card';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
 
@@ -52,7 +52,7 @@ try {
     .select()
     .from(opportunities)
     .where(whereClause)
-    .orderBy(desc(opportunities.postedAt))
+    .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
     .limit(PAGE_SIZE)
     .offset(offset);
 } catch (e) {
