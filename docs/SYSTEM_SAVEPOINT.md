@@ -45,8 +45,9 @@ Previous handoff document:
 
 Last accepted implementation commit:
 
-- `f9f9a43` - `fix: pre-filter obvious non-English and local European roles during triage`
+- `c180925` - `feat: fix silent freshness bug, tune scraper limit/cadence, and import work777.xlsx directory entries`
 - Supporting product/CI commits:
+  - `f9f9a43` - `fix: pre-filter obvious non-English and local European roles during triage`
   - `b360d29` - `docs: finalize README and handoff docs for Masterplan completion`
   - `70ff8cf` - `feat: add Jobicy Customer Support APAC RSS source feed`
   - `0ac3907` - `feat: optimize directory query with company name index, run audit for 2026-06-13`
@@ -57,7 +58,7 @@ Last accepted implementation commit:
   - `3036a53` - `docs: update implementation status and system savepoint with F-09 post-handoff details`
   - `8d499df` - `feat: reduce payload size by slimming DB projections, add Remote OK unit tests`
 - Evidence:
-  - `020ba7d` documented compliance and operational findings for 20Four7VA, Sourcefit, VAA Philippines.
+  - `c180925` resolved the silent freshness bug, increased processing limit to 50, reduced Remote OK min interval to 60 min, and successfully imported 22 new companies to D1 directory.
   - `2b91c68` added `source_fetch_events` table and logged all fetch attempt metrics.
   - `e719a2c` added `bun test` to `.github/workflows/ci-guardrail.yml`.
   - `8d499df` slimmed homepage and directory DB projections.
