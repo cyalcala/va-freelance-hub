@@ -1,24 +1,21 @@
 # Source Health Latest
 
-Date: 2026-06-19
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/27801270679
-Commit: 35b71c8f392d1023b75a9ba8eacd4620afa2737e
+Date: 2026-06-20
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/27858012921
+Commit: d2da7ed1f33019e7a1c7a69a5b88ec4583e4b45a
 
 ### Hunter Source Health
 
-- Timestamp: 2026-06-19T02:16:00Z
-- Run ID: 27801270679
-- Signals Harvested: 9
-- Accepted For Insert: 9
-- Attempted Inserts: 9
+- Timestamp: 2026-06-20T02:53:50Z
+- Run ID: 27858012921
+- Signals Harvested: 13
+- Accepted For Insert: 13
+- Attempted Inserts: 13
 - Failed Insert Batches: 0
 - Insert Errors: 0
-- Failed Sources: 1
+- Failed Sources: 0
 - Zero-Count Successful Sources: 1
 - Skipped Sources: 22
-
-#### Failed Sources
-- Remote OK (JSON): [json] Failed to fetch Remote OK: HTTP 502
 
 #### Skipped Sources
 - ProBlogger (RSS, paused): Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.
