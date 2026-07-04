@@ -48,9 +48,14 @@ jobs:
           CHECKED=$(jq -r '.checked // 0' verify.log || echo "0")
           ARCHIVED=$(jq -r '.autoArchived // 0' verify.log || echo "0")
           DEACTIVATED=$(jq -r '.deactivated // 0' verify.log || echo "0")
+          NEVER_VERIFIED=$(jq -r '.neverVerifiedRemaining // -1' verify.log || echo "-1")
           echo "### 🩺 Sovereign Verifier Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ✅ Verification Audit Concluded" >> $GITHUB_STEP_SUMMARY
           echo "- **Links Checked**: $CHECKED" >> $GITHUB_STEP_SUMMARY
           echo "- **Dead Links Pruned**: $DEACTIVATED" >> $GITHUB_STEP_SUMMARY
           echo "- **Stale Jobs Archived (>30d)**: $ARCHIVED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Never-Verified Backlog Remaining**: $NEVER_VERIFIED" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
+          if [ "$NEVER_VERIFIED" -gt 300 ]; then
+            echo "::warning title=Verification backlog growing::$NEVER_VERIFIED active jobs have never been link-verified. Consider raising the per-run verify limit."
+          fi

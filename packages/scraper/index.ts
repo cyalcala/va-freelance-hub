@@ -6,3 +6,4 @@ export { triageJob, isObviousGeoRestriction } from "./triage";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";
 export { fetchATSFeed } from "./ats";
+export { chunkArray, maxRowsPerD1Batch, D1_MAX_BOUND_PARAMETERS } from "./batch";

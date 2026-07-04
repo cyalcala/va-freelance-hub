@@ -52,6 +52,24 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-20 - Major Audit: Silent-Error Elimination & Durability Hardening
+
+- Date: 2026-07-04
+- Status: implemented and locally verified; production acceptance steps listed in the audit doc
+- Audit report: `docs/major-audit-2026-07-04.md`
+- Silent errors found and fixed:
+  - S-1 (critical): `source_fetch_events` history was never recorded in production — the batch insert exceeded D1's 100-bound-parameter limit on every run since 2026-06-13 and the failure only reached `console.warn`. Proof: the table's only row was a 2026-06-15 local test insertion. Fixed by chunked inserts via new `packages/scraper/batch.ts` (`chunkArray`, `maxRowsPerD1Batch`), surfaced as `fetchEventLog` in the scrape response, annotated by the Hunter workflow.
+  - S-2 (critical): the daily prune endpoint hard-DELETEd rows — cross-company `description_hash` collisions could delete legitimate jobs, archived history was purged, and deleted-but-still-listed URLs re-inserted as "new" (churn). Rewritten to soft-archive active rows only, scoped to `(description_hash, company)`, keeping the oldest row; response reports `mode: "soft-archive"`, `deleted: 0`; the prune workflow warns if the mode ever regresses.
+  - S-3 (high): jobs dropped by triage exceptions were invisible; the scrape response now reports `triageFailures` and Hunter annotates it.
+  - S-4 (medium): the never-verified backlog (456 rows) could not drain at 50 links/run twice daily; the limit is now 120, the response reports `neverVerifiedRemaining`, and the verifier summary warns above 300.
+  - S-5/S-6 (low): cadence-guard state availability is now reported (`cadenceGuards`) and annotated instead of silently degrading.
+- Durability rules adopted (recorded in the audit doc): no silent catches in write paths; all D1 batch inserts go through `maxRowsPerD1Batch`; no destructive SQL in cron paths; workflows assert on response fields, not just HTTP 200; backlog metrics are reported in run summaries.
+- Verification:
+  - `bun test` passed (70/70; 9 new tests in `packages/scraper/batch.test.ts`).
+  - `bun run --cwd apps/web build` passed.
+  - `git diff --check` passed.
+  - Production acceptance checklist (post-deploy) is in `docs/major-audit-2026-07-04.md`: fetch events must accumulate, prune must report soft-archive with no row-count decrease, verifier backlog must shrink.
+
 ### Post-Handoff F-19 - Gold777 Directory Import & Verified ATS Expansion
 
 - Date: 2026-07-04

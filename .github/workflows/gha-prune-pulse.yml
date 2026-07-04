@@ -36,11 +36,15 @@ jobs:
             exit 1
           fi
           
-          PRUNED_HASH=$(echo $BODY | jq -r '.prunedHashDuplicates')
-          PRUNED_URL=$(echo $BODY | jq -r '.prunedUrlDuplicates')
-          
-          echo "PRUNED_HASH=$PRUNED_HASH" >> $GITHUB_ENV
-          echo "PRUNED_URL=$PRUNED_URL" >> $GITHUB_ENV
+          ARCHIVED_HASH=$(echo $BODY | jq -r '.archivedHashDuplicates // 0')
+          PRUNE_MODE=$(echo $BODY | jq -r '.mode // "unknown"')
+
+          echo "ARCHIVED_HASH=$ARCHIVED_HASH" >> $GITHUB_ENV
+          echo "PRUNE_MODE=$PRUNE_MODE" >> $GITHUB_ENV
+
+          if [ "$PRUNE_MODE" != "soft-archive" ]; then
+            echo "::warning::Prune endpoint did not report soft-archive mode (got: $PRUNE_MODE). Verify no hard deletes are happening."
+          fi
 
       - name: 📊 Generate Prune Summary
         if: always()
@@ -48,6 +52,6 @@ jobs:
         run: |
           echo "### 🧹 Sovereign Database Pruning Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ✅ Pruning Complete" >> $GITHUB_STEP_SUMMARY
-          echo "- **Cross-Platform Duplicates Removed (Hash)**: $PRUNED_HASH" >> $GITHUB_STEP_SUMMARY
-          echo "- **Exact Duplicates Removed (URL)**: $PRUNED_URL" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mode**: $PRUNE_MODE (rows archived, never deleted)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Duplicate Active Rows Archived (Hash+Company)**: $ARCHIVED_HASH" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY

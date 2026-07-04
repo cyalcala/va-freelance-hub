@@ -4,7 +4,7 @@ import { isNotNull, and, inArray, eq } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, chunkArray, maxRowsPerD1Batch, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -284,13 +284,20 @@ async function fetchSourceWithStatus(
   }
 }
 
-async function loadSourceFetchStates(db: AppDb): Promise<Map<string, SourceFetchState>> {
+interface SourceFetchStateLoad {
+  states: Map<string, SourceFetchState>;
+  available: boolean;
+  error?: string;
+}
+
+async function loadSourceFetchStates(db: AppDb): Promise<SourceFetchStateLoad> {
   try {
     const rows = await db.select().from(sourceFetchState);
-    return new Map(rows.map((row) => [row.sourceId, row]));
+    return { states: new Map(rows.map((row) => [row.sourceId, row])), available: true };
   } catch (error) {
-    console.warn("[api/cron/scrape] Source fetch state unavailable; cadence guards will be skipped for this run:", errorMessage(error));
-    return new Map();
+    const message = errorMessage(error);
+    console.warn("[api/cron/scrape] Source fetch state unavailable; cadence guards will be skipped for this run:", message);
+    return { states: new Map(), available: false, error: message };
   }
 }
 
@@ -344,11 +351,25 @@ async function recordSourceFetchState(
   }
 }
 
+interface FetchEventLogResult {
+  attempted: number;
+  recorded: number;
+  failedBatches: number;
+  errors: string[];
+}
+
+// source_fetch_events rows bind 12 SQL variables each. D1 rejects statements
+// with more than 100 bound parameters, so a full run's ~25 source results in a
+// single insert always failed with "too many SQL variables" — silently, because
+// the failure only reached console.warn. Chunk the insert and surface the
+// outcome in the scrape response so Hunter can annotate regressions.
+const FETCH_EVENT_COLUMNS = 12;
+
 async function recordSourceFetchEvents(
   db: AppDb,
   results: any[],
   observedAt: string
-): Promise<void> {
+): Promise<FetchEventLogResult> {
   const events = results.map(r => ({
     sourceId: r.sourceId ?? r.sourceName,
     sourceName: r.sourceName,
@@ -364,14 +385,26 @@ async function recordSourceFetchEvents(
     skipReason: r.skipReason ?? null,
   }));
 
-  if (events.length === 0) return;
+  const outcome: FetchEventLogResult = {
+    attempted: events.length,
+    recorded: 0,
+    failedBatches: 0,
+    errors: [],
+  };
+  if (events.length === 0) return outcome;
 
-  try {
-    await db.insert(sourceFetchEvents).values(events);
-    console.log(`[api/cron/scrape] Recorded ${events.length} source fetch events in history.`);
-  } catch (error) {
-    console.warn(`[api/cron/scrape] Failed to record source fetch events:`, errorMessage(error));
+  for (const batch of chunkArray(events, maxRowsPerD1Batch(FETCH_EVENT_COLUMNS))) {
+    try {
+      await db.insert(sourceFetchEvents).values(batch);
+      outcome.recorded += batch.length;
+    } catch (error) {
+      outcome.failedBatches += 1;
+      outcome.errors.push(errorMessage(error));
+      console.warn(`[api/cron/scrape] Failed to record a batch of ${batch.length} source fetch events:`, errorMessage(error));
+    }
   }
+  console.log(`[api/cron/scrape] Recorded ${outcome.recorded}/${outcome.attempted} source fetch events (${outcome.failedBatches} failed batches).`);
+  return outcome;
 }
 
 async function fetchConfiguredSourceWithStatus(
@@ -433,7 +466,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     // 3. Fetch all raw items
-    const sourceFetchStates = await loadSourceFetchStates(db);
+    const fetchStateLoad = await loadSourceFetchStates(db);
+    const sourceFetchStates = fetchStateLoad.states;
 
     const rssResults = await Promise.all(
       rssSources.map((source) =>
@@ -564,7 +598,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       ...duplicateAtsAgencies.map(skippedDuplicateAtsResult),
     ];
     const sourceResults = [...rssResults, ...htmlResults, ...jsonResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
-    await recordSourceFetchEvents(db, sourceResults, observedAt);
+    const fetchEventLog = await recordSourceFetchEvents(db, sourceResults, observedAt);
+    const cadenceGuards = {
+      stateAvailable: fetchStateLoad.available,
+      ...(fetchStateLoad.error ? { stateError: fetchStateLoad.error } : {}),
+    };
     const failedSources = sourceResults
       .filter((result) => !result.ok)
       .map((result) => `${result.sourceName} (${result.sourceType}): ${result.error}`);
@@ -580,10 +618,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         attemptedInsert: 0,
         insertFailedBatches: 0,
         insertErrors: [],
-        skipped: 0, 
-        failedSources, 
+        skipped: 0,
+        failedSources,
         sourceResults,
-        message: "No jobs scraped" 
+        fetchEventLog,
+        cadenceGuards,
+        message: "No jobs scraped"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
@@ -622,10 +662,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         attemptedInsert: 0,
         insertFailedBatches: 0,
         insertErrors: [],
-        skipped: allItems.length, 
-        failedSources, 
+        skipped: allItems.length,
+        failedSources,
         sourceResults,
-        message: "Zero new jobs after dedup" 
+        fetchEventLog,
+        cadenceGuards,
+        message: "Zero new jobs after dedup"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
@@ -637,6 +679,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const triagedItems: typeof opportunities.$inferInsert[] = [];
     const concurrency = 3;
+    // Jobs whose triage call threw are dropped from this run. Count them so the
+    // response (and Hunter annotations) can distinguish "filtered out by
+    // policy" from "lost to a triage error" — previously these vanished with
+    // only a console.error.
+    let triageFailures = 0;
 
     for (let i = 0; i < itemsToProcess.length; i += concurrency) {
       const chunk = itemsToProcess.slice(i, i + concurrency);
@@ -648,6 +695,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             return { item, triage };
           } catch (err) {
             console.error(`[api/cron/scrape] Triage failed for "${item.title}":`, err);
+            triageFailures += 1;
             return { item, triage: null };
           }
         })
@@ -702,11 +750,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
         attemptedInsert: 0,
         insertFailedBatches: 0,
         insertErrors: [],
+        triageFailures,
         processed: itemsToProcess.length,
         backlogRemaining: newItems.length - itemsToProcess.length,
         skipped: allItems.length,
         failedSources,
         sourceResults,
+        fetchEventLog,
+        cadenceGuards,
         message: "No jobs passed AI triage in this batch"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -751,12 +802,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
       attemptedInsert,
       insertFailedBatches,
       insertErrors,
+      triageFailures,
       filteredOut: itemsToProcess.length - triagedItems.length,
       processed: itemsToProcess.length,
       backlogRemaining: newItems.length - itemsToProcess.length,
       skipped: allItems.length - actualChanges,
       failedSources,
       sourceResults,
+      fetchEventLog,
+      cadenceGuards,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);

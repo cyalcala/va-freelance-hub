@@ -140,6 +140,28 @@ jobs:
             fi
           fi
 
+          # 3. Fetch-event history logging check (2026-07-04 audit: this insert
+          # silently failed for weeks with "too many SQL variables"; now the
+          # response reports it and this warning makes any regression visible).
+          FETCH_EVENTS_ATTEMPTED=$(jq -r '.fetchEventLog.attempted // 0' harvest.log || echo 0)
+          FETCH_EVENTS_RECORDED=$(jq -r '.fetchEventLog.recorded // 0' harvest.log || echo 0)
+          FETCH_EVENT_FAILED_BATCHES=$(jq -r '.fetchEventLog.failedBatches // 0' harvest.log || echo 0)
+          if [ "$FETCH_EVENT_FAILED_BATCHES" -gt 0 ]; then
+            echo "::warning title=Fetch-event history logging degraded::$FETCH_EVENT_FAILED_BATCHES batch(es) of source fetch events failed to record ($FETCH_EVENTS_RECORDED/$FETCH_EVENTS_ATTEMPTED recorded)."
+          fi
+
+          # 4. Cadence guard availability check
+          CADENCE_STATE_AVAILABLE=$(jq -r '.cadenceGuards.stateAvailable // true' harvest.log || echo true)
+          if [ "$CADENCE_STATE_AVAILABLE" != "true" ]; then
+            echo "::warning title=Cadence guards skipped::source_fetch_state was unavailable this run; per-source cadence limits were not enforced."
+          fi
+
+          # 5. Triage failure check (jobs dropped due to triage errors, not policy)
+          TRIAGE_FAILURES=$(jq -r '.triageFailures // 0' harvest.log || echo 0)
+          if [ "$TRIAGE_FAILURES" -gt 0 ]; then
+            echo "::warning title=Triage errors dropped jobs::$TRIAGE_FAILURES job(s) were dropped because triage threw an error (not policy filtering)."
+          fi
+
           FAILED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' harvest.log || echo 0)
           ZERO_COUNT_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == true and .count == 0 and (.skipped != true))] | length' harvest.log || echo 0)
           SKIPPED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.skipped == true)] | length' harvest.log || echo 0)
@@ -157,6 +179,9 @@ jobs:
             echo "- Failed Sources: $FAILED_SOURCE_COUNT"
             echo "- Zero-Count Successful Sources: $ZERO_COUNT_SOURCE_COUNT"
             echo "- Skipped Sources: $SKIPPED_SOURCE_COUNT"
+            echo "- Fetch Events Recorded: $FETCH_EVENTS_RECORDED/$FETCH_EVENTS_ATTEMPTED (failed batches: $FETCH_EVENT_FAILED_BATCHES)"
+            echo "- Cadence State Available: $CADENCE_STATE_AVAILABLE"
+            echo "- Triage Failures: $TRIAGE_FAILURES"
           } > source-health-summary.md
 
           if [ "$FAILED_SOURCE_COUNT" -gt 0 ]; then

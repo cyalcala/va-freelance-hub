@@ -10,11 +10,16 @@ historical, and where to resume. Start here instead of guessing from filenames.
 Read these in order:
 
 1. `AGENTS.md` - active project context and operating rules.
-2. `docs/gold777-directory-import-2026-07-04.md` - latest directory-import
+2. `docs/major-audit-2026-07-04.md` - latest major audit: found and fixed the
+   silent fetch-event logging failure (D1 bound-parameter limit), rewrote the
+   hard-deleting prune endpoint to soft-archive, surfaced triage failures and
+   cadence-guard state in scrape responses, and set the durability rules for
+   future write paths.
+3. `docs/gold777-directory-import-2026-07-04.md` - directory-import
    checkpoint: 32 new `va_directory` companies cross-referenced from
    `gold777.xlsx`, plus verified Greenhouse/Breezy ATS tokens for GitLab,
    Ghost, Remote.com, and Time Etc.
-3. `docs/IMPLEMENTATION_STATUS.md` - current percentage, phase status, and next
+4. `docs/IMPLEMENTATION_STATUS.md` - current percentage, phase status, and next
    task.
 3. `docs/HANDOFF.md` - latest stop/resume note.
 4. `docs/MASTER_EXECUTION_PLAN.md` - full roadmap and acceptance strategy.

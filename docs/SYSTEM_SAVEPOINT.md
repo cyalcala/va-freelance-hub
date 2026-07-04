@@ -8,6 +8,20 @@ Repository: `cyalcala/va-freelance-hub`
 
 Latest implementation commit (pending push):
 
+- `fix: eliminate silent errors found in 2026-07-04 major audit`
+- Audit report: `docs/major-audit-2026-07-04.md`
+- Scope: chunked source_fetch_events inserts under the D1 100-parameter limit
+  (S-1, broken silently since 2026-06-13); prune rewritten from hard-DELETE to
+  company-scoped soft-archive (S-2); triage failures, cadence-guard state, and
+  fetch-event outcomes surfaced in scrape responses with Hunter/verifier/prune
+  workflow annotations (S-3, S-5/S-6); verifier throughput raised to 120/run
+  with `neverVerifiedRemaining` backlog reporting (S-4); new shared batching
+  helper `packages/scraper/batch.ts` with regression tests.
+- Verification: `bun test` 70/70; `bun run --cwd apps/web build` passed;
+  `git diff --check` passed. Production acceptance steps in the audit doc.
+
+Previous implementation commit (pushed as `aa03741`):
+
 - `feat: import gold777.xlsx directory entries and verify ats expansion`
 - Handoff doc: `docs/gold777-directory-import-2026-07-04.md`
 - Evidence:

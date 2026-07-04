@@ -3,9 +3,20 @@
 ### Current State
 
 Date: 2026-07-04
-Status: Gold777 directory import complete. 32 new va_directory companies added
-(265 -> 297) and 4 confirmed Greenhouse/Breezy ATS tokens wired for GitLab,
-Ghost, Remote.com, and Time Etc. See `docs/gold777-directory-import-2026-07-04.md`.
+Status: Major audit complete (`docs/major-audit-2026-07-04.md`). Fixed the
+silent fetch-event logging failure (D1 100-bound-parameter limit, broken since
+2026-06-13), rewrote the hard-deleting prune endpoint to policy-compliant
+soft-archive, surfaced triage failures / cadence-guard state / verification
+backlog in cron responses and workflow annotations, and adopted five standing
+durability rules. 70/70 tests pass. Post-deploy acceptance checklist is in the
+audit doc: fetch events must accumulate past the single test row, prune must
+report soft-archive mode with no row-count decrease, and the never-verified
+backlog (456) must shrink.
+
+Earlier same day: Gold777 directory import complete. 32 new va_directory
+companies added (265 -> 297) and 4 confirmed Greenhouse/Breezy ATS tokens
+wired for GitLab, Ghost, Remote.com, and Time Etc. See
+`docs/gold777-directory-import-2026-07-04.md`.
 Active branch: `main`
 
 Previous state:

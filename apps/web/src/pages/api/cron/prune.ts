@@ -1,8 +1,32 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { sql } from "drizzle-orm";
+import { nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
+
+// 2026-07-04 major audit rewrite.
+//
+// The previous implementation hard-DELETEd rows, which violated the project's
+// archive-only stale policy (ADR-001 posture: keep evidence, make mutations
+// reversible) and caused two concrete failure modes:
+//
+// 1. Cross-company false positives: description_hash = sha256(title + first
+//    1500 chars of description). Two different companies posting the same
+//    generic title with an empty description collide, and one job was
+//    permanently deleted.
+// 2. Re-scrape churn: scrape dedup works against existing source_url rows.
+//    Deleting a row whose URL still appears in a feed made the same job
+//    re-insert as "new" on the next Hunter run, corrupting freshness data.
+//
+// This version only archives (is_active = 0), only considers ACTIVE rows,
+// scopes the duplicate key to (description_hash, company) so distinct
+// companies never collapse, and keeps the oldest row (MIN(id)) visible.
+// Archived rows keep their source_url in the table, so scrape dedup still
+// recognizes them and does not re-insert.
+//
+// The old second pass (DELETE duplicates by source_url) was dead code —
+// source_url has a UNIQUE index, so duplicates cannot exist — and was removed.
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -18,40 +42,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const db = getDb(env);
+    const archivedAt = nowUtcIso();
 
-    // Find duplicates based on descriptionHash
-    // Keeping the oldest one (MIN(id)) and returning the rest to delete
-    
-    // SQLite doesn't support DELETE with JOIN directly, so we use a subquery
-    // We want to delete opportunities where the descriptionHash is not null
-    // AND its ID is not the minimum ID for that descriptionHash
-    
     const result = await db.run(sql`
-      DELETE FROM \`opportunities\`
-      WHERE \`description_hash\` IS NOT NULL
+      UPDATE \`opportunities\`
+      SET \`is_active\` = 0, \`updated_at\` = ${archivedAt}
+      WHERE \`is_active\` = 1
+      AND \`description_hash\` IS NOT NULL
       AND \`id\` NOT IN (
         SELECT MIN(\`id\`)
         FROM \`opportunities\`
-        WHERE \`description_hash\` IS NOT NULL
-        GROUP BY \`description_hash\`
+        WHERE \`is_active\` = 1
+        AND \`description_hash\` IS NOT NULL
+        GROUP BY \`description_hash\`, lower(coalesce(\`company\`, ''))
       )
     `);
 
-    // We can also prune duplicates by URL just in case
-    const urlResult = await db.run(sql`
-      DELETE FROM \`opportunities\`
-      WHERE \`id\` NOT IN (
-        SELECT MIN(\`id\`)
-        FROM \`opportunities\`
-        GROUP BY \`source_url\`
-      )
-    `);
+    const archived = (result as any).meta?.changes ?? 0;
+    console.log(`[api/cron/prune] Archived ${archived} duplicate active rows (description_hash + company scoped). No rows deleted.`);
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      prunedHashDuplicates: (result as any).meta?.changes ?? 0,
-      prunedUrlDuplicates: (urlResult as any).meta?.changes ?? 0
-    }), { 
+    return new Response(JSON.stringify({
+      success: true,
+      archivedHashDuplicates: archived,
+      deleted: 0,
+      mode: "soft-archive",
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });

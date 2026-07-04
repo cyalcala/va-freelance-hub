@@ -36,17 +36,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.log(`[api/cron/verify-links] Auto-archived ${stale.length} stale jobs older than 30 days`);
     }
 
-    // 2. Verify remaining active links
+    // 2. Verify remaining active links.
+    // 2026-07-04 audit: at 50 links per run, twice a day, the queue could
+    // never drain (456 active rows had never been verified against ~30+ new
+    // rows arriving daily). 120 per run keeps the request bounded (HEAD only,
+    // 8s timeout, batches of 10) while letting the backlog shrink.
+    const VERIFY_LIMIT = 120;
     const active = await db
-      .select({ 
-        id: opportunities.id, 
+      .select({
+        id: opportunities.id,
         sourceUrl: opportunities.sourceUrl,
         failedCount: opportunities.failedVerificationCount
       })
       .from(opportunities)
       .where(eq(opportunities.isActive, true))
       .orderBy(asc(opportunities.lastVerifiedAt))
-      .limit(50);
+      .limit(VERIFY_LIMIT);
 
     console.log(`[api/cron/verify-links] Checking ${active.length} oldest unverified links...`);
     let deactivated = 0;
@@ -93,8 +98,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
       deactivated += results.reduce((sum, r) => (r.status === "fulfilled" ? sum + r.value : sum), 0);
     }
 
-    console.log(`[api/cron/verify-links] Completed. Checked ${active.length}, auto-archived ${stale.length}, deactivated ${deactivated} dead links.`);
-    return new Response(JSON.stringify({ checked: active.length, autoArchived: stale.length, deactivated }), {
+    // Surface the verification backlog so the workflow summary shows whether
+    // the queue is draining instead of silently growing.
+    let neverVerifiedRemaining = -1;
+    try {
+      const backlog = await db.select({ count: sql<number>`COUNT(*)` })
+        .from(opportunities)
+        .where(sql`${opportunities.isActive} = 1 AND ${opportunities.lastVerifiedAt} IS NULL`);
+      neverVerifiedRemaining = backlog[0]?.count ?? -1;
+    } catch (err) {
+      console.warn("[api/cron/verify-links] Failed to compute never-verified backlog:", (err as Error).message);
+    }
+
+    console.log(`[api/cron/verify-links] Completed. Checked ${active.length}, auto-archived ${stale.length}, deactivated ${deactivated} dead links, never-verified backlog: ${neverVerifiedRemaining}.`);
+    return new Response(JSON.stringify({ checked: active.length, autoArchived: stale.length, deactivated, neverVerifiedRemaining }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
