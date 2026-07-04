@@ -71,13 +71,45 @@ Week-over-week drift becomes visible in the file's git history.
   pause recommendations) to prevent notification spam.
 - All D1 access is read-only; the digest job's only write is a docs commit.
 
-## Tier 2 (Documented, Not Implemented)
+## Tier 2 (Implemented 2026-07-04, same day)
 
-If diagnosis-with-proposals is wanted later: an on-failure workflow step
-that sends the error context to Workers AI (already used for triage, free
-allocation) or the Gemini free tier, and appends the model's diagnosis to
-the alert issue. Kept out of this slice to keep the bot fully
-deterministic and quota-free.
+Both issue-filing bots now append an advisory Workers AI diagnosis as an
+issue comment after creating an issue:
+
+- Hunter `alerts` job: sends the degradation evidence (failed sources,
+  fetch-event log state, triage/insert failures, cadence state) to Workers
+  AI and comments a root-cause analysis on the daily alert issue.
+- Sentinel pulse: sends each flapping source's failure row and comments a
+  transient-vs-persistent assessment and pause-now-or-wait call on the
+  pause-recommendation issue.
+
+Design properties that keep Tier 2 as safe as Tier 1:
+
+- **Advisory-only output path.** The model's text lands in an issue
+  comment — inert report text a human reads. It is never executed, never
+  written to code, and never fed back into automation. This is the
+  guardrail that makes prompt injection from scraped content harmless:
+  even if a malicious job posting smuggled instructions into an error
+  string, the worst outcome is a misleading paragraph in a comment.
+- **Untrusted-data framing.** The system prompt explicitly instructs the
+  model to treat all evidence as data, never as instructions.
+- **Graceful degradation.** AI steps are `continue-on-error` / fallible by
+  design; if Workers AI is down or over quota, the deterministic issue
+  stands alone, unchanged.
+- **Zero new credentials.** Reuses `CLOUDFLARE_API_TOKEN` (which already
+  carries the `ai` scope for triage) and the built-in `GITHUB_TOKEN`.
+- **Proven models.** Uses the same Llama model chain
+  (`@cf/meta/llama-3.1-8b-instruct` with fallback) that production triage
+  has run daily for weeks, within the Workers AI free allocation.
+
+## Tier 3 / Level A Auto-Pause (Documented, Not Implemented)
+
+If fuller autonomy is wanted later: upgrade Sentinel from
+recommend-a-pause to open-a-pause-PR with auto-merge on green CI. Pausing
+is fail-safe and policy-encoded, so it is the one code change safe to
+automate. Requires a fine-grained PAT secret (GITHUB_TOKEN-created PRs do
+not trigger CI) and enabling repo auto-merge. Enabling sources and editing
+scraper logic stay human-gated regardless.
 
 ## Verification
 

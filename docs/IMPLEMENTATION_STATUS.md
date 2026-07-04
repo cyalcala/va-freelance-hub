@@ -52,6 +52,21 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-22 - Tier-2 AI Diagnosis On Bot Issues
+
+- Date: 2026-07-04
+- Status: implemented and pushed; exercises on the next real degradation event
+- Design doc: `docs/maintenance-bot-2026-07-04.md` (Tier 2 section)
+- Scope:
+  - Hunter `alerts` job now appends a Workers AI root-cause diagnosis as a comment on each daily degradation issue.
+  - Sentinel pulse now appends a per-source transient-vs-persistent assessment to each pause-recommendation issue.
+  - Safety design: AI output is advisory comment text only (never executed, never written to code, never fed back into automation), evidence is framed as untrusted data in the system prompt, AI steps degrade gracefully if Workers AI is unavailable, and no new credentials were added (reuses the `ai`-scoped `CLOUDFLARE_API_TOKEN` and built-in `GITHUB_TOKEN`).
+  - Models: the production-proven `@cf/meta/llama-3.1-8b-instruct` chain already used by triage, within the Workers AI free allocation.
+- Verification:
+  - All workflow YAMLs parse (local PyYAML check).
+  - CI guardrail green on the push.
+  - Live exercise occurs on the next degradation event; the deterministic Tier-1 issue is unaffected if the AI call fails.
+
 ### Post-Handoff F-21 - Tier-1 Maintenance Bot (Free 24/7 Detection)
 
 - Date: 2026-07-04
