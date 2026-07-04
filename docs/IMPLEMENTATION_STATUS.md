@@ -55,7 +55,7 @@ Current accepted completion: 100% of Lens 2.
 ### Post-Handoff F-20 - Major Audit: Silent-Error Elimination & Durability Hardening
 
 - Date: 2026-07-04
-- Status: implemented and locally verified; production acceptance steps listed in the audit doc
+- Status: implemented, deployed (`9762994`, CI run `28701640187`), and S-1 accepted live in production — Hunter run `28702090635` recorded 35 real fetch events, taking `source_fetch_events` from its single stuck test row to 36 rows. Prune (midnight UTC) and verifier (12h) acceptance criteria remain listed in the audit doc for their next scheduled runs.
 - Audit report: `docs/major-audit-2026-07-04.md`
 - Silent errors found and fixed:
   - S-1 (critical): `source_fetch_events` history was never recorded in production — the batch insert exceeded D1's 100-bound-parameter limit on every run since 2026-06-13 and the failure only reached `console.warn`. Proof: the table's only row was a 2026-06-15 local test insertion. Fixed by chunked inserts via new `packages/scraper/batch.ts` (`chunkArray`, `maxRowsPerD1Batch`), surfaced as `fetchEventLog` in the scrape response, annotated by the Hunter workflow.

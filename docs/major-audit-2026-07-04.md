@@ -152,15 +152,19 @@ annotates when guards were skipped.
 - `bun test`: 70/70 pass (9 new tests in `packages/scraper/batch.test.ts`).
 - `bun run --cwd apps/web build`: passed.
 - `git diff --check`: passed (normal CRLF warnings only).
-- Post-deploy acceptance (run after CI deploys `main`):
-  1. Trigger a manual Hunter run; confirm the response contains
-     `fetchEventLog.recorded > 0` and 0 failed batches.
-  2. Read-only D1: `SELECT COUNT(*) FROM source_fetch_events;` must exceed 1
-     and grow per Hunter run.
-  3. Next scheduled prune: response reports `mode: "soft-archive"` and
-     `deleted: 0`; total row count in `opportunities` must NOT decrease.
-  4. Next verifier run: summary shows `Never-Verified Backlog Remaining`
-     decreasing from ~456.
+- Post-deploy acceptance:
+  1. **S-1 CONFIRMED LIVE (2026-07-04).** Fix commit `9762994` deployed via
+     CI guardrail run `28701640187`. The first post-deploy scheduled Hunter
+     run `28702090635` (success, 2026-07-04T09:34:22Z) recorded 35 real
+     source fetch events in one run. Read-only D1 immediately after:
+     `source_fetch_events` total 36 rows (35 real + the historical test
+     row), latest timestamp `2026-07-04T09:34:38.228Z`. The table had been
+     frozen at 1 test row since 2026-06-15.
+  2. Next scheduled prune (daily, midnight UTC): response must report
+     `mode: "soft-archive"` and `deleted: 0`; total row count in
+     `opportunities` must NOT decrease.
+  3. Next verifier runs (every 12h): summary shows `Never-Verified Backlog
+     Remaining` decreasing from ~456.
 
 ## Follow-Ups (Not Done In This Slice)
 
