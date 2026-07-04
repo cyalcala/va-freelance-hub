@@ -316,3 +316,86 @@ jobs:
 
           git commit -m "docs: update daily source health"
           git push origin HEAD:main
+
+  # Tier-1 maintenance bot (2026-07-04): turn degradation warnings into a
+  # tracked GitHub issue instead of scroll-past run annotations. At most one
+  # issue per UTC day; healthy runs create nothing.
+  alerts:
+    name: Raise Degradation Alert Issue
+    needs: hunt
+    if: ${{ always() && needs.hunt.result != 'cancelled' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Download Hunter Evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: hunter-health-${{ github.run_id }}
+          path: .hunter-health
+
+      - name: Evaluate And File Alert
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          LOG=.hunter-health/harvest.log
+          if [ ! -f "$LOG" ] || ! jq -e . "$LOG" >/dev/null 2>&1; then
+            echo "No parseable harvest.log; skipping alert evaluation."
+            exit 0
+          fi
+
+          FAILED_SOURCES=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' "$LOG")
+          EVENT_FAILED=$(jq -r '.fetchEventLog.failedBatches // 0' "$LOG")
+          TRIAGE_FAILURES=$(jq -r '.triageFailures // 0' "$LOG")
+          INSERT_FAILED=$(jq -r '.insertFailedBatches // 0' "$LOG")
+          CADENCE_OK=$(jq -r '.cadenceGuards.stateAvailable // true' "$LOG")
+
+          if [ "$FAILED_SOURCES" -eq 0 ] && [ "$EVENT_FAILED" -eq 0 ] && \
+             [ "$TRIAGE_FAILURES" -eq 0 ] && [ "$INSERT_FAILED" -eq 0 ] && \
+             [ "$CADENCE_OK" = "true" ]; then
+            echo "All internals healthy; no alert issue needed."
+            exit 0
+          fi
+
+          TODAY=$(date -u +"%Y-%m-%d")
+          TITLE="Source health alert (${TODAY})"
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "in:title \"$TITLE\"" --json number --jq 'length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "Alert issue for $TODAY already open; skipping duplicate."
+            exit 0
+          fi
+
+          {
+            echo "Automated Tier-1 maintenance alert from Hunter run: $RUN_URL"
+            echo ""
+            echo "| Signal | Value |"
+            echo "| --- | --- |"
+            echo "| Failed sources | $FAILED_SOURCES |"
+            echo "| Fetch-event log failed batches | $EVENT_FAILED |"
+            echo "| Triage failures (jobs dropped) | $TRIAGE_FAILURES |"
+            echo "| Insert failed batches | $INSERT_FAILED |"
+            echo "| Cadence state available | $CADENCE_OK |"
+            echo ""
+            if [ "$FAILED_SOURCES" -gt 0 ]; then
+              echo "### Failed sources"
+              jq -r '.sourceResults[]? | select(.ok == false) | "- \(.sourceName) (\(.sourceType)): \(.error)"' "$LOG"
+              echo ""
+            fi
+            echo "Triage guide: docs/major-audit-2026-07-04.md (durability rules)"
+            echo "and docs/scraper-troubleshooting.md. Sources that keep failing"
+            echo "get a pause recommendation from the daily Sentinel pulse."
+          } > alert-body.md
+
+          gh label create "source-health" --repo "$GITHUB_REPOSITORY" \
+            --description "Automated maintenance-bot health alerts" \
+            --color D93F0B --force || true
+
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "$TITLE" \
+            --label "source-health" \
+            --body-file alert-body.md
+          echo "Alert issue created for $TODAY."

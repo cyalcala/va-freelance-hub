@@ -3,7 +3,15 @@
 ### Current State
 
 Date: 2026-07-04
-Status: Major audit complete (`docs/major-audit-2026-07-04.md`). Fixed the
+Status: Tier-1 maintenance bot implemented (`docs/maintenance-bot-2026-07-04.md`):
+Hunter now files deduped alert issues on internal degradation, the daily
+Sentinel pulse detects flapping sources from real fetch-event history and files
+pause recommendations (never edits code), and the weekly Medic pulse commits an
+automated data-quality digest to `docs/health-digest-latest.md`. All free
+(public-repo Actions, read-only D1, built-in token). First scheduled runs:
+alerts on next Hunter tick, Sentinel daily 01:30 UTC, Medic Sunday 02:00 UTC.
+
+Earlier same day: Major audit complete (`docs/major-audit-2026-07-04.md`). Fixed the
 silent fetch-event logging failure (D1 100-bound-parameter limit, broken since
 2026-06-13), rewrote the hard-deleting prune endpoint to policy-compliant
 soft-archive, surfaced triage failures / cadence-guard state / verification

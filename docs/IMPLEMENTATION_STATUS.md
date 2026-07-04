@@ -52,6 +52,21 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-21 - Tier-1 Maintenance Bot (Free 24/7 Detection)
+
+- Date: 2026-07-04
+- Status: implemented and pushed; first live runs occur on their schedules (alerts: next Hunter tick; Sentinel: daily 01:30 UTC; Medic: Sunday 02:00 UTC)
+- Design doc: `docs/maintenance-bot-2026-07-04.md`
+- Scope:
+  - Added an `alerts` job to `gha-hunter-pulse.yml`: parses `harvest.log` after every Hunter run and files a deduped, labeled GitHub issue (max one per UTC day) when any internal degradation signal is present (failed sources, fetch-event log failures, triage failures, insert failures, cadence-guard unavailability).
+  - Added `gha-sentinel-pulse.yml` (daily): window-function query over `source_fetch_events` detects sources whose last 4 non-skipped attempts all failed and files a per-source pause-recommendation issue with evidence and exact file pointers. The bot never edits code — pausing remains a human/agent decision per AGENTS.md compliance rules.
+  - Added `gha-medic-pulse.yml` (weekly): automates the major-audit data-quality snapshot (staleness, backlogs, duplicates, missing fields, 7-day per-source reliability) into `docs/health-digest-latest.md` via the same guarded bot-commit pattern as the daily rollup.
+  - Cost posture: $0 — public-repo Actions minutes, read-only D1 within free tier, built-in GITHUB_TOKEN, no new secrets or services.
+- Verification:
+  - All five workflow YAMLs parse (local PyYAML check).
+  - Sentinel SQL validated against production D1 (window functions OK; 0 flapping sources today).
+  - Medic reliability SQL validated against production D1: 34 sources in the last 7 days, including gold777 ATS additions (greenhouse:gitlab 143 items, greenhouse:ghost 4, breezy:time-etc 1) — end-to-end proof of the F-20 fetch-event fix.
+
 ### Post-Handoff F-20 - Major Audit: Silent-Error Elimination & Durability Hardening
 
 - Date: 2026-07-04

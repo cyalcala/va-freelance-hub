@@ -10,59 +10,62 @@ historical, and where to resume. Start here instead of guessing from filenames.
 Read these in order:
 
 1. `AGENTS.md` - active project context and operating rules.
-2. `docs/major-audit-2026-07-04.md` - latest major audit: found and fixed the
+2. `docs/maintenance-bot-2026-07-04.md` - the Tier-1 maintenance bot: Hunter
+   alert issues, daily Sentinel flapping-source detector, weekly Medic
+   health digest. Detection is automated; decisions stay human/agent-gated.
+3. `docs/major-audit-2026-07-04.md` - latest major audit: found and fixed the
    silent fetch-event logging failure (D1 bound-parameter limit), rewrote the
    hard-deleting prune endpoint to soft-archive, surfaced triage failures and
    cadence-guard state in scrape responses, and set the durability rules for
    future write paths.
-3. `docs/gold777-directory-import-2026-07-04.md` - directory-import
+4. `docs/gold777-directory-import-2026-07-04.md` - directory-import
    checkpoint: 32 new `va_directory` companies cross-referenced from
    `gold777.xlsx`, plus verified Greenhouse/Breezy ATS tokens for GitLab,
    Ghost, Remote.com, and Time Etc.
-4. `docs/IMPLEMENTATION_STATUS.md` - current percentage, phase status, and next
+5. `docs/IMPLEMENTATION_STATUS.md` - current percentage, phase status, and next
    task.
-3. `docs/HANDOFF.md` - latest stop/resume note.
-4. `docs/MASTER_EXECUTION_PLAN.md` - full roadmap and acceptance strategy.
-5. `docs/AI_RECOVERY_TRAIL.md` - backup loop and evidence requirements.
-6. `docs/SYSTEM_SAVEPOINT.md` - current saved state and operational baseline.
-7. `docs/gemini-masterplan-handoff-2026-06-13.md` - current Gemini-ready
+6. `docs/HANDOFF.md` - latest stop/resume note.
+7. `docs/MASTER_EXECUTION_PLAN.md` - full roadmap and acceptance strategy.
+8. `docs/AI_RECOVERY_TRAIL.md` - backup loop and evidence requirements.
+9. `docs/SYSTEM_SAVEPOINT.md` - current saved state and operational baseline.
+10. `docs/gemini-masterplan-handoff-2026-06-13.md` - current Gemini-ready
    masterplan, latest QA baseline, and next ordered workstreams.
-8. `docs/remote-ok-json-source-handoff-2026-06-13.md` - latest source-specific
+11. `docs/remote-ok-json-source-handoff-2026-06-13.md` - latest source-specific
    handoff for Remote OK JSON ingestion, quality filtering, production D1
    evidence, and next safe work.
-9. `docs/source-expansion-2026-06-12.md` - accepted source-expansion
+12. `docs/source-expansion-2026-06-12.md` - accepted source-expansion
    implementation evidence, D1 source-state snapshot, and next safe work.
-10. `docs/goldilocks-source-expansion-handoff-2026-06-12.md` - source-expansion
+13. `docs/goldilocks-source-expansion-handoff-2026-06-12.md` - source-expansion
    plan for balanced compliance, ingestion caps, cadence, and indexing.
-11. `docs/ats-policy-follow-up-2026-06-12.md` - latest ATS source policy
+14. `docs/ats-policy-follow-up-2026-06-12.md` - latest ATS source policy
    hardening and Hunter evidence.
-12. `docs/wrangler-d1-audit-2026-06-12.md` - latest Wrangler v4 and local D1
+15. `docs/wrangler-d1-audit-2026-06-12.md` - latest Wrangler v4 and local D1
    audit recovery evidence.
-13. `docs/major-audit-2026-06-11.md` - major health audit and hotfix evidence.
-14. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
+16. `docs/major-audit-2026-06-11.md` - major health audit and hotfix evidence.
+17. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
    backfill evidence.
-15. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
+18. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
    findings.
-16. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
+19. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
    evidence.
-17. `docs/ats-source-review-2026-06-09.md` - earlier ATS source policy
+20. `docs/ats-source-review-2026-06-09.md` - earlier ATS source policy
    evidence.
-18. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
+21. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
    metrics.
-19. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
+22. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
    dry run.
-20. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
+23. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
    quality improvement.
-21. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
+24. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
    and backup-hygiene checkpoint.
-22. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
+25. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
    checkpoint.
-23. `docs/source-health-latest.md` - current repo-readable source-health state.
-24. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
+26. `docs/source-health-latest.md` - current repo-readable source-health state.
+27. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
    acceptance audit.
-25. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+28. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-26. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+29. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points

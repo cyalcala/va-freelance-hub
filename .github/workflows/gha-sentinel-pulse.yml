@@ -1,0 +1,118 @@
+name: 🛰️ Sovereign Sentinel Pulse (Flapping Source Detector)
+
+# Tier-1 maintenance bot (2026-07-04): reads the source_fetch_events history
+# (real data since the 2026-07-04 major audit fixed its silent insert failure)
+# and files a pause recommendation issue for any source whose last 4
+# non-skipped fetch attempts all failed. Detection is deterministic; the
+# pause itself stays a human/agent decision per the compliance policy in
+# AGENTS.md — this bot never edits code.
+
+on:
+  schedule:
+    - cron: '30 1 * * *' # Daily at 01:30 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: gha-sentinel-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  sentinel:
+    name: Detect Flapping Sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Query Consecutive Failures (read-only)
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npx wrangler@4 d1 execute remoteph-jobs-db --remote --json --command "
+            SELECT source_id,
+                   COUNT(*) AS consecutive_fails,
+                   MAX(timestamp) AS last_failure,
+                   MAX(error) AS sample_error
+            FROM (
+              SELECT source_id, ok, timestamp, error,
+                     ROW_NUMBER() OVER (PARTITION BY source_id ORDER BY timestamp DESC) AS rn
+              FROM source_fetch_events
+              WHERE skipped = 0
+            )
+            WHERE rn <= 4 AND ok = 0
+            GROUP BY source_id
+            HAVING COUNT(*) >= 4;
+          " > ../../sentinel.json
+          jq '.[0].results' ../../sentinel.json
+
+      - name: File Pause Recommendations
+        run: |
+          set -euo pipefail
+          COUNT=$(jq '.[0].results | length' sentinel.json)
+          echo "Flapping sources detected: $COUNT"
+          if [ "$COUNT" -eq 0 ]; then
+            echo "All sources healthy. No action."
+            exit 0
+          fi
+
+          gh label create "source-health" --repo "$GITHUB_REPOSITORY" \
+            --description "Automated maintenance-bot health alerts" \
+            --color D93F0B --force || true
+
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          jq -c '.[0].results[]' sentinel.json | while read -r ROW; do
+            SOURCE_ID=$(echo "$ROW" | jq -r '.source_id')
+            FAILS=$(echo "$ROW" | jq -r '.consecutive_fails')
+            LAST=$(echo "$ROW" | jq -r '.last_failure')
+            ERR=$(echo "$ROW" | jq -r '.sample_error // "n/a"')
+            TITLE="Auto-pause recommended: ${SOURCE_ID}"
+
+            EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+              --search "in:title \"$TITLE\"" --json number --jq 'length')
+            if [ "$EXISTING" -gt 0 ]; then
+              echo "Open recommendation already exists for ${SOURCE_ID}; skipping."
+              continue
+            fi
+
+            {
+              echo "The Sentinel pulse found that \`${SOURCE_ID}\` failed its last ${FAILS} non-skipped fetch attempts."
+              echo ""
+              echo "- Last failure: ${LAST}"
+              echo "- Sample error: \`${ERR}\`"
+              echo "- Detection run: ${RUN_URL}"
+              echo ""
+              echo "### Suggested action"
+              echo ""
+              echo "Per the time-boxing rule in AGENTS.md, pause the source rather than rathole:"
+              echo ""
+              echo "- RSS/HTML/JSON sources: set the entry to disabled with a dated reason in \`packages/scraper/sources.ts\`."
+              echo "- ATS tokens: set \`enabled: false\` (or remove the token) in \`ATS_TOKEN_POLICIES\` in \`apps/web/src/pages/api/cron/scrape.ts\`."
+              echo ""
+              echo "Close this issue after pausing, or if the source recovers on its own"
+              echo "(the Sentinel will re-open a fresh recommendation if it flaps again)."
+            } > sentinel-body.md
+
+            gh issue create --repo "$GITHUB_REPOSITORY" \
+              --title "$TITLE" \
+              --label "source-health" \
+              --body-file sentinel-body.md
+            echo "Filed pause recommendation for ${SOURCE_ID}."
+          done
+
+      - name: 📊 Sentinel Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          COUNT=$(jq '.[0].results | length' sentinel.json 2>/dev/null || echo "n/a")
+          echo "### 🛰️ Sovereign Sentinel Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Flapping sources (last 4 attempts all failed)**: $COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_STEP_SUMMARY
