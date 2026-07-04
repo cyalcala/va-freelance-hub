@@ -30,6 +30,26 @@ function toContentHash(title: string, sourceUrl: string): string {
   return ((h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0")).slice(0, 16);
 }
 
+function greenhouseLocationSummary(job: any): string | null {
+  const location = normalizeText(job?.location?.name);
+  return location ? `Location: ${location}` : null;
+}
+
+function breezyLocationSummary(job: any): string | null {
+  const locations = Array.isArray(job?.locations) ? job.locations : [job?.location];
+  const names = locations
+    .map((location: any) => normalizeText(location?.name))
+    .filter(Boolean);
+
+  if (names.length === 0) return null;
+
+  const remoteSignals = locations
+    .map((location: any) => location?.is_remote)
+    .filter((value: unknown) => typeof value === "boolean");
+  const remoteText = remoteSignals.length > 0 ? ` Remote: ${remoteSignals.some(Boolean) ? "yes" : "no"}.` : "";
+  return `Location: ${Array.from(new Set(names)).join("; ")}.${remoteText}`;
+}
+
 export async function fetchATSFeed(
   platform: "lever" | "greenhouse" | "workable" | "breezy",
   token: string,
@@ -106,7 +126,7 @@ async function fetchGreenhouse(token: string, companyName: string): Promise<NewO
         sourcePlatform: companyName,
         tags: [companyName.toLowerCase()],
         locationType: "remote",
-        description: null, // Greenhouse board API doesn't return description by default
+        description: greenhouseLocationSummary(job),
         postedAt: safeNormalizeDate(job.updated_at),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
@@ -170,6 +190,7 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
     .map((job: any) => {
       const title = normalizeText(job.name);
       const sourceUrl = job.url;
+      const payRange = normalizeText(job.salary) || null;
       return {
         title,
         company: companyName,
@@ -178,7 +199,8 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
         sourcePlatform: companyName,
         tags: [companyName.toLowerCase()],
         locationType: "remote",
-        description: null,
+        payRange,
+        description: breezyLocationSummary(job),
         postedAt: safeNormalizeDate(job.published_date),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),

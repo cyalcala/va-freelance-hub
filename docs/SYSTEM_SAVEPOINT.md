@@ -2,11 +2,26 @@
 
 ### Current Savepoint
 
-Date: 2026-06-15
+Date: 2026-07-04
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`
 
-Latest stop-point handoff:
+Latest implementation commit (pending push):
+
+- `feat: import gold777.xlsx directory entries and verify ats expansion`
+- Handoff doc: `docs/gold777-directory-import-2026-07-04.md`
+- Evidence:
+  - Cross-referenced `gold777.xlsx` (79 rows) against production `va_directory` (265 rows); imported 32 new companies via `apps/web/gold777_imports.sql`, bringing the total to 297.
+  - Confirmed 4 live public ATS endpoints by direct probe (not guessed) and wired `va_directory` rows to match already-uncommitted scraper code: `greenhouse:gitlab`, `greenhouse:ghost`, `greenhouse:remotecom`, `breezy:time-etc`.
+  - Left all unconfirmed ATS token guesses (Zapier, Buffer, Doist, Automattic, ClickUp, Wise, Canva, Shopify, Help Scout, Wishup, Atlassian) as directory-only entries.
+- Verification:
+  - Local D1 dry-run passed (32/32 statements).
+  - Production D1 import verified: `SELECT COUNT(*) FROM va_directory` went 265 -> 297.
+  - `bun test` passed (61/61 tests).
+  - `bun run --cwd apps/web build` passed.
+- Credentials: no new credentials introduced; reused existing `gh` CLI GitHub login and existing local Wrangler/Cloudflare OAuth login already configured on this machine.
+
+Previous stop-point handoff:
 
 - `docs/gemini-masterplan-handoff-2026-06-13.md`
 - Captures the current Gemini-ready masterplan after Gemini's payload/test work

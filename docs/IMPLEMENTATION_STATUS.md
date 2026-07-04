@@ -52,6 +52,25 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-19 - Gold777 Directory Import & Verified ATS Expansion
+
+- Date: 2026-07-04
+- Status: completed cross-referenced directory import and confirmed-only ATS token verification
+- Scope:
+  - Cross-referenced `gold777.xlsx` (79 rows) against the production `va_directory` table (265 rows); found 44 exact/normalized duplicates and 3 near-duplicates already present under slightly different names (Pepper Virtual Assistant, Belay, GetMagic).
+  - Imported 32 genuinely new companies into `va_directory` via `apps/web/gold777_imports.sql`, bringing the total from 265 to 297.
+  - Classified each new entry's `niche` (`job-boards`, `bpo`, `tech`, `ecommerce`, `global-va`) following existing directory precedent, researching real websites via WebSearch for lesser-known regional platforms (VA Workers PH, Kerja-Remote, HireBasis, Prosple, GigaBPO, Remote Philippines, Amentum).
+  - Probed public Greenhouse/Lever/Workable/Breezy Job Board APIs for every remote-first tech company candidate rather than guessing tokens; confirmed 4 live endpoints (`greenhouse:gitlab` 143 jobs, `greenhouse:ghost` 4 jobs, `greenhouse:remotecom` 287 jobs, `breezy:time-etc`) and left all unconfirmed guesses (Zapier, Buffer, Doist, Automattic, ClickUp, Wise, Canva, Shopify, Help Scout, Wishup, Atlassian) as directory-only entries with no ATS wiring.
+  - Completed in-progress, previously uncommitted work already present in `packages/scraper/ats.ts` and `apps/web/src/pages/api/cron/scrape.ts` (referencing "Gold777 review 2026-07-03") by adding matching `va_directory` rows with `ats_platform`/`ats_token` for the 4 confirmed companies.
+  - Documented full method, dedupe logic, and ATS probe evidence in `docs/gold777-directory-import-2026-07-04.md`.
+- Verification:
+  - Dry-run applied cleanly against local D1 (`wrangler d1 execute remoteph-jobs-db --local`), 32/32 statements succeeded.
+  - Production import applied via `wrangler d1 execute remoteph-jobs-db --remote`; `SELECT COUNT(*) FROM va_directory` confirmed 265 -> 297.
+  - Spot-checked all 32 new rows' `niche`/`ats_platform`/`ats_token` values against the intended import.
+  - `bun test` passed (61/61 tests).
+  - `bun run --cwd apps/web build` passed.
+  - No new credentials were introduced; used the existing `gh` CLI GitHub login and the existing local Wrangler/Cloudflare OAuth login already configured on this machine.
+
 ### Post-Handoff F-18 - Dayshift Directory Imports & ATS Expansion
 
 - Date: 2026-06-15

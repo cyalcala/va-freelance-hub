@@ -137,6 +137,24 @@ const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
 };
 
 const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
+  "greenhouse:gitlab": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Gold777 review 2026-07-03: Greenhouse Job Board API endpoint is public and returns published jobs; collect minimal factual metadata, include location context for triage, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+  },
+  "greenhouse:ghost": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Gold777 review 2026-07-03: Greenhouse Job Board API endpoint is public and returns published jobs; collect minimal factual metadata, include location context for triage, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+  },
+  "greenhouse:remotecom": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Gold777 review 2026-07-03: Greenhouse Job Board API endpoint is public and returns published jobs; collect minimal factual metadata, include location context for triage, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+  },
   "breezy:20four7va": {
     enabled: true,
     complianceStatus: "needs_review",
@@ -154,6 +172,12 @@ const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
     complianceStatus: "needs_review",
     complianceNotes:
       "Goldilocks review 2026-06-12: public Breezy career endpoint is robots-allowed and CORS-readable but currently returns zero jobs; keep minimal monitored access and pause on objection or clarified hostile terms.",
+  },
+  "breezy:time-etc": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "Gold777 review 2026-07-03: public Breezy career endpoint is robots-allowed and returns published jobs; collect minimal factual metadata, include location context for triage, link back to Breezy-hosted URLs, and pause on objection or clarified hostile terms.",
   },
 };
 
