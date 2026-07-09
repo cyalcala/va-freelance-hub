@@ -178,8 +178,15 @@ export function isEnabledSource(source: Source): boolean {
   return source.complianceStatus !== "paused" && source.complianceStatus !== "deprecated";
 }
 
-export const enabledSources = sources.filter(isEnabledSource);
-export const disabledSources = sources.filter((s) => !isEnabledSource(s));
+// Sentinel auto-pauses (paused-sources.json) are applied on top of the static
+// config: an auto-paused source becomes complianceStatus "paused" with the
+// pause reason prefixed into its notes, so existing skip reporting surfaces
+// it with no caller changes. See pause.ts.
+import { applyAutoPauses, autoPauseEntries } from "./pause";
+const effectiveSources = applyAutoPauses(sources, autoPauseEntries);
+
+export const enabledSources = effectiveSources.filter(isEnabledSource);
+export const disabledSources = effectiveSources.filter((s) => !isEnabledSource(s));
 export const rssSources = enabledSources.filter((s) => s.type === "rss");
 export const htmlSources = enabledSources.filter((s) => s.type === "html");
 export const jsonSources = enabledSources.filter((s) => s.type === "json");

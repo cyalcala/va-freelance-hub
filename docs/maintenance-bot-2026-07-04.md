@@ -102,14 +102,60 @@ Design properties that keep Tier 2 as safe as Tier 1:
   (`@cf/meta/llama-3.1-8b-instruct` with fallback) that production triage
   has run daily for weeks, within the Workers AI free allocation.
 
-## Tier 3 / Level A Auto-Pause (Documented, Not Implemented)
+## Tier 3 / Level A Auto-Pause (Implemented 2026-07-08)
 
-If fuller autonomy is wanted later: upgrade Sentinel from
-recommend-a-pause to open-a-pause-PR with auto-merge on green CI. Pausing
-is fail-safe and policy-encoded, so it is the one code change safe to
-automate. Requires a fine-grained PAT secret (GITHUB_TOKEN-created PRs do
-not trigger CI) and enabling repo auto-merge. Enabling sources and editing
-scraper logic stay human-gated regardless.
+The Sentinel pulse is now fully autonomous for the one action that is
+fail-safe and policy-encoded (AGENTS.md: pause repeatedly-failing sources,
+don't rathole): pausing.
+
+Architecture — the bot edits data, never code:
+
+- `packages/scraper/paused-sources.json` is the machine-managed pause list.
+  The Sentinel only ever APPENDS entries `{sourceId, reason, pausedAt, by}`.
+- `packages/scraper/pause.ts` validates the file defensively (malformed
+  entries are dropped, never thrown — a bad entry cannot break scraping)
+  and applies pauses as pure, unit-tested functions.
+- RSS/JSON/HTML sources: `sources.ts` overlays auto-pauses onto the static
+  config, so a paused source flows through the existing
+  `disabledSources`/skip-reason reporting with zero caller changes.
+- ATS tokens: `atsPlatformPolicy()` in scrape.ts checks `isAutoPaused()`
+  first, returning a paused policy with the pause reason in the notes.
+- Pauses take effect on deploy — which the bot's own merge triggers.
+
+Autonomous flow (requires the `SENTINEL_BOT_PAT` secret):
+
+1. Detection unchanged (last 4 non-skipped attempts all failed).
+2. **Mass-failure guard**: >3 sources flapping at once = infrastructure
+   outage signature -> ONE alert issue, nothing paused.
+3. Already-paused sources are filtered out (idempotent across runs).
+4. Date-keyed branch (`bot/auto-pause-YYYY-MM-DD`, max one PR/day), jq
+   appends the entries, then the FULL CI gate runs in-runner (`bun test` +
+   `bun run build` — guardrail parity) BEFORE any merge.
+5. PR opened with the evidence table + advisory AI diagnosis, labeled
+   `auto-pause`, then squash-merged with the PAT. The PAT-made push to main
+   triggers ci-guardrail, which deploys — the pause reaches production with
+   no human in the loop.
+6. Un-pausing is human-only: remove the JSON entry after the source
+   recovers. Enabling sources and editing scraper logic remain human-gated
+   permanently.
+
+Fallback: without the PAT, the Sentinel files the Tier-1 recommendation
+issue exactly as before (now including the ready-to-paste JSON entry).
+
+### One-time user setup to activate autonomy
+
+1. GitHub -> Settings -> Developer settings -> Personal access tokens ->
+   Fine-grained tokens -> Generate new token.
+2. Repository access: Only select repositories -> `cyalcala/va-freelance-hub`.
+3. Permissions -> Repository permissions: **Contents: Read and write**,
+   **Pull requests: Read and write**. Nothing else.
+4. Repo Settings -> Secrets and variables -> Actions -> New repository
+   secret: name `SENTINEL_BOT_PAT`, value = the token.
+5. Done — the next Sentinel run auto-detects the secret and switches modes.
+
+Why the PAT is required: events caused by the built-in `GITHUB_TOKEN` do
+not trigger workflows (GitHub anti-recursion), so a bot merge made with it
+would never run CI on main and the pause would never deploy.
 
 ## Verification
 

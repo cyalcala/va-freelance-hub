@@ -4,7 +4,7 @@ import { isNotNull, and, inArray, eq } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, chunkArray, maxRowsPerD1Batch, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -199,6 +199,15 @@ function atsSourceKey(agency: AtsAgency): string {
 function atsPlatformPolicy(agency: AtsAgency): AtsPlatformPolicy {
   const platform = agency.atsPlatform as AtsPlatform | null;
   const sourceKey = platform && agency.atsToken ? `${platform}:${agency.atsToken}` : null;
+  // Sentinel auto-pauses (paused-sources.json) take precedence over static
+  // token policies; the pause reason flows into skip reporting via notes.
+  if (sourceKey && isAutoPaused(sourceKey)) {
+    return {
+      enabled: false,
+      complianceStatus: "paused",
+      complianceNotes: autoPauseNote(sourceKey) ?? `Auto-paused by sentinel-bot.`,
+    };
+  }
   if (sourceKey && sourceKey in ATS_TOKEN_POLICIES) {
     return ATS_TOKEN_POLICIES[sourceKey];
   }

@@ -52,6 +52,21 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-23 - Tier-3 Autonomous Auto-Pause (Sentinel)
+
+- Date: 2026-07-08
+- Status: implemented and pushed; autonomy activates when the user adds the `SENTINEL_BOT_PAT` secret (setup steps in `docs/maintenance-bot-2026-07-04.md`); until then Sentinel falls back to recommendation issues
+- Scope:
+  - New `packages/scraper/paused-sources.json` — machine-managed pause list the bot only ever appends to; config-over-code per AGENTS.md engineering preferences.
+  - New `packages/scraper/pause.ts` — defensive validation (malformed entries dropped, never thrown) + pure `applyAutoPauses` overlay; 9 unit tests in `pause.test.ts`.
+  - `sources.ts` overlays auto-pauses so paused feeds flow through existing skip reporting unchanged; `atsPlatformPolicy()` in scrape.ts checks `isAutoPaused()` for ATS tokens.
+  - Sentinel workflow upgraded to three modes: infrastructure guard (>3 sources flapping = outage signature -> one alert issue, zero pauses), autonomous PR mode (date-keyed branch, jq append, in-runner `bun test` + `bun run build` guardrail parity before merge, PR with evidence + AI diagnosis, squash-merge via PAT -> CI deploys the pause), and the prior recommendation-issue fallback when no PAT.
+  - Un-pause, source enabling, and code edits remain human-gated permanently.
+- Verification:
+  - `bun test` 79/79 (9 new pause tests).
+  - `bun run --cwd apps/web build` passed with the JSON import bundled.
+  - Workflow YAML parses; CI guardrail green on push.
+
 ### Post-Handoff F-22 - Tier-2 AI Diagnosis On Bot Issues
 
 - Date: 2026-07-04

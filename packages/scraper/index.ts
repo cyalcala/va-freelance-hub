@@ -7,3 +7,5 @@ export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./s
 export type { TriageResult } from "./triage";
 export { fetchATSFeed } from "./ats";
 export { chunkArray, maxRowsPerD1Batch, D1_MAX_BOUND_PARAMETERS } from "./batch";
+export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validateAutoPauses } from "./pause";
+export type { AutoPauseEntry } from "./pause";

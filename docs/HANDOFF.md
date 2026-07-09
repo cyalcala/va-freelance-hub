@@ -2,6 +2,19 @@
 
 ### Current State
 
+Date: 2026-07-08
+Status: Tier-3 autonomous auto-pause implemented (checkpoint F-23). Sentinel
+now detects flapping sources and — when the `SENTINEL_BOT_PAT` secret exists —
+appends them to `packages/scraper/paused-sources.json` on a branch, validates
+with full guardrail parity in-runner, opens an evidence PR, squash-merges, and
+the resulting CI deploy activates the pause. Mass-failure guard (>3 flapping =
+infrastructure issue, zero pauses), one PR/day cap, append-only JSON, un-pause
+human-only. Without the PAT it files recommendation issues as before. User
+setup steps: `docs/maintenance-bot-2026-07-04.md`. Next planned work:
+`docs/comprehensive-audit-masterplan-2026-07-07.md` (W0-W9).
+
+### Previous State
+
 Date: 2026-07-04
 Status: Tier-1 maintenance bot implemented (`docs/maintenance-bot-2026-07-04.md`):
 Hunter now files deduped alert issues on internal degradation, the daily

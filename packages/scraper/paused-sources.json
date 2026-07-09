@@ -1,0 +1,4 @@
+{
+  "$comment": "Machine-managed auto-pause list. The Sentinel pulse APPENDS entries here via PR when a source fails its last 4 non-skipped fetch attempts. Humans may remove entries to un-pause. sourceId matches source_fetch_events.source_id: plain ids for RSS/JSON/HTML sources (e.g. 'remotive'), 'platform:token' for ATS (e.g. 'breezy:sourcefit'). Never edit by hand while an auto-pause PR is open.",
+  "paused": []
+}
