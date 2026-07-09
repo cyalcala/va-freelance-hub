@@ -4,7 +4,7 @@ import { isNotNull, and, inArray, eq } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -508,6 +508,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
     
     console.log(`[api/cron/scrape] Found ${atsAgencies.length} ATS-enabled agencies in the directory.`);
 
+    // Reconcile Sentinel auto-pauses against the actual source universe: an
+    // entry whose sourceId matches neither a static source id nor any ATS
+    // platform:token key pauses nothing — surface that instead of silently
+    // fetching a source the bot believed it paused.
+    const knownPauseTargets = new Set<string>([
+      ...staticSources.map((s) => s.id),
+      ...atsAgencies
+        .filter((a) => a.atsPlatform && a.atsToken)
+        .map((a) => `${a.atsPlatform}:${a.atsToken}`),
+    ]);
+    const unmatchedPauses = autoPauseEntries
+      .map((e) => e.sourceId)
+      .filter((id) => !knownPauseTargets.has(id));
+    if (unmatchedPauses.length > 0) {
+      console.warn(`[api/cron/scrape] ${unmatchedPauses.length} auto-pause entr(ies) match no known source and pause nothing:`, unmatchedPauses.join(", "));
+    }
+
         const sortedAtsAgencies = [...atsAgencies].sort((a, b) =>
       atsSourceKey(a).localeCompare(atsSourceKey(b)) ||
       a.companyName.localeCompare(b.companyName)
@@ -628,6 +645,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         insertFailedBatches: 0,
         insertErrors: [],
         skipped: 0,
+        unmatchedPauses,
         failedSources,
         sourceResults,
         fetchEventLog,
@@ -638,6 +656,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 4. De-duplicate against existing database entries by source URL (batch check, not full-table scan)
     const allScrapedUrls = allItems.map(item => item.sourceUrl).filter(Boolean);
+    // Items without a usable sourceUrl can neither dedup nor insert — count
+    // them so the raw -> dedup -> triage -> insert funnel stays closed-form.
+    const droppedNoUrl = allItems.length - allScrapedUrls.length;
+    if (droppedNoUrl > 0) {
+      console.warn(`[api/cron/scrape] ${droppedNoUrl} scraped item(s) had no usable sourceUrl and were dropped.`);
+    }
     const BATCH_SIZE = 50;
     const existingUrls = new Set<string>();
     for (let i = 0; i < allScrapedUrls.length; i += BATCH_SIZE) {
@@ -672,6 +696,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         insertFailedBatches: 0,
         insertErrors: [],
         skipped: allItems.length,
+        droppedNoUrl,
+        unmatchedPauses,
         failedSources,
         sourceResults,
         fetchEventLog,
@@ -687,12 +713,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.log(`[api/cron/scrape] Processing ${itemsToProcess.length} out of ${newItems.length} new items (limit: ${limit})`);
 
     const triagedItems: typeof opportunities.$inferInsert[] = [];
+    // Ineligible jobs are persisted as INACTIVE rows so their source_url
+    // enters dedup: previously they were dropped with no record, re-entered
+    // newItems on every run, were re-triaged (Workers AI cost) indefinitely,
+    // and a cluster of persistent ineligible listings at the head of a large
+    // feed could permanently starve items behind the per-run limit.
+    const rejectedItems: typeof opportunities.$inferInsert[] = [];
     const concurrency = 3;
     // Jobs whose triage call threw are dropped from this run. Count them so the
     // response (and Hunter annotations) can distinguish "filtered out by
     // policy" from "lost to a triage error" — previously these vanished with
     // only a console.error.
     let triageFailures = 0;
+    // Jobs the AI never actually classified (binding missing / all models
+    // failed). FAIL CLOSED: skip them this run — their URLs are not inserted,
+    // so they naturally retry on the next run when AI recovers. Previously
+    // these failed open as eligible/other and an AI outage silently filled
+    // the board with unfiltered listings.
+    let triageAiUnavailable = 0;
 
     for (let i = 0; i < itemsToProcess.length; i += concurrency) {
       const chunk = itemsToProcess.slice(i, i + concurrency);
@@ -713,8 +751,29 @@ export const POST: APIRoute = async ({ request, locals }) => {
       for (const { item, triage } of results) {
         if (!triage) continue;
 
+        if (triage.aiUnavailable) {
+          triageAiUnavailable += 1;
+          console.warn(`[api/cron/scrape] AI unavailable for "${item.title}"; deferring to next run (fail closed).`);
+          continue;
+        }
+
+        const cleanDesc = (item.description || "").slice(0, 1500);
+        const descriptionHash = await generateHash(item.title + cleanDesc);
+
         if (!triage.eligibleForFilipinos) {
           console.log(`[api/cron/scrape] Filtering out ineligible job: "${item.title}". Reason: ${triage.reason}`);
+          rejectedItems.push({
+            ...item,
+            isActive: false,
+            tags: Array.from(new Set([...(item.tags || []), "triage-rejected"])),
+            category: "other",
+            descriptionHash,
+            applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+            postedAt: normalizeUtcIso(item.postedAt),
+            scrapedAt: observedAt,
+            lastSeenInFeedAt: observedAt,
+            updatedAt: observedAt,
+          });
           continue;
         }
 
@@ -729,12 +788,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
           .filter(Boolean)
           .map((t) => typeof t === 'string' ? t.toLowerCase().trim() : t);
 
-        const cleanDesc = (item.description || "").slice(0, 1500);
-        const descriptionHash = await generateHash(item.title + cleanDesc);
-
         triagedItems.push({
           ...item,
-          applicationUrl: triage.applicationUrl || item.applicationUrl || item.sourceUrl,
+          // Sanitized precedence: the LLM-extracted apply link only wins when
+          // it is a real http(s)/mailto URL — previously the raw model string
+          // overrode verified URLs with no validation.
+          applicationUrl: sanitizeApplyUrl(triage.applicationUrl) || sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
           tags: mergedTags,
           payRange: triage.payRange,
           category: mapTriageCategoryToUiCategory(triage.category),
@@ -750,26 +809,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     console.log(`[api/cron/scrape] ${triagedItems.length} jobs approved after AI triaging`);
-
-    if (triagedItems.length === 0) {
-      return new Response(JSON.stringify({
-        inserted: 0,
-        actualChanges: 0,
-        acceptedForInsert: 0,
-        attemptedInsert: 0,
-        insertFailedBatches: 0,
-        insertErrors: [],
-        triageFailures,
-        processed: itemsToProcess.length,
-        backlogRemaining: newItems.length - itemsToProcess.length,
-        skipped: allItems.length,
-        failedSources,
-        sourceResults,
-        fetchEventLog,
-        cadenceGuards,
-        message: "No jobs passed AI triage in this batch"
-      }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }
+    // Note: no early return when triagedItems is empty — rejected items must
+    // still be persisted below so an all-ineligible batch is not re-triaged
+    // forever. The insert loops are no-ops on empty arrays.
 
     // 6. Batch insert into D1
     let actualChanges = 0;
@@ -803,6 +845,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
+    // 6b. Persist triage-rejected items as inactive rows so their URLs join
+    // dedup and they are never re-triaged. Failures here must not fail the
+    // run — they are counted and surfaced instead.
+    let rejectedPersisted = 0;
+    let rejectedInsertFailedBatches = 0;
+    for (let i = 0; i < rejectedItems.length; i += D1_INSERT_BATCH_SIZE) {
+      const batch = rejectedItems.slice(i, i + D1_INSERT_BATCH_SIZE);
+      try {
+        const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
+        if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
+          rejectedPersisted += (res as any).meta.changes;
+        }
+      } catch (err) {
+        rejectedInsertFailedBatches += 1;
+        console.warn(`[api/cron/scrape] Rejected-item batch insert failed (index ${i}):`, errorMessage(err));
+      }
+    }
+    if (rejectedItems.length > 0) {
+      console.log(`[api/cron/scrape] Persisted ${rejectedPersisted}/${rejectedItems.length} triage-rejected items as inactive rows (${rejectedInsertFailedBatches} failed batches).`);
+    }
+
     console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}`);
     return new Response(JSON.stringify({
       inserted: actualChanges,
@@ -812,6 +875,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       insertFailedBatches,
       insertErrors,
       triageFailures,
+      triageAiUnavailable,
+      rejectedPersisted,
+      rejectedInsertFailedBatches,
+      droppedNoUrl,
+      unmatchedPauses,
       filteredOut: itemsToProcess.length - triagedItems.length,
       processed: itemsToProcess.length,
       backlogRemaining: newItems.length - itemsToProcess.length,

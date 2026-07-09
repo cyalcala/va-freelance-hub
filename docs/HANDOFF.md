@@ -3,6 +3,22 @@
 ### Current State
 
 Date: 2026-07-08
+Status: Comprehensive audit Part 1 complete (checkpoint F-24,
+`docs/comprehensive-audit-report-2026-07.md`). Fixed: triage fail-open
+during AI outages (now fail-closed + counted), unvalidated LLM apply-URLs
+(sanitized precedence), hostile-entity feed kills (guarded decode +
+per-item isolation), infinite re-triage of rejected items (persisted as
+inactive rows), production-confirmed temp-B-tree board sort (expression
+index migration 0018), plus consistency/observability fixes (shared
+contentHash/text/urls modules, funnel counters, unmatched-pause
+reconciliation, new Hunter annotations). 91/91 tests. Remaining dimension
+sweeps (W2-W8) stay queued in the masterplan. Post-deploy acceptance:
+confirm production EXPLAIN plan uses `active_effective_posted_idx`, and
+watch the next Hunter run for the new response fields.
+
+### Previous State
+
+Date: 2026-07-08
 Status: Tier-3 autonomous auto-pause implemented (checkpoint F-23). Sentinel
 now detects flapping sources and — when the `SENTINEL_BOT_PAT` secret exists —
 appends them to `packages/scraper/paused-sources.json` on a branch, validates

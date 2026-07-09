@@ -1,6 +1,8 @@
 import { XMLParser } from "fast-xml-parser";
 import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
+import { decodeHtmlEntities, xmlNodeText, xmlTextList } from "./text";
+import { toContentHash } from "./contentHash";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -18,18 +20,9 @@ interface RawRSSItem {
   description?: string;
   "dc:creator"?: string;
   author?: string;
-  category?: string | string[];
-}
-
-function decodeHtmlEntities(raw: string): string {
-  return raw
-    .replace(/&#(\d+);/g, (_match, code) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([0-9a-f]+);/gi, (_match, code) => String.fromCodePoint(Number.parseInt(code, 16)))
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&apos;/g, "'")
-    .replace(/&nbsp;/g, " ");
+  // Runtime shape can also be attributed objects like {'@_domain', '#text'};
+  // xmlTextList handles every variant.
+  category?: unknown;
 }
 
 function normalizeText(raw: string | undefined): string {
@@ -40,20 +33,6 @@ function normalizeText(raw: string | undefined): string {
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function toContentHash(title: string, sourceUrl: string): string {
-  const str = `${title}::${sourceUrl}`;
-  let h1 = 0xdeadbeef;
-  let h2 = 0x41c6ce57;
-  for (let i = 0; i < str.length; i++) {
-    const ch = str.charCodeAt(i);
-    h1 = Math.imul(h1 ^ ch, 2654435761);
-    h2 = Math.imul(h2 ^ ch, 1597334677);
-  }
-  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
-  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
-  return ((h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0")).slice(0, 16);
 }
 
 function normalizeDate(rawDate: string | undefined): string | null {
@@ -100,12 +79,14 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
     console.log(`[rss] ${source.name}: capped ${items.length} raw items to ${cappedItems.length}`);
   }
 
+  // flatMap with a per-item guard: one malformed item must never reject the
+  // whole feed (previously a hostile numeric entity threw inside .map and
+  // zeroed the entire source for the run).
   const opportunities: NewOpportunity[] = cappedItems
     .filter((item) => item.title && (item.link ?? item.id))
-    .map((item) => {
-      const title = normalizeText(
-        typeof item.title === "string" ? item.title : item.title?.["#text"]
-      );
+    .flatMap((item) => {
+      try {
+      const title = normalizeText(xmlNodeText(item.title) ?? undefined);
       const link =
         typeof item.link === "string"
           ? item.link
@@ -114,17 +95,13 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
 
       const tags: string[] = [
         ...source.tags,
-        ...(Array.isArray(item.category)
-          ? item.category.map(String)
-          : item.category
-          ? [String(item.category)]
-          : []),
+        ...xmlTextList(item.category),
       ].slice(0, 10);
 
       const rawDate = item.pubDate ?? item.published;
 
       let finalTitle = title;
-      let extractedCompany = normalizeText(item["dc:creator"] ?? item.author) || null;
+      let extractedCompany = normalizeText(xmlNodeText(item["dc:creator"] ?? item.author) ?? undefined) || null;
 
       // Pre-process missing company names from "Company: Job Title" format (e.g. WeWorkRemotely)
       if (!extractedCompany && finalTitle.includes(":")) {
@@ -135,7 +112,7 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
         }
       }
 
-      return {
+      return [{
         title: finalTitle,
         company: extractedCompany,
         type: source.defaultJobType,
@@ -144,11 +121,15 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
         tags,
         locationType: "remote" as const,
         payRange: null,
-        description: normalizeText(item.description).slice(0, 1500) || null,
+        description: normalizeText(xmlNodeText(item.description) ?? undefined).slice(0, 1500) || null,
         postedAt: normalizeDate(rawDate),
         isActive: true,
         contentHash: toContentHash(finalTitle, sourceUrl),
-      } satisfies NewOpportunity;
+      } satisfies NewOpportunity];
+      } catch (err) {
+        console.warn(`[rss] ${source.name}: skipped one malformed item:`, (err as Error).message);
+        return [];
+      }
     });
 
   console.log(`[rss] ${source.name}: ${opportunities.length} items`);

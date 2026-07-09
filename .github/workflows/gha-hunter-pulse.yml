@@ -162,6 +162,18 @@ jobs:
             echo "::warning title=Triage errors dropped jobs::$TRIAGE_FAILURES job(s) were dropped because triage threw an error (not policy filtering)."
           fi
 
+          # 6. AI-unavailable check (fail-closed deferrals; a sustained streak = Workers AI outage)
+          TRIAGE_AI_UNAVAILABLE=$(jq -r '.triageAiUnavailable // 0' harvest.log || echo 0)
+          if [ "$TRIAGE_AI_UNAVAILABLE" -gt 0 ]; then
+            echo "::warning title=Workers AI unavailable::$TRIAGE_AI_UNAVAILABLE job(s) deferred to the next run because no AI model classified them (fail-closed)."
+          fi
+
+          # 7. Auto-pause reconciliation check (a pause entry that matches no source pauses nothing)
+          UNMATCHED_PAUSES=$(jq -r '(.unmatchedPauses // []) | length' harvest.log || echo 0)
+          if [ "$UNMATCHED_PAUSES" -gt 0 ]; then
+            echo "::warning title=Unmatched auto-pause entries::$UNMATCHED_PAUSES entr(ies) in paused-sources.json match no known source and pause nothing."
+          fi
+
           FAILED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' harvest.log || echo 0)
           ZERO_COUNT_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == true and .count == 0 and (.skipped != true))] | length' harvest.log || echo 0)
           SKIPPED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.skipped == true)] | length' harvest.log || echo 0)
@@ -182,6 +194,10 @@ jobs:
             echo "- Fetch Events Recorded: $FETCH_EVENTS_RECORDED/$FETCH_EVENTS_ATTEMPTED (failed batches: $FETCH_EVENT_FAILED_BATCHES)"
             echo "- Cadence State Available: $CADENCE_STATE_AVAILABLE"
             echo "- Triage Failures: $TRIAGE_FAILURES"
+            echo "- AI-Unavailable Deferrals: $TRIAGE_AI_UNAVAILABLE"
+            echo "- Rejected Persisted (inactive): $(jq -r '.rejectedPersisted // 0' harvest.log || echo 0)"
+            echo "- Dropped (no sourceUrl): $(jq -r '.droppedNoUrl // 0' harvest.log || echo 0)"
+            echo "- Unmatched Auto-Pauses: $UNMATCHED_PAUSES"
           } > source-health-summary.md
 
           if [ "$FAILED_SOURCE_COUNT" -gt 0 ]; then

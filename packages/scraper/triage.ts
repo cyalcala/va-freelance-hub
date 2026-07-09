@@ -9,6 +9,11 @@ export interface TriageResult {
   employmentType: "full-time" | "part-time" | "contract" | "freelance" | null;
   experienceLevel: "entry" | "mid" | "senior" | "any" | null;
   companyName: string | null;
+  // True when no AI model actually classified this job (binding missing or
+  // every model failed). Callers must treat such results as UNCLASSIFIED and
+  // must not persist them as eligible — previously these failed open and an
+  // AI outage silently filled the board with unfiltered listings.
+  aiUnavailable?: boolean;
 }
 
 // Simple regex list for obvious geo-exclusion checks before running LLM (saves tokens)
@@ -165,6 +170,7 @@ export async function triageJob(
       employmentType: null,
       experienceLevel: null,
       companyName: null,
+      aiUnavailable: true,
     };
   }
 
@@ -292,5 +298,6 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
     employmentType: null,
     experienceLevel: null,
     companyName: null,
+    aiUnavailable: true,
   };
 }

@@ -31,7 +31,7 @@ export const opportunities = sqliteTable("opportunities", {
     .notNull()
     .default(sql`(datetime('now'))`),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-  contentHash: text("content_hash").notNull(), // sha256 of title+sourceUrl for dedup
+  contentHash: text("content_hash").notNull(), // 64-bit cyrb-style hash of title+sourceUrl (packages/scraper/contentHash.ts); dedup belt — primary dedup is UNIQUE source_url
   updatedAt: text("updated_at"),
   lastSeenInFeedAt: text("last_seen_in_feed_at"),
   lastVerifiedAt: text("last_verified_at"),

@@ -52,6 +52,22 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-24 - Comprehensive Audit Part 1: Pipeline Correctness Fixes
+
+- Date: 2026-07-08
+- Status: implemented, 91/91 tests, build passed; production index applied via deploy-migrations pipeline on push
+- Report: `docs/comprehensive-audit-report-2026-07.md`
+- Confirmed findings fixed (each verified against code before action):
+  - Triage fail-open during AI outages -> fail-closed with `triageAiUnavailable` counter + Hunter warning (A-1).
+  - Unvalidated LLM applicationUrl overriding verified URLs -> shared `sanitizeApplyUrl()` with sanitized precedence (A-2).
+  - Hostile numeric HTML entity zeroing a whole feed per run -> shared guarded `text.ts` decode + per-item try/catch (A-3).
+  - Rejected items re-triaged forever / head-of-line starvation -> persisted as inactive `triage-rejected` rows joining dedup (A-4).
+  - Production-confirmed temp-B-tree board sort -> expression index migration `0018_effective_posted_idx.sql` (A-5, plan verified locally).
+  - "[object Object]" category tags, leaky funnel accounting, silently-unmatched auto-pause entries -> fixed with counters + annotations (A-6..A-8).
+  - content_hash: four private copies + false sha256 schema comment -> single shared `contentHash.ts`, honest docs; harvest.ts confirmed dead (A-9).
+- Cross-dimension manual checks: zero HTML-injection sinks (grep), applicationUrl unrendered, chef.ts live / harvest.ts dead, 1 duplicate company group in production.
+- Verification: `bun test` 91/91 (12 new); local D1 plan uses `active_effective_posted_idx` with no temp B-tree; YAMLs parse.
+
 ### Post-Handoff F-23 - Tier-3 Autonomous Auto-Pause (Sentinel)
 
 - Date: 2026-07-08
