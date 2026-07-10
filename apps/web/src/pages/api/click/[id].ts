@@ -40,10 +40,25 @@ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
       return new Response("Invalid redirect URL", { status: 403 });
     }
 
+    // Rate-limit the DB write per client IP (after redirect-target validation,
+    // so the rate-limited path still only ever redirects to a validated URL).
+    // A crawler/attacker spamming this public endpoint cannot inflate clickCount
+    // or exhaust the D1 write quota (which would throttle ingest). No-op if
+    // unbound; over-limit still redirects, it just skips the write.
+    const rateLimiter = env?.API_RATE_LIMITER;
+    let allowWrite = true;
+    if (rateLimiter) {
+      const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
+      const { success } = await rateLimiter.limit({ key: `click:${clientIp}` });
+      allowWrite = success;
+    }
+
     // Track click and redirect
-    await db.update(opportunities)
-      .set({ clickCount: sql`${opportunities.clickCount} + 1` })
-      .where(eq(opportunities.id, id));
+    if (allowWrite) {
+      await db.update(opportunities)
+        .set({ clickCount: sql`${opportunities.clickCount} + 1` })
+        .where(eq(opportunities.id, id));
+    }
 
     return redirect(targetUrl, 302);
   } catch (err) {

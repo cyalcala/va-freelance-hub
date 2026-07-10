@@ -1,7 +1,16 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { eq, sql, inArray, asc } from "drizzle-orm";
+import { chunkArray } from "@va-hub/scraper";
 import { daysAgoUtcIso, nowUtcIso } from "@/lib/time";
+import { isAuthorized } from "@/lib/auth";
+
+// D1 rejects statements binding >100 parameters. The archive UPDATE binds
+// (2 SET params + N ids); batch-bumped lastSeenInFeedAt means 100+ rows from a
+// dead source cross the 30-day cutoff in the same run, so N must be chunked or
+// the entire verifier pipeline throws and wedges (same class as the 2026-07-04
+// S-1 fetch-event fix). 90 keeps 90 + 2 comfortably under 100.
+const ARCHIVE_ID_BATCH = 90;
 
 export const prerender = false;
 
@@ -12,12 +21,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const db = getDb(env);
   const startedAt = nowUtcIso();
 
-  // Authorization Check — supports both header formats and env var names for compatibility
-  const proxySecret = env?.PROXY_SECRET || env?.CRON_SECRET;
-  const authHeader = request.headers.get("Authorization");
-  const cronSecretHeader = request.headers.get("x-cron-secret");
-  const providedSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cronSecretHeader;
-  if (!proxySecret || !providedSecret || providedSecret !== proxySecret) {
+  // Rate-limit before auth so the shared secret cannot be brute-forced at
+  // unlimited speed. No-op if the binding is absent.
+  const rateLimiter = env?.API_RATE_LIMITER;
+  if (rateLimiter) {
+    const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
+    const { success } = await rateLimiter.limit({ key: `verify-links:${clientIp}` });
+    if (!success) {
+      return new Response("Too Many Requests", { status: 429 });
+    }
+  }
+
+  // Constant-time shared-secret check (supports Bearer and x-cron-secret).
+  if (!isAuthorized(request, env?.PROXY_SECRET || env?.CRON_SECRET)) {
     console.warn("[api/cron/verify-links] Unauthorized access attempt");
     return new Response("Unauthorized", { status: 401 });
   }
@@ -30,9 +46,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .where(sql`${opportunities.isActive} = 1 AND unixepoch(COALESCE(${opportunities.lastSeenInFeedAt}, ${opportunities.scrapedAt})) < unixepoch(${staleCutoff})`);
       
     if (stale.length > 0) {
-      await db.update(opportunities)
-        .set({ isActive: false, updatedAt: startedAt })
-        .where(inArray(opportunities.id, stale.map(s => s.id)));
+      for (const batch of chunkArray(stale.map(s => s.id), ARCHIVE_ID_BATCH)) {
+        await db.update(opportunities)
+          .set({ isActive: false, updatedAt: startedAt })
+          .where(inArray(opportunities.id, batch));
+      }
       console.log(`[api/cron/verify-links] Auto-archived ${stale.length} stale jobs older than 30 days`);
     }
 
@@ -79,7 +97,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
                 console.log(`[api/cron/verify-links] Deactivated: ${sourceUrl} (failed 3 times)`);
                 return 1;
               } else {
-                await db.update(opportunities).set({ failedVerificationCount: newFailCount, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
+                // Atomic increment (not JS read-modify-write from the run-start
+                // snapshot) so overlapping runs cannot lose a strike.
+                await db.update(opportunities).set({ failedVerificationCount: sql`${opportunities.failedVerificationCount} + 1`, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
                 console.log(`[api/cron/verify-links] Transient error (${res.status}): ${sourceUrl} (strike ${newFailCount})`);
               }
             } else {

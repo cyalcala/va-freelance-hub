@@ -2,6 +2,21 @@
 
 ### Current State
 
+Date: 2026-07-10
+Status: Comprehensive audit Part 2 complete (checkpoint F-25,
+`docs/comprehensive-audit-report-2026-07.md`). CRITICAL: leaked legacy
+secrets in tracked build artifacts were untracked (`f85eed9`) — **OWNER MUST
+ROTATE** the Turso, Trigger.dev, and ISR secrets at their providers (they
+remain in git history until a consented purge). Also fixed: verify-links
+D1-param wedge (chunked), /api/ingest mass-assignment (allow-list +
+sanitize), ci-guardrail/deploy-migrations concurrency, bot push rebase-retry,
+Sentinel branch re-entrancy, /api/click rate limit, atomic verify increment,
+constant-time auth on prune/verify-links. 91/91 tests. Five audit dimensions
+(performance, frontend, workflows-CI, data-integrity, code-quality) remain
+queued — they errored on agent capacity, not findings.
+
+### Previous State
+
 Date: 2026-07-08
 Status: Comprehensive audit Part 1 complete (checkpoint F-24,
 `docs/comprehensive-audit-report-2026-07.md`). Fixed: triage fail-open

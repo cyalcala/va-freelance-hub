@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { sql } from "drizzle-orm";
 import { nowUtcIso } from "@/lib/time";
+import { isAuthorized } from "@/lib/auth";
 
 export const prerender = false;
 
@@ -32,12 +33,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const env = locals.runtime?.env ?? (import.meta as any).env;
 
-    const authHeader = request.headers.get("Authorization");
-    const cronSecretHeader = request.headers.get("x-cron-secret");
-    const proxySecret = env.PROXY_SECRET || env.CRON_SECRET;
-    const providedSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cronSecretHeader;
+    // Rate-limit before auth so an attacker cannot brute-force the shared
+    // secret at unlimited speed. No-op if the binding is absent.
+    const rateLimiter = env?.API_RATE_LIMITER;
+    if (rateLimiter) {
+      const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
+      const { success } = await rateLimiter.limit({ key: `prune:${clientIp}` });
+      if (!success) {
+        return new Response(JSON.stringify({ error: "Too Many Requests" }), { status: 429 });
+      }
+    }
 
-    if (!proxySecret || !providedSecret || providedSecret !== proxySecret) {
+    if (!isAuthorized(request, env.PROXY_SECRET || env.CRON_SECRET)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 

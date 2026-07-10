@@ -163,7 +163,11 @@ jobs:
           git config user.email "sentinel-bot@users.noreply.github.com"
           git add packages/scraper/paused-sources.json
           git commit -m "bot: auto-pause flapping sources (${IDS})"
-          git push origin "$BRANCH"
+          # Re-entrant: if a prior same-day run pushed this branch but died
+          # before opening the PR (leaving a stale remote branch and no open
+          # PR, so the open-PR guard above lets us proceed), force-with-lease
+          # replaces it instead of failing non-fast-forward.
+          git push --force-with-lease origin "$BRANCH"
 
           # Optional advisory AI diagnosis for the PR body (never blocks).
           ai_diagnose() {

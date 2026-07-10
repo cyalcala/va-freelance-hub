@@ -1,8 +1,14 @@
 import type { APIRoute } from "astro";
 import { getDb, contentDigests } from "@va-hub/db";
+import { chunkArray, maxRowsPerD1Batch } from "@va-hub/scraper";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
+
+// contentDigests inserts ~9 columns/row; D1 caps a statement at 100 bound
+// parameters, so a single insert 500s once the payload exceeds ~11 items —
+// while the endpoint advertised a 200-item limit. Chunk to honor that limit.
+const DIGEST_COLUMNS = 9;
 
 function normalizeDigestForInsert(item: any, processedAt: string) {
   return {
@@ -68,18 +74,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const db = getDb(locals.runtime?.env);
     const processedAt = nowUtcIso();
     const normalizedItems = items.map((item) => normalizeDigestForInsert(item, processedAt));
-    
-    // Insert with deduplication based on videoId
-    const result = await db.insert(contentDigests)
-      .values(normalizedItems)
-      .onConflictDoNothing({ target: contentDigests.videoId })
-      .returning({ id: contentDigests.id });
 
-    return new Response(JSON.stringify({ 
-      success: true, 
-      inserted: result.length,
+    // Insert with deduplication based on videoId, chunked under the D1 limit.
+    let inserted = 0;
+    for (const chunk of chunkArray(normalizedItems, maxRowsPerD1Batch(DIGEST_COLUMNS))) {
+      const result = await db.insert(contentDigests)
+        .values(chunk)
+        .onConflictDoNothing({ target: contentDigests.videoId })
+        .returning({ id: contentDigests.id });
+      inserted += result.length;
+    }
+
+    return new Response(JSON.stringify({
+      success: true,
+      inserted,
       totalReceived: items.length
-    }), { 
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });

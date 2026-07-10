@@ -149,11 +149,130 @@ the W8 cleanup (deletion needs user sign-off).
    list_models.ts, onlinejobs_test.html, root xlsx/db files, dual lockfiles);
    scrape.ts modularization (~900 lines); 3 search components unification.
 
-## Prioritized Roadmap
+## Part 2 - Concurrency & Security Sweep (2026-07-10)
 
-- **Next 30 days:** finish W2 (concurrency) + W3 (security) sweeps; events
-  retention migration; va_directory unique index.
-- **Next quarter:** scrape.ts modularization with extracted pure functions +
-  tests; /directory pagination; dead-code removal batch.
-- **Opportunistic:** search-component unification; Tier-3 PAT activation for
-  autonomous pauses (setup steps in docs/maintenance-bot-2026-07-04.md).
+The concurrency-idempotency and security dimensions completed their agent
+sweep (the other five errored on session capacity and remain queued). 14
+findings; the verifier agents could not run (same capacity limit), so every
+finding was re-verified manually against the code before action. All
+confirmed items were fixed this pass.
+
+### B-0 (CRITICAL, confirmed) Live legacy secrets in committed build artifacts
+`git ls-files` showed 63 tracked files under
+`apps/web-nextjs-backup/.wrangler/`; the `worker.js` dev bundles hardcoded a
+Turso rw JWT, a Trigger.dev `tr_dev_` key, and `ISR_SECRET`. `.wrangler/` was
+gitignored later (F-03) but never untracked these pre-existing copies. The
+active app has zero tracked `.wrangler` files. **Fix:** `git rm --cached` the
+whole tree (commit `f85eed9`). **Owner action still required:** rotate all
+three secrets at their providers — the values survive in git history until a
+separate history purge (filter-repo/BFG + force-push) is run with consent.
+These are legacy-stack credentials (Turso/Trigger.dev are deprecated, not the
+D1 production path), which bounds but does not eliminate the exposure.
+
+### B-1 (HIGH, confirmed) verify-links stale-archive could wedge on the D1 param limit
+`db.update(...).where(inArray(id, stale.map(...)))` binds 2 + N parameters;
+batch-bumped `lastSeenInFeedAt` makes 100+ rows from a dead/paused source
+cross the 30-day cutoff together, so N > 98 threw "too many SQL variables"
+and — being the first operation — killed the whole verifier run (stale-archive
+AND link verification). Same class as the 2026-07-04 S-1 fix. **Fix:** chunk
+the archive UPDATE via `chunkArray(..., 90)`.
+
+### B-2 (HIGH, confirmed) /api/ingest mass-assignment + unsanitized apply URL
+The live endpoint (advertised as `INGEST_API_URL` in Hunter) spread `...item`
+into the row, letting any secret-holder set `isActive`, `clickCount`, `id`,
+`contentHash`, and store an unsanitized `applicationUrl` — the exact bypass
+A-2 closed in the scrape route. **Fix:** explicit allow-list mapping;
+`sanitizeApplyUrl` on the apply URL; server-computed `contentHash`
+(shared module) and `descriptionHash`; forced `isActive=true`,
+`clickCount=0`; enum validation for type/locationType/experienceLevel; rows
+without an http(s) `sourceUrl` are rejected and counted (`rejectedForUrl`);
+switched to bare `onConflictDoNothing()` so a content_hash collision is
+absorbed rather than thrown.
+
+### B-3 (HIGH, confirmed) ci-guardrail had no concurrency group -> out-of-order deploys
+Two close pushes to main (a realistic daily pattern: Sentinel PAT merge +
+Hunter rollup) ran ci-guardrail in parallel; the older commit's
+`wrangler pages deploy` could finish last and overwrite the newer production
+deployment, both green. **Fix:** `concurrency: ci-guardrail-${{ github.ref }}`
+with `cancel-in-progress: false` serializes deploys in push order.
+
+### B-4 (MEDIUM, confirmed) ingest-digest single un-chunked insert
+`items.length <= 200` was validated but a single `insert(values(all))` over
+~9-column rows 500s past ~11 items. Latent (Chef posts 1) but a false
+promise. **Fix:** chunk via `maxRowsPerD1Batch(9)`.
+
+### B-5 (MEDIUM, confirmed) deploy-migrations concurrency + ordering
+No concurrency group (concurrent applies could race wrangler's tracking
+table). **Fix:** `concurrency: d1-migrations`. Code-before-migration ordering
+across the two independent workflows is noted as a follow-up (documented
+below) since it needs a larger restructure.
+
+### B-6 (MEDIUM, confirmed) bot git pushes had no rebase-retry
+Hunter rollup and Medic did `git push origin HEAD:main` with no retry; a
+concurrent push in the window failed the job — costing Medic a whole week's
+digest. **Fix:** bounded 5-attempt `push || pull --rebase` loop in both
+(each bot owns its own file, so rebases are conflict-free).
+
+### B-7 (MEDIUM, confirmed) Sentinel same-day branch collision
+If a run pushed `bot/auto-pause-DATE` then died before `gh pr create`, the
+next same-day run failed non-fast-forward and the pause never shipped.
+**Fix:** `git push --force-with-lease` makes the branch push re-entrant
+(safe — the open-PR guard already returned zero open PRs for that head).
+
+### B-8 (MEDIUM, confirmed) /api/click unthrottled public DB write
+A crawler/attacker looping `GET /api/click/<id>?url=<valid>` drove unbounded
+D1 writes (clickCount inflation + write-quota exhaustion that could throttle
+ingest). The redirect target was already validated (not an open redirect) and
+the increment already atomic. **Fix:** `API_RATE_LIMITER` gate (60/60s per IP)
+placed AFTER redirect-target validation so the rate-limited path still only
+redirects to a validated URL, and over-limit still redirects — it just skips
+the write.
+
+### B-9 (LOW, confirmed) fixes bundled in
+- verify-links `failedVerificationCount` now increments via atomic SQL
+  (`col + 1`) instead of JS read-modify-write from the run snapshot.
+- Shared `src/lib/auth.ts` with a constant-time secret compare; applied to
+  prune and verify-links (which also gained rate limiting). scrape/ingest/
+  ingest-digest keep their working inline checks — adopting `isAuthorized`
+  there is a documented consistency follow-up (timing channel is theoretical).
+
+### Part 2 refuted / deferred as latent
+- **Workable rotation liveness** (verifiedAt only advances on success ->
+  starvation): real but LATENT — Workable is disabled
+  (`ATS_PLATFORM_POLICIES.workable.enabled = false`) and Sentinel would pause
+  the flapping tokens. Documented as a must-fix-before-re-enabling-Workable
+  item rather than changed now.
+- **Cadence-guard TOCTOU** (concurrent scrape double-fetch): LOW — GitHub's
+  per-workflow concurrency group serializes the only real caller; data stays
+  correct (idempotent writes). Documented; the atomic-claim rewrite is a
+  follow-up.
+
+## Before / After (Part 2)
+
+| Metric | Before | After |
+| --- | --- | --- |
+| Secrets in tracked files | 3 live legacy secrets in 63 artifacts | 0 tracked (rotation pending owner) |
+| verify-links on 100+ stale rows | throws, wedges whole verifier | chunked, survives |
+| /api/ingest column control | client sets any column | server-owned allow-list |
+| /api/ingest apply URL | unsanitized | sanitizeApplyUrl |
+| ingest-digest > 11 items | 500 | chunked |
+| Close pushes to main | parallel, deploy race | serialized in order |
+| Bot push vs concurrent push | job fails, digest lost | rebase-retry (x5) |
+| /api/click flood | unbounded DB writes | 60/60s per IP |
+| Secret compare | short-circuit (timing) | constant-time (prune, verify-links) |
+
+## Prioritized Roadmap (updated)
+
+- **Owner, immediate:** rotate the Turso / Trigger.dev / ISR secrets; decide
+  whether to purge git history (destructive, needs consent).
+- **Next 30 days:** finish the 5 queued dimension sweeps (performance,
+  frontend, workflows-CI, data-integrity, code-quality); events retention
+  migration; va_directory unique index; adopt `isAuthorized` in the remaining
+  three routes.
+- **Next quarter:** code-before-migration ordering (merge migrate step into
+  ci-guardrail before deploy); Workable rotation liveness (attempt-based
+  cursor) before re-enabling Workable; scrape.ts modularization; /directory
+  pagination; dead-code removal (incl. deleting apps/web-nextjs-backup after
+  secret rotation).
+- **Opportunistic:** search-component unification; cadence-guard atomic claim;
+  Tier-3 PAT activation (setup in docs/maintenance-bot-2026-07-04.md).

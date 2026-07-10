@@ -52,6 +52,17 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-25 - Comprehensive Audit Part 2: Concurrency & Security
+
+- Date: 2026-07-10
+- Status: implemented, 91/91 tests, build gate pending push; report extended in `docs/comprehensive-audit-report-2026-07.md`
+- CRITICAL (B-0): 63 tracked apps/web-nextjs-backup/.wrangler build artifacts hardcoded live LEGACY secrets (Turso rw JWT, Trigger.dev key, ISR_SECRET). Untracked in commit `f85eed9`. OWNER MUST ROTATE the three secrets at their providers — values persist in git history until a consented history purge. Legacy stack (not the D1 production path), which bounds the exposure.
+- HIGH fixes: verify-links stale-archive chunked under the D1 100-param limit (B-1, would wedge the whole verifier); /api/ingest hardened from `...item` mass-assignment to an explicit server-owned allow-list with sanitizeApplyUrl + server-computed hashes + enum validation (B-2); ci-guardrail given a concurrency group to stop out-of-order deploys (B-3).
+- MEDIUM fixes: ingest-digest insert chunked (B-4); deploy-migrations concurrency group (B-5); Hunter-rollup + Medic pushes given bounded rebase-retry (B-6); Sentinel branch push made re-entrant via --force-with-lease (B-7); /api/click DB write rate-limited after redirect-target validation (B-8).
+- LOW fixes: atomic SQL increment for failedVerificationCount; shared constant-time `src/lib/auth.ts` applied to prune + verify-links (which also gained rate limiting) (B-9).
+- Deferred (documented, latent): Workable rotation liveness (fix before re-enabling Workable); cadence-guard TOCTOU atomic claim; isAuthorized adoption in scrape/ingest/ingest-digest; 5 queued dimension sweeps.
+- Verification: `bun test` 91/91; all 5 edited workflow YAMLs parse; build gate + CI on push.
+
 ### Post-Handoff F-24 - Comprehensive Audit Part 1: Pipeline Correctness Fixes
 
 - Date: 2026-07-08

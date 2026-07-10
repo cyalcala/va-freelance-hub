@@ -331,7 +331,14 @@ jobs:
           fi
 
           git commit -m "docs: update daily source health"
-          git push origin HEAD:main
+          # Bounded rebase-retry: another job (Medic, Sentinel, human) may push
+          # to main in the same window; a bare push would fail non-fast-forward.
+          # This bot owns its own file, so rebases are conflict-free.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then break; fi
+            echo "Push rejected (attempt $attempt); rebasing on main and retrying."
+            git pull --rebase origin main
+          done
 
   # Tier-1 maintenance bot (2026-07-04): turn degradation warnings into a
   # tracked GitHub issue instead of scroll-past run annotations. At most one

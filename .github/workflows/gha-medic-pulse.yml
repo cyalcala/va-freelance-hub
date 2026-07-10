@@ -117,7 +117,14 @@ jobs:
           fi
 
           git commit -m "docs: update weekly health digest"
-          git push origin HEAD:main
+          # Bounded rebase-retry: Medic runs weekly, so a lost push means no
+          # digest for 7 days. Another job pushing in the window must not cost
+          # the whole week. This bot owns its own file, so rebases are clean.
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then break; fi
+            echo "Push rejected (attempt $attempt); rebasing on main and retrying."
+            git pull --rebase origin main
+          done
 
       - name: 📊 Medic Summary
         if: always()

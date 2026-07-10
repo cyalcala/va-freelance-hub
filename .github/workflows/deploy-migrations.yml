@@ -7,6 +7,12 @@ on:
     paths:
       - 'packages/db/migrations/**'
 
+# Serialize migration runs so concurrent applies cannot race wrangler's
+# migration-tracking table.
+concurrency:
+  group: d1-migrations
+  cancel-in-progress: false
+
 jobs:
   migrate:
     name: Apply D1 Migrations
