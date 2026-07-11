@@ -43,6 +43,10 @@ export const opportunities = sqliteTable("opportunities", {
   activeScrapedIdx: index("active_scraped_idx").on(table.isActive, table.scrapedAt),
   activePostedIdx: index("active_posted_idx").on(table.isActive, table.postedAt),
   categoryActivePostedIdx: index("category_active_posted_idx").on(table.category, table.isActive, table.postedAt),
+  // Expression index matching the board freshness sort (migration 0018). Kept
+  // in sync with the DB so `drizzle-kit generate` cannot emit a migration that
+  // drops it and regresses the temp-B-tree fix.
+  activeEffectivePostedIdx: index("active_effective_posted_idx").on(table.isActive, sql`coalesce(${table.postedAt}, ${table.scrapedAt}) DESC`),
   activeLastVerifiedIdx: index("active_last_verified_idx").on(table.isActive, table.lastVerifiedAt),
   lastVerifiedIdx: index("last_verified_idx").on(table.lastVerifiedAt),
   contentHashIdx: uniqueIndex("content_hash_idx").on(table.contentHash),

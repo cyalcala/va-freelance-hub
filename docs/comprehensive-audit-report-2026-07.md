@@ -261,6 +261,66 @@ the write.
 | /api/click flood | unbounded DB writes | 60/60s per IP |
 | Secret compare | short-circuit (timing) | constant-time (prune, verify-links) |
 
+## Part 3 - Performance, Frontend, Workflows, Data-Integrity, Code-Quality (2026-07-11)
+
+The agent fleet was capacity-blocked for this pass, so all five remaining
+dimensions were audited by direct static analysis (read-only tools need no
+classifier) plus live production `EXPLAIN QUERY PLAN` probes. Confirmed items
+were fixed; suspected items that the code/plan disproved are recorded as
+verified-clean so a future pass need not re-investigate them.
+
+### C-1 (MEDIUM, confirmed) Drizzle schema drift on the 0018 expression index
+`schema.ts` declares all opportunities indexes EXCEPT
+`active_effective_posted_idx` (added by migration 0018 to fix the board-sort
+temp B-tree). Because the schema is the ORM source of truth, a future
+`drizzle-kit generate` would diff the schema against the DB and emit a
+migration DROPPING the index — silently regressing the A-5 performance fix.
+Blast radius is bounded today (deploy uses `wrangler d1 migrations apply`,
+not drizzle push; `migrate.ts`/`push.ts` target the dead Turso path), so it
+is a latent trap, not an active regression. **Fix:** declared the expression
+index in `schema.ts` via `index(...).on(table.isActive, sql\`coalesce(...)
+DESC\`)` so schema and DB agree and no drop can be generated.
+
+### C-2 (LOW, confirmed) Hunter/Verifier passed a total-outage curl as a warning
+The scrape/verify calls failed the step on `HTTP_CODE -ge 400`, but a curl
+CONNECTION failure returns code `000`, and `000 -ge 400` is false — so a full
+Cloudflare/network outage produced all-zero metrics and only a soft warning
+(a mild watermelon; Prune already used the stricter `!= "200"`). **Fix:**
+both now fail on any non-2xx (`< 200 || >= 300`), catching `000`, 1xx, and
+3xx.
+
+### Part 3 verified-CLEAN (suspected, disproved by reading the code / live plan)
+- **Rejected-row leak (highest-stakes correctness):** every user-facing
+  opportunities query in index/opportunities/[category].astro filters
+  `is_active = 1` (count, list, and facet queries alike), so the new inactive
+  `triage-rejected` rows can never surface on any page, search, or filter.
+- **Category-page temp B-tree:** live production `EXPLAIN QUERY PLAN` for the
+  `WHERE is_active AND category=? ORDER BY coalesce(posted_at, scraped_at)
+  DESC` query shows `USING INDEX active_effective_posted_idx` with NO temp
+  B-tree — the 0018 index serves category pages too (SQLite applies category
+  as a residual filter rather than sorting).
+- **Pagination edge cases:** `?page=0`, negative, and non-numeric all clamp to
+  page 1 via `Number.isFinite(p) && p > 0 ? p : 1` in both paginated pages;
+  beyond-last shows an empty page, no 500.
+- **Mixed timestamp formats:** every insert path (scrape, ingest,
+  rejected-items) writes an ISO `scrapedAt`, so the `datetime('now')` table
+  default never fires — no format drift introduced.
+
+### Part 3 advisory (LOW, not changed)
+- The Workers AI model list is duplicated between `triage.ts` and the two
+  workflow `ai_diagnose` bash helpers; a model deprecation needs three edits.
+  Low impact (the diagnosis path degrades gracefully), noted for a future
+  config-extraction pass.
+
+## Before / After (Part 3)
+
+| Item | Before | After |
+| --- | --- | --- |
+| schema.ts vs DB indexes | 0018 index undeclared (drop trap) | declared, schema == DB |
+| Hunter/Verifier on total outage | all-zero metrics + warning | hard failure on any non-2xx |
+| Rejected rows on UI | (verified) never surface | (verified) never surface |
+| Category page sort | (verified) index-served | (verified) index-served |
+
 ## Prioritized Roadmap (updated)
 
 - **Owner, immediate:** rotate the Turso / Trigger.dev / ISR secrets; decide

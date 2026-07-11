@@ -72,8 +72,11 @@ jobs:
             echo "HTTP Status: $HTTP_CODE"
             cat temp_harvest.log
             echo ""
-            
-            if [ "$HTTP_CODE" -ge 400 ]; then
+
+            # Fail on any non-2xx, INCLUDING curl connection failures (code
+            # "000") and 3xx — a bare `-ge 400` let a total outage pass as a
+            # warning with all-zero metrics (a watermelon).
+            if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
               echo "::error::Scraper API returned HTTP $HTTP_CODE"
               exit 1
             fi

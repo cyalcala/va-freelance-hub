@@ -35,8 +35,9 @@ jobs:
           echo "HTTP Status: $HTTP_CODE"
           cat verify.log
           echo ""
-          
-          if [ "$HTTP_CODE" -ge 400 ]; then
+
+          # Fail on any non-2xx, including curl connection failures ("000").
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
             echo "::error::Verify API returned HTTP $HTTP_CODE"
             exit 1
           fi

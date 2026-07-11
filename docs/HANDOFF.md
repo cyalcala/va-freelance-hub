@@ -2,6 +2,22 @@
 
 ### Current State
 
+Date: 2026-07-11
+Status: Comprehensive audit COMPLETE — all 8 dimensions swept across Parts
+1-3 (checkpoint F-26, `docs/comprehensive-audit-report-2026-07.md`). Part 3
+(perf, frontend, workflows, data-integrity, code-quality) done by static
+analysis + live EXPLAIN plans. Fixed: schema.ts drift on the 0018 expression
+index (drop-trap), and a Hunter/Verifier total-outage watermelon (now fail
+on any non-2xx). Verified-clean: no rejected-row UI leak, category pages
+index-served, pagination guarded, ISO timestamps everywhere. 91/91 tests,
+build passed. STILL PENDING OWNER ACTION from Part 2: rotate the leaked
+Turso / Trigger.dev / ISR secrets at their providers (git history purge is a
+separate consented step). Remaining work is the roadmap in the report
+(events retention, va_directory unique index, dead-code removal, scrape.ts
+modularization) — no known correctness/security defects remain unaddressed.
+
+### Previous State
+
 Date: 2026-07-10
 Status: Comprehensive audit Part 2 complete (checkpoint F-25,
 `docs/comprehensive-audit-report-2026-07.md`). CRITICAL: leaked legacy

@@ -52,6 +52,17 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-26 - Comprehensive Audit Part 3: Perf/Frontend/Workflows/Data/Quality
+
+- Date: 2026-07-11
+- Status: implemented, 91/91 tests, build passed; report extended in `docs/comprehensive-audit-report-2026-07.md`. The final 5 dimensions were audited by direct static analysis + live EXPLAIN plans (agent fleet was capacity-blocked).
+- Confirmed + fixed:
+  - C-1 (MEDIUM): `schema.ts` did not declare `active_effective_posted_idx` (migration 0018), so a future `drizzle-kit generate` could emit a migration dropping it and regress the board-sort perf fix. Declared it as an expression index in schema.ts (build-verified).
+  - C-2 (LOW): Hunter + Verifier failed only on `HTTP_CODE -ge 400`, letting a curl connection failure (`000` on a total outage) pass as an all-zero warning. Both now fail on any non-2xx.
+- Verified-CLEAN (suspected, disproved): no user-facing query can surface the new inactive `triage-rejected` rows (all filter is_active=1); category pages are index-served (live EXPLAIN shows active_effective_posted_idx, no temp B-tree); pagination clamps 0/negative/NaN to page 1; all insert paths write ISO scrapedAt (no datetime('now') drift).
+- Advisory (not changed): Workers AI model list duplicated across triage.ts + 2 workflow bash helpers.
+- With this, all 8 audit dimensions have been swept (Part 1: ingestion; Part 2: concurrency + security; Part 3: the remaining five).
+
 ### Post-Handoff F-25 - Comprehensive Audit Part 2: Concurrency & Security
 
 - Date: 2026-07-10
