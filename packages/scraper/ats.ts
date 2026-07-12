@@ -22,6 +22,13 @@ function greenhouseLocationSummary(job: any): string | null {
   return location ? `Location: ${location}` : null;
 }
 
+function ashbyLocationSummary(job: any): string | null {
+  const location = normalizeText(typeof job?.location === "string" ? job.location : job?.location?.name);
+  const remote = job?.isRemote === true ? " Remote: yes." : job?.isRemote === false ? " Remote: no." : "";
+  if (!location && !remote) return null;
+  return `${location ? `Location: ${location}.` : ""}${remote}`.trim() || null;
+}
+
 function breezyLocationSummary(job: any): string | null {
   const locations = Array.isArray(job?.locations) ? job.locations : [job?.location];
   const names = locations
@@ -38,12 +45,12 @@ function breezyLocationSummary(job: any): string | null {
 }
 
 export async function fetchATSFeed(
-  platform: "lever" | "greenhouse" | "workable" | "breezy",
+  platform: "lever" | "greenhouse" | "workable" | "breezy" | "ashby",
   token: string,
   companyName: string
 ): Promise<NewOpportunity[]> {
   console.log(`[ats] Fetching ${platform} feed for ${companyName} (${token})...`);
-  
+
   try {
     switch (platform) {
       case "lever":
@@ -54,6 +61,8 @@ export async function fetchATSFeed(
         return await fetchWorkable(token, companyName);
       case "breezy":
         return await fetchBreezy(token, companyName);
+      case "ashby":
+        return await fetchAshby(token, companyName);
       default:
         throw new Error(`Unknown ATS platform: ${platform}`);
     }
@@ -115,6 +124,43 @@ async function fetchGreenhouse(token: string, companyName: string): Promise<NewO
         locationType: "remote",
         description: greenhouseLocationSummary(job),
         postedAt: safeNormalizeDate(job.updated_at),
+        isActive: true,
+        contentHash: toContentHash(title, sourceUrl),
+      };
+    });
+}
+
+// Ashby public posting API (jobs.ashbyhq.com boards). Official job-board
+// distribution endpoint: robots-allowed, returns published/listed roles with a
+// direct linkback to the Ashby-hosted posting. Added 2026-07-12 (RemoteWork3.8).
+export async function fetchAshby(token: string, companyName: string): Promise<NewOpportunity[]> {
+  const res = await fetch(`https://api.ashbyhq.com/posting-api/job-board/${token}`, {
+    headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) throw new Error(`Ashby HTTP ${res.status}`);
+  const data = await res.json() as any;
+  if (!Array.isArray(data?.jobs)) {
+    throw new Error(`Ashby feed for ${companyName} (${token}) did not return a jobs array`);
+  }
+
+  return data.jobs
+    // isListed === false means the posting is hidden/unpublished; keep only listed roles.
+    .filter((job: any) => job && job.isListed !== false && job.title && job.jobUrl)
+    .map((job: any) => {
+      const title = normalizeText(job.title);
+      const sourceUrl = job.jobUrl;
+      return {
+        title,
+        company: companyName,
+        type: "full-time",
+        sourceUrl,
+        sourcePlatform: companyName,
+        tags: [companyName.toLowerCase()],
+        locationType: "remote" as const,
+        applicationUrl: typeof job.applyUrl === "string" ? job.applyUrl : null,
+        description: ashbyLocationSummary(job),
+        postedAt: safeNormalizeDate(job.publishedAt),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
       };

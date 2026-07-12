@@ -5,7 +5,7 @@ export { disabledSources, enabledSources, isEnabledSource, sources, rssSources, 
 export { triageJob, isObviousGeoRestriction } from "./triage";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";
-export { fetchATSFeed } from "./ats";
+export { fetchATSFeed, fetchAshby } from "./ats";
 export { chunkArray, maxRowsPerD1Batch, D1_MAX_BOUND_PARAMETERS } from "./batch";
 export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validateAutoPauses } from "./pause";
 export type { AutoPauseEntry } from "./pause";

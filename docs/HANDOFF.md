@@ -2,6 +2,19 @@
 
 ### Current State
 
+Date: 2026-07-12
+Status: RemoteWork3.8 import + Ashby ATS expansion (checkpoint F-27,
+`docs/remotework38-import-2026-07-12.md`). Added a NEW Ashby ATS adapter
+(supabase/camunda/tremendous/amplify/ashby, all probed live) plus 2 Greenhouse
+tokens (grafanalabs, nearform), and 14 new directory companies via idempotent
+migration 0019 (CI applies it — local Wrangler OAuth was expired with error
+7403, so delivery is migration-based). 97/97 tests, build passed. Post-deploy:
+confirm deploy-migrations green for 0019 and the 7 new ATS tokens appear in the
+next Hunter run's source_fetch_events. Prior work: comprehensive audit complete
+(F-24 to F-26).
+
+### Previous State
+
 Date: 2026-07-11
 Status: Comprehensive audit COMPLETE — all 8 dimensions swept across Parts
 1-3 (checkpoint F-26, `docs/comprehensive-audit-report-2026-07.md`). Part 3

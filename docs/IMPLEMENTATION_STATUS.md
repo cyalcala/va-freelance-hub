@@ -52,6 +52,18 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-27 - RemoteWork3.8 Import & Ashby ATS Expansion
+
+- Date: 2026-07-12
+- Status: implemented, 97/97 tests, build passed; directory delivered as migration 0019 (CI applies via deploy-migrations). Report: `docs/remotework38-import-2026-07-12.md`.
+- Scope:
+  - Cross-referenced the 40-row RemoteWork3.8 sheet vs the live 297-company directory; ~25 already present, 1 skipped (Remote Philippines Jobs, Status=Caution), 14 genuinely new.
+  - NEW ATS PLATFORM: added an Ashby adapter (`fetchAshby` in ats.ts, `ashby` in the platform enum/type, fail-closed platform policy + 5 enabled `needs_review` token policies). Ashby's public posting API was probed live: supabase(51), ashby(64), camunda(36), amplify(35), tremendous(20).
+  - Also wired 2 verified Greenhouse tokens (grafanalabs, nearform:34).
+  - Directory import via idempotent migration `0019_remotework38_directory.sql` (WHERE NOT EXISTS guard; 7 rows carry ATS tokens, 7 directory-only BPO/enterprise).
+- Verification: `bun test` 97/97 (6 new Ashby tests); build passed; local D1 applied 14 rows then re-applied 0 (idempotency proven); all ATS tokens probed live before wiring.
+- Note: local Wrangler OAuth was expired (error 7403) so delivery is migration-based (CI applies with the repo Cloudflare token) — no local D1 auth needed.
+
 ### Post-Handoff F-26 - Comprehensive Audit Part 3: Perf/Frontend/Workflows/Data/Quality
 
 - Date: 2026-07-11

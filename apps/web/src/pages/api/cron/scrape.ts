@@ -101,7 +101,7 @@ interface AtsAgency {
   verifiedAt: string | null;
 }
 
-type AtsPlatform = "lever" | "greenhouse" | "workable" | "breezy";
+type AtsPlatform = "lever" | "greenhouse" | "workable" | "breezy" | "ashby";
 
 interface AtsPlatformPolicy {
   enabled: boolean;
@@ -110,6 +110,14 @@ interface AtsPlatformPolicy {
 }
 
 const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
+  ashby: {
+    // Platform default is paused; specific reviewed tokens are enabled in
+    // ATS_TOKEN_POLICIES below (fail-closed for any unreviewed Ashby org).
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes:
+      "Paused 2026-07-12: unknown Ashby orgs require source-specific review; reviewed tokens are enabled individually.",
+  },
   breezy: {
     enabled: false,
     complianceStatus: "paused",
@@ -137,6 +145,52 @@ const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
 };
 
 const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
+  // RemoteWork3.8 review 2026-07-12: Ashby public posting API (jobs.ashbyhq.com
+  // boards) is a documented job-board distribution endpoint; each token below
+  // was probed live and returns published, listed roles. Collect minimal
+  // metadata, link back to the Ashby-hosted posting, pause on objection.
+  "ashby:supabase": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 51 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+  },
+  "ashby:camunda": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 36 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+  },
+  "ashby:tremendous": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 20 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+  },
+  "ashby:amplify": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 35 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+  },
+  "ashby:ashby": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 64 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+  },
+  "greenhouse:grafanalabs": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "RemoteWork3.8 review 2026-07-12: Greenhouse Job Board API is public and returned published jobs; collect minimal metadata, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+  },
+  "greenhouse:nearform": {
+    enabled: true,
+    complianceStatus: "needs_review",
+    complianceNotes:
+      "RemoteWork3.8 review 2026-07-12: Greenhouse Job Board API returned 34 published jobs; collect minimal metadata, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+  },
   "greenhouse:gitlab": {
     enabled: true,
     complianceStatus: "needs_review",
