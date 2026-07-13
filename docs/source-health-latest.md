@@ -1,25 +1,25 @@
 # Source Health Latest
 
-Date: 2026-07-12
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29174645652
-Commit: 575e14d3983b5ff46b36a89319dfa1958cae5345
+Date: 2026-07-13
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29216519818
+Commit: aaf982ee35d13a62a4b579509bba528d9e191928
 
 ### Hunter Source Health
 
-- Timestamp: 2026-07-12T01:02:25Z
-- Run ID: 29174645652
-- Signals Harvested: 0
-- Accepted For Insert: 0
-- Attempted Inserts: 0
+- Timestamp: 2026-07-13T01:03:26Z
+- Run ID: 29216519818
+- Signals Harvested: 9
+- Accepted For Insert: 9
+- Attempted Inserts: 9
 - Failed Insert Batches: 0
 - Insert Errors: 0
 - Failed Sources: 0
 - Zero-Count Successful Sources: 1
 - Skipped Sources: 22
-- Fetch Events Recorded: 35/35 (failed batches: 0)
+- Fetch Events Recorded: 42/42 (failed batches: 0)
 - Cadence State Available: true
 - Triage Failures: 0
-- AI-Unavailable Deferrals: 0
+- AI-Unavailable Deferrals: 1
 - Rejected Persisted (inactive): 0
 - Dropped (no sourceUrl): 0
 - Unmatched Auto-Pauses: 0
