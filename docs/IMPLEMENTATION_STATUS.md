@@ -62,7 +62,8 @@ Current accepted completion: 100% of Lens 2.
   - `apps/web/src/pages/api/cron/prospect.ts`: cron route (auth + rate-limit like prune/verify-links). Mines active jobs for companies missing from va_directory (correlated NOT IN subquery — no param-limit risk), classifies, idempotently auto-adds trusted quality candidates via chunked Drizzle inserts. Mass-add guard (>15/run → add nothing, alert). Fail-closed ATS: discovered tokens are stored but stay PAUSED until promoted in code.
   - `.github/workflows/gha-prospector-pulse.yml`: 4x/day (fed by the 48x/day Hunter ingestion), non-2xx fail guard, backs up `docs/prospector-latest.md` digest to git, files human-gated per-token `ats-proposal` issues, mass-add anomaly issue.
 - Compliance: only companies from already-eligible ingested jobs; enabling ATS scraping stays human/PR-gated per the standing rule; additive/idempotent/reversible.
-- Verification: `bun test` 113/113 (16 new); build passed; YAML valid; production candidate query validated live (real targets found, garbage + spam correctly excluded). First scheduled run occurs after deploy.
+- Verification: `bun test` 113/113 (16 new); build passed; YAML valid.
+- LIVE PROVEN (3 manual dispatches against production): run 1 correctly guarded on a 68-company backlog (led to the cap-and-drain refinement, commit 620d513); run 2 drained 4 (surfaced a batch-insert param overflow → per-row-fallback + safer batch size, commit 396ea9f); run 3 drained the full 15 real companies (LawnStarter, Airalo, Proxify AB, Lemon.io, LiveKit, CloudLinux, Sourcegraph, SafetyWing, Metabase, Fingerprint, ...). Production va_directory 309 → 328 (19 auto-added), garbage (3) rejected and RemoteOK spam (59) held for review every run. Runs 4x/day on schedule; backlog (~48) drains over the next few runs, then steady trickle. Stale run-1 guard issue #50 closed.
 
 ### Post-Handoff F-28 - Homepage Category Bug Fix + Company-Hunter Strategy
 
