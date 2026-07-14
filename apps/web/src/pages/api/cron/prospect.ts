@@ -30,7 +30,11 @@ const MAX_AUTO_ADD_PER_RUN = 15;
 // new bulk source or a parsing bug (the two quality gates already exclude
 // garbage/spam), so add NOTHING and alert instead.
 const ANOMALY_CEILING = 120;
-const DIRECTORY_INSERT_COLUMNS = 9;
+// Conservative param budget: the row has 9 explicit columns, but Drizzle may
+// also bind a default (e.g. created_at), so treat it as wider to stay well
+// under D1's 100-bound-parameter cap. Batch failures also fall back to
+// per-row inserts (below) so throughput is resilient regardless.
+const DIRECTORY_INSERT_COLUMNS = 12;
 
 function errorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
@@ -120,7 +124,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
           added += batch.length;
           addedNames.push(...batch.map((b) => b.companyName));
         } catch (err) {
-          console.warn(`[api/cron/prospect] directory insert batch failed:`, errorMessage(err));
+          // A whole-batch failure (param overflow or one bad row) must not
+          // block the other rows — retry the batch one row at a time.
+          console.warn(`[api/cron/prospect] batch insert failed, retrying rows individually:`, errorMessage(err));
+          for (const row of batch) {
+            try {
+              await db.insert(vaDirectory).values(row);
+              added += 1;
+              addedNames.push(row.companyName);
+            } catch (rowErr) {
+              console.warn(`[api/cron/prospect] row insert failed for ${row.companyName}:`, errorMessage(rowErr));
+            }
+          }
         }
       }
     }
