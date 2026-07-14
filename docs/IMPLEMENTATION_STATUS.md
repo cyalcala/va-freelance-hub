@@ -52,6 +52,15 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-28 - Homepage Category Bug Fix + Company-Hunter Strategy
+
+- Date: 2026-07-14
+- Status: homepage fix implemented + build; strategy doc written for the next AI. Report of the fix below; strategy in `docs/company-hunter-strategy.md`.
+- Bug fixed ("customer-service island is lost"): the homepage "Fresh opportunities by category" section fetched a flat latest-60-overall pool and grouped it client-side, so when ingestion skewed tech-heavy (recent Ashby/Greenhouse additions) whole categories with 100+ active jobs (customer-service 177, design 98) vanished because none appeared in the newest 60. Confirmed live via the browser (homepage showed only admin/marketing/tech/finance/other = 60; customer-service + design absent; /categories/customer-service itself worked with 177 jobs).
+- Root-cause fix: `apps/web/src/pages/index.astro` now sources the preview PER CATEGORY (window function `ROW_NUMBER() OVER (PARTITION BY category ...)` for the freshest N per category, then a typed fetch), guaranteeing every category with jobs gets a card; and passes true per-category active totals so `OpportunitySearch`/`JobCategoryCard` show accurate "N JOBS"/"See all N" (gated to non-search state).
+- Strategy delivered: `docs/company-hunter-strategy.md` — autonomous "Prospector" to discover + auto-add new Filipino-hiring companies from already-ingested eligible jobs, keeping scraping-enable human/PR-gated. Phased rollout, cadence, schema, guardrails specified. Not yet built (recommended next major workstream).
+- Verification: build passed; live browser confirmation of the fix pending the deploy after push.
+
 ### Post-Handoff F-27 - RemoteWork3.8 Import & Ashby ATS Expansion
 
 - Date: 2026-07-12

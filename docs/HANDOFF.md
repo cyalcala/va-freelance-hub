@@ -2,6 +2,27 @@
 
 ### Current State
 
+Date: 2026-07-14
+Status: (1) Fixed the "lost customer-service island" bug — the homepage
+"Fresh opportunities by category" sourced a flat latest-60-overall pool, so
+tech-heavy ingestion hid whole categories (customer-service: 177 jobs,
+design: 98) that had zero rows in the latest 60. Root-cause fix: source the
+preview PER CATEGORY via a window query, and pass true per-category totals so
+each card's "See all N" is accurate. Files: apps/web/src/pages/index.astro,
+apps/web/src/components/OpportunitySearch.tsx.
+(2) NEW STRATEGY DOC FOR THE NEXT AI: `docs/company-hunter-strategy.md` — a
+full plan to upgrade the Hunter to autonomously discover and auto-add new
+companies that hire Filipino talent (the "Prospector"), removing the manual
+spreadsheet-import loop. Key idea: mine the already-ingested, already-eligible
+jobs for companies/ATS tokens not yet in va_directory; auto-add directory rows
+(paused for scraping by default = fail-closed); keep scraping-enable
+human/PR-gated per the compliance policy. Phased rollout, cadence design
+(~48/day extraction, batched verification), schema + workflow changes, and
+guardrails are all specified there. NOT YET BUILT — it is the recommended
+next major workstream.
+
+### Previous State
+
 Date: 2026-07-12
 Status: RemoteWork3.8 import + Ashby ATS expansion (checkpoint F-27,
 `docs/remotework38-import-2026-07-12.md`). Added a NEW Ashby ATS adapter

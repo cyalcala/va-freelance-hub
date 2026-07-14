@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities, vaDirectory } from '@va-hub/db';
-import { eq, desc, count, sql } from 'drizzle-orm';
+import { eq, desc, count, sql, inArray } from 'drizzle-orm';
 import { OpportunitySearch } from '@/components/OpportunitySearch';
 
 export const prerender = false;
@@ -11,39 +11,71 @@ Astro.response.headers.set(
   'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
 );
 
+// How many freshest jobs to preview per category on the homepage.
+const PER_CATEGORY_PREVIEW = 6;
+
 let stats = { opportunities: 0, companies: 0 };
 let latestOpportunities: any[] = [];
+let categoryTotals: Record<string, number> = {};
 
 try {
   const db = getDb(Astro.locals.runtime.env);
-  
+
   const [oppCount] = await db.select({ count: count() }).from(opportunities).where(eq(opportunities.isActive, true));
   const [dirCount] = await db.select({ count: count() }).from(vaDirectory);
-  
+
   stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
-  
-  // Only select the fields used by OpportunityCard and OpportunitySearch
-  // to keep the hydration payload small. Excludes description (~1500 chars
-  // per row), contentHash, descriptionHash, applicationUrl, scrapedAt,
-  // lastSeenInFeedAt, lastVerifiedAt, updatedAt, failedVerificationCount,
-  // clickCount, isActive, clientTimezone, locationType, and payRange.
-  latestOpportunities = await db
-    .select({
-      id: opportunities.id,
-      title: opportunities.title,
-      company: opportunities.company,
-      type: opportunities.type,
-      sourceUrl: opportunities.sourceUrl,
-      sourcePlatform: opportunities.sourcePlatform,
-      tags: opportunities.tags,
-      category: opportunities.category,
-      experienceLevel: opportunities.experienceLevel,
-      postedAt: opportunities.postedAt,
-    })
+
+  // Homepage preview is "Fresh opportunities BY CATEGORY". Previously this
+  // fetched a single flat "latest 60 overall" pool, so whenever ingestion
+  // skewed toward a few categories (e.g. a batch of tech ATS sources), whole
+  // categories with hundreds of active jobs — customer-service, design —
+  // dropped off the homepage entirely because none appeared in the latest 60.
+  // Fix the root cause: fetch the freshest N *per category* so every category
+  // that has jobs always gets a card. A window function keeps this to one
+  // round-trip; then a typed fetch preserves the slim projection + JSON tag
+  // parsing + ordering.
+  const idRows = await db.all<{ id: number }>(sql`
+    SELECT id FROM (
+      SELECT id, ROW_NUMBER() OVER (
+        PARTITION BY category ORDER BY coalesce(posted_at, scraped_at) DESC
+      ) AS rn
+      FROM opportunities WHERE is_active = 1
+    ) WHERE rn <= ${PER_CATEGORY_PREVIEW}
+  `);
+  const ids = idRows.map((r) => Number(r.id)).filter((n) => Number.isFinite(n));
+
+  // Only select the fields used by OpportunityCard/OpportunitySearch to keep
+  // the hydration payload small (excludes description, hashes, timestamps,
+  // clickCount, payRange, etc.).
+  latestOpportunities = ids.length
+    ? await db
+        .select({
+          id: opportunities.id,
+          title: opportunities.title,
+          company: opportunities.company,
+          type: opportunities.type,
+          sourceUrl: opportunities.sourceUrl,
+          sourcePlatform: opportunities.sourcePlatform,
+          tags: opportunities.tags,
+          category: opportunities.category,
+          experienceLevel: opportunities.experienceLevel,
+          postedAt: opportunities.postedAt,
+        })
+        .from(opportunities)
+        .where(inArray(opportunities.id, ids))
+        .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
+    : [];
+
+  // True per-category active totals so each card's "See all N jobs" reflects
+  // the real category size (matching its /categories/[slug] page), not the
+  // preview subset.
+  const totalRows = await db
+    .select({ category: opportunities.category, n: count() })
     .from(opportunities)
     .where(eq(opportunities.isActive, true))
-    .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
-    .limit(60);
+    .groupBy(opportunities.category);
+  categoryTotals = Object.fromEntries(totalRows.map((r) => [r.category, r.n]));
 } catch (e) {
   console.error("DB error:", e);
 }
@@ -95,6 +127,6 @@ try {
         Browse all jobs
       </a>
     </div>
-    <OpportunitySearch client:load opportunities={latestOpportunities} showSearch={false} />
+    <OpportunitySearch client:load opportunities={latestOpportunities} categoryTotals={categoryTotals} showSearch={false} />
   </div>
 </Layout>

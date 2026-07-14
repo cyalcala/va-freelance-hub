@@ -6,13 +6,16 @@ import { JOB_CATEGORY_MAP, getJobCategory } from '@/lib/categories';
 
 const INITIAL_VISIBLE_COUNT = 5;
 
-function JobCategoryCard({ category, jobs }: { category: string, jobs: Opportunity[] }) {
+function JobCategoryCard({ category, jobs, total }: { category: string, jobs: Opportunity[], total?: number }) {
   const info = JOB_CATEGORY_MAP[category] || { title: category, color: 'border-ink/10' };
-  
+
   if (jobs.length === 0) return null;
 
   const visibleJobs = jobs.slice(0, INITIAL_VISIBLE_COUNT);
-  const hasMore = jobs.length > INITIAL_VISIBLE_COUNT;
+  // Prefer the true active category total (from the server) over the preview
+  // subset so the badge and "See all N" reflect the real category size.
+  const totalCount = typeof total === 'number' && total >= jobs.length ? total : jobs.length;
+  const hasMore = totalCount > INITIAL_VISIBLE_COUNT;
 
   return (
     <div className={`mb-8 break-inside-avoid bg-white/70 backdrop-blur-sm rounded-3xl border ${info.color} shadow-lg shadow-ink/5 overflow-hidden flex flex-col transition-all hover:-translate-y-1 hover:shadow-xl duration-300`}>
@@ -20,19 +23,19 @@ function JobCategoryCard({ category, jobs }: { category: string, jobs: Opportuni
         <h3 className="font-extrabold text-sm tracking-widest uppercase text-ink/80 hover:text-accent transition-colors">
           <a href={`/categories/${category}`}>{info.title}</a>
         </h3>
-        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 bg-ink/10 px-2 py-0.5 rounded-full">{jobs.length} JOBS</span>
+        <span className="text-[10px] font-black uppercase tracking-widest opacity-40 bg-ink/10 px-2 py-0.5 rounded-full">{totalCount} JOBS</span>
       </div>
       <div className="p-3 flex flex-col gap-1">
         {visibleJobs.map(opp => (
           <OpportunityCard key={opp.id} opportunity={opp} />
         ))}
-        
+
         {hasMore && (
-          <a 
+          <a
             href={`/categories/${category}`}
             className="mt-3 mx-2 mb-2 py-3 bg-ink/5 rounded-xl text-xs font-bold tracking-widest uppercase text-ink/50 hover:text-accent hover:bg-accent/5 transition-all text-center group block"
           >
-            See all {jobs.length} jobs <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
+            See all {totalCount} jobs <span className="inline-block group-hover:translate-x-1 transition-transform">→</span>
           </a>
         )}
       </div>
@@ -43,9 +46,11 @@ function JobCategoryCard({ category, jobs }: { category: string, jobs: Opportuni
 export function OpportunitySearch({
   opportunities,
   showSearch = true,
+  categoryTotals,
 }: {
   opportunities: Opportunity[];
   showSearch?: boolean;
+  categoryTotals?: Record<string, number>;
 }) {
   const [query, setQuery] = useState('');
 
@@ -115,7 +120,7 @@ export function OpportunitySearch({
                 className="animate-in fade-in slide-in-from-bottom-8 fill-mode-both"
                 style={{ animationDelay: `${index * 150}ms`, animationDuration: '800ms' }}
               >
-                <JobCategoryCard category={key} jobs={grouped[key]} />
+                <JobCategoryCard category={key} jobs={grouped[key]} total={query.trim() ? undefined : categoryTotals?.[key]} />
               </div>
             );
           })}
