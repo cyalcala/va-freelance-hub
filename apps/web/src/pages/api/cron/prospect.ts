@@ -22,7 +22,14 @@ export const prerender = false;
 //    until a human promotes it (the workflow files that proposal).
 const MIN_JOBS = 2;
 const CANDIDATE_LIMIT = 200;
-const MAX_AUTO_ADD = 15;
+// Per-run drain rate: add at most this many of the highest-signal eligible
+// companies each run, so a legitimate backlog clears gradually (N/run x 4
+// runs/day) without a false anomaly alert.
+const MAX_AUTO_ADD_PER_RUN = 15;
+// Genuine-anomaly ceiling: more eligible than this in a single run implies a
+// new bulk source or a parsing bug (the two quality gates already exclude
+// garbage/spam), so add NOTHING and alert instead.
+const ANOMALY_CEILING = 120;
 const DIRECTORY_INSERT_COLUMNS = 9;
 
 function errorMessage(e: unknown): string {
@@ -79,18 +86,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const existingNormalized = new Set(existing.map((e) => e.name.toLowerCase().replace(/\s+/g, " ").trim()));
 
     // 3. Classify (name-quality + source-trust gates, dedup vs directory).
+    // autoAdd is ordered by active job count (query ORDER BY jobs DESC).
     const { autoAdd, review, rejected } = classifyCandidates(raw, existingNormalized);
 
-    // 4. Mass-add guard.
-    const massAddGuardTripped = autoAdd.length > MAX_AUTO_ADD;
+    // 4. Cap-and-drain: only a genuinely extreme count is an anomaly (add
+    // nothing + alert). A normal/large backlog drains the top N by job count
+    // per run.
+    const eligibleCount = autoAdd.length;
+    const anomaly = eligibleCount > ANOMALY_CEILING;
+    const toAdd = anomaly ? [] : autoAdd.slice(0, MAX_AUTO_ADD_PER_RUN);
+    const draining = !anomaly && eligibleCount > MAX_AUTO_ADD_PER_RUN;
 
-    // 5. Idempotent additive insert of trusted candidates (chunked under D1's
-    // 100-param limit). Discovered ATS tokens are stored but stay paused
-    // (fail-closed) until promoted in code.
+    // 5. Idempotent additive insert of the highest-signal trusted candidates
+    // (chunked under D1's 100-param limit). Discovered ATS tokens are stored
+    // but stay paused (fail-closed) until promoted in code.
     let added = 0;
     const addedNames: string[] = [];
-    if (!massAddGuardTripped && autoAdd.length > 0) {
-      const values = autoAdd.map((c: ClassifiedCandidate) => ({
+    if (toAdd.length > 0) {
+      const values = toAdd.map((c: ClassifiedCandidate) => ({
         companyName: c.companyName,
         website: null,
         hiresFilipinos: true,
@@ -112,22 +125,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // 6. ATS-enable proposals: discovered tokens (from auto-added or review
-    // candidates) that a human should promote into ATS_TOKEN_POLICIES.
-    const atsProposals = [...autoAdd, ...review]
+    // 6. ATS-enable proposals: discovered tokens on the companies we acted on
+    // this run (added) or are surfacing for review, for a human to promote
+    // into ATS_TOKEN_POLICIES.
+    const atsProposals = [...toAdd, ...review]
       .filter((c) => c.atsRef)
       .map((c) => ({ company: c.companyName, platform: c.atsRef!.platform, token: c.atsRef!.token, jobs: c.jobs, sampleUrl: c.sampleUrl }));
 
     return new Response(JSON.stringify({
       success: true,
       candidatesConsidered: raw.length,
-      autoAddEligible: autoAdd.length,
+      autoAddEligible: eligibleCount,
       added,
       addedNames,
+      draining,
+      backlogRemaining: Math.max(0, eligibleCount - added),
       reviewOnly: review.map((c) => ({ company: c.companyName, jobs: c.jobs, sampleUrl: c.sampleUrl })),
       rejectedForQuality: rejected,
       atsProposals,
-      massAddGuardTripped,
+      massAddGuardTripped: anomaly,
       mode: "auto-add-directory-only",
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error: any) {

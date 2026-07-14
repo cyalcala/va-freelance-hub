@@ -123,6 +123,7 @@ jobs:
             echo "| --- | ---: |"
             echo "| Candidates considered | $(jq -r '.candidatesConsidered // 0' prospect.log) |"
             echo "| Auto-added this run | $(jq -r '.added // 0' prospect.log) |"
+            echo "| Backlog remaining (drains next runs) | $(jq -r '.backlogRemaining // 0' prospect.log) |"
             echo "| Review-only (untrusted source) | $(jq -r '(.reviewOnly // []) | length' prospect.log) |"
             echo "| Rejected for quality | $(jq -r '.rejectedForQuality // 0' prospect.log) |"
             echo "| ATS proposals filed | $(jq -r '(.atsProposals // []) | length' prospect.log) |"
