@@ -52,6 +52,18 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-29 - Autonomous Prospector (Company Auto-Discovery)
+
+- Date: 2026-07-14
+- Status: Phase 1-2 implemented, 113/113 tests, build passed. Strategy doc updated to IMPLEMENTED. Report: `docs/company-hunter-strategy.md`.
+- Delivers the Hunter upgrade the owner asked for: automatically discover and add new Filipino-hiring companies from already-ingested eligible jobs, removing the manual spreadsheet-import loop.
+- Design (surgical, no new table/state):
+  - `packages/scraper/prospector.ts` (+16 tests): two quality gates grounded in a live production probe — name-quality (blocklist "Unknown"/"Digital"/spam) + source-trust (auto-add only from curated feeds; RemoteOK-sourced → review-only, since that feed carries recruiter-repost spam). Plus ATS-token extraction from job URLs, niche inference, `classifyCandidates`.
+  - `apps/web/src/pages/api/cron/prospect.ts`: cron route (auth + rate-limit like prune/verify-links). Mines active jobs for companies missing from va_directory (correlated NOT IN subquery — no param-limit risk), classifies, idempotently auto-adds trusted quality candidates via chunked Drizzle inserts. Mass-add guard (>15/run → add nothing, alert). Fail-closed ATS: discovered tokens are stored but stay PAUSED until promoted in code.
+  - `.github/workflows/gha-prospector-pulse.yml`: 4x/day (fed by the 48x/day Hunter ingestion), non-2xx fail guard, backs up `docs/prospector-latest.md` digest to git, files human-gated per-token `ats-proposal` issues, mass-add anomaly issue.
+- Compliance: only companies from already-eligible ingested jobs; enabling ATS scraping stays human/PR-gated per the standing rule; additive/idempotent/reversible.
+- Verification: `bun test` 113/113 (16 new); build passed; YAML valid; production candidate query validated live (real targets found, garbage + spam correctly excluded). First scheduled run occurs after deploy.
+
 ### Post-Handoff F-28 - Homepage Category Bug Fix + Company-Hunter Strategy
 
 - Date: 2026-07-14

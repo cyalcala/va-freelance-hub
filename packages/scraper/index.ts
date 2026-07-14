@@ -6,6 +6,11 @@ export { triageJob, isObviousGeoRestriction } from "./triage";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";
 export { fetchATSFeed, fetchAshby } from "./ats";
+export {
+  normalizeCompanyName, isQualityCompanyName, hostOf, isTrustedSourceUrl,
+  extractAtsToken, inferNiche, classifyCandidates,
+} from "./prospector";
+export type { AtsRef, RawCandidate, ClassifiedCandidate, ClassifyResult } from "./prospector";
 export { chunkArray, maxRowsPerD1Batch, D1_MAX_BOUND_PARAMETERS } from "./batch";
 export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validateAutoPauses } from "./pause";
 export type { AutoPauseEntry } from "./pause";

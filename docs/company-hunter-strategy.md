@@ -1,8 +1,34 @@
 # Strategy: Autonomous Company Hunter ("Prospector") - 2026-07-14
 
-## For the next AI executing this
+## STATUS: Phase 1-2 IMPLEMENTED (2026-07-14)
 
-This is a **strategy + implementation plan**, not yet built. The owner wants
+Built and shipped:
+- `packages/scraper/prospector.ts` (+ 16 tests): pure two-gate logic —
+  name-quality + source-trust — plus ATS-token extraction, niche inference,
+  and `classifyCandidates` (auto-add / review / rejected).
+- `apps/web/src/pages/api/cron/prospect.ts`: cron route that mines active
+  jobs for companies missing from `va_directory`, applies both gates, and
+  **idempotently auto-adds** the trusted quality ones (chunked Drizzle
+  inserts, mass-add guard, fail-closed ATS, auth + rate-limit).
+- `.github/workflows/gha-prospector-pulse.yml`: runs 4x/day, backs up a
+  `docs/prospector-latest.md` digest to git, and files a **human-gated**
+  `ats-proposal` issue per discovered ATS token (scraping-enable stays a
+  human code edit — Phase 3/4 below).
+
+Production probe (2026-07-14) that validated the approach found real targets
+(LawnStarter 28 jobs, Airalo 17, Proxify 12, Lemon.io 12, LiveKit 11,
+Sourcegraph 6, Xapo Bank 5) while the two gates correctly excluded the
+garbage ("Unknown", "Digital") and RemoteOK recruiter-repost spam.
+
+Remaining (Phase 3-4): promote proposed ATS tokens into `ATS_TOKEN_POLICIES`
+on human review, and optionally auto-enable trusted-platform tokens via the
+Sentinel Tier-3 PAT after false-positive rates are proven low.
+
+---
+
+## Original plan (retained for context)
+
+This was a **strategy + implementation plan**. The owner wants
 the GitHub Actions Hunter upgraded so it hunts not just *jobs* but *new and
 emerging companies that hire Filipino talent*, and auto-adds them to
 `va_directory` — removing the manual spreadsheet-import loop (gold777,

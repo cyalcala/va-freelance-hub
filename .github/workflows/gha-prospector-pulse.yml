@@ -1,0 +1,159 @@
+name: 🧭 Sovereign Prospector Pulse (Company Auto-Discovery)
+
+# Autonomous company discovery (2026-07-14). The every-30-min Hunter ingests
+# jobs ~48x/day; this Prospector harvests those already-ingested, already-
+# eligible jobs 4x/day to find companies missing from va_directory and
+# auto-add the trusted, quality ones — removing the manual spreadsheet-import
+# loop. Safety lives in /api/cron/prospect: two quality gates (name + source
+# trust), idempotent additive inserts, a mass-add guard, and fail-closed ATS
+# (discovered tokens stay paused until a human promotes them, which this
+# workflow proposes via issue). This job only orchestrates + backs up.
+
+on:
+  schedule:
+    - cron: '15 */6 * * *' # 4x/day (fed by the 48x/day Hunter ingestion)
+  workflow_dispatch:
+
+concurrency:
+  group: gha-prospector-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  prospect:
+    name: Discover & Auto-Add Companies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PROSPECT_API_URL: "https://remotejobs-ph.pages.dev/api/cron/prospect"
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🧭 Run Prospector
+        run: |
+          set -euo pipefail
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o prospect.log --max-time 60 -X POST "$PROSPECT_API_URL" \
+            -H "Authorization: Bearer $PROXY_SECRET" \
+            -H "x-cron-secret: $PROXY_SECRET" \
+            -H "Content-Type: application/json")
+          echo "HTTP Status: $HTTP_CODE"
+          cat prospect.log; echo ""
+          # Fail on any non-2xx, including curl connection failures ("000").
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Prospector API returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+          if ! jq -e . prospect.log >/dev/null 2>&1; then
+            echo "::error::Prospector response was not valid JSON"
+            exit 1
+          fi
+
+      - name: 🚨 Mass-Add Guard Check
+        run: |
+          set -euo pipefail
+          if [ "$(jq -r '.massAddGuardTripped // false' prospect.log)" = "true" ]; then
+            ELIGIBLE=$(jq -r '.autoAddEligible // 0' prospect.log)
+            RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "::warning title=Prospector mass-add guard::$ELIGIBLE auto-add candidates in one run exceeded the safety cap; NOTHING was added. Likely a new bulk source or a parsing bug — review $RUN_URL."
+            gh label create "source-health" --repo "$GITHUB_REPOSITORY" --description "Automated maintenance-bot health alerts" --color D93F0B --force || true
+            TITLE="Prospector mass-add guard tripped ($(date -u +%Y-%m-%d))"
+            if [ "$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$TITLE\"" --json number --jq 'length')" = "0" ]; then
+              printf 'The Prospector found %s auto-add candidates in one run (over the safety cap) and added NOTHING.\n\nThis usually means a new high-volume source appeared or a parsing bug inflated candidates. Review the run: %s\n' "$ELIGIBLE" "$RUN_URL" > mass.md
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --label "source-health" --body-file mass.md
+            fi
+          fi
+
+      - name: 🔌 Propose ATS-Enable (human-gated)
+        run: |
+          set -euo pipefail
+          COUNT=$(jq -r '(.atsProposals // []) | length' prospect.log)
+          if [ "$COUNT" -eq 0 ]; then echo "No ATS proposals this run."; exit 0; fi
+          gh label create "ats-proposal" --repo "$GITHUB_REPOSITORY" --description "Prospector-discovered ATS tokens awaiting review" --color 1D76DB --force || true
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          # One dedup issue per platform:token so scraping is never enabled
+          # without a human editing ATS_TOKEN_POLICIES.
+          jq -c '.atsProposals[]' prospect.log | while read -r P; do
+            PLATFORM=$(echo "$P" | jq -r '.platform')
+            TOKEN=$(echo "$P" | jq -r '.token')
+            COMPANY=$(echo "$P" | jq -r '.company')
+            JOBS=$(echo "$P" | jq -r '.jobs')
+            KEY="${PLATFORM}:${TOKEN}"
+            TITLE="Enable ATS source: ${KEY} (${COMPANY})"
+            if [ "$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$TITLE\"" --json number --jq 'length')" != "0" ]; then
+              echo "Proposal for ${KEY} already open; skipping."; continue
+            fi
+            {
+              echo "The Prospector discovered a scrapable ATS feed while auto-adding **${COMPANY}** (seen in ${JOBS} active job(s))."
+              echo ""
+              echo "- ATS key: \`${KEY}\`"
+              echo "- Detection run: ${RUN_URL}"
+              echo ""
+              echo "### To enable scraping (human-gated per compliance policy)"
+              echo ""
+              echo "1. Probe the public endpoint returns 200 + published jobs (Goldilocks: robots-allowed, linkback, minimal metadata)."
+              echo "2. Add \`${KEY}\` to \`ATS_TOKEN_POLICIES\` in \`apps/web/src/pages/api/cron/scrape.ts\` as \`enabled: true, complianceStatus: \"needs_review\"\`."
+              echo ""
+              echo "Until then the directory row exists but the token stays PAUSED (fail-closed) and nothing is scraped."
+            } > proposal.md
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --label "ats-proposal" --body-file proposal.md
+            echo "Filed ATS proposal for ${KEY}."
+          done
+
+      - name: 📒 Commit Prospector Digest (backup)
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          TODAY=$(date -u +"%Y-%m-%d")
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          {
+            echo "# Prospector Latest"
+            echo ""
+            echo "Date: ${TODAY}"
+            echo "Workflow run: ${RUN_URL}"
+            echo ""
+            echo "| Metric | Value |"
+            echo "| --- | ---: |"
+            echo "| Candidates considered | $(jq -r '.candidatesConsidered // 0' prospect.log) |"
+            echo "| Auto-added this run | $(jq -r '.added // 0' prospect.log) |"
+            echo "| Review-only (untrusted source) | $(jq -r '(.reviewOnly // []) | length' prospect.log) |"
+            echo "| Rejected for quality | $(jq -r '.rejectedForQuality // 0' prospect.log) |"
+            echo "| ATS proposals filed | $(jq -r '(.atsProposals // []) | length' prospect.log) |"
+            echo "| Mass-add guard tripped | $(jq -r '.massAddGuardTripped // false' prospect.log) |"
+            echo ""
+            echo "## Auto-added companies"
+            echo ""
+            jq -r '(.addedNames // []) | if length == 0 then "- (none this run)" else .[] | "- \(.)" end' prospect.log
+          } > docs/prospector-latest.md
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/prospector-latest.md
+          if git diff --cached --quiet; then echo "No digest changes."; exit 0; fi
+          git commit -m "docs: update prospector digest"
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then break; fi
+            echo "Push rejected (attempt $attempt); rebasing."
+            git pull --rebase origin main
+          done
+
+      - name: 📊 Prospector Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "### 🧭 Sovereign Prospector Report" >> $GITHUB_STEP_SUMMARY
+          if [ -f prospect.log ] && jq -e . prospect.log >/dev/null 2>&1; then
+            echo "- **Candidates considered**: $(jq -r '.candidatesConsidered // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Auto-added**: $(jq -r '.added // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Review-only**: $(jq -r '(.reviewOnly // []) | length' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Rejected (quality)**: $(jq -r '.rejectedForQuality // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **ATS proposals**: $(jq -r '(.atsProposals // []) | length' prospect.log)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Prospector produced no parseable response." >> $GITHUB_STEP_SUMMARY
+          fi

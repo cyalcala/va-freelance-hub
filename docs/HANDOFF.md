@@ -2,7 +2,22 @@
 
 ### Current State
 
-Date: 2026-07-14
+Date: 2026-07-14 (later)
+Status: IMPLEMENTED the autonomous Prospector (checkpoint F-29) — the Hunter
+upgrade that auto-discovers and adds new Filipino-hiring companies from
+already-ingested eligible jobs, ending the manual spreadsheet-import loop.
+`packages/scraper/prospector.ts` (two gates: name-quality + source-trust,
++16 tests), `apps/web/src/pages/api/cron/prospect.ts` (idempotent auto-add,
+mass-add guard, fail-closed ATS), `.github/workflows/gha-prospector-pulse.yml`
+(4x/day, git digest backup, human-gated ATS-enable proposals). 113/113 tests,
+build green. Enabling scraping of a discovered ATS token stays a human code
+edit (Phase 3). Details + remaining phases: `docs/company-hunter-strategy.md`.
+Post-deploy: watch the first Prospector run add trusted companies (LawnStarter,
+Airalo, Proxify, etc.) and file ats-proposal issues; confirm garbage/spam
+excluded.
+
+### Earlier same day
+
 Status: (1) Fixed the "lost customer-service island" bug — the homepage
 "Fresh opportunities by category" sourced a flat latest-60-overall pool, so
 tech-heavy ingestion hid whole categories (customer-service: 177 jobs,
