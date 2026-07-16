@@ -3,19 +3,61 @@
 @tailwind utilities;
 
 :root {
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: "Outfit", "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-body {
-  background-color: #0a0a0a;
-  color: #e4e4e7;
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: #17140F;
+    /* Comfortable reading rhythm for body copy site-wide. */
+    line-height: 1.6;
+    letter-spacing: -0.011em;
+  }
+
+  /* Tighter, more confident tracking on display headings. */
+  h1, h2, h3 {
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+  }
+
+  /* Consistent, accessible focus ring for keyboard users. */
+  :focus-visible {
+    outline: 2px solid #DC5A34;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #111111; }
-::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+/* Light, unobtrusive scrollbar to match the warm paper theme
+   (the old dark scrollbar was a leftover from an abandoned dark theme). */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(23, 20, 15, 0.15);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(23, 20, 15, 0.28); background-clip: padding-box; }
+* { scrollbar-color: rgba(23,20,15,0.2) transparent; scrollbar-width: thin; }
+
+/* Respect reduced-motion: keep the UI calm and accessible. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

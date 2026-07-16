@@ -103,30 +103,31 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
 ---
 
 <Layout
-  title="Remote Jobs for Filipinos - VA Freelance Hub"
-  description="Browse, search, and filter active VA and freelance opportunities open to Filipino remote workers. Updated automatically."
+  title="Browse Remote Jobs for Filipinos — RemotePH"
+  description="Search and filter every active remote and VA role open to Filipino talent. Updated automatically, all day."
 >
-  <section class="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
-    <div class="mb-10">
+  <section class="w-full max-w-5xl mx-auto pt-10 md:pt-14">
+    <div class="mb-8">
       <a
         href="/"
-        class="inline-flex items-center gap-2 text-sm font-extrabold tracking-widest uppercase text-ink/50 hover:text-accent transition-colors group mb-6"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-6"
       >
-        <span class="inline-block group-hover:-translate-x-1 transition-transform">&larr;</span>
+        <span class="inline-block transition-transform group-hover:-translate-x-0.5">&larr;</span>
         Home
       </a>
 
-      <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-ink/10 pb-8">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <p class="text-xs font-black uppercase tracking-widest text-accent mb-3">Full job board</p>
-          <h2 class="text-3xl sm:text-5xl font-black tracking-tight text-ink">
-            Remote jobs for Filipino talents
-          </h2>
-          <p class="text-ink/55 text-base sm:text-lg font-medium max-w-2xl mt-4 leading-relaxed">
-            Search the active opportunity index without loading the whole board into the homepage.
+          <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-2">The full board</p>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
+            Every open remote role
+          </h1>
+          <p class="text-ink/55 text-[15px] max-w-xl mt-3 leading-relaxed">
+            Search, filter, and page through every active opportunity open to
+            Filipino remote workers.
           </p>
         </div>
-        <div class="text-xs sm:text-sm font-black uppercase tracking-widest text-accent bg-accent/5 border border-accent/20 px-4 py-2 rounded-full self-start lg:self-auto">
+        <div class="text-sm font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-4 py-2 rounded-full self-start sm:self-auto shrink-0 tabular-nums">
           {totalJobs.toLocaleString()} {totalJobs === 1 ? 'job' : 'jobs'}
         </div>
       </div>
@@ -136,24 +137,24 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
       id="search"
       method="get"
       action="/opportunities"
-      class="scroll-mt-24 md:scroll-mt-32 sticky top-2 md:top-24 z-40 mb-10 bg-parchment/80 backdrop-blur-md border border-ink/5 rounded-3xl p-3 sm:p-4 shadow-lg shadow-ink/5"
+      class="scroll-mt-20 sticky top-[4.5rem] z-40 mt-8 mb-8 bg-parchment/85 backdrop-blur-xl border border-ink/[0.08] rounded-2xl p-2.5 shadow-soft"
     >
-      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(0,0.8fr))_auto] gap-3">
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,0.8fr))_auto] gap-2">
         <label class="sr-only" for="q">Search jobs</label>
         <input
           id="q"
           type="search"
           name="q"
           value={query}
-          placeholder="Search roles, companies, or platforms..."
-          class="w-full px-5 py-4 bg-white/85 border border-ink/10 rounded-2xl text-ink font-semibold shadow-sm focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10 transition-all placeholder:text-ink/30"
+          placeholder="Search roles, companies, or platforms…"
+          class="w-full h-12 px-4 bg-surface border border-ink/[0.09] rounded-xl text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10 transition-all placeholder:text-ink/35"
         />
 
         <label class="sr-only" for="category">Category</label>
         <select
           id="category"
           name="category"
-          class="w-full px-4 py-4 bg-white/85 border border-ink/10 rounded-2xl text-sm text-ink font-bold focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
+          class="w-full h-12 px-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
         >
           <option value="">All categories</option>
           {Object.entries(JOB_CATEGORY_MAP).map(([key, info]) => (
@@ -165,7 +166,7 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
         <select
           id="type"
           name="type"
-          class="w-full px-4 py-4 bg-white/85 border border-ink/10 rounded-2xl text-sm text-ink font-bold focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
+          class="w-full h-12 px-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
         >
           <option value="">All types</option>
           {TYPE_OPTIONS.map((option) => (
@@ -177,7 +178,7 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
         <select
           id="platform"
           name="platform"
-          class="w-full px-4 py-4 bg-white/85 border border-ink/10 rounded-2xl text-sm text-ink font-bold focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
+          class="w-full h-12 px-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
         >
           <option value="">All platforms</option>
           {platformOptions.map((option) => (
@@ -187,31 +188,32 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
 
         <button
           type="submit"
-          class="bg-accent hover:bg-accent-hover text-white px-6 py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-sm hover:shadow-accent/20 active:scale-95"
+          class="h-12 bg-accent hover:bg-accent-hover text-white px-6 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98]"
         >
           Search
         </button>
       </div>
     </form>
 
-    <div class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-black uppercase tracking-widest text-ink/40">
-      <p>
-        Showing {resultStart.toLocaleString()}-{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
+    <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[13px] font-semibold text-ink/45">
+      <p class="tabular-nums">
+        Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
       </p>
       {(query || category || type || platform) && (
-        <a href="/opportunities" class="text-accent hover:underline underline-offset-4">
+        <a href="/opportunities" class="text-accent hover:text-accent-hover transition-colors">
           Clear filters
         </a>
       )}
     </div>
 
     {pageJobs.length === 0 ? (
-      <div class="text-center py-24 bg-white/40 backdrop-blur-md rounded-3xl border border-ink/5">
-        <p class="text-ink/40 font-semibold text-xl tracking-tight">No opportunities matched the current filters.</p>
-        <a href="/opportunities" class="inline-block mt-4 text-accent font-bold hover:underline underline-offset-4">Reset filters</a>
+      <div class="text-center py-24 bg-surface/60 rounded-2xl border border-ink/[0.07]">
+        <p class="text-ink/55 font-semibold text-lg">No jobs match these filters.</p>
+        <p class="text-ink/40 text-sm mt-1">Try removing a filter or broadening your search.</p>
+        <a href="/opportunities" class="inline-flex items-center mt-5 px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Reset filters</a>
       </div>
     ) : (
-      <div class="bg-white/50 backdrop-blur-sm border border-ink/5 rounded-3xl p-4 sm:p-6 shadow-xl shadow-ink/5 flex flex-col gap-2">
+      <div class="bg-surface border border-ink/[0.07] rounded-2xl p-2 sm:p-3 shadow-card flex flex-col divide-y divide-ink/[0.05]">
         {pageJobs.map((opp) => (
           <OpportunityCard opportunity={opp} />
         ))}
@@ -222,30 +224,30 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
       {hasPrevious ? (
         <a
           href={buildPageUrl(currentPage - 1)}
-          class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/70 border border-ink/10 text-xs font-black uppercase tracking-widest text-ink/60 hover:text-accent hover:border-accent/30 transition-colors"
+          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-colors"
         >
-          Previous
+          &larr; Previous
         </a>
       ) : (
-        <span class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-ink/5 border border-ink/5 text-xs font-black uppercase tracking-widest text-ink/25">
-          Previous
+        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
+          &larr; Previous
         </span>
       )}
 
-      <span class="text-xs font-black uppercase tracking-widest text-ink/40">
+      <span class="text-[13px] font-semibold text-ink/45 tabular-nums">
         Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
       </span>
 
       {hasNext ? (
         <a
           href={buildPageUrl(currentPage + 1)}
-          class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/70 border border-ink/10 text-xs font-black uppercase tracking-widest text-ink/60 hover:text-accent hover:border-accent/30 transition-colors"
+          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-colors"
         >
-          Next
+          Next &rarr;
         </a>
       ) : (
-        <span class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-ink/5 border border-ink/5 text-xs font-black uppercase tracking-widest text-ink/25">
-          Next
+        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
+          Next &rarr;
         </span>
       )}
     </nav>

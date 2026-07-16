@@ -70,47 +70,50 @@ const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
   title={`${info.title} Remote Jobs for Filipinos — VA Freelance Hub`}
   description={`Browse and search all active ${info.title.toLowerCase()} remote jobs and virtual assistant opportunities open to Filipino talents. Updated automatically.`}
 >
-  <section class="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
-    <div class="mb-12">
+  <section class="w-full max-w-4xl mx-auto pt-10 md:pt-14">
+    <div class="mb-8">
       <a
         href="/"
-        class="inline-flex items-center gap-2 text-sm font-extrabold tracking-widest uppercase text-ink/50 hover:text-accent transition-colors group mb-6"
+        class="inline-flex items-center gap-1.5 text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-6"
       >
-        <span class="inline-block group-hover:-translate-x-1 transition-transform">&larr;</span>
-        Back to categories
+        <span class="inline-block transition-transform group-hover:-translate-x-0.5">&larr;</span>
+        All categories
       </a>
 
-      <div class="flex flex-col md:flex-row md:items-baseline justify-between gap-4 border-b border-ink/10 pb-6">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h2 class="text-3xl sm:text-5xl font-black tracking-tight text-ink">
+          <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-2">Category</p>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
             {info.title}
-          </h2>
-          <p class="text-ink/55 text-base font-medium max-w-2xl mt-4 leading-relaxed">
-            Browse active {info.title.toLowerCase()} opportunities without loading the entire category into the page.
+          </h1>
+          <p class="text-ink/55 text-[15px] max-w-xl mt-3 leading-relaxed">
+            The latest active {info.title.toLowerCase()} roles open to Filipino
+            remote workers.
           </p>
         </div>
-        <span class="text-xs sm:text-sm font-black uppercase tracking-widest text-accent bg-accent/5 border border-accent/20 px-4 py-1.5 rounded-full self-start">
-          {totalJobs.toLocaleString()} {totalJobs === 1 ? 'Job' : 'Jobs'} Found
+        <span class="text-sm font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-4 py-2 rounded-full self-start sm:self-auto shrink-0 tabular-nums">
+          {totalJobs.toLocaleString()} {totalJobs === 1 ? 'job' : 'jobs'}
         </span>
       </div>
     </div>
 
-    <div class="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-black uppercase tracking-widest text-ink/40">
-      <p>
-        Showing {resultStart.toLocaleString()}-{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
+    <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[13px] font-semibold text-ink/45">
+      <p class="tabular-nums">
+        Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
       </p>
-      <a href={`/opportunities?category=${category}#search`} class="text-accent hover:underline underline-offset-4">
+      <a href={`/opportunities?category=${category}#search`} class="text-accent hover:text-accent-hover transition-colors">
         Search this category
       </a>
     </div>
 
     {categoryJobs.length === 0 ? (
-      <div class="text-center py-24 bg-white/40 backdrop-blur-md rounded-3xl border border-ink/5">
-        <p class="text-ink/40 font-semibold text-xl tracking-tight">No active openings found in this category.</p>
-        <a href="/opportunities" class="inline-block mt-4 text-accent font-bold hover:underline underline-offset-4">Browse all opportunities</a>
+      <div class="text-center py-24 bg-surface/60 rounded-2xl border border-ink/[0.07]">
+        <p class="text-ink/55 font-semibold text-lg">No active openings here right now.</p>
+        <p class="text-ink/40 text-sm mt-1">New roles arrive automatically throughout the day.</p>
+        <a href="/opportunities" class="inline-flex items-center mt-5 px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Browse all jobs</a>
       </div>
     ) : (
-      <div class="bg-white/50 backdrop-blur-sm border border-ink/5 rounded-3xl p-4 sm:p-6 shadow-xl shadow-ink/5 flex flex-col gap-2">
+      <div class="bg-surface border border-ink/[0.07] rounded-2xl p-2 sm:p-3 shadow-card flex flex-col divide-y divide-ink/[0.05]">
         {categoryJobs.map((opp) => (
           <OpportunityCard opportunity={opp} />
         ))}
@@ -121,30 +124,30 @@ const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
       {hasPrevious ? (
         <a
           href={buildPageUrl(currentPage - 1)}
-          class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/70 border border-ink/10 text-xs font-black uppercase tracking-widest text-ink/60 hover:text-accent hover:border-accent/30 transition-colors"
+          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-colors"
         >
-          Previous
+          &larr; Previous
         </a>
       ) : (
-        <span class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-ink/5 border border-ink/5 text-xs font-black uppercase tracking-widest text-ink/25">
-          Previous
+        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
+          &larr; Previous
         </span>
       )}
 
-      <span class="text-xs font-black uppercase tracking-widest text-ink/40">
+      <span class="text-[13px] font-semibold text-ink/45 tabular-nums">
         Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
       </span>
 
       {hasNext ? (
         <a
           href={buildPageUrl(currentPage + 1)}
-          class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-white/70 border border-ink/10 text-xs font-black uppercase tracking-widest text-ink/60 hover:text-accent hover:border-accent/30 transition-colors"
+          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-colors"
         >
-          Next
+          Next &rarr;
         </a>
       ) : (
-        <span class="inline-flex items-center justify-center px-5 py-3 rounded-full bg-ink/5 border border-ink/5 text-xs font-black uppercase tracking-widest text-ink/25">
-          Next
+        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
+          Next &rarr;
         </span>
       )}
     </nav>

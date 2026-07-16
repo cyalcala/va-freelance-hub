@@ -6,14 +6,14 @@ interface Props {
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
-  WeWorkRemotely: "text-emerald-700 bg-emerald-500/10",
-  Remotive: "text-sky-700 bg-sky-500/10",
-  Jobicy: "text-cyan-700 bg-cyan-500/10",
-  RealWorkFromAnywhere: "text-indigo-700 bg-indigo-500/10",
-  RemoteOK: "text-purple-700 bg-purple-500/10",
-  ProBlogger: "text-orange-700 bg-orange-500/10",
-  RemoteCo: "text-purple-700 bg-purple-500/10",
-  OnlineJobsPH: "text-yellow-700 bg-yellow-500/10",
+  WeWorkRemotely: "text-emerald-700 bg-emerald-500/[0.08]",
+  Remotive: "text-sky-700 bg-sky-500/[0.08]",
+  Jobicy: "text-cyan-700 bg-cyan-500/[0.08]",
+  RealWorkFromAnywhere: "text-indigo-700 bg-indigo-500/[0.08]",
+  RemoteOK: "text-violet-700 bg-violet-500/[0.08]",
+  ProBlogger: "text-orange-700 bg-orange-500/[0.08]",
+  RemoteCo: "text-violet-700 bg-violet-500/[0.08]",
+  OnlineJobsPH: "text-yellow-700 bg-yellow-500/[0.08]",
 };
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -62,65 +62,57 @@ export function OpportunityCard({ opportunity: opp }: Props) {
   }
 
   return (
-    <a 
+    <a
       href={href}
       target="_blank"
       rel={rel}
-      className="flex items-start justify-between group p-4 rounded-2xl transition-all duration-300 hover:bg-white hover:shadow-sm cursor-pointer border border-transparent hover:border-accent/10 active:scale-[0.99] active:bg-ink/5"
+      className="group flex items-center gap-3.5 p-3 rounded-xl transition-colors duration-200 hover:bg-ink/[0.035] active:bg-ink/[0.06]"
     >
-      <div className="flex items-center gap-4 w-full">
-        <div className="w-10 h-10 rounded-full bg-ink/5 flex items-center justify-center shrink-0 border border-ink/5 group-hover:scale-110 group-hover:shadow-md transition-all duration-300 overflow-hidden bg-white">
-          {hostname ? (
-            <img 
-              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`} 
-              alt={platformLabel}
-              className="w-5 h-5 object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-                (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-              }}
-            />
-          ) : null}
-          <Briefcase className={`w-4 h-4 text-ink/30 ${hostname ? 'hidden' : ''}`} />
+      <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
+        {hostname ? (
+          <img
+            src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
+            alt=""
+            aria-hidden="true"
+            className="w-5 h-5 object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null}
+        <Briefcase className={`w-4 h-4 text-ink/30 ${hostname ? 'hidden' : ''}`} />
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-ink text-[15px] group-hover:text-accent transition-colors leading-snug line-clamp-1">
+            {opp.title}
+          </span>
         </div>
-        
-        <div className="flex-1 transform group-hover:translate-x-1 transition-transform duration-300">
-          <div className="flex items-center gap-1.5 flex-wrap pr-4">
-            <span className="font-extrabold text-ink/90 text-sm group-hover:text-accent transition-colors leading-tight line-clamp-1">
-              {opp.title}
+
+        <div className="flex items-center gap-1.5 mt-1 text-[13px] text-ink/50 min-w-0">
+          {opp.company && <span className="truncate">{opp.company}</span>}
+          {opp.company && postedDate && <span className="text-ink/25">·</span>}
+          {postedDate && <span className="shrink-0 text-ink/40">{postedDate}</span>}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 mt-2">
+          <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${platformColor}`}>
+            {platformLabel}
+          </span>
+          <span className="text-[10px] px-2 py-0.5 rounded-md bg-ink/[0.05] text-ink/55 font-semibold">
+            {typeLabel}
+          </span>
+          {opp.experienceLevel && opp.experienceLevel !== 'any' && (
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-accent-soft text-accent font-semibold capitalize">
+              {opp.experienceLevel}
             </span>
-          </div>
-          
-          {opp.company && (
-            <div className="text-[10px] font-bold tracking-widest uppercase text-ink/50 mt-0.5 truncate max-w-[200px] sm:max-w-[300px]">
-              {opp.company}
-            </div>
           )}
-          
-          <div className="flex flex-wrap gap-1.5 mt-1.5">
-            <span className={`text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider ${platformColor}`}>
-              {platformLabel}
-            </span>
-            <span className="text-[9px] px-2 py-0.5 rounded-full bg-ink/5 text-ink/60 font-black uppercase tracking-wider border border-ink/5">
-              {typeLabel}
-            </span>
-            {opp.experienceLevel && opp.experienceLevel !== 'any' && (
-              <span className="text-[9px] px-2 py-0.5 rounded-full bg-accent/10 text-accent font-black uppercase tracking-wider border border-accent/10">
-                {opp.experienceLevel}
-              </span>
-            )}
-            {postedDate && (
-              <span className="text-[9px] font-bold tracking-widest uppercase text-ink/40 ml-1 py-0.5 inline-block">
-                {postedDate}
-              </span>
-            )}
-          </div>
-        </div>
-        
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform -translate-x-2 group-hover:translate-x-0 flex flex-col items-end gap-1 shrink-0">
-          <ExternalLink className="w-4 h-4 text-accent" />
         </div>
       </div>
+
+      <ExternalLink className="w-4 h-4 text-ink/25 group-hover:text-accent transition-colors shrink-0 self-start mt-1" />
     </a>
   );
 }

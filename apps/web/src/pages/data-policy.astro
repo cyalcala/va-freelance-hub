@@ -1,13 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Nav } from '../components/nav';
-import { Footer } from '../components/footer';
 ---
 
-<Layout title="Data Collection Policy - VA Freelance Hub">
-  <Nav client:load />
-  
-  <main className="min-h-screen pt-32 pb-24 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+<Layout title="Data Policy — RemotePH" description="How RemotePH collects and uses public job data, and its source-compliance posture.">
+  <main className="pt-12 pb-8 max-w-3xl mx-auto">
     <div className="bg-white/70 backdrop-blur-md rounded-3xl border border-ink/10 p-8 sm:p-12 shadow-xl shadow-ink/5 prose prose-zinc max-w-none">
       <h1 className="text-3xl font-black text-ink mb-2 uppercase tracking-tight">Data Collection Policy</h1>
       <p className="text-sm font-bold text-ink/50 uppercase tracking-widest mb-8">Last Updated: June 2026</p>
@@ -45,6 +41,4 @@ import { Footer } from '../components/footer';
       </p>
     </div>
   </main>
-
-  <Footer client:load />
 </Layout>
