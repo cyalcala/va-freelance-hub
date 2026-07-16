@@ -1,20 +1,21 @@
 # Prospector Latest
 
-Date: 2026-07-15
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29445221109
+Date: 2026-07-16
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29469470234
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 64 |
-| Auto-added this run | 3 |
+| Candidates considered | 66 |
+| Auto-added this run | 4 |
 | Backlog remaining (drains next runs) | 0 |
-| Review-only (untrusted source) | 57 |
+| Review-only (untrusted source) | 58 |
 | Rejected for quality | 3 |
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
 
 ## Auto-added companies
 
-- garden3d
-- FIXD Automotive
-- Atom Partners
+- Abbott
+- RETR
+- JLL
+- Bright Vision Technologies
