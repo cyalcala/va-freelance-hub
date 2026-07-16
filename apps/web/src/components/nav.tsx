@@ -3,7 +3,7 @@ export function Nav() {
     <header className="border-b border-border sticky top-0 z-50 bg-background/80 backdrop-blur-sm">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
         <a href="/" className="font-bold text-zinc-100 tracking-tight hover:text-white transition-colors">
-          Remote<span className="text-accent">PH</span>
+          VA <span className="text-accent">&amp;</span> Freelance Hub
         </a>
         <nav className="flex items-center gap-1">
           <NavLink href="/opportunities">Jobs</NavLink>

@@ -5,9 +5,9 @@ export function Footer() {
       <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
         <div className="max-w-sm">
           <a href="/" className="inline-flex items-center gap-2.5 group">
-            <span className="grid place-items-center w-8 h-8 rounded-lg bg-ink text-parchment font-extrabold text-base">R</span>
+            <span className="grid place-items-center w-8 h-8 rounded-lg bg-ink text-parchment font-extrabold text-base">V</span>
             <span className="text-lg font-extrabold tracking-tight text-ink">
-              Remote<span className="text-accent">PH</span>
+              VA <span className="text-accent">&amp;</span> Freelance Hub
             </span>
           </a>
           <p className="mt-3 text-sm text-ink/55 leading-relaxed">
@@ -33,7 +33,7 @@ export function Footer() {
       </div>
 
       <div className="mt-10 pt-6 border-t border-ink/[0.07] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink/45">
-        <p>© {year} RemotePH · Self-updating on Cloudflare Edge</p>
+        <p>© {year} VA &amp; Freelance Hub · Self-updating on Cloudflare Edge</p>
         <p>
           Crafted by{" "}
           <a href="https://www.linkedin.com/in/cyrusalcala/" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink/60 hover:text-accent transition-colors">
