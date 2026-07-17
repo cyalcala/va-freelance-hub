@@ -112,6 +112,11 @@ export const sourceFetchState = sqliteTable("source_fetch_state", {
   lastCount: integer("last_count").notNull().default(0),
   lastError: text("last_error"),
   updatedAt: text("updated_at").notNull(),
+  // Conditional-request validators + body hash (migration 0020): lets the
+  // scraper send If-None-Match / If-Modified-Since and skip unchanged feeds.
+  etag: text("etag"),
+  lastModified: text("last_modified"),
+  lastBodyHash: text("last_body_hash"),
 }, (table) => ({
   lastAttemptIdx: index("source_fetch_state_last_attempt_idx").on(table.lastAttemptAt),
 }));

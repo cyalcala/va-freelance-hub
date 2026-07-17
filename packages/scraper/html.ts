@@ -1,6 +1,7 @@
 import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
 import { toContentHash } from "./contentHash";
+import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
 
 interface ParsedJobItem {
   title?: string;
@@ -97,20 +98,31 @@ function parseHtmlWithTS(html: string, source: Source): ParsedJobItem[] {
   return items;
 }
 
-export async function fetchHTMLSource(source: Source): Promise<NewOpportunity[]> {
+export async function fetchHTMLSource(source: Source, state?: ConditionalState): Promise<SourceFetchOutput> {
   console.log(`[html] Fetching ${source.name}...`);
 
   let html: string;
+  let etag: string | null = null;
+  let lastModified: string | null = null;
+  let bodyHash: string | null = null;
   try {
-    const res = await fetch(source.url, {
-      headers: {
+    const cond = await conditionalFetchText(
+      source.url,
+      {
         "User-Agent":
           "Mozilla/5.0 (compatible; va-freelance-hub/1.0; +https://github.com/cyalcala/va-freelance-hub)",
       },
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    html = await res.text();
+      state,
+      20_000,
+    );
+    if (cond.notModified) {
+      console.log(`[html] ${source.name}: unchanged (${cond.status}), skipping parse.`);
+      return unchangedOutput(state);
+    }
+    html = cond.text;
+    etag = cond.etag;
+    lastModified = cond.lastModified;
+    bodyHash = cond.bodyHash;
   } catch (err) {
     console.error(`[html] Failed to fetch ${source.name}:`, err);
     throw new Error(`[html] Failed to fetch ${source.name}: ${(err as Error).message}`);
@@ -136,5 +148,5 @@ export async function fetchHTMLSource(source: Source): Promise<NewOpportunity[]>
     }));
 
   console.log(`[html] ${source.name}: ${opportunities.length} items`);
-  return opportunities;
+  return { items: opportunities, notModified: false, etag, lastModified, bodyHash };
 }

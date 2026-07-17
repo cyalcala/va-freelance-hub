@@ -3,6 +3,7 @@ import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
 import { decodeHtmlEntities, xmlNodeText, xmlTextList } from "./text";
 import { toContentHash } from "./contentHash";
+import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -46,17 +47,27 @@ function normalizeDate(rawDate: string | undefined): string | null {
   }
 }
 
-export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
+export async function fetchRSSFeed(source: Source, state?: ConditionalState): Promise<SourceFetchOutput> {
   console.log(`[rss] Fetching ${source.name}...`);
 
   let xml: string;
+  let etag: string | null = null;
+  let lastModified: string | null = null;
+  let bodyHash: string | null = null;
   try {
-    const res = await fetch(source.url, {
-      headers: { "User-Agent": "va-freelance-hub/1.0 (RSS aggregator)" },
-      signal: AbortSignal.timeout(15_000),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    xml = await res.text();
+    const cond = await conditionalFetchText(
+      source.url,
+      { "User-Agent": "va-freelance-hub/1.0 (RSS aggregator)" },
+      state,
+    );
+    if (cond.notModified) {
+      console.log(`[rss] ${source.name}: unchanged (${cond.status}), skipping parse.`);
+      return unchangedOutput(state);
+    }
+    xml = cond.text;
+    etag = cond.etag;
+    lastModified = cond.lastModified;
+    bodyHash = cond.bodyHash;
   } catch (err) {
     console.error(`[rss] Failed to fetch ${source.name}:`, err);
     throw new Error(`[rss] Failed to fetch ${source.name}: ${(err as Error).message}`);
@@ -133,5 +144,5 @@ export async function fetchRSSFeed(source: Source): Promise<NewOpportunity[]> {
     });
 
   console.log(`[rss] ${source.name}: ${opportunities.length} items`);
-  return opportunities;
+  return { items: opportunities, notModified: false, etag, lastModified, bodyHash };
 }

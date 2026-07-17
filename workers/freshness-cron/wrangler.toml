@@ -1,0 +1,16 @@
+name = "va-freelance-freshness-cron"
+main = "src/index.ts"
+compatibility_date = "2026-07-01"
+
+# Free-plan Cron Trigger: fire the scrape endpoint every 15 minutes so newly
+# posted jobs reach the site in well under an hour (GitHub Actions free cron
+# drifts 1.5-3h; this does not).
+[triggers]
+crons = ["*/15 * * * *"]
+
+[vars]
+SCRAPE_URL = "https://remotejobs-ph.pages.dev/api/cron/scrape"
+
+# PROXY_SECRET is a Worker SECRET (not a var). Set it once, in this directory:
+#   npx wrangler secret put PROXY_SECRET
+# Use the same value as the Pages project's PROXY_SECRET.

@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
-import { isNotNull, and, inArray, eq } from "drizzle-orm";
+import { isNotNull, and, inArray, eq, lt } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, type CollectionMethod, type ComplianceStatus, type Source } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -45,6 +45,13 @@ interface SourceFetchResult {
   skipped?: boolean;
   skipReason?: string;
   error?: string;
+  // Conditional-fetch outcome (freshness masterplan): true when the feed was
+  // unchanged (304 / identical body) and parse+triage were skipped. Validators
+  // are carried forward to source_fetch_state.
+  notModified?: boolean;
+  etag?: string | null;
+  lastModified?: string | null;
+  bodyHash?: string | null;
 }
 
 interface InsertError {
@@ -312,12 +319,17 @@ async function fetchSourceWithStatus(
   collectionMethod: SourceFetchResult["collectionMethod"],
   complianceStatus: ComplianceStatus,
   complianceNotes: string | undefined,
-  fetcher: () => Promise<NewOpportunity[]>,
+  fetcher: () => Promise<NewOpportunity[] | SourceFetchOutput>,
   sourceId?: string
 ): Promise<SourceFetchResult> {
   const startedAt = Date.now();
   try {
-    const items = await fetcher();
+    const raw = await fetcher();
+    // Feed fetchers return SourceFetchOutput (items + validators); the ATS
+    // path still returns a bare array. Normalize both.
+    const output: SourceFetchOutput = Array.isArray(raw)
+      ? { items: raw, notModified: false, etag: null, lastModified: null, bodyHash: null }
+      : raw;
     return {
       sourceId,
       sourceName,
@@ -326,9 +338,13 @@ async function fetchSourceWithStatus(
       complianceStatus,
       complianceNotes,
       ok: true,
-      count: items.length,
+      count: output.items.length,
       durationMs: Date.now() - startedAt,
-      items,
+      items: output.items,
+      notModified: output.notModified,
+      etag: output.etag,
+      lastModified: output.lastModified,
+      bodyHash: output.bodyHash,
     };
   } catch (error) {
     return {
@@ -351,6 +367,40 @@ interface SourceFetchStateLoad {
   states: Map<string, SourceFetchState>;
   available: boolean;
   error?: string;
+}
+
+// Coarse run-level mutual exclusion using a reserved source_fetch_state row.
+// A run may not exceed this before its lock is considered stale and reclaimable.
+const RUN_LOCK_ID = "__scrape_run_lock__";
+const RUN_LOCK_TTL_MIN = 8;
+
+async function acquireRunLock(db: AppDb, observedAt: string): Promise<boolean> {
+  const cutoff = new Date(Date.now() - RUN_LOCK_TTL_MIN * 60_000).toISOString();
+  try {
+    // Seed the lock row once (no-op if it already exists). Placeholder metadata
+    // keeps the NOT NULL columns satisfied; this row is never a real source.
+    await db.insert(sourceFetchState).values({
+      sourceId: RUN_LOCK_ID,
+      sourceName: "run lock",
+      sourceType: "lock",
+      collectionMethod: "lock",
+      complianceStatus: "lock",
+      lastAttemptAt: "1970-01-01T00:00:00.000Z", // start clearly stale so the first run claims it
+      updatedAt: observedAt,
+    }).onConflictDoNothing();
+
+    // Atomic claim: only succeeds if the current lock is stale (or first run).
+    const res: any = await db.update(sourceFetchState)
+      .set({ lastAttemptAt: observedAt, updatedAt: observedAt })
+      .where(and(eq(sourceFetchState.sourceId, RUN_LOCK_ID), lt(sourceFetchState.lastAttemptAt, cutoff)));
+    const changed = res?.meta?.changes ?? res?.rowsAffected ?? 0;
+    return changed > 0;
+  } catch (error) {
+    // If the lock mechanism itself fails, do not block scraping — degrade to
+    // the prior (lock-free) behavior rather than stalling the pipeline.
+    console.warn("[api/cron/scrape] Run-lock unavailable; proceeding without it:", errorMessage(error));
+    return true;
+  }
 }
 
 async function loadSourceFetchStates(db: AppDb): Promise<SourceFetchStateLoad> {
@@ -397,6 +447,11 @@ async function recordSourceFetchState(
     lastCount: result.count,
     lastError: result.ok ? null : result.error ?? "Unknown source fetch error",
     updatedAt: observedAt,
+    // Persist conditional-request validators so the next run can send
+    // If-None-Match / If-Modified-Since and skip an unchanged feed.
+    etag: result.etag ?? null,
+    lastModified: result.lastModified ?? null,
+    lastBodyHash: result.bodyHash ?? null,
     ...(result.ok ? { lastSuccessAt: observedAt } : {}),
   };
 
@@ -476,9 +531,10 @@ async function fetchConfiguredSourceWithStatus(
   sourceType: SourceType,
   sourceFetchStates: Map<string, SourceFetchState>,
   observedAt: string,
-  fetcher: () => Promise<NewOpportunity[]>
+  fetcher: (state: ConditionalState | undefined) => Promise<SourceFetchOutput>
 ): Promise<SourceFetchResult> {
-  const skipReason = sourceCadenceSkipReason(source, sourceFetchStates.get(source.id), observedAt);
+  const prevState = sourceFetchStates.get(source.id);
+  const skipReason = sourceCadenceSkipReason(source, prevState, observedAt);
   if (skipReason) {
     return skippedSourceResult(source, skipReason);
   }
@@ -489,9 +545,14 @@ async function fetchConfiguredSourceWithStatus(
     source.collectionMethod,
     source.complianceStatus,
     source.complianceNotes,
-    fetcher,
+    () => fetcher({ etag: prevState?.etag, lastModified: prevState?.lastModified, lastBodyHash: prevState?.lastBodyHash }),
     source.id
   );
+  // An unchanged feed produced no items this run; carry the prior count forward
+  // for reporting so it does not read as a zero-count source.
+  if (result.notModified && prevState) {
+    result.count = prevState.lastCount ?? 0;
+  }
   await recordSourceFetchState(db, source, result, observedAt);
   return result;
 }
@@ -528,27 +589,41 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   try {
+    // 2b. Run-level lock (concurrency guard). With two triggers now firing the
+    // scrape endpoint — the GitHub Hunter and a Cloudflare Worker cron — two
+    // runs could otherwise overlap and double-fetch every source (compliance +
+    // Workers AI cost). Claim a single lock row with an atomic conditional
+    // UPDATE; if a fresh lock is already held, exit early. This also closes the
+    // cadence-guard TOCTOU noted in the 2026-07 audit.
+    const lockAcquired = await acquireRunLock(db, observedAt);
+    if (!lockAcquired) {
+      console.log("[api/cron/scrape] Another run holds the lock; exiting.");
+      return new Response(JSON.stringify({ skipped: true, reason: "run-lock-held", message: "Another scrape run is in progress." }), {
+        status: 200, headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // 3. Fetch all raw items
     const fetchStateLoad = await loadSourceFetchStates(db);
     const sourceFetchStates = fetchStateLoad.states;
 
     const rssResults = await Promise.all(
       rssSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "RSS", sourceFetchStates, observedAt, () => fetchRSSFeed(source))
+        fetchConfiguredSourceWithStatus(db, source, "RSS", sourceFetchStates, observedAt, (state) => fetchRSSFeed(source, state))
       )
     );
     const rssItems = rssResults.flatMap((result) => result.items);
 
     const htmlResults = await Promise.all(
       htmlSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "HTML", sourceFetchStates, observedAt, () => fetchHTMLSource(source))
+        fetchConfiguredSourceWithStatus(db, source, "HTML", sourceFetchStates, observedAt, (state) => fetchHTMLSource(source, state))
       )
     );
     const htmlItems = htmlResults.flatMap((result) => result.items);
 
     const jsonResults = await Promise.all(
       jsonSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "JSON", sourceFetchStates, observedAt, () => fetchJSONSource(source))
+        fetchConfiguredSourceWithStatus(db, source, "JSON", sourceFetchStates, observedAt, (state) => fetchJSONSource(source, state))
       )
     );
     const jsonItems = jsonResults.flatMap((result) => result.items);
@@ -677,6 +752,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       ...policySkippedAtsAgencies.map(skippedAtsResult),
       ...duplicateAtsAgencies.map(skippedDuplicateAtsResult),
     ];
+    // Conditional-fetch efficiency: how many feeds were unchanged this run and
+    // skipped parse+triage (the freshness/efficiency win).
+    const sourcesUnchanged = [...rssResults, ...htmlResults, ...jsonResults].filter((r) => r.notModified).length;
     const sourceResults = [...rssResults, ...htmlResults, ...jsonResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
     const fetchEventLog = await recordSourceFetchEvents(db, sourceResults, observedAt);
     const cadenceGuards = {
@@ -704,6 +782,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         sourceResults,
         fetchEventLog,
         cadenceGuards,
+        sourcesUnchanged,
         message: "No jobs scraped"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -756,6 +835,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         sourceResults,
         fetchEventLog,
         cadenceGuards,
+        sourcesUnchanged,
         message: "Zero new jobs after dedup"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -942,6 +1022,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       sourceResults,
       fetchEventLog,
       cadenceGuards,
+      sourcesUnchanged,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);

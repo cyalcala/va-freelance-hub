@@ -2,6 +2,7 @@ import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
 import { decodeHtmlEntities } from "./text";
 import { toContentHash } from "./contentHash";
+import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
 
 interface RemoteOkJob {
   id?: string | number;
@@ -77,20 +78,31 @@ export function isRelevantForHub(title: string, description: string): boolean {
   return HUB_RELEVANT_ROLE_REGEX.test(searchableText) && !PHYSICAL_OR_LOGISTICS_ROLE_REGEX.test(searchableText);
 }
 
-export async function fetchJSONSource(source: Source): Promise<NewOpportunity[]> {
+export async function fetchJSONSource(source: Source, state?: ConditionalState): Promise<SourceFetchOutput> {
   console.log(`[json] Fetching ${source.name}...`);
 
   let data: unknown;
+  let etag: string | null = null;
+  let lastModified: string | null = null;
+  let bodyHash: string | null = null;
   try {
-    const res = await fetch(source.url, {
-      headers: {
+    const cond = await conditionalFetchText(
+      source.url,
+      {
         "User-Agent": "va-freelance-hub/1.0 (+https://github.com/cyalcala/va-freelance-hub)",
         Accept: "application/json",
       },
-      signal: AbortSignal.timeout(20_000),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    data = await res.json();
+      state,
+      20_000,
+    );
+    if (cond.notModified) {
+      console.log(`[json] ${source.name}: unchanged (${cond.status}), skipping parse.`);
+      return unchangedOutput(state);
+    }
+    etag = cond.etag;
+    lastModified = cond.lastModified;
+    bodyHash = cond.bodyHash;
+    data = JSON.parse(cond.text);
   } catch (err) {
     console.error(`[json] Failed to fetch ${source.name}:`, err);
     throw new Error(`[json] Failed to fetch ${source.name}: ${(err as Error).message}`);
@@ -139,5 +151,5 @@ export async function fetchJSONSource(source: Source): Promise<NewOpportunity[]>
     .filter((job): job is NewOpportunity => job !== null);
 
   console.log(`[json] ${source.name}: ${opportunities.length} items`);
-  return opportunities;
+  return { items: opportunities, notModified: false, etag, lastModified, bodyHash };
 }

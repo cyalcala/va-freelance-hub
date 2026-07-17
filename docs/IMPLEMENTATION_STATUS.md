@@ -52,6 +52,18 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-30 - Freshness Masterplan (Conditional Fetch + Cron Worker + Run-Lock)
+
+- Date: 2026-07 (later)
+- Status: implemented, 120/120 tests, build passed. Selective adoption of a DeepSeek freshness masterplan — full disposition (adopt/adapt/reject/defer) in `docs/freshness-masterplan-2026-07.md`.
+- Rejected (with reasons): Cloudflare Queues (requires PAID Workers plan — violates $0); 5-min sitemap polling (violates source cadence terms); Zod-everywhere + admin recovery UI (marginal value, new attack surface); much of it already existed (Sentinel=dead-letter, source_fetch_events=audit log, stateless Prospector).
+- Implemented:
+  - Conditional requests: `packages/scraper/conditional.ts` (If-None-Match/If-Modified-Since + body-hash diff, 7 tests); RSS/JSON/HTML fetchers return SourceFetchOutput and skip parse+triage on unchanged feeds; migration `0020_conditional_fetch_state.sql` adds etag/last_modified/last_body_hash; scrape response reports `sourcesUnchanged`. Compute + third-party-load reduction (compliance-positive).
+  - Freshness fix — the real bottleneck was GitHub free-cron lag (1.5–3h). Added `workers/freshness-cron/` (free-plan Cloudflare Cron Trigger Worker, every 15 min, pings the scrape endpoint) + `gha-deploy-cron-worker.yml`. One manual step: `wrangler secret put PROXY_SECRET` (worker README). GitHub Hunter stays as fallback.
+  - Run-level lock (`acquireRunLock`, TTL 8 min, atomic conditional UPDATE) — dedupes overlapping Worker+Hunter triggers and closes the audit's cadence TOCTOU.
+- Deferred (scoped): D1 FTS5 full-text search (next headline feature); ATS conditional fetch; source_fetch_events retention.
+- Verification: `bun test` 120/120 (7 new conditional tests); build passed; YAML valid. Post-deploy acceptance in the masterplan doc.
+
 ### Post-Handoff F-29 - Autonomous Prospector (Company Auto-Discovery)
 
 - Date: 2026-07-14

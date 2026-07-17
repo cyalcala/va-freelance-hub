@@ -2,6 +2,23 @@
 
 ### Current State
 
+Date: 2026-07 (later)
+Status: Freshness masterplan implemented selectively (checkpoint F-30,
+`docs/freshness-masterplan-2026-07.md`). Conditional requests
+(ETag/If-Modified-Since + body-hash diff) now skip parse+triage on unchanged
+feeds (migration 0020, `sourcesUnchanged` reported, 7 tests). The real
+freshness fix — GitHub cron lag — is addressed by a free-plan Cloudflare Cron
+Trigger Worker (`workers/freshness-cron/`, every 15 min) deployed by
+`gha-deploy-cron-worker.yml`; ONE manual step remains: `wrangler secret put
+PROXY_SECRET` in that worker dir. A run-level lock dedupes overlapping
+triggers and closes the audit's cadence TOCTOU. 120/120 tests. Rejected from
+the plan: Cloudflare Queues (paid), 5-min polling (source terms), Zod/admin-UI.
+Deferred & scoped: D1 FTS5 search (next headline feature), ATS conditional
+fetch. OWNER ACTION: set the Worker's PROXY_SECRET to activate 15-min
+freshness (GitHub Hunter is the fallback until then).
+
+### Previous State
+
 Date: 2026-07-14 (later)
 Status: IMPLEMENTED the autonomous Prospector (checkpoint F-29) — the Hunter
 upgrade that auto-discovers and adds new Filipino-hiring companies from
