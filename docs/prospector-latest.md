@@ -1,21 +1,18 @@
 # Prospector Latest
 
-Date: 2026-07-16
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29528562226
+Date: 2026-07-17
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29552911670
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 67 |
-| Auto-added this run | 4 |
+| Candidates considered | 64 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
-| Review-only (untrusted source) | 59 |
+| Review-only (untrusted source) | 60 |
 | Rejected for quality | 3 |
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
 
 ## Auto-added companies
 
-- TE Connectivity
-- ICF
-- HighLevel
-- Faith Technologies
+- (none this run)
