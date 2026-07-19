@@ -1,11 +1,11 @@
 # Prospector Latest
 
 Date: 2026-07-19
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29689796978
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29700843653
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 64 |
+| Candidates considered | 63 |
 | Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 60 |
