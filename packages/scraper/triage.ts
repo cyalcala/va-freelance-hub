@@ -255,10 +255,19 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       jsonText = jsonText.trim();
 
       const parsed: TriageResult = JSON.parse(jsonText);
-      
+
+      // FAIL CLOSED (geo masterplan L2 prefix, 2026-07): a model response
+      // missing the eligibility boolean is an unclassified job, not an
+      // eligible one — throw so the next fallback model gets a chance, and
+      // the final aiUnavailable path fails closed if all models misbehave.
+      // Previously this defaulted to `true` and malformed output published.
+      if (typeof parsed.eligibleForFilipinos !== "boolean") {
+        throw new Error("model output missing boolean eligibleForFilipinos");
+      }
+
       // Validate fields and provide safe fallbacks
       return {
-        eligibleForFilipinos: typeof parsed.eligibleForFilipinos === "boolean" ? parsed.eligibleForFilipinos : true,
+        eligibleForFilipinos: parsed.eligibleForFilipinos,
         reason: parsed.reason || "AI classified",
         category: [
           "admin",
@@ -287,8 +296,11 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
   }
 
   console.error(`[triage] ALL Workers AI models failed for "${title}". Last error:`, lastError);
+  // Defense-in-depth: callers already skip on aiUnavailable, but the
+  // eligibility flag itself must also never read `true` for an unclassified
+  // job (it previously did — harmless only as long as every caller checked).
   return {
-    eligibleForFilipinos: true,
+    eligibleForFilipinos: false,
     reason: `Workers AI error fallback (all models failed): ${lastError?.message}`,
     category: "other",
     tags: ["remote"],

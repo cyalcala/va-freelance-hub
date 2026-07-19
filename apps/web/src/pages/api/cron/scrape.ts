@@ -4,7 +4,7 @@ import { isNotNull, and, inArray, eq, lt } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -865,24 +865,68 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // these failed open as eligible/other and an AI outage silently filled
     // the board with unfiltered listings.
     let triageAiUnavailable = 0;
+    // Deterministic geo-gate rejections (geo masterplan L1): counted
+    // separately from AI rejections so the response shows how much the gate
+    // catches — and how many Workers AI calls it saves.
+    let geoGateRejected = 0;
 
-    for (let i = 0; i < itemsToProcess.length; i += concurrency) {
-      const chunk = itemsToProcess.slice(i, i + concurrency);
+    // L1: run the deterministic geo-gate BEFORE any AI call. Ineligible items
+    // are persisted as inactive rows (same dedup rationale as triage
+    // rejections) without spending a Workers AI invocation. Everything else
+    // carries its gate verdict forward so approved rows get geo fields.
+    const gatePassedItems: { item: (typeof itemsToProcess)[number]; gate: ReturnType<typeof geoGate> }[] = [];
+    for (const item of itemsToProcess) {
+      const gate = geoGate({
+        title: item.title,
+        description: item.description,
+        locationRaw: (item as { locationRaw?: string | null }).locationRaw ?? null,
+        tags: item.tags,
+      });
+      if (gate.phEligibility === "ineligible") {
+        geoGateRejected += 1;
+        console.log(`[api/cron/scrape] Geo-gate rejected "${item.title}": ${gate.evidence}`);
+        const cleanDesc = (item.description || "").slice(0, 1500);
+        rejectedItems.push({
+          ...item,
+          isActive: false,
+          tags: Array.from(new Set([...(item.tags || []), "geo-gate-rejected"])),
+          category: "other",
+          geoScope: gate.geoScope,
+          phEligibility: gate.phEligibility,
+          geoEvidence: gate.evidence,
+          geoCheckedAt: observedAt,
+          descriptionHash: await generateHash(item.title + cleanDesc),
+          applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+          postedAt: normalizeUtcIso(item.postedAt),
+          scrapedAt: observedAt,
+          lastSeenInFeedAt: observedAt,
+          updatedAt: observedAt,
+        });
+        continue;
+      }
+      gatePassedItems.push({ item, gate });
+    }
+    if (geoGateRejected > 0) {
+      console.log(`[api/cron/scrape] Geo-gate rejected ${geoGateRejected}/${itemsToProcess.length} items before AI triage.`);
+    }
+
+    for (let i = 0; i < gatePassedItems.length; i += concurrency) {
+      const chunk = gatePassedItems.slice(i, i + concurrency);
       const results = await Promise.all(
-        chunk.map(async (item) => {
+        chunk.map(async ({ item, gate }) => {
           console.log(`[api/cron/scrape] Triaging: "${item.title}"`);
           try {
             const triage = await triageJob(item.title, item.description || "", env);
-            return { item, triage };
+            return { item, gate, triage };
           } catch (err) {
             console.error(`[api/cron/scrape] Triage failed for "${item.title}":`, err);
             triageFailures += 1;
-            return { item, triage: null };
+            return { item, gate, triage: null };
           }
         })
       );
 
-      for (const { item, triage } of results) {
+      for (const { item, gate, triage } of results) {
         if (!triage) continue;
 
         if (triage.aiUnavailable) {
@@ -901,6 +945,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
             isActive: false,
             tags: Array.from(new Set([...(item.tags || []), "triage-rejected"])),
             category: "other",
+            geoScope: gate.geoScope,
+            phEligibility: "ineligible",
+            geoEvidence: `AI triage: ${(triage.reason || "ineligible").slice(0, 200)}`,
+            geoCheckedAt: observedAt,
             descriptionHash,
             applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
             postedAt: normalizeUtcIso(item.postedAt),
@@ -924,6 +972,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
         triagedItems.push({
           ...item,
+          // Geo verdict (masterplan L1): gate-verified positives keep their
+          // strong verdict; gate-unknown items that passed AI triage are
+          // "eligible_likely" — the AI affirmed them but no structured
+          // signal did.
+          geoScope: gate.geoScope,
+          phEligibility: gate.phEligibility === "unclear" ? "eligible_likely" : gate.phEligibility,
+          geoEvidence: gate.geoScope === "unknown" ? `AI triage passed: ${(triage.reason || "eligible").slice(0, 200)}` : gate.evidence,
+          geoCheckedAt: observedAt,
           // Sanitized precedence: the LLM-extracted apply link only wins when
           // it is a real http(s)/mailto URL — previously the raw model string
           // overrode verified URLs with no validation.
@@ -1010,6 +1066,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       insertErrors,
       triageFailures,
       triageAiUnavailable,
+      geoGateRejected,
       rejectedPersisted,
       rejectedInsertFailedBatches,
       droppedNoUrl,

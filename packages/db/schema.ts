@@ -39,6 +39,18 @@ export const opportunities = sqliteTable("opportunities", {
   experienceLevel: text("experience_level", { enum: ["entry", "mid", "senior", "any"] }),
   descriptionHash: text("description_hash"),
   clickCount: integer("click_count").notNull().default(0),
+  // Geo-eligibility (migration 0021): the structured location signal the
+  // source sent (RemoteOK `location`, WWR `<region>`, ATS offices) plus the
+  // geo-gate verdict — makes "truly hires Filipinos" auditable per listing.
+  locationRaw: text("location_raw"),
+  geoScope: text("geo_scope", {
+    enum: ["worldwide", "apac_incl_ph", "ph_only", "region_excl_ph", "country_locked", "unknown"],
+  }),
+  phEligibility: text("ph_eligibility", {
+    enum: ["eligible_verified", "eligible_likely", "unclear", "ineligible"],
+  }),
+  geoEvidence: text("geo_evidence"),
+  geoCheckedAt: text("geo_checked_at"),
 }, (table) => ({
   activeScrapedIdx: index("active_scraped_idx").on(table.isActive, table.scrapedAt),
   activePostedIdx: index("active_posted_idx").on(table.isActive, table.postedAt),
@@ -52,6 +64,8 @@ export const opportunities = sqliteTable("opportunities", {
   contentHashIdx: uniqueIndex("content_hash_idx").on(table.contentHash),
   categoryIdx: index("category_idx").on(table.category),
   descriptionHashIdx: index("description_hash_idx").on(table.descriptionHash),
+  // Board default view "Open to Philippines" filters on this (migration 0021).
+  activePhEligibilityIdx: index("active_ph_eligibility_idx").on(table.isActive, table.phEligibility),
 }));
 
 // ─── VA Directory ─────────────────────────────────────────────────────────────

@@ -93,6 +93,11 @@ async function fetchLever(token: string, companyName: string): Promise<NewOpport
         sourcePlatform: companyName, // Use company name as platform for ATS jobs
         tags: [companyName.toLowerCase()],
         locationType: "remote",
+        // Geo masterplan L0: Lever postings carry categories.location +
+        // workplaceType ("unspecified"|"on-site"|"remote"|"hybrid").
+        locationRaw:
+          [normalizeText(job?.categories?.location), job?.workplaceType && job.workplaceType !== "unspecified" ? `(${job.workplaceType})` : ""]
+            .filter(Boolean).join(" ") || null,
         description: normalizeText(job.descriptionPlain || job.description).slice(0, 500) || null,
         postedAt: safeNormalizeDate(job.createdAt),
         isActive: true,
@@ -122,6 +127,7 @@ async function fetchGreenhouse(token: string, companyName: string): Promise<NewO
         sourcePlatform: companyName,
         tags: [companyName.toLowerCase()],
         locationType: "remote",
+        locationRaw: normalizeText(job?.location?.name) || null, // geo masterplan L0
         description: greenhouseLocationSummary(job),
         postedAt: safeNormalizeDate(job.updated_at),
         isActive: true,
@@ -158,6 +164,11 @@ export async function fetchAshby(token: string, companyName: string): Promise<Ne
         sourcePlatform: companyName,
         tags: [companyName.toLowerCase()],
         locationType: "remote" as const,
+        // Geo masterplan L0: isRemote === false is an explicit onsite signal —
+        // "(onsite)" trips the geo-gate's not-fully-remote check.
+        locationRaw:
+          [normalizeText(typeof job?.location === "string" ? job.location : job?.location?.name), job?.isRemote === false ? "(onsite)" : ""]
+            .filter(Boolean).join(" ") || null,
         applicationUrl: typeof job.applyUrl === "string" ? job.applyUrl : null,
         description: ashbyLocationSummary(job),
         postedAt: safeNormalizeDate(job.publishedAt),
@@ -191,6 +202,10 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
         sourcePlatform: companyName,
         tags: [companyName.toLowerCase()],
         locationType: "remote",
+        // Geo masterplan L0: Workable v3 results carry location objects.
+        locationRaw:
+          normalizeText([job?.location?.city, job?.location?.region, job?.location?.country].filter(Boolean).join(", ")) ||
+          (typeof job?.location === "string" ? normalizeText(job.location) : "") || null,
         description: null,
         postedAt: safeNormalizeDate(job.published_on),
         isActive: true,
@@ -233,6 +248,12 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
         tags: [companyName.toLowerCase()],
         locationType: "remote",
         payRange,
+        // Geo masterplan L0: reuse the same location extraction the summary uses.
+        locationRaw: (() => {
+          const locations = Array.isArray(job?.locations) ? job.locations : [job?.location];
+          const names = locations.map((l: any) => normalizeText(l?.name)).filter(Boolean);
+          return names.length ? Array.from(new Set(names)).join("; ") : null;
+        })(),
         description: breezyLocationSummary(job),
         postedAt: safeNormalizeDate(job.published_date),
         isActive: true,

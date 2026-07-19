@@ -55,3 +55,24 @@ export function xmlTextList(node: unknown): string[] {
     .filter((s): s is string => typeof s === "string" && s.trim() !== "")
     .map((s) => s.trim());
 }
+
+// UTF-8 bytes mis-decoded as Latin-1 produce "Ã" + a continuation character
+// ("Casinò" → "CasinÃ²"). Found in production row #4667 via RemoteOK.
+const MOJIBAKE_MARKER = /[ÂÃ][-ÿ]/;
+
+/**
+ * Repair UTF-8-as-Latin-1 mojibake ("CasinÃ²" → "Casinò"). Applies only when
+ * the tell-tale byte pattern is present and the re-decode succeeds; any
+ * failure returns the input unchanged (never throws, never corrupts).
+ */
+export function fixMojibake(raw: string): string {
+  if (!MOJIBAKE_MARKER.test(raw)) return raw;
+  try {
+    const bytes = Uint8Array.from(raw, (ch) => ch.charCodeAt(0) & 0xff);
+    const decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    // A genuine repair shrinks the string (2 mangled chars → 1 real char).
+    return decoded.length < raw.length ? decoded : raw;
+  } catch {
+    return raw; // not actually mojibake — leave untouched
+  }
+}

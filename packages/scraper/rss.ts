@@ -24,6 +24,10 @@ interface RawRSSItem {
   // Runtime shape can also be attributed objects like {'@_domain', '#text'};
   // xmlTextList handles every variant.
   category?: unknown;
+  // Geo masterplan L0: We Work Remotely publishes a <region> element per item
+  // ("Anywhere in the World", "Texas", "Dubai", …) — a structured eligibility
+  // signal, previously discarded, now captured for the geo-gate.
+  region?: unknown;
 }
 
 function normalizeText(raw: string | undefined): string {
@@ -131,6 +135,7 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState): Pr
         sourcePlatform: source.platform,
         tags,
         locationType: "remote" as const,
+        locationRaw: normalizeText(xmlNodeText(item.region) ?? undefined) || null,
         payRange: null,
         description: normalizeText(xmlNodeText(item.description) ?? undefined).slice(0, 1500) || null,
         postedAt: normalizeDate(rawDate),

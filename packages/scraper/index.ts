@@ -3,6 +3,8 @@ export { fetchHTMLSource } from "./html";
 export { fetchJSONSource } from "./json";
 export { disabledSources, enabledSources, isEnabledSource, sources, rssSources, htmlSources, jsonSources } from "./sources";
 export { triageJob, isObviousGeoRestriction } from "./triage";
+export { geoGate, detectDominantLanguage } from "./geoGate";
+export type { GeoGateInput, GeoVerdict, GeoScope, PhEligibility } from "./geoGate";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";
 export { fetchATSFeed, fetchAshby } from "./ats";
@@ -19,4 +21,4 @@ export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validat
 export type { AutoPauseEntry } from "./pause";
 export { sanitizeApplyUrl } from "./urls";
 export { toContentHash } from "./contentHash";
-export { decodeHtmlEntities, safeFromCodePoint, xmlNodeText, xmlTextList } from "./text";
+export { decodeHtmlEntities, safeFromCodePoint, xmlNodeText, xmlTextList, fixMojibake } from "./text";

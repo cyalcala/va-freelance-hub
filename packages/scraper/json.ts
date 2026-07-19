@@ -1,6 +1,6 @@
 import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
-import { decodeHtmlEntities } from "./text";
+import { decodeHtmlEntities, fixMojibake } from "./text";
 import { toContentHash } from "./contentHash";
 import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
 
@@ -15,11 +15,17 @@ interface RemoteOkJob {
   url?: string;
   salary_min?: number;
   salary_max?: number;
+  // Geo masterplan L0: RemoteOK sends a per-job location string ("Florida,
+  // United States", "Worldwide", …) — previously discarded, now captured for
+  // the geo-gate. Production escape #4667 (Casino Lugano) proved its value.
+  location?: string;
 }
 
 export function normalizeText(raw: unknown): string {
   if (typeof raw !== "string") return "";
-  return decodeHtmlEntities(raw)
+  // fixMojibake first: repairs UTF-8-as-Latin-1 ("CasinÃ²" → "Casinò") before
+  // any other transform sees the mangled bytes.
+  return decodeHtmlEntities(fixMojibake(raw))
     .replace(/<br\s*\/?>/gi, " ")
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
@@ -140,6 +146,7 @@ export async function fetchJSONSource(source: Source, state?: ConditionalState):
         sourcePlatform: source.platform,
         tags,
         locationType: "remote" as const,
+        locationRaw: normalizeText(job.location) || null,
         payRange: normalizePayRange(job.salary_min, job.salary_max),
         description: description.slice(0, 1500) || null,
         applicationUrl: normalizeRemoteOkUrl(job.apply_url) ?? sourceUrl,

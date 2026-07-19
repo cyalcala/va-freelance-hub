@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { decodeHtmlEntities, safeFromCodePoint, xmlNodeText, xmlTextList } from "./text";
+import { decodeHtmlEntities, safeFromCodePoint, xmlNodeText, xmlTextList, fixMojibake } from "./text";
 import { toContentHash } from "./contentHash";
 import { sanitizeApplyUrl } from "./urls";
 
@@ -86,5 +86,23 @@ describe("sanitizeApplyUrl", () => {
     expect(sanitizeApplyUrl(null)).toBeNull();
     expect(sanitizeApplyUrl(42)).toBeNull();
     expect(sanitizeApplyUrl("https://" + "a".repeat(2050))).toBeNull();
+  });
+});
+
+describe("fixMojibake", () => {
+  test("repairs UTF-8-as-Latin-1 mojibake (production row #4667)", () => {
+    expect(fixMojibake("CasinÃ² Lugano SA")).toBe("Casinò Lugano SA");
+    expect(fixMojibake("ZÃ¼rich based")).toBe("Zürich based");
+    expect(fixMojibake("CafÃ© team")).toBe("Café team");
+  });
+
+  test("leaves clean strings untouched", () => {
+    expect(fixMojibake("Casino Lugano SA")).toBe("Casino Lugano SA");
+    expect(fixMojibake("Casinò Lugano")).toBe("Casinò Lugano");
+    expect(fixMojibake("")).toBe("");
+  });
+
+  test("never throws on lookalike-but-valid text", () => {
+    expect(fixMojibake("ÃABC")).toBe("ÃABC");
   });
 });
