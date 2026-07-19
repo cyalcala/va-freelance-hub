@@ -1,21 +1,21 @@
 # Source Health Latest
 
-Date: 2026-07-18
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29624055779
-Commit: 26a14d6bebef82486458740b9b5d20bf43161089
+Date: 2026-07-19
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29667828123
+Commit: 0b98974ba1753d6a4ac51c2b672630dd6606e20a
 
 ### Hunter Source Health
 
-- Timestamp: 2026-07-18T00:53:27Z
-- Run ID: 29624055779
-- Signals Harvested: 1
-- Accepted For Insert: 1
-- Attempted Inserts: 1
+- Timestamp: 2026-07-19T00:58:46Z
+- Run ID: 29667828123
+- Signals Harvested: 0
+- Accepted For Insert: 0
+- Attempted Inserts: 0
 - Failed Insert Batches: 0
 - Insert Errors: 0
 - Failed Sources: 0
 - Zero-Count Successful Sources: 1
-- Skipped Sources: 22
+- Skipped Sources: 23
 - Fetch Events Recorded: 42/42 (failed batches: 0)
 - Cadence State Available: true
 - Triage Failures: 0
@@ -25,6 +25,7 @@ Commit: 26a14d6bebef82486458740b9b5d20bf43161089
 - Unmatched Auto-Pauses: 0
 
 #### Skipped Sources
+- Jobicy Admin Support APAC (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-19T00:45:25.610Z; 60-minute minimum interval.
 - ProBlogger (RSS, paused): Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.
 - Remote.co (RSS, paused): Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.
 - Authentic Jobs (RSS, paused): Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.
