@@ -61,6 +61,9 @@ try {
           category: opportunities.category,
           experienceLevel: opportunities.experienceLevel,
           postedAt: opportunities.postedAt,
+          // Geo badges (masterplan L5) need scope + evidence tooltip.
+          geoScope: opportunities.geoScope,
+          geoEvidence: opportunities.geoEvidence,
         })
         .from(opportunities)
         .where(inArray(opportunities.id, ids))

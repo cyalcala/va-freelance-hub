@@ -30,6 +30,15 @@ const TYPE_LABELS: Record<string, string> = {
   "part-time": "Part-time",
 };
 
+// Geo badges (geo masterplan L5): only the three positively-verified scopes
+// get a badge — accuracy made visible. geo_evidence rides along as a tooltip
+// so users can see WHY a listing earned it.
+const GEO_BADGES: Record<string, { label: string; className: string }> = {
+  ph_only: { label: "🇵🇭 PH-exclusive", className: "text-red-700 bg-red-500/[0.08]" },
+  apac_incl_ph: { label: "⏰ APAC-friendly", className: "text-teal-700 bg-teal-500/[0.08]" },
+  worldwide: { label: "🌍 Worldwide", className: "text-blue-700 bg-blue-500/[0.08]" },
+};
+
 function formatDate(isoString: string | null | undefined): string | null {
   if (!isoString) return null;
   try {
@@ -107,6 +116,14 @@ export function OpportunityCard({ opportunity: opp }: Props) {
           {opp.experienceLevel && opp.experienceLevel !== 'any' && (
             <span className="text-[10px] px-2 py-0.5 rounded-md bg-accent-soft text-accent font-semibold capitalize">
               {opp.experienceLevel}
+            </span>
+          )}
+          {opp.geoScope && GEO_BADGES[opp.geoScope] && (
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${GEO_BADGES[opp.geoScope].className}`}
+              title={opp.geoEvidence ?? undefined}
+            >
+              {GEO_BADGES[opp.geoScope].label}
             </span>
           )}
         </div>
