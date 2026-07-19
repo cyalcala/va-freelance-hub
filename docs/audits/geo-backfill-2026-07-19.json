@@ -1,0 +1,372 @@
+{
+  "generatedAt": "2026-07-19T13:08:32.066Z",
+  "totalRows": 2278,
+  "verdicts": {
+    "unclear": 1870,
+    "eligible_likely": 237,
+    "ineligible": 72,
+    "eligible_verified": 99
+  },
+  "deactivated": [
+    {
+      "id": 1336,
+      "title": "Staff Product Engineer (Porto Alegre)",
+      "evidence": "Title names location: \"Porto\""
+    },
+    {
+      "id": 1342,
+      "title": "Senior Independent Software Developer",
+      "evidence": "Residence/authorization lock: \"must be located in the A\""
+    },
+    {
+      "id": 1908,
+      "title": "Paralegal - Onsite",
+      "evidence": "Not fully remote: \"Onsite\" marker"
+    },
+    {
+      "id": 1930,
+      "title": "Tier 1 Technical Support Specialist | ONSITE Seasonal",
+      "evidence": "Not fully remote: \"ONSITE\" marker"
+    },
+    {
+      "id": 1949,
+      "title": "Sourcing Associate | Onsite",
+      "evidence": "Not fully remote: \"Onsite\" marker"
+    },
+    {
+      "id": 1976,
+      "title": "Staff Software Engineer, Product (Porto Alegre)",
+      "evidence": "Title names location: \"Porto\""
+    },
+    {
+      "id": 2110,
+      "title": "Customer Support Specialist",
+      "evidence": "Residence/authorization lock: \"must be based in the U\""
+    },
+    {
+      "id": 2147,
+      "title": "Profissional Líder de Implantação - Remoto",
+      "evidence": "Non-English posting (detected: pt)"
+    },
+    {
+      "id": 2148,
+      "title": "UX Designer – Design System SR",
+      "evidence": "Non-English posting (detected: pt)"
+    },
+    {
+      "id": 2183,
+      "title": "Desenvolvedor C# .NET e PHP - Remota",
+      "evidence": "Non-English posting (detected: pt)"
+    },
+    {
+      "id": 2185,
+      "title": "Buchhalter / Steuerfachangestellte (M/W/D)",
+      "evidence": "Non-English posting (detected: de)"
+    },
+    {
+      "id": 2213,
+      "title": "Product Marketing Manager (w/m/d) für SaaS und On-Premises Lösungen",
+      "evidence": "Non-English posting (detected: de)"
+    },
+    {
+      "id": 2367,
+      "title": "Customer Success – Japan",
+      "evidence": "Source tagged language: \"japanese\""
+    },
+    {
+      "id": 2470,
+      "title": "Java/DevOps Senior Pipelines CI/CD y Docker",
+      "evidence": "Non-English posting (detected: es)"
+    },
+    {
+      "id": 2539,
+      "title": "SDET / Automated QA Engineer- Seattle WA",
+      "evidence": "Title names location: \"Seattle\""
+    },
+    {
+      "id": 2573,
+      "title": "Banco de Talentos | Analista de QA JR/PL/SR",
+      "evidence": "Non-English posting (detected: pt)"
+    },
+    {
+      "id": 2577,
+      "title": "581321 DevOps Engineer Testing (all genders)",
+      "evidence": "Non-English posting (detected: de)"
+    },
+    {
+      "id": 2581,
+      "title": "Social Media and YouTube Content Manager",
+      "evidence": "Residence/authorization lock: \"Must be based in the U\""
+    },
+    {
+      "id": 2604,
+      "title": "Growth Manager - AI Trainer - Freelance - 8-20 hrs/week",
+      "evidence": "Residence/authorization lock: \"based in the EU\""
+    },
+    {
+      "id": 2643,
+      "title": "VP GM East & Control",
+      "evidence": "Residence/authorization lock: \"must reside in the E\""
+    },
+    {
+      "id": 2646,
+      "title": "Launch and Recovery Technician I",
+      "evidence": "Residence/authorization lock: \"Citizenship is required\""
+    },
+    {
+      "id": 2651,
+      "title": "Senior SQL Database Administrator DBA (Brazil, Remote)",
+      "evidence": "Residence/authorization lock: \"must be located in B\""
+    },
+    {
+      "id": 2676,
+      "title": "Analista de Software SÃªnior",
+      "evidence": "Non-English posting (detected: pt)"
+    },
+    {
+      "id": 2719,
+      "title": "Strategy Director at Airalo",
+      "evidence": "Residence/authorization lock: \"must live in a\""
+    },
+    {
+      "id": 2739,
+      "title": "Outside Sales Representative",
+      "evidence": "Residence/authorization lock: \"must reside in the U\""
+    },
+    {
+      "id": 2743,
+      "title": "Area Sales Manager Chicago",
+      "evidence": "Title names location: \"Chicago\""
+    },
+    {
+      "id": 2744,
+      "title": "Area Sales Manager Michigan",
+      "evidence": "Title names location: \"Michigan\""
+    },
+    {
+      "id": 2749,
+      "title": "User Retention Specialist at Airalo",
+      "evidence": "Residence/authorization lock: \"must live in a\""
+    },
+    {
+      "id": 2761,
+      "title": "Senior Quality Engineer (Porto Alegre)",
+      "evidence": "Title names location: \"Porto\""
+    },
+    {
+      "id": 2776,
+      "title": "Director Senior Director Sales New York",
+      "evidence": "Title names location: \"New York\""
+    },
+    {
+      "id": 2784,
+      "title": "Regional Sales Director EMEA",
+      "evidence": "Residence/authorization lock: \"Must be located in the U\""
+    },
+    {
+      "id": 2799,
+      "title": "Principal Finance Business Partner - Networks at Airalo",
+      "evidence": "Residence/authorization lock: \"must live in a\""
+    },
+    {
+      "id": 2819,
+      "title": "Associate Customer Success Manager SMB (On-site)",
+      "evidence": "Not fully remote: \"On-site\" marker"
+    },
+    {
+      "id": 2835,
+      "title": "Social Media Content Creator",
+      "evidence": "Residence/authorization lock: \"must be located in N\""
+    },
+    {
+      "id": 2859,
+      "title": "Product Marketing - Senior Manager at Airalo",
+      "evidence": "Residence/authorization lock: \"must live in a\""
+    },
+    {
+      "id": 2860,
+      "title": "Procurement Lead - Telco at Airalo",
+      "evidence": "Residence/authorization lock: \"must live in a\""
+    },
+    {
+      "id": 2886,
+      "title": "REVENUE MANAGER",
+      "evidence": "Non-English posting (detected: es)"
+    },
+    {
+      "id": 2887,
+      "title": "Aplicador de Productos QuÃ­micos B",
+      "evidence": "Non-English posting (detected: es)"
+    },
+    {
+      "id": 2897,
+      "title": "Customer Enablement Manager (Tokyo, Japan)",
+      "evidence": "Title names location: \"Tokyo\""
+    },
+    {
+      "id": 2901,
+      "title": "Analista de Produtos Pleno Open Finance Wallet & Banking Remoto",
+      "evidence": "Non-English posting (detected: pt)"
+    },
+    {
+      "id": 2927,
+      "title": "Preparador de Vehiculos Hatillo",
+      "evidence": "Non-English posting (detected: es)"
+    },
+    {
+      "id": 2950,
+      "title": "Analista de Customer Service , Delivery Station Customer Support",
+      "evidence": "Residence/authorization lock: \"authorized to work in\""
+    },
+    {
+      "id": 2952,
+      "title": "Australian English Voice Actor Specialist Sydney",
+      "evidence": "Title names location: \"Sydney\""
+    },
+    {
+      "id": 2966,
+      "title": "Customer Service Representative (Spanish Bilingual)",
+      "evidence": "Source tagged language: \"spanish\""
+    },
+    {
+      "id": 3011,
+      "title": "UX UI Designer",
+      "evidence": "Non-English posting (detected: es)"
+    },
+    {
+      "id": 3135,
+      "title": "Freelancer im Inbound Customer Service - innerhalb der EU - 100% Remote - Deutsch C1/C2",
+      "evidence": "Non-English posting (detected: de)"
+    },
+    {
+      "id": 3169,
+      "title": "Full Stack Developer first UK",
+      "evidence": "Residence/authorization lock: \"based in the UK\""
+    },
+    {
+      "id": 3172,
+      "title": "Operations Supervisor Healthcare Atlanta",
+      "evidence": "Title names location: \"Atlanta\""
+    },
+    {
+      "id": 3339,
+      "title": "Strategic Account Executive, San Francisco",
+      "evidence": "Title names location: \"San Francisco\""
+    },
+    {
+      "id": 3537,
+      "title": "Sales Development Representative - South Korea (Korean Speaking)",
+      "evidence": "Source tagged language: \"korean\""
+    },
+    {
+      "id": 3688,
+      "title": "Executive Assitant to the CEO at Supabase",
+      "evidence": "Residence/authorization lock: \"must be based in a\""
+    },
+    {
+      "id": 3699,
+      "title": "Customer Engineer – Auckland",
+      "evidence": "Title names location: \"Auckland\""
+    },
+    {
+      "id": 3703,
+      "title": "New Business Account Executive - Southern California",
+      "evidence": "Title names location: \"California\""
+    },
+    {
+      "id": 3706,
+      "title": "Operations Supervisor Healthcare South Georgia",
+      "evidence": "Title names location: \"Georgia\""
+    },
+    {
+      "id": 3707,
+      "title": "Pedagogy Specialist Spanish",
+      "evidence": "Source tagged language: \"spanish\""
+    },
+    {
+      "id": 3714,
+      "title": "Dutch Speaking Customer Service Agent For Imperial Work from Home Greece",
+      "evidence": "Source tagged language: \"dutch\""
+    },
+    {
+      "id": 3818,
+      "title": "Analista Marketing JR Social Media",
+      "evidence": "Non-English posting (detected: pt)"
+    },
+    {
+      "id": 3863,
+      "title": "Diver",
+      "evidence": "Residence/authorization lock: \"Citizenship is required\""
+    },
+    {
+      "id": 4023,
+      "title": "Senior Customer Success Manager - France",
+      "evidence": "Source tagged language: \"french\""
+    },
+    {
+      "id": 4051,
+      "title": "Developer Relations Engineer (San Francisco, CA)",
+      "evidence": "Title names location: \"San Francisco\""
+    },
+    {
+      "id": 4118,
+      "title": "Commercial Account Executive, Acquisition | Melbourne | Remote",
+      "evidence": "Title names location: \"Melbourne\""
+    },
+    {
+      "id": 4141,
+      "title": "Senior Enterprise Account Executive, Acquisition | Tokyo, Japan",
+      "evidence": "Title names location: \"Tokyo\""
+    },
+    {
+      "id": 4166,
+      "title": "Senior Solutions Engineer | Toronto | Remote",
+      "evidence": "Title names location: \"Toronto\""
+    },
+    {
+      "id": 4238,
+      "title": "Senior AI Software Engineer Javascript or Python (Perm, London, on-site 4 days per week)",
+      "evidence": "Not fully remote: \"on-site\" marker"
+    },
+    {
+      "id": 4432,
+      "title": "Ecosystem Sales Manager, Carahsoft (Washington DC)",
+      "evidence": "Title names location: \"Washington\""
+    },
+    {
+      "id": 4449,
+      "title": "Spécialiste DevOps",
+      "evidence": "Non-English posting (detected: fr)"
+    },
+    {
+      "id": 4458,
+      "title": "Clinical Specialist, CRM (Denver, CO)",
+      "evidence": "Title names location: \"Denver\""
+    },
+    {
+      "id": 4527,
+      "title": "PRODUCT MANAGER IV (Remote - Seattle, WA)",
+      "evidence": "Title names location: \"Seattle\""
+    },
+    {
+      "id": 4554,
+      "title": "Website Builder / WordPress Specialist",
+      "evidence": "Non-English posting (detected: es)"
+    },
+    {
+      "id": 4643,
+      "title": "Community & Social Manager",
+      "evidence": "Residence/authorization lock: \"must be based in the N\""
+    },
+    {
+      "id": 4667,
+      "title": "Addetto a Customer Service",
+      "evidence": "Non-English posting (detected: it)"
+    },
+    {
+      "id": 4677,
+      "title": "Designer de Interiores",
+      "evidence": "Non-English posting (detected: pt)"
+    }
+  ]
+}
