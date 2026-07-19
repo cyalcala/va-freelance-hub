@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
-import { isNotNull, and, inArray, eq, lt } from "drizzle-orm";
+import { isNotNull, and, inArray, eq, lt, asc } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
 
 async function generateHash(message: string) {
   const msgUint8 = new TextEncoder().encode(message);
@@ -869,6 +869,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // separately from AI rejections so the response shows how much the gate
     // catches — and how many Workers AI calls it saves.
     let geoGateRejected = 0;
+    // Items where the two AI votes disagreed (L2 consensus) — quarantined.
+    let consensusQuarantined = 0;
 
     // L1: run the deterministic geo-gate BEFORE any AI call. Ineligible items
     // are persisted as inactive rows (same dedup rationale as triage
@@ -916,17 +918,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
         chunk.map(async ({ item, gate }) => {
           console.log(`[api/cron/scrape] Triaging: "${item.title}"`);
           try {
-            const triage = await triageJob(item.title, item.description || "", env);
-            return { item, gate, triage };
+            // L2: the model now sees the structured location, source tags,
+            // and company — not just title + description.
+            const triageContext = {
+              locationRaw: (item as { locationRaw?: string | null }).locationRaw ?? null,
+              tags: item.tags,
+              company: item.company,
+            };
+            const triage = await triageJob(item.title, item.description || "", env, triageContext);
+            // Consensus (L2): a gate-unknown item approved by one AI pass
+            // needs a second, adversarial vote before publishing. Gate-
+            // verified positives (worldwide/APAC/PH) skip this — the
+            // structured signal already corroborates.
+            let skeptic = null;
+            if (gate.geoScope === "unknown" && !triage.aiUnavailable && triage.eligibleForFilipinos) {
+              skeptic = await skepticEligibilityCheck(item.title, item.description || "", env, triageContext);
+            }
+            return { item, gate, triage, skeptic };
           } catch (err) {
             console.error(`[api/cron/scrape] Triage failed for "${item.title}":`, err);
             triageFailures += 1;
-            return { item, gate, triage: null };
+            return { item, gate, triage: null, skeptic: null };
           }
         })
       );
 
-      for (const { item, gate, triage } of results) {
+      for (const { item, gate, triage, skeptic } of results) {
         if (!triage) continue;
 
         if (triage.aiUnavailable) {
@@ -948,6 +965,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
             geoScope: gate.geoScope,
             phEligibility: "ineligible",
             geoEvidence: `AI triage: ${(triage.reason || "ineligible").slice(0, 200)}`,
+            geoCheckedAt: observedAt,
+            descriptionHash,
+            applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+            postedAt: normalizeUtcIso(item.postedAt),
+            scrapedAt: observedAt,
+            lastSeenInFeedAt: observedAt,
+            updatedAt: observedAt,
+          });
+          continue;
+        }
+
+        // Consensus quarantine (L2): the skeptic refuted the first AI pass —
+        // conflicting votes never publish. Persisted inactive with evidence
+        // so the URL joins dedup and a human can audit the split.
+        if (skeptic && !skeptic.aiUnavailable && !skeptic.eligible) {
+          consensusQuarantined += 1;
+          console.log(`[api/cron/scrape] Consensus split for "${item.title}" — quarantined. Skeptic: ${skeptic.reason}`);
+          rejectedItems.push({
+            ...item,
+            isActive: false,
+            tags: Array.from(new Set([...(item.tags || []), "consensus-quarantined"])),
+            category: "other",
+            geoScope: gate.geoScope,
+            phEligibility: "unclear",
+            geoEvidence: `Consensus split — skeptic: ${(skeptic.reason || "refuted").slice(0, 200)}`,
             geoCheckedAt: observedAt,
             descriptionHash,
             applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
@@ -1056,6 +1098,81 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.log(`[api/cron/scrape] Persisted ${rejectedPersisted}/${rejectedItems.length} triage-rejected items as inactive rows (${rejectedInsertFailedBatches} failed batches).`);
     }
 
+    // 6c. Unclear-backlog convergence (geo masterplan Phase 3): the 2026-07-19
+    // backfill left ~1,870 live rows verdicted "unclear" (no deterministic
+    // signal; predate AI geo review). Each run upgrades a small budget of the
+    // oldest ones via the hardened triage + skeptic consensus — the whole
+    // backlog converges in a couple of days at the 15-min cadence without
+    // ever spiking Workers AI usage or run duration.
+    const UNCLEAR_RETRIAGE_BUDGET = 12;
+    let unclearRetriaged = 0;
+    let unclearUpgraded = 0;
+    let unclearDeactivated = 0;
+    try {
+      const unclearRows = await db
+        .select({
+          id: opportunities.id,
+          title: opportunities.title,
+          description: opportunities.description,
+          tags: opportunities.tags,
+          company: opportunities.company,
+          locationRaw: opportunities.locationRaw,
+        })
+        .from(opportunities)
+        .where(and(eq(opportunities.isActive, true), eq(opportunities.phEligibility, "unclear")))
+        .orderBy(asc(opportunities.geoCheckedAt))
+        .limit(UNCLEAR_RETRIAGE_BUDGET);
+
+      for (const row of unclearRows) {
+        const ctx = { locationRaw: row.locationRaw, tags: row.tags, company: row.company };
+        try {
+          const triage = await triageJob(row.title, row.description || "", env, ctx);
+          if (triage.aiUnavailable) break; // AI quota/outage — stop the sweep, rows retry next run
+          unclearRetriaged += 1;
+          if (!triage.eligibleForFilipinos) {
+            unclearDeactivated += 1;
+            await db.update(opportunities).set({
+              isActive: false,
+              phEligibility: "ineligible",
+              geoEvidence: `AI re-triage: ${(triage.reason || "ineligible").slice(0, 200)}`,
+              geoCheckedAt: observedAt,
+              updatedAt: observedAt,
+            }).where(eq(opportunities.id, row.id));
+            continue;
+          }
+          const skeptic = await skepticEligibilityCheck(row.title, row.description || "", env, ctx);
+          if (skeptic && !skeptic.aiUnavailable && !skeptic.eligible) {
+            unclearDeactivated += 1;
+            await db.update(opportunities).set({
+              isActive: false,
+              phEligibility: "unclear",
+              geoEvidence: `Re-triage consensus split — skeptic: ${(skeptic.reason || "refuted").slice(0, 200)}`,
+              geoCheckedAt: observedAt,
+              updatedAt: observedAt,
+            }).where(eq(opportunities.id, row.id));
+            continue;
+          }
+          unclearUpgraded += 1;
+          await db.update(opportunities).set({
+            phEligibility: "eligible_likely",
+            geoEvidence: skeptic?.aiUnavailable
+              ? `AI re-triage passed (single vote): ${(triage.reason || "eligible").slice(0, 160)}`
+              : `AI re-triage + skeptic agreed: ${(triage.reason || "eligible").slice(0, 160)}`,
+            geoCheckedAt: observedAt,
+            updatedAt: observedAt,
+          }).where(eq(opportunities.id, row.id));
+        } catch (err) {
+          console.warn(`[api/cron/scrape] Unclear re-triage failed for #${row.id}:`, errorMessage(err));
+        }
+      }
+      if (unclearRetriaged > 0) {
+        console.log(`[api/cron/scrape] Unclear backlog: re-triaged ${unclearRetriaged} (upgraded ${unclearUpgraded}, deactivated ${unclearDeactivated}).`);
+      }
+    } catch (err) {
+      // The sweep is best-effort maintenance — it must never fail the run.
+      console.warn(`[api/cron/scrape] Unclear-backlog sweep skipped:`, errorMessage(err));
+    }
+
     console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}`);
     return new Response(JSON.stringify({
       inserted: actualChanges,
@@ -1067,6 +1184,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       triageFailures,
       triageAiUnavailable,
       geoGateRejected,
+      consensusQuarantined,
+      unclearRetriaged,
       rejectedPersisted,
       rejectedInsertFailedBatches,
       droppedNoUrl,

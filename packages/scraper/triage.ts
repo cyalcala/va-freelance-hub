@@ -91,13 +91,34 @@ export function isObviousNonEnglishOrLocalOnly(title: string, description: strin
   return LOCAL_OR_NON_ENGLISH_REGEX.test(content);
 }
 
+/** Extra structured context for triage (geo masterplan L2, 2026-07). */
+export interface TriageContext {
+  /** Structured location string from the source (RemoteOK location, WWR region, ATS offices). */
+  locationRaw?: string | null;
+  /** Source-provided tags — RemoteOK tags the posting language (e.g. "italian"). */
+  tags?: string[] | null;
+  company?: string | null;
+}
+
+function contextBlock(context?: TriageContext): string {
+  if (!context) return "";
+  const lines: string[] = [];
+  if (context.locationRaw) lines.push(`Source-listed location: ${context.locationRaw}`);
+  if (context.tags?.length) lines.push(`Source tags: ${context.tags.slice(0, 12).join(", ")}`);
+  if (context.company) lines.push(`Company: ${context.company}`);
+  return lines.length ? `\n${lines.join("\n")}` : "";
+}
+
 /**
- * Intelligently classifies and verifies eligibility of a job listing using Cloudflare Workers AI (Llama 3.1)
+ * Intelligently classifies and verifies eligibility of a job listing using
+ * Cloudflare Workers AI. Model ladder (L2): llama-3.3-70b (fp8-fast, far
+ * better geo nuance) → llama-3.1-8b → mistral-7b.
  */
 export async function triageJob(
   title: string,
   description: string,
-  env?: any
+  env?: any,
+  context?: TriageContext
 ): Promise<TriageResult> {
   const cleanDescription = (description || "").slice(0, 1500); // limit payload size
 
@@ -179,13 +200,21 @@ export async function triageJob(
 You are an expert AI job triager for "Remote PH Jobs", a site that matches remote jobs to Filipino freelancers and virtual assistants.
 Analyze the following job details and output a valid JSON object matching the schema below.
 
-Job Title: ${title}
+Job Title: ${title}${contextBlock(context)}
 Job Description Summary:
 ${cleanDescription}
 
+Eligibility examples (learn the pattern):
+- Italian-language posting "Addetto a Customer Service" for a Swiss casino → eligibleForFilipinos: false (non-English, targets the local Swiss/Italian market).
+- Source-listed location "Florida, United States" → false (pinned to a US location even though listed as remote).
+- "Must be based in the EU" / "US work authorization required" → false (hard residence/authorization lock).
+- Source-listed location "Anywhere in the World" → true (explicitly worldwide).
+- "Hiring for our Philippines team, must reside in the Philippines" → true (PH-targeted is exactly what we want).
+- "Must overlap 4 hours with EST business hours" → true (timezone OVERLAP is fine — Filipino VAs routinely work night shift; only residence locks disqualify).
+
 Requirements for output JSON schema:
 {
-  "eligibleForFilipinos": boolean, // Set to false if: 1) the job requires residency/citizenship in specific non-PH regions (like US only, Europe only), 2) the job is written in a non-English language (German, French, etc.), 3) it requires local university enrollment or national student/apprentice schemes (like German Werkstudent, French Alternance/Apprentissage), or 4) it contains localized legal gender abbreviations (like m/w/d, H/F). Otherwise, if the job is open globally, remote, or to the Philippines, set to true.
+  "eligibleForFilipinos": boolean, // Set to false if: 1) the job requires residency/citizenship in specific non-PH regions (like US only, Europe only), 2) the job is written in a non-English language (German, French, etc.), 3) it requires local university enrollment or national student/apprentice schemes (like German Werkstudent, French Alternance/Apprentissage), 4) it contains localized legal gender abbreviations (like m/w/d, H/F), or 5) the source-listed location pins it to a specific non-PH country, state, or city. Otherwise, if the job is open globally, remote, or to the Philippines, set to true.
   "reason": "string", // Brief explanation of eligibility or location rules.
   "category": "admin" | "design" | "tech" | "marketing" | "customer-service" | "finance" | "other", // Classify based on these guidelines:
   // - "admin": virtual assistant, data entry, calendar/email management, HR, recruiting, executive assistant, scheduling, office operations.
@@ -210,6 +239,11 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
   const modelsToTry = env?.AI_MODEL
     ? [env.AI_MODEL]
     : [
+        // L2 model upgrade: 70B fp8-fast first — dramatically better at geo
+        // nuance than the 8B models and still on the Workers AI free tier.
+        // If its quota runs dry the ladder degrades to the cheaper models,
+        // and if everything fails the caller fails closed (aiUnavailable).
+        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
         "@cf/meta/llama-3.1-8b-instruct",
         "@cf/meta/llama-3-8b-instruct",
         "@cf/mistral/mistral-7b-instruct-v0.1"
@@ -219,7 +253,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
 
   for (const model of modelsToTry) {
     try {
-      const response = await env.AI.run(model, {
+      const request: Record<string, unknown> = {
         messages: [
           {
             role: "system",
@@ -227,8 +261,14 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
           },
           { role: "user", content: prompt },
         ],
-        // We parse the string response. Cloudflare Workers AI also supports JSON mode.
-      });
+      };
+      // JSON mode (L2): grammar-constrained output kills parse failures on
+      // models that support it. Guarded per-model — an unsupported param
+      // would otherwise error EVERY rung of the fallback ladder.
+      if (typeof model === "string" && model.includes("llama-3.3")) {
+        request.response_format = { type: "json_object" };
+      }
+      const response = await env.AI.run(model, request);
 
       let jsonText = "";
       if (typeof response === "string") {
@@ -312,4 +352,72 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
     companyName: null,
     aiUnavailable: true,
   };
+}
+
+// ─── Consensus skeptic (geo masterplan L2) ───────────────────────────────────
+
+export interface SkepticVerdict {
+  eligible: boolean;
+  reason: string;
+  /** True when no model produced a usable verdict — caller decides the tie-break. */
+  aiUnavailable?: boolean;
+}
+
+/**
+ * Second, adversarial vote before publishing a job whose only eligibility
+ * signal is one AI pass. Prompted to REFUTE: a different framing than
+ * triageJob's, so the two votes fail differently. Disagreement → the caller
+ * quarantines instead of publishing.
+ */
+export async function skepticEligibilityCheck(
+  title: string,
+  description: string,
+  env?: any,
+  context?: TriageContext
+): Promise<SkepticVerdict> {
+  if (!env || !env.AI) {
+    return { eligible: true, reason: "Skeptic unavailable (no AI binding)", aiUnavailable: true };
+  }
+
+  const prompt = `
+You are a skeptical reviewer for a Filipino remote-jobs board. Another reviewer approved this job as open to applicants living in the Philippines. Your job is to try to REFUTE that.
+
+Job Title: ${title}${contextBlock(context)}
+Job Description:
+${(description || "").slice(0, 1200)}
+
+Look for ANY disqualifier: non-English posting language; residency, citizenship, or work-authorization requirements outside the Philippines; the listed location pinning it to a specific non-PH country/state/city; onsite or hybrid requirements; local statutory schemes (Werkstudent, Alternance, m/w/d). Timezone-overlap requirements alone do NOT disqualify.
+
+Output ONLY raw JSON: {"eligible": boolean, "reason": "one short sentence"}.
+"eligible" is false if you found a genuine disqualifier, true if you could not refute it.
+  `.trim();
+
+  const models = env?.AI_MODEL
+    ? [env.AI_MODEL]
+    : ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/meta/llama-3.1-8b-instruct"];
+
+  for (const model of models) {
+    try {
+      const request: Record<string, unknown> = {
+        messages: [
+          { role: "system", content: "You are a precise JSON generator. Output only valid JSON objects." },
+          { role: "user", content: prompt },
+        ],
+      };
+      if (typeof model === "string" && model.includes("llama-3.3")) {
+        request.response_format = { type: "json_object" };
+      }
+      const response = await env.AI.run(model, request);
+      let jsonText = typeof response === "string" ? response : (response?.response ?? response?.text ?? JSON.stringify(response));
+      jsonText = String(jsonText).trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
+      const parsed = JSON.parse(jsonText);
+      if (typeof parsed.eligible !== "boolean") throw new Error("skeptic output missing boolean eligible");
+      return { eligible: parsed.eligible, reason: typeof parsed.reason === "string" ? parsed.reason : "" };
+    } catch (error) {
+      console.warn(`[triage] Skeptic model ${model} failed for "${title}":`, error);
+    }
+  }
+  // Never block ingestion on a skeptic outage — the first vote plus the
+  // deterministic gate still stand; the caller records single-vote status.
+  return { eligible: true, reason: "Skeptic unavailable (all models failed)", aiUnavailable: true };
 }
