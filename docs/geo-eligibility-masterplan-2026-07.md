@@ -1,6 +1,19 @@
 # Geo-Eligibility Masterplan — Maximizing "Truly Hires Filipinos" Accuracy
 
-**Date:** 2026-07-19 · **Status:** STRATEGY APPROVED-PENDING · **Cost constraint:** $0 (free tiers only)
+**Date:** 2026-07-19 · **Status:** ✅ IMPLEMENTED (all 5 layers, 2026-07-19) · **Cost constraint:** $0 (free tiers only)
+
+## Implementation record (live-verified 2026-07-20)
+
+| Layer | Commit | Verified in production |
+| --- | --- | --- |
+| L0 capture + L1 gate + fail-closed | `8176314` | New RemoteOK job rejected via captured location ("Florida") |
+| Phase 2 backfill | `3ab7309` | 72 geo-locked jobs deactivated of 2,278 swept |
+| L2 AI consensus + 70B model | `1a3d593` | 17 consensus splits quarantined overnight; backlog 1,870→1,830 in 6.5h |
+| L5 badges + trust copy | `b9b2e17` | 🌍 badges + evidence tooltips render on the live board |
+| L3 metrics + L4 page scan | `d2e4f81` | geoRejectionsBySource in responses; verifier GET-scans 15 pages/run |
+
+151/151 tests green (`geoGate.test.ts` golden set; Casino Lugano is fixture #1).
+Deferred: PH-exclusive ATS stream — resumes with the paused directory audit.
 
 ## The trigger case (fully diagnosed)
 
