@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { geoGate, detectDominantLanguage } from "./geoGate";
+import { geoGate, detectDominantLanguage, scanLandingPageForGeoLock } from "./geoGate";
 
 // Golden set for the deterministic geo-gate. Fixture #1 is the real
 // production escape that motivated the whole geo masterplan (job #4667).
@@ -230,5 +230,36 @@ describe("detectDominantLanguage", () => {
 
   it("fails safe on very short text", () => {
     expect(detectDominantLanguage("Addetto a Customer Service")).toBe("en");
+  });
+});
+
+describe("scanLandingPageForGeoLock", () => {
+  const wrap = (body: string) => `<html><head><style>.x{}</style></head><body><nav>Jobs Home About</nav>${body}<footer>Privacy Terms</footer></body></html>`;
+
+  it("flags a non-English landing page (Casino Lugano pattern)", () => {
+    const html = wrap(`<div>${"Per il nostro reparto online stiamo cercando la seguente figura. Occuparsi di assicurare la soddisfazione del cliente durante lo svolgimento di tutte le attività di gioco, gestione delle richieste dei clienti, collaborazione con il team per garantire un servizio di qualità e supporto continuo. ".repeat(3)}</div>`);
+    const result = scanLandingPageForGeoLock(html);
+    expect(result).not.toBeNull();
+    expect(result).toContain("non-English");
+  });
+
+  it("flags an explicit residence lock on the page", () => {
+    const html = wrap(`<div>${"We are a fast growing company with a fully remote team and a strong culture of ownership and growth for every member of the organization. ".repeat(3)}Applicants must be based in the United States for this role.</div>`);
+    const result = scanLandingPageForGeoLock(html);
+    expect(result).not.toBeNull();
+  });
+
+  it("passes a clean English worldwide page", () => {
+    const html = wrap(`<div>${"We are hiring a customer support specialist to join our fully distributed team. You will help customers around the world resolve issues and have a great experience with the product. ".repeat(3)}</div>`);
+    expect(scanLandingPageForGeoLock(html)).toBeNull();
+  });
+
+  it("PH mention on the page beats a residence-lock pattern", () => {
+    const html = wrap(`<div>${"Our team is growing quickly and we can not wait to meet you. This role offers HMO, 13th month pay, and a supportive environment for career growth over the years. ".repeat(3)}This role is for our Philippines team; you must reside in the Philippines.</div>`);
+    expect(scanLandingPageForGeoLock(html)).toBeNull();
+  });
+
+  it("stays silent on near-empty pages (SPA shells)", () => {
+    expect(scanLandingPageForGeoLock("<html><body><div id=root></div></body></html>")).toBeNull();
   });
 });

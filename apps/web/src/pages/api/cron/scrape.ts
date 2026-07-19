@@ -871,6 +871,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let geoGateRejected = 0;
     // Items where the two AI votes disagreed (L2 consensus) — quarantined.
     let consensusQuarantined = 0;
+    // Per-source geo-rejection counts (masterplan L3): a source segment that
+    // keeps shipping country-locked "remote" jobs shows up here run after
+    // run — the Sentinel/digest layer can then tighten its defaults.
+    const geoRejectionsBySource: Record<string, number> = {};
 
     // L1: run the deterministic geo-gate BEFORE any AI call. Ineligible items
     // are persisted as inactive rows (same dedup rationale as triage
@@ -886,6 +890,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
       if (gate.phEligibility === "ineligible") {
         geoGateRejected += 1;
+        geoRejectionsBySource[item.sourcePlatform] = (geoRejectionsBySource[item.sourcePlatform] || 0) + 1;
         console.log(`[api/cron/scrape] Geo-gate rejected "${item.title}": ${gate.evidence}`);
         const cleanDesc = (item.description || "").slice(0, 1500);
         rejectedItems.push({
@@ -1184,6 +1189,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       triageFailures,
       triageAiUnavailable,
       geoGateRejected,
+      geoRejectionsBySource,
       consensusQuarantined,
       unclearRetriaged,
       rejectedPersisted,

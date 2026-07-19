@@ -290,3 +290,39 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
   // 8. No deterministic signal — the AI layer decides.
   return verdict("unknown", "unclear", "No deterministic geo signal");
 }
+
+// ─── Landing-page scan (geo masterplan L4, used by the Verifier pulse) ──────
+// Our stored descriptions truncate at 1500 chars; the live application page
+// carries the truth. Conservative by design: only the two highest-confidence
+// signals flag, because a job page's footer/nav can contain almost anything.
+
+/** Strip tags/scripts/styles from HTML to visible text. */
+export function htmlToVisibleText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&[a-z#0-9]+;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Scan a job landing page's visible text for disqualifiers. Returns evidence
+ * when the page is confidently NOT open to PH applicants, else null.
+ */
+export function scanLandingPageForGeoLock(html: string): string | null {
+  const text = htmlToVisibleText(html).slice(0, 4000);
+  if (text.length < 200) return null; // too little text to judge safely
+
+  // PH positives on the page beat everything (same rule as the gate).
+  if (PH_POSITIVE_REGEX.test(text)) return null;
+
+  const lang = detectDominantLanguage(text);
+  if (lang !== "en") return `Landing page is non-English (detected: ${lang})`;
+
+  const lock = RESIDENCE_LOCK_REGEX.exec(text);
+  if (lock) return `Landing page states: "${(lock[0] || "").slice(0, 80)}"`;
+
+  return null;
+}

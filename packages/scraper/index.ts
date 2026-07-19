@@ -4,7 +4,7 @@ export { fetchJSONSource } from "./json";
 export { disabledSources, enabledSources, isEnabledSource, sources, rssSources, htmlSources, jsonSources } from "./sources";
 export { triageJob, skepticEligibilityCheck, isObviousGeoRestriction } from "./triage";
 export type { TriageContext, SkepticVerdict } from "./triage";
-export { geoGate, detectDominantLanguage } from "./geoGate";
+export { geoGate, detectDominantLanguage, scanLandingPageForGeoLock, htmlToVisibleText } from "./geoGate";
 export type { GeoGateInput, GeoVerdict, GeoScope, PhEligibility } from "./geoGate";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";

@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { eq, sql, inArray, asc } from "drizzle-orm";
-import { chunkArray } from "@va-hub/scraper";
+import { chunkArray, scanLandingPageForGeoLock } from "@va-hub/scraper";
 import { daysAgoUtcIso, nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 
@@ -73,22 +73,56 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     console.log(`[api/cron/verify-links] Checking ${active.length} oldest unverified links...`);
     let deactivated = 0;
+    // Geo masterplan L4: a budget of each run's link checks are upgraded from
+    // HEAD to GET so the landing page's visible text can be scanned for
+    // disqualifiers our 1500-char stored description can't show (non-English
+    // page, residence locks). Rows rotate through lastVerifiedAt ordering, so
+    // the whole board gets page-scanned over time — drift detection included.
+    const DEEP_SCAN_BUDGET = 15;
+    let geoPageDeactivated = 0;
 
     // Check in batches of 10
     for (let i = 0; i < active.length; i += 10) {
       const batch = active.slice(i, i + 10);
       const results = await Promise.allSettled(
-        batch.map(async ({ id, sourceUrl, failedCount }) => {
+        batch.map(async ({ id, sourceUrl, failedCount }, batchIndex) => {
+          const deepScan = i + batchIndex < DEEP_SCAN_BUDGET;
           try {
             const res = await fetch(sourceUrl, {
-              method: "HEAD",
+              method: deepScan ? "GET" : "HEAD",
               headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
               },
               signal: AbortSignal.timeout(8_000),
               redirect: "follow",
             });
-            
+
+            // Deep scan on a live page: the application page is the ground
+            // truth for geo-eligibility. Conservative signals only.
+            if (deepScan && res.ok) {
+              try {
+                const html = (await res.text()).slice(0, 200_000);
+                const geoLock = scanLandingPageForGeoLock(html);
+                if (geoLock) {
+                  const checkedAt = nowUtcIso();
+                  await db.update(opportunities).set({
+                    isActive: false,
+                    phEligibility: "ineligible",
+                    geoEvidence: `Verifier page scan: ${geoLock.slice(0, 250)}`,
+                    geoCheckedAt: checkedAt,
+                    lastVerifiedAt: checkedAt,
+                    updatedAt: checkedAt,
+                  }).where(eq(opportunities.id, id));
+                  geoPageDeactivated += 1;
+                  console.log(`[api/cron/verify-links] Geo page-scan deactivated #${id}: ${geoLock}`);
+                  return 1;
+                }
+              } catch (scanErr) {
+                // Scan failures must never fail link verification itself.
+                console.warn(`[api/cron/verify-links] Page scan failed for #${id}:`, (scanErr as Error).message);
+              }
+            }
+
             if (res.status === 404 || res.status === 410 || res.status === 403 || res.status === 401) {
               const newFailCount = (failedCount || 0) + 1;
               const checkedAt = nowUtcIso();
@@ -130,8 +164,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.warn("[api/cron/verify-links] Failed to compute never-verified backlog:", (err as Error).message);
     }
 
-    console.log(`[api/cron/verify-links] Completed. Checked ${active.length}, auto-archived ${stale.length}, deactivated ${deactivated} dead links, never-verified backlog: ${neverVerifiedRemaining}.`);
-    return new Response(JSON.stringify({ checked: active.length, autoArchived: stale.length, deactivated, neverVerifiedRemaining }), {
+    console.log(`[api/cron/verify-links] Completed. Checked ${active.length}, auto-archived ${stale.length}, deactivated ${deactivated} dead links (${geoPageDeactivated} by geo page-scan), never-verified backlog: ${neverVerifiedRemaining}.`);
+    return new Response(JSON.stringify({ checked: active.length, autoArchived: stale.length, deactivated, geoPageDeactivated, neverVerifiedRemaining }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
