@@ -1,0 +1,106 @@
+name: 🏢 Sovereign Directory Pulse (Company Link Health)
+
+# Automated directory audit (2026-07). Recurring link-health check over the
+# va_directory company list, encoding the 2026-07 manual audit's ground truth:
+# bot walls (403/429 from live sites like Canva/Fiverr) are NOT dead; parked
+# for-sale pages hide behind HTTP 200. Safety lives in /api/cron/directory-audit:
+# a company must return a hard-dead verdict on THREE consecutive checks before
+# it is de-verified (is_verified=0) and annotated — never deleted, never has its
+# URL edited. A human decides removal. This job only orchestrates + backs up a
+# health digest to the repo.
+
+on:
+  schedule:
+    - cron: '45 3 * * *' # Daily at 03:45 UTC (rotating budget covers all rows over a few days)
+  workflow_dispatch:
+
+concurrency:
+  group: gha-directory-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  directory-audit:
+    name: Audit Directory Company Links
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      DIRECTORY_API_URL: "https://remotejobs-ph.pages.dev/api/cron/directory-audit"
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🏢 Run Directory Link-Health Pulse
+        run: |
+          set -euo pipefail
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o directory.log --max-time 120 -X POST "$DIRECTORY_API_URL" \
+            -H "Authorization: Bearer $PROXY_SECRET" \
+            -H "x-cron-secret: $PROXY_SECRET" \
+            -H "Content-Type: application/json")
+          echo "HTTP Status: $HTTP_CODE"
+          cat directory.log
+          echo ""
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Directory audit API returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: 📒 Commit Directory Health Digest (backup)
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          TODAY=$(date -u +"%Y-%m-%d")
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          {
+            echo "# Directory Health — Latest"
+            echo ""
+            echo "Date: ${TODAY}"
+            echo "Workflow run: ${RUN_URL}"
+            echo ""
+            echo "| Metric | Value |"
+            echo "| --- | ---: |"
+            echo "| Companies checked this run | $(jq -r '.checked // 0' directory.log) |"
+            echo "| OK | $(jq -r '.tally.ok // 0' directory.log) |"
+            echo "| Bot-walled (alive) | $(jq -r '.tally.bot_wall // 0' directory.log) |"
+            echo "| Dead (HTTP) | $(jq -r '.tally.dead_http // 0' directory.log) |"
+            echo "| Dead (DNS) | $(jq -r '.tally.dead_dns // 0' directory.log) |"
+            echo "| Parked / for-sale | $(jq -r '.tally.parked // 0' directory.log) |"
+            echo "| Newly de-verified (3-strike) | $(jq -r '.newlyFlagged // 0' directory.log) |"
+            echo "| Suspected dead (1-2 strikes) | $(jq -r '.suspectedDeadWithStrikes // -1' directory.log) |"
+            echo ""
+            echo "## De-verified this run (3 consecutive hard-dead checks — awaiting human review)"
+            echo ""
+            jq -r '(.flaggedThisRun // []) | if length == 0 then "- (none this run)" else .[] | "- #\(.id) \(.company) — \(.status) x\(.strikes)" end' directory.log
+          } > docs/directory-health-latest.md
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/directory-health-latest.md
+          if git diff --cached --quiet; then echo "No digest changes."; exit 0; fi
+          git commit -m "docs: update directory health digest"
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then break; fi
+            echo "Push rejected (attempt $attempt); rebasing."
+            git pull --rebase origin main
+          done
+
+      - name: 📊 Directory Summary
+        if: always()
+        continue-on-error: true
+        run: |
+          CHECKED=$(jq -r '.checked // 0' directory.log || echo "0")
+          FLAGGED=$(jq -r '.newlyFlagged // 0' directory.log || echo "0")
+          DEAD=$(( $(jq -r '.tally.dead_dns // 0' directory.log || echo 0) + $(jq -r '.tally.dead_http // 0' directory.log || echo 0) + $(jq -r '.tally.parked // 0' directory.log || echo 0) ))
+          echo "### 🏢 Sovereign Directory Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: ✅ Link-Health Pulse Concluded" >> $GITHUB_STEP_SUMMARY
+          echo "- **Companies Checked**: $CHECKED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Hard-Dead Verdicts This Run**: $DEAD" >> $GITHUB_STEP_SUMMARY
+          echo "- **Newly De-verified (3-strike, human review)**: $FLAGGED" >> $GITHUB_STEP_SUMMARY
+          echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY

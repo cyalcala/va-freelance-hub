@@ -89,11 +89,19 @@ export const vaDirectory = sqliteTable("va_directory", {
   isMarketplace: integer("is_marketplace", { mode: "boolean" }).notNull().default(false),
   atsPlatform: text("ats_platform", { enum: ["lever", "greenhouse", "workable", "breezy", "ashby"] }),
   atsToken: text("ats_token"),
+  // Link-health tracking (migration 0022): recurring directory pulse verdicts.
+  // 3 consecutive hard-dead checks → is_verified = 0 + annotation, never deletion.
+  linkStatus: text("link_status", { enum: ["ok", "bot_wall", "dead_http", "dead_dns", "parked", "no_url"] }),
+  linkCheckedAt: text("link_checked_at"),
+  linkEvidence: text("link_evidence"),
+  linkFailCount: integer("link_fail_count").notNull().default(0),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),
 }, (table) => ({
   companyNameIdx: index("company_name_idx").on(table.companyName),
+  // Directory pulse selects its per-run budget by oldest check (migration 0022).
+  linkCheckedIdx: index("va_directory_link_checked_idx").on(table.linkCheckedAt),
 }));
 
 // ─── Content Digests ──────────────────────────────────────────────────────────

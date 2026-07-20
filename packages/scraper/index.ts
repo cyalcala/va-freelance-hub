@@ -18,6 +18,8 @@ export {
 } from "./prospector";
 export type { AtsRef, RawCandidate, ClassifiedCandidate, ClassifyResult } from "./prospector";
 export { chunkArray, maxRowsPerD1Batch, D1_MAX_BOUND_PARAMETERS } from "./batch";
+export { checkDirectoryLink, classifyLinkResponse, normalizeCheckUrl } from "./linkHealth";
+export type { LinkStatus, LinkVerdict } from "./linkHealth";
 export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validateAutoPauses } from "./pause";
 export type { AutoPauseEntry } from "./pause";
 export { sanitizeApplyUrl } from "./urls";
