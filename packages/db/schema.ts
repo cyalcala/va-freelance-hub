@@ -91,7 +91,7 @@ export const vaDirectory = sqliteTable("va_directory", {
   atsToken: text("ats_token"),
   // Link-health tracking (migration 0022): recurring directory pulse verdicts.
   // 3 consecutive hard-dead checks → is_verified = 0 + annotation, never deletion.
-  linkStatus: text("link_status", { enum: ["ok", "bot_wall", "dead_http", "dead_dns", "parked", "no_url"] }),
+  linkStatus: text("link_status", { enum: ["ok", "bot_wall", "dead_http", "unreachable", "dead_dns", "parked", "no_url"] }),
   linkCheckedAt: text("link_checked_at"),
   linkEvidence: text("link_evidence"),
   linkFailCount: integer("link_fail_count").notNull().default(0),

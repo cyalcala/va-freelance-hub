@@ -32,6 +32,33 @@ describe("classifyLinkResponse", () => {
     expect(v.isHardDead).toBe(true);
   });
 
+  it("410 Gone → dead_http, strike", () => {
+    expect(classifyLinkResponse(410, "").isHardDead).toBe(true);
+  });
+
+  // Regression: the 2026-07-21 false positives. Real PH agencies behind
+  // Cloudflare (FVA, Diversify, EzyVA, Cool Pixels) returned 525/526/530
+  // (SSL/origin edge hiccups) and were wrongly flagged dead_http.
+  it("525 Cloudflare SSL handshake failed → NOT dead (site alive)", () => {
+    const v = classifyLinkResponse(525, "");
+    expect(v.status).toBe("bot_wall");
+    expect(v.isHardDead).toBe(false);
+  });
+
+  it("530 Cloudflare origin DNS error → NOT dead (site alive)", () => {
+    expect(classifyLinkResponse(530, "").isHardDead).toBe(false);
+  });
+
+  it("526 invalid SSL cert → NOT dead", () => {
+    expect(classifyLinkResponse(526, "").isHardDead).toBe(false);
+  });
+
+  it("500/502/503 origin errors → transient, NOT dead", () => {
+    expect(classifyLinkResponse(500, "").isHardDead).toBe(false);
+    expect(classifyLinkResponse(502, "").isHardDead).toBe(false);
+    expect(classifyLinkResponse(503, "").isHardDead).toBe(false);
+  });
+
   it("200 parked/for-sale page → parked, strike (Kaya Services class)", () => {
     const v = classifyLinkResponse(200, "<html><body>This domain is for sale. Buy this domain now via Afternic.</body></html>");
     expect(v.status).toBe("parked");

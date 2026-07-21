@@ -11,7 +11,7 @@ name: 🏢 Sovereign Directory Pulse (Company Link Health)
 
 on:
   schedule:
-    - cron: '45 3 * * *' # Daily at 03:45 UTC (rotating budget covers all rows over a few days)
+    - cron: '45 */6 * * *' # Every 6h (4x/day). At 60/run the full ~368-company directory is re-checked every ~1.5 days, and a genuinely-dead link reaches its 3-strike hide threshold within ~18h.
   workflow_dispatch:
 
 concurrency:

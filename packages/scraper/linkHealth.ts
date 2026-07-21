@@ -9,7 +9,12 @@
 // - DNS failures are the strongest death signal but still get retried across
 //   runs (the 3-strike system) before any flagging.
 
-export type LinkStatus = "ok" | "bot_wall" | "dead_http" | "dead_dns" | "parked" | "no_url";
+// "dead_dns" retained only for backward-compat with rows written before
+// 2026-07-21; the checker no longer produces it. Network failures now classify
+// as "unreachable" (surfaced for human review, NOT an auto-strike) because the
+// Workers runtime cannot reliably distinguish a genuine NXDOMAIN from a
+// transient TLS/timeout/Cloudflare-egress failure.
+export type LinkStatus = "ok" | "bot_wall" | "dead_http" | "unreachable" | "dead_dns" | "parked" | "no_url";
 
 export interface LinkVerdict {
   status: LinkStatus;
@@ -44,7 +49,16 @@ const DEAD_PAGE_MARKERS = [
 ];
 
 // Statuses that mean "the server is alive but refuses bots".
-const BOT_WALL_STATUSES = new Set([401, 403, 405, 406, 409, 418, 429, 503]);
+const BOT_WALL_STATUSES = new Set([401, 403, 405, 406, 409, 418, 429]);
+
+// ONLY these HTTP codes are treated as a genuinely-gone page (a strike). A page
+// that returns 404/410/451 is definitively removed. Everything else that isn't
+// a clean 2xx/3xx — 5xx origin errors, Cloudflare edge codes (520-527, 530),
+// rate-limit/anti-bot 4xx — is transient-or-protected and must NOT count a
+// strike. Root cause of the 2026-07-21 false positives: real agencies behind
+// Cloudflare returned 525/526/530 (SSL/origin hiccups) and were wrongly flagged
+// dead_http. See docs/directory-health-latest.md and the audit.
+const DEFINITELY_GONE_STATUSES = new Set([404, 410, 451]);
 
 /** Pure classifier — separated from fetching so it is unit-testable. */
 export function classifyLinkResponse(status: number, bodySnippet: string): LinkVerdict {
@@ -63,10 +77,19 @@ export function classifyLinkResponse(status: number, bodySnippet: string): LinkV
   if (status >= 200 && status < 400) {
     return { status: "ok", evidence: `HTTP ${status}`, isHardDead: false };
   }
+  if (DEFINITELY_GONE_STATUSES.has(status)) {
+    return { status: "dead_http", evidence: `HTTP ${status}`, isHardDead: true };
+  }
   if (BOT_WALL_STATUSES.has(status)) {
     return { status: "bot_wall", evidence: `HTTP ${status} (bot wall — site alive)`, isHardDead: false };
   }
-  return { status: "dead_http", evidence: `HTTP ${status}`, isHardDead: true };
+  // Cloudflare edge errors (520-527, 530) and generic 5xx: origin is reachable
+  // through a CDN but had a transient SSL/origin problem. Alive, not a strike.
+  if (status >= 500) {
+    return { status: "bot_wall", evidence: `HTTP ${status} (edge/origin transient — not counted dead)`, isHardDead: false };
+  }
+  // Any other non-2xx (odd 4xx like 400/406-variants): ambiguous, don't strike.
+  return { status: "bot_wall", evidence: `HTTP ${status} (ambiguous — not counted dead)`, isHardDead: false };
 }
 
 export function normalizeCheckUrl(raw: string | null | undefined): string | null {
@@ -77,9 +100,11 @@ export function normalizeCheckUrl(raw: string | null | undefined): string | null
 }
 
 /**
- * Fetch + classify one company website. Network failures (DNS, TLS, timeout)
- * classify as dead_dns — the strike system absorbs transient blips, and the
- * manual audit showed persistent DNS failure is the most reliable dead signal.
+ * Fetch + classify one company website. Network failures (DNS, TLS, timeout,
+ * Cloudflare-egress block) classify as "unreachable" with isHardDead=false —
+ * NOT a strike. The Workers runtime cannot tell a genuinely-dead NXDOMAIN from
+ * a transient failure or a site that simply blocks Cloudflare's egress IPs, so
+ * these are surfaced for human review instead of auto-hidden.
  */
 export async function checkDirectoryLink(rawUrl: string | null | undefined, timeoutMs = 8_000): Promise<LinkVerdict> {
   const url = normalizeCheckUrl(rawUrl);
@@ -107,6 +132,6 @@ export async function checkDirectoryLink(rawUrl: string | null | undefined, time
     const message = (err as Error & { cause?: { code?: string } }).cause?.code
       ?? (err as Error).name
       ?? "network failure";
-    return { status: "dead_dns", evidence: `Network failure: ${String(message).slice(0, 80)}`, isHardDead: true };
+    return { status: "unreachable", evidence: `Unreachable: ${String(message).slice(0, 80)} (not counted dead — needs human review)`, isHardDead: false };
   }
 }

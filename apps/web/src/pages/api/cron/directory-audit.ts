@@ -16,7 +16,7 @@ import { isAuthorized } from "@/lib/auth";
 // for human review. Any healthy check resets the strike counter. Bot walls
 // (403/429 from live sites like Canva/Fiverr) never count a strike.
 
-const DEFAULT_BUDGET = 40;   // companies re-checked per run
+const DEFAULT_BUDGET = 60;   // companies re-checked per run (4 runs/day = full ~368 sweep in ~1.5 days)
 const STRIKE_THRESHOLD = 3;  // consecutive hard-dead checks before de-verifying
 const CHECK_CONCURRENCY = 8;
 
@@ -61,7 +61,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     console.log(`[api/cron/directory-audit] Checking ${targets.length} company links (budget ${budget}).`);
 
-    const tally = { ok: 0, bot_wall: 0, dead_http: 0, dead_dns: 0, parked: 0, no_url: 0 };
+    const tally: Record<string, number> = { ok: 0, bot_wall: 0, dead_http: 0, unreachable: 0, dead_dns: 0, parked: 0, no_url: 0 };
     let newlyFlagged = 0;
     const flaggedThisRun: { id: number; company: string; status: string; strikes: number }[] = [];
 

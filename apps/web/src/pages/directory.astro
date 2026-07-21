@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getDb, vaDirectory } from '@va-hub/db';
 import { DirectorySearch } from '@/components/DirectorySearch';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, lt } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -30,10 +30,15 @@ try {
       isMarketplace: vaDirectory.isMarketplace,
     })
     .from(vaDirectory)
-    // Directory audit (2026-07): hides companies flagged hires_filipinos=0
-    // (defunct, duplicates, or verified not-Filipino-hiring). Reversible —
-    // flip the flag to restore. See migration 0024.
-    .where(eq(vaDirectory.hiresFilipinos, true))
+    // Directory audit (2026-07): hide two disjoint sets, both reversible.
+    //   1. hires_filipinos=0 — defunct/duplicate/verified-not-PH (migration 0024).
+    //   2. link_fail_count >= 3 — the automated Directory Pulse confirmed the
+    //      website genuinely gone (404/410/parked) on 3 consecutive checks.
+    // This is the fix for the mechanism gap found 2026-07-21: the pulse counts
+    // strikes but the directory previously filtered only on hires_filipinos, so
+    // confirmed-dead links never actually disappeared. Now they do — and a
+    // recovered site (strike reset to 0) reappears automatically.
+    .where(and(eq(vaDirectory.hiresFilipinos, true), lt(vaDirectory.linkFailCount, 3)))
     .orderBy(asc(vaDirectory.companyName));
 } catch (e) {
   console.error("DB error:", e);
