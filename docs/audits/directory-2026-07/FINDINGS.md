@@ -1,19 +1,29 @@
 # VA Directory Audit — Findings (2026-07-20)
 
-Research pass over the 391-company `va_directory`. **252 of 391 companies were
-assessed** before the run hit a usage limit; batches 18–28 (~139 companies) and
-the entire adversarial verify pass did not complete.
+Research pass over the `va_directory` (391 companies at audit time). **All 391
+assessed; the adversarial verify pass completed** (a first attempt was
+usage-limited at 252/391 — the resumable workflow finished it from cache).
 
-## ⚠️ Status: PROPOSAL ONLY — nothing here has been applied to production
+## ✅ Status: APPLIED (reversibly) — 2026-07-20
 
-The workflow's safety design is *assess → adversarially verify → apply*. The
-**verify pass failed entirely** on the usage limit, so every proposed removal is
-unverified. No rows were deleted, de-verified, or edited from these findings.
-They are recorded here for a human decision and for the next verified pass.
+The workflow's safety design is *assess → adversarially verify → apply*, and it
+ran end to end. What was applied, all reversible, no hard deletes:
 
-The recurring **link-health** half of this audit is now fully automated (see
-[Automated pulse](#automated-pulse-supersedes-the-manual-link-sweep)); the
-**PH-hiring** half below still needs a verified re-run to become actionable.
+- **Migration 0023** — 12 moved-domain URL repairs (each replacement re-checked
+  live first) + 40 marketplace/job-board flags.
+- **Migration 0024** — 25 companies soft-hidden via `hires_filipinos=0`
+  (defunct, duplicates, verified non-PH-hiring); `directory.astro` now filters
+  on that flag. Flip the flag to restore any row.
+
+**What the verify pass changed vs. the raw proposal:** it confirmed only
+genuinely *defunct* domains for removal (MS Virtual Assistant #300, Philippines
+Recruitment UK #328, KOOS #432 — each NXDOMAIN with no successor) and correctly
+*rejected* removing alive-but-miscategorized companies (Hilton, KPMG, Magic,
+Scotiabank came back "not defunct"). Those alive non-PH companies were instead
+soft-hidden by scope (the reversible flag), never deleted. Two generator errors
+were caught in review before applying: #309 (kept as the primary of a dup pair,
+only its dup #310 hidden) and #405 Majorel (kept — a real BPO, not a clear
+remove). Medium-confidence non-PH verdicts were left visible.
 
 ## What the 252 assessed companies looked like
 

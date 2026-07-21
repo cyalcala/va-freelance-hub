@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getDb, vaDirectory } from '@va-hub/db';
 import { DirectorySearch } from '@/components/DirectorySearch';
-import { asc } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 
 export const prerender = false;
 
@@ -30,6 +30,10 @@ try {
       isMarketplace: vaDirectory.isMarketplace,
     })
     .from(vaDirectory)
+    // Directory audit (2026-07): hides companies flagged hires_filipinos=0
+    // (defunct, duplicates, or verified not-Filipino-hiring). Reversible —
+    // flip the flag to restore. See migration 0024.
+    .where(eq(vaDirectory.hiresFilipinos, true))
     .orderBy(asc(vaDirectory.companyName));
 } catch (e) {
   console.error("DB error:", e);
