@@ -9,6 +9,12 @@ historical, and where to resume. Start here instead of guessing from filenames.
 
 Read these in order:
 
+0. `docs/labor-engine-masterplan-2026-07.md` - **the standing forward roadmap**
+   (2026-07-21): verified $0 free-tier capacity ledger, non-negotiable
+   invariants, 8 phased upgrades (trust surface → retention → push → semantic
+   search → engine hardening → prospector autonomy → recurrence → gated
+   accounts), and the executor protocol. New sessions doing forward work start
+   here; recovery/debugging sessions continue with the trail below.
 1. `AGENTS.md` - active project context and operating rules.
 2. `docs/maintenance-bot-2026-07-04.md` - the Tier-1 maintenance bot: Hunter
    alert issues, daily Sentinel flapping-source detector, weekly Medic
