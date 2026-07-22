@@ -1,31 +1,34 @@
 # Source Health Latest
 
-Date: 2026-07-21
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29795101258
-Commit: 997d686b7233548346fae3ce903ae90599352c30
+Date: 2026-07-22
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/29881624912
+Commit: c2b6a91fa1cf8027f734de45ba81f94af07868fc
 
 ### Hunter Source Health
 
-- Timestamp: 2026-07-21T02:14:38Z
-- Run ID: 29795101258
-- Signals Harvested: 3
-- Accepted For Insert: 3
-- Attempted Inserts: 3
+- Timestamp: 2026-07-22T00:55:33Z
+- Run ID: 29881624912
+- Signals Harvested: 0
+- Accepted For Insert: 0
+- Attempted Inserts: 0
 - Failed Insert Batches: 0
 - Insert Errors: 0
 - Failed Sources: 0
 - Zero-Count Successful Sources: 1
-- Skipped Sources: 23
+- Skipped Sources: 26
 - Fetch Events Recorded: 42/42 (failed batches: 0)
 - Cadence State Available: true
 - Triage Failures: 0
 - AI-Unavailable Deferrals: 0
-- Rejected Persisted (inactive): 8
+- Rejected Persisted (inactive): 0
 - Dropped (no sourceUrl): 0
 - Unmatched Auto-Pauses: 0
 
 #### Skipped Sources
-- Jobicy Admin Support APAC (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-21T01:15:53.046Z; 60-minute minimum interval.
+- Real Work From Anywhere (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-22T00:45:53.127Z; 60-minute minimum interval.
+- Jobicy Admin Support APAC (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-22T00:45:53.127Z; 60-minute minimum interval.
+- Jobicy Customer Support APAC (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-22T00:45:53.127Z; 60-minute minimum interval.
+- Remote OK (JSON, allowed): Skipped cadence guard: last attempted at 2026-07-22T00:45:53.127Z; 60-minute minimum interval.
 - ProBlogger (RSS, paused): Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.
 - Remote.co (RSS, paused): Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.
 - Authentic Jobs (RSS, paused): Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.
