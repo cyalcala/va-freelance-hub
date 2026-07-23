@@ -1,6 +1,7 @@
 # Labor Engine Masterplan — 2026-07
 
 **Status:** DIRECTIVE (planning complete, execution not started)
+**Revised:** 2026-07-21 — Phase 4 replaced: semantic search → **Sovereign Crawler** (user direction), grounded by live probes of our own sources; Phase 5 slimmed accordingly; semantic search preserved in §9 Backlog
 **Authored:** 2026-07-21 by Fable 5 (planning model), grounded by a 4-agent verification workflow (repo inventory + free-tier research, sources cited inline)
 **Executor:** Opus 4.8 works phase by phase; this document is the standing instruction set
 **Relationship to other docs:** extends `MASTER_EXECUTION_PLAN.md`; supersedes nothing; the geo system it builds on is recorded in `geo-eligibility-masterplan-2026-07.md`; indexed in `DOCS_INDEX.md`
@@ -87,7 +88,12 @@ Sources: developers.cloudflare.com platform/pricing + limits pages; github.blog 
 
 The DeepSeek conversation produced ~30 upgrade ideas. Verdict on each family:
 
-**ADOPT (high value, $0-fits):** trust/transparency surface; source & company trust badges; PWA; saved jobs; semantic search (at 384-dim, budgeted); Web Push alerts; JSON-LD fallback parsing; adaptive per-source cadence; fuzzy dedup; scam gate; salary extraction; prospector auto-validation scoring; predictive source-health trends; RSS/JSON output feeds.
+**ADOPT (high value, $0-fits):** trust/transparency surface; source & company trust badges; PWA; saved jobs; Web Push alerts; JSON-LD structured extraction; adaptive per-source cadence; fuzzy dedup; scam gate; salary extraction; prospector auto-validation scoring; predictive source-health trends; RSS/JSON output feeds.
+
+**DEFERRED to §9 Backlog (2026-07-21 revision):** semantic search — sound and
+$0-feasible at 384-dim, but displaced by the Sovereign Crawler work, which is
+higher-leverage for this project's identity and *improves data correctness at the
+source* rather than improving retrieval over data of uncertain quality.
 
 **ADAPT (right idea, wrong mechanism):**
 - "User accounts first" → **inverted**: privacy-first retention (localStorage + PWA + push) delivers most of the retention value with zero PII liability; server-side accounts become a later decision gate.
@@ -132,21 +138,161 @@ The differentiating data **already exists in D1** — this phase only exposes it
 - **Acceptance:** end-to-end push received on Android + desktop; unsubscribe works; D1 table migration verified.
 - **DECISION GATE inside phase:** none for push itself ($0, no third party). **Email fallback (Resend/Brevo) is a separate gate** — propose, wait for user, user creates the key.
 
-### Phase 4 — Semantic search at $0 *(M–L, budgeted)*
-1. Embeddings: `@cf/baai/bge-small-en-v1.5` (**384-dim** — the 768-dim plan blows the free Vectorize cap; verified §3). Embed title+company+tags+description-head at ingest inside `scrape.ts` (~200–300/day ≈ negligible neurons).
-2. Vectorize index (384-dim, cosine). **Delete vectors when jobs deactivate** (verify-links/prune hooks) so stored count ≈ active jobs (~2–3k ⇒ ~1M stored dims of 5M cap).
-3. `/api/search` endpoint: embed query → Vectorize topK → hydrate from D1. Budget ≈ **2,500 searches/day**; debounce client-side (min 3 chars, 400ms), cache repeated queries in a D1 cache table (KV's 1k writes/day is too tight), and **degrade gracefully to LIKE search** when the monthly queried-dims budget nears exhaustion (track usage in D1).
-4. "Similar jobs" on cards from the same index (cheap: reuse stored vector, no re-embed).
-- **Acceptance:** "customer support" surfaces "client success" roles; budget counter visible in an admin digest; LIKE fallback tested.
-- **Fallback plan if Vectorize misbehaves:** brute-force cosine over ≤3k×384 floats (~4.6MB) in-Worker — feasible but last resort.
+### Phase 4 — Sovereign Crawler: world-class *because* compliant *(L)*
 
-### Phase 5 — Engine hardening *(L, maps DeepSeek's Hunter/Digester/Verifier items to real files)*
-1. **JSON-LD `JobPosting` fallback extractor** (`packages/scraper/structured.ts` + wire into `html.ts` path): when a CSS-selector source breaks, try schema.org structured data before failing — the highest-value slice of "adaptive parsers."
-2. **Failure-aware cadence** in `scrape.ts`/`source_fetch_state`: consecutive-failure and 429 history stretches a source's effective poll interval (exponential backoff with jitter), success shrinks it back. Respect any `Crawl-delay`.
-3. **Fuzzy dedup**: normalization pass (title/company canonicalization — case, punctuation, "LLC/Inc", known aliases) feeding `contentHash`, plus a near-dup sweep in the prune pulse (token-set similarity on title+company within a source-day window). Log, don't silently merge, for the first cycle.
-4. **Deterministic scam gate**: red-flag patterns (pay-to-apply, upfront fees, crypto-salary-only, messaging-app-only contact, implausible salary) as a `geoGate`-style tested module; flagged jobs quarantined `unclear` with evidence, triage prompt gains a scam clause. Golden tests required (both scam fixtures and legit-job non-triggers).
-5. **Salary extraction v2**: extend the existing `payRange` triage field with deterministic currency/range regexes (₱/$/€, "per hour/month"), display on cards when present.
-6. **Predictive source health**: sentinel digest gains trend deltas (error-rate/latency/yield slope over 7 days) from `source_fetch_events`, flagging "declining" sources before they die.
+> **Replaces the former "Semantic search" phase** (revised 2026-07-21 at user
+> direction). Semantic search moves to §9 Backlog — still a good idea, not ahead
+> of this. Absorbs the JSON-LD and adaptive-cadence items formerly in Phase 5.
+
+**Thesis.** Aggressive crawling (proxy rotation, fingerprint spoofing, CAPTCHA
+solving) is not elite — it is what crawlers do when they *lack* legitimate
+access, and it is permanently adversarial to the sources you depend on. Elite
+crawlers win on protocol mastery, channel quality, and freshness modeling.
+Googlebot is the most capable crawler alive and also the most polite; that is
+causation, not coincidence. **Target state: the crawler sources would whitelist.**
+
+#### Verified findings that motivate this phase (probed live 2026-07-21)
+
+| Finding | Evidence |
+| --- | --- |
+| **Compliance is documented, not enforced.** Every `robots` reference in the codebase is a human-written `complianceNotes` string in `sources.ts` (e.g. *"Current review 2026-06-09: robots allows the feed path"*). There is **zero runtime robots.txt fetching or parsing.** Compliance is a snapshot taken at source-add time, not a live contract. | `grep -rn "robots" packages/scraper apps/web/src/pages/api/cron` → only prose in `sources.ts`/`scrape.ts` |
+| **User-Agent is inconsistent — the honest pattern already exists.** `json.ts` sends `va-freelance-hub/1.0 (+github.com/cyalcala/…)` and `rss.ts` sends `va-freelance-hub/1.0 (RSS aggregator)`, but `ats.ts`, `html.ts`, `linkHealth.ts` and `verify-links.ts` send a spoofed `Mozilla/5.0 … Chrome/120`. This is drift, not philosophy. | `grep -rn "User-Agent"` |
+| **A source we scrape today already publishes machine-readable terms that permit us.** RemoteOK: `Content-Signal: search=yes,ai-train=no,use=reference` + `Allow: /`. Our use (index, short excerpt, link back) is the `search` lane — explicitly sanctioned. It also names-and-blocks AI crawlers (`GPTBot`, `CCBot`, `ClaudeBot`, `Google-Extended`, `Bytespider`, …). | `curl https://remoteok.com/robots.txt` |
+| **We are ignoring declared `Crawl-delay` directives.** RemoteOK declares `Crawl-delay: 1`; Jobspresso declares `Crawl-delay: 3`. Neither is parsed today. | same |
+| **The original geo escape was preventable from structured data the source already publishes.** RemoteOK job pages carry JSON-LD `JobPosting` with `"applicantLocationRequirements":[{"@type":"Country","name":"United States"}]`, `"jobLocationType":"TELECOMMUTE"`, and structured `baseSalary`. A *"remote"* job that is in fact US-only — the exact Casino Lugano failure class — declares its restriction in a field we never read. WeWorkRemotely publishes the same fields. Jobicy and Remotive do not. | parsed live from a real RemoteOK job page |
+| **Sitemaps available** on WeWorkRemotely and RemoteOK (`Sitemap:` in robots.txt); absent on Jobicy/Remotive. | same |
+
+**Consequence for sequencing:** Phase 1 publishes a `/transparency` page asserting
+ethical crawling. Shipping that page while the code spoofs Chrome and never reads
+robots.txt would convert a to-do into a false public claim. **Phase 4A+4B must land
+with or before Phase 1's transparency page.**
+
+#### 4A — `packages/scraper/robots.ts` *(~200 lines + golden tests)*
+Runtime robots engine, in-house (see build-vs-depend note below):
+- RFC 9309 semantics **limited to the subset we need**: user-agent group selection by
+  specificity, **longest-match Allow/Disallow precedence**, `*` and `$` wildcards,
+  `Crawl-delay`, `Sitemap:` collection.
+- **Content Signals** parsing (`search` / `ai-input` / `ai-train` / `use`).
+- Cached in D1 (new table, TTL ~24h) so one robots fetch serves many source checks.
+- **Hard gate: no source fetch may occur without a robots decision on record.** Deny →
+  skip + log evidence. Also honor `X-Robots-Tag` response headers.
+- Golden test set built from RFC 9309's worked examples plus the real robots.txt of
+  our live sources (RemoteOK's content-signal line is fixture #1).
+
+**Build vs. depend (decided):** [`samclarke/robots-parser`](https://github.com/samclarke/robots-parser)
+is MIT, mature and widely deployed, but its Workers compatibility is unverified;
+[`robotstxt-ts-port`](https://github.com/trybyte-app/robotstxt-ts-port) is a faithful
+zero-dep port of Google's C++ parser but has **8 commits / 2 stars / 0 releases** —
+unacceptable for a compliance-critical path. We need a small subset (not Google's
+16,664-byte truncation or "disalow" typo tolerance), RFC 9309 ships worked examples
+that become fixtures directly, and in-house tightly-scoped tested modules are the
+pattern that already worked twice (`geoGate.ts`, `linkHealth.ts`). **Write it.**
+*Optional 5-minute smoke test first: if `robots-parser` imports cleanly in Workers,
+reconsider — a battle-tested dep would be preferable.*
+
+#### 4B — Honest identity *(~30 lines)*
+- One exported constant used by **every** fetcher:
+  `RemotePHJobsBot/1.0 (+https://remotejobs-ph.pages.dev/transparency)` — resolving to
+  a page stating who we are, what we take, and how to opt out. Generalizes the pattern
+  `json.ts` already uses.
+- **DECISION GATE (user's call).** Dropping the Chrome spoof may cause some sources to
+  403. Risk assessment: our RSS/JSON sources already receive honest UAs and work fine,
+  and the ATS endpoints are *public distribution APIs* that do not need spoofing —
+  so exposure is likely limited to `html.ts` sources and possibly Breezy. Recommended
+  policy: **declare always, measure per source, and treat a block as information** — a
+  source refusing a declared bot has told us something, and the compliant response is
+  to pause and seek permission, not to disguise. Losing two sources beats publishing a
+  transparency page that isn't true. *Note: `linkHealth`/`verify-links` are a separable
+  case — there, a browser UA arguably simulates the real user click; decide explicitly
+  rather than by drift.*
+- Record per-source declared-UA acceptance in `source_fetch_state`.
+
+#### 4C — Acquisition ladder *(~140 lines)* — **highest quality payoff**
+Prefer the highest-fidelity legitimate channel, negotiating down only as needed:
+> official API → RSS/Atom → sitemap.xml + `lastmod` → JSON-LD `JobPosting` → HTML scraping
+- `packages/scraper/sitemap.ts`: `<sitemapindex>` recursion (one level) + `<lastmod>`
+  filtering for incremental fetch. Reuse the existing `xmlNodeText`/`xmlTextList`
+  helpers in `text.ts` — no new dependency.
+- `packages/scraper/jsonld.ts`: extract `<script type="application/ld+json">`, walk
+  arrays and `@graph`, select `@type: JobPosting`. **Note the value shapes:**
+  `applicantLocationRequirements` is an *array of `{"@type":"Country","name":…}` objects*
+  (a naive string regex misses it — this cost us a false negative during research).
+- **Feed `applicantLocationRequirements` and `jobLocationType` directly into `geoGate`
+  as a new highest-priority deterministic signal** (`eligible_verified` /
+  `country_locked` from the employer's own declaration, above all inference). Add
+  golden fixtures, including the US-only-remote case.
+- Structured `baseSalary` from JSON-LD **satisfies Phase 5's salary extraction for
+  these sources for free.**
+- Record the channel rung used per source (provenance, 4E).
+
+#### 4D — Adaptive cadence *(~40 lines, in `source_fetch_state`)*
+Steal the **math** from [Scrapy's AutoThrottle](https://docs.scrapy.org/en/latest/topics/autothrottle.html), not the mechanism — Scrapy throttles between requests inside a long-running process; we are a stateless 15-minute cron, so the same formula applies to a **per-source `next_fetch_at`** instead:
+```
+target_interval = f(latency, change_rate)
+new_interval    = (previous_interval + target_interval) / 2      # EWMA smoothing
+clamp(new_interval, floor = max(source Crawl-delay, min cadence), ceiling = max staleness)
+```
+- **Adopt AutoThrottle's key asymmetry: non-200 responses may only *lengthen* the
+  interval, never shorten it.** Error responses return faster than real ones, so naive
+  latency logic accelerates exactly when a server is struggling.
+- **Go beyond it by folding in change-rate**, which we already collect: a `304 Not
+  Modified` or unchanged `last_body_hash` lengthens the interval; new jobs shorten it.
+  Scrapy optimizes throughput politeness; we optimize freshness *and* politeness in one
+  formula, using data already in `source_fetch_events`.
+- Honor `Retry-After` on 429/503 as a hard floor. Per-host circuit breaker.
+- **This reduces total fetches** — compliance and free-tier headroom are the same axis.
+
+#### 4E — Provenance + live compliance ledger
+- Columns on ingested rows / source state: channel rung used, robots decision + when,
+  HTTP status, ETag, fetch time. This is what makes the crawler *defensible* rather
+  than merely well-intentioned.
+- **Publish it**: a per-source table on `/transparency` showing robots decision,
+  crawl-delay honored, conditional-request hit rate, last fetch, channel. Essentially
+  no aggregator does this. It converts "we are ethical" from a claim we *make* into a
+  claim we can *prove*.
+
+#### 4F — Prospector compliance-by-construction + real opt-out *(~80 lines)*
+- Robots precheck **before a source is ever proposed**; a disallowed source never
+  enters the candidate list.
+- Prefer documented public ATS APIs (Greenhouse/Lever/Ashby publish these *for* job
+  distribution — intended use, no spoofing required).
+- **Enforced opt-out**: a blocklist table consulted pre-fetch, honored instantly, with
+  an audit trail — not a promise in a policy document.
+- **Content-signal-aware AI use:** if a source sets `ai-input=no`, skip AI triage for
+  that source and fall back to deterministic `geoGate` only. Near-zero cost; a
+  genuinely leading posture. (RemoteOK currently sets `use=reference`, which permits
+  our classification use; we do not train on content.)
+
+**Sequencing:** 4A → 4C → 4D → (4B + 4E together, since the UA switch and the public
+ledger are the same credibility story) → 4F.
+
+**Acceptance (per sub-phase):** golden tests green; no source fetched without a robots
+decision; declared UA acceptance measured per source; `applicantLocationRequirements`
+demonstrably rejecting a US-only "remote" job in a geoGate fixture; fetch-count
+before/after showing the cadence change reduced requests; compliance ledger live.
+
+**Explicitly out of scope (anti-overengineering, deliberate):** distributed crawl
+frontier or URL queue (≈30 sources, not 30M URLs — a D1 table with `next_fetch_at`
+*is* the frontier); in-process politeness connection pools (Workers is stateless with
+10 ms CPU); plugin architecture for parsers (5 fetcher types — a switch is correct);
+Google's typo tolerance and byte truncation; reverse-DNS verifiable identity (requires
+infra we do not control); headless-browser rendering; any evasion tooling (§2.2).
+**Total realistic build ≈ 600 lines of tested code across 4 small modules** — the same
+order as the geo gate.
+
+### Phase 5 — Data-quality hardening *(M–L)*
+> Slimmed 2026-07-21: JSON-LD extraction and adaptive cadence moved into Phase 4,
+> where they belong. Structured `baseSalary` from 4C also covers item 3 below for
+> JSON-LD-publishing sources.
+1. **Deterministic scam gate** — *highest mission value on the board.* Red-flag patterns
+   (pay-to-apply, upfront fees, crypto-salary-only, messaging-app-only contact,
+   implausible salary) as a `geoGate`-style tested module; flagged jobs quarantined
+   `unclear` with evidence; triage prompt gains a scam clause. Golden tests required —
+   **both** scam fixtures and legit-job non-triggers (fixtures should be written
+   adversarially, not by the same pass that wrote the patterns).
+2. **Fuzzy dedup**: normalization pass (title/company canonicalization — case, punctuation, "LLC/Inc", known aliases) feeding `contentHash`, plus a near-dup sweep in the prune pulse (token-set similarity on title+company within a source-day window). Log, don't silently merge, for the first cycle.
+3. **Salary extraction v2**: for sources without JSON-LD (Jobicy, Remotive, HTML sources), extend the existing `payRange` triage field with deterministic currency/range regexes (₱/$/€, "per hour/month"); display on cards when present.
+4. **Predictive source health**: sentinel digest gains trend deltas (error-rate/latency/yield slope over 7 days) from `source_fetch_events`, flagging "declining" sources before they die.
 - **Acceptance per item:** tests green including new golden sets; before/after metrics in the relevant digest; no compliance regression.
 
 ### Phase 6 — Prospector autonomy (bounded) *(M)*
@@ -185,13 +331,28 @@ Only if the user asks for cross-device sync or email digests: OAuth (Google/GitH
 | 1 | Trust Surface | pending | — | — |
 | 2 | Retention without accounts | pending | — | — |
 | 3 | Web Push alerts | pending | — | — |
-| 4 | Semantic search ($0 budget) | pending | — | — |
-| 5 | Engine hardening | pending | — | — |
+| 4 | **Sovereign Crawler** (4A robots → 4C ladder → 4D cadence → 4B+4E identity/ledger → 4F prospector) | pending | — | — |
+| 5 | Data-quality hardening (scam gate, dedup, salary, health trends) | pending | — | — |
 | 6 | Prospector autonomy (bounded) | pending | — | — |
 | 7 | Directory recurrence + PH stream gate | pending | — | — |
 | 8 | Accounts/email (gated) | deferred | — | — |
 
 ---
+
+## §9 Backlog (good ideas, not scheduled)
+
+- **Semantic search at $0** (deferred 2026-07-21). Design remains valid: embeddings via
+  `@cf/baai/bge-small-en-v1.5` at **384-dim** (768-dim blows the free Vectorize cap —
+  see §3), Vectorize index with **vectors deleted when jobs deactivate** so stored count
+  tracks active jobs (~2–3k ⇒ ~1M of 5M stored-dim cap), `/api/search` budgeted to
+  ~2,500 queries/day with client debounce, a D1 query cache (KV's 1k writes/day is too
+  tight), and graceful degradation to LIKE search as the monthly budget nears exhaustion.
+  Fallback if Vectorize disappoints: brute-force cosine over ≤3k×384 floats (~4.6 MB)
+  in-Worker. **Revisit after Phase 4** — better retrieval over better-verified data is
+  worth more than better retrieval alone.
+- Server-side accounts / cross-device sync (see Phase 8 gate).
+- End-user email digests (gate; user-held API keys).
+- Community features, native apps, blockchain credentials — see §6, rejected.
 
 ## §8 Standing constraints for the executor (verbatim, carry across sessions)
 
