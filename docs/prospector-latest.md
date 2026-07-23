@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-07-23
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30016394879
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30039390285
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 47 |
-| Auto-added this run | 0 |
+| Candidates considered | 48 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 45 |
 | Rejected for quality | 2 |
@@ -15,4 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30016394
 
 ## Auto-added companies
 
-- (none this run)
+- Palo Alto Networks
