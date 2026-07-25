@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-07-25
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30142652715
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30151054565
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 46 |
-| Auto-added this run | 2 |
+| Candidates considered | 44 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 42 |
 | Rejected for quality | 2 |
@@ -15,5 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30142652
 
 ## Auto-added companies
 
-- Istari
-- Wishpond
+- (none this run)
