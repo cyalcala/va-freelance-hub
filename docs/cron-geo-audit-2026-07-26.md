@@ -1,5 +1,29 @@
 # Cron/geo audit — handoff (2026-07-26)
 
+## Commit ledger
+
+| Commit | Fix | Deployed | Proven working? |
+|---|---|---|---|
+| `ebe37e6` | Unauthenticated scrape trigger closed | yes | **yes** — unauth `POST` → 401, cron still fires |
+| `3a5b7b1` | Poison-row wedge + keep 70B out of sweep | yes | wedge yes; the cost pin caused `5173234` |
+| `b0c2b23` | Sweep on the `allItems===0` exit | yes | insufficient alone |
+| `9b03ebb` | Sweep on the `newItems===0` exit | yes | **yes** — sweep provably entered |
+| `5173234` | `AI_MODEL` as ladder, not single model | yes | **not yet** — see Open question |
+
+All commits: 169 tests pass, web build clean.
+
+**Honest summary:** four attempts to reach the real cause. Three distinct bugs
+stacked (sweep unreachable → reachable but AI failing closed), and two
+intermediate "verified" claims did not hold up. The only trustworthy proof is
+the backlog count falling while inflow is zero.
+
+Two misreads worth not repeating:
+- Judging deploys against the wrong Pages project (see topology below).
+- Attributing ~20 rows with fresh `geo_checked_at` to the sweep when other
+  pulses also stamp that column. With `inflow = 0` and a static backlog, those
+  could not have been sweep resolutions. Break down by
+  `ph_eligibility, is_active` before concluding.
+
 ## Deployment topology (this tripped me up — read first)
 
 Scope is **`remotejobs-ph.pages.dev`** + this repo. Nothing else.
@@ -108,14 +132,53 @@ Residual (low priority, not fixed): a run exceeding 8 min could be lapped by the
 next run. Raising the TTL toward the cadence would trade that for a crashed run
 blocking the following one.
 
-## Caveat on the sweep fix
+### Critical #5 — the cost fix broke the sweep's AI calls — DONE
+Commit `5173234`. This was self-inflicted by Critical #3 above, and was logged
+here first as a hypothetical caveat before the data confirmed it.
 
-Setting `AI_MODEL` collapses the ladder to a **single** model with no fallback,
-and JSON mode is only enabled for `llama-3.3` in `triage.ts`, so the 8B sweep
-parses free-form output. Failures are now safe (row rotates out instead of
-wedging), but if 8B parse failures are common the backlog will churn without
-converging. Watch the `Unclear backlog: re-triaged N` log line, or simply
-re-check that the backlog count is falling.
+Once #4 landed, the sweep ran on every tick but still resolved nothing: with
+`inflow_60min = 0` over a full hour, the active-unclear backlog held at exactly
+1435 while only 2–4 unclear rows were touched.
+
+The `2` is the tell. The sweep's `catch` branch advances the cursor **without**
+incrementing the failure counter and **without** breaking, so N thrown errors
+would touch N rows. Only the `aiUnavailable` path increments and breaks at two.
+So every AI call was failing closed — and multiples of 2 across ticks confirmed
+it was one break per run.
+
+Cause: `env.AI_MODEL ? [env.AI_MODEL] : [...]` collapses a **four-rung ladder to
+a single model with no fallback**, and JSON mode is enabled only for `llama-3.3`
+(`triage.ts`, the `model.includes("llama-3.3")` guard), so the pinned 8B rung
+parses free-form output. One bad parse exhausts the ladder → `aiUnavailable`.
+That the sweep *had* historically resolved rows (backlog fell ~1870 → 1435 on
+the full ladder) is what pointed here.
+
+Fix: `parseModelOverride()` parses `AI_MODEL` as a comma-separated ladder
+(single values still work), and the sweep now uses
+`llama-3.1-8b → llama-3-8b → mistral-7b`. Keeps the expensive 70B rung out of
+the high-volume path while restoring the fallbacks that make free-form parsing
+survivable.
+
+**Lesson worth keeping:** a cost control that pins a model also removes every
+fallback. Prefer constraining a ladder to swapping in a single rung.
+
+## Open question — is any of this enough?
+
+At the time of writing this is **not yet proven**. The backlog had been pinned at
+exactly 1435 for ~4 hours. Nothing above counts as working until that number
+drops with inflow at zero.
+
+If the backlog still holds at 1435 after several ticks on `5173234`, the
+remaining suspect is **account-level Workers AI quota** (10,000 neurons/day),
+which no model ladder can fix. The mitigation is to lower
+`UNCLEAR_RETRIAGE_BUDGET` (currently 12) — that trades convergence speed
+(~1.5 days → a week or more) for AI cost, and is a product decision, not a
+technical one. Deliberately left unpushed.
+
+Related sizing note: with the sweep now genuinely running every tick, volume is
+12 rows x 96 ticks x up to 2 calls ≈ 2,300 calls/day. `UNCLEAR_RETRIAGE_BUDGET`
+was sized for a sweep that almost never ran, so it likely needs lowering
+regardless of the quota question.
 
 Verify with:
 
