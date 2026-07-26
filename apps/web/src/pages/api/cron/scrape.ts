@@ -955,8 +955,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.log(`[api/cron/scrape] ${newItems.length} new items found after URL dedup`);
 
     if (newItems.length === 0) {
-      return new Response(JSON.stringify({ 
-        inserted: 0, 
+      // Same reasoning as the allItems===0 return above, and this is the path
+      // that actually fires on most ticks: feeds keep returning their current
+      // items (so allItems > 0), but after URL dedup none of them are new. The
+      // backlog sweep is maintenance and must not be gated on fresh ingest.
+      const dedupSweep = await sweepUnclearBacklog(db, env, observedAt);
+      return new Response(JSON.stringify({
+        inserted: 0,
         actualChanges: 0,
         acceptedForInsert: 0,
         attemptedInsert: 0,
@@ -970,6 +975,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         fetchEventLog,
         cadenceGuards,
         sourcesUnchanged,
+        unclearRetriaged: dedupSweep.retriaged,
+        unclearUpgraded: dedupSweep.upgraded,
+        unclearDeactivated: dedupSweep.deactivated,
         message: "Zero new jobs after dedup"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
