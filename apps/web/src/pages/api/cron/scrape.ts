@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
-import { isNotNull, and, inArray, eq, lt, asc, gte, like, sql } from "drizzle-orm";
+import { isNotNull, and, inArray, eq, lt, asc, gte } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
@@ -454,6 +454,11 @@ const SWEEP_DIAG_ID = "__sweep_diag__";
 // rows are swept before legacy backfill rows — see the fresh-first note below.
 const SWEEP_FRESH_WINDOW_DAYS = 10;
 
+// Reserved row holding the sweep's rows-attempted count for the current UTC day.
+// lastSuccessAt stores the YYYY-MM-DD stamp, lastCount the tally; a stale stamp
+// means a new day and the tally restarts, so no cleanup job is needed.
+const SWEEP_QUOTA_ID = "__sweep_quota__";
+
 export const DAILY_SWEEP_CAP = 50;
 // Per-tick ceilings. Idle ticks scraped nothing, so no new-item triage is
 // competing for budget in that run and the sweep may use the tick fully. Ticks
@@ -471,22 +476,30 @@ export async function sweepUnclearBacklog(
   observedAt: string,
   perTickBudget: number = SWEEP_BUDGET_BUSY_TICK,
 ): Promise<UnclearSweepStats> {
-  // Spend against the daily cap before anything else. The sweep stamps
-  // distinctive geoEvidence ("AI re-triage…", "Re-triage consensus split…")
-  // that new-item triage never writes ("AI triage…", "Consensus split…"), so
-  // today's spend is derivable from existing rows — no counter table, and
-  // nothing new that can drift or wedge.
+  // Spend against the daily cap before anything else.
+  //
+  // This deliberately uses an explicit counter rather than deriving spend from
+  // the opportunities table. The obvious derivation — count rows whose
+  // geoEvidence looks like sweep output and whose geoCheckedAt is today —
+  // over-counts badly, because other pulses re-stamp geoCheckedAt on rows the
+  // sweep resolved days earlier. Measured on 2026-07-26: that query reported 20
+  // rows "swept today" when the true figure was 0. At a 50/day cap that silently
+  // discards ~40% of the budget.
+  //
+  // The counter records ATTEMPTS, not resolutions, because a failed call
+  // consumes neuron allocation just as a successful one does. Date-stamped so it
+  // self-resets at 00:00 UTC with no cleanup job.
+  const today = observedAt.slice(0, 10);
   let UNCLEAR_RETRIAGE_BUDGET = perTickBudget;
+  let spentToday = 0;
   try {
-    const dayStart = `${observedAt.slice(0, 10)}T00:00:00.000Z`;
-    const spentRows = await db
-      .select({ n: sql<number>`count(*)` })
-      .from(opportunities)
-      .where(and(
-        gte(opportunities.geoCheckedAt, dayStart),
-        like(opportunities.geoEvidence, "%re-triage%"),
-      ));
-    const spentToday = Number(spentRows?.[0]?.n ?? 0);
+    const quotaRow = await db
+      .select({ day: sourceFetchState.lastSuccessAt, used: sourceFetchState.lastCount })
+      .from(sourceFetchState)
+      .where(eq(sourceFetchState.sourceId, SWEEP_QUOTA_ID))
+      .limit(1);
+    // A stale date means a new UTC day: start from zero.
+    spentToday = quotaRow?.[0]?.day === today ? Number(quotaRow[0].used ?? 0) : 0;
     const remainingToday = DAILY_SWEEP_CAP - spentToday;
     if (remainingToday <= 0) {
       console.log(`[api/cron/scrape] Unclear backlog: daily cap reached (${spentToday}/${DAILY_SWEEP_CAP}), skipping sweep.`);
@@ -586,7 +599,11 @@ export async function sweepUnclearBacklog(
     // oldest-checked forever and re-blocked the sweep on every run. Now a
     // failure rotates the row out, and only consecutive failures stop the sweep.
     let consecutiveAiFailures = 0;
+    let attempted = 0;
     for (const row of unclearRows) {
+      // Counted before the call: a failed attempt consumes neuron allocation
+      // just as a successful one does, so the cap must charge for both.
+      attempted += 1;
       const ctx = { locationRaw: row.locationRaw, tags: row.tags, company: row.company };
       try {
         const triage = await triageJob(row.title, row.description || "", sweepEnv, ctx);
@@ -680,6 +697,35 @@ export async function sweepUnclearBacklog(
     }
     if (stats.retriaged > 0) {
       console.log(`[api/cron/scrape] Unclear backlog: re-triaged ${stats.retriaged} (upgraded ${stats.upgraded}, deactivated ${stats.deactivated}).`);
+    }
+    // Charge the day's tally. Written even when every attempt failed, so a
+    // quota outage cannot be retried indefinitely within the same day.
+    if (attempted > 0) {
+      try {
+        await db.insert(sourceFetchState).values({
+          sourceId: SWEEP_QUOTA_ID,
+          sourceName: "sweep daily quota",
+          sourceType: "quota",
+          collectionMethod: "quota",
+          complianceStatus: "quota",
+          lastAttemptAt: observedAt,
+          lastSuccessAt: today,
+          lastCount: spentToday + attempted,
+          updatedAt: observedAt,
+        }).onConflictDoUpdate({
+          target: sourceFetchState.sourceId,
+          set: {
+            lastAttemptAt: observedAt,
+            lastSuccessAt: today,
+            lastCount: spentToday + attempted,
+            updatedAt: observedAt,
+          },
+        });
+      } catch (err) {
+        // Losing the tally means the cap under-counts for this tick only; the
+        // per-tick ceiling still bounds spend, so this must not fail the sweep.
+        console.warn(`[api/cron/scrape] Sweep quota tally write failed:`, errorMessage(err));
+      }
     }
   } catch (err) {
     // The sweep is best-effort maintenance — it must never fail the run.
