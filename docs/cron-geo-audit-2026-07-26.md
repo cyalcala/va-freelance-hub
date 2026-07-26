@@ -170,15 +170,28 @@ drops with inflow at zero.
 
 If the backlog still holds at 1435 after several ticks on `5173234`, the
 remaining suspect is **account-level Workers AI quota** (10,000 neurons/day),
-which no model ladder can fix. The mitigation is to lower
-`UNCLEAR_RETRIAGE_BUDGET` (currently 12) — that trades convergence speed
-(~1.5 days → a week or more) for AI cost, and is a product decision, not a
-technical one. Deliberately left unpushed.
+which no model ladder can fix.
 
-Related sizing note: with the sweep now genuinely running every tick, volume is
-12 rows x 96 ticks x up to 2 calls ≈ 2,300 calls/day. `UNCLEAR_RETRIAGE_BUDGET`
-was sized for a sweep that almost never ran, so it likely needs lowering
-regardless of the quota question.
+### Decision taken: stability over speed
+
+`UNCLEAR_RETRIAGE_BUDGET` lowered **12 → 2**, on an explicit request to
+prioritise reliability and stability.
+
+Rationale:
+- New-item triage is the higher-stakes consumer of the shared daily neuron
+  budget — a wrong verdict on a fresh job reaches users, a stale `unclear` row
+  does not. The sweep is background maintenance and must never crowd it out.
+- 12 was sized for a sweep that in practice almost never ran. Running every
+  tick, 12 x 96 x up to 2 calls ≈ 2,300 calls/day would make the sweep the
+  account's dominant AI consumer.
+- The other available lever — dropping the skeptic second opinion to halve cost
+  — was **rejected**. It is the guard against falsely upgrading ineligible jobs
+  to PH-eligible; trading an accuracy check for speed contradicts the goal.
+- Correct under either open outcome (ladder fix worked / quota is the limit), so
+  it does not gamble on the pending measurement.
+
+Cost: ~192 rows/day, so the ~1,435-row backlog converges in roughly **7–8 days**
+instead of ~1.5. Raise the constant only after confirming neuron-budget headroom.
 
 Verify with:
 

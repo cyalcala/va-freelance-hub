@@ -426,7 +426,19 @@ export async function sweepUnclearBacklog(
   env: any,
   observedAt: string,
 ): Promise<UnclearSweepStats> {
-  const UNCLEAR_RETRIAGE_BUDGET = 12;
+  // Rows re-triaged per tick. Deliberately small: this is background
+  // maintenance and must never be able to starve new-item triage, which is the
+  // higher-stakes consumer of the shared daily neuron budget (a wrong verdict on
+  // a fresh job reaches users; a stale "unclear" row does not).
+  //
+  // 12 was sized for a sweep that in practice almost never ran — it sat below
+  // two ingest-gated early returns. Now that it runs on every tick, 12 would
+  // mean 12 x 96 ticks x up to 2 calls ~= 2,300 calls/day, making the sweep the
+  // account's dominant AI consumer. At 2 it is ~192 rows/day: the ~1,435-row
+  // backlog converges in roughly a week, steadily, without crowding out triage.
+  //
+  // Raise this only after confirming headroom in the daily neuron budget.
+  const UNCLEAR_RETRIAGE_BUDGET = 2;
   const stats: UnclearSweepStats = { retriaged: 0, upgraded: 0, deactivated: 0 };
   try {
     const unclearRows = await db
