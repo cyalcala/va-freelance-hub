@@ -2,6 +2,12 @@ name = "va-freelance-freshness-cron"
 main = "src/index.ts"
 compatibility_date = "2026-07-01"
 
+# No public route. Cron Triggers fire scheduled(), which does not need one.
+# Without this, wrangler publishes <name>.<subdomain>.workers.dev and the fetch()
+# handler was an unauthenticated lever to fire full scrapes (metered AI/D1/
+# Workers quota). fetch() is now secret-gated too — defence in depth.
+workers_dev = false
+
 # Free-plan Cron Trigger: fire the scrape endpoint every 15 minutes so newly
 # posted jobs reach the site in well under an hour (GitHub Actions free cron
 # drifts 1.5-3h; this does not).
