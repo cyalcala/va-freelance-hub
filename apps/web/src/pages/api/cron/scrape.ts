@@ -491,18 +491,28 @@ export async function sweepUnclearBacklog(
     // the cheap 8B rung via the AI_MODEL override that triage.ts /
     // skepticEligibilityCheck already honour; new-item triage keeps the 70B
     // ladder (low volume, high stakes).
-    // Cheap *ladder*, not a single model. Pinning one 8B model left no fallback,
-    // and JSON mode is only enabled for llama-3.3, so the sweep parses free-form
-    // output — one bad parse then failed the call closed as aiUnavailable. In
-    // production that meant the sweep entered, burned its two-strike budget on
-    // the first two rows, and resolved nothing. Keep 70B out (cost), keep
-    // fallbacks in (correctness).
+    // Cheap rungs first, 70B last — not "cheap only".
+    //
+    // Cost control here originally pinned the sweep to one 8B model. That
+    // removed every fallback AND the thing that makes parsing reliable: JSON
+    // mode (`response_format`) is enabled only for llama-3.3, so cheap rungs
+    // return free-form text. Production evidence: the sweep last resolved a row
+    // at 02:15 on the default 70B-first ladder, then resolved nothing for hours
+    // once pinned, advancing cursors only. Loose JSON parsing (parseLooseJson)
+    // now recovers most free-form replies, but the cheap rungs are still
+    // best-effort — so keep 70B as the final rung to guarantee the sweep can
+    // always make progress.
+    //
+    // Cost is bounded by DAILY_SWEEP_CAP, not by forbidding the good model: a
+    // capped number of 70B calls beats an uncapped number of failures that
+    // resolve nothing.
     const sweepEnv = {
       ...env,
       AI_MODEL: [
         "@cf/meta/llama-3.1-8b-instruct",
         "@cf/meta/llama-3-8b-instruct",
         "@cf/mistral/mistral-7b-instruct-v0.1",
+        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
       ].join(","),
     };
     // A row whose content makes every model fail returns aiUnavailable

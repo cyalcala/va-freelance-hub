@@ -120,6 +120,36 @@ function contextBlock(context?: TriageContext): string {
  * The unclear-backlog sweep hit exactly that: pinned to one 8B model it resolved
  * nothing and merely rotated rows.
  */
+/**
+ * Parses a model response that is supposed to be JSON but may not be.
+ *
+ * JSON mode (`response_format`) is only enabled for llama-3.3, so every other
+ * rung returns free-form text and may wrap the object in prose ("Sure! Here's
+ * the JSON: {...}"). Strict JSON.parse rejects that, the rung is treated as a
+ * failure, and once the whole ladder is consumed the call fails closed as
+ * aiUnavailable. In production that silently disabled the backlog sweep on every
+ * cheap rung. Falling back to the outermost {...} span recovers those responses.
+ *
+ * Returns null when nothing parseable is present, so callers keep failing closed
+ * rather than inventing a verdict.
+ */
+export function parseLooseJson<T = any>(raw: string): T | null {
+  const text = (raw || "").trim();
+  if (!text) return null;
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    const start = text.indexOf("{");
+    const end = text.lastIndexOf("}");
+    if (start === -1 || end === -1 || end <= start) return null;
+    try {
+      return JSON.parse(text.slice(start, end + 1)) as T;
+    } catch {
+      return null;
+    }
+  }
+}
+
 export function parseModelOverride(override: unknown): string[] {
   if (Array.isArray(override)) return override.map(String).map((s) => s.trim()).filter(Boolean);
   return String(override)
@@ -313,7 +343,8 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       }
       jsonText = jsonText.trim();
 
-      const parsed: TriageResult = JSON.parse(jsonText);
+      const parsed = parseLooseJson<TriageResult>(jsonText);
+      if (!parsed) throw new Error("Model response was not parseable JSON");
 
       // FAIL CLOSED (geo masterplan L2 prefix, 2026-07): a model response
       // missing the eligibility boolean is an unclassified job, not an
@@ -429,7 +460,8 @@ Output ONLY raw JSON: {"eligible": boolean, "reason": "one short sentence"}.
       const response = await env.AI.run(model, request);
       let jsonText = typeof response === "string" ? response : (response?.response ?? response?.text ?? JSON.stringify(response));
       jsonText = String(jsonText).trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
-      const parsed = JSON.parse(jsonText);
+      const parsed = parseLooseJson<{ eligible?: unknown; reason?: unknown }>(jsonText);
+      if (!parsed) throw new Error("skeptic response was not parseable JSON");
       if (typeof parsed.eligible !== "boolean") throw new Error("skeptic output missing boolean eligible");
       return { eligible: parsed.eligible, reason: typeof parsed.reason === "string" ? parsed.reason : "" };
     } catch (error) {
