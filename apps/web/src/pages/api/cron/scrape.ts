@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
-import { isNotNull, and, inArray, eq, lt, asc } from "drizzle-orm";
+import { isNotNull, and, inArray, eq, lt, asc, gte, like, sql } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
@@ -421,24 +421,54 @@ export interface UnclearSweepStats {
 // 15-min cadence), and while this was inline below that return it simply never
 // executed on those runs. That was the dominant cause of the backlog not
 // draining: measured ~11 rows/day against a 1,152/day design.
+// Hard ceiling on rows the sweep may re-triage per UTC day, across all ticks.
+// This is the real cost lever: it bounds the sweep's share of the shared daily
+// neuron budget regardless of how many ticks fire or how idle they are, so
+// new-item triage (higher stakes — a wrong verdict on a fresh job reaches users,
+// a stale "unclear" row does not) always has the remainder.
+// ~400/day converges the ~1,435-row backlog in about 3-4 days.
+export const DAILY_SWEEP_CAP = 400;
+// Per-tick ceilings. Idle ticks scraped nothing, so no new-item triage is
+// competing for budget in that run and the sweep may use the tick fully. Ticks
+// that did ingest run triage first (it sits above the sweep in the handler), so
+// the sweep takes only a small slice and yields the rest.
+export const SWEEP_BUDGET_IDLE_TICK = 8;
+export const SWEEP_BUDGET_BUSY_TICK = 2;
+
 export async function sweepUnclearBacklog(
   db: AppDb,
   env: any,
   observedAt: string,
+  perTickBudget: number = SWEEP_BUDGET_BUSY_TICK,
 ): Promise<UnclearSweepStats> {
-  // Rows re-triaged per tick. Deliberately small: this is background
-  // maintenance and must never be able to starve new-item triage, which is the
-  // higher-stakes consumer of the shared daily neuron budget (a wrong verdict on
-  // a fresh job reaches users; a stale "unclear" row does not).
-  //
-  // 12 was sized for a sweep that in practice almost never ran — it sat below
-  // two ingest-gated early returns. Now that it runs on every tick, 12 would
-  // mean 12 x 96 ticks x up to 2 calls ~= 2,300 calls/day, making the sweep the
-  // account's dominant AI consumer. At 2 it is ~192 rows/day: the ~1,435-row
-  // backlog converges in roughly a week, steadily, without crowding out triage.
-  //
-  // Raise this only after confirming headroom in the daily neuron budget.
-  const UNCLEAR_RETRIAGE_BUDGET = 2;
+  // Spend against the daily cap before anything else. The sweep stamps
+  // distinctive geoEvidence ("AI re-triage…", "Re-triage consensus split…")
+  // that new-item triage never writes ("AI triage…", "Consensus split…"), so
+  // today's spend is derivable from existing rows — no counter table, and
+  // nothing new that can drift or wedge.
+  let UNCLEAR_RETRIAGE_BUDGET = perTickBudget;
+  try {
+    const dayStart = `${observedAt.slice(0, 10)}T00:00:00.000Z`;
+    const spentRows = await db
+      .select({ n: sql<number>`count(*)` })
+      .from(opportunities)
+      .where(and(
+        gte(opportunities.geoCheckedAt, dayStart),
+        like(opportunities.geoEvidence, "%re-triage%"),
+      ));
+    const spentToday = Number(spentRows?.[0]?.n ?? 0);
+    const remainingToday = DAILY_SWEEP_CAP - spentToday;
+    if (remainingToday <= 0) {
+      console.log(`[api/cron/scrape] Unclear backlog: daily cap reached (${spentToday}/${DAILY_SWEEP_CAP}), skipping sweep.`);
+      return { retriaged: 0, upgraded: 0, deactivated: 0 };
+    }
+    UNCLEAR_RETRIAGE_BUDGET = Math.min(perTickBudget, remainingToday);
+  } catch (err) {
+    // Cap unknown — fall back to the conservative per-tick number rather than
+    // the idle-tick one, so a broken count cannot license a spending spree.
+    console.warn(`[api/cron/scrape] Sweep daily-cap check failed; using conservative budget:`, errorMessage(err));
+    UNCLEAR_RETRIAGE_BUDGET = Math.min(perTickBudget, SWEEP_BUDGET_BUSY_TICK);
+  }
   const stats: UnclearSweepStats = { retriaged: 0, upgraded: 0, deactivated: 0 };
   try {
     const unclearRows = await db
@@ -924,7 +954,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // 304, or every source is cadence-skipped), and while the sweep lived only
       // below this return it never ran on those ticks. That, not the per-row
       // failure handling, was the dominant reason the unclear backlog sat flat.
-      const idleSweep = await sweepUnclearBacklog(db, env, observedAt);
+      const idleSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
       return new Response(JSON.stringify({
         inserted: 0,
         actualChanges: 0,
@@ -984,7 +1014,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // that actually fires on most ticks: feeds keep returning their current
       // items (so allItems > 0), but after URL dedup none of them are new. The
       // backlog sweep is maintenance and must not be gated on fresh ingest.
-      const dedupSweep = await sweepUnclearBacklog(db, env, observedAt);
+      const dedupSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
       return new Response(JSON.stringify({
         inserted: 0,
         actualChanges: 0,
@@ -1272,7 +1302,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 6c. Unclear-backlog convergence — see sweepUnclearBacklog(). Also invoked
     // on the no-new-items early-return path above, so it runs every tick.
-    const unclearSweep = await sweepUnclearBacklog(db, env, observedAt);
+    const unclearSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_BUSY_TICK);
     const unclearRetriaged = unclearSweep.retriaged;
     const unclearUpgraded = unclearSweep.upgraded;
     const unclearDeactivated = unclearSweep.deactivated;

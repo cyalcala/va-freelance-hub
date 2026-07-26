@@ -172,26 +172,47 @@ If the backlog still holds at 1435 after several ticks on `5173234`, the
 remaining suspect is **account-level Workers AI quota** (10,000 neurons/day),
 which no model ladder can fix.
 
-### Decision taken: stability over speed
+### Decision taken: adaptive budget under a hard daily cap
 
-`UNCLEAR_RETRIAGE_BUDGET` lowered **12 → 2**, on an explicit request to
-prioritise reliability and stability.
+Replaces a single flat per-tick number (which was first set 12 → 2 for pure
+stability). A flat number is a blunt instrument: it spends the same on ticks
+where new-item triage is competing for budget as on ticks where nothing was
+ingested at all. The sweep now scales to what the tick can spare, under a
+ceiling that bounds the day.
 
-Rationale:
-- New-item triage is the higher-stakes consumer of the shared daily neuron
-  budget — a wrong verdict on a fresh job reaches users, a stale `unclear` row
-  does not. The sweep is background maintenance and must never crowd it out.
-- 12 was sized for a sweep that in practice almost never ran. Running every
-  tick, 12 x 96 x up to 2 calls ≈ 2,300 calls/day would make the sweep the
-  account's dominant AI consumer.
-- The other available lever — dropping the skeptic second opinion to halve cost
-  — was **rejected**. It is the guard against falsely upgrading ineligible jobs
-  to PH-eligible; trading an accuracy check for speed contradicts the goal.
-- Correct under either open outcome (ladder fix worked / quota is the limit), so
-  it does not gamble on the pending measurement.
+| Knob | Value | Purpose |
+|---|---|---|
+| `DAILY_SWEEP_CAP` | 400 | Hard ceiling per UTC day, across all ticks — the real cost lever |
+| `SWEEP_BUDGET_IDLE_TICK` | 8 | Tick scraped nothing: no triage competing, use the tick |
+| `SWEEP_BUDGET_BUSY_TICK` | 2 | Tick ingested items: triage ran first, take a small slice |
 
-Cost: ~192 rows/day, so the ~1,435-row backlog converges in roughly **7–8 days**
-instead of ~1.5. Raise the constant only after confirming neuron-budget headroom.
+Why this shape:
+- **Triage is protected structurally, not by hoping.** On ingest ticks triage
+  runs *above* the sweep in the handler, so it is served first; the sweep then
+  takes only 2. On idle ticks there is no triage to protect, so idle capacity is
+  not wasted.
+- **The daily cap is the guarantee.** Per-tick numbers alone cannot bound cost —
+  tick count and idle ratio both vary. The cap bounds the sweep's share of the
+  shared neuron budget regardless, leaving the remainder for triage.
+- **No new state.** Today's spend is derived from existing rows: the sweep
+  stamps `geoEvidence` that ingest never writes (`AI re-triage…`,
+  `Re-triage consensus split…` vs `AI triage…`, `Consensus split…`), so
+  `LIKE '%re-triage%'` since UTC midnight is an exact count. No counter table to
+  drift, contend, or wedge.
+- **Fails safe.** If the cap query errors, the budget falls back to the *busy*
+  (smaller) number, so a broken count can never license a spending spree.
+- **Rejected lever:** dropping the skeptic second opinion would halve cost, but
+  it guards against falsely upgrading ineligible jobs to PH-eligible. Trading an
+  accuracy check for throughput is the wrong trade.
+
+Cost/speed: ~400 rows/day, converging the ~1,435-row backlog in about **3–4
+days** — roughly twice the speed of the flat-2 setting while keeping a firm
+ceiling.
+
+**Tune with real data, not this estimate.** The neuron-per-call figure behind
+these numbers is an estimate. Check Workers AI usage in the Cloudflare dashboard
+(AI → Usage); if there is clear headroom, raise `DAILY_SWEEP_CAP` first — it is
+the binding constraint, not the per-tick values.
 
 Verify with:
 
