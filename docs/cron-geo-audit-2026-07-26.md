@@ -182,9 +182,14 @@ ceiling that bounds the day.
 
 | Knob | Value | Purpose |
 |---|---|---|
-| `DAILY_SWEEP_CAP` | 400 | Hard ceiling per UTC day, across all ticks — the real cost lever |
-| `SWEEP_BUDGET_IDLE_TICK` | 8 | Tick scraped nothing: no triage competing, use the tick |
-| `SWEEP_BUDGET_BUSY_TICK` | 2 | Tick ingested items: triage ran first, take a small slice |
+| `DAILY_SWEEP_CAP` | **50** | Hard ceiling per UTC day, across all ticks — the real cost lever |
+| `SWEEP_BUDGET_IDLE_TICK` | **2** | Tick scraped nothing: no triage competing |
+| `SWEEP_BUDGET_BUSY_TICK` | **1** | Tick ingested items: triage ran first, yield |
+
+These were first set to 400 / 8 / 2 against an *estimated* neuron cost. That
+estimate was wrong by a wide margin — see Critical #6 — and 400 would have been
+~19,000 neurons/day against a 10,000/day account allocation. The values above
+are sized against the measured limit.
 
 Why this shape:
 - **Triage is protected structurally, not by hoping.** On ingest ticks triage
@@ -205,14 +210,38 @@ Why this shape:
   it guards against falsely upgrading ineligible jobs to PH-eligible. Trading an
   accuracy check for throughput is the wrong trade.
 
-Cost/speed: ~400 rows/day, converging the ~1,435-row backlog in about **3–4
-days** — roughly twice the speed of the flat-2 setting while keeping a firm
-ceiling.
+Cost/speed: ~50 rows/day, converging the ~1,435-row backlog in roughly **4
+weeks**. That is the honest number on the free tier, not a target.
 
-**Tune with real data, not this estimate.** The neuron-per-call figure behind
-these numbers is an estimate. Check Workers AI usage in the Cloudflare dashboard
-(AI → Usage); if there is clear headroom, raise `DAILY_SWEEP_CAP` first — it is
-the binding constraint, not the per-tick values.
+## Critical #6 — the actual ceiling: account-wide neuron quota
+
+The `__sweep_diag__` row (commit `bcfda47`) captured the real error:
+
+```
+4006: you have used up your daily free allocation of 10,000 neurons,
+please upgrade to Cloudflare's Workers Paid plan
+```
+
+**The 10,000 neurons/day is account-wide**, shared by the sweep, ingest triage,
+and every pulse workflow (verifier, medic, sentinel, prospector, hunter, chef,
+directory). That is why *all* AI writes stopped at 02:15 UTC on 2026-07-26 after
+only 12 successful writes — and why no model change and no parser change moved
+the backlog. Everything after Critical #3 was, in part, chasing this.
+
+Read it any time with:
+
+```bash
+npx wrangler d1 execute remoteph-jobs-db --remote --command "SELECT last_error, last_attempt_at FROM source_fetch_state WHERE source_id='__sweep_diag__';"
+```
+
+### The real fix is capacity, not tuning
+
+Clearing the whole backlog costs about `1,435 x 2 calls x ~25 neurons ≈ 72,000
+neurons` — comfortably **under $1 one-off** on Workers Paid. On the free tier,
+shared with everything else, the same work takes ~4 weeks.
+
+If the plan is upgraded, raise `DAILY_SWEEP_CAP` first — it is the binding
+constraint, not the per-tick values.
 
 Verify with:
 
