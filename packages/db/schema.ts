@@ -60,6 +60,11 @@ export const opportunities = sqliteTable("opportunities", {
   // drops it and regresses the temp-B-tree fix.
   activeEffectivePostedIdx: index("active_effective_posted_idx").on(table.isActive, sql`coalesce(${table.postedAt}, ${table.scrapedAt}) DESC`),
   activeLastVerifiedIdx: index("active_last_verified_idx").on(table.isActive, table.lastVerifiedAt),
+  // Unclear-backlog sweep row selection (migration 0025). Declared here so
+  // `drizzle-kit generate` cannot emit a migration that drops it. geo_checked_at
+  // precedes scraped_at so the sweep's ORDER BY is served by the index and stops
+  // at LIMIT rather than sorting every matching row on all 96 daily ticks.
+  unclearSweepIdx: index("unclear_sweep_idx").on(table.isActive, table.phEligibility, table.geoCheckedAt, table.scrapedAt),
   lastVerifiedIdx: index("last_verified_idx").on(table.lastVerifiedAt),
   contentHashIdx: uniqueIndex("content_hash_idx").on(table.contentHash),
   categoryIdx: index("category_idx").on(table.category),

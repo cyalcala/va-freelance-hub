@@ -1,0 +1,23 @@
+-- Index for the unclear-backlog sweep's row selection.
+--
+-- The sweep runs on every cron tick (96/day) and issues up to two queries of
+-- this shape, one for freshly-scraped rows and one for the legacy backfill:
+--
+--   SELECT ... FROM opportunities
+--   WHERE is_active = 1 AND ph_eligibility = 'unclear'
+--     AND scraped_at >= :cutoff        -- or < :cutoff for the legacy tier
+--   ORDER BY geo_checked_at ASC
+--   LIMIT :budget
+--
+-- Column order is deliberate:
+--   is_active, ph_eligibility  equality predicates, most selective first
+--   geo_checked_at             lets SQLite walk in ORDER BY order and stop at
+--                              LIMIT instead of sorting the whole match set
+--   scraped_at                 the tier's range predicate, testable straight
+--                              from the index without loading the row
+--
+-- Without this, both queries sort ~1,400 matched rows on every tick to return
+-- as few as one. Harmless at today's ~2,000 active rows; the cost grows linearly
+-- and this is a hot path.
+CREATE INDEX IF NOT EXISTS unclear_sweep_idx
+  ON opportunities (is_active, ph_eligibility, geo_checked_at, scraped_at);

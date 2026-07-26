@@ -459,6 +459,11 @@ const SWEEP_FRESH_WINDOW_DAYS = 10;
 // means a new day and the tally restarts, so no cleanup job is needed.
 const SWEEP_QUOTA_ID = "__sweep_quota__";
 
+// Consecutive aiUnavailable results that mean "the allocation is gone" rather
+// than "this row is unparseable". Only reachable when the effective per-tick
+// budget is larger than this, i.e. on idle ticks.
+const MAX_CONSECUTIVE_AI_FAILURES = 2;
+
 export const DAILY_SWEEP_CAP = 50;
 // Per-tick ceilings. Idle ticks scraped nothing, so no new-item triage is
 // competing for budget in that run and the sweep may use the tick fully. Ticks
@@ -643,9 +648,15 @@ export async function sweepUnclearBacklog(
             .set({ geoCheckedAt: observedAt, updatedAt: observedAt })
             .where(eq(opportunities.id, row.id));
           consecutiveAiFailures += 1;
-          // Two in a row means the account budget really is gone, not one bad
-          // row — stop and let the next run retry.
-          if (consecutiveAiFailures >= 2) break;
+          // Consecutive failures mean the account allocation is gone, not that
+          // one row is unparseable — stop and let the next tick retry.
+          //
+          // Note this only bites when the effective budget exceeds the
+          // threshold: on a busy tick (budget 1) the loop ends after one row and
+          // the break is never reached. That is fine — the per-tick budget is
+          // already the binding limit there — but it means this guard protects
+          // idle ticks, not every tick.
+          if (consecutiveAiFailures >= MAX_CONSECUTIVE_AI_FAILURES) break;
           continue;
         }
         consecutiveAiFailures = 0;
