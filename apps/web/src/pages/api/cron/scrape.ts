@@ -427,6 +427,12 @@ export interface UnclearSweepStats {
 // new-item triage (higher stakes — a wrong verdict on a fresh job reaches users,
 // a stale "unclear" row does not) always has the remainder.
 // ~400/day converges the ~1,435-row backlog in about 3-4 days.
+// Reserved source_fetch_state row holding the sweep's last AI failure reason.
+// Not a real source; read it with:
+//   SELECT last_error, last_attempt_at FROM source_fetch_state
+//   WHERE source_id = '__sweep_diag__';
+const SWEEP_DIAG_ID = "__sweep_diag__";
+
 export const DAILY_SWEEP_CAP = 400;
 // Per-tick ceilings. Idle ticks scraped nothing, so no new-item triage is
 // competing for budget in that run and the sweep may use the tick fully. Ticks
@@ -526,6 +532,36 @@ export async function sweepUnclearBacklog(
       try {
         const triage = await triageJob(row.title, row.description || "", sweepEnv, ctx);
         if (triage.aiUnavailable) {
+          // Record *why* AI was unavailable. triageJob folds the underlying
+          // error into `reason` ("Workers AI error fallback (all models
+          // failed): …") and the sweep previously discarded it, leaving no way
+          // to tell a quota exhaustion from a bad model name or a missing
+          // binding — the cursor just advanced silently. Park it on a reserved
+          // source_fetch_state row (same trick as the run lock) so it is
+          // readable with a plain D1 query and never overwrites a job's
+          // geo_evidence. Only on the first failure of a run: one sample per
+          // tick is enough.
+          if (consecutiveAiFailures === 0) {
+            try {
+              await db.insert(sourceFetchState).values({
+                sourceId: SWEEP_DIAG_ID,
+                sourceName: "sweep diagnostics",
+                sourceType: "diag",
+                collectionMethod: "diag",
+                complianceStatus: "diag",
+                lastAttemptAt: observedAt,
+                lastError: (triage.reason || "unknown").slice(0, 500),
+                updatedAt: observedAt,
+              }).onConflictDoUpdate({
+                target: sourceFetchState.sourceId,
+                set: {
+                  lastAttemptAt: observedAt,
+                  lastError: (triage.reason || "unknown").slice(0, 500),
+                  updatedAt: observedAt,
+                },
+              });
+            } catch { /* diagnostics must never fail the sweep */ }
+          }
           // Advance the cursor so one poison row cannot wedge the queue.
           await db.update(opportunities)
             .set({ geoCheckedAt: observedAt, updatedAt: observedAt })
