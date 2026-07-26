@@ -1106,9 +1106,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // 6c. Unclear-backlog convergence (geo masterplan Phase 3): the 2026-07-19
     // backfill left ~1,870 live rows verdicted "unclear" (no deterministic
     // signal; predate AI geo review). Each run upgrades a small budget of the
-    // oldest ones via the hardened triage + skeptic consensus — the whole
-    // backlog converges in a couple of days at the 15-min cadence without
-    // ever spiking Workers AI usage or run duration.
+    // oldest ones via the hardened triage + skeptic consensus, on the cheap
+    // model rung so the sweep cannot exhaust the daily neuron budget.
+    // NOTE: the original comment here claimed convergence "in a couple of days".
+    // That was wrong — measured throughput was ~11 rows/day (see the poison-row
+    // and model-cost fixes below), i.e. months, not days.
     const UNCLEAR_RETRIAGE_BUDGET = 12;
     let unclearRetriaged = 0;
     let unclearUpgraded = 0;
@@ -1128,11 +1130,37 @@ export const POST: APIRoute = async ({ request, locals }) => {
         .orderBy(asc(opportunities.geoCheckedAt))
         .limit(UNCLEAR_RETRIAGE_BUDGET);
 
+      // Cost control (2026-07-26): the sweep is ~95% of AI call volume
+      // (12 rows x up to 2 calls x 96 runs/day). Running it on the 70B rung
+      // exhausted the 10,000 neuron/day account budget, which then starved
+      // BOTH the sweep and new-item triage. Pin the sweep to the cheap 8B rung
+      // via the AI_MODEL override that triage.ts/skepticEligibilityCheck
+      // already honour; new-item triage keeps the 70B ladder (low volume,
+      // high stakes).
+      const sweepEnv = { ...env, AI_MODEL: "@cf/meta/llama-3.1-8b-instruct" };
+      // A row whose content makes every model fail returns aiUnavailable
+      // indistinguishably from a real quota outage. Previously `break` plus a
+      // catch that never advanced geoCheckedAt meant such a row stayed the
+      // oldest-checked forever and re-blocked the sweep on every run (observed:
+      // 11 rows/day against a 1,152/day design). Now a failure rotates the row
+      // out, and only consecutive failures stop the sweep.
+      let consecutiveAiFailures = 0;
       for (const row of unclearRows) {
         const ctx = { locationRaw: row.locationRaw, tags: row.tags, company: row.company };
         try {
-          const triage = await triageJob(row.title, row.description || "", env, ctx);
-          if (triage.aiUnavailable) break; // AI quota/outage — stop the sweep, rows retry next run
+          const triage = await triageJob(row.title, row.description || "", sweepEnv, ctx);
+          if (triage.aiUnavailable) {
+            // Advance the cursor so one poison row cannot wedge the queue.
+            await db.update(opportunities)
+              .set({ geoCheckedAt: observedAt, updatedAt: observedAt })
+              .where(eq(opportunities.id, row.id));
+            consecutiveAiFailures += 1;
+            // Two in a row means the account budget really is gone, not one bad
+            // row — stop and let the next run retry.
+            if (consecutiveAiFailures >= 2) break;
+            continue;
+          }
+          consecutiveAiFailures = 0;
           unclearRetriaged += 1;
           if (!triage.eligibleForFilipinos) {
             unclearDeactivated += 1;
@@ -1145,7 +1173,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             }).where(eq(opportunities.id, row.id));
             continue;
           }
-          const skeptic = await skepticEligibilityCheck(row.title, row.description || "", env, ctx);
+          const skeptic = await skepticEligibilityCheck(row.title, row.description || "", sweepEnv, ctx);
           if (skeptic && !skeptic.aiUnavailable && !skeptic.eligible) {
             unclearDeactivated += 1;
             await db.update(opportunities).set({
@@ -1168,6 +1196,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
           }).where(eq(opportunities.id, row.id));
         } catch (err) {
           console.warn(`[api/cron/scrape] Unclear re-triage failed for #${row.id}:`, errorMessage(err));
+          // Same wedge hazard as the aiUnavailable path: without advancing the
+          // cursor this row stays oldest-checked and is re-selected first every
+          // run. Rotate it out; its verdict is unchanged, so it will be revisited
+          // after the rest of the backlog.
+          try {
+            await db.update(opportunities)
+              .set({ geoCheckedAt: observedAt, updatedAt: observedAt })
+              .where(eq(opportunities.id, row.id));
+          } catch { /* best-effort cursor advance */ }
         }
       }
       if (unclearRetriaged > 0) {
