@@ -110,6 +110,25 @@ function contextBlock(context?: TriageContext): string {
 }
 
 /**
+ * Parses the AI_MODEL override into a model ladder.
+ *
+ * Accepts a comma-separated list so a caller can pick a *cheaper ladder*
+ * rather than a single model. This matters: callers override AI_MODEL to keep
+ * the expensive 70B rung out of high-volume paths, but a one-element ladder has
+ * no fallback, and JSON mode is only enabled for llama-3.3 (see below) — so a
+ * single free-form parse failure fails the whole call closed as aiUnavailable.
+ * The unclear-backlog sweep hit exactly that: pinned to one 8B model it resolved
+ * nothing and merely rotated rows.
+ */
+export function parseModelOverride(override: unknown): string[] {
+  if (Array.isArray(override)) return override.map(String).map((s) => s.trim()).filter(Boolean);
+  return String(override)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/**
  * Intelligently classifies and verifies eligibility of a job listing using
  * Cloudflare Workers AI. Model ladder (L2): llama-3.3-70b (fp8-fast, far
  * better geo nuance) → llama-3.1-8b → mistral-7b.
@@ -237,7 +256,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
   `.trim();
 
   const modelsToTry = env?.AI_MODEL
-    ? [env.AI_MODEL]
+    ? parseModelOverride(env.AI_MODEL)
     : [
         // L2 model upgrade: 70B fp8-fast first — dramatically better at geo
         // nuance than the 8B models and still on the Workers AI free tier.
@@ -393,7 +412,7 @@ Output ONLY raw JSON: {"eligible": boolean, "reason": "one short sentence"}.
   `.trim();
 
   const models = env?.AI_MODEL
-    ? [env.AI_MODEL]
+    ? parseModelOverride(env.AI_MODEL)
     : ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/meta/llama-3.1-8b-instruct"];
 
   for (const model of models) {

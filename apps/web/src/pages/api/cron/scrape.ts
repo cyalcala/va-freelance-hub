@@ -449,7 +449,20 @@ export async function sweepUnclearBacklog(
     // the cheap 8B rung via the AI_MODEL override that triage.ts /
     // skepticEligibilityCheck already honour; new-item triage keeps the 70B
     // ladder (low volume, high stakes).
-    const sweepEnv = { ...env, AI_MODEL: "@cf/meta/llama-3.1-8b-instruct" };
+    // Cheap *ladder*, not a single model. Pinning one 8B model left no fallback,
+    // and JSON mode is only enabled for llama-3.3, so the sweep parses free-form
+    // output — one bad parse then failed the call closed as aiUnavailable. In
+    // production that meant the sweep entered, burned its two-strike budget on
+    // the first two rows, and resolved nothing. Keep 70B out (cost), keep
+    // fallbacks in (correctness).
+    const sweepEnv = {
+      ...env,
+      AI_MODEL: [
+        "@cf/meta/llama-3.1-8b-instruct",
+        "@cf/meta/llama-3-8b-instruct",
+        "@cf/mistral/mistral-7b-instruct-v0.1",
+      ].join(","),
+    };
     // A row whose content makes every model fail returns aiUnavailable
     // indistinguishably from a real quota outage. A bare `break` plus a catch
     // that never advanced geoCheckedAt meant such a row stayed the

@@ -49,9 +49,30 @@ failure path advances `geoCheckedAt` while leaving the row `unclear`, a sweep
 that was *running and failing* would still have produced a non-zero count. Zero
 means it never entered the block.
 
+There are **two** such early returns above the sweep, and the first fix only
+covered one — the backlog stayed flat at 1435 through the next tick, which is
+what exposed the miss:
+
+| Line | Guard | When it fires |
+|---|---|---|
+| ~771 | `allItems.length === 0` — "No jobs scraped" | all feeds 304 / cadence-skipped |
+| ~957 | `newItems.length === 0` — "Zero new jobs after dedup" | **dominant**: feeds returned their usual items, none new after URL dedup |
+
+The second is the common one: RSS feeds keep serving their current listings
+every tick, so `allItems` is usually non-zero, but at a 15-min cadence almost
+nothing in them is new.
+
 Fix: extracted the block to `sweepUnclearBacklog(db, env, observedAt)` and call
-it on **both** paths — the normal path and the no-new-items early return — so
-maintenance runs every tick.
+it on **all three** non-error exits — both early returns and the normal ingest
+path. The exits deliberately left uncovered are unauthorized, rate-limited, and
+run-lock-held (another run is already doing the work), plus the catch-all 500.
+
+Diagnostic worth reusing: if the sweep is entered at all, `touched` must be
+non-zero, because every path inside it — success, `aiUnavailable`, and thrown
+error — advances `geoCheckedAt`. Exactly zero therefore distinguishes "never
+reached" from "reached and failing". Note that `MAX(last_attempt_at)` over
+`source_fetch_state` includes the `__scrape_run_lock__` row, so it proves only
+that the run *started*, not how far it got.
 
 ### Critical #2 + #3 — sweep wedge + AI cost — DONE
 - Commit `3a5b7b1`, **deployed to `remotejobs-ph` Production**.
