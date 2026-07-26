@@ -426,20 +426,40 @@ export interface UnclearSweepStats {
 // neuron budget regardless of how many ticks fire or how idle they are, so
 // new-item triage (higher stakes — a wrong verdict on a fresh job reaches users,
 // a stale "unclear" row does not) always has the remainder.
-// ~400/day converges the ~1,435-row backlog in about 3-4 days.
+//
+// Sized against a MEASURED constraint, not an estimate. On 2026-07-26 the sweep
+// recorded, via the __sweep_diag__ row:
+//   "4006: you have used up your daily free allocation of 10,000 neurons"
+// That allocation is account-wide, shared with ingest triage and every pulse
+// workflow — which is why ALL AI stopped at 02:15 UTC after only 12 successful
+// writes that day.
+//
+// At ~25 neurons per 8B call and up to 2 calls per row (~50/row), 50 rows/day is
+// ~2,500 neurons: about a quarter of the account's daily budget, leaving the
+// rest for everything else. The previous value of 400 would have been ~19,000
+// neurons — nearly twice the entire daily allocation — draining it within an
+// hour of the UTC reset and starving triage.
+//
+// Consequence: the ~1,435-row backlog converges in ~4 weeks, not days. The real
+// fix is capacity, not tuning: on Workers Paid the entire backlog costs roughly
+// 1,435 x 2 x 25 ~= 72,000 neurons, comfortably under $1 one-off. If the plan is
+// upgraded, raise this first — it is the binding constraint.
 // Reserved source_fetch_state row holding the sweep's last AI failure reason.
 // Not a real source; read it with:
 //   SELECT last_error, last_attempt_at FROM source_fetch_state
 //   WHERE source_id = '__sweep_diag__';
 const SWEEP_DIAG_ID = "__sweep_diag__";
 
-export const DAILY_SWEEP_CAP = 400;
+export const DAILY_SWEEP_CAP = 50;
 // Per-tick ceilings. Idle ticks scraped nothing, so no new-item triage is
 // competing for budget in that run and the sweep may use the tick fully. Ticks
 // that did ingest run triage first (it sits above the sweep in the handler), so
 // the sweep takes only a small slice and yields the rest.
-export const SWEEP_BUDGET_IDLE_TICK = 8;
-export const SWEEP_BUDGET_BUSY_TICK = 2;
+// Kept small so the daily cap is spent as a trickle across the day rather than
+// burned in a burst right after the 00:00 UTC reset — a burst would collide
+// with ingest triage and the pulse workflows competing for the same allocation.
+export const SWEEP_BUDGET_IDLE_TICK = 2;
+export const SWEEP_BUDGET_BUSY_TICK = 1;
 
 export async function sweepUnclearBacklog(
   db: AppDb,
