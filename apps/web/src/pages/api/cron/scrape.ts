@@ -450,6 +450,10 @@ export interface UnclearSweepStats {
 //   WHERE source_id = '__sweep_diag__';
 const SWEEP_DIAG_ID = "__sweep_diag__";
 
+// A row counts as "fresh" if it was scraped within this window. Fresh unclear
+// rows are swept before legacy backfill rows — see the fresh-first note below.
+const SWEEP_FRESH_WINDOW_DAYS = 10;
+
 export const DAILY_SWEEP_CAP = 50;
 // Per-tick ceilings. Idle ticks scraped nothing, so no new-item triage is
 // competing for budget in that run and the sweep may use the tick fully. Ticks
@@ -497,19 +501,54 @@ export async function sweepUnclearBacklog(
   }
   const stats: UnclearSweepStats = { retriaged: 0, upgraded: 0, deactivated: 0 };
   try {
-    const unclearRows = await db
-      .select({
-        id: opportunities.id,
-        title: opportunities.title,
-        description: opportunities.description,
-        tags: opportunities.tags,
-        company: opportunities.company,
-        locationRaw: opportunities.locationRaw,
-      })
+    const sweepCols = {
+      id: opportunities.id,
+      title: opportunities.title,
+      description: opportunities.description,
+      tags: opportunities.tags,
+      company: opportunities.company,
+      locationRaw: opportunities.locationRaw,
+    };
+
+    // FRESH-FIRST. Ordering purely by oldest geoCheckedAt puts the ~1,435 legacy
+    // backfill rows ahead of everything, so a job scraped today that lands
+    // "unclear" joins the back of that queue and waits weeks to become visible —
+    // backwards, since recent listings are the ones users act on (and the ones
+    // still open). Serve recently-scraped unclear rows first, then spend any
+    // leftover budget draining the legacy backlog.
+    //
+    // Fresh inflow is ~4-22 rows/day against a 50/day cap, so fresh rows are
+    // effectively always same-day and legacy still gets the bulk of the budget.
+    const freshCutoff = new Date(Date.parse(observedAt) - SWEEP_FRESH_WINDOW_DAYS * 86_400_000).toISOString();
+    const freshRows = await db
+      .select(sweepCols)
       .from(opportunities)
-      .where(and(eq(opportunities.isActive, true), eq(opportunities.phEligibility, "unclear")))
+      .where(and(
+        eq(opportunities.isActive, true),
+        eq(opportunities.phEligibility, "unclear"),
+        gte(opportunities.scrapedAt, freshCutoff),
+      ))
       .orderBy(asc(opportunities.geoCheckedAt))
       .limit(UNCLEAR_RETRIAGE_BUDGET);
+
+    const legacyBudget = UNCLEAR_RETRIAGE_BUDGET - freshRows.length;
+    const legacyRows = legacyBudget > 0
+      ? await db
+          .select(sweepCols)
+          .from(opportunities)
+          .where(and(
+            eq(opportunities.isActive, true),
+            eq(opportunities.phEligibility, "unclear"),
+            lt(opportunities.scrapedAt, freshCutoff),
+          ))
+          .orderBy(asc(opportunities.geoCheckedAt))
+          .limit(legacyBudget)
+      : [];
+
+    if (freshRows.length > 0) {
+      console.log(`[api/cron/scrape] Unclear sweep: ${freshRows.length} fresh + ${legacyRows.length} legacy.`);
+    }
+    const unclearRows = [...freshRows, ...legacyRows];
 
     // Cost control: the sweep is ~95% of AI call volume (12 rows x up to 2 calls
     // x 96 runs/day). On the 70B rung it exhausted the 10,000 neuron/day account
