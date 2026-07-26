@@ -24,6 +24,70 @@ Two misreads worth not repeating:
   could not have been sweep resolutions. Break down by
   `ph_eligibility, is_active` before concluding.
 
+## Critical #7 — D1 migrations had been silently failing for 9 days
+
+Found while verifying that migration `0025` reached production. It had not, and
+neither had anything since **0020 (2026-07-17)**.
+
+`.github/workflows/deploy-migrations.yml` had failed on its last three runs
+(2026-07-20, 07-21, 07-26). Each run tried to apply 0021–0025 and died on the
+first statement:
+
+```
+duplicate column name: location_raw: SQLITE_ERROR [code: 7500]
+```
+
+Cause: the schema changes in 0021+ were applied to production by some other
+route — most likely `wrangler d1 execute` directly — which does **not** write to
+wrangler's `d1_migrations` bookkeeping table. So the database had the columns
+while wrangler still believed 0021 was pending. `ALTER TABLE ADD COLUMN` is not
+idempotent and SQLite has no `ADD COLUMN IF NOT EXISTS`, so every subsequent run
+hit the same wall and **no migration could ever land again**.
+
+This is worth emphasising: the failure was silent from the application's point of
+view. Nothing was broken at runtime, so nothing surfaced it. It was only visible
+by asking production whether a specific index existed.
+
+### Fix
+
+Verified each unrecorded migration was genuinely applied before recording it —
+marking an *unapplied* migration as applied would skip a real schema change
+permanently:
+
+| Migration | Verification |
+|---|---|
+| 0021 | `location_raw` duplicate-column error; `active_ph_eligibility_idx` present |
+| 0022 | all four `link_*` columns + `va_directory_link_checked_idx` present |
+| 0023 | `va_directory.id=296` website is exactly `https://kaya.services/` |
+| 0024 | `va_directory.id=235 hires_filipinos = 0` |
+
+Then recorded them and let the normal path apply 0025:
+
+```bash
+npx wrangler d1 execute remoteph-jobs-db --remote --command "INSERT OR IGNORE INTO d1_migrations (name) VALUES ('0021_geo_eligibility.sql'),('0022_directory_link_health.sql'),('0023_directory_audit_url_fixes.sql'),('0024_directory_soft_hide.sql');"
+cd apps/web && npx wrangler d1 migrations apply remoteph-jobs-db --remote
+```
+
+Reversible: `DELETE FROM d1_migrations WHERE name IN (...)`.
+
+`0025_unclear_sweep_index.sql` then applied cleanly and `unclear_sweep_idx` is
+confirmed present.
+
+### To avoid recurrence
+
+Apply schema changes **only** via `wrangler d1 migrations apply`, never
+`wrangler d1 execute`. The latter changes the database without recording it, and
+the drift is invisible until the next migration fails. Note also that
+`migrations apply` must run from `apps/web` (that is where the wrangler config
+with `migrations_dir` lives); from the repo root it errors with "No configuration
+file found".
+
+Worth checking after any migration:
+
+```bash
+npx wrangler d1 execute remoteph-jobs-db --remote --command "SELECT name FROM d1_migrations ORDER BY id DESC LIMIT 3;"
+```
+
 ## Deployment topology (this tripped me up — read first)
 
 Scope is **`remotejobs-ph.pages.dev`** + this repo. Nothing else.
