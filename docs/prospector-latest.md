@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-07-27
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30256964219
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30279086134
 
 | Metric | Value |
 | --- | ---: |
@@ -15,4 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30256964
 
 ## Auto-added companies
 
-- Everpure
+- OnTheGoSystems
