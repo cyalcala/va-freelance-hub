@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-07-27
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30236067193
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30256964219
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 47 |
-| Auto-added this run | 11 |
+| Candidates considered | 37 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 34 |
 | Rejected for quality | 2 |
@@ -15,14 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30236067
 
 ## Auto-added companies
 
-- Hightouch
-- Tebra
-- Smartsheet
-- Sezzle
-- Reddit
-- Mercury
-- Jumio
-- JetBrains
-- Collibra
-- Bybit
-- Abnormal
+- Everpure
