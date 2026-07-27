@@ -1,34 +1,30 @@
 # Source Health Latest
 
-Date: 2026-07-26
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30184576180
-Commit: ebe37e668f38e43cbf6eb0372782d445b900e493
+Date: 2026-07-27
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30229169639
+Commit: bd831bbc9f9ea72d54b67fa03c39bb359129815d
 
 ### Hunter Source Health
 
-- Timestamp: 2026-07-26T02:27:42Z
-- Run ID: 30184576180
-- Signals Harvested: 0
-- Accepted For Insert: 0
-- Attempted Inserts: 0
+- Timestamp: 2026-07-27T01:11:56Z
+- Run ID: 30229169639
+- Signals Harvested: 30
+- Accepted For Insert: 30
+- Attempted Inserts: 30
 - Failed Insert Batches: 0
 - Insert Errors: 0
 - Failed Sources: 0
 - Zero-Count Successful Sources: 1
-- Skipped Sources: 26
+- Skipped Sources: 22
 - Fetch Events Recorded: 42/42 (failed batches: 0)
 - Cadence State Available: true
 - Triage Failures: 0
-- AI-Unavailable Deferrals: 0
+- AI-Unavailable Deferrals: 19
 - Rejected Persisted (inactive): 0
 - Dropped (no sourceUrl): 0
 - Unmatched Auto-Pauses: 0
 
 #### Skipped Sources
-- Real Work From Anywhere (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-26T02:15:47.707Z; 60-minute minimum interval.
-- Jobicy Admin Support APAC (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-26T02:15:47.707Z; 60-minute minimum interval.
-- Jobicy Customer Support APAC (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-26T02:15:47.707Z; 60-minute minimum interval.
-- Remote OK (JSON, allowed): Skipped cadence guard: last attempted at 2026-07-26T02:15:47.707Z; 60-minute minimum interval.
 - ProBlogger (RSS, paused): Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.
 - Remote.co (RSS, paused): Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.
 - Authentic Jobs (RSS, paused): Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.
