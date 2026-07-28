@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-07-28
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30345118290
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30369441053
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 34 |
-| Auto-added this run | 1 |
+| Candidates considered | 33 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 31 |
 | Rejected for quality | 2 |
@@ -15,4 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30345118
 
 ## Auto-added companies
 
-- Celonis
+- (none this run)
