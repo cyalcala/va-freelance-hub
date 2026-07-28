@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-07-28
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30326450650
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30345118290
 
 | Metric | Value |
 | --- | ---: |
@@ -15,4 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30326450
 
 ## Auto-added companies
 
-- Superside
+- Celonis
