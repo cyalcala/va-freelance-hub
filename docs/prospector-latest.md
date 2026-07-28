@@ -1,19 +1,18 @@
 # Prospector Latest
 
-Date: 2026-07-27
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30300436137
+Date: 2026-07-28
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30326450650
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 38 |
-| Auto-added this run | 2 |
+| Candidates considered | 34 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
-| Review-only (untrusted source) | 34 |
+| Review-only (untrusted source) | 31 |
 | Rejected for quality | 2 |
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
 
 ## Auto-added companies
 
-- Otterly.ai
-- Gartner
+- Superside
