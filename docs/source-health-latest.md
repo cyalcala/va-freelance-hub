@@ -1,21 +1,21 @@
 # Source Health Latest
 
-Date: 2026-07-28
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30315933241
-Commit: 0f5619f247b17b644d8d0ecbfa46a8f6e64fcbee
+Date: 2026-07-29
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30412568659
+Commit: 76bb741a3c8cc29ac618e1f3466102e8862d24cd
 
 ### Hunter Source Health
 
-- Timestamp: 2026-07-28T00:01:00Z
-- Run ID: 30315933241
+- Timestamp: 2026-07-29T00:56:13Z
+- Run ID: 30412568659
 - Signals Harvested: 0
 - Accepted For Insert: 0
 - Attempted Inserts: 0
 - Failed Insert Batches: 0
 - Insert Errors: 0
-- Failed Sources: 1
+- Failed Sources: 0
 - Zero-Count Successful Sources: 1
-- Skipped Sources: 26
+- Skipped Sources: 22
 - Fetch Events Recorded: 42/42 (failed batches: 0)
 - Cadence State Available: true
 - Triage Failures: 0
@@ -24,14 +24,7 @@ Commit: 0f5619f247b17b644d8d0ecbfa46a8f6e64fcbee
 - Dropped (no sourceUrl): 0
 - Unmatched Auto-Pauses: 0
 
-#### Failed Sources
-- We Work Remotely (RSS): [rss] Failed to fetch We Work Remotely: The operation was aborted due to timeout
-
 #### Skipped Sources
-- Real Work From Anywhere (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-27T23:45:47.713Z; 60-minute minimum interval.
-- Jobicy Admin Support APAC (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-27T23:45:47.713Z; 60-minute minimum interval.
-- Jobicy Customer Support APAC (RSS, allowed): Skipped cadence guard: last attempted at 2026-07-27T23:45:47.713Z; 60-minute minimum interval.
-- Remote OK (JSON, allowed): Skipped cadence guard: last attempted at 2026-07-27T23:45:47.713Z; 60-minute minimum interval.
 - ProBlogger (RSS, paused): Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.
 - Remote.co (RSS, paused): Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.
 - Authentic Jobs (RSS, paused): Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.
