@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-07-29
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30438538849
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30461366174
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 34 |
-| Auto-added this run | 1 |
+| Candidates considered | 33 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 30 |
 | Rejected for quality | 3 |
@@ -15,4 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30438538
 
 ## Auto-added companies
 
-- Twitch
+- (none this run)
