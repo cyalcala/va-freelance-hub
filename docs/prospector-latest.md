@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-07-30
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30552249218
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30576782007
 
 | Metric | Value |
 | --- | ---: |
@@ -15,4 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/30552249
 
 ## Auto-added companies
 
-- TestGorilla
+- Carnival Corporation
