@@ -4,15 +4,7 @@ import { isNotNull, and, inArray, eq, lt, asc, gte } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
-
-async function generateHash(message: string) {
-  const msgUint8 = new TextEncoder().encode(message);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  return hashHex;
-}
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sha256Hex, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
 
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
@@ -1261,7 +1253,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           phEligibility: gate.phEligibility,
           geoEvidence: gate.evidence,
           geoCheckedAt: observedAt,
-          descriptionHash: await generateHash(item.title + cleanDesc),
+          descriptionHash: await sha256Hex(item.title + cleanDesc),
           applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
           postedAt: normalizeUtcIso(item.postedAt),
           scrapedAt: observedAt,
@@ -1317,7 +1309,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         }
 
         const cleanDesc = (item.description || "").slice(0, 1500);
-        const descriptionHash = await generateHash(item.title + cleanDesc);
+        const descriptionHash = await sha256Hex(item.title + cleanDesc);
 
         if (!triage.eligibleForFilipinos) {
           console.log(`[api/cron/scrape] Filtering out ineligible job: "${item.title}". Reason: ${triage.reason}`);

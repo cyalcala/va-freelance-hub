@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
-import { sanitizeApplyUrl, toContentHash } from "@va-hub/scraper";
+import { sanitizeApplyUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
@@ -11,11 +11,6 @@ const EXPERIENCE_LEVELS = new Set(["entry", "mid", "senior", "any"]);
 
 function str(v: unknown): string | null {
   return typeof v === "string" && v.trim() !== "" ? v.trim() : null;
-}
-
-async function sha256Hex(message: string): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(message));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 // Explicit allow-list mapping. Previously this spread `...item`, letting any
@@ -29,6 +24,13 @@ async function normalizeOpportunityForInsert(item: any, observedAt: string) {
   const applicationUrl = sanitizeApplyUrl(item?.applicationUrl) ?? (sourceUrl ?? null);
   const description = str(item?.description);
   const rawTags = Array.isArray(item?.tags) ? item.tags.filter((t: unknown) => typeof t === "string").slice(0, 15) : [];
+  const gate = geoGate({
+    title,
+    description,
+    locationRaw: str(item?.locationRaw),
+    tags: rawTags,
+  });
+
   return {
     title,
     company: str(item?.company),
@@ -45,7 +47,7 @@ async function normalizeOpportunityForInsert(item: any, observedAt: string) {
     postedAt: normalizeUtcIso(item?.postedAt),
     scrapedAt: normalizeUtcIso(item?.scrapedAt) ?? observedAt,
     // Server-owned safety fields — never client-controlled.
-    isActive: true,
+    isActive: gate.phEligibility !== "ineligible",
     contentHash: toContentHash(title, sourceUrl ?? title),
     descriptionHash: await sha256Hex(title + (description ?? "").slice(0, 1500)),
     experienceLevel: EXPERIENCE_LEVELS.has(item?.experienceLevel) ? item.experienceLevel : null,
@@ -54,6 +56,11 @@ async function normalizeOpportunityForInsert(item: any, observedAt: string) {
     updatedAt: observedAt,
     lastSeenInFeedAt: normalizeUtcIso(item?.lastSeenInFeedAt) ?? observedAt,
     lastVerifiedAt: normalizeUtcIso(item?.lastVerifiedAt),
+    locationRaw: str(item?.locationRaw),
+    geoScope: gate.geoScope,
+    phEligibility: gate.phEligibility,
+    geoEvidence: gate.evidence,
+    geoCheckedAt: observedAt,
   };
 }
 

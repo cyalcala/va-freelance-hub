@@ -323,14 +323,13 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       if (typeof response === "string") {
         jsonText = response;
       } else if (response && response.response) {
-        jsonText = response.response;
+        jsonText = String(response.response);
       } else if (response && response.text) {
-        jsonText = response.text;
+        jsonText = String(response.text);
       } else {
         jsonText = JSON.stringify(response);
       }
 
-      // Clean up markdown wrapper if LLM returned it anyway
       jsonText = jsonText.trim();
       if (jsonText.startsWith("```json")) {
         jsonText = jsonText.slice(7);

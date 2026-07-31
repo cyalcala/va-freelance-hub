@@ -11,7 +11,7 @@ export type { TriageResult } from "./triage";
 export { fetchATSFeed, fetchAshby } from "./ats";
 export { conditionalFetchText, unchangedOutput } from "./conditional";
 export type { ConditionalState, ConditionalResult, SourceFetchOutput } from "./conditional";
-export { hashString } from "./contentHash";
+export { hashString, sha256Hex } from "./contentHash";
 export {
   normalizeCompanyName, isQualityCompanyName, hostOf, isTrustedSourceUrl,
   extractAtsToken, inferNiche, classifyCandidates,

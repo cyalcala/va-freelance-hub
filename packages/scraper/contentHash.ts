@@ -31,3 +31,9 @@ export function hashString(str: string): string {
 export function toContentHash(title: string, sourceUrl: string): string {
   return hashString(`${title}::${sourceUrl}`);
 }
+
+/** SHA-256 hex digest via the Web Crypto API (available in Workers and Node 18+). */
+export async function sha256Hex(message: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(message));
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
