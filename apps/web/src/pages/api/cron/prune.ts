@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { getDb, opportunities } from "@va-hub/db";
-import { sql } from "drizzle-orm";
+import { getDb, opportunities, sourceFetchEvents } from "@va-hub/db";
+import { sql, lt } from "drizzle-orm";
 import { nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 
@@ -68,9 +68,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const archived = (result as any).meta?.changes ?? 0;
     console.log(`[api/cron/prune] Archived ${archived} duplicate active rows (description_hash + company scoped). No rows deleted.`);
 
+    const EVENT_RETENTION_DAYS = 90;
+    const eventCutoff = new Date(Date.now() - EVENT_RETENTION_DAYS * 24 * 60 * 60_000).toISOString();
+    const eventPrune = await db.delete(sourceFetchEvents)
+      .where(lt(sourceFetchEvents.timestamp, eventCutoff));
+    const eventsDeleted = (eventPrune as any).meta?.changes ?? 0;
+    if (eventsDeleted > 0) {
+      console.log(`[api/cron/prune] Deleted ${eventsDeleted} source_fetch_events older than ${EVENT_RETENTION_DAYS} days.`);
+    }
+
     return new Response(JSON.stringify({
       success: true,
       archivedHashDuplicates: archived,
+      eventsDeleted,
       deleted: 0,
       mode: "soft-archive",
     }), {

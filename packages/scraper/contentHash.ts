@@ -32,6 +32,11 @@ export function toContentHash(title: string, sourceUrl: string): string {
   return hashString(`${title}::${sourceUrl}`);
 }
 
+/** Extract an error message from an unknown thrown value. */
+export function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /** SHA-256 hex digest via the Web Crypto API (available in Workers and Node 18+). */
 export async function sha256Hex(message: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(message));

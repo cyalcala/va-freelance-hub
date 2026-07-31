@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getDb, vaDirectory } from "@va-hub/db";
 import { sql } from "drizzle-orm";
 import {
-  classifyCandidates, chunkArray, maxRowsPerD1Batch,
+  classifyCandidates, chunkArray, maxRowsPerD1Batch, errorMessage,
   type RawCandidate, type ClassifiedCandidate,
 } from "@va-hub/scraper";
 import { nowUtcIso } from "@/lib/time";
@@ -36,9 +36,6 @@ const ANOMALY_CEILING = 120;
 // per-row inserts (below) so throughput is resilient regardless.
 const DIRECTORY_INSERT_COLUMNS = 12;
 
-function errorMessage(e: unknown): string {
-  return e instanceof Error ? e.message : String(e);
-}
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -63,17 +60,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // 1. Candidate companies: appear in active eligible jobs, not yet in the
     // directory, with at least MIN_JOBS active postings. Correlated NOT IN
     // subquery (not a bound-param list) keeps this off the 100-param limit.
+    const STALE_DAYS = 90;
+    const staleCutoff = new Date(Date.now() - STALE_DAYS * 24 * 60 * 60_000).toISOString();
     const rows = await db.all<{ company: string; jobs: number; sampleUrl: string | null; category: string | null }>(sql`
-      SELECT company AS company,
+      SELECT o.company AS company,
              COUNT(*) AS jobs,
-             MAX(source_url) AS sampleUrl,
-             MAX(category) AS category
-      FROM opportunities
-      WHERE is_active = 1
-        AND company IS NOT NULL AND TRIM(company) <> ''
-        AND LOWER(company) NOT IN (SELECT LOWER(company_name) FROM va_directory)
-      GROUP BY LOWER(company)
+             (SELECT o2.source_url FROM opportunities o2
+              WHERE o2.company = o.company AND o2.is_active = 1
+              ORDER BY COALESCE(o2.scraped_at, o2.created_at) DESC LIMIT 1) AS sampleUrl,
+             MAX(o.category) AS category
+      FROM opportunities o
+      WHERE o.is_active = 1
+        AND o.company IS NOT NULL AND TRIM(o.company) <> ''
+        AND LOWER(o.company) NOT IN (SELECT LOWER(company_name) FROM va_directory)
+      GROUP BY LOWER(o.company)
       HAVING COUNT(*) >= ${MIN_JOBS}
+        AND MAX(COALESCE(o.scraped_at, o.created_at)) >= ${staleCutoff}
       ORDER BY jobs DESC
       LIMIT ${CANDIDATE_LIMIT}
     `);

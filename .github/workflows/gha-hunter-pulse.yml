@@ -1,8 +1,6 @@
 name: 🏹 Sovereign Hunter Pulse
 
 on:
-  schedule:
-    - cron: '*/30 * * * *' # Every 30 minutes
   workflow_dispatch:
     inputs:
       write_rollup:
@@ -279,7 +277,7 @@ jobs:
   daily-rollup:
     name: Update Source Health Rollup
     needs: hunt
-    if: ${{ always() && (github.event_name == 'schedule' || github.event.inputs.write_rollup == 'true') }}
+    if: ${{ always() && github.event.inputs.write_rollup == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -308,11 +306,6 @@ jobs:
 
           TODAY=$(date -u +"%Y-%m-%d")
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-
-          if [ "${GITHUB_EVENT_NAME}" = "schedule" ] && [ -f docs/source-health-latest.md ] && grep -q "^Date: ${TODAY}$" docs/source-health-latest.md; then
-            echo "Source health rollup already exists for ${TODAY}; skipping scheduled commit."
-            exit 0
-          fi
 
           {
             echo "# Source Health Latest"

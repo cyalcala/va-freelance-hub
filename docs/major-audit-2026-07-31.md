@@ -74,7 +74,7 @@ consumers import it.
 
 ---
 
-## Findings — not fixed, documented for future work
+## Findings — all fixed in round 2 (see above)
 
 ### Performance
 
@@ -204,13 +204,73 @@ needed now, but the events table cleanup (P-4) should happen before Q4.
 
 ---
 
+## Fixes shipped — round 2
+
+### P-1 — Parallelize ATS source fetching
+**File:** `scrape.ts` ATS fetch loop. Non-Workable agencies now fetched in parallel
+batches of 8 via `Promise.all()`. Workable agencies kept sequential with 1s rate-
+limit sleep. Cuts ATS wall-clock time by ~4x.
+
+### P-2 — Cadence guards and state recording for ATS sources
+**File:** `scrape.ts`. ATS agencies now checked against `source_fetch_state` with
+a 60-minute minimum interval. State recorded after each fetch (upsert into
+`source_fetch_state`). Eliminates redundant ATS re-fetches on 15-min cron ticks.
+
+### P-3 — Debounce lastSeenInFeedAt updates
+**File:** `scrape.ts:1197+`. Only updates `lastSeenInFeedAt` when the existing
+value is null or has drifted >12 hours from the current timestamp. Reduces DB
+write churn from hundreds of UPDATEs per tick to only stale rows.
+
+### P-4 — source_fetch_events cleanup policy
+**File:** `prune.ts`. Added 90-day retention cleanup — deletes events older than
+90 days on each prune run. Prevents unbounded table growth (~2,400 rows/day).
+
+### P-5 — Remove Hunter GHA schedule trigger
+**File:** `gha-hunter-pulse.yml`. Removed `schedule: */30 * * * *` trigger,
+keeping `workflow_dispatch` only. Workers cron is the reliable primary; the GHA
+schedule was redundant and wasted Actions minutes.
+
+### I-1 — Widen RemoteOK role-relevance filter
+**File:** `json.ts`. Added senior role keywords: head of, vp, vice president,
+chief, director, lead, manager, program manager, strategy, coordinator,
+scheduler, executive assistant, social media. Widens funnel for roles Filipino
+VAs and freelancers increasingly fill.
+
+### I-2 — Capture locationRaw from Remotive RSS
+**File:** `rss.ts`. Added `location` field to `RawRSSItem` interface. Location
+extraction now falls back from `<region>` to `<location>` element, giving the
+geo gate more signal from Remotive feeds.
+
+### PR-1 — Fix prospector sample URL
+**File:** `prospect.ts`. Changed from `MAX(source_url)` (lexicographic) to a
+correlated subquery that returns the URL of the most recently scraped job for
+each candidate company.
+
+### PR-2 — Prospector staleness cutoff
+**File:** `prospect.ts`. Added 90-day staleness filter to candidate query.
+Companies whose most recent active job is older than 90 days are excluded,
+preventing forever-reappearing review candidates.
+
+### Q-2 — Extract shared errorMessage utility
+**Files:** `contentHash.ts`, `prospect.ts`, `scrape.ts`. Removed duplicate inline
+`errorMessage()` from prospect.ts and scrape.ts; both now import from the shared
+`@va-hub/scraper` package.
+
+### O-1 — Sweep error alerting in Sentinel
+**File:** `gha-sentinel-pulse.yml`. Added a `Query Sweep Diagnostics` step that
+reads the `__sweep_diag__` row from D1 and surfaces any recorded error as a GHA
+warning and in the Sentinel summary.
+
+---
+
 ## Commit ledger
 
 | Commit | Fix | Impact |
 |---|---|---|
-| (this commit) | Type coercion in `triageJob` response parsing | Eliminates intermittent sweep failures |
-| (this commit) | Geo gate on `/api/ingest` endpoint | Ingested jobs get PH eligibility classification |
-| (this commit) | Shared `sha256Hex` utility | Eliminates duplicate code, prevents drift |
+| f5ae794 | Type coercion in `triageJob` response parsing | Eliminates intermittent sweep failures |
+| f5ae794 | Geo gate on `/api/ingest` endpoint | Ingested jobs get PH eligibility classification |
+| f5ae794 | Shared `sha256Hex` utility | Eliminates duplicate code, prevents drift |
+| (this commit) | P-1 through PR-2, Q-2, O-1 (11 fixes) | Performance, ingestion, prospecting, and ops improvements |
 
 ## Methodology
 

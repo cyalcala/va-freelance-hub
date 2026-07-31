@@ -28,6 +28,7 @@ interface RawRSSItem {
   // ("Anywhere in the World", "Texas", "Dubai", …) — a structured eligibility
   // signal, previously discarded, now captured for the geo-gate.
   region?: unknown;
+  location?: unknown;
 }
 
 function normalizeText(raw: string | undefined): string {
@@ -135,7 +136,7 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState): Pr
         sourcePlatform: source.platform,
         tags,
         locationType: "remote" as const,
-        locationRaw: normalizeText(xmlNodeText(item.region) ?? undefined) || null,
+        locationRaw: normalizeText(xmlNodeText(item.region) ?? xmlNodeText(item.location) ?? undefined) || null,
         payRange: null,
         description: normalizeText(xmlNodeText(item.description) ?? undefined).slice(0, 1500) || null,
         postedAt: normalizeDate(rawDate),

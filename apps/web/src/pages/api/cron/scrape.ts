@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
-import { isNotNull, and, inArray, eq, lt, asc, gte } from "drizzle-orm";
+import { isNotNull, isNull, or, and, inArray, eq, lt, asc, gte } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sha256Hex, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
 
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
@@ -53,10 +53,6 @@ interface InsertError {
 }
 
 type AppDb = ReturnType<typeof getDb>;
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -1050,9 +1046,33 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
     
-    const atsResults: SourceFetchResult[] = [];
+    const ATS_FETCH_CONCURRENCY = 8;
+    const ATS_MIN_INTERVAL_MS = 60 * 60_000;
+    const cadenceSkippedAts: SkippedAtsAgency[] = [];
+    const cadencePassedAgencies: typeof uniqueAtsAgencies = [];
     for (const agency of uniqueAtsAgencies) {
+      const key = atsSourceKey(agency);
+      const prev = sourceFetchStates.get(key);
+      if (prev?.lastAttemptAt) {
+        const elapsed = Date.parse(observedAt) - Date.parse(prev.lastAttemptAt);
+        if (Number.isFinite(elapsed) && elapsed < ATS_MIN_INTERVAL_MS) {
+          cadenceSkippedAts.push({
+            agency,
+            policy: atsPlatformPolicy(agency),
+            skipReason: `Cadence guard: last fetched ${prev.lastAttemptAt}; 60-min minimum.`,
+          });
+          continue;
+        }
+      }
+      cadencePassedAgencies.push(agency);
+    }
+
+    const workableFetchList = cadencePassedAgencies.filter((a) => a.atsPlatform === "workable");
+    const nonWorkableFetchList = cadencePassedAgencies.filter((a) => a.atsPlatform !== "workable");
+
+    const fetchOneAts = async (agency: typeof uniqueAtsAgencies[number]): Promise<SourceFetchResult> => {
       const policy = atsPlatformPolicy(agency);
+      const key = atsSourceKey(agency);
       const result = await fetchSourceWithStatus(
         agency.companyName,
         "ATS",
@@ -1060,10 +1080,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         policy.complianceStatus,
         policy.complianceNotes,
         () => fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName),
-        atsSourceKey(agency)
+        key
       );
-      atsResults.push(result);
-
       if (result.ok && agency.atsPlatform === "workable") {
         try {
           await db.update(vaDirectory)
@@ -1074,10 +1092,37 @@ export const POST: APIRoute = async ({ request, locals }) => {
           console.error(`[api/cron/scrape] Failed to update verifiedAt for Workable agency: ${agency.companyName}`, error);
         }
       }
-
-      if (agency.atsPlatform === "workable") {
-        await sleep(1_000);
+      try {
+        await db.insert(sourceFetchState).values({
+          sourceId: key, sourceName: agency.companyName, sourceType: "ATS",
+          collectionMethod: "public_ats_json", complianceStatus: policy.complianceStatus,
+          lastAttemptAt: observedAt, lastCount: result.count,
+          lastError: result.ok ? null : result.error ?? null,
+          updatedAt: observedAt, lastSuccessAt: result.ok ? observedAt : null,
+          etag: null, lastModified: null, lastBodyHash: null,
+        }).onConflictDoUpdate({
+          target: sourceFetchState.sourceId,
+          set: {
+            sourceName: agency.companyName, lastAttemptAt: observedAt,
+            lastCount: result.count,
+            lastError: result.ok ? null : result.error ?? null,
+            updatedAt: observedAt,
+            ...(result.ok ? { lastSuccessAt: observedAt } : {}),
+          },
+        });
+      } catch (e) {
+        console.warn(`[api/cron/scrape] Failed to record ATS fetch state for ${agency.companyName}:`, errorMessage(e));
       }
+      return result;
+    };
+
+    const atsResults: SourceFetchResult[] = [];
+    for (const batch of chunkArray(nonWorkableFetchList, ATS_FETCH_CONCURRENCY)) {
+      atsResults.push(...await Promise.all(batch.map(fetchOneAts)));
+    }
+    for (const agency of workableFetchList) {
+      atsResults.push(await fetchOneAts(agency));
+      await sleep(1_000);
     }
     const atsItems = atsResults.flatMap((result) => result.items);
 
@@ -1085,6 +1130,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const skippedAtsResults = [
       ...policySkippedAtsAgencies.map(skippedAtsResult),
       ...duplicateAtsAgencies.map(skippedDuplicateAtsResult),
+      ...cadenceSkippedAts.map(skippedAtsResult),
     ];
     // Conditional-fetch efficiency: how many feeds were unchanged this run and
     // skipped parse+triage (the freshness/efficiency win).
@@ -1148,16 +1194,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
       found.forEach((r: any) => existingUrls.add(r.sourceUrl));
     }
 
-    // Update lastSeenInFeedAt for jobs still in feeds (prevents false stale archiving)
+    // Update lastSeenInFeedAt for jobs still in feeds (prevents false stale archiving).
+    // Debounce: only touch rows where the value is null or has drifted >12h,
+    // since the 30-day stale cutoff does not need minute granularity.
     if (existingUrls.size > 0) {
+      const SEEN_DEBOUNCE_MS = 12 * 60 * 60_000;
+      const staleThreshold = new Date(Date.parse(observedAt) - SEEN_DEBOUNCE_MS).toISOString();
       const existingUrlArray = Array.from(existingUrls);
+      let updatedCount = 0;
       for (let i = 0; i < existingUrlArray.length; i += BATCH_SIZE) {
         const batch = existingUrlArray.slice(i, i + BATCH_SIZE);
-        await db.update(opportunities)
+        const res = await db.update(opportunities)
           .set({ lastSeenInFeedAt: observedAt, updatedAt: observedAt })
-          .where(inArray(opportunities.sourceUrl, batch));
+          .where(and(
+            inArray(opportunities.sourceUrl, batch),
+            or(isNull(opportunities.lastSeenInFeedAt), lt(opportunities.lastSeenInFeedAt, staleThreshold))
+          ));
+        updatedCount += (res as any)?.changes ?? batch.length;
       }
-      console.log(`[api/cron/scrape] Updated lastSeenInFeedAt for ${existingUrls.size} existing jobs`);
+      console.log(`[api/cron/scrape] Debounced lastSeenInFeedAt: ${updatedCount} of ${existingUrls.size} existing jobs updated`);
     }
 
     const newItems = allItems.filter((item) => item.sourceUrl && !existingUrls.has(item.sourceUrl));

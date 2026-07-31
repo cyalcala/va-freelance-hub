@@ -72,6 +72,23 @@ jobs:
           " > ../../sentinel.json
           jq '.[0].results' ../../sentinel.json
 
+      - name: Query Sweep Diagnostics
+        working-directory: apps/web
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          npx wrangler@4 d1 execute remoteph-jobs-db --remote --json --command "
+            SELECT source_url, description
+            FROM opportunities
+            WHERE source_url = '__sweep_diag__'
+            LIMIT 1;
+          " > ../../sweep-diag.json
+          DIAG_DESC=$(jq -r '.[0].results[0].description // ""' ../../sweep-diag.json)
+          echo "SWEEP_DIAG_ERROR=$DIAG_DESC" >> "$GITHUB_ENV"
+          if [ -n "$DIAG_DESC" ] && [ "$DIAG_DESC" != "null" ]; then
+            echo "::warning title=Sweep error detected::__sweep_diag__ contains: $DIAG_DESC"
+          fi
+
       - name: Guard And Filter
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -311,8 +328,14 @@ jobs:
           TOTAL=$(jq '.[0].results | length' sentinel.json 2>/dev/null || echo "n/a")
           ACTIONABLE="${FLAP_ACTIONABLE:-n/a}"
           MODE=$([ "${HAS_PAT}" = "true" ] && echo "autonomous (PR + merge)" || echo "recommend-only (no PAT)")
+          SWEEP_ERR="${SWEEP_DIAG_ERROR:-}"
           echo "### 🛰️ Sovereign Sentinel Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Flapping sources (last 4 attempts all failed)**: $TOTAL" >> $GITHUB_STEP_SUMMARY
           echo "- **Actionable after pause-list filter**: $ACTIONABLE" >> $GITHUB_STEP_SUMMARY
           echo "- **Mode**: $MODE" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$SWEEP_ERR" ] && [ "$SWEEP_ERR" != "null" ]; then
+            echo "- **Sweep error**: \`$SWEEP_ERR\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Sweep error**: none" >> $GITHUB_STEP_SUMMARY
+          fi
           echo "- **Timestamp**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_STEP_SUMMARY
