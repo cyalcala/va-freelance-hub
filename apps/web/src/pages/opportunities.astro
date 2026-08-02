@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities } from '@va-hub/db';
-import { and, asc, count, desc, eq, like, or, type SQL, sql } from 'drizzle-orm';
+import { and, asc, count, desc, eq, type SQL, sql } from 'drizzle-orm';
 import { OpportunityCard } from '@/components/opportunity-card';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
 
@@ -56,32 +56,53 @@ try {
   }
 
   if (query) {
-    const term = `%${query}%`;
-    filters.push(
-      or(
-        like(opportunities.title, term),
-        like(opportunities.company, term),
-        like(opportunities.sourcePlatform, term)
-      )
+    const ftsMatch = query
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => `"${w.replace(/"/g, '""')}"`)
+      .join(' ');
+
+    const ftsConditions = [
+      sql`opportunities_fts MATCH ${ftsMatch}`,
+      sql`o.is_active = 1`,
+    ];
+    if (category && JOB_CATEGORY_MAP[category]) {
+      ftsConditions.push(sql`o.category = ${category}`);
+    }
+    if (type && TYPE_OPTIONS.includes(type)) {
+      ftsConditions.push(sql`o.type = ${type}`);
+    }
+    if (platform) {
+      ftsConditions.push(sql`o.source_platform = ${platform}`);
+    }
+    const ftsWhere = sql.join(ftsConditions, sql` AND `);
+
+    const countRow = await db.all<{ total: number }>(
+      sql`SELECT count(*) AS total FROM opportunities o INNER JOIN opportunities_fts fts ON o.id = fts.rowid WHERE ${ftsWhere}`
     );
+    totalJobs = countRow[0]?.total ?? 0;
+
+    pageJobs = await db.all(
+      sql`SELECT o.* FROM opportunities o INNER JOIN opportunities_fts fts ON o.id = fts.rowid WHERE ${ftsWhere} ORDER BY fts.rank LIMIT ${PAGE_SIZE} OFFSET ${offset}`
+    );
+  } else {
+    const whereClause = and(...filters);
+
+    const [totalResult] = await db
+      .select({ total: count() })
+      .from(opportunities)
+      .where(whereClause);
+
+    totalJobs = totalResult?.total ?? 0;
+
+    pageJobs = await db
+      .select()
+      .from(opportunities)
+      .where(whereClause)
+      .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
+      .limit(PAGE_SIZE)
+      .offset(offset);
   }
-
-  const whereClause = and(...filters);
-
-  const [totalResult] = await db
-    .select({ total: count() })
-    .from(opportunities)
-    .where(whereClause);
-
-  totalJobs = totalResult?.total ?? 0;
-
-  pageJobs = await db
-    .select()
-    .from(opportunities)
-    .where(whereClause)
-    .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
-    .limit(PAGE_SIZE)
-    .offset(offset);
 
   const platforms = await db
     .select({ name: opportunities.sourcePlatform })

@@ -52,6 +52,22 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-31 - SEO Growth Engine (Detail Pages + FTS5 + Sitemap)
+
+- Date: 2026-08-02
+- Status: implemented, 189/189 tests, build passed. Transitions the project from infrastructure to growth — adds the first user-facing pages beyond the board, structured data for Google for Jobs, and replaces LIKE search with BM25-ranked FTS5.
+- Implemented:
+  - ADR-003 compliance decision (`docs/decisions/ADR-003-job-detail-page-compliance.md`): source-aware excerpt policy (not flat 1500 chars), mandatory outbound attribution via `source_url`, per-source terms review confirming all 6 enabled sources allow redistribution with attribution. Display-time policy: <300 chars = full text, >=300 chars = 500-char excerpt + "Read full listing on [source]" link. `needs_review` sources get metadata-only pages.
+  - Job detail pages (`apps/web/src/pages/jobs/[id].astro`): SSR route scoped to `is_active = 1 AND ph_eligibility IN ('eligible_verified', 'eligible_likely')`. Shows title, company, badges, meta grid (posted date, location, pay, timezone, tags), source-aware description excerpt, and "Apply on [platform]" CTA with follow link. Non-eligible IDs return 404.
+  - JobPosting JSON-LD: structured data in `<head>` for Google for Jobs indexing — title, description, datePosted, hiringOrganization, jobLocationType (TELECOMMUTE), employmentType mapping, applicantLocationRequirements (Philippines for eligible_verified). Layout updated with `<slot name="head" />` for page-specific head content.
+  - Opportunity card internal linking: cards for eligible jobs now link to `/jobs/[id]` (internal, with ChevronRight icon) instead of external source. Non-eligible cards retain external link behavior.
+  - Dynamic XML sitemap (`apps/web/src/pages/sitemap.xml.ts`): lists static pages + all eligible job detail pages with lastmod dates. Cached 1 hour.
+  - `public/robots.txt`: allows all crawlers, points to sitemap.
+  - FTS5 full-text search: migration `0026_fts5_search.sql` creates external-content FTS5 virtual table on title/company/tags with sync triggers (INSERT/UPDATE/DELETE). Opportunities page search swapped from `LIKE '%term%'` scan to `MATCH` with BM25 ranking. FTS5 query input sanitized (double-quote wrapping prevents operator injection). Non-search browsing unchanged.
+- Deferred from F-30 resolved: "D1 FTS5 full-text search (next headline feature)" — now implemented.
+- Verification: `bun test` 189/189; `astro build` passed; no regressions.
+- OWNER ACTION: run migration `0026_fts5_search.sql` against production D1 to activate FTS5 search.
+
 ### Post-Handoff F-30 - Freshness Masterplan (Conditional Fetch + Cron Worker + Run-Lock)
 
 - Date: 2026-07 (later)
@@ -61,7 +77,7 @@ Current accepted completion: 100% of Lens 2.
   - Conditional requests: `packages/scraper/conditional.ts` (If-None-Match/If-Modified-Since + body-hash diff, 7 tests); RSS/JSON/HTML fetchers return SourceFetchOutput and skip parse+triage on unchanged feeds; migration `0020_conditional_fetch_state.sql` adds etag/last_modified/last_body_hash; scrape response reports `sourcesUnchanged`. Compute + third-party-load reduction (compliance-positive).
   - Freshness fix — the real bottleneck was GitHub free-cron lag (1.5–3h). Added `workers/freshness-cron/` (free-plan Cloudflare Cron Trigger Worker, every 15 min, pings the scrape endpoint) + `gha-deploy-cron-worker.yml`. One manual step: `wrangler secret put PROXY_SECRET` (worker README). GitHub Hunter stays as fallback.
   - Run-level lock (`acquireRunLock`, TTL 8 min, atomic conditional UPDATE) — dedupes overlapping Worker+Hunter triggers and closes the audit's cadence TOCTOU.
-- Deferred (scoped): D1 FTS5 full-text search (next headline feature); ATS conditional fetch; source_fetch_events retention.
+- Deferred (scoped): ~~D1 FTS5 full-text search~~ (delivered in F-31); ATS conditional fetch; source_fetch_events retention.
 - Verification: `bun test` 120/120 (7 new conditional tests); build passed; YAML valid. Post-deploy acceptance in the masterplan doc.
 
 ### Post-Handoff F-29 - Autonomous Prospector (Company Auto-Discovery)

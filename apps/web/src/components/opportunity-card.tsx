@@ -1,5 +1,5 @@
 import type { Opportunity } from "@/lib/db";
-import { Briefcase, ExternalLink } from "lucide-react";
+import { Briefcase, ChevronRight, ExternalLink } from "lucide-react";
 
 interface Props {
   opportunity: Opportunity;
@@ -57,11 +57,18 @@ export function OpportunityCard({ opportunity: opp }: Props) {
   const platformLabel = PLATFORM_LABELS[opp.sourcePlatform] ?? opp.sourcePlatform;
   const typeLabel = TYPE_LABELS[opp.type] ?? opp.type;
   const postedDate = formatDate(opp.postedAt);
+  const hasDetailPage =
+    opp.phEligibility === "eligible_verified" ||
+    opp.phEligibility === "eligible_likely";
+
   const isRemoteOk = opp.sourcePlatform === "RemoteOK";
-  const href = isRemoteOk
+  const externalHref = isRemoteOk
     ? opp.sourceUrl
     : `/api/click/${opp.id}?url=${encodeURIComponent(opp.sourceUrl)}`;
-  const rel = isRemoteOk ? "noopener" : "noopener noreferrer";
+
+  const href = hasDetailPage ? `/jobs/${opp.id}` : externalHref;
+  const target = hasDetailPage ? undefined : "_blank";
+  const rel = hasDetailPage ? undefined : isRemoteOk ? "noopener" : "noopener noreferrer";
 
   let hostname = "";
   try {
@@ -73,7 +80,7 @@ export function OpportunityCard({ opportunity: opp }: Props) {
   return (
     <a
       href={href}
-      target="_blank"
+      target={target}
       rel={rel}
       className="group flex items-center gap-3.5 p-3 rounded-xl transition-colors duration-200 hover:bg-ink/[0.035] active:bg-ink/[0.06]"
     >
@@ -129,7 +136,11 @@ export function OpportunityCard({ opportunity: opp }: Props) {
         </div>
       </div>
 
-      <ExternalLink className="w-4 h-4 text-ink/25 group-hover:text-accent transition-colors shrink-0 self-start mt-1" />
+      {hasDetailPage ? (
+        <ChevronRight className="w-4 h-4 text-ink/25 group-hover:text-accent transition-colors shrink-0 self-start mt-1" />
+      ) : (
+        <ExternalLink className="w-4 h-4 text-ink/25 group-hover:text-accent transition-colors shrink-0 self-start mt-1" />
+      )}
     </a>
   );
 }

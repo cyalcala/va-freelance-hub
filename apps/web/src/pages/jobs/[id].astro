@@ -1,0 +1,336 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getDb, opportunities } from '@va-hub/db';
+import { and, eq, inArray } from 'drizzle-orm';
+import { JOB_CATEGORY_MAP } from '@/lib/categories';
+
+export const prerender = false;
+
+Astro.response.headers.set(
+  'Cache-Control',
+  'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
+);
+
+const { id } = Astro.params;
+const numericId = Number.parseInt(id ?? '', 10);
+
+if (!id || isNaN(numericId)) {
+  return new Response('Not found', { status: 404 });
+}
+
+let job: typeof opportunities.$inferSelect | null = null;
+
+try {
+  const db = getDb(Astro.locals.runtime.env);
+  const [row] = await db
+    .select()
+    .from(opportunities)
+    .where(
+      and(
+        eq(opportunities.id, numericId),
+        eq(opportunities.isActive, true),
+        inArray(opportunities.phEligibility, ['eligible_verified', 'eligible_likely'])
+      )
+    )
+    .limit(1);
+
+  job = row ?? null;
+} catch (e) {
+  console.error('[jobs/[id]] DB error:', e);
+}
+
+if (!job) {
+  return new Response('Not found', { status: 404 });
+}
+
+// --- Source-aware description display (ADR-003) ---
+const DESCRIPTION_ALLOWED_PLATFORMS = new Set([
+  'WeWorkRemotely',
+  'Remotive',
+  'RealWorkFromAnywhere',
+  'Jobicy',
+  'RemoteOK',
+]);
+
+const canShowDescription =
+  !!job.description && DESCRIPTION_ALLOWED_PLATFORMS.has(job.sourcePlatform);
+
+let displayDescription = '';
+let isTruncated = false;
+if (canShowDescription && job.description) {
+  if (job.description.length < 300) {
+    displayDescription = job.description;
+  } else {
+    displayDescription = job.description.slice(0, 500).trimEnd();
+    const lastSpace = displayDescription.lastIndexOf(' ');
+    if (lastSpace > 400) {
+      displayDescription = displayDescription.slice(0, lastSpace);
+    }
+    isTruncated = true;
+  }
+}
+
+// --- Platform labels & apply link ---
+const PLATFORM_LABELS: Record<string, string> = {
+  WeWorkRemotely: 'We Work Remotely',
+  RealWorkFromAnywhere: 'Real Work From Anywhere',
+  RemoteOK: 'Remote OK',
+};
+const platformLabel = PLATFORM_LABELS[job.sourcePlatform] ?? job.sourcePlatform;
+
+const isRemoteOk = job.sourcePlatform === 'RemoteOK';
+const applyHref = isRemoteOk
+  ? job.sourceUrl
+  : `/api/click/${job.id}?url=${encodeURIComponent(job.sourceUrl)}`;
+const applyRel = isRemoteOk ? 'noopener' : 'noopener noreferrer';
+
+// --- Metadata ---
+const TYPE_LABELS: Record<string, string> = {
+  VA: 'VA',
+  freelance: 'Freelance',
+  project: 'Project',
+  'full-time': 'Full-time',
+  'part-time': 'Part-time',
+};
+
+const GEO_BADGES: Record<string, { label: string; className: string }> = {
+  ph_only: { label: '\u{1F1F5}\u{1F1ED} PH-exclusive', className: 'text-red-700 bg-red-500/[0.08]' },
+  apac_incl_ph: { label: '⏰ APAC-friendly', className: 'text-teal-700 bg-teal-500/[0.08]' },
+  worldwide: { label: '\u{1F30D} Worldwide', className: 'text-blue-700 bg-blue-500/[0.08]' },
+};
+
+const PLATFORM_COLORS: Record<string, string> = {
+  WeWorkRemotely: 'text-emerald-700 bg-emerald-500/[0.08]',
+  Remotive: 'text-sky-700 bg-sky-500/[0.08]',
+  Jobicy: 'text-cyan-700 bg-cyan-500/[0.08]',
+  RealWorkFromAnywhere: 'text-indigo-700 bg-indigo-500/[0.08]',
+  RemoteOK: 'text-violet-700 bg-violet-500/[0.08]',
+};
+
+const typeLabel = TYPE_LABELS[job.type] ?? job.type;
+const categoryInfo = JOB_CATEGORY_MAP[job.category] ?? JOB_CATEGORY_MAP['other'];
+const platformColor = PLATFORM_COLORS[job.sourcePlatform] ?? 'text-ink/60 bg-ink/5';
+const geoBadge = job.geoScope ? GEO_BADGES[job.geoScope] : null;
+
+function formatDate(isoString: string | null | undefined): string | null {
+  if (!isoString) return null;
+  try {
+    const d = new Date(isoString);
+    if (isNaN(d.getTime())) return null;
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+  } catch {
+    return null;
+  }
+}
+
+const postedDate = formatDate(job.postedAt) ?? formatDate(job.scrapedAt);
+const isoPostedDate = job.postedAt ?? job.scrapedAt ?? '';
+
+let hostname = '';
+try { hostname = new URL(job.sourceUrl).hostname; } catch {}
+
+const pageTitle = `${job.title}${job.company ? ` at ${job.company}` : ''} — VA & Freelance Hub`;
+const pageDescription = `${typeLabel} role${job.company ? ` at ${job.company}` : ''}. ${job.locationType === 'remote' ? 'Remote, open to Philippines. ' : ''}Apply on ${platformLabel}.`;
+
+// --- JobPosting JSON-LD (ADR-003 §5) ---
+const EMPLOYMENT_TYPE_MAP: Record<string, string> = {
+  'full-time': 'FULL_TIME',
+  'part-time': 'PART_TIME',
+  freelance: 'CONTRACTOR',
+  project: 'TEMPORARY',
+  VA: 'CONTRACTOR',
+};
+
+const jsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org/',
+  '@type': 'JobPosting',
+  title: job.title,
+  description: canShowDescription ? displayDescription : job.title,
+  datePosted: isoPostedDate,
+  jobLocationType: 'TELECOMMUTE',
+};
+
+if (job.company) {
+  jsonLd.hiringOrganization = {
+    '@type': 'Organization',
+    name: job.company,
+  };
+}
+
+if (job.type && EMPLOYMENT_TYPE_MAP[job.type]) {
+  jsonLd.employmentType = EMPLOYMENT_TYPE_MAP[job.type];
+}
+
+if (job.phEligibility === 'eligible_verified') {
+  jsonLd.applicantLocationRequirements = {
+    '@type': 'Country',
+    name: 'Philippines',
+  };
+}
+
+jsonLd.directApply = false;
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" />
+
+  <section class="w-full max-w-3xl mx-auto pt-10 md:pt-14 pb-16">
+    <a
+      href="/opportunities"
+      class="inline-flex items-center gap-1.5 text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-8"
+    >
+      <span class="inline-block transition-transform group-hover:-translate-x-0.5">&larr;</span>
+      All jobs
+    </a>
+
+    <article>
+      <!-- Header -->
+      <div class="flex items-start gap-4 mb-6">
+        <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
+          {hostname ? (
+            <img
+              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
+              alt=""
+              aria-hidden="true"
+              class="w-6 h-6 object-contain"
+            />
+          ) : (
+            <svg class="w-5 h-5 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          )}
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink leading-snug">
+            {job.title}
+          </h1>
+          {job.company && (
+            <p class="text-ink/55 text-[15px] mt-1 font-medium">{job.company}</p>
+          )}
+        </div>
+      </div>
+
+      <!-- Badges -->
+      <div class="flex flex-wrap items-center gap-2 mb-8">
+        <span class={`text-xs px-2.5 py-1 rounded-md font-semibold ${platformColor}`}>
+          {platformLabel}
+        </span>
+        <span class="text-xs px-2.5 py-1 rounded-md bg-ink/[0.05] text-ink/55 font-semibold">
+          {typeLabel}
+        </span>
+        {categoryInfo && job.category !== 'other' && (
+          <span class="text-xs px-2.5 py-1 rounded-md bg-ink/[0.05] text-ink/55 font-semibold">
+            {categoryInfo.title}
+          </span>
+        )}
+        {job.experienceLevel && job.experienceLevel !== 'any' && (
+          <span class="text-xs px-2.5 py-1 rounded-md bg-accent-soft text-accent font-semibold capitalize">
+            {job.experienceLevel}
+          </span>
+        )}
+        {geoBadge && (
+          <span
+            class={`text-xs px-2.5 py-1 rounded-md font-semibold ${geoBadge.className}`}
+            title={job.geoEvidence ?? undefined}
+          >
+            {geoBadge.label}
+          </span>
+        )}
+      </div>
+
+      <!-- Meta grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8 bg-surface border border-ink/[0.07] rounded-2xl p-5">
+        {postedDate && (
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Posted</p>
+            <p class="text-sm font-semibold text-ink">{postedDate}</p>
+          </div>
+        )}
+        <div>
+          <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Location</p>
+          <p class="text-sm font-semibold text-ink capitalize">{job.locationType ?? 'Remote'}</p>
+        </div>
+        {job.payRange && (
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Pay</p>
+            <p class="text-sm font-semibold text-ink">{job.payRange}</p>
+          </div>
+        )}
+        {job.clientTimezone && (
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Timezone</p>
+            <p class="text-sm font-semibold text-ink">{job.clientTimezone}</p>
+          </div>
+        )}
+        {Array.isArray(job.tags) && job.tags.length > 0 && (
+          <div class="col-span-2 sm:col-span-3">
+            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1.5">Tags</p>
+            <div class="flex flex-wrap gap-1.5">
+              {(job.tags as string[]).map((tag: string) => (
+                <span class="text-[11px] px-2 py-0.5 rounded-md bg-ink/[0.04] text-ink/55 font-medium">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <!-- Description (source-aware per ADR-003) -->
+      {canShowDescription && displayDescription && (
+        <div class="mb-8">
+          <h2 class="text-sm font-semibold uppercase tracking-overline text-ink/50 mb-3">About this role</h2>
+          <div class="bg-surface border border-ink/[0.07] rounded-2xl p-5 sm:p-6">
+            <p class="text-[15px] text-ink/75 leading-relaxed whitespace-pre-line">{displayDescription}{isTruncated ? '...' : ''}</p>
+            {isTruncated && (
+              <a
+                href={job.sourceUrl}
+                target="_blank"
+                rel={applyRel}
+                class="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
+              >
+                Read full listing on {platformLabel}
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!canShowDescription && (
+        <div class="mb-8">
+          <div class="bg-surface border border-ink/[0.07] rounded-2xl p-5 sm:p-6 text-center">
+            <p class="text-sm text-ink/50">
+              Full job details are available on the original listing.
+            </p>
+            <a
+              href={job.sourceUrl}
+              target="_blank"
+              rel={applyRel}
+              class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
+            >
+              View on {platformLabel}
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </a>
+          </div>
+        </div>
+      )}
+
+      <!-- Attribution + CTA -->
+      <div class="bg-surface border border-ink/[0.07] rounded-2xl p-5 sm:p-6">
+        <p class="text-sm text-ink/50 mb-4">
+          Listed on <span class="font-semibold text-ink/70">{platformLabel}</span>
+        </p>
+        <a
+          href={applyHref}
+          target="_blank"
+          rel={applyRel}
+          class="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98]"
+        >
+          Apply on {platformLabel}
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </article>
+  </section>
+</Layout>
