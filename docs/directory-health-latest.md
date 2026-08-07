@@ -1,14 +1,14 @@
 # Directory Health — Latest
 
 Date: 2026-08-07
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/31159801105
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/31185269328
 
 | Metric | Value |
 | --- | ---: |
 | Companies checked this run | 60 |
-| OK | 33 |
-| Bot-walled (alive) | 5 |
-| Dead (HTTP) | 1 |
+| OK | 20 |
+| Bot-walled (alive) | 2 |
+| Dead (HTTP) | 0 |
 | Dead (DNS) | 0 |
 | Parked / for-sale | 0 |
 | Newly de-verified (3-strike) | 0 |
