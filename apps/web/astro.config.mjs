@@ -42,13 +42,19 @@ export default defineConfig({
         name: 'messagechannel-polyfill',
         apply: 'build',
         configResolved(config) {
-          // Inject polyfill into server build via esbuild banner
+          // Inject polyfill into all server chunks via esbuild banner
           if (config.build?.ssr) {
             config.esbuild = config.esbuild || {};
-            config.esbuild.banner = messageChannelPolyfill;
+            config.esbuild.banner = { js: messageChannelPolyfill };
           }
         },
       },
     ],
+    build: {
+      ssr: {
+        // Ensure polyfill is included in all server chunks
+        external: [],
+      },
+    },
   },
 });
