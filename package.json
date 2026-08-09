@@ -9,6 +9,9 @@
   "scripts": {
     "dev": "bun run --cwd apps/web dev",
     "build": "bun run --cwd apps/web build",
+    "test": "bun test packages/scraper packages/db apps/web/tests",
+    "typecheck": "bunx tsc --noEmit -p apps/web/tsconfig.json",
+    "verify": "bun run test && bun run typecheck && bun run build",
     "db:generate": "bun run --cwd packages/db generate",
     "db:migrate": "bun run --cwd packages/db migrate",
     "trigger:dev": "bunx trigger.dev@latest dev",

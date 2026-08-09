@@ -2,6 +2,26 @@
 
 ### Current Savepoint
 
+Date: 2026-08-09
+Branch: `codex/major-quality-audit-2026-08-09`
+Repository: `cyalcala/va-freelance-hub`
+
+Latest durable checkpoint (pushed, pending main acceptance):
+
+- `2ea2226` - `fix: harden production quality guardrails`
+- GitHub backup: `origin/codex/major-quality-audit-2026-08-09`
+- Audit: `docs/major-code-audit-2026-08-09.md`
+- Decision: `docs/decisions/ADR-004-migrate-before-deploy-and-validate-fts.md`
+- Local verification: `bun run verify` passed (190 tests, 0 failures, 354
+  assertions; strict TypeScript; Astro production build) and changed workflow
+  YAML parsed with PyYAML.
+- Delivery is deliberately pending: this branch does not trigger the protected
+  main CI workflow, so no production migration/deploy has occurred. Create a
+  pull request, require the validation run, then confirm the main release's D1
+  migration and FTS integrity steps before marking it accepted.
+
+Previous savepoint:
+
 Date: 2026-07-04
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`

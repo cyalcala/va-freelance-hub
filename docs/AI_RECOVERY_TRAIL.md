@@ -40,6 +40,27 @@ Read these first when starting a new work session:
 23. `docs/scraper-troubleshooting.md`
 24. `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
 25. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md`
+26. `docs/major-code-audit-2026-08-09.md`
+27. `docs/decisions/ADR-004-migrate-before-deploy-and-validate-fts.md`
+
+## Latest Recovery Checkpoint — 2026-08-09
+
+- Branch: `codex/major-quality-audit-2026-08-09`
+- Pushed implementation commit: `2ea2226`.
+- Read the major audit and ADR-004 before changing the release, FTS, or pulse
+  workflows. They explain why FTS indexes all external-content rows, why only
+  indexed text triggers an FTS rewrite, and why production migration must
+  precede Pages deployment.
+- Local evidence: `bun run verify` passed in 93.5 seconds with 190 tests, zero
+  failures, 354 assertions, strict TypeScript, and an Astro production build.
+  The four edited workflow files parse with PyYAML.
+- GitHub backup is present, but no Actions run exists yet: feature branches do
+  not match the workflow's `push` trigger. The next operator action is a pull
+  request to `main`; only main can run the migration-first release path.
+- Do not run D1 migration 0027 manually unless recovering from a failed main
+  release. If recovery is necessary, use the manual `Deploy Database
+  Migrations` workflow with a recorded reason; it shares the production D1
+  lock and performs the FTS integrity check.
 
 ## Required Backup Loop
 

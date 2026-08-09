@@ -3,6 +3,9 @@ node_modules/
 .pnp
 .pnp.js
 
+# Isolated agent workspaces
+.worktrees/
+
 # Environment
 .env
 .env.local
