@@ -52,6 +52,41 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
+### Post-Handoff F-32 - Major Quality Guardrails (Pending Main Acceptance)
+
+- Date: 2026-08-09
+- Branch: `codex/major-quality-audit-2026-08-09`
+- Implementation commit: `2ea2226` (`fix: harden production quality guardrails`)
+- Status: locally verified and pushed to GitHub. This checkpoint is not yet a
+  production acceptance: CI only triggers on a pull request to `main` or a
+  push to `main`, so the feature-branch backup intentionally created no
+  GitHub Actions run and performed no production D1 mutation.
+- Delivered:
+  - root `test`, `typecheck`, and `verify` commands target project-owned test
+    paths and turn strict compilation into a reproducible local/CI gate;
+  - migration `0027_fts5_trigger_scope.sql` rebuilds the external-content FTS5
+    index over all opportunity rows and narrows FTS updates to indexed text;
+  - `packages/db/fts5-search.test.ts` proves original index drift is detected,
+    repaired integrity passes, historic inactive rows are indexed, and indexed
+    text updates remain searchable;
+  - normal release flow is validate -> D1 migration -> remote FTS integrity
+    check -> Pages deploy under a shared D1 lock; standalone migration is
+    manual recovery only;
+  - prune and verifier pulses fail malformed/non-2xx responses and report real
+    workflow plus HTTP status rather than unconditional success;
+  - ADR-004 and `docs/major-code-audit-2026-08-09.md` record the rationale,
+    ranked findings, residual risks, and follow-up order.
+- Local verification:
+  - `bun run verify` passed in 93.5 seconds: 190 tests, 0 failures, 354
+    assertions; strict TypeScript; Astro production build.
+  - PyYAML parsed all four modified workflows; `git diff --check` passed.
+- Acceptance sequence:
+  1. Create/approve a pull request for the branch to trigger CI validation.
+  2. Merge only after the validation job passes.
+  3. Confirm the main-branch release applies migration 0027, passes remote FTS
+     integrity, then deploys Pages.
+  4. Record the GitHub run IDs and production smoke evidence in this section.
+
 ### Post-Handoff F-31 - SEO Growth Engine (Detail Pages + FTS5 + Sitemap)
 
 - Date: 2026-08-02
