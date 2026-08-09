@@ -2,7 +2,18 @@ import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
-import fs from 'node:fs';
+
+const messageChannelPolyfill = `
+if (typeof globalThis.MessageChannel === 'undefined') {
+  class MessageChannel {
+    constructor() {
+      this.port1 = { postMessage: () => {}, onmessage: null };
+      this.port2 = { postMessage: () => {}, onmessage: null };
+    }
+  }
+  globalThis.MessageChannel = MessageChannel;
+}
+`;
 
 export default defineConfig({
   // Development should never listen on a LAN/public interface. This limits the
@@ -30,9 +41,13 @@ export default defineConfig({
       {
         name: 'messagechannel-polyfill',
         apply: 'build',
-        transformIndexHtml(html) {
-          const polyfill = fs.readFileSync('./polyfill-messagechannel.js', 'utf-8');
-          return html.replace('<head>', `<head><script>${polyfill}</script>`);
+        configResolved(config) {
+          // Inject polyfill into server build via esbuild banner
+          if (config.build?.ssr) {
+            config.esbuild = config.esbuild || {};
+            config.esbuild.banner = config.esbuild.banner || {};
+            config.esbuild.banner.js = messageChannelPolyfill + (config.esbuild.banner.js || '');
+          }
         },
       },
     ],
