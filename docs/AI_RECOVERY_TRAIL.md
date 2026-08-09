@@ -14,6 +14,11 @@ codex/production-apex-audit-2026-08-09. It is a backup checkpoint, not a
 production release. Do not deploy or merge it merely because the code is
 present.
 
+The primary code checkpoint is 33c1995 on the remote branch of the same name.
+No GitHub Actions run was triggered by that branch push because the CI guardrail
+targets main and pull requests. Treat the saved branch as recoverable code and
+documentation, not as an accepted release.
+
 Read docs/major-production-audit-2026-08-10.md and
 docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md before resuming.
 They contain the five-workstream audit ledger, fixed findings, residual

@@ -7,6 +7,10 @@ it up to GitHub. The current branch is
 codex/production-apex-audit-2026-08-09. It contains five audited hardening
 tracks and is not merged, deployed, or production-accepted.
 
+Primary GitHub code checkpoint: 33c1995. The branch push did not trigger CI
+because the guardrail is configured for main and pull requests; no workflow
+result may be inferred from the saved branch.
+
 The authoritative audit ledger is
 docs/major-production-audit-2026-08-10.md. It records the precise completed
 work, residual dependency advisories, verification evidence, known non-release

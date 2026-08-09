@@ -2,7 +2,7 @@
 
 ## Stop Checkpoint — 2026-08-10 Production Hardening Audit
 
-Status: owner-requested stop and GitHub backup in progress. No Cloudflare Pages
+Status: owner-requested stop; GitHub backup completed. No Cloudflare Pages
 deployment, remote D1 migration, main-branch merge, or live end-to-end
 acceptance was performed from this checkpoint.
 
@@ -10,6 +10,11 @@ Branch being backed up: codex/production-apex-audit-2026-08-09. The committed
 starting point is 548198b; the current checkpoint adds the hardening work and
 the handoff documentation. The five audited workstreams are all recorded in
 docs/major-production-audit-2026-08-10.md:
+
+The primary code checkpoint is 33c1995, pushed to GitHub on branch
+codex/production-apex-audit-2026-08-09. A GitHub Actions check immediately
+after the backup returned no branch run; the CI guardrail is configured for
+main and pull requests, so this is not CI acceptance.
 
 1. public runtime, security, and performance;
 2. ingestion/data integrity;

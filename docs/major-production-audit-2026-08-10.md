@@ -10,6 +10,11 @@ based on committed checkpoint 548198b. The work in this checkpoint hardens the
 active Astro, Cloudflare Pages, D1, Bun, and GitHub Actions path. It does not
 deploy Pages, run remote D1 migrations, or claim production acceptance.
 
+Primary GitHub code checkpoint: 33c1995 on
+origin/codex/production-apex-audit-2026-08-09. The branch push did not trigger
+a GitHub Actions run because the guardrail workflow is limited to main and pull
+requests. This backup is therefore not CI or production acceptance.
+
 The owner supplied a 2/5 marker when requesting this handoff. It is recorded
 as a pause marker, not as a claim that only two audit tracks were completed.
 All five audit tracks below were investigated and are included in this handoff.
