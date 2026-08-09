@@ -45,8 +45,7 @@ export default defineConfig({
           // Inject polyfill into server build via esbuild banner
           if (config.build?.ssr) {
             config.esbuild = config.esbuild || {};
-            config.esbuild.banner = config.esbuild.banner || {};
-            config.esbuild.banner.js = messageChannelPolyfill + (config.esbuild.banner.js || '');
+            config.esbuild.banner = messageChannelPolyfill;
           }
         },
       },
