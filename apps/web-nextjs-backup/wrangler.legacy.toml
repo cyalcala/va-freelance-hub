@@ -1,4 +1,6 @@
-name = "va-freelance-hub"
+# LEGACY_QUARANTINE: archival recovery reference only. This filename is not
+# auto-discovered by Wrangler; use the active apps/web/wrangler.jsonc instead.
+name = "va-freelance-hub-legacy-archive"
 pages_build_output_dir = ".open-next"
 main = "./entry.ts"
 compatibility_date = "2024-11-01"

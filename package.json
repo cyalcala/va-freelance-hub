@@ -2,30 +2,32 @@
   "name": "va-freelance-hub",
   "private": true,
   "version": "0.1.0",
+  "packageManager": "bun@1.3.14",
   "workspaces": [
-    "apps/*",
+    "apps/web",
     "packages/*"
   ],
   "scripts": {
     "dev": "bun run --cwd apps/web dev",
     "build": "bun run --cwd apps/web build",
-    "test": "bun test packages/scraper packages/db apps/web/tests",
+    "test": "bun test packages/scraper packages/db apps/web/tests scripts/ci scripts/gha workers/freshness-cron/src",
     "typecheck": "bunx tsc --noEmit -p apps/web/tsconfig.json",
+    "audit:guardrails": "bun scripts/ci/check-production-guardrails.ts",
     "verify": "bun run test && bun run typecheck && bun run build",
-    "db:generate": "bun run --cwd packages/db generate",
-    "db:migrate": "bun run --cwd packages/db migrate",
-    "trigger:dev": "bunx trigger.dev@latest dev",
-    "trigger:deploy": "bunx trigger.dev@latest deploy"
+    "db:migrate": "bun run --cwd apps/web db:migrate"
   },
   "devDependencies": {
-    "@types/bun": "latest",
+    "@types/bun": "1.3.14",
     "@types/node-cron": "^3.0.11",
-    "typescript": "^5.4.0",
-    "wrangler": "^4.100.0"
+    "typescript": "^5.9.3",
+    "wrangler": "4.120.0"
   },
-  "dependencies": {
-    "@google/genai": "^2.6.0",
-    "@trigger.dev/sdk": "4.4.3",
-    "fast-xml-parser": "^4.3.0"
+  "overrides": {
+    "js-yaml": "4.3.1",
+    "picomatch": "4.0.5",
+    "postcss": "8.5.26",
+    "sharp": "0.35.3",
+    "vite": "6.4.3",
+    "wrangler": "4.120.0"
   }
 }

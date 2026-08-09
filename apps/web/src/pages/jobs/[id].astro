@@ -3,6 +3,9 @@ import Layout from '../../layouts/Layout.astro';
 import { getDb, opportunities } from '@va-hub/db';
 import { and, eq, inArray } from 'drizzle-orm';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
+import { serializeJsonLd } from '@/lib/json-ld';
+import { sanitizeSourceUrl } from '@va-hub/scraper';
+import { markPublicDataUnavailable } from '@/lib/public-route-load';
 
 export const prerender = false;
 
@@ -12,13 +15,14 @@ Astro.response.headers.set(
 );
 
 const { id } = Astro.params;
-const numericId = Number.parseInt(id ?? '', 10);
+const numericId = Number(id);
 
-if (!id || isNaN(numericId)) {
+if (!id || !/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(numericId)) {
   return new Response('Not found', { status: 404 });
 }
 
 let job: typeof opportunities.$inferSelect | null = null;
+let dataUnavailable = false;
 
 try {
   const db = getDb(Astro.locals.runtime.env);
@@ -36,7 +40,15 @@ try {
 
   job = row ?? null;
 } catch (e) {
-  console.error('[jobs/[id]] DB error:', e);
+  dataUnavailable = true;
+  markPublicDataUnavailable(Astro.response, e);
+}
+
+if (dataUnavailable) {
+  return new Response('Service temporarily unavailable', {
+    status: 503,
+    headers: Astro.response.headers,
+  });
 }
 
 if (!job) {
@@ -79,9 +91,12 @@ const PLATFORM_LABELS: Record<string, string> = {
 const platformLabel = PLATFORM_LABELS[job.sourcePlatform] ?? job.sourcePlatform;
 
 const isRemoteOk = job.sourcePlatform === 'RemoteOK';
-const applyHref = isRemoteOk
-  ? job.sourceUrl
-  : `/api/click/${job.id}?url=${encodeURIComponent(job.sourceUrl)}`;
+const safeSourceUrl = sanitizeSourceUrl(job.sourceUrl);
+const applyHref = safeSourceUrl
+  ? isRemoteOk
+    ? safeSourceUrl
+    : `/api/click/${job.id}?url=${encodeURIComponent(job.sourceUrl)}`
+  : null;
 const applyRel = isRemoteOk ? 'noopener' : 'noopener noreferrer';
 
 // --- Metadata ---
@@ -128,7 +143,7 @@ const postedDate = formatDate(job.postedAt) ?? formatDate(job.scrapedAt);
 const isoPostedDate = job.postedAt ?? job.scrapedAt ?? '';
 
 let hostname = '';
-try { hostname = new URL(job.sourceUrl).hostname; } catch {}
+try { hostname = safeSourceUrl ? new URL(safeSourceUrl).hostname : ''; } catch {}
 
 const pageTitle = `${job.title}${job.company ? ` at ${job.company}` : ''} — VA & Freelance Hub`;
 const pageDescription = `${typeLabel} role${job.company ? ` at ${job.company}` : ''}. ${job.locationType === 'remote' ? 'Remote, open to Philippines. ' : ''}Apply on ${platformLabel}.`;
@@ -173,7 +188,7 @@ jsonLd.directApply = false;
 ---
 
 <Layout title={pageTitle} description={pageDescription}>
-  <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} slot="head" />
+  <script type="application/ld+json" set:html={serializeJsonLd(jsonLd)} slot="head" />
 
   <section class="w-full max-w-3xl mx-auto pt-10 md:pt-14 pb-16">
     <a
@@ -282,9 +297,9 @@ jsonLd.directApply = false;
           <h2 class="text-sm font-semibold uppercase tracking-overline text-ink/50 mb-3">About this role</h2>
           <div class="bg-surface border border-ink/[0.07] rounded-2xl p-5 sm:p-6">
             <p class="text-[15px] text-ink/75 leading-relaxed whitespace-pre-line">{displayDescription}{isTruncated ? '...' : ''}</p>
-            {isTruncated && (
+            {isTruncated && safeSourceUrl && (
               <a
-                href={job.sourceUrl}
+                href={safeSourceUrl}
                 target="_blank"
                 rel={applyRel}
                 class="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
@@ -303,15 +318,17 @@ jsonLd.directApply = false;
             <p class="text-sm text-ink/50">
               Full job details are available on the original listing.
             </p>
-            <a
-              href={job.sourceUrl}
-              target="_blank"
-              rel={applyRel}
-              class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
-            >
-              View on {platformLabel}
-              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </a>
+            {safeSourceUrl && (
+              <a
+                href={safeSourceUrl}
+                target="_blank"
+                rel={applyRel}
+                class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
+              >
+                View on {platformLabel}
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1 2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </a>
+            )}
           </div>
         </div>
       )}
@@ -321,15 +338,19 @@ jsonLd.directApply = false;
         <p class="text-sm text-ink/50 mb-4">
           Listed on <span class="font-semibold text-ink/70">{platformLabel}</span>
         </p>
-        <a
-          href={applyHref}
-          target="_blank"
-          rel={applyRel}
-          class="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98]"
-        >
-          Apply on {platformLabel}
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        </a>
+        {applyHref ? (
+          <a
+            href={applyHref}
+            target="_blank"
+            rel={applyRel}
+            class="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98]"
+          >
+            Apply on {platformLabel}
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        ) : (
+          <p class="text-sm text-ink/50">This listing does not have a safe outbound link.</p>
+        )}
       </div>
     </article>
   </section>

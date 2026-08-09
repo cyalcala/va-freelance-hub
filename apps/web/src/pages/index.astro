@@ -3,6 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities, vaDirectory } from '@va-hub/db';
 import { eq, desc, count, sql, inArray } from 'drizzle-orm';
 import { OpportunitySearch } from '@/components/OpportunitySearch';
+import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
+import { markPublicDataUnavailable } from '@/lib/public-route-load';
 
 export const prerender = false;
 
@@ -17,6 +19,7 @@ const PER_CATEGORY_PREVIEW = 6;
 let stats = { opportunities: 0, companies: 0 };
 let latestOpportunities: any[] = [];
 let categoryTotals: Record<string, number> = {};
+let dataUnavailable = false;
 
 try {
   const db = getDb(Astro.locals.runtime.env);
@@ -80,7 +83,8 @@ try {
     .groupBy(opportunities.category);
   categoryTotals = Object.fromEntries(totalRows.map((r) => [r.category, r.n]));
 } catch (e) {
-  console.error("DB error:", e);
+  dataUnavailable = true;
+  markPublicDataUnavailable(Astro.response, e);
 }
 ---
 
@@ -88,6 +92,7 @@ try {
   title="VA & Freelance Hub — Remote Jobs & VA Work That Hire Filipino Talent"
   description="A curated, always-current board of remote and virtual-assistant roles from companies that actually hire in the Philippines. Auto-updated all day. Free, forever."
 >
+  {dataUnavailable && <ServiceUnavailable />}
   <section class="max-w-3xl mx-auto text-center pt-14 md:pt-24 pb-16 md:pb-24">
     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-ink/[0.08] bg-surface/70 text-ink/60 text-xs font-semibold mb-8 shadow-card">
       <span class="relative flex h-2 w-2">

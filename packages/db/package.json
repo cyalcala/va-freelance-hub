@@ -9,15 +9,11 @@
     "./client": "./client.ts"
   },
   "scripts": {
-    "generate": "drizzle-kit generate",
-    "migrate": "bun run migrate.ts",
-    "studio": "drizzle-kit studio"
+    "generate": "bun -e \"console.error('LEGACY_QUARANTINE: Turso/Drizzle generation is archived; use hand-reviewed Cloudflare D1 migrations.'); process.exit(1)\"",
+    "migrate": "bun -e \"console.error('LEGACY_QUARANTINE: Turso migrations are disabled; run bun run db:migrate from the repository root.'); process.exit(1)\"",
+    "studio": "bun -e \"console.error('LEGACY_QUARANTINE: Turso Drizzle Studio is disabled.'); process.exit(1)\""
   },
   "dependencies": {
-    "@libsql/client": "^0.17.0",
-    "drizzle-orm": "^0.30.0"
-  },
-  "devDependencies": {
-    "drizzle-kit": "^0.21.0"
+    "drizzle-orm": "0.45.2"
   }
 }

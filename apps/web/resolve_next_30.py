@@ -1,3 +1,5 @@
+raise RuntimeError("LEGACY_QUARANTINE: historical unrestricted ATS resolver is disabled; use reviewed source adapters.")
+
 import json
 import os
 import re

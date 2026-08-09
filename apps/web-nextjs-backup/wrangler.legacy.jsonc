@@ -1,0 +1,17 @@
+// LEGACY_QUARANTINE: retained solely as a historical recovery artifact.
+// It is deliberately not named wrangler.jsonc, so Wrangler cannot discover it
+// during normal commands. Do not deploy it; see docs/legacy-quarantine.md.
+{
+  "name": "va-freelance-hub-legacy-archive",
+  "pages_build_output_dir": ".open-next",
+  "compatibility_date": "2024-11-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "remoteph-jobs-db",
+      "database_id": "08072f16-d3d1-436a-9104-b057a162db7c"
+    }
+  ],
+  "ai": { "binding": "AI" }
+}

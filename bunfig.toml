@@ -1,6 +1,10 @@
 [install]
-# Use exact versions by default for reproducibility
-exact = false
+# Use exact versions by default for reproducibility.
+exact = true
+# Keep toolchains isolated: Astro 5/Vite 6 resolves its compatible esbuild
+# while the newer Wrangler CLI resolves its own compiler. Hoisting made the
+# Wrangler compiler override Astro's dependency and broke production builds.
+linker = "isolated"
 
 [install.scopes]
 # Add any private registry scopes here if needed

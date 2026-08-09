@@ -2,6 +2,24 @@
 
 ### Current Savepoint
 
+Date: 2026-08-10
+Branch: codex/production-apex-audit-2026-08-09
+Repository: cyalcala/va-freelance-hub
+Status: owner-requested stop-point backup. The branch contains unmerged,
+undeployed production-hardening work. The primary code checkpoint is 33c1995,
+pushed to origin/codex/production-apex-audit-2026-08-09.
+
+GitHub Actions evidence: an immediate branch query returned no workflow run.
+The CI guardrail only triggers for main and pull requests; this backup must not
+be mistaken for CI or production acceptance.
+
+Read docs/major-production-audit-2026-08-10.md for the five-track ledger and
+docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md before changing
+the framework, Pages deployment model, D1 schema, or workflows. Migrations
+0028 and 0029 are local-verified only and must not be treated as deployed.
+
+### Last Accepted Production Baseline
+
 Date: 2026-08-09
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`

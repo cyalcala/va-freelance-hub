@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { eq, sql, inArray, asc } from "drizzle-orm";
-import { chunkArray, scanLandingPageForGeoLock } from "@va-hub/scraper";
+import { chunkArray, classifyLinkResponse, sanitizeSourceUrl, scanLandingPageForGeoLock } from "@va-hub/scraper";
 import { daysAgoUtcIso, nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 
@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (stale.length > 0) {
       for (const batch of chunkArray(stale.map(s => s.id), ARCHIVE_ID_BATCH)) {
         await db.update(opportunities)
-          .set({ isActive: false, updatedAt: startedAt })
+          .set({ isActive: false, inactiveReason: "stale-feed", updatedAt: startedAt })
           .where(inArray(opportunities.id, batch));
       }
       console.log(`[api/cron/verify-links] Auto-archived ${stale.length} stale jobs older than 30 days`);
@@ -87,8 +87,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const results = await Promise.allSettled(
         batch.map(async ({ id, sourceUrl, failedCount }, batchIndex) => {
           const deepScan = i + batchIndex < DEEP_SCAN_BUDGET;
+          const safeSourceUrl = sanitizeSourceUrl(sourceUrl);
+          if (!safeSourceUrl) {
+            const checkedAt = nowUtcIso();
+            await db.update(opportunities).set({
+              isActive: false,
+              inactiveReason: "invalid-source-url",
+              lastVerifiedAt: checkedAt,
+              updatedAt: checkedAt,
+            }).where(eq(opportunities.id, id));
+            console.warn(`[api/cron/verify-links] Deactivated #${id}: invalid stored source URL`);
+            return 1;
+          }
           try {
-            const res = await fetch(sourceUrl, {
+            const res = await fetch(safeSourceUrl, {
               method: deepScan ? "GET" : "HEAD",
               headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -107,6 +119,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                   const checkedAt = nowUtcIso();
                   await db.update(opportunities).set({
                     isActive: false,
+                    inactiveReason: "policy-rejected",
                     phEligibility: "ineligible",
                     geoEvidence: `Verifier page scan: ${geoLock.slice(0, 250)}`,
                     geoCheckedAt: checkedAt,
@@ -123,27 +136,34 @@ export const POST: APIRoute = async ({ request, locals }) => {
               }
             }
 
-            if (res.status === 404 || res.status === 410 || res.status === 403 || res.status === 401) {
+            const verdict = classifyLinkResponse(res.status, "");
+            if (verdict.isHardDead) {
               const newFailCount = (failedCount || 0) + 1;
               const checkedAt = nowUtcIso();
               if (newFailCount >= 3) {
-                await db.update(opportunities).set({ isActive: false, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
-                console.log(`[api/cron/verify-links] Deactivated: ${sourceUrl} (failed 3 times)`);
+                await db.update(opportunities).set({
+                  isActive: false,
+                  inactiveReason: "link-unavailable",
+                  lastVerifiedAt: checkedAt,
+                  updatedAt: checkedAt,
+                }).where(eq(opportunities.id, id));
+                console.log(`[api/cron/verify-links] Deactivated: ${safeSourceUrl} (failed 3 times)`);
                 return 1;
               } else {
                 // Atomic increment (not JS read-modify-write from the run-start
                 // snapshot) so overlapping runs cannot lose a strike.
                 await db.update(opportunities).set({ failedVerificationCount: sql`${opportunities.failedVerificationCount} + 1`, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
-                console.log(`[api/cron/verify-links] Transient error (${res.status}): ${sourceUrl} (strike ${newFailCount})`);
+                console.log(`[api/cron/verify-links] Definitively gone (${res.status}): ${safeSourceUrl} (strike ${newFailCount})`);
               }
             } else {
-              // Success! Reset fail count and update verified timestamp
+              // Success, bot wall, or transient origin error: none are proof a
+              // listing is gone, so reset stale strikes and keep it active.
               const checkedAt = nowUtcIso();
               await db.update(opportunities).set({ failedVerificationCount: 0, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
             }
           } catch (err) {
             // Log warning but don't deactivate on network issues or timeouts to avoid false positives
-            console.warn(`[api/cron/verify-links] Failed checking ${sourceUrl}:`, (err as Error).message);
+            console.warn(`[api/cron/verify-links] Failed checking ${safeSourceUrl}:`, (err as Error).message);
           }
           return 0;
         })
