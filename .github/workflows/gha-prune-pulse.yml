@@ -1,9 +1,9 @@
-name: 🧹 Sovereign Database Pruning (Deduplication)
+name: Sovereign Database Pruning
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Run daily at midnight UTC
-  workflow_dispatch: 
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 concurrency:
   group: gha-prune-pipeline
@@ -14,30 +14,32 @@ permissions:
 
 jobs:
   prune:
-    name: Execute Duplicate Pruning
+    name: Execute duplicate pruning
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    
     steps:
-      - name: 🚀 Trigger Prune API
+      - name: Trigger prune API
         run: |
-          RESPONSE=$(curl -s -w "\\n%{http_code}" -X POST "https://remotejobs-ph.pages.dev/api/cron/prune" \
+          set -euo pipefail
+          RESPONSE=$(curl --silent --show-error --connect-timeout 20 --max-time 120 -w "\n%{http_code}" -X POST "https://remotejobs-ph.pages.dev/api/cron/prune" \
             -H "Authorization: Bearer ${{ secrets.PROXY_SECRET }}" \
             -H "Content-Type: application/json")
-          
-          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | sed '$d')
-          
-          echo "Response Code: $HTTP_CODE"
-          echo "Response Body: $BODY"
-          
+
+          HTTP_CODE=$(printf '%s\n' "$RESPONSE" | tail -n1)
+          BODY=$(printf '%s\n' "$RESPONSE" | sed '$d')
+
+          printf 'Response Code: %s\n' "$HTTP_CODE"
+          printf 'Response Body: %s\n' "$BODY"
+          echo "PRUNE_HTTP_CODE=$HTTP_CODE" >> $GITHUB_ENV
+
           if [ "$HTTP_CODE" != "200" ]; then
             echo "::error::Pruning failed with status $HTTP_CODE"
             exit 1
           fi
-          
-          ARCHIVED_HASH=$(echo $BODY | jq -r '.archivedHashDuplicates // 0')
-          PRUNE_MODE=$(echo $BODY | jq -r '.mode // "unknown"')
+
+          printf '%s' "$BODY" | jq -e 'if type == "object" then . else error("expected JSON object") end' > prune-response.json
+          ARCHIVED_HASH=$(jq -er '.archivedHashDuplicates // 0 | if type == "number" then . else error("archivedHashDuplicates must be a number") end' prune-response.json)
+          PRUNE_MODE=$(jq -er '.mode | if type == "string" then . else error("mode must be a string") end' prune-response.json)
 
           echo "ARCHIVED_HASH=$ARCHIVED_HASH" >> $GITHUB_ENV
           echo "PRUNE_MODE=$PRUNE_MODE" >> $GITHUB_ENV
@@ -46,12 +48,13 @@ jobs:
             echo "::warning::Prune endpoint did not report soft-archive mode (got: $PRUNE_MODE). Verify no hard deletes are happening."
           fi
 
-      - name: 📊 Generate Prune Summary
+      - name: Generate prune summary
         if: always()
         continue-on-error: true
         run: |
-          echo "### 🧹 Sovereign Database Pruning Report" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ✅ Pruning Complete" >> $GITHUB_STEP_SUMMARY
-          echo "- **Mode**: $PRUNE_MODE (rows archived, never deleted)" >> $GITHUB_STEP_SUMMARY
-          echo "- **Duplicate Active Rows Archived (Hash+Company)**: $ARCHIVED_HASH" >> $GITHUB_STEP_SUMMARY
+          echo "### Sovereign Database Pruning Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow result**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **API HTTP status**: ${PRUNE_HTTP_CODE:-not received}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mode**: ${PRUNE_MODE:-not received} (rows archived, never deleted)" >> $GITHUB_STEP_SUMMARY
+          echo "- **Duplicate Active Rows Archived (Hash+Company)**: ${ARCHIVED_HASH:-not received}" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY

@@ -1,9 +1,9 @@
-name: 🩺 Sovereign Verifier Pulse
+name: Sovereign Verifier Pulse
 
 on:
   schedule:
-    - cron: '0 */12 * * *' # Every 12 hours
-  workflow_dispatch: 
+    - cron: '0 */12 * * *'
+  workflow_dispatch:
 
 concurrency:
   group: gha-verifier-pipeline
@@ -17,21 +17,21 @@ env:
 
 jobs:
   verify:
-    name: Execute Link & Age Audit (Verifier)
+    name: Execute link and age audit
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
       PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
       VERIFY_API_URL: "https://remotejobs-ph.pages.dev/api/cron/verify-links"
-    
     steps:
-      - name: 🩺 Execute Link Verification API
+      - name: Execute link verification API
         run: |
-          HTTP_CODE=$(curl -s -w "%{http_code}" -o verify.log -X POST "$VERIFY_API_URL" \
+          set -euo pipefail
+          HTTP_CODE=$(curl --silent --show-error --connect-timeout 20 --max-time 120 -w "%{http_code}" -o verify.log -X POST "$VERIFY_API_URL" \
             -H "Authorization: Bearer $PROXY_SECRET" \
             -H "x-cron-secret: $PROXY_SECRET" \
             -H "Content-Type: application/json")
-          
+
           echo "HTTP Status: $HTTP_CODE"
           cat verify.log
           echo ""
@@ -41,22 +41,32 @@ jobs:
             echo "::error::Verify API returned HTTP $HTTP_CODE"
             exit 1
           fi
-          
-      - name: 📊 Generate Verifier Summary
+
+          jq -e 'if type == "object" then . else error("expected JSON object") end' verify.log > /dev/null
+          CHECKED=$(jq -er '.checked // 0 | if type == "number" then . else error("checked must be a number") end' verify.log)
+          ARCHIVED=$(jq -er '.autoArchived // 0 | if type == "number" then . else error("autoArchived must be a number") end' verify.log)
+          DEACTIVATED=$(jq -er '.deactivated // 0 | if type == "number" then . else error("deactivated must be a number") end' verify.log)
+          NEVER_VERIFIED=$(jq -er '.neverVerifiedRemaining // 0 | if type == "number" then . else error("neverVerifiedRemaining must be a number") end' verify.log)
+
+          echo "VERIFY_HTTP_CODE=$HTTP_CODE" >> $GITHUB_ENV
+          echo "VERIFY_CHECKED=$CHECKED" >> $GITHUB_ENV
+          echo "VERIFY_ARCHIVED=$ARCHIVED" >> $GITHUB_ENV
+          echo "VERIFY_DEACTIVATED=$DEACTIVATED" >> $GITHUB_ENV
+          echo "VERIFY_NEVER_VERIFIED=$NEVER_VERIFIED" >> $GITHUB_ENV
+
+      - name: Generate verifier summary
         if: always()
         continue-on-error: true
         run: |
-          CHECKED=$(jq -r '.checked // 0' verify.log || echo "0")
-          ARCHIVED=$(jq -r '.autoArchived // 0' verify.log || echo "0")
-          DEACTIVATED=$(jq -r '.deactivated // 0' verify.log || echo "0")
-          NEVER_VERIFIED=$(jq -r '.neverVerifiedRemaining // -1' verify.log || echo "-1")
-          echo "### 🩺 Sovereign Verifier Report" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ✅ Verification Audit Concluded" >> $GITHUB_STEP_SUMMARY
-          echo "- **Links Checked**: $CHECKED" >> $GITHUB_STEP_SUMMARY
-          echo "- **Dead Links Pruned**: $DEACTIVATED" >> $GITHUB_STEP_SUMMARY
-          echo "- **Stale Jobs Archived (>30d)**: $ARCHIVED" >> $GITHUB_STEP_SUMMARY
-          echo "- **Never-Verified Backlog Remaining**: $NEVER_VERIFIED" >> $GITHUB_STEP_SUMMARY
+          echo "### Sovereign Verifier Report" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow result**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **API HTTP status**: ${VERIFY_HTTP_CODE:-not received}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Links Checked**: ${VERIFY_CHECKED:-not received}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dead Links Pruned**: ${VERIFY_DEACTIVATED:-not received}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Stale Jobs Archived (>30d)**: ${VERIFY_ARCHIVED:-not received}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Never-Verified Backlog Remaining**: ${VERIFY_NEVER_VERIFIED:-not received}" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
-          if [ "$NEVER_VERIFIED" -gt 300 ]; then
-            echo "::warning title=Verification backlog growing::$NEVER_VERIFIED active jobs have never been link-verified. Consider raising the per-run verify limit."
+
+          if [[ "${VERIFY_NEVER_VERIFIED:-}" =~ ^[0-9]+$ ]] && [ "$VERIFY_NEVER_VERIFIED" -gt 300 ]; then
+            echo "::warning title=Verification backlog growing::$VERIFY_NEVER_VERIFIED active jobs have never been link-verified. Consider raising the per-run verify limit."
           fi

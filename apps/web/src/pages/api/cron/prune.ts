@@ -31,7 +31,7 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    const env = locals.runtime?.env ?? (import.meta as any).env;
+    const env = (locals.runtime?.env ?? (import.meta.env as unknown as ENV)) as ENV;
 
     // Rate-limit before auth so an attacker cannot brute-force the shared
     // secret at unlimited speed. No-op if the binding is absent.

@@ -1,39 +1,50 @@
-name: 🚀 Deploy Database Migrations
+name: Deploy Database Migrations
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'packages/db/migrations/**'
+  # Normal releases migrate in ci-guardrail before Pages deploys. Keep this
+  # workflow as an explicit, audited recovery path only.
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Reason for the manual production migration
+        required: true
+        type: string
 
-# Serialize migration runs so concurrent applies cannot race wrangler's
-# migration-tracking table.
 concurrency:
-  group: d1-migrations
+  group: production-d1-migrations
   cancel-in-progress: false
 
 jobs:
   migrate:
-    name: Apply D1 Migrations
+    name: Apply D1 migrations
     runs-on: ubuntu-latest
     steps:
-      - name: 🛑 Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🥟 Setup Bun Runtime
+      - name: Setup Bun runtime
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: 📦 Install Dependencies
+      - name: Install dependencies
         run: bun install
 
-      - name: 🚀 Apply D1 Migrations to Production
+      - name: Apply D1 migrations to production
         working-directory: apps/web
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          set -euo pipefail
           bunx wrangler d1 execute remoteph-jobs-db --remote --file=../../packages/db/sync_migrations.sql
           bunx wrangler d1 migrations apply remoteph-jobs-db --remote
+
+      - name: Verify D1 full-text index integrity
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          bunx wrangler d1 execute remoteph-jobs-db --remote --command "INSERT INTO opportunities_fts(opportunities_fts, rank) VALUES ('integrity-check', 1);"
