@@ -41,20 +41,15 @@ export default defineConfig({
       {
         name: 'messagechannel-polyfill',
         apply: 'build',
-        configResolved(config) {
-          // Inject polyfill into all server chunks via esbuild banner
-          if (config.build?.ssr) {
-            config.esbuild = config.esbuild || {};
-            config.esbuild.banner = { js: messageChannelPolyfill };
+        generateBundle(options, bundle) {
+          // Prepend polyfill to all server chunks
+          for (const [fileName, chunk] of Object.entries(bundle)) {
+            if (chunk.type === 'chunk' && fileName.endsWith('.mjs')) {
+              chunk.code = messageChannelPolyfill + '\n' + chunk.code;
+            }
           }
         },
       },
     ],
-    build: {
-      ssr: {
-        // Ensure polyfill is included in all server chunks
-        external: [],
-      },
-    },
   },
 });
