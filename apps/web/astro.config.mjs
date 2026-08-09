@@ -23,5 +23,10 @@ export default defineConfig({
   session: {
     driver: 'memory',
   },
-  integrations: [react(), tailwind()]
+  integrations: [react(), tailwind()],
+  vite: {
+    define: {
+      'globalThis.MessageChannel': 'class MessageChannel { constructor() { this.port1 = { postMessage: () => {}, onmessage: null }; this.port2 = { postMessage: () => {}, onmessage: null }; } }',
+    },
+  },
 });
