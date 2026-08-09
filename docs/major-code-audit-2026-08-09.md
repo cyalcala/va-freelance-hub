@@ -55,15 +55,13 @@ reversible.
 | `bun run verify` | Passed: deterministic tests, strict typecheck, and Astro production build completed in 93.5 seconds. |
 | Workflow YAML parse | Passed with PyYAML for all four changed workflows. |
 | `git diff --check` | Passed (line-ending notices only). |
-| Production migration/deploy | Pending the GitHub Actions run for this branch; no direct production mutation was performed locally. |
+| Production migration/deploy | Passed on main: GitHub Actions run `31317525008` applied D1 migrations, passed remote FTS integrity, and deployed Pages. Public smoke checks for `/`, `/opportunities`, `/opportunities?q=assistant`, and `/directory` returned 200. |
 
 ## Residual risks and next sequence
 
-1. Confirm the pushed release run applies migration 0027 and passes the remote
-   FTS integrity command before approving a Pages deployment.
-2. Add a dependency-scanning policy after choosing a compatible scanner; do not
+1. Add a dependency-scanning policy after choosing a compatible scanner; do not
    claim a vulnerability audit until it is actually configured and passing.
-3. Refresh production health measurements and review duplicate groups, stale
+2. Refresh production health measurements and review duplicate groups, stale
    rows, and missing-company records source by source.
-4. Measure current homepage HTML/payload and normalize legacy date fields only
+3. Measure current homepage HTML/payload and normalize legacy date fields only
    after current production evidence identifies the highest-cost query paths.

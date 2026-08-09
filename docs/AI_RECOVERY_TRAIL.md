@@ -45,18 +45,20 @@ Read these first when starting a new work session:
 
 ## Latest Recovery Checkpoint — 2026-08-09
 
-- Branch: `codex/major-quality-audit-2026-08-09`
-- Pushed implementation commit: `2ea2226`.
+- Branch: `main`
+- Production merge commit: `5bc6d09`; source implementation commit: `2ea2226`.
 - Read the major audit and ADR-004 before changing the release, FTS, or pulse
   workflows. They explain why FTS indexes all external-content rows, why only
   indexed text triggers an FTS rewrite, and why production migration must
   precede Pages deployment.
-- Local evidence: `bun run verify` passed in 93.5 seconds with 190 tests, zero
+- Local evidence: `bun run verify` passed on the merged tree in 55.8 seconds with 190 tests, zero
   failures, 354 assertions, strict TypeScript, and an Astro production build.
   The four edited workflow files parse with PyYAML.
-- GitHub backup is present, but no Actions run exists yet: feature branches do
-  not match the workflow's `push` trigger. The next operator action is a pull
-  request to `main`; only main can run the migration-first release path.
+- Production acceptance: GitHub Actions run `31317525008` passed its
+  validation job and then the migration-first release job: D1 migrations,
+  remote FTS integrity, and Pages deployment all completed successfully. Public
+  smoke checks for `/`, `/opportunities`, `/opportunities?q=assistant`, and
+  `/directory` each returned HTTP 200.
 - Do not run D1 migration 0027 manually unless recovering from a failed main
   release. If recovery is necessary, use the manual `Deploy Database
   Migrations` workflow with a recorded reason; it shares the production D1

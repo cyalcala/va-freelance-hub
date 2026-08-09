@@ -52,15 +52,14 @@ Current accepted completion: 100% of Lens 2.
 
 ## Latest Accepted Checkpoint
 
-### Post-Handoff F-32 - Major Quality Guardrails (Pending Main Acceptance)
+### Post-Handoff F-32 - Major Quality Guardrails (Production Accepted)
 
 - Date: 2026-08-09
-- Branch: `codex/major-quality-audit-2026-08-09`
-- Implementation commit: `2ea2226` (`fix: harden production quality guardrails`)
-- Status: locally verified and pushed to GitHub. This checkpoint is not yet a
-  production acceptance: CI only triggers on a pull request to `main` or a
-  push to `main`, so the feature-branch backup intentionally created no
-  GitHub Actions run and performed no production D1 mutation.
+- Branch: `main`
+- Production merge commit: `5bc6d09` (`Merge branch 'codex/major-quality-audit-2026-08-09'`)
+- Status: production accepted. The isolated implementation was merged after a
+  second clean merged-tree verification, then released through the
+  migration-first CI path.
 - Delivered:
   - root `test`, `typecheck`, and `verify` commands target project-owned test
     paths and turn strict compilation into a reproducible local/CI gate;
@@ -77,15 +76,16 @@ Current accepted completion: 100% of Lens 2.
   - ADR-004 and `docs/major-code-audit-2026-08-09.md` record the rationale,
     ranked findings, residual risks, and follow-up order.
 - Local verification:
-  - `bun run verify` passed in 93.5 seconds: 190 tests, 0 failures, 354
+  - `bun run verify` passed in 55.8 seconds on the merged `main` tree: 190 tests, 0 failures, 354
     assertions; strict TypeScript; Astro production build.
   - PyYAML parsed all four modified workflows; `git diff --check` passed.
-- Acceptance sequence:
-  1. Create/approve a pull request for the branch to trigger CI validation.
-  2. Merge only after the validation job passes.
-  3. Confirm the main-branch release applies migration 0027, passes remote FTS
-     integrity, then deploys Pages.
-  4. Record the GitHub run IDs and production smoke evidence in this section.
+- Production evidence:
+  - GitHub Actions run `31317525008` passed on `5bc6d09`.
+  - Validation job passed unit tests, production build, and strict typecheck.
+  - Release job applied D1 migrations, passed the remote FTS5 integrity check,
+    and deployed Cloudflare Pages in that order.
+  - Public smoke checks returned 200 for `/`, `/opportunities`,
+    `/opportunities?q=assistant`, and `/directory`.
 
 ### Post-Handoff F-31 - SEO Growth Engine (Detail Pages + FTS5 + Sitemap)
 
