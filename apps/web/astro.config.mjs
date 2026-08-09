@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
+import fs from 'node:fs';
 
 export default defineConfig({
   // Development should never listen on a LAN/public interface. This limits the
@@ -25,8 +26,15 @@ export default defineConfig({
   },
   integrations: [react(), tailwind()],
   vite: {
-    define: {
-      'globalThis.MessageChannel': 'class MessageChannel { constructor() { this.port1 = { postMessage: () => {}, onmessage: null }; this.port2 = { postMessage: () => {}, onmessage: null }; } }',
-    },
+    plugins: [
+      {
+        name: 'messagechannel-polyfill',
+        apply: 'build',
+        transformIndexHtml(html) {
+          const polyfill = fs.readFileSync('./polyfill-messagechannel.js', 'utf-8');
+          return html.replace('<head>', `<head><script>${polyfill}</script>`);
+        },
+      },
+    ],
   },
 });
