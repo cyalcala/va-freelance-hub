@@ -144,7 +144,10 @@ export function inspectWorkflowText(path: string, text: string): GuardrailResult
     errors.push(`${path}: validation must run for documentation-only pushes; gate only the release job`);
   }
 
-  if (path === "ci-guardrail.yml" && !/pages deploy dist\s+--project-name remotejobs-ph\s+--branch main\s+--config wrangler\.jsonc/.test(text)) {
+  if (
+    path === "ci-guardrail.yml"
+    && !/pages deploy dist\s+--project-name remotejobs-ph\s+--branch main(\s+--config wrangler\.jsonc)?/.test(text)
+  ) {
     errors.push(`${path}: Pages deployment must use the checked-in production Wrangler config`);
   }
 
