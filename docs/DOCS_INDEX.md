@@ -5,6 +5,24 @@
 This index tells future AI agents which documents are canonical, which are
 historical, and where to resume. Start here instead of guessing from filenames.
 
+## Current Pause Checkpoint
+
+Before any new implementation or deployment, read these documents in this
+order:
+
+1. AGENTS.md
+2. docs/major-production-audit-2026-08-10.md
+3. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
+4. docs/HANDOFF.md
+5. docs/SYSTEM_SAVEPOINT.md
+6. docs/AI_RECOVERY_TRAIL.md
+
+This checkpoint is on branch codex/production-apex-audit-2026-08-09 and is a
+GitHub backup stop-point, not a main-branch or production release. It covers
+all five audit workstreams despite the owner’s 2/5 pause marker. The next agent
+must run the deferred verification gates before proposing D1 migration or
+Cloudflare deployment.
+
 ## Canonical Recovery Trail
 
 Read these in order:

@@ -8,9 +8,38 @@
 // to the verified source URL when the candidate does not survive.
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
+const SOURCE_PROTOCOLS = new Set(["http:", "https:"]);
 
 // Pragmatic address shape check for mailto: targets — not RFC-complete.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function isLocalOrIpHost(hostname: string): boolean {
+  const normalized = hostname.toLowerCase().replace(/\.$/, "");
+  return normalized === "localhost"
+    || normalized.endsWith(".localhost")
+    || normalized.startsWith("[")
+    || /^\d{1,3}(?:\.\d{1,3}){3}$/.test(normalized);
+}
+
+/**
+ * Return a normalized public web URL suitable for storage as a source and
+ * later fetching. Source URLs never need mailto: and must not carry embedded
+ * credentials, local hosts, or IP addresses.
+ */
+export function sanitizeSourceUrl(raw: unknown): string | null {
+  if (typeof raw !== "string") return null;
+  const candidate = raw.trim();
+  if (candidate === "" || candidate.length > 2048) return null;
+
+  try {
+    const url = new URL(candidate);
+    if (!SOURCE_PROTOCOLS.has(url.protocol) || !url.hostname || !url.hostname.includes(".")) return null;
+    if (url.username || url.password || isLocalOrIpHost(url.hostname)) return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Return a normalized, safe apply URL or null when the candidate is not a

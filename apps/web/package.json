@@ -6,30 +6,30 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "deploy": "pnpm run build && wrangler pages deploy dist --project-name remotejobs-ph"
+    "db:migrate": "bunx wrangler@4.120.0 d1 migrations apply DB --remote --env production --config wrangler.jsonc",
+    "deploy": "bun run build && bunx wrangler@4.120.0 pages deploy dist --project-name remotejobs-ph --branch main --config wrangler.jsonc"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^10.2.2",
-    "@astrojs/react": "^3.3.4",
-    "@astrojs/tailwind": "^5.1.0",
-    "@types/react": "^18.3.2",
-    "@types/react-dom": "^18.3.0",
+    "@astrojs/cloudflare": "12.6.13",
+    "@astrojs/react": "4.4.2",
+    "@astrojs/tailwind": "5.1.5",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.4",
     "@va-hub/db": "workspace:*",
     "@va-hub/scraper": "workspace:*",
-    "astro": "^4.8.6",
+    "astro": "5.18.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.3.0",
-    "drizzle-orm": "^0.30.0",
-    "lucide-react": "^1.16.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "drizzle-orm": "0.45.2",
+    "lucide-react": "1.31.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "tailwind-merge": "^3.6.0",
-    "tailwindcss": "^3.4.3",
+    "tailwindcss": "3.4.19",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
-    "csv-parse": "^6.2.1",
-    "typescript": "^5.4.5",
-    "wrangler": "^4.100.0"
+    "typescript": "^5.9.3",
+    "wrangler": "4.120.0"
   }
 }

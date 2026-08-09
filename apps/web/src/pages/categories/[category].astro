@@ -4,6 +4,9 @@ import { getDb, opportunities } from '@va-hub/db';
 import { eq, desc, and, count, sql } from 'drizzle-orm';
 import { OpportunityCard } from '@/components/opportunity-card';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
+import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
+import { markPublicDataUnavailable } from '@/lib/public-route-load';
+import { parsePageRequest } from '@/lib/public-query';
 
 export const prerender = false;
 
@@ -20,12 +23,18 @@ if (!category || !JOB_CATEGORY_MAP[category]) {
 
 const info = JOB_CATEGORY_MAP[category];
 const PAGE_SIZE = 30;
-const requestedPage = Number.parseInt(Astro.url.searchParams.get('page') || '1', 10);
-const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+const parsedPage = parsePageRequest(Astro.url.searchParams.get('page'));
+if (!parsedPage.ok) {
+  Astro.response.headers.set('Cache-Control', 'no-store');
+  return new Response(parsedPage.message, { status: parsedPage.status });
+}
+const currentPage = parsedPage.page;
 const offset = (currentPage - 1) * PAGE_SIZE;
 
 let categoryJobs = [];
 let totalJobs = 0;
+let dataUnavailable = false;
+let pageOutOfRange = false;
 
 function buildPageUrl(page: number) {
   const params = new URLSearchParams();
@@ -48,15 +57,24 @@ try {
 
   totalJobs = totalResult?.total ?? 0;
 
-  categoryJobs = await db
-    .select()
-    .from(opportunities)
-    .where(whereClause)
-    .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
-    .limit(PAGE_SIZE)
-    .offset(offset);
+  pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
+  if (!pageOutOfRange) {
+    categoryJobs = await db
+      .select()
+      .from(opportunities)
+      .where(whereClause)
+      .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
+      .limit(PAGE_SIZE)
+      .offset(offset);
+  }
 } catch (e) {
-  console.error("DB Error in category page:", e);
+  dataUnavailable = true;
+  markPublicDataUnavailable(Astro.response, e);
+}
+
+if (pageOutOfRange && !dataUnavailable) {
+  Astro.response.headers.set('Cache-Control', 'no-store');
+  return new Response('Not found', { status: 404 });
 }
 
 const totalPages = Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
@@ -70,6 +88,7 @@ const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
   title={`${info.title} Remote Jobs for Filipinos — VA & Freelance Hub`}
   description={`Browse and search all active ${info.title.toLowerCase()} remote jobs and virtual assistant opportunities open to Filipino talents. Updated automatically.`}
 >
+  {dataUnavailable && <ServiceUnavailable />}
   <section class="w-full max-w-4xl mx-auto pt-10 md:pt-14">
     <div class="mb-8">
       <a

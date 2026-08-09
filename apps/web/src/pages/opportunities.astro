@@ -4,6 +4,9 @@ import { getDb, opportunities } from '@va-hub/db';
 import { and, asc, count, desc, eq, type SQL, sql } from 'drizzle-orm';
 import { OpportunityCard } from '@/components/opportunity-card';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
+import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
+import { markPublicDataUnavailable } from '@/lib/public-route-load';
+import { parseJobBoardRequest } from '@/lib/public-query';
 
 export const prerender = false;
 
@@ -16,17 +19,23 @@ const PAGE_SIZE = 30;
 const TYPE_OPTIONS = ['VA', 'freelance', 'project', 'full-time', 'part-time'];
 
 const searchParams = Astro.url.searchParams;
-const query = (searchParams.get('q') || '').trim();
+const parsedRequest = parseJobBoardRequest(searchParams);
+if (!parsedRequest.ok) {
+  Astro.response.headers.set('Cache-Control', 'no-store');
+  return new Response(parsedRequest.message, { status: parsedRequest.status });
+}
+
+const { query, page: currentPage } = parsedRequest;
 const category = searchParams.get('category') || '';
 const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
-const requestedPage = Number.parseInt(searchParams.get('page') || '1', 10);
-const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
 const offset = (currentPage - 1) * PAGE_SIZE;
 
 let pageJobs = [];
 let platformOptions: string[] = [];
 let totalJobs = 0;
+let dataUnavailable = false;
+let pageOutOfRange = false;
 
 function buildPageUrl(page: number) {
   const params = new URLSearchParams();
@@ -82,9 +91,12 @@ try {
     );
     totalJobs = countRow[0]?.total ?? 0;
 
-    pageJobs = await db.all(
-      sql`SELECT o.* FROM opportunities o INNER JOIN opportunities_fts fts ON o.id = fts.rowid WHERE ${ftsWhere} ORDER BY fts.rank LIMIT ${PAGE_SIZE} OFFSET ${offset}`
-    );
+    pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
+    if (!pageOutOfRange) {
+      pageJobs = await db.all(
+        sql`SELECT o.* FROM opportunities o INNER JOIN opportunities_fts fts ON o.id = fts.rowid WHERE ${ftsWhere} ORDER BY fts.rank LIMIT ${PAGE_SIZE} OFFSET ${offset}`
+      );
+    }
   } else {
     const whereClause = and(...filters);
 
@@ -95,13 +107,16 @@ try {
 
     totalJobs = totalResult?.total ?? 0;
 
-    pageJobs = await db
-      .select()
-      .from(opportunities)
-      .where(whereClause)
-      .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
-      .limit(PAGE_SIZE)
-      .offset(offset);
+    pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
+    if (!pageOutOfRange) {
+      pageJobs = await db
+        .select()
+        .from(opportunities)
+        .where(whereClause)
+        .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
+        .limit(PAGE_SIZE)
+        .offset(offset);
+    }
   }
 
   const platforms = await db
@@ -113,7 +128,13 @@ try {
 
   platformOptions = platforms.map((item) => item.name).filter(Boolean);
 } catch (e) {
-  console.error('DB Error in opportunities page:', e);
+  dataUnavailable = true;
+  markPublicDataUnavailable(Astro.response, e);
+}
+
+if (pageOutOfRange && !dataUnavailable) {
+  Astro.response.headers.set('Cache-Control', 'no-store');
+  return new Response('Not found', { status: 404 });
 }
 
 const totalPages = Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
@@ -127,6 +148,7 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
   title="Browse Remote Jobs for Filipinos — VA & Freelance Hub"
   description="Search and filter every active remote and VA role open to Filipino talent. Updated automatically, all day."
 >
+  {dataUnavailable && <ServiceUnavailable />}
   <section class="w-full max-w-5xl mx-auto pt-10 md:pt-14">
     <div class="mb-8">
       <a

@@ -32,27 +32,34 @@ jobs:
       - name: 🥟 Setup Bun Runtime
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.14
 
       - name: 📦 Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: 👨‍🍳 Deploy the Chef
         run: |
+          # Keep the human-readable log, but do not turn a failed Chef run into
+          # a green workflow because tee is the final command in the pipeline.
+          set -o pipefail
+          set +e
           bun run scripts/gha/chef.ts 2>&1 | tee chef.log
-          
+          CHEF_EXIT=${PIPESTATUS[0]}
+          set -e
+
           # Extract stats for summary
-          PLATED=$(grep -c '\[PLATED\]' chef.log || echo "0")
-          FAILED=$(grep -c '\[CHEF\] Burnt dish' chef.log || echo "0")
+          PLATED=$(grep -c '\[PLATED\]' chef.log || true)
+          FAILED=$(grep -c '\[CHEF\] Burnt dish' chef.log || true)
           echo "PLATED=$PLATED" >> $GITHUB_ENV
           echo "FAILED=$FAILED" >> $GITHUB_ENV
+          exit "$CHEF_EXIT"
 
       - name: 📊 Generate Chef Summary
         if: always()
-        continue-on-error: true
         run: |
+          set -euo pipefail
           echo "### 👨‍🍳 Sovereign Chef Report" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ✅ Kitchen Service Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "- **Dishes Plated**: $PLATED" >> $GITHUB_STEP_SUMMARY
           echo "- **Dishes Burnt**: $FAILED" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY

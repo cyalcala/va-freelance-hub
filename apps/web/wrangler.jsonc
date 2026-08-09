@@ -1,30 +1,26 @@
 {
-  "name": "remoteph-jobs",
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "remotejobs-ph",
   "pages_build_output_dir": "dist",
-  "compatibility_date": "2024-11-01",
-  "compatibility_flags": [
-    "nodejs_compat"
-  ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "remoteph-jobs-db",
-      "database_id": "08072f16-d3d1-436a-9104-b057a162db7c",
-      "migrations_dir": "../../packages/db/migrations"
-    }
-  ],
-  "ai": {
-    "binding": "AI"
-  },
-  "ratelimits": [
-    {
-      "name": "API_RATE_LIMITER",
-      "namespace_id": "1001",
-      "simple": {
-        "limit": 60,
-        "period": 60
+  // Downloaded from the live Pages project on 2026-08-09. The root date is
+  // only a configuration baseline; production deliberately retains the
+  // dashboard-verified compatibility contract below.
+  "compatibility_date": "2026-05-26",
+  "env": {
+    "production": {
+      "compatibility_date": "2024-11-01",
+      "compatibility_flags": ["nodejs_compat"],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "DB",
+          "database_id": "08072f16-d3d1-436a-9104-b057a162db7c",
+          "migrations_dir": "../../packages/db/migrations"
+        }
+      ],
+      "ai": {
+        "binding": "AI"
       }
     }
-  ]
+  }
 }
-

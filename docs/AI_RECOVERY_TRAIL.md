@@ -7,6 +7,23 @@ depending on chat history. Every meaningful implementation move should be
 recoverable from GitHub: code, docs, verification, workflow evidence, and the
 next task.
 
+## Latest Recovery Checkpoint — 2026-08-10
+
+The current recoverable work is the paused production-hardening branch
+codex/production-apex-audit-2026-08-09. It is a backup checkpoint, not a
+production release. Do not deploy or merge it merely because the code is
+present.
+
+Read docs/major-production-audit-2026-08-10.md and
+docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md before resuming.
+They contain the five-workstream audit ledger, fixed findings, residual
+advisories, deferred release gates, and the reason the project remains on its
+Cloudflare Pages-compatible adapter line. Then read HANDOFF.md and
+SYSTEM_SAVEPOINT.md for the exact Git savepoint.
+
+The owner’s 2/5 marker is a stop-and-handoff marker. All five workstreams were
+audited; no deployment acceptance is implied.
+
 The model is intentionally similar to `cyalcala/techwriter-bot`: small slices,
 documented checkpoints, percentage progress, GitHub-backed evidence, and a clear
 handoff after every important move.

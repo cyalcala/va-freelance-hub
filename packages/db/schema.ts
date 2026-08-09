@@ -31,6 +31,9 @@ export const opportunities = sqliteTable("opportunities", {
     .notNull()
     .default(sql`(datetime('now'))`),
   isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  // A reversible system state, deliberately distinct from policy rejection.
+  // Feed reappearance may reactivate only `stale-feed` / `link-unavailable`.
+  inactiveReason: text("inactive_reason"),
   contentHash: text("content_hash").notNull(), // 64-bit cyrb-style hash of title+sourceUrl (packages/scraper/contentHash.ts); dedup belt — primary dedup is UNIQUE source_url
   updatedAt: text("updated_at"),
   lastSeenInFeedAt: text("last_seen_in_feed_at"),
@@ -59,6 +62,13 @@ export const opportunities = sqliteTable("opportunities", {
   // in sync with the DB so `drizzle-kit generate` cannot emit a migration that
   // drops it and regresses the temp-B-tree fix.
   activeEffectivePostedIdx: index("active_effective_posted_idx").on(table.isActive, sql`coalesce(${table.postedAt}, ${table.scrapedAt}) DESC`),
+  // Category pages use the same effective-date order but should not scan the
+  // entire active corpus before applying their category filter (migration 0029).
+  categoryActiveEffectivePostedIdx: index("category_active_effective_posted_idx").on(
+    table.category,
+    table.isActive,
+    sql`coalesce(${table.postedAt}, ${table.scrapedAt}) DESC`,
+  ),
   activeLastVerifiedIdx: index("active_last_verified_idx").on(table.isActive, table.lastVerifiedAt),
   // Unclear-backlog sweep row selection (migration 0025). Declared here so
   // `drizzle-kit generate` cannot emit a migration that drops it. geo_checked_at

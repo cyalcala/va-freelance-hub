@@ -35,7 +35,7 @@ jobs:
         working-directory: apps/web
         run: |
           set -euo pipefail
-          npx wrangler@4 d1 execute remoteph-jobs-db --remote --json --command "
+          npx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --json --command "
             SELECT
               (SELECT COUNT(*) FROM opportunities WHERE is_active=1) AS active,
               (SELECT COUNT(*) FROM opportunities) AS total,
@@ -51,7 +51,7 @@ jobs:
         working-directory: apps/web
         run: |
           set -euo pipefail
-          npx wrangler@4 d1 execute remoteph-jobs-db --remote --json --command "
+          npx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --json --command "
             SELECT source_id,
                    COUNT(*) AS attempts,
                    SUM(CASE WHEN ok=1 THEN 1 ELSE 0 END) AS ok_count,
@@ -120,11 +120,16 @@ jobs:
           # Bounded rebase-retry: Medic runs weekly, so a lost push means no
           # digest for 7 days. Another job pushing in the window must not cost
           # the whole week. This bot owns its own file, so rebases are clean.
+          pushed=false
           for attempt in 1 2 3 4 5; do
-            if git push origin HEAD:main; then break; fi
+            if git push origin HEAD:main; then pushed=true; break; fi
             echo "Push rejected (attempt $attempt); rebasing on main and retrying."
             git pull --rebase origin main
           done
+          if [ "$pushed" != true ]; then
+            echo "::error title=Digest push failed::Weekly health digest could not be pushed after five attempts."
+            exit 1
+          fi
 
       - name: 📊 Medic Summary
         if: always()

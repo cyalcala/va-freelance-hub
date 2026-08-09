@@ -1,3 +1,5 @@
+throw new Error("LEGACY_QUARANTINE: historical custom worker bundler is disabled; use Astro and Wrangler production scripts.");
+
 const esbuild = require('esbuild');
 
 const banner = `

@@ -14,8 +14,11 @@ export default {
       path = "/api/cron/verify-directory";
     }
 
-    const url = `http://localhost${path}?secret=${secret}`;
-    console.log(`Triggering scheduled task: ${url}`);
+    // This historical adapter remains only for recovery reference. It never
+    // places a secret in a URL or logs one; the active scheduler is the
+    // Cloudflare/Astro path documented in docs/legacy-quarantine.md.
+    const url = new URL(path, "http://localhost");
+    console.log(`Triggering quarantined scheduled task: ${path}`);
 
     try {
       const res = await handler.fetch(

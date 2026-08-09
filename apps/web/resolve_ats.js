@@ -1,3 +1,5 @@
+throw new Error("LEGACY_QUARANTINE: historical Gemini/ATS resolver is disabled; use reviewed source adapters.");
+
 import fs from 'fs';
 import { execSync } from 'child_process';
 

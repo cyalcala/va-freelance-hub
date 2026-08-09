@@ -1,3 +1,5 @@
+throw new Error("LEGACY_QUARANTINE: historical manual ATS resolution batch is disabled; use reviewed source adapters.");
+
 /**
  * Batch 4+ Resolution Script
  * Resolves ALL remaining 92 pending companies and updates resolve_state.json + ats_updates.sql

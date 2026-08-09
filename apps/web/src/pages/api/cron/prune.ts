@@ -3,6 +3,7 @@ import { getDb, opportunities, sourceFetchEvents } from "@va-hub/db";
 import { sql, lt } from "drizzle-orm";
 import { nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
+import { duplicateSurvivorSql } from "@/lib/prune-query";
 
 export const prerender = false;
 
@@ -22,7 +23,7 @@ export const prerender = false;
 //
 // This version only archives (is_active = 0), only considers ACTIVE rows,
 // scopes the duplicate key to (description_hash, company) so distinct
-// companies never collapse, and keeps the oldest row (MIN(id)) visible.
+// companies never collapse, and keeps the freshest feed-confirmed row visible.
 // Archived rows keep their source_url in the table, so scrape dedup still
 // recognizes them and does not re-insert.
 //
@@ -53,15 +54,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const result = await db.run(sql`
       UPDATE \`opportunities\`
-      SET \`is_active\` = 0, \`updated_at\` = ${archivedAt}
+      SET \`is_active\` = 0, \`inactive_reason\` = 'duplicate-superseded', \`updated_at\` = ${archivedAt}
       WHERE \`is_active\` = 1
       AND \`description_hash\` IS NOT NULL
       AND \`id\` NOT IN (
-        SELECT MIN(\`id\`)
-        FROM \`opportunities\`
-        WHERE \`is_active\` = 1
-        AND \`description_hash\` IS NOT NULL
-        GROUP BY \`description_hash\`, lower(coalesce(\`company\`, ''))
+        ${sql.raw(duplicateSurvivorSql)}
       )
     `);
 

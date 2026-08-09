@@ -40,10 +40,10 @@ jobs:
       - name: 🥟 Setup Bun Runtime
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.14
 
       - name: 📦 Install Dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
 
       - name: 🏹 Deploy the ATS Engine (Layer 2)
         run: |
@@ -330,11 +330,16 @@ jobs:
           # Bounded rebase-retry: another job (Medic, Sentinel, human) may push
           # to main in the same window; a bare push would fail non-fast-forward.
           # This bot owns its own file, so rebases are conflict-free.
+          pushed=false
           for attempt in 1 2 3 4 5; do
-            if git push origin HEAD:main; then break; fi
+            if git push origin HEAD:main; then pushed=true; break; fi
             echo "Push rejected (attempt $attempt); rebasing on main and retrying."
             git pull --rebase origin main
           done
+          if [ "$pushed" != true ]; then
+            echo "::error title=Digest push failed::Source-health rollup could not be pushed after five attempts."
+            exit 1
+          fi
 
   # Tier-1 maintenance bot (2026-07-04): turn degradation warnings into a
   # tracked GitHub issue instead of scroll-past run annotations. At most one

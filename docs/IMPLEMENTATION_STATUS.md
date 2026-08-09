@@ -1,5 +1,23 @@
 # Implementation Status
 
+## Latest Stop Checkpoint — 2026-08-10
+
+Owner direction: stop implementation, preserve the work, document it, and back
+it up to GitHub. The current branch is
+codex/production-apex-audit-2026-08-09. It contains five audited hardening
+tracks and is not merged, deployed, or production-accepted.
+
+The authoritative audit ledger is
+docs/major-production-audit-2026-08-10.md. It records the precise completed
+work, residual dependency advisories, verification evidence, known non-release
+items, and safe resume order. ADR-005 records why the active Cloudflare Pages
+path remains on its compatibility line instead of performing an implicit
+Pages-to-Workers migration.
+
+The owner’s 2/5 marker is a pause marker, not an accepted completion
+percentage. The historical Lens 2 completion below remains historical; it is
+not evidence that this new branch was released.
+
 ## Start Here
 
 When starting a new chat or work session, read these in order:
@@ -15,7 +33,7 @@ When starting a new chat or work session, read these in order:
 9. `docs/major-audit-2026-06-10.md`
 10. `docs/major-audit-2026-06-06.md`
 
-### Current Focus
+### Previous Focus
 
 Post-audit health repairs complete. The system is healthy after the 2026-06-11
 major audit fixed Hunter D1 insert batching, reduced category page payloads, and

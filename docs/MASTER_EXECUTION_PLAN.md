@@ -24,6 +24,27 @@ VA Freelance Hub should do these things well:
 It should not become a general applicant tracking system, paid marketplace,
 resume database, or full browser-scraping platform.
 
+## 2026-08-10 Production-Hardening Pause Checkpoint
+
+The implementation branch codex/production-apex-audit-2026-08-09 is paused by
+owner request for a documented GitHub backup. It is not merged or deployed.
+The historical roadmap below remains valuable, but it must not be read as
+production acceptance for this checkpoint.
+
+The completed hardening scope is organized into five tracks:
+
+| Track | Pause state | Required next evidence |
+| --- | --- | --- |
+| Runtime/security/performance | Implemented and targetedly verified | Full suite plus live Pages smoke checks |
+| Ingestion/data integrity | Implemented; local migration validation passed | Remote D1 migration evidence and pulse contract checks |
+| Scheduled automation/CI | Failure propagation and guardrails implemented | GitHub Actions result for the backup commit |
+| Supply chain/configuration | Exact pins, isolated Bun linking, Pages compatibility decision recorded | Review residual advisories; do not change hosting implicitly |
+| Legacy/recovery | Historical runtime quarantined and documentation written | Preserve branch until an explicit integration decision |
+
+No action after this checkpoint may assume a release occurred. The next agent
+must read docs/major-production-audit-2026-08-10.md and ADR-005 before changing
+the Astro/Cloudflare adapter, deployment model, D1 schema, or workflow logic.
+
 ## Current Baseline
 
 Accepted audit checkpoint:

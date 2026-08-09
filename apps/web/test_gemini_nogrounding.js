@@ -1,3 +1,5 @@
+throw new Error("LEGACY_QUARANTINE: historical Gemini experiment is disabled; production uses the reviewed Chef flow.");
+
 import fs from 'fs';
 
 const envText = fs.readFileSync('../../.env', 'utf8');
