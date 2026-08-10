@@ -1,26 +1,23 @@
 # Implementation Status
 
-## Latest Stop Checkpoint — 2026-08-10
+## Latest Checkpoint — 2026-08-10 (verified)
 
-Owner direction: stop implementation, preserve the work, document it, and back
-it up to GitHub. The current branch is
-codex/production-apex-audit-2026-08-09. It contains five audited hardening
-tracks and is not merged, deployed, or production-accepted.
+The five-track production hardening audit (Codex/Nemotron, branch
+`codex/production-apex-audit-2026-08-09`) was merged to `main` via PR #55
+(commit `2497620`). All 16 ranked findings are implemented and live.
 
-Primary GitHub code checkpoint: 33c1995. The branch push did not trigger CI
-because the guardrail is configured for main and pull requests; no workflow
-result may be inferred from the saved branch.
+Post-merge verification (2026-08-10 Claude Opus):
+- 234 tests passing, 0 failures, 448 expectations.
+- TypeScript strict-mode typecheck clean.
+- Astro production build clean.
+- All 29 D1 migrations deployed (including 0028, 0029).
+- Security headers verified live on production (CSP, HSTS, X-Frame-Options).
+- Job detail pages + JSON-LD + sitemap live and correct.
+- Unnecessary MessageChannel polyfill removed (6 Nemotron commits reverted;
+  Workers runtime has native MessageChannel since compatibility date 2023-03-01).
 
-The authoritative audit ledger is
-docs/major-production-audit-2026-08-10.md. It records the precise completed
-work, residual dependency advisories, verification evidence, known non-release
-items, and safe resume order. ADR-005 records why the active Cloudflare Pages
-path remains on its compatibility line instead of performing an implicit
-Pages-to-Workers migration.
-
-The owner’s 2/5 marker is a pause marker, not an accepted completion
-percentage. The historical Lens 2 completion below remains historical; it is
-not evidence that this new branch was released.
+ADR-005 records why the Cloudflare Pages adapter stays pinned rather than
+upgrading to a Pages-incompatible Workers-only adapter.
 
 ## Start Here
 

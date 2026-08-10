@@ -1,48 +1,31 @@
 # Handoff
 
-## Stop Checkpoint — 2026-08-10 Production Hardening Audit
+## Verified Checkpoint — 2026-08-10 Production Hardening Audit
 
-Status: owner-requested stop; GitHub backup completed. No Cloudflare Pages
-deployment, remote D1 migration, main-branch merge, or live end-to-end
-acceptance was performed from this checkpoint.
+Status: merged, deployed, and independently verified.
 
-Branch being backed up: codex/production-apex-audit-2026-08-09. The committed
-starting point is 548198b; the current checkpoint adds the hardening work and
-the handoff documentation. The five audited workstreams are all recorded in
-docs/major-production-audit-2026-08-10.md:
+The five-track production hardening audit was merged to `main` via PR #55
+(commit `2497620`) and deployed to Cloudflare Pages (CI run on `8da74fb`).
+All 29 D1 migrations including 0028/0029 are applied to production.
 
-The primary code checkpoint is 33c1995, pushed to GitHub on branch
-codex/production-apex-audit-2026-08-09. A GitHub Actions check immediately
-after the backup returned no branch run; the CI guardrail is configured for
-main and pull requests, so this is not CI acceptance.
+Independent verification (2026-08-10 Claude Opus) confirmed:
+- All 16 ranked findings (3 P0, 9 P1, 3 P2) correctly implemented
+- 234 tests passing, 0 failures, 448 expectations
+- TypeScript strict-mode clean; Astro production build clean
+- Security headers live on production (CSP, HSTS, X-Frame-Options, etc.)
+- Job detail pages, JSON-LD, sitemap all functioning
+- Unnecessary MessageChannel polyfill removed (Nemotron artifact)
+- ADR-005 (Pages compatibility line) validated as sound
 
+The five audited workstreams:
 1. public runtime, security, and performance;
 2. ingestion/data integrity;
 3. scheduled automation and CI honesty;
 4. supply chain and Cloudflare runtime configuration; and
 5. legacy quarantine and operational recovery.
 
-The owner’s 2/5 note is retained as a pause marker only. It does not mean that
-only two tracks were audited or that the branch is production-accepted.
-
-Completed local evidence includes a passing final typecheck, production build,
-frozen Bun install, targeted new tests, local D1 migration validation, and a
-dependency-audit reduction from 85 findings to 10 residual upstream findings
-with no critical finding. The earlier full suite passed before the final
-dependency pass; rerunning it afterward is deliberately the first resume gate.
-
-Read in order before resuming:
-
-1. AGENTS.md
-2. docs/major-production-audit-2026-08-10.md
-3. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
-4. docs/SYSTEM_SAVEPOINT.md
-5. this file
-
-Resume only with renewed release authority. First run bun run test, bun run
-typecheck, bun run build, and git diff --check; then inspect the GitHub Actions
-result for the saved backup commit. Apply migrations 0028 and 0029 and deploy
-Cloudflare Pages only through the existing migration-first release process.
+Full audit ledger: docs/major-production-audit-2026-08-10.md
+Compatibility decision: docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
 
 ### Previous State
 
