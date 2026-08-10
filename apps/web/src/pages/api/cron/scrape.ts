@@ -10,6 +10,7 @@ import {
 } from "@/lib/conditional-state";
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
+import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
   buildIngestDiagUpdate,
@@ -18,7 +19,7 @@ import {
 } from "@/lib/run-diagnostics";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict } from "@va-hub/scraper";
 
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
@@ -36,6 +37,28 @@ function mapTriageCategoryToUiCategory(cat: string): string {
 }
 
 type SourceType = "RSS" | "HTML" | "JSON" | "ATS";
+
+/**
+ * Robots enforcement mode (masterplan 4A).
+ *
+ * "observe" computes, caches and reports every robots decision but still
+ * performs the fetch. "enforce" skips a source whose robots.txt disallows it,
+ * or whose robots.txt could not be read (withheld consent is not consent).
+ *
+ * Shipping straight to "enforce" against a live pipeline would risk a silent
+ * ingestion halt from a parser bug or a transient wave of 5xx responses, with
+ * a drop in job counts as the first symptom. Observe first, then flip once the
+ * `robotsWouldBlock` counter in the scrape response has shown a full cycle of
+ * real traffic.
+ *
+ * Flip checklist:
+ *   1. robotsWouldBlock stays 0 across ~24h of runs, or every non-zero case is
+ *      explained and accepted;
+ *   2. robots_cache holds a row per active origin;
+ *   3. record the decision in IMPLEMENTATION_STATUS.md, then change this to
+ *      "enforce" in its own commit so it can be reverted alone.
+ */
+const ROBOTS_MODE: RobotsMode = "observe";
 
 interface SourceFetchResult {
   sourceId?: string;
@@ -58,6 +81,13 @@ interface SourceFetchResult {
   etag?: string | null;
   lastModified?: string | null;
   bodyHash?: string | null;
+  // Robots provenance (masterplan 4A/4E). Recorded for every configured-source
+  // fetch so the compliance claim is auditable rather than asserted.
+  robotsVerdict?: RobotsVerdict;
+  robotsEvidence?: string;
+  robotsCrawlDelay?: number | null;
+  /** True when enforce mode would have skipped this fetch. */
+  robotsWouldBlock?: boolean;
 }
 
 interface InsertError {
@@ -916,6 +946,34 @@ async function recordIngestDiagnostics(
   }
 }
 
+/**
+ * Consults robots.txt before a configured source is fetched (masterplan 4A).
+ *
+ * Runs in observe mode: the decision is computed, cached and reported, but a
+ * would-block does not yet stop the fetch. Flip `ROBOTS_MODE` to "enforce"
+ * once a cycle of live evidence shows which sources would be blocked and why.
+ * See the staging note in packages/scraper/robotsGate.ts.
+ *
+ * Returns null when the gate could not run at all, which is reported but never
+ * fatal — a compliance check that can crash ingestion is a worse bug than the
+ * gap it closes.
+ */
+async function robotsCheckForSource(
+  db: AppDb,
+  source: Source,
+): Promise<RobotsGateResult | null> {
+  try {
+    return await checkRobots(source.url, {
+      store: createRobotsStore(db),
+      mode: ROBOTS_MODE,
+      userAgent: COLLECTION_USER_AGENT,
+    });
+  } catch (error) {
+    console.warn(`[api/cron/scrape] Robots gate failed for ${source.name}:`, errorMessage(error));
+    return null;
+  }
+}
+
 async function fetchConfiguredSourceWithStatus(
   db: AppDb,
   source: Source,
@@ -928,6 +986,13 @@ async function fetchConfiguredSourceWithStatus(
   const skipReason = sourceCadenceSkipReason(source, prevState, observedAt);
   if (skipReason) {
     return skippedSourceResult(source, skipReason);
+  }
+
+  // Checked before the cadence-passing fetch, so the robots decision is on
+  // record for every request we actually make.
+  const robots = await robotsCheckForSource(db, source);
+  if (robots && !robots.allowed) {
+    return skippedSourceResult(source, `robots.txt disallows this fetch — ${robots.evidence}`);
   }
 
   const result = await fetchSourceWithStatus(
@@ -943,6 +1008,21 @@ async function fetchConfiguredSourceWithStatus(
   // for reporting so it does not read as a zero-count source.
   if (result.notModified && prevState) {
     result.count = prevState.lastCount ?? 0;
+  }
+
+  // Provenance: what robots.txt said, and whether honoring it would have
+  // changed this fetch. This is the evidence the transparency ledger (4E) will
+  // publish, and the data that decides when observe mode can flip to enforce.
+  if (robots) {
+    result.robotsVerdict = robots.verdict;
+    result.robotsEvidence = robots.evidence;
+    result.robotsCrawlDelay = robots.crawlDelay;
+    result.robotsWouldBlock = robots.wouldBlock;
+    if (robots.wouldBlock) {
+      console.warn(
+        `[api/cron/scrape] robots would block ${source.name} in enforce mode: ${robots.evidence}`,
+      );
+    }
   }
   return result;
 }
@@ -1216,6 +1296,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // skipped parse+triage (the freshness/efficiency win).
     const sourcesUnchanged = [...rssResults, ...htmlResults, ...jsonResults].filter((r) => r.notModified).length;
     const sourceResults = [...rssResults, ...htmlResults, ...jsonResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
+    // Masterplan 4A staging metric: how many fetches enforce mode would have
+    // skipped. This is the number that decides when ROBOTS_MODE can flip.
+    const robotsWouldBlock = sourceResults.filter((r) => (r as any).robotsWouldBlock).length;
     const fetchEventLog = await recordSourceFetchEvents(db, sourceResults, observedAt);
     const cadenceGuards = {
       stateAvailable: fetchStateLoad.available,
@@ -1270,6 +1353,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         fetchEventLog,
         cadenceGuards,
         sourcesUnchanged,
+        robotsWouldBlock,
         unclearRetriaged: idleSweep.retriaged,
         unclearUpgraded: idleSweep.upgraded,
         unclearDeactivated: idleSweep.deactivated,
@@ -1380,6 +1464,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         fetchEventLog,
         cadenceGuards,
         sourcesUnchanged,
+        robotsWouldBlock,
         unclearRetriaged: dedupSweep.retriaged,
         unclearUpgraded: dedupSweep.upgraded,
         unclearDeactivated: dedupSweep.deactivated,
@@ -1723,6 +1808,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       fetchEventLog,
       cadenceGuards,
       sourcesUnchanged,
+      robotsWouldBlock,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);
