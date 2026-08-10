@@ -10,6 +10,12 @@ import {
 } from "@/lib/conditional-state";
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
+import {
+  buildIngestDiagRow,
+  buildIngestDiagUpdate,
+  summarizeRunDiagnostics,
+  type RunDiagnosticsInput,
+} from "@/lib/run-diagnostics";
 
 export const prerender = false;
 import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
@@ -876,6 +882,40 @@ async function recordSourceFetchEvents(
   return outcome;
 }
 
+/**
+ * Parks this run's degradation summary on the reserved `__ingest_diag__` row so
+ * the daily Sentinel pulse can alert on it.
+ *
+ * Called on every exit path, including clean ones: the row doubles as the
+ * ingestion heartbeat, and a heartbeat that only beats on failure is useless
+ * for detecting a stopped clock.
+ *
+ * Never throws. Diagnostics are observability, so a write failure must not fail
+ * a scrape that otherwise succeeded — it degrades to a console warning, which
+ * is exactly the state this row exists to escape, but only for the diagnostic
+ * itself rather than for the whole run.
+ */
+async function recordIngestDiagnostics(
+  db: AppDb,
+  observedAt: string,
+  input: RunDiagnosticsInput,
+): Promise<void> {
+  const summary = summarizeRunDiagnostics(input);
+  try {
+    await db.insert(sourceFetchState)
+      .values(buildIngestDiagRow(observedAt, summary))
+      .onConflictDoUpdate({
+        target: sourceFetchState.sourceId,
+        set: buildIngestDiagUpdate(observedAt, summary),
+      });
+    if (summary.degraded) {
+      console.warn(`[api/cron/scrape] Run degraded: ${summary.summary}`);
+    }
+  } catch (error) {
+    console.warn("[api/cron/scrape] Failed to record ingest diagnostics:", errorMessage(error));
+  }
+}
+
 async function fetchConfiguredSourceWithStatus(
   db: AppDb,
   source: Source,
@@ -1211,6 +1251,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // below this return it never ran on those ticks. That, not the per-row
       // failure handling, was the dominant reason the unclear backlog sat flat.
       const idleSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
+      await recordIngestDiagnostics(db, observedAt, {
+        fetchEventFailedBatches: fetchEventLog.failedBatches,
+        failedSourceCount: failedSources.length,
+        cadenceStateAvailable: cadenceGuards.stateAvailable,
+      });
       return new Response(JSON.stringify({
         inserted: 0,
         actualChanges: 0,
@@ -1315,6 +1360,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // items (so allItems > 0), but after URL dedup none of them are new. The
       // backlog sweep is maintenance and must not be gated on fresh ingest.
       const dedupSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
+      await recordIngestDiagnostics(db, observedAt, {
+        fetchEventFailedBatches: fetchEventLog.failedBatches,
+        failedSourceCount: failedSources.length,
+        cadenceStateAvailable: cadenceGuards.stateAvailable,
+      });
       return new Response(JSON.stringify({
         inserted: 0,
         actualChanges: 0,
@@ -1637,6 +1687,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const unclearDeactivated = unclearSweep.deactivated;
 
     console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}`);
+    await recordIngestDiagnostics(db, observedAt, {
+      insertFailedBatches,
+      insertErrorCount: insertErrors.length,
+      rejectedInsertFailedBatches,
+      fetchEventFailedBatches: fetchEventLog.failedBatches,
+      triageFailures,
+      triageAiUnavailable,
+      failedSourceCount: failedSources.length,
+      cadenceStateAvailable: cadenceGuards.stateAvailable,
+    });
     return new Response(JSON.stringify({
       inserted: actualChanges,
       actualChanges,
