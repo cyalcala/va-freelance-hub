@@ -1,15 +1,13 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { extractActionPlan } from "./gemini-response";
 
 const INGEST_DIGEST_API_URL = process.env.INGEST_DIGEST_API_URL || "http://localhost:4321/api/ingest-digest";
 const PROXY_SECRET = process.env.PROXY_SECRET;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 if (!PROXY_SECRET || !GEMINI_API_KEY) {
-  console.error("Missing required environment variables (PROXY_SECRET or GEMINI_API_KEY).");
-  process.exit(1);
+  throw new Error("Missing required environment variables (PROXY_SECRET or GEMINI_API_KEY).");
 }
-
-const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
 const dummyTranscript = `
 Hey guys, Nate Herk here. Today I want to talk about how to land a high-paying remote VA job.
@@ -27,65 +25,76 @@ const videoInfo = {
   videoTitle: "How to land a remote VA job in 2026",
   videoUrl: "https://youtube.com/watch?v=dQw4w9WgXcQ",
   transcriptRaw: dummyTranscript,
-  tags: ["VA", "Freelance", "Upwork", "Cold Email"]
+  tags: ["VA", "Freelance", "Upwork", "Cold Email"],
 };
 
-async function cook() {
-  console.log("👨‍🍳 Starting Sovereign Chef Pulse...");
-  console.log(`Processing video: ${videoInfo.videoTitle} by ${videoInfo.creatorName}`);
-
-  const prompt = `
-    Analyze the following YouTube transcript from an influencer and extract a clear, concise step-by-step action plan.
-    Return ONLY a JSON array of strings, where each string is an actionable step.
-    
-    Transcript:
-    ${videoInfo.transcriptRaw}
-  `;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: { type: Type.STRING }
-        }
-      }
-    });
-
-    const actionPlan = JSON.parse(response.text || "[]");
-    console.log("Extracted Action Plan:", actionPlan);
-
-    const digest = {
-      ...videoInfo,
-      actionPlan
-    };
-
-    console.log("Sending payload to ingest-digest API...");
-    const result = await fetch(INGEST_DIGEST_API_URL, {
+async function generateActionPlan(prompt: string): Promise<string[]> {
+  // Gemini's documented REST contract accepts the key in a header. This keeps
+  // it out of request URLs, logs, and proxy history while avoiding the former
+  // SDK's vulnerable protobuf dependency tree.
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`,
+    {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${PROXY_SECRET}`
+        "x-goog-api-key": GEMINI_API_KEY,
       },
-      body: JSON.stringify({ items: [digest] })
-    });
-
-    if (!result.ok) {
-      const errorText = await result.text();
-      console.error(`Ingest API rejected payload: ${result.status} ${errorText}`);
-      process.exit(1);
-    }
-
-    const data: any = await result.json();
-    console.log(`✅ [PLATED] Successfully inserted ${data.inserted} new digests out of ${data.totalReceived} total.`);
-    
-  } catch (e) {
-    console.error("❌ [CHEF] Burnt dish. Failed to process transcript:", e);
-    process.exit(1);
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json" },
+      }),
+      signal: AbortSignal.timeout(60_000),
+    },
+  );
+  const body = await response.text();
+  if (!response.ok) {
+    throw new Error(`Gemini request failed with HTTP ${response.status}: ${body.slice(0, 300)}`);
   }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body);
+  } catch {
+    throw new Error("Gemini returned a non-JSON response");
+  }
+  return extractActionPlan(parsed);
 }
 
-cook().catch(console.error);
+async function cook() {
+  console.log("Starting Sovereign Chef Pulse...");
+  console.log(`Processing video: ${videoInfo.videoTitle} by ${videoInfo.creatorName}`);
+
+  const prompt = `
+Analyze the following YouTube transcript from an influencer and extract a clear, concise step-by-step action plan.
+Return ONLY a JSON array of strings, where each string is an actionable step.
+
+Transcript:
+${videoInfo.transcriptRaw}
+`;
+
+  const actionPlan = await generateActionPlan(prompt);
+  console.log(`Extracted ${actionPlan.length} action-plan step(s).`);
+
+  const result = await fetch(INGEST_DIGEST_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${PROXY_SECRET}`,
+    },
+    body: JSON.stringify({ items: [{ ...videoInfo, actionPlan }] }),
+    signal: AbortSignal.timeout(60_000),
+  });
+  const body = await result.text();
+  if (!result.ok) {
+    throw new Error(`Ingest API rejected payload: ${result.status} ${body.slice(0, 300)}`);
+  }
+  const payload = JSON.parse(body) as { inserted?: unknown; totalReceived?: unknown };
+  const inserted = typeof payload.inserted === "number" ? payload.inserted : 0;
+  const totalReceived = typeof payload.totalReceived === "number" ? payload.totalReceived : 0;
+  console.log(`[PLATED] Successfully inserted ${inserted} new digests out of ${totalReceived} total.`);
+}
+
+void cook().catch((error: unknown) => {
+  console.error("[CHEF] Burnt dish. Failed to process transcript:", error);
+  process.exitCode = 1;
+});

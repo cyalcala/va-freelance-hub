@@ -8,7 +8,7 @@
     "build:cf": "opennextjs-cloudflare",
     "start": "next start",
     "lint": "next lint",
-    "deploy": "bun run build:cf && wrangler pages deploy .open-next"
+    "deploy": "bun -e \"console.error('LEGACY_QUARANTINE: apps/web-nextjs-backup is archival only. See docs/legacy-quarantine.md.'); process.exit(1)\""
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",

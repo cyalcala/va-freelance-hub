@@ -22,6 +22,6 @@ export { checkDirectoryLink, classifyLinkResponse, normalizeCheckUrl } from "./l
 export type { LinkStatus, LinkVerdict } from "./linkHealth";
 export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validateAutoPauses } from "./pause";
 export type { AutoPauseEntry } from "./pause";
-export { sanitizeApplyUrl } from "./urls";
+export { sanitizeApplyUrl, sanitizeSourceUrl } from "./urls";
 export { toContentHash } from "./contentHash";
 export { decodeHtmlEntities, safeFromCodePoint, xmlNodeText, xmlTextList, fixMojibake } from "./text";

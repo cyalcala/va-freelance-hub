@@ -1,0 +1,5 @@
+## LEGACY_QUARANTINE: historical pnpm workspace topology. Bun is the only
+## supported package manager; this filename prevents accidental discovery.
+packages:
+  - 'apps/*'
+  - 'packages/*'

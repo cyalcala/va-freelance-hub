@@ -85,11 +85,16 @@ jobs:
           git add docs/directory-health-latest.md
           if git diff --cached --quiet; then echo "No digest changes."; exit 0; fi
           git commit -m "docs: update directory health digest"
+          pushed=false
           for attempt in 1 2 3 4 5; do
-            if git push origin HEAD:main; then break; fi
+            if git push origin HEAD:main; then pushed=true; break; fi
             echo "Push rejected (attempt $attempt); rebasing."
             git pull --rebase origin main
           done
+          if [ "$pushed" != true ]; then
+            echo "::error title=Digest push failed::Directory-health digest could not be pushed after five attempts."
+            exit 1
+          fi
 
       - name: 📊 Directory Summary
         if: always()

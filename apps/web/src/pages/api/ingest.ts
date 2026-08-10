@@ -1,16 +1,34 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
-import { sanitizeApplyUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
+import { chunkArray, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
+import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
+import { isAuthorized } from "@/lib/auth";
+import { readJsonBodyLimited } from "@/lib/request-body";
 
 export const prerender = false;
 
-const JOB_TYPES = new Set(["VA", "freelance", "project", "full-time", "part-time"]);
-const LOCATION_TYPES = new Set(["remote", "hybrid", "onsite"]);
-const EXPERIENCE_LEVELS = new Set(["entry", "mid", "senior", "any"]);
+const JOB_TYPES = new Set(["VA", "freelance", "project", "full-time", "part-time"] as const);
+const LOCATION_TYPES = new Set(["remote", "hybrid", "onsite"] as const);
+const EXPERIENCE_LEVELS = new Set(["entry", "mid", "senior", "any"] as const);
+const MAX_PAYLOAD_BYTES = 2 * 1024 * 1024;
 
 function str(v: unknown): string | null {
   return typeof v === "string" && v.trim() !== "" ? v.trim() : null;
+}
+
+function record(v: unknown): Record<string, unknown> {
+  return v !== null && typeof v === "object" && !Array.isArray(v)
+    ? v as Record<string, unknown>
+    : {};
+}
+
+function enumOrFallback<T extends string>(value: unknown, values: ReadonlySet<T>, fallback: T): T {
+  return typeof value === "string" && values.has(value as T) ? value as T : fallback;
+}
+
+function enumOrNull<T extends string>(value: unknown, values: ReadonlySet<T>): T | null {
+  return typeof value === "string" && values.has(value as T) ? value as T : null;
 }
 
 // Explicit allow-list mapping. Previously this spread `...item`, letting any
@@ -18,45 +36,47 @@ function str(v: unknown): string | null {
 // id, contentHash) and store an unsanitized applicationUrl — the same class
 // the scrape route was hardened against (audit A-2). Server owns all
 // safety-critical fields; the client may only supply descriptive data.
-async function normalizeOpportunityForInsert(item: any, observedAt: string) {
-  const title = str(item?.title) ?? "Untitled";
-  const sourceUrl = str(item?.sourceUrl);
-  const applicationUrl = sanitizeApplyUrl(item?.applicationUrl) ?? (sourceUrl ?? null);
-  const description = str(item?.description);
-  const rawTags = Array.isArray(item?.tags) ? item.tags.filter((t: unknown) => typeof t === "string").slice(0, 15) : [];
+async function normalizeOpportunityForInsert(item: unknown, observedAt: string) {
+  const input = record(item);
+  const title = str(input.title) ?? "Untitled";
+  const sourceUrl = sanitizeSourceUrl(input.sourceUrl);
+  const applicationUrl = sanitizeApplyUrl(input.applicationUrl) ?? (sourceUrl ?? null);
+  const description = str(input.description);
+  const rawTags = Array.isArray(input.tags) ? input.tags.filter((t): t is string => typeof t === "string").slice(0, 15) : [];
   const gate = geoGate({
     title,
     description,
-    locationRaw: str(item?.locationRaw),
+    locationRaw: str(input.locationRaw),
     tags: rawTags,
   });
 
   return {
     title,
-    company: str(item?.company),
-    type: JOB_TYPES.has(item?.type) ? item.type : "freelance",
+    company: str(input.company),
+    type: enumOrFallback(input.type, JOB_TYPES, "freelance"),
     sourceUrl: sourceUrl ?? "",
-    sourcePlatform: str(item?.sourcePlatform) ?? "ingest",
+    sourcePlatform: str(input.sourcePlatform) ?? "ingest",
     tags: rawTags,
-    category: str(item?.category) ?? "other",
-    locationType: LOCATION_TYPES.has(item?.locationType) ? item.locationType : "remote",
-    clientTimezone: str(item?.clientTimezone),
-    payRange: str(item?.payRange),
+    category: str(input.category) ?? "other",
+    locationType: enumOrFallback(input.locationType, LOCATION_TYPES, "remote"),
+    clientTimezone: str(input.clientTimezone),
+    payRange: str(input.payRange),
     description,
     applicationUrl,
-    postedAt: normalizeUtcIso(item?.postedAt),
-    scrapedAt: normalizeUtcIso(item?.scrapedAt) ?? observedAt,
+    postedAt: normalizeUtcIso(input.postedAt),
+    scrapedAt: normalizeUtcIso(input.scrapedAt) ?? observedAt,
     // Server-owned safety fields — never client-controlled.
     isActive: gate.phEligibility !== "ineligible",
+    inactiveReason: gate.phEligibility === "ineligible" ? "policy-rejected" : null,
     contentHash: toContentHash(title, sourceUrl ?? title),
     descriptionHash: await sha256Hex(title + (description ?? "").slice(0, 1500)),
-    experienceLevel: EXPERIENCE_LEVELS.has(item?.experienceLevel) ? item.experienceLevel : null,
+    experienceLevel: enumOrNull(input.experienceLevel, EXPERIENCE_LEVELS),
     clickCount: 0,
     failedVerificationCount: 0,
     updatedAt: observedAt,
-    lastSeenInFeedAt: normalizeUtcIso(item?.lastSeenInFeedAt) ?? observedAt,
-    lastVerifiedAt: normalizeUtcIso(item?.lastVerifiedAt),
-    locationRaw: str(item?.locationRaw),
+    lastSeenInFeedAt: normalizeUtcIso(input.lastSeenInFeedAt) ?? observedAt,
+    lastVerifiedAt: normalizeUtcIso(input.lastVerifiedAt),
+    locationRaw: str(input.locationRaw),
     geoScope: gate.geoScope,
     phEligibility: gate.phEligibility,
     geoEvidence: gate.evidence,
@@ -81,14 +101,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // 2. Payload Content-Length Safeguard (Max 2MB)
-    const contentLength = request.headers.get("content-length");
-    if (contentLength && parseInt(contentLength, 10) > 2 * 1024 * 1024) {
-      return new Response(JSON.stringify({ error: "Payload too large (max 2MB)" }), { status: 413 });
-    }
-
-    const authHeader = request.headers.get("Authorization");
-    const cronSecretHeader = request.headers.get("x-cron-secret");
     const proxySecret = env?.PROXY_SECRET || env?.CRON_SECRET;
 
     if (!proxySecret) {
@@ -96,12 +108,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: "Server misconfiguration" }), { status: 500 });
     }
 
-    const providedSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cronSecretHeader;
-    if (!providedSecret || providedSecret !== proxySecret) {
+    if (!isAuthorized(request, proxySecret)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
-    const payload = await request.json() as any;
+    const parsedBody = await readJsonBodyLimited(request, MAX_PAYLOAD_BYTES);
+    if (!parsedBody.ok) {
+      return new Response(JSON.stringify({ error: parsedBody.message }), {
+        status: parsedBody.status,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const payload = record(parsedBody.value);
     const { items } = payload;
 
     if (!items || !Array.isArray(items)) {
@@ -127,10 +145,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const rejectedForUrl = mapped.length - normalizedItems.length;
 
     // Insert with deduplication based on sourceUrl, chunked to avoid SQLite limits
-    const CHUNK_SIZE = 10;
     let insertedCount = 0;
-    for (let i = 0; i < normalizedItems.length; i += CHUNK_SIZE) {
-      const chunk = normalizedItems.slice(i, i + CHUNK_SIZE);
+    for (const chunk of chunkArray(normalizedItems, DIRECT_INGEST_BATCH_SIZE)) {
       // Bare onConflictDoNothing (no target) mirrors the scrape route: absorbs
       // BOTH source_url and content_hash unique conflicts. A targeted conflict
       // on source_url alone would throw on a content_hash collision.
@@ -150,8 +166,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Ingest API Error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Internal Server Error" }), { status: 500 });
   }
 };

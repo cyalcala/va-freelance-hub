@@ -125,7 +125,7 @@ export async function fetchJSONSource(source: Source, state?: ConditionalState):
   }
 
   const opportunities: NewOpportunity[] = cappedJobs
-    .map((job) => {
+    .map<NewOpportunity | null>((job): NewOpportunity | null => {
       const title = normalizeText(job.position);
       const sourceUrl = normalizeRemoteOkUrl(job.url) ?? normalizeRemoteOkUrl(job.apply_url);
       if (!title || !sourceUrl || isLikelyPlaceholderTitle(title)) return null;
@@ -153,7 +153,7 @@ export async function fetchJSONSource(source: Source, state?: ConditionalState):
         postedAt: normalizeDate(job.date),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
-      } satisfies NewOpportunity;
+      };
     })
     .filter((job): job is NewOpportunity => job !== null);
 

@@ -1,3 +1,5 @@
+throw new Error("LEGACY_QUARANTINE: historical workstation-specific directory seed generator is disabled.");
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';

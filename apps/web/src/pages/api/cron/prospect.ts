@@ -7,6 +7,10 @@ import {
 } from "@va-hub/scraper";
 import { nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
+import {
+  PROSPECT_CANDIDATE_FRESHNESS_SQL,
+  PROSPECT_SAMPLE_FRESHNESS_SQL,
+} from "@/lib/prospect-query";
 
 export const prerender = false;
 
@@ -67,7 +71,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
              COUNT(*) AS jobs,
              (SELECT o2.source_url FROM opportunities o2
               WHERE o2.company = o.company AND o2.is_active = 1
-              ORDER BY COALESCE(o2.scraped_at, o2.created_at) DESC LIMIT 1) AS sampleUrl,
+              ORDER BY ${sql.raw(PROSPECT_SAMPLE_FRESHNESS_SQL)} DESC LIMIT 1) AS sampleUrl,
              MAX(o.category) AS category
       FROM opportunities o
       WHERE o.is_active = 1
@@ -75,7 +79,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         AND LOWER(o.company) NOT IN (SELECT LOWER(company_name) FROM va_directory)
       GROUP BY LOWER(o.company)
       HAVING COUNT(*) >= ${MIN_JOBS}
-        AND MAX(COALESCE(o.scraped_at, o.created_at)) >= ${staleCutoff}
+        AND MAX(${sql.raw(PROSPECT_CANDIDATE_FRESHNESS_SQL)}) >= ${staleCutoff}
       ORDER BY jobs DESC
       LIMIT ${CANDIDATE_LIMIT}
     `);

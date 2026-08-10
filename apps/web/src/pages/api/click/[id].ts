@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { eq, sql } from "drizzle-orm";
+import { resolveOutboundUrl } from "@/lib/outbound-url";
 
 export const prerender = false;
 
@@ -36,7 +37,8 @@ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
       return new Response("Job not found", { status: 404 });
     }
 
-    if (targetUrl !== job.sourceUrl && targetUrl !== job.applicationUrl) {
+    const safeTargetUrl = resolveOutboundUrl(job, targetUrl);
+    if (!safeTargetUrl) {
       return new Response("Invalid redirect URL", { status: 403 });
     }
 
@@ -60,7 +62,7 @@ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
         .where(eq(opportunities.id, id));
     }
 
-    return redirect(targetUrl, 302);
+    return redirect(safeTargetUrl, 302);
   } catch (err) {
     console.error(`[api/click] Failed to track click for job ${id}:`, err);
     // Still redirect to the sourceUrl if we validated it, otherwise fail

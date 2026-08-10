@@ -1,4 +1,4 @@
-name: 🛡️ Sovereign CI Guardrail
+name: Sovereign CI Guardrail
 
 on:
   push:
@@ -6,10 +6,8 @@ on:
   pull_request:
     branches: [main]
 
-# Serialize per-ref so two close pushes (e.g. a Sentinel PAT merge and a
-# Hunter rollup commit) cannot deploy out of order — an older commit's build
-# finishing last would otherwise overwrite a newer production deployment.
-# cancel-in-progress:false keeps the latest run queued rather than dropped.
+# Serialize per-ref so two close pushes cannot deploy out of order. The
+# migration lock on the release job also protects the manual recovery path.
 concurrency:
   group: ci-guardrail-${{ github.ref }}
   cancel-in-progress: false
@@ -17,31 +15,113 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
+permissions:
+  contents: read
+
 jobs:
   validate:
-    name: Build & Type Audit
+    name: Validate project-owned code
     runs-on: ubuntu-latest
     steps:
-      - name: 🛑 Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🥟 Setup Bun Runtime
+      - name: Setup Bun runtime
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.3.14
 
-      - name: 📦 Install Dependencies
-        run: bun install
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
 
-      - name: 🧪 Run Unit Tests
-        run: bun test
+      - name: Validate production guardrails
+        run: bun run audit:guardrails
 
-      - name: 🏗️ Build App (Astro check + build)
+      - name: Run unit tests
+        run: bun run test
+
+      - name: Build app
         run: bun run build
 
-      - name: 🚀 Deploy to Cloudflare Pages
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: bunx wrangler pages deploy apps/web/dist --project-name remotejobs-ph
+      - name: Run strict type check
+        run: bun run typecheck
+
+  changes:
+    name: Detect deployable changes
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      deployable: ${{ steps.scope.outputs.deployable }}
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify release scope
+        id: scope
+        shell: bash
+        env:
+          BEFORE: ${{ github.event.before }}
+          CURRENT: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "${BEFORE}^{commit}" 2>/dev/null; then
+            echo "deployable=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --name-only "$BEFORE" "$CURRENT" | grep -qvE '(^docs/|.*\.md$)'; then
+            echo "deployable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "deployable=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    name: Migrate and deploy production
+    needs: [validate, changes]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.deployable == 'true'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: production-d1-migrations
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build deploy artifact
+        run: bun run build
+
+      - name: Apply D1 migrations to production
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --file=../../packages/db/sync_migrations.sql
+          bunx wrangler@4.120.0 d1 migrations apply DB --remote --env production --config wrangler.jsonc
+
+      - name: Verify D1 full-text index integrity
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --command "INSERT INTO opportunities_fts(opportunities_fts, rank) VALUES ('integrity-check', 1);"
+
+      - name: Deploy to Cloudflare Pages
+        working-directory: apps/web
+        run: bunx wrangler@4.120.0 pages deploy dist --project-name remotejobs-ph --branch main
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

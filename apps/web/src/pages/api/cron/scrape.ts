@@ -2,9 +2,17 @@ import type { APIRoute } from "astro";
 import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
 import { isNotNull, isNull, or, and, inArray, eq, lt, asc, gte } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
+import { isAuthorized } from "@/lib/auth";
+import {
+  buildSourceIdsByUrl,
+  conditionalValidatorsForPersistence,
+  sourceIdsForUrls,
+} from "@/lib/conditional-state";
+import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
+import { runLockOutcome } from "@/lib/run-lock";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput } from "@va-hub/scraper";
 
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
@@ -362,7 +370,12 @@ interface SourceFetchStateLoad {
 const RUN_LOCK_ID = "__scrape_run_lock__";
 const RUN_LOCK_TTL_MIN = 8;
 
-async function acquireRunLock(db: AppDb, observedAt: string): Promise<boolean> {
+type RunLockResult =
+  | { state: "acquired" }
+  | { state: "held" }
+  | { state: "unavailable"; error: string };
+
+async function acquireRunLock(db: AppDb, observedAt: string): Promise<RunLockResult> {
   const cutoff = new Date(Date.now() - RUN_LOCK_TTL_MIN * 60_000).toISOString();
   try {
     // Seed the lock row once (no-op if it already exists). Placeholder metadata
@@ -378,16 +391,18 @@ async function acquireRunLock(db: AppDb, observedAt: string): Promise<boolean> {
     }).onConflictDoNothing();
 
     // Atomic claim: only succeeds if the current lock is stale (or first run).
-    const res: any = await db.update(sourceFetchState)
+    const result: unknown = await db.update(sourceFetchState)
       .set({ lastAttemptAt: observedAt, updatedAt: observedAt })
       .where(and(eq(sourceFetchState.sourceId, RUN_LOCK_ID), lt(sourceFetchState.lastAttemptAt, cutoff)));
-    const changed = res?.meta?.changes ?? res?.rowsAffected ?? 0;
-    return changed > 0;
+    const outcome = runLockOutcome(result);
+    if (outcome === "unavailable") {
+      return { state: "unavailable", error: "D1 lock update returned no mutation count" };
+    }
+    return { state: outcome };
   } catch (error) {
-    // If the lock mechanism itself fails, do not block scraping — degrade to
-    // the prior (lock-free) behavior rather than stalling the pipeline.
-    console.warn("[api/cron/scrape] Run-lock unavailable; proceeding without it:", errorMessage(error));
-    return true;
+    // A failed lock must be visible: running without one risks duplicate
+    // source fetches and doubled AI/D1 usage.
+    return { state: "unavailable", error: errorMessage(error) };
   }
 }
 
@@ -653,6 +668,7 @@ export async function sweepUnclearBacklog(
           stats.deactivated += 1;
           await db.update(opportunities).set({
             isActive: false,
+            inactiveReason: "policy-rejected",
             phEligibility: "ineligible",
             geoEvidence: `AI re-triage: ${(triage.reason || "ineligible").slice(0, 200)}`,
             geoCheckedAt: observedAt,
@@ -665,6 +681,7 @@ export async function sweepUnclearBacklog(
           stats.deactivated += 1;
           await db.update(opportunities).set({
             isActive: false,
+            inactiveReason: "policy-rejected",
             phEligibility: "unclear",
             geoEvidence: `Re-triage consensus split — skeptic: ${(skeptic.reason || "refuted").slice(0, 200)}`,
             geoCheckedAt: observedAt,
@@ -766,8 +783,10 @@ async function recordSourceFetchState(
   db: AppDb,
   source: Source,
   result: SourceFetchResult,
-  observedAt: string
+  observedAt: string,
+  shouldPersistConditionalValidators = true,
 ): Promise<void> {
+  const validators = conditionalValidatorsForPersistence(result, shouldPersistConditionalValidators);
   const updateValues = {
     sourceName: source.name,
     sourceType: toSourceType(source),
@@ -775,13 +794,15 @@ async function recordSourceFetchState(
     complianceStatus: source.complianceStatus,
     lastAttemptAt: observedAt,
     lastCount: result.count,
-    lastError: result.ok ? null : result.error ?? "Unknown source fetch error",
+    lastError: result.ok
+      ? (shouldPersistConditionalValidators ? null : "Pending durable ingestion; conditional validators cleared for retry.")
+      : result.error ?? "Unknown source fetch error",
     updatedAt: observedAt,
     // Persist conditional-request validators so the next run can send
     // If-None-Match / If-Modified-Since and skip an unchanged feed.
-    etag: result.etag ?? null,
-    lastModified: result.lastModified ?? null,
-    lastBodyHash: result.bodyHash ?? null,
+    etag: validators.etag,
+    lastModified: validators.lastModified,
+    lastBodyHash: validators.bodyHash,
     ...(result.ok ? { lastSuccessAt: observedAt } : {}),
   };
 
@@ -883,7 +904,6 @@ async function fetchConfiguredSourceWithStatus(
   if (result.notModified && prevState) {
     result.count = prevState.lastCount ?? 0;
   }
-  await recordSourceFetchState(db, source, result, observedAt);
   return result;
 }
 
@@ -910,10 +930,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // 2. Authorization Check — supports both header formats and env var names for compatibility
   const proxySecret = env?.PROXY_SECRET || env?.CRON_SECRET;
-  const authHeader = request.headers.get("Authorization");
-  const cronSecretHeader = request.headers.get("x-cron-secret");
-  const providedSecret = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : cronSecretHeader;
-  if (!proxySecret || !providedSecret || providedSecret !== proxySecret) {
+  if (!isAuthorized(request, proxySecret)) {
     console.warn("[api/cron/scrape] Unauthorized access attempt");
     return new Response("Unauthorized", { status: 401 });
   }
@@ -925,11 +942,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Workers AI cost). Claim a single lock row with an atomic conditional
     // UPDATE; if a fresh lock is already held, exit early. This also closes the
     // cadence-guard TOCTOU noted in the 2026-07 audit.
-    const lockAcquired = await acquireRunLock(db, observedAt);
-    if (!lockAcquired) {
+    const lock = await acquireRunLock(db, observedAt);
+    if (lock.state === "held") {
       console.log("[api/cron/scrape] Another run holds the lock; exiting.");
       return new Response(JSON.stringify({ skipped: true, reason: "run-lock-held", message: "Another scrape run is in progress." }), {
         status: 200, headers: { "Content-Type": "application/json" },
+      });
+    }
+    if (lock.state === "unavailable") {
+      console.error("[api/cron/scrape] Run-lock unavailable; refusing an unlocked run:", lock.error);
+      return new Response(JSON.stringify({ error: "Scrape coordination is temporarily unavailable. Retry shortly." }), {
+        status: 503, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     }
 
@@ -957,6 +980,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
       )
     );
     const jsonItems = jsonResults.flatMap((result) => result.items);
+    const conditionalSourceResults = [...rssResults, ...htmlResults, ...jsonResults];
+    const configuredSourcesById = new Map(staticSources.map((source) => [source.id, source]));
+    const sourceIdsByUrl = buildSourceIdsByUrl(conditionalSourceResults);
+    const recordConditionalSourceStates = async (retrySourceIds: ReadonlySet<string>) => {
+      for (const result of conditionalSourceResults) {
+        if (result.skipped || !result.sourceId) continue;
+        const source = configuredSourcesById.get(result.sourceId);
+        if (!source) continue;
+        await recordSourceFetchState(
+          db,
+          source,
+          result,
+          observedAt,
+          !retrySourceIds.has(result.sourceId),
+        );
+      }
+    };
 
     const atsAgencies = await db.select().from(vaDirectory).where(
       and(
@@ -1145,10 +1185,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .filter((result) => !result.ok)
       .map((result) => `${result.sourceName} (${result.sourceType}): ${result.error}`);
 
-    const allItems = [...rssItems, ...htmlItems, ...jsonItems, ...atsItems];
+    const rawItems = [...rssItems, ...htmlItems, ...jsonItems, ...atsItems];
+    // This is the final untrusted-data boundary before database writes and
+    // later verifier fetches. Every source implementation may evolve, so the
+    // production route normalizes source URLs again rather than relying on any
+    // one parser to keep the invariant.
+    const allItems = rawItems.flatMap((item) => {
+      const sourceUrl = sanitizeSourceUrl(item.sourceUrl);
+      if (!sourceUrl) return [];
+      return [{
+        ...item,
+        sourceUrl,
+        applicationUrl: sanitizeApplyUrl(item.applicationUrl) ?? sourceUrl,
+        contentHash: toContentHash(item.title, sourceUrl),
+      }];
+    });
+    const droppedNoUrl = rawItems.length - allItems.length;
     console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML, ${jsonItems.length} JSON, ${atsItems.length} ATS)`);
 
     if (allItems.length === 0) {
+      await recordConditionalSourceStates(new Set());
       // Nothing new to ingest — but backlog convergence is maintenance work that
       // must still happen. At a 15-min cadence most ticks land here (feeds return
       // 304, or every source is cadence-skipped), and while the sweep lived only
@@ -1178,20 +1234,30 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 4. De-duplicate against existing database entries by source URL (batch check, not full-table scan)
     const allScrapedUrls = allItems.map(item => item.sourceUrl).filter(Boolean);
-    // Items without a usable sourceUrl can neither dedup nor insert — count
-    // them so the raw -> dedup -> triage -> insert funnel stays closed-form.
-    const droppedNoUrl = allItems.length - allScrapedUrls.length;
+    // Invalid source URLs were removed at the final ingestion boundary above;
+    // retain their count so the raw -> dedup -> triage -> insert funnel stays
+    // closed-form in the response telemetry.
     if (droppedNoUrl > 0) {
       console.warn(`[api/cron/scrape] ${droppedNoUrl} scraped item(s) had no usable sourceUrl and were dropped.`);
     }
     const BATCH_SIZE = 50;
     const existingUrls = new Set<string>();
+    const recoverableInactiveUrls = new Set<string>();
     for (let i = 0; i < allScrapedUrls.length; i += BATCH_SIZE) {
       const batch = allScrapedUrls.slice(i, i + BATCH_SIZE);
-      const found = await db.select({ sourceUrl: opportunities.sourceUrl })
+      const found = await db.select({
+        sourceUrl: opportunities.sourceUrl,
+        isActive: opportunities.isActive,
+        inactiveReason: opportunities.inactiveReason,
+      })
         .from(opportunities)
         .where(inArray(opportunities.sourceUrl, batch));
-      found.forEach((r: any) => existingUrls.add(r.sourceUrl));
+      found.forEach((row) => {
+        existingUrls.add(row.sourceUrl);
+        if (!row.isActive && isFeedRecoverableInactiveReason(row.inactiveReason)) {
+          recoverableInactiveUrls.add(row.sourceUrl);
+        }
+      });
     }
 
     // Update lastSeenInFeedAt for jobs still in feeds (prevents false stale archiving).
@@ -1215,10 +1281,35 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.log(`[api/cron/scrape] Debounced lastSeenInFeedAt: ${updatedCount} of ${existingUrls.size} existing jobs updated`);
     }
 
+    // A feed is the source of truth for availability. Revive only rows that
+    // this system previously archived for staleness or link health; policy and
+    // quality rejections remain inactive even when a feed repeats their URL.
+    if (recoverableInactiveUrls.size > 0) {
+      let reactivated = 0;
+      for (const batch of chunkArray(Array.from(recoverableInactiveUrls), BATCH_SIZE)) {
+        const res = await db.update(opportunities)
+          .set({
+            isActive: true,
+            inactiveReason: null,
+            failedVerificationCount: 0,
+            lastSeenInFeedAt: observedAt,
+            updatedAt: observedAt,
+          })
+          .where(and(
+            inArray(opportunities.sourceUrl, batch),
+            eq(opportunities.isActive, false),
+            inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
+          ));
+        reactivated += (res as any)?.meta?.changes ?? (res as any)?.changes ?? 0;
+      }
+      console.log(`[api/cron/scrape] Reactivated ${reactivated} feed-confirmed jobs previously archived by the system.`);
+    }
+
     const newItems = allItems.filter((item) => item.sourceUrl && !existingUrls.has(item.sourceUrl));
     console.log(`[api/cron/scrape] ${newItems.length} new items found after URL dedup`);
 
     if (newItems.length === 0) {
+      await recordConditionalSourceStates(new Set());
       // Same reasoning as the allItems===0 return above, and this is the path
       // that actually fires on most ticks: feeds keep returning their current
       // items (so allItems > 0), but after URL dedup none of them are new. The
@@ -1248,9 +1339,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 5. Triage and classify new items
     const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get("limit") || "50", 10);
+    const requestedLimit = Number(url.searchParams.get("limit") || "50");
+    const limit = Number.isSafeInteger(requestedLimit) && requestedLimit >= 1 && requestedLimit <= 100
+      ? requestedLimit
+      : 50;
     const itemsToProcess = newItems.slice(0, limit);
     console.log(`[api/cron/scrape] Processing ${itemsToProcess.length} out of ${newItems.length} new items (limit: ${limit})`);
+    const retrySourceIds = sourceIdsForUrls(
+      newItems.slice(itemsToProcess.length).map((item) => item.sourceUrl),
+      sourceIdsByUrl,
+    );
+    const markItemsForRetry = (items: readonly { sourceUrl: string }[]) => {
+      for (const sourceId of sourceIdsForUrls(items.map((item) => item.sourceUrl), sourceIdsByUrl)) {
+        retrySourceIds.add(sourceId);
+      }
+    };
 
     const triagedItems: typeof opportunities.$inferInsert[] = [];
     // Ineligible jobs are persisted as INACTIVE rows so their source_url
@@ -1302,6 +1405,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         rejectedItems.push({
           ...item,
           isActive: false,
+          inactiveReason: "policy-rejected",
           tags: Array.from(new Set([...(item.tags || []), "geo-gate-rejected"])),
           category: "other",
           geoScope: gate.geoScope,
@@ -1355,11 +1459,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
 
       for (const { item, gate, triage, skeptic } of results) {
-        if (!triage) continue;
+        if (!triage) {
+          markItemsForRetry([item]);
+          continue;
+        }
 
         if (triage.aiUnavailable) {
           triageAiUnavailable += 1;
           console.warn(`[api/cron/scrape] AI unavailable for "${item.title}"; deferring to next run (fail closed).`);
+          markItemsForRetry([item]);
           continue;
         }
 
@@ -1371,6 +1479,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           rejectedItems.push({
             ...item,
             isActive: false,
+            inactiveReason: "policy-rejected",
             tags: Array.from(new Set([...(item.tags || []), "triage-rejected"])),
             category: "other",
             geoScope: gate.geoScope,
@@ -1396,6 +1505,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           rejectedItems.push({
             ...item,
             isActive: false,
+            inactiveReason: "policy-rejected",
             tags: Array.from(new Set([...(item.tags || []), "consensus-quarantined"])),
             category: "other",
             geoScope: gate.geoScope,
@@ -1471,6 +1581,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
           actualChanges += (res as any).meta.changes;
         } else {
+          markItemsForRetry(batch);
           insertErrors.push({
             batchStart: i,
             batchSize: batch.length,
@@ -1479,6 +1590,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         }
       } catch (err) {
         insertFailedBatches += 1;
+        markItemsForRetry(batch);
         insertErrors.push({
           batchStart: i,
           batchSize: batch.length,
@@ -1499,9 +1611,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
           rejectedPersisted += (res as any).meta.changes;
+        } else {
+          markItemsForRetry(batch);
+          console.warn(`[api/cron/scrape] Rejected-item insert metadata missing (index ${i}); clearing conditional validators for retry.`);
         }
       } catch (err) {
         rejectedInsertFailedBatches += 1;
+        markItemsForRetry(batch);
         console.warn(`[api/cron/scrape] Rejected-item batch insert failed (index ${i}):`, errorMessage(err));
       }
     }
@@ -1511,6 +1627,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // 6c. Unclear-backlog convergence — see sweepUnclearBacklog(). Also invoked
     // on the no-new-items early-return path above, so it runs every tick.
+    // A source's ETag/body hash becomes durable only after every listing has a
+    // terminal outcome. Otherwise a later 304 would silently suppress a retry.
+    await recordConditionalSourceStates(retrySourceIds);
+
     const unclearSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_BUSY_TICK);
     const unclearRetriaged = unclearSweep.retriaged;
     const unclearUpgraded = unclearSweep.upgraded;

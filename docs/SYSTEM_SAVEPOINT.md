@@ -2,6 +2,44 @@
 
 ### Current Savepoint
 
+Date: 2026-08-10
+Branch: codex/production-apex-audit-2026-08-09
+Repository: cyalcala/va-freelance-hub
+Status: owner-requested stop-point backup. The branch contains unmerged,
+undeployed production-hardening work. The primary code checkpoint is 33c1995,
+pushed to origin/codex/production-apex-audit-2026-08-09.
+
+GitHub Actions evidence: an immediate branch query returned no workflow run.
+The CI guardrail only triggers for main and pull requests; this backup must not
+be mistaken for CI or production acceptance.
+
+Read docs/major-production-audit-2026-08-10.md for the five-track ledger and
+docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md before changing
+the framework, Pages deployment model, D1 schema, or workflows. Migrations
+0028 and 0029 are local-verified only and must not be treated as deployed.
+
+### Last Accepted Production Baseline
+
+Date: 2026-08-09
+Branch: `main`
+Repository: `cyalcala/va-freelance-hub`
+
+Latest accepted checkpoint:
+
+- `5bc6d09` - `Merge branch 'codex/major-quality-audit-2026-08-09'`
+- Source implementation: `2ea2226` - `fix: harden production quality guardrails`
+- Audit: `docs/major-code-audit-2026-08-09.md`
+- Decision: `docs/decisions/ADR-004-migrate-before-deploy-and-validate-fts.md`
+- Local verification: `bun run verify` passed on the merged tree (190 tests,
+  0 failures, 354 assertions; strict TypeScript; Astro production build) and
+  changed workflow YAML parsed with PyYAML.
+- Production acceptance: GitHub Actions run `31317525008` passed validation,
+  D1 migration, remote FTS integrity, and Pages deploy in sequence. Public
+  smoke checks returned 200 for `/`, `/opportunities`,
+  `/opportunities?q=assistant`, and `/directory`.
+
+Previous savepoint:
+
 Date: 2026-07-04
 Branch: `main`
 Repository: `cyalcala/va-freelance-hub`

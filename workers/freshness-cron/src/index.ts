@@ -8,6 +8,8 @@
 // The scrape endpoint is idempotent and holds a run-lock, so it is safe for
 // this Worker and the GitHub Hunter to both trigger it — overlaps are deduped.
 
+import { assessSuccessfulScrapeResponse } from "./scrape-response";
+
 export interface Env {
   // Set once with: wrangler secret put PROXY_SECRET (in this Worker's dir).
   PROXY_SECRET: string;
@@ -40,8 +42,8 @@ async function ping(env: Env): Promise<void> {
     signal: AbortSignal.timeout(60_000),
   });
   const body = await res.text();
-  console.log(`[freshness-cron] scrape ${res.status}: ${body.slice(0, 500)}`);
   if (!res.ok) throw new Error(`scrape endpoint returned HTTP ${res.status}`);
+  console.log(`[freshness-cron] scrape ${res.status}: ${assessSuccessfulScrapeResponse(body)}`);
 }
 
 export default {

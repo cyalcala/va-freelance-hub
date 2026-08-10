@@ -1,5 +1,27 @@
 # Implementation Status
 
+## Latest Stop Checkpoint — 2026-08-10
+
+Owner direction: stop implementation, preserve the work, document it, and back
+it up to GitHub. The current branch is
+codex/production-apex-audit-2026-08-09. It contains five audited hardening
+tracks and is not merged, deployed, or production-accepted.
+
+Primary GitHub code checkpoint: 33c1995. The branch push did not trigger CI
+because the guardrail is configured for main and pull requests; no workflow
+result may be inferred from the saved branch.
+
+The authoritative audit ledger is
+docs/major-production-audit-2026-08-10.md. It records the precise completed
+work, residual dependency advisories, verification evidence, known non-release
+items, and safe resume order. ADR-005 records why the active Cloudflare Pages
+path remains on its compatibility line instead of performing an implicit
+Pages-to-Workers migration.
+
+The owner’s 2/5 marker is a pause marker, not an accepted completion
+percentage. The historical Lens 2 completion below remains historical; it is
+not evidence that this new branch was released.
+
 ## Start Here
 
 When starting a new chat or work session, read these in order:
@@ -15,7 +37,7 @@ When starting a new chat or work session, read these in order:
 9. `docs/major-audit-2026-06-10.md`
 10. `docs/major-audit-2026-06-06.md`
 
-### Current Focus
+### Previous Focus
 
 Post-audit health repairs complete. The system is healthy after the 2026-06-11
 major audit fixed Hunter D1 insert batching, reduced category page payloads, and
@@ -51,6 +73,41 @@ Current accepted completion: 100% of Lens 2.
 | L3 CI/CD Auto-Deployments | 30% | 30% | Accepted | Complete |
 
 ## Latest Accepted Checkpoint
+
+### Post-Handoff F-32 - Major Quality Guardrails (Production Accepted)
+
+- Date: 2026-08-09
+- Branch: `main`
+- Production merge commit: `5bc6d09` (`Merge branch 'codex/major-quality-audit-2026-08-09'`)
+- Status: production accepted. The isolated implementation was merged after a
+  second clean merged-tree verification, then released through the
+  migration-first CI path.
+- Delivered:
+  - root `test`, `typecheck`, and `verify` commands target project-owned test
+    paths and turn strict compilation into a reproducible local/CI gate;
+  - migration `0027_fts5_trigger_scope.sql` rebuilds the external-content FTS5
+    index over all opportunity rows and narrows FTS updates to indexed text;
+  - `packages/db/fts5-search.test.ts` proves original index drift is detected,
+    repaired integrity passes, historic inactive rows are indexed, and indexed
+    text updates remain searchable;
+  - normal release flow is validate -> D1 migration -> remote FTS integrity
+    check -> Pages deploy under a shared D1 lock; standalone migration is
+    manual recovery only;
+  - prune and verifier pulses fail malformed/non-2xx responses and report real
+    workflow plus HTTP status rather than unconditional success;
+  - ADR-004 and `docs/major-code-audit-2026-08-09.md` record the rationale,
+    ranked findings, residual risks, and follow-up order.
+- Local verification:
+  - `bun run verify` passed in 55.8 seconds on the merged `main` tree: 190 tests, 0 failures, 354
+    assertions; strict TypeScript; Astro production build.
+  - PyYAML parsed all four modified workflows; `git diff --check` passed.
+- Production evidence:
+  - GitHub Actions run `31317525008` passed on `5bc6d09`.
+  - Validation job passed unit tests, production build, and strict typecheck.
+  - Release job applied D1 migrations, passed the remote FTS5 integrity check,
+    and deployed Cloudflare Pages in that order.
+  - Public smoke checks returned 200 for `/`, `/opportunities`,
+    `/opportunities?q=assistant`, and `/directory`.
 
 ### Post-Handoff F-31 - SEO Growth Engine (Detail Pages + FTS5 + Sitemap)
 

@@ -1,6 +1,8 @@
 import { XMLParser } from "fast-xml-parser";
 import crypto from "crypto";
 
+throw new Error("LEGACY_QUARANTINE: this unreferenced Hunter prototype is archived. Use /api/cron/scrape and the active Hunter pulse.");
+
 const INGEST_API_URL = process.env.INGEST_API_URL;
 const PROXY_SECRET = process.env.PROXY_SECRET;
 

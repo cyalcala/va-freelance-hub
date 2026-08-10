@@ -1,8 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getDb, vaDirectory } from '@va-hub/db';
-import { DirectorySearch } from '@/components/DirectorySearch';
-import { and, asc, eq, lt } from 'drizzle-orm';
+import { and, asc, count, eq, lt, sql, type SQL } from 'drizzle-orm';
+import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
+import { markPublicDataUnavailable } from '@/lib/public-route-load';
+import { escapeSqlLike, parseJobBoardRequest } from '@/lib/public-query';
+import { sanitizeSourceUrl } from '@va-hub/scraper';
 
 export const prerender = false;
 
@@ -11,44 +14,125 @@ Astro.response.headers.set(
   'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
 );
 
-let allAgencies: any[] = [];
+const DIRECTORY_PAGE_SIZE = 48;
+const parsedRequest = parseJobBoardRequest(Astro.url.searchParams);
+if (!parsedRequest.ok) {
+  Astro.response.headers.set('Cache-Control', 'no-store');
+  return new Response(parsedRequest.message, { status: parsedRequest.status });
+}
+
+const { query, page: currentPage } = parsedRequest;
+const offset = (currentPage - 1) * DIRECTORY_PAGE_SIZE;
+
+type DirectoryAgency = {
+  id: number;
+  companyName: string;
+  website: string | null;
+  niche: string;
+  isDayshift: boolean;
+  isVerified: boolean;
+  isRemote: boolean;
+  isMarketplace: boolean;
+};
+
+const NICHE_LABELS: Record<string, string> = {
+  'australian-dayshift': 'Australian & dayshift VA',
+  'global-va': 'Global VA & outsourcing',
+  bpo: 'BPO & professional services',
+  'job-boards': 'Job boards & resources',
+  ecommerce: 'E-commerce & marketing',
+  tech: 'Technology & specialized',
+};
+
+const NICHE_DOTS: Record<string, string> = {
+  'australian-dayshift': 'bg-accent',
+  'global-va': 'bg-emerald-500',
+  bpo: 'bg-blue-500',
+  'job-boards': 'bg-violet-500',
+  ecommerce: 'bg-orange-500',
+  tech: 'bg-cyan-500',
+};
+
+function normalizeDirectoryUrl(raw: string | null): string | null {
+  if (!raw) return null;
+  return sanitizeSourceUrl(raw) ?? sanitizeSourceUrl(`https://${raw.trim().replace(/^\/\//, '')}`);
+}
+
+function buildPageUrl(page: number) {
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (page > 1) params.set('page', String(page));
+  const qs = params.toString();
+  return qs ? `/directory?${qs}` : '/directory';
+}
+
+let agencies: DirectoryAgency[] = [];
+let totalAgencies = 0;
+let dataUnavailable = false;
+let pageOutOfRange = false;
 
 try {
   const db = getDb(Astro.locals.runtime.env);
-  // Only select the fields used by DirectorySearch/CategoryCard to keep
-  // the hydration payload small. Drops notes, hiringPageUrl, verifiedAt,
-  // createdAt, rating, atsToken, atsPlatform, and hiresFilipinos.
-  allAgencies = await db
-    .select({
-      id: vaDirectory.id,
-      companyName: vaDirectory.companyName,
-      website: vaDirectory.website,
-      niche: vaDirectory.niche,
-      isDayshift: vaDirectory.isDayshift,
-      isVerified: vaDirectory.isVerified,
-      isRemote: vaDirectory.isRemote,
-      isMarketplace: vaDirectory.isMarketplace,
-    })
+  const filters: SQL[] = [
+    eq(vaDirectory.hiresFilipinos, true),
+    lt(vaDirectory.linkFailCount, 3),
+  ];
+  if (query) {
+    filters.push(sql`lower(${vaDirectory.companyName}) LIKE ${`%${escapeSqlLike(query.toLowerCase())}%`} ESCAPE '\\'`);
+  }
+  const whereClause = and(...filters);
+
+  const [totalResult] = await db
+    .select({ total: count() })
     .from(vaDirectory)
-    // Directory audit (2026-07): hide two disjoint sets, both reversible.
-    //   1. hires_filipinos=0 — defunct/duplicate/verified-not-PH (migration 0024).
-    //   2. link_fail_count >= 3 — the automated Directory Pulse confirmed the
-    //      website genuinely gone (404/410/parked) on 3 consecutive checks.
-    // This is the fix for the mechanism gap found 2026-07-21: the pulse counts
-    // strikes but the directory previously filtered only on hires_filipinos, so
-    // confirmed-dead links never actually disappeared. Now they do — and a
-    // recovered site (strike reset to 0) reappears automatically.
-    .where(and(eq(vaDirectory.hiresFilipinos, true), lt(vaDirectory.linkFailCount, 3)))
-    .orderBy(asc(vaDirectory.companyName));
-} catch (e) {
-  console.error("DB error:", e);
+    .where(whereClause);
+  totalAgencies = totalResult?.total ?? 0;
+  pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalAgencies / DIRECTORY_PAGE_SIZE));
+
+  if (!pageOutOfRange) {
+    agencies = await db
+      .select({
+        id: vaDirectory.id,
+        companyName: vaDirectory.companyName,
+        website: vaDirectory.website,
+        niche: vaDirectory.niche,
+        isDayshift: vaDirectory.isDayshift,
+        isVerified: vaDirectory.isVerified,
+        isRemote: vaDirectory.isRemote,
+        isMarketplace: vaDirectory.isMarketplace,
+      })
+      .from(vaDirectory)
+      .where(whereClause)
+      .orderBy(asc(vaDirectory.companyName))
+      .limit(DIRECTORY_PAGE_SIZE)
+      .offset(offset);
+  }
+} catch (error) {
+  dataUnavailable = true;
+  markPublicDataUnavailable(Astro.response, error);
 }
+
+if (pageOutOfRange && !dataUnavailable) {
+  Astro.response.headers.set('Cache-Control', 'no-store');
+  return new Response('Not found', { status: 404 });
+}
+
+const totalPages = Math.max(1, Math.ceil(totalAgencies / DIRECTORY_PAGE_SIZE));
+const resultStart = totalAgencies === 0 ? 0 : offset + 1;
+const resultEnd = Math.min(offset + agencies.length, totalAgencies);
+const cards = agencies.map((agency) => {
+  const href = normalizeDirectoryUrl(agency.website);
+  let hostname = '';
+  try { hostname = href ? new URL(href).hostname : ''; } catch {}
+  return { ...agency, href, hostname };
+});
 ---
 
 <Layout
   title="Agencies & Companies That Hire Filipinos — VA & Freelance Hub"
   description="A curated, vetted directory of VA agencies and remote-first companies that actively hire Filipino talent."
 >
+  {dataUnavailable && <ServiceUnavailable />}
   <div class="max-w-5xl mx-auto pt-12 md:pt-16">
     <div class="mb-10 max-w-2xl">
       <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-2">The directory</p>
@@ -61,6 +145,79 @@ try {
       </p>
     </div>
 
-    <DirectorySearch client:load directory={allAgencies} />
+    <form
+      id="search"
+      method="get"
+      action="/directory"
+      class="scroll-mt-20 sticky top-[4.5rem] z-40 max-w-2xl mb-8 bg-parchment/85 backdrop-blur-xl rounded-full"
+    >
+      <label class="sr-only" for="q">Search companies</label>
+      <div class="flex gap-2 rounded-full border border-ink/[0.1] bg-surface p-1.5 shadow-soft focus-within:border-accent/50 focus-within:ring-4 focus-within:ring-accent/10 transition-all">
+        <svg class="ml-3 shrink-0 self-center h-5 w-5 text-ink/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input
+          id="q"
+          name="q"
+          type="search"
+          value={query}
+          placeholder="Search companies…"
+          class="min-w-0 flex-1 h-11 bg-transparent text-ink text-base font-medium outline-none placeholder:text-ink/35"
+        />
+        <button type="submit" class="shrink-0 rounded-full bg-accent px-4 sm:px-5 text-sm font-semibold text-white hover:bg-accent-hover transition-colors">Search</button>
+      </div>
+    </form>
+
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 text-[13px] font-semibold text-ink/45">
+      <p class="tabular-nums">Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalAgencies.toLocaleString()} companies</p>
+      {query && <a href="/directory" class="text-accent hover:text-accent-hover transition-colors">Clear search</a>}
+    </div>
+
+    {cards.length === 0 ? (
+      <div class="text-center py-24 bg-surface/60 rounded-2xl border border-ink/[0.07]">
+        <p class="text-ink/55 font-semibold text-lg">{query ? `No companies match “${query}”.` : 'No companies are available right now.'}</p>
+        {query && <a href="/directory" class="mt-5 inline-flex items-center px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Clear search</a>}
+      </div>
+    ) : (
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        {cards.map((agency) => (
+          <article class="break-inside-avoid bg-surface rounded-2xl border border-ink/[0.07] shadow-card overflow-hidden transition-shadow hover:shadow-soft">
+            {agency.href ? (
+              <a href={agency.href} target="_blank" rel="noopener noreferrer" class="group flex items-start gap-3.5 p-4 hover:bg-ink/[0.025] transition-colors">
+                <div class="w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
+                  {agency.hostname ? (
+                    <img src={`https://www.google.com/s2/favicons?domain=${agency.hostname}&sz=64`} alt="" aria-hidden="true" width="20" height="20" loading="lazy" decoding="async" class="w-5 h-5 object-contain" />
+                  ) : (
+                    <svg class="w-4 h-4 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
+                  )}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5">
+                    <h2 class="font-semibold text-ink text-[15px] group-hover:text-accent transition-colors truncate">{agency.companyName}</h2>
+                    {agency.isVerified && <span class="text-blue-500 shrink-0" aria-label="Verified company">✓</span>}
+                  </div>
+                  <p class="mt-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-overline text-ink/45"><span class={`w-1.5 h-1.5 rounded-full ${NICHE_DOTS[agency.niche] ?? 'bg-ink/30'}`}></span>{NICHE_LABELS[agency.niche] ?? agency.niche}</p>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-3">
+                    {agency.isDayshift && <span class="text-[10px] px-2 py-0.5 rounded-md bg-accent-soft text-accent font-semibold">Dayshift</span>}
+                    {agency.isRemote && <span class="text-[10px] px-2 py-0.5 rounded-md bg-ink/[0.05] text-ink/55 font-semibold">Remote</span>}
+                    {agency.isMarketplace && <span class="text-[10px] px-2 py-0.5 rounded-md bg-violet-500/[0.08] text-violet-700 font-semibold">Marketplace</span>}
+                  </div>
+                </div>
+                <svg class="mt-1 h-4 w-4 text-ink/25 group-hover:text-accent transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg>
+              </a>
+            ) : (
+              <div class="flex items-start gap-3.5 p-4">
+                <div class="w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08]"><svg class="w-4 h-4 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+                <div class="min-w-0 flex-1"><h2 class="font-semibold text-ink text-[15px] truncate">{agency.companyName}</h2><p class="mt-1 text-xs text-ink/45">Website unavailable</p></div>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    )}
+
+    <nav class="mt-8 flex items-center justify-between gap-4" aria-label="Directory pagination">
+      {currentPage > 1 ? <a href={buildPageUrl(currentPage - 1)} class="inline-flex items-center px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">← Previous</a> : <span />}
+      <p class="text-sm font-semibold text-ink/45 tabular-nums">Page {currentPage} of {totalPages}</p>
+      {currentPage < totalPages ? <a href={buildPageUrl(currentPage + 1)} class="inline-flex items-center px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Next →</a> : <span />}
+    </nav>
   </div>
 </Layout>
