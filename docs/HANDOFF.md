@@ -1,6 +1,55 @@
 # Handoff
 
-## Verified Checkpoint — 2026-08-10 Production Hardening Audit
+## Current Checkpoint — 2026-08-11 Alerting Regression + Sovereign Crawler 4A/4B
+
+Status: implemented, tested, pushed on `codex/audit-worktree-bootstrap`.
+Not merged, not deployed. Audit: `docs/major-audit-2026-08-11.md`.
+
+### The finding that mattered
+
+Ingestion alerting had been dead since 2026-07-31 and nothing reported it.
+Removing the Hunter GHA schedule (finding P-5) correctly made the Cloudflare
+cron Worker the primary clock, but it also orphaned Hunter's `alerts` job —
+the only reader of per-run insert failures, triage failures, fetch-event
+logging failures and cadence-guard state. Ingestion stayed healthy by luck,
+so the eleven-day silence was invisible.
+
+Fixed durably: run diagnostics now land on a reserved `__ingest_diag__` row in
+`source_fetch_state`, and the daily Sentinel pulse alerts on both degradation
+and a **stale heartbeat**. Alerting no longer depends on which clock ran the
+scrape, and a stopped clock is detectable for the first time.
+
+### Also in this checkpoint
+
+- Daily source-health rollup restored, now derived from D1 instead of a Hunter
+  artifact (it had frozen on 2026-07-31).
+- **Phase 4A** — runtime robots.txt engine: RFC 9309 subset, Content Signals,
+  D1 cache keyed by origin, migration 0030. Ships in **observe mode**; the
+  flip-to-enforce checklist is at the `ROBOTS_MODE` constant in `scrape.ts`.
+- **Phase 4B** — one declared crawler identity (`RemotePHJobsBot/1.0`) replacing
+  five drifted UA strings; four ATS endpoints that sent no UA at all now declare
+  one. Link-liveness checks deliberately keep a browser UA, and that is now a
+  named decision rather than drift.
+- Stale worktree holding `main` removed; polyfill removal committed.
+
+327 tests pass, typecheck and build clean.
+
+### Next safe work
+
+1. Merge and deploy via the migration-first path so 0030 lands before the code
+   that reads `robots_cache`.
+2. Confirm the first post-deploy Sentinel run reports `Ingestion: healthy`.
+3. Collect ~24h of `robotsWouldBlock` evidence, then flip `ROBOTS_MODE` to
+   `enforce` in its own revertible commit.
+4. Watch `failedSources` for Breezy and HTML sources after the UA change; per
+   standing policy, a source that blocks a declared bot gets paused and asked,
+   not disguised.
+5. Then Phase 4C (acquisition ladder: sitemap + JSON-LD `JobPosting` feeding
+   `applicantLocationRequirements` into the geo gate).
+
+OWNER ACTION still open: rotate the leaked `tr_dev_` / Turso / ISR secrets.
+
+## Previous Checkpoint — 2026-08-10 Production Hardening Audit
 
 Status: merged, deployed, and independently verified.
 

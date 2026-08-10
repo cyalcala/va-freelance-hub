@@ -1,6 +1,42 @@
 # Implementation Status
 
-## Latest Checkpoint — 2026-08-10 (verified)
+## Latest Checkpoint — 2026-08-11 (alerting regression + Sovereign Crawler 4A/4B)
+
+Audit: `docs/major-audit-2026-08-11.md`. Branch
+`codex/audit-worktree-bootstrap`, pushed, not yet merged or deployed.
+
+**P0 found and fixed — ingestion alerting had been silently dead for 11 days.**
+Commit `b3347f3` (finding P-5, 2026-07-31) removed the Hunter GHA schedule so
+the Cloudflare cron Worker became the sole clock. That also orphaned Hunter's
+`alerts` job, the only consumer of per-run degradation signals (insert
+failures, triage failures, fetch-event logging failures, cadence-guard state).
+Those were being reported into an HTTP response nobody reads — regressing the
+whole 2026-07-04 silent-error audit. Ingestion itself stayed healthy, which is
+why nothing surfaced it.
+
+Fixed by parking run diagnostics on a reserved `__ingest_diag__` row in
+`source_fetch_state` (same pattern as `__sweep_diag__`, no schema change) and
+alerting from the daily Sentinel pulse. The row also carries an ingestion
+**heartbeat**, so a stopped clock is now detectable — it was not, in any form,
+before.
+
+**Also fixed:**
+- `docs/source-health-latest.md` had frozen on 2026-07-31; rebuilt as a D1-derived
+  daily rollup on the Sentinel pulse.
+- Masterplan **Phase 4A**: runtime robots.txt engine (RFC 9309 subset + Content
+  Signals + D1 cache, migration 0030), shipped in **observe mode** with a
+  documented flip checklist.
+- Masterplan **Phase 4B**: one declared crawler identity replacing five drifted
+  User-Agent strings and four ATS endpoints that sent none.
+- Stale worktree holding `main` removed; MessageChannel polyfill removal committed.
+
+Verification: 327 tests pass (was 234), typecheck clean, build clean, migration
+0030 idempotent locally.
+
+OWNER ACTION unchanged: rotate the leaked `tr_dev_` / Turso / ISR secrets at
+their providers.
+
+## Previous Checkpoint — 2026-08-10 (verified)
 
 The five-track production hardening audit (Codex/Nemotron, branch
 `codex/production-apex-audit-2026-08-09`) was merged to `main` via PR #55
