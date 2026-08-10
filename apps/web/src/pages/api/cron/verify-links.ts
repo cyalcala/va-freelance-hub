@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { eq, sql, inArray, asc } from "drizzle-orm";
-import { chunkArray, classifyLinkResponse, sanitizeSourceUrl, scanLandingPageForGeoLock } from "@va-hub/scraper";
+import { chunkArray, classifyLinkResponse, linkCheckHeaders, sanitizeSourceUrl, scanLandingPageForGeoLock } from "@va-hub/scraper";
 import { daysAgoUtcIso, nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 
@@ -102,9 +102,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
           try {
             const res = await fetch(safeSourceUrl, {
               method: deepScan ? "GET" : "HEAD",
-              headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-              },
+              // Browser identity is deliberate here: this request asks "would
+              // a job seeker clicking this link still reach the posting?", so
+              // it stands in for their browser. See packages/scraper/userAgent.ts.
+              headers: linkCheckHeaders(),
               signal: AbortSignal.timeout(8_000),
               redirect: "follow",
             });

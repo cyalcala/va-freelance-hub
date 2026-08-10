@@ -9,6 +9,8 @@
 // - DNS failures are the strongest death signal but still get retried across
 //   runs (the 3-strike system) before any flagging.
 
+import { linkCheckHeaders } from "./userAgent";
+
 // "dead_dns" retained only for backward-compat with rows written before
 // 2026-07-21; the checker no longer produces it. Network failures now classify
 // as "unreachable" (surfaced for human review, NOT an auto-strike) because the
@@ -113,11 +115,7 @@ export async function checkDirectoryLink(rawUrl: string | null | undefined, time
   try {
     const res = await fetch(url, {
       method: "GET",
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml,*/*",
-      },
+      headers: linkCheckHeaders({ Accept: "text/html,application/xhtml+xml,*/*" }),
       redirect: "follow",
       signal: AbortSignal.timeout(timeoutMs),
     });
