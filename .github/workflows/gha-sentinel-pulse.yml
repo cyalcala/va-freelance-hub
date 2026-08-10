@@ -451,4 +451,125 @@ jobs:
           else
             echo "- **Sweep error**: none" >> $GITHUB_STEP_SUMMARY
           fi
+          INGEST_ERR="${INGEST_DIAG_ERROR:-}"
+          if [ -n "$INGEST_ERR" ] && [ "$INGEST_ERR" != "null" ]; then
+            echo "- **Ingestion**: \`$INGEST_ERR\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- **Ingestion**: healthy" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "- **Hours since last scrape**: ${INGEST_HOURS_SINCE:-n/a}" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_STEP_SUMMARY
+
+  # Restores the daily repo-readable source-health rollup.
+  #
+  # The original rollup was a second job on the Hunter workflow that reformatted
+  # Hunter's own harvest.log artifact. When the Hunter schedule was removed
+  # (P-5, commit b3347f3) that job became manual-only, and
+  # docs/source-health-latest.md froze at 2026-07-31 while DOCS_INDEX.md kept
+  # advertising it as the current source-health state.
+  #
+  # This version derives the rollup from source_fetch_events in D1 instead of
+  # from one workflow's artifact, so it reflects every scrape regardless of
+  # which clock fired it. Separate job so `contents: write` stays scoped to the
+  # rollup and does not widen the Tier-3 pause job's permissions.
+  source-health-rollup:
+    name: Update Source Health Rollup
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Query Source Health (read-only, last 24h)
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --json --command "
+            SELECT source_id,
+                   source_type,
+                   compliance_status,
+                   COUNT(*) AS attempts,
+                   SUM(CASE WHEN ok = 1 THEN 1 ELSE 0 END) AS ok_count,
+                   SUM(CASE WHEN skipped = 1 THEN 1 ELSE 0 END) AS skipped_count,
+                   SUM(count) AS items_seen,
+                   MAX(timestamp) AS last_attempt,
+                   MAX(CASE WHEN ok = 0 THEN error END) AS sample_error
+            FROM source_fetch_events
+            WHERE timestamp >= datetime('now', '-1 day')
+            GROUP BY source_id, source_type, compliance_status
+            ORDER BY source_id;
+          " > ../../source-health.json
+          jq '.[0].results | length' ../../source-health.json
+
+      - name: Write And Commit Rollup
+        run: |
+          set -euo pipefail
+
+          git pull --ff-only origin main
+
+          TODAY=$(date -u +"%Y-%m-%d")
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          ROWS=$(jq '.[0].results | length' source-health.json)
+          FAILING=$(jq '[.[0].results[] | select(.ok_count < .attempts)] | length' source-health.json)
+          TOTAL_ITEMS=$(jq '[.[0].results[].items_seen] | add // 0' source-health.json)
+
+          {
+            echo "# Source Health Latest"
+            echo ""
+            echo "Date: ${TODAY}"
+            echo "Workflow run: ${RUN_URL}"
+            echo "Window: last 24 hours of source_fetch_events"
+            echo ""
+            echo "Derived from D1, not from a single workflow's artifact, so it"
+            echo "covers every scrape regardless of which clock triggered it."
+            echo ""
+            echo "## Summary"
+            echo ""
+            echo "- Sources seen: ${ROWS}"
+            echo "- Sources with at least one failed attempt: ${FAILING}"
+            echo "- Total items seen: ${TOTAL_ITEMS}"
+            echo ""
+            echo "## Per-Source (last 24h)"
+            echo ""
+            echo "| Source | Type | Compliance | Attempts | OK | Skipped | Items | Last Attempt |"
+            echo "| --- | --- | --- | ---: | ---: | ---: | ---: | --- |"
+            jq -r '.[0].results[] | "| \(.source_id) | \(.source_type) | \(.compliance_status) | \(.attempts) | \(.ok_count) | \(.skipped_count) | \(.items_seen) | \(.last_attempt) |"' source-health.json
+            echo ""
+            if [ "$FAILING" -gt 0 ]; then
+              echo "## Failing Sources"
+              echo ""
+              jq -r '.[0].results[] | select(.ok_count < .attempts) | "- **\(.source_id)**: \(.attempts - .ok_count)/\(.attempts) failed — \(.sample_error // "no error recorded")"' source-health.json
+              echo ""
+            fi
+          } > docs/source-health-latest.md
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/source-health-latest.md
+
+          if git diff --cached --quiet; then
+            echo "No source-health rollup changes to commit."
+            exit 0
+          fi
+
+          git commit -m "docs: update daily source health"
+
+          # Bounded rebase-retry: Medic, Prospector and Directory bots also push
+          # to main. This job owns its own file, so rebases are conflict-free.
+          pushed=false
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then pushed=true; break; fi
+            echo "Push rejected (attempt $attempt); rebasing on main and retrying."
+            git pull --rebase origin main
+          done
+          if [ "$pushed" != true ]; then
+            echo "::error title=Rollup push failed::Source-health rollup could not be pushed after five attempts."
+            exit 1
+          fi
