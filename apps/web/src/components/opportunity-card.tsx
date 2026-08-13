@@ -1,8 +1,23 @@
 import type { Opportunity } from "@/lib/db";
 import { Briefcase, ChevronRight, ExternalLink } from "lucide-react";
 
+export type OpportunityCardData = Pick<
+  Opportunity,
+  | "id"
+  | "title"
+  | "company"
+  | "type"
+  | "sourceUrl"
+  | "sourcePlatform"
+  | "postedAt"
+  | "experienceLevel"
+  | "geoScope"
+  | "phEligibility"
+  | "geoEvidence"
+>;
+
 interface Props {
-  opportunity: Opportunity;
+  opportunity: OpportunityCardData;
 }
 
 const PLATFORM_COLORS: Record<string, string> = {
