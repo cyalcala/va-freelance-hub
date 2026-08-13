@@ -1,9 +1,15 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
-import { eq, sql, inArray, asc } from "drizzle-orm";
+import { eq, sql, inArray } from "drizzle-orm";
 import { chunkArray, classifyLinkResponse, linkCheckHeaders, sanitizeSourceUrl, scanLandingPageForGeoLock } from "@va-hub/scraper";
 import { daysAgoUtcIso, nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
+import {
+  buildVerifierFailureUpdate,
+  buildVerifierSelectionQuery,
+  summarizeVerifierAttempts,
+  type VerifierAttemptResult,
+} from "@/lib/verifier-attempt";
 
 // D1 rejects statements binding >100 parameters. The archive UPDATE binds
 // (2 SET params + N ids); batch-bumped lastSeenInFeedAt means 100+ rows from a
@@ -60,19 +66,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // rows arriving daily). 120 per run keeps the request bounded (HEAD only,
     // 8s timeout, batches of 10) while letting the backlog shrink.
     const VERIFY_LIMIT = 120;
-    const active = await db
-      .select({
-        id: opportunities.id,
-        sourceUrl: opportunities.sourceUrl,
-        failedCount: opportunities.failedVerificationCount
-      })
-      .from(opportunities)
-      .where(eq(opportunities.isActive, true))
-      .orderBy(asc(opportunities.lastVerifiedAt))
-      .limit(VERIFY_LIMIT);
+    const active = await db.all<{ id: number; sourceUrl: string; failedCount: number }>(
+      buildVerifierSelectionQuery(VERIFY_LIMIT),
+    );
 
     console.log(`[api/cron/verify-links] Checking ${active.length} oldest unverified links...`);
     let deactivated = 0;
+    let attempted = 0;
+    let succeeded = 0;
+    let failedChecks = 0;
     // Geo masterplan L4: a budget of each run's link checks are upgraded from
     // HEAD to GET so the landing page's visible text can be scanned for
     // disqualifiers our 1500-char stored description can't show (non-English
@@ -97,7 +99,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
               updatedAt: checkedAt,
             }).where(eq(opportunities.id, id));
             console.warn(`[api/cron/verify-links] Deactivated #${id}: invalid stored source URL`);
-            return 1;
+            return { deactivated: 1, succeeded: true } satisfies VerifierAttemptResult;
           }
           try {
             const res = await fetch(safeSourceUrl, {
@@ -129,7 +131,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                   }).where(eq(opportunities.id, id));
                   geoPageDeactivated += 1;
                   console.log(`[api/cron/verify-links] Geo page-scan deactivated #${id}: ${geoLock}`);
-                  return 1;
+                  return { deactivated: 1, succeeded: true } satisfies VerifierAttemptResult;
                 }
               } catch (scanErr) {
                 // Scan failures must never fail link verification itself.
@@ -149,7 +151,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
                   updatedAt: checkedAt,
                 }).where(eq(opportunities.id, id));
                 console.log(`[api/cron/verify-links] Deactivated: ${safeSourceUrl} (failed 3 times)`);
-                return 1;
+                return { deactivated: 1, succeeded: true } satisfies VerifierAttemptResult;
               } else {
                 // Atomic increment (not JS read-modify-write from the run-start
                 // snapshot) so overlapping runs cannot lose a strike.
@@ -163,14 +165,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
               await db.update(opportunities).set({ failedVerificationCount: 0, lastVerifiedAt: checkedAt, updatedAt: checkedAt }).where(eq(opportunities.id, id));
             }
           } catch (err) {
-            // Log warning but don't deactivate on network issues or timeouts to avoid false positives
+            // A network failure is still an attempt: rotate the row without
+            // changing strikes or active state. This prevents one bad cohort
+            // from starving every later row while remaining non-authoritative.
+            const attemptedAt = nowUtcIso();
+            await db.update(opportunities).set(
+              buildVerifierFailureUpdate(attemptedAt),
+            ).where(eq(opportunities.id, id));
             console.warn(`[api/cron/verify-links] Failed checking ${safeSourceUrl}:`, (err as Error).message);
+            return { deactivated: 0, succeeded: false } satisfies VerifierAttemptResult;
           }
-          return 0;
+          return { deactivated: 0, succeeded: true } satisfies VerifierAttemptResult;
         })
       );
 
-      deactivated += results.reduce((sum, r) => (r.status === "fulfilled" ? sum + r.value : sum), 0);
+      const summary = summarizeVerifierAttempts(results);
+      attempted += summary.attempted;
+      succeeded += summary.succeeded;
+      failedChecks += summary.failedChecks;
+      deactivated += summary.deactivated;
     }
 
     // Surface the verification backlog so the workflow summary shows whether
@@ -185,8 +198,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.warn("[api/cron/verify-links] Failed to compute never-verified backlog:", (err as Error).message);
     }
 
-    console.log(`[api/cron/verify-links] Completed. Checked ${active.length}, auto-archived ${stale.length}, deactivated ${deactivated} dead links (${geoPageDeactivated} by geo page-scan), never-verified backlog: ${neverVerifiedRemaining}.`);
-    return new Response(JSON.stringify({ checked: active.length, autoArchived: stale.length, deactivated, geoPageDeactivated, neverVerifiedRemaining }), {
+    console.log(`[api/cron/verify-links] Completed. Attempted ${attempted}, succeeded ${succeeded}, failed ${failedChecks}, auto-archived ${stale.length}, deactivated ${deactivated} dead links (${geoPageDeactivated} by geo page-scan), never-verified backlog: ${neverVerifiedRemaining}.`);
+    return new Response(JSON.stringify({ attempted, succeeded, failedChecks, checked: succeeded, autoArchived: stale.length, deactivated, geoPageDeactivated, neverVerifiedRemaining }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });
