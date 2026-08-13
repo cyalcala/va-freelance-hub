@@ -1,7 +1,7 @@
 # Source Health Latest
 
 Date: 2026-08-13
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/31687728070
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/31688019982
 Window: last 24 hours of source_fetch_events
 
 Derived from D1, not from a single workflow's artifact, so it
