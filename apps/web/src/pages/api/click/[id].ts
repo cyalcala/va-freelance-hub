@@ -5,7 +5,12 @@ import { resolveOutboundUrl } from "@/lib/outbound-url";
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
+type ClickHandlerDependencies = {
+  getDb: typeof getDb;
+};
+
+export function createClickHandler(dependencies: ClickHandlerDependencies): APIRoute {
+  return async ({ params, request, locals, redirect }) => {
   const idStr = params.id;
   if (!idStr) {
     return new Response("Missing job ID", { status: 400 });
@@ -25,7 +30,7 @@ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
 
   try {
     const env = locals.runtime.env as any;
-    const db = getDb(env);
+    const db = dependencies.getDb(env);
 
     // Validate the target URL belongs to this job (prevents open redirect)
     const [job] = await db.select({ sourceUrl: opportunities.sourceUrl, applicationUrl: opportunities.applicationUrl })
@@ -42,24 +47,23 @@ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
       return new Response("Invalid redirect URL", { status: 403 });
     }
 
-    // Rate-limit the DB write per client IP (after redirect-target validation,
-    // so the rate-limited path still only ever redirects to a validated URL).
-    // A crawler/attacker spamming this public endpoint cannot inflate clickCount
-    // or exhaust the D1 write quota (which would throttle ingest). No-op if
-    // unbound; over-limit still redirects, it just skips the write.
+    // Analytics is optional and fail-closed. Pages does not currently prove a
+    // Rate Limiting binding for this project, so an absent binding means no D1
+    // write. Once the redirect target is validated, limiter or analytics
+    // failures must never prevent the user from reaching the posting.
     const rateLimiter = env?.API_RATE_LIMITER;
-    let allowWrite = true;
     if (rateLimiter) {
-      const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
-      const { success } = await rateLimiter.limit({ key: `click:${clientIp}` });
-      allowWrite = success;
-    }
-
-    // Track click and redirect
-    if (allowWrite) {
-      await db.update(opportunities)
-        .set({ clickCount: sql`${opportunities.clickCount} + 1` })
-        .where(eq(opportunities.id, id));
+      try {
+        const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
+        const { success } = await rateLimiter.limit({ key: `click:${clientIp}` });
+        if (success) {
+          await db.update(opportunities)
+            .set({ clickCount: sql`${opportunities.clickCount} + 1` })
+            .where(eq(opportunities.id, id));
+        }
+      } catch (analyticsError) {
+        console.warn(`[api/click] Optional analytics failed for job ${id}:`, analyticsError);
+      }
     }
 
     return redirect(safeTargetUrl, 302);
@@ -68,4 +72,7 @@ export const GET: APIRoute = async ({ params, request, locals, redirect }) => {
     // Still redirect to the sourceUrl if we validated it, otherwise fail
     return new Response("Internal error", { status: 500 });
   }
-};
+  };
+}
+
+export const GET = createClickHandler({ getDb });
