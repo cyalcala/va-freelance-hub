@@ -70,6 +70,8 @@ jobs:
             echo "| Companies checked this run | $(jq -r '.checked // 0' directory.log) |"
             echo "| OK | $(jq -r '.tally.ok // 0' directory.log) |"
             echo "| Bot-walled (alive) | $(jq -r '.tally.bot_wall // 0' directory.log) |"
+            echo "| Unreachable (ambiguous; strikes preserved) | $(jq -r '.unreachable // .tally.unreachable // 0' directory.log) |"
+            echo "| Unreachable ratio | $(jq -r '((.unreachableRatio // 0) * 100 | round | tostring) + "%"' directory.log) |"
             echo "| Dead (HTTP) | $(jq -r '.tally.dead_http // 0' directory.log) |"
             echo "| Dead (DNS) | $(jq -r '.tally.dead_dns // 0' directory.log) |"
             echo "| Parked / for-sale | $(jq -r '.tally.parked // 0' directory.log) |"
@@ -102,10 +104,21 @@ jobs:
         run: |
           CHECKED=$(jq -r '.checked // 0' directory.log || echo "0")
           FLAGGED=$(jq -r '.newlyFlagged // 0' directory.log || echo "0")
+          UNREACHABLE=$(jq -r '.unreachable // .tally.unreachable // 0' directory.log || echo "0")
+          UNREACHABLE_RATIO=$(jq -r '((.unreachableRatio // 0) * 100 | round | tostring) + "%"' directory.log || echo "0%")
           DEAD=$(( $(jq -r '.tally.dead_dns // 0' directory.log || echo 0) + $(jq -r '.tally.dead_http // 0' directory.log || echo 0) + $(jq -r '.tally.parked // 0' directory.log || echo 0) ))
           echo "### 🏢 Sovereign Directory Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ✅ Link-Health Pulse Concluded" >> $GITHUB_STEP_SUMMARY
           echo "- **Companies Checked**: $CHECKED" >> $GITHUB_STEP_SUMMARY
           echo "- **Hard-Dead Verdicts This Run**: $DEAD" >> $GITHUB_STEP_SUMMARY
+          echo "- **Unreachable (ambiguous, strikes preserved)**: $UNREACHABLE" >> $GITHUB_STEP_SUMMARY
+          echo "- **Unreachable Ratio**: $UNREACHABLE_RATIO" >> $GITHUB_STEP_SUMMARY
           echo "- **Newly De-verified (3-strike, human review)**: $FLAGGED" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Enforce Systemic Egress Gate
+        run: |
+          if [ "$(jq -r '.degraded // false' directory.log)" = "true" ]; then
+            echo "::error title=Directory egress degraded::At least 80% of a 10+ company cohort was unreachable; strikes were preserved."
+            exit 1
+          fi
