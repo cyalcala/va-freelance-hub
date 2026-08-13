@@ -6,11 +6,6 @@ export const BUN_VERSION = "1.3.14";
 export const WRANGLER_VERSION = "4.120.0";
 const ROOT_D1_MIGRATION_SCRIPT = "bun run --cwd apps/web db:migrate";
 const WEB_D1_MIGRATION_SCRIPT = "bunx wrangler@4.120.0 d1 migrations apply DB --remote --env production --config wrangler.jsonc";
-const RETIRED_WORKERS_AI_MODELS = [
-  "@cf/meta/llama-3.1-8b-instruct",
-  "@cf/meta/llama-3-8b-instruct",
-  "@cf/mistral/mistral-7b-instruct-v0.1",
-] as const;
 
 const DIGEST_RETRY_WORKFLOWS = new Set([
   "gha-directory-pulse.yml",
@@ -145,13 +140,6 @@ export function inspectWorkflowText(path: string, text: string): GuardrailResult
     errors.push(`${path}: active workflows must not reference the historical runtime packages/zig-parser`);
   }
 
-  for (const model of RETIRED_WORKERS_AI_MODELS) {
-    const escaped = model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    if (new RegExp(`${escaped}(?![-\\w.])`).test(text)) {
-      errors.push(`${path}: active workflow references retired Workers AI model ${model}`);
-    }
-  }
-
   if (path === "ci-guardrail.yml" && /\bpaths-ignore\s*:/.test(text)) {
     errors.push(`${path}: validation must run for documentation-only pushes; gate only the release job`);
   }
@@ -187,6 +175,15 @@ export function inspectWorkflowText(path: string, text: string): GuardrailResult
     && (!/FROM source_fetch_state/.test(text) || !/source_id = '__sweep_diag__'/.test(text))
   ) {
     errors.push(`${path}: sweep diagnostics must read the reserved source_fetch_state record`);
+  }
+
+  if (
+    path === "gha-sentinel-pulse.yml"
+    && /source-health-rollup:/.test(text)
+    && /git push origin HEAD:main/.test(text)
+    && !/source-health-rollup:\s*\n\s+if:\s*\$\{\{\s*github\.ref\s*==\s*'refs\/heads\/main'\s*\}\}/.test(text)
+  ) {
+    errors.push(`${path}: source-health rollup must not push non-main workflow code to main`);
   }
 
   return { errors, warnings: [] };

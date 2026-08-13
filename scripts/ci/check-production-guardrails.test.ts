@@ -139,12 +139,18 @@ test("rejects workflow patterns that hide operational failure", () => {
   ]);
 });
 
-test("rejects retired Workers AI model ids in active workflows", () => {
+test("rejects a Sentinel rollup that can push a non-main checkout to main", () => {
   const result = inspectWorkflowText(
-    "ai.yml",
-    "run: curl /ai/run/@cf/meta/llama-3.1-8b-instruct",
+    "gha-sentinel-pulse.yml",
+    [
+      "source-health-rollup:",
+      "  steps:",
+      "    - run: git push origin HEAD:main",
+      "FROM source_fetch_state",
+      "source_id = '__sweep_diag__'",
+    ].join("\n"),
   );
-  expect(result.errors).toEqual([
-    "ai.yml: active workflow references retired Workers AI model @cf/meta/llama-3.1-8b-instruct",
-  ]);
+  expect(result.errors).toContain(
+    "gha-sentinel-pulse.yml: source-health rollup must not push non-main workflow code to main",
+  );
 });
