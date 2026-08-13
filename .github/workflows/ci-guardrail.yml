@@ -46,6 +46,11 @@ jobs:
       - name: Run strict type check
         run: bun run typecheck
 
+      - name: Validate Freshness Cron Worker
+        run: |
+          bun run --cwd workers/freshness-cron typecheck
+          bun run --cwd workers/freshness-cron deploy:dry-run
+
   changes:
     name: Detect deployable changes
     if: github.event_name == 'push'

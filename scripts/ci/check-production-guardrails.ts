@@ -146,6 +146,13 @@ export function inspectWorkflowText(path: string, text: string): GuardrailResult
 
   if (
     path === "ci-guardrail.yml"
+    && (!/workers\/freshness-cron typecheck/.test(text) || !/workers\/freshness-cron deploy:dry-run/.test(text))
+  ) {
+    errors.push(`${path}: freshness Worker must be typechecked and dry-run in project CI`);
+  }
+
+  if (
+    path === "ci-guardrail.yml"
     && !/pages deploy dist\s+--project-name remotejobs-ph\s+--branch main(\s+--config wrangler\.jsonc)?/.test(text)
   ) {
     errors.push(`${path}: Pages deployment must use the checked-in production Wrangler config`);
@@ -184,6 +191,27 @@ export function inspectWorkflowText(path: string, text: string): GuardrailResult
     && !/source-health-rollup:\s*\n\s+if:\s*\$\{\{\s*github\.ref\s*==\s*'refs\/heads\/main'\s*\}\}/.test(text)
   ) {
     errors.push(`${path}: source-health rollup must not push non-main workflow code to main`);
+  }
+
+  if (
+    path === "gha-deploy-cron-worker.yml"
+    && (!/secret list --(?:format json|json)/.test(text) || !/PROXY_SECRET/.test(text))
+  ) {
+    errors.push(`${path}: deployment must verify PROXY_SECRET before shipping`);
+  }
+
+  if (
+    path === "gha-deploy-cron-worker.yml"
+    && (!/bun run typecheck/.test(text) || !/bun run deploy:dry-run/.test(text))
+  ) {
+    errors.push(`${path}: deployment must typecheck and dry-run the Worker`);
+  }
+
+  if (
+    path === "gha-ingest-watchdog.yml"
+    && (!/cron:\s*['"]17 \* \* \* \*['"]/.test(text) || !/evaluate-ingest-health\.mjs/.test(text))
+  ) {
+    errors.push(`${path}: heartbeat watchdog must run hourly and use the shared evaluator`);
   }
 
   return { errors, warnings: [] };

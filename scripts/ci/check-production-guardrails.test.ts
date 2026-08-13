@@ -60,6 +60,8 @@ test("keeps validation on docs-only changes and configures Pages explicitly", ()
       "    branches: [main]",
       "run: bun install --frozen-lockfile",
       "bun-version: 1.3.14",
+      "run: bun run --cwd workers/freshness-cron typecheck",
+      "run: bun run --cwd workers/freshness-cron deploy:dry-run",
       "run: bunx wrangler@4.120.0 pages deploy dist --project-name remotejobs-ph --branch main --config wrangler.jsonc",
     ].join("\n"),
   );
@@ -153,4 +155,18 @@ test("rejects a Sentinel rollup that can push a non-main checkout to main", () =
   expect(result.errors).toContain(
     "gha-sentinel-pulse.yml: source-health rollup must not push non-main workflow code to main",
   );
+});
+
+test("requires clock deployment checks and an evidence-producing watchdog", () => {
+  expect(inspectWorkflowText("ci-guardrail.yml", "pages deploy dist --project-name remotejobs-ph --branch main --config wrangler.jsonc").errors)
+    .toContain("ci-guardrail.yml: freshness Worker must be typechecked and dry-run in project CI");
+
+  expect(inspectWorkflowText("gha-deploy-cron-worker.yml", "bunx wrangler@4.120.0 deploy").errors).toEqual([
+    "gha-deploy-cron-worker.yml: deployment must verify PROXY_SECRET before shipping",
+    "gha-deploy-cron-worker.yml: deployment must typecheck and dry-run the Worker",
+  ]);
+
+  expect(inspectWorkflowText("gha-ingest-watchdog.yml", "schedule:\n  - cron: '30 1 * * *'").errors).toEqual([
+    "gha-ingest-watchdog.yml: heartbeat watchdog must run hourly and use the shared evaluator",
+  ]);
 });

@@ -1,0 +1,138 @@
+name: Ingestion Heartbeat Watchdog
+
+# GitHub schedules have no delivery SLA. This hourly monitor is therefore a
+# best-effort backstop whose observed timestamps are evidence, not a promise of
+# sub-three-hour detection.
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      simulate_outage:
+        description: Create, verify, and close a synthetic watchdog issue
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: ingest-heartbeat-watchdog
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Read Last Successful Worker Deployment
+        id: worker
+        run: |
+          set -euo pipefail
+          DEPLOYED_AT=$(gh run list --workflow gha-deploy-cron-worker.yml --branch main \
+            --status success --limit 1 --json updatedAt --jq '.[0].updatedAt // ""')
+          echo "deployed_at=$DEPLOYED_AT" >> "$GITHUB_OUTPUT"
+
+      - name: Query Durable Ingestion Heartbeat
+        if: ${{ inputs.simulate_outage != true }}
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npx wrangler@4.120.0 d1 execute DB --remote --env production \
+            --config wrangler.jsonc --json --command "
+              SELECT last_error,
+                     last_attempt_at,
+                     last_success_at,
+                     last_count,
+                     CAST((julianday('now') - julianday(last_attempt_at)) * 24 AS INT) AS hours_since_attempt
+              FROM source_fetch_state
+              WHERE source_id = '__ingest_diag__'
+              LIMIT 1;
+            " > ../../ingest-diag.json
+
+      - name: Prepare Synthetic Outage
+        if: ${{ inputs.simulate_outage == true }}
+        run: printf '[{"results":[]}]\n' > ingest-diag.json
+
+      - name: Evaluate Heartbeat
+        id: evaluation
+        env:
+          WORKER_DEPLOYED_AT: ${{ inputs.simulate_outage == true && '1970-01-01T00:00:00Z' || steps.worker.outputs.deployed_at }}
+        run: |
+          set -euo pipefail
+          node scripts/gha/evaluate-ingest-health.mjs ingest-diag.json "$WORKER_DEPLOYED_AT" > ingest-evaluation.json
+          jq . ingest-evaluation.json
+          echo "alert=$(jq -r .alert ingest-evaluation.json)" >> "$GITHUB_OUTPUT"
+          echo "status=$(jq -r .status ingest-evaluation.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Report Healthy Or Grace State
+        if: ${{ steps.evaluation.outputs.alert != 'true' }}
+        run: |
+          jq -r '.status + ": " + .reason' ingest-evaluation.json
+
+      - name: Deliver Alert Issue
+        if: ${{ steps.evaluation.outputs.alert == 'true' }}
+        env:
+          SYNTHETIC: ${{ inputs.simulate_outage == true }}
+        run: |
+          set -euo pipefail
+          REASON=$(jq -r .reason ingest-evaluation.json)
+          DETECTED_AT=$(jq -r .evaluatedAt ingest-evaluation.json)
+          RUN_STARTED_AT=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          if [ "$SYNTHETIC" = "true" ]; then
+            TITLE="Synthetic ingestion watchdog alert (run ${GITHUB_RUN_ID})"
+            LABEL="watchdog-test"
+          else
+            TITLE="Ingestion health alert ($(date -u +'%Y-%m-%d'))"
+            LABEL="source-health"
+            EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+              --search 'in:title "Ingestion health alert"' --json number --jq 'length')
+            if [ "$EXISTING" -ne 0 ]; then
+              echo "An ingestion health issue is already open; not filing a duplicate."
+              exit 0
+            fi
+          fi
+
+          gh label create "$LABEL" --repo "$GITHUB_REPOSITORY" --color D93F0B --force \
+            --description "Automated ingestion watchdog evidence" || true
+
+          {
+            echo "The ingestion heartbeat watchdog detected a failure."
+            echo
+            echo "**Signal:** ${REASON}"
+            echo
+            echo "| Evidence | Timestamp / value |"
+            echo "| --- | --- |"
+            echo "| Schedule | hourly at minute 17 UTC (best effort; no delivery SLA) |"
+            echo "| Workflow started | ${RUN_STARTED_AT} |"
+            echo "| Detection evaluated | ${DETECTED_AT} |"
+            echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // "never"' ingest-diag.json) |"
+            echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // "never"' ingest-diag.json) |"
+            echo
+            echo "Detection run: ${RUN_URL}"
+          } > ingest-body.md
+
+          ISSUE_URL=$(gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" \
+            --label "$LABEL" --body-file ingest-body.md)
+          ISSUE_NUMBER=${ISSUE_URL##*/}
+          ISSUE_CREATED_AT=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}" --jq .created_at)
+          echo "Delivered issue ${ISSUE_URL} at ${ISSUE_CREATED_AT}"
+          echo "issue_url=${ISSUE_URL}" >> "$GITHUB_STEP_SUMMARY"
+          echo "issue_created_at=${ISSUE_CREATED_AT}" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$SYNTHETIC" = "true" ]; then
+            gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" \
+              --comment "Synthetic watchdog delivery verified by run ${RUN_URL}."
+          fi
