@@ -92,6 +92,7 @@ jobs:
           if-no-files-found: error
           retention-days: 30
   sentinel:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.run_ai_evaluation) }}
     name: Detect Flapping Sources
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -547,6 +548,7 @@ jobs:
   # which clock fired it. Separate job so `contents: write` stays scoped to the
   # rollup and does not widen the Tier-3 pause job's permissions.
   source-health-rollup:
+    if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.run_ai_evaluation) }}
     name: Update Source Health Rollup
     runs-on: ubuntu-latest
     timeout-minutes: 10

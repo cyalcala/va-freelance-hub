@@ -53,6 +53,14 @@ AI-01 primary sources checked on 2026-08-13:
 - **Boundary:** active model IDs and response handling can be corrected locally, but model-quality acceptance and account-level cost evidence cannot be inferred from mocks or configuration.
 - **Smallest alternatives:** (A) run the frozen corpus in an isolated authenticated evaluation against the active 70B and replacement 8B models, archive per-case outputs/latency/usage and the dashboard neuron delta, then decide rollout; (B) keep AI-01 unmerged/deferred with an explicit owner and review date. Do not deploy solely because conformance tests pass.
 
+### C-03 - Retired model IDs are not the only cause of production AI unavailability
+
+- **False assumption:** AI-01 could be read as if replacing retired fallback IDs would by itself restore the production AI path.
+- **Contradicting evidence:** Sentinel run `31688782482` reported both `triageAiUnavailable=50` and a sweep diagnostic of `Too many subrequests by single Worker invocation`. The latter is an independent platform-limit failure that a model-ladder change cannot correct.
+- **Affected plan sections:** AI-01's production acceptance claim and REL-04's sweep reliability/cap work. Any claim that Unit 3 alone resolves the observed AI degradation is invalid.
+- **Boundary:** model IDs, response normalization, fail-closed behavior, and attempt telemetry are local AI-01 corrections. Changing sweep batching, invocation topology, or persistence alters runtime behavior and belongs to REL-04 or a separately approved architecture decision.
+- **Smallest alternatives:** (A) accept AI-01 only for demonstrated model compatibility and quality, explicitly carrying the subrequest failure into REL-04; (B) defer AI-01 production rollout if the two failure modes cannot be independently measured. Do not silently redesign the sweep in Unit 3.
+
 ## Rejected or reverted changes
 
 None recorded yet.
