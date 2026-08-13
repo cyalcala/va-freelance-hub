@@ -66,7 +66,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set -euo pipefail
-          DEPLOY_OUTPUT=$(bunx wrangler@4.120.0 pages deploy dist --project-name remotejobs-ph --branch codex-ai-eval --config wrangler.jsonc)
+          DEPLOY_OUTPUT=$(bunx wrangler@4.120.0 pages deploy dist --project-name remotejobs-ph --branch codex-ai-eval)
           printf '%s\n' "$DEPLOY_OUTPUT"
           PREVIEW_URL=$(printf '%s\n' "$DEPLOY_OUTPUT" | grep -Eo 'https://[a-zA-Z0-9.-]+\.pages\.dev' | tail -1)
           test -n "$PREVIEW_URL"
