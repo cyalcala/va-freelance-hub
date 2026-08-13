@@ -473,6 +473,7 @@ jobs:
   # which clock fired it. Separate job so `contents: write` stays scoped to the
   # rollup and does not widen the Tier-3 pause job's permissions.
   source-health-rollup:
+    if: ${{ github.ref == 'refs/heads/main' }}
     name: Update Source Health Rollup
     runs-on: ubuntu-latest
     timeout-minutes: 10

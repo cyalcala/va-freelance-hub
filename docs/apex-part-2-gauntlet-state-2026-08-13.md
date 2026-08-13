@@ -24,8 +24,10 @@ Branch: `codex/apex-gauntlet`
 
 | Unit | Finding | State | Decision | Evidence / follow-up |
 | --- | --- | --- | --- | --- |
-| 1 | OPS-01 release PR #56 | Deploy accepted; ingestion heartbeat pending | REVISE -> provisional KEEP | PR #56 merged as `7616f80`; run `31686932747` applied migration 0030 and passed FTS, then Pages publish failed on missing `MessageChannel`. The bounded compatibility correction merged through PR #57 as `1371bf7`; release run `31687601151` passed validation, build, migrations, FTS integrity, and Pages deploy. Production smoke returned Cloudflare 200s for `/`, `/opportunities`, `/directory`, `/categories/tech`, `/data-policy`, `/privacy`, and `/sitemap.xml`. Sentinel runs `31687728070` and `31688019982` passed and queried 41 source-health rows, but no first post-deploy `__ingest_diag__` row had arrived yet. |
-| 2 | COR-01 FTS row/card contract | Implemented; deploy acceptance pending | REVISE -> KEEP | Replaced `SELECT o.*` with a bound, shared FTS query that projects the 11-field `OpportunityCardData` contract. The first source-text regression test was rejected by the critic. The revised in-memory SQLite FTS5 fixture executes the production query, proves active/category/type/platform filters, BM25 order, all camelCase fields, both internal and encoded external links, and no `url=undefined`; 11 focused assertions pass. Full suite: 329 pass, 0 fail; typecheck and build pass. Final critic: KEEP. |
+| 1 | OPS-01 release PR #56 | Production accepted | REVISE -> KEEP | PR #56 merged as `7616f80`; run `31686932747` applied migration 0030 and passed FTS, then Pages publish failed on missing `MessageChannel`. The bounded compatibility correction merged through PR #57 as `1371bf7`; release run `31687601151` passed validation, build, migrations, FTS integrity, and Pages deploy. Production smoke returned Cloudflare 200s for seven core routes. Sentinel run `31688782482` found `INGEST_DIAG_ROWS=1`, heartbeat age `0h`, and 41 source-health rows. Its `triageAiUnavailable=50` degradation is tracked under AI-01 rather than hidden inside release acceptance. |
+| 2 | COR-01 FTS row/card contract | Production accepted | REVISE -> KEEP | Replaced `SELECT o.*` with a bound, shared FTS query projecting the 11-field `OpportunityCardData` contract. The in-memory SQLite FTS5 fixture proves active/category/type/platform filters, BM25 order, all camelCase fields, internal/external links, and no `url=undefined`; final critic: KEEP. PR #58 merged as `9930634`; release run `31688576077` passed the full pipeline. Production searches for `assistant` and `developer` rendered 30 cards each with zero undefined URLs and both internal and external targets. |
+| 3 | AI-01 active model ladder | Reverted from production; evidence-gated defer | REVERT | Workflow dispatch `31690030037` ran from unaccepted commit `e02fa72`. Its independent `source-health-rollup` job committed the rollup on top of that branch SHA and pushed `HEAD:main` as `56fbddd`, bypassing the intended review/defer boundary. The incomplete AI slice was therefore deployed before corpus/cost acceptance and before critic corrections. Revert commit `489b027` removes exactly `e02fa72`; AI-01 remains deferred pending an unchanged production-contract corpus, account neuron evidence, and a safe non-production harness. |
+| 4 | SEC-01 click analytics | Production accepted | KEEP | Missing/unproven limiter now performs zero analytics writes; allowed, over-limit, limiter-error, and D1-error paths preserve the validated redirect; unsafe targets remain rejected before analytics. Six focused tests plus 344-test full suite, typecheck, build, and guardrail audit passed. Independent critic: KEEP. PR #60 merged as `f7bf8e0`; release run `31692363962` passed validation, migration, FTS integrity, and Pages deploy. |
 
 ## Plan contradictions
 
@@ -37,9 +39,17 @@ Branch: `codex/apex-gauntlet`
 - **Boundary:** this is a Pages publish-time module-evaluation compatibility defect, not evidence for a platform redesign.
 - **Smallest alternatives:** (A) restore a bundle-first conditional shim before React's module evaluation and add an artifact guard; (B) change the rendering/dependency line, which is larger and violates the preservation rule. Proceed with A only after a failing regression test.
 
+### C-02 - A branch-dispatched reporting job can promote unreviewed code to `main`
+
+- **False assumption:** manual Sentinel evaluation runs on `codex/apex-gauntlet` were treated as branch-scoped evidence collection and therefore unable to change the production branch.
+- **Contradicting evidence:** run `31690030037` used head SHA `e02fa72`. Although the run failed overall, `source-health-rollup` committed its documentation update on top of that SHA and executed `git push origin HEAD:main`, producing main commit `56fbddd` with parent `e02fa72`. The subsequent main release deployed the incomplete, critic-rejected AI slice.
+- **Affected plan sections:** AI-01's explicit live-evidence-before-rollout gate, the Gauntlet's KEEP/REVISE/REVERT boundary, release branch ownership, and the source-health reporting workflow's mutation contract.
+- **Boundary:** this incident does not authorize completing or redesigning AI behavior in production. The immediate correction is to revert only the unaccepted commit and separately harden the reporting workflow so non-main dispatches cannot push code to `main`.
+- **Smallest alternatives:** (A) revert `e02fa72`, then require the rollup mutation job to run only from `main` and check out/push the main ref explicitly; (B) make the rollup artifact-only on non-main refs. Apply A without altering the scheduler or data model.
+
 ## Rejected or reverted changes
 
-None recorded yet.
+- AI-01 commit `e02fa72` was promoted by a reporting workflow before acceptance and is reverted by `489b027`. The model migration remains deferred; no production-quality conclusion was inferred from its configuration or mocks.
 
 ## Intentionally retained
 

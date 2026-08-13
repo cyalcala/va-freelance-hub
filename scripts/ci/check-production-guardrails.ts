@@ -177,6 +177,15 @@ export function inspectWorkflowText(path: string, text: string): GuardrailResult
     errors.push(`${path}: sweep diagnostics must read the reserved source_fetch_state record`);
   }
 
+  if (
+    path === "gha-sentinel-pulse.yml"
+    && /source-health-rollup:/.test(text)
+    && /git push origin HEAD:main/.test(text)
+    && !/source-health-rollup:\s*\n\s+if:\s*\$\{\{\s*github\.ref\s*==\s*'refs\/heads\/main'\s*\}\}/.test(text)
+  ) {
+    errors.push(`${path}: source-health rollup must not push non-main workflow code to main`);
+  }
+
   return { errors, warnings: [] };
 }
 
