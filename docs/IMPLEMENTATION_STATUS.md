@@ -1,26 +1,59 @@
 # Implementation Status
 
-## Latest Stop Checkpoint — 2026-08-10
+## Latest Checkpoint — 2026-08-11 (alerting regression + Sovereign Crawler 4A/4B)
 
-Owner direction: stop implementation, preserve the work, document it, and back
-it up to GitHub. The current branch is
-codex/production-apex-audit-2026-08-09. It contains five audited hardening
-tracks and is not merged, deployed, or production-accepted.
+Audit: `docs/major-audit-2026-08-11.md`. Branch
+`codex/audit-worktree-bootstrap`, pushed, not yet merged or deployed.
 
-Primary GitHub code checkpoint: 33c1995. The branch push did not trigger CI
-because the guardrail is configured for main and pull requests; no workflow
-result may be inferred from the saved branch.
+**P0 found and fixed — ingestion alerting had been silently dead for 11 days.**
+Commit `b3347f3` (finding P-5, 2026-07-31) removed the Hunter GHA schedule so
+the Cloudflare cron Worker became the sole clock. That also orphaned Hunter's
+`alerts` job, the only consumer of per-run degradation signals (insert
+failures, triage failures, fetch-event logging failures, cadence-guard state).
+Those were being reported into an HTTP response nobody reads — regressing the
+whole 2026-07-04 silent-error audit. Ingestion itself stayed healthy, which is
+why nothing surfaced it.
 
-The authoritative audit ledger is
-docs/major-production-audit-2026-08-10.md. It records the precise completed
-work, residual dependency advisories, verification evidence, known non-release
-items, and safe resume order. ADR-005 records why the active Cloudflare Pages
-path remains on its compatibility line instead of performing an implicit
-Pages-to-Workers migration.
+Fixed by parking run diagnostics on a reserved `__ingest_diag__` row in
+`source_fetch_state` (same pattern as `__sweep_diag__`, no schema change) and
+alerting from the daily Sentinel pulse. The row also carries an ingestion
+**heartbeat**, so a stopped clock is now detectable — it was not, in any form,
+before.
 
-The owner’s 2/5 marker is a pause marker, not an accepted completion
-percentage. The historical Lens 2 completion below remains historical; it is
-not evidence that this new branch was released.
+**Also fixed:**
+- `docs/source-health-latest.md` had frozen on 2026-07-31; rebuilt as a D1-derived
+  daily rollup on the Sentinel pulse.
+- Masterplan **Phase 4A**: runtime robots.txt engine (RFC 9309 subset + Content
+  Signals + D1 cache, migration 0030), shipped in **observe mode** with a
+  documented flip checklist.
+- Masterplan **Phase 4B**: one declared crawler identity replacing five drifted
+  User-Agent strings and four ATS endpoints that sent none.
+- Stale worktree holding `main` removed; MessageChannel polyfill removal committed.
+
+Verification: 327 tests pass (was 234), typecheck clean, build clean, migration
+0030 idempotent locally.
+
+OWNER ACTION unchanged: rotate the leaked `tr_dev_` / Turso / ISR secrets at
+their providers.
+
+## Previous Checkpoint — 2026-08-10 (verified)
+
+The five-track production hardening audit (Codex/Nemotron, branch
+`codex/production-apex-audit-2026-08-09`) was merged to `main` via PR #55
+(commit `2497620`). All 16 ranked findings are implemented and live.
+
+Post-merge verification (2026-08-10 Claude Opus):
+- 234 tests passing, 0 failures, 448 expectations.
+- TypeScript strict-mode typecheck clean.
+- Astro production build clean.
+- All 29 D1 migrations deployed (including 0028, 0029).
+- Security headers verified live on production (CSP, HSTS, X-Frame-Options).
+- Job detail pages + JSON-LD + sitemap live and correct.
+- Unnecessary MessageChannel polyfill removed (6 Nemotron commits reverted;
+  Workers runtime has native MessageChannel since compatibility date 2023-03-01).
+
+ADR-005 records why the Cloudflare Pages adapter stays pinned rather than
+upgrading to a Pages-incompatible Workers-only adapter.
 
 ## Start Here
 

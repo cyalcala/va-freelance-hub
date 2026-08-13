@@ -19,6 +19,34 @@ export {
 export type { AtsRef, RawCandidate, ClassifiedCandidate, ClassifyResult } from "./prospector";
 export { chunkArray, maxRowsPerD1Batch, D1_MAX_BOUND_PARAMETERS } from "./batch";
 export { checkDirectoryLink, classifyLinkResponse, normalizeCheckUrl } from "./linkHealth";
+export {
+  COLLECTION_USER_AGENT,
+  LINK_CHECK_USER_AGENT,
+  CRAWLER_CONTACT_URL,
+  CRAWLER_VERSION,
+  collectionHeaders,
+  linkCheckHeaders,
+} from "./userAgent";
+export {
+  ROBOTS_USER_AGENT_TOKEN,
+  parseRobotsTxt,
+  selectGroup,
+  evaluatePath,
+  matchesPattern,
+  isPathAllowed,
+  robotsDecisionForStatus,
+  allowsAiInput,
+  robotsUrlFor,
+} from "./robots";
+export type { ParsedRobots, RobotsGroup, RobotsRule, RobotsDecision, RobotsVerdict, ContentSignals } from "./robots";
+export {
+  ROBOTS_CACHE_TTL_MS,
+  ROBOTS_BODY_MAX_BYTES,
+  checkRobots,
+  decideFromEntry,
+  originOf,
+} from "./robotsGate";
+export type { RobotsCacheEntry, RobotsCacheStore, RobotsGateResult, RobotsGateDeps, RobotsMode } from "./robotsGate";
 export type { LinkStatus, LinkVerdict } from "./linkHealth";
 export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validateAutoPauses } from "./pause";
 export type { AutoPauseEntry } from "./pause";

@@ -5,23 +5,28 @@
 This index tells future AI agents which documents are canonical, which are
 historical, and where to resume. Start here instead of guessing from filenames.
 
-## Current Pause Checkpoint
+## Current Checkpoint
 
 Before any new implementation or deployment, read these documents in this
 order:
 
 1. AGENTS.md
-2. docs/major-production-audit-2026-08-10.md
-3. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
-4. docs/HANDOFF.md
-5. docs/SYSTEM_SAVEPOINT.md
-6. docs/AI_RECOVERY_TRAIL.md
+2. docs/major-audit-2026-08-11.md — **latest**: alerting regression + Sovereign
+   Crawler Phase 4A/4B
+3. docs/labor-engine-masterplan-2026-07.md — the standing forward roadmap
+4. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
+5. docs/HANDOFF.md
+6. docs/SYSTEM_SAVEPOINT.md
+7. docs/AI_RECOVERY_TRAIL.md
 
-This checkpoint is on branch codex/production-apex-audit-2026-08-09 and is a
-GitHub backup stop-point, not a main-branch or production release. It covers
-all five audit workstreams despite the owner’s 2/5 pause marker. The next agent
-must run the deferred verification gates before proposing D1 migration or
-Cloudflare deployment.
+The 2026-08-11 checkpoint is on branch `codex/audit-worktree-bootstrap`,
+pushed but not merged or deployed. It carries migration 0030, which must be
+applied through the migration-first release path **before** the code that reads
+`robots_cache`.
+
+The earlier 2026-08-10 production hardening audit
+(`docs/major-production-audit-2026-08-10.md`) has since been merged to `main`
+and independently verified; treat it as history, not as a pending checkpoint.
 
 ## Canonical Recovery Trail
 
@@ -144,6 +149,9 @@ Read these in order:
 - `docs/source-health-rollup-2026-06-09.md` records the P6 Slice 2 rollup job
   and generated `docs/source-health-latest.md` proof.
 - `docs/source-health-latest.md` is the compact current source-health rollup.
+  Regenerated daily by the Sentinel pulse from `source_fetch_events` in D1.
+  (It froze between 2026-07-31 and 2026-08-11 while it was still tied to the
+  Hunter workflow's artifact — see `docs/major-audit-2026-08-11.md`.)
 - `docs/final-acceptance-audit-2026-06-09.md` records the P7 final acceptance
   audit.
 - `docs/major-audit-2026-06-11.md` records the latest health audit, Hunter D1

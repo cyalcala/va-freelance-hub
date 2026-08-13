@@ -331,7 +331,12 @@ Only if the user asks for cross-device sync or email digests: OAuth (Google/GitH
 | 1 | Trust Surface | pending | — | — |
 | 2 | Retention without accounts | pending | — | — |
 | 3 | Web Push alerts | pending | — | — |
-| 4 | **Sovereign Crawler** (4A robots → 4C ladder → 4D cadence → 4B+4E identity/ledger → 4F prospector) | pending | — | — |
+| 4A | Robots engine (RFC 9309 + Content Signals + D1 cache) | **done (observe mode)** | 2026-08-11 | `packages/scraper/robots.ts`, `robotsGate.ts`, migration 0030, 68 tests; `docs/major-audit-2026-08-11.md` |
+| 4B | Honest identity (one declared UA) | **done** | 2026-08-11 | `packages/scraper/userAgent.ts`, 9 tests; applied to every collection fetcher |
+| 4C | Acquisition ladder (sitemap → JSON-LD JobPosting) | pending — **next** | — | — |
+| 4D | Adaptive cadence (`next_fetch_at`, Crawl-delay floor) | pending | — | Crawl-delay is parsed and surfaced per source by 4A; scheduling not yet wired |
+| 4E | Provenance + live compliance ledger | partial | 2026-08-11 | Robots verdict/evidence/crawl-delay recorded per source fetch; public ledger still to build |
+| 4F | Prospector compliance-by-construction | pending | — | — |
 | 5 | Data-quality hardening (scam gate, dedup, salary, health trends) | pending | — | — |
 | 6 | Prospector autonomy (bounded) | pending | — | — |
 | 7 | Directory recurrence + PH stream gate | pending | — | — |

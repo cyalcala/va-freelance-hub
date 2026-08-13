@@ -178,6 +178,22 @@ export const sourceFetchEvents = sqliteTable("source_fetch_events", {
   timestampIdx: index("source_fetch_events_timestamp_idx").on(table.timestamp),
 }));
 
+// Runtime robots.txt cache (migration 0030). Keyed by origin, not by source:
+// one robots.txt governs every source sharing a host, so caching by origin
+// keeps the crawl polite and the Workers budget small. TTL is enforced at read
+// time in robotsGate.ts, so no cleanup job is required.
+export const robotsCache = sqliteTable("robots_cache", {
+  origin: text("origin").primaryKey().notNull(),
+  fetchedAt: text("fetched_at").notNull(),
+  status: integer("status").notNull(),
+  body: text("body"),
+  crawlDelay: integer("crawl_delay"),
+  contentSignals: text("content_signals"),
+  error: text("error"),
+}, (table) => ({
+  fetchedAtIdx: index("robots_cache_fetched_at_idx").on(table.fetchedAt),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type Opportunity = typeof opportunities.$inferSelect;
@@ -190,3 +206,5 @@ export type SourceFetchState = typeof sourceFetchState.$inferSelect;
 export type NewSourceFetchState = typeof sourceFetchState.$inferInsert;
 export type SourceFetchEvent = typeof sourceFetchEvents.$inferSelect;
 export type NewSourceFetchEvent = typeof sourceFetchEvents.$inferInsert;
+export type RobotsCacheRow = typeof robotsCache.$inferSelect;
+export type NewRobotsCacheRow = typeof robotsCache.$inferInsert;

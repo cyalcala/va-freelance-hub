@@ -2,6 +2,7 @@ import type { NewOpportunity } from "@va-hub/db";
 import type { Source } from "./sources";
 import { toContentHash } from "./contentHash";
 import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
+import { collectionHeaders } from "./userAgent";
 
 interface ParsedJobItem {
   title?: string;
@@ -108,10 +109,7 @@ export async function fetchHTMLSource(source: Source, state?: ConditionalState):
   try {
     const cond = await conditionalFetchText(
       source.url,
-      {
-        "User-Agent":
-          "Mozilla/5.0 (compatible; va-freelance-hub/1.0; +https://github.com/cyalcala/va-freelance-hub)",
-      },
+      collectionHeaders(),
       state,
       20_000,
     );

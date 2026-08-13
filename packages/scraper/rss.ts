@@ -4,6 +4,7 @@ import type { Source } from "./sources";
 import { decodeHtmlEntities, xmlNodeText, xmlTextList } from "./text";
 import { toContentHash } from "./contentHash";
 import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
+import { collectionHeaders } from "./userAgent";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -62,7 +63,7 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState): Pr
   try {
     const cond = await conditionalFetchText(
       source.url,
-      { "User-Agent": "va-freelance-hub/1.0 (RSS aggregator)" },
+      collectionHeaders(),
       state,
     );
     if (cond.notModified) {

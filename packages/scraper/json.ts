@@ -3,6 +3,7 @@ import type { Source } from "./sources";
 import { decodeHtmlEntities, fixMojibake } from "./text";
 import { toContentHash } from "./contentHash";
 import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
+import { collectionHeaders } from "./userAgent";
 
 interface RemoteOkJob {
   id?: string | number;
@@ -95,7 +96,7 @@ export async function fetchJSONSource(source: Source, state?: ConditionalState):
     const cond = await conditionalFetchText(
       source.url,
       {
-        "User-Agent": "va-freelance-hub/1.0 (+https://github.com/cyalcala/va-freelance-hub)",
+        ...collectionHeaders(),
         Accept: "application/json",
       },
       state,

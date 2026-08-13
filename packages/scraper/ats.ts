@@ -1,5 +1,6 @@
 import type { NewOpportunity } from "@va-hub/db";
 import { toContentHash } from "./contentHash";
+import { collectionHeaders } from "./userAgent";
 
 function normalizeText(raw: string | undefined): string {
   if (!raw) return "";
@@ -75,6 +76,7 @@ export async function fetchATSFeed(
 
 async function fetchLever(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://api.lever.co/v0/postings/${token}?mode=json`, {
+    headers: collectionHeaders(),
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`Lever HTTP ${res.status}`);
@@ -108,6 +110,7 @@ async function fetchLever(token: string, companyName: string): Promise<NewOpport
 
 async function fetchGreenhouse(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://boards-api.greenhouse.io/v1/boards/${token}/jobs`, {
+    headers: collectionHeaders(),
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`Greenhouse HTTP ${res.status}`);
@@ -141,7 +144,7 @@ async function fetchGreenhouse(token: string, companyName: string): Promise<NewO
 // direct linkback to the Ashby-hosted posting. Added 2026-07-12 (RemoteWork3.8).
 export async function fetchAshby(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://api.ashbyhq.com/posting-api/job-board/${token}`, {
-    headers: { "Content-Type": "application/json" },
+    headers: collectionHeaders({ "Content-Type": "application/json" }),
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`Ashby HTTP ${res.status}`);
@@ -181,7 +184,7 @@ export async function fetchAshby(token: string, companyName: string): Promise<Ne
 async function fetchWorkable(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://apply.workable.com/api/v3/accounts/${token}/jobs`, {
     method: "POST", // Workable API often requires POST for the jobs listing
-    headers: { "Content-Type": "application/json" },
+    headers: collectionHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ query: "", location: [], department: [], worktype: [], remote: [] }),
     signal: AbortSignal.timeout(15_000),
   });
@@ -215,10 +218,10 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
 }
 
 async function fetchBreezy(token: string, companyName: string): Promise<NewOpportunity[]> {
+  // Breezy's /json path is a public job-distribution endpoint: it exists so
+  // aggregators can read it, so there is nothing here that needs a disguise.
   const res = await fetch(`https://${token}.breezy.hr/json`, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    },
+    headers: collectionHeaders(),
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`Breezy HTTP ${res.status}`);

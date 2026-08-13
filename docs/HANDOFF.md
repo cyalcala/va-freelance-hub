@@ -1,48 +1,80 @@
 # Handoff
 
-## Stop Checkpoint — 2026-08-10 Production Hardening Audit
+## Current Checkpoint — 2026-08-11 Alerting Regression + Sovereign Crawler 4A/4B
 
-Status: owner-requested stop; GitHub backup completed. No Cloudflare Pages
-deployment, remote D1 migration, main-branch merge, or live end-to-end
-acceptance was performed from this checkpoint.
+Status: implemented, tested, pushed on `codex/audit-worktree-bootstrap`.
+Not merged, not deployed. Audit: `docs/major-audit-2026-08-11.md`.
 
-Branch being backed up: codex/production-apex-audit-2026-08-09. The committed
-starting point is 548198b; the current checkpoint adds the hardening work and
-the handoff documentation. The five audited workstreams are all recorded in
-docs/major-production-audit-2026-08-10.md:
+### The finding that mattered
 
-The primary code checkpoint is 33c1995, pushed to GitHub on branch
-codex/production-apex-audit-2026-08-09. A GitHub Actions check immediately
-after the backup returned no branch run; the CI guardrail is configured for
-main and pull requests, so this is not CI acceptance.
+Ingestion alerting had been dead since 2026-07-31 and nothing reported it.
+Removing the Hunter GHA schedule (finding P-5) correctly made the Cloudflare
+cron Worker the primary clock, but it also orphaned Hunter's `alerts` job —
+the only reader of per-run insert failures, triage failures, fetch-event
+logging failures and cadence-guard state. Ingestion stayed healthy by luck,
+so the eleven-day silence was invisible.
 
+Fixed durably: run diagnostics now land on a reserved `__ingest_diag__` row in
+`source_fetch_state`, and the daily Sentinel pulse alerts on both degradation
+and a **stale heartbeat**. Alerting no longer depends on which clock ran the
+scrape, and a stopped clock is detectable for the first time.
+
+### Also in this checkpoint
+
+- Daily source-health rollup restored, now derived from D1 instead of a Hunter
+  artifact (it had frozen on 2026-07-31).
+- **Phase 4A** — runtime robots.txt engine: RFC 9309 subset, Content Signals,
+  D1 cache keyed by origin, migration 0030. Ships in **observe mode**; the
+  flip-to-enforce checklist is at the `ROBOTS_MODE` constant in `scrape.ts`.
+- **Phase 4B** — one declared crawler identity (`RemotePHJobsBot/1.0`) replacing
+  five drifted UA strings; four ATS endpoints that sent no UA at all now declare
+  one. Link-liveness checks deliberately keep a browser UA, and that is now a
+  named decision rather than drift.
+- Stale worktree holding `main` removed; polyfill removal committed.
+
+327 tests pass, typecheck and build clean.
+
+### Next safe work
+
+1. Merge and deploy via the migration-first path so 0030 lands before the code
+   that reads `robots_cache`.
+2. Confirm the first post-deploy Sentinel run reports `Ingestion: healthy`.
+3. Collect ~24h of `robotsWouldBlock` evidence, then flip `ROBOTS_MODE` to
+   `enforce` in its own revertible commit.
+4. Watch `failedSources` for Breezy and HTML sources after the UA change; per
+   standing policy, a source that blocks a declared bot gets paused and asked,
+   not disguised.
+5. Then Phase 4C (acquisition ladder: sitemap + JSON-LD `JobPosting` feeding
+   `applicantLocationRequirements` into the geo gate).
+
+OWNER ACTION still open: rotate the leaked `tr_dev_` / Turso / ISR secrets.
+
+## Previous Checkpoint — 2026-08-10 Production Hardening Audit
+
+Status: merged, deployed, and independently verified.
+
+The five-track production hardening audit was merged to `main` via PR #55
+(commit `2497620`) and deployed to Cloudflare Pages (CI run on `8da74fb`).
+All 29 D1 migrations including 0028/0029 are applied to production.
+
+Independent verification (2026-08-10 Claude Opus) confirmed:
+- All 16 ranked findings (3 P0, 9 P1, 3 P2) correctly implemented
+- 234 tests passing, 0 failures, 448 expectations
+- TypeScript strict-mode clean; Astro production build clean
+- Security headers live on production (CSP, HSTS, X-Frame-Options, etc.)
+- Job detail pages, JSON-LD, sitemap all functioning
+- Unnecessary MessageChannel polyfill removed (Nemotron artifact)
+- ADR-005 (Pages compatibility line) validated as sound
+
+The five audited workstreams:
 1. public runtime, security, and performance;
 2. ingestion/data integrity;
 3. scheduled automation and CI honesty;
 4. supply chain and Cloudflare runtime configuration; and
 5. legacy quarantine and operational recovery.
 
-The owner’s 2/5 note is retained as a pause marker only. It does not mean that
-only two tracks were audited or that the branch is production-accepted.
-
-Completed local evidence includes a passing final typecheck, production build,
-frozen Bun install, targeted new tests, local D1 migration validation, and a
-dependency-audit reduction from 85 findings to 10 residual upstream findings
-with no critical finding. The earlier full suite passed before the final
-dependency pass; rerunning it afterward is deliberately the first resume gate.
-
-Read in order before resuming:
-
-1. AGENTS.md
-2. docs/major-production-audit-2026-08-10.md
-3. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
-4. docs/SYSTEM_SAVEPOINT.md
-5. this file
-
-Resume only with renewed release authority. First run bun run test, bun run
-typecheck, bun run build, and git diff --check; then inspect the GitHub Actions
-result for the saved backup commit. Apply migrations 0028 and 0029 and deploy
-Cloudflare Pages only through the existing migration-first release process.
+Full audit ledger: docs/major-production-audit-2026-08-10.md
+Compatibility decision: docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
 
 ### Previous State
 
