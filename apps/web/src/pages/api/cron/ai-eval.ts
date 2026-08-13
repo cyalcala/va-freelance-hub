@@ -28,24 +28,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response("Invalid prompt", { status: 400 });
   }
 
-  const result = await env.AI.run(body.model, {
-    messages: [
-      { role: "system", content: "You are a precise JSON classifier." },
-      { role: "user", content: body.prompt },
-    ],
-    response_format: {
-      type: "json_schema",
-      json_schema: {
-        type: "object",
-        properties: {
-          eligibleForFilipinos: { type: "boolean" },
-          reason: { type: "string" },
-        },
-        required: ["eligibleForFilipinos", "reason"],
-      },
-    },
-    max_tokens: 180,
-    temperature: 0,
-  });
-  return Response.json(result);
+  try {
+    const result = await env.AI.run(body.model, {
+      messages: [
+        { role: "system", content: "You are a precise JSON classifier." },
+        { role: "user", content: body.prompt },
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 180,
+      temperature: 0,
+    });
+    return Response.json(result);
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message.slice(0, 300) : "Workers AI evaluation failed" },
+      { status: 502 },
+    );
+  }
 };
