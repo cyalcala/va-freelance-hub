@@ -86,7 +86,19 @@ for (const model of MODELS) {
       throw new Error(`${model}/${fixture.id}: non-JSON response ${response.status} ${responseText.slice(0, 160)}`);
     }
     if (!response.ok || (!viaPreview && body?.success !== true)) {
-      throw new Error(`${model}/${fixture.id}: provider error ${response.status}`);
+      const detail = typeof body?.error === "string"
+        ? body.error
+        : JSON.stringify(body?.errors ?? body).slice(0, 300);
+      await Bun.write("ai-eval-results.json", JSON.stringify({
+        generatedAt: new Date().toISOString(),
+        incomplete: true,
+        failedModel: model,
+        failedFixture: fixture.id,
+        status: response.status,
+        detail,
+        results,
+      }, null, 2));
+      throw new Error(`${model}/${fixture.id}: provider error ${response.status}: ${detail}`);
     }
     const providerResult = viaPreview ? body : body.result;
     const raw = providerResult?.response;
