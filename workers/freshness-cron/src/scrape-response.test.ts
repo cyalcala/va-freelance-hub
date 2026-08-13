@@ -24,9 +24,35 @@ test("rejects HTTP-200 scrape results with unresolved ingestion work", () => {
     insertFailedBatches: 1,
     triageAiUnavailable: 2,
   }))).toThrow("incomplete ingestion");
+
+  expect(() => assessSuccessfulScrapeResponse(JSON.stringify({
+    inserted: 0,
+    actualChanges: 0,
+    droppedNoUrl: 3,
+  }))).toThrow("droppedNoUrl=3");
 });
 
 test("rejects malformed or error-shaped HTTP-200 bodies", () => {
   expect(() => assessSuccessfulScrapeResponse("not json")).toThrow("valid JSON");
+  expect(() => assessSuccessfulScrapeResponse("{}" )).toThrow("recognized terminal response");
   expect(() => assessSuccessfulScrapeResponse(JSON.stringify({ error: "D1 unavailable" }))).toThrow("D1 unavailable");
+});
+
+test("accepts explicit zero-change and lock-held terminal responses", () => {
+  expect(assessSuccessfulScrapeResponse(JSON.stringify({ inserted: 0, actualChanges: 0 })))
+    .toBe("inserted=0 actualChanges=0");
+  expect(assessSuccessfulScrapeResponse(JSON.stringify({ skipped: true, reason: "run-lock-held" })))
+    .toBe("skipped=run-lock-held");
+});
+
+test("rejects unrecognized or degraded skipped responses", () => {
+  expect(() => assessSuccessfulScrapeResponse(JSON.stringify({
+    skipped: true,
+    reason: "parser-failed",
+  }))).toThrow("recognized terminal response");
+  expect(() => assessSuccessfulScrapeResponse(JSON.stringify({
+    skipped: true,
+    reason: "run-lock-held",
+    droppedNoUrl: 3,
+  }))).toThrow("droppedNoUrl=3");
 });
