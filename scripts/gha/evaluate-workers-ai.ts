@@ -22,7 +22,11 @@ const MODELS = [
 
 const token = process.env.CLOUDFLARE_API_TOKEN;
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-if (!token || !accountId) throw new Error("Cloudflare evaluation credentials are required");
+const evalUrl = process.env.AI_EVAL_URL;
+const proxySecret = process.env.PROXY_SECRET;
+if ((!token || !accountId) && (!evalUrl || !proxySecret)) {
+  throw new Error("Cloudflare REST credentials or a protected preview evaluation URL are required");
+}
 
 const fixtures = await Bun.file(
   new URL("../../packages/scraper/fixtures/ai-geo-eval.json", import.meta.url),
@@ -52,15 +56,18 @@ const results: Array<Record<string, unknown>> = [];
 for (const model of MODELS) {
   for (const fixture of fixtures) {
     const startedAt = performance.now();
+    const viaPreview = Boolean(evalUrl && proxySecret);
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
+      viaPreview
+        ? `${evalUrl}/api/cron/ai-eval`
+        : `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai/run/${model}`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${viaPreview ? proxySecret : token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.stringify(viaPreview ? { model, prompt: promptFor(fixture) } : {
           messages: [
             { role: "system", content: "You are a precise JSON classifier." },
             { role: "user", content: promptFor(fixture) },
@@ -72,10 +79,11 @@ for (const model of MODELS) {
       },
     );
     const body = await response.json() as any;
-    if (!response.ok || body?.success !== true) {
+    if (!response.ok || (!viaPreview && body?.success !== true)) {
       throw new Error(`${model}/${fixture.id}: provider error ${response.status}`);
     }
-    const raw = body.result?.response;
+    const providerResult = viaPreview ? body : body.result;
+    const raw = providerResult?.response;
     const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
     if (typeof parsed?.eligibleForFilipinos !== "boolean") {
       throw new Error(`${model}/${fixture.id}: missing boolean verdict`);
@@ -88,7 +96,7 @@ for (const model of MODELS) {
       predictedEligible: parsed.eligibleForFilipinos,
       reason: String(parsed.reason ?? "").slice(0, 300),
       latencyMs: Math.round(performance.now() - startedAt),
-      usage: (body.result?.usage ?? null) as Usage | null,
+      usage: (providerResult?.usage ?? null) as Usage | null,
     });
   }
 }
