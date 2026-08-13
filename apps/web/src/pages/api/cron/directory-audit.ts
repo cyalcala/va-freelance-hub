@@ -4,6 +4,7 @@ import { eq, and, isNotNull, asc, sql } from "drizzle-orm";
 import { checkDirectoryLink } from "@va-hub/scraper";
 import { nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
+import { buildDirectoryHealthUpdate, directoryHealthStatus } from "@/lib/directory-health";
 
 // Automated directory pulse (2026-07). Recurring link-health check over the
 // va_directory company list, mirroring the manual 2026-07 audit's classifier
@@ -17,7 +18,6 @@ import { isAuthorized } from "@/lib/auth";
 // (403/429 from live sites like Canva/Fiverr) never count a strike.
 
 const DEFAULT_BUDGET = 60;   // companies re-checked per run (4 runs/day = full ~368 sweep in ~1.5 days)
-const STRIKE_THRESHOLD = 3;  // consecutive hard-dead checks before de-verifying
 const CHECK_CONCURRENCY = 8;
 
 export const prerender = false;
@@ -73,33 +73,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
           tally[verdict.status] = (tally[verdict.status] ?? 0) + 1;
           const checkedAt = nowUtcIso();
 
-          if (!verdict.isHardDead) {
-            // Healthy (or bot-walled but alive): reset strikes, record status.
-            await db.update(vaDirectory).set({
-              linkStatus: verdict.status,
-              linkEvidence: verdict.evidence,
-              linkCheckedAt: checkedAt,
-              linkFailCount: 0,
-            }).where(eq(vaDirectory.id, row.id));
-            return;
-          }
-
-          const strikes = (row.failCount || 0) + 1;
-          const reached = strikes >= STRIKE_THRESHOLD;
+          const update = buildDirectoryHealthUpdate({
+            verdict,
+            priorFailCount: row.failCount,
+            isVerified: row.isVerified,
+            checkedAt,
+          });
+          const strikes = update.values.linkFailCount;
           await db.update(vaDirectory).set({
-            linkStatus: verdict.status,
-            linkEvidence: verdict.evidence,
-            linkCheckedAt: checkedAt,
-            linkFailCount: strikes,
+            ...update.values,
             // Human-gated: de-verify (hide from the "vetted" set) only at the
             // threshold, and only if currently verified. Never delete, never
             // touch the website URL — a human decides removal.
-            ...(reached && row.isVerified
-              ? { isVerified: false, notes: sql`coalesce(${vaDirectory.notes} || ' | ', '') || ${'[auto ' + checkedAt.slice(0, 10) + '] link ' + verdict.status + ' x' + strikes + ': ' + verdict.evidence}` }
+            ...(update.reachedThreshold
+              ? { notes: sql`coalesce(${vaDirectory.notes} || ' | ', '') || ${'[auto ' + checkedAt.slice(0, 10) + '] link ' + verdict.status + ' x' + strikes + ': ' + verdict.evidence}` }
               : {}),
           }).where(eq(vaDirectory.id, row.id));
 
-          if (reached && row.isVerified) {
+          if (update.reachedThreshold) {
             newlyFlagged += 1;
             flaggedThisRun.push({ id: row.id, company: row.companyName, status: verdict.status, strikes });
           }
@@ -116,11 +107,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       suspected = row?.n ?? -1;
     } catch { /* best-effort */ }
 
+    const health = directoryHealthStatus(targets.length, tally);
     console.log(`[api/cron/directory-audit] Done. Checked ${targets.length}, flagged ${newlyFlagged}, tally ${JSON.stringify(tally)}.`);
     return new Response(JSON.stringify({
       checked: targets.length,
       budget,
       tally,
+      ...health,
       newlyFlagged,
       flaggedThisRun,
       suspectedDeadWithStrikes: suspected,
