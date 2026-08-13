@@ -53,6 +53,14 @@
         "fast-xml-parser": "5.10.1",
       },
     },
+    "workers/freshness-cron": {
+      "name": "va-freelance-freshness-cron",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@cloudflare/workers-types": "^4.20240000.0",
+        "wrangler": "4.120.0",
+      },
+    },
   },
   "overrides": {
     "js-yaml": "4.3.1",
@@ -996,6 +1004,8 @@
     "update-browserslist-db": ["update-browserslist-db@1.2.3", "", { "dependencies": { "escalade": "^3.2.0", "picocolors": "^1.1.1" }, "peerDependencies": { "browserslist": ">= 4.21.0" }, "bin": { "update-browserslist-db": "cli.js" } }, "sha512-Js0m9cx+qOgDxo0eMiFGEueWztz+d4+M3rGlmKPT+T4IS/jP4ylw3Nwpu6cpTTP8R1MAC1kF4VbdLt3ARf209w=="],
 
     "util-deprecate": ["util-deprecate@1.0.2", "", {}, "sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw=="],
+
+    "va-freelance-freshness-cron": ["va-freelance-freshness-cron@workspace:workers/freshness-cron"],
 
     "vfile": ["vfile@6.0.3", "", { "dependencies": { "@types/unist": "^3.0.0", "vfile-message": "^4.0.0" } }, "sha512-KzIbH/9tXat2u30jf+smMwFCsno4wHVdNmzFyL+T/L3UGqqk6JKfVqOFOZEpZSHADH1k40ab6NUIXZq422ov3Q=="],
 

@@ -27,10 +27,9 @@ function timingSafeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-async function ping(env: Env): Promise<void> {
+export async function ping(env: Env): Promise<void> {
   if (!env.PROXY_SECRET) {
-    console.warn("[freshness-cron] PROXY_SECRET not set; skipping (set it with `wrangler secret put PROXY_SECRET`).");
-    return;
+    throw new Error("PROXY_SECRET is not configured");
   }
   const res = await fetch(env.SCRAPE_URL, {
     method: "POST",
