@@ -41,6 +41,12 @@ describe("summarizeRunDiagnostics", () => {
     expect(result.summary).toBe("fetchEventFailedBatches=2");
   });
 
+  test("items dropped at the final URL boundary degrade the durable run", () => {
+    const result = summarizeRunDiagnostics({ droppedNoUrl: 4 });
+    expect(result.degraded).toBe(true);
+    expect(result.summary).toBe("droppedNoUrl=4");
+  });
+
   test("triage failures and AI unavailability are distinct signals", () => {
     const result = summarizeRunDiagnostics({
       triageFailures: 4,

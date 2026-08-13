@@ -90,6 +90,52 @@ interface SourceFetchResult {
   robotsWouldBlock?: boolean;
 }
 
+export function normalizeScrapedItems(rawItems: NewOpportunity[]): {
+  items: NewOpportunity[];
+  droppedNoUrl: number;
+} {
+  const items = rawItems.flatMap((item) => {
+    const sourceUrl = sanitizeSourceUrl(item.sourceUrl);
+    if (!sourceUrl) return [];
+    return [{
+      ...item,
+      sourceUrl,
+      applicationUrl: sanitizeApplyUrl(item.applicationUrl) ?? sourceUrl,
+      contentHash: toContentHash(item.title, sourceUrl),
+    }];
+  });
+  return { items, droppedNoUrl: rawItems.length - items.length };
+}
+
+export function buildNoJobsScrapedOutcome(input: {
+  droppedNoUrl: number;
+  fetchEventFailedBatches: number;
+  failedSourceCount: number;
+  cadenceStateAvailable: boolean;
+  details: Record<string, unknown>;
+}): { diagnostics: RunDiagnosticsInput; response: Record<string, unknown> } {
+  return {
+    diagnostics: {
+      fetchEventFailedBatches: input.fetchEventFailedBatches,
+      failedSourceCount: input.failedSourceCount,
+      droppedNoUrl: input.droppedNoUrl,
+      cadenceStateAvailable: input.cadenceStateAvailable,
+    },
+    response: {
+      inserted: 0,
+      actualChanges: 0,
+      acceptedForInsert: 0,
+      attemptedInsert: 0,
+      insertFailedBatches: 0,
+      insertErrors: [],
+      skipped: 0,
+      droppedNoUrl: input.droppedNoUrl,
+      ...input.details,
+      message: "No jobs scraped",
+    },
+  };
+}
+
 interface InsertError {
   batchStart: number;
   batchSize: number;
@@ -1313,18 +1359,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // later verifier fetches. Every source implementation may evolve, so the
     // production route normalizes source URLs again rather than relying on any
     // one parser to keep the invariant.
-    const allItems = rawItems.flatMap((item) => {
-      const sourceUrl = sanitizeSourceUrl(item.sourceUrl);
-      if (!sourceUrl) return [];
-      return [{
-        ...item,
-        sourceUrl,
-        applicationUrl: sanitizeApplyUrl(item.applicationUrl) ?? sourceUrl,
-        contentHash: toContentHash(item.title, sourceUrl),
-      }];
-    });
-    const droppedNoUrl = rawItems.length - allItems.length;
+    const { items: allItems, droppedNoUrl } = normalizeScrapedItems(rawItems);
     console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML, ${jsonItems.length} JSON, ${atsItems.length} ATS)`);
+    if (droppedNoUrl > 0) {
+      console.warn(`[api/cron/scrape] ${droppedNoUrl} scraped item(s) had no usable sourceUrl and were dropped.`);
+    }
 
     if (allItems.length === 0) {
       await recordConditionalSourceStates(new Set());
@@ -1334,31 +1373,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // below this return it never ran on those ticks. That, not the per-row
       // failure handling, was the dominant reason the unclear backlog sat flat.
       const idleSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
-      await recordIngestDiagnostics(db, observedAt, {
+      const outcome = buildNoJobsScrapedOutcome({
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
+        droppedNoUrl,
         cadenceStateAvailable: cadenceGuards.stateAvailable,
+        details: {
+          unmatchedPauses,
+          failedSources,
+          sourceResults,
+          fetchEventLog,
+          cadenceGuards,
+          sourcesUnchanged,
+          robotsWouldBlock,
+          unclearRetriaged: idleSweep.retriaged,
+          unclearUpgraded: idleSweep.upgraded,
+          unclearDeactivated: idleSweep.deactivated,
+        },
       });
-      return new Response(JSON.stringify({
-        inserted: 0,
-        actualChanges: 0,
-        acceptedForInsert: 0,
-        attemptedInsert: 0,
-        insertFailedBatches: 0,
-        insertErrors: [],
-        skipped: 0,
-        unmatchedPauses,
-        failedSources,
-        sourceResults,
-        fetchEventLog,
-        cadenceGuards,
-        sourcesUnchanged,
-        robotsWouldBlock,
-        unclearRetriaged: idleSweep.retriaged,
-        unclearUpgraded: idleSweep.upgraded,
-        unclearDeactivated: idleSweep.deactivated,
-        message: "No jobs scraped"
-      }), { status: 200, headers: { "Content-Type": "application/json" } });
+      await recordIngestDiagnostics(db, observedAt, outcome.diagnostics);
+      return new Response(JSON.stringify(outcome.response), { status: 200, headers: { "Content-Type": "application/json" } });
     }
 
     // 4. De-duplicate against existing database entries by source URL (batch check, not full-table scan)
@@ -1366,9 +1400,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Invalid source URLs were removed at the final ingestion boundary above;
     // retain their count so the raw -> dedup -> triage -> insert funnel stays
     // closed-form in the response telemetry.
-    if (droppedNoUrl > 0) {
-      console.warn(`[api/cron/scrape] ${droppedNoUrl} scraped item(s) had no usable sourceUrl and were dropped.`);
-    }
     const BATCH_SIZE = 50;
     const existingUrls = new Set<string>();
     const recoverableInactiveUrls = new Set<string>();
@@ -1447,6 +1478,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       await recordIngestDiagnostics(db, observedAt, {
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
+        droppedNoUrl,
         cadenceStateAvailable: cadenceGuards.stateAvailable,
       });
       return new Response(JSON.stringify({
@@ -1780,6 +1812,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       triageFailures,
       triageAiUnavailable,
       failedSourceCount: failedSources.length,
+      droppedNoUrl,
       cadenceStateAvailable: cadenceGuards.stateAvailable,
     });
     return new Response(JSON.stringify({

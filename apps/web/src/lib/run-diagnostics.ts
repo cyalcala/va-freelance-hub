@@ -48,6 +48,8 @@ export type RunDiagnosticsInput = {
   fetchEventFailedBatches?: number;
   /** Sources whose fetch threw this run. */
   failedSourceCount?: number;
+  /** Parser rows rejected because their source URL was absent or unsafe. */
+  droppedNoUrl?: number;
   /** False when cadence state could not be read, so guards degraded open. */
   cadenceStateAvailable?: boolean;
 };
@@ -112,6 +114,11 @@ export function summarizeRunDiagnostics(input: RunDiagnosticsInput): RunDiagnost
   const failedSourceCount = count(input.failedSourceCount);
   if (failedSourceCount > 0) {
     signals.push(`failedSources=${failedSourceCount}`);
+  }
+
+  const droppedNoUrl = count(input.droppedNoUrl);
+  if (droppedNoUrl > 0) {
+    signals.push(`droppedNoUrl=${droppedNoUrl}`);
   }
 
   // Explicit false only. `undefined` means the caller did not report cadence

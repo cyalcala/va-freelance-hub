@@ -5,6 +5,7 @@ const UNRESOLVED_WORK_FIELDS = [
   "rejectedInsertFailedBatches",
   "triageFailures",
   "triageAiUnavailable",
+  "droppedNoUrl",
 ] as const;
 
 function asRecord(value: unknown): ScrapeResponse | null {
@@ -40,18 +41,23 @@ export function assessSuccessfulScrapeResponse(body: string): string {
     throw new Error(`scrape endpoint reported an error: ${response.error.slice(0, 300)}`);
   }
 
-  if (response.skipped === true) {
-    const reason = typeof response.reason === "string" && response.reason.trim()
-      ? response.reason.slice(0, 120)
-      : "intentional-noop";
-    return `skipped=${reason}`;
-  }
-
   const unresolved = UNRESOLVED_WORK_FIELDS
     .map((field) => [field, positiveCount(response[field])] as const)
     .filter(([, count]) => count > 0);
   if (unresolved.length > 0) {
     throw new Error(`scrape endpoint reported incomplete ingestion: ${unresolved.map(([field, count]) => `${field}=${count}`).join(", ")}`);
+  }
+
+  if (response.skipped === true) {
+    if (response.reason !== "run-lock-held") {
+      throw new Error("scrape endpoint returned HTTP 200 without a recognized terminal response");
+    }
+    return "skipped=run-lock-held";
+  }
+
+  if (typeof response.inserted !== "number" || !Number.isFinite(response.inserted) || response.inserted < 0
+      || typeof response.actualChanges !== "number" || !Number.isFinite(response.actualChanges) || response.actualChanges < 0) {
+    throw new Error("scrape endpoint returned HTTP 200 without a recognized terminal response");
   }
 
   const inserted = positiveCount(response.inserted);
