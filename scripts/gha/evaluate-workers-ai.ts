@@ -78,7 +78,13 @@ for (const model of MODELS) {
         }),
       },
     );
-    const body = await response.json() as any;
+    const responseText = await response.text();
+    let body: any;
+    try {
+      body = JSON.parse(responseText);
+    } catch {
+      throw new Error(`${model}/${fixture.id}: non-JSON response ${response.status} ${responseText.slice(0, 160)}`);
+    }
     if (!response.ok || (!viaPreview && body?.success !== true)) {
       throw new Error(`${model}/${fixture.id}: provider error ${response.status}`);
     }
