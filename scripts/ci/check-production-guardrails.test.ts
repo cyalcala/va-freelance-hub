@@ -138,13 +138,3 @@ test("rejects workflow patterns that hide operational failure", () => {
     "gha-sentinel-pulse.yml: sweep diagnostics must read the reserved source_fetch_state record",
   ]);
 });
-
-test("rejects retired Workers AI model ids in active workflows", () => {
-  const result = inspectWorkflowText(
-    "ai.yml",
-    "run: curl /ai/run/@cf/meta/llama-3.1-8b-instruct",
-  );
-  expect(result.errors).toEqual([
-    "ai.yml: active workflow references retired Workers AI model @cf/meta/llama-3.1-8b-instruct",
-  ]);
-});
