@@ -24,7 +24,8 @@ Branch: `codex/apex-gauntlet`
 
 | Unit | Finding | State | Decision | Evidence / follow-up |
 | --- | --- | --- | --- | --- |
-| 1 | OPS-01 release PR #56 | Revised; deploy acceptance pending | REVISE -> provisional KEEP | PR merged as `7616f80`. Run `31686932747` applied migration 0030 and passed FTS, then Pages publish failed on missing `MessageChannel`. A bundle-first conditional fallback was restored test-first; 328 tests, typecheck, build, and emitted-order inspection passed. Fresh critic: KEEP. Final KEEP requires a successful Pages deploy and production smoke/diagnostics. |
+| 1 | OPS-01 release PR #56 | Deploy accepted; ingestion heartbeat pending | REVISE -> provisional KEEP | PR #56 merged as `7616f80`; run `31686932747` applied migration 0030 and passed FTS, then Pages publish failed on missing `MessageChannel`. The bounded compatibility correction merged through PR #57 as `1371bf7`; release run `31687601151` passed validation, build, migrations, FTS integrity, and Pages deploy. Production smoke returned Cloudflare 200s for `/`, `/opportunities`, `/directory`, `/categories/tech`, `/data-policy`, `/privacy`, and `/sitemap.xml`. Sentinel runs `31687728070` and `31688019982` passed and queried 41 source-health rows, but no first post-deploy `__ingest_diag__` row had arrived yet. |
+| 2 | COR-01 FTS row/card contract | Implemented; deploy acceptance pending | REVISE -> KEEP | Replaced `SELECT o.*` with a bound, shared FTS query that projects the 11-field `OpportunityCardData` contract. The first source-text regression test was rejected by the critic. The revised in-memory SQLite FTS5 fixture executes the production query, proves active/category/type/platform filters, BM25 order, all camelCase fields, both internal and encoded external links, and no `url=undefined`; 11 focused assertions pass. Full suite: 329 pass, 0 fail; typecheck and build pass. Final critic: KEEP. |
 
 ## Plan contradictions
 

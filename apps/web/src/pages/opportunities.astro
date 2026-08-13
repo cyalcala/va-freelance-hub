@@ -2,11 +2,12 @@
 import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities } from '@va-hub/db';
 import { and, asc, count, desc, eq, type SQL, sql } from 'drizzle-orm';
-import { OpportunityCard } from '@/components/opportunity-card';
+import { OpportunityCard, type OpportunityCardData } from '@/components/opportunity-card';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parseJobBoardRequest } from '@/lib/public-query';
+import { buildOpportunityFtsQueries } from '@/lib/opportunity-fts-query';
 
 export const prerender = false;
 
@@ -31,7 +32,7 @@ const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
 const offset = (currentPage - 1) * PAGE_SIZE;
 
-let pageJobs = [];
+let pageJobs: OpportunityCardData[] = [];
 let platformOptions: string[] = [];
 let totalJobs = 0;
 let dataUnavailable = false;
@@ -71,31 +72,28 @@ try {
       .map((w) => `"${w.replace(/"/g, '""')}"`)
       .join(' ');
 
-    const ftsConditions = [
-      sql`opportunities_fts MATCH ${ftsMatch}`,
-      sql`o.is_active = 1`,
-    ];
-    if (category && JOB_CATEGORY_MAP[category]) {
-      ftsConditions.push(sql`o.category = ${category}`);
-    }
-    if (type && TYPE_OPTIONS.includes(type)) {
-      ftsConditions.push(sql`o.type = ${type}`);
-    }
-    if (platform) {
-      ftsConditions.push(sql`o.source_platform = ${platform}`);
-    }
-    const ftsWhere = sql.join(ftsConditions, sql` AND `);
-
-    const countRow = await db.all<{ total: number }>(
-      sql`SELECT count(*) AS total FROM opportunities o INNER JOIN opportunities_fts fts ON o.id = fts.rowid WHERE ${ftsWhere}`
-    );
-    totalJobs = countRow[0]?.total ?? 0;
+    const ftsQueries = buildOpportunityFtsQueries({
+      ftsMatch,
+      category: category && JOB_CATEGORY_MAP[category] ? category : undefined,
+      type: type && TYPE_OPTIONS.includes(type) ? type : undefined,
+      platform: platform || undefined,
+      limit: PAGE_SIZE,
+      offset,
+    });
+    const d1 = Astro.locals.runtime.env.DB;
+    const countRow = await d1
+      .prepare(ftsQueries.countSql)
+      .bind(...ftsQueries.filterParams)
+      .first<{ total: number }>();
+    totalJobs = countRow?.total ?? 0;
 
     pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
     if (!pageOutOfRange) {
-      pageJobs = await db.all(
-        sql`SELECT o.* FROM opportunities o INNER JOIN opportunities_fts fts ON o.id = fts.rowid WHERE ${ftsWhere} ORDER BY fts.rank LIMIT ${PAGE_SIZE} OFFSET ${offset}`
-      );
+      const pageResult = await d1
+        .prepare(ftsQueries.pageSql)
+        .bind(...ftsQueries.pageParams)
+        .all<OpportunityCardData>();
+      pageJobs = pageResult.results;
     }
   } else {
     const whereClause = and(...filters);
