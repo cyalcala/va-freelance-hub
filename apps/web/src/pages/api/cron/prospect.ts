@@ -8,8 +8,7 @@ import {
 import { nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 import {
-  PROSPECT_CANDIDATE_FRESHNESS_SQL,
-  PROSPECT_SAMPLE_FRESHNESS_SQL,
+  buildProspectCandidateQuery,
 } from "@/lib/prospect-query";
 
 export const prerender = false;
@@ -66,23 +65,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // subquery (not a bound-param list) keeps this off the 100-param limit.
     const STALE_DAYS = 90;
     const staleCutoff = new Date(Date.now() - STALE_DAYS * 24 * 60 * 60_000).toISOString();
-    const rows = await db.all<{ company: string; jobs: number; sampleUrl: string | null; category: string | null }>(sql`
-      SELECT o.company AS company,
-             COUNT(*) AS jobs,
-             (SELECT o2.source_url FROM opportunities o2
-              WHERE o2.company = o.company AND o2.is_active = 1
-              ORDER BY ${sql.raw(PROSPECT_SAMPLE_FRESHNESS_SQL)} DESC LIMIT 1) AS sampleUrl,
-             MAX(o.category) AS category
-      FROM opportunities o
-      WHERE o.is_active = 1
-        AND o.company IS NOT NULL AND TRIM(o.company) <> ''
-        AND LOWER(o.company) NOT IN (SELECT LOWER(company_name) FROM va_directory)
-      GROUP BY LOWER(o.company)
-      HAVING COUNT(*) >= ${MIN_JOBS}
-        AND MAX(${sql.raw(PROSPECT_CANDIDATE_FRESHNESS_SQL)}) >= ${staleCutoff}
-      ORDER BY jobs DESC
-      LIMIT ${CANDIDATE_LIMIT}
-    `);
+    const rows = await db.all<{ company: string; jobs: number; sampleUrl: string | null; category: string | null }>(
+      buildProspectCandidateQuery({ minimumJobs: MIN_JOBS, staleCutoff, limit: CANDIDATE_LIMIT }),
+    );
 
     const raw: RawCandidate[] = rows.map((r) => ({
       company: r.company,
