@@ -2,8 +2,16 @@ export { fetchRSSFeed } from "./rss";
 export { fetchHTMLSource } from "./html";
 export { fetchJSONSource } from "./json";
 export { disabledSources, enabledSources, isEnabledSource, sources, rssSources, htmlSources, jsonSources } from "./sources";
-export { triageJob, skepticEligibilityCheck, isObviousGeoRestriction } from "./triage";
-export type { TriageContext, SkepticVerdict } from "./triage";
+export {
+  CHEAP_AI_MODEL_LADDER,
+  DEFAULT_AI_MODEL_LADDER,
+  JSON_MODE_MODELS,
+  RETIRED_AI_MODELS,
+  triageJob,
+  skepticEligibilityCheck,
+  isObviousGeoRestriction,
+} from "./triage";
+export type { AiAttempt, AiTrace, AiUsage, TriageContext, SkepticVerdict } from "./triage";
 export { geoGate, detectDominantLanguage, scanLandingPageForGeoLock, htmlToVisibleText } from "./geoGate";
 export type { GeoGateInput, GeoVerdict, GeoScope, PhEligibility } from "./geoGate";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";

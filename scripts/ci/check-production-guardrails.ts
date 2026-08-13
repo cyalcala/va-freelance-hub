@@ -6,6 +6,11 @@ export const BUN_VERSION = "1.3.14";
 export const WRANGLER_VERSION = "4.120.0";
 const ROOT_D1_MIGRATION_SCRIPT = "bun run --cwd apps/web db:migrate";
 const WEB_D1_MIGRATION_SCRIPT = "bunx wrangler@4.120.0 d1 migrations apply DB --remote --env production --config wrangler.jsonc";
+const RETIRED_WORKERS_AI_MODELS = [
+  "@cf/meta/llama-3.1-8b-instruct",
+  "@cf/meta/llama-3-8b-instruct",
+  "@cf/mistral/mistral-7b-instruct-v0.1",
+] as const;
 
 const DIGEST_RETRY_WORKFLOWS = new Set([
   "gha-directory-pulse.yml",
@@ -138,6 +143,13 @@ export function inspectWorkflowText(path: string, text: string): GuardrailResult
 
   if (/\bpackages\/zig-parser\b/.test(text)) {
     errors.push(`${path}: active workflows must not reference the historical runtime packages/zig-parser`);
+  }
+
+  for (const model of RETIRED_WORKERS_AI_MODELS) {
+    const escaped = model.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (new RegExp(`${escaped}(?![-\\w.])`).test(text)) {
+      errors.push(`${path}: active workflow references retired Workers AI model ${model}`);
+    }
   }
 
   if (path === "ci-guardrail.yml" && /\bpaths-ignore\s*:/.test(text)) {

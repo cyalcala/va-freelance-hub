@@ -14,6 +14,64 @@ export interface TriageResult {
   // must not persist them as eligible — previously these failed open and an
   // AI outage silently filled the board with unfiltered listings.
   aiUnavailable?: boolean;
+  aiTrace?: AiTrace;
+}
+
+export const DEFAULT_AI_MODEL_LADDER = [
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+  "@cf/meta/llama-3.1-8b-instruct-fast",
+] as const;
+
+export const CHEAP_AI_MODEL_LADDER = [
+  "@cf/meta/llama-3.1-8b-instruct-fast",
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+] as const;
+
+export const JSON_MODE_MODELS = new Set<string>(DEFAULT_AI_MODEL_LADDER);
+
+export const RETIRED_AI_MODELS = new Set([
+  "@cf/meta/llama-3.1-8b-instruct",
+  "@cf/meta/llama-3-8b-instruct",
+  "@cf/mistral/mistral-7b-instruct-v0.1",
+]);
+
+export interface AiUsage {
+  inputTokens: number | null;
+  outputTokens: number | null;
+  totalTokens: number | null;
+}
+
+export interface AiAttempt {
+  model: string;
+  fallbackDepth: number;
+  latencyMs: number;
+  outcome: "success" | "invalid" | "error";
+  usage?: AiUsage | null;
+  error?: string;
+}
+
+export interface AiTrace {
+  selectedModel: string | null;
+  fallbackDepth: number | null;
+  attempts: AiAttempt[];
+  usage: AiUsage | null;
+}
+
+class InvalidModelOutputError extends Error {}
+
+function normalizeUsage(response: any): AiUsage | null {
+  const usage = response?.usage;
+  if (!usage || typeof usage !== "object") return null;
+  const numberOrNull = (value: unknown) => typeof value === "number" ? value : null;
+  return {
+    inputTokens: numberOrNull(usage.prompt_tokens ?? usage.input_tokens),
+    outputTokens: numberOrNull(usage.completion_tokens ?? usage.output_tokens),
+    totalTokens: numberOrNull(usage.total_tokens),
+  };
+}
+
+function emitAiAttempt(attempt: AiAttempt): void {
+  console.info(`[triage] ai_attempt=${JSON.stringify(attempt)}`);
 }
 
 // Simple regex list for obvious geo-exclusion checks before running LLM (saves tokens)
@@ -115,7 +173,7 @@ function contextBlock(context?: TriageContext): string {
  * Accepts a comma-separated list so a caller can pick a *cheaper ladder*
  * rather than a single model. This matters: callers override AI_MODEL to keep
  * the expensive 70B rung out of high-volume paths, but a one-element ladder has
- * no fallback, and JSON mode is only enabled for llama-3.3 (see below) — so a
+ * no fallback, and a model without declared JSON capability can still return
  * single free-form parse failure fails the whole call closed as aiUnavailable.
  * The unclear-backlog sweep hit exactly that: pinned to one 8B model it resolved
  * nothing and merely rotated rows.
@@ -123,8 +181,8 @@ function contextBlock(context?: TriageContext): string {
 /**
  * Parses a model response that is supposed to be JSON but may not be.
  *
- * JSON mode (`response_format`) is only enabled for llama-3.3, so every other
- * rung returns free-form text and may wrap the object in prose ("Sure! Here's
+ * Models outside the explicit JSON capability set return free-form text and
+ * may wrap the object in prose ("Sure! Here's
  * the JSON: {...}"). Strict JSON.parse rejects that, the rung is treated as a
  * failure, and once the whole ladder is consumed the call fails closed as
  * aiUnavailable. In production that silently disabled the backlog sweep on every
@@ -151,17 +209,26 @@ export function parseLooseJson<T = any>(raw: string): T | null {
 }
 
 export function parseModelOverride(override: unknown): string[] {
-  if (Array.isArray(override)) return override.map(String).map((s) => s.trim()).filter(Boolean);
-  return String(override)
+  const models = Array.isArray(override)
+    ? override.map(String).map((s) => s.trim()).filter(Boolean)
+    : String(override)
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+  const retired = models.find((model) => RETIRED_AI_MODELS.has(model));
+  if (retired) throw new Error(`retired Workers AI model is not allowed: ${retired}`);
+  return models;
+}
+
+function responseText(response: any): string {
+  const value = response?.response ?? response?.text ?? response;
+  return typeof value === "string" ? value : JSON.stringify(value);
 }
 
 /**
  * Intelligently classifies and verifies eligibility of a job listing using
- * Cloudflare Workers AI. Model ladder (L2): llama-3.3-70b (fp8-fast, far
- * better geo nuance) → llama-3.1-8b → mistral-7b.
+ * Cloudflare Workers AI. Active ladder: llama-3.3-70b-fp8-fast for geo nuance,
+ * then llama-3.1-8b-instruct-fast as the lower-cost fallback.
  */
 export async function triageJob(
   title: string,
@@ -287,20 +354,13 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
 
   const modelsToTry = env?.AI_MODEL
     ? parseModelOverride(env.AI_MODEL)
-    : [
-        // L2 model upgrade: 70B fp8-fast first — dramatically better at geo
-        // nuance than the 8B models and still on the Workers AI free tier.
-        // If its quota runs dry the ladder degrades to the cheaper models,
-        // and if everything fails the caller fails closed (aiUnavailable).
-        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-        "@cf/meta/llama-3.1-8b-instruct",
-        "@cf/meta/llama-3-8b-instruct",
-        "@cf/mistral/mistral-7b-instruct-v0.1"
-      ];
-
+    : [...DEFAULT_AI_MODEL_LADDER];
   let lastError: Error | null = null;
+  const attempts: AiAttempt[] = [];
 
-  for (const model of modelsToTry) {
+  for (const [fallbackDepth, model] of modelsToTry.entries()) {
+    const startedAt = performance.now();
+    let usage: AiUsage | null = null;
     try {
       const request: Record<string, unknown> = {
         messages: [
@@ -314,21 +374,13 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       // JSON mode (L2): grammar-constrained output kills parse failures on
       // models that support it. Guarded per-model — an unsupported param
       // would otherwise error EVERY rung of the fallback ladder.
-      if (typeof model === "string" && model.includes("llama-3.3")) {
+      if (JSON_MODE_MODELS.has(model)) {
         request.response_format = { type: "json_object" };
       }
       const response = await env.AI.run(model, request);
+      usage = normalizeUsage(response);
 
-      let jsonText = "";
-      if (typeof response === "string") {
-        jsonText = response;
-      } else if (response && response.response) {
-        jsonText = String(response.response);
-      } else if (response && response.text) {
-        jsonText = String(response.text);
-      } else {
-        jsonText = JSON.stringify(response);
-      }
+      let jsonText = responseText(response);
 
       jsonText = jsonText.trim();
       if (jsonText.startsWith("```json")) {
@@ -343,7 +395,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       jsonText = jsonText.trim();
 
       const parsed = parseLooseJson<TriageResult>(jsonText);
-      if (!parsed) throw new Error("Model response was not parseable JSON");
+      if (!parsed) throw new InvalidModelOutputError("Model response was not parseable JSON");
 
       // FAIL CLOSED (geo masterplan L2 prefix, 2026-07): a model response
       // missing the eligibility boolean is an unclassified job, not an
@@ -351,8 +403,18 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       // the final aiUnavailable path fails closed if all models misbehave.
       // Previously this defaulted to `true` and malformed output published.
       if (typeof parsed.eligibleForFilipinos !== "boolean") {
-        throw new Error("model output missing boolean eligibleForFilipinos");
+        throw new InvalidModelOutputError("model output missing boolean eligibleForFilipinos");
       }
+
+      const attempt: AiAttempt = {
+        model,
+        fallbackDepth,
+        latencyMs: Math.round(performance.now() - startedAt),
+        outcome: "success",
+        usage,
+      };
+      attempts.push(attempt);
+      emitAiAttempt(attempt);
 
       // Validate fields and provide safe fallbacks
       return {
@@ -376,10 +438,27 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
         employmentType: ["full-time", "part-time", "contract", "freelance"].includes(parsed.employmentType as any) ? parsed.employmentType : null,
         experienceLevel: ["entry", "mid", "senior", "any"].includes(parsed.experienceLevel as any) ? parsed.experienceLevel : null,
         companyName: typeof parsed.companyName === "string" ? parsed.companyName : null,
+        aiTrace: {
+          selectedModel: model,
+          fallbackDepth,
+          attempts,
+          usage: attempt.usage ?? null,
+        },
       };
     } catch (error) {
+      const caught = error as Error;
+      const attempt: AiAttempt = {
+        model,
+        fallbackDepth,
+        latencyMs: Math.round(performance.now() - startedAt),
+        outcome: caught instanceof InvalidModelOutputError ? "invalid" : "error",
+        usage,
+        error: caught.message.slice(0, 200),
+      };
+      attempts.push(attempt);
+      emitAiAttempt(attempt);
       console.warn(`[triage] Workers AI model ${model} failed for "${title}":`, error);
-      lastError = error as Error;
+      lastError = caught;
       // Continue to the next fallback model
     }
   }
@@ -400,6 +479,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
     experienceLevel: null,
     companyName: null,
     aiUnavailable: true,
+    aiTrace: { selectedModel: null, fallbackDepth: null, attempts, usage: null },
   };
 }
 
@@ -410,6 +490,7 @@ export interface SkepticVerdict {
   reason: string;
   /** True when no model produced a usable verdict — caller decides the tie-break. */
   aiUnavailable?: boolean;
+  aiTrace?: AiTrace;
 }
 
 /**
@@ -443,9 +524,13 @@ Output ONLY raw JSON: {"eligible": boolean, "reason": "one short sentence"}.
 
   const models = env?.AI_MODEL
     ? parseModelOverride(env.AI_MODEL)
-    : ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/meta/llama-3.1-8b-instruct"];
+    : [...DEFAULT_AI_MODEL_LADDER];
 
-  for (const model of models) {
+  const attempts: AiAttempt[] = [];
+
+  for (const [fallbackDepth, model] of models.entries()) {
+    const startedAt = performance.now();
+    let usage: AiUsage | null = null;
     try {
       const request: Record<string, unknown> = {
         messages: [
@@ -453,21 +538,55 @@ Output ONLY raw JSON: {"eligible": boolean, "reason": "one short sentence"}.
           { role: "user", content: prompt },
         ],
       };
-      if (typeof model === "string" && model.includes("llama-3.3")) {
+      if (JSON_MODE_MODELS.has(model)) {
         request.response_format = { type: "json_object" };
       }
       const response = await env.AI.run(model, request);
-      let jsonText = typeof response === "string" ? response : (response?.response ?? response?.text ?? JSON.stringify(response));
-      jsonText = String(jsonText).trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
+      usage = normalizeUsage(response);
+      let jsonText = responseText(response).trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
       const parsed = parseLooseJson<{ eligible?: unknown; reason?: unknown }>(jsonText);
-      if (!parsed) throw new Error("skeptic response was not parseable JSON");
-      if (typeof parsed.eligible !== "boolean") throw new Error("skeptic output missing boolean eligible");
-      return { eligible: parsed.eligible, reason: typeof parsed.reason === "string" ? parsed.reason : "" };
+      if (!parsed) throw new InvalidModelOutputError("skeptic response was not parseable JSON");
+      if (typeof parsed.eligible !== "boolean") throw new InvalidModelOutputError("skeptic output missing boolean eligible");
+      const attempt: AiAttempt = {
+        model,
+        fallbackDepth,
+        latencyMs: Math.round(performance.now() - startedAt),
+        outcome: "success",
+        usage,
+      };
+      attempts.push(attempt);
+      emitAiAttempt(attempt);
+      return {
+        eligible: parsed.eligible,
+        reason: typeof parsed.reason === "string" ? parsed.reason : "",
+        aiTrace: {
+          selectedModel: model,
+          fallbackDepth,
+          attempts,
+          usage: attempt.usage ?? null,
+        },
+      };
     } catch (error) {
+      const caught = error as Error;
+      const attempt: AiAttempt = {
+        model,
+        fallbackDepth,
+        latencyMs: Math.round(performance.now() - startedAt),
+        outcome: caught instanceof InvalidModelOutputError ? "invalid" : "error",
+        usage,
+        error: caught.message.slice(0, 200),
+      };
+      attempts.push(attempt);
+      emitAiAttempt(attempt);
       console.warn(`[triage] Skeptic model ${model} failed for "${title}":`, error);
     }
   }
   // Never block ingestion on a skeptic outage — the first vote plus the
   // deterministic gate still stand; the caller records single-vote status.
-  return { eligible: true, reason: "Skeptic unavailable (all models failed)", aiUnavailable: true };
+  return {
+    eligible: true,
+    reason: "Skeptic unavailable (all models failed)",
+    aiUnavailable: true,
+    aiTrace: { selectedModel: null, fallbackDepth: null, attempts, usage: null },
+  };
 }

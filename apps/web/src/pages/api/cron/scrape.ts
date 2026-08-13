@@ -19,7 +19,7 @@ import {
 } from "@/lib/run-diagnostics";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict } from "@va-hub/scraper";
+import { CHEAP_AI_MODEL_LADDER, disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict } from "@va-hub/scraper";
 
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
@@ -610,32 +610,23 @@ export async function sweepUnclearBacklog(
     // Cost control: the sweep is ~95% of AI call volume (12 rows x up to 2 calls
     // x 96 runs/day). On the 70B rung it exhausted the 10,000 neuron/day account
     // budget, which then starved BOTH the sweep and new-item triage. Pin it to
-    // the cheap 8B rung via the AI_MODEL override that triage.ts /
+    // the active cheap 8B-fast rung via the AI_MODEL override that triage.ts /
     // skepticEligibilityCheck already honour; new-item triage keeps the 70B
     // ladder (low volume, high stakes).
     // Cheap rungs first, 70B last — not "cheap only".
     //
     // Cost control here originally pinned the sweep to one 8B model. That
     // removed every fallback AND the thing that makes parsing reliable: JSON
-    // mode (`response_format`) is enabled only for llama-3.3, so cheap rungs
-    // return free-form text. Production evidence: the sweep last resolved a row
-    // at 02:15 on the default 70B-first ladder, then resolved nothing for hours
-    // once pinned, advancing cursors only. Loose JSON parsing (parseLooseJson)
-    // now recovers most free-form replies, but the cheap rungs are still
-    // best-effort — so keep 70B as the final rung to guarantee the sweep can
-    // always make progress.
+    // mode was enabled only by a model-name substring, so the prior cheap rung
+    // returned free-form text. The active 8B-fast model explicitly supports
+    // JSON mode; 70B remains the final fallback so the sweep can make progress.
     //
     // Cost is bounded by DAILY_SWEEP_CAP, not by forbidding the good model: a
     // capped number of 70B calls beats an uncapped number of failures that
     // resolve nothing.
     const sweepEnv = {
       ...env,
-      AI_MODEL: [
-        "@cf/meta/llama-3.1-8b-instruct",
-        "@cf/meta/llama-3-8b-instruct",
-        "@cf/mistral/mistral-7b-instruct-v0.1",
-        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
-      ].join(","),
+      AI_MODEL: CHEAP_AI_MODEL_LADDER.join(","),
     };
     // A row whose content makes every model fail returns aiUnavailable
     // indistinguishably from a real quota outage. A bare `break` plus a catch
