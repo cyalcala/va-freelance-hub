@@ -94,6 +94,59 @@ function makeEnv(responses: string[], onRun?: (model: string) => void) {
   };
 }
 
+/**
+ * Minimal drizzle-shaped fake with optional write failure injection.
+ * `failUpdates` makes every `update().set().where()` reject so tests can prove
+ * counters are only credited after durable writes.
+ */
+function makeFailingDb(selectResults: SelectResult[], failUpdates = false) {
+  const calls = {
+    selects: 0,
+    limits: [] as number[],
+    updates: [] as any[],
+    upserts: [] as any[],
+  };
+  const queue = [...selectResults];
+
+  const db: any = {
+    select() {
+      calls.selects += 1;
+      const builder: any = {
+        from: () => builder,
+        where: () => builder,
+        orderBy: () => builder,
+        limit: (n: number) => {
+          calls.limits.push(n);
+          return Promise.resolve(queue.shift() ?? []);
+        },
+      };
+      return builder;
+    },
+    insert() {
+      return {
+        values: (vals: any) => ({
+          onConflictDoUpdate: (arg: any) => {
+            calls.upserts.push({ vals, arg });
+            return Promise.resolve();
+          },
+          onConflictDoNothing: () => Promise.resolve(),
+        }),
+      };
+    },
+    update() {
+      return {
+        set: (vals: any) => ({
+          where: () => {
+            calls.updates.push(vals);
+            return failUpdates ? Promise.reject(new Error("D1 write rejected")) : Promise.resolve();
+          },
+        }),
+      };
+    },
+  };
+  return { db, calls };
+}
+
 const row = (id: number) => ({
   id,
   title: `Job ${id}`,
@@ -266,5 +319,57 @@ describe("sweepUnclearBacklog — verdicts", () => {
     const cursorAdvances = calls.updates.filter((u) => u.geoCheckedAt === OBSERVED && !u.phEligibility);
     expect(cursorAdvances.length).toBe(2);
     expect(models.length).toBeGreaterThan(0);
+  });
+});
+
+describe("sweepUnclearBacklog — durable-write truth (REL-04)", () => {
+  it("credits retriaged/upgraded only after the durable upgrade write succeeds", async () => {
+    const { db } = makeFakeDb([[{ day: TODAY, used: 0 }], [row(1)], []]);
+    const { env } = makeEnv([ELIGIBLE, SKEPTIC_AGREES]);
+
+    const stats = await sweepUnclearBacklog(db, env, OBSERVED, 1);
+
+    expect(stats).toEqual({ retriaged: 1, upgraded: 1, deactivated: 0 });
+  });
+
+  it("does not credit deactivated when the verdict write rejects", async () => {
+    const { db } = makeFailingDb([[{ day: TODAY, used: 0 }], [row(1)], []], true);
+    const { env } = makeEnv([ELIGIBLE, SKEPTIC_REFUTES]);
+
+    const stats = await sweepUnclearBacklog(db, env, OBSERVED, 1);
+
+    // The write rejected, so no durable outcome was produced.
+    expect(stats).toEqual({ retriaged: 0, upgraded: 0, deactivated: 0 });
+  });
+
+  it("does not credit upgraded when the upgrade write rejects", async () => {
+    const { db } = makeFailingDb([[{ day: TODAY, used: 0 }], [row(1)], []], true);
+    const { env } = makeEnv([ELIGIBLE, SKEPTIC_AGREES]);
+
+    const stats = await sweepUnclearBacklog(db, env, OBSERVED, 1);
+
+    expect(stats).toEqual({ retriaged: 0, upgraded: 0, deactivated: 0 });
+  });
+
+  it("skips sweep when the daily quota state cannot be read", async () => {
+    const { db } = makeFakeDb([
+      [], // quota select rejects
+    ]);
+    // Override select so the first select (quota read) throws.
+    const originalSelect = db.select;
+    db.select = () => ({
+      from: () => ({
+        where: () => ({
+          limit: () => Promise.reject(new Error("D1 read rejected")),
+        }),
+      }),
+    });
+
+    const { env, models } = makeEnv([ELIGIBLE, SKEPTIC_AGREES]);
+    const stats = await sweepUnclearBacklog(db, env, OBSERVED, 2);
+
+    expect(stats).toEqual({ retriaged: 0, upgraded: 0, deactivated: 0, quotaUnavailable: true });
+    expect(models).toEqual([]);
+    db.select = originalSelect;
   });
 });

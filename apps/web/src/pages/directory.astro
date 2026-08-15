@@ -1,10 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getDb, vaDirectory } from '@va-hub/db';
-import { and, asc, count, eq, lt, sql, type SQL } from 'drizzle-orm';
+import { and, asc, count, sql, type SQL } from 'drizzle-orm';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { escapeSqlLike, parseJobBoardRequest } from '@/lib/public-query';
+import { directoryVisibilityFilters } from '@/lib/directory-visibility';
 import { sanitizeSourceUrl } from '@va-hub/scraper';
 
 export const prerender = false;
@@ -73,10 +74,7 @@ let pageOutOfRange = false;
 
 try {
   const db = getDb(Astro.locals.runtime.env);
-  const filters: SQL[] = [
-    eq(vaDirectory.hiresFilipinos, true),
-    lt(vaDirectory.linkFailCount, 3),
-  ];
+  const filters: SQL[] = [directoryVisibilityFilters()];
   if (query) {
     filters.push(sql`lower(${vaDirectory.companyName}) LIKE ${`%${escapeSqlLike(query.toLowerCase())}%`} ESCAPE '\\'`);
   }

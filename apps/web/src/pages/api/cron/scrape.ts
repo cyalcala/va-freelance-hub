@@ -178,6 +178,72 @@ function skippedSourceResult(source: Source, skipReason = source.complianceNotes
 
 const D1_INSERT_BATCH_SIZE = 3;
 
+// ─── Workers AI per-invocation subrequest budget ─────────────────────────────
+//
+// Cloudflare counts every `env.AI.run()` call as a subrequest, and the Workers
+// Free plan caps subrequests at 50 per invocation (Paid: 10,000). One scrape
+// invocation runs the whole pipeline — source fetches, robots.txt checks, AI
+// triage, the unclear-backlog sweep — inside a single Pages Function request.
+// With ~41 configured sources, even a light tick spends ~10-20 subrequests on
+// fetching; triage then multiplies that by up to `limit` (default 50) items,
+// each burning up to 4 model-ladder calls plus a skeptic call. The invocation
+// blows through 50 in the first few items, every subsequent AI call fails with
+// "Too many subrequests by single Worker invocation", triage fails closed
+// (aiUnavailable), and no new job is inserted. Measured in production
+// 2026-08-08..15: inserts collapsed 51/day -> ~0 while the heartbeat stayed
+// green — exactly the silent-error class this project's audits are built to
+// surface.
+//
+// This budget caps AI subrequests per invocation instead. When it is consumed,
+// remaining items are deferred via the existing retrySourceIds mechanism and
+// re-fetched on the next 15-minute tick — no data loss, just spreading work
+// across ticks (96/day), which is far more capacity than the ~65 items/day the
+// site actually ingests. The value is sized against the measured 50/subrequest
+// ceiling with headroom for the source-fetch phase: ~20 AI calls + ~20 fetch
+// subrequests stays under the cap even on a busy tick, and when a model fails
+// the ladder tries a few extra calls before the budget trips the next item.
+export const AI_SUBREQUEST_BUDGET_PER_RUN = 15;
+
+export class AiBudgetExceededError extends Error {
+  constructor() {
+    super("Workers AI per-invocation subrequest budget exhausted");
+    this.name = "AiBudgetExceededError";
+  }
+}
+
+/**
+ * Wraps the AI binding with a per-invocation call counter.
+ *
+ * Returns a replacement env whose `AI.run` throws `AiBudgetExceededError` once
+ * `budget` calls have been made, plus a read-only view of the counter. The
+ * counter is closure-scoped, so it resets on every request — the budget is
+ * per-invocation, matching the platform limit it protects.
+ */
+export function withAiSubrequestBudget(
+  env: any,
+  budget: number,
+): { env: any; calls: () => number; exhausted: () => boolean } {
+  let calls = 0;
+  const rawRun = env?.AI?.run?.bind(env.AI);
+  const budgetedEnv = rawRun
+    ? {
+        ...env,
+        AI: {
+          run: async (model: unknown, request: unknown) => {
+            calls += 1;
+            if (calls > budget) throw new AiBudgetExceededError();
+            return rawRun(model, request);
+          },
+        },
+      }
+    : env;
+  return {
+    env: budgetedEnv,
+    calls: () => calls,
+    exhausted: () => calls >= budget,
+  };
+}
+
 interface AtsAgency {
   id: number;
   companyName: string;
@@ -492,6 +558,10 @@ export interface UnclearSweepStats {
   retriaged: number;
   upgraded: number;
   deactivated: number;
+  /** True when the daily quota state could not be read or persisted this run. */
+  quotaUnavailable?: boolean;
+  /** Number of rows where the skeptic was unavailable (single-vote upgrade). */
+  skepticUnavailable?: number;
 }
 
 // Unclear-backlog convergence (geo masterplan Phase 3). Upgrades a small budget
@@ -597,10 +667,12 @@ export async function sweepUnclearBacklog(
     }
     UNCLEAR_RETRIAGE_BUDGET = Math.min(perTickBudget, remainingToday);
   } catch (err) {
-    // Cap unknown — fall back to the conservative per-tick number rather than
-    // the idle-tick one, so a broken count cannot license a spending spree.
-    console.warn(`[api/cron/scrape] Sweep daily-cap check failed; using conservative budget:`, errorMessage(err));
-    UNCLEAR_RETRIAGE_BUDGET = Math.min(perTickBudget, SWEEP_BUDGET_BUSY_TICK);
+    // Cap unavailable — run zero sweep work. An aggressive fail-closed is safer
+    // than a guess: a conservative budget of 1 can still exhaust the shared
+    // neuron allocation across 96 daily ticks, starving new-item triage. The
+    // sweep will resume as soon as the read succeeds on the next tick.
+    console.warn(`[api/cron/scrape] Sweep daily-cap check failed; skipping sweep:`, errorMessage(err));
+    return { retriaged: 0, upgraded: 0, deactivated: 0, quotaUnavailable: true };
   }
   const stats: UnclearSweepStats = { retriaged: 0, upgraded: 0, deactivated: 0 };
   try {
@@ -745,9 +817,7 @@ export async function sweepUnclearBacklog(
           continue;
         }
         consecutiveAiFailures = 0;
-        stats.retriaged += 1;
         if (!triage.eligibleForFilipinos) {
-          stats.deactivated += 1;
           await db.update(opportunities).set({
             isActive: false,
             inactiveReason: "policy-rejected",
@@ -756,11 +826,12 @@ export async function sweepUnclearBacklog(
             geoCheckedAt: observedAt,
             updatedAt: observedAt,
           }).where(eq(opportunities.id, row.id));
+          stats.retriaged += 1;
+          stats.deactivated += 1;
           continue;
         }
         const skeptic = await skepticEligibilityCheck(row.title, row.description || "", sweepEnv, ctx);
         if (skeptic && !skeptic.aiUnavailable && !skeptic.eligible) {
-          stats.deactivated += 1;
           await db.update(opportunities).set({
             isActive: false,
             inactiveReason: "policy-rejected",
@@ -769,9 +840,10 @@ export async function sweepUnclearBacklog(
             geoCheckedAt: observedAt,
             updatedAt: observedAt,
           }).where(eq(opportunities.id, row.id));
+          stats.retriaged += 1;
+          stats.deactivated += 1;
           continue;
         }
-        stats.upgraded += 1;
         await db.update(opportunities).set({
           phEligibility: "eligible_likely",
           geoEvidence: skeptic?.aiUnavailable
@@ -780,6 +852,11 @@ export async function sweepUnclearBacklog(
           geoCheckedAt: observedAt,
           updatedAt: observedAt,
         }).where(eq(opportunities.id, row.id));
+        if (skeptic?.aiUnavailable) {
+          stats.skepticUnavailable = (stats.skepticUnavailable ?? 0) + 1;
+        }
+        stats.retriaged += 1;
+        stats.upgraded += 1;
       } catch (err) {
         console.warn(`[api/cron/scrape] Unclear re-triage failed for #${row.id}:`, errorMessage(err));
         // Same wedge hazard as the aiUnavailable path: without advancing the
@@ -795,6 +872,30 @@ export async function sweepUnclearBacklog(
     }
     if (stats.retriaged > 0) {
       console.log(`[api/cron/scrape] Unclear backlog: re-triaged ${stats.retriaged} (upgraded ${stats.upgraded}, deactivated ${stats.deactivated}).`);
+    }
+    // Sweep recovery: stamp the diag row with current-ok so Sentinel can
+    // distinguish a fresh outage from a historical one. Only update when the
+    // sweep finished without an active failure streak.
+    if (attempted > 0 && consecutiveAiFailures === 0) {
+      try {
+        await db.insert(sourceFetchState).values({
+          sourceId: SWEEP_DIAG_ID,
+          sourceName: "sweep diagnostics",
+          sourceType: "diag",
+          collectionMethod: "diag",
+          complianceStatus: "diag",
+          lastAttemptAt: observedAt,
+          lastError: null,
+          updatedAt: observedAt,
+        }).onConflictDoUpdate({
+          target: sourceFetchState.sourceId,
+          set: {
+            lastAttemptAt: observedAt,
+            lastError: null,
+            updatedAt: observedAt,
+          },
+        });
+      } catch { /* diagnostics must never fail the sweep */ }
     }
     // Charge the day's tally. Written even when every attempt failed, so a
     // quota outage cannot be retried indefinitely within the same day.
@@ -823,6 +924,7 @@ export async function sweepUnclearBacklog(
         // Losing the tally means the cap under-counts for this tick only; the
         // per-tick ceiling still bounds spend, so this must not fail the sweep.
         console.warn(`[api/cron/scrape] Sweep quota tally write failed:`, errorMessage(err));
+        stats.quotaUnavailable = true;
       }
     }
   } catch (err) {
@@ -867,7 +969,7 @@ async function recordSourceFetchState(
   result: SourceFetchResult,
   observedAt: string,
   shouldPersistConditionalValidators = true,
-): Promise<void> {
+): Promise<{ ok: boolean; error?: string }> {
   const validators = conditionalValidatorsForPersistence(result, shouldPersistConditionalValidators);
   const updateValues = {
     sourceName: source.name,
@@ -897,8 +999,11 @@ async function recordSourceFetchState(
       target: sourceFetchState.sourceId,
       set: updateValues,
     });
+    return { ok: true };
   } catch (error) {
-    console.warn(`[api/cron/scrape] Failed to record source fetch state for ${source.name}:`, errorMessage(error));
+    const msg = errorMessage(error);
+    console.warn(`[api/cron/scrape] Failed to record source fetch state for ${source.name}:`, msg);
+    return { ok: false, error: msg };
   }
 }
 
@@ -1074,11 +1179,19 @@ async function fetchConfiguredSourceWithStatus(
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const startedAt = Date.now();
   console.log("[api/cron/scrape] Starting execution...");
   
   const env = locals.runtime.env as any;
   const db = getDb(env);
   const observedAt = nowUtcIso();
+
+  // Per-invocation Workers AI subrequest budget (see AI_SUBREQUEST_BUDGET_PER_RUN).
+  // Every triage/sweep AI call below runs through this counter so the invocation
+  // cannot exceed the platform's 50-subrequest cap (Free plan) and silently fail
+  // closed — the exact regression that froze ingestion on 2026-08-08.
+  const aiBudget = withAiSubrequestBudget(env, AI_SUBREQUEST_BUDGET_PER_RUN);
+  const aiEnv = aiBudget.env;
 
   // 1. Rate Limiting Check
   const rateLimiter = env?.API_RATE_LIMITER;
@@ -1111,7 +1224,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const lock = await acquireRunLock(db, observedAt);
     if (lock.state === "held") {
       console.log("[api/cron/scrape] Another run holds the lock; exiting.");
-      return new Response(JSON.stringify({ skipped: true, reason: "run-lock-held", message: "Another scrape run is in progress." }), {
+      return new Response(JSON.stringify({
+        skipped: true,
+        reason: "run-lock-held",
+        lockState: "held",
+        backlogRemaining: 1,
+        message: "Another scrape run is in progress.",
+      }), {
         status: 200, headers: { "Content-Type": "application/json" },
       });
     }
@@ -1149,19 +1268,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const conditionalSourceResults = [...rssResults, ...htmlResults, ...jsonResults];
     const configuredSourcesById = new Map(staticSources.map((source) => [source.id, source]));
     const sourceIdsByUrl = buildSourceIdsByUrl(conditionalSourceResults);
-    const recordConditionalSourceStates = async (retrySourceIds: ReadonlySet<string>) => {
+    const recordConditionalSourceStates = async (retrySourceIds: ReadonlySet<string>):
+      Promise<{ ok: number; failed: number; errors: string[] }> => {
+      let ok = 0;
+      let failed = 0;
+      const errors: string[] = [];
       for (const result of conditionalSourceResults) {
         if (result.skipped || !result.sourceId) continue;
         const source = configuredSourcesById.get(result.sourceId);
         if (!source) continue;
-        await recordSourceFetchState(
+        const outcome = await recordSourceFetchState(
           db,
           source,
           result,
           observedAt,
           !retrySourceIds.has(result.sourceId),
         );
+        if (outcome.ok) { ok += 1; } else { failed += 1; errors.push(outcome.error ?? "unknown"); }
       }
+      return { ok, failed, errors };
     };
 
     const atsAgencies = await db.select().from(vaDirectory).where(
@@ -1366,13 +1491,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     if (allItems.length === 0) {
-      await recordConditionalSourceStates(new Set());
+      const stateWrite = await recordConditionalSourceStates(new Set());
       // Nothing new to ingest — but backlog convergence is maintenance work that
       // must still happen. At a 15-min cadence most ticks land here (feeds return
       // 304, or every source is cadence-skipped), and while the sweep lived only
       // below this return it never ran on those ticks. That, not the per-row
       // failure handling, was the dominant reason the unclear backlog sat flat.
-      const idleSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
+      const idleSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
       const outcome = buildNoJobsScrapedOutcome({
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -1389,6 +1514,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
           unclearRetriaged: idleSweep.retriaged,
           unclearUpgraded: idleSweep.upgraded,
           unclearDeactivated: idleSweep.deactivated,
+          unclearSkepticUnavailable: idleSweep.skepticUnavailable ?? 0,
+          unclearQuotaUnavailable: idleSweep.quotaUnavailable === true,
+          stateWriteOk: stateWrite.ok,
+          stateWriteFailed: stateWrite.failed,
+          stateWriteErrors: stateWrite.errors.length > 0 ? stateWrite.errors : undefined,
         },
       });
       await recordIngestDiagnostics(db, observedAt, outcome.diagnostics);
@@ -1469,12 +1599,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.log(`[api/cron/scrape] ${newItems.length} new items found after URL dedup`);
 
     if (newItems.length === 0) {
-      await recordConditionalSourceStates(new Set());
+      const stateWrite = await recordConditionalSourceStates(new Set());
       // Same reasoning as the allItems===0 return above, and this is the path
       // that actually fires on most ticks: feeds keep returning their current
       // items (so allItems > 0), but after URL dedup none of them are new. The
       // backlog sweep is maintenance and must not be gated on fresh ingest.
-      const dedupSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
+      const dedupSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
       await recordIngestDiagnostics(db, observedAt, {
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -1500,6 +1630,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
         unclearRetriaged: dedupSweep.retriaged,
         unclearUpgraded: dedupSweep.upgraded,
         unclearDeactivated: dedupSweep.deactivated,
+        unclearSkepticUnavailable: dedupSweep.skepticUnavailable ?? 0,
+        unclearQuotaUnavailable: dedupSweep.quotaUnavailable === true,
+        stateWriteOk: stateWrite.ok,
+        stateWriteFailed: stateWrite.failed,
+        stateWriteErrors: stateWrite.errors.length > 0 ? stateWrite.errors : undefined,
         message: "Zero new jobs after dedup"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -1529,6 +1664,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // and a cluster of persistent ineligible listings at the head of a large
     // feed could permanently starve items behind the per-run limit.
     const rejectedItems: typeof opportunities.$inferInsert[] = [];
+    // Durable-triage queue (Inngest pilot): when INNGEST_SIGNING_KEY is set,
+    // gate-passed listings are persisted here as hidden `pending-triage` rows
+    // instead of being AI-triaged inline, and the Inngest triage-drain worker
+    // classifies them out-of-band — one listing per invocation, so no single
+    // Pages Function request ever approaches the 50-subrequest cap that froze
+    // ingestion on 2026-08-07. The key's PRESENCE is the feature flag: with no
+    // key the block below is skipped and triage runs inline exactly as before.
+    const triageViaInngest = Boolean((env as { INNGEST_SIGNING_KEY?: string })?.INNGEST_SIGNING_KEY);
+    const pendingItems: typeof opportunities.$inferInsert[] = [];
     const concurrency = 3;
     // Jobs whose triage call threw are dropped from this run. Count them so the
     // response (and Hunter annotations) can distinguish "filtered out by
@@ -1547,6 +1691,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let geoGateRejected = 0;
     // Items where the two AI votes disagreed (L2 consensus) — quarantined.
     let consensusQuarantined = 0;
+    // Items deferred because the per-invocation Workers AI subrequest budget was
+    // consumed. Deferred, not lost — their source validators are cleared so the
+    // next tick re-fetches and retries them. This keeps the invocation under
+    // Cloudflare's 50-subrequest ceiling (Free plan) instead of failing closed
+    // on the last ~50 AI calls like the 2026-08-08 ingestion freeze did.
+    let triageBudgetDeferred = 0;
     // Per-source geo-rejection counts (masterplan L3): a source segment that
     // keeps shipping country-locked "remote" jobs shows up here run after
     // run — the Sentinel/digest layer can then tighten its defaults.
@@ -1594,7 +1744,42 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.log(`[api/cron/scrape] Geo-gate rejected ${geoGateRejected}/${itemsToProcess.length} items before AI triage.`);
     }
 
+    // ── Durable triage path: persist, don't classify inline ──────────────────
+    // With Inngest enabled, a gate-passed listing becomes a hidden
+    // `pending-triage` row (is_active=0 → never rendered) and the triage-drain
+    // worker sets its verdict later. No `env.AI.run` happens on this request, so
+    // the whole scrape invocation stays trivially under the 50-subrequest cap.
+    if (triageViaInngest) {
+      for (const { item, gate } of gatePassedItems) {
+        const cleanDesc = (item.description || "").slice(0, 1500);
+        pendingItems.push({
+          ...item,
+          isActive: false,
+          inactiveReason: "pending-triage",
+          geoScope: gate.geoScope,
+          phEligibility: "unclear",
+          geoEvidence: `Queued for Inngest durable triage (gate: ${gate.geoScope})`,
+          geoCheckedAt: observedAt,
+          descriptionHash: await sha256Hex(item.title + cleanDesc),
+          applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+          postedAt: normalizeUtcIso(item.postedAt),
+          scrapedAt: observedAt,
+          lastSeenInFeedAt: observedAt,
+          updatedAt: observedAt,
+        });
+      }
+    } else {
     for (let i = 0; i < gatePassedItems.length; i += concurrency) {
+      // Subrequest budget (see AI_SUBREQUEST_BUDGET_PER_RUN): once consumed,
+      // defer the remaining items to the next tick instead of making AI calls
+      // that would fail with "Too many subrequests" and fail closed anyway.
+      if (aiBudget.exhausted()) {
+        const deferred = gatePassedItems.slice(i);
+        markItemsForRetry(deferred.map(({ item }) => item));
+        triageBudgetDeferred += deferred.length;
+        console.warn(`[api/cron/scrape] AI subrequest budget exhausted; deferring ${deferred.length} item(s) to the next run.`);
+        break;
+      }
       const chunk = gatePassedItems.slice(i, i + concurrency);
       const results = await Promise.all(
         chunk.map(async ({ item, gate }) => {
@@ -1607,14 +1792,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
               tags: item.tags,
               company: item.company,
             };
-            const triage = await triageJob(item.title, item.description || "", env, triageContext);
+            const triage = await triageJob(item.title, item.description || "", aiEnv, triageContext);
             // Consensus (L2): a gate-unknown item approved by one AI pass
             // needs a second, adversarial vote before publishing. Gate-
             // verified positives (worldwide/APAC/PH) skip this — the
             // structured signal already corroborates.
             let skeptic = null;
             if (gate.geoScope === "unknown" && !triage.aiUnavailable && triage.eligibleForFilipinos) {
-              skeptic = await skepticEligibilityCheck(item.title, item.description || "", env, triageContext);
+              skeptic = await skepticEligibilityCheck(item.title, item.description || "", aiEnv, triageContext);
             }
             return { item, gate, triage, skeptic };
           } catch (err) {
@@ -1727,6 +1912,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         });
       }
     }
+    } // end inline-triage branch (else of triageViaInngest)
 
     console.log(`[api/cron/scrape] ${triagedItems.length} jobs approved after AI triaging`);
     // Note: no early return when triagedItems is empty — rejected items must
@@ -1792,18 +1978,44 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.log(`[api/cron/scrape] Persisted ${rejectedPersisted}/${rejectedItems.length} triage-rejected items as inactive rows (${rejectedInsertFailedBatches} failed batches).`);
     }
 
+    // 6b-inngest. Persist gate-passed listings queued for durable Inngest
+    // triage as hidden `pending-triage` rows (is_active=0 → never on the board
+    // until the worker classifies them). Same fail-soft accounting as above;
+    // empty when triageViaInngest is off, so this is a no-op on the inline path.
+    let pendingPersisted = 0;
+    let pendingInsertFailedBatches = 0;
+    for (let i = 0; i < pendingItems.length; i += D1_INSERT_BATCH_SIZE) {
+      const batch = pendingItems.slice(i, i + D1_INSERT_BATCH_SIZE);
+      try {
+        const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
+        if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
+          pendingPersisted += (res as any).meta.changes;
+        } else {
+          markItemsForRetry(batch);
+        }
+      } catch (err) {
+        pendingInsertFailedBatches += 1;
+        markItemsForRetry(batch);
+        console.warn(`[api/cron/scrape] Pending-triage batch insert failed (index ${i}):`, errorMessage(err));
+      }
+    }
+    if (pendingItems.length > 0) {
+      console.log(`[api/cron/scrape] Queued ${pendingPersisted}/${pendingItems.length} listing(s) for Inngest durable triage (${pendingInsertFailedBatches} failed batches).`);
+    }
+
     // 6c. Unclear-backlog convergence — see sweepUnclearBacklog(). Also invoked
     // on the no-new-items early-return path above, so it runs every tick.
     // A source's ETag/body hash becomes durable only after every listing has a
     // terminal outcome. Otherwise a later 304 would silently suppress a retry.
-    await recordConditionalSourceStates(retrySourceIds);
+    const stateWrite = await recordConditionalSourceStates(retrySourceIds);
 
-    const unclearSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_BUSY_TICK);
+    const unclearSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_BUSY_TICK);
     const unclearRetriaged = unclearSweep.retriaged;
     const unclearUpgraded = unclearSweep.upgraded;
     const unclearDeactivated = unclearSweep.deactivated;
+    const unclearSkepticUnavailable = unclearSweep.skepticUnavailable ?? 0;
 
-    console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}`);
+    console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}, budget-deferred: ${triageBudgetDeferred}, aiCalls: ${aiBudget.calls()}`);
     await recordIngestDiagnostics(db, observedAt, {
       insertFailedBatches,
       insertErrorCount: insertErrors.length,
@@ -1811,6 +2023,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       fetchEventFailedBatches: fetchEventLog.failedBatches,
       triageFailures,
       triageAiUnavailable,
+      triageBudgetDeferred,
       failedSourceCount: failedSources.length,
       droppedNoUrl,
       cadenceStateAvailable: cadenceGuards.stateAvailable,
@@ -1824,12 +2037,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
       insertErrors,
       triageFailures,
       triageAiUnavailable,
+      triageBudgetDeferred,
+      aiSubrequestCalls: aiBudget.calls(),
+      aiSubrequestBudget: AI_SUBREQUEST_BUDGET_PER_RUN,
       geoGateRejected,
       geoRejectionsBySource,
       consensusQuarantined,
       unclearRetriaged,
+      unclearUpgraded,
+      unclearDeactivated,
+      unclearSkepticUnavailable,
+      unclearQuotaUnavailable: unclearSweep.quotaUnavailable === true,
+      stateWriteOk: stateWrite.ok,
+      stateWriteFailed: stateWrite.failed,
+      stateWriteErrors: stateWrite.errors.length > 0 ? stateWrite.errors : undefined,
       rejectedPersisted,
       rejectedInsertFailedBatches,
+      pendingPersisted,
+      pendingInsertFailedBatches,
+      triageViaInngest,
       droppedNoUrl,
       unmatchedPauses,
       filteredOut: itemsToProcess.length - triagedItems.length,
@@ -1842,9 +2068,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       cadenceGuards,
       sourcesUnchanged,
       robotsWouldBlock,
+      runDurationMs: Date.now() - startedAt,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: (error as Error).message, runDurationMs: Date.now() - startedAt }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 };
