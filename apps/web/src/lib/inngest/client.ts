@@ -1,3 +1,5 @@
+// MUST be first: shims FinalizationRegistry/WeakRef before `inngest` evaluates.
+import "./polyfill";
 import { Inngest, Middleware } from "inngest";
 
 /**
