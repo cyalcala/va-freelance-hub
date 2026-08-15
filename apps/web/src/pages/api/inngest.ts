@@ -1,3 +1,7 @@
+// MUST be first: defines FinalizationRegistry/WeakRef before any inngest module
+// evaluates (the cloudflare serve import below constructs Inngest's OTel span
+// processor, which needs FinalizationRegistry — absent on the Workers runtime).
+import "@/lib/inngest/polyfill";
 import type { APIRoute } from "astro";
 import { serve } from "inngest/cloudflare";
 import { inngest } from "@/lib/inngest/client";
