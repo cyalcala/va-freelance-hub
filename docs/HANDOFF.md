@@ -1,5 +1,40 @@
 # Handoff
 
+## Current Checkpoint — 2026-08-15 AI-Subrequest Freeze + Inngest Durable Triage
+
+Status: implemented on `codex/apex-flash-continuation`, pushed. Typecheck 0,
+**379 tests pass**, build clean. NOT merged to `main`; not deployed.
+
+**The board was frozen at jobs posted 2026-08-07** for 8 days. Confirmed root
+cause from live D1 (Sentinel workflow): the scrape route runs the whole pipeline
+in ONE Cloudflare Pages Function request, and the Free plan caps subrequests at
+**50 per invocation** (D1 + every `env.AI.run` count). Busy ticks blew past 50,
+triage failed closed (`Too many subrequests` / `triageAiUnavailable=50`), and
+nothing inserted — heartbeat green the whole time.
+
+Two-layer fix:
+1. **Emergency tourniquet (`21cbbeb`)** — `AI_SUBREQUEST_BUDGET_PER_RUN = 15`
+   caps AI calls per invocation and defers overflow to the next tick. Deploying
+   this alone unfreezes ingestion. Doc: `docs/incident-2026-08-15-ai-subrequest-freeze.md`.
+2. **Structural fix — Inngest durable triage** (this checkpoint) — moves triage
+   out of the scrape invocation and fans it out one-listing-per-step, each its
+   own invocation/budget, under concurrency 5 + throttle 30/min (also respects
+   the 10k-neuron/day quota, error `4006`). Doc:
+   `docs/inngest-durable-triage-2026-08-15.md`.
+
+**The Inngest signing key IS the feature flag.** With no `INNGEST_SIGNING_KEY`,
+scrape triages inline exactly as before (with the budget guard). Set the key on
+the Pages project → scrape persists new listings as hidden `pending-triage` rows
+(is_active=0) and the `triage-drain` Inngest cron classifies them out-of-band.
+
+### Next steps (owner)
+1. Deploy `21cbbeb` (merge to `main`) to unfreeze ingestion immediately.
+2. `bunx wrangler pages secret put INNGEST_SIGNING_KEY --project-name remotejobs-ph`
+   (Signing Key, `signkey-prod-…`), then sync the app at
+   `https://remotejobs-ph.pages.dev/api/inngest` in the Inngest dashboard.
+3. Watch the board advance past 2026-08-07 and `triage-drain` runs in the Inngest
+   dashboard. `4006` during backlog drain is expected and self-heals.
+
 ## Current Checkpoint — 2026-08-11 Alerting Regression + Sovereign Crawler 4A/4B
 
 Status: implemented, tested, pushed on `codex/audit-worktree-bootstrap`.

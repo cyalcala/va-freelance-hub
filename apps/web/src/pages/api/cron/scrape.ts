@@ -1664,6 +1664,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // and a cluster of persistent ineligible listings at the head of a large
     // feed could permanently starve items behind the per-run limit.
     const rejectedItems: typeof opportunities.$inferInsert[] = [];
+    // Durable-triage queue (Inngest pilot): when INNGEST_SIGNING_KEY is set,
+    // gate-passed listings are persisted here as hidden `pending-triage` rows
+    // instead of being AI-triaged inline, and the Inngest triage-drain worker
+    // classifies them out-of-band — one listing per invocation, so no single
+    // Pages Function request ever approaches the 50-subrequest cap that froze
+    // ingestion on 2026-08-07. The key's PRESENCE is the feature flag: with no
+    // key the block below is skipped and triage runs inline exactly as before.
+    const triageViaInngest = Boolean((env as { INNGEST_SIGNING_KEY?: string })?.INNGEST_SIGNING_KEY);
+    const pendingItems: typeof opportunities.$inferInsert[] = [];
     const concurrency = 3;
     // Jobs whose triage call threw are dropped from this run. Count them so the
     // response (and Hunter annotations) can distinguish "filtered out by
@@ -1735,6 +1744,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.log(`[api/cron/scrape] Geo-gate rejected ${geoGateRejected}/${itemsToProcess.length} items before AI triage.`);
     }
 
+    // ── Durable triage path: persist, don't classify inline ──────────────────
+    // With Inngest enabled, a gate-passed listing becomes a hidden
+    // `pending-triage` row (is_active=0 → never rendered) and the triage-drain
+    // worker sets its verdict later. No `env.AI.run` happens on this request, so
+    // the whole scrape invocation stays trivially under the 50-subrequest cap.
+    if (triageViaInngest) {
+      for (const { item, gate } of gatePassedItems) {
+        const cleanDesc = (item.description || "").slice(0, 1500);
+        pendingItems.push({
+          ...item,
+          isActive: false,
+          inactiveReason: "pending-triage",
+          geoScope: gate.geoScope,
+          phEligibility: "unclear",
+          geoEvidence: `Queued for Inngest durable triage (gate: ${gate.geoScope})`,
+          geoCheckedAt: observedAt,
+          descriptionHash: await sha256Hex(item.title + cleanDesc),
+          applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+          postedAt: normalizeUtcIso(item.postedAt),
+          scrapedAt: observedAt,
+          lastSeenInFeedAt: observedAt,
+          updatedAt: observedAt,
+        });
+      }
+    } else {
     for (let i = 0; i < gatePassedItems.length; i += concurrency) {
       // Subrequest budget (see AI_SUBREQUEST_BUDGET_PER_RUN): once consumed,
       // defer the remaining items to the next tick instead of making AI calls
@@ -1878,6 +1912,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         });
       }
     }
+    } // end inline-triage branch (else of triageViaInngest)
 
     console.log(`[api/cron/scrape] ${triagedItems.length} jobs approved after AI triaging`);
     // Note: no early return when triagedItems is empty — rejected items must
@@ -1943,6 +1978,31 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.log(`[api/cron/scrape] Persisted ${rejectedPersisted}/${rejectedItems.length} triage-rejected items as inactive rows (${rejectedInsertFailedBatches} failed batches).`);
     }
 
+    // 6b-inngest. Persist gate-passed listings queued for durable Inngest
+    // triage as hidden `pending-triage` rows (is_active=0 → never on the board
+    // until the worker classifies them). Same fail-soft accounting as above;
+    // empty when triageViaInngest is off, so this is a no-op on the inline path.
+    let pendingPersisted = 0;
+    let pendingInsertFailedBatches = 0;
+    for (let i = 0; i < pendingItems.length; i += D1_INSERT_BATCH_SIZE) {
+      const batch = pendingItems.slice(i, i + D1_INSERT_BATCH_SIZE);
+      try {
+        const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
+        if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
+          pendingPersisted += (res as any).meta.changes;
+        } else {
+          markItemsForRetry(batch);
+        }
+      } catch (err) {
+        pendingInsertFailedBatches += 1;
+        markItemsForRetry(batch);
+        console.warn(`[api/cron/scrape] Pending-triage batch insert failed (index ${i}):`, errorMessage(err));
+      }
+    }
+    if (pendingItems.length > 0) {
+      console.log(`[api/cron/scrape] Queued ${pendingPersisted}/${pendingItems.length} listing(s) for Inngest durable triage (${pendingInsertFailedBatches} failed batches).`);
+    }
+
     // 6c. Unclear-backlog convergence — see sweepUnclearBacklog(). Also invoked
     // on the no-new-items early-return path above, so it runs every tick.
     // A source's ETag/body hash becomes durable only after every listing has a
@@ -1993,6 +2053,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       stateWriteErrors: stateWrite.errors.length > 0 ? stateWrite.errors : undefined,
       rejectedPersisted,
       rejectedInsertFailedBatches,
+      pendingPersisted,
+      pendingInsertFailedBatches,
+      triageViaInngest,
       droppedNoUrl,
       unmatchedPauses,
       filteredOut: itemsToProcess.length - triagedItems.length,

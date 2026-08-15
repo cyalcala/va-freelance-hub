@@ -8,6 +8,8 @@ export { geoGate, detectDominantLanguage, scanLandingPageForGeoLock, htmlToVisib
 export type { GeoGateInput, GeoVerdict, GeoScope, PhEligibility } from "./geoGate";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";
+export { decideTriage, mapTriageCategoryToUiCategory } from "./triage-decision";
+export type { TriageDecision, TriageDecisionInput } from "./triage-decision";
 export { fetchATSFeed, fetchAshby } from "./ats";
 export { conditionalFetchText, unchangedOutput } from "./conditional";
 export type { ConditionalState, ConditionalResult, SourceFetchOutput } from "./conditional";
