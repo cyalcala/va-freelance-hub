@@ -1,6 +1,44 @@
 # Implementation Status
 
-## Latest Checkpoint — 2026-08-11 (alerting regression + Sovereign Crawler 4A/4B)
+## Latest Checkpoint — 2026-08-15/16 (AI-subrequest freeze fixed + Inngest durable triage)
+
+Full session summary: `docs/checkpoint-2026-08-16-documentation-backup.md`.
+Incident detail: `docs/incident-2026-08-15-ai-subrequest-freeze.md`.
+Inngest architecture + activation: `docs/inngest-durable-triage-2026-08-15.md`.
+
+**The board was frozen at jobs posted 2026-08-07 for ~8 days while the heartbeat
+stayed green.** Root cause: the scrape route runs the whole pipeline inside ONE
+Cloudflare Pages Function request, and the Workers Free plan caps subrequests at
+**50 per invocation** (D1 + every `env.AI.run` count). Busy ticks blew past 50,
+triage failed closed (`Too many subrequests` / `triageAiUnavailable=50`), and
+nothing inserted. Confirmed from live production D1 via the Sentinel workflow.
+
+Three-layer fix, all merged to `main` (`5986311`, `77101b5`):
+
+1. **`21cbbeb`** — emergency `AI_SUBREQUEST_BUDGET_PER_RUN = 15` budget
+   tourniquet (defers overflow to the next tick; `triageBudgetDeferred` signal).
+2. **`c897560`** — **Inngest durable triage**: moves triage out of the scrape
+   invocation and fans it out one-listing-per-step (own invocation/budget) under
+   `concurrency:5` + `throttle:30/min` (respects the 10k-neuron/day quota).
+   The signing key IS the feature flag; `decideTriage()` is the shared verdict.
+3. **`1d60282`** — `FinalizationRegistry`/`WeakRef` polyfill so `/api/inngest`
+   stops 500ing on Workers (Inngest v4 OTel span processor needs the global,
+   absent on the Workers runtime).
+
+Also in `b6877e2`: completed Apex gauntlet units REL-04, REL-06, OPS-02, REL-07,
+DATA-02, DEP-01, and the AI-02 safe-slice metrics (`skepticUnavailable`).
+
+Verification: **379 tests pass, 0 fail, 976 expectations**; typecheck clean;
+build clean (ran 2026-08-16).
+
+Status: merged to `main` and **Inngest ACTIVATED in production** (2026-08-16).
+Valid `INNGEST_SIGNING_KEY` set on Pages, app registered with Inngest cloud,
+`triage-drain` cron live every 10 min. Baseline @ 22:02Z: `pending_triage: 155`,
+`active: 1362`, freshest active `Aug 14`. **Pending acceptance: confirm the
+155-row backlog drains** (pending drops, active climbs, freshest date advances
+past `Aug 14`). Owner steps are in the session summary.
+
+## Previous Checkpoint — 2026-08-11 (alerting regression + Sovereign Crawler 4A/4B)
 
 Audit: `docs/major-audit-2026-08-11.md`. Branch
 `codex/audit-worktree-bootstrap`, pushed, not yet merged or deployed.

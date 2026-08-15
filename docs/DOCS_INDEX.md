@@ -11,13 +11,27 @@ Before any new implementation or deployment, read these documents in this
 order:
 
 1. AGENTS.md
-2. docs/major-audit-2026-08-11.md — **latest**: alerting regression + Sovereign
-   Crawler Phase 4A/4B
-3. docs/labor-engine-masterplan-2026-07.md — the standing forward roadmap
-4. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
-5. docs/HANDOFF.md
-6. docs/SYSTEM_SAVEPOINT.md
-7. docs/AI_RECOVERY_TRAIL.md
+2. docs/directory-growth-strategy-2026-08-16.md — **latest**: Directory Growth
+   Engine strategy: enrichment cron (website inference + auto-verification),
+   curated VA agency seed (28 companies), GHA workflow, daily cycle documentation
+3. docs/checkpoint-2026-08-16-documentation-backup.md — consolidated
+   2026-08-15/16 session summary (AI-subrequest freeze incident, budget fix,
+   Inngest durable triage, FinalizationRegistry polyfill) and current repo state
+4. docs/incident-2026-08-15-ai-subrequest-freeze.md — the freeze + emergency budget fix
+5. docs/inngest-durable-triage-2026-08-15.md — the Inngest structural fix + owner activation steps
+6. docs/checkpoint-2026-08-15-deepseek-continuation.md — Apex gauntlet units completed
+7. docs/major-audit-2026-08-11.md — prior: alerting regression + Sovereign Crawler Phase 4A/4B
+8. docs/labor-engine-masterplan-2026-07.md — the standing forward roadmap
+9. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
+10. docs/HANDOFF.md
+11. docs/SYSTEM_SAVEPOINT.md
+12. docs/AI_RECOVERY_TRAIL.md
+
+The 2026-08-15 work is merged to `main` (`5986311`, `77101b5`) and **Inngest is
+activated in production** (2026-08-16): valid `INNGEST_SIGNING_KEY` set, app
+registered, `triage-drain` cron live every 10 min. Remaining acceptance: confirm
+the `pending_triage` backlog (155 @ 22:02Z) drains and the board advances past
+2026-08-14. Full owner steps: docs/checkpoint-2026-08-16-documentation-backup.md.
 
 The 2026-08-11 checkpoint is on branch `codex/audit-worktree-bootstrap`,
 pushed but not merged or deployed. It carries migration 0030, which must be
@@ -38,63 +52,75 @@ Read these in order:
    search → engine hardening → prospector autonomy → recurrence → gated
    accounts), and the executor protocol. New sessions doing forward work start
    here; recovery/debugging sessions continue with the trail below.
-1. `AGENTS.md` - active project context and operating rules.
-2. `docs/maintenance-bot-2026-07-04.md` - the Tier-1 maintenance bot: Hunter
+1. `docs/checkpoint-2026-08-16-documentation-backup.md` - **latest session
+   summary**: the 2026-08-15 AI-subrequest freeze incident and its three-layer
+   fix (budget tourniquet `21cbbeb`, Inngest durable triage `c897560`,
+   FinalizationRegistry polyfill `1d60282`), the completed Apex gauntlet units,
+   and the current repo state. Start here for anything after 2026-08-15.
+2. `docs/incident-2026-08-15-ai-subrequest-freeze.md` - the freeze root cause
+   (Workers Free 50-subrequest/invocation cap), the budget fix, verification,
+   and deployment path.
+3. `docs/inngest-durable-triage-2026-08-15.md` - the Inngest durable-triage
+   architecture, the signing-key feature flag, and owner activation steps.
+4. `docs/checkpoint-2026-08-15-deepseek-continuation.md` - Apex gauntlet units
+   completed by the continuation agent.
+5. `AGENTS.md` - active project context and operating rules.
+6. `docs/maintenance-bot-2026-07-04.md` - the Tier-1 maintenance bot: Hunter
    alert issues, daily Sentinel flapping-source detector, weekly Medic
    health digest. Detection is automated; decisions stay human/agent-gated.
-3. `docs/major-audit-2026-07-04.md` - latest major audit: found and fixed the
+7. `docs/major-audit-2026-07-04.md` - latest major audit: found and fixed the
    silent fetch-event logging failure (D1 bound-parameter limit), rewrote the
    hard-deleting prune endpoint to soft-archive, surfaced triage failures and
    cadence-guard state in scrape responses, and set the durability rules for
    future write paths.
-4. `docs/gold777-directory-import-2026-07-04.md` - directory-import
+8. `docs/gold777-directory-import-2026-07-04.md` - directory-import
    checkpoint: 32 new `va_directory` companies cross-referenced from
    `gold777.xlsx`, plus verified Greenhouse/Breezy ATS tokens for GitLab,
    Ghost, Remote.com, and Time Etc.
-5. `docs/IMPLEMENTATION_STATUS.md` - current percentage, phase status, and next
+9. `docs/IMPLEMENTATION_STATUS.md` - current percentage, phase status, and next
    task.
-6. `docs/HANDOFF.md` - latest stop/resume note.
-7. `docs/MASTER_EXECUTION_PLAN.md` - full roadmap and acceptance strategy.
-8. `docs/AI_RECOVERY_TRAIL.md` - backup loop and evidence requirements.
-9. `docs/SYSTEM_SAVEPOINT.md` - current saved state and operational baseline.
-10. `docs/gemini-masterplan-handoff-2026-06-13.md` - current Gemini-ready
-   masterplan, latest QA baseline, and next ordered workstreams.
-11. `docs/remote-ok-json-source-handoff-2026-06-13.md` - latest source-specific
+10. `docs/HANDOFF.md` - latest stop/resume note.
+11. `docs/MASTER_EXECUTION_PLAN.md` - full roadmap and acceptance strategy.
+12. `docs/AI_RECOVERY_TRAIL.md` - backup loop and evidence requirements.
+13. `docs/SYSTEM_SAVEPOINT.md` - current saved state and operational baseline.
+14. `docs/gemini-masterplan-handoff-2026-06-13.md` - current Gemini-ready
+    masterplan, latest QA baseline, and next ordered workstreams.
+15. `docs/remote-ok-json-source-handoff-2026-06-13.md` - latest source-specific
    handoff for Remote OK JSON ingestion, quality filtering, production D1
    evidence, and next safe work.
-12. `docs/source-expansion-2026-06-12.md` - accepted source-expansion
+16. `docs/source-expansion-2026-06-12.md` - accepted source-expansion
    implementation evidence, D1 source-state snapshot, and next safe work.
-13. `docs/goldilocks-source-expansion-handoff-2026-06-12.md` - source-expansion
+17. `docs/goldilocks-source-expansion-handoff-2026-06-12.md` - source-expansion
    plan for balanced compliance, ingestion caps, cadence, and indexing.
-14. `docs/ats-policy-follow-up-2026-06-12.md` - latest ATS source policy
+18. `docs/ats-policy-follow-up-2026-06-12.md` - latest ATS source policy
    hardening and Hunter evidence.
-15. `docs/wrangler-d1-audit-2026-06-12.md` - latest Wrangler v4 and local D1
+19. `docs/wrangler-d1-audit-2026-06-12.md` - latest Wrangler v4 and local D1
    audit recovery evidence.
-16. `docs/major-audit-2026-06-11.md` - major health audit and hotfix evidence.
-17. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
+20. `docs/major-audit-2026-06-11.md` - major health audit and hotfix evidence.
+21. `docs/major-audit-2026-06-10.md` - post-Lens 2 health audit and timestamp
    backfill evidence.
-18. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
+22. `docs/major-audit-2026-06-06.md` - original recovery-roadmap major audit
    findings.
-19. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
+23. `docs/source-review-2026-06-09.md` - latest RSS/HTML source keep/pause
    evidence.
-20. `docs/ats-source-review-2026-06-09.md` - earlier ATS source policy
+24. `docs/ats-source-review-2026-06-09.md` - earlier ATS source policy
    evidence.
-21. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
+25. `docs/data-quality-snapshot-2026-06-09.md` - latest production data-quality
    metrics.
-22. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
+26. `docs/stale-policy-dry-run-2026-06-09.md` - latest no-mutation stale policy
    dry run.
-23. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
+27. `docs/application-url-backfill-2026-06-09.md` - latest reversible P5 data
    quality improvement.
-24. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
+28. `docs/hunter-health-artifacts-2026-06-09.md` - latest P6 Hunter reporting
    and backup-hygiene checkpoint.
-25. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
+29. `docs/source-health-rollup-2026-06-09.md` - latest P6 source-health rollup
    checkpoint.
-26. `docs/source-health-latest.md` - current repo-readable source-health state.
-27. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
+30. `docs/source-health-latest.md` - current repo-readable source-health state.
+31. `docs/final-acceptance-audit-2026-06-09.md` - final recovery-roadmap
    acceptance audit.
-28. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
+32. `docs/decisions/ADR-001-recovery-driven-public-job-index.md` - accepted
    methodology and compliance decision.
-29. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
+33. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
 
 ## Agent Entry Points

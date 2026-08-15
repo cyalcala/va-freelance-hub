@@ -2,10 +2,26 @@
 
 Date: 2026-08-15
 Branch: `codex/apex-flash-continuation`
-Status: implemented, typecheck/test/build green (379 tests). **Inert in production
-until the owner sets `INNGEST_SIGNING_KEY` and syncs the app** (steps below).
+Status: implemented, typecheck/test/build green (379 tests). **LIVE in production
+as of 2026-08-16** — valid `INNGEST_SIGNING_KEY` set on Pages, app registered
+with Inngest cloud (`{"message":"Successfully registered","modified":true}`),
+`triage-drain` running on its 10-minute cron. **Acceptance pending: confirm the
+backlog drains.** Baseline @ 22:02Z: `pending_triage: 155`, `active: 1362`,
+freshest active `Aug 14`. (Key value stays in the Pages secret store; not
+committed to the repo.)
 Companion to: `docs/incident-2026-08-15-ai-subrequest-freeze.md` (the emergency
 budget fix, commit `21cbbeb`).
+
+> **Addendum (2026-08-16, commit `1d60282`):** the runtime gap this doc flagged
+> as "runtime-unverifiable until deployed" was hit and fixed. Inngest v4's OTel
+> `InngestMetadataSpanProcessor` constructs a `FinalizationRegistry` at init,
+> which the Workers runtime does not expose; `/api/inngest` returned a bare 500
+> on every request (confirmed from live production Function logs, deployment
+> `aa151f12`). `apps/web/src/lib/inngest/polyfill.ts` now shims
+> `FinalizationRegistry`/`WeakRef` as no-ops, imported before any `inngest`
+> module in both entry points (`api/inngest.ts`, `lib/inngest/client.ts`). Safe
+> because Workers are short-lived and GC finalizers never fire deterministically.
+> `1d60282` is merged to `main` via `77101b5`.
 
 ## Why this exists
 
