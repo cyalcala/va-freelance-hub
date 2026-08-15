@@ -178,6 +178,72 @@ function skippedSourceResult(source: Source, skipReason = source.complianceNotes
 
 const D1_INSERT_BATCH_SIZE = 3;
 
+// ─── Workers AI per-invocation subrequest budget ─────────────────────────────
+//
+// Cloudflare counts every `env.AI.run()` call as a subrequest, and the Workers
+// Free plan caps subrequests at 50 per invocation (Paid: 10,000). One scrape
+// invocation runs the whole pipeline — source fetches, robots.txt checks, AI
+// triage, the unclear-backlog sweep — inside a single Pages Function request.
+// With ~41 configured sources, even a light tick spends ~10-20 subrequests on
+// fetching; triage then multiplies that by up to `limit` (default 50) items,
+// each burning up to 4 model-ladder calls plus a skeptic call. The invocation
+// blows through 50 in the first few items, every subsequent AI call fails with
+// "Too many subrequests by single Worker invocation", triage fails closed
+// (aiUnavailable), and no new job is inserted. Measured in production
+// 2026-08-08..15: inserts collapsed 51/day -> ~0 while the heartbeat stayed
+// green — exactly the silent-error class this project's audits are built to
+// surface.
+//
+// This budget caps AI subrequests per invocation instead. When it is consumed,
+// remaining items are deferred via the existing retrySourceIds mechanism and
+// re-fetched on the next 15-minute tick — no data loss, just spreading work
+// across ticks (96/day), which is far more capacity than the ~65 items/day the
+// site actually ingests. The value is sized against the measured 50/subrequest
+// ceiling with headroom for the source-fetch phase: ~20 AI calls + ~20 fetch
+// subrequests stays under the cap even on a busy tick, and when a model fails
+// the ladder tries a few extra calls before the budget trips the next item.
+export const AI_SUBREQUEST_BUDGET_PER_RUN = 15;
+
+export class AiBudgetExceededError extends Error {
+  constructor() {
+    super("Workers AI per-invocation subrequest budget exhausted");
+    this.name = "AiBudgetExceededError";
+  }
+}
+
+/**
+ * Wraps the AI binding with a per-invocation call counter.
+ *
+ * Returns a replacement env whose `AI.run` throws `AiBudgetExceededError` once
+ * `budget` calls have been made, plus a read-only view of the counter. The
+ * counter is closure-scoped, so it resets on every request — the budget is
+ * per-invocation, matching the platform limit it protects.
+ */
+export function withAiSubrequestBudget(
+  env: any,
+  budget: number,
+): { env: any; calls: () => number; exhausted: () => boolean } {
+  let calls = 0;
+  const rawRun = env?.AI?.run?.bind(env.AI);
+  const budgetedEnv = rawRun
+    ? {
+        ...env,
+        AI: {
+          run: async (model: unknown, request: unknown) => {
+            calls += 1;
+            if (calls > budget) throw new AiBudgetExceededError();
+            return rawRun(model, request);
+          },
+        },
+      }
+    : env;
+  return {
+    env: budgetedEnv,
+    calls: () => calls,
+    exhausted: () => calls >= budget,
+  };
+}
+
 interface AtsAgency {
   id: number;
   companyName: string;
@@ -1120,6 +1186,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const db = getDb(env);
   const observedAt = nowUtcIso();
 
+  // Per-invocation Workers AI subrequest budget (see AI_SUBREQUEST_BUDGET_PER_RUN).
+  // Every triage/sweep AI call below runs through this counter so the invocation
+  // cannot exceed the platform's 50-subrequest cap (Free plan) and silently fail
+  // closed — the exact regression that froze ingestion on 2026-08-08.
+  const aiBudget = withAiSubrequestBudget(env, AI_SUBREQUEST_BUDGET_PER_RUN);
+  const aiEnv = aiBudget.env;
+
   // 1. Rate Limiting Check
   const rateLimiter = env?.API_RATE_LIMITER;
   if (rateLimiter) {
@@ -1424,7 +1497,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // 304, or every source is cadence-skipped), and while the sweep lived only
       // below this return it never ran on those ticks. That, not the per-row
       // failure handling, was the dominant reason the unclear backlog sat flat.
-      const idleSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
+      const idleSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
       const outcome = buildNoJobsScrapedOutcome({
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -1531,7 +1604,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // that actually fires on most ticks: feeds keep returning their current
       // items (so allItems > 0), but after URL dedup none of them are new. The
       // backlog sweep is maintenance and must not be gated on fresh ingest.
-      const dedupSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_IDLE_TICK);
+      const dedupSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
       await recordIngestDiagnostics(db, observedAt, {
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -1609,6 +1682,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let geoGateRejected = 0;
     // Items where the two AI votes disagreed (L2 consensus) — quarantined.
     let consensusQuarantined = 0;
+    // Items deferred because the per-invocation Workers AI subrequest budget was
+    // consumed. Deferred, not lost — their source validators are cleared so the
+    // next tick re-fetches and retries them. This keeps the invocation under
+    // Cloudflare's 50-subrequest ceiling (Free plan) instead of failing closed
+    // on the last ~50 AI calls like the 2026-08-08 ingestion freeze did.
+    let triageBudgetDeferred = 0;
     // Per-source geo-rejection counts (masterplan L3): a source segment that
     // keeps shipping country-locked "remote" jobs shows up here run after
     // run — the Sentinel/digest layer can then tighten its defaults.
@@ -1657,6 +1736,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     for (let i = 0; i < gatePassedItems.length; i += concurrency) {
+      // Subrequest budget (see AI_SUBREQUEST_BUDGET_PER_RUN): once consumed,
+      // defer the remaining items to the next tick instead of making AI calls
+      // that would fail with "Too many subrequests" and fail closed anyway.
+      if (aiBudget.exhausted()) {
+        const deferred = gatePassedItems.slice(i);
+        markItemsForRetry(deferred.map(({ item }) => item));
+        triageBudgetDeferred += deferred.length;
+        console.warn(`[api/cron/scrape] AI subrequest budget exhausted; deferring ${deferred.length} item(s) to the next run.`);
+        break;
+      }
       const chunk = gatePassedItems.slice(i, i + concurrency);
       const results = await Promise.all(
         chunk.map(async ({ item, gate }) => {
@@ -1669,14 +1758,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
               tags: item.tags,
               company: item.company,
             };
-            const triage = await triageJob(item.title, item.description || "", env, triageContext);
+            const triage = await triageJob(item.title, item.description || "", aiEnv, triageContext);
             // Consensus (L2): a gate-unknown item approved by one AI pass
             // needs a second, adversarial vote before publishing. Gate-
             // verified positives (worldwide/APAC/PH) skip this — the
             // structured signal already corroborates.
             let skeptic = null;
             if (gate.geoScope === "unknown" && !triage.aiUnavailable && triage.eligibleForFilipinos) {
-              skeptic = await skepticEligibilityCheck(item.title, item.description || "", env, triageContext);
+              skeptic = await skepticEligibilityCheck(item.title, item.description || "", aiEnv, triageContext);
             }
             return { item, gate, triage, skeptic };
           } catch (err) {
@@ -1860,13 +1949,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // terminal outcome. Otherwise a later 304 would silently suppress a retry.
     const stateWrite = await recordConditionalSourceStates(retrySourceIds);
 
-    const unclearSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_BUSY_TICK);
+    const unclearSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_BUSY_TICK);
     const unclearRetriaged = unclearSweep.retriaged;
     const unclearUpgraded = unclearSweep.upgraded;
     const unclearDeactivated = unclearSweep.deactivated;
     const unclearSkepticUnavailable = unclearSweep.skepticUnavailable ?? 0;
 
-    console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}`);
+    console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}, budget-deferred: ${triageBudgetDeferred}, aiCalls: ${aiBudget.calls()}`);
     await recordIngestDiagnostics(db, observedAt, {
       insertFailedBatches,
       insertErrorCount: insertErrors.length,
@@ -1874,6 +1963,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       fetchEventFailedBatches: fetchEventLog.failedBatches,
       triageFailures,
       triageAiUnavailable,
+      triageBudgetDeferred,
       failedSourceCount: failedSources.length,
       droppedNoUrl,
       cadenceStateAvailable: cadenceGuards.stateAvailable,
@@ -1887,6 +1977,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       insertErrors,
       triageFailures,
       triageAiUnavailable,
+      triageBudgetDeferred,
+      aiSubrequestCalls: aiBudget.calls(),
+      aiSubrequestBudget: AI_SUBREQUEST_BUDGET_PER_RUN,
       geoGateRejected,
       geoRejectionsBySource,
       consensusQuarantined,

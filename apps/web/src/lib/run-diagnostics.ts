@@ -42,6 +42,8 @@ export type RunDiagnosticsInput = {
   triageFailures?: number;
   /** Listings whose verdict was withheld because Workers AI was unreachable. */
   triageAiUnavailable?: number;
+  /** Listings deferred because the per-invocation AI subrequest budget was hit. */
+  triageBudgetDeferred?: number;
   /** Batches that threw while persisting triage-rejected rows. */
   rejectedInsertFailedBatches?: number;
   /** Failed `source_fetch_events` insert batches (the S-1 regression class). */
@@ -109,6 +111,11 @@ export function summarizeRunDiagnostics(input: RunDiagnosticsInput): RunDiagnost
   const triageAiUnavailable = count(input.triageAiUnavailable);
   if (triageAiUnavailable > 0) {
     signals.push(`triageAiUnavailable=${triageAiUnavailable}`);
+  }
+
+  const triageBudgetDeferred = count(input.triageBudgetDeferred);
+  if (triageBudgetDeferred > 0) {
+    signals.push(`triageBudgetDeferred=${triageBudgetDeferred}`);
   }
 
   const failedSourceCount = count(input.failedSourceCount);

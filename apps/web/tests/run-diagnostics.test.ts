@@ -58,6 +58,17 @@ describe("summarizeRunDiagnostics", () => {
     expect(result.summary).toContain("triageAiUnavailable=7");
   });
 
+  test("budget-deferred triage is a distinct, surfaced signal", () => {
+    const result = summarizeRunDiagnostics({
+      triageBudgetDeferred: 9,
+      triageAiUnavailable: 0,
+    });
+
+    expect(result.degraded).toBe(true);
+    expect(result.signalCount).toBe(1);
+    expect(result.summary).toBe("triageBudgetDeferred=9");
+  });
+
   test("unavailable cadence state is reported only when explicitly false", () => {
     expect(summarizeRunDiagnostics({ cadenceStateAvailable: false }).summary)
       .toBe("cadenceStateUnavailable");
