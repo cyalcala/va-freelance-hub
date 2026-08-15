@@ -1,12 +1,14 @@
 # Handoff
 
-## Current Checkpoint — 2026-08-15 AI-Subrequest Freeze + Inngest Durable Triage (+ polyfill)
+## Current Checkpoint — 2026-08-15/16 AI-Subrequest Freeze Fixed + Inngest Durable Triage LIVE
 
 Status: implemented on `codex/apex-flash-continuation`, all commits **merged to
 `main`** (`5986311`, `77101b5`). Typecheck 0, **379 tests pass**, build clean.
-Inngest remains **inert in production** until the owner sets
-`INNGEST_SIGNING_KEY`; the board unfreeze also requires the merged `main` to be
-deployed. Consolidated session summary + repo state for any agent:
+**Inngest is ACTIVATED in production** (2026-08-16): valid `INNGEST_SIGNING_KEY`
+set on Pages, app registered with Inngest cloud, `triage-drain` cron live every
+10 min. **Remaining acceptance: confirm the queue actually drains.** Baseline @
+22:02Z: `pending_triage: 155`, `active: 1362`, freshest active `Aug 14`.
+Consolidated session summary + repo state for any agent:
 `docs/checkpoint-2026-08-16-documentation-backup.md`.
 
 **The board was frozen at jobs posted 2026-08-07** for 8 days. Confirmed root
@@ -32,15 +34,14 @@ the Pages project → scrape persists new listings as hidden `pending-triage` ro
 (is_active=0) and the `triage-drain` Inngest cron classifies them out-of-band.
 
 ### Next steps (owner)
-1. Deploy the current `main` (already merged, `77101b5`) to push the budget
-   tourniquet to production and unfreeze ingestion immediately.
-2. `bunx wrangler pages secret put INNGEST_SIGNING_KEY --project-name remotejobs-ph`
-   (Signing Key, `signkey-prod-…`), then sync the app at
-   `https://remotejobs-ph.pages.dev/api/inngest` in the Inngest dashboard.
-   The `/api/inngest` 500 is already fixed by the `FinalizationRegistry`
-   polyfill (`1d60282`), so the app can be synced once deployed.
-3. Watch the board advance past 2026-08-07 and `triage-drain` runs in the Inngest
-   dashboard. `4006` during backlog drain is expected and self-heals.
+1. **Confirm the drain** — after a few `triage-drain` cycles (every 10 min),
+   re-query D1 and record that `pending_triage` is dropping, `active` is
+   climbing, and the freshest active date passes `Aug 14`. Watch the Inngest
+   dashboard for `triage-drain` runs returning `{ claimed, published, rejected,
+   quarantined, deferred }`.
+2. Confirm the board fills the Aug 8-15 gap. `4006` during backlog drain is
+   expected and self-heals (rows stay pending and are reclaimed next pass).
+3. Record the drain evidence in `docs/checkpoint-2026-08-16-documentation-backup.md`.
 
 ## Current Checkpoint — 2026-08-11 Alerting Regression + Sovereign Crawler 4A/4B
 

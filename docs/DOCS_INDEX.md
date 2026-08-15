@@ -24,9 +24,11 @@ order:
 10. docs/SYSTEM_SAVEPOINT.md
 11. docs/AI_RECOVERY_TRAIL.md
 
-The 2026-08-15 work is merged to `main` (`5986311`, `77101b5`) but Inngest stays
-inert in production until the owner sets `INNGEST_SIGNING_KEY` and deploys
-`main`. Full owner steps: docs/checkpoint-2026-08-16-documentation-backup.md.
+The 2026-08-15 work is merged to `main` (`5986311`, `77101b5`) and **Inngest is
+activated in production** (2026-08-16): valid `INNGEST_SIGNING_KEY` set, app
+registered, `triage-drain` cron live every 10 min. Remaining acceptance: confirm
+the `pending_triage` backlog (155 @ 22:02Z) drains and the board advances past
+2026-08-14. Full owner steps: docs/checkpoint-2026-08-16-documentation-backup.md.
 
 The 2026-08-11 checkpoint is on branch `codex/audit-worktree-bootstrap`,
 pushed but not merged or deployed. It carries migration 0030, which must be

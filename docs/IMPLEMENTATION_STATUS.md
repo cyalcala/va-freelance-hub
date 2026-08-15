@@ -31,9 +31,12 @@ DATA-02, DEP-01, and the AI-02 safe-slice metrics (`skepticUnavailable`).
 Verification: **379 tests pass, 0 fail, 976 expectations**; typecheck clean;
 build clean (ran 2026-08-16).
 
-Status: merged to `main`, **not yet activated in production**. The board
-unfreezes on deploy of `main`; Inngest activates when the owner sets
-`INNGEST_SIGNING_KEY` and syncs the app. Owner steps are in the session summary.
+Status: merged to `main` and **Inngest ACTIVATED in production** (2026-08-16).
+Valid `INNGEST_SIGNING_KEY` set on Pages, app registered with Inngest cloud,
+`triage-drain` cron live every 10 min. Baseline @ 22:02Z: `pending_triage: 155`,
+`active: 1362`, freshest active `Aug 14`. **Pending acceptance: confirm the
+155-row backlog drains** (pending drops, active climbs, freshest date advances
+past `Aug 14`). Owner steps are in the session summary.
 
 ## Previous Checkpoint — 2026-08-11 (alerting regression + Sovereign Crawler 4A/4B)
 

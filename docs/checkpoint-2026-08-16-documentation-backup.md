@@ -109,24 +109,38 @@ Detailed in `docs/checkpoint-2026-08-15-deepseek-continuation.md`. Summary:
   clean (server build 85s). One benign build warning: vite externalizes
   `node:async_hooks` (imported by `inngest/execution/als.js`); no action needed.
 
+## Activation milestone — 2026-08-16 (owner/claude)
+
+The two manual owner steps are **done** (reported by a Claude session operating
+directly on production):
+
+| Milestone | Status |
+| --- | --- |
+| Aug-7 subrequest freeze | fixed (budget cap `21cbbeb`) |
+| `FinalizationRegistry` crash on Workers | fixed (polyfill `1d60282`) |
+| Valid signing key set + bound | done — `INNGEST_SIGNING_KEY` set on Pages (value stays in the Pages secret store; not committed to the repo) |
+| App registered with Inngest | done — `{"message":"Successfully registered","modified":true}` |
+| `triage-drain` cron live | done — every 10 min |
+
+**Baseline @ 22:02Z (2026-08-16):** `pending_triage: 155`, `active: 1362`,
+freshest active `Aug 14`. The 155 orphaned `pending-triage` rows are the fresh
+Aug 8-15 jobs that were stuck in the freeze.
+
+**Drain verification is the remaining acceptance step** — per the project's own
+"registered ≠ draining" lesson, activation alone is not acceptance. Watch
+targets: `pending_triage` drops across 10-min drain cycles, `active` climbs, and
+the freshest active date advances past `Aug 14`. `4006` during backlog drain is
+expected and self-heals (rows stay pending and are reclaimed next pass).
+
 ## What is still pending (owner actions)
 
-The code is merged to `main`, but **Inngest is inert in production and the board
-may still be stale** until the owner performs the two manual steps:
-
-1. **Deploy** the current `main` (or wait for the next CI release run) so the
-   budget tourniquet reaches production and ingestion unfreezes immediately.
-2. **Set the Inngest signing key on Pages** and sync the app (run these yourself
-   so the secret never passes through an agent):
-   ```
-   bunx wrangler pages secret put INNGEST_SIGNING_KEY --project-name remotejobs-ph
-   ```
-   Then in the Inngest dashboard: *Apps -> Sync new app*,
-   `https://remotejobs-ph.pages.dev/api/inngest`, and confirm the `triage-drain`
-   function appears with its `*/10 * * * *` schedule.
-3. After activation, watch the board advance past 2026-08-07 and confirm
-   `triageAiUnavailable` drops toward 0. `4006` during backlog drain is expected
-   and self-heals (rows stay pending and are reclaimed next pass).
+1. **Confirm the drain** — re-query D1 after a few `triage-drain` cycles and
+   record that `pending_triage` is dropping and `active` / freshest-date are
+   climbing. If the drain throws, catch it in the Inngest/Function logs and fix.
+2. **Confirm the board freshness gap closes** — jobs newer than 2026-08-14
+   (and past the original 2026-08-07 freeze line) reach production.
+3. Record the evidence in this doc / `docs/inngest-durable-triage-2026-08-15.md`
+   once the drain is confirmed.
 
 Unrelated standing owner action (unchanged): rotate the leaked `tr_dev_` /
 Turso / ISR secrets at their providers.
@@ -150,7 +164,8 @@ No implementation code was changed in this session.
 5. For the gauntlet program: `docs/checkpoint-2026-08-15-deepseek-continuation.md`
    and `docs/apex-part-2-gauntlet-state-2026-08-13.md`.
 
-Next safe work after owner activation: consolidate the inline scrape triage loop
-onto `decideTriage()`, move `sweepUnclearBacklog` into Inngest too, and, once the
-Inngest path is proven in production, retire the `AI_SUBREQUEST_BUDGET_PER_RUN`
-inline throttling (see follow-ups in the Inngest doc).
+Next safe work (once drain is verified): consolidate the inline scrape triage
+loop onto `decideTriage()`, move `sweepUnclearBacklog` into Inngest too, and,
+once the Inngest path is proven in production, retire the
+`AI_SUBREQUEST_BUDGET_PER_RUN` inline throttling (see follow-ups in the Inngest
+doc).
