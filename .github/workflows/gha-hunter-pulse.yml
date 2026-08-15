@@ -81,19 +81,27 @@ jobs:
             
             mv temp_harvest.log harvest.log
             
-            NEW_INSERTED=$(jq -r '.inserted // 0' harvest.log)
-            NEW_ACCEPTED=$(jq -r '.acceptedForInsert // 0' harvest.log)
-            NEW_ATTEMPTED=$(jq -r '.attemptedInsert // 0' harvest.log)
-            NEW_INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // 0' harvest.log)
-            NEW_INSERT_ERRORS=$(jq -r '[.insertErrors[]?] | length' harvest.log)
-            BACKLOG=$(jq -r '.backlogRemaining // 0' harvest.log)
-            
-            TOTAL=$((TOTAL + NEW_INSERTED))
-            TOTAL_ACCEPTED=$((TOTAL_ACCEPTED + NEW_ACCEPTED))
-            TOTAL_ATTEMPTED=$((TOTAL_ATTEMPTED + NEW_ATTEMPTED))
-            TOTAL_INSERT_FAILED_BATCHES=$((TOTAL_INSERT_FAILED_BATCHES + NEW_INSERT_FAILED_BATCHES))
-            TOTAL_INSERT_ERRORS=$((TOTAL_INSERT_ERRORS + NEW_INSERT_ERRORS))
-            echo "Inserted this batch: $NEW_INSERTED, Accepted: $NEW_ACCEPTED, Attempted: $NEW_ATTEMPTED, Total inserted: $TOTAL, Backlog: $BACKLOG"
+            LOCK_STATE=$(jq -r '.lockState // "free"' harvest.log)
+            if [ "$LOCK_STATE" = "held" ]; then
+              echo "Lock is held by another run; marking backlog as unknown to avoid false completion."
+              # A lock-held response has no meaningful backlog info; set to 1 so the
+              # loop does not exit early (backlogRemaining would default to 0).
+              BACKLOG=1
+            else
+              NEW_INSERTED=$(jq -r '.inserted // 0' harvest.log)
+              NEW_ACCEPTED=$(jq -r '.acceptedForInsert // 0' harvest.log)
+              NEW_ATTEMPTED=$(jq -r '.attemptedInsert // 0' harvest.log)
+              NEW_INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // 0' harvest.log)
+              NEW_INSERT_ERRORS=$(jq -r '[.insertErrors[]?] | length' harvest.log)
+              BACKLOG=$(jq -r '.backlogRemaining // 0' harvest.log)
+              
+              TOTAL=$((TOTAL + NEW_INSERTED))
+              TOTAL_ACCEPTED=$((TOTAL_ACCEPTED + NEW_ACCEPTED))
+              TOTAL_ATTEMPTED=$((TOTAL_ATTEMPTED + NEW_ATTEMPTED))
+              TOTAL_INSERT_FAILED_BATCHES=$((TOTAL_INSERT_FAILED_BATCHES + NEW_INSERT_FAILED_BATCHES))
+              TOTAL_INSERT_ERRORS=$((TOTAL_INSERT_ERRORS + NEW_INSERT_ERRORS))
+              echo "Inserted this batch: $NEW_INSERTED, Accepted: $NEW_ACCEPTED, Attempted: $NEW_ATTEMPTED, Total inserted: $TOTAL, Backlog: $BACKLOG"
+            fi
             
             if [ "$BACKLOG" -gt 0 ]; then
               echo "Sleeping 2s before next batch..."

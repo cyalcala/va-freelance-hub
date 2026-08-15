@@ -492,6 +492,10 @@ export interface UnclearSweepStats {
   retriaged: number;
   upgraded: number;
   deactivated: number;
+  /** True when the daily quota state could not be read or persisted this run. */
+  quotaUnavailable?: boolean;
+  /** Number of rows where the skeptic was unavailable (single-vote upgrade). */
+  skepticUnavailable?: number;
 }
 
 // Unclear-backlog convergence (geo masterplan Phase 3). Upgrades a small budget
@@ -597,10 +601,12 @@ export async function sweepUnclearBacklog(
     }
     UNCLEAR_RETRIAGE_BUDGET = Math.min(perTickBudget, remainingToday);
   } catch (err) {
-    // Cap unknown — fall back to the conservative per-tick number rather than
-    // the idle-tick one, so a broken count cannot license a spending spree.
-    console.warn(`[api/cron/scrape] Sweep daily-cap check failed; using conservative budget:`, errorMessage(err));
-    UNCLEAR_RETRIAGE_BUDGET = Math.min(perTickBudget, SWEEP_BUDGET_BUSY_TICK);
+    // Cap unavailable — run zero sweep work. An aggressive fail-closed is safer
+    // than a guess: a conservative budget of 1 can still exhaust the shared
+    // neuron allocation across 96 daily ticks, starving new-item triage. The
+    // sweep will resume as soon as the read succeeds on the next tick.
+    console.warn(`[api/cron/scrape] Sweep daily-cap check failed; skipping sweep:`, errorMessage(err));
+    return { retriaged: 0, upgraded: 0, deactivated: 0, quotaUnavailable: true };
   }
   const stats: UnclearSweepStats = { retriaged: 0, upgraded: 0, deactivated: 0 };
   try {
@@ -745,9 +751,7 @@ export async function sweepUnclearBacklog(
           continue;
         }
         consecutiveAiFailures = 0;
-        stats.retriaged += 1;
         if (!triage.eligibleForFilipinos) {
-          stats.deactivated += 1;
           await db.update(opportunities).set({
             isActive: false,
             inactiveReason: "policy-rejected",
@@ -756,11 +760,12 @@ export async function sweepUnclearBacklog(
             geoCheckedAt: observedAt,
             updatedAt: observedAt,
           }).where(eq(opportunities.id, row.id));
+          stats.retriaged += 1;
+          stats.deactivated += 1;
           continue;
         }
         const skeptic = await skepticEligibilityCheck(row.title, row.description || "", sweepEnv, ctx);
         if (skeptic && !skeptic.aiUnavailable && !skeptic.eligible) {
-          stats.deactivated += 1;
           await db.update(opportunities).set({
             isActive: false,
             inactiveReason: "policy-rejected",
@@ -769,9 +774,10 @@ export async function sweepUnclearBacklog(
             geoCheckedAt: observedAt,
             updatedAt: observedAt,
           }).where(eq(opportunities.id, row.id));
+          stats.retriaged += 1;
+          stats.deactivated += 1;
           continue;
         }
-        stats.upgraded += 1;
         await db.update(opportunities).set({
           phEligibility: "eligible_likely",
           geoEvidence: skeptic?.aiUnavailable
@@ -780,6 +786,11 @@ export async function sweepUnclearBacklog(
           geoCheckedAt: observedAt,
           updatedAt: observedAt,
         }).where(eq(opportunities.id, row.id));
+        if (skeptic?.aiUnavailable) {
+          stats.skepticUnavailable = (stats.skepticUnavailable ?? 0) + 1;
+        }
+        stats.retriaged += 1;
+        stats.upgraded += 1;
       } catch (err) {
         console.warn(`[api/cron/scrape] Unclear re-triage failed for #${row.id}:`, errorMessage(err));
         // Same wedge hazard as the aiUnavailable path: without advancing the
@@ -795,6 +806,30 @@ export async function sweepUnclearBacklog(
     }
     if (stats.retriaged > 0) {
       console.log(`[api/cron/scrape] Unclear backlog: re-triaged ${stats.retriaged} (upgraded ${stats.upgraded}, deactivated ${stats.deactivated}).`);
+    }
+    // Sweep recovery: stamp the diag row with current-ok so Sentinel can
+    // distinguish a fresh outage from a historical one. Only update when the
+    // sweep finished without an active failure streak.
+    if (attempted > 0 && consecutiveAiFailures === 0) {
+      try {
+        await db.insert(sourceFetchState).values({
+          sourceId: SWEEP_DIAG_ID,
+          sourceName: "sweep diagnostics",
+          sourceType: "diag",
+          collectionMethod: "diag",
+          complianceStatus: "diag",
+          lastAttemptAt: observedAt,
+          lastError: null,
+          updatedAt: observedAt,
+        }).onConflictDoUpdate({
+          target: sourceFetchState.sourceId,
+          set: {
+            lastAttemptAt: observedAt,
+            lastError: null,
+            updatedAt: observedAt,
+          },
+        });
+      } catch { /* diagnostics must never fail the sweep */ }
     }
     // Charge the day's tally. Written even when every attempt failed, so a
     // quota outage cannot be retried indefinitely within the same day.
@@ -823,6 +858,7 @@ export async function sweepUnclearBacklog(
         // Losing the tally means the cap under-counts for this tick only; the
         // per-tick ceiling still bounds spend, so this must not fail the sweep.
         console.warn(`[api/cron/scrape] Sweep quota tally write failed:`, errorMessage(err));
+        stats.quotaUnavailable = true;
       }
     }
   } catch (err) {
@@ -867,7 +903,7 @@ async function recordSourceFetchState(
   result: SourceFetchResult,
   observedAt: string,
   shouldPersistConditionalValidators = true,
-): Promise<void> {
+): Promise<{ ok: boolean; error?: string }> {
   const validators = conditionalValidatorsForPersistence(result, shouldPersistConditionalValidators);
   const updateValues = {
     sourceName: source.name,
@@ -897,8 +933,11 @@ async function recordSourceFetchState(
       target: sourceFetchState.sourceId,
       set: updateValues,
     });
+    return { ok: true };
   } catch (error) {
-    console.warn(`[api/cron/scrape] Failed to record source fetch state for ${source.name}:`, errorMessage(error));
+    const msg = errorMessage(error);
+    console.warn(`[api/cron/scrape] Failed to record source fetch state for ${source.name}:`, msg);
+    return { ok: false, error: msg };
   }
 }
 
@@ -1074,6 +1113,7 @@ async function fetchConfiguredSourceWithStatus(
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const startedAt = Date.now();
   console.log("[api/cron/scrape] Starting execution...");
   
   const env = locals.runtime.env as any;
@@ -1111,7 +1151,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const lock = await acquireRunLock(db, observedAt);
     if (lock.state === "held") {
       console.log("[api/cron/scrape] Another run holds the lock; exiting.");
-      return new Response(JSON.stringify({ skipped: true, reason: "run-lock-held", message: "Another scrape run is in progress." }), {
+      return new Response(JSON.stringify({
+        skipped: true,
+        reason: "run-lock-held",
+        lockState: "held",
+        backlogRemaining: 1,
+        message: "Another scrape run is in progress.",
+      }), {
         status: 200, headers: { "Content-Type": "application/json" },
       });
     }
@@ -1149,19 +1195,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const conditionalSourceResults = [...rssResults, ...htmlResults, ...jsonResults];
     const configuredSourcesById = new Map(staticSources.map((source) => [source.id, source]));
     const sourceIdsByUrl = buildSourceIdsByUrl(conditionalSourceResults);
-    const recordConditionalSourceStates = async (retrySourceIds: ReadonlySet<string>) => {
+    const recordConditionalSourceStates = async (retrySourceIds: ReadonlySet<string>):
+      Promise<{ ok: number; failed: number; errors: string[] }> => {
+      let ok = 0;
+      let failed = 0;
+      const errors: string[] = [];
       for (const result of conditionalSourceResults) {
         if (result.skipped || !result.sourceId) continue;
         const source = configuredSourcesById.get(result.sourceId);
         if (!source) continue;
-        await recordSourceFetchState(
+        const outcome = await recordSourceFetchState(
           db,
           source,
           result,
           observedAt,
           !retrySourceIds.has(result.sourceId),
         );
+        if (outcome.ok) { ok += 1; } else { failed += 1; errors.push(outcome.error ?? "unknown"); }
       }
+      return { ok, failed, errors };
     };
 
     const atsAgencies = await db.select().from(vaDirectory).where(
@@ -1366,7 +1418,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     if (allItems.length === 0) {
-      await recordConditionalSourceStates(new Set());
+      const stateWrite = await recordConditionalSourceStates(new Set());
       // Nothing new to ingest — but backlog convergence is maintenance work that
       // must still happen. At a 15-min cadence most ticks land here (feeds return
       // 304, or every source is cadence-skipped), and while the sweep lived only
@@ -1389,6 +1441,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
           unclearRetriaged: idleSweep.retriaged,
           unclearUpgraded: idleSweep.upgraded,
           unclearDeactivated: idleSweep.deactivated,
+          unclearSkepticUnavailable: idleSweep.skepticUnavailable ?? 0,
+          unclearQuotaUnavailable: idleSweep.quotaUnavailable === true,
+          stateWriteOk: stateWrite.ok,
+          stateWriteFailed: stateWrite.failed,
+          stateWriteErrors: stateWrite.errors.length > 0 ? stateWrite.errors : undefined,
         },
       });
       await recordIngestDiagnostics(db, observedAt, outcome.diagnostics);
@@ -1469,7 +1526,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.log(`[api/cron/scrape] ${newItems.length} new items found after URL dedup`);
 
     if (newItems.length === 0) {
-      await recordConditionalSourceStates(new Set());
+      const stateWrite = await recordConditionalSourceStates(new Set());
       // Same reasoning as the allItems===0 return above, and this is the path
       // that actually fires on most ticks: feeds keep returning their current
       // items (so allItems > 0), but after URL dedup none of them are new. The
@@ -1500,6 +1557,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
         unclearRetriaged: dedupSweep.retriaged,
         unclearUpgraded: dedupSweep.upgraded,
         unclearDeactivated: dedupSweep.deactivated,
+        unclearSkepticUnavailable: dedupSweep.skepticUnavailable ?? 0,
+        unclearQuotaUnavailable: dedupSweep.quotaUnavailable === true,
+        stateWriteOk: stateWrite.ok,
+        stateWriteFailed: stateWrite.failed,
+        stateWriteErrors: stateWrite.errors.length > 0 ? stateWrite.errors : undefined,
         message: "Zero new jobs after dedup"
       }), { status: 200, headers: { "Content-Type": "application/json" } });
     }
@@ -1796,12 +1858,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // on the no-new-items early-return path above, so it runs every tick.
     // A source's ETag/body hash becomes durable only after every listing has a
     // terminal outcome. Otherwise a later 304 would silently suppress a retry.
-    await recordConditionalSourceStates(retrySourceIds);
+    const stateWrite = await recordConditionalSourceStates(retrySourceIds);
 
     const unclearSweep = await sweepUnclearBacklog(db, env, observedAt, SWEEP_BUDGET_BUSY_TICK);
     const unclearRetriaged = unclearSweep.retriaged;
     const unclearUpgraded = unclearSweep.upgraded;
     const unclearDeactivated = unclearSweep.deactivated;
+    const unclearSkepticUnavailable = unclearSweep.skepticUnavailable ?? 0;
 
     console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}`);
     await recordIngestDiagnostics(db, observedAt, {
@@ -1828,6 +1891,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       geoRejectionsBySource,
       consensusQuarantined,
       unclearRetriaged,
+      unclearUpgraded,
+      unclearDeactivated,
+      unclearSkepticUnavailable,
+      unclearQuotaUnavailable: unclearSweep.quotaUnavailable === true,
+      stateWriteOk: stateWrite.ok,
+      stateWriteFailed: stateWrite.failed,
+      stateWriteErrors: stateWrite.errors.length > 0 ? stateWrite.errors : undefined,
       rejectedPersisted,
       rejectedInsertFailedBatches,
       droppedNoUrl,
@@ -1842,9 +1912,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       cadenceGuards,
       sourcesUnchanged,
       robotsWouldBlock,
+      runDurationMs: Date.now() - startedAt,
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: (error as Error).message, runDurationMs: Date.now() - startedAt }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 };

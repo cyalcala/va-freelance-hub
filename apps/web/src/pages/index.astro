@@ -5,6 +5,7 @@ import { eq, desc, count, sql, inArray } from 'drizzle-orm';
 import { OpportunitySearch } from '@/components/OpportunitySearch';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
+import { directoryVisibilityFilters } from '@/lib/directory-visibility';
 
 export const prerender = false;
 
@@ -25,7 +26,10 @@ try {
   const db = getDb(Astro.locals.runtime.env);
 
   const [oppCount] = await db.select({ count: count() }).from(opportunities).where(eq(opportunities.isActive, true));
-  const [dirCount] = await db.select({ count: count() }).from(vaDirectory);
+  const [dirCount] = await db
+    .select({ count: count() })
+    .from(vaDirectory)
+    .where(directoryVisibilityFilters());
 
   stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
 

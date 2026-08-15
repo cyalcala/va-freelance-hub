@@ -241,6 +241,7 @@ export async function auditProductionRepository(rootDirectory = join(import.meta
   const dbResult = inspectDbPackageJson(await Bun.file(join(rootDirectory, "packages/db/package.json")).text());
   const webResult = inspectWebPackageJson(await Bun.file(join(rootDirectory, "apps/web/package.json")).text());
   const errors: string[] = [];
+  const warnings: string[] = [];
   for (const legacyConfig of ["wrangler.toml", "wrangler.jsonc"]) {
     if (existsSync(join(rootDirectory, "apps/web-nextjs-backup", legacyConfig))) {
       errors.push(`apps/web-nextjs-backup/${legacyConfig}: auto-discoverable legacy Wrangler config is forbidden`);
@@ -274,7 +275,10 @@ export async function auditProductionRepository(rootDirectory = join(import.meta
       errors.push(message);
     }
   }
-  return mergeResults(workflowResult, packageResult, legacyResult, dbResult, webResult, { errors, warnings: [] });
+  if (!existsSync(join(rootDirectory, "docs/decisions/DEP-01-dependency-exceptions.md"))) {
+    errors.push("docs/decisions/DEP-01-dependency-exceptions.md: dependency exception tracker must exist");
+  }
+  return mergeResults(workflowResult, packageResult, legacyResult, dbResult, webResult, { errors, warnings });
 }
 
 if (import.meta.main) {
