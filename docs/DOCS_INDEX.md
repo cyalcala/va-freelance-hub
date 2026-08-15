@@ -11,18 +11,21 @@ Before any new implementation or deployment, read these documents in this
 order:
 
 1. AGENTS.md
-2. docs/checkpoint-2026-08-16-documentation-backup.md — **latest**: consolidated
+2. docs/directory-growth-strategy-2026-08-16.md — **latest**: Directory Growth
+   Engine strategy: enrichment cron (website inference + auto-verification),
+   curated VA agency seed (28 companies), GHA workflow, daily cycle documentation
+3. docs/checkpoint-2026-08-16-documentation-backup.md — consolidated
    2026-08-15/16 session summary (AI-subrequest freeze incident, budget fix,
    Inngest durable triage, FinalizationRegistry polyfill) and current repo state
-3. docs/incident-2026-08-15-ai-subrequest-freeze.md — the freeze + emergency budget fix
-4. docs/inngest-durable-triage-2026-08-15.md — the Inngest structural fix + owner activation steps
-5. docs/checkpoint-2026-08-15-deepseek-continuation.md — Apex gauntlet units completed
-6. docs/major-audit-2026-08-11.md — prior: alerting regression + Sovereign Crawler Phase 4A/4B
-7. docs/labor-engine-masterplan-2026-07.md — the standing forward roadmap
-8. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
-9. docs/HANDOFF.md
-10. docs/SYSTEM_SAVEPOINT.md
-11. docs/AI_RECOVERY_TRAIL.md
+4. docs/incident-2026-08-15-ai-subrequest-freeze.md — the freeze + emergency budget fix
+5. docs/inngest-durable-triage-2026-08-15.md — the Inngest structural fix + owner activation steps
+6. docs/checkpoint-2026-08-15-deepseek-continuation.md — Apex gauntlet units completed
+7. docs/major-audit-2026-08-11.md — prior: alerting regression + Sovereign Crawler Phase 4A/4B
+8. docs/labor-engine-masterplan-2026-07.md — the standing forward roadmap
+9. docs/decisions/ADR-005-cloudflare-pages-compatibility-line.md
+10. docs/HANDOFF.md
+11. docs/SYSTEM_SAVEPOINT.md
+12. docs/AI_RECOVERY_TRAIL.md
 
 The 2026-08-15 work is merged to `main` (`5986311`, `77101b5`) and **Inngest is
 activated in production** (2026-08-16): valid `INNGEST_SIGNING_KEY` set, app

@@ -1,0 +1,108 @@
+name: "\U0001F9E9 Sovereign Enrichment Pulse (Directory Quality)"
+
+# Directory enrichment (2026-08-16). Fills in missing websites and auto-verifies
+# companies from active job signals. Runs 2x/day to steadily improve directory
+# quality for Prospector-added companies that arrive with no website or
+# verification. Safety: additive only (sets website/hiring_page_url/is_verified),
+# never deletes, never overwrites an existing website.
+
+on:
+  schedule:
+    - cron: '30 3,15 * * *'  # 2x/day at 03:30 and 15:30 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: gha-enrichment-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  enrich:
+    name: Enrich Directory Entries
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      ENRICH_API_URL: "https://remotejobs-ph.pages.dev/api/cron/directory-enrich"
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "\U0001F9E9 Run Directory Enrichment"
+        run: |
+          set -euo pipefail
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o enrich.log --max-time 90 -X POST "$ENRICH_API_URL" \
+            -H "Authorization: Bearer $PROXY_SECRET" \
+            -H "x-cron-secret: $PROXY_SECRET" \
+            -H "Content-Type: application/json")
+          echo "HTTP Status: $HTTP_CODE"
+          cat enrich.log; echo ""
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::error::Enrichment API returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+          if ! jq -e . enrich.log >/dev/null 2>&1; then
+            echo "::error::Enrichment response was not valid JSON"
+            exit 1
+          fi
+
+      - name: "\U0001F4D2 Commit Enrichment Digest (backup)"
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          TODAY=$(date -u +"%Y-%m-%d")
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          {
+            echo "# Directory Enrichment — Latest"
+            echo ""
+            echo "Date: ${TODAY}"
+            echo "Workflow run: ${RUN_URL}"
+            echo ""
+            echo "| Metric | Value |"
+            echo "| --- | ---: |"
+            echo "| Companies processed | $(jq -r '.enriched // 0' enrich.log) |"
+            echo "| Websites set | $(jq -r '.websiteSet // 0' enrich.log) |"
+            echo "| Hiring pages set | $(jq -r '.hiringPageSet // 0' enrich.log) |"
+            echo "| Auto-verified | $(jq -r '.verified // 0' enrich.log) |"
+            echo "| Budget | $(jq -r '.budget // 0' enrich.log) |"
+            echo ""
+            echo "## Enrichment details"
+            echo ""
+            jq -r '(.details // []) | if length == 0 then "- (none this run)" else .[] | "- #\(.id) \(.company): \(.action)" end' enrich.log
+          } > docs/enrichment-latest.md
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/enrichment-latest.md
+          if git diff --cached --quiet; then echo "No digest changes."; exit 0; fi
+          git commit -m "docs: update enrichment digest"
+          pushed=false
+          for attempt in 1 2 3 4 5; do
+            if git push origin HEAD:main; then pushed=true; break; fi
+            echo "Push rejected (attempt $attempt); rebasing."
+            git pull --rebase origin main
+          done
+          if [ "$pushed" != true ]; then
+            echo "::error title=Digest push failed::Enrichment digest could not be pushed after five attempts."
+            exit 1
+          fi
+
+      - name: "\U0001F4CA Enrichment Summary"
+        if: always()
+        continue-on-error: true
+        run: |
+          echo "### \U0001F9E9 Sovereign Enrichment Report" >> $GITHUB_STEP_SUMMARY
+          if [ -f enrich.log ] && jq -e . enrich.log >/dev/null 2>&1; then
+            echo "- **Enriched**: $(jq -r '.enriched // 0' enrich.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Websites set**: $(jq -r '.websiteSet // 0' enrich.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Hiring pages set**: $(jq -r '.hiringPageSet // 0' enrich.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Auto-verified**: $(jq -r '.verified // 0' enrich.log)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- Enrichment produced no parseable response." >> $GITHUB_STEP_SUMMARY
+          fi
