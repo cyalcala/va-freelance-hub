@@ -202,6 +202,109 @@ jobs:
           gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" \
             --label "source-health" --body-file ingest-body.md
 
+      - name: Query Enrichment Health
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --json --command "
+            SELECT last_error,
+                   last_attempt_at,
+                   last_success_at,
+                   last_count,
+                   CAST((julianday('now') - julianday(last_attempt_at)) * 24 AS INT) AS hours_since_attempt
+            FROM source_fetch_state
+            WHERE source_id = '__enrich_diag__'
+            LIMIT 1;
+          " > ../../enrich-diag.json
+          jq '.[0].results' ../../enrich-diag.json
+
+          ENRICH_ERROR=$(jq -r '.[0].results[0].last_error // ""' ../../enrich-diag.json)
+          ENRICH_HOURS=$(jq -r '.[0].results[0].hours_since_attempt // ""' ../../enrich-diag.json)
+          ENRICH_ROWS=$(jq -r '.[0].results | length' ../../enrich-diag.json)
+
+          {
+            echo "ENRICH_DIAG_ERROR=$ENRICH_ERROR"
+            echo "ENRICH_HOURS_SINCE=$ENRICH_HOURS"
+            echo "ENRICH_DIAG_ROWS=$ENRICH_ROWS"
+          } >> "$GITHUB_ENV"
+
+      - name: Alert On Enrichment Degradation
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # The row is created by the first enrichment run after this change ships.
+          # Until then its absence is expected, not a failure.
+          if [ "${ENRICH_DIAG_ROWS:-0}" = "0" ]; then
+            echo "No __enrich_diag__ row yet; skipping (first enrichment run after deploy creates it)."
+            exit 0
+          fi
+
+          # 36h = 3 missed 2x/day runs. Generous because GHA schedules drift, but
+          # short enough to catch a disabled workflow or a rotated PROXY_SECRET
+          # before the directory goes visibly stale.
+          STALE_HOURS=36
+          REASONS=""
+
+          if [ -n "${ENRICH_DIAG_ERROR:-}" ] && [ "${ENRICH_DIAG_ERROR}" != "null" ]; then
+            REASONS="degraded run: ${ENRICH_DIAG_ERROR}"
+          fi
+
+          if [ -n "${ENRICH_HOURS_SINCE:-}" ] && [ "${ENRICH_HOURS_SINCE}" != "null" ] \
+             && [ "${ENRICH_HOURS_SINCE}" -ge "$STALE_HOURS" ]; then
+            STALE_MSG="no enrichment run in ${ENRICH_HOURS_SINCE}h (clock may be stopped)"
+            if [ -n "$REASONS" ]; then REASONS="${REASONS}; ${STALE_MSG}"; else REASONS="$STALE_MSG"; fi
+          fi
+
+          if [ -z "$REASONS" ]; then
+            echo "Enrichment healthy: last run clean, heartbeat within ${STALE_HOURS}h."
+            exit 0
+          fi
+
+          echo "::warning title=Enrichment degraded::${REASONS}"
+
+          TODAY=$(date -u +"%Y-%m-%d")
+          TITLE="Directory enrichment health alert (${TODAY})"
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+
+          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --search "in:title \"Directory enrichment health alert\"" --json number --jq 'length')
+          if [ "$EXISTING" -ne 0 ]; then
+            echo "An enrichment health issue is already open; not filing a duplicate."
+            exit 0
+          fi
+
+          gh label create "source-health" --repo "$GITHUB_REPOSITORY" \
+            --description "Automated maintenance-bot health alerts" \
+            --color D93F0B --force || true
+
+          {
+            echo "The directory enrichment pulse reported a problem."
+            echo ""
+            echo "**Signals:** ${REASONS}"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // "never"' enrich-diag.json) |"
+            echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // "never"' enrich-diag.json) |"
+            echo "| Signal count | $(jq -r '.[0].results[0].last_count // 0' enrich-diag.json) |"
+            echo ""
+            echo "Detection run: ${RUN_URL}"
+            echo ""
+            echo "Read the row directly with:"
+            echo '```sql'
+            echo "SELECT * FROM source_fetch_state WHERE source_id = '__enrich_diag__';"
+            echo '```'
+            echo ""
+            echo "The enrichment pulse runs 2x/day via \`gha-enrichment-pulse.yml\`."
+            echo "A stopped clock usually means the workflow is disabled, the"
+            echo "PROXY_SECRET was rotated, or the route is 500ing."
+          } > enrich-body.md
+
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" \
+            --label "source-health" --body-file enrich-body.md
+
       - name: Guard And Filter
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

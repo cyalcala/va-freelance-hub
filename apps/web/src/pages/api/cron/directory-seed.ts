@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         companyName: entry.companyName,
         website: entry.website,
         hiresFilipinos: true,
-        niche: entry.niche as any,
+        niche: entry.niche,
         isDayshift: entry.isDayshift ?? false,
         isVerified: entry.isVerified ?? true,
         isRemote: entry.isRemote ?? true,

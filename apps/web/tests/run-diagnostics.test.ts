@@ -2,8 +2,11 @@ import { describe, expect, test } from "bun:test";
 import {
   DIAG_ERROR_MAX_LENGTH,
   INGEST_DIAG_ID,
+  ENRICH_DIAG_ID,
   buildIngestDiagRow,
   buildIngestDiagUpdate,
+  buildEnrichDiagRow,
+  buildEnrichDiagUpdate,
   summarizeRunDiagnostics,
 } from "../src/lib/run-diagnostics";
 
@@ -194,5 +197,54 @@ describe("buildIngestDiagUpdate", () => {
 
     expect(clean.lastAttemptAt).toBe(observedAt);
     expect(degraded.lastAttemptAt).toBe(observedAt);
+  });
+});
+
+describe("buildEnrichDiagRow", () => {
+  const observedAt = "2026-08-16T00:00:00.000Z";
+
+  test("uses the reserved __enrich_diag__ source id", () => {
+    const row = buildEnrichDiagRow(observedAt, { degraded: false, signalCount: 0, summary: null });
+    expect(row.sourceId).toBe(ENRICH_DIAG_ID);
+    expect(row.sourceType).toBe("diag");
+  });
+
+  test("a clean enrichment stamps both the attempt and the success heartbeat", () => {
+    const row = buildEnrichDiagRow(observedAt, { degraded: false, signalCount: 0, summary: null });
+    expect(row.lastAttemptAt).toBe(observedAt);
+    expect(row.lastSuccessAt).toBe(observedAt);
+    expect(row.lastError).toBeNull();
+  });
+
+  test("a degraded enrichment stamps the attempt but not the success heartbeat", () => {
+    const row = buildEnrichDiagRow(
+      observedAt,
+      { degraded: true, signalCount: 1, summary: "enrichErrors=3" },
+    );
+    expect(row.lastAttemptAt).toBe(observedAt);
+    expect(row.lastSuccessAt).toBeNull();
+    expect(row.lastError).toBe("enrichErrors=3");
+    expect(row.lastCount).toBe(1);
+  });
+});
+
+describe("buildEnrichDiagUpdate", () => {
+  const observedAt = "2026-08-16T00:00:00.000Z";
+
+  test("a clean run advances the success heartbeat and clears the error", () => {
+    const update = buildEnrichDiagUpdate(observedAt, { degraded: false, signalCount: 0, summary: null });
+    expect(update).toHaveProperty("lastSuccessAt", observedAt);
+    expect(update.lastError).toBeNull();
+    expect(update.lastAttemptAt).toBe(observedAt);
+  });
+
+  test("a degraded run omits lastSuccessAt so the last clean run is preserved", () => {
+    const update = buildEnrichDiagUpdate(
+      observedAt,
+      { degraded: true, signalCount: 1, summary: "enrichErrors=2" },
+    );
+    expect(update).not.toHaveProperty("lastSuccessAt");
+    expect(update.lastError).toBe("enrichErrors=2");
+    expect(update.lastAttemptAt).toBe(observedAt);
   });
 });

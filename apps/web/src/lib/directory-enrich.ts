@@ -85,7 +85,7 @@ export async function enrichDirectory(db: ReturnType<typeof getDb>, budget: numb
 
   for (const target of targets) {
     try {
-      const updates: Record<string, any> = {};
+      const updates: Partial<typeof vaDirectory.$inferInsert> = {};
       const actions: string[] = [];
 
       const needsWebsite = !target.website || target.website.trim() === "";
