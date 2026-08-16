@@ -184,3 +184,39 @@ export function buildIngestDiagUpdate(observedAt: string, summary: RunDiagnostic
   };
   return summary.degraded ? base : { ...base, lastSuccessAt: observedAt };
 }
+
+// ─── Directory Enrichment Diagnostics ─────────────────────────────────────────
+//
+// Same reserved-row trick as __ingest_diag__, applied to the directory
+// enrichment pulse (apps/web/src/pages/api/cron/directory-enrich.ts). The
+// enrichment route runs 2x/day via gha-enrichment-pulse.yml. Without a durable
+// heartbeat, a stopped clock (workflow disabled, secret rotated, route 500ing)
+// would be invisible until someone notices the directory is stale.
+
+/** Reserved source_fetch_state row id for the directory enrichment pulse. */
+export const ENRICH_DIAG_ID = "__enrich_diag__";
+
+export function buildEnrichDiagRow(observedAt: string, summary: RunDiagnosticsSummary) {
+  return {
+    sourceId: ENRICH_DIAG_ID,
+    sourceName: "directory enrichment diagnostics",
+    sourceType: "diag",
+    collectionMethod: "diag",
+    complianceStatus: "diag",
+    lastAttemptAt: observedAt,
+    lastSuccessAt: summary.degraded ? null : observedAt,
+    lastCount: summary.signalCount,
+    lastError: summary.summary,
+    updatedAt: observedAt,
+  };
+}
+
+export function buildEnrichDiagUpdate(observedAt: string, summary: RunDiagnosticsSummary) {
+  const base = {
+    lastAttemptAt: observedAt,
+    lastCount: summary.signalCount,
+    lastError: summary.summary,
+    updatedAt: observedAt,
+  };
+  return summary.degraded ? base : { ...base, lastSuccessAt: observedAt };
+}

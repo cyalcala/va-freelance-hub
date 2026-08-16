@@ -1,5 +1,59 @@
 # Handoff
 
+## Current Checkpoint — 2026-08-16 Directory Growth Engine Hardening (complete)
+
+Status: all P1 findings fixed, tested, and pushed to
+`origin/codex/apex-flash-continuation` (commits `a17d00b` → `4372c9b`).
+Full plan and ranked findings:
+`docs/masterplan-2026-08-16-directory-engine-hardening.md`.
+
+The prior session shipped the Directory Growth Engine (`41c0336`) — an
+enrichment cron (`/api/cron/directory-enrich`), a curated seed import
+(`/api/cron/directory-seed`), and `gha-enrichment-pulse.yml` (2x/day). It
+built clean but had never been code-reviewed or tested.
+
+This session ran the brainstorming + code-reviewer + debugging skills
+against `41c0336` and found 6 P1 issues (no P0). All are now fixed.
+
+### What was fixed (6 P1 + 3 P2)
+
+| # | Fix | Commit |
+| --- | --- | --- |
+| P1-1 | Silent `hiringPageUrl` overwrite — deleted the redundant ATS block in the `needsWebsite` branch that gated on the local `updates` object instead of the DB value | `a17d00b` |
+| P1-2 | Poison-row wedge hazard — wrapped the per-target loop in try/catch; one failing target no longer aborts the run; `result.errors` surfaced in the API response | `a17d00b` |
+| P1-6 | LinkedIn/Indeed/Glassdoor/ZipRecruiter/SmartRecruiters not filtered — extended `knownAtsHosts` so a third-party job board is never written as a company website | `a17d00b` |
+| P1-3 | Silent seed insert failures — `directory-seed` response now includes `failed`, `failedNames`, and `insertErrors` | `0926afd` |
+| P1-5 | Curated name idempotency collisions — renamed `"Shepherd (formerly Support Shepherd)"` → `"Shepherd"` and `"Sitel (Foundever)"` → `"Foundever"` (former names already in notes) | `0dca892` |
+| P1-4 | Zero tests — new `apps/web/tests/directory-enrich.test.ts` (15 tests) covering ATS URL builders, domain extraction blocklist, and `enrichDirectory` against a mock db (including the P1-1 and P1-2 regression cases) | `8a44a74` |
+| P2-1 | No durable heartbeat — added `__enrich_diag__` reserved row pattern (run-diagnostics.ts) + Sentinel pulse query/alert step with a 36h stale threshold | `4372c9b` |
+| P2-6 | `niche: entry.niche as any` — dropped the `as any`; the CuratedEntry type already constrains the enum | `4372c9b` |
+| P2-7 | `updates: Record<string, any>` — typed as `Partial<typeof vaDirectory.$inferInsert>` so misspelled keys fail at compile time | `4372c9b` |
+
+### Verification (final)
+
+| Check | Result |
+| --- | --- |
+| `bun run test` | 399 pass, 0 fail, 1047 expectations, 48 files (was 379/976/47 at session start) |
+| `bun run typecheck` | exit 0 (strict) |
+| `bun run build` | exit 0 (server build ~29s) |
+| `bun run audit:guardrails` | exit 0 |
+| Branch | `codex/apex-flash-continuation`, pushed to origin (all 7 session commits) |
+
+### Remaining work (not this session's scope)
+
+- **Merge + deploy**: the branch is ready to merge to `main` via the
+  migration-first release path. No D1 migration is required (the
+  `__enrich_diag__` row reuses the existing `source_fetch_state` table).
+  After deploy, watch the first Sentinel run: it should report
+  "Enrichment healthy" (or "No __enrich_diag__ row yet" until the first
+  enrichment pulse runs).
+- **Confirm the Inngest drain** (owner action, unchanged from the
+  2026-08-15/16 checkpoint): `pending_triage: 155` should drop, `active`
+  should climb past `Aug 14`.
+- **Rotate the leaked `tr_dev_` / Turso / ISR secrets** (owner action).
+- P2 follow-ups noted in the masterplan: N+1 batching (P2-3), stuck-row
+  backoff (P2-4), 4 curated entries missing `hiringPageUrl` (P2-5).
+
 ## Current Checkpoint — 2026-08-15/16 AI-Subrequest Freeze Fixed + Inngest Durable Triage LIVE
 
 Status: implemented on `codex/apex-flash-continuation`, all commits **merged to

@@ -210,7 +210,7 @@ export const CURATED_VA_AGENCIES_2026_08: CuratedEntry[] = [
     notes: "Curated 2026-08-16: remote-first software consultancy known to hire PH talent.",
   },
   {
-    companyName: "Shepherd (formerly Support Shepherd)",
+    companyName: "Shepherd",
     website: "https://shepherdglobal.com",
     niche: "global-va",
     isDayshift: false,
@@ -325,7 +325,7 @@ export const CURATED_VA_AGENCIES_2026_08: CuratedEntry[] = [
     notes: "Curated 2026-08-16: PH-founded BPO; HQ in New Braunfels, major PH operations.",
   },
   {
-    companyName: "Sitel (Foundever)",
+    companyName: "Foundever",
     website: "https://foundever.com",
     niche: "bpo",
     isDayshift: false,

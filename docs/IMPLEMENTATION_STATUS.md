@@ -1,6 +1,54 @@
 # Implementation Status
 
-## Latest Checkpoint — 2026-08-15/16 (AI-subrequest freeze fixed + Inngest durable triage)
+## Latest Checkpoint — 2026-08-16 Directory Growth Engine Hardening
+
+Full plan: `docs/masterplan-2026-08-16-directory-engine-hardening.md`.
+Handoff: `docs/HANDOFF.md` (top checkpoint).
+
+The prior session shipped the Directory Growth Engine (`41c0336`) — an
+enrichment cron, a curated seed import, and `gha-enrichment-pulse.yml`
+(2x/day). It built clean but had never been code-reviewed or tested. This
+session ran a code-reviewer agent against it and found 6 P1 issues (no P0).
+All are fixed, tested, and pushed to `origin/codex/apex-flash-continuation`.
+
+### Fixes shipped (commits `a17d00b` → `4372c9b`)
+
+- **P1-1** (`a17d00b`): silent `hiringPageUrl` overwrite — deleted the redundant
+  ATS block in the `needsWebsite` branch.
+- **P1-2** (`a17d00b`): poison-row wedge hazard — per-target try/catch;
+  `result.errors` surfaced.
+- **P1-6** (`a17d00b`): LinkedIn/Indeed/Glassdoor/ZipRecruiter/SmartRecruiters
+  added to the `knownAtsHosts` blocklist.
+- **P1-3** (`0926afd`): seed insert failures now surfaced as `failed`,
+  `failedNames`, `insertErrors` in the response.
+- **P1-5** (`0dca892`): curated names canonicalized — "Shepherd" and "Foundever"
+  (former names already in notes).
+- **P1-4** (`8a44a74`): new `apps/web/tests/directory-enrich.test.ts` (15 tests)
+  covering ATS URL builders, domain extraction, and `enrichDirectory` against a
+  mock db, including the P1-1 and P1-2 regression cases.
+- **P2-1** (`4372c9b`): `__enrich_diag__` durable heartbeat — run-diagnostics.ts
+  builders + Sentinel pulse query/alert step (36h stale threshold).
+- **P2-6** (`4372c9b`): dropped `niche: entry.niche as any`.
+- **P2-7** (`4372c9b`): `updates` typed as `Partial<typeof vaDirectory.$inferInsert>`.
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `bun run test` | 399 pass, 0 fail, 1047 expectations, 48 files (was 379/976/47) |
+| `bun run typecheck` | exit 0 |
+| `bun run build` | exit 0 |
+| `bun run audit:guardrails` | exit 0 |
+
+### Next steps
+
+- Merge `codex/apex-flash-continuation` to `main` via the migration-first
+  release path (no D1 migration required — `__enrich_diag__` reuses
+  `source_fetch_state`).
+- After deploy, watch the first Sentinel run for "Enrichment healthy".
+- Owner actions unchanged: confirm Inngest drain; rotate leaked secrets.
+
+## Previous Checkpoint — 2026-08-15/16 (AI-subrequest freeze fixed + Inngest durable triage)
 
 Full session summary: `docs/checkpoint-2026-08-16-documentation-backup.md`.
 Incident detail: `docs/incident-2026-08-15-ai-subrequest-freeze.md`.
