@@ -35,7 +35,7 @@ export function buildAtsCareerUrl(platform: string | null, token: string | null)
   return builder ? builder(token) : null;
 }
 
-function extractDomainFromUrl(url: string | null): string | null {
+export function extractDomainFromUrl(url: string | null): string | null {
   if (!url) return null;
   try {
     const parsed = new URL(url.trim());
