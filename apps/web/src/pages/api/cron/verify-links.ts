@@ -23,7 +23,7 @@ export const prerender = false;
 export const POST: APIRoute = async ({ request, locals }) => {
   console.log("[api/cron/verify-links] Starting verification...");
   
-  const env = locals.runtime.env as any;
+  const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
   const db = getDb(env);
   const startedAt = nowUtcIso();
 

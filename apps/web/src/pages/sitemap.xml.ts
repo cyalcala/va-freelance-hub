@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ locals }) => {
   let jobEntries = "";
 
   try {
-    const env = locals.runtime.env as any;
+    const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
     const db = getDb(env);
 
     const rows = await db

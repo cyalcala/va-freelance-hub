@@ -141,8 +141,21 @@ export function summarizeRunDiagnostics(input: RunDiagnosticsInput): RunDiagnost
   return {
     degraded: true,
     signalCount: signals.length,
-    summary: signals.join(", ").slice(0, DIAG_ERROR_MAX_LENGTH),
+    summary: truncateSignals(signals.join(", "), DIAG_ERROR_MAX_LENGTH),
   };
+}
+
+/**
+ * Truncates the signal string at the last complete `key=value` token so a
+ * Sentinel issue title never reads a cut-off signal name. Falls back to a
+ * hard cut with an ellipsis only when no token boundary fits within the limit.
+ */
+export function truncateSignals(joined: string, maxLength: number): string {
+  if (joined.length <= maxLength) return joined;
+  const cut = joined.slice(0, maxLength);
+  const lastBoundary = cut.lastIndexOf(", ");
+  if (lastBoundary > 0) return cut.slice(0, lastBoundary);
+  return cut.slice(0, Math.max(0, maxLength - 1)) + "\u2026";
 }
 
 /**

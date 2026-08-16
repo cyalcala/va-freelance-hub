@@ -8,6 +8,7 @@ import {
   buildEnrichDiagRow,
   buildEnrichDiagUpdate,
   summarizeRunDiagnostics,
+  truncateSignals,
 } from "../src/lib/run-diagnostics";
 
 describe("summarizeRunDiagnostics", () => {
@@ -127,6 +128,29 @@ describe("summarizeRunDiagnostics", () => {
     });
 
     expect(result.summary!.length).toBeLessThanOrEqual(DIAG_ERROR_MAX_LENGTH);
+  });
+});
+
+describe("truncateSignals", () => {
+  test("a short string is returned unchanged", () => {
+    expect(truncateSignals("insertFailedBatches=3", 500)).toBe("insertFailedBatches=3");
+  });
+
+  test("a long string is cut at the last complete token, not mid-token", () => {
+    const long = "alphaKey=1234567890, betaKey=1234567890, gammaKey=1234567890, deltaKey=1234567890";
+    const truncated = truncateSignals(long, 40);
+    expect(truncated.length).toBeLessThanOrEqual(40);
+    // Must not end mid-token (no trailing partial after a comma).
+    expect(truncated).not.toMatch(/,\s$/);
+    // Must not end with a partial number after an equals sign that was cut.
+    expect(truncated).not.toMatch(/=\d+5$/);
+  });
+
+  test("a long string with no comma boundary falls back to a hard cut with ellipsis", () => {
+    const noCommas = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz";
+    const truncated = truncateSignals(noCommas, 20);
+    expect(truncated.length).toBeLessThanOrEqual(20);
+    expect(truncated.endsWith("\u2026")).toBe(true);
   });
 });
 

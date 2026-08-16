@@ -24,7 +24,7 @@ export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   console.log("[api/cron/directory-audit] Starting directory link-health pulse...");
-  const env = locals.runtime.env as any;
+  const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
   const db = getDb(env);
   const startedAt = nowUtcIso();
 
@@ -122,7 +122,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/directory-audit] Error:", error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500, headers: { "Content-Type": "application/json" },
     });
   }

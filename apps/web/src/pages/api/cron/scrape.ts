@@ -10,6 +10,7 @@ import {
 } from "@/lib/conditional-state";
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
+import { d1Changes } from "@/lib/d1-result";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -1182,7 +1183,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const startedAt = Date.now();
   console.log("[api/cron/scrape] Starting execution...");
   
-  const env = locals.runtime.env as any;
+  const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
   const db = getDb(env);
   const observedAt = nowUtcIso();
 
@@ -1289,14 +1290,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return { ok, failed, errors };
     };
 
-    const atsAgencies = await db.select().from(vaDirectory).where(
+    // Project only the columns AtsAgency needs and bound the result so an
+    // ever-growing directory cannot load every ATS-enabled row into memory every
+    // run. 200 is well above the current ~50 ATS entries; if the limit is hit
+    // the warning makes the growth visible so a pagination slice can follow.
+    const ATS_AGENCIES_MAX = 200;
+    const atsAgencies = await db.select({
+      id: vaDirectory.id,
+      companyName: vaDirectory.companyName,
+      atsPlatform: vaDirectory.atsPlatform,
+      atsToken: vaDirectory.atsToken,
+      verifiedAt: vaDirectory.verifiedAt,
+    }).from(vaDirectory).where(
       and(
         isNotNull(vaDirectory.atsPlatform),
         isNotNull(vaDirectory.atsToken)
       )
-    );
+    ).limit(ATS_AGENCIES_MAX);
     
     console.log(`[api/cron/scrape] Found ${atsAgencies.length} ATS-enabled agencies in the directory.`);
+    if (atsAgencies.length >= ATS_AGENCIES_MAX) {
+      console.warn(`[api/cron/scrape] ATS agency limit (${ATS_AGENCIES_MAX}) reached; add pagination if the directory grows past this.`);
+    }
 
     // Reconcile Sentinel auto-pauses against the actual source universe: an
     // entry whose sourceId matches neither a static source id nor any ATS
@@ -1315,7 +1330,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.warn(`[api/cron/scrape] ${unmatchedPauses.length} auto-pause entr(ies) match no known source and pause nothing:`, unmatchedPauses.join(", "));
     }
 
-        const sortedAtsAgencies = [...atsAgencies].sort((a, b) =>
+    const sortedAtsAgencies = [...atsAgencies].sort((a, b) =>
       atsSourceKey(a).localeCompare(atsSourceKey(b)) ||
       a.companyName.localeCompare(b.companyName)
     );
@@ -1566,7 +1581,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             inArray(opportunities.sourceUrl, batch),
             or(isNull(opportunities.lastSeenInFeedAt), lt(opportunities.lastSeenInFeedAt, staleThreshold))
           ));
-        updatedCount += (res as any)?.changes ?? batch.length;
+        updatedCount += d1Changes(res);
       }
       console.log(`[api/cron/scrape] Debounced lastSeenInFeedAt: ${updatedCount} of ${existingUrls.size} existing jobs updated`);
     }
@@ -1590,7 +1605,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             eq(opportunities.isActive, false),
             inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
           ));
-        reactivated += (res as any)?.meta?.changes ?? (res as any)?.changes ?? 0;
+        reactivated += d1Changes(res);
       }
       console.log(`[api/cron/scrape] Reactivated ${reactivated} feed-confirmed jobs previously archived by the system.`);
     }
@@ -1928,11 +1943,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const batch = triagedItems.slice(i, i + D1_INSERT_BATCH_SIZE);
       attemptedInsert += batch.length;
       try {
-        console.log(`[api/cron/scrape] Inserting batch of ${batch.length} items:`, batch.map(b => `${b.title} (${b.sourceUrl})`));
+        console.log(`[api/cron/scrape] Inserting batch of ${batch.length} items (index ${i}).`);
         const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
-        console.log(`[api/cron/scrape] D1 insert result:`, JSON.stringify(res));
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
-          actualChanges += (res as any).meta.changes;
+          actualChanges += d1Changes(res);
         } else {
           markItemsForRetry(batch);
           insertErrors.push({
@@ -1963,7 +1977,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       try {
         const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
-          rejectedPersisted += (res as any).meta.changes;
+          rejectedPersisted += d1Changes(res);
         } else {
           markItemsForRetry(batch);
           console.warn(`[api/cron/scrape] Rejected-item insert metadata missing (index ${i}); clearing conditional validators for retry.`);
@@ -1989,7 +2003,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       try {
         const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
-          pendingPersisted += (res as any).meta.changes;
+          pendingPersisted += d1Changes(res);
         } else {
           markItemsForRetry(batch);
         }
@@ -2009,7 +2023,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // terminal outcome. Otherwise a later 304 would silently suppress a retry.
     const stateWrite = await recordConditionalSourceStates(retrySourceIds);
 
-    const unclearSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_BUSY_TICK);
+    // Guard: if inline triage exhausted the per-invocation AI subrequest budget,
+    // the sweep would immediately throw AiBudgetExceededError on its first call,
+    // waste two D1 cursor-write round-trips, and record a misleading
+    // "__sweep_diag__" AI-unavailable entry that looks like a quota outage. Skip
+    // it instead — the sweep runs on every tick, so it will catch up on the next
+    // idle tick when the budget is fresh.
+    let unclearSweep: UnclearSweepStats = { retriaged: 0, upgraded: 0, deactivated: 0 };
+    if (aiBudget.exhausted()) {
+      console.log("[api/cron/scrape] Skipping unclear sweep: AI subrequest budget exhausted by inline triage.");
+    } else {
+      unclearSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_BUSY_TICK);
+    }
     const unclearRetriaged = unclearSweep.retriaged;
     const unclearUpgraded = unclearSweep.upgraded;
     const unclearDeactivated = unclearSweep.deactivated;
@@ -2072,6 +2097,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);
-    return new Response(JSON.stringify({ error: (error as Error).message, runDurationMs: Date.now() - startedAt }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Internal Server Error", runDurationMs: Date.now() - startedAt }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
 };

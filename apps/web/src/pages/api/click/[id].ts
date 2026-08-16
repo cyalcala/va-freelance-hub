@@ -29,7 +29,7 @@ export function createClickHandler(dependencies: ClickHandlerDependencies): APIR
   }
 
   try {
-    const env = locals.runtime.env as any;
+    const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
     const db = dependencies.getDb(env);
 
     // Validate the target URL belongs to this job (prevents open redirect)

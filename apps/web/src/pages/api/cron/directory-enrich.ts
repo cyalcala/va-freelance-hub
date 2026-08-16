@@ -46,7 +46,7 @@ async function recordEnrichDiagnostics(
 
 export const POST: APIRoute = async ({ request, locals }) => {
   console.log("[api/cron/directory-enrich] Starting directory enrichment pulse...");
-  const env = locals.runtime.env as any;
+  const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
   const db = getDb(env);
   const startedAt = nowUtcIso();
 
@@ -88,7 +88,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("[api/cron/directory-enrich] Error:", error);
     await recordEnrichDiagnostics(db, startedAt, enrichDiagSummary(0, msg));
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

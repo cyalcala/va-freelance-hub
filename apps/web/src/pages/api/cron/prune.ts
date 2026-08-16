@@ -4,6 +4,7 @@ import { sql, lt } from "drizzle-orm";
 import { nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 import { duplicateSurvivorSql } from "@/lib/prune-query";
+import { d1Changes } from "@/lib/d1-result";
 
 export const prerender = false;
 
@@ -62,14 +63,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
       )
     `);
 
-    const archived = (result as any).meta?.changes ?? 0;
+    const archived = d1Changes(result);
     console.log(`[api/cron/prune] Archived ${archived} duplicate active rows (description_hash + company scoped). No rows deleted.`);
 
     const EVENT_RETENTION_DAYS = 90;
     const eventCutoff = new Date(Date.now() - EVENT_RETENTION_DAYS * 24 * 60 * 60_000).toISOString();
     const eventPrune = await db.delete(sourceFetchEvents)
       .where(lt(sourceFetchEvents.timestamp, eventCutoff));
-    const eventsDeleted = (eventPrune as any).meta?.changes ?? 0;
+    const eventsDeleted = d1Changes(eventPrune);
     if (eventsDeleted > 0) {
       console.log(`[api/cron/prune] Deleted ${eventsDeleted} source_fetch_events older than ${EVENT_RETENTION_DAYS} days.`);
     }
@@ -87,6 +88,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   } catch (error: any) {
     console.error("Prune API Error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   }
 };

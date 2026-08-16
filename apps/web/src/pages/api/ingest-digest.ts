@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    const proxySecret = env.PROXY_SECRET || env.CRON_SECRET;
+    const proxySecret = env?.PROXY_SECRET || env?.CRON_SECRET;
 
     if (!proxySecret) {
       console.error("PROXY_SECRET/CRON_SECRET not configured in environment");
@@ -63,7 +63,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ success: true, inserted: 0 }), { status: 200 });
     }
 
-    const db = getDb(locals.runtime?.env);
+    const db = getDb(env);
     // Insert with deduplication based on videoId, chunked under the D1 limit.
     let inserted = 0;
     for (const chunk of chunkArray(normalizedItems, maxRowsPerD1Batch(DIGEST_COLUMNS))) {
@@ -83,7 +83,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" }
     });
   } catch (error) {
-    console.error("Ingest API Error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Internal Server Error" }), { status: 500 });
+    console.error("Ingest-digest API Error:", error);
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   }
 };

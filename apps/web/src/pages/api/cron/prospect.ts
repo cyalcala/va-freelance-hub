@@ -154,6 +154,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error: any) {
     console.error("[api/cron/prospect] Error:", error);
-    return new Response(JSON.stringify({ error: error.message || "Internal Server Error" }), { status: 500 });
+    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
   }
 };
