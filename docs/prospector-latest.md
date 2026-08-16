@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-08-16
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/31920767706
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/31932794690
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 18 |
-| Auto-added this run | 9 |
+| Candidates considered | 9 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 8 |
 | Rejected for quality | 1 |
@@ -15,12 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/31920767
 
 ## Auto-added companies
 
-- Temporal Technologies
-- ZoomInfo Technologies LLC
-- Webflow
-- Storyblok
-- SoFi
-- Power Digital
-- Pixel One
-- Knock
-- Grailed
+- (none this run)
