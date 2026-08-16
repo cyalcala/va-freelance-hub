@@ -1,5 +1,44 @@
 # Handoff
 
+## Current Checkpoint — 2026-08-16 Directory Growth Engine Hardening (in progress)
+
+Status: masterplan committed (`2c46584`), surgical P1 fixes being implemented
+on `codex/apex-flash-continuation`. Full plan:
+`docs/masterplan-2026-08-16-directory-engine-hardening.md`.
+
+The prior session shipped the Directory Growth Engine (`41c0336`) — an
+enrichment cron (`/api/cron/directory-enrich`), a curated seed import
+(`/api/cron/directory-seed`), and `gha-enrichment-pulse.yml` (2x/day). It built
+clean but had never been code-reviewed or tested.
+
+This session ran the brainstorming + code-reviewer + debugging skills against
+`41c0336` and found 6 P1 issues (no P0). Baseline before any fix: **379 tests
+pass, typecheck clean, build clean.**
+
+Ranked P1 findings (all surgical, smallest-first):
+- **P1-1** `directory-enrich.ts:103-108` — silent overwrite of an existing
+  `hiringPageUrl` (gates on the local `updates` object, not the DB value).
+  Violates the "additive only" guarantee. Fix: delete the redundant block.
+- **P1-2** `directory-enrich.ts:83-161` — no per-target try/catch; one poison
+  row aborts the run and re-aborts on every retry (the wedge hazard
+  `scrape.ts:803-816` guards against). Fix: try/catch + `result.errors`.
+- **P1-3** `directory-seed.ts:63-73` — silent write-path error
+  (`console.warn`-and-continue). Fix: surface `failed` + `insertErrors`.
+- **P1-4** `directory-enrich.ts` — zero tests. Fix: new test file.
+- **P1-5** `curated-va-agencies-2026-08.ts:213,328` — `"Shepherd (formerly
+  Support Shepherd)"` / `"Sitel (Foundever)"` do not collide with existing
+  names via `normalizeCompanyName` (punctuation-unaware) → duplicate
+  directory rows. Fix: canonical names, former name in `notes`.
+- **P1-6** `directory-enrich.ts:42-50` — `extractDomainFromUrl` does not filter
+  LinkedIn/Indeed/Glassdoor/ZipRecruiter → could write `linkedin.com` as a
+  company website. Fix: extend `knownAtsHosts`.
+
+P2 follow-ups noted: `__enrich_diag__` heartbeat, N+1 batching, stuck-row
+backoff, `niche as any` type leak, `updates: Record<string,any>` typing.
+
+Owner actions unchanged: confirm the Inngest `triage-drain` drains
+`pending_triage: 155`; rotate the leaked `tr_dev_` / Turso / ISR secrets.
+
 ## Current Checkpoint — 2026-08-15/16 AI-Subrequest Freeze Fixed + Inngest Durable Triage LIVE
 
 Status: implemented on `codex/apex-flash-continuation`, all commits **merged to
