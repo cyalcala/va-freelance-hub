@@ -39,6 +39,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     let added = 0;
     const addedNames: string[] = [];
+    const failedNames: string[] = [];
+    const insertErrors: string[] = [];
     const skipped = CURATED_VA_AGENCIES_2026_08.length - toInsert.length;
 
     if (toInsert.length > 0) {
@@ -68,19 +70,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
               added += 1;
               addedNames.push(row.companyName);
             } catch (rowErr) {
-              console.warn(`[api/cron/directory-seed] row insert failed for ${row.companyName}:`, errorMessage(rowErr));
+              const msg = errorMessage(rowErr);
+              console.warn(`[api/cron/directory-seed] row insert failed for ${row.companyName}:`, msg);
+              failedNames.push(row.companyName);
+              insertErrors.push(`${row.companyName}: ${msg}`);
             }
           }
         }
       }
     }
 
-    console.log(`[api/cron/directory-seed] Done. Added ${added}, skipped ${skipped} existing.`);
+    console.log(`[api/cron/directory-seed] Done. Added ${added}, skipped ${skipped} existing, failed ${failedNames.length}.`);
     return new Response(JSON.stringify({
       totalCurated: CURATED_VA_AGENCIES_2026_08.length,
       added,
       addedNames,
       skippedExisting: skipped,
+      failed: failedNames.length,
+      failedNames,
+      insertErrors,
       startedAt,
       finishedAt: nowUtcIso(),
     }), { status: 200, headers: { "Content-Type": "application/json" } });
