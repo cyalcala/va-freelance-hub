@@ -1,4 +1,4 @@
-import { sql, eq, and, isNull, or, lt, asc, type SQL } from "drizzle-orm";
+import { sql, eq } from "drizzle-orm";
 import { getDb, vaDirectory, opportunities } from "@va-hub/db";
 import { nowUtcIso } from "@/lib/time";
 
@@ -57,31 +57,60 @@ export function extractDomainFromUrl(url: string | null): string | null {
   }
 }
 
+/**
+ * Selection query for the enrichment pulse's per-run target budget.
+ *
+ * Extracted as raw SQL (bun:sqlite-testable, mirroring duplicateSurvivorSql)
+ * because the ordering here is load-bearing and was the site of a starvation
+ * bug. Two properties matter:
+ *
+ *  - `ORDER BY RANDOM()`, not `id ASC`. The candidate set is dominated by rows
+ *    this pass can never enrich in a given run: a prospector-added company whose
+ *    only job URLs are aggregator links (weworkremotely, remoteok) yields no
+ *    inferable website, and a company with no ATS token can never get a hiring
+ *    page. Those rows never leave the candidate set, so `ORDER BY id ASC LIMIT
+ *    budget` re-selected the same lowest-id stuck rows every run and starved
+ *    every higher-id row — including the few that ARE enrichable. Random
+ *    rotation gives every candidate a fair turn, matching how directory-audit
+ *    rotates on link_checked_at and verify-links on last_verified_at. Those two
+ *    can use a deterministic cursor because a migration added the column;
+ *    enrichment has none, so RANDOM() is the migration-free equivalent that
+ *    still guarantees eventual coverage.
+ *
+ *  - The hiring-page gap is ATS-scoped. A missing hiring page is only actionable
+ *    when the row carries an ATS platform+token (buildAtsCareerUrl). Selecting
+ *    non-ATS rows purely because hiring_page_url IS NULL kept them in the budget
+ *    forever for a gap that can never be filled.
+ *
+ * `budget` is clamped here too, so the function is safe to interpolate even if a
+ * caller forgets to validate it.
+ */
+export function buildEnrichmentTargetSql(budget: number): string {
+  const limit = Math.max(1, Math.min(100, Math.floor(Number(budget) || 1)));
+  return `
+    SELECT
+      id,
+      company_name AS companyName,
+      website,
+      hiring_page_url AS hiringPageUrl,
+      ats_platform AS atsPlatform,
+      ats_token AS atsToken,
+      is_verified AS isVerified
+    FROM va_directory
+    WHERE website IS NULL
+       OR TRIM(COALESCE(website, '')) = ''
+       OR (is_verified = 0 AND hires_filipinos = 1)
+       OR (ats_platform IS NOT NULL AND ats_token IS NOT NULL AND hiring_page_url IS NULL)
+    ORDER BY RANDOM()
+    LIMIT ${limit}
+  `;
+}
+
 export async function enrichDirectory(db: ReturnType<typeof getDb>, budget: number): Promise<EnrichmentResult> {
   const now = nowUtcIso();
   const result: EnrichmentResult = { enriched: 0, verified: 0, hiringPageSet: 0, websiteSet: 0, errors: 0, details: [] };
 
-  const targets = await db
-    .select({
-      id: vaDirectory.id,
-      companyName: vaDirectory.companyName,
-      website: vaDirectory.website,
-      hiringPageUrl: vaDirectory.hiringPageUrl,
-      atsPlatform: vaDirectory.atsPlatform,
-      atsToken: vaDirectory.atsToken,
-      isVerified: vaDirectory.isVerified,
-    })
-    .from(vaDirectory)
-    .where(
-      or(
-        isNull(vaDirectory.website),
-        sql`TRIM(COALESCE(${vaDirectory.website}, '')) = ''`,
-        and(eq(vaDirectory.isVerified, false), sql`${vaDirectory.hiresFilipinos} = 1`),
-        isNull(vaDirectory.hiringPageUrl),
-      )
-    )
-    .orderBy(asc(vaDirectory.id))
-    .limit(budget);
+  const targets = await db.all<EnrichmentTarget>(sql.raw(buildEnrichmentTargetSql(budget)));
 
   for (const target of targets) {
     try {
