@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-08-18
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32109786565
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32140718220
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 5 |
-| Auto-added this run | 0 |
+| Candidates considered | 7 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 4 |
 | Rejected for quality | 1 |
@@ -15,4 +15,5 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32109786
 
 ## Auto-added companies
 
-- (none this run)
+- Vonage
+- Mixpanel
