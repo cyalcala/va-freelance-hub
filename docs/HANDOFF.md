@@ -1,5 +1,49 @@
 # Handoff
 
+## Current Checkpoint — 2026-08-18 Apex Debugging & Hardening Audit (complete)
+
+Status: adversarial audit of the live Cloudflare/Astro/D1 system. Two real bugs
+found, proven, fixed, tested, and committed on `main` (`d6114b2`, `6e07bcf`).
+Full report + confidence scores: `docs/apex-audit-2026-08-18.md`.
+
+The codebase is already heavily hardened (2026-06 → 2026-08 audit trail), so
+finding density was intentionally low; the effort concentrated on the newest,
+least-audited code (the 2026-08-16 Directory Growth Engine) and on the project's
+cardinal failure mode — the Workers-Free 50-subrequest/invocation cap.
+
+### What was fixed
+
+| # | Sev | Fix | Commit |
+| --- | --- | --- | --- |
+| U1 | P1 | directory-enrich **budget starvation** — `ORDER BY id ASC LIMIT` re-selected the same un-enrichable low-id rows every run and starved every higher-id row (silent zero-progress success). Now `ORDER BY RANDOM()` + ATS-scoped hiring-page clause + `[1,100]` budget clamp, extracted as `buildEnrichmentTargetSql` with real `bun:sqlite` regression tests. | `d6114b2` |
+| F2 | P2 | directory-audit **subrequest-cap breach** — `DEFAULT_BUDGET=60` link-check fetches per invocation vs the 50-subrequest Workers-Free cap (the workflow POSTs with no `?limit` override). Overflow fetches were caught as `unreachable` (never a strike → bounded, no corruption) but silently reported as checked. Lowered to 40 (D1 calls don't count toward the cap; rotation defers the rest), exported + regression-tested, stale workflow comment corrected. | `6e07bcf` |
+
+### Verification
+
+| Check | Result |
+| --- | --- |
+| `bun run test` | 408 pass, 0 fail, 1068 expectations, 49 files (was 407/48 at start) |
+| `bun run typecheck` | exit 0 |
+| `bun run build` | exit 0 |
+| `bun run audit:guardrails` | exit 0 |
+
+### Verified robust (audited, not changed)
+
+scrape AI-budget threading (all AI paths), `auth.ts` (constant-time), `ingest.ts`
+(column allow-list), directory seed/prospect (idempotent + guarded), directory
+visibility/health predicates, all pulse workflows (concurrency + real-signal
+validation), `public-query.ts` input hardening. See the report for the full list.
+
+### Deferred (P3 / monitor — documented, low ROI vs regression risk)
+
+- directory-audit per-row `db.update()` inside `Promise.all` is un-try/caught (one
+  transient D1 write error 500s the run); F2 removed the main trigger.
+- Optional hard fetch-guard for directory-audit (redirect-hop safety).
+- Inngest `triage-drain` step-batching (monitor if it activates at volume).
+
+Owner actions unchanged from prior checkpoints: confirm the Inngest drain; rotate
+the leaked `tr_dev_` / Turso / ISR secrets.
+
 ## Current Checkpoint — 2026-08-16 Directory Growth Engine Hardening (complete)
 
 Status: all P1 findings fixed, tested, and pushed to

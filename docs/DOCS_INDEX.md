@@ -11,7 +11,11 @@ Before any new implementation or deployment, read these documents in this
 order:
 
 1. AGENTS.md
-2. docs/directory-growth-strategy-2026-08-16.md — **latest**: Directory Growth
+2. docs/apex-audit-2026-08-18.md — **latest**: Apex debugging & hardening audit.
+   Fixed U1 (directory-enrich `ORDER BY id ASC` starvation, `d6114b2`) and F2
+   (directory-audit 60-fetch subrequest-cap breach → budget 40, `6e07bcf`);
+   verified the rest of the system robust. Confidence scores + deferred work.
+3. docs/directory-growth-strategy-2026-08-16.md — Directory Growth
    Engine strategy: enrichment cron (website inference + auto-verification),
    curated VA agency seed (28 companies), GHA workflow, daily cycle documentation
 3. docs/checkpoint-2026-08-16-documentation-backup.md — consolidated

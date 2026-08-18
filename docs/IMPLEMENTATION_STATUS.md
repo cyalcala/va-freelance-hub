@@ -1,5 +1,26 @@
 # Implementation Status
 
+## Latest Checkpoint — 2026-08-18 Apex Debugging & Hardening Audit
+
+Full report: `docs/apex-audit-2026-08-18.md`. Handoff: `docs/HANDOFF.md` (top).
+
+Adversarial audit of the live production system. The codebase is already heavily
+hardened, so the audit concentrated on the newest code (Directory Growth Engine)
+and the Workers-Free 50-subrequest cap. Two real bugs found, proven, fixed,
+tested, committed to `main`:
+
+- **U1 (P1, `d6114b2`)** — directory-enrich starvation: `ORDER BY id ASC LIMIT`
+  re-selected the same un-enrichable low-id rows every run (silent zero-progress
+  success). Fixed to `ORDER BY RANDOM()` + ATS-scoped hiring-page clause + budget
+  clamp, extracted as `buildEnrichmentTargetSql` with `bun:sqlite` regression tests.
+- **F2 (P2, `6e07bcf`)** — directory-audit ran 60 link-check fetches per
+  invocation against the 50-subrequest cap (same class as the Aug-7 freeze);
+  overflow was caught as `unreachable` (no strike, bounded) but silently reported
+  as checked. Lowered `DEFAULT_BUDGET` to 40 + regression test + workflow comment.
+
+Verification: `bun run test` 408/0 (was 407); `typecheck` 0; `build` 0;
+`audit:guardrails` 0. Deferred P3/monitor items are listed in the report.
+
 ## Latest Checkpoint — 2026-08-16 Directory Growth Engine Hardening
 
 Full plan: `docs/masterplan-2026-08-16-directory-engine-hardening.md`.
