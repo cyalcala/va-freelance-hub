@@ -6,6 +6,12 @@ node_modules/
 # Isolated agent workspaces
 .worktrees/
 
+# Local agent/tool state and scratch output (never belongs in this public repo).
+# .claude/ holds per-machine Claude Code config (settings.local.json, launch.json);
+# graphify-out/ is regenerable /graphify skill output.
+.claude/
+graphify-out/
+
 # Environment and local Cloudflare secrets. Keep examples tracked.
 .env*
 !.env.example
