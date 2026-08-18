@@ -16,8 +16,20 @@ import { buildDirectoryHealthUpdate, directoryHealthStatus } from "@/lib/directo
 // consecutive checks before it is de-verified (is_verified = 0) and annotated
 // for human review. Any healthy check resets the strike counter. Bot walls
 // (403/429 from live sites like Canva/Fiverr) never count a strike.
-
-const DEFAULT_BUDGET = 60;   // companies re-checked per run (4 runs/day = full ~368 sweep in ~1.5 days)
+//
+// SUBREQUEST BUDGET: this route runs in one Cloudflare Pages Function
+// invocation, and Workers Free caps subrequests at 50 per invocation — the same
+// ceiling that froze ingestion on 2026-08-08 (see ai-subrequest-budget.test.ts).
+// Each company checked is one checkDirectoryLink() fetch (a subrequest); D1
+// binding calls do not count toward that cap (the scrape route makes dozens per
+// run). The default MUST therefore stay safely under 50 fetches: 60 exceeded the
+// cap outright, so overflow rows past ~50 threw "Too many subrequests", were
+// caught as `unreachable` (never a strike — bounded blast radius), and the run
+// silently reported them as checked when they were not. Kept under the cap with
+// headroom for redirects; the oldest-checked-first rotation below defers the
+// rest of the directory to the next run, so a lower per-run budget only slows
+// the full sweep, it never skips a company.
+export const DEFAULT_BUDGET = 40;   // companies re-checked per run; 4 runs/day sweeps the directory's linked rows every ~2-3 days
 const CHECK_CONCURRENCY = 8;
 
 export const prerender = false;
