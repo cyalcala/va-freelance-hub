@@ -245,6 +245,23 @@ export function withAiSubrequestBudget(
   };
 }
 
+// Durable-triage routing gate.
+//
+// FREEZE GUARD (2026-08-18/19). This was `Boolean(env.INNGEST_SIGNING_KEY)`
+// alone: the signing key was present on production, but the Inngest triage-drain
+// cloud cron never fired, so every gate-passed listing was parked as a hidden
+// `pending-triage` row and nothing published — the board froze for ~30h behind a
+// green heartbeat while 55 eligible jobs piled up invisibly. Durable triage is
+// now a DELIBERATE two-part opt-in: the key (Inngest needs it to verify its
+// requests) AND an explicit TRIAGE_VIA_INNGEST="1". With either missing, triage
+// runs inline — the proven, self-contained path — so a stray/leftover key can
+// never again silently divert ingestion into a queue whose drain may be dead.
+export function shouldTriageViaInngest(
+  env: { INNGEST_SIGNING_KEY?: string; TRIAGE_VIA_INNGEST?: string } | null | undefined,
+): boolean {
+  return Boolean(env?.INNGEST_SIGNING_KEY) && String(env?.TRIAGE_VIA_INNGEST ?? "") === "1";
+}
+
 interface AtsAgency {
   id: number;
   companyName: string;
@@ -1679,14 +1696,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // and a cluster of persistent ineligible listings at the head of a large
     // feed could permanently starve items behind the per-run limit.
     const rejectedItems: typeof opportunities.$inferInsert[] = [];
-    // Durable-triage queue (Inngest pilot): when INNGEST_SIGNING_KEY is set,
-    // gate-passed listings are persisted here as hidden `pending-triage` rows
-    // instead of being AI-triaged inline, and the Inngest triage-drain worker
-    // classifies them out-of-band — one listing per invocation, so no single
-    // Pages Function request ever approaches the 50-subrequest cap that froze
-    // ingestion on 2026-08-07. The key's PRESENCE is the feature flag: with no
-    // key the block below is skipped and triage runs inline exactly as before.
-    const triageViaInngest = Boolean((env as { INNGEST_SIGNING_KEY?: string })?.INNGEST_SIGNING_KEY);
+    // Durable-triage queue (Inngest pilot): when explicitly opted in, gate-passed
+    // listings are persisted here as hidden `pending-triage` rows instead of being
+    // AI-triaged inline, and the Inngest triage-drain worker classifies them
+    // out-of-band — one listing per invocation, so no single Pages Function
+    // request ever approaches the 50-subrequest cap that froze ingestion on
+    // 2026-08-07. Enabling it requires BOTH INNGEST_SIGNING_KEY and
+    // TRIAGE_VIA_INNGEST="1" (see shouldTriageViaInngest): the signing key alone
+    // used to flip this on, which froze the board for ~30h on 2026-08-18/19 when
+    // the key was present but the Inngest drain was not running.
+    const triageViaInngest = shouldTriageViaInngest(
+      env as { INNGEST_SIGNING_KEY?: string; TRIAGE_VIA_INNGEST?: string },
+    );
     const pendingItems: typeof opportunities.$inferInsert[] = [];
     const concurrency = 3;
     // Jobs whose triage call threw are dropped from this run. Count them so the
