@@ -20,7 +20,7 @@ import {
 } from "@/lib/run-diagnostics";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict } from "@va-hub/scraper";
 
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
@@ -260,6 +260,192 @@ export function shouldTriageViaInngest(
   env: { INNGEST_SIGNING_KEY?: string; TRIAGE_VIA_INNGEST?: string } | null | undefined,
 ): boolean {
   return Boolean(env?.INNGEST_SIGNING_KEY) && String(env?.TRIAGE_VIA_INNGEST ?? "") === "1";
+}
+
+// ── Inline pending-triage drain ──────────────────────────────────────────────
+//
+// Recovers `pending-triage` rows (is_active=0, gate-passed but never AI-
+// classified) WITHOUT depending on the external Inngest cron. Those rows only
+// exist because durable triage was opted into and then left without a working
+// drain — the 2026-08-18/19 freeze. This runs the SAME verdict the inline scrape
+// loop uses (decideTriage) and updates each row in place: publish, reject,
+// quarantine, or leave pending on AI-unavailable (fail closed, reclaimed later).
+//
+// It shares the caller's budgeted AI env, so its calls count against the same
+// AI_SUBREQUEST_BUDGET_PER_RUN ceiling as fresh triage and the unclear sweep — a
+// drain pass can therefore never push a scrape invocation past Cloudflare's
+// 50-subrequest cap. Fresh-item triage runs first and has priority; the drain
+// spends only leftover budget, oldest row first, and stops the moment it is gone.
+export interface PendingDrainStats {
+  claimed: number;
+  published: number;
+  rejected: number;
+  quarantined: number;
+  deferred: number;
+}
+
+const EMPTY_PENDING_DRAIN: PendingDrainStats = {
+  claimed: 0, published: 0, rejected: 0, quarantined: 0, deferred: 0,
+};
+
+// Rows one drain pass may claim. Small on purpose: the drain trickles the finite
+// backlog across ticks rather than bursting the shared ~10k-neuron/day budget.
+export const PENDING_DRAIN_PER_TICK = 4;
+
+export async function drainPendingTriageInline(
+  db: AppDb,
+  aiEnv: any,
+  aiBudget: { exhausted: () => boolean },
+  observedAt: string,
+  limit: number = PENDING_DRAIN_PER_TICK,
+): Promise<PendingDrainStats> {
+  const stats: PendingDrainStats = { claimed: 0, published: 0, rejected: 0, quarantined: 0, deferred: 0 };
+  if (aiBudget.exhausted()) return stats;
+
+  let pending: Array<{
+    id: number;
+    title: string;
+    description: string | null;
+    company: string | null;
+    tags: string[] | null;
+    locationRaw: string | null;
+    sourceUrl: string;
+    applicationUrl: string | null;
+  }>;
+  try {
+    pending = await db
+      .select({
+        id: opportunities.id,
+        title: opportunities.title,
+        description: opportunities.description,
+        company: opportunities.company,
+        tags: opportunities.tags,
+        locationRaw: opportunities.locationRaw,
+        sourceUrl: opportunities.sourceUrl,
+        applicationUrl: opportunities.applicationUrl,
+      })
+      .from(opportunities)
+      .where(and(eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage")))
+      .orderBy(asc(opportunities.scrapedAt))
+      .limit(limit);
+  } catch (err) {
+    console.warn(`[api/cron/scrape] Pending-triage drain: claim query failed:`, errorMessage(err));
+    return stats;
+  }
+
+  for (const item of pending) {
+    if (aiBudget.exhausted()) break;
+    stats.claimed += 1;
+    const baseTags = item.tags ?? [];
+    const gate = geoGate({
+      title: item.title,
+      description: item.description,
+      locationRaw: item.locationRaw,
+      tags: baseTags,
+    });
+
+    let decision: Awaited<ReturnType<typeof decideTriage>>;
+    try {
+      decision = await decideTriage(
+        { title: item.title, description: item.description, company: item.company, tags: baseTags, locationRaw: item.locationRaw },
+        { geoScope: gate.geoScope },
+        aiEnv,
+      );
+    } catch (err) {
+      // Transient (e.g. skeptic call threw) — leave pending, reclaimed next pass.
+      stats.deferred += 1;
+      continue;
+    }
+
+    // FAIL CLOSED: never publish a listing the AI did not actually classify.
+    if (decision.kind === "error" || decision.kind === "ai-unavailable") {
+      stats.deferred += 1;
+      continue;
+    }
+
+    try {
+      if (decision.kind === "ineligible") {
+        await db.update(opportunities).set({
+          inactiveReason: "policy-rejected",
+          phEligibility: "ineligible",
+          geoScope: gate.geoScope,
+          category: "other",
+          tags: Array.from(new Set([...baseTags, "triage-rejected"])),
+          geoEvidence: `AI triage: ${decision.reason.slice(0, 200)}`,
+          geoCheckedAt: observedAt,
+          updatedAt: observedAt,
+        }).where(eq(opportunities.id, item.id));
+        stats.rejected += 1;
+        continue;
+      }
+
+      if (decision.kind === "consensus-split") {
+        await db.update(opportunities).set({
+          inactiveReason: "policy-rejected",
+          phEligibility: "unclear",
+          geoScope: gate.geoScope,
+          tags: Array.from(new Set([...baseTags, "consensus-quarantined"])),
+          geoEvidence: `Consensus split — skeptic: ${decision.reason.slice(0, 200)}`,
+          geoCheckedAt: observedAt,
+          updatedAt: observedAt,
+        }).where(eq(opportunities.id, item.id));
+        stats.quarantined += 1;
+        continue;
+      }
+
+      // Eligible → publish (is_active=1). Mirrors the inline scrape mapping.
+      const triage = decision.triage;
+      const mergedTags = Array.from(new Set([...baseTags, triage.category, ...(triage.tags || [])]))
+        .filter(Boolean)
+        .map((t) => (typeof t === "string" ? t.toLowerCase().trim() : t));
+      await db.update(opportunities).set({
+        isActive: true,
+        inactiveReason: null,
+        geoScope: gate.geoScope,
+        phEligibility: gate.phEligibility === "unclear" ? "eligible_likely" : gate.phEligibility,
+        geoEvidence: gate.geoScope === "unknown"
+          ? `AI triage passed: ${(triage.reason || "eligible").slice(0, 200)}`
+          : gate.evidence,
+        geoCheckedAt: observedAt,
+        applicationUrl: sanitizeApplyUrl(triage.applicationUrl) || sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+        tags: mergedTags,
+        payRange: triage.payRange,
+        category: mapTriageCategoryToUiCategory(triage.category),
+        experienceLevel: triage.experienceLevel,
+        type: triage.employmentType === "contract" ? "freelance" : (triage.employmentType || "freelance"),
+        updatedAt: observedAt,
+      }).where(eq(opportunities.id, item.id));
+      stats.published += 1;
+    } catch (err) {
+      // Durable-write truth: a failed write is not credited; the row stays
+      // pending and is reclaimed next pass.
+      stats.deferred += 1;
+      console.warn(`[api/cron/scrape] Pending-triage drain: write failed for #${item.id}:`, errorMessage(err));
+    }
+  }
+
+  return stats;
+}
+
+// Gate + log wrapper used at each no-new-items path and the main path. When
+// durable triage is opted in, the Inngest worker owns the queue, so the inline
+// drain stands down to avoid double-processing.
+async function maybeDrainPendingTriage(
+  db: AppDb,
+  aiEnv: any,
+  aiBudget: { exhausted: () => boolean },
+  observedAt: string,
+  triageViaInngest: boolean,
+  where: string,
+): Promise<PendingDrainStats> {
+  if (triageViaInngest) return EMPTY_PENDING_DRAIN;
+  const stats = await drainPendingTriageInline(db, aiEnv, aiBudget, observedAt);
+  if (stats.claimed > 0) {
+    console.log(
+      `[api/cron/scrape] Pending-triage drain (${where}): claimed ${stats.claimed}, published ${stats.published}, rejected ${stats.rejected}, quarantined ${stats.quarantined}, deferred ${stats.deferred}.`,
+    );
+  }
+  return stats;
 }
 
 interface AtsAgency {
@@ -1210,6 +1396,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // closed — the exact regression that froze ingestion on 2026-08-08.
   const aiBudget = withAiSubrequestBudget(env, AI_SUBREQUEST_BUDGET_PER_RUN);
   const aiEnv = aiBudget.env;
+  // Durable-triage routing gate (see shouldTriageViaInngest). Computed once here
+  // so the pending-triage drain on the no-new-items paths below can gate on it
+  // too, not only the main inline branch.
+  const triageViaInngest = shouldTriageViaInngest(
+    env as { INNGEST_SIGNING_KEY?: string; TRIAGE_VIA_INNGEST?: string },
+  );
 
   // 1. Rate Limiting Check
   const rateLimiter = env?.API_RATE_LIMITER;
@@ -1530,6 +1722,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // below this return it never ran on those ticks. That, not the per-row
       // failure handling, was the dominant reason the unclear backlog sat flat.
       const idleSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
+      await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, triageViaInngest, "idle");
       const outcome = buildNoJobsScrapedOutcome({
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -1637,6 +1830,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // items (so allItems > 0), but after URL dedup none of them are new. The
       // backlog sweep is maintenance and must not be gated on fresh ingest.
       const dedupSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
+      const dedupDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, triageViaInngest, "dedup");
       await recordIngestDiagnostics(db, observedAt, {
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -1651,6 +1845,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
         insertFailedBatches: 0,
         insertErrors: [],
         skipped: allItems.length,
+        pendingDrainClaimed: dedupDrain.claimed,
+        pendingDrainPublished: dedupDrain.published,
+        pendingDrainRejected: dedupDrain.rejected,
+        pendingDrainDeferred: dedupDrain.deferred,
         droppedNoUrl,
         unmatchedPauses,
         failedSources,
@@ -1702,12 +1900,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // out-of-band — one listing per invocation, so no single Pages Function
     // request ever approaches the 50-subrequest cap that froze ingestion on
     // 2026-08-07. Enabling it requires BOTH INNGEST_SIGNING_KEY and
-    // TRIAGE_VIA_INNGEST="1" (see shouldTriageViaInngest): the signing key alone
-    // used to flip this on, which froze the board for ~30h on 2026-08-18/19 when
-    // the key was present but the Inngest drain was not running.
-    const triageViaInngest = shouldTriageViaInngest(
-      env as { INNGEST_SIGNING_KEY?: string; TRIAGE_VIA_INNGEST?: string },
-    );
+    // TRIAGE_VIA_INNGEST="1" (see shouldTriageViaInngest, computed as
+    // `triageViaInngest` above): the signing key alone used to flip this on,
+    // which froze the board for ~30h on 2026-08-18/19 when the key was present
+    // but the Inngest drain was not running.
     const pendingItems: typeof opportunities.$inferInsert[] = [];
     const concurrency = 3;
     // Jobs whose triage call threw are dropped from this run. Count them so the
@@ -2060,6 +2256,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const unclearUpgraded = unclearSweep.upgraded;
     const unclearDeactivated = unclearSweep.deactivated;
     const unclearSkepticUnavailable = unclearSweep.skepticUnavailable ?? 0;
+    // Recover any `pending-triage` backlog inline with leftover AI budget (no-op
+    // under durable-triage opt-in, where Inngest owns the queue).
+    const pendingDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, triageViaInngest, "post-ingest");
 
     console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}, budget-deferred: ${triageBudgetDeferred}, aiCalls: ${aiBudget.calls()}`);
     await recordIngestDiagnostics(db, observedAt, {
@@ -2101,6 +2300,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       rejectedInsertFailedBatches,
       pendingPersisted,
       pendingInsertFailedBatches,
+      pendingDrainClaimed: pendingDrain.claimed,
+      pendingDrainPublished: pendingDrain.published,
+      pendingDrainRejected: pendingDrain.rejected,
+      pendingDrainQuarantined: pendingDrain.quarantined,
+      pendingDrainDeferred: pendingDrain.deferred,
       triageViaInngest,
       droppedNoUrl,
       unmatchedPauses,
