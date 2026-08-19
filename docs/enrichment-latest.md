@@ -1,30 +1,29 @@
 # Directory Enrichment — Latest
 
-Date: 2026-08-18
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32157704583
+Date: 2026-08-19
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32214752056
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 15 |
-| Websites set | 9 |
-| Hiring pages set | 6 |
+| Companies processed | 14 |
+| Websites set | 7 |
+| Hiring pages set | 7 |
 | Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #561 Metabase: website=https://remotephjobs.com
-- #308 MyOutDesk: hiring_page=https://apply.workable.com/myoutdesk
-- #535 Camunda: hiring_page=https://jobs.ashbyhq.com/camunda
-- #404 Global Strategic: hiring_page=https://apply.workable.com/global-strategic
-- #546 Vidalytics: website=https://we-work-remotely.com
-- #638 Palo Alto Networks: website=https://paloaltonetworks.com
-- #645 Reddit: website=https://redditinc.com
-- #621 HighLevel: website=https://gohighlevel.com
-- #536 Tremendous: hiring_page=https://jobs.ashbyhq.com/tremendous
-- #318 Outsource Access: hiring_page=https://apply.workable.com/outsource-access
-- #548 Airalo: website=https://remotephjobs.ph
-- #620 ICF: website=https://icf.com
-- #622 Faith Technologies: website=https://faithtechinc.com
-- #532 Ashby: hiring_page=https://jobs.ashbyhq.com/ashby
-- #641 Hightouch: website=https://hightouch.com
+- #370 VAA Philippines: hiring_page=https://vaaphilippines-recruitment.breezy.hr
+- #380 Virtual Staff 365: hiring_page=https://apply.workable.com/virtualstaff365
+- #612 garden3d: website=https://garden3d.net
+- #533 Supabase: hiring_page=https://jobs.ashbyhq.com/supabase
+- #568 VRChat: website=https://careers.vrchat.com
+- #573 Mindrift: website=https://mindrift.ai
+- #529 Time Etc: hiring_page=https://time-etc.breezy.hr
+- #578 Canonical: website=https://jobs.canonical.com
+- #358 SuperStaff: hiring_page=https://apply.workable.com/superstaff
+- #576 EY Studio+ Nederland: website=https://ey.com
+- #543 Instrumentl: website=https://remotephjobs.com
+- #494 RocketAMS: hiring_page=https://apply.workable.com/rocketams
+- #498 Hunt St: hiring_page=https://apply.workable.com/hunt-st
+- #661 TestGorilla: website=https://testgorilla.com
