@@ -467,6 +467,45 @@ async function maybeDrainPendingTriage(
   return stats;
 }
 
+// Geo scopes the deterministic gate treats as open to Filipino applicants. A row
+// with one of these needs no AI to establish eligibility — the AI only adds
+// category/pay and a second vote.
+export const GATE_ELIGIBLE_GEO_SCOPES = ["worldwide", "apac_incl_ph", "ph_only"] as const;
+
+// Board-freshness fallback. Surface `pending-triage` rows the geo-gate already
+// judged PH-eligible WITHOUT spending AI. Those rows exist only because durable
+// triage was opted into and then abandoned; the 10k-neuron/day budget is far too
+// scarce to AI-drain them promptly (that is why the drain is opt-in off), so
+// rather than leave real eligible jobs hidden for days this publishes them now
+// and lets the unclear sweep AI-re-vet/enrich them later — phEligibility stays
+// "unclear", so a false positive is deactivated and a category refined on a
+// later tick. No neurons, one D1 write, idempotent (a no-op once drained).
+export async function recoverGateEligiblePending(
+  db: AppDb,
+  observedAt: string,
+): Promise<number> {
+  try {
+    const res = await db
+      .update(opportunities)
+      .set({
+        isActive: true,
+        inactiveReason: null,
+        geoEvidence: "Geo-gate eligible; auto-published pending AI re-vet",
+        updatedAt: observedAt,
+        lastSeenInFeedAt: observedAt,
+      })
+      .where(and(
+        eq(opportunities.isActive, false),
+        eq(opportunities.inactiveReason, "pending-triage"),
+        inArray(opportunities.geoScope, [...GATE_ELIGIBLE_GEO_SCOPES]),
+      ));
+    return d1Changes(res);
+  } catch (err) {
+    console.warn(`[api/cron/scrape] Gate-eligible pending recovery failed:`, errorMessage(err));
+    return 0;
+  }
+}
+
 interface AtsAgency {
   id: number;
   companyName: string;
@@ -1486,6 +1525,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response(JSON.stringify({ error: "Scrape coordination is temporarily unavailable. Retry shortly." }), {
         status: 503, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
+    }
+
+    // Board-freshness fallback: publish geo-gate-eligible `pending-triage` rows
+    // without AI so real eligible jobs are not hidden for days behind the scarce
+    // neuron budget (see recoverGateEligiblePending). Inline mode only — under a
+    // durable-triage opt-in the Inngest worker owns that queue. Idempotent.
+    if (!triageViaInngest) {
+      const recovered = await recoverGateEligiblePending(db, observedAt);
+      if (recovered > 0) {
+        console.log(`[api/cron/scrape] Board-freshness fallback: published ${recovered} gate-eligible pending-triage listing(s) without AI.`);
+      }
     }
 
     // 3. Fetch all raw items
