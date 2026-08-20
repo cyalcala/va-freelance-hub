@@ -812,11 +812,13 @@ export interface UnclearSweepStats {
 // workflow — which is why ALL AI stopped at 02:15 UTC after only 12 successful
 // writes that day.
 //
-// At ~25 neurons per 8B call and up to 2 calls per row (~50/row), 50 rows/day is
-// ~2,500 neurons: about a quarter of the account's daily budget, leaving the
-// rest for everything else. The previous value of 400 would have been ~19,000
-// neurons — nearly twice the entire daily allocation — draining it within an
-// hour of the UTC reset and starving triage.
+// The original sizing assumed ~25 neurons per 8B call, up to 2 calls per row
+// (~50/row) — ~2,500 neurons for 50 rows/day. In practice the cheap rungs often
+// miss and the 70B fallback pushes the true cost ~4x higher (~200/row; see the
+// 2026-08-20 note at DAILY_SWEEP_CAP), so 50/day drained the whole account
+// budget. The cap is now 15. The previous value of 400 would have been far
+// worse — multiples of the entire daily allocation, draining it within an hour
+// of the UTC reset and starving triage.
 //
 // Consequence: the ~1,435-row backlog converges in ~4 weeks, not days. The real
 // fix is capacity, not tuning: on Workers Paid the entire backlog costs roughly
@@ -842,7 +844,16 @@ const SWEEP_QUOTA_ID = "__sweep_quota__";
 // budget is larger than this, i.e. on idle ticks.
 const MAX_CONSECUTIVE_AI_FAILURES = 2;
 
-export const DAILY_SWEEP_CAP = 50;
+// 2026-08-20: reduced 50 -> 15. Measured reality beats the ~50-neurons/row
+// estimate above: the cheap rungs frequently fail to parse and fall through to
+// the expensive 70B rung, so a swept row costs closer to ~200 neurons. Proof:
+// on 2026-08-19 the Inngest divert had NEW-item triage off, yet Workers AI still
+// 4006'd ("daily 10k neurons used up") by 06:45Z — the sweep ALONE, at 50/day,
+// drained the whole account budget and starved the board once triage resumed.
+// New-item triage is the user-facing priority; 15/day keeps the sweep useful
+// while reserving the bulk of the daily budget for fresh jobs. Raise this again
+// only with neuron capacity (Workers Paid).
+export const DAILY_SWEEP_CAP = 15;
 // Per-tick ceilings. Idle ticks scraped nothing, so no new-item triage is
 // competing for budget in that run and the sweep may use the tick fully. Ticks
 // that did ingest run triage first (it sits above the sweep in the handler), so
