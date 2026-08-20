@@ -24,6 +24,12 @@ type ENV = {
   // triage-drain queue; anything else (the default) triages inline. Set this
   // ONLY alongside a verified-live Inngest drain. See docs/inngest-durable-triage-2026-08-15.md.
   TRIAGE_VIA_INNGEST?: string;
+  // Inline pending-triage backlog recovery opt-in. OFF by default: only "1"
+  // lets the scrape route re-classify stranded `pending-triage` rows, which
+  // spends the scarce daily Workers-AI neuron budget. Enable ONLY once that
+  // budget has headroom (e.g. Workers Paid); otherwise it starves new-item
+  // triage. See drainPendingTriageInline / maybeDrainPendingTriage in scrape.ts.
+  DRAIN_PENDING_TRIAGE?: string;
 };
 
 type Runtime = import("@astrojs/cloudflare").Runtime<ENV>;

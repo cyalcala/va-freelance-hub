@@ -443,18 +443,21 @@ export async function drainPendingTriageInline(
   return stats;
 }
 
-// Gate + log wrapper used at each no-new-items path and the main path. When
-// durable triage is opted in, the Inngest worker owns the queue, so the inline
-// drain stands down to avoid double-processing.
+// Gate + log wrapper used at each no-new-items path and the main path. The inline
+// drain is OFF by default: under the free-tier ~10k-neuron/day cap it competes
+// with new-item triage (higher priority), so recovering the finite pending-triage
+// backlog is opt-in via DRAIN_PENDING_TRIAGE=1 — intended once neuron capacity is
+// raised (e.g. Workers Paid). It also stands down under durable-triage opt-in,
+// where the Inngest worker owns the queue. `enabled` folds both conditions.
 async function maybeDrainPendingTriage(
   db: AppDb,
   aiEnv: any,
   aiBudget: { exhausted: () => boolean },
   observedAt: string,
-  triageViaInngest: boolean,
+  enabled: boolean,
   where: string,
 ): Promise<PendingDrainStats> {
-  if (triageViaInngest) return EMPTY_PENDING_DRAIN;
+  if (!enabled) return EMPTY_PENDING_DRAIN;
   const stats = await drainPendingTriageInline(db, aiEnv, aiBudget, observedAt);
   if (stats.claimed > 0) {
     console.log(
@@ -1418,6 +1421,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const triageViaInngest = shouldTriageViaInngest(
     env as { INNGEST_SIGNING_KEY?: string; TRIAGE_VIA_INNGEST?: string },
   );
+  // Pending-triage backlog recovery is opt-in and OFF by default: under the
+  // free-tier ~10k-neuron/day cap it competes with higher-priority new-item
+  // triage. Enable with DRAIN_PENDING_TRIAGE=1 once neuron capacity allows. It
+  // also stands down under durable-triage opt-in (Inngest owns the queue then).
+  const pendingDrainEnabled =
+    !triageViaInngest &&
+    String((env as { DRAIN_PENDING_TRIAGE?: string })?.DRAIN_PENDING_TRIAGE ?? "") === "1";
 
   // 1. Rate Limiting Check
   const rateLimiter = env?.API_RATE_LIMITER;
@@ -1738,7 +1748,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // below this return it never ran on those ticks. That, not the per-row
       // failure handling, was the dominant reason the unclear backlog sat flat.
       const idleSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
-      await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, triageViaInngest, "idle");
+      await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "idle");
       const outcome = buildNoJobsScrapedOutcome({
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -1846,7 +1856,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // items (so allItems > 0), but after URL dedup none of them are new. The
       // backlog sweep is maintenance and must not be gated on fresh ingest.
       const dedupSweep = await sweepUnclearBacklog(db, aiEnv, observedAt, SWEEP_BUDGET_IDLE_TICK);
-      const dedupDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, triageViaInngest, "dedup");
+      const dedupDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "dedup");
       await recordIngestDiagnostics(db, observedAt, {
         fetchEventFailedBatches: fetchEventLog.failedBatches,
         failedSourceCount: failedSources.length,
@@ -2274,7 +2284,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const unclearSkepticUnavailable = unclearSweep.skepticUnavailable ?? 0;
     // Recover any `pending-triage` backlog inline with leftover AI budget (no-op
     // under durable-triage opt-in, where Inngest owns the queue).
-    const pendingDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, triageViaInngest, "post-ingest");
+    const pendingDrain = await maybeDrainPendingTriage(db, aiEnv, aiBudget, observedAt, pendingDrainEnabled, "post-ingest");
 
     console.log(`[api/cron/scrape] Finished. Processed ${itemsToProcess.length}, accepted ${triagedItems.length}, attempted ${attemptedInsert}, actual DB changes: ${actualChanges}, failed batches: ${insertFailedBatches}, budget-deferred: ${triageBudgetDeferred}, aiCalls: ${aiBudget.calls()}`);
     await recordIngestDiagnostics(db, observedAt, {
