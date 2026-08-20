@@ -2404,9 +2404,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       pendingDrainQuarantined: pendingDrain.quarantined,
       pendingDrainDeferred: pendingDrain.deferred,
       triageViaInngest,
-      // Runtime proof the Gemini free-tier triage fallback is wired (key bound on
-      // the Pages deployment). If false in prod, the key needs a redeploy to bind.
+      // Runtime proof of which AI providers are bound on the live Pages
+      // deployment (secrets bind at deploy time; false in prod → redeploy to bind).
       geminiConfigured: Boolean((env as { GEMINI_API_KEY?: string }).GEMINI_API_KEY),
+      groqConfigured: Boolean((env as { GROQ_API_KEY?: string }).GROQ_API_KEY),
       droppedNoUrl,
       unmatchedPauses,
       filteredOut: itemsToProcess.length - triagedItems.length,
