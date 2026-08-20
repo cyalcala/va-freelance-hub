@@ -1,5 +1,34 @@
 # Implementation Status
 
+## Latest Checkpoint — 2026-08-20 Board-freeze incident (Inngest divert + neuron ceiling)
+
+Full report: `docs/incident-2026-08-20-inngest-divert-freeze.md`. Handoff:
+`docs/HANDOFF.md` (top).
+
+The public board froze at jobs scraped 2026-08-18 14:00Z (~30h, green heartbeat).
+Root cause: `INNGEST_SIGNING_KEY` was still set on the Pages project while the
+Inngest `triage-drain` cron was dead, so `triageViaInngest = Boolean(key)` parked
+every new job as hidden `pending-triage` and never published it. Compounded by the
+chronic Workers-AI 10k-neuron/day ceiling — the only AI consumers are scrape's
+new-item triage + the unclear sweep, and the sweep (~200 neurons/row) at 50/day
+drained the whole budget alone.
+
+Fixes (all on `main`, deployed, tested — 426/0 pass, typecheck 0, guardrails 0, build 0):
+- **`4c7c934` (P1)** — `shouldTriageViaInngest` now requires BOTH `INNGEST_SIGNING_KEY`
+  and `TRIAGE_VIA_INNGEST="1"`; default is inline triage, so a stray key can't
+  silently re-freeze the board. Regression test.
+- **`3d6cd74`/`1d825f7`/`3c6a3cb`** — `drainPendingTriageInline` recovers orphaned
+  pending-triage rows (cheap ladder, budget-bounded); OPT-IN OFF via
+  `DRAIN_PENDING_TRIAGE=1` (free-tier neurons too scarce). 8 tests.
+- **`a349bb6`** — `DAILY_SWEEP_CAP` 50→15 to reserve neurons for fresh jobs; watchdog
+  now alerts on board-freshness stall (>36h) not just heartbeat. 5 tests.
+
+Finding: Inngest CANNOT reduce the neuron cost (same AI binding + account quota) —
+it only solves per-invocation subrequest isolation. Recovery is gated by the
+00:00Z neuron reset; the divert fix is verified holding (0 new parked jobs since
+deploy). Owner levers: Workers Paid (raise cap, then enable the drain) or accept
+the daily-batch cadence. `INNGEST_SIGNING_KEY` is now inert and safe to delete.
+
 ## Latest Checkpoint — 2026-08-18 Apex Debugging & Hardening Audit
 
 Full report: `docs/apex-audit-2026-08-18.md`. Handoff: `docs/HANDOFF.md` (top).
