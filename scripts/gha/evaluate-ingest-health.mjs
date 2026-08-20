@@ -2,6 +2,14 @@ import { readFile } from "node:fs/promises";
 
 const DEFAULT_GRACE_HOURS = 2;
 const DEFAULT_STALE_HOURS = 3;
+// Board-freshness backstop. The heartbeat above only proves the scrape RAN; it
+// stays green during a "silent success" where every new job is filtered/parked
+// and nothing reaches the public board (exactly the 2026-08-18 Inngest-divert
+// freeze, which went unseen for ~30h). This alerts when no new VISIBLE job has
+// been published in this many hours. Sized above the normal daily-batch cadence
+// (the Workers-AI neuron cap means the board often refreshes once/day), so a
+// breach means a missed cycle, not a quiet afternoon. Absent value = skip.
+const DEFAULT_BOARD_STALE_HOURS = 36;
 
 /**
  * Convert the durable ingestion row into one reproducible watchdog verdict.
@@ -13,6 +21,7 @@ export function evaluateIngestHealth({
   now = new Date().toISOString(),
   graceHours = DEFAULT_GRACE_HOURS,
   staleHours = DEFAULT_STALE_HOURS,
+  boardStaleHours = DEFAULT_BOARD_STALE_HOURS,
 }) {
   const evaluatedAt = new Date(now);
   if (!Number.isFinite(evaluatedAt.getTime())) throw new Error("now must be an ISO timestamp");
@@ -51,6 +60,17 @@ export function evaluateIngestHealth({
     reasons.push("heartbeat row has no valid last-attempt age");
   } else if (hoursSinceAttempt >= staleHours) {
     reasons.push(`no scrape run in ${hoursSinceAttempt}h (clock may be stopped)`);
+  }
+
+  // Board-freshness backstop (see DEFAULT_BOARD_STALE_HOURS). Only evaluated when
+  // the query supplied a valid age, so older watchdog data never false-alarms.
+  const rawBoardAge = row.board_stale_hours;
+  const boardAge = Number(rawBoardAge);
+  if (
+    rawBoardAge !== null && rawBoardAge !== undefined && rawBoardAge !== "null" &&
+    Number.isFinite(boardAge) && boardAge >= 0 && boardAge >= boardStaleHours
+  ) {
+    reasons.push(`board frozen: no new visible job in ${boardAge}h (scrape green but publishing nothing)`);
   }
 
   return {

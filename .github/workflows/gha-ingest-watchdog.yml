@@ -54,7 +54,9 @@ jobs:
                      last_attempt_at,
                      last_success_at,
                      last_count,
-                     CAST((julianday('now') - julianday(last_attempt_at)) * 24 AS INT) AS hours_since_attempt
+                     CAST((julianday('now') - julianday(last_attempt_at)) * 24 AS INT) AS hours_since_attempt,
+                     (SELECT CAST((julianday('now') - julianday(MAX(scraped_at))) * 24 AS INT)
+                        FROM opportunities WHERE is_active = 1) AS board_stale_hours
               FROM source_fetch_state
               WHERE source_id = '__ingest_diag__'
               LIMIT 1;
@@ -120,6 +122,7 @@ jobs:
             echo "| Detection evaluated | ${DETECTED_AT} |"
             echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // "never"' ingest-diag.json) |"
             echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // "never"' ingest-diag.json) |"
+            echo "| Newest visible job age | $(jq -r '.[0].results[0].board_stale_hours // "n/a"' ingest-diag.json)h |"
             echo
             echo "Detection run: ${RUN_URL}"
           } > ingest-body.md

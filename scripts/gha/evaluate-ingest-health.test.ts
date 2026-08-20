@@ -60,4 +60,38 @@ describe("evaluateIngestHealth", () => {
       now,
     })).toMatchObject({ status: "healthy", alert: false });
   });
+
+  // Board-freshness backstop: the 2026-08-18 freeze kept a GREEN heartbeat while
+  // the board silently stopped publishing. A clean, recent heartbeat must still
+  // alert when no new visible job has landed for longer than the threshold.
+  test("alerts when the board is frozen despite a healthy heartbeat", () => {
+    expect(evaluateIngestHealth({
+      rows: [{ last_error: null, hours_since_attempt: 1, board_stale_hours: 40 }],
+      workerDeployedAt: "2026-08-12T00:00:00.000Z",
+      now,
+    })).toMatchObject({
+      status: "alert",
+      alert: true,
+      reason: "board frozen: no new visible job in 40h (scrape green but publishing nothing)",
+    });
+  });
+
+  test("stays healthy when the board refreshed within the threshold", () => {
+    expect(evaluateIngestHealth({
+      rows: [{ last_error: null, hours_since_attempt: 1, board_stale_hours: 10 }],
+      workerDeployedAt: "2026-08-12T00:00:00.000Z",
+      now,
+    })).toMatchObject({ status: "healthy", alert: false });
+  });
+
+  test.each([null, undefined, "null"])(
+    "never false-alarms when board age is absent: %s",
+    (board_stale_hours) => {
+      expect(evaluateIngestHealth({
+        rows: [{ last_error: null, hours_since_attempt: 1, board_stale_hours }],
+        workerDeployedAt: "2026-08-12T00:00:00.000Z",
+        now,
+      })).toMatchObject({ status: "healthy", alert: false });
+    },
+  );
 });
