@@ -1,25 +1,23 @@
 # Directory Enrichment — Latest
 
 Date: 2026-08-20
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32330848587
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32389588369
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 10 |
-| Websites set | 9 |
-| Hiring pages set | 1 |
+| Companies processed | 8 |
+| Websites set | 5 |
+| Hiring pages set | 3 |
 | Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #609 APEX TRADE: website=https://remotephjobs.com
-- #585 Rimini Street: website=https://riministreet.com
-- #674 Webflow: website=https://webflow.com
-- #655 Gartner: website=https://gartner.com
-- #549 Proxify AB: website=https://career.proxify.io
-- #623 Kindred: website=https://remote-ph-jobs.com
-- #619 TE Connectivity: website=https://te.com
-- #429 ConnectOS: hiring_page=https://apply.workable.com/connectos
-- #565 CoinMarketCap: website=https://remotephjobs.com
-- #587 Remote Talent Cloud: website=https://remotetalentcloud.com
+- #607 Bright! Tax: website=https://brighttax.com
+- #352 Staff Domain: hiring_page=https://apply.workable.com/staff-domain-inc
+- #555 TELUS Digital: website=https://jobs.telusdigital.com
+- #575 Impact Clients: website=https://highperformancetrain.com
+- #624 Native Camp: website=https://nativecamp.net
+- #518 Ghost: hiring_page=https://boards.greenhouse.io/ghost
+- #349 Sourcefit: hiring_page=https://sourcefit.breezy.hr
+- #678 Pixel One: website=https://pixel-one.com
