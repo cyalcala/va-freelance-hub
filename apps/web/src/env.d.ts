@@ -30,6 +30,15 @@ type ENV = {
   // budget has headroom (e.g. Workers Paid); otherwise it starves new-item
   // triage. See drainPendingTriageInline / maybeDrainPendingTriage in scrape.ts.
   DRAIN_PENDING_TRIAGE?: string;
+  // Free-tier AI fallback (Google Gemini). When set, triageJob classifies via
+  // Gemini once Cloudflare Workers AI hits its 10k-neuron/day cap (error 4006)
+  // instead of failing closed — keeping the board AI-fresh past the neuron
+  // budget. Purely additive: absent = Cloudflare-only, exactly as before. Gemini
+  // calls are charged against the same per-invocation subrequest budget.
+  GEMINI_API_KEY?: string;
+  // Optional model override for the Gemini fallback (default gemini-2.5-flash-lite,
+  // the free-tier model with the largest daily request allowance).
+  GEMINI_MODEL?: string;
 };
 
 type Runtime = import("@astrojs/cloudflare").Runtime<ENV>;

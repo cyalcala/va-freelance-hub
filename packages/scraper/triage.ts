@@ -158,6 +158,81 @@ export function parseModelOverride(override: unknown): string[] {
     .filter(Boolean);
 }
 
+// Coerce a raw parsed model object into a validated TriageResult with safe
+// fallbacks. Shared by the Cloudflare ladder and the Gemini fallback so the two
+// providers can never drift on field validation.
+export function validateTriageResult(parsed: any): TriageResult {
+  return {
+    eligibleForFilipinos: parsed.eligibleForFilipinos,
+    reason: parsed.reason || "AI classified",
+    category: [
+      "admin", "design", "tech", "marketing", "customer-service", "finance", "other",
+    ].includes(parsed.category) ? parsed.category : "other",
+    tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
+    payRange: typeof parsed.payRange === "string" ? parsed.payRange : null,
+    clientTimezone: typeof parsed.clientTimezone === "string" ? parsed.clientTimezone : null,
+    applicationUrl: typeof parsed.applicationUrl === "string" ? parsed.applicationUrl : null,
+    employmentType: ["full-time", "part-time", "contract", "freelance"].includes(parsed.employmentType as any) ? parsed.employmentType : null,
+    experienceLevel: ["entry", "mid", "senior", "any"].includes(parsed.experienceLevel as any) ? parsed.experienceLevel : null,
+    companyName: typeof parsed.companyName === "string" ? parsed.companyName : null,
+  };
+}
+
+// True when a Workers AI error means the shared account allocation is spent
+// (10k-neuron/day cap, error 4006) or the invocation hit Cloudflare's subrequest
+// ceiling — i.e. every other rung will fail identically, so the ladder should
+// stop and fall back rather than burn more subrequests re-confirming it.
+export function isQuotaExhaustionError(err: unknown): boolean {
+  const m = (err instanceof Error ? err.message : String(err)).toLowerCase();
+  return (
+    m.includes("4006") ||
+    m.includes("neuron") ||
+    m.includes("too many subrequests") ||
+    m.includes("capacity") ||
+    m.includes("daily") ||
+    m.includes("quota")
+  );
+}
+
+// Free-tier AI fallback. When Cloudflare Workers AI is exhausted/unavailable and
+// a GEMINI_API_KEY is configured, classify one listing via Google's Gemini free
+// tier (Flash-Lite: ~1k-1.5k req/day, far larger than the neuron budget's
+// ~50-200 triages/day) rather than failing closed. Same prompt, same validated
+// shape as the Cloudflare path. Returns null on any failure so the caller falls
+// through to its normal fail-closed defer.
+export async function triageViaGemini(
+  prompt: string,
+  apiKey: string,
+  model?: unknown,
+): Promise<TriageResult | null> {
+  const geminiModel = (typeof model === "string" && model.trim()) || "gemini-2.5-flash-lite";
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        // Force raw JSON out (no markdown fences) and make the verdict deterministic.
+        generationConfig: { responseMimeType: "application/json", temperature: 0 },
+      }),
+      signal: AbortSignal.timeout(20_000),
+    },
+  );
+  if (!res.ok) {
+    throw new Error(`Gemini HTTP ${res.status}`);
+  }
+  const data: any = await res.json();
+  const text: string = (data?.candidates?.[0]?.content?.parts ?? [])
+    .map((p: any) => (typeof p?.text === "string" ? p.text : ""))
+    .join("")
+    .trim();
+  const parsed = parseLooseJson<any>(text);
+  // FAIL CLOSED: an unclassified job is not an eligible one.
+  if (!parsed || typeof parsed.eligibleForFilipinos !== "boolean") return null;
+  return validateTriageResult(parsed);
+}
+
 /**
  * Intelligently classifies and verifies eligibility of a job listing using
  * Cloudflare Workers AI. Model ladder (L2): llama-3.3-70b (fp8-fast, far
@@ -299,7 +374,13 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       ];
 
   let lastError: Error | null = null;
+  const geminiKey = env?.GEMINI_API_KEY;
+  // Skip the Cloudflare ladder entirely if an earlier listing this run already
+  // proved the neuron budget is spent (4006) — re-confirming it only burns
+  // subrequests. Straight to the Gemini fallback below instead.
+  const skipCloudflare = env?.__cfAiExhausted === true && Boolean(geminiKey);
 
+  if (!skipCloudflare) {
   for (const model of modelsToTry) {
     try {
       const request: Record<string, unknown> = {
@@ -354,33 +435,36 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
         throw new Error("model output missing boolean eligibleForFilipinos");
       }
 
-      // Validate fields and provide safe fallbacks
-      return {
-        eligibleForFilipinos: parsed.eligibleForFilipinos,
-        reason: parsed.reason || "AI classified",
-        category: [
-          "admin",
-          "design",
-          "tech",
-          "marketing",
-          "customer-service",
-          "finance",
-          "other",
-        ].includes(parsed.category)
-          ? parsed.category
-          : "other",
-        tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
-        payRange: typeof parsed.payRange === "string" ? parsed.payRange : null,
-        clientTimezone: typeof parsed.clientTimezone === "string" ? parsed.clientTimezone : null,
-        applicationUrl: typeof parsed.applicationUrl === "string" ? parsed.applicationUrl : null,
-        employmentType: ["full-time", "part-time", "contract", "freelance"].includes(parsed.employmentType as any) ? parsed.employmentType : null,
-        experienceLevel: ["entry", "mid", "senior", "any"].includes(parsed.experienceLevel as any) ? parsed.experienceLevel : null,
-        companyName: typeof parsed.companyName === "string" ? parsed.companyName : null,
-      };
+      // Validate fields and provide safe fallbacks (shared with the Gemini path).
+      return validateTriageResult(parsed);
     } catch (error) {
       console.warn(`[triage] Workers AI model ${model} failed for "${title}":`, error);
       lastError = error as Error;
-      // Continue to the next fallback model
+      // Account-wide quota (4006) / subrequest ceiling: every other rung fails
+      // identically, so stop the ladder and let the Gemini fallback take over.
+      // Remember it on `env` so later listings this run skip the dead ladder.
+      if (isQuotaExhaustionError(error)) {
+        if (env) env.__cfAiExhausted = true;
+        break;
+      }
+      // Otherwise continue to the next fallback model.
+    }
+  }
+  } // end if (!skipCloudflare)
+
+  // Gemini free-tier fallback: Cloudflare AI is exhausted/unavailable this run, so
+  // classify via Gemini instead of failing closed. Charged against the same
+  // per-invocation subrequest budget — chargeAiSubrequest throws once it is spent,
+  // so the 50-subrequest cap still holds and the caller defers the rest. Any
+  // Gemini failure falls through to the fail-closed defer below.
+  if (geminiKey) {
+    try {
+      (env as { chargeAiSubrequest?: () => void })?.chargeAiSubrequest?.();
+      const viaGemini = await triageViaGemini(prompt, geminiKey, env?.GEMINI_MODEL);
+      if (viaGemini) return viaGemini;
+    } catch (error) {
+      console.warn(`[triage] Gemini fallback failed for "${title}":`, error);
+      lastError = error as Error;
     }
   }
 

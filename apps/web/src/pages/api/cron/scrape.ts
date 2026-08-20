@@ -225,19 +225,27 @@ export function withAiSubrequestBudget(
   budget: number,
 ): { env: any; calls: () => number; exhausted: () => boolean } {
   let calls = 0;
+  // Charge one AI subrequest against the shared per-invocation budget. Both the
+  // wrapped env.AI.run (Cloudflare) and the Gemini fallback in triageJob (a raw
+  // fetch the wrapper cannot see) call this, so the combined total stays under
+  // Cloudflare's 50-subrequest cap no matter which provider served the request.
+  const charge = () => {
+    calls += 1;
+    if (calls > budget) throw new AiBudgetExceededError();
+  };
   const rawRun = env?.AI?.run?.bind(env.AI);
-  const budgetedEnv = rawRun
+  const base = rawRun
     ? {
         ...env,
         AI: {
           run: async (model: unknown, request: unknown) => {
-            calls += 1;
-            if (calls > budget) throw new AiBudgetExceededError();
+            charge();
             return rawRun(model, request);
           },
         },
       }
-    : env;
+    : { ...env };
+  const budgetedEnv = { ...base, chargeAiSubrequest: charge };
   return {
     env: budgetedEnv,
     calls: () => calls,
