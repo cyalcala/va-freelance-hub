@@ -292,6 +292,19 @@ const EMPTY_PENDING_DRAIN: PendingDrainStats = {
 // backlog across ticks rather than bursting the shared ~10k-neuron/day budget.
 export const PENDING_DRAIN_PER_TICK = 4;
 
+// Cheap-first model ladder for backlog recovery — same rationale as the unclear
+// sweep (see sweepEnv): the default 70B-first ladder is ~50 neurons/row and,
+// multiplied across a backlog, exhausts the 10k-neuron/day account budget and
+// starves new-item triage. Try the cheap 8B/7B rungs first (loose-JSON parsed),
+// keep 70B as the final rung so a hard row can still resolve. New-item triage is
+// deliberately left on the default 70B-first ladder: low volume, high stakes.
+const DRAIN_MODEL_LADDER = [
+  "@cf/meta/llama-3.1-8b-instruct",
+  "@cf/meta/llama-3-8b-instruct",
+  "@cf/mistral/mistral-7b-instruct-v0.1",
+  "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+].join(",");
+
 export async function drainPendingTriageInline(
   db: AppDb,
   aiEnv: any,
@@ -301,6 +314,9 @@ export async function drainPendingTriageInline(
 ): Promise<PendingDrainStats> {
   const stats: PendingDrainStats = { claimed: 0, published: 0, rejected: 0, quarantined: 0, deferred: 0 };
   if (aiBudget.exhausted()) return stats;
+  // Same budgeted AI binding (so calls still count against the 50-subrequest
+  // ceiling) but pinned to the cheap-first ladder for cost.
+  const drainEnv = { ...aiEnv, AI_MODEL: DRAIN_MODEL_LADDER };
 
   let pending: Array<{
     id: number;
@@ -349,7 +365,7 @@ export async function drainPendingTriageInline(
       decision = await decideTriage(
         { title: item.title, description: item.description, company: item.company, tags: baseTags, locationRaw: item.locationRaw },
         { geoScope: gate.geoScope },
-        aiEnv,
+        drainEnv,
       );
     } catch (err) {
       // Transient (e.g. skeptic call threw) — leave pending, reclaimed next pass.
