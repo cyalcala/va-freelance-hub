@@ -1,5 +1,28 @@
 # Implementation Status
 
+## Latest Checkpoint — 2026-08-20 Free-first AI triage cascade (Gemini→Groq→Cloudflare)
+
+The neuron ceiling that froze the board is now bypassed for free by a multi-provider
+triage cascade in `packages/scraper/triage.ts`. Gemini was activated + verified first
+(board advanced to Aug-20 jobs while CF neurons were exhausted, `geminiConfigured:true`).
+Then the cascade was flipped/generalised (`c17f4e5`):
+
+- **bulk triage:** Gemini Flash-Lite → Groq 70B → Cloudflare ladder (reserve)
+- **critical vote (skeptic):** Gemini 2.5 Flash → Groq 70B → Cloudflare 70B
+
+`triageJob` + `skepticEligibilityCheck` refactored into provider closures + an ordered
+cascade; `AI_PRIMARY=cloudflare` inverts to the old CF-first order. Every provider call
+is charged against the shared per-invocation subrequest budget (50-cap holds); all paths
+fail closed → `aiUnavailable` (defer). Groq (`groqGenerateContent`, OpenAI-compatible)
+absorbs Gemini's rate-limit/quota overflow before the neuron reserve is touched. Fan-out
+concurrency 3→2 to smooth bursts vs free RPM limits. New config: `GROQ_API_KEY`,
+`GROQ_MODEL`, `GEMINI_CRITICAL_MODEL`, `AI_PRIMARY` (env.d.ts).
+
+Verified: 439 tests pass (10 new cascade tests), typecheck 0, guardrails 0, build clean.
+**Owner action:** set `GROQ_API_KEY` on the Pages project + redeploy to bind (Pages binds
+secrets at deploy time). Gemini already live. Chosen over OpenRouter (50/day free) and
+NVIDIA NIM (production-prohibited on free tier).
+
 ## Latest Checkpoint — 2026-08-20 Board-freeze incident (Inngest divert + neuron ceiling)
 
 Full report: `docs/incident-2026-08-20-inngest-divert-freeze.md`. Handoff:
