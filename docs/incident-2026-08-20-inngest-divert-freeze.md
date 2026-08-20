@@ -45,7 +45,27 @@ adds zero neurons. Inngest only solves per-invocation **subrequest** isolation
 re-introduce the exact fragility that caused this freeze. The neuron ceiling
 moves only by (a) reducing AI demand (done: sweep cut) or (b) Workers Paid.
 
-## Current state / what to watch
+## Resolution (superseded the "current state" below same-day)
+
+Two more moves, same session, closed the loop:
+
+1. **Immediate relief** (`e36d303`) — one-time publish of the 58 orphaned
+   `pending-triage` rows the deterministic geo-gate had already verified
+   eligible (`worldwide` / `apac_incl_ph`), without waiting on AI at all.
+2. **The structural fix for the neuron ceiling itself** — a free-first AI
+   provider cascade (Gemini primary, Groq overflow, Cloudflare AI as reserve
+   instead of the primary path). Full writeup, evaluation of OpenRouter/NVIDIA/
+   Gemini/Groq, architecture, and live verification:
+   `docs/ai-fallback-cascade-2026-08-20.md`.
+
+Verified in production: the board's newest visible job advanced from the
+frozen `2026-08-18T14:00Z` past `2026-08-20T14:00Z` **while Cloudflare's
+neurons were still exhausted** — proof the free-provider cascade, not the
+neuron reset, is what's carrying triage now. 7 `pending-triage` rows remain as
+a static (non-growing) leftover from before the divert fix; see the cascade
+doc's "current backlog state" for why that's low-priority.
+
+## Current state / what to watch (as of the original incident, now historical)
 - Board still frozen at Aug-18 at time of writing: **today's neurons are spent**;
   the budget resets 00:00 UTC. After reset, with the divert fixed and the sweep
   capped, fresh-item triage should publish a daily batch again.
@@ -54,8 +74,12 @@ moves only by (a) reducing AI demand (done: sweep cut) or (b) Workers Paid.
 - Watch: newest `is_active=1` `scraped_at` should advance after the reset; the
   new watchdog will file an issue if it stalls >36h again.
 
-## Owner decision (capacity)
-Free-tier 10k neurons/day caps daily fresh-job throughput. Options: reduce AI
+## Owner decision (capacity) — superseded by the cascade doc
+This section assumed the only levers were "reduce AI demand" or "Workers
+Paid" — written before the owner asked whether other free providers could
+help. They can: see `docs/ai-fallback-cascade-2026-08-20.md` for the
+evaluation and the shipped fix. Kept here for the historical record.
+~~Free-tier 10k neurons/day caps daily fresh-job throughput. Options: reduce AI
 demand further (already cut the sweep; could lower fresh-triage quality), or
-**Workers Paid (~$5/mo)** to raise the ceiling and then enable the drain to clear
-the 77 backlog. See [[project_cf-freetier-limits]] / [[project_inngest-pilot]].
+Workers Paid (~$5/mo) to raise the ceiling and then enable the drain to clear
+the 77 backlog.~~ See [[project_cf-freetier-limits]] / [[project_inngest-pilot]].

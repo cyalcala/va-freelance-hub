@@ -2,10 +2,11 @@
 
 ## Latest Checkpoint — 2026-08-20 Free-first AI triage cascade (Gemini→Groq→Cloudflare)
 
+Full writeup: `docs/ai-fallback-cascade-2026-08-20.md`. Handoff:
+`docs/HANDOFF.md` (top).
+
 The neuron ceiling that froze the board is now bypassed for free by a multi-provider
-triage cascade in `packages/scraper/triage.ts`. Gemini was activated + verified first
-(board advanced to Aug-20 jobs while CF neurons were exhausted, `geminiConfigured:true`).
-Then the cascade was flipped/generalised (`c17f4e5`):
+triage cascade in `packages/scraper/triage.ts`:
 
 - **bulk triage:** Gemini Flash-Lite → Groq 70B → Cloudflare ladder (reserve)
 - **critical vote (skeptic):** Gemini 2.5 Flash → Groq 70B → Cloudflare 70B
@@ -16,12 +17,16 @@ is charged against the shared per-invocation subrequest budget (50-cap holds); a
 fail closed → `aiUnavailable` (defer). Groq (`groqGenerateContent`, OpenAI-compatible)
 absorbs Gemini's rate-limit/quota overflow before the neuron reserve is touched. Fan-out
 concurrency 3→2 to smooth bursts vs free RPM limits. New config: `GROQ_API_KEY`,
-`GROQ_MODEL`, `GEMINI_CRITICAL_MODEL`, `AI_PRIMARY` (env.d.ts).
+`GROQ_MODEL`, `GEMINI_CRITICAL_MODEL`, `AI_PRIMARY` (env.d.ts). Chosen over OpenRouter
+(50/day free, too small) and NVIDIA NIM (production-prohibited on its free tier).
 
 Verified: 439 tests pass (10 new cascade tests), typecheck 0, guardrails 0, build clean.
-**Owner action:** set `GROQ_API_KEY` on the Pages project + redeploy to bind (Pages binds
-secrets at deploy time). Gemini already live. Chosen over OpenRouter (50/day free) and
-NVIDIA NIM (production-prohibited on free tier).
+**Both `GEMINI_API_KEY` and `GROQ_API_KEY` are set AND bound** (each followed by the
+redeploy Pages requires to bind a secret — `dfec65f`, `cb88665`). Live production
+evidence: board advanced from frozen-at-Aug-18 past `2026-08-20T14:00Z`
+(`geminiConfigured:true`) while Cloudflare neurons were still exhausted. No owner action
+required; 7 static `pending-triage` leftovers remain (optional `DRAIN_PENDING_TRIAGE=1`
+to clear).
 
 ## Latest Checkpoint — 2026-08-20 Board-freeze incident (Inngest divert + neuron ceiling)
 

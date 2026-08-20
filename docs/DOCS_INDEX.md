@@ -11,13 +11,20 @@ Before any new implementation or deployment, read these documents in this
 order:
 
 1. AGENTS.md
-2. docs/incident-2026-08-20-inngest-divert-freeze.md — **latest**: board froze
-   at Aug-18 (stray `INNGEST_SIGNING_KEY` + dead Inngest drain parked all new jobs
+2. docs/ai-fallback-cascade-2026-08-20.md — **latest**: free-first AI triage
+   cascade (Gemini primary → Groq overflow → Cloudflare reserve) ends the
+   10k-neuron/day freshness ceiling at $0. Evaluated OpenRouter (too small)
+   and NVIDIA NIM (production-prohibited on free tier) and rejected both;
+   Gemini + Groq adopted. Verified live: board advanced past the freeze to
+   fresh Aug-20 jobs while Cloudflare neurons were still exhausted.
+3. docs/incident-2026-08-20-inngest-divert-freeze.md — board froze at Aug-18
+   (stray `INNGEST_SIGNING_KEY` + dead Inngest drain parked all new jobs
    hidden), compounded by the chronic 10k-neuron/day ceiling. Fixed: durable
    triage now needs explicit `TRIAGE_VIA_INNGEST=1` (`4c7c934`); opt-in inline
    pending-triage drain; `DAILY_SWEEP_CAP` 50→15; board-freshness watchdog
-   (`a349bb6`). Inngest can't reduce neurons. Divert fix verified holding.
-3. docs/apex-audit-2026-08-18.md — Apex debugging & hardening audit.
+   (`a349bb6`). Resolution (the neuron ceiling itself) continues in the
+   cascade doc above.
+4. docs/apex-audit-2026-08-18.md — Apex debugging & hardening audit.
    Fixed U1 (directory-enrich `ORDER BY id ASC` starvation, `d6114b2`) and F2
    (directory-audit 60-fetch subrequest-cap breach → budget 40, `6e07bcf`);
    verified the rest of the system robust. Confidence scores + deferred work.

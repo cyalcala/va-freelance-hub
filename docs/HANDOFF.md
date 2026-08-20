@@ -1,6 +1,54 @@
 # Handoff
 
-## Current Checkpoint — 2026-08-20 Board-freeze incident (Inngest divert + neuron ceiling)
+## Current Checkpoint — 2026-08-20 Free-first AI triage cascade (Gemini→Groq→Cloudflare)
+
+Full writeup: `docs/ai-fallback-cascade-2026-08-20.md`. Follows directly from the
+Inngest-divert freeze checkpoint below — read that first for the freeze root
+cause, this one picks up from "board recovers at the next neuron reset."
+
+The owner asked whether OpenRouter/NVIDIA/other free AI providers could raise
+the Workers-AI 10k-neuron/day ceiling (the project's chronic freshness
+constraint — see `docs/incident-2026-08-20-inngest-divert-freeze.md` and
+[[project_cf-freetier-limits]]). Researched current free-tier terms:
+OpenRouter (50/day free, too small), NVIDIA NIM (free tier is dev/test-only,
+production-prohibited — wrong fit for a public board), Gemini (~1-1.5k/day
+Flash-Lite, owner already had a key), Groq (30 RPM / ~66 triages-worth of
+tokens/day on 70B, very fast). Gemini and Groq were adopted; OpenRouter and
+NVIDIA were not.
+
+Shipped to `main`, deployed, tested (439 pass / typecheck 0 / guardrails 0 / build):
+- `5b0ce9b` — initial Cloudflare-first + Gemini-fallback-on-exhaustion.
+- `e36d303` — one-time recovery: published the 58 orphaned `pending-triage`
+  rows the deterministic geo-gate had already verified eligible, without
+  waiting on AI.
+- `dfec65f` — `geminiConfigured` runtime probe + the redeploy that bound
+  `GEMINI_API_KEY` (Cloudflare Pages binds env vars/secrets at DEPLOY time,
+  not set time — a key added after the last deploy needs a fresh deploy).
+- `c17f4e5` — the full cascade: reordered to **Gemini primary → Groq overflow
+  → Cloudflare reserve** for both bulk triage (`triageJob`) and the critical
+  skeptic vote (`skepticEligibilityCheck`, now on the more capable Gemini 2.5
+  Flash / Groq 70B tier); added the Groq client
+  (`groqGenerateContent`/`triageViaGroq`); triage concurrency 3→2 to smooth
+  bursts against free-tier RPM limits; `AI_PRIMARY=cloudflare` inverts back to
+  the original order if ever needed. 10 new tests.
+- `cb88665` — `groqConfigured` probe + the redeploy that bound `GROQ_API_KEY`.
+
+**Verified live in production** while Cloudflare's neurons were still spent
+(`4006`) — so this could only be the free-provider cascade at work: the
+board's newest visible job advanced from frozen-at-`2026-08-18T14:00Z` past
+`2026-08-20T14:00Z`; `geminiConfigured:true`; both keys confirmed bound.
+7 `pending-triage` rows remain as a static pre-fix leftover (not growing) —
+low-priority; see the cascade doc's "current backlog state" for the option to
+clear them now that free-provider capacity exists for it.
+
+**Net effect: the board's freshness is no longer capped by the 10k-neuron/day
+ceiling, at $0.** Owner decisions now open: (1) optionally set
+`DRAIN_PENDING_TRIAGE=1` to clear the 7 static backlog rows; (2)
+`INNGEST_SIGNING_KEY` remains inert/safe to delete; (3) Workers Paid is no
+longer the only lever for daily throughput, though it would still remove the
+Cloudflare-reserve ceiling entirely if ever wanted.
+
+## Previous Checkpoint — 2026-08-20 Board-freeze incident (Inngest divert + neuron ceiling)
 
 Full writeup: `docs/incident-2026-08-20-inngest-divert-freeze.md`.
 
