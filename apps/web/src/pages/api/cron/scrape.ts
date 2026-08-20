@@ -2000,7 +2000,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // which froze the board for ~30h on 2026-08-18/19 when the key was present
     // but the Inngest drain was not running.
     const pendingItems: typeof opportunities.$inferInsert[] = [];
-    const concurrency = 3;
+    // Triage fan-out width. Kept at 2 (not 3) to smooth bursts against the free
+    // AI providers' per-minute rate limits (Gemini 15 RPM / Groq 30 RPM) — a wide
+    // burst just 429s and defers; a narrower one lands more first-try.
+    const concurrency = 2;
     // Jobs whose triage call threw are dropped from this run. Count them so the
     // response (and Hunter annotations) can distinguish "filtered out by
     // policy" from "lost to a triage error" — previously these vanished with

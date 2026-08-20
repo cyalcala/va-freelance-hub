@@ -200,12 +200,22 @@ export function isQuotaExhaustionError(err: unknown): boolean {
 // ~50-200 triages/day) rather than failing closed. Same prompt, same validated
 // shape as the Cloudflare path. Returns null on any failure so the caller falls
 // through to its normal fail-closed defer.
-export async function triageViaGemini(
+// Default Gemini models. Flash-Lite is the high-volume workhorse (~1k-1.5k/day
+// free); Flash is more capable but lower-volume (~250/day), reserved for the
+// critical skeptic vote. Both overridable via GEMINI_MODEL / GEMINI_CRITICAL_MODEL.
+export const GEMINI_BULK_MODEL = "gemini-2.5-flash-lite";
+export const GEMINI_CRITICAL_MODEL = "gemini-2.5-flash";
+
+// Raw Gemini generateContent call → returns the model's text output. Throws on
+// any HTTP error (429 rate-limit, 5xx, quota) so callers can fall back or defer.
+// Shared by triage and the skeptic so the two never drift on request shape.
+export async function geminiGenerateContent(
   prompt: string,
   apiKey: string,
   model?: unknown,
-): Promise<TriageResult | null> {
-  const geminiModel = (typeof model === "string" && model.trim()) || "gemini-2.5-flash-lite";
+  fallbackModel: string = GEMINI_BULK_MODEL,
+): Promise<string> {
+  const geminiModel = (typeof model === "string" && model.trim()) || fallbackModel;
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(geminiModel)}:generateContent`,
     {
@@ -223,12 +233,66 @@ export async function triageViaGemini(
     throw new Error(`Gemini HTTP ${res.status}`);
   }
   const data: any = await res.json();
-  const text: string = (data?.candidates?.[0]?.content?.parts ?? [])
+  return (data?.candidates?.[0]?.content?.parts ?? [])
     .map((p: any) => (typeof p?.text === "string" ? p.text : ""))
     .join("")
     .trim();
+}
+
+export async function triageViaGemini(
+  prompt: string,
+  apiKey: string,
+  model?: unknown,
+): Promise<TriageResult | null> {
+  const text = await geminiGenerateContent(prompt, apiKey, model, GEMINI_BULK_MODEL);
   const parsed = parseLooseJson<any>(text);
   // FAIL CLOSED: an unclassified job is not an eligible one.
+  if (!parsed || typeof parsed.eligibleForFilipinos !== "boolean") return null;
+  return validateTriageResult(parsed);
+}
+
+// Groq is the SECOND free provider — it absorbs Gemini's rate-limit/quota
+// overflow (30 RPM, very fast LPU inference) before the Cloudflare neuron reserve
+// is ever touched. 70B-versatile is capable enough for both bulk and the critical
+// skeptic vote; its ~100k-token/day cap is fine because it only sees overflow.
+export const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
+
+// Raw Groq chat/completions call (OpenAI-compatible) → model text output. Throws
+// on any HTTP error (429/5xx) so callers can fall through to the next provider.
+export async function groqGenerateContent(
+  prompt: string,
+  apiKey: string,
+  model?: unknown,
+): Promise<string> {
+  const groqModel = (typeof model === "string" && model.trim()) || GROQ_DEFAULT_MODEL;
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: groqModel,
+      messages: [
+        { role: "system", content: "You are a precise JSON generator. Output only valid JSON objects." },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0,
+    }),
+    signal: AbortSignal.timeout(20_000),
+  });
+  if (!res.ok) {
+    throw new Error(`Groq HTTP ${res.status}`);
+  }
+  const data: any = await res.json();
+  return String(data?.choices?.[0]?.message?.content ?? "").trim();
+}
+
+export async function triageViaGroq(
+  prompt: string,
+  apiKey: string,
+  model?: unknown,
+): Promise<TriageResult | null> {
+  const text = await groqGenerateContent(prompt, apiKey, model);
+  const parsed = parseLooseJson<any>(text);
   if (!parsed || typeof parsed.eligibleForFilipinos !== "boolean") return null;
   return validateTriageResult(parsed);
 }
@@ -375,106 +439,98 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
 
   let lastError: Error | null = null;
   const geminiKey = env?.GEMINI_API_KEY;
-  // Skip the Cloudflare ladder entirely if an earlier listing this run already
-  // proved the neuron budget is spent (4006) — re-confirming it only burns
-  // subrequests. Straight to the Gemini fallback below instead.
-  const skipCloudflare = env?.__cfAiExhausted === true && Boolean(geminiKey);
+  const groqKey = env?.GROQ_API_KEY;
+  // Provider order. Gemini Flash-Lite is the default PRIMARY when configured (its
+  // ~1k-1.5k/day free tier dwarfs the ~50-200 triages the 10k-neuron/day CF budget
+  // affords); Groq is the second free provider, absorbing Gemini's rate-limit /
+  // quota overflow (30 RPM, fast LPU) BEFORE the Cloudflare neuron reserve is
+  // touched; Cloudflare AI is the reserved BACKUP, fired only when both free
+  // providers fail. Set AI_PRIMARY=cloudflare to invert to the CF-first order.
+  const primaryIsGemini = Boolean(geminiKey) && String(env?.AI_PRIMARY ?? "gemini") !== "cloudflare";
 
-  if (!skipCloudflare) {
-  for (const model of modelsToTry) {
-    try {
-      const request: Record<string, unknown> = {
-        messages: [
-          {
-            role: "system",
-            content: "You are a precise JSON generator. Output only valid JSON objects.",
-          },
-          { role: "user", content: prompt },
-        ],
-      };
-      // JSON mode (L2): grammar-constrained output kills parse failures on
-      // models that support it. Guarded per-model — an unsupported param
-      // would otherwise error EVERY rung of the fallback ladder.
-      if (typeof model === "string" && model.includes("llama-3.3")) {
-        request.response_format = { type: "json_object" };
+  // Cloudflare Workers AI model ladder (reserve). Returns a validated result, or
+  // null if every rung failed (lastError holds why; __cfAiExhausted is set on 4006
+  // so later listings this run skip the dead ladder).
+  const tryCloudflare = async (): Promise<TriageResult | null> => {
+    if (!env?.AI || env?.__cfAiExhausted === true) return null;
+    for (const model of modelsToTry) {
+      try {
+        const request: Record<string, unknown> = {
+          messages: [
+            { role: "system", content: "You are a precise JSON generator. Output only valid JSON objects." },
+            { role: "user", content: prompt },
+          ],
+        };
+        // JSON mode (L2): grammar-constrained output kills parse failures on
+        // models that support it. Guarded per-model.
+        if (typeof model === "string" && model.includes("llama-3.3")) {
+          request.response_format = { type: "json_object" };
+        }
+        const response = await env.AI.run(model, request);
+        let jsonText = "";
+        if (typeof response === "string") jsonText = response;
+        else if (response && response.response) jsonText = String(response.response);
+        else if (response && response.text) jsonText = String(response.text);
+        else jsonText = JSON.stringify(response);
+        jsonText = jsonText.trim();
+        if (jsonText.startsWith("```json")) jsonText = jsonText.slice(7);
+        if (jsonText.startsWith("```")) jsonText = jsonText.slice(3);
+        if (jsonText.endsWith("```")) jsonText = jsonText.slice(0, -3);
+        jsonText = jsonText.trim();
+        const parsed = parseLooseJson<TriageResult>(jsonText);
+        if (!parsed) throw new Error("Model response was not parseable JSON");
+        // FAIL CLOSED: a response missing the eligibility boolean is unclassified.
+        if (typeof parsed.eligibleForFilipinos !== "boolean") {
+          throw new Error("model output missing boolean eligibleForFilipinos");
+        }
+        return validateTriageResult(parsed);
+      } catch (error) {
+        console.warn(`[triage] Workers AI model ${model} failed for "${title}":`, error);
+        lastError = error as Error;
+        if (isQuotaExhaustionError(error)) {
+          if (env) env.__cfAiExhausted = true;
+          break;
+        }
       }
-      const response = await env.AI.run(model, request);
-
-      let jsonText = "";
-      if (typeof response === "string") {
-        jsonText = response;
-      } else if (response && response.response) {
-        jsonText = String(response.response);
-      } else if (response && response.text) {
-        jsonText = String(response.text);
-      } else {
-        jsonText = JSON.stringify(response);
-      }
-
-      jsonText = jsonText.trim();
-      if (jsonText.startsWith("```json")) {
-        jsonText = jsonText.slice(7);
-      }
-      if (jsonText.startsWith("```")) {
-        jsonText = jsonText.slice(3);
-      }
-      if (jsonText.endsWith("```")) {
-        jsonText = jsonText.slice(0, -3);
-      }
-      jsonText = jsonText.trim();
-
-      const parsed = parseLooseJson<TriageResult>(jsonText);
-      if (!parsed) throw new Error("Model response was not parseable JSON");
-
-      // FAIL CLOSED (geo masterplan L2 prefix, 2026-07): a model response
-      // missing the eligibility boolean is an unclassified job, not an
-      // eligible one — throw so the next fallback model gets a chance, and
-      // the final aiUnavailable path fails closed if all models misbehave.
-      // Previously this defaulted to `true` and malformed output published.
-      if (typeof parsed.eligibleForFilipinos !== "boolean") {
-        throw new Error("model output missing boolean eligibleForFilipinos");
-      }
-
-      // Validate fields and provide safe fallbacks (shared with the Gemini path).
-      return validateTriageResult(parsed);
-    } catch (error) {
-      console.warn(`[triage] Workers AI model ${model} failed for "${title}":`, error);
-      lastError = error as Error;
-      // Account-wide quota (4006) / subrequest ceiling: every other rung fails
-      // identically, so stop the ladder and let the Gemini fallback take over.
-      // Remember it on `env` so later listings this run skip the dead ladder.
-      if (isQuotaExhaustionError(error)) {
-        if (env) env.__cfAiExhausted = true;
-        break;
-      }
-      // Otherwise continue to the next fallback model.
     }
-  }
-  } // end if (!skipCloudflare)
+    return null;
+  };
 
-  // Gemini free-tier fallback: Cloudflare AI is exhausted/unavailable this run, so
-  // classify via Gemini instead of failing closed. Charged against the same
-  // per-invocation subrequest budget — chargeAiSubrequest throws once it is spent,
-  // so the 50-subrequest cap still holds and the caller defers the rest. Any
-  // Gemini failure falls through to the fail-closed defer below.
-  if (geminiKey) {
+  // A free HTTP provider (Gemini / Groq), charged against the shared subrequest
+  // budget so the 50-cap holds. Swallows failures to null so the cascade advances.
+  const tryHttp = async (
+    label: string,
+    fn: () => Promise<TriageResult | null>,
+  ): Promise<TriageResult | null> => {
     try {
       (env as { chargeAiSubrequest?: () => void })?.chargeAiSubrequest?.();
-      const viaGemini = await triageViaGemini(prompt, geminiKey, env?.GEMINI_MODEL);
-      if (viaGemini) return viaGemini;
+      return await fn();
     } catch (error) {
-      console.warn(`[triage] Gemini fallback failed for "${title}":`, error);
+      console.warn(`[triage] ${label} failed for "${title}":`, error);
       lastError = error as Error;
+      return null;
     }
+  };
+  const tryGemini = (): Promise<TriageResult | null> =>
+    geminiKey ? tryHttp("Gemini", () => triageViaGemini(prompt, geminiKey, env?.GEMINI_MODEL)) : Promise.resolve(null);
+  const tryGroq = (): Promise<TriageResult | null> =>
+    groqKey ? tryHttp("Groq", () => triageViaGroq(prompt, groqKey, env?.GROQ_MODEL)) : Promise.resolve(null);
+
+  // Cascade: free providers first (Gemini → Groq), Cloudflare reserve last — or
+  // CF first when AI_PRIMARY=cloudflare.
+  const order = primaryIsGemini
+    ? [tryGemini, tryGroq, tryCloudflare]
+    : [tryCloudflare, tryGemini, tryGroq];
+  for (const attempt of order) {
+    const result = await attempt();
+    if (result) return result;
   }
 
-  console.error(`[triage] ALL Workers AI models failed for "${title}". Last error:`, lastError);
-  // Defense-in-depth: callers already skip on aiUnavailable, but the
-  // eligibility flag itself must also never read `true` for an unclassified
-  // job (it previously did — harmless only as long as every caller checked).
+  console.error(`[triage] All AI providers failed for "${title}". Last error:`, lastError);
+  // FAIL CLOSED: an unclassified job must never read eligible=true.
   return {
     eligibleForFilipinos: false,
-    reason: `Workers AI error fallback (all models failed): ${lastError?.message}`,
+    reason: `AI unavailable (all providers failed): ${(lastError as Error | null)?.message ?? "unknown"}`,
     category: "other",
     tags: ["remote"],
     payRange: null,
@@ -508,8 +564,10 @@ export async function skepticEligibilityCheck(
   env?: any,
   context?: TriageContext
 ): Promise<SkepticVerdict> {
-  if (!env || !env.AI) {
-    return { eligible: true, reason: "Skeptic unavailable (no AI binding)", aiUnavailable: true };
+  const geminiKey = env?.GEMINI_API_KEY;
+  const groqKey = env?.GROQ_API_KEY;
+  if (!env?.AI && !geminiKey && !groqKey) {
+    return { eligible: true, reason: "Skeptic unavailable (no AI provider)", aiUnavailable: true };
   }
 
   const prompt = `
@@ -525,33 +583,70 @@ Output ONLY raw JSON: {"eligible": boolean, "reason": "one short sentence"}.
 "eligible" is false if you found a genuine disqualifier, true if you could not refute it.
   `.trim();
 
-  const models = env?.AI_MODEL
-    ? parseModelOverride(env.AI_MODEL)
-    : ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/meta/llama-3.1-8b-instruct"];
+  const primaryIsGemini = Boolean(geminiKey) && String(env?.AI_PRIMARY ?? "gemini") !== "cloudflare";
 
-  for (const model of models) {
+  const parseSkeptic = (raw: string): SkepticVerdict | null => {
+    const jsonText = String(raw).trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
+    const parsed = parseLooseJson<{ eligible?: unknown; reason?: unknown }>(jsonText);
+    if (!parsed || typeof parsed.eligible !== "boolean") return null;
+    return { eligible: parsed.eligible, reason: typeof parsed.reason === "string" ? parsed.reason : "" };
+  };
+
+  // Free HTTP provider vote, charged against the shared subrequest budget.
+  const tryHttpSkeptic = async (label: string, fn: () => Promise<string>): Promise<SkepticVerdict | null> => {
     try {
-      const request: Record<string, unknown> = {
-        messages: [
-          { role: "system", content: "You are a precise JSON generator. Output only valid JSON objects." },
-          { role: "user", content: prompt },
-        ],
-      };
-      if (typeof model === "string" && model.includes("llama-3.3")) {
-        request.response_format = { type: "json_object" };
-      }
-      const response = await env.AI.run(model, request);
-      let jsonText = typeof response === "string" ? response : (response?.response ?? response?.text ?? JSON.stringify(response));
-      jsonText = String(jsonText).trim().replace(/^```json/, "").replace(/^```/, "").replace(/```$/, "").trim();
-      const parsed = parseLooseJson<{ eligible?: unknown; reason?: unknown }>(jsonText);
-      if (!parsed) throw new Error("skeptic response was not parseable JSON");
-      if (typeof parsed.eligible !== "boolean") throw new Error("skeptic output missing boolean eligible");
-      return { eligible: parsed.eligible, reason: typeof parsed.reason === "string" ? parsed.reason : "" };
+      (env as { chargeAiSubrequest?: () => void })?.chargeAiSubrequest?.();
+      return parseSkeptic(await fn());
     } catch (error) {
-      console.warn(`[triage] Skeptic model ${model} failed for "${title}":`, error);
+      console.warn(`[triage] Skeptic ${label} failed for "${title}":`, error);
+      return null;
     }
+  };
+  // Critical vote → the more capable free models: Gemini 2.5 Flash, then Groq 70B.
+  const tryGeminiSkeptic = () =>
+    geminiKey ? tryHttpSkeptic("Gemini", () => geminiGenerateContent(prompt, geminiKey, env?.GEMINI_CRITICAL_MODEL, GEMINI_CRITICAL_MODEL)) : Promise.resolve(null);
+  const tryGroqSkeptic = () =>
+    groqKey ? tryHttpSkeptic("Groq", () => groqGenerateContent(prompt, groqKey, env?.GROQ_MODEL)) : Promise.resolve(null);
+
+  // Cloudflare 70B reserve.
+  const tryCfSkeptic = async (): Promise<SkepticVerdict | null> => {
+    if (!env?.AI || env?.__cfAiExhausted === true) return null;
+    const models = env?.AI_MODEL
+      ? parseModelOverride(env.AI_MODEL)
+      : ["@cf/meta/llama-3.3-70b-instruct-fp8-fast", "@cf/meta/llama-3.1-8b-instruct"];
+    for (const model of models) {
+      try {
+        const request: Record<string, unknown> = {
+          messages: [
+            { role: "system", content: "You are a precise JSON generator. Output only valid JSON objects." },
+            { role: "user", content: prompt },
+          ],
+        };
+        if (typeof model === "string" && model.includes("llama-3.3")) {
+          request.response_format = { type: "json_object" };
+        }
+        const response = await env.AI.run(model, request);
+        const raw = typeof response === "string" ? response : (response?.response ?? response?.text ?? JSON.stringify(response));
+        const verdict = parseSkeptic(raw);
+        if (verdict) return verdict;
+        throw new Error("skeptic output not parseable / missing boolean eligible");
+      } catch (error) {
+        console.warn(`[triage] Skeptic CF model ${model} failed for "${title}":`, error);
+        if (isQuotaExhaustionError(error)) { if (env) env.__cfAiExhausted = true; break; }
+      }
+    }
+    return null;
+  };
+
+  const order = primaryIsGemini
+    ? [tryGeminiSkeptic, tryGroqSkeptic, tryCfSkeptic]
+    : [tryCfSkeptic, tryGeminiSkeptic, tryGroqSkeptic];
+  for (const attempt of order) {
+    const verdict = await attempt();
+    if (verdict) return verdict;
   }
+
   // Never block ingestion on a skeptic outage — the first vote plus the
   // deterministic gate still stand; the caller records single-vote status.
-  return { eligible: true, reason: "Skeptic unavailable (all models failed)", aiUnavailable: true };
+  return { eligible: true, reason: "Skeptic unavailable (all providers failed)", aiUnavailable: true };
 }
