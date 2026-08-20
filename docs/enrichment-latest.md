@@ -1,23 +1,25 @@
 # Directory Enrichment — Latest
 
-Date: 2026-08-19
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32273312293
+Date: 2026-08-20
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32330848587
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 8 |
-| Websites set | 7 |
+| Companies processed | 10 |
+| Websites set | 9 |
 | Hiring pages set | 1 |
 | Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #618 Bright Vision Technologies: website=https://bvteck.com
-- #550 Lemon.io: website=https://lemon.io
-- #626 Bobtail: website=https://remotephjobs.com
-- #660 Maven Clinic: website=https://remotephjobs.com
-- #580 Wonderdog: website=https://wonderdoghealth.com
-- #325 Pearl Talent: hiring_page=https://apply.workable.com/pearltalent
-- #577 DuckDuckGo: website=https://remote.ph
-- #557 Sourcegraph: website=https://remote.ph
+- #609 APEX TRADE: website=https://remotephjobs.com
+- #585 Rimini Street: website=https://riministreet.com
+- #674 Webflow: website=https://webflow.com
+- #655 Gartner: website=https://gartner.com
+- #549 Proxify AB: website=https://career.proxify.io
+- #623 Kindred: website=https://remote-ph-jobs.com
+- #619 TE Connectivity: website=https://te.com
+- #429 ConnectOS: hiring_page=https://apply.workable.com/connectos
+- #565 CoinMarketCap: website=https://remotephjobs.com
+- #587 Remote Talent Cloud: website=https://remotetalentcloud.com
