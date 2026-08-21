@@ -1,5 +1,17 @@
 # Implementation Status
 
+## Latest Checkpoint — 2026-08-21 organized Agencies directory restored
+
+Full report: `docs/directory-organization-restoration-2026-08-21.md`.
+
+Commit `df76adf` is deployed. It restores the six category lanes removed by the
+August pagination hardening, adds Dayshift and Marketplace focused views, groups
+the paginated results, and preserves category state through search/pagination.
+Production run `32474522646` passed. Live proof: six group headings and 48 cards
+on page one; Dayshift returns 14/14 badged entries; zero horizontal overflow and
+zero console errors. Filipino-hiring is verified by the standing visibility
+filter; Filipino ownership remains an explicit data-model gap and is not guessed.
+
 ## Latest Checkpoint — 2026-08-21 10-minute freshness hardening and mobile navigation
 
 Full report: `docs/karpathy-freshness-mobile-gauntlet-2026-08-21.md`.

@@ -1,5 +1,17 @@
 # Handoff
 
+## Current Checkpoint — 2026-08-21 organized Agencies directory restored
+
+Read `docs/directory-organization-restoration-2026-08-21.md`. Commit `df76adf`
+is on `main` and deployed by successful run `32474522646`. The directory keeps
+server pagination but is category-first again: six explained employer lanes,
+Dayshift and Marketplace quick views, grouped result sections, and filter-aware
+search/pagination. Do not flatten it back into a single alphabetical card grid.
+
+The owner also wants Filipino-owned companies discoverable. Do not infer that
+from names. Add a reviewed ownership field plus source evidence and backfill
+before exposing an ownership filter.
+
 ## Current Checkpoint — 2026-08-21 10-minute freshness hardening
 
 Read `docs/karpathy-freshness-mobile-gauntlet-2026-08-21.md` first. Commits
