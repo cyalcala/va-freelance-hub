@@ -15,5 +15,6 @@ test("desktop header navigation and mobile tabs switch at the same breakpoint", 
 
 test("directory cards do not depend on a third-party favicon service", () => {
   expect(directorySource).not.toContain("google.com/s2/favicons");
-  expect(directorySource).toContain("agency.companyName.charAt(0).toUpperCase()");
+  expect(directorySource).toContain("/api/company-logo?domain=");
+  expect(directorySource).toContain("loading=\"lazy\"");
 });

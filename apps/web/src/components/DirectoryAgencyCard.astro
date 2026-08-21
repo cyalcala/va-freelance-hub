@@ -3,6 +3,7 @@ type Props = {
   agency: {
     companyName: string;
     href: string | null;
+    logoDomain: string | null;
     isVerified: boolean;
     isDayshift: boolean;
     isRemote: boolean;
@@ -11,13 +12,29 @@ type Props = {
 };
 
 const { agency } = Astro.props;
+const initial = agency.companyName.charAt(0).toUpperCase();
+const logoUrl = agency.logoDomain
+  ? `/api/company-logo?domain=${encodeURIComponent(agency.logoDomain)}&initial=${encodeURIComponent(initial)}`
+  : null;
 ---
 
 <article class="break-inside-avoid overflow-hidden rounded-xl border border-ink/[0.07] bg-surface transition-colors hover:border-accent/20">
   {agency.href ? (
     <a href={agency.href} target="_blank" rel="noopener noreferrer" class="group flex items-start gap-3.5 p-4 hover:bg-ink/[0.025] transition-colors">
-      <div class="w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
-        <span class="text-sm font-bold text-ink/45" aria-hidden="true">{agency.companyName.charAt(0).toUpperCase()}</span>
+      <div class="relative w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
+        <span class="text-sm font-bold text-ink/45" aria-hidden="true">{initial}</span>
+        {logoUrl && (
+          <img
+            src={logoUrl}
+            alt=""
+            aria-hidden="true"
+            width="24"
+            height="24"
+            loading="lazy"
+            decoding="async"
+            class="absolute inset-0 m-auto h-6 w-6 object-contain"
+          />
+        )}
       </div>
       <div class="min-w-0 flex-1">
         <div class="flex items-center gap-1.5">

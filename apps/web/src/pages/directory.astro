@@ -125,7 +125,11 @@ const resultStart = totalAgencies === 0 ? 0 : offset + 1;
 const resultEnd = Math.min(offset + agencies.length, totalAgencies);
 const cards = agencies.map((agency) => {
   const href = normalizeDirectoryUrl(agency.website);
-  return { ...agency, href };
+  let logoDomain: string | null = null;
+  try {
+    logoDomain = href ? new URL(href).hostname : null;
+  } catch {}
+  return { ...agency, href, logoDomain };
 });
 
 type DirectoryCard = (typeof cards)[number];
