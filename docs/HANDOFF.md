@@ -1,5 +1,22 @@
 # Handoff
 
+## Current Checkpoint — 2026-08-21 10-minute freshness hardening
+
+Read `docs/karpathy-freshness-mobile-gauntlet-2026-08-21.md` first. Commits
+`123aed2`, `a631c2f`, and `a44972e` are deployed. The Worker runs every 10 minutes; free AI
+capacity automatically enables inline pending recovery; every AI-deferred item
+is written as hidden `pending-triage`; and degraded API counters can no longer
+produce a false-success schedule. Gemini, Groq, and Cloudflare failure signatures
+are preserved in `__ingest_diag__`. The Agencies navigation switches once at the
+768 px breakpoint; local monograms replaced the failing external favicon calls.
+Runs `32471235256`, `32471235312`, and `32472691564` passed. The first post-deploy
+heartbeat was clean at `2026-08-21T10:20:39.440Z`, and the final deployed 700 px
+browser check had zero overflow and zero console errors.
+
+Do not restore the old `*/15` clock or make ATS fetch success synonymous with
+candidate durability. Keep source-specific cadence guards and the fail-closed
+response assessor together with the 10-minute Worker schedule.
+
 ## Current Checkpoint — 2026-08-20 Free-first AI triage cascade (Gemini→Groq→Cloudflare)
 
 Full writeup: `docs/ai-fallback-cascade-2026-08-20.md`. Follows directly from the

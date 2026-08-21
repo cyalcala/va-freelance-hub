@@ -1,5 +1,22 @@
 # Implementation Status
 
+## Latest Checkpoint — 2026-08-21 10-minute freshness hardening and mobile navigation
+
+Full report: `docs/karpathy-freshness-mobile-gauntlet-2026-08-21.md`.
+
+Shipped `123aed2`, `a631c2f`, and `a44972e` to `main`. The production clock is now `*/10`,
+AI-deferred ATS candidates are durable `pending-triage` rows, the Worker treats
+all deferred/write/source failure signals as degradation, and Gemini/Groq/
+Cloudflare failure history reaches the durable diagnostic row. Agencies no
+longer renders desktop and bottom navigation together at 640–767 px. Local
+acceptance: 446 core tests plus the focused follow-up passed; final CI reports
+447 tests, 0 failures, and 1,169 assertions. Typecheck, guardrails, build, and
+Worker dry-run all pass.
+GitHub runs `32471235256` (Worker), `32471235312` (CI/Pages), and `32472691564`
+(console-clean directory follow-up) succeeded. The first post-deploy D1 cycle
+completed cleanly at `2026-08-21T10:20:39.440Z`; deployed browser verification
+reported no horizontal overflow and zero console errors.
+
 ## Latest Checkpoint — 2026-08-20 Free-first AI triage cascade (Gemini→Groq→Cloudflare)
 
 Full writeup: `docs/ai-fallback-cascade-2026-08-20.md`. Handoff:

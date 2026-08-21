@@ -1,5 +1,21 @@
 # System Savepoint
 
+### Accepted Production Savepoint — 2026-08-21
+
+Branch: `main`
+Implementation HEAD: `a44972e`
+Repository: `cyalcala/va-freelance-hub`
+
+The 10-minute freshness and responsive Agencies fixes are deployed. Worker run
+`32471235256` and CI/Pages runs `32471235312` and `32472691564` succeeded. Final
+CI acceptance was 447 tests with 0 failures and 1,169 assertions plus strict
+typecheck, production guardrails, Astro build, and Worker deployment dry-run. See
+`docs/karpathy-freshness-mobile-gauntlet-2026-08-21.md` for root-cause and risk
+evidence. The first post-deploy D1 heartbeat was clean at
+`2026-08-21T10:20:39.440Z`; responsive production verification was console-clean.
+This supersedes the older paused-branch savepoint below as the current production
+recovery point.
+
 ### Current Savepoint
 
 Date: 2026-08-10

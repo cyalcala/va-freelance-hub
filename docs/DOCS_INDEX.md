@@ -11,13 +11,19 @@ Before any new implementation or deployment, read these documents in this
 order:
 
 1. AGENTS.md
-2. docs/ai-fallback-cascade-2026-08-20.md — **latest**: free-first AI triage
+2. docs/karpathy-freshness-mobile-gauntlet-2026-08-21.md — **latest**: 10-minute
+   Worker clock, durable AI deferrals, fail-closed schedule assessment, complete
+   provider diagnostics, and the Agencies 768 px navigation fix. Deployed in
+   `123aed2`/`a631c2f`/`a44972e`; Worker and Pages workflows passed, the first
+   post-deploy heartbeat was clean, and responsive production checks were
+   console-clean.
+3. docs/ai-fallback-cascade-2026-08-20.md — free-first AI triage
    cascade (Gemini primary → Groq overflow → Cloudflare reserve) ends the
    10k-neuron/day freshness ceiling at $0. Evaluated OpenRouter (too small)
    and NVIDIA NIM (production-prohibited on free tier) and rejected both;
    Gemini + Groq adopted. Verified live: board advanced past the freeze to
    fresh Aug-20 jobs while Cloudflare neurons were still exhausted.
-3. docs/incident-2026-08-20-inngest-divert-freeze.md — board froze at Aug-18
+4. docs/incident-2026-08-20-inngest-divert-freeze.md — board froze at Aug-18
    (stray `INNGEST_SIGNING_KEY` + dead Inngest drain parked all new jobs
    hidden), compounded by the chronic 10k-neuron/day ceiling. Fixed: durable
    triage now needs explicit `TRIAGE_VIA_INNGEST=1` (`4c7c934`); opt-in inline
