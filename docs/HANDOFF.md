@@ -1,5 +1,15 @@
 # Handoff
 
+## Current Checkpoint — 2026-08-21 agency logos restored
+
+Commit `07f582b` is on `main` and deployed by successful run `32475868471`.
+Agency cards use `/api/company-logo` to restore real favicons without exposing
+the browser to upstream 404s. Keep the fixed upstream, hostname validation,
+three-second timeout, content limits, caching, and SVG initial fallback
+together. Live desktop/mobile proof found zero broken images, overflow, or
+console errors/warnings. Full evidence is in
+`docs/directory-organization-restoration-2026-08-21.md`.
+
 ## Current Checkpoint — 2026-08-21 organized Agencies directory restored
 
 Read `docs/directory-organization-restoration-2026-08-21.md`. Commit `df76adf`
@@ -20,7 +30,8 @@ capacity automatically enables inline pending recovery; every AI-deferred item
 is written as hidden `pending-triage`; and degraded API counters can no longer
 produce a false-success schedule. Gemini, Groq, and Cloudflare failure signatures
 are preserved in `__ingest_diag__`. The Agencies navigation switches once at the
-768 px breakpoint; local monograms replaced the failing external favicon calls.
+768 px breakpoint. Commit `07f582b` subsequently restored logos through the
+same-origin resilient endpoint documented above.
 Runs `32471235256`, `32471235312`, and `32472691564` passed. The first post-deploy
 heartbeat was clean at `2026-08-21T10:20:39.440Z`, and the final deployed 700 px
 browser check had zero overflow and zero console errors.

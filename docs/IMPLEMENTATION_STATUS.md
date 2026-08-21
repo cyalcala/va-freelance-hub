@@ -1,6 +1,16 @@
 # Implementation Status
 
-## Latest Checkpoint — 2026-08-21 organized Agencies directory restored
+## Latest Checkpoint — 2026-08-21 agency logos restored
+
+Commit `07f582b` is deployed by successful run `32475868471`. Agency cards once
+again show real company favicons when available, through a validated and
+cacheable same-origin endpoint; unavailable favicons get a clean SVG initial
+instead of a broken image. Local acceptance: 454 tests, 0 failures, 1,209
+assertions; typecheck, guardrails, and build passed. Live desktop/mobile checks
+rendered 21 viewport-loaded logos with zero broken images, zero horizontal
+overflow, and zero console errors/warnings.
+
+## Previous Checkpoint — 2026-08-21 organized Agencies directory restored
 
 Full report: `docs/directory-organization-restoration-2026-08-21.md`.
 
