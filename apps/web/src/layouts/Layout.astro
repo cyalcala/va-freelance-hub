@@ -58,13 +58,13 @@ const isActive = (base: string) =>
           </span>
         </a>
 
-        <nav class="flex items-center gap-1 sm:gap-2">
+        <nav class="hidden md:flex items-center gap-2">
           <a href="/opportunities"
-             class={`hidden sm:inline-flex items-center px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${isActive('/opportunities') || isActive('/categories') ? 'text-ink bg-ink/[0.06]' : 'text-ink/60 hover:text-ink hover:bg-ink/[0.04]'}`}>
+             class={`inline-flex items-center px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${isActive('/opportunities') || isActive('/categories') ? 'text-ink bg-ink/[0.06]' : 'text-ink/60 hover:text-ink hover:bg-ink/[0.04]'}`}>
             Jobs
           </a>
           <a href="/directory"
-             class={`hidden sm:inline-flex items-center px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${isActive('/directory') ? 'text-ink bg-ink/[0.06]' : 'text-ink/60 hover:text-ink hover:bg-ink/[0.04]'}`}>
+             class={`inline-flex items-center px-3.5 py-2 rounded-full text-sm font-semibold transition-colors ${isActive('/directory') ? 'text-ink bg-ink/[0.06]' : 'text-ink/60 hover:text-ink hover:bg-ink/[0.04]'}`}>
             Agencies
           </a>
           <a href="/opportunities"
