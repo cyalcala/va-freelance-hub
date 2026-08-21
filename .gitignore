@@ -70,6 +70,9 @@ Thumbs.db
 npm-debug.log*
 bun-debug.log*
 
+# Browser verification artifacts
+.playwright-cli/
+
 # Vercel
 .vercel/
 
