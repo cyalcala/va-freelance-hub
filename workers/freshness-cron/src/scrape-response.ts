@@ -3,8 +3,12 @@ type ScrapeResponse = Record<string, unknown>;
 const UNRESOLVED_WORK_FIELDS = [
   "insertFailedBatches",
   "rejectedInsertFailedBatches",
+  "pendingInsertFailedBatches",
   "triageFailures",
   "triageAiUnavailable",
+  "triageBudgetDeferred",
+  "pendingDrainDeferred",
+  "stateWriteFailed",
   "droppedNoUrl",
 ] as const;
 
@@ -41,9 +45,18 @@ export function assessSuccessfulScrapeResponse(body: string): string {
     throw new Error(`scrape endpoint reported an error: ${response.error.slice(0, 300)}`);
   }
 
-  const unresolved = UNRESOLVED_WORK_FIELDS
+  const unresolved: Array<readonly [string, number]> = UNRESOLVED_WORK_FIELDS
     .map((field) => [field, positiveCount(response[field])] as const)
     .filter(([, count]) => count > 0);
+
+  if (Array.isArray(response.failedSources) && response.failedSources.length > 0) {
+    unresolved.push(["failedSources", response.failedSources.length]);
+  }
+  const fetchEventLog = asRecord(response.fetchEventLog);
+  const fetchEventFailedBatches = positiveCount(fetchEventLog?.failedBatches);
+  if (fetchEventFailedBatches > 0) {
+    unresolved.push(["fetchEventFailedBatches", fetchEventFailedBatches]);
+  }
   if (unresolved.length > 0) {
     throw new Error(`scrape endpoint reported incomplete ingestion: ${unresolved.map(([field, count]) => `${field}=${count}`).join(", ")}`);
   }

@@ -9,6 +9,8 @@ export interface TriageResult {
   employmentType: "full-time" | "part-time" | "contract" | "freelance" | null;
   experienceLevel: "entry" | "mid" | "senior" | "any" | null;
   companyName: string | null;
+  /** Safe, bounded provider/error signatures when the entire cascade fails. */
+  providerFailures?: string[];
   // True when no AI model actually classified this job (binding missing or
   // every model failed). Callers must treat such results as UNCLASSIFIED and
   // must not persist them as eligible — previously these failed open and an
@@ -438,6 +440,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       ];
 
   let lastError: Error | null = null;
+  const providerFailures: string[] = [];
   const geminiKey = env?.GEMINI_API_KEY;
   const groqKey = env?.GROQ_API_KEY;
   // Provider order. Gemini Flash-Lite is the default PRIMARY when configured (its
@@ -487,6 +490,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
       } catch (error) {
         console.warn(`[triage] Workers AI model ${model} failed for "${title}":`, error);
         lastError = error as Error;
+        providerFailures.push(`Cloudflare ${model}: ${(error as Error)?.message ?? String(error)}`.slice(0, 180));
         if (isQuotaExhaustionError(error)) {
           if (env) env.__cfAiExhausted = true;
           break;
@@ -504,10 +508,16 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
   ): Promise<TriageResult | null> => {
     try {
       (env as { chargeAiSubrequest?: () => void })?.chargeAiSubrequest?.();
-      return await fn();
+      const result = await fn();
+      if (!result) {
+        lastError = new Error(`${label} returned an invalid response`);
+        providerFailures.push(`${label}: invalid response`);
+      }
+      return result;
     } catch (error) {
       console.warn(`[triage] ${label} failed for "${title}":`, error);
       lastError = error as Error;
+      providerFailures.push(`${label}: ${(error as Error)?.message ?? String(error)}`.slice(0, 180));
       return null;
     }
   };
@@ -527,10 +537,11 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
   }
 
   console.error(`[triage] All AI providers failed for "${title}". Last error:`, lastError);
+  const providerSummary = providerFailures.join(" | ").slice(0, 500);
   // FAIL CLOSED: an unclassified job must never read eligible=true.
   return {
     eligibleForFilipinos: false,
-    reason: `AI unavailable (all providers failed): ${(lastError as Error | null)?.message ?? "unknown"}`,
+    reason: `AI unavailable (all providers failed): ${providerSummary || (lastError as Error | null)?.message || "unknown"}`,
     category: "other",
     tags: ["remote"],
     payRange: null,
@@ -540,6 +551,7 @@ Output ONLY the raw JSON object. Do not wrap in markdown code blocks. Do not wri
     experienceLevel: null,
     companyName: null,
     aiUnavailable: true,
+    providerFailures,
   };
 }
 

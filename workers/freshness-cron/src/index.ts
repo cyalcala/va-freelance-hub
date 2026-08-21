@@ -1,8 +1,8 @@
 // Freshness cron Worker (2026-07). Cloudflare Cron Triggers are free-plan and
 // fire on schedule reliably — unlike GitHub Actions' free cron, which we
 // observed drifting 1.5-3 hours late. This tiny Worker pings the scrape
-// endpoint every 15 minutes so any newly posted job reaches the site well
-// under an hour. The scrape endpoint owns all the real logic (conditional
+// endpoint every 10 minutes so fetch/triage/persist has processing headroom
+// inside the 15-minute freshness target. The scrape endpoint owns all the real logic (conditional
 // fetch, run-lock, triage); this Worker is just a reliable clock.
 //
 // The scrape endpoint is idempotent and holds a run-lock, so it is safe for

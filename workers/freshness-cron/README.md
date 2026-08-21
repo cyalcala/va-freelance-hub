@@ -1,8 +1,9 @@
 # Freshness Cron Worker
 
 A tiny Cloudflare Worker whose only job is a **reliable clock**. Its Cron
-Trigger fires the scrape endpoint every 15 minutes so newly posted jobs reach
-the site in well under an hour.
+Trigger fires the scrape endpoint every 10 minutes. This leaves roughly five
+minutes for fetch, triage, persistence, and public exposure inside the
+15-minute freshness target.
 
 ## Why it exists
 
@@ -39,7 +40,8 @@ evidence rather than a guaranteed sub-three-hour delivery promise.
   disabled, so no public manual route is expected.
 - `npx wrangler tail va-freelance-freshness-cron` streams each cron run.
 - The next `source_fetch_events` rows (via the Medic digest) should show fresh
-  timestamps ~15 min apart instead of GitHub's laggy gaps.
+  clock timestamps ~10 min apart instead of GitHub's laggy gaps. Per-source
+  cadence guards may intentionally skip a fetch on some ticks.
 
 ## Change the cadence
 

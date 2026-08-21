@@ -8,11 +8,11 @@ compatibility_date = "2026-07-01"
 # Workers quota). fetch() is now secret-gated too — defence in depth.
 workers_dev = false
 
-# Free-plan Cron Trigger: fire the scrape endpoint every 15 minutes so newly
-# posted jobs reach the site in well under an hour (GitHub Actions free cron
-# drifts 1.5-3h; this does not).
+# Fire every 10 minutes so the source-available -> public-visible path has five
+# minutes of processing headroom inside the 15-minute freshness target. Source
+# cadence guards still prevent restricted feeds from being fetched this often.
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["*/10 * * * *"]
 
 [vars]
 SCRAPE_URL = "https://remotejobs-ph.pages.dev/api/cron/scrape"

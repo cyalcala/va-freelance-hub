@@ -196,9 +196,9 @@ const D1_INSERT_BATCH_SIZE = 3;
 // surface.
 //
 // This budget caps AI subrequests per invocation instead. When it is consumed,
-// remaining items are deferred via the existing retrySourceIds mechanism and
-// re-fetched on the next 15-minute tick — no data loss, just spreading work
-// across ticks (96/day), which is far more capacity than the ~65 items/day the
+// remaining items are parked as durable `pending-triage` rows for later ticks —
+// no data loss and no dependence on the source being fetched again. At 144
+// ticks/day this provides far more capacity than the ~65 items/day the
 // site actually ingests. The value is sized against the measured 50/subrequest
 // ceiling with headroom for the source-fetch phase: ~20 AI calls + ~20 fetch
 // subrequests stays under the cap even on a busy tick, and when a model fails
@@ -268,6 +268,40 @@ export function shouldTriageViaInngest(
   env: { INNGEST_SIGNING_KEY?: string; TRIAGE_VIA_INNGEST?: string } | null | undefined,
 ): boolean {
   return Boolean(env?.INNGEST_SIGNING_KEY) && String(env?.TRIAGE_VIA_INNGEST ?? "") === "1";
+}
+
+export function shouldDrainPendingTriage(
+  env: { DRAIN_PENDING_TRIAGE?: string; GEMINI_API_KEY?: string; GROQ_API_KEY?: string } | null | undefined,
+  triageViaInngest: boolean,
+): boolean {
+  if (triageViaInngest) return false;
+  return String(env?.DRAIN_PENDING_TRIAGE ?? "") === "1"
+    || Boolean(env?.GEMINI_API_KEY)
+    || Boolean(env?.GROQ_API_KEY);
+}
+
+export async function buildPendingTriageItem(
+  item: NewOpportunity,
+  gate: ReturnType<typeof geoGate>,
+  observedAt: string,
+  reason: string,
+): Promise<NewOpportunity> {
+  const cleanDesc = (item.description || "").slice(0, 1500);
+  return {
+    ...item,
+    isActive: false,
+    inactiveReason: "pending-triage",
+    geoScope: gate.geoScope,
+    phEligibility: "unclear",
+    geoEvidence: `Pending durable triage: ${reason.slice(0, 160)}`,
+    geoCheckedAt: observedAt,
+    descriptionHash: await sha256Hex(item.title + cleanDesc),
+    applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+    postedAt: normalizeUtcIso(item.postedAt),
+    scrapedAt: observedAt,
+    lastSeenInFeedAt: observedAt,
+    updatedAt: observedAt,
+  };
 }
 
 // ── Inline pending-triage drain ──────────────────────────────────────────────
@@ -1479,13 +1513,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const triageViaInngest = shouldTriageViaInngest(
     env as { INNGEST_SIGNING_KEY?: string; TRIAGE_VIA_INNGEST?: string },
   );
-  // Pending-triage backlog recovery is opt-in and OFF by default: under the
-  // free-tier ~10k-neuron/day cap it competes with higher-priority new-item
-  // triage. Enable with DRAIN_PENDING_TRIAGE=1 once neuron capacity allows. It
-  // also stands down under durable-triage opt-in (Inngest owns the queue then).
-  const pendingDrainEnabled =
-    !triageViaInngest &&
-    String((env as { DRAIN_PENDING_TRIAGE?: string })?.DRAIN_PENDING_TRIAGE ?? "") === "1";
+  // Reuse the inline durable queue whenever a free HTTP provider is configured.
+  // Fresh-item triage still runs first; the drain spends only leftover budget.
+  // CF-only deployments retain the explicit DRAIN_PENDING_TRIAGE opt-in because
+  // their 10k-neuron/day allocation is too scarce for automatic backlog work.
+  const pendingDrainEnabled = shouldDrainPendingTriage(env, triageViaInngest);
 
   // 1. Rate Limiting Check
   const rateLimiter = env?.API_RATE_LIMITER;
@@ -2015,6 +2047,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // these failed open as eligible/other and an AI outage silently filled
     // the board with unfiltered listings.
     let triageAiUnavailable = 0;
+    const triageProviderFailures = new Set<string>();
     // Deterministic geo-gate rejections (geo masterplan L1): counted
     // separately from AI rejections so the response shows how much the gate
     // catches — and how many Workers AI calls it saves.
@@ -2081,22 +2114,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // the whole scrape invocation stays trivially under the 50-subrequest cap.
     if (triageViaInngest) {
       for (const { item, gate } of gatePassedItems) {
-        const cleanDesc = (item.description || "").slice(0, 1500);
-        pendingItems.push({
-          ...item,
-          isActive: false,
-          inactiveReason: "pending-triage",
-          geoScope: gate.geoScope,
-          phEligibility: "unclear",
-          geoEvidence: `Queued for Inngest durable triage (gate: ${gate.geoScope})`,
-          geoCheckedAt: observedAt,
-          descriptionHash: await sha256Hex(item.title + cleanDesc),
-          applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
-          postedAt: normalizeUtcIso(item.postedAt),
-          scrapedAt: observedAt,
-          lastSeenInFeedAt: observedAt,
-          updatedAt: observedAt,
-        });
+        pendingItems.push(await buildPendingTriageItem(
+          item,
+          gate,
+          observedAt,
+          `queued for Inngest (gate: ${gate.geoScope})`,
+        ));
       }
     } else {
     for (let i = 0; i < gatePassedItems.length; i += concurrency) {
@@ -2105,7 +2128,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       // that would fail with "Too many subrequests" and fail closed anyway.
       if (aiBudget.exhausted()) {
         const deferred = gatePassedItems.slice(i);
-        markItemsForRetry(deferred.map(({ item }) => item));
+        for (const { item, gate } of deferred) {
+          pendingItems.push(await buildPendingTriageItem(item, gate, observedAt, "AI subrequest budget exhausted"));
+        }
         triageBudgetDeferred += deferred.length;
         console.warn(`[api/cron/scrape] AI subrequest budget exhausted; deferring ${deferred.length} item(s) to the next run.`);
         break;
@@ -2142,14 +2167,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       for (const { item, gate, triage, skeptic } of results) {
         if (!triage) {
-          markItemsForRetry([item]);
+          pendingItems.push(await buildPendingTriageItem(item, gate, observedAt, "triage threw before a verdict"));
           continue;
         }
 
         if (triage.aiUnavailable) {
           triageAiUnavailable += 1;
-          console.warn(`[api/cron/scrape] AI unavailable for "${item.title}"; deferring to next run (fail closed).`);
-          markItemsForRetry([item]);
+          for (const failure of triage.providerFailures ?? []) {
+            triageProviderFailures.add(failure);
+          }
+          console.warn(`[api/cron/scrape] AI unavailable for "${item.title}"; persisting for durable retry (fail closed).`);
+          pendingItems.push(await buildPendingTriageItem(item, gate, observedAt, triage.reason));
           continue;
         }
 
@@ -2263,6 +2291,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
           actualChanges += d1Changes(res);
         } else {
+          insertFailedBatches += 1;
           markItemsForRetry(batch);
           insertErrors.push({
             batchStart: i,
@@ -2294,6 +2323,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
           rejectedPersisted += d1Changes(res);
         } else {
+          rejectedInsertFailedBatches += 1;
           markItemsForRetry(batch);
           console.warn(`[api/cron/scrape] Rejected-item insert metadata missing (index ${i}); clearing conditional validators for retry.`);
         }
@@ -2307,10 +2337,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.log(`[api/cron/scrape] Persisted ${rejectedPersisted}/${rejectedItems.length} triage-rejected items as inactive rows (${rejectedInsertFailedBatches} failed batches).`);
     }
 
-    // 6b-inngest. Persist gate-passed listings queued for durable Inngest
-    // triage as hidden `pending-triage` rows (is_active=0 → never on the board
-    // until the worker classifies them). Same fail-soft accounting as above;
-    // empty when triageViaInngest is off, so this is a no-op on the inline path.
+    // 6b. Persist gate-passed listings that still need a durable AI verdict.
+    // This covers both deliberate Inngest routing and inline provider/budget
+    // deferrals, so ATS cadence guards cannot erase unresolved candidates.
     let pendingPersisted = 0;
     let pendingInsertFailedBatches = 0;
     for (let i = 0; i < pendingItems.length; i += D1_INSERT_BATCH_SIZE) {
@@ -2320,7 +2349,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
           pendingPersisted += d1Changes(res);
         } else {
+          pendingInsertFailedBatches += 1;
           markItemsForRetry(batch);
+          console.warn(`[api/cron/scrape] Pending-triage insert metadata missing (index ${i}); clearing conditional validators for retry.`);
         }
       } catch (err) {
         pendingInsertFailedBatches += 1;
@@ -2329,7 +2360,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
     if (pendingItems.length > 0) {
-      console.log(`[api/cron/scrape] Queued ${pendingPersisted}/${pendingItems.length} listing(s) for Inngest durable triage (${pendingInsertFailedBatches} failed batches).`);
+      console.log(`[api/cron/scrape] Persisted ${pendingPersisted}/${pendingItems.length} listing(s) for durable triage (${pendingInsertFailedBatches} failed batches).`);
     }
 
     // 6c. Unclear-backlog convergence — see sweepUnclearBacklog(). Also invoked
@@ -2363,9 +2394,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       insertFailedBatches,
       insertErrorCount: insertErrors.length,
       rejectedInsertFailedBatches,
+      pendingInsertFailedBatches,
       fetchEventFailedBatches: fetchEventLog.failedBatches,
       triageFailures,
       triageAiUnavailable,
+      providerFailureSamples: [...triageProviderFailures],
       triageBudgetDeferred,
       failedSourceCount: failedSources.length,
       droppedNoUrl,
@@ -2380,6 +2413,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       insertErrors,
       triageFailures,
       triageAiUnavailable,
+      triageProviderFailures: [...triageProviderFailures],
       triageBudgetDeferred,
       aiSubrequestCalls: aiBudget.calls(),
       aiSubrequestBudget: AI_SUBREQUEST_BUDGET_PER_RUN,

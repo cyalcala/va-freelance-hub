@@ -186,6 +186,34 @@ describe("triageJob provider cascade", () => {
     try {
       const r = await triageJob("X", "Remote, open worldwide.", env);
       expect(r.aiUnavailable).toBe(true);
+      expect(r.providerFailures).toEqual([
+        "Gemini: Gemini HTTP 500",
+        "Groq: Groq HTTP 500",
+        "Cloudflare @cf/meta/llama-3.3-70b-instruct-fp8-fast: 4006 neurons",
+      ]);
+      expect(r.reason).toContain("Gemini: Gemini HTTP 500");
+      expect(r.reason).toContain("Groq: Groq HTTP 500");
+      expect(r.reason).toContain("Cloudflare");
+    } finally {
+      restore();
+    }
+  });
+
+  test("records malformed provider output before falling through", async () => {
+    const restore = mockFetchByHost({
+      "generativelanguage.googleapis.com": { text: JSON.stringify({ reason: "no verdict" }) },
+      "api.groq.com": { ok: false, status: 429 },
+    });
+    const env: any = {
+      AI: { run: async () => { throw new Error("4006 neurons"); } },
+      GEMINI_API_KEY: "gk",
+      GROQ_API_KEY: "qk",
+      chargeAiSubrequest: () => {},
+    };
+    try {
+      const r = await triageJob("X", "Remote, open worldwide.", env);
+      expect(r.providerFailures?.[0]).toBe("Gemini: invalid response");
+      expect(r.providerFailures?.[1]).toBe("Groq: Groq HTTP 429");
     } finally {
       restore();
     }

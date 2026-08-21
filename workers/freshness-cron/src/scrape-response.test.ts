@@ -30,6 +30,36 @@ test("rejects HTTP-200 scrape results with unresolved ingestion work", () => {
     actualChanges: 0,
     droppedNoUrl: 3,
   }))).toThrow("droppedNoUrl=3");
+
+  expect(() => assessSuccessfulScrapeResponse(JSON.stringify({
+    inserted: 0,
+    actualChanges: 0,
+    triageBudgetDeferred: 34,
+  }))).toThrow("triageBudgetDeferred=34");
+
+  expect(() => assessSuccessfulScrapeResponse(JSON.stringify({
+    inserted: 0,
+    actualChanges: 0,
+    pendingInsertFailedBatches: 1,
+  }))).toThrow("pendingInsertFailedBatches=1");
+
+  expect(() => assessSuccessfulScrapeResponse(JSON.stringify({
+    inserted: 0,
+    actualChanges: 0,
+    stateWriteFailed: 1,
+  }))).toThrow("stateWriteFailed=1");
+
+  expect(() => assessSuccessfulScrapeResponse(JSON.stringify({
+    inserted: 0,
+    actualChanges: 0,
+    failedSources: ["Example RSS: HTTP 503"],
+  }))).toThrow("failedSources=1");
+
+  expect(() => assessSuccessfulScrapeResponse(JSON.stringify({
+    inserted: 0,
+    actualChanges: 0,
+    fetchEventLog: { failedBatches: 1 },
+  }))).toThrow("fetchEventFailedBatches=1");
 });
 
 test("rejects malformed or error-shaped HTTP-200 bodies", () => {

@@ -42,10 +42,14 @@ export type RunDiagnosticsInput = {
   triageFailures?: number;
   /** Listings whose verdict was withheld because Workers AI was unreachable. */
   triageAiUnavailable?: number;
+  /** Safe provider/status signatures collected from all-provider failures. */
+  providerFailureSamples?: readonly string[];
   /** Listings deferred because the per-invocation AI subrequest budget was hit. */
   triageBudgetDeferred?: number;
   /** Batches that threw while persisting triage-rejected rows. */
   rejectedInsertFailedBatches?: number;
+  /** Batches that threw while durably parking unresolved triage rows. */
+  pendingInsertFailedBatches?: number;
   /** Failed `source_fetch_events` insert batches (the S-1 regression class). */
   fetchEventFailedBatches?: number;
   /** Sources whose fetch threw this run. */
@@ -96,6 +100,11 @@ export function summarizeRunDiagnostics(input: RunDiagnosticsInput): RunDiagnost
     signals.push(`rejectedInsertFailedBatches=${rejectedInsertFailedBatches}`);
   }
 
+  const pendingInsertFailedBatches = count(input.pendingInsertFailedBatches);
+  if (pendingInsertFailedBatches > 0) {
+    signals.push(`pendingInsertFailedBatches=${pendingInsertFailedBatches}`);
+  }
+
   // The S-1 regression class: when this logging fails, source health history
   // stops accumulating and every downstream detector goes blind.
   const fetchEventFailedBatches = count(input.fetchEventFailedBatches);
@@ -111,6 +120,14 @@ export function summarizeRunDiagnostics(input: RunDiagnosticsInput): RunDiagnost
   const triageAiUnavailable = count(input.triageAiUnavailable);
   if (triageAiUnavailable > 0) {
     signals.push(`triageAiUnavailable=${triageAiUnavailable}`);
+  }
+
+  const providerFailureSamples = Array.from(new Set(input.providerFailureSamples ?? []))
+    .map((sample) => sample.replace(/\s+/g, " ").trim().slice(0, 180))
+    .filter(Boolean)
+    .slice(0, 6);
+  if (providerFailureSamples.length > 0) {
+    signals.push(`aiProviders=${providerFailureSamples.join("|")}`);
   }
 
   const triageBudgetDeferred = count(input.triageBudgetDeferred);

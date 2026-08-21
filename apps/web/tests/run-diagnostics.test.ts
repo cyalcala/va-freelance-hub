@@ -38,6 +38,12 @@ describe("summarizeRunDiagnostics", () => {
     expect(result.summary).toBe("insertFailedBatches=3");
   });
 
+  test("failed durable-pending inserts are reported", () => {
+    const result = summarizeRunDiagnostics({ pendingInsertFailedBatches: 2 });
+    expect(result.degraded).toBe(true);
+    expect(result.summary).toBe("pendingInsertFailedBatches=2");
+  });
+
   test("failed fetch-event logging is reported (the S-1 regression class)", () => {
     const result = summarizeRunDiagnostics({ fetchEventFailedBatches: 2 });
 
@@ -60,6 +66,20 @@ describe("summarizeRunDiagnostics", () => {
     expect(result.signalCount).toBe(2);
     expect(result.summary).toContain("triageFailures=4");
     expect(result.summary).toContain("triageAiUnavailable=7");
+  });
+
+  test("provider failure signatures are durable without secret or response bodies", () => {
+    const result = summarizeRunDiagnostics({
+      triageAiUnavailable: 2,
+      providerFailureSamples: [
+        "Gemini: Gemini HTTP 429",
+        "Groq: Groq HTTP 500",
+        "Gemini: Gemini HTTP 429",
+      ],
+    });
+
+    expect(result.summary).toContain("aiProviders=Gemini: Gemini HTTP 429|Groq: Groq HTTP 500");
+    expect(result.signalCount).toBe(2);
   });
 
   test("budget-deferred triage is a distinct, surfaced signal", () => {

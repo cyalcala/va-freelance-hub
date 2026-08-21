@@ -29,6 +29,8 @@ type ENV = {
   // spends the scarce daily Workers-AI neuron budget. Enable ONLY once that
   // budget has headroom (e.g. Workers Paid); otherwise it starves new-item
   // triage. See drainPendingTriageInline / maybeDrainPendingTriage in scrape.ts.
+  // Gemini/Groq configuration enables the drain automatically; this remains an
+  // explicit override for Cloudflare-only deployments.
   DRAIN_PENDING_TRIAGE?: string;
   // ── AI triage providers: free-first cascade (2026-08-20) ──────────────────
   // Default order: Gemini (free, primary) → Groq (free, overflow) → Cloudflare

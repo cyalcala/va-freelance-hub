@@ -138,7 +138,7 @@ jobs:
             exit 0
           fi
 
-          # 12 missed 15-minute ticks. Long enough to ride out a transient
+          # 18 missed 10-minute ticks. Long enough to ride out a transient
           # Cloudflare incident, short enough to catch a dead clock same-day.
           STALE_HOURS=3
           REASONS=""
