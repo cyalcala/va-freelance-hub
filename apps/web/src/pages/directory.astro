@@ -120,9 +120,7 @@ const resultStart = totalAgencies === 0 ? 0 : offset + 1;
 const resultEnd = Math.min(offset + agencies.length, totalAgencies);
 const cards = agencies.map((agency) => {
   const href = normalizeDirectoryUrl(agency.website);
-  let hostname = '';
-  try { hostname = href ? new URL(href).hostname : ''; } catch {}
-  return { ...agency, href, hostname };
+  return { ...agency, href };
 });
 ---
 
@@ -181,11 +179,7 @@ const cards = agencies.map((agency) => {
             {agency.href ? (
               <a href={agency.href} target="_blank" rel="noopener noreferrer" class="group flex items-start gap-3.5 p-4 hover:bg-ink/[0.025] transition-colors">
                 <div class="w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
-                  {agency.hostname ? (
-                    <img src={`https://www.google.com/s2/favicons?domain=${agency.hostname}&sz=64`} alt="" aria-hidden="true" width="20" height="20" loading="lazy" decoding="async" class="w-5 h-5 object-contain" />
-                  ) : (
-                    <svg class="w-4 h-4 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>
-                  )}
+                  <span class="text-sm font-bold text-ink/45" aria-hidden="true">{agency.companyName.charAt(0).toUpperCase()}</span>
                 </div>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5">
