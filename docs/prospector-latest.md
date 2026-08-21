@@ -1,12 +1,12 @@
 # Prospector Latest
 
-Date: 2026-08-20
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32406342551
+Date: 2026-08-21
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32438161310
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 5 |
-| Auto-added this run | 1 |
+| Candidates considered | 4 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 3 |
 | Rejected for quality | 1 |
@@ -15,4 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32406342
 
 ## Auto-added companies
 
-- 6sense
+- (none this run)
