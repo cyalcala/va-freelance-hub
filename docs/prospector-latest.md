@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-08-21
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32438161310
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32457333982
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 4 |
-| Auto-added this run | 0 |
+| Candidates considered | 5 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 3 |
 | Rejected for quality | 1 |
@@ -15,4 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32438161
 
 ## Auto-added companies
 
-- (none this run)
+- TrainBrainSpace
