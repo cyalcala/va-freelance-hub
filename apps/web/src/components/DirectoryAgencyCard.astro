@@ -1,0 +1,41 @@
+---
+type Props = {
+  agency: {
+    companyName: string;
+    href: string | null;
+    isVerified: boolean;
+    isDayshift: boolean;
+    isRemote: boolean;
+    isMarketplace: boolean;
+  };
+};
+
+const { agency } = Astro.props;
+---
+
+<article class="break-inside-avoid overflow-hidden rounded-xl border border-ink/[0.07] bg-surface transition-colors hover:border-accent/20">
+  {agency.href ? (
+    <a href={agency.href} target="_blank" rel="noopener noreferrer" class="group flex items-start gap-3.5 p-4 hover:bg-ink/[0.025] transition-colors">
+      <div class="w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
+        <span class="text-sm font-bold text-ink/45" aria-hidden="true">{agency.companyName.charAt(0).toUpperCase()}</span>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-1.5">
+          <h3 class="truncate text-[15px] font-semibold text-ink transition-colors group-hover:text-accent">{agency.companyName}</h3>
+          {agency.isVerified && <span class="shrink-0 text-blue-500" aria-label="Verified company">✓</span>}
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-1.5">
+          {agency.isDayshift && <span class="rounded-md bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">Dayshift</span>}
+          {agency.isRemote && <span class="rounded-md bg-ink/[0.05] px-2 py-0.5 text-[10px] font-semibold text-ink/55">Remote</span>}
+          {agency.isMarketplace && <span class="rounded-md bg-violet-500/[0.08] px-2 py-0.5 text-[10px] font-semibold text-violet-700">Marketplace</span>}
+        </div>
+      </div>
+      <svg class="mt-1 h-4 w-4 shrink-0 text-ink/25 transition-colors group-hover:text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg>
+    </a>
+  ) : (
+    <div class="flex items-start gap-3.5 p-4">
+      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-ink/[0.08] bg-parchment"><svg class="h-4 w-4 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
+      <div class="min-w-0 flex-1"><h3 class="truncate text-[15px] font-semibold text-ink">{agency.companyName}</h3><p class="mt-1 text-xs text-ink/45">Website unavailable</p></div>
+    </div>
+  )}
+</article>

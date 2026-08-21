@@ -4,7 +4,7 @@ const layoutSource = await Bun.file(
   new URL("../src/layouts/Layout.astro", import.meta.url),
 ).text();
 const directorySource = await Bun.file(
-  new URL("../src/pages/directory.astro", import.meta.url),
+  new URL("../src/components/DirectoryAgencyCard.astro", import.meta.url),
 ).text();
 
 test("desktop header navigation and mobile tabs switch at the same breakpoint", () => {

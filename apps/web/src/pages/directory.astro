@@ -1,11 +1,20 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import DirectoryAgencyCard from '@/components/DirectoryAgencyCard.astro';
+import DirectoryCategoryNav from '@/components/DirectoryCategoryNav.astro';
 import { getDb, vaDirectory } from '@va-hub/db';
-import { and, asc, count, sql, type SQL } from 'drizzle-orm';
+import { and, asc, count, eq, sql, type SQL } from 'drizzle-orm';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { escapeSqlLike, parseJobBoardRequest } from '@/lib/public-query';
 import { directoryVisibilityFilters } from '@/lib/directory-visibility';
+import {
+  DIRECTORY_CATEGORY_INFO,
+  DIRECTORY_NICHES,
+  isDirectoryNiche,
+  parseDirectoryCategory,
+  type DirectoryCategory,
+} from '@/lib/directory-categories';
 import { sanitizeSourceUrl } from '@va-hub/scraper';
 
 export const prerender = false;
@@ -23,6 +32,12 @@ if (!parsedRequest.ok) {
 }
 
 const { query, page: currentPage } = parsedRequest;
+const rawCategory = Astro.url.searchParams.get('category');
+const selectedCategory = parseDirectoryCategory(rawCategory);
+if (rawCategory && !selectedCategory) {
+  Astro.response.headers.set('Cache-Control', 'no-store');
+  return new Response('Unknown directory category.', { status: 400 });
+}
 const offset = (currentPage - 1) * DIRECTORY_PAGE_SIZE;
 
 type DirectoryAgency = {
@@ -36,24 +51,6 @@ type DirectoryAgency = {
   isMarketplace: boolean;
 };
 
-const NICHE_LABELS: Record<string, string> = {
-  'australian-dayshift': 'Australian & dayshift VA',
-  'global-va': 'Global VA & outsourcing',
-  bpo: 'BPO & professional services',
-  'job-boards': 'Job boards & resources',
-  ecommerce: 'E-commerce & marketing',
-  tech: 'Technology & specialized',
-};
-
-const NICHE_DOTS: Record<string, string> = {
-  'australian-dayshift': 'bg-accent',
-  'global-va': 'bg-emerald-500',
-  bpo: 'bg-blue-500',
-  'job-boards': 'bg-violet-500',
-  ecommerce: 'bg-orange-500',
-  tech: 'bg-cyan-500',
-};
-
 function normalizeDirectoryUrl(raw: string | null): string | null {
   if (!raw) return null;
   return sanitizeSourceUrl(raw) ?? sanitizeSourceUrl(`https://${raw.trim().replace(/^\/\//, '')}`);
@@ -62,6 +59,7 @@ function normalizeDirectoryUrl(raw: string | null): string | null {
 function buildPageUrl(page: number) {
   const params = new URLSearchParams();
   if (query) params.set('q', query);
+  if (selectedCategory) params.set('category', selectedCategory);
   if (page > 1) params.set('page', String(page));
   const qs = params.toString();
   return qs ? `/directory?${qs}` : '/directory';
@@ -75,6 +73,13 @@ let pageOutOfRange = false;
 try {
   const db = getDb(Astro.locals.runtime.env);
   const filters: SQL[] = [directoryVisibilityFilters()];
+  if (selectedCategory === 'dayshift') {
+    filters.push(eq(vaDirectory.isDayshift, true));
+  } else if (selectedCategory === 'marketplaces') {
+    filters.push(eq(vaDirectory.isMarketplace, true));
+  } else if (selectedCategory && isDirectoryNiche(selectedCategory)) {
+    filters.push(eq(vaDirectory.niche, selectedCategory));
+  }
   if (query) {
     filters.push(sql`lower(${vaDirectory.companyName}) LIKE ${`%${escapeSqlLike(query.toLowerCase())}%`} ESCAPE '\\'`);
   }
@@ -122,6 +127,32 @@ const cards = agencies.map((agency) => {
   const href = normalizeDirectoryUrl(agency.website);
   return { ...agency, href };
 });
+
+type DirectoryCard = (typeof cards)[number];
+type DirectoryGroup = {
+  key: DirectoryCategory;
+  cards: DirectoryCard[];
+};
+
+const groupedCards: DirectoryGroup[] = selectedCategory
+  ? [{ key: selectedCategory, cards }]
+  : DIRECTORY_NICHES.map((niche) => ({
+      key: niche,
+      cards: cards.filter((agency) => agency.niche === niche),
+    })).filter((group) => group.cards.length > 0);
+
+const selectedInfo = selectedCategory ? DIRECTORY_CATEGORY_INFO[selectedCategory] : null;
+
+function buildCategoryUrl(category: DirectoryCategory | null) {
+  const params = new URLSearchParams();
+  if (category) params.set('category', category);
+  const qs = params.toString();
+  return qs ? `/directory?${qs}` : '/directory';
+}
+
+function buildClearSearchUrl() {
+  return selectedCategory ? buildCategoryUrl(selectedCategory) : '/directory';
+}
 ---
 
 <Layout
@@ -130,16 +161,18 @@ const cards = agencies.map((agency) => {
 >
   {dataUnavailable && <ServiceUnavailable />}
   <div class="max-w-5xl mx-auto pt-12 md:pt-16">
-    <div class="mb-10 max-w-2xl">
+    <div class="mb-9 max-w-2xl">
       <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-2">The directory</p>
       <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
         Companies that hire Filipinos
       </h1>
       <p class="mt-3 text-[15px] sm:text-base text-ink/55 leading-relaxed">
-        A vetted list of VA agencies and remote-first companies known to hire
-        in the Philippines — from dayshift agencies to global tech teams.
+        Start with the kind of work or schedule you want. Every visible entry is
+        known to hire in the Philippines; job platforms are separated from direct employers.
       </p>
     </div>
+
+    <DirectoryCategoryNav selectedCategory={selectedCategory} />
 
     <form
       id="search"
@@ -147,6 +180,7 @@ const cards = agencies.map((agency) => {
       action="/directory"
       class="scroll-mt-20 sticky top-[4.5rem] z-40 max-w-2xl mb-8 bg-parchment/85 backdrop-blur-xl rounded-full"
     >
+      {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
       <label class="sr-only" for="q">Search companies</label>
       <div class="flex gap-2 rounded-full border border-ink/[0.1] bg-surface p-1.5 shadow-soft focus-within:border-accent/50 focus-within:ring-4 focus-within:ring-accent/10 transition-all">
         <svg class="ml-3 shrink-0 self-center h-5 w-5 text-ink/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
@@ -155,54 +189,55 @@ const cards = agencies.map((agency) => {
           name="q"
           type="search"
           value={query}
-          placeholder="Search companies…"
+          placeholder={selectedInfo ? `Search ${selectedInfo.shortTitle.toLowerCase()}…` : 'Search companies…'}
           class="min-w-0 flex-1 h-11 bg-transparent text-ink text-base font-medium outline-none placeholder:text-ink/35"
         />
         <button type="submit" class="shrink-0 rounded-full bg-accent px-4 sm:px-5 text-sm font-semibold text-white hover:bg-accent-hover transition-colors">Search</button>
       </div>
     </form>
 
-    <div class="mb-5 flex flex-wrap items-center justify-between gap-3 text-[13px] font-semibold text-ink/45">
-      <p class="tabular-nums">Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalAgencies.toLocaleString()} companies</p>
-      {query && <a href="/directory" class="text-accent hover:text-accent-hover transition-colors">Clear search</a>}
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3 text-[13px] font-semibold text-ink/45">
+      <p class="tabular-nums">
+        Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalAgencies.toLocaleString()}
+        {selectedInfo ? ` in ${selectedInfo.shortTitle}` : ' companies'}
+      </p>
+      {(query || selectedCategory) && (
+        <div class="flex items-center gap-3">
+          {query && <a href={buildClearSearchUrl()} class="text-accent hover:text-accent-hover transition-colors">Clear search</a>}
+          {selectedCategory && <a href="/directory" class="text-ink/50 hover:text-accent transition-colors">Clear category</a>}
+        </div>
+      )}
     </div>
 
     {cards.length === 0 ? (
       <div class="text-center py-24 bg-surface/60 rounded-2xl border border-ink/[0.07]">
         <p class="text-ink/55 font-semibold text-lg">{query ? `No companies match “${query}”.` : 'No companies are available right now.'}</p>
-        {query && <a href="/directory" class="mt-5 inline-flex items-center px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Clear search</a>}
+        {(query || selectedCategory) && <a href="/directory" class="mt-5 inline-flex items-center px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Clear filters</a>}
       </div>
     ) : (
-      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {cards.map((agency) => (
-          <article class="break-inside-avoid bg-surface rounded-2xl border border-ink/[0.07] shadow-card overflow-hidden transition-shadow hover:shadow-soft">
-            {agency.href ? (
-              <a href={agency.href} target="_blank" rel="noopener noreferrer" class="group flex items-start gap-3.5 p-4 hover:bg-ink/[0.025] transition-colors">
-                <div class="w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
-                  <span class="text-sm font-bold text-ink/45" aria-hidden="true">{agency.companyName.charAt(0).toUpperCase()}</span>
-                </div>
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5">
-                    <h2 class="font-semibold text-ink text-[15px] group-hover:text-accent transition-colors truncate">{agency.companyName}</h2>
-                    {agency.isVerified && <span class="text-blue-500 shrink-0" aria-label="Verified company">✓</span>}
-                  </div>
-                  <p class="mt-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-overline text-ink/45"><span class={`w-1.5 h-1.5 rounded-full ${NICHE_DOTS[agency.niche] ?? 'bg-ink/30'}`}></span>{NICHE_LABELS[agency.niche] ?? agency.niche}</p>
-                  <div class="flex flex-wrap items-center gap-1.5 mt-3">
-                    {agency.isDayshift && <span class="text-[10px] px-2 py-0.5 rounded-md bg-accent-soft text-accent font-semibold">Dayshift</span>}
-                    {agency.isRemote && <span class="text-[10px] px-2 py-0.5 rounded-md bg-ink/[0.05] text-ink/55 font-semibold">Remote</span>}
-                    {agency.isMarketplace && <span class="text-[10px] px-2 py-0.5 rounded-md bg-violet-500/[0.08] text-violet-700 font-semibold">Marketplace</span>}
-                  </div>
-                </div>
-                <svg class="mt-1 h-4 w-4 text-ink/25 group-hover:text-accent transition-colors shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg>
-              </a>
-            ) : (
-              <div class="flex items-start gap-3.5 p-4">
-                <div class="w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08]"><svg class="w-4 h-4 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
-                <div class="min-w-0 flex-1"><h2 class="font-semibold text-ink text-[15px] truncate">{agency.companyName}</h2><p class="mt-1 text-xs text-ink/45">Website unavailable</p></div>
+      <div class="space-y-10">
+        {groupedCards.map((group) => {
+          const info = DIRECTORY_CATEGORY_INFO[group.key];
+          return (
+          <section aria-labelledby={`directory-group-${group.key}`}>
+            <div class="mb-4 border-b border-ink/[0.08] pb-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 id={`directory-group-${group.key}`} class="flex items-center gap-2.5 text-xl font-extrabold tracking-tight text-ink">
+                  <span class={`h-2 w-2 rounded-full ${info.dot}`} aria-hidden="true"></span>
+                  {info.title}
+                </h2>
+                {!selectedCategory && (
+                  <a href={buildCategoryUrl(group.key)} class="text-sm font-semibold text-accent hover:text-accent-hover">View this category →</a>
+                )}
               </div>
-            )}
-          </article>
-        ))}
+              <p class="mt-1 max-w-2xl text-sm leading-relaxed text-ink/50">{info.description}</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+              {group.cards.map((agency) => <DirectoryAgencyCard agency={agency} />)}
+            </div>
+          </section>
+          );
+        })}
       </div>
     )}
 
