@@ -7,7 +7,34 @@ depending on chat history. Every meaningful implementation move should be
 recoverable from GitHub: code, docs, verification, workflow evidence, and the
 next task.
 
-## Latest Recovery Checkpoint — 2026-08-10
+## Current Recovery Checkpoint — 2026-08-22 Gauntlet planning
+
+Status: **PLANNING ONLY**. The synchronized planning baseline is `bd84cc1` on
+`main`; the last accepted behavior remains `07f582b`, deployed by successful run
+`32475868471`. No Gauntlet implementation unit has begun.
+
+Current scheduled evidence includes successful watchdog `32550368138`,
+source-health `32546699929`, directory `32545246416`, Prospector `32544606954`,
+and enrichment `32550872494` runs. Treat the generated payloads as evidence;
+workflow success alone is not production-health acceptance.
+
+Recovery and resume order:
+
+1. [System Savepoint](./SYSTEM_SAVEPOINT.md)
+2. [Master Execution Plan](./MASTER_EXECUTION_PLAN.md)
+3. [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md)
+4. [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md)
+5. [Implementation Status](./IMPLEMENTATION_STATUS.md)
+6. [Handoff](./HANDOFF.md)
+
+The next unit is read-only `REC-01`; it inventories and classifies existing
+worktrees without deleting them. The first production implementation after that
+preflight is `DATA-05A`. Before starting either unit, re-sync `main`, preserve
+unrelated work, and record the actual starting SHA because automated digest
+commits may advance the branch. Partial implementation is recoverable only when
+clearly marked non-accepted on an isolated pushed branch.
+
+## Historical Recovery Checkpoint — 2026-08-10 (superseded)
 
 The current recoverable work is the paused production-hardening branch
 codex/production-apex-audit-2026-08-09. It is a backup checkpoint, not a

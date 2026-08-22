@@ -24,23 +24,25 @@ Current active stack:
 - UI: Tailwind CSS with React islands where needed
 - Hosting: Cloudflare Pages
 - Database: Cloudflare D1, SQLite-compatible
-- Scheduled jobs: GitHub Actions pulse workflows
+- Primary ingestion clock: Cloudflare Worker every 10 minutes
+- Scheduled maintenance: GitHub Actions pulse workflows
 - Ingestion API: Astro API routes under `apps/web/src/pages/api`
 - Scrapers: TypeScript packages under `packages/scraper`
-- AI/category helpers: Workers AI / Gemini experiments where explicitly wired
+- AI/category helpers: Gemini -> Groq -> Cloudflare reserve where configured;
+  durable inline deferral is the production default
 - Versioning and backup: GitHub commits, pushes, workflow run evidence
 
 ## Active Architecture
 
 ```text
-GitHub Actions pulse workflows
-  -> scraper scripts fetch allowed RSS/API/public sources
-  -> triage filters and normalizes jobs
-  -> authenticated POST to Cloudflare Pages API
-  -> Astro API route writes to Cloudflare D1
-  -> Cloudflare Pages serves public job board and directory
+Cloudflare freshness Worker (every 10 minutes)
+  -> authenticated Astro /api/cron/scrape route
+  -> allowed RSS/API/public ATS sources
+  -> normalize, deduplicate, geo-gate, and AI-triage
+  -> Cloudflare D1
+  -> Astro pages serve the public board and directory
 
-Daily/periodic maintenance
+GitHub Actions daily/periodic maintenance
   -> verify links
   -> prune stale jobs
   -> record source health and operational evidence
@@ -54,37 +56,38 @@ Daily/periodic maintenance
 /categories/[slug]   Category-specific job pages
 /data-policy         Data and public-source policy
 /privacy             Privacy page
-/opportunities       Planned; currently a known gap from the audit
+/opportunities       Paginated/filterable opportunity index
+/jobs/[id]           Eligible active opportunity detail
+/sitemap.xml         Public sitemap
 ```
 
 ## Current Audit Baseline
 
-Read `docs/major-audit-2026-06-11.md` before doing substantial work, then use
-`docs/major-audit-2026-06-10.md` and `docs/major-audit-2026-06-06.md` as
-historical baselines. The original accepted audit baseline found:
+Read the current authority in this order:
 
-Latest 2026-06-11 health state:
+1. `docs/SYSTEM_SAVEPOINT.md`
+2. `docs/MASTER_EXECUTION_PLAN.md`
+3. `docs/gauntlet/IMPLEMENTATION_UNITS.md`
+4. `docs/IMPLEMENTATION_STATUS.md`
+5. generated `docs/*-latest.md` operational evidence
 
-- Production routes are healthy after smoke checks.
-- Hunter ingestion recovered from D1 `too many SQL variables` insert failures.
-- `/categories/tech` was reduced from about 980 KB to about 94 KB by
-  server-side pagination.
-- Local `.wrangler` runtime state is no longer tracked in Git.
-- Direct local Wrangler D1 reads currently fail with Cloudflare API error 7403;
-  use GitHub workflow evidence or refresh local Cloudflare auth for database
-  audits.
+Current 2026-08-22 planning baseline:
 
-- GitHub Actions are currently green, but green runs can hide source-level
-  failures.
-- Production has 635 active opportunities, 238 companies, and 0 content digests.
-- `/opportunities` returns 404.
-- Homepage HTML is too large at roughly 1.75 MB.
-- Hot D1 queries need ordering-aligned indexes.
-- Date fields are mixed-format text and need normalization.
-- ATS and batch insert paths can fail silently or report misleading counts.
-- Remote.co alerts are noisy and should become daily/source-health rollups.
-- Source compliance must be treated as a first-class requirement, not an
-  assumption based only on public visibility.
+- Planning began from clean synchronized `main`/`origin/main` at `bd84cc1`;
+  automation may advance it, so every unit must fetch and restate its start SHA.
+- Latest accepted behavior is `07f582b`, verified by CI/deploy run
+  `32475868471`: 454 tests, 0 failures, 1,209 assertions, plus typecheck,
+  guardrails, build, and live checks.
+- The ten-minute Worker clock and latest accepted pending queue are healthy.
+- Source health reports 41 identities; the two current failures are Jobicy
+  feeds returning HTTP 429.
+- The first implementation priority is DATA-05A: contain recurring unrelated
+  company-domain writes from directory enrichment.
+- Source expansion is frozen until the current data, hostname, Doctor,
+  taxonomy, and compliance evidence gates pass.
+
+The June audits remain historical baselines. Do not use their counts or missing
+route findings as current production truth.
 
 ## Recovery-Driven Methodology
 
@@ -103,15 +106,18 @@ project's scope:
 Canonical recovery docs:
 
 - `docs/MASTER_EXECUTION_PLAN.md`
+- `docs/gauntlet/IMPLEMENTATION_UNITS.md`
+- `docs/research/agent-reach-study-2026-08-22.md`
 - `docs/IMPLEMENTATION_STATUS.md`
 - `docs/AI_RECOVERY_TRAIL.md`
 - `docs/SYSTEM_SAVEPOINT.md`
 - `docs/major-audit-2026-06-06.md`
 - `docs/decisions/ADR-001-recovery-driven-public-job-index.md`
 
-## Percent-Based Roadmap
+## Historical Percent-Based Roadmap (Accepted)
 
-Progress percentages are weighted checkpoints, not vibes.
+These P0–P7 percentages describe the completed recovery program. The current
+Gauntlet uses dependency-ordered units in `docs/MASTER_EXECUTION_PLAN.md`.
 
 | Phase | Weight | Focus |
 | --- | ---: | --- |

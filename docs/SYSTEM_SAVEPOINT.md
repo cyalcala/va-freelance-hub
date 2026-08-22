@@ -1,5 +1,45 @@
 # System Savepoint
 
+## Current Gauntlet Planning Savepoint — 2026-08-22
+
+Status: **PLANNING ONLY**. No Gauntlet implementation unit has started, and no
+new production behavior is accepted by this checkpoint.
+
+- Branch: `main`
+- Planning baseline and last GitHub backup: `bd84cc1`
+- Last accepted behavior commit: `07f582b`
+- Last accepted behavior deployment: GitHub Actions run `32475868471`
+- Current scheduled evidence: watchdog `32550368138`, source-health rollup
+  `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
+  enrichment pulse `32550872494` completed successfully. Their payloads remain
+  evidence to inspect, not blanket health acceptance.
+- Current unit: none; authoritative planning and portable-unit definition only.
+- Fresh planning-package verification: `bun test` passed 454 tests with 1,209
+  assertions and zero failures; `bun run audit:guardrails`, `bun run typecheck`,
+  and `bun run build` also passed locally on 2026-08-22.
+- Next unit: `REC-01` — read-only inventory and classification of registered
+  and orphan worktrees; no cleanup is authorized.
+- First production implementation: `DATA-05A` — contain unverified directory
+  website inference before any feature or source-expansion work.
+- Next exact action: execute `REC-01` from the portable-unit ledger after
+  re-syncing `main`, then hand its accepted inventory to `DATA-05A`.
+
+Canonical planning artifacts:
+
+- [Master Execution Plan](./MASTER_EXECUTION_PLAN.md)
+- [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md)
+- [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md)
+
+Automated digest commits may advance `main`; executors must fetch/rebase and
+record the actual starting SHA without silently changing the accepted behavior
+baseline above.
+
+## Historical Savepoints
+
+Everything below is preserved as append-only recovery history. Where a section
+calls itself "current," it is superseded by the 2026-08-22 planning savepoint
+above unless explicitly cited as the last accepted production behavior.
+
 ### Accepted Production Savepoint — 2026-08-21
 
 Branch: `main`

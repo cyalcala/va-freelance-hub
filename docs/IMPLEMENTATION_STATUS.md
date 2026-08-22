@@ -1,5 +1,37 @@
 # Implementation Status
 
+## Current Gauntlet Planning Checkpoint — 2026-08-22
+
+Status: **PLANNING ONLY**. This checkpoint defines the next program of work; it
+does not claim an implementation, deployment, or production acceptance.
+
+- Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
+- Last accepted behavior: `07f582b`, deployed by run `32475868471`.
+- Current scheduled evidence: watchdog `32550368138`, source health
+  `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
+  enrichment `32550872494` completed successfully. Green workflow conclusions
+  do not waive payload-level degradation or data-quality findings.
+- Current unit: none.
+- Planning-package local verification: 454 tests, 0 failures, 1,209 assertions;
+  production guardrails, strict typecheck, and Astro/Cloudflare build all pass.
+- First queued preflight: `REC-01`, a read-only worktree/continuity inventory
+  with no cleanup authority.
+- First production implementation unit: `DATA-05A`, the bounded containment of
+  unverified directory website inference.
+- Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
+- Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
+- Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).
+
+No percentage is awarded for planning alone. The next accepted status update
+must name a terminal unit decision, fresh verification, commit, push, workflow
+evidence, and any production proof required by that unit.
+
+## Accepted Implementation History — historical below this checkpoint
+
+The dated checkpoints below remain valid evidence for their time. Any embedded
+"latest," "current," or "next task" wording is superseded as routing guidance
+by the 2026-08-22 planning checkpoint and portable-unit ledger above.
+
 ## Latest Checkpoint — 2026-08-21 agency logos restored
 
 Commit `07f582b` is deployed by successful run `32475868471`. Agency cards once

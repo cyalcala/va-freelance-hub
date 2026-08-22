@@ -13,9 +13,11 @@ Live site: [remotejobs-ph.pages.dev](https://remotejobs-ph.pages.dev)
 - Frontend: Astro in `apps/web`
 - Hosting: Cloudflare Pages
 - Database: Cloudflare D1
-- Scheduled jobs: GitHub Actions pulse workflows
+- Primary ingestion clock: Cloudflare Worker every 10 minutes
+- Scheduled maintenance: GitHub Actions pulse workflows
 - Ingestion API: Astro API routes under `apps/web/src/pages/api`
-- Collection and triage: TypeScript packages under `packages/scraper`
+- Collection and triage: TypeScript packages under `packages/scraper`, with a
+  Gemini -> Groq -> Cloudflare reserve cascade where configured
 - Backup and recovery: Git commits, workflow run evidence, and recovery docs
 
 Older Next.js, Vercel, Turso, Trigger.dev, and parser experiments remain in the
@@ -57,32 +59,34 @@ The recovery-driven roadmap is documented in:
 - `docs/AI_RECOVERY_TRAIL.md`
 - `docs/SYSTEM_SAVEPOINT.md`
 - `docs/DOCS_INDEX.md`
-- `docs/gemini-masterplan-handoff-2026-06-13.md`
+- `docs/gauntlet/IMPLEMENTATION_UNITS.md`
+- `docs/research/agent-reach-study-2026-08-22.md`
 
-As of the latest June 13, 2026 checkpoint, the project has:
+As of the 2026-08-22 planning checkpoint, the project has:
 
 - a working `/opportunities` route;
-- a reduced homepage payload (roughly 130 KB);
-- query-aligned D1 indexes, including optimized directory page indexing (`company_name_idx`);
-- normalized app-owned timestamps;
-- source-level Hunter health reporting and scraper attempt metrics logging (`source_fetch_events`);
-- paused high-risk or unproductive sources;
-- a cleaned database, with stale paused source rows and duplicate listings archived;
-- a new allowed source feed (`jobicy-supporting-apac`) successfully integrated.
+- a healthy ten-minute Cloudflare Worker ingestion clock;
+- an accepted baseline of 454 tests and 1,209 assertions, plus CI/build/live
+  checks from deployment run `32475868471`;
+- source-level fetch events, generated source/directory/enrichment evidence, and
+  a durable pending-triage fallback;
+- a current planning queue led by containment of recurring directory-domain
+  contamination, followed by request-budget, hostname, and migration safety;
+- a source-expansion freeze until the safety and evaluation gates pass.
 
 ## Architecture
 
 ```text
-GitHub Actions pulse workflows
+Cloudflare freshness Worker (every 10 minutes)
+  -> authenticated Astro scrape endpoint
   -> allowed public RSS/API/ATS sources
-  -> triage and normalize jobs
-  -> authenticated POST to Cloudflare Pages API
-  -> Astro API route writes to Cloudflare D1
+  -> normalize, deduplicate, geo-gate, and AI-triage
+  -> Cloudflare D1
   -> Cloudflare Pages serves the job board and directory
 ```
 
-Daily and periodic maintenance verifies links, prunes stale jobs, and records
-operational evidence.
+GitHub Actions verifies links, prunes stale jobs, audits sources and directory
+health, and records operational evidence.
 
 ## Local Development
 

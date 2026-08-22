@@ -1,5 +1,40 @@
 # Handoff
 
+## Current Handoff — 2026-08-22 Gauntlet planning checkpoint
+
+Status: **PLANNING ONLY**. No implementation unit is active, no worktree is
+assigned to the Gauntlet, and no production change is authorized by this
+handoff.
+
+- Planning baseline: clean synchronized `main` at `bd84cc1`.
+- Last accepted behavior: `07f582b`, deployed by run `32475868471`.
+- Latest scheduled evidence inspected: watchdog `32550368138`, source health
+  `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
+  enrichment `32550872494` all completed successfully; their payload findings
+  remain inputs to the plan.
+- Fresh local planning-package verification passed all 454 tests/1,209
+  assertions, production guardrails, strict typecheck, and the full build.
+- Resume with the current [System Savepoint](./SYSTEM_SAVEPOINT.md), then the
+  [Master Execution Plan](./MASTER_EXECUTION_PLAN.md), then
+  [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
+- Use the [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md) only as
+  a bounded reference.
+- First exact action: re-sync `main`, confirm the starting SHA, and execute the
+  read-only `REC-01` continuity inventory without cleanup. Then execute
+  `DATA-05A` without combining it with repair, source expansion, or unrelated
+  refactoring.
+
+If execution stops before acceptance, record the unit state, changed files,
+tests run, failures, last safe commit, branch/worktree, and next exact action;
+push recoverable partial work only to its isolated branch and never label it
+KEEP.
+
+## Prior Accepted Handoffs — historical below this checkpoint
+
+The append-only handoffs below preserve accepted decisions and incident history.
+Their older "current" and "next" instructions are superseded for resume routing
+by the 2026-08-22 block above.
+
 ## Current Checkpoint — 2026-08-21 agency logos restored
 
 Commit `07f582b` is on `main` and deployed by successful run `32475868471`.

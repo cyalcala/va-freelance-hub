@@ -5,7 +5,35 @@
 This index tells future AI agents which documents are canonical, which are
 historical, and where to resume. Start here instead of guessing from filenames.
 
-## Current Checkpoint
+## Current Gauntlet Planning Checkpoint — 2026-08-22
+
+Status: **PLANNING ONLY**. Repository planning baseline is `bd84cc1`; the last
+accepted behavior remains `07f582b`, deployed by run `32475868471`. Recent
+watchdog and scheduled evidence is green, but current source, directory, and
+enrichment payloads must still be evaluated individually. No implementation
+unit is accepted or in progress.
+
+Read in this order before implementation:
+
+1. [System Savepoint](./SYSTEM_SAVEPOINT.md) — current execution baton and Git
+   checkpoint.
+2. [Master Execution Plan](./MASTER_EXECUTION_PLAN.md) — authoritative roadmap,
+   invariants, evidence register, and dependency order.
+3. [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md) — exact
+   downstream work orders; begin with read-only `REC-01`, then production unit
+   `DATA-05A`.
+4. [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md) — bounded
+   reference evaluation; it is not permission to copy unrestricted access
+   behavior.
+5. [Implementation Status](./IMPLEMENTATION_STATUS.md) and
+   [Handoff](./HANDOFF.md) — accepted history and exact resume note.
+6. [AI Recovery Trail](./AI_RECOVERY_TRAIL.md) — backup, evidence, pause, and
+   recovery protocol.
+
+Re-sync `main` before beginning a unit because machine-generated digest commits
+can advance the branch after this planning baseline.
+
+## Historical Checkpoint Trail — superseded as current entry point
 
 Before any new implementation or deployment, read these documents in this
 order:
