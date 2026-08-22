@@ -110,6 +110,15 @@ export const vaDirectory = sqliteTable("va_directory", {
   linkCheckedAt: text("link_checked_at"),
   linkEvidence: text("link_evidence"),
   linkFailCount: integer("link_fail_count").notNull().default(0),
+  // Website provenance (migration 0033, DATA-05B): origin of the current
+  // website value. 'curated' = seed/import insert; 'manual' = human edit;
+  // 'enrichment' = retired automated writer (must never be written again);
+  // 'repair_cleared' = the approval-gated DATA-05B repair cleared an
+  // unsupported value, so website is NULL. NULL = legacy/unknown provenance:
+  // unclassified by the DATA-05B report, never treated as trusted.
+  websiteSource: text("website_source"),
+  websiteEvidence: text("website_evidence"),
+  websiteSetAt: text("website_set_at"),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),

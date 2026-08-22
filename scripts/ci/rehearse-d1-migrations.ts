@@ -173,6 +173,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
       "is_dayshift", "is_verified", "is_remote", "is_marketplace",
       "ats_platform", "ats_token", "link_status", "link_checked_at",
       "link_evidence", "link_fail_count",
+      "website_source", "website_evidence", "website_set_at",
     ];
     for (const col of requiredDirCols) {
       assertions.push({
@@ -276,8 +277,8 @@ function assertSchema(db: Database): SchemaAssertion[] {
 
   // 9. d1_migrations ledger integrity
   const migCount = db.query("SELECT COUNT(*) as c FROM d1_migrations").get() as { c: number };
-  // 31 migrations exist (0000-0031, but 0004 is missing from the sequence)
-  const expectedMigrationCount = 32;
+  // 33 migrations exist: 0000-0033, but 0004 is missing from the sequence.
+  const expectedMigrationCount = 33;
   assertions.push({
     name: `d1_migrations ledger has expected count (${expectedMigrationCount} migrations)`,
     passed: migCount.c === expectedMigrationCount,
@@ -376,7 +377,7 @@ function runLegacyRehearsal(): { success: boolean; assertions: SchemaAssertion[]
       }
     }
 
-    // Should have all 32 migrations in ledger
+    // Should have all migrations (0000-0033, no 0004) in ledger
     const finalApplied = getAppliedMigrations(db);
     console.log(`  Migrations in ledger after all migrations: ${finalApplied.size}`);
 
