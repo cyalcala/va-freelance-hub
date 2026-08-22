@@ -1,54 +1,78 @@
 # System Savepoint
 
-## Current Gauntlet Planning Savepoint — 2026-08-23
+## Current Gauntlet Planning Savepoint — 2026-08-23 (run 2)
 
-Status: **SRC-4D IMPLEMENTED — VERIFYING (48h live window)**. The bounded
-Jobicy shared-origin cadence fix is deployed: the two `jobicy.com` feeds share
-a `cadenceGroup`; a pure per-tick planner (`planCadenceGroupTurns` in
-`apps/web/src/pages/api/cron/scrape.ts`) grants exactly one member a turn via
-deterministic oldest-attempt alternation, and consecutive HTTP 429s extend that
-member's own interval with a capped exponential cooldown (+30m base, ×2,
-cap +240m) read from durable non-skipped `source_fetch_events`. No retry, no
-schema change, no generic scheduler. Behavior commit `90f3243` (rebased onto
-bot docs commit `5082279`) passed CI/deploy run `32592205884` incl. production
-Pages deploy at ~2026-08-22T18:57Z — that timestamp starts the ≥48h post
-window. Local G3: 602 tests, 0 failures, 1,403 assertions; typecheck, build,
-guardrails green; focused fixtures 13/13
-(`apps/web/tests/cadence-group.test.ts`). NEXT EXACT ACTION: on/after
-2026-08-24T19:00Z run the read-only D1 post-rollup (per-feed attempts / HTTP
-429s / `Deferred by cadence group%` deferrals / `%shared-origin 429 backoff%`
-skips / publication lag from `source_fetch_events` since
-`2026-08-22T18:57:00Z`), record it in
-`docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, then decide KEEP
-or pause-Jobicy per contract. OPS-05, DATA-06, REL-08, COMP-01A, DB-01, OPS-04,
-DATA-03, OPS-06, REL-09, SEC-03, REL-10, DATA-05A remain KEEP.
+Status: **DATA-06B TERMINAL — KEEP**. Owner product decision (2026-08-23):
+option (a) trust the stored `category` column on every surface. The
+display-time regex reclassifier in `getJobCategory` was deleted
+(`apps/web/src/lib/categories.ts` → `return opp.category || 'other'`), so
+homepage preview grouping, the `categoryTotals` badge, `/categories/[slug]`,
+and `/opportunities` now always agree; stored-`other` jobs render only under
+GENERAL & OTHER. Behavior commit `f00478c` + critic-recommended test-hardening
+commit `041bc2c` (stored-`other` pinned against all six legacy regex families)
+both pushed; CI/deploy runs `32602546093` (incl. production deploy job
+`97102984274`) and `32602939487` green; fresh independent critic SHIP with its
+one Important test-power recommendation applied in-unit; local G3 at behavior
+commit: 606 tests, 0 failures, 1,418 assertions; typecheck/build/guardrails
+EXIT 0. Evidence:
+`docs/gauntlet/evidence/DATA-06B-ui-category-consistency.md`. Contract row
+added to `docs/gauntlet/IMPLEMENTATION_UNITS.md` (owner decision recorded
+there). Sole executor; no overlapping work; worktree clean.
 
-- Branch: `main`
-- SRC-4D execution resume start: `783b540` (`main` = `origin/main`, clean
-  tree). Behavior commit pushed: `90f3243`.
-- CI/deploy: run `32592205884` (`90f3243`) success — Validate, Migrate,
-  Deploy jobs all green.
-- Evidence: `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`
-  (diagnosis + implementation status + remaining acceptance gate).
+**SRC-4D remains VERIFYING (48h live window)** — unchanged gate: the bounded
+Jobicy shared-origin cadence fix is deployed (behavior commit `90f3243`, CI/
+deploy `32592205884`, production Pages deploy ~2026-08-22T18:57Z starts the
+≥48h post window; local G3 at that commit: 602 tests, 0 failures, 1,403
+assertions). Interim read-only observation 2026-08-22T22:18Z (~3.4h into
+window, this runtime): Source Doctor on both `jobicy.com` feeds returned
+**HTTP 200** (no 429) — `jobicy-admin-support-apac` HEALTHY_WITH_RESULTS
+(robots allowed, 6 items), `jobicy-supporting-apac` fetched HTTP 200 but
+**failed XML parse: "CDATA is not closed." → SCHEMA_BROKEN**. The 200s are
+favorable interim signal only, not acceptance evidence; the post-rollup D1
+query remains the gate. NEW FINDING (recorded separately, not folded into
+SRC-4D): the `jobicy-supporting-apac` CDATA parse failure is not documented
+anywhere in the repo; proposed follow-up **SRC-4E — Jobicy supporting-feed
+XML parse failure** (diagnosis-first, read-only; needs a bounded contract
+before any parser change). NEXT EXACT ACTION: on/after 2026-08-24T19:00Z run
+the read-only D1 post-rollup (per-feed attempts / HTTP 429s /
+`Deferred by cadence group%` deferrals / `%shared-origin 429 backoff%` skips /
+publication lag from `source_fetch_events` since `2026-08-22T18:57:00Z`),
+record it in `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, then
+decide KEEP or pause-Jobicy per contract. OPS-05, DATA-06, REL-08, COMP-01A,
+DB-01, OPS-04, DATA-03, OPS-06, REL-09, SEC-03, REL-10, DATA-05A, DATA-06B
+remain KEEP.
+
+- Branch: `main`; this run resumed at `7719b5f`, fast-forwarded clean to
+  `bdb6e22` (automation docs-only), behavior base `bdb6e22`, head `041bc2c`
+  (`main` = `origin/main`).
+- CI/deploy: `32602546093` (`f00478c`) success; `32602939487` (`041bc2c`)
+  success; watchdogs `32594161486`/`32597360223`/`32600048103` success
+  post-SRC-4D-deploy.
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
   indexing is allowed only through the existing compliance policy and never
   implies ownership.
 - Planning baseline: `bd84cc1`
-- Accepted planning package and last GitHub backup: `d21cd9e`
-- Last accepted production behavior commit: `90f3243` (SRC-4D cadence fix,
-  VERIFYING). Prior accepted behavior: `7f0040b` (OPS-05 alert lifecycle),
-  `a014e71` (DATA-06).
+- Accepted planning package and last GitHub backup: `d21cd9e` (superseded by
+  `041bc2c` on origin/main)
+- Last accepted production behavior commits: `f00478c`/`041bc2c` (DATA-06B,
+  KEEP); `90f3243` (SRC-4D, VERIFYING).
+- Doc-hygiene note (no unit): `IMPLEMENTATION_UNITS.md` STATUS rows for REC-01,
+  OPS-06, DATA-03, and SRC-4D lag their terminal reality recorded in the
+  baton/commit history (`451b76e`, `539b65b`, `6146290`, `90f3243`); treat the
+  baton as authoritative until a docs-only pass refreshes them.
 - Current scheduled evidence: watchdog runs continue hourly; their payloads
   remain evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `SRC-4D` implementation slice deployed — unit stays
-  VERIFYING until the 48-hour post-rollup exists.
+- Last Gauntlet decision: `DATA-06B` — KEEP.
 - Current implementation unit queue:
   `SRC-4D` **VERIFYING** (48h post-rollup pending; see above),
   `DATA-05B` (provenance repair; mutation needs human-approved evidence file),
-  `DATA-06B` (UI category consistency; user-visible product-taxonomy decision),
+  `SRC-4E` (PROPOSED — Jobicy supporting-feed CDATA parse failure; needs
+  bounded contract before any change),
   `COMP-01B` (reviewed enforcement; gated on a complete reviewed robots observe
-  window).
+  window plus per-source reviewer sign-off),
+  `REC-02` (resume drill; needs owner agreement to synthetic interruption).
+  `DATA-06B` closed KEEP this run.
 
 ### Historical checkpoint — DATA-06 (2026-08-22)
 

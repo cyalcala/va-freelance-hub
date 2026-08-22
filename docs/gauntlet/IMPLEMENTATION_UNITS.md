@@ -756,6 +756,62 @@ Migration-writing units are sequential even when their functional work is otherw
 | HANDOFF | G6 plus DTO version, removed duplicates, fixture license/source, metrics, disagreements, and critic result. |
 | STATUS | TERMINAL — KEEP (`a014e71`; CI/deploy `32579585128`; 569 tests, 1,335 assertions; 30-case labelled eval + cross-path anti-drift guard; fresh critic SHIP; behavior-preserving 1:1 branch parity; sweep exception preserved; UI `getJobCategory` unification escalated as follow-up DATA-06B). Evidence: `docs/gauntlet/evidence/DATA-06-taxonomy-convergence.md` |
 
+## DATA-06B — Unify UI surfaces on the stored job category
+
+| Field | Contract |
+| --- | --- |
+| UNIT ID | DATA-06B |
+| TITLE | Make homepage preview, totals, and category pages agree on the stored category |
+| MILESTONE | M12 — Display/Data Taxonomy Consistency (follow-up spun out of DATA-06) |
+| PRIORITY | P1 user-visible correctness |
+| OBJECTIVE | Remove the display-time `getJobCategory` regex reclassification so every surface (homepage preview grouping, `categoryTotals` badge, `/categories/[slug]`, `/opportunities` filter) reflects the stored D1 `category` column. |
+| WHY THIS MATTERS | A stored-`other` job with a techy title rendered under ENGINEERING & IT on the homepage while its count badge and `/categories/tech` disagreed, so "See all N" links could understate or contradict what users just saw. |
+| CURRENT EVIDENCE | Inconsistency documented in `docs/gauntlet/evidence/DATA-06-taxonomy-convergence.md` (Deliberate exceptions item 2); sole inconsistent surface is `OpportunitySearch` grouping via `getJobCategory`. |
+| EVIDENCE STATUS | Defect VERIFIED in code; product direction UNKNOWN until owner decision 2026-08-23. |
+| ROOT CAUSE | Display-side heuristic reclassification predates the DATA-06 ingestion taxonomy convergence; it duplicated a decision path the plan had just unified. |
+| ROOT CAUSE CONFIDENCE | High. |
+| PREREQUISITES | DATA-06 accepted; explicit owner product decision between option (a) trust stored category everywhere and option (b) shared server-side fallback. |
+| DEPENDENCIES | REC-01, DATA-06. |
+| DECISION | Owner selected **option (a): trust the stored category everywhere** on 2026-08-23. Stored-`other` jobs appear only under GENERAL & OTHER; miscategorized rows are an upstream ingestion-quality concern, not a display-time concern. |
+| AFFECTED FILES / SYMBOLS | `apps/web/src/lib/categories.ts` — `getJobCategory`; `apps/web/tests/ui-category-contract.test.ts` (new). |
+| CALLERS / DEPENDENTS | `OpportunitySearch.tsx` (sole consumer of `getJobCategory`). |
+| BASELINE | Pre-change: six regex families reclassified stored-`other` rows at render time on the homepage only. |
+| PRIMARY ADDY SKILL / WORKFLOW | `spec-driven-development` (plan default; contract row = committed spec, owner decision = human gate). |
+| OPTIONAL SUPERPOWERS MECHANISM | Fresh independent critic + verification-before-completion. |
+| WHY DISTINCT VALUE | User-visible product-taxonomy change requires independent challenge plus recorded owner authority. |
+| ASSIGNED MODEL | Repository executor. |
+| CRITIC | Independent reviewer with no role in authorship; verified scope, unknown-slug behavioral equivalence, remaining disagreement paths, and test regression-detection power. |
+| ESCALATION MODEL | Frontier product/architecture reasoner if a future surface needs reclassification semantics again. |
+| WORKTREE REQUIRED | No (single-file behavior deletion + tests; clean synchronized main, sole executor). |
+| ALLOWED SCOPE | Simplify `getJobCategory`; add regression tests; document decision. |
+| SMALLEST IMPLEMENTATION | `return opp.category || 'other'` plus focused contract tests pinning all six legacy families against stored-`other`. |
+| MUST PRESERVE | Stored-category SQL surfaces untouched; no D1 writes/backfill; ingestion/triage/model/source behavior unchanged; G1. |
+| DO NOT TOUCH / FORBIDDEN SCOPE | No category backfill/mutation, no `/categories/[category]` or `/opportunities` query changes, no ingestion/triage changes, no schema change, no new dependencies. |
+| REGRESSION SURFACE | Homepage preview group membership; badge/total agreement; hydration payload size (unchanged projection). |
+| STEPS | Record owner decision; write failing focused test; implement one-line resolution; run focused then full G3; fresh critic; CI/deploy; record evidence. |
+| TESTS | `apps/web/tests/ui-category-contract.test.ts`: stored slugs pass through unchanged; stored-`other` survives every legacy reclassification family (tech/marketing/design/customer-service/admin/finance titles); missing/empty falls back to `other`. |
+| PROBES | Post-deploy homepage spot-check that totals badge equals card membership per category. |
+| BENCHMARK / EVAL | Focused suite green; full suite green; no other test references `getJobCategory` (grep-verified by critic). |
+| AUTOMATION OPPORTUNITY | None beyond existing CI. |
+| AUTOMATION CLASS | GUARDED AUTOMATION after owner decision. |
+| MATURITY TARGET | A4/A5. |
+| OBSERVABILITY | Existing CI; display-only change with no runtime metrics surface. |
+| IDEMPOTENCY | Pure function of the row; repeated renders identical. |
+| MAINTAINABILITY IMPACT | Removes the last duplicate classification path; single source of truth = stored column. |
+| SCALE IMPACT | Removes six regex evaluations per job per keystroke from client grouping. |
+| HARDENING IMPACT | Eliminates title-derived rendering divergence; unknown non-slug stored values behave exactly as before (unrendered in preview groups, redirect-guarded on category routes). |
+| ACCEPTANCE | Owner decision recorded; focused + full suites green; fresh critic SHIP; CI/deploy green including production Pages deploy. |
+| ACCEPTANCE EVIDENCE | `docs/gauntlet/evidence/DATA-06B-ui-category-consistency.md`. |
+| REVERT | Revert the two commits; display-only change, no data touched. |
+| STOP CONDITIONS | Critic REVISE beyond bounded test hardening; out-of-unit test failures; owner reverses decision. |
+| ESCALATION | Revert and return to owner with evidence. |
+| DOCUMENTATION | This contract row, evidence file, savepoint baton. |
+| COMMIT PLAN | Behavior commit then bounded critic-recommended test-hardening commit. |
+| COMMIT BOUNDARY | `getJobCategory`, its consumer's import surface, and its tests only. |
+| GITHUB BACKUP | G5 with CI/deploy run IDs. |
+| HANDOFF | Decision provenance, diff scope proof, equivalence analysis, run IDs. |
+| STATUS | TERMINAL — KEEP (`f00478c` behavior + `041bc2c` test hardening; CI/deploy `32602546093` incl. deploy job `97102984274`; local 606 tests, 0 failures, 1,418 assertions at behavior commit; focused 5/5 after hardening; fresh critic SHIP with one test-power recommendation applied in-unit). Evidence: `docs/gauntlet/evidence/DATA-06B-ui-category-consistency.md` |
+
 ## SRC-4D — Investigate and adapt Jobicy combined-origin cadence
 
 | Field | Contract |
