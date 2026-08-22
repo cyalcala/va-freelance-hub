@@ -74,11 +74,24 @@ const TRUSTED_HOSTS = [
   "apply.workable.com",
 ];
 
+function normalizeHost(host: string): string {
+  return host.trim().toLowerCase().replace(/\.$/, "");
+}
+
+/** True only for the exact trusted host or one of its DNS subdomains. */
+export function exactOrSubdomain(host: string, trusted: string): boolean {
+  const normalizedHost = normalizeHost(host);
+  const normalizedTrusted = normalizeHost(trusted);
+  return normalizedHost.length > 0
+    && normalizedTrusted.length > 0
+    && (normalizedHost === normalizedTrusted || normalizedHost.endsWith(`.${normalizedTrusted}`));
+}
+
 /** Extract a lowercased hostname from a URL, or null. */
 export function hostOf(url: string | null | undefined): string | null {
   if (typeof url !== "string" || !url.trim()) return null;
   try {
-    return new URL(url.trim()).hostname.toLowerCase().replace(/^www\./, "");
+    return normalizeHost(new URL(url.trim()).hostname).replace(/^www\./, "");
   } catch {
     return null;
   }
@@ -88,7 +101,7 @@ export function hostOf(url: string | null | undefined): string | null {
 export function isTrustedSourceUrl(url: string | null | undefined): boolean {
   const host = hostOf(url);
   if (!host) return false;
-  return TRUSTED_HOSTS.some((t) => host === t || host.endsWith(`.${t}`) || host.endsWith(t));
+  return TRUSTED_HOSTS.some((trusted) => exactOrSubdomain(host, trusted));
 }
 
 /**
@@ -108,29 +121,29 @@ export function extractAtsToken(url: string | null | undefined): AtsRef | null {
   const clean = (t: string | undefined) =>
     (t || "").trim().replace(/\/+$/, "").toLowerCase();
 
-  if (host.endsWith("greenhouse.io")) {
+  if (exactOrSubdomain(host, "greenhouse.io")) {
     // boards.greenhouse.io/{token}/... or /v1/boards/{token}/...
     const m = path.match(/(?:\/v\d+\/boards)?\/([^/]+)/);
     const token = clean(m?.[1] === "boards" ? undefined : m?.[1]);
     return token ? { platform: "greenhouse", token } : null;
   }
-  if (host.endsWith("ashbyhq.com")) {
+  if (exactOrSubdomain(host, "ashbyhq.com")) {
     // jobs.ashbyhq.com/{token}/... or /posting-api/job-board/{token}
     const m = path.match(/(?:\/posting-api\/job-board)?\/([^/]+)/);
     const token = clean(m?.[1] === "posting-api" ? undefined : m?.[1]);
     return token ? { platform: "ashby", token } : null;
   }
-  if (host.endsWith("lever.co")) {
+  if (exactOrSubdomain(host, "lever.co")) {
     const m = path.match(/(?:\/v\d+\/postings)?\/([^/]+)/);
     const token = clean(m?.[1] === "postings" ? undefined : m?.[1]);
     return token ? { platform: "lever", token } : null;
   }
-  if (host.endsWith("breezy.hr")) {
+  if (exactOrSubdomain(host, "breezy.hr")) {
     // {token}.breezy.hr
     const sub = host.replace(/\.breezy\.hr$/, "");
     return sub && sub !== "breezy" ? { platform: "breezy", token: sub } : null;
   }
-  if (host.endsWith("workable.com")) {
+  if (exactOrSubdomain(host, "workable.com")) {
     // apply.workable.com/{token}/...
     const m = path.match(/\/([^/]+)/);
     const token = clean(m?.[1]);

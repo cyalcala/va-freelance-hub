@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   normalizeCompanyName,
   isQualityCompanyName,
+  exactOrSubdomain,
   hostOf,
   isTrustedSourceUrl,
   extractAtsToken,
@@ -47,20 +48,56 @@ describe("isQualityCompanyName", () => {
 });
 
 describe("hostOf / isTrustedSourceUrl", () => {
-  test("extracts host and strips www", () => {
+  test("normalizes case and a trailing root dot, and strips www", () => {
     expect(hostOf("https://www.weworkremotely.com/remote-jobs/x")).toBe("weworkremotely.com");
+    expect(hostOf("HTTPS://WWW.JOBICY.COM./jobs/x")).toBe("jobicy.com");
     expect(hostOf("not a url")).toBeNull();
     expect(hostOf(null)).toBeNull();
   });
 
-  test("trusts curated feeds and ATS hosts, distrusts RemoteOK", () => {
-    expect(isTrustedSourceUrl("https://weworkremotely.com/remote-jobs/x")).toBe(true);
-    expect(isTrustedSourceUrl("https://www.realworkfromanywhere.com/jobs/x")).toBe(true);
-    expect(isTrustedSourceUrl("https://jobicy.com/jobs/x")).toBe(true);
-    expect(isTrustedSourceUrl("https://jobs.ashbyhq.com/supabase/abc")).toBe(true);
+  test("matches only an exact host or dot-delimited subdomain", () => {
+    expect(exactOrSubdomain("jobicy.com", "jobicy.com")).toBe(true);
+    expect(exactOrSubdomain("feeds.jobicy.com", "jobicy.com")).toBe(true);
+    expect(exactOrSubdomain("regional.feeds.jobicy.com.", "JOBICY.COM")).toBe(true);
+    expect(exactOrSubdomain("eviljobicy.com", "jobicy.com")).toBe(false);
+    expect(exactOrSubdomain("jobicy.com.evil.test", "jobicy.com")).toBe(false);
+    expect(exactOrSubdomain("", "jobicy.com")).toBe(false);
+  });
+
+  test("preserves trust for every configured source and ATS host", () => {
+    const trustedUrls = [
+      "https://weworkremotely.com/remote-jobs/x",
+      "https://www.realworkfromanywhere.com/jobs/x",
+      "https://jobicy.com/jobs/x",
+      "https://remotive.com/remote-jobs/x",
+      "https://boards.greenhouse.io/acme/jobs/1",
+      "https://boards-api.greenhouse.io/v1/boards/acme/jobs/1",
+      "https://jobs.ashbyhq.com/acme/1",
+      "https://api.ashbyhq.com/posting-api/job-board/acme",
+      "https://jobs.lever.co/acme/1",
+      "https://api.lever.co/v0/postings/acme",
+      "https://acme.breezy.hr/p/1",
+      "https://apply.workable.com/acme/j/1",
+    ];
+
+    for (const url of trustedUrls) expect(isTrustedSourceUrl(url)).toBe(true);
     // RemoteOK carries recruiter-repost spam -> not auto-add-trusted.
     expect(isTrustedSourceUrl("https://remoteok.com/remote-jobs/x")).toBe(false);
     expect(isTrustedSourceUrl(null)).toBe(false);
+  });
+
+  test("rejects concatenated lookalikes for curated and ATS hosts", () => {
+    for (const host of [
+      "eviljobicy.com",
+      "evilboards.greenhouse.io.evil.test",
+      "evilboards.greenhouse.io",
+      "eviljobs.ashbyhq.com",
+      "eviljobs.lever.co",
+      "evilbreezy.hr",
+      "evilapply.workable.com",
+    ]) {
+      expect(isTrustedSourceUrl(`https://${host}/acme/jobs/1`)).toBe(false);
+    }
   });
 });
 
@@ -86,6 +123,18 @@ describe("extractAtsToken", () => {
     expect(extractAtsToken("https://remoteok.com/remote-jobs/x")).toBeNull();
     expect(extractAtsToken("not a url")).toBeNull();
     expect(extractAtsToken(null)).toBeNull();
+  });
+
+  test("rejects concatenated ATS suffix lookalikes", () => {
+    const maliciousUrls = [
+      "https://evilgreenhouse.io/acme/jobs/1",
+      "https://evilashbyhq.com/acme/1",
+      "https://evillever.co/acme/1",
+      "https://evilbreezy.hr/p/1",
+      "https://evilworkable.com/acme/j/1",
+    ];
+
+    for (const url of maliciousUrls) expect(extractAtsToken(url)).toBeNull();
   });
 });
 
