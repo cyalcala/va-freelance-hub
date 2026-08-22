@@ -314,7 +314,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Rehearsal + minimal safe bootstrap/schema contract + CI invocation; no unrelated schema feature. |
 | GITHUB BACKUP | G5; require CI evidence before merge and release evidence after merge. |
 | HANDOFF | G6 plus migration head, exact fresh/legacy commands, ledger before/after, schema assertions, and whether later migration units may proceed. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (`af960d7`; CI/deploy `32574532452`; rehearsal 85/85 assertions fresh+legacy) |
 
 ## REL-10 — Restore homepage detail-link data contract
 
@@ -589,7 +589,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Robots evidence only; no enforcement/cadence/source changes. |
 | GITHUB BACKUP | G5; migration and Pages release evidence required. |
 | HANDOFF | G6 plus migration number, event schema, bind math, active-origin coverage, gate errors, and start time for COMP-01B observation window. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (`c992dfe` app layer + `60f4838` DB layer; CI/deploy `32573525387` app + `32574532452` full; 520 tests, 1,207 assertions, migration 0032 applied, FTS verified, Pages deployed) |
 
 ## REL-08 — Native TypeScript Source Doctor V1
 

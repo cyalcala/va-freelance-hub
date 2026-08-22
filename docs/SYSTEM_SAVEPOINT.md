@@ -2,18 +2,21 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **COMP-01A TERMINAL — KEEP**. Durable robots evidence for static and ATS
-sources shipped and verified: `source_fetch_events` now records 6 robots columns
-per fetch attempt; ATS endpoints (Lever, Greenhouse, Workable, Breezy, Ashby)
-participate in the robots gate; observe mode only (ROBOTS_MODE="observe");
-enforcement is COMP-01B. OPS-04 remains KEEP. DATA-03 remains KEEP (read-only
-quality baseline). OPS-06 remains KEEP (production behavior baseline).
+Status: **COMP-01A TERMINAL — KEEP (fully committed)**. Durable robots evidence
+for static and ATS sources shipped and verified: `source_fetch_events` now
+records 6 robots columns per fetch attempt; ATS endpoints (Lever, Greenhouse,
+Workable, Breezy, Ashby) participate in the robots gate; observe mode only
+(ROBOTS_MODE="observe"); enforcement is COMP-01B. DB-01 rehearsal passes fresh
+and legacy chains (85/85 schema assertions, 32 migrations including 0032).
+OPS-04 remains KEEP. DATA-03 remains KEEP (read-only quality baseline).
+OPS-06 remains KEEP (production behavior baseline).
 
 - Branch: `main`
 - OPS-04 execution start: `6146290` (`main` = `origin/main` at start).
 - DATA-03 execution start: `539b65b` (`main` = `origin/main` at start).
 - OPS-06 execution start: `060b2db` (`main` = `origin/main` at start).
 - COMP-01A execution start: `a75f8a8` (`main` = `origin/main` at start).
+- DB-01 rehearsal fix: `af960d7` (updated expected migration count to 32).
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
   indexing is allowed only through the existing compliance policy and never
@@ -22,14 +25,12 @@ quality baseline). OPS-06 remains KEEP (production behavior baseline).
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted production behavior commit: `62acf5a` (OPS-06). DATA-03 adds a
-  read-only diagnostic generator, a manual-dispatch read-only workflow, and an
-  evidence report; it does not change production runtime and does not deploy.
-- Last accepted behavior deployment: GitHub Actions CI run `32563188313` passed full suite (481 tests, 1,113 assertions, typecheck, build, guardrails).
+- Last accepted production behavior commit: `af960d7` (COMP-01A DB layer + DB-01 rehearsal fix).
+- Last accepted behavior deployment: GitHub Actions CI run `32574532452` passed full suite (520 tests, 1,207 assertions, typecheck, build, guardrails, D1 migrations applied, FTS verified, Pages deployed).
 - Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, CI `32563188313` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `COMP-01A` durable robots evidence — `KEEP`.
-- Current implementation unit: `COMP-01A` (terminal).
+- Last Gauntlet decision: `COMP-01A` durable robots evidence — `KEEP` (now fully committed including DB layer).
+- Current implementation unit: `REL-08` (Source Doctor V1) — PLANNED, dependency-ready.
 - DATA-03 code commits: `1cca4b3` (generator + read-only workflow + fixture
   test) and `feb5f0b` (run cohorts per-command after a dispatched run proved
   multi-statement `--file` returns only a summary). Local G3: 495 tests, 0
@@ -102,11 +103,7 @@ quality baseline). OPS-06 remains KEEP (production behavior baseline).
   passed. The live run returned HTTP 200 with 4 considered, 0 eligible/added,
   3 review-only, 1 quality rejection, 0 ATS proposals, and no guard trip.
 - DB-01 acceptance: rehearsal script `scripts/ci/rehearse-d1-migrations.ts`
-  passes fresh and legacy database rehearsals locally (85/85 schema assertions);
-  CI/deploy run `32560891840` passed full suite (464 tests, 1,053 assertions,
-  typecheck, build, guardrails, D1 migrations applied, FTS verified, Pages
-  deployed). Production smoke: `/`, `/directory`, `/opportunities` all return
-  HTTP 200.
+  passes fresh and legacy database rehearsals locally (85/85 schema assertions, 32 migrations including 0032); CI/deploy run `32574532452` passed full suite (520 tests, 1,207 assertions, typecheck, build, guardrails, D1 migrations applied, FTS verified, Pages deployed). Production smoke: `/`, `/directory`, `/opportunities` all return HTTP 200.
 - REL-10 acceptance: behavior commit `5690d54` adds `phEligibility` to the
   homepage slim projection, types the card projection as `OpportunityCardData`,
   and adds 7 focused contract tests. Local verification: 471 tests, 0 failures,
@@ -120,19 +117,19 @@ quality baseline). OPS-06 remains KEEP (production behavior baseline).
   `0032_source_fetch_events_robots_evidence.sql`; adds robots.txt checking for
   all 5 ATS endpoint families (Lever, Greenhouse, Workable, Breezy, Ashby);
   exports `atsEndpointUrl`; updates `FETCH_EVENT_COLUMNS` to 18; adds 7 ATS
-  robots integration tests. Local verification: 520 tests, 0 failures, 1,207
-  assertions; typecheck, build, guardrails passed. CI/deploy run
-  `32573525387` passed full suite (520 tests, 1,207 assertions, typecheck,
-  build, guardrails, Freshness Cron Worker validated). PR #70 merged.
+  robots integration tests. DB layer committed at `60f4838` (schema + migration).
+  Local verification: 520 tests, 0 failures, 1,207 assertions; typecheck, build,
+  guardrails passed. CI/deploy run `32573525387` (app layer) and `32574532452`
+  (full with DB layer) passed full suite.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
 - Next exact action: execute `REL-08` (Source Doctor V1) from synchronized clean
   `main`. Per the authoritative dependency tree in `IMPLEMENTATION_UNITS.md`
   (`DB-01 → COMP-01A → {REL-08 → SRC-4D, OPS-05, COMP-01B, DATA-05B}`),
-  COMP-01A is now accepted, so REL-08 is the next dependency-ready unit; SRC-4D,
-  OPS-05, COMP-01B, DATA-05B are its children and remain BLOCKED until REL-08
-  is accepted. `DATA-06` taxonomy/eval convergence is independently ready
-  (branches off the accepted `DATA-03`). Source expansion remains frozen.
+  COMP-01A is now fully accepted, so REL-08 is the next dependency-ready unit;
+  SRC-4D, OPS-05, COMP-01B, DATA-05B are its children and remain BLOCKED until
+  REL-08 is accepted. `DATA-06` taxonomy/eval convergence is independently
+  ready (branches off the accepted `DATA-03`). Source expansion remains frozen.
   OPS-04 follow-on (a non-Cloudflare link-health probe path) remains a separate
   future unit.
 
