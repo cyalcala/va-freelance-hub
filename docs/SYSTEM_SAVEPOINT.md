@@ -2,12 +2,20 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **REL-08 TERMINAL — KEEP**. Source Doctor V1 shipped and verified:
-`bun scripts/source-doctor.ts --source <id>` emits compliance-first, side-effect-free
-diagnostics with exactly nine terminal outcomes; zero D1 writes, zero AI calls,
-bounded requests. COMP-01A fully committed with DB layer. DB-01 rehearsal passes
-fresh and legacy chains (85/85 schema assertions, 32 migrations). OPS-04, DATA-03,
-OPS-06 remain KEEP. DATA-05A, REL-09, SEC-03, REL-10 remain KEEP.
+Status: **DATA-06 TERMINAL — KEEP**. Taxonomy/triage-decision convergence
+shipped and verified: the three new-item ingestion decision paths (inline scrape
+loop, inline pending-triage drain, Inngest drain) now share one `decideTriage` +
+`mapTriageCategoryToUiCategory` contract; the private duplicate mapper in
+`scrape.ts` was removed; a 30-case labelled eval corpus + cross-path anti-drift
+guard lock the contract. Behavior-preserving (1:1 branch parity, fresh critic
+SHIP); no model/prompt/schema/source change. Two deliberate exceptions
+documented: the cheap-8B unclear-sweep keeps its distinct ladder, and the
+display-side `getJobCategory` homepage/category inconsistency is escalated as a
+new follow-up **DATA-06B** (user-visible product-taxonomy decision). REL-08
+Source Doctor V1 remains KEEP. COMP-01A fully committed with DB layer. DB-01
+rehearsal passes fresh and legacy chains (85/85 schema assertions, 32
+migrations). OPS-04, DATA-03, OPS-06 remain KEEP. DATA-05A, REL-09, SEC-03,
+REL-10 remain KEEP.
 
 - Branch: `main`
 - OPS-04 execution start: `6146290` (`main` = `origin/main` at start).
@@ -15,6 +23,8 @@ OPS-06 remain KEEP. DATA-05A, REL-09, SEC-03, REL-10 remain KEEP.
 - OPS-06 execution start: `060b2db` (`main` = `origin/main` at start).
 - COMP-01A execution start: `a75f8a8` (`main` = `origin/main` at start).
 - REL-08 execution start: `e2c89e1` (`main` = `origin/main` at start).
+- DATA-06 execution start: `c6ea703` (`main` = `origin/main` at start; behavior
+  developed on `codex/data-06-taxonomy-convergence`, fast-forwarded to `main`).
 - DB-01 rehearsal fix: `af960d7` (updated expected migration count to 32).
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
@@ -24,12 +34,12 @@ OPS-06 remain KEEP. DATA-05A, REL-09, SEC-03, REL-10 remain KEEP.
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted production behavior commit: `e2c89e1` (REL-08 Source Doctor V1).
-- Last accepted behavior deployment: GitHub Actions CI run `32576239721` passed full suite (534 tests, 1,264 assertions, typecheck, build, guardrails, Pages deployed).
+- Last accepted production behavior commit: `a014e71` (DATA-06 taxonomy/triage-decision convergence).
+- Last accepted behavior deployment: GitHub Actions CI run `32579585128` passed full suite (569 tests, 1,335 assertions, typecheck, build, guardrails, D1 migrations applied, FTS verified, Pages deployed; deploy job `97046920502`).
 - Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, CI `32563188313` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `REL-08` Source Doctor V1 — `KEEP`.
-- Current implementation unit: `SRC-4D` (Jobicy cadence) / `OPS-05` (alert lifecycle) / `COMP-01B` (reviewed enforcement) / `DATA-05B` (provenance repair) — PLANNED, all BLOCKED on REL-08 acceptance. `DATA-06` taxonomy/eval convergence — PLANNED, independently ready off DATA-03.
+- Last Gauntlet decision: `DATA-06` taxonomy/triage-decision convergence — `KEEP`.
+- Current implementation unit: `OPS-05` (alert lifecycle) / `SRC-4D` (Jobicy cadence; needs 48h live evidence) / `DATA-05B` (provenance repair; needs human-approved evidence) — PLANNED, dependency-ready after REL-08. `COMP-01B` (reviewed enforcement) — PLANNED but gated on a complete reviewed robots observe window. `DATA-06B` (UI category consistency) — new follow-up spun out of DATA-06; user-visible product-taxonomy decision.
 - DATA-03 code commits: `1cca4b3` (generator + read-only workflow + fixture
   test) and `feb5f0b` (run cohorts per-command after a dispatched run proved
   multi-statement `--file` returns only a summary). Local G3: 495 tests, 0
@@ -128,13 +138,32 @@ OPS-06 remain KEEP. DATA-05A, REL-09, SEC-03, REL-10 remain KEEP.
   Remotely), enabled JSON (Remote OK), paused (ProBlogger), unknown ID — all
   produce correct terminal outcomes. Request budget bounded (≤2 for static).
   Zero mutations, zero AI calls, zero D1 writes.
+- DATA-06 acceptance: behavior commit `a014e71` converges the three new-item
+  ingestion decision paths onto the shared `decideTriage` +
+  `mapTriageCategoryToUiCategory`, removes the private duplicate mapper in
+  `scrape.ts`, additively enriches the `ai-unavailable` verdict variant to carry
+  the failed `triage` (preserving diagnostics), and adds a 30-case labelled eval
+  corpus (`packages/scraper/fixtures/triage-eval.json`) + cross-path anti-drift
+  guard (`packages/scraper/triage-eval.test.ts`). Behavior-preserving (verified
+  1:1 branch parity; fresh independent critic verdict SHIP). Local verification:
+  569 tests, 0 failures, 1,335 assertions; typecheck, build, guardrails passed.
+  CI/deploy run `32579585128` passed full suite (D1 migrations, FTS, Pages
+  deploy). Production smoke `/`, `/directory`, `/opportunities`, `/categories/tech`
+  all HTTP 200. Two deliberate exceptions documented in
+  `docs/gauntlet/evidence/DATA-06-taxonomy-convergence.md`: cheap-8B unclear-sweep
+  ladder kept distinct; display-side `getJobCategory` unification escalated as
+  new follow-up DATA-06B. No model/prompt/schema/source change; zero D1 writes by
+  the change itself.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `SRC-4D` (Jobicy cadence experiment), `OPS-05` (alert lifecycle),
-  `COMP-01B` (reviewed enforcement gate), or `DATA-05B` (provenance repair) — all
-  dependency-ready after REL-08. `DATA-06` taxonomy/eval convergence independently
-  ready off DATA-03. Source expansion remains frozen. OPS-04 follow-on (non-Cloudflare
-  link-health probe) remains separate future unit.
+- Next exact action: execute `OPS-05` (alert lifecycle — cleanest single-session
+  terminal, lowest blast radius) or begin `SRC-4D` (Jobicy cadence; diagnosis +
+  fix now, but KEEP needs 48h live evidence). `DATA-05B` (provenance repair) is
+  dependency-ready but its mutation needs a human-approved evidence file.
+  `COMP-01B` remains gated on a complete reviewed robots observe window.
+  `DATA-06B` (UI category consistency) is a new user-visible product-taxonomy
+  decision. Source expansion remains frozen. OPS-04 follow-on (non-Cloudflare
+  link-health probe) remains a separate future unit.
 
 Canonical planning artifacts:
 

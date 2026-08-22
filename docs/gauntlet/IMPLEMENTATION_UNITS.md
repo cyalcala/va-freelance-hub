@@ -754,7 +754,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Shared decision/mapping + adapters + labelled eval only. |
 | GITHUB BACKUP | G5. |
 | HANDOFF | G6 plus DTO version, removed duplicates, fixture license/source, metrics, disagreements, and critic result. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (`a014e71`; CI/deploy `32579585128`; 569 tests, 1,335 assertions; 30-case labelled eval + cross-path anti-drift guard; fresh critic SHIP; behavior-preserving 1:1 branch parity; sweep exception preserved; UI `getJobCategory` unification escalated as follow-up DATA-06B). Evidence: `docs/gauntlet/evidence/DATA-06-taxonomy-convergence.md` |
 
 ## SRC-4D — Investigate and adapt Jobicy combined-origin cadence
 

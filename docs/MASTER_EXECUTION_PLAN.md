@@ -564,25 +564,25 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, REL-10, OPS-06 deployed/accepted; DATA-03 read-only baseline KEEP; OPS-04 egress diagnostics deployed/accepted; production clock healthy at latest evidence
+CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, REL-10, OPS-06 deployed/accepted; DATA-03 read-only baseline KEEP; OPS-04 egress diagnostics KEEP; COMP-01A durable robots evidence KEEP (incl. DB layer); REL-08 Source Doctor V1 KEEP; DATA-06 taxonomy/triage-decision convergence deployed/accepted; production clock healthy at latest evidence
 CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: OPS-04 directory unreachable-spike diagnosis — KEEP
-CURRENT UNIT: OPS-04 complete; COMP-01A next
-CURRENT UNIT STATUS: TERMINAL OPS-04 verdict KEEP
-PRIMARY ADDY WORKFLOW: debugging-and-error-recovery
-ACTIVE SUPERPOWERS MECHANISM: systematic debugging (reproduce → classify → cross-runtime compare)
+LAST ACCEPTED GAUNTLET UNIT: DATA-06 taxonomy/triage-decision convergence — KEEP
+CURRENT UNIT: DATA-06 complete; OPS-05 or SRC-4D next
+CURRENT UNIT STATUS: TERMINAL DATA-06 verdict KEEP
+PRIMARY ADDY WORKFLOW: spec-driven-development
+ACTIVE SUPERPOWERS MECHANISM: fresh independent critic + verification-before-completion
 CURRENT EXECUTOR: repository executor
-CURRENT WORKTREE / BRANCH: main at accepted behavior 83f94d0 (auto-digest synced to 1e9f863)
-NEXT UNIT: COMP-01A durable robots evidence (only prereq DB-01 accepted); REL-08 and SRC-4D remain BLOCKED as its children; DATA-06 independently ready off DATA-03
-BLOCKERS: SEC-LEGACY-01 requires owner/provider action; REL-08 and SRC-4D blocked on COMP-01A
-CONTRADICTIONS: Section H recorded; PLUS Section AI queue lists COMP-01A as depending on REL-08 — stale/inverted; dependency tree + unit contracts are authoritative (COMP-01A precedes REL-08)
-AUTOMATION STATUS: OPS-04 CI/deploy 32568634636 passed; directory-pulse runs 32568721809 + 32568795476 green
+CURRENT WORKTREE / BRANCH: main at accepted behavior a014e71 (DATA-06 developed on codex/data-06-taxonomy-convergence, fast-forwarded to main)
+NEXT UNIT: OPS-05 alert lifecycle (cleanest single-session terminal, lowest blast radius) or SRC-4D Jobicy cadence (diagnosis+fix now, KEEP needs 48h live evidence). DATA-05B dependency-ready but mutation needs human-approved evidence. COMP-01B gated on a complete reviewed robots observe window. DATA-06B (UI category consistency) is a new user-visible product-taxonomy follow-up.
+BLOCKERS: SEC-LEGACY-01 requires owner/provider action; COMP-01B blocked on observe window; DATA-05B mutation blocked on human-approved evidence file
+CONTRADICTIONS: Section H recorded; the stale Section AI queue rows 8–11 remain superseded by the authoritative dependency tree (see the ordering-correction note under Section AI)
+AUTOMATION STATUS: DATA-06 CI/deploy 32579585128 passed (D1 migrations, FTS, Pages deploy); prior REL-08 CI 32576239721 green
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: accepted behavior 83f94d0
-LAST GITHUB BACKUP: 1e9f863 on origin/main (83f94d0 behavior + two auto-digest commits)
-LAST VERIFICATION EVIDENCE: local 513/0/1,191 + guardrails/typecheck/build; CI/deploy 32568634636; two live directory-pulse runs + cross-runtime probe
-NEXT EXACT ACTION: re-sync main and execute COMP-01A durable robots evidence (migration/schema unit — claim next unused migration number, fresh independent critic)
-NEXT RECOMMENDED MODEL: schema/compliance-capable executor + fresh critic for COMP-01A
+LAST VERIFIED COMMIT: accepted behavior a014e71
+LAST GITHUB BACKUP: a014e71 on origin/main
+LAST VERIFICATION EVIDENCE: local 569/0/1,335 + guardrails/typecheck/build; fresh critic SHIP; CI/deploy 32579585128; production smoke /, /directory, /opportunities, /categories/tech all HTTP 200
+NEXT EXACT ACTION: re-sync main and execute OPS-05 (alert lifecycle; pure lifecycle evaluator + workflow steps + synthetic issue acceptance) or begin SRC-4D diagnosis; fresh independent critic required for either
+NEXT RECOMMENDED MODEL: GitHub Actions/API automation executor + fresh ops critic for OPS-05
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after
