@@ -2,23 +2,25 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **DB-01 TERMINAL — KEEP**. Fresh/legacy D1 migration rehearsal passes locally and in CI; production deployment verified.
+Status: **REL-10 TERMINAL — KEEP**. Homepage detail-link contract restored; phEligibility field added to slim projection and typed; production deployment verified.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - DATA-05A execution started from synchronized `main`/`origin/main` at
   `451b76e`.
+- REL-10 execution started from synchronized `main`/`origin/main` at
+  `97b8dbc`.
 - Correct ownership statement: `remotephjobs.com` is external;
   `remotejobs-ph.pages.dev` is the project production site. The fix validates
   attribution and does not blacklist or claim ownership of the external host.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
   validation and correctly skipped production migration/deploy as docs-only.
-- Last accepted behavior: `857ca34`, deployed by run `32560891840`.
+- Last accepted behavior: `5690d54`, deployed by run `32561624073`.
 - Current scheduled evidence: watchdog `32550368138`, source health
   `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
   enrichment `32550872494` completed successfully. Green workflow conclusions
   do not waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `DB-01` fresh/legacy D1 migration rehearsal — `KEEP`.
-- Current implementation unit: `DB-01` (terminal).
+- Last Gauntlet decision: `REL-10` homepage detail-link contract — `KEEP`.
+- Current implementation unit: `REL-10` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -74,12 +76,19 @@ Status: **DB-01 TERMINAL — KEEP**. Fresh/legacy D1 migration rehearsal passes 
   HTTP 200.
 - Supplemental `bun audit` reported 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; dependency remediation is separate from DB-01.
-- Next implementation unit: `REL-10` homepage detail-link contract.
+- REL-10 acceptance: behavior commit `5690d54` adds `phEligibility` to the
+  homepage slim projection, types the card projection as `OpportunityCardData`,
+  and adds 7 focused contract tests. Local verification: 471 tests, 0 failures,
+  1,077 assertions; typecheck, build, and guardrails passed. CI/deploy run
+  `32561624073` passed full suite (471 tests, 1,077 assertions, typecheck,
+  build, guardrails, Pages deployed). Production smoke: `/`, `/directory`,
+  `/opportunities` all return HTTP 200.
+- Next implementation unit: `OPS-06` Hunter recovery lock alignment.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
 - Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
 - Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).
 
-The next accepted status update must name the REL-10 homepage contract
+The next accepted status update must name the OPS-06 Hunter lock alignment
 results, terminal decision, commit, push, workflow evidence, and bounded
 production proof.
 

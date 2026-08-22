@@ -2,10 +2,10 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **DB-01 TERMINAL — KEEP**. Fresh/legacy D1 migration rehearsal passes locally and in CI; production deployment verified.
+Status: **REL-10 TERMINAL — KEEP**. Homepage detail-link contract restored; phEligibility field added to slim projection and typed; production deployment verified.
 
 - Branch: `main`
-- DATA-05A execution start: `451b76e` (`main` = `origin/main` at start).
+- REL-10 execution start: `97b8dbc` (`main` = `origin/main` at start).
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
   indexing is allowed only through the existing compliance policy and never
@@ -14,14 +14,14 @@ Status: **DB-01 TERMINAL — KEEP**. Fresh/legacy D1 migration rehearsal passes 
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted behavior commit: `857ca34`
-- Last accepted behavior deployment: GitHub Actions run `32560891840`
+- Last accepted behavior commit: `5690d54`
+- Last accepted behavior deployment: GitHub Actions run `32561624073`
 - Current scheduled evidence: watchdog `32550368138`, source-health rollup
   `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
   enrichment pulse `32550872494` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `DB-01` fresh/legacy D1 migration rehearsal — `KEEP`.
-- Current implementation unit: `DB-01` (terminal).
+- Last Gauntlet decision: `REL-10` homepage detail-link contract — `KEEP`.
+- Current implementation unit: `REL-10` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -68,9 +68,16 @@ Status: **DB-01 TERMINAL — KEEP**. Fresh/legacy D1 migration rehearsal passes 
   typecheck, build, guardrails, D1 migrations applied, FTS verified, Pages
   deployed). Production smoke: `/`, `/directory`, `/opportunities` all return
   HTTP 200.
+- REL-10 acceptance: behavior commit `5690d54` adds `phEligibility` to the
+  homepage slim projection, types the card projection as `OpportunityCardData`,
+  and adds 7 focused contract tests. Local verification: 471 tests, 0 failures,
+  1,077 assertions; typecheck, build, and guardrails passed. CI/deploy run
+  `32561624073` passed full suite (471 tests, 1,077 assertions, typecheck,
+  build, guardrails, Pages deployed). Production smoke: `/`, `/directory`,
+  `/opportunities` all return HTTP 200.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `REL-10` homepage detail-link contract from
+- Next exact action: execute `OPS-06` Hunter recovery lock alignment from
   synchronized clean `main`; source expansion remains frozen.
 
 Canonical planning artifacts:

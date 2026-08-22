@@ -564,25 +564,25 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, and SEC-03 deployed and accepted; production clock healthy at latest evidence
+CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, and REL-10 deployed and accepted; production clock healthy at latest evidence
 CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: SEC-03 hostname trust hardening — KEEP
-CURRENT UNIT: SEC-03 complete; DB-01 next
-CURRENT UNIT STATUS: TERMINAL SEC-03 verdict KEEP
-PRIMARY ADDY WORKFLOW: security-and-hardening
+LAST ACCEPTED GAUNTLET UNIT: REL-10 homepage detail-link contract — KEEP
+CURRENT UNIT: REL-10 complete; OPS-06 next
+CURRENT UNIT STATUS: TERMINAL REL-10 verdict KEEP
+PRIMARY ADDY WORKFLOW: frontend-ui-engineering
 ACTIVE SUPERPOWERS MECHANISM: verification before completion
 CURRENT EXECUTOR: repository executor
-CURRENT WORKTREE / BRANCH: main at accepted behavior 6c48810
-NEXT UNIT: DB-01 fresh/legacy D1 migration rehearsal
+CURRENT WORKTREE / BRANCH: main at accepted behavior 5690d54
+NEXT UNIT: OPS-06 Hunter recovery lock alignment
 BLOCKERS: SEC-LEGACY-01 requires owner/provider action
 CONTRADICTIONS: Section H recorded; canonical entry docs rebased
-AUTOMATION STATUS: SEC-03 CI/migration/deploy 32557360004 passed; live Prospector 32557448855 passed with zero writes
+AUTOMATION STATUS: REL-10 CI/deploy 32561624073 passed; production smoke verified
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: accepted behavior 6c48810
-LAST GITHUB BACKUP: 6c48810 on origin/main; expected Prospector digest advanced main to 80f6d7d
-LAST VERIFICATION EVIDENCE: local 464/0/1,053 + guardrails/typecheck/build; CI/deploy 32557360004; Prospector 32557448855
-NEXT EXACT ACTION: re-sync main and execute DB-01 fresh/legacy D1 migration rehearsal
-NEXT RECOMMENDED MODEL: Cloudflare D1/SQLite migration executor for DB-01
+LAST VERIFIED COMMIT: accepted behavior 5690d54
+LAST GITHUB BACKUP: 5690d54 on origin/main
+LAST VERIFICATION EVIDENCE: local 471/0/1,077 + guardrails/typecheck/build; CI/deploy 32561624073; production smoke 200
+NEXT EXACT ACTION: re-sync main and execute OPS-06 Hunter recovery lock alignment
+NEXT RECOMMENDED MODEL: Cloudflare/TypeScript reliability executor for OPS-06
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after

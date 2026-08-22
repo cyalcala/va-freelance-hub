@@ -369,7 +369,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Projection + DTO/type + focused test only. |
 | GITHUB BACKUP | G5 with production homepage smoke. |
 | HANDOFF | G6 plus payload delta and link results for all eligibility states. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (`5690d54`; CI/deploy `32561624073`; production smoke verified) |
 
 ## OPS-06 — Make Hunter recovery compatible with the scrape lock
 
