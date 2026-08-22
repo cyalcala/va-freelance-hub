@@ -2,9 +2,10 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **OPS-06 TERMINAL — KEEP**. Hunter recovery loop aligned with 8-minute scrape lock; single-call contract verified; rapid 10×2s retry loop removed.
+Status: **DATA-03 TERMINAL — KEEP**. Fresh source-stratified read-only quality cohort baseline captured from remote D1; all partitions reconcile (zero deltas); no mutation authorized. OPS-06 remains KEEP (production behavior baseline).
 
 - Branch: `main`
+- DATA-03 execution start: `539b65b` (`main` = `origin/main` at start).
 - OPS-06 execution start: `060b2db` (`main` = `origin/main` at start).
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
@@ -14,12 +15,30 @@ Status: **OPS-06 TERMINAL — KEEP**. Hunter recovery loop aligned with 8-minute
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted behavior commit: `62acf5a`
+- Last accepted production behavior commit: `62acf5a` (OPS-06). DATA-03 adds a
+  read-only diagnostic generator, a manual-dispatch read-only workflow, and an
+  evidence report; it does not change production runtime and does not deploy.
 - Last accepted behavior deployment: GitHub Actions CI run `32563188313` passed full suite (481 tests, 1,113 assertions, typecheck, build, guardrails).
 - Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, CI `32563188313` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `OPS-06` Hunter recovery lock alignment — `KEEP`.
-- Current implementation unit: `OPS-06` (terminal).
+- Last Gauntlet decision: `DATA-03` read-only quality cohort baseline — `KEEP`.
+- Current implementation unit: `DATA-03` (terminal).
+- DATA-03 code commits: `1cca4b3` (generator + read-only workflow + fixture
+  test) and `feb5f0b` (run cohorts per-command after a dispatched run proved
+  multi-statement `--file` returns only a summary). Local G3: 495 tests, 0
+  failures, 1,155 assertions; typecheck, build, guardrails passed; focused
+  cohort test 14/14.
+- DATA-03 D1 read: `workflow_dispatch` run `32565032655` (head `feb5f0b`)
+  succeeded read-only (`rows_written: 0`, `changed_db: false`). asOf
+  `2026-08-22T00:00:00Z`; cutoffs stale=`2026-07-23`, unseen=`2026-08-08`.
+- DATA-03 baseline: 4,828 total / 1,283 active / 3,545 inactive. Active cohorts:
+  stale-30d `623`, unseen-14d `399`, never-verified `16`, missing-company `48`,
+  undated `0`. All 10 reconciliation deltas `0`. Active `1,283` matches E-03
+  public opportunities count. Key stratified findings: 45 of 48 missing-company
+  rows are Jobicy (100% of its active rows); staleness/`unclear` concentrate in
+  ATS engineering feeds; 49 duplicate groups / 74 excess rows dominated by
+  same-company Remote.com APAC reposts. Evidence:
+  `docs/gauntlet/evidence/DATA-03-quality-baseline.md`. No mutation authorized.
 - OPS-06 local verification: `bun test` passed 481 tests with 1,113 assertions and zero failures; `bun run typecheck`, `bun run build`, and `bun run audit:guardrails` passed locally on 2026-08-22; focused test `hunter-recovery.test.ts` 10/10 passed.
 - OPS-06 commit: `62acf5a`; GitHub Actions CI run `32563188313` passed.
 - Manual Hunter run `32563299530` completed: single scrape invocation, terminal state `needs-rerun` (zero new jobs after dedup), lock state `free`, backlog `0`, zero failed sources, zero insert errors; artifact `hunter-health-32563299530` uploaded.
@@ -67,8 +86,10 @@ Status: **OPS-06 TERMINAL — KEEP**. Hunter recovery loop aligned with 8-minute
   `/opportunities` all return HTTP 200.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `DATA-03` read-only quality cohort refresh from
-  synchronized clean `main`; source expansion remains frozen.
+- Next exact action: execute `OPS-04` (directory unreachable-spike diagnosis,
+  read-only; `SRC-4D` Jobicy cadence may parallel) from synchronized clean
+  `main`. `DATA-06` taxonomy/eval convergence is now unblocked by this DATA-03
+  baseline. Source expansion remains frozen.
 
 Canonical planning artifacts:
 

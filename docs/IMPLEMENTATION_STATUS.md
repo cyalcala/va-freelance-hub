@@ -2,7 +2,7 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **OPS-06 TERMINAL — KEEP**. Hunter recovery loop aligned with the eight-minute scrape lock; the rapid 10×2s retry loop is removed and a single-call contract with truthful lock/backlog handoff is verified.
+Status: **DATA-03 TERMINAL — KEEP**. A fresh, source-stratified, read-only data-quality cohort baseline was captured from remote D1 via a manual-dispatch workflow; all partitions reconcile (zero deltas) and the run was read-only (`rows_written: 0`). No mutation is authorized. OPS-06 remains KEEP as the last production-behavior baseline.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - DATA-05A execution started from synchronized `main`/`origin/main` at
@@ -14,12 +14,14 @@ Status: **OPS-06 TERMINAL — KEEP**. Hunter recovery loop aligned with the eigh
   attribution and does not blacklist or claim ownership of the external host.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
   validation and correctly skipped production migration/deploy as docs-only.
-- Last accepted behavior: `62acf5a`, verified by CI run `32563188313`.
+- Last accepted production behavior: `62acf5a` (OPS-06), verified by CI run
+  `32563188313`. DATA-03 adds read-only diagnostics/docs only; no deploy.
+- DATA-03 execution started from synchronized `main`/`origin/main` at `539b65b`.
 - Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, and
   CI `32563188313` completed successfully. Green workflow conclusions do not
   waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `OPS-06` Hunter recovery lock alignment — `KEEP`.
-- Current implementation unit: `OPS-06` (terminal).
+- Last Gauntlet decision: `DATA-03` read-only quality cohort baseline — `KEEP`.
+- Current implementation unit: `DATA-03` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -93,15 +95,34 @@ Status: **OPS-06 TERMINAL — KEEP**. Hunter recovery loop aligned with the eigh
   `needs-rerun` (zero new jobs after dedup), lock state `free`, backlog `0`,
   zero failed sources, zero insert errors; artifact `hunter-health-32563299530`
   uploaded. Docs-only change, so production Pages deploy was correctly skipped.
-- Next implementation unit: `DATA-03` read-only data-quality cohort refresh;
-  source expansion remains frozen.
+- DATA-03 acceptance: generator `scripts/diagnostics/data-quality-cohorts.ts`
+  (single-source read-only cohort SQL) with a 14-case `bun:sqlite` fixture test,
+  a manual-dispatch read-only workflow `gha-data-quality-cohorts.yml`, and
+  evidence report `docs/gauntlet/evidence/DATA-03-quality-baseline.md`. Code
+  commits `1cca4b3` + `feb5f0b` (the second runs cohorts per-`--command` after a
+  dispatched run proved multi-statement `--file` returns only a summary). Local
+  G3: 495 tests, 0 failures, 1,155 assertions; typecheck, build, guardrails
+  passed; focused cohort test 14/14. D1 read run `32565032655` (head `feb5f0b`)
+  succeeded read-only (`rows_written: 0`, `changed_db: false`). Baseline at asOf
+  `2026-08-22T00:00:00Z`: 4,828 total / 1,283 active / 3,545 inactive; active
+  stale-30d `623`, unseen-14d `399`, never-verified `16`, missing-company `48`,
+  undated `0`; all 10 reconciliation deltas `0`; active `1,283` matches the E-03
+  public opportunities count. Stratified: 45/48 missing-company rows are Jobicy;
+  staleness/`unclear` concentrate in ATS engineering feeds; 49 duplicate groups
+  / 74 excess rows dominated by same-company Remote.com APAC reposts. Query
+  plans show the active-row cohorts use `active_ph_eligibility_idx` with only a
+  sub-millisecond per-source temp B-tree. No mutation authorized.
+- Next implementation unit: `OPS-04` directory unreachable-spike diagnosis
+  (read-only; `SRC-4D` Jobicy cadence may parallel); `DATA-06` taxonomy/eval
+  convergence is now unblocked by the DATA-03 baseline. Source expansion remains
+  frozen.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
 - Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
 - Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).
 
-The next accepted status update must name the DATA-03 read-only quality cohort
-results, terminal decision, commit, push, workflow/read evidence, query plans,
-and reconciliation totals.
+The next accepted status update must name the OPS-04 directory-diagnosis
+results, terminal decision, commit, push, workflow evidence, and bounded
+cross-runtime comparison.
 
 ## Accepted Implementation History — historical below this checkpoint
 
