@@ -7,7 +7,11 @@ import { isAuthorized } from "@/lib/auth";
 import {
   buildVerifierFailureUpdate,
   buildVerifierSelectionQuery,
+  clampVerifierLimit,
+  isPlatformSubrequestLimitError,
   summarizeVerifierAttempts,
+  VERIFIER_LEGACY_REQUESTED_LIMIT,
+  VERIFIER_SAFE_FETCH_BUDGET,
   type VerifierAttemptResult,
 } from "@/lib/verifier-attempt";
 
@@ -61,13 +65,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // 2. Verify remaining active links.
-    // 2026-07-04 audit: at 50 links per run, twice a day, the queue could
-    // never drain (456 active rows had never been verified against ~30+ new
-    // rows arriving daily). 120 per run keeps the request bounded (HEAD only,
-    // 8s timeout, batches of 10) while letting the backlog shrink.
-    const VERIFY_LIMIT = 120;
+    // Workers Free permits 50 external subrequests per invocation and redirect
+    // hops count. The legacy request of 120 reproduced 71 network failures
+    // after 49 successes in run 32542676422. Clamp to 40, matching the accepted
+    // directory-audit precedent while retaining ten requests of headroom.
+    const requestedLimit = VERIFIER_LEGACY_REQUESTED_LIMIT;
+    const verifyLimit = clampVerifierLimit(requestedLimit);
     const active = await db.all<{ id: number; sourceUrl: string; failedCount: number }>(
-      buildVerifierSelectionQuery(VERIFY_LIMIT),
+      buildVerifierSelectionQuery(verifyLimit),
     );
 
     console.log(`[api/cron/verify-links] Checking ${active.length} oldest unverified links...`);
@@ -75,6 +80,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let attempted = 0;
     let succeeded = 0;
     let failedChecks = 0;
+    let platformBudgetFailures = 0;
     // Geo masterplan L4: a budget of each run's link checks are upgraded from
     // HEAD to GET so the landing page's visible text can be scanned for
     // disqualifiers our 1500-char stored description can't show (non-English
@@ -173,7 +179,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
               buildVerifierFailureUpdate(attemptedAt),
             ).where(eq(opportunities.id, id));
             console.warn(`[api/cron/verify-links] Failed checking ${safeSourceUrl}:`, (err as Error).message);
-            return { deactivated: 0, succeeded: false } satisfies VerifierAttemptResult;
+            return {
+              deactivated: 0,
+              succeeded: false,
+              platformBudgetFailure: isPlatformSubrequestLimitError(err),
+            } satisfies VerifierAttemptResult;
           }
           return { deactivated: 0, succeeded: true } satisfies VerifierAttemptResult;
         })
@@ -184,22 +194,53 @@ export const POST: APIRoute = async ({ request, locals }) => {
       succeeded += summary.succeeded;
       failedChecks += summary.failedChecks;
       deactivated += summary.deactivated;
+      platformBudgetFailures += summary.platformBudgetFailures;
     }
 
     // Surface the verification backlog so the workflow summary shows whether
     // the queue is draining instead of silently growing.
     let neverVerifiedRemaining = -1;
+    let verificationBacklog = -1;
     try {
-      const backlog = await db.select({ count: sql<number>`COUNT(*)` })
+      const backlog = await db.select({
+        count: sql<number>`COUNT(*)`,
+        neverVerified: sql<number>`SUM(CASE WHEN ${opportunities.lastVerifiedAt} IS NULL THEN 1 ELSE 0 END)`,
+      })
         .from(opportunities)
-        .where(sql`${opportunities.isActive} = 1 AND ${opportunities.lastVerifiedAt} IS NULL`);
-      neverVerifiedRemaining = backlog[0]?.count ?? -1;
+        .where(sql`${opportunities.isActive} = 1`);
+      verificationBacklog = backlog[0]?.count ?? -1;
+      neverVerifiedRemaining = backlog[0]?.neverVerified ?? -1;
     } catch (err) {
       console.warn("[api/cron/verify-links] Failed to compute never-verified backlog:", (err as Error).message);
     }
 
-    console.log(`[api/cron/verify-links] Completed. Attempted ${attempted}, succeeded ${succeeded}, failed ${failedChecks}, auto-archived ${stale.length}, deactivated ${deactivated} dead links (${geoPageDeactivated} by geo page-scan), never-verified backlog: ${neverVerifiedRemaining}.`);
-    return new Response(JSON.stringify({ attempted, succeeded, failedChecks, checked: succeeded, autoArchived: stale.length, deactivated, geoPageDeactivated, neverVerifiedRemaining }), {
+    // Add rows deactivated by this invocation back to the final active count
+    // before subtracting attempts, so deferred means "not selected this run"
+    // rather than being understated when a selected row is retired.
+    const deferred = verificationBacklog < 0
+      ? -1
+      : Math.max(0, verificationBacklog + deactivated - attempted);
+    const estimatedSweepDays = verificationBacklog < 0
+      ? -1
+      : Math.ceil(verificationBacklog / VERIFIER_SAFE_FETCH_BUDGET / 2);
+    console.log(`[api/cron/verify-links] Completed. Budget ${verifyLimit}/${requestedLimit}; attempted ${attempted}, succeeded ${succeeded}, failed ${failedChecks}, platform-budget failures ${platformBudgetFailures}, deferred ${deferred}, auto-archived ${stale.length}, deactivated ${deactivated} dead links (${geoPageDeactivated} by geo page-scan), never-verified backlog: ${neverVerifiedRemaining}.`);
+    return new Response(JSON.stringify({
+      requestedLimit,
+      budget: verifyLimit,
+      selected: active.length,
+      attempted,
+      deferred,
+      verificationBacklog,
+      estimatedSweepDays,
+      platformBudgetFailures,
+      succeeded,
+      failedChecks,
+      checked: succeeded,
+      autoArchived: stale.length,
+      deactivated,
+      geoPageDeactivated,
+      neverVerifiedRemaining,
+    }), {
       status: 200,
       headers: { "Content-Type": "application/json" }
     });

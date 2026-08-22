@@ -7,7 +7,7 @@ import {
   summarizeVerifierAttempts,
 } from "../src/lib/verifier-attempt";
 
-test("120 network failures rotate out so the next run selects a different cohort", () => {
+test("40 network failures rotate out so the next run selects a different cohort", () => {
   const database = new Database(":memory:");
   try {
     database.exec(`
@@ -22,7 +22,7 @@ test("120 network failures rotate out so the next run selects a different cohort
     const insert = database.prepare(
       "INSERT INTO opportunities VALUES (?, ?, ?, NULL, 1)",
     );
-    for (let id = 1; id <= 240; id += 1) {
+    for (let id = 1; id <= 80; id += 1) {
       insert.run(id, `https://example.com/${id}`, id % 3);
     }
 
@@ -36,7 +36,7 @@ test("120 network failures rotate out so the next run selects a different cohort
       }>;
     };
 
-    const first = select(120);
+    const first = select(40);
     const attemptedAt = "2026-08-13T01:00:00.000Z";
     const stamp = database.prepare("UPDATE opportunities SET last_verified_at = ? WHERE id = ?");
     for (const row of first) {
@@ -46,9 +46,9 @@ test("120 network failures rotate out so the next run selects a different cohort
       expect("isActive" in update).toBe(false);
     }
 
-    const second = select(120);
-    expect(first.map((row) => row.id)).toEqual(Array.from({ length: 120 }, (_, index) => index + 1));
-    expect(second.map((row) => row.id)).toEqual(Array.from({ length: 120 }, (_, index) => index + 121));
+    const second = select(40);
+    expect(first.map((row) => row.id)).toEqual(Array.from({ length: 40 }, (_, index) => index + 1));
+    expect(second.map((row) => row.id)).toEqual(Array.from({ length: 40 }, (_, index) => index + 41));
   } finally {
     database.close();
   }
@@ -60,5 +60,5 @@ test("attempt counters distinguish success, network failure, and rejected work",
     { status: "fulfilled", value: { deactivated: 0, succeeded: false } },
     { status: "fulfilled", value: { deactivated: 1, succeeded: true } },
     { status: "rejected", reason: new Error("D1 write failed") },
-  ])).toEqual({ attempted: 4, succeeded: 2, failedChecks: 2, deactivated: 1 });
+  ])).toEqual({ attempted: 4, succeeded: 2, failedChecks: 2, deactivated: 1, platformBudgetFailures: 0 });
 });

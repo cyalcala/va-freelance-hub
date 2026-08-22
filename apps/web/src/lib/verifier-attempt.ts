@@ -4,7 +4,27 @@ import { sql } from "drizzle-orm";
 export type VerifierAttemptResult = {
   deactivated: number;
   succeeded: boolean;
+  platformBudgetFailure?: boolean;
 };
+
+// Cloudflare Workers Free permits 50 external subrequests per invocation.
+// Redirect hops also consume that budget, so keep ten requests of headroom
+// rather than selecting right up to the platform ceiling.
+export const VERIFIER_EXTERNAL_SUBREQUEST_CAP = 50;
+export const VERIFIER_SAFE_FETCH_BUDGET = 40;
+export const VERIFIER_LEGACY_REQUESTED_LIMIT = 120;
+
+export function clampVerifierLimit(requested: number): number {
+  if (!Number.isFinite(requested) || requested < 1) {
+    return VERIFIER_SAFE_FETCH_BUDGET;
+  }
+  return Math.min(Math.floor(requested), VERIFIER_SAFE_FETCH_BUDGET);
+}
+
+export function isPlatformSubrequestLimitError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /too many subrequests|subrequest limit|subrequests exceeded/i.test(message);
+}
 
 export function buildVerifierSelectionQuery(limit: number) {
   return sql`
@@ -34,11 +54,12 @@ export function summarizeVerifierAttempts(
     summary.attempted += 1;
     if (result.status === "fulfilled") {
       summary.deactivated += result.value.deactivated;
+      if (result.value.platformBudgetFailure) summary.platformBudgetFailures += 1;
       if (result.value.succeeded) summary.succeeded += 1;
       else summary.failedChecks += 1;
     } else {
       summary.failedChecks += 1;
     }
     return summary;
-  }, { attempted: 0, succeeded: 0, failedChecks: 0, deactivated: 0 });
+  }, { attempted: 0, succeeded: 0, failedChecks: 0, deactivated: 0, platformBudgetFailures: 0 });
 }
