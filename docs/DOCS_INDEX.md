@@ -24,12 +24,17 @@ Read in this order before implementation:
 3. [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md) — exact
    downstream work orders; begin with read-only `REC-01`, then production unit
    `DATA-05A`.
-4. [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md) — bounded
+4. [Verbatim Operating Mandate](./gauntlet/OPERATING_MANDATE.md) — immutable
+   archive of all 3,482 lines of user-supplied source text. It is retained for
+   mandate audits and contradiction resolution; models should normally execute
+   from the compact master plan and unit ledger. Normalized UTF-8 SHA-256:
+   `08248bb5739dce34c21d8fc3a4b4f96df4d26e23785ee3cf52b409d4f25c68da`.
+5. [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md) — bounded
    reference evaluation; it is not permission to copy unrestricted access
    behavior.
-5. [Implementation Status](./IMPLEMENTATION_STATUS.md) and
+6. [Implementation Status](./IMPLEMENTATION_STATUS.md) and
    [Handoff](./HANDOFF.md) — accepted history and exact resume note.
-6. [AI Recovery Trail](./AI_RECOVERY_TRAIL.md) — backup, evidence, pause, and
+7. [AI Recovery Trail](./AI_RECOVERY_TRAIL.md) — backup, evidence, pause, and
    recovery protocol.
 
 Re-sync `main` before beginning a unit because machine-generated digest commits

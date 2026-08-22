@@ -3479,4 +3479,3 @@ And the ultimate engineering test is:
 If yes, the architecture of the engineering process is working.
 
 If no, improve the plan, repository memory, evidence, unit contracts, or handoff system until it can.
-

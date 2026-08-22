@@ -59,6 +59,7 @@ The recovery-driven roadmap is documented in:
 - `docs/AI_RECOVERY_TRAIL.md`
 - `docs/SYSTEM_SAVEPOINT.md`
 - `docs/DOCS_INDEX.md`
+- `docs/gauntlet/OPERATING_MANDATE.md` — verbatim archived source mandate
 - `docs/gauntlet/IMPLEMENTATION_UNITS.md`
 - `docs/research/agent-reach-study-2026-08-22.md`
 

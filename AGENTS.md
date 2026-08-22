@@ -71,6 +71,11 @@ Read the current authority in this order:
 4. `docs/IMPLEMENTATION_STATUS.md`
 5. generated `docs/*-latest.md` operational evidence
 
+The complete user-supplied Gauntlet source is archived verbatim at
+`docs/gauntlet/OPERATING_MANDATE.md`. It is immutable source evidence, not the
+compact default execution context; consult it for mandate audits or
+contradictions.
+
 Current 2026-08-22 planning baseline:
 
 - Planning began from clean synchronized `main`/`origin/main` at `bd84cc1`;
@@ -106,6 +111,7 @@ project's scope:
 Canonical recovery docs:
 
 - `docs/MASTER_EXECUTION_PLAN.md`
+- `docs/gauntlet/OPERATING_MANDATE.md`
 - `docs/gauntlet/IMPLEMENTATION_UNITS.md`
 - `docs/research/agent-reach-study-2026-08-22.md`
 - `docs/IMPLEMENTATION_STATUS.md`
