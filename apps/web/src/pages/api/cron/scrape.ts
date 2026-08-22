@@ -20,7 +20,7 @@ import {
 } from "@/lib/run-diagnostics";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, findRepeatedCrossCompanyApplyHosts, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, findRepeatedCrossCompanyApplyHosts, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict, atsEndpointUrl } from "@va-hub/scraper";
 
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
@@ -89,6 +89,10 @@ interface SourceFetchResult {
   robotsCrawlDelay?: number | null;
   /** True when enforce mode would have skipped this fetch. */
   robotsWouldBlock?: boolean;
+  /** Origin that was checked for robots.txt (COMP-01A). */
+  robotsOrigin?: string | null;
+  /** Gate mode used for this decision (COMP-01A). */
+  robotsMode?: RobotsMode;
 }
 
 export function normalizeScrapedItems(rawItems: NewOpportunity[]): {
@@ -1342,12 +1346,13 @@ interface FetchEventLogResult {
   errors: string[];
 }
 
-// source_fetch_events rows bind 12 SQL variables each. D1 rejects statements
-// with more than 100 bound parameters, so a full run's ~25 source results in a
-// single insert always failed with "too many SQL variables" — silently, because
-// the failure only reached console.warn. Chunk the insert and surface the
-// outcome in the scrape response so Hunter can annotate regressions.
-const FETCH_EVENT_COLUMNS = 12;
+// source_fetch_events rows bind 18 SQL variables each (added 6 robots columns
+// in COMP-01A). D1 rejects statements with more than 100 bound parameters,
+// so a full run's ~25 source results in a single insert always failed with
+// "too many SQL variables" — silently, because the failure only reached
+// console.warn. Chunk the insert and surface the outcome in the scrape
+// response so Hunter can annotate regressions.
+const FETCH_EVENT_COLUMNS = 18;
 
 async function recordSourceFetchEvents(
   db: AppDb,
@@ -1367,6 +1372,13 @@ async function recordSourceFetchEvents(
     durationMs: r.durationMs ?? 0,
     error: r.error ?? null,
     skipReason: r.skipReason ?? null,
+    // Robots provenance (COMP-01A): durable evidence for every static/ATS fetch.
+    robotsOrigin: r.robotsOrigin ?? null,
+    robotsVerdict: r.robotsVerdict ?? null,
+    robotsEvidence: r.robotsEvidence ?? null,
+    robotsCrawlDelay: r.robotsCrawlDelay ?? null,
+    robotsWouldBlock: r.robotsWouldBlock ?? null,
+    robotsMode: r.robotsMode ?? null,
   }));
 
   const outcome: FetchEventLogResult = {
@@ -1768,15 +1780,64 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const fetchOneAts = async (agency: typeof uniqueAtsAgencies[number]): Promise<SourceFetchResult> => {
       const policy = atsPlatformPolicy(agency);
       const key = atsSourceKey(agency);
-      const result = await fetchSourceWithStatus(
-        agency.companyName,
-        "ATS",
-        "public_ats_json",
-        policy.complianceStatus,
-        policy.complianceNotes,
-        () => fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName),
-        key
-      );
+      const atsUrl = atsEndpointUrl(agency.atsPlatform as any, agency.atsToken as string);
+
+      // Check robots.txt for the ATS endpoint origin (COMP-01A: ATS fetches now
+      // participate in the robots gate so every fetch attempt leaves a durable
+      // robots decision record. Runs in observe mode only.)
+      const robots = await checkRobots(atsUrl, {
+        store: createRobotsStore(db),
+        mode: ROBOTS_MODE,
+        userAgent: COLLECTION_USER_AGENT,
+      }).catch((error) => {
+        console.warn(`[api/cron/scrape] Robots gate failed for ATS ${agency.companyName} (${atsUrl}):`, errorMessage(error));
+        return null;
+      });
+
+      let result: SourceFetchResult;
+      if (robots && !robots.allowed) {
+        result = skippedAtsResult({
+          agency,
+          policy,
+          skipReason: `robots.txt disallows this fetch — ${robots.evidence}`,
+        });
+        // Still attach robots provenance so the event records the decision.
+        result.robotsVerdict = robots.verdict;
+        result.robotsEvidence = robots.evidence;
+        result.robotsCrawlDelay = robots.crawlDelay;
+        result.robotsWouldBlock = robots.wouldBlock;
+        result.robotsOrigin = robots.fromCache ? robots.evidence.includes("cached") ? null : new URL(atsUrl).origin : new URL(atsUrl).origin;
+        result.robotsMode = robots.mode;
+      } else {
+        result = await fetchSourceWithStatus(
+          agency.companyName,
+          "ATS",
+          "public_ats_json",
+          policy.complianceStatus,
+          policy.complianceNotes,
+          () => fetchATSFeed(agency.atsPlatform as any, agency.atsToken as string, agency.companyName),
+          key
+        );
+        // Attach robots provenance for successful fetches too.
+        if (robots) {
+          result.robotsVerdict = robots.verdict;
+          result.robotsEvidence = robots.evidence;
+          result.robotsCrawlDelay = robots.crawlDelay;
+          result.robotsWouldBlock = robots.wouldBlock;
+          try {
+            result.robotsOrigin = new URL(atsUrl).origin;
+          } catch {
+            result.robotsOrigin = null;
+          }
+          result.robotsMode = robots.mode;
+          if (robots.wouldBlock) {
+            console.warn(
+              `[api/cron/scrape] robots would block ATS ${agency.companyName} in enforce mode: ${robots.evidence}`,
+            );
+          }
+        }
+      }
+
       if (result.ok && agency.atsPlatform === "workable") {
         try {
           await db.update(vaDirectory)

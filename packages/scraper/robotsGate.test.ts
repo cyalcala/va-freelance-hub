@@ -315,3 +315,100 @@ describe("decideFromEntry", () => {
     expect(decideFromEntry(entry, "https://example.com/x").verdict).toBe("unknown");
   });
 });
+
+describe("checkRobots — ATS endpoint integration (COMP-01A)", () => {
+  test("checks robots for a Lever ATS endpoint", async () => {
+    const store = memoryStore();
+    const result = await checkRobots("https://api.lever.co/v0/postings/test?mode=json", {
+      store,
+      now,
+      mode: "observe",
+      fetchImpl: async () => response("User-agent: *\nAllow: /"),
+    });
+
+    expect(result.verdict).toBe("allowed");
+    expect(result.allowed).toBe(true);
+    expect(result.mode).toBe("observe");
+  });
+
+  test("checks robots for a Greenhouse ATS endpoint", async () => {
+    const store = memoryStore();
+    const result = await checkRobots("https://boards-api.greenhouse.io/v1/boards/test/jobs", {
+      store,
+      now,
+      mode: "observe",
+      fetchImpl: async () => response("User-agent: *\nDisallow: /"),
+    });
+
+    expect(result.verdict).toBe("disallowed");
+    expect(result.wouldBlock).toBe(true);
+    expect(result.allowed).toBe(true); // observe mode
+  });
+
+  test("checks robots for a Workable ATS endpoint", async () => {
+    const store = memoryStore();
+    const result = await checkRobots("https://apply.workable.com/api/v3/accounts/test/jobs", {
+      store,
+      now,
+      mode: "observe",
+      fetchImpl: async () => response("User-agent: *\nAllow: /", 200),
+    });
+
+    expect(result.verdict).toBe("allowed");
+    expect(result.crawlDelay).toBeNull();
+  });
+
+  test("checks robots for a Breezy ATS endpoint", async () => {
+    const store = memoryStore();
+    const result = await checkRobots("https://test.breezy.hr/json", {
+      store,
+      now,
+      mode: "enforce",
+      fetchImpl: async () => response("User-agent: *\nDisallow: /json", 200),
+    });
+
+    expect(result.verdict).toBe("disallowed");
+    expect(result.allowed).toBe(false);
+  });
+
+  test("checks robots for an Ashby ATS endpoint", async () => {
+    const store = memoryStore();
+    const result = await checkRobots("https://api.ashbyhq.com/posting-api/job-board/test", {
+      store,
+      now,
+      mode: "observe",
+      fetchImpl: async () => response("User-agent: *\nAllow: /", 200),
+    });
+
+    expect(result.verdict).toBe("allowed");
+    expect(result.allowed).toBe(true);
+  });
+
+  test("caches by origin across ATS endpoints on the same host", async () => {
+    const store = memoryStore();
+    let fetches = 0;
+    const fetchImpl = async () => {
+      fetches += 1;
+      return response("User-agent: *\nAllow: /");
+    };
+
+    // Two different Ashby tokens on the same host
+    await checkRobots("https://api.ashbyhq.com/posting-api/job-board/token1", { store, now, fetchImpl });
+    await checkRobots("https://api.ashbyhq.com/posting-api/job-board/token2", { store, now, fetchImpl });
+
+    expect(fetches).toBe(1);
+  });
+
+  test("network failure for ATS endpoint degrades to unknown", async () => {
+    const result = await checkRobots("https://api.lever.co/v0/postings/test?mode=json", {
+      store: memoryStore(),
+      now,
+      mode: "enforce",
+      fetchImpl: async () => { throw new Error("ENOTFOUND"); },
+    });
+
+    expect(result.verdict).toBe("unknown");
+    expect(result.allowed).toBe(false);
+    expect(result.evidence).toContain("ENOTFOUND");
+  });
+});
