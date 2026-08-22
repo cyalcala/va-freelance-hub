@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "bun run --cwd apps/web dev",
     "build": "bun run --cwd apps/web build",
-    "test": "bun test packages/scraper packages/db apps/web/tests scripts/ci scripts/gha workers/freshness-cron/src",
+    "test": "bun test packages/scraper packages/db apps/web/tests scripts/ci scripts/gha scripts/diagnostics workers/freshness-cron/src",
     "typecheck": "bunx tsc --noEmit -p apps/web/tsconfig.json",
     "audit:guardrails": "bun scripts/ci/check-production-guardrails.ts",
     "verify": "bun run test && bun run typecheck && bun run build",
