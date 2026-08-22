@@ -2,8 +2,8 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **DATA-05A IN PROGRESS**. Local containment and exact incident repair
-are implemented; no production acceptance is claimed yet.
+Status: **DATA-05A TERMINAL — KEEP**. Containment and the exact incident repair
+are deployed and production-accepted.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - DATA-05A execution started from synchronized `main`/`origin/main` at
@@ -13,13 +13,13 @@ are implemented; no production acceptance is claimed yet.
   attribution and does not blacklist or claim ownership of the external host.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
   validation and correctly skipped production migration/deploy as docs-only.
-- Last accepted behavior: `07f582b`, deployed by run `32475868471`.
+- Last accepted behavior: `b824600`, deployed by run `32555307405`.
 - Current scheduled evidence: watchdog `32550368138`, source health
   `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
   enrichment `32550872494` completed successfully. Green workflow conclusions
   do not waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `REC-01` worktree inventory — `KEEP`.
-- Current implementation unit: `REC-01` (completed).
+- Last Gauntlet decision: `DATA-05A` data-integrity containment — `KEEP`.
+- Current implementation unit: `DATA-05A` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -31,20 +31,29 @@ are implemented; no production acceptance is claimed yet.
   `candidate for archive` (apex-ai-revert, apex-gauntlet, apex-sec01,
   major-quality-audit, production-apex-audit-2026-08-09, production-release).
 - First queued preflight: `REC-01` completed.
-- Current production implementation unit: `DATA-05A`, containing cross-source
-  apply URLs, protecting legacy clicks, retiring job-to-company website
-  inference, and repairing only the reviewed incident cohort.
+- Accepted production unit `DATA-05A` contains cross-source apply URLs,
+  protects legacy clicks, retires job-to-company website inference, and
+  repairs only the reviewed incident cohort.
 - Fresh read-only D1 pre-migration inventory: 169 cross-source application
   rows and 8 reviewed directory assignments; 0 same-source rows currently
   exist, and the preservation case is regression-tested. Query metadata
   reported `changed_db=false` and 0 rows written.
+- Post-deploy read-only D1: exact-host cross-source rows `0`; reviewed
+  assignments remaining `0`; all eight reviewed directory rows repaired;
+  migration `0031` recorded; query metadata remained read-only.
+- Acceptance runs: CI/deploy `32555307405`; enrichment `32555452346` returned
+  `websiteSet=0`; Hunter `32556180387` exposed
+  `quarantinedApplicationUrls=0`, no anomalous hosts, 42/42 fetch events, and
+  no failed sources or insert batches.
+- Fresh local acceptance at `d269755`: 457 tests, 0 failures, 1,210 assertions;
+  typecheck, build, and guardrails passed.
+- Next implementation unit: `REL-09` verifier budget safety.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
 - Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
 - Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).
 
-No percentage is awarded for planning alone. The next accepted status update
-must name a terminal unit decision, fresh verification, commit, push, workflow
-evidence, and any production proof required by that unit.
+The next accepted status update must name a terminal REL-09 decision, fresh
+verification, commit, push, workflow evidence, and bounded production proof.
 
 ## Accepted Implementation History — historical below this checkpoint
 

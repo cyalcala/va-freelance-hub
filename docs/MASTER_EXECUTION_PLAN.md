@@ -6,9 +6,8 @@
 
 **Planning baseline:** `bd84cc1` (`main` = `origin/main` when the audit closed)
 
-**Latest accepted behavior:** `07f582b`, CI/deploy run `32475868471`
-**Current DATA-05 incident start SHA:** `451b76e` (`main` = `origin/main` at
-execution start; acceptance is still pending)
+**Latest accepted behavior:** `b824600`, CI/deploy run `32555307405`
+**DATA-05A execution start SHA:** `451b76e`; terminal decision `KEEP`
 **Authority:** this section is the current strategic plan. The accepted P0–P7
 recovery roadmap is retained below as historical evidence, not as the current
 queue.
@@ -565,25 +564,25 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: production clock healthy at latest evidence; DATA-05 open
+CURRENT VERIFIED SYSTEM STATE: DATA-05A containment deployed and accepted; production clock healthy at latest evidence
 CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: DOC-STATE-01 planning package — KEEP
-CURRENT UNIT: none; implementation has not started
-CURRENT UNIT STATUS: TERMINAL planning verdict KEEP
-PRIMARY ADDY WORKFLOW: planning-and-task-breakdown
-ACTIVE SUPERPOWERS MECHANISM: targeted parallel evidence/doc ownership only
-CURRENT EXECUTOR: Sol-class planner (this task)
-CURRENT WORKTREE / BRANCH: main at planning commit d21cd9e
-NEXT UNIT: REC-01 read-only continuity inventory, then DATA-05A
+LAST ACCEPTED GAUNTLET UNIT: DATA-05A data-integrity containment — KEEP
+CURRENT UNIT: DATA-05A complete; REL-09 next
+CURRENT UNIT STATUS: TERMINAL DATA-05A verdict KEEP
+PRIMARY ADDY WORKFLOW: incremental-implementation
+ACTIVE SUPERPOWERS MECHANISM: verification before completion
+CURRENT EXECUTOR: repository executor
+CURRENT WORKTREE / BRANCH: main at automation digest d269755
+NEXT UNIT: REL-09 verifier budget safety
 BLOCKERS: SEC-LEGACY-01 requires owner/provider action
 CONTRADICTIONS: Section H recorded; canonical entry docs rebased
-AUTOMATION STATUS: planning CI 32552942171 passed; deploy skipped as docs-only
+AUTOMATION STATUS: DATA-05A CI/migration/deploy 32555307405 passed; Hunter acceptance 32556180387 passed
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: planning d21cd9e; accepted behavior 07f582b
-LAST GITHUB BACKUP: d21cd9e on origin/main
-LAST VERIFICATION EVIDENCE: local 454/0/1,209 + guardrails/typecheck/build; CI 32552942171
-NEXT EXACT ACTION: re-sync main and execute read-only REC-01 without cleanup
-NEXT RECOMMENDED MODEL: Nemotron-capable executor for REC-01; Claude-capable for DATA-05A
+LAST VERIFIED COMMIT: accepted behavior b824600; automation digest d269755
+LAST GITHUB BACKUP: d269755 on origin/main
+LAST VERIFICATION EVIDENCE: local 457/0/1,210 + guardrails/typecheck/build; CI/deploy 32555307405; Hunter 32556180387
+NEXT EXACT ACTION: re-sync main and execute REL-09 verifier budget safety
+NEXT RECOMMENDED MODEL: bounded TypeScript/Cloudflare executor for REL-09
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after

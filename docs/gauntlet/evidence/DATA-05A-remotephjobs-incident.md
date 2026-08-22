@@ -4,7 +4,7 @@ Date: 2026-08-22
 
 Execution start: `451b76e` (`main` = `origin/main`)
 
-Status: `IN_PROGRESS`
+Status: `TERMINAL — KEEP`
 
 ## Ownership and compliance boundary
 
@@ -54,11 +54,47 @@ value predicates: it changes cross-source application URLs to `source_url` and
 clears only the eight named directory assignments while preserving same-source
 `remotephjobs.com` rows.
 
-## Acceptance still required
+## Acceptance evidence
 
-- full local G3 verification;
-- review/commit/push through the normal repository path;
-- CI and deployment run IDs;
-- read-only pre/post D1 counts proving the exact cohort changed;
-- a scrape response exposing quarantine/anomaly counters;
-- an enrichment response with `websiteSet=0` and preserved ATS behavior.
+- Base/head: `451b76e` -> behavioral commit `b824600`; branch `main`.
+  Automation then advanced the clean synchronized tree to `d269755` with the
+  generated enrichment digest.
+- Fresh local G3 at `d269755`: `bun run test` passed 457 tests with 1,210
+  assertions and zero failures; `bun run typecheck`, `bun run build`, and
+  `bun run audit:guardrails` passed on 2026-08-22.
+- CI/release: run `32555307405` passed validation, tests, guardrails, build,
+  typecheck, migration `0031`, FTS integrity, and Cloudflare Pages deployment.
+- Read-only post-migration D1 evidence: exact-host cross-source rows remaining
+  `0`; reviewed directory assignments remaining `0`; all eight reviewed rows
+  have a null website plus the incident note; migration `0031` is recorded;
+  query metadata reported `changed_db=false` and `rows_written=0`.
+- First post-deploy enrichment: run `32555452346` returned HTTP 200 with
+  `websiteSet=0`, `hiringPageSet=0`, and zero errors. ATS set-once behavior is
+  preserved by the focused fixture, which still proves `hiringPageSet=1`.
+- Bounded scrape acceptance: manual Hunter run `32556180387` completed with
+  `quarantinedApplicationUrls=0`, `anomalousApplicationHosts=[]`, 42/42 fetch
+  events recorded, zero failed sources, and zero failed insert batches. Two
+  earlier acceptance attempts (`32555450731`, `32556110039`) correctly returned
+  `run-lock-held` and were not treated as scrape evidence.
+- Same-source `remotephjobs.com` preservation is covered by both URL and
+  migration fixtures; no such production row existed before or after repair.
+
+## Terminal handoff
+
+- Decision: `KEEP`.
+- Files changed: the shared URL boundary and exports, scrape/direct/Inngest
+  writers, click resolution, directory enrichment, migration `0031`, focused
+  tests, and this unit's directly coupled recovery documents.
+- Evidence status: production containment and exact incident repair verified;
+  broader directory provenance remains intentionally deferred to DATA-05B.
+- Assumption preserved: an external hostname is neither owned nor globally
+  banned; attribution is evaluated per source relationship.
+- Remaining DATA-05A acceptance items: none.
+- Blocker/stop condition: none triggered.
+- Rollback point: parent of `b824600`; never restore heuristic website writes
+  without DATA-05B-grade provenance.
+- Next exact action: execute REL-09 verifier budget safety from a freshly
+  synchronized clean `main`.
+- Recommended capability: bounded TypeScript/Cloudflare executor comfortable
+  reproducing subrequest ceilings and distinguishing platform exhaustion from
+  target failure.

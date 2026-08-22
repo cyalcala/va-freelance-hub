@@ -144,12 +144,12 @@ Migration-writing units are sequential even when their functional work is otherw
 | REVERT | Revert the single commit only if ATS/verification regression is proven; do not restore heuristic website writes without DATA-05B-grade provenance. |
 | STOP CONDITIONS | Discovery that another active caller relies on `websiteSet>0`, or that removing the branch changes verification/visibility semantics. |
 | ESCALATION | Resolve product/data contract before broadening; do not substitute a different inference heuristic. |
-| DOCUMENTATION | Record the ownership distinction, exact repaired cohort, and execution state; acceptance remains pending until deployment evidence exists. |
+| DOCUMENTATION | Ownership distinction, exact repaired cohort, and terminal evidence are recorded in `docs/gauntlet/evidence/DATA-05A-remotephjobs-incident.md`. |
 | COMMIT PLAN | `fix(data): contain cross-source job URL poisoning`. |
 | COMMIT BOUNDARY | Shared URL boundary + active callers + directory containment + exact incident migration/tests + directly coupled documentation only. |
 | GITHUB BACKUP | G5; production evidence must identify the first enrichment run after deploy. |
 | HANDOFF | G6 plus pre/post target SQL, preserved behaviors, `websiteSet`/`hiringPageSet` results, and whether DATA-05B prerequisites are now satisfied. |
-| STATUS | IN_PROGRESS |
+| STATUS | TERMINAL — KEEP (`b824600`; CI/deploy `32555307405`; Hunter acceptance `32556180387`) |
 
 ## REL-09 — Bound verifier external subrequests
 

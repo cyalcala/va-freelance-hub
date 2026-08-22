@@ -2,8 +2,8 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **DATA-05A IN PROGRESS**. Cross-source apply-link and directory-domain
-incident containment is implemented locally; production acceptance is pending.
+Status: **DATA-05A TERMINAL — KEEP**. Cross-source apply-link and
+directory-domain incident containment is deployed and production-accepted.
 
 - Branch: `main`
 - DATA-05A execution start: `451b76e` (`main` = `origin/main` at start).
@@ -15,14 +15,14 @@ incident containment is implemented locally; production acceptance is pending.
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted behavior commit: `07f582b`
-- Last accepted behavior deployment: GitHub Actions run `32475868471`
+- Last accepted behavior commit: `b824600`
+- Last accepted behavior deployment: GitHub Actions run `32555307405`
 - Current scheduled evidence: watchdog `32550368138`, source-health rollup
   `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
   enrichment pulse `32550872494` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `REC-01` worktree inventory — `KEEP`.
-- Current implementation unit: `REC-01` (completed).
+- Last Gauntlet decision: `DATA-05A` data-integrity containment — `KEEP`.
+- Current implementation unit: `DATA-05A` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -34,14 +34,19 @@ incident containment is implemented locally; production acceptance is pending.
   requiring owner review before disposition; 6 entries classified as
   `candidate for archive` (apex-ai-revert, apex-gauntlet, apex-sec01,
   major-quality-audit, production-apex-audit-2026-08-09, production-release).
-- Current production implementation: `DATA-05A` — source-attributable apply
-  URLs, legacy click fallback, directory inference removal, and exact incident
-  repair. No feature or source-expansion work may resume before acceptance.
+- Accepted DATA-05A behavior: source-attributable apply URLs, legacy click
+  fallback, directory inference removal, and exact incident repair.
 - Fresh read-only pre-migration D1 inventory: 169 cross-source application
   rows, 8 reviewed directory assignments, 0 current same-source rows;
   `changed_db=false`, 0 rows written.
-- Next exact action: finish G3 verification, review the exact migration diff,
-  then use the normal commit/push/CI/deploy path and record pre/post counts.
+- Post-deploy acceptance: exact-host cross-source rows `0`; reviewed directory
+  assignments remaining `0`; eight reviewed rows repaired; first enrichment
+  run `32555452346` returned `websiteSet=0`; bounded Hunter run `32556180387`
+  exposed zero quarantines/anomalies and recorded 42/42 fetch events.
+- Fresh local acceptance at automation-advanced `d269755`: 457 tests, 0
+  failures, 1,210 assertions; typecheck, build, and guardrails passed.
+- Next exact action: execute `REL-09` verifier budget safety from synchronized
+  clean `main`; source expansion remains frozen behind the documented gates.
 
 Canonical planning artifacts:
 
