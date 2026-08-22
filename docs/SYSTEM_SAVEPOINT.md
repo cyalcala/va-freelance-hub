@@ -2,9 +2,14 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **DATA-03 TERMINAL — KEEP**. Fresh source-stratified read-only quality cohort baseline captured from remote D1; all partitions reconcile (zero deltas); no mutation authorized. OPS-06 remains KEEP (production behavior baseline).
+Status: **OPS-04 TERMINAL — KEEP**. Bounded egress diagnostics shipped and
+verified live: the directory `unreachable` cohort is a Cloudflare egress-side
+transport failure (EGRESS_BLOCKED against alive origins), not origin death;
+strikes/visibility/gate byte-for-byte unchanged. DATA-03 remains KEEP (read-only
+quality baseline). OPS-06 remains KEEP (production behavior baseline).
 
 - Branch: `main`
+- OPS-04 execution start: `6146290` (`main` = `origin/main` at start).
 - DATA-03 execution start: `539b65b` (`main` = `origin/main` at start).
 - OPS-06 execution start: `060b2db` (`main` = `origin/main` at start).
 - Ownership boundary: `remotephjobs.com` is an external site;
@@ -21,8 +26,8 @@ Status: **DATA-03 TERMINAL — KEEP**. Fresh source-stratified read-only quality
 - Last accepted behavior deployment: GitHub Actions CI run `32563188313` passed full suite (481 tests, 1,113 assertions, typecheck, build, guardrails).
 - Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, CI `32563188313` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `DATA-03` read-only quality cohort baseline — `KEEP`.
-- Current implementation unit: `DATA-03` (terminal).
+- Last Gauntlet decision: `OPS-04` directory unreachable-spike diagnosis — `KEEP`.
+- Current implementation unit: `OPS-04` (terminal).
 - DATA-03 code commits: `1cca4b3` (generator + read-only workflow + fixture
   test) and `feb5f0b` (run cohorts per-command after a dispatched run proved
   multi-statement `--file` returns only a summary). Local G3: 495 tests, 0
@@ -39,6 +44,29 @@ Status: **DATA-03 TERMINAL — KEEP**. Fresh source-stratified read-only quality
   ATS engineering feeds; 49 duplicate groups / 74 excess rows dominated by
   same-company Remote.com APAC reposts. Evidence:
   `docs/gauntlet/evidence/DATA-03-quality-baseline.md`. No mutation authorized.
+- OPS-04 behavior commit: `83f94d0` (`feat(directory): expose bounded egress
+  diagnostics`). Adds a runtime-agnostic `classifyUnreachableError()` taxonomy
+  (TIMEOUT/DNS/TLS/CONNECT/EGRESS_BLOCKED/REQUEST_ERROR/UNKNOWN_NETWORK) + a
+  `<=40`-char cause code, populates `unreachableCode/unreachableReason`,
+  aggregates per-run reason counts + capped redacted hostname samples in the
+  audit response, and surfaces the distribution in the digest/job summary.
+  Strikes, de-verify threshold, visibility, URL immutability, 40-row budget,
+  concurrency 8, and the 80% systemic gate are unchanged.
+- OPS-04 local G3: 513 tests, 0 failures, 1,191 assertions; typecheck, build,
+  guardrails passed (bun 1.3.14). Focused: scraper linkHealth 33/33, web
+  directory-health 8/8.
+- OPS-04 CI/deploy: run `32568634636` success (full suite, D1 migrations, FTS
+  verify, Pages deploy job `97020879509`).
+- OPS-04 live evidence: two Cloudflare cohorts — run `32568721809` (#1) checked
+  40 → 5 unreachable, all `EGRESS_BLOCKED`, ratio 12.5%, not degraded; run
+  `32568795476` (#2) checked 40 → 0 unreachable, ratio 0%. Bounded cross-runtime
+  probe re-checked the five #1 hosts (`ph.indeed.com`, `ph.jobstreet.com`,
+  `hellorache.com`, `jobquest.ph`, `bottleneck.ph`) from a non-Cloudflare
+  runtime: 2 bot_wall (HTTP 403, alive), 3 ok (HTTP 200), 0 dead. Supported
+  cause: Cloudflare egress-side transport failure, not origin death; no strike
+  change warranted. Auto-digest sync commits `a329efc`, `1e9f863`. Evidence:
+  `docs/gauntlet/evidence/OPS-04-unreachable-diagnosis.md`. Remediation (a
+  non-Cloudflare probe path) is a separate future unit, not folded into OPS-04.
 - OPS-06 local verification: `bun test` passed 481 tests with 1,113 assertions and zero failures; `bun run typecheck`, `bun run build`, and `bun run audit:guardrails` passed locally on 2026-08-22; focused test `hunter-recovery.test.ts` 10/10 passed.
 - OPS-06 commit: `62acf5a`; GitHub Actions CI run `32563188313` passed.
 - Manual Hunter run `32563299530` completed: single scrape invocation, terminal state `needs-rerun` (zero new jobs after dedup), lock state `free`, backlog `0`, zero failed sources, zero insert errors; artifact `hunter-health-32563299530` uploaded.
@@ -86,10 +114,12 @@ Status: **DATA-03 TERMINAL — KEEP**. Fresh source-stratified read-only quality
   `/opportunities` all return HTTP 200.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `OPS-04` (directory unreachable-spike diagnosis,
-  read-only; `SRC-4D` Jobicy cadence may parallel) from synchronized clean
-  `main`. `DATA-06` taxonomy/eval convergence is now unblocked by this DATA-03
-  baseline. Source expansion remains frozen.
+- Next exact action: execute `SRC-4D` (Jobicy same-origin 429 cadence
+  diagnosis, read-only; the order-8 partner to the now-terminal `OPS-04`) from
+  synchronized clean `main`. `REL-08` Source Doctor V1 (deps `SEC-03`+`DATA-03`
+  satisfied) and `DATA-06` taxonomy/eval convergence (dep `DATA-03` satisfied)
+  are also now unblocked. Source expansion remains frozen. OPS-04 follow-on: a
+  non-Cloudflare link-health probe path is a separate unit if prioritized.
 
 Canonical planning artifacts:
 

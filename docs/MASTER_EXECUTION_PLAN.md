@@ -564,25 +564,25 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, and REL-10 deployed and accepted; production clock healthy at latest evidence
+CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, REL-10, OPS-06 deployed/accepted; DATA-03 read-only baseline KEEP; OPS-04 egress diagnostics deployed/accepted; production clock healthy at latest evidence
 CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: REL-10 homepage detail-link contract — KEEP
-CURRENT UNIT: REL-10 complete; OPS-06 next
-CURRENT UNIT STATUS: TERMINAL REL-10 verdict KEEP
-PRIMARY ADDY WORKFLOW: frontend-ui-engineering
-ACTIVE SUPERPOWERS MECHANISM: verification before completion
+LAST ACCEPTED GAUNTLET UNIT: OPS-04 directory unreachable-spike diagnosis — KEEP
+CURRENT UNIT: OPS-04 complete; SRC-4D next
+CURRENT UNIT STATUS: TERMINAL OPS-04 verdict KEEP
+PRIMARY ADDY WORKFLOW: debugging-and-error-recovery
+ACTIVE SUPERPOWERS MECHANISM: systematic debugging (reproduce → classify → cross-runtime compare)
 CURRENT EXECUTOR: repository executor
-CURRENT WORKTREE / BRANCH: main at accepted behavior 5690d54
-NEXT UNIT: OPS-06 Hunter recovery lock alignment
+CURRENT WORKTREE / BRANCH: main at accepted behavior 83f94d0 (auto-digest synced to 1e9f863)
+NEXT UNIT: SRC-4D Jobicy same-origin 429 cadence diagnosis (REL-08, DATA-06 also unblocked)
 BLOCKERS: SEC-LEGACY-01 requires owner/provider action
 CONTRADICTIONS: Section H recorded; canonical entry docs rebased
-AUTOMATION STATUS: REL-10 CI/deploy 32561624073 passed; production smoke verified
+AUTOMATION STATUS: OPS-04 CI/deploy 32568634636 passed; directory-pulse runs 32568721809 + 32568795476 green
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: accepted behavior 5690d54
-LAST GITHUB BACKUP: 5690d54 on origin/main
-LAST VERIFICATION EVIDENCE: local 471/0/1,077 + guardrails/typecheck/build; CI/deploy 32561624073; production smoke 200
-NEXT EXACT ACTION: re-sync main and execute OPS-06 Hunter recovery lock alignment
-NEXT RECOMMENDED MODEL: Cloudflare/TypeScript reliability executor for OPS-06
+LAST VERIFIED COMMIT: accepted behavior 83f94d0
+LAST GITHUB BACKUP: 1e9f863 on origin/main (83f94d0 behavior + two auto-digest commits)
+LAST VERIFICATION EVIDENCE: local 513/0/1,191 + guardrails/typecheck/build; CI/deploy 32568634636; two live directory-pulse runs + cross-runtime probe
+NEXT EXACT ACTION: re-sync main and execute SRC-4D Jobicy same-origin 429 cadence diagnosis
+NEXT RECOMMENDED MODEL: network/Cloudflare diagnostic executor for SRC-4D
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after

@@ -2,7 +2,7 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **DATA-03 TERMINAL — KEEP**. A fresh, source-stratified, read-only data-quality cohort baseline was captured from remote D1 via a manual-dispatch workflow; all partitions reconcile (zero deltas) and the run was read-only (`rows_written: 0`). No mutation is authorized. OPS-06 remains KEEP as the last production-behavior baseline.
+Status: **OPS-04 TERMINAL — KEEP**. Bounded egress diagnostics for the directory `unreachable` cohort are deployed and verified live: two Cloudflare cohorts plus a same-host non-Cloudflare probe localize the cause to a Cloudflare egress-side transport failure (`EGRESS_BLOCKED` against alive origins), not origin death. Strikes/visibility/threshold/budget/gate are byte-for-byte unchanged. DATA-03 remains KEEP (read-only quality baseline); OPS-06 remains KEEP as the last production-behavior baseline before OPS-04.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - DATA-05A execution started from synchronized `main`/`origin/main` at
@@ -20,8 +20,17 @@ Status: **DATA-03 TERMINAL — KEEP**. A fresh, source-stratified, read-only dat
 - Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, and
   CI `32563188313` completed successfully. Green workflow conclusions do not
   waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `DATA-03` read-only quality cohort baseline — `KEEP`.
-- Current implementation unit: `DATA-03` (terminal).
+- Last Gauntlet decision: `OPS-04` directory unreachable-spike diagnosis — `KEEP`.
+- Current implementation unit: `OPS-04` (terminal).
+- OPS-04 execution started from synchronized `main`/`origin/main` at `6146290`.
+- OPS-04 behavior commit `83f94d0`; CI/deploy run `32568634636` success (513
+  tests, 1,191 assertions, typecheck, build, guardrails, D1 migrations, FTS
+  verify, Pages deploy). Two live directory-pulse runs produced reason
+  distributions: `32568721809` (5 unreachable, all `EGRESS_BLOCKED`) and
+  `32568795476` (0 unreachable). A bounded cross-runtime probe of the same five
+  hosts returned 2 bot_wall (403) + 3 ok (200) + 0 dead. Evidence:
+  `docs/gauntlet/evidence/OPS-04-unreachable-diagnosis.md`. Next: `SRC-4D`
+  (`REL-08`, `DATA-06` also unblocked).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file

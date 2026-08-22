@@ -534,7 +534,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Diagnostic taxonomy/aggregation/tests/workflow summary only. |
 | GITHUB BACKUP | G5 with two run IDs. |
 | HANDOFF | G6 plus reason distribution, runtime comparison, rejected hypotheses, and whether a new remediation unit is justified. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP. Behavior `83f94d0`; CI/deploy `32568634636`; live runs `32568721809` (5 unreachable, all EGRESS_BLOCKED) + `32568795476` (0 unreachable); cross-runtime probe of the same 5 hosts returned 2 bot_wall (403) + 3 ok (200), 0 dead. Cause: Cloudflare egress-side transport failure, not origin death; no strike/policy change. Remediation (non-Cloudflare probe path) is a separate future unit. Evidence: `docs/gauntlet/evidence/OPS-04-unreachable-diagnosis.md`. |
 
 ## COMP-01A — Persist robots decisions for static and ATS sources
 
