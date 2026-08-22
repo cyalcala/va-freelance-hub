@@ -559,24 +559,24 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: production healthy; data-integrity defect open
+CURRENT VERIFIED SYSTEM STATE: production clock healthy at latest evidence; DATA-05 open
 CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: historical recovery P0–P7 / August acceptance
-CURRENT UNIT: DOC-STATE-01 Gauntlet planning package
-CURRENT UNIT STATUS: IN PROGRESS until committed/pushed/verified
+LAST ACCEPTED GAUNTLET UNIT: DOC-STATE-01 planning package — KEEP
+CURRENT UNIT: none; implementation has not started
+CURRENT UNIT STATUS: TERMINAL planning verdict KEEP
 PRIMARY ADDY WORKFLOW: planning-and-task-breakdown
 ACTIVE SUPERPOWERS MECHANISM: targeted parallel evidence/doc ownership only
 CURRENT EXECUTOR: Sol-class planner (this task)
-CURRENT WORKTREE / BRANCH: main workspace at audit baseline bd84cc1
+CURRENT WORKTREE / BRANCH: main at planning commit d21cd9e
 NEXT UNIT: REC-01 read-only continuity inventory, then DATA-05A
 BLOCKERS: SEC-LEGACY-01 requires owner/provider action
-CONTRADICTIONS: Section H; canonical docs being rebased
-AUTOMATION STATUS: scheduled workflows green at audit close
+CONTRADICTIONS: Section H recorded; canonical entry docs rebased
+AUTOMATION STATUS: planning CI 32552942171 passed; deploy skipped as docs-only
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: accepted behavior 07f582b
-LAST GITHUB BACKUP: current main bd84cc1 at audit close
-LAST VERIFICATION EVIDENCE: CI/deploy 32475868471 plus current generated rollups
-NEXT EXACT ACTION: validate and push this planning package; execute REC-01
+LAST VERIFIED COMMIT: planning d21cd9e; accepted behavior 07f582b
+LAST GITHUB BACKUP: d21cd9e on origin/main
+LAST VERIFICATION EVIDENCE: local 454/0/1,209 + guardrails/typecheck/build; CI 32552942171
+NEXT EXACT ACTION: re-sync main and execute read-only REC-01 without cleanup
 NEXT RECOMMENDED MODEL: Nemotron-capable executor for REC-01; Claude-capable for DATA-05A
 ```
 

@@ -2,18 +2,22 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **PLANNING ONLY**. No Gauntlet implementation unit has started, and no
-new production behavior is accepted by this checkpoint.
+Status: **PLANNING COMPLETE — KEEP**. No Gauntlet implementation unit has
+started, and no new production behavior is accepted by this checkpoint.
 
 - Branch: `main`
-- Planning baseline and last GitHub backup: `bd84cc1`
+- Planning baseline: `bd84cc1`
+- Accepted planning package and last GitHub backup: `d21cd9e`
+- Planning-package CI: GitHub Actions run `32552942171` passed validation;
+  production migration/deploy was correctly skipped for a docs-only change.
 - Last accepted behavior commit: `07f582b`
 - Last accepted behavior deployment: GitHub Actions run `32475868471`
 - Current scheduled evidence: watchdog `32550368138`, source-health rollup
   `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
   enrichment pulse `32550872494` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Current unit: none; authoritative planning and portable-unit definition only.
+- Last Gauntlet decision: `DOC-STATE-01` planning package — `KEEP`.
+- Current implementation unit: none.
 - Fresh planning-package verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run audit:guardrails`, `bun run typecheck`,
   and `bun run build` also passed locally on 2026-08-22.

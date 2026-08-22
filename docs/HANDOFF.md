@@ -2,11 +2,12 @@
 
 ## Current Handoff — 2026-08-22 Gauntlet planning checkpoint
 
-Status: **PLANNING ONLY**. No implementation unit is active, no worktree is
-assigned to the Gauntlet, and no production change is authorized by this
-handoff.
+Status: **PLANNING COMPLETE — KEEP**. No implementation unit is active, no
+worktree is assigned to the Gauntlet, and no production behavior changed.
 
 - Planning baseline: clean synchronized `main` at `bd84cc1`.
+- Accepted planning package: `d21cd9e`; GitHub Actions run `32552942171`
+  passed validation and skipped production migration/deploy as docs-only.
 - Last accepted behavior: `07f582b`, deployed by run `32475868471`.
 - Latest scheduled evidence inspected: watchdog `32550368138`, source health
   `32546699929`, directory health `32545246416`, Prospector `32544606954`, and

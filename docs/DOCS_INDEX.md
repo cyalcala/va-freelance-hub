@@ -7,8 +7,10 @@ historical, and where to resume. Start here instead of guessing from filenames.
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **PLANNING ONLY**. Repository planning baseline is `bd84cc1`; the last
-accepted behavior remains `07f582b`, deployed by run `32475868471`. Recent
+Status: **PLANNING COMPLETE — KEEP**. Repository planning baseline was
+`bd84cc1`; the package is backed up at `d21cd9e` with successful validation run
+`32552942171`. The last accepted behavior remains `07f582b`, deployed by run
+`32475868471`. Recent
 watchdog and scheduled evidence is green, but current source, directory, and
 enrichment payloads must still be evaluated individually. No implementation
 unit is accepted or in progress.

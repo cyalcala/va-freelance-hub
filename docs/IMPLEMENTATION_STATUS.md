@@ -2,16 +2,19 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **PLANNING ONLY**. This checkpoint defines the next program of work; it
-does not claim an implementation, deployment, or production acceptance.
+Status: **PLANNING COMPLETE — KEEP**. This checkpoint defines the next program
+of work; it does not claim a production implementation or behavior change.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
+- Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
+  validation and correctly skipped production migration/deploy as docs-only.
 - Last accepted behavior: `07f582b`, deployed by run `32475868471`.
 - Current scheduled evidence: watchdog `32550368138`, source health
   `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
   enrichment `32550872494` completed successfully. Green workflow conclusions
   do not waive payload-level degradation or data-quality findings.
-- Current unit: none.
+- Last Gauntlet decision: `DOC-STATE-01` planning package — `KEEP`.
+- Current implementation unit: none.
 - Planning-package local verification: 454 tests, 0 failures, 1,209 assertions;
   production guardrails, strict typecheck, and Astro/Cloudflare build all pass.
 - First queued preflight: `REC-01`, a read-only worktree/continuity inventory

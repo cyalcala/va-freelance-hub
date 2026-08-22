@@ -9,8 +9,10 @@ next task.
 
 ## Current Recovery Checkpoint — 2026-08-22 Gauntlet planning
 
-Status: **PLANNING ONLY**. The synchronized planning baseline is `bd84cc1` on
-`main`; the last accepted behavior remains `07f582b`, deployed by successful run
+Status: **PLANNING COMPLETE — KEEP**. The synchronized audit baseline was
+`bd84cc1`; the planning package is backed up on `main` at `d21cd9e` and passed
+GitHub Actions run `32552942171` (docs-only deploy correctly skipped). The last
+accepted production behavior remains `07f582b`, deployed by successful run
 `32475868471`. No Gauntlet implementation unit has begun.
 
 Current scheduled evidence includes successful watchdog `32550368138`,
