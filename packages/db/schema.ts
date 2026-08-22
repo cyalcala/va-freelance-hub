@@ -173,9 +173,20 @@ export const sourceFetchEvents = sqliteTable("source_fetch_events", {
   durationMs: integer("duration_ms").notNull().default(0),
   error: text("error"),
   skipReason: text("skip_reason"),
+  // Robots provenance (COMP-01A): durable evidence for every static/ATS fetch.
+  // The origin checked, the verdict, human-auditable evidence, declared
+  // crawl-delay, whether enforce mode would have blocked, and the gate mode.
+  robotsOrigin: text("robots_origin"),
+  robotsVerdict: text("robots_verdict"),
+  robotsEvidence: text("robots_evidence"),
+  robotsCrawlDelay: integer("robots_crawl_delay"),
+  robotsWouldBlock: integer("robots_would_block", { mode: "boolean" }),
+  robotsMode: text("robots_mode"),
 }, (table) => ({
   sourceIdIdx: index("source_fetch_events_source_id_idx").on(table.sourceId),
   timestampIdx: index("source_fetch_events_timestamp_idx").on(table.timestamp),
+  robotsOriginIdx: index("source_fetch_events_robots_origin_idx").on(table.robotsOrigin),
+  robotsVerdictIdx: index("source_fetch_events_robots_verdict_idx").on(table.robotsVerdict),
 }));
 
 // Runtime robots.txt cache (migration 0030). Keyed by origin, not by source:
