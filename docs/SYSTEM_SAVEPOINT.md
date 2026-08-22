@@ -22,6 +22,7 @@ accepted; no cleanup performed. Next unit: `DATA-05A`.
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
   `docs/gauntlet/evidence/REC-01-worktree-inventory.md` created.
+- REC-01 commit: `b2d7782`; GitHub Actions CI run `32553970322` passed.
 - REC-01 inventory summary: 1 main + 6 registered auxiliary worktrees + 4
   orphan-looking directories classified; zero mutations; 4 worktrees classified
   as `unknown` (apex-clock, apex-directory, apex-prospector, apex-verifier)
