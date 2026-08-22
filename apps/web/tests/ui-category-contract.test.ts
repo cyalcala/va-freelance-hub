@@ -45,6 +45,20 @@ describe("DATA-06B stored-category display contract", () => {
     expect(getJobCategory(opp)).toBe("other");
   });
 
+  test("stored other survives every legacy reclassification family", () => {
+    const familyTitles = [
+      "SEO Growth Marketer",
+      "UI Illustrator",
+      "Customer Support Chat Agent",
+      "Data Entry Admin HR",
+      "Bookkeeper Payroll Billing",
+      "Senior React Developer",
+    ];
+    for (const title of familyTitles) {
+      expect(getJobCategory(makeOpportunity({ category: "other", title }))).toBe("other");
+    }
+  });
+
   test("stored category wins over techy titles in every board slug", () => {
     const cases: Array<[string, string]> = [
       ["admin", "Software Engineer Virtual Assistant"],
