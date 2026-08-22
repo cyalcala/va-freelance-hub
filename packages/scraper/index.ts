@@ -10,7 +10,7 @@ export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./s
 export type { TriageResult } from "./triage";
 export { decideTriage, mapTriageCategoryToUiCategory } from "./triage-decision";
 export type { TriageDecision, TriageDecisionInput } from "./triage-decision";
-export { fetchATSFeed, fetchAshby } from "./ats";
+export { fetchATSFeed, fetchAshby, atsEndpointUrl } from "./ats";
 export { conditionalFetchText, unchangedOutput } from "./conditional";
 export type { ConditionalState, ConditionalResult, SourceFetchOutput } from "./conditional";
 export { hashString, sha256Hex, errorMessage } from "./contentHash";

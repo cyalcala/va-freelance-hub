@@ -45,8 +45,25 @@ function breezyLocationSummary(job: any): string | null {
   return `Location: ${Array.from(new Set(names)).join("; ")}.${remoteText}`;
 }
 
+export type AtsPlatform = "lever" | "greenhouse" | "workable" | "breezy" | "ashby";
+
+export function atsEndpointUrl(platform: AtsPlatform, token: string): string {
+  switch (platform) {
+    case "lever":
+      return `https://api.lever.co/v0/postings/${token}?mode=json`;
+    case "greenhouse":
+      return `https://boards-api.greenhouse.io/v1/boards/${token}/jobs`;
+    case "workable":
+      return `https://apply.workable.com/api/v3/accounts/${token}/jobs`;
+    case "breezy":
+      return `https://${token}.breezy.hr/json`;
+    case "ashby":
+      return `https://api.ashbyhq.com/posting-api/job-board/${token}`;
+  }
+}
+
 export async function fetchATSFeed(
-  platform: "lever" | "greenhouse" | "workable" | "breezy" | "ashby",
+  platform: AtsPlatform,
   token: string,
   companyName: string
 ): Promise<NewOpportunity[]> {
