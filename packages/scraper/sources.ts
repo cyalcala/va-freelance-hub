@@ -15,6 +15,11 @@ export interface Source {
   tags: string[];
   maxItems?: number;
   minFetchIntervalMinutes?: number;
+  // SRC-4D: optional shared-origin marker. Members of one cadenceGroup take
+  // turns (at most one eligible fetch per tick) because the provider enforces
+  // its rate allowance per origin, not per feed. Jobicy-only until another
+  // origin proves the same need — do not generalize speculatively.
+  cadenceGroup?: string;
 }
 
 export const sources: Source[] = [
@@ -71,6 +76,7 @@ export const sources: Source[] = [
     tags: ["remote", "admin", "VA", "apac"],
     maxItems: 40,
     minFetchIntervalMinutes: 60,
+    cadenceGroup: "jobicy.com",
   },
   {
     id: "jobicy-supporting-apac",
@@ -85,6 +91,7 @@ export const sources: Source[] = [
     tags: ["remote", "customer-support", "customer-service", "apac"],
     maxItems: 40,
     minFetchIntervalMinutes: 60,
+    cadenceGroup: "jobicy.com",
   },
   {
     id: "remote-ok",

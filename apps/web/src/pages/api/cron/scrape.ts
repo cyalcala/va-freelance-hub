@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
-import { isNotNull, isNull, or, and, inArray, eq, lt, asc, gte } from "drizzle-orm";
+import { isNotNull, isNull, or, and, inArray, eq, lt, asc, gte, desc } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 import {
@@ -1268,10 +1268,155 @@ async function loadSourceFetchStates(db: AppDb): Promise<SourceFetchStateLoad> {
   }
 }
 
+// ─── Shared-origin cadence groups (SRC-4D) ──────────────────────────────────
+//
+// Jobicy serves both category feeds under one origin-level rate allowance:
+// seven days of source_fetch_events showed every real fetch fires as a
+// same-millisecond PAIR against jobicy.com, and all five HTTP 429 windows hit
+// both feeds at identical timestamps. Per-source intervals cannot see that —
+// they are keyed by source ID while the provider's limit is keyed by origin.
+//
+// The fix is deliberately narrow (see docs/gauntlet/evidence/
+// SRC-4D-jobicy-cadence-diagnosis.md):
+//   1. Within a `cadenceGroup`, at most one member is eligible per tick —
+//      deterministic alternation by oldest lastAttemptAt (config order breaks
+//      ties), which halves origin load immediately.
+//   2. On HTTP 429, the member's own interval is extended by a capped
+//      exponential cooldown before its next turn.
+// There is no retry in the same invocation, no new infrastructure, and no
+// generic global scheduler — only these pure functions over existing state.
+
+export const CADENCE_GROUP_BACKOFF_BASE_MINUTES = 30;
+export const CADENCE_GROUP_BACKOFF_MAX_MINUTES = 240;
+// How many recent non-skipped events per member feed the backoff streak read.
+// Level 4 already saturates the cap, so 20 attempts is generous headroom.
+const CADENCE_GROUP_STREAK_WINDOW_PER_SOURCE = 20;
+
+/**
+ * Counts the leading run of HTTP 429 errors in a newest-first list of attempt
+ * error texts. Any success or different failure breaks the streak, so recovery
+ * resets the cooldown instead of compounding unrelated outages into it.
+ */
+export function countConsecutiveRateLimitErrors(
+  attemptErrorsNewestFirst: ReadonlyArray<string | null> | undefined,
+): number {
+  let count = 0;
+  for (const error of attemptErrorsNewestFirst ?? []) {
+    if (error && error.includes("HTTP 429")) {
+      count += 1;
+    } else {
+      break;
+    }
+  }
+  return count;
+}
+
+/** Capped exponential cooldown for a member's consecutive-429 streak. */
+export function rateLimitBackoffMinutes(consecutive429s: number): number {
+  if (!Number.isFinite(consecutive429s) || consecutive429s <= 0) return 0;
+  const raw = CADENCE_GROUP_BACKOFF_BASE_MINUTES * 2 ** (Math.floor(consecutive429s) - 1);
+  return Math.min(raw, CADENCE_GROUP_BACKOFF_MAX_MINUTES);
+}
+
+export interface CadenceGroupPlan {
+  /** sourceId -> skip reason for members deferred this tick by alternation. */
+  deferred: Map<string, string>;
+  /** sourceId -> extra delay minutes added to the member's own interval guard. */
+  backoffMinutes: Map<string, number>;
+}
+
+/**
+ * Pure per-tick decision for every cadenceGroup member. For each group:
+ * compute 429 backoff from durable event streaks, keep members whose own
+ * interval guard still passes, then defer all but one eligible member —
+ * deterministic oldest-attempt wins, configured order breaks ties. Members
+ * without prior state sort oldest so a fresh source can never be starved.
+ */
+export function planCadenceGroupTurns(args: {
+  sources: ReadonlyArray<Source>;
+  states: ReadonlyMap<string, Pick<SourceFetchState, "lastAttemptAt">>;
+  attemptErrorsBySourceId: ReadonlyMap<string, ReadonlyArray<string | null>>;
+  observedAt: string;
+}): CadenceGroupPlan {
+  const deferred = new Map<string, string>();
+  const backoffMinutes = new Map<string, number>();
+
+  const groups = new Map<string, Array<{ source: Source; index: number }>>();
+  args.sources.forEach((source, index) => {
+    if (!source.cadenceGroup || !source.minFetchIntervalMinutes) return;
+    const members = groups.get(source.cadenceGroup) ?? [];
+    members.push({ source, index });
+    groups.set(source.cadenceGroup, members);
+  });
+
+  for (const [groupId, members] of groups) {
+    const eligible: Array<{ source: Source; lastAttemptMs: number; index: number }> = [];
+    for (const { source, index } of members) {
+      const state = args.states.get(source.id);
+      const consecutive429s = countConsecutiveRateLimitErrors(args.attemptErrorsBySourceId.get(source.id));
+      const backoff = rateLimitBackoffMinutes(consecutive429s);
+      if (backoff > 0) backoffMinutes.set(source.id, backoff);
+      if (sourceCadenceSkipReason(source, state, args.observedAt, backoff)) continue;
+
+      const parsed = state?.lastAttemptAt ? Date.parse(state.lastAttemptAt) : NaN;
+      eligible.push({
+        source,
+        // Missing/unparseable timestamps rank as never-attempted (oldest), so
+        // unknown state biases toward fetching exactly like the plain guard.
+        lastAttemptMs: Number.isFinite(parsed) ? parsed : Number.NEGATIVE_INFINITY,
+        index,
+      });
+    }
+
+    if (eligible.length <= 1) continue;
+    eligible.sort((a, b) => (a.lastAttemptMs - b.lastAttemptMs) || (a.index - b.index));
+    const winner = eligible[0];
+    for (const loser of eligible.slice(1)) {
+      deferred.set(
+        loser.source.id,
+        `Deferred by cadence group "${groupId}": turn held by ${winner.source.id} this tick (shared-origin alternation).`,
+      );
+    }
+  }
+
+  return { deferred, backoffMinutes };
+}
+
+/**
+ * Reads each cadence-group member's recent non-skipped events (newest first)
+ * so backoff can key off the same durable evidence the diagnosis used. A read
+ * failure degrades to zero backoff — alternation alone still bounds origin
+ * load, and starving both feeds over an observability hiccup would be worse.
+ */
+async function loadRecentAttemptErrors(
+  db: AppDb,
+  sourceIds: ReadonlyArray<string>,
+): Promise<Map<string, Array<string | null>>> {
+  const errorsBySourceId = new Map<string, Array<string | null>>();
+  if (sourceIds.length === 0) return errorsBySourceId;
+  try {
+    const rows = await db
+      .select({ sourceId: sourceFetchEvents.sourceId, error: sourceFetchEvents.error })
+      .from(sourceFetchEvents)
+      .where(and(inArray(sourceFetchEvents.sourceId, [...sourceIds]), eq(sourceFetchEvents.skipped, false)))
+      .orderBy(desc(sourceFetchEvents.id))
+      .limit(CADENCE_GROUP_STREAK_WINDOW_PER_SOURCE * sourceIds.length);
+    for (const row of rows) {
+      const list = errorsBySourceId.get(row.sourceId) ?? [];
+      list.push(row.error);
+      errorsBySourceId.set(row.sourceId, list);
+    }
+  } catch (error) {
+    console.warn("[api/cron/scrape] Recent source events unavailable; 429 backoff defaults to 0 this run:", errorMessage(error));
+  }
+  return errorsBySourceId;
+}
+
 function sourceCadenceSkipReason(
   source: Source,
-  state: SourceFetchState | undefined,
-  observedAt: string
+  state: Pick<SourceFetchState, "lastAttemptAt"> | undefined,
+  observedAt: string,
+  extraDelayMinutes = 0
 ): string | null {
   if (!source.minFetchIntervalMinutes || !state?.lastAttemptAt) return null;
 
@@ -1279,11 +1424,14 @@ function sourceCadenceSkipReason(
   const observedMs = Date.parse(observedAt);
   if (!Number.isFinite(lastAttemptMs) || !Number.isFinite(observedMs)) return null;
 
-  const intervalMs = source.minFetchIntervalMinutes * 60_000;
+  // SRC-4D: extraDelayMinutes carries the capped shared-origin 429 backoff for
+  // cadence-group members; it is 0 (no change) for every other source.
+  const intervalMs = source.minFetchIntervalMinutes * 60_000 + extraDelayMinutes * 60_000;
   const nextAllowedMs = lastAttemptMs + intervalMs;
   if (observedMs >= nextAllowedMs) return null;
 
-  return `Skipped cadence guard: last attempted at ${state.lastAttemptAt}; ${source.minFetchIntervalMinutes}-minute minimum interval.`;
+  const backoffNote = extraDelayMinutes > 0 ? ` (+${extraDelayMinutes}m shared-origin 429 backoff)` : "";
+  return `Skipped cadence guard: last attempted at ${state.lastAttemptAt}; ${source.minFetchIntervalMinutes}-minute minimum interval${backoffNote}.`;
 }
 
 async function recordSourceFetchState(
@@ -1462,12 +1610,18 @@ async function fetchConfiguredSourceWithStatus(
   sourceType: SourceType,
   sourceFetchStates: Map<string, SourceFetchState>,
   observedAt: string,
+  cadence: { deferReason?: string; backoffMinutes?: number } | undefined,
   fetcher: (state: ConditionalState | undefined) => Promise<SourceFetchOutput>
 ): Promise<SourceFetchResult> {
   const prevState = sourceFetchStates.get(source.id);
-  const skipReason = sourceCadenceSkipReason(source, prevState, observedAt);
+  const skipReason = sourceCadenceSkipReason(source, prevState, observedAt, cadence?.backoffMinutes ?? 0);
   if (skipReason) {
     return skippedSourceResult(source, skipReason);
+  }
+  // Alternation deferral only applies to members that already passed their own
+  // interval guard, so the reason always names the real blocker.
+  if (cadence?.deferReason) {
+    return skippedSourceResult(source, cadence.deferReason);
   }
 
   // Checked before the cadence-passing fetch, so the robots decision is on
@@ -1598,23 +1752,40 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const fetchStateLoad = await loadSourceFetchStates(db);
     const sourceFetchStates = fetchStateLoad.states;
 
+    // SRC-4D: plan shared-origin turns before any fetch fires. The decision is
+    // pure over durable state, so concurrent per-source fetches below cannot
+    // race it and a repeated run replays the identical decision.
+    const fetchableSources = [...rssSources, ...htmlSources, ...jsonSources];
+    const cadenceGroupSourceIds = fetchableSources.filter((s) => s.cadenceGroup).map((s) => s.id);
+    const attemptErrorsBySourceId = await loadRecentAttemptErrors(db, cadenceGroupSourceIds);
+    const cadencePlan = planCadenceGroupTurns({
+      sources: fetchableSources,
+      states: sourceFetchStates,
+      attemptErrorsBySourceId,
+      observedAt,
+    });
+    const cadenceForSource = (source: Source) => ({
+      deferReason: cadencePlan.deferred.get(source.id),
+      backoffMinutes: cadencePlan.backoffMinutes.get(source.id) ?? 0,
+    });
+
     const rssResults = await Promise.all(
       rssSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "RSS", sourceFetchStates, observedAt, (state) => fetchRSSFeed(source, state))
+        fetchConfiguredSourceWithStatus(db, source, "RSS", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchRSSFeed(source, state))
       )
     );
     const rssItems = rssResults.flatMap((result) => result.items);
 
     const htmlResults = await Promise.all(
       htmlSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "HTML", sourceFetchStates, observedAt, (state) => fetchHTMLSource(source, state))
+        fetchConfiguredSourceWithStatus(db, source, "HTML", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchHTMLSource(source, state))
       )
     );
     const htmlItems = htmlResults.flatMap((result) => result.items);
 
     const jsonResults = await Promise.all(
       jsonSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "JSON", sourceFetchStates, observedAt, (state) => fetchJSONSource(source, state))
+        fetchConfiguredSourceWithStatus(db, source, "JSON", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchJSONSource(source, state))
       )
     );
     const jsonItems = jsonResults.flatMap((result) => result.items);
