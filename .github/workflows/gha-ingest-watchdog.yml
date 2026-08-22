@@ -284,8 +284,11 @@ jobs:
           echo "created ${URL} at ${CREATED_AT}"
 
           # 2. UPDATE healthy-progress (healthy, streak 0 -> 1)
-          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label "$LABEL" --json number,body \
-            --jq "[.[] | select(.number == ${NUM})]" > syn.json
+          # Read the issue back via the direct REST endpoint (`gh issue view`),
+          # NOT the search-backed `gh issue list`: search indexing lags creation
+          # by seconds and made the first drill abort with a false
+          # "no open incident" (run 32588399580). Same for step 3 below.
+          gh issue view "$NUM" --repo "$GITHUB_REPOSITORY" --json number,body --jq "[.]" > syn.json
           D=$(emit healthy syn.json); echo "step 2 UPDATE: $D"
           [ "$(echo "$D" | jq -r .action)" = "UPDATE" ] || { echo "expected UPDATE, got $D"; exit 1; }
           SYN_N=$(echo "$D" | jq -r '.healthyStreak // 1')
@@ -295,8 +298,7 @@ jobs:
             --body "Synthetic healthy observation 1/${THRESHOLD}. Run ${RUN_URL}."
 
           # 3. CLOSE (healthy, streak 1 -> threshold reached)
-          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label "$LABEL" --json number,body \
-            --jq "[.[] | select(.number == ${NUM})]" > syn.json
+          gh issue view "$NUM" --repo "$GITHUB_REPOSITORY" --json number,body --jq "[.]" > syn.json
           D=$(emit healthy syn.json); echo "step 3 CLOSE: $D"
           [ "$(echo "$D" | jq -r .action)" = "CLOSE" ] || { echo "expected CLOSE, got $D"; exit 1; }
           gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" \
