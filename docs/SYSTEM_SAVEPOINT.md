@@ -44,13 +44,18 @@ REL-10, DATA-05A remain KEEP.
 - Current scheduled evidence: watchdog runs continue hourly; their payloads
   remain evidence to inspect, not blanket health acceptance.
 - Last Gauntlet decision: `OPS-05` source-alert incident lifecycle — `KEEP`.
-- Current implementation unit queue — all PLANNED:
-  `SRC-4D` (Jobicy cadence; diagnosis now, KEEP needs 48h live evidence),
+- Current implementation unit queue:
+  `SRC-4D` **IN_PROGRESS — diagnosis COMPLETE** (evidence-only commit; root
+  cause CONFIRMED: origin-scoped allowance tripped by same-millisecond paired
+  fetches, all five 429 windows hit both feeds at identical timestamps;
+  robots re-check allows `/feed/job_feed*`. Evidence:
+  `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`. NEXT EXACT
+  ACTION: implement the bounded Jobicy-only `cadenceGroup` alternation + capped
+  429 backoff with fixture tests, deploy, then 48h post-rollup before KEEP),
   `DATA-05B` (provenance repair; mutation needs human-approved evidence file),
   `DATA-06B` (UI category consistency; user-visible product-taxonomy decision),
   `COMP-01B` (reviewed enforcement; gated on a complete reviewed robots observe
-  window). Dependency-ready next: SRC-4D or DATA-06B; DATA-05B mutation remains
-  owner-gated.
+  window).
 
 ### Historical checkpoint — DATA-06 (2026-08-22)
 
