@@ -33,7 +33,7 @@ CREATE TABLE `va_directory` (
 	`company_name` text NOT NULL,
 	`website` text,
 	`hires_filipinos` integer DEFAULT true NOT NULL,
-	`niche` text DEFAULT 'admin',
+	`niche` text DEFAULT 'australian-dayshift',
 	`hiring_page_url` text,
 	`verified_at` text,
 	`notes` text,
