@@ -564,25 +564,25 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, REL-10, OPS-06 deployed/accepted; DATA-03 read-only baseline KEEP; OPS-04 egress diagnostics KEEP; COMP-01A durable robots evidence KEEP (incl. DB layer); REL-08 Source Doctor V1 KEEP; DATA-06 taxonomy/triage-decision convergence deployed/accepted; production clock healthy at latest evidence
+CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, REL-10, OPS-06 deployed/accepted; DATA-03 read-only baseline KEEP; OPS-04 egress diagnostics KEEP; COMP-01A durable robots evidence KEEP (incl. DB layer); REL-08 Source Doctor V1 KEEP; DATA-06 taxonomy/triage-decision convergence deployed/accepted; OPS-05 source-alert incident lifecycle deployed/accepted with synthetic drill evidence; production clock healthy at latest evidence
 CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: DATA-06 taxonomy/triage-decision convergence — KEEP
-CURRENT UNIT: DATA-06 complete; OPS-05 or SRC-4D next
-CURRENT UNIT STATUS: TERMINAL DATA-06 verdict KEEP
-PRIMARY ADDY WORKFLOW: spec-driven-development
+LAST ACCEPTED GAUNTLET UNIT: OPS-05 source-alert incident lifecycle — KEEP
+CURRENT UNIT: OPS-05 complete; SRC-4D or DATA-06B next
+CURRENT UNIT STATUS: TERMINAL OPS-05 verdict KEEP
+PRIMARY ADDY WORKFLOW: ci-cd-and-automation (OPS-05); spec-driven-development remains the plan-level default
 ACTIVE SUPERPOWERS MECHANISM: fresh independent critic + verification-before-completion
 CURRENT EXECUTOR: repository executor
-CURRENT WORKTREE / BRANCH: main at accepted behavior a014e71 (DATA-06 developed on codex/data-06-taxonomy-convergence, fast-forwarded to main)
-NEXT UNIT: OPS-05 alert lifecycle (cleanest single-session terminal, lowest blast radius) or SRC-4D Jobicy cadence (diagnosis+fix now, KEEP needs 48h live evidence). DATA-05B dependency-ready but mutation needs human-approved evidence. COMP-01B gated on a complete reviewed robots observe window. DATA-06B (UI category consistency) is a new user-visible product-taxonomy follow-up.
+CURRENT WORKTREE / BRANCH: main at accepted behavior 7f0040b (OPS-05 behavior f1d5029 + revisions dc2699f, 7f0040b)
+NEXT UNIT: SRC-4D Jobicy cadence (diagnosis+fix now, KEEP needs 48h live evidence) or DATA-06B UI category consistency. DATA-05B dependency-ready but mutation needs human-approved evidence. COMP-01B gated on a complete reviewed robots observe window.
 BLOCKERS: SEC-LEGACY-01 requires owner/provider action; COMP-01B blocked on observe window; DATA-05B mutation blocked on human-approved evidence file
 CONTRADICTIONS: Section H recorded; the stale Section AI queue rows 8–11 remain superseded by the authoritative dependency tree (see the ordering-correction note under Section AI)
-AUTOMATION STATUS: DATA-06 CI/deploy 32579585128 passed (D1 migrations, FTS, Pages deploy); prior REL-08 CI 32576239721 green
+AUTOMATION STATUS: OPS-05 CI/deploy runs 32587929436 / 32588597297 / 32589627739 passed (D1 migrations, FTS, Pages deploy); synthetic drill 32588713203 PASS via issue #72
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: accepted behavior a014e71
-LAST GITHUB BACKUP: a014e71 on origin/main
-LAST VERIFICATION EVIDENCE: local 569/0/1,335 + guardrails/typecheck/build; fresh critic SHIP; CI/deploy 32579585128; production smoke /, /directory, /opportunities, /categories/tech all HTTP 200
-NEXT EXACT ACTION: re-sync main and execute OPS-05 (alert lifecycle; pure lifecycle evaluator + workflow steps + synthetic issue acceptance) or begin SRC-4D diagnosis; fresh independent critic required for either
-NEXT RECOMMENDED MODEL: GitHub Actions/API automation executor + fresh ops critic for OPS-05
+LAST VERIFIED COMMIT: accepted behavior 7f0040b
+LAST GITHUB BACKUP: 7f0040b on origin/main
+LAST VERIFICATION EVIDENCE: local 589/0/1,367 + guardrails/typecheck/build; fresh critic REVISE then SHIP; CI/deploy 32589627739; synthetic issue #72 created/advanced/closed 2026-08-22T17:45–17:46Z; real dry-run read-only (5 unkeyed issues → CREATE/HOLD)
+NEXT EXACT ACTION: re-sync main and execute SRC-4D (Jobicy same-origin cadence diagnosis) or DATA-06B (UI category consistency decision); fresh independent critic required for either
+NEXT RECOMMENDED MODEL: GitHub Actions/API automation executor + fresh ops critic
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after

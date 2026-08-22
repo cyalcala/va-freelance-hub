@@ -1,6 +1,58 @@
 # System Savepoint
 
-## Current Gauntlet Planning Savepoint — 2026-08-22
+## Current Gauntlet Planning Savepoint — 2026-08-23
+
+Status: **OPS-05 TERMINAL — KEEP**. The verified source-alert incident lifecycle
+is deployed: a pure evaluator (`scripts/gha/source-alert-lifecycle.ts`) emits
+exactly one CREATE | UPDATE | HOLD | CLOSE per observation, keyed by hidden body
+markers so repeated detections dedupe onto one open incident and close only
+after two confirmed-healthy observations. Synthetic drill run `32588713203`
+created/advanced/closed issue #72 with timestamps (required acceptance evidence);
+read-only real dry-run shows 5 legacy unkeyed issues (#51–54, #69) → failing
+CREATE / healthy HOLD; no real closure occurred. Fresh critic returned REVISE
+(I-1 Sentinel could close a watchdog board-frozen incident without observing
+board freshness; I-2 first-hit match order could orphan an older keyed twin),
+both fixed in bounded revision `7f0040b`; same critic then returned SHIP. An
+earlier drill failure (run `32588399580`, search-index race on `gh issue list`)
+was root-caused, fixed by REST read-back (`dc2699f`), and recorded honestly.
+DATA-06, REL-08, COMP-01A, DB-01, OPS-04, DATA-03, OPS-06, REL-09, SEC-03,
+REL-10, DATA-05A remain KEEP.
+
+- Branch: `main`
+- OPS-05 execution resume start: `f1d5029` (behavior commit already at HEAD;
+  `main` = `origin/main`, clean tree).
+- OPS-05 commits: behavior `f1d5029`; revisions `dc2699f` (drill REST read-back),
+  `7f0040b` (Sentinel board-freshness parity + oldest-wins match + tests).
+- CI/deploy: runs `32587929436` (`f1d5029`), `32588597297` (`dc2699f`),
+  `32589627739` (`7f0040b`) — all success incl. D1 migrations, FTS verify,
+  Pages deploy.
+- Local G3 at `7f0040b`: 589 tests, 0 failures, 1,367 assertions; typecheck,
+  build, guardrails passed. Focused lifecycle suite: 20/20.
+- Permission diff: no scope beyond pre-existing `issues: write`; Hunter scopes
+  it to the lifecycle job only.
+- Evidence: `docs/gauntlet/evidence/OPS-05-alert-lifecycle.md` (includes
+  follow-up ledger: marker hardening, Sentinel PR-permission trim, drill-orphan
+  cleanup step, TOCTOU/empty-board residuals).
+- Ownership boundary: `remotephjobs.com` is an external site;
+  `remotejobs-ph.pages.dev` is this project's production site. External-source
+  indexing is allowed only through the existing compliance policy and never
+  implies ownership.
+- Planning baseline: `bd84cc1`
+- Accepted planning package and last GitHub backup: `d21cd9e`
+- Last accepted production behavior commit: `7f0040b` (OPS-05 alert lifecycle,
+  incl. critic revisions). Prior accepted behavior: `a014e71` (DATA-06).
+- Current scheduled evidence: watchdog runs continue hourly; their payloads
+  remain evidence to inspect, not blanket health acceptance.
+- Last Gauntlet decision: `OPS-05` source-alert incident lifecycle — `KEEP`.
+- Current implementation unit queue — all PLANNED:
+  `SRC-4D` (Jobicy cadence; diagnosis now, KEEP needs 48h live evidence),
+  `DATA-05B` (provenance repair; mutation needs human-approved evidence file),
+  `DATA-06B` (UI category consistency; user-visible product-taxonomy decision),
+  `COMP-01B` (reviewed enforcement; gated on a complete reviewed robots observe
+  window). Dependency-ready next: SRC-4D or DATA-06B; DATA-05B mutation remains
+  owner-gated.
+
+### Historical checkpoint — DATA-06 (2026-08-22)
 
 Status: **DATA-06 TERMINAL — KEEP**. Taxonomy/triage-decision convergence
 shipped and verified: the three new-item ingestion decision paths (inline scrape

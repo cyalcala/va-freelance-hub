@@ -864,7 +864,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Evaluator/tests/workflow lifecycle only; no detector threshold or source policy changes. |
 | GITHUB BACKUP | G5; synthetic issue is required acceptance evidence. |
 | HANDOFF | G6 plus incident key schema, thresholds, synthetic issue, real dry-run plan, and permissions. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (`f1d5029` behavior + `dc2699f`, `7f0040b` bounded revisions; CI/deploy `32587929436`, `32588597297`, `32589627739`; 589 tests, 1,367 assertions; synthetic drill run `32588713203` created/advanced/closed issue #72 with timestamps; read-only real dry-run: 5 unkeyed issues → failing CREATE / healthy HOLD; fresh critic REVISE→SHIP). Evidence: `docs/gauntlet/evidence/OPS-05-alert-lifecycle.md` |
 
 ## COMP-01B — Gate robots enforcement on reviewed observation evidence
 
