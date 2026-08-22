@@ -2,16 +2,18 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **OPS-04 TERMINAL — KEEP**. Bounded egress diagnostics shipped and
-verified live: the directory `unreachable` cohort is a Cloudflare egress-side
-transport failure (EGRESS_BLOCKED against alive origins), not origin death;
-strikes/visibility/gate byte-for-byte unchanged. DATA-03 remains KEEP (read-only
+Status: **COMP-01A TERMINAL — KEEP**. Durable robots evidence for static and ATS
+sources shipped and verified: `source_fetch_events` now records 6 robots columns
+per fetch attempt; ATS endpoints (Lever, Greenhouse, Workable, Breezy, Ashby)
+participate in the robots gate; observe mode only (ROBOTS_MODE="observe");
+enforcement is COMP-01B. OPS-04 remains KEEP. DATA-03 remains KEEP (read-only
 quality baseline). OPS-06 remains KEEP (production behavior baseline).
 
 - Branch: `main`
 - OPS-04 execution start: `6146290` (`main` = `origin/main` at start).
 - DATA-03 execution start: `539b65b` (`main` = `origin/main` at start).
 - OPS-06 execution start: `060b2db` (`main` = `origin/main` at start).
+- COMP-01A execution start: `a75f8a8` (`main` = `origin/main` at start).
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
   indexing is allowed only through the existing compliance policy and never
@@ -26,8 +28,8 @@ quality baseline). OPS-06 remains KEEP (production behavior baseline).
 - Last accepted behavior deployment: GitHub Actions CI run `32563188313` passed full suite (481 tests, 1,113 assertions, typecheck, build, guardrails).
 - Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, CI `32563188313` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `OPS-04` directory unreachable-spike diagnosis — `KEEP`.
-- Current implementation unit: `OPS-04` (terminal).
+- Last Gauntlet decision: `COMP-01A` durable robots evidence — `KEEP`.
+- Current implementation unit: `COMP-01A` (terminal).
 - DATA-03 code commits: `1cca4b3` (generator + read-only workflow + fixture
   test) and `feb5f0b` (run cohorts per-command after a dispatched run proved
   multi-statement `--file` returns only a summary). Local G3: 495 tests, 0
@@ -112,21 +114,27 @@ quality baseline). OPS-06 remains KEEP (production behavior baseline).
   `32561624073` passed full suite (471 tests, 1,077 assertions, typecheck,
   build, guardrails, Pages deployed). Production smoke: `/`, `/directory`,
   `/opportunities` all return HTTP 200.
+- COMP-01A acceptance: behavior commit `c992dfe` extends `source_fetch_events`
+  with 6 robots columns (robots_origin, robots_verdict, robots_evidence,
+  robots_crawl_delay, robots_would_block, robots_mode) via migration
+  `0032_source_fetch_events_robots_evidence.sql`; adds robots.txt checking for
+  all 5 ATS endpoint families (Lever, Greenhouse, Workable, Breezy, Ashby);
+  exports `atsEndpointUrl`; updates `FETCH_EVENT_COLUMNS` to 18; adds 7 ATS
+  robots integration tests. Local verification: 520 tests, 0 failures, 1,207
+  assertions; typecheck, build, guardrails passed. CI/deploy run
+  `32573525387` passed full suite (520 tests, 1,207 assertions, typecheck,
+  build, guardrails, Freshness Cron Worker validated). PR #70 merged.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `COMP-01A` (persist durable robots decisions for
-  static and ATS sources) from synchronized clean `main`. Per the authoritative
-  dependency tree in `IMPLEMENTATION_UNITS.md` (`DB-01 → COMP-01A → {REL-08 →
-  SRC-4D, OPS-05, COMP-01B, DATA-05B}`), COMP-01A's only prerequisite (`DB-01`)
-  is accepted, so it is the next dependency-ready unit; `REL-08` and `SRC-4D` are
-  its children and remain BLOCKED until COMP-01A is accepted. `DATA-06`
-  taxonomy/eval convergence is independently ready (branches off the accepted
-  `DATA-03`). CONTRADICTION NOTE: the "First execution queue" table (Section AI)
-  lists COMP-01A as depending on REL-08 — this is stale and inverted; trust the
-  dependency tree + unit contracts (COMP-01A precedes REL-08). COMP-01A is a
-  migration/schema unit: claim the next unused migration number and use a fresh
-  independent critic. Source expansion remains frozen. OPS-04 follow-on (a
-  non-Cloudflare link-health probe path) remains a separate future unit.
+- Next exact action: execute `REL-08` (Source Doctor V1) from synchronized clean
+  `main`. Per the authoritative dependency tree in `IMPLEMENTATION_UNITS.md`
+  (`DB-01 → COMP-01A → {REL-08 → SRC-4D, OPS-05, COMP-01B, DATA-05B}`),
+  COMP-01A is now accepted, so REL-08 is the next dependency-ready unit; SRC-4D,
+  OPS-05, COMP-01B, DATA-05B are its children and remain BLOCKED until REL-08
+  is accepted. `DATA-06` taxonomy/eval convergence is independently ready
+  (branches off the accepted `DATA-03`). Source expansion remains frozen.
+  OPS-04 follow-on (a non-Cloudflare link-health probe path) remains a separate
+  future unit.
 
 Canonical planning artifacts:
 
