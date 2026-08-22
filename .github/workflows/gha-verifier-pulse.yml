@@ -47,6 +47,8 @@ jobs:
           SUCCEEDED=$(jq -er '.succeeded | if type == "number" then . else error("succeeded must be a number") end' verify.log)
           FAILED_CHECKS=$(jq -er '.failedChecks | if type == "number" then . else error("failedChecks must be a number") end' verify.log)
           BUDGET=$(jq -er '.budget | if type == "number" then . else error("budget must be a number") end' verify.log)
+          EXTERNAL_FETCH_BUDGET=$(jq -er '.externalFetchBudget | if type == "number" then . else error("externalFetchBudget must be a number") end' verify.log)
+          MAX_REDIRECT_HOPS=$(jq -er '.maxRedirectHops | if type == "number" then . else error("maxRedirectHops must be a number") end' verify.log)
           DEFERRED=$(jq -er '.deferred | if type == "number" then . else error("deferred must be a number") end' verify.log)
           BACKLOG=$(jq -er '.verificationBacklog | if type == "number" then . else error("verificationBacklog must be a number") end' verify.log)
           SWEEP_DAYS=$(jq -er '.estimatedSweepDays | if type == "number" then . else error("estimatedSweepDays must be a number") end' verify.log)
@@ -60,6 +62,8 @@ jobs:
           echo "VERIFY_SUCCEEDED=$SUCCEEDED" >> $GITHUB_ENV
           echo "VERIFY_FAILED_CHECKS=$FAILED_CHECKS" >> $GITHUB_ENV
           echo "VERIFY_BUDGET=$BUDGET" >> $GITHUB_ENV
+          echo "VERIFY_EXTERNAL_FETCH_BUDGET=$EXTERNAL_FETCH_BUDGET" >> $GITHUB_ENV
+          echo "VERIFY_MAX_REDIRECT_HOPS=$MAX_REDIRECT_HOPS" >> $GITHUB_ENV
           echo "VERIFY_DEFERRED=$DEFERRED" >> $GITHUB_ENV
           echo "VERIFY_BACKLOG=$BACKLOG" >> $GITHUB_ENV
           echo "VERIFY_SWEEP_DAYS=$SWEEP_DAYS" >> $GITHUB_ENV
@@ -76,7 +80,9 @@ jobs:
           echo "- **Workflow result**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "- **API HTTP status**: ${VERIFY_HTTP_CODE:-not received}" >> $GITHUB_STEP_SUMMARY
           echo "- **Links Attempted**: ${VERIFY_ATTEMPTED:-not received}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Safe External-Fetch Budget**: ${VERIFY_BUDGET:-not received}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Safe Item Budget**: ${VERIFY_BUDGET:-not received}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Worst-Case External Fetches**: ${VERIFY_EXTERNAL_FETCH_BUDGET:-not received}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Maximum Redirect Hops Per Item**: ${VERIFY_MAX_REDIRECT_HOPS:-not received}" >> $GITHUB_STEP_SUMMARY
           echo "- **Checks Deferred This Run**: ${VERIFY_DEFERRED:-not received}" >> $GITHUB_STEP_SUMMARY
           echo "- **Active Verification Backlog**: ${VERIFY_BACKLOG:-not received}" >> $GITHUB_STEP_SUMMARY
           echo "- **Estimated Full Sweep**: ${VERIFY_SWEEP_DAYS:-not received} days at two runs/day" >> $GITHUB_STEP_SUMMARY

@@ -11,6 +11,8 @@ import {
   isPlatformSubrequestLimitError,
   summarizeVerifierAttempts,
   VERIFIER_LEGACY_REQUESTED_LIMIT,
+  VERIFIER_MAX_REDIRECT_HOPS,
+  VERIFIER_SAFE_ITEM_BUDGET,
   VERIFIER_SAFE_FETCH_BUDGET,
   type VerifierAttemptResult,
 } from "@/lib/verifier-attempt";
@@ -23,6 +25,42 @@ import {
 const ARCHIVE_ID_BATCH = 90;
 
 export const prerender = false;
+
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
+
+export async function fetchVerifierTarget(
+  sourceUrl: string,
+  init: Omit<RequestInit, "redirect">,
+  fetcher: typeof fetch = fetch,
+): Promise<Response> {
+  let currentUrl = sourceUrl;
+  for (let hop = 0; ; hop += 1) {
+    const response = await fetcher(currentUrl, { ...init, redirect: "manual" });
+    const location = response.headers.get("location");
+    if (
+      !REDIRECT_STATUSES.has(response.status)
+      || !location
+      || hop >= VERIFIER_MAX_REDIRECT_HOPS
+    ) {
+      return response;
+    }
+
+    let redirectedUrl: string | null = null;
+    try {
+      redirectedUrl = sanitizeSourceUrl(new URL(location, currentUrl).href);
+    } catch {
+      // An invalid redirect is not evidence that the stored source is dead.
+    }
+    if (!redirectedUrl) return response;
+    try {
+      await response.body?.cancel();
+    } catch {
+      // Body cancellation is only connection cleanup; it cannot change the
+      // conservative link verdict.
+    }
+    currentUrl = redirectedUrl;
+  }
+}
 
 export const POST: APIRoute = async ({ request, locals }) => {
   console.log("[api/cron/verify-links] Starting verification...");
@@ -67,8 +105,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // 2. Verify remaining active links.
     // Workers Free permits 50 external subrequests per invocation and redirect
     // hops count. The legacy request of 120 reproduced 71 network failures
-    // after 49 successes in run 32542676422. Clamp to 40, matching the accepted
-    // directory-audit precedent while retaining ten requests of headroom.
+    // after 49 successes in run 32542676422. A first 40-item canary passed, but
+    // the next cohort exhausted the platform budget on five redirecting rows
+    // (run 32556609049). One bounded redirect per item and 20 selected items
+    // now cap the worst case at 40 external fetches with ten of headroom.
     const requestedLimit = VERIFIER_LEGACY_REQUESTED_LIMIT;
     const verifyLimit = clampVerifierLimit(requestedLimit);
     const active = await db.all<{ id: number; sourceUrl: string; failedCount: number }>(
@@ -108,14 +148,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
             return { deactivated: 1, succeeded: true } satisfies VerifierAttemptResult;
           }
           try {
-            const res = await fetch(safeSourceUrl, {
+            const res = await fetchVerifierTarget(safeSourceUrl, {
               method: deepScan ? "GET" : "HEAD",
               // Browser identity is deliberate here: this request asks "would
               // a job seeker clicking this link still reach the posting?", so
               // it stands in for their browser. See packages/scraper/userAgent.ts.
               headers: linkCheckHeaders(),
               signal: AbortSignal.timeout(8_000),
-              redirect: "follow",
             });
 
             // Deep scan on a live page: the application page is the ground
@@ -222,11 +261,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       : Math.max(0, verificationBacklog + deactivated - attempted);
     const estimatedSweepDays = verificationBacklog < 0
       ? -1
-      : Math.ceil(verificationBacklog / VERIFIER_SAFE_FETCH_BUDGET / 2);
+      : Math.ceil(verificationBacklog / VERIFIER_SAFE_ITEM_BUDGET / 2);
     console.log(`[api/cron/verify-links] Completed. Budget ${verifyLimit}/${requestedLimit}; attempted ${attempted}, succeeded ${succeeded}, failed ${failedChecks}, platform-budget failures ${platformBudgetFailures}, deferred ${deferred}, auto-archived ${stale.length}, deactivated ${deactivated} dead links (${geoPageDeactivated} by geo page-scan), never-verified backlog: ${neverVerifiedRemaining}.`);
     return new Response(JSON.stringify({
       requestedLimit,
       budget: verifyLimit,
+      externalFetchBudget: VERIFIER_SAFE_FETCH_BUDGET,
+      maxRedirectHops: VERIFIER_MAX_REDIRECT_HOPS,
       selected: active.length,
       attempted,
       deferred,

@@ -12,13 +12,18 @@ export type VerifierAttemptResult = {
 // rather than selecting right up to the platform ceiling.
 export const VERIFIER_EXTERNAL_SUBREQUEST_CAP = 50;
 export const VERIFIER_SAFE_FETCH_BUDGET = 40;
+export const VERIFIER_MAX_REDIRECT_HOPS = 1;
+export const VERIFIER_MAX_FETCHES_PER_ITEM = 1 + VERIFIER_MAX_REDIRECT_HOPS;
+export const VERIFIER_SAFE_ITEM_BUDGET = Math.floor(
+  VERIFIER_SAFE_FETCH_BUDGET / VERIFIER_MAX_FETCHES_PER_ITEM,
+);
 export const VERIFIER_LEGACY_REQUESTED_LIMIT = 120;
 
 export function clampVerifierLimit(requested: number): number {
   if (!Number.isFinite(requested) || requested < 1) {
-    return VERIFIER_SAFE_FETCH_BUDGET;
+    return VERIFIER_SAFE_ITEM_BUDGET;
   }
-  return Math.min(Math.floor(requested), VERIFIER_SAFE_FETCH_BUDGET);
+  return Math.min(Math.floor(requested), VERIFIER_SAFE_ITEM_BUDGET);
 }
 
 export function isPlatformSubrequestLimitError(error: unknown): boolean {
