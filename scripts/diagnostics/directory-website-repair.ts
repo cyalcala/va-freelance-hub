@@ -22,7 +22,9 @@
  *   - Every apply run emits an undo artifact whose restore statements are
  *     themselves CAS-guarded on the repaired state (`website IS NULL AND
  *     website_source = 'repair_cleared'`), so drifted rows are never restored
- *     blindly.
+ *     blindly. Undo is a gated, human-disciplined step like apply: it emits
+ *     SQL only, and an operator runs it deliberately with the artifact at
+ *     hand.
  *
  * CLI:
  *   bun scripts/diagnostics/directory-website-repair.ts sql [--out <dir>]
@@ -376,6 +378,15 @@ export interface ApplyPlan {
   undo: UndoRecord[];
 }
 
+/**
+ * Deliberately coarse equivalence class for clearing anomalous values: trim,
+ * strip trailing slashes, lowercase everything including the path. Paths are
+ * case-sensitive in principle, but this tool only ever clears a whole value;
+ * it never rewrites one value into another.
+ *
+ * The SQL-side guard in buildApplyStatements must normalize IDENTICALLY —
+ * `lower(rtrim(trim(website), '/'))` — or planned rows silently no-op.
+ */
 export function normalizeWebsite(website: string): string {
   return website.trim().replace(/\/+$/, "").toLowerCase();
 }
@@ -457,12 +468,13 @@ function sqlString(value: string): string {
 
 /**
  * One guarded CAS UPDATE per approved row. The WHERE clause pins both the id
- * and the exact expected current website, so concurrent edits turn the update
- * into a counted no-op instead of an overwrite.
+ * and the expected current website using the SAME normalization as
+ * planApply's pre-check (trim + rtrim '/' + lowercase), so a value that
+ * passes planning cannot silently match zero rows, and concurrent edits turn
+ * the update into a counted no-op instead of an overwrite.
  */
 export function buildApplyStatements(plan: ApplyPlan): string[] {
   const hash12 = plan.evidenceSha256.slice(0, 12);
-  const date = plan.plannedAt.slice(0, 10);
   const note = `[repair DATA-05B ev=${hash12}] cleared unsupported website`;
   return plan.planned.map((p) => `UPDATE va_directory
 SET website = NULL,
@@ -475,14 +487,27 @@ SET website = NULL,
     link_fail_count = 0,
     notes = coalesce(notes || ' | ', '') || ${sqlString(note)}
 WHERE id = ${p.id}
-  AND lower(trim(website)) = ${sqlString(p.expectedWebsite)};`);
+  AND lower(rtrim(trim(website), '/')) = ${sqlString(p.expectedWebsite)};`);
 }
 
 /**
  * Restore statements from the undo artifact. Each is guarded on the repaired
  * state; a drifted row yields zero changed rows instead of a wrong restore.
+ * Note: link-health fields are restored to their plan-time values by design;
+ * if directory-audit refreshes them between apply and undo, the restore
+ * intentionally reverts to the exact pre-repair state.
  */
 export function buildRestoreStatements(undo: UndoRecord[]): string[] {
+  for (const u of undo) {
+    const idOk = typeof u.id === "number" && Number.isInteger(u.id) && u.id > 0;
+    const stringsOk =
+      [u.oldWebsite, u.oldLinkStatus, u.oldLinkCheckedAt, u.oldLinkEvidence].every(
+        (v) => v === null || typeof v === "string",
+      ) && typeof u.oldWebsite === "string";
+    if (!idOk || !stringsOk) {
+      throw new Error(`undo artifact contains a malformed record for id ${JSON.stringify((u as { id?: unknown }).id)}; refusing to emit restore SQL`);
+    }
+  }
   return undo.map((u) => `UPDATE va_directory
 SET website = ${sqlString(u.oldWebsite)},
     website_source = NULL,
@@ -573,6 +598,14 @@ async function main(): Promise<void> {
       }
       const evidenceRaw = JSON.parse(readFileSync(evidencePath, "utf-8"));
       const report = JSON.parse(readFileSync(reportPath, "utf-8")) as Report;
+      // The fresh report is the CAS premise. A report whose partitions did not
+      // reconcile (or that came from another unit) must never feed an apply.
+      if (report.meta?.unit !== "DATA-05B") {
+        throw new Error("report file is not a DATA-05B report; refusing to plan an apply");
+      }
+      if (report.reconciliation?.ok !== true) {
+        throw new Error("fresh report failed reconciliation; re-run collect before any apply");
+      }
       const plan = planApply(evidenceRaw, report);
       if (dryRun) {
         process.stdout.write(JSON.stringify(plan, null, 2) + "\n");
@@ -604,10 +637,20 @@ async function main(): Promise<void> {
       buildApplyStatements(plan).forEach((stmt, i) => {
         files[`apply-${String(i + 1).padStart(3, "0")}-id-${plan.planned[i].id}.sql`] = stmt + "\n";
       });
-      await writeOut(outDir, files);
-      process.stdout.write(
-        `Wrote ${Object.keys(files).length} artifact files${outDir ? ` to ${outDir}` : ""}: ${plan.planned.length} planned, ${plan.skipped.length} skipped. Nothing has been executed.\n`,
-      );
+      if (outDir) {
+        await writeOut(outDir, files);
+        process.stdout.write(
+          `Wrote ${Object.keys(files).length} artifact files to ${outDir}: ${plan.planned.length} planned, ${plan.skipped.length} skipped. Nothing has been executed.\n`,
+        );
+      } else {
+        // No --out: print instead of silently discarding the artifacts.
+        for (const [name, content] of Object.entries(files)) {
+          process.stdout.write(`-- >>> ${name}\n${content}\n`);
+        }
+        process.stdout.write(
+          `${plan.planned.length} planned, ${plan.skipped.length} skipped; printed to stdout (use --out <dir> to write files). Nothing has been executed.\n`,
+        );
+      }
       return;
     }
     case "undo-sql": {

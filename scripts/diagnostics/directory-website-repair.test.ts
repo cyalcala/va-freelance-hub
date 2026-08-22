@@ -1,3 +1,4 @@
+import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
 import {
   MAX_APPLY_ROWS,
@@ -310,7 +311,7 @@ describe("buildApplyStatements", () => {
     expect(stmts).toHaveLength(1);
     const stmt = stmts[0];
     expect(stmt).toContain("WHERE id = 1");
-    expect(stmt).toContain("AND lower(trim(website)) = 'https://remotephjobs.com'");
+    expect(stmt).toContain("AND lower(rtrim(trim(website), '/')) = 'https://remotephjobs.com'");
     expect(stmt).toContain("website_source = 'repair_cleared'");
     expect(stmt).toContain("'2026-08-23T12:00:00.000Z'");
     expect(stmt).toContain("[repair DATA-05B ev=");
@@ -337,6 +338,108 @@ describe("buildRestoreStatements", () => {
     expect(stmt).toContain("AND website IS NULL");
     expect(stmt).toContain("AND website_source = 'repair_cleared'");
     expect(stmt).toContain("link_fail_count = 2");
+  });
+
+  test("refuses malformed undo records instead of interpolating them", () => {
+    const bad = [{ id: "1 OR 1=1", companyName: "Evil", oldWebsite: "https://x.com", oldLinkStatus: null, oldLinkCheckedAt: null, oldLinkEvidence: null, oldLinkFailCount: 0 }] as unknown as Parameters<typeof buildRestoreStatements>[0];
+    expect(() => buildRestoreStatements(bad)).toThrow(/malformed record/);
+  });
+});
+
+// ─── Execution round-trip: the emitted SQL must actually repair SQLite ────────
+
+function repairableDb(): Database {
+  const db = new Database(":memory:");
+  // Minimal va_directory with the pre-0033 shape plus the provenance columns.
+  db.exec(`
+    CREATE TABLE va_directory (
+      id INTEGER PRIMARY KEY,
+      company_name TEXT NOT NULL,
+      website TEXT,
+      link_status TEXT,
+      link_checked_at TEXT,
+      link_evidence TEXT,
+      link_fail_count INTEGER NOT NULL DEFAULT 0,
+      notes TEXT,
+      website_source TEXT,
+      website_evidence TEXT,
+      website_set_at TEXT
+    );
+  `);
+  const insert = db.prepare(
+    "INSERT INTO va_directory (id, company_name, website, link_status, link_checked_at, link_evidence, link_fail_count) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  );
+  // The three storage variants proven to coexist in production by migration
+  // 0031's predicate list, plus a drifted row that must NOT be touched.
+  insert.run(1, "Slash Co", "https://remotephjobs.com/", "ok", "2026-08-01T00:00:00Z", "ev", 2);
+  insert.run(2, "Upper Co", "HTTPS://REMOTEPHJOBS.COM", null, null, null, 0);
+  insert.run(3, "Bare Co", "https://remotephjobs.com", "bot_wall", null, null, 1);
+  insert.run(4, "Drifted Co", "https://someone-else.com", null, null, null, 0);
+  return db;
+}
+
+describe("apply SQL round-trip against bun:sqlite", () => {
+  test("every planned statement changes exactly its row; drifted rows no-op", () => {
+    const report = classifyReport({
+      "report-totals": wrangler([{ total_rows: 4, with_website: 4, classified: 0 }]),
+      "report-rows": wrangler([
+        { id: 1, companyName: "Slash Co", website: "https://remotephjobs.com/", linkStatus: "ok", linkCheckedAt: "2026-08-01T00:00:00Z", linkEvidence: "ev", linkFailCount: 2, enrichWebsiteNote: 0 },
+        { id: 2, companyName: "Upper Co", website: "HTTPS://REMOTEPHJOBS.COM", linkStatus: null, linkCheckedAt: null, linkEvidence: null, linkFailCount: 0, enrichWebsiteNote: 0 },
+        { id: 3, companyName: "Bare Co", website: "https://remotephjobs.com", linkStatus: "bot_wall", linkCheckedAt: null, linkEvidence: null, linkFailCount: 1, enrichWebsiteNote: 0 },
+      ]),
+    });
+    const plan = planApply(
+      {
+        unit: "DATA-05B",
+        approvedBy: "owner",
+        approvedAt: "2026-08-23T00:00:00Z",
+        rows: [1, 2, 3].map((id) => ({
+          id,
+          currentWebsite: id === 2 ? "https://remotephjobs.com" : `https://remotephjobs.com${id === 1 ? "/" : ""}`,
+          reason: "shared anomalous host across unrelated companies",
+          sharedDomainReviewed: true,
+        })),
+      },
+      report,
+      new Date("2026-08-23T12:00:00Z"),
+    );
+    expect(plan.planned).toHaveLength(3);
+
+    const db = repairableDb();
+    try {
+      for (const stmt of buildApplyStatements(plan)) {
+        db.run(stmt);
+      }
+      const repaired = db.query("SELECT id, website, website_source FROM va_directory WHERE website_source = 'repair_cleared' ORDER BY id").all() as Array<{ id: number; website: string | null }>;
+      // All three stored variants of the same value were actually cleared —
+      // this pins the critic finding that lower(trim()) alone missed the
+      // trailing-slash form.
+      expect(repaired.map((r) => r.id)).toEqual([1, 2, 3]);
+      expect(repaired.every((r) => r.website === null)).toBe(true);
+      // The drifted row was untouched.
+      const drifted = db.query("SELECT website, website_source FROM va_directory WHERE id = 4").get() as { website: string; website_source: string | null };
+      expect(drifted.website).toBe("https://someone-else.com");
+      expect(drifted.website_source).toBeNull();
+
+      // Re-applying the same statements is a counted no-op (idempotent CAS).
+      let changedAgain = 0;
+      for (const stmt of buildApplyStatements(plan)) {
+        const res = db.run(stmt);
+        changedAgain += Number(res.changes ?? 0);
+      }
+      expect(changedAgain).toBe(0);
+
+      // Undo restores the exact pre-repair values through the same guard.
+      for (const stmt of buildRestoreStatements(plan.undo)) {
+        db.run(stmt);
+      }
+      const restored = db.query("SELECT id, website, link_status, website_source FROM va_directory ORDER BY id").all() as Array<{ id: number; website: string | null; link_status: string | null; website_source: string | null }>;
+      expect(restored[0]).toMatchObject({ id: 1, website: "https://remotephjobs.com/", link_status: "ok", website_source: null });
+      expect(restored[2]?.website).toBe("https://remotephjobs.com");
+      expect(restored.every((r) => r.website_source === null)).toBe(true);
+    } finally {
+      db.close();
+    }
   });
 });
 

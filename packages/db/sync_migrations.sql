@@ -1,7 +1,7 @@
 -- Bootstrap-safe migration ledger sync for Cloudflare D1.
 --
 -- This script is idempotent and safe for both fresh and legacy databases:
--- - Fresh database: core tables don't exist → no premarking → wrangler applies all migrations 0000-0031
+-- - Fresh database: core tables don't exist → no premarking → wrangler applies all migrations 0000-0033
 -- - Legacy database: core tables exist → premarks foundational migrations 0000-0008 → wrangler applies remaining
 --
 -- The foundational migrations (0000-0008) create the core schema:
