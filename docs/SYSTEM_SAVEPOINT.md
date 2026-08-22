@@ -2,20 +2,19 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **COMP-01A TERMINAL — KEEP (fully committed)**. Durable robots evidence
-for static and ATS sources shipped and verified: `source_fetch_events` now
-records 6 robots columns per fetch attempt; ATS endpoints (Lever, Greenhouse,
-Workable, Breezy, Ashby) participate in the robots gate; observe mode only
-(ROBOTS_MODE="observe"); enforcement is COMP-01B. DB-01 rehearsal passes fresh
-and legacy chains (85/85 schema assertions, 32 migrations including 0032).
-OPS-04 remains KEEP. DATA-03 remains KEEP (read-only quality baseline).
-OPS-06 remains KEEP (production behavior baseline).
+Status: **REL-08 TERMINAL — KEEP**. Source Doctor V1 shipped and verified:
+`bun scripts/source-doctor.ts --source <id>` emits compliance-first, side-effect-free
+diagnostics with exactly nine terminal outcomes; zero D1 writes, zero AI calls,
+bounded requests. COMP-01A fully committed with DB layer. DB-01 rehearsal passes
+fresh and legacy chains (85/85 schema assertions, 32 migrations). OPS-04, DATA-03,
+OPS-06 remain KEEP. DATA-05A, REL-09, SEC-03, REL-10 remain KEEP.
 
 - Branch: `main`
 - OPS-04 execution start: `6146290` (`main` = `origin/main` at start).
 - DATA-03 execution start: `539b65b` (`main` = `origin/main` at start).
 - OPS-06 execution start: `060b2db` (`main` = `origin/main` at start).
 - COMP-01A execution start: `a75f8a8` (`main` = `origin/main` at start).
+- REL-08 execution start: `e2c89e1` (`main` = `origin/main` at start).
 - DB-01 rehearsal fix: `af960d7` (updated expected migration count to 32).
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
@@ -25,12 +24,12 @@ OPS-06 remains KEEP (production behavior baseline).
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted production behavior commit: `af960d7` (COMP-01A DB layer + DB-01 rehearsal fix).
-- Last accepted behavior deployment: GitHub Actions CI run `32574532452` passed full suite (520 tests, 1,207 assertions, typecheck, build, guardrails, D1 migrations applied, FTS verified, Pages deployed).
+- Last accepted production behavior commit: `e2c89e1` (REL-08 Source Doctor V1).
+- Last accepted behavior deployment: GitHub Actions CI run `32576239721` passed full suite (534 tests, 1,264 assertions, typecheck, build, guardrails, Pages deployed).
 - Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, CI `32563188313` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `COMP-01A` durable robots evidence — `KEEP` (now fully committed including DB layer).
-- Current implementation unit: `REL-08` (Source Doctor V1) — PLANNED, dependency-ready.
+- Last Gauntlet decision: `REL-08` Source Doctor V1 — `KEEP`.
+- Current implementation unit: `SRC-4D` (Jobicy cadence) / `OPS-05` (alert lifecycle) / `COMP-01B` (reviewed enforcement) / `DATA-05B` (provenance repair) — PLANNED, all BLOCKED on REL-08 acceptance. `DATA-06` taxonomy/eval convergence — PLANNED, independently ready off DATA-03.
 - DATA-03 code commits: `1cca4b3` (generator + read-only workflow + fixture
   test) and `feb5f0b` (run cohorts per-command after a dispatched run proved
   multi-statement `--file` returns only a summary). Local G3: 495 tests, 0
@@ -121,17 +120,21 @@ OPS-06 remains KEEP (production behavior baseline).
   Local verification: 520 tests, 0 failures, 1,207 assertions; typecheck, build,
   guardrails passed. CI/deploy run `32573525387` (app layer) and `32574532452`
   (full with DB layer) passed full suite.
+- REL-08 acceptance: behavior commit `4c33d96` adds `packages/scraper/source-doctor.ts`,
+  `packages/scraper/source-doctor.test.ts` (14 tests, all nine outcomes covered),
+  `scripts/source-doctor.ts` CLI. Local verification: 534 tests, 0 failures,
+  1,264 assertions; typecheck, build, guardrails passed. CI/deploy run
+  `32576239721` passed full suite. Four fixture runs: enabled RSS (We Work
+  Remotely), enabled JSON (Remote OK), paused (ProBlogger), unknown ID — all
+  produce correct terminal outcomes. Request budget bounded (≤2 for static).
+  Zero mutations, zero AI calls, zero D1 writes.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `REL-08` (Source Doctor V1) from synchronized clean
-  `main`. Per the authoritative dependency tree in `IMPLEMENTATION_UNITS.md`
-  (`DB-01 → COMP-01A → {REL-08 → SRC-4D, OPS-05, COMP-01B, DATA-05B}`),
-  COMP-01A is now fully accepted, so REL-08 is the next dependency-ready unit;
-  SRC-4D, OPS-05, COMP-01B, DATA-05B are its children and remain BLOCKED until
-  REL-08 is accepted. `DATA-06` taxonomy/eval convergence is independently
-  ready (branches off the accepted `DATA-03`). Source expansion remains frozen.
-  OPS-04 follow-on (a non-Cloudflare link-health probe path) remains a separate
-  future unit.
+- Next exact action: execute `SRC-4D` (Jobicy cadence experiment), `OPS-05` (alert lifecycle),
+  `COMP-01B` (reviewed enforcement gate), or `DATA-05B` (provenance repair) — all
+  dependency-ready after REL-08. `DATA-06` taxonomy/eval convergence independently
+  ready off DATA-03. Source expansion remains frozen. OPS-04 follow-on (non-Cloudflare
+  link-health probe) remains separate future unit.
 
 Canonical planning artifacts:
 

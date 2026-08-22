@@ -644,7 +644,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Doctor, thin reusable exports, fixtures/tests, docs; no scheduler or remediation. |
 | GITHUB BACKUP | G5. |
 | HANDOFF | G6 plus output schema version, request limits, four fixtures, zero-mutation proof, and known unsupported paths. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (`4c33d96`; CI/deploy `32576239721`; 534 tests, 1,264 assertions; 14 source-doctor tests covering all 9 outcomes; 4 fixture runs verified; zero mutations, zero AI calls, zero D1 writes) |
 
 ## DATA-05B — Repair directory website evidence with provenance and anomaly guards
 
