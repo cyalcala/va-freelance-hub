@@ -2,8 +2,8 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **REL-09 TERMINAL — KEEP AFTER REVISE**. Verifier external requests
-are bounded below the Cloudflare Free ceiling and production-accepted.
+Status: **SEC-03 TERMINAL — KEEP**. Prospector trusted-source and ATS hostname
+matching now requires an exact host or dot-delimited subdomain and is deployed.
 
 - Branch: `main`
 - DATA-05A execution start: `451b76e` (`main` = `origin/main` at start).
@@ -15,14 +15,14 @@ are bounded below the Cloudflare Free ceiling and production-accepted.
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted behavior commit: `137a3ff`
-- Last accepted behavior deployment: GitHub Actions run `32556741237`
+- Last accepted behavior commit: `6c48810`
+- Last accepted behavior deployment: GitHub Actions run `32557360004`
 - Current scheduled evidence: watchdog `32550368138`, source-health rollup
   `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
   enrichment pulse `32550872494` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `REL-09` verifier budget safety — `KEEP AFTER REVISE`.
-- Current implementation unit: `REL-09` (terminal).
+- Last Gauntlet decision: `SEC-03` hostname trust hardening — `KEEP`.
+- Current implementation unit: `SEC-03` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -55,8 +55,18 @@ are bounded below the Cloudflare Free ceiling and production-accepted.
   measured 32-day sweep at two runs per day.
 - Fresh REL-09 G3: 461 tests, 0 failures, 1,026 assertions; typecheck, build,
   and guardrails passed.
-- Next exact action: execute `SEC-03` exact-host-or-dot-subdomain trust matching
-  from synchronized clean `main`; source expansion remains frozen.
+- SEC-03 acceptance: behavior commit `6c48810` centralizes exact-host-or-dot-
+  subdomain matching across source trust and all five ATS families. Known-good
+  configured hosts retained 100% parity and all malicious concatenated suffix
+  fixtures failed closed; no allowlist or dependency changed.
+- Fresh SEC-03 G3: 464 tests, 0 failures, 1,053 assertions; typecheck, build,
+  guardrails, CI/deploy run `32557360004`, and live Prospector run `32557448855`
+  passed. The live run returned HTTP 200 with 4 considered, 0 eligible/added,
+  3 review-only, 1 quality rejection, 0 ATS proposals, and no guard trip.
+- Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
+  Astro-toolchain advisories; remediation remains separately scoped debt.
+- Next exact action: execute `DB-01` fresh/legacy D1 migration rehearsal from
+  synchronized clean `main`; source expansion remains frozen.
 
 Canonical planning artifacts:
 

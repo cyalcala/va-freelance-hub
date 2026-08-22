@@ -2,8 +2,8 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **REL-09 TERMINAL — KEEP AFTER REVISE**. Verifier external fetches are
-bounded, redirect-accounted, deployed, and production-accepted.
+Status: **SEC-03 TERMINAL — KEEP**. Prospector source trust and ATS recognition
+now enforce DNS-label hostname boundaries and are production-accepted.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - DATA-05A execution started from synchronized `main`/`origin/main` at
@@ -13,13 +13,13 @@ bounded, redirect-accounted, deployed, and production-accepted.
   attribution and does not blacklist or claim ownership of the external host.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
   validation and correctly skipped production migration/deploy as docs-only.
-- Last accepted behavior: `137a3ff`, deployed by run `32556741237`.
+- Last accepted behavior: `6c48810`, deployed by run `32557360004`.
 - Current scheduled evidence: watchdog `32550368138`, source health
   `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
   enrichment `32550872494` completed successfully. Green workflow conclusions
   do not waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `REL-09` verifier budget safety — `KEEP AFTER REVISE`.
-- Current implementation unit: `REL-09` (terminal).
+- Last Gauntlet decision: `SEC-03` hostname trust hardening — `KEEP`.
+- Current implementation unit: `SEC-03` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -58,13 +58,25 @@ bounded, redirect-accounted, deployed, and production-accepted.
   and the estimated full sweep is 32 days at two runs/day.
 - Fresh REL-09 G3: 461 tests, 0 failures, 1,026 assertions; typecheck, build,
   and guardrails passed.
-- Next implementation unit: `SEC-03` exact-host trust matching.
+- SEC-03 behavior commit `6c48810` replaced the source-trust suffix bypass and
+  all five ATS suffix branches with one exact-host-or-dot-subdomain predicate.
+  All configured known-good hosts retained parity; concatenated malicious
+  suffixes and invalid URLs fail closed without allowlist expansion.
+- Fresh SEC-03 G3: 464 tests, 0 failures, 1,053 assertions; typecheck, build,
+  and guardrails passed. CI/deploy run `32557360004` succeeded.
+- Live Prospector run `32557448855` returned HTTP 200 on `6c48810`: 4
+  candidates considered, 0 eligible, 0 added, 3 review-only, 1 rejected for
+  quality, 0 ATS proposals, and no mass-add guard trip.
+- Supplemental `bun audit` reported 2 high, 4 moderate, and 4 low existing
+  Astro-toolchain advisories; dependency remediation is separate from SEC-03.
+- Next implementation unit: `DB-01` fresh/legacy D1 migration rehearsal.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
 - Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
 - Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).
 
-The next accepted status update must name a terminal SEC-03 decision, fresh
-verification, commit, push, workflow evidence, and bounded production proof.
+The next accepted status update must name the DB-01 fresh and legacy rehearsal
+results, migration-ledger/schema evidence, terminal decision, commit, push,
+workflow evidence, and bounded production proof.
 
 ## Accepted Implementation History — historical below this checkpoint
 

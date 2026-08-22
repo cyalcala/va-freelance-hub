@@ -259,7 +259,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Pure helper/call sites/tests only. |
 | GITHUB BACKUP | G5. |
 | HANDOFF | G6 plus exact host matrix, rejected malicious cases, and all migrated call sites. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (`6c48810`; CI/deploy `32557360004`; live Prospector `32557448855`) |
 
 ## DB-01 — Rehearse the complete migration chain on an empty D1 database
 

@@ -198,7 +198,7 @@ Manual extensions
 | P0 | DATA-05 | cross-source application-link poisoning amplified into cross-company directory-domain contamination | verified live; immediate containment plus exact incident repair, followed by general provenance hardening |
 | P0 owner | SEC-LEGACY-01 | legacy provider credentials were previously exposed and rotation remains unconfirmed | owner-gated; never print values |
 | P1 | REL-09 | verifier request budget can exceed the hosting envelope | structure verified; reproduce effect |
-| P1 | SEC-03 | permissive hostname suffix matching admits lookalikes | verified in code |
+| P1 | SEC-03 | permissive hostname suffix matching admits lookalikes | accepted and deployed at `6c48810` |
 | P1 | DB-01 | fresh-D1 migration/recovery chain is unproven | verified gap; effect inferred |
 | P1 | OPS-04 | directory unreachable ratio rose to 43% | verified current signal |
 | P1 | SRC-4D | two Jobicy feeds receive 429 on one origin | verified current signal |
@@ -564,25 +564,25 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: DATA-05A and REL-09 deployed and accepted; production clock healthy at latest evidence
+CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, and SEC-03 deployed and accepted; production clock healthy at latest evidence
 CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: REL-09 verifier budget safety — KEEP AFTER REVISE
-CURRENT UNIT: REL-09 complete; SEC-03 next
-CURRENT UNIT STATUS: TERMINAL REL-09 verdict KEEP AFTER REVISE
-PRIMARY ADDY WORKFLOW: performance
+LAST ACCEPTED GAUNTLET UNIT: SEC-03 hostname trust hardening — KEEP
+CURRENT UNIT: SEC-03 complete; DB-01 next
+CURRENT UNIT STATUS: TERMINAL SEC-03 verdict KEEP
+PRIMARY ADDY WORKFLOW: security-and-hardening
 ACTIVE SUPERPOWERS MECHANISM: verification before completion
 CURRENT EXECUTOR: repository executor
-CURRENT WORKTREE / BRANCH: main at accepted behavior 137a3ff
-NEXT UNIT: SEC-03 exact-host-or-dot-subdomain trust matching
+CURRENT WORKTREE / BRANCH: main at accepted behavior 6c48810
+NEXT UNIT: DB-01 fresh/legacy D1 migration rehearsal
 BLOCKERS: SEC-LEGACY-01 requires owner/provider action
 CONTRADICTIONS: Section H recorded; canonical entry docs rebased
-AUTOMATION STATUS: REL-09 CI/migration/deploy 32556741237 passed; verifier rotations 32556799462 and 32556821369 passed
+AUTOMATION STATUS: SEC-03 CI/migration/deploy 32557360004 passed; live Prospector 32557448855 passed with zero writes
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: accepted behavior 137a3ff
-LAST GITHUB BACKUP: 137a3ff on origin/main
-LAST VERIFICATION EVIDENCE: local 461/0/1,026 + guardrails/typecheck/build; CI/deploy 32556741237; verifier 32556799462 and 32556821369
-NEXT EXACT ACTION: re-sync main and execute SEC-03 exact-host trust hardening
-NEXT RECOMMENDED MODEL: TypeScript security executor for SEC-03
+LAST VERIFIED COMMIT: accepted behavior 6c48810
+LAST GITHUB BACKUP: 6c48810 on origin/main; expected Prospector digest advanced main to 80f6d7d
+LAST VERIFICATION EVIDENCE: local 464/0/1,053 + guardrails/typecheck/build; CI/deploy 32557360004; Prospector 32557448855
+NEXT EXACT ACTION: re-sync main and execute DB-01 fresh/legacy D1 migration rehearsal
+NEXT RECOMMENDED MODEL: Cloudflare D1/SQLite migration executor for DB-01
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after
