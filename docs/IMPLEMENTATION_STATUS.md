@@ -2,8 +2,8 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **DATA-05A TERMINAL — KEEP**. Containment and the exact incident repair
-are deployed and production-accepted.
+Status: **REL-09 TERMINAL — KEEP AFTER REVISE**. Verifier external fetches are
+bounded, redirect-accounted, deployed, and production-accepted.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - DATA-05A execution started from synchronized `main`/`origin/main` at
@@ -13,13 +13,13 @@ are deployed and production-accepted.
   attribution and does not blacklist or claim ownership of the external host.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
   validation and correctly skipped production migration/deploy as docs-only.
-- Last accepted behavior: `b824600`, deployed by run `32555307405`.
+- Last accepted behavior: `137a3ff`, deployed by run `32556741237`.
 - Current scheduled evidence: watchdog `32550368138`, source health
   `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
   enrichment `32550872494` completed successfully. Green workflow conclusions
   do not waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `DATA-05A` data-integrity containment — `KEEP`.
-- Current implementation unit: `DATA-05A` (terminal).
+- Last Gauntlet decision: `REL-09` verifier budget safety — `KEEP AFTER REVISE`.
+- Current implementation unit: `REL-09` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -47,12 +47,23 @@ are deployed and production-accepted.
   no failed sources or insert batches.
 - Fresh local acceptance at `d269755`: 457 tests, 0 failures, 1,210 assertions;
   typecheck, build, and guardrails passed.
-- Next implementation unit: `REL-09` verifier budget safety.
+- REL-09 reproduction: run `32542676422` returned 49 successes and 71 network
+  failures from 120 attempts. The first 40-row canary passed; the second,
+  `32556609049`, exposed five redirect-driven platform-budget failures and
+  correctly failed its workflow gate.
+- Accepted correction `137a3ff`: at most one redirect hop and 20 items per run,
+  bounding worst-case external fetches to 40 below Cloudflare Free's 50 limit.
+- Final rotations `32556799462` and `32556821369` each passed 20/20 with zero
+  platform-budget failures. The active backlog is 1,267, never-verified is 0,
+  and the estimated full sweep is 32 days at two runs/day.
+- Fresh REL-09 G3: 461 tests, 0 failures, 1,026 assertions; typecheck, build,
+  and guardrails passed.
+- Next implementation unit: `SEC-03` exact-host trust matching.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
 - Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
 - Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).
 
-The next accepted status update must name a terminal REL-09 decision, fresh
+The next accepted status update must name a terminal SEC-03 decision, fresh
 verification, commit, push, workflow evidence, and bounded production proof.
 
 ## Accepted Implementation History — historical below this checkpoint

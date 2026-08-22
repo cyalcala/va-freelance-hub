@@ -199,12 +199,12 @@ Migration-writing units are sequential even when their functional work is otherw
 | REVERT | Revert code commit if rotation or accounting regresses; never revert to 120 without verified platform capacity. |
 | STOP CONDITIONS | Unknown current limit, redirects make 40 unsafe, or backlog SLA requires a scheduler/architecture change. |
 | ESCALATION | Present measured throughput options; do not buy capacity or increase schedule without approval. |
-| DOCUMENTATION | Record limit rationale and observed sweep duration in implementation status/recovery trail. |
+| DOCUMENTATION | Limit rationale, failed 40-row canary, redirect revision, live rotations, and 32-day sweep estimate are recorded in `docs/gauntlet/evidence/REL-09-verifier-subrequest-budget.md`. |
 | COMMIT PLAN | `fix(verifier): bound external subrequests per invocation`. |
 | COMMIT BOUNDARY | Route + focused test + directly coupled workflow summary only. |
 | GITHUB BACKUP | G5 with verifier workflow and release evidence. |
 | HANDOFF | G6 plus confirmed cap source, selected limit, redirects assumption, backlog estimate, and live run counters. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP AFTER REVISE (`137a3ff`; CI/deploy `32556741237`; live `32556799462`, `32556821369`) |
 
 ## SEC-03 — Enforce exact-host-or-dot-subdomain trust matching
 

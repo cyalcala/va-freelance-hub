@@ -6,7 +6,7 @@
 
 **Planning baseline:** `bd84cc1` (`main` = `origin/main` when the audit closed)
 
-**Latest accepted behavior:** `b824600`, CI/deploy run `32555307405`
+**Latest accepted behavior:** `137a3ff`, CI/deploy run `32556741237`
 **DATA-05A execution start SHA:** `451b76e`; terminal decision `KEEP`
 **Authority:** this section is the current strategic plan. The accepted P0–P7
 recovery roadmap is retained below as historical evidence, not as the current
@@ -564,25 +564,25 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: DATA-05A containment deployed and accepted; production clock healthy at latest evidence
+CURRENT VERIFIED SYSTEM STATE: DATA-05A and REL-09 deployed and accepted; production clock healthy at latest evidence
 CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: DATA-05A data-integrity containment — KEEP
-CURRENT UNIT: DATA-05A complete; REL-09 next
-CURRENT UNIT STATUS: TERMINAL DATA-05A verdict KEEP
-PRIMARY ADDY WORKFLOW: incremental-implementation
+LAST ACCEPTED GAUNTLET UNIT: REL-09 verifier budget safety — KEEP AFTER REVISE
+CURRENT UNIT: REL-09 complete; SEC-03 next
+CURRENT UNIT STATUS: TERMINAL REL-09 verdict KEEP AFTER REVISE
+PRIMARY ADDY WORKFLOW: performance
 ACTIVE SUPERPOWERS MECHANISM: verification before completion
 CURRENT EXECUTOR: repository executor
-CURRENT WORKTREE / BRANCH: main at automation digest d269755
-NEXT UNIT: REL-09 verifier budget safety
+CURRENT WORKTREE / BRANCH: main at accepted behavior 137a3ff
+NEXT UNIT: SEC-03 exact-host-or-dot-subdomain trust matching
 BLOCKERS: SEC-LEGACY-01 requires owner/provider action
 CONTRADICTIONS: Section H recorded; canonical entry docs rebased
-AUTOMATION STATUS: DATA-05A CI/migration/deploy 32555307405 passed; Hunter acceptance 32556180387 passed
+AUTOMATION STATUS: REL-09 CI/migration/deploy 32556741237 passed; verifier rotations 32556799462 and 32556821369 passed
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: accepted behavior b824600; automation digest d269755
-LAST GITHUB BACKUP: d269755 on origin/main
-LAST VERIFICATION EVIDENCE: local 457/0/1,210 + guardrails/typecheck/build; CI/deploy 32555307405; Hunter 32556180387
-NEXT EXACT ACTION: re-sync main and execute REL-09 verifier budget safety
-NEXT RECOMMENDED MODEL: bounded TypeScript/Cloudflare executor for REL-09
+LAST VERIFIED COMMIT: accepted behavior 137a3ff
+LAST GITHUB BACKUP: 137a3ff on origin/main
+LAST VERIFICATION EVIDENCE: local 461/0/1,026 + guardrails/typecheck/build; CI/deploy 32556741237; verifier 32556799462 and 32556821369
+NEXT EXACT ACTION: re-sync main and execute SEC-03 exact-host trust hardening
+NEXT RECOMMENDED MODEL: TypeScript security executor for SEC-03
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after

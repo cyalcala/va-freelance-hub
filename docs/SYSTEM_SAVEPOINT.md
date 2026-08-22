@@ -2,8 +2,8 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **DATA-05A TERMINAL — KEEP**. Cross-source apply-link and
-directory-domain incident containment is deployed and production-accepted.
+Status: **REL-09 TERMINAL — KEEP AFTER REVISE**. Verifier external requests
+are bounded below the Cloudflare Free ceiling and production-accepted.
 
 - Branch: `main`
 - DATA-05A execution start: `451b76e` (`main` = `origin/main` at start).
@@ -15,14 +15,14 @@ directory-domain incident containment is deployed and production-accepted.
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted behavior commit: `b824600`
-- Last accepted behavior deployment: GitHub Actions run `32555307405`
+- Last accepted behavior commit: `137a3ff`
+- Last accepted behavior deployment: GitHub Actions run `32556741237`
 - Current scheduled evidence: watchdog `32550368138`, source-health rollup
   `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
   enrichment pulse `32550872494` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `DATA-05A` data-integrity containment — `KEEP`.
-- Current implementation unit: `DATA-05A` (terminal).
+- Last Gauntlet decision: `REL-09` verifier budget safety — `KEEP AFTER REVISE`.
+- Current implementation unit: `REL-09` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -45,8 +45,18 @@ directory-domain incident containment is deployed and production-accepted.
   exposed zero quarantines/anomalies and recorded 42/42 fetch events.
 - Fresh local acceptance at automation-advanced `d269755`: 457 tests, 0
   failures, 1,210 assertions; typecheck, build, and guardrails passed.
-- Next exact action: execute `REL-09` verifier budget safety from synchronized
-  clean `main`; source expansion remains frozen behind the documented gates.
+- REL-09 acceptance: baseline run `32542676422` reproduced 49 successes/71
+  failures at 120 rows. A 40-row canary passed, but the next canary
+  `32556609049` exposed five redirect-driven platform-budget failures and
+  correctly failed the workflow. Corrective commit `137a3ff` caps one redirect
+  hop and 20 rows, for at most 40 external fetches under the 50-request ceiling.
+- Final live rotations `32556799462` and `32556821369` each passed 20/20 with
+  zero platform-budget failures. Current active backlog 1,267 implies a
+  measured 32-day sweep at two runs per day.
+- Fresh REL-09 G3: 461 tests, 0 failures, 1,026 assertions; typecheck, build,
+  and guardrails passed.
+- Next exact action: execute `SEC-03` exact-host-or-dot-subdomain trust matching
+  from synchronized clean `main`; source expansion remains frozen.
 
 Canonical planning artifacts:
 
