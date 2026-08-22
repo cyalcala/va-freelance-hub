@@ -25,8 +25,12 @@ import type { GeoScope } from "./geoGate";
 export type TriageDecision =
   /** triageJob threw — transient; caller should leave the item for a later run. */
   | { kind: "error"; error: string }
-  /** AI binding missing / every model failed — FAIL CLOSED, retry next run. */
-  | { kind: "ai-unavailable" }
+  /**
+   * AI binding missing / every model failed — FAIL CLOSED, retry next run.
+   * `triage` carries the failed pass so callers can persist the underlying
+   * reason / providerFailures for diagnostics; its verdict must never publish.
+   */
+  | { kind: "ai-unavailable"; triage: TriageResult }
   /** AI judged the listing not open to Filipinos — persist inactive, never publish. */
   | { kind: "ineligible"; reason: string; triage: TriageResult }
   /** First pass approved but the skeptic refuted it — quarantine, never publish. */
@@ -55,6 +59,9 @@ export async function decideTriage(
   gate: { geoScope: GeoScope },
   env: any,
 ): Promise<TriageDecision> {
+  // `null` inputs are normalized to `undefined` here; both render identically in
+  // `contextBlock` (truthy / optional-chaining checks), so the prompt is
+  // unchanged whether a caller passes `null` or omits the field.
   const context: TriageContext = {
     locationRaw: input.locationRaw ?? null,
     tags: input.tags ?? undefined,
@@ -71,7 +78,7 @@ export async function decideTriage(
   // FAIL CLOSED: an item the AI never actually classified is not published; it
   // is left to retry when AI recovers. An AI outage must never fill the board.
   if (triage.aiUnavailable) {
-    return { kind: "ai-unavailable" };
+    return { kind: "ai-unavailable", triage };
   }
 
   if (!triage.eligibleForFilipinos) {

@@ -20,22 +20,13 @@ import {
 } from "@/lib/run-diagnostics";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, findRepeatedCrossCompanyApplyHosts, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict, atsEndpointUrl } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, mapTriageCategoryToUiCategory, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, findRepeatedCrossCompanyApplyHosts, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict, atsEndpointUrl } from "@va-hub/scraper";
 
-function mapTriageCategoryToUiCategory(cat: string): string {
-  switch (cat) {
-    case "admin": return "admin";
-    case "design":
-    case "creative": return "design";
-    case "tech": return "tech";
-    case "marketing":
-    case "social-media": return "marketing";
-    case "customer-service":
-    case "customer-support": return "customer-service";
-    case "finance": return "finance";
-    default: return "other";
-  }
-}
+// The AI-category → board-taxonomy mapper lives in `@va-hub/scraper`
+// (triage-decision.ts) as the single source of truth. It was previously copied
+// here; the private duplicate was removed in DATA-06 so the inline scrape loop,
+// the inline pending-triage drain, and the Inngest drain can never drift on how
+// a listing's category is folded into the seven public slugs.
 
 type SourceType = "RSS" | "HTML" | "JSON" | "ATS";
 
@@ -2229,38 +2220,49 @@ export const POST: APIRoute = async ({ request, locals }) => {
         chunk.map(async ({ item, gate }) => {
           console.log(`[api/cron/scrape] Triaging: "${item.title}"`);
           try {
-            // L2: the model now sees the structured location, source tags,
-            // and company — not just title + description.
-            const triageContext = {
-              locationRaw: (item as { locationRaw?: string | null }).locationRaw ?? null,
-              tags: item.tags,
-              company: item.company,
-            };
-            const triage = await triageJob(item.title, item.description || "", aiEnv, triageContext);
-            // Consensus (L2): a gate-unknown item approved by one AI pass
-            // needs a second, adversarial vote before publishing. Gate-
-            // verified positives (worldwide/APAC/PH) skip this — the
-            // structured signal already corroborates.
-            let skeptic = null;
-            if (gate.geoScope === "unknown" && !triage.aiUnavailable && triage.eligibleForFilipinos) {
-              skeptic = await skepticEligibilityCheck(item.title, item.description || "", aiEnv, triageContext);
-            }
-            return { item, gate, triage, skeptic };
+            // DATA-06: the inline new-item verdict now runs through the shared
+            // `decideTriage` — the same function the inline pending-triage drain
+            // and the Inngest durable drain use — so the three paths cannot drift
+            // on what publishes, rejects, quarantines, or defers. `aiEnv` still
+            // carries the subrequest-budget-wrapped AI binding, so per-run budget
+            // accounting is unchanged. The model ladder, the L2 consensus skeptic
+            // (only for gate-`unknown` positives), and fail-closed behavior are
+            // all preserved inside `decideTriage`.
+            const decision = await decideTriage(
+              {
+                title: item.title,
+                description: item.description,
+                company: item.company,
+                tags: item.tags,
+                locationRaw: (item as { locationRaw?: string | null }).locationRaw ?? null,
+              },
+              { geoScope: gate.geoScope },
+              aiEnv,
+            );
+            return { item, gate, decision };
           } catch (err) {
-            console.error(`[api/cron/scrape] Triage failed for "${item.title}":`, err);
-            triageFailures += 1;
-            return { item, gate, triage: null, skeptic: null };
+            // Only the skeptic call can throw out of decideTriage; a triageJob
+            // failure is already returned as {kind:"error"}. Normalize both to
+            // one error verdict, counted in the write phase below.
+            return {
+              item,
+              gate,
+              decision: { kind: "error" as const, error: errorMessage(err) },
+            };
           }
         })
       );
 
-      for (const { item, gate, triage, skeptic } of results) {
-        if (!triage) {
+      for (const { item, gate, decision } of results) {
+        if (decision.kind === "error") {
+          triageFailures += 1;
+          console.error(`[api/cron/scrape] Triage failed for "${item.title}": ${decision.error}`);
           pendingItems.push(await buildPendingTriageItem(item, gate, observedAt, "triage threw before a verdict"));
           continue;
         }
 
-        if (triage.aiUnavailable) {
+        if (decision.kind === "ai-unavailable") {
+          const triage = decision.triage;
           triageAiUnavailable += 1;
           for (const failure of triage.providerFailures ?? []) {
             triageProviderFailures.add(failure);
@@ -2273,7 +2275,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         const cleanDesc = (item.description || "").slice(0, 1500);
         const descriptionHash = await sha256Hex(item.title + cleanDesc);
 
-        if (!triage.eligibleForFilipinos) {
+        if (decision.kind === "ineligible") {
+          const triage = decision.triage;
           console.log(`[api/cron/scrape] Filtering out ineligible job: "${item.title}". Reason: ${triage.reason}`);
           rejectedItems.push({
             ...item,
@@ -2298,7 +2301,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         // Consensus quarantine (L2): the skeptic refuted the first AI pass —
         // conflicting votes never publish. Persisted inactive with evidence
         // so the URL joins dedup and a human can audit the split.
-        if (skeptic && !skeptic.aiUnavailable && !skeptic.eligible) {
+        if (decision.kind === "consensus-split") {
+          const skeptic = decision.skeptic;
           consensusQuarantined += 1;
           console.log(`[api/cron/scrape] Consensus split for "${item.title}" — quarantined. Skeptic: ${skeptic.reason}`);
           rejectedItems.push({
@@ -2321,6 +2325,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
           continue;
         }
 
+        // decision.kind === "eligible" — publish.
+        const triage = decision.triage;
         // Merge tags: combine scraper sources tags, LLM category, and LLM skills/tags
         const mergedTags = Array.from(
           new Set([
