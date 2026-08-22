@@ -74,3 +74,39 @@ Implement the smallest contract-compliant fix, then observe ≥48h:
 
 Revert path: restore the previous per-source interval config; if 429s persist at
 minimum traffic, pause Jobicy rather than increase traffic.
+
+## Implementation status (2026-08-22)
+
+The bounded fix is implemented, verified, and deployed:
+
+- Commit `90f3243` `fix(source): coordinate Jobicy origin cadence` (rebased onto
+  bot commit `5082279`; pushed to `origin/main`).
+- `packages/scraper/sources.ts`: optional `cadenceGroup` marker; only the two
+  Jobicy entries carry `"jobicy.com"`.
+- `apps/web/src/pages/api/cron/scrape.ts`: pure `planCadenceGroupTurns`
+  (deterministic oldest-attempt alternation inside a group, configured order as
+  tie-break), `countConsecutiveRateLimitErrors` + capped exponential
+  `rateLimitBackoffMinutes` (+30m base, ×2 per consecutive 429, cap +240m)
+  fed by a newest-first read of durable non-skipped `source_fetch_events`;
+  `sourceCadenceSkipReason` accepts the extra delay. No retry in the same
+  invocation; no schema change; no generic scheduler.
+- Fixtures: `apps/web/tests/cadence-group.test.ts` — 13 tests covering group
+  fixture guard, alternation fairness, six-tick starvation-free simulation,
+  missing state, clock skew, capped backoff flipping a turn, streak reset on
+  success, and zero/one-eligible no-op cases.
+- Local G3 at `90f3243`: 602 tests, 0 failures, 1,403 assertions; typecheck,
+  build, production guardrails all passed.
+- CI/deploy: GitHub Actions run `32592205884` (`90f3243`) — Validate,
+  Migrate, and Deploy to production all success
+  (https://github.com/cyalcala/va-freelance-hub/actions/runs/32592205884).
+  Deploy completed ~2026-08-22T18:57Z, which starts the ≥48h post window.
+
+### Remaining acceptance gate (VERIFYING)
+
+KEEP still requires the 48-hour post-rollup: a per-feed table of attempts,
+429s, deferrals (`skipReason LIKE 'Deferred by cadence group%'`), backoff
+applications (`skipReason LIKE '%shared-origin 429 backoff%'`), and
+publication lag from `source_fetch_events` on/after
+`2026-08-22T18:57:00Z`, showing reduced 429s, no same-invocation retries, no
+starvation (each feed receiving bounded turns), and bounded freshness. If 429s
+persist at minimum traffic, pause Jobicy instead of increasing load.
