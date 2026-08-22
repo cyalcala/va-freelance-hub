@@ -2,8 +2,8 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **PLANNING COMPLETE — KEEP**. This checkpoint defines the next program
-of work; it does not claim a production implementation or behavior change.
+Status: **REC-01 COMPLETE — KEEP**. Read-only worktree inventory executed and
+accepted; no cleanup performed. Next unit: `DATA-05A`.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
@@ -13,12 +13,19 @@ of work; it does not claim a production implementation or behavior change.
   `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
   enrichment `32550872494` completed successfully. Green workflow conclusions
   do not waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `DOC-STATE-01` planning package — `KEEP`.
-- Current implementation unit: none.
-- Planning-package local verification: 454 tests, 0 failures, 1,209 assertions;
-  production guardrails, strict typecheck, and Astro/Cloudflare build all pass.
-- First queued preflight: `REC-01`, a read-only worktree/continuity inventory
-  with no cleanup authority.
+- Last Gauntlet decision: `REC-01` worktree inventory — `KEEP`.
+- Current implementation unit: `REC-01` (completed).
+- REC-01 execution verification: `bun test` passed 454 tests with 1,209
+  assertions and zero failures; `bun run typecheck` and `bun run build` passed
+  locally on 2026-08-22; evidence file
+  `docs/gauntlet/evidence/REC-01-worktree-inventory.md` created.
+- REC-01 inventory summary: 1 main + 6 registered auxiliary worktrees + 4
+  orphan-looking directories classified; zero mutations; 4 worktrees classified
+  as `unknown` (apex-clock, apex-directory, apex-prospector, apex-verifier)
+  requiring owner review before disposition; 6 entries classified as
+  `candidate for archive` (apex-ai-revert, apex-gauntlet, apex-sec01,
+  major-quality-audit, production-apex-audit-2026-08-09, production-release).
+- First queued preflight: `REC-01` completed.
 - First production implementation unit: `DATA-05A`, the bounded containment of
   unverified directory website inference.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).

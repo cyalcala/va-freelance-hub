@@ -2,8 +2,8 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **PLANNING COMPLETE — KEEP**. No Gauntlet implementation unit has
-started, and no new production behavior is accepted by this checkpoint.
+Status: **REC-01 COMPLETE — KEEP**. Read-only worktree inventory executed and
+accepted; no cleanup performed. Next unit: `DATA-05A`.
 
 - Branch: `main`
 - Planning baseline: `bd84cc1`
@@ -16,17 +16,22 @@ started, and no new production behavior is accepted by this checkpoint.
   `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
   enrichment pulse `32550872494` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `DOC-STATE-01` planning package — `KEEP`.
-- Current implementation unit: none.
-- Fresh planning-package verification: `bun test` passed 454 tests with 1,209
-  assertions and zero failures; `bun run audit:guardrails`, `bun run typecheck`,
-  and `bun run build` also passed locally on 2026-08-22.
-- Next unit: `REC-01` — read-only inventory and classification of registered
-  and orphan worktrees; no cleanup is authorized.
+- Last Gauntlet decision: `REC-01` worktree inventory — `KEEP`.
+- Current implementation unit: `REC-01` (completed).
+- REC-01 execution verification: `bun test` passed 454 tests with 1,209
+  assertions and zero failures; `bun run typecheck` and `bun run build` passed
+  locally on 2026-08-22; evidence file
+  `docs/gauntlet/evidence/REC-01-worktree-inventory.md` created.
+- REC-01 inventory summary: 1 main + 6 registered auxiliary worktrees + 4
+  orphan-looking directories classified; zero mutations; 4 worktrees classified
+  as `unknown` (apex-clock, apex-directory, apex-prospector, apex-verifier)
+  requiring owner review before disposition; 6 entries classified as
+  `candidate for archive` (apex-ai-revert, apex-gauntlet, apex-sec01,
+  major-quality-audit, production-apex-audit-2026-08-09, production-release).
 - First production implementation: `DATA-05A` — contain unverified directory
   website inference before any feature or source-expansion work.
-- Next exact action: execute `REC-01` from the portable-unit ledger after
-  re-syncing `main`, then hand its accepted inventory to `DATA-05A`.
+- Next exact action: execute `DATA-05A` from the portable-unit ledger on clean
+  main worktree, using REC-01 inventory as prerequisite evidence.
 
 Canonical planning artifacts:
 
