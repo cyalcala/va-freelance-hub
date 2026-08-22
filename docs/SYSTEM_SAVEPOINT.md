@@ -2,10 +2,10 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **REL-10 TERMINAL — KEEP**. Homepage detail-link contract restored; phEligibility field added to slim projection and typed; production deployment verified.
+Status: **OPS-06 TERMINAL — KEEP**. Hunter recovery loop aligned with 8-minute scrape lock; single-call contract verified; rapid 10×2s retry loop removed.
 
 - Branch: `main`
-- REL-10 execution start: `97b8dbc` (`main` = `origin/main` at start).
+- OPS-06 execution start: `060b2db` (`main` = `origin/main` at start).
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
   indexing is allowed only through the existing compliance policy and never
@@ -14,25 +14,15 @@ Status: **REL-10 TERMINAL — KEEP**. Homepage detail-link contract restored; ph
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted behavior commit: `5690d54`
-- Last accepted behavior deployment: GitHub Actions run `32561624073`
-- Current scheduled evidence: watchdog `32550368138`, source-health rollup
-  `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
-  enrichment pulse `32550872494` completed successfully. Their payloads remain
+- Last accepted behavior commit: `62acf5a`
+- Last accepted behavior deployment: GitHub Actions CI run `32563188313` passed full suite (481 tests, 1,113 assertions, typecheck, build, guardrails).
+- Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, CI `32563188313` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `REL-10` homepage detail-link contract — `KEEP`.
-- Current implementation unit: `REL-10` (terminal).
-- REC-01 execution verification: `bun test` passed 454 tests with 1,209
-  assertions and zero failures; `bun run typecheck` and `bun run build` passed
-  locally on 2026-08-22; evidence file
-  `docs/gauntlet/evidence/REC-01-worktree-inventory.md` created.
-- REC-01 commit: `b2d7782`; GitHub Actions CI run `32553970322` passed.
-- REC-01 inventory summary: 1 main + 6 registered auxiliary worktrees + 4
-  orphan-looking directories classified; zero mutations; 4 worktrees classified
-  as `unknown` (apex-clock, apex-directory, apex-prospector, apex-verifier)
-  requiring owner review before disposition; 6 entries classified as
-  `candidate for archive` (apex-ai-revert, apex-gauntlet, apex-sec01,
-  major-quality-audit, production-apex-audit-2026-08-09, production-release).
+- Last Gauntlet decision: `OPS-06` Hunter recovery lock alignment — `KEEP`.
+- Current implementation unit: `OPS-06` (terminal).
+- OPS-06 local verification: `bun test` passed 481 tests with 1,113 assertions and zero failures; `bun run typecheck`, `bun run build`, and `bun run audit:guardrails` passed locally on 2026-08-22; focused test `hunter-recovery.test.ts` 10/10 passed.
+- OPS-06 commit: `62acf5a`; GitHub Actions CI run `32563188313` passed.
+- Manual Hunter run `32563299530` completed: single scrape invocation, terminal state `needs-rerun` (zero new jobs after dedup), lock state `free`, backlog `0`, zero failed sources, zero insert errors; artifact `hunter-health-32563299530` uploaded.
 - Accepted DATA-05A behavior: source-attributable apply URLs, legacy click
   fallback, directory inference removal, and exact incident repair.
 - Fresh read-only pre-migration D1 inventory: 169 cross-source application
@@ -77,7 +67,7 @@ Status: **REL-10 TERMINAL — KEEP**. Homepage detail-link contract restored; ph
   `/opportunities` all return HTTP 200.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `OPS-06` Hunter recovery lock alignment from
+- Next exact action: execute `DATA-03` read-only quality cohort refresh from
   synchronized clean `main`; source expansion remains frozen.
 
 Canonical planning artifacts:

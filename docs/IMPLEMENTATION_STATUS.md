@@ -2,7 +2,7 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **REL-10 TERMINAL — KEEP**. Homepage detail-link contract restored; phEligibility field added to slim projection and typed; production deployment verified.
+Status: **OPS-06 TERMINAL — KEEP**. Hunter recovery loop aligned with the eight-minute scrape lock; the rapid 10×2s retry loop is removed and a single-call contract with truthful lock/backlog handoff is verified.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - DATA-05A execution started from synchronized `main`/`origin/main` at
@@ -14,13 +14,12 @@ Status: **REL-10 TERMINAL — KEEP**. Homepage detail-link contract restored; ph
   attribution and does not blacklist or claim ownership of the external host.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
   validation and correctly skipped production migration/deploy as docs-only.
-- Last accepted behavior: `5690d54`, deployed by run `32561624073`.
-- Current scheduled evidence: watchdog `32550368138`, source health
-  `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
-  enrichment `32550872494` completed successfully. Green workflow conclusions
-  do not waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `REL-10` homepage detail-link contract — `KEEP`.
-- Current implementation unit: `REL-10` (terminal).
+- Last accepted behavior: `62acf5a`, verified by CI run `32563188313`.
+- Current scheduled evidence: watchdog `32563229451`, Hunter `32563299530`, and
+  CI `32563188313` completed successfully. Green workflow conclusions do not
+  waive payload-level degradation or data-quality findings.
+- Last Gauntlet decision: `OPS-06` Hunter recovery lock alignment — `KEEP`.
+- Current implementation unit: `OPS-06` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -83,14 +82,26 @@ Status: **REL-10 TERMINAL — KEEP**. Homepage detail-link contract restored; ph
   `32561624073` passed full suite (471 tests, 1,077 assertions, typecheck,
   build, guardrails, Pages deployed). Production smoke: `/`, `/directory`,
   `/opportunities` all return HTTP 200.
-- Next implementation unit: `OPS-06` Hunter recovery lock alignment.
+- OPS-06 acceptance: behavior commit `62acf5a` replaces the Hunter workflow's
+  rapid 10×2s retry loop with a single scrape invocation and truthful terminal
+  states, and adds `apps/web/tests/hunter-recovery.test.ts` (10 focused cases
+  for success, lock-held, backlog, malformed, and non-2xx responses). Local
+  verification: 481 tests, 0 failures, 1,113 assertions; typecheck, build, and
+  guardrails passed; focused `hunter-recovery.test.ts` 10/10. CI run
+  `32563188313` passed the full suite. Controlled manual Hunter dispatch
+  `32563299530` completed a single scrape invocation with terminal state
+  `needs-rerun` (zero new jobs after dedup), lock state `free`, backlog `0`,
+  zero failed sources, zero insert errors; artifact `hunter-health-32563299530`
+  uploaded. Docs-only change, so production Pages deploy was correctly skipped.
+- Next implementation unit: `DATA-03` read-only data-quality cohort refresh;
+  source expansion remains frozen.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
 - Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
 - Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).
 
-The next accepted status update must name the OPS-06 Hunter lock alignment
-results, terminal decision, commit, push, workflow evidence, and bounded
-production proof.
+The next accepted status update must name the DATA-03 read-only quality cohort
+results, terminal decision, commit, push, workflow/read evidence, query plans,
+and reconciliation totals.
 
 ## Accepted Implementation History — historical below this checkpoint
 
