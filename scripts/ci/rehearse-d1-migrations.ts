@@ -277,7 +277,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
   // 9. d1_migrations ledger integrity
   const migCount = db.query("SELECT COUNT(*) as c FROM d1_migrations").get() as { c: number };
   // 31 migrations exist (0000-0031, but 0004 is missing from the sequence)
-  const expectedMigrationCount = 31;
+  const expectedMigrationCount = 32;
   assertions.push({
     name: `d1_migrations ledger has expected count (${expectedMigrationCount} migrations)`,
     passed: migCount.c === expectedMigrationCount,
