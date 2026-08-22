@@ -567,22 +567,22 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, REL-10, OPS-06 deployed/accepted; DATA-03 read-only baseline KEEP; OPS-04 egress diagnostics deployed/accepted; production clock healthy at latest evidence
 CURRENT BASELINES: Section F, captured 2026-08-22
 LAST ACCEPTED GAUNTLET UNIT: OPS-04 directory unreachable-spike diagnosis — KEEP
-CURRENT UNIT: OPS-04 complete; SRC-4D next
+CURRENT UNIT: OPS-04 complete; COMP-01A next
 CURRENT UNIT STATUS: TERMINAL OPS-04 verdict KEEP
 PRIMARY ADDY WORKFLOW: debugging-and-error-recovery
 ACTIVE SUPERPOWERS MECHANISM: systematic debugging (reproduce → classify → cross-runtime compare)
 CURRENT EXECUTOR: repository executor
 CURRENT WORKTREE / BRANCH: main at accepted behavior 83f94d0 (auto-digest synced to 1e9f863)
-NEXT UNIT: SRC-4D Jobicy same-origin 429 cadence diagnosis (REL-08, DATA-06 also unblocked)
-BLOCKERS: SEC-LEGACY-01 requires owner/provider action
-CONTRADICTIONS: Section H recorded; canonical entry docs rebased
+NEXT UNIT: COMP-01A durable robots evidence (only prereq DB-01 accepted); REL-08 and SRC-4D remain BLOCKED as its children; DATA-06 independently ready off DATA-03
+BLOCKERS: SEC-LEGACY-01 requires owner/provider action; REL-08 and SRC-4D blocked on COMP-01A
+CONTRADICTIONS: Section H recorded; PLUS Section AI queue lists COMP-01A as depending on REL-08 — stale/inverted; dependency tree + unit contracts are authoritative (COMP-01A precedes REL-08)
 AUTOMATION STATUS: OPS-04 CI/deploy 32568634636 passed; directory-pulse runs 32568721809 + 32568795476 green
 SOURCE HEALTH: 41 identities; two Jobicy 429 failures
 LAST VERIFIED COMMIT: accepted behavior 83f94d0
 LAST GITHUB BACKUP: 1e9f863 on origin/main (83f94d0 behavior + two auto-digest commits)
 LAST VERIFICATION EVIDENCE: local 513/0/1,191 + guardrails/typecheck/build; CI/deploy 32568634636; two live directory-pulse runs + cross-runtime probe
-NEXT EXACT ACTION: re-sync main and execute SRC-4D Jobicy same-origin 429 cadence diagnosis
-NEXT RECOMMENDED MODEL: network/Cloudflare diagnostic executor for SRC-4D
+NEXT EXACT ACTION: re-sync main and execute COMP-01A durable robots evidence (migration/schema unit — claim next unused migration number, fresh independent critic)
+NEXT RECOMMENDED MODEL: schema/compliance-capable executor + fresh critic for COMP-01A
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after
@@ -701,6 +701,17 @@ for correctness or safety.
 The queue is ready after this plan is committed and pushed. Production fixes
 begin in separate units; this planning turn intentionally does not implement
 them.
+
+> **Ordering correction (2026-08-22, post-OPS-04).** This queue's rows 8–11
+> predate the finalized dependency tree in `docs/gauntlet/IMPLEMENTATION_UNITS.md`
+> and are inconsistent with it. The authoritative order is
+> `DB-01 → COMP-01A → {REL-08 → SRC-4D, OPS-05, COMP-01B, DATA-05B}`, with
+> `DATA-06` branching off `DATA-03`. Specifically, row 10 lists COMP-01A as
+> depending on REL-08, but the tree and the unit contracts make COMP-01A a
+> prerequisite *of* REL-08 (and REL-08 a prerequisite of SRC-4D). With REC-01,
+> the containment units, DATA-03, OPS-04, and DB-01 all accepted, the next
+> dependency-ready unit is **COMP-01A**; DATA-06 is independently ready. Trust
+> the dependency tree and unit contracts over these queue rows.
 
 ---
 

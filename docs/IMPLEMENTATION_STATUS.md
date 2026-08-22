@@ -29,8 +29,13 @@ Status: **OPS-04 TERMINAL — KEEP**. Bounded egress diagnostics for the directo
   distributions: `32568721809` (5 unreachable, all `EGRESS_BLOCKED`) and
   `32568795476` (0 unreachable). A bounded cross-runtime probe of the same five
   hosts returned 2 bot_wall (403) + 3 ok (200) + 0 dead. Evidence:
-  `docs/gauntlet/evidence/OPS-04-unreachable-diagnosis.md`. Next: `SRC-4D`
-  (`REL-08`, `DATA-06` also unblocked).
+  `docs/gauntlet/evidence/OPS-04-unreachable-diagnosis.md`. Next dependency-ready
+  unit: `COMP-01A` (durable robots evidence; only prereq `DB-01` accepted).
+  `REL-08` and `SRC-4D` are children of COMP-01A and remain BLOCKED until it is
+  accepted; `DATA-06` is independently ready off `DATA-03`. The Section-AI queue
+  entry that lists COMP-01A as depending on REL-08 is stale/inverted — the
+  dependency tree and unit contracts are authoritative (COMP-01A precedes
+  REL-08).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file

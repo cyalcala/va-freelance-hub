@@ -114,12 +114,19 @@ quality baseline). OPS-06 remains KEEP (production behavior baseline).
   `/opportunities` all return HTTP 200.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `SRC-4D` (Jobicy same-origin 429 cadence
-  diagnosis, read-only; the order-8 partner to the now-terminal `OPS-04`) from
-  synchronized clean `main`. `REL-08` Source Doctor V1 (deps `SEC-03`+`DATA-03`
-  satisfied) and `DATA-06` taxonomy/eval convergence (dep `DATA-03` satisfied)
-  are also now unblocked. Source expansion remains frozen. OPS-04 follow-on: a
-  non-Cloudflare link-health probe path is a separate unit if prioritized.
+- Next exact action: execute `COMP-01A` (persist durable robots decisions for
+  static and ATS sources) from synchronized clean `main`. Per the authoritative
+  dependency tree in `IMPLEMENTATION_UNITS.md` (`DB-01 → COMP-01A → {REL-08 →
+  SRC-4D, OPS-05, COMP-01B, DATA-05B}`), COMP-01A's only prerequisite (`DB-01`)
+  is accepted, so it is the next dependency-ready unit; `REL-08` and `SRC-4D` are
+  its children and remain BLOCKED until COMP-01A is accepted. `DATA-06`
+  taxonomy/eval convergence is independently ready (branches off the accepted
+  `DATA-03`). CONTRADICTION NOTE: the "First execution queue" table (Section AI)
+  lists COMP-01A as depending on REL-08 — this is stale and inverted; trust the
+  dependency tree + unit contracts (COMP-01A precedes REL-08). COMP-01A is a
+  migration/schema unit: claim the next unused migration number and use a fresh
+  independent critic. Source expansion remains frozen. OPS-04 follow-on (a
+  non-Cloudflare link-health probe path) remains a separate future unit.
 
 Canonical planning artifacts:
 
