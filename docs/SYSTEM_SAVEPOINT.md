@@ -2,10 +2,15 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **REC-01 COMPLETE — KEEP**. Read-only worktree inventory executed and
-accepted; no cleanup performed. Next unit: `DATA-05A`.
+Status: **DATA-05A IN PROGRESS**. Cross-source apply-link and directory-domain
+incident containment is implemented locally; production acceptance is pending.
 
 - Branch: `main`
+- DATA-05A execution start: `451b76e` (`main` = `origin/main` at start).
+- Ownership boundary: `remotephjobs.com` is an external site;
+  `remotejobs-ph.pages.dev` is this project's production site. External-source
+  indexing is allowed only through the existing compliance policy and never
+  implies ownership.
 - Planning baseline: `bd84cc1`
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
@@ -29,10 +34,14 @@ accepted; no cleanup performed. Next unit: `DATA-05A`.
   requiring owner review before disposition; 6 entries classified as
   `candidate for archive` (apex-ai-revert, apex-gauntlet, apex-sec01,
   major-quality-audit, production-apex-audit-2026-08-09, production-release).
-- First production implementation: `DATA-05A` — contain unverified directory
-  website inference before any feature or source-expansion work.
-- Next exact action: execute `DATA-05A` from the portable-unit ledger on clean
-  main worktree, using REC-01 inventory as prerequisite evidence.
+- Current production implementation: `DATA-05A` — source-attributable apply
+  URLs, legacy click fallback, directory inference removal, and exact incident
+  repair. No feature or source-expansion work may resume before acceptance.
+- Fresh read-only pre-migration D1 inventory: 169 cross-source application
+  rows, 8 reviewed directory assignments, 0 current same-source rows;
+  `changed_db=false`, 0 rows written.
+- Next exact action: finish G3 verification, review the exact migration diff,
+  then use the normal commit/push/CI/deploy path and record pre/post counts.
 
 Canonical planning artifacts:
 

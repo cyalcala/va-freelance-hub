@@ -2,10 +2,15 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **REC-01 COMPLETE — KEEP**. Read-only worktree inventory executed and
-accepted; no cleanup performed. Next unit: `DATA-05A`.
+Status: **DATA-05A IN PROGRESS**. Local containment and exact incident repair
+are implemented; no production acceptance is claimed yet.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
+- DATA-05A execution started from synchronized `main`/`origin/main` at
+  `451b76e`.
+- Correct ownership statement: `remotephjobs.com` is external;
+  `remotejobs-ph.pages.dev` is the project production site. The fix validates
+  attribution and does not blacklist or claim ownership of the external host.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
   validation and correctly skipped production migration/deploy as docs-only.
 - Last accepted behavior: `07f582b`, deployed by run `32475868471`.
@@ -26,8 +31,13 @@ accepted; no cleanup performed. Next unit: `DATA-05A`.
   `candidate for archive` (apex-ai-revert, apex-gauntlet, apex-sec01,
   major-quality-audit, production-apex-audit-2026-08-09, production-release).
 - First queued preflight: `REC-01` completed.
-- First production implementation unit: `DATA-05A`, the bounded containment of
-  unverified directory website inference.
+- Current production implementation unit: `DATA-05A`, containing cross-source
+  apply URLs, protecting legacy clicks, retiring job-to-company website
+  inference, and repairing only the reviewed incident cohort.
+- Fresh read-only D1 pre-migration inventory: 169 cross-source application
+  rows and 8 reviewed directory assignments; 0 same-source rows currently
+  exist, and the preservation case is regression-tested. Query metadata
+  reported `changed_db=false` and 0 rows written.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
 - Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
 - Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).

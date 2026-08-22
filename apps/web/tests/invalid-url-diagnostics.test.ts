@@ -28,6 +28,26 @@ test("mixed parser output retains valid items and reports invalid ones", () => {
   expect(result.droppedNoUrl).toBe(1);
 });
 
+test("quarantines cross-host apply links, reports repeated hosts, and preserves attributable external sources", () => {
+  const poisoned = ["Alpaca", "Xapo Bank", "Metabase"].map((company, index) => ({
+    ...item(company, `https://remoteok.com/remote-jobs/${index}`),
+    company,
+    applicationUrl: `https://remotephjobs.com/apply/${index}`,
+  }));
+  const attributable = {
+    ...item("External source", "https://remotephjobs.com/jobs/9"),
+    company: "External source",
+    applicationUrl: "https://remotephjobs.com/apply/9",
+  };
+
+  const result = normalizeScrapedItems([...poisoned, attributable] as NewOpportunity[]);
+
+  expect(result.quarantinedApplicationUrls).toBe(3);
+  expect(result.anomalousApplicationHosts).toEqual(["remotephjobs.com"]);
+  expect(result.items.slice(0, 3).every((row) => row.applicationUrl === row.sourceUrl)).toBe(true);
+  expect(result.items[3]?.applicationUrl).toBe("https://remotephjobs.com/apply/9");
+});
+
 test("the all-invalid early exit returns the drop count and records degradation", () => {
   const outcome = buildNoJobsScrapedOutcome({
     droppedNoUrl: 2,

@@ -66,6 +66,11 @@ describe("toContentHash (shared)", () => {
   });
 });
 
+import {
+  findRepeatedCrossCompanyApplyHosts,
+  sanitizeApplyUrlForSource,
+} from "./urls";
+
 describe("sanitizeApplyUrl", () => {
   test("accepts http(s) URLs and normalizes", () => {
     expect(sanitizeApplyUrl("https://jobs.example.com/apply?id=1")).toBe("https://jobs.example.com/apply?id=1");
@@ -86,6 +91,67 @@ describe("sanitizeApplyUrl", () => {
     expect(sanitizeApplyUrl(null)).toBeNull();
     expect(sanitizeApplyUrl(42)).toBeNull();
     expect(sanitizeApplyUrl("https://" + "a".repeat(2050))).toBeNull();
+  });
+});
+
+describe("sanitizeApplyUrlForSource", () => {
+  test("accepts attributable same-host links and approved ATS host aliases", () => {
+    expect(sanitizeApplyUrlForSource(
+      "https://remoteok.com/l/123",
+      "https://www.remoteok.com/remote-jobs/123",
+    )).toBe("https://remoteok.com/l/123");
+    expect(sanitizeApplyUrlForSource(
+      "https://boards.greenhouse.io/acme/jobs/123",
+      "https://boards-api.greenhouse.io/v1/boards/acme/jobs/123",
+    )).toBe("https://boards.greenhouse.io/acme/jobs/123");
+    expect(sanitizeApplyUrlForSource(
+      "https://remotephjobs.com/apply/123",
+      "https://remotephjobs.com/jobs/123",
+    )).toBe("https://remotephjobs.com/apply/123");
+  });
+
+  test("fails closed for unrelated, mailto, local, and missing-source candidates", () => {
+    expect(sanitizeApplyUrlForSource(
+      "https://remotephjobs.com/apply/123",
+      "https://remoteok.com/remote-jobs/123",
+    )).toBeNull();
+    expect(sanitizeApplyUrlForSource("mailto:jobs@acme.test", "https://source.test/job/1")).toBeNull();
+    expect(sanitizeApplyUrlForSource("https://example.com/apply", null)).toBeNull();
+    expect(sanitizeApplyUrlForSource(
+      "https://boards.greenhouse.io/other-company/jobs/123",
+      "https://boards-api.greenhouse.io/v1/boards/acme/jobs/123",
+    )).toBeNull();
+    expect(sanitizeApplyUrlForSource(
+      "https://evil.breezy.hr/p/job",
+      "https://acme.breezy.hr/p/job",
+    )).toBeNull();
+  });
+});
+
+describe("findRepeatedCrossCompanyApplyHosts", () => {
+  test("flags one unrelated apply host repeated across companies", () => {
+    const rows = ["Alpaca", "Xapo Bank", "Metabase"].map((company, index) => ({
+      company,
+      sourceUrl: `https://remoteok.com/remote-jobs/${index}`,
+      applicationUrl: `https://remotephjobs.com/apply/${index}`,
+    }));
+    expect(findRepeatedCrossCompanyApplyHosts(rows)).toEqual(["remotephjobs.com"]);
+  });
+
+  test("does not flag same-source links or approved shared ATS hosts", () => {
+    const rows = ["A", "B", "C"].flatMap((company, index) => [
+      {
+        company,
+        sourceUrl: `https://remoteok.com/remote-jobs/${index}`,
+        applicationUrl: `https://remoteok.com/l/${index}`,
+      },
+      {
+        company,
+        sourceUrl: `https://boards-api.greenhouse.io/v1/boards/acme/jobs/${index}`,
+        applicationUrl: `https://boards.greenhouse.io/acme/jobs/${index}`,
+      },
+    ]);
+    expect(findRepeatedCrossCompanyApplyHosts(rows)).toEqual([]);
   });
 });
 

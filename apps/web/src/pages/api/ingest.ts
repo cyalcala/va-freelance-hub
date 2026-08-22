@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
-import { chunkArray, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
+import { chunkArray, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
 import { isAuthorized } from "@/lib/auth";
@@ -40,7 +40,7 @@ async function normalizeOpportunityForInsert(item: unknown, observedAt: string) 
   const input = record(item);
   const title = str(input.title) ?? "Untitled";
   const sourceUrl = sanitizeSourceUrl(input.sourceUrl);
-  const applicationUrl = sanitizeApplyUrl(input.applicationUrl) ?? (sourceUrl ?? null);
+  const applicationUrl = sanitizeApplyUrlForSource(input.applicationUrl, sourceUrl) ?? (sourceUrl ?? null);
   const description = str(input.description);
   const rawTags = Array.isArray(input.tags) ? input.tags.filter((t): t is string => typeof t === "string").slice(0, 15) : [];
   const gate = geoGate({

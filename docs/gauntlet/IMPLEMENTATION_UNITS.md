@@ -96,24 +96,24 @@ Migration-writing units are sequential even when their functional work is otherw
 | HANDOFF | G6 plus the exact path, branch, HEAD, dirty state, unique-commit status, and recommended disposition for all ten auxiliary/orphan entries. |
 | STATUS | PLANNED |
 
-## DATA-05A — Contain unverified directory website inference
+## DATA-05A — Contain cross-source apply poisoning and directory inference
 
 | Field | Contract |
 | --- | --- |
 | UNIT ID | DATA-05A |
-| TITLE | Stop inferred company-website writes while retaining deterministic ATS hiring-page enrichment |
+| TITLE | Validate apply destinations by attributable source, stop inferred company websites, and repair the bounded incident cohort |
 | MILESTONE | M4 — Verified P0/P1 Failures |
 | PRIORITY | P0 data-integrity containment |
-| OBJECTIVE | Prevent active job URLs from being promoted automatically to canonical company websites; keep the deterministic ATS platform+token hiring-page path and existing verification logic unchanged. |
-| WHY THIS MATTERS | A wrong website becomes a public trust signal, logo input, audit target, and future enrichment premise. The current write has no structured provenance or confidence. |
-| CURRENT EVIDENCE | `apps/web/src/lib/directory-enrich.ts:enrichDirectory` scans five active opportunity URLs, uses `extractDomainFromUrl`, and writes the first non-aggregator domain. The 2026-08-22 digest reports three websites set and one hiring page set. |
+| OBJECTIVE | Reject cross-source application hosts at every active writer and click boundary, preserve same-source/approved ATS links, prevent job URLs from becoming canonical company websites, and repair only the reviewed `remotephjobs.com` incident rows. |
+| WHY THIS MATTERS | A poisoned apply URL can misdirect a user and then become a public company trust signal, logo input, audit target, and future enrichment premise. Protocol validation and an aggregator blocklist do not establish attribution. |
+| CURRENT EVIDENCE | Read-only production evidence found `remotephjobs.com` apply URLs attached to other sources and the same hostname stored for eight unrelated companies. The owner states that hostname is external; this project's production site is `remotejobs-ph.pages.dev`. `enrichDirectory` promoted the first nonblocked job host, while the click route trusted any syntactically safe stored application URL. |
 | EVIDENCE STATUS | VERIFIED code path and committed digest; correctness of each written domain is UNKNOWN. |
-| ROOT CAUSE | A heuristic discovery signal is treated as authoritative directory data without provenance, consensus, or review. |
+| ROOT CAUSE | Syntactic URL safety was mistaken for source attribution, then a heuristic discovery signal was treated as authoritative directory data without provenance, consensus, or review. |
 | ROOT CAUSE CONFIDENCE | High. |
 | PREREQUISITES | REC-01; capture current enrichment counters and tests. |
 | DEPENDENCIES | REC-01. DATA-05B must not begin until this containment is accepted. |
-| AFFECTED FILES / SYMBOLS | `apps/web/src/lib/directory-enrich.ts` — `buildEnrichmentTargetSql`, `enrichDirectory`, website branch; `apps/web/tests/directory-enrich.test.ts`; `apps/web/src/pages/api/cron/directory-enrich.ts`; `.github/workflows/gha-enrichment-pulse.yml` only if counter wording must change. |
-| CALLERS / DEPENDENTS | `/api/cron/directory-enrich`; enrichment workflow/digest; `/directory`; company-logo route; directory audit. |
+| AFFECTED FILES / SYMBOLS | `packages/scraper/urls.ts`; all active ingestion writers; `apps/web/src/lib/outbound-url.ts`; `apps/web/src/lib/directory-enrich.ts`; focused tests; exact incident migration `0031_remotephjobs_incident_repair.sql`. |
+| CALLERS / DEPENDENTS | scrape/direct/durable ingestion; `/api/click/[id]`; `/api/cron/directory-enrich`; enrichment workflow/digest; `/directory`; company-logo route; directory audit. |
 | BASELINE | Enrichment can write both `website` and `hiringPageUrl`; `websiteSet` was 3 in the latest committed run. |
 | PRIMARY ADDY SKILL / WORKFLOW | `incremental-implementation`. |
 | OPTIONAL SUPERPOWERS MECHANISM | Verification before completion. |
@@ -122,14 +122,14 @@ Migration-writing units are sequential even when their functional work is otherw
 | CRITIC | Independent data-integrity reviewer. |
 | ESCALATION MODEL | Architecture-capable model only if website writes are coupled to verification or ATS activation in an undocumented caller. |
 | WORKTREE REQUIRED | No after REC-01, provided the main tree is clean for these files. |
-| ALLOWED SCOPE | Remove/disable website inference selection and writes; retain API response compatibility; update focused tests and honest workflow text. |
-| SMALLEST IMPLEMENTATION | Make website gaps alone ineligible for enrichment and delete the automatic website-update branch; keep `buildAtsCareerUrl`, ATS hiring-page writes, and existing verification thresholds. |
+| ALLOWED SCOPE | Validate direct apply links only against their attributable source host or an explicit same-ATS family; fall back to source URLs; protect legacy clicks; report repeated cross-company hosts; remove website inference; exact-value repair of the eight named directory rows and only cross-source `remotephjobs.com` apply rows. |
+| SMALLEST IMPLEMENTATION | One shared source-attribution validator used by every writer and click resolution; website gaps become ineligible for enrichment; a tested idempotent migration repairs only current values that still match the reviewed incident conditions. |
 | MUST PRESERVE | ATS hiring-page construction, per-target error isolation, random rotation, verification criteria, diagnostics, auth/rate limit, and G1. |
-| DO NOT TOUCH / FORBIDDEN SCOPE | No repair/backfill, schema migration, website clearing, ATS policy changes, directory visibility changes, new lookup provider, or source expansion. |
+| DO NOT TOUCH / FORBIDDEN SCOPE | No hostname-wide ban, no claim that `remotephjobs.com` is owned by this project, no clearing of legitimate same-source rows, no guessed replacement company websites, no ATS policy changes, new lookup provider, or source expansion. |
 | REGRESSION SURFACE | Enrichment target selection, counters/digest, ATS URL construction, verification, rotation fairness. |
 | STEPS | Add failing tests; remove website-only targeting and writes; retain response field with zero count if needed for compatibility; run focused and full verification; observe one scheduled/manual dry acceptance run without modifying websites. |
-| TESTS | `bun test apps/web/tests/directory-enrich.test.ts apps/web/tests/run-diagnostics.test.ts`; then G3. Tests must prove missing website alone is not selected and missing ATS hiring page still is. |
-| PROBES | Compare before/after generated target SQL; use fake DB to assert no update object contains `website`. |
+| TESTS | Focused URL, click, ingestion diagnostic, migration, and directory tests; then G3. Tests must prove cross-source quarantine, same-source `remotephjobs.com` preservation, missing website exclusion, and ATS hiring-page preservation. |
+| PROBES | Compare before/after target SQL; assert no enrichment update contains `website`; dry-run/read-only counts before migration and exact post-migration counts after the normal deployment path. |
 | BENCHMARK / EVAL | Same or fewer selected rows; `websiteSet=0`; ATS hiring-page fixture remains `hiringPageSet=1`; no added D1/external calls. |
 | AUTOMATION OPPORTUNITY | CI regression permanently guards against reintroducing unproven website writes. |
 | AUTOMATION CLASS | FULL AUTOMATION. |
@@ -139,17 +139,17 @@ Migration-writing units are sequential even when their functional work is otherw
 | MAINTAINABILITY IMPACT | Removes a hidden heuristic write path. |
 | SCALE IMPACT | Reduces bad-domain amplification as the directory grows. |
 | HARDENING IMPACT | Converts unknown evidence into fail-closed behavior. |
-| ACCEPTANCE | No production code path infers/writes `va_directory.website`; ATS hiring-page and verification tests remain green; full suite/build/guardrails pass. |
-| ACCEPTANCE EVIDENCE | Focused test output, full G3 output, diff, CI/release run, and one enrichment response showing zero website writes. |
+| ACCEPTANCE | No active writer stores an unattributable cross-source apply URL; legacy poisoned clicks fall back to source; no enrichment path infers/writes `va_directory.website`; legitimate external same-source links and ATS behavior remain green; exact incident migration counts match the reviewed cohort; full suite/build/guardrails pass. |
+| ACCEPTANCE EVIDENCE | Focused/full test output, migration fixture, diff, CI/release run, pre/post read-only counts, one scrape response with quarantine/anomaly fields, and one enrichment response showing zero website writes. |
 | REVERT | Revert the single commit only if ATS/verification regression is proven; do not restore heuristic website writes without DATA-05B-grade provenance. |
 | STOP CONDITIONS | Discovery that another active caller relies on `websiteSet>0`, or that removing the branch changes verification/visibility semantics. |
 | ESCALATION | Resolve product/data contract before broadening; do not substitute a different inference heuristic. |
-| DOCUMENTATION | Update `IMPLEMENTATION_STATUS.md`, recovery trail, and execution state only after acceptance. |
-| COMMIT PLAN | `fix(directory): stop unverified website inference`. |
-| COMMIT BOUNDARY | Code + focused tests + directly affected workflow wording only. |
+| DOCUMENTATION | Record the ownership distinction, exact repaired cohort, and execution state; acceptance remains pending until deployment evidence exists. |
+| COMMIT PLAN | `fix(data): contain cross-source job URL poisoning`. |
+| COMMIT BOUNDARY | Shared URL boundary + active callers + directory containment + exact incident migration/tests + directly coupled documentation only. |
 | GITHUB BACKUP | G5; production evidence must identify the first enrichment run after deploy. |
 | HANDOFF | G6 plus pre/post target SQL, preserved behaviors, `websiteSet`/`hiringPageSet` results, and whether DATA-05B prerequisites are now satisfied. |
-| STATUS | PLANNED |
+| STATUS | IN_PROGRESS |
 
 ## REL-09 — Bound verifier external subrequests
 
@@ -660,7 +660,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | EVIDENCE STATUS | Provenance gap VERIFIED; affected rows and repeated-domain anomalies UNKNOWN pending report mode. |
 | ROOT CAUSE | Authoritative website state lacks source/evidence/confidence fields and reversible repair tooling. |
 | ROOT CAUSE CONFIDENCE | High for design gap; medium/unknown for row-level corruption. |
-| PREREQUISITES | DATA-05A, SEC-03, DB-01, COMP-01A accepted; fresh read-only report; human-approved repair evidence; claim next unused migration sequentially. |
+| PREREQUISITES | DATA-05A accepted for the exact incident; SEC-03, DB-01, COMP-01A accepted; fresh read-only report; human-approved repair evidence; claim next unused migration sequentially. The bounded DATA-05A incident migration does not authorize any broader repair here. |
 | DEPENDENCIES | REC-01, DATA-05A, SEC-03, DB-01, COMP-01A. Must not run in parallel with another migration unit. |
 | AFFECTED FILES / SYMBOLS | `packages/db/schema.ts` — `vaDirectory`; next unused migration, likely after COMP-01A; `apps/web/src/lib/directory-enrich.ts`; expected `scripts/diagnostics/directory-website-repair.ts` and test; `apps/web/tests/directory-enrich.test.ts`; generated redacted evidence/undo artifact. |
 | CALLERS / DEPENDENTS | Directory page/logo, audit, enrichment, future curated seed/import paths. |

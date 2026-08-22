@@ -70,3 +70,98 @@ export function sanitizeApplyUrl(raw: unknown): string | null {
   if (EMAIL_RE.test(candidate)) return `mailto:${candidate}`;
   return null;
 }
+
+function normalizedHost(url: URL): string {
+  return url.hostname.toLowerCase().replace(/^www\./, "").replace(/\.$/, "");
+}
+
+function atsTenantIdentity(url: URL): string | null {
+  const host = normalizedHost(url);
+  const path = url.pathname.split("/").filter(Boolean).map((part) => part.toLowerCase());
+
+  if (host === "boards.greenhouse.io" && path[0]) return `greenhouse:${path[0]}`;
+  if (host === "boards-api.greenhouse.io" && path[0] === "v1" && path[1] === "boards" && path[2]) {
+    return `greenhouse:${path[2]}`;
+  }
+  if (host === "jobs.lever.co" && path[0]) return `lever:${path[0]}`;
+  if (host === "api.lever.co" && path[0] === "v0" && path[1] === "postings" && path[2]) {
+    return `lever:${path[2]}`;
+  }
+  if (host === "jobs.ashbyhq.com" && path[0]) return `ashby:${path[0]}`;
+  if (host === "api.ashbyhq.com" && path[0] === "posting-api" && path[1] === "job-board" && path[2]) {
+    return `ashby:${path[2]}`;
+  }
+  return null;
+}
+
+function urlsShareApprovedAttribution(candidateUrl: URL, sourceUrl: URL): boolean {
+  if (normalizedHost(candidateUrl) === normalizedHost(sourceUrl)) return true;
+
+  const candidateTenant = atsTenantIdentity(candidateUrl);
+  const sourceTenant = atsTenantIdentity(sourceUrl);
+  return candidateTenant !== null && candidateTenant === sourceTenant;
+}
+
+/**
+ * Validate an apply URL against its attributable source URL.
+ *
+ * Protocol validation alone is insufficient: an upstream feed or model can
+ * provide a syntactically valid but unrelated hostname. Cross-host links fail
+ * closed unless both hosts are known aliases of the same ATS family. Callers
+ * should fall back to the sanitized source URL when this returns null.
+ */
+export function sanitizeApplyUrlForSource(raw: unknown, rawSourceUrl: unknown): string | null {
+  const candidate = sanitizeApplyUrl(raw);
+  const source = sanitizeSourceUrl(rawSourceUrl);
+  if (!candidate || !source || candidate.startsWith("mailto:")) return null;
+
+  try {
+    const candidateUrl = new URL(candidate);
+    const sourceUrl = new URL(source);
+    return urlsShareApprovedAttribution(candidateUrl, sourceUrl)
+      ? candidate
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+export interface ApplicationUrlAnomalyInput {
+  company?: string | null;
+  sourceUrl: unknown;
+  applicationUrl?: unknown;
+}
+
+/**
+ * Report untrusted application hosts repeated across unrelated companies.
+ * Shared ATS families and same-host links are excluded because they are valid
+ * multi-tenant infrastructure or attributable source links.
+ */
+export function findRepeatedCrossCompanyApplyHosts(
+  rows: ApplicationUrlAnomalyInput[],
+  threshold = 3,
+): string[] {
+  const companiesByHost = new Map<string, Set<string>>();
+
+  for (const row of rows) {
+    const candidate = sanitizeApplyUrl(row.applicationUrl);
+    const source = sanitizeSourceUrl(row.sourceUrl);
+    const company = row.company?.trim().toLowerCase();
+    if (!candidate || !source || !company || candidate.startsWith("mailto:")) continue;
+
+    const candidateUrl = new URL(candidate);
+    const sourceUrl = new URL(source);
+    const candidateHost = normalizedHost(candidateUrl);
+    if (urlsShareApprovedAttribution(candidateUrl, sourceUrl)) continue;
+
+    const companies = companiesByHost.get(candidateHost) ?? new Set<string>();
+    companies.add(company);
+    companiesByHost.set(candidateHost, companies);
+  }
+
+  const minimum = Math.max(2, Math.floor(threshold));
+  return [...companiesByHost.entries()]
+    .filter(([, companies]) => companies.size >= minimum)
+    .map(([host]) => host)
+    .sort();
+}

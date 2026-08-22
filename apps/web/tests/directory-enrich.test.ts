@@ -3,7 +3,6 @@ import { describe, expect, test } from "bun:test";
 import {
   buildAtsCareerUrl,
   buildEnrichmentTargetSql,
-  extractDomainFromUrl,
   enrichDirectory,
   type EnrichmentTarget,
 } from "../src/lib/directory-enrich";
@@ -25,44 +24,6 @@ describe("buildAtsCareerUrl", () => {
     expect(buildAtsCareerUrl(null, "gitlab")).toBeNull();
     expect(buildAtsCareerUrl("greenhouse", null)).toBeNull();
     expect(buildAtsCareerUrl(null, null)).toBeNull();
-  });
-});
-
-describe("extractDomainFromUrl", () => {
-  test("strips leading www and returns the https origin for a real company host", () => {
-    expect(extractDomainFromUrl("https://www.taskus.com/careers")).toBe("https://taskus.com");
-    expect(extractDomainFromUrl("https://cloudstaff.com/any/path")).toBe("https://cloudstaff.com");
-  });
-
-  test("returns null for ATS board hosts (never set an ATS board as a company website)", () => {
-    expect(extractDomainFromUrl("https://boards.greenhouse.io/gitlab")).toBeNull();
-    expect(extractDomainFromUrl("https://jobs.lever.co/vaultoutsourcing")).toBeNull();
-    expect(extractDomainFromUrl("https://jobs.ashbyhq.com/supabase")).toBeNull();
-    expect(extractDomainFromUrl("https://apply.workable.com/rocketams")).toBeNull();
-    expect(extractDomainFromUrl("https://20four7va.breezy.hr")).toBeNull();
-  });
-
-  test("returns null for remote-job aggregator hosts", () => {
-    expect(extractDomainFromUrl("https://weworkremotely.com/job/foo")).toBeNull();
-    expect(extractDomainFromUrl("https://remoteok.com/api")).toBeNull();
-    expect(extractDomainFromUrl("https://remotive.com/remote-jobs")).toBeNull();
-    expect(extractDomainFromUrl("https://realworkfromanywhere.com/feed")).toBeNull();
-    expect(extractDomainFromUrl("https://jobicy.com/supporting")).toBeNull();
-  });
-
-  test("returns null for third-party job boards (LinkedIn/Indeed/Glassdoor/ZipRecruiter/SmartRecruiters)", () => {
-    expect(extractDomainFromUrl("https://linkedin.com/jobs/view/123")).toBeNull();
-    expect(extractDomainFromUrl("https://www.linkedin.com/jobs/view/123")).toBeNull();
-    expect(extractDomainFromUrl("https://indeed.com/viewjob?jk=abc")).toBeNull();
-    expect(extractDomainFromUrl("https://www.glassdoor.com/job.htm?id=1")).toBeNull();
-    expect(extractDomainFromUrl("https://ziprecruiter.com/job/123")).toBeNull();
-    expect(extractDomainFromUrl("https://jobs.smartrecruiters.com/acme")).toBeNull();
-  });
-
-  test("returns null for null/empty/invalid URLs", () => {
-    expect(extractDomainFromUrl(null)).toBeNull();
-    expect(extractDomainFromUrl("")).toBeNull();
-    expect(extractDomainFromUrl("not a url")).toBeNull();
   });
 });
 
@@ -160,10 +121,10 @@ describe("buildEnrichmentTargetSql", () => {
     // lowest-id un-enrichable prospector rows. Prove that starvation for the old
     // ordering, then prove the new ordering reaches every row across runs.
     const db = seedDirectory([
-      { id: 1, website: null },
-      { id: 2, website: null },
-      { id: 3, website: null },
-      { id: 4, website: null },
+      { id: 1, website: null, is_verified: 0 },
+      { id: 2, website: null, is_verified: 0 },
+      { id: 3, website: null, is_verified: 0 },
+      { id: 4, website: null, is_verified: 0 },
     ]);
     try {
       const oldOrder = db
@@ -202,11 +163,11 @@ describe("buildEnrichmentTargetSql", () => {
     }
   });
 
-  test("still selects rows that genuinely need a website or verification, and skips complete rows", () => {
+  test("missing website alone is not actionable; verification candidates still are", () => {
     const db = seedDirectory([
-      { id: 1, website: null, is_verified: 1 }, // needs website
+      { id: 1, website: null, is_verified: 1 }, // website-only gap: intentionally skipped
       { id: 2, website: "https://c.com", is_verified: 0, hires_filipinos: 1 }, // needs verification
-      { id: 3, website: "   ", is_verified: 1 }, // blank website counts as missing
+      { id: 3, website: "   ", is_verified: 1 }, // blank website-only gap: skipped
       // Complete non-ATS row: website + verified + hiring page set → excluded.
       { id: 4, website: "https://d.com", hiring_page_url: "https://d.com/jobs", is_verified: 1, hires_filipinos: 1 },
     ]);
@@ -214,7 +175,7 @@ describe("buildEnrichmentTargetSql", () => {
       const ids = (db.query(buildEnrichmentTargetSql(40)).all() as Array<{ id: number }>)
         .map((r) => r.id)
         .sort((a, b) => a - b);
-      expect(ids).toEqual([1, 2, 3]);
+      expect(ids).toEqual([2]);
     } finally {
       db.close();
     }
@@ -251,10 +212,7 @@ describe("buildEnrichmentTargetSql", () => {
 });
 
 describe("enrichDirectory", () => {
-  test("P1-1 regression: an existing hiringPageUrl is never overwritten", async () => {
-    // Company already has a hiringPageUrl in the DB but is missing its website.
-    // The old code re-set hiringPageUrl from the ATS token inside the
-    // needsWebsite branch, overwriting the existing value and under-counting.
+  test("never writes a company website from opportunity URLs", async () => {
     const target: EnrichmentTarget = {
       id: 1,
       companyName: "Co",
@@ -264,18 +222,14 @@ describe("enrichDirectory", () => {
       atsToken: "co",
       isVerified: true,
     };
-    const { db, updates } = makeFakeDb([target], [
-      [{ appUrl: "https://co.com/careers", srcUrl: null }],
-    ]);
+    const { db, updates } = makeFakeDb([target], []);
 
     const result = await enrichDirectory(db, 40);
 
     expect(result.hiringPageSet).toBe(0);
-    expect(result.websiteSet).toBe(1);
-    expect(result.enriched).toBe(1);
-    expect(updates.length).toBe(1);
-    expect(updates[0].hiringPageUrl).toBeUndefined();
-    expect(updates[0].website).toBe("https://co.com");
+    expect(result.websiteSet).toBe(0);
+    expect(result.enriched).toBe(0);
+    expect(updates.length).toBe(0);
   });
 
   test("sets hiringPageUrl from the ATS token when it is missing", async () => {
@@ -296,27 +250,6 @@ describe("enrichDirectory", () => {
     expect(result.hiringPageSet).toBe(1);
     expect(result.enriched).toBe(1);
     expect(updates[0].hiringPageUrl).toBe("https://boards.greenhouse.io/co2");
-  });
-
-  test("website inference prefers application_url over source_url", async () => {
-    const target: EnrichmentTarget = {
-      id: 3,
-      companyName: "Co3",
-      website: null,
-      hiringPageUrl: "https://h.com",
-      atsPlatform: null,
-      atsToken: null,
-      isVerified: true,
-    };
-    // appUrl is a real company domain; srcUrl is an aggregator we must ignore.
-    const { db, updates } = makeFakeDb([target], [
-      [{ appUrl: "https://realcompany.com/job/1", srcUrl: "https://weworkremotely.com/feed" }],
-    ]);
-
-    const result = await enrichDirectory(db, 40);
-
-    expect(result.websiteSet).toBe(1);
-    expect(updates[0].website).toBe("https://realcompany.com");
   });
 
   test("auto-verifies a company with >=1 verified and >=2 PH-eligible active jobs", async () => {
@@ -390,7 +323,7 @@ describe("enrichDirectory", () => {
       hiringPageUrl: "https://h.com",
       atsPlatform: null,
       atsToken: null,
-      isVerified: true,
+      isVerified: false,
     };
     const targetB: EnrichmentTarget = {
       id: 11,
@@ -399,21 +332,21 @@ describe("enrichDirectory", () => {
       hiringPageUrl: "https://h2.com",
       atsPlatform: null,
       atsToken: null,
-      isVerified: true,
+      isVerified: false,
     };
     const { db, updates } = makeFakeDb([targetA, targetB], [
       new Error("D1 read rejected"),
-      [{ appUrl: "https://goodco.com/job", srcUrl: null }],
+      [{ verified_jobs: 1, total_ph_jobs: 2 }],
     ]);
 
     const result = await enrichDirectory(db, 40);
 
     expect(result.errors).toBe(1);
     expect(result.enriched).toBe(1);
-    expect(result.websiteSet).toBe(1);
+    expect(result.websiteSet).toBe(0);
     expect(updates.length).toBe(1);
-    expect(updates[0].website).toBe("https://goodco.com");
+    expect(updates[0].website).toBeUndefined();
     expect(result.details.some((d) => d.id === 10 && d.action.startsWith("error:"))).toBe(true);
-    expect(result.details.some((d) => d.id === 11 && d.action.startsWith("website="))).toBe(true);
+    expect(result.details.some((d) => d.id === 11 && d.action.startsWith("auto-verified"))).toBe(true);
   });
 });

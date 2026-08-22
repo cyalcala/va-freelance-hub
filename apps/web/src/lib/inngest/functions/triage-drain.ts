@@ -4,7 +4,7 @@ import {
   geoGate,
   decideTriage,
   mapTriageCategoryToUiCategory,
-  sanitizeApplyUrl,
+  sanitizeApplyUrlForSource,
 } from "@va-hub/scraper";
 import { inngest, type CfBindings } from "../client";
 
@@ -171,8 +171,8 @@ export const triageDrain = inngest.createFunction(
                   : gate.evidence,
               geoCheckedAt: observedAt,
               applicationUrl:
-                sanitizeApplyUrl(triage.applicationUrl) ||
-                sanitizeApplyUrl(row.applicationUrl) ||
+                sanitizeApplyUrlForSource(triage.applicationUrl, row.sourceUrl) ||
+                sanitizeApplyUrlForSource(row.applicationUrl, row.sourceUrl) ||
                 row.sourceUrl,
               tags: mergedTags,
               payRange: triage.payRange,

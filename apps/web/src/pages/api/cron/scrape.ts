@@ -20,7 +20,7 @@ import {
 } from "@/lib/run-diagnostics";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, sanitizeApplyUrl, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, findRepeatedCrossCompanyApplyHosts, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict } from "@va-hub/scraper";
 
 function mapTriageCategoryToUiCategory(cat: string): string {
   switch (cat) {
@@ -94,18 +94,29 @@ interface SourceFetchResult {
 export function normalizeScrapedItems(rawItems: NewOpportunity[]): {
   items: NewOpportunity[];
   droppedNoUrl: number;
+  quarantinedApplicationUrls: number;
+  anomalousApplicationHosts: string[];
 } {
+  const anomalousApplicationHosts = findRepeatedCrossCompanyApplyHosts(rawItems);
+  let quarantinedApplicationUrls = 0;
   const items = rawItems.flatMap((item) => {
     const sourceUrl = sanitizeSourceUrl(item.sourceUrl);
     if (!sourceUrl) return [];
+    const trustedApplicationUrl = sanitizeApplyUrlForSource(item.applicationUrl, sourceUrl);
+    if (item.applicationUrl && !trustedApplicationUrl) quarantinedApplicationUrls++;
     return [{
       ...item,
       sourceUrl,
-      applicationUrl: sanitizeApplyUrl(item.applicationUrl) ?? sourceUrl,
+      applicationUrl: trustedApplicationUrl ?? sourceUrl,
       contentHash: toContentHash(item.title, sourceUrl),
     }];
   });
-  return { items, droppedNoUrl: rawItems.length - items.length };
+  return {
+    items,
+    droppedNoUrl: rawItems.length - items.length,
+    quarantinedApplicationUrls,
+    anomalousApplicationHosts,
+  };
 }
 
 export function buildNoJobsScrapedOutcome(input: {
@@ -296,7 +307,7 @@ export async function buildPendingTriageItem(
     geoEvidence: `Pending durable triage: ${reason.slice(0, 160)}`,
     geoCheckedAt: observedAt,
     descriptionHash: await sha256Hex(item.title + cleanDesc),
-    applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+    applicationUrl: sanitizeApplyUrlForSource(item.applicationUrl, item.sourceUrl) || item.sourceUrl,
     postedAt: normalizeUtcIso(item.postedAt),
     scrapedAt: observedAt,
     lastSeenInFeedAt: observedAt,
@@ -465,7 +476,9 @@ export async function drainPendingTriageInline(
           ? `AI triage passed: ${(triage.reason || "eligible").slice(0, 200)}`
           : gate.evidence,
         geoCheckedAt: observedAt,
-        applicationUrl: sanitizeApplyUrl(triage.applicationUrl) || sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+        applicationUrl: sanitizeApplyUrlForSource(triage.applicationUrl, item.sourceUrl)
+          || sanitizeApplyUrlForSource(item.applicationUrl, item.sourceUrl)
+          || item.sourceUrl,
         tags: mergedTags,
         payRange: triage.payRange,
         category: mapTriageCategoryToUiCategory(triage.category),
@@ -1835,10 +1848,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // later verifier fetches. Every source implementation may evolve, so the
     // production route normalizes source URLs again rather than relying on any
     // one parser to keep the invariant.
-    const { items: allItems, droppedNoUrl } = normalizeScrapedItems(rawItems);
+    const {
+      items: allItems,
+      droppedNoUrl,
+      quarantinedApplicationUrls,
+      anomalousApplicationHosts,
+    } = normalizeScrapedItems(rawItems);
     console.log(`[api/cron/scrape] Scraped ${allItems.length} raw items (${rssItems.length} RSS, ${htmlItems.length} HTML, ${jsonItems.length} JSON, ${atsItems.length} ATS)`);
     if (droppedNoUrl > 0) {
       console.warn(`[api/cron/scrape] ${droppedNoUrl} scraped item(s) had no usable sourceUrl and were dropped.`);
+    }
+    if (quarantinedApplicationUrls > 0) {
+      console.warn(`[api/cron/scrape] ${quarantinedApplicationUrls} unattributable application URL(s) fell back to their source listing.`);
+    }
+    if (anomalousApplicationHosts.length > 0) {
+      console.warn(`[api/cron/scrape] Repeated cross-company application host anomaly: ${anomalousApplicationHosts.join(", ")}`);
     }
 
     if (allItems.length === 0) {
@@ -1863,6 +1887,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
           cadenceGuards,
           sourcesUnchanged,
           robotsWouldBlock,
+          quarantinedApplicationUrls,
+          anomalousApplicationHosts,
           unclearRetriaged: idleSweep.retriaged,
           unclearUpgraded: idleSweep.upgraded,
           unclearDeactivated: idleSweep.deactivated,
@@ -1977,6 +2003,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         pendingDrainRejected: dedupDrain.rejected,
         pendingDrainDeferred: dedupDrain.deferred,
         droppedNoUrl,
+        quarantinedApplicationUrls,
+        anomalousApplicationHosts,
         unmatchedPauses,
         failedSources,
         sourceResults,
@@ -2093,7 +2121,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           geoEvidence: gate.evidence,
           geoCheckedAt: observedAt,
           descriptionHash: await sha256Hex(item.title + cleanDesc),
-          applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+          applicationUrl: sanitizeApplyUrlForSource(item.applicationUrl, item.sourceUrl) || item.sourceUrl,
           postedAt: normalizeUtcIso(item.postedAt),
           scrapedAt: observedAt,
           lastSeenInFeedAt: observedAt,
@@ -2197,7 +2225,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             geoEvidence: `AI triage: ${(triage.reason || "ineligible").slice(0, 200)}`,
             geoCheckedAt: observedAt,
             descriptionHash,
-            applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+            applicationUrl: sanitizeApplyUrlForSource(item.applicationUrl, item.sourceUrl) || item.sourceUrl,
             postedAt: normalizeUtcIso(item.postedAt),
             scrapedAt: observedAt,
             lastSeenInFeedAt: observedAt,
@@ -2223,7 +2251,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             geoEvidence: `Consensus split — skeptic: ${(skeptic.reason || "refuted").slice(0, 200)}`,
             geoCheckedAt: observedAt,
             descriptionHash,
-            applicationUrl: sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+            applicationUrl: sanitizeApplyUrlForSource(item.applicationUrl, item.sourceUrl) || item.sourceUrl,
             postedAt: normalizeUtcIso(item.postedAt),
             scrapedAt: observedAt,
             lastSeenInFeedAt: observedAt,
@@ -2256,7 +2284,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
           // Sanitized precedence: the LLM-extracted apply link only wins when
           // it is a real http(s)/mailto URL — previously the raw model string
           // overrode verified URLs with no validation.
-          applicationUrl: sanitizeApplyUrl(triage.applicationUrl) || sanitizeApplyUrl(item.applicationUrl) || item.sourceUrl,
+          applicationUrl: sanitizeApplyUrlForSource(triage.applicationUrl, item.sourceUrl)
+            || sanitizeApplyUrlForSource(item.applicationUrl, item.sourceUrl)
+            || item.sourceUrl,
           tags: mergedTags,
           payRange: triage.payRange,
           category: mapTriageCategoryToUiCategory(triage.category),
@@ -2443,6 +2473,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       geminiConfigured: Boolean((env as { GEMINI_API_KEY?: string }).GEMINI_API_KEY),
       groqConfigured: Boolean((env as { GROQ_API_KEY?: string }).GROQ_API_KEY),
       droppedNoUrl,
+      quarantinedApplicationUrls,
+      anomalousApplicationHosts,
       unmatchedPauses,
       filteredOut: itemsToProcess.length - triagedItems.length,
       processed: itemsToProcess.length,

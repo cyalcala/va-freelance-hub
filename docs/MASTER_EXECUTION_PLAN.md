@@ -7,6 +7,8 @@
 **Planning baseline:** `bd84cc1` (`main` = `origin/main` when the audit closed)
 
 **Latest accepted behavior:** `07f582b`, CI/deploy run `32475868471`
+**Current DATA-05 incident start SHA:** `451b76e` (`main` = `origin/main` at
+execution start; acceptance is still pending)
 **Authority:** this section is the current strategic plan. The accepted P0–P7
 recovery roadmap is retained below as historical evidence, not as the current
 queue.
@@ -24,9 +26,10 @@ accepted test/deployment baseline. The old June emergency—missing
 `/opportunities`, oversized category pages, and a frozen board—is no longer the
 current system.
 
-The highest current risk is data trust, not basic availability. Directory
-enrichment is repeatedly assigning an unrelated aggregator domain to unrelated
-companies. A second cluster of verified structural risks can silently distort
+The highest current risk is data trust, not basic availability. Unattributable
+application links from one external hostname crossed source and company
+boundaries, and directory enrichment then promoted that hostname to unrelated
+companies' canonical websites. A second cluster of verified structural risks can silently distort
 health: the link verifier can exceed the Worker subrequest budget; trusted-host
 checks admit lookalike suffixes; and fresh-D1 recovery has no full-chain proof.
 Source compliance evidence, category decisions, and quality metrics still have
@@ -112,7 +115,8 @@ Manual extensions
 | Clock -> scrape -> D1 | a tick either writes/advances state or emits an explicit reason | run lock and provider budgets can make retries appear active without progress |
 | Source -> normalized job | approved access, valid public URL, provenance, stable identity | compliance data split between registries; ATS entries remain `needs_review` |
 | Job -> board/detail | active and correct PH/category semantics render consistently | homepage projection omits `phEligibility`; active-unclear behavior needs a written product contract |
-| Directory job -> company website | company-domain evidence must be attributable and reversible | first nonblocked application/source host can contaminate unrelated companies |
+| Job -> apply destination | use the attributable source listing unless a source-specific host relationship validates a direct apply URL | protocol-only validation allowed cross-source hostname poisoning; legacy rows also require click-time containment |
+| Directory job -> company website | company-domain evidence must be attributable and reversible | a job URL was incorrectly promoted to a canonical company website |
 | Maintenance -> link state | platform limits must not be recorded as target failure | verifier limit 120 conflicts with a documented <50 subrequest envelope |
 | Migration -> recoverable D1 | empty database reaches current schema from migration zero | sync premark script may skip foundations; no complete fresh-chain rehearsal |
 | Incident -> durable learning | alert, diagnosis, repair, acceptance, closure | old recovered issues and contradictory handoff sections remain open/stale |
@@ -128,7 +132,7 @@ Manual extensions
 | E-04 | source rollup: 41 identities; only two failures, both Jobicy 429s | V | source clock is healthy; investigate same-origin cadence rather than retrying harder |
 | E-05 | directory audit: 40 checked, 17 OK, 6 bot wall, 17 unreachable, no newly hidden | V | diagnose network/egress conditions before changing strike logic |
 | E-06 | weekly digest: 1,413 active, 4,489 total, 447 companies, 797 older than 30d, 509 unseen 14+d, 45 missing company, 51 duplicate groups | V, dated 2026-08-16 | refresh a read-only cohort before mutation |
-| E-07 | enrichment history assigns `remotephjobs.com` to at least eight unrelated companies, including current Alpaca | V | DATA-05A is the first production implementation unit |
+| E-07 | owner confirms `remotephjobs.com` is external and `remotejobs-ph.pages.dev` is this project's production site; read-only evidence found cross-source `remotephjobs.com` apply URLs and the hostname assigned to eight unrelated directory companies | V owner statement / V read-only inventory | DATA-05A must contain ingestion, click-time use, and directory inference; the hostname must not be treated as owned or globally banned |
 | E-08 | verifier limit is 120; directory audit deliberately caps at 40 for a 50-subrequest environment | V structure / I runtime effect | reproduce and make budget exhaustion distinct from dead links |
 | E-09 | prospector and ATS hostname checks use permissive bare suffix matching | V | exact-or-dot-subdomain regression unit before expanding discovery |
 | E-10 | migration sync premarks foundations; no empty-chain test | V structure / I failure effect | rehearse locally/ephemerally before changing release behavior |
@@ -160,7 +164,9 @@ Manual extensions
    never changes compliance status.
 3. No login, cookie export, CAPTCHA bypass, residential proxy, paywall bypass,
    or anti-automation evasion.
-4. Store minimal factual metadata and send users to the originating apply URL.
+4. Store minimal factual metadata and send users to the attributable source or
+   a direct apply URL validated against that source. An indexed hostname does
+   not imply project ownership.
 5. Fail closed on unclear eligibility, source policy, credentials, or schema.
 6. Never mark a target dead because the platform exhausted its own budget.
 7. Data repair is evidence-based, soft/reversible, counted, and dry-run first.
@@ -190,7 +196,7 @@ Manual extensions
 
 | Priority | ID | Finding | State |
 | --- | --- | --- | --- |
-| P0 | DATA-05 | recurring cross-company directory-domain contamination | verified live; split into containment and repair |
+| P0 | DATA-05 | cross-source application-link poisoning amplified into cross-company directory-domain contamination | verified live; immediate containment plus exact incident repair, followed by general provenance hardening |
 | P0 owner | SEC-LEGACY-01 | legacy provider credentials were previously exposed and rotation remains unconfirmed | owner-gated; never print values |
 | P1 | REL-09 | verifier request budget can exceed the hosting envelope | structure verified; reproduce effect |
 | P1 | SEC-03 | permissive hostname suffix matching admits lookalikes | verified in code |
@@ -248,7 +254,7 @@ acceptance.
 
 | Failure | How it can look green | Required detector |
 | --- | --- | --- |
-| wrong company website | enrichment reports rows changed | provenance, company-domain match, repeated-domain anomaly |
+| poisoned apply/company hostname | URL is syntactically valid and enrichment reports rows changed | source-attributable apply-host validation, click-time fallback, no job-to-company promotion, repeated-domain anomaly |
 | verifier budget exhaustion | workflow threshold tolerates partial failures | explicit budget-exhausted outcome and bounded attempted count |
 | lookalike trusted host | suffix check returns true | adversarial hostname table tests |
 | source returns HTTP 200 but wrong schema/no jobs | availability probe passes | semantic schema and plausible-item probe |

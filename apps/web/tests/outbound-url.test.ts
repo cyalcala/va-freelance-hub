@@ -8,13 +8,31 @@ test("rejects a stored script URL even when it matches the requested redirect ta
   )).toBeNull();
 });
 
-test("allows only the matching sanitized source or application URL", () => {
+test("allows only the matching attributable source or application URL", () => {
   const job = {
     sourceUrl: "https://jobs.example.com/role",
-    applicationUrl: "mailto:apply@example.com",
+    applicationUrl: "https://jobs.example.com/role/apply",
   };
 
   expect(resolveOutboundUrl(job, job.sourceUrl)).toBe("https://jobs.example.com/role");
-  expect(resolveOutboundUrl(job, job.applicationUrl)).toBe("mailto:apply@example.com");
+  expect(resolveOutboundUrl(job, job.applicationUrl)).toBe("https://jobs.example.com/role/apply");
   expect(resolveOutboundUrl(job, "https://attacker.example/")).toBeNull();
+});
+
+test("falls back to the source listing for a legacy cross-host application URL", () => {
+  const job = {
+    sourceUrl: "https://remoteok.com/remote-jobs/123",
+    applicationUrl: "https://remotephjobs.com/apply/123",
+  };
+
+  expect(resolveOutboundUrl(job, job.applicationUrl)).toBe("https://remoteok.com/remote-jobs/123");
+});
+
+test("treats remotephjobs.com as an attributable external source, not an owned or banned host", () => {
+  const job = {
+    sourceUrl: "https://remotephjobs.com/jobs/123",
+    applicationUrl: "https://remotephjobs.com/apply/123",
+  };
+
+  expect(resolveOutboundUrl(job, job.applicationUrl)).toBe("https://remotephjobs.com/apply/123");
 });
