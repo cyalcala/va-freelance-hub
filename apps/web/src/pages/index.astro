@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities, vaDirectory } from '@va-hub/db';
 import { eq, desc, count, sql, inArray } from 'drizzle-orm';
 import { OpportunitySearch } from '@/components/OpportunitySearch';
+import type { Opportunity } from '@/lib/db';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { directoryVisibilityFilters } from '@/lib/directory-visibility';
@@ -18,8 +19,27 @@ Astro.response.headers.set(
 const PER_CATEGORY_PREVIEW = 6;
 
 let stats = { opportunities: 0, companies: 0 };
-let latestOpportunities: any[] = [];
+let latestOpportunities: OpportunityCardData[] = [];
 let categoryTotals: Record<string, number> = {};
+
+// Minimal card projection shared with OpportunityCard (keeps hydration payload small).
+type OpportunityCardData = Pick<
+  Opportunity,
+  | "id"
+  | "title"
+  | "company"
+  | "type"
+  | "sourceUrl"
+  | "sourcePlatform"
+  | "tags"
+  | "category"
+  | "experienceLevel"
+  | "postedAt"
+  | "geoScope"
+  | "phEligibility"
+  | "geoEvidence"
+>;
+
 let dataUnavailable = false;
 
 try {
@@ -56,22 +76,23 @@ try {
   // the hydration payload small (excludes description, hashes, timestamps,
   // clickCount, payRange, etc.).
   latestOpportunities = ids.length
-    ? await db
-        .select({
-          id: opportunities.id,
-          title: opportunities.title,
-          company: opportunities.company,
-          type: opportunities.type,
-          sourceUrl: opportunities.sourceUrl,
-          sourcePlatform: opportunities.sourcePlatform,
-          tags: opportunities.tags,
-          category: opportunities.category,
-          experienceLevel: opportunities.experienceLevel,
-          postedAt: opportunities.postedAt,
-          // Geo badges (masterplan L5) need scope + evidence tooltip.
-          geoScope: opportunities.geoScope,
-          geoEvidence: opportunities.geoEvidence,
-        })
+? await db
+          .select({
+            id: opportunities.id,
+            title: opportunities.title,
+            company: opportunities.company,
+            type: opportunities.type,
+            sourceUrl: opportunities.sourceUrl,
+            sourcePlatform: opportunities.sourcePlatform,
+            tags: opportunities.tags,
+            category: opportunities.category,
+            experienceLevel: opportunities.experienceLevel,
+            postedAt: opportunities.postedAt,
+            // Geo badges (masterplan L5) need scope + evidence tooltip.
+            geoScope: opportunities.geoScope,
+            phEligibility: opportunities.phEligibility,
+            geoEvidence: opportunities.geoEvidence,
+          })
         .from(opportunities)
         .where(inArray(opportunities.id, ids))
         .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
