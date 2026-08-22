@@ -2,8 +2,7 @@
 
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
-Status: **SEC-03 TERMINAL — KEEP**. Prospector source trust and ATS recognition
-now enforce DNS-label hostname boundaries and are production-accepted.
+Status: **DB-01 TERMINAL — KEEP**. Fresh/legacy D1 migration rehearsal passes locally and in CI; production deployment verified.
 
 - Repository planning baseline: `bd84cc1` on synchronized `main`/`origin/main`.
 - DATA-05A execution started from synchronized `main`/`origin/main` at
@@ -13,13 +12,13 @@ now enforce DNS-label hostname boundaries and are production-accepted.
   attribution and does not blacklist or claim ownership of the external host.
 - Planning package: `d21cd9e` on `main`; CI run `32552942171` passed all
   validation and correctly skipped production migration/deploy as docs-only.
-- Last accepted behavior: `6c48810`, deployed by run `32557360004`.
+- Last accepted behavior: `857ca34`, deployed by run `32560891840`.
 - Current scheduled evidence: watchdog `32550368138`, source health
   `32546699929`, directory health `32545246416`, Prospector `32544606954`, and
   enrichment `32550872494` completed successfully. Green workflow conclusions
   do not waive payload-level degradation or data-quality findings.
-- Last Gauntlet decision: `SEC-03` hostname trust hardening — `KEEP`.
-- Current implementation unit: `SEC-03` (terminal).
+- Last Gauntlet decision: `DB-01` fresh/legacy D1 migration rehearsal — `KEEP`.
+- Current implementation unit: `DB-01` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -67,16 +66,22 @@ now enforce DNS-label hostname boundaries and are production-accepted.
 - Live Prospector run `32557448855` returned HTTP 200 on `6c48810`: 4
   candidates considered, 0 eligible, 0 added, 3 review-only, 1 rejected for
   quality, 0 ATS proposals, and no mass-add guard trip.
+- DB-01 acceptance: rehearsal script `scripts/ci/rehearse-d1-migrations.ts`
+  passes fresh and legacy database rehearsals locally (85/85 schema assertions);
+  CI/deploy run `32560891840` passed full suite (464 tests, 1,053 assertions,
+  typecheck, build, guardrails, D1 migrations applied, FTS verified, Pages
+  deployed). Production smoke: `/`, `/directory`, `/opportunities` all return
+  HTTP 200.
 - Supplemental `bun audit` reported 2 high, 4 moderate, and 4 low existing
-  Astro-toolchain advisories; dependency remediation is separate from SEC-03.
-- Next implementation unit: `DB-01` fresh/legacy D1 migration rehearsal.
+  Astro-toolchain advisories; dependency remediation is separate from DB-01.
+- Next implementation unit: `REL-10` homepage detail-link contract.
 - Planning source: [Master Execution Plan](./MASTER_EXECUTION_PLAN.md).
 - Work orders: [Portable Implementation Units](./gauntlet/IMPLEMENTATION_UNITS.md).
 - Reference study: [Agent-Reach Study](./research/agent-reach-study-2026-08-22.md).
 
-The next accepted status update must name the DB-01 fresh and legacy rehearsal
-results, migration-ledger/schema evidence, terminal decision, commit, push,
-workflow evidence, and bounded production proof.
+The next accepted status update must name the REL-10 homepage contract
+results, terminal decision, commit, push, workflow evidence, and bounded
+production proof.
 
 ## Accepted Implementation History — historical below this checkpoint
 

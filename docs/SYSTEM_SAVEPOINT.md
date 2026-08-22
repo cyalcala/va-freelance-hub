@@ -2,8 +2,7 @@
 
 ## Current Gauntlet Planning Savepoint — 2026-08-22
 
-Status: **SEC-03 TERMINAL — KEEP**. Prospector trusted-source and ATS hostname
-matching now requires an exact host or dot-delimited subdomain and is deployed.
+Status: **DB-01 TERMINAL — KEEP**. Fresh/legacy D1 migration rehearsal passes locally and in CI; production deployment verified.
 
 - Branch: `main`
 - DATA-05A execution start: `451b76e` (`main` = `origin/main` at start).
@@ -15,14 +14,14 @@ matching now requires an exact host or dot-delimited subdomain and is deployed.
 - Accepted planning package and last GitHub backup: `d21cd9e`
 - Planning-package CI: GitHub Actions run `32552942171` passed validation;
   production migration/deploy was correctly skipped for a docs-only change.
-- Last accepted behavior commit: `6c48810`
-- Last accepted behavior deployment: GitHub Actions run `32557360004`
+- Last accepted behavior commit: `857ca34`
+- Last accepted behavior deployment: GitHub Actions run `32560891840`
 - Current scheduled evidence: watchdog `32550368138`, source-health rollup
   `32546699929`, directory pulse `32545246416`, Prospector `32544606954`, and
   enrichment pulse `32550872494` completed successfully. Their payloads remain
   evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `SEC-03` hostname trust hardening — `KEEP`.
-- Current implementation unit: `SEC-03` (terminal).
+- Last Gauntlet decision: `DB-01` fresh/legacy D1 migration rehearsal — `KEEP`.
+- Current implementation unit: `DB-01` (terminal).
 - REC-01 execution verification: `bun test` passed 454 tests with 1,209
   assertions and zero failures; `bun run typecheck` and `bun run build` passed
   locally on 2026-08-22; evidence file
@@ -63,9 +62,15 @@ matching now requires an exact host or dot-delimited subdomain and is deployed.
   guardrails, CI/deploy run `32557360004`, and live Prospector run `32557448855`
   passed. The live run returned HTTP 200 with 4 considered, 0 eligible/added,
   3 review-only, 1 quality rejection, 0 ATS proposals, and no guard trip.
+- DB-01 acceptance: rehearsal script `scripts/ci/rehearse-d1-migrations.ts`
+  passes fresh and legacy database rehearsals locally (85/85 schema assertions);
+  CI/deploy run `32560891840` passed full suite (464 tests, 1,053 assertions,
+  typecheck, build, guardrails, D1 migrations applied, FTS verified, Pages
+  deployed). Production smoke: `/`, `/directory`, `/opportunities` all return
+  HTTP 200.
 - Supplemental dependency audit found 2 high, 4 moderate, and 4 low existing
   Astro-toolchain advisories; remediation remains separately scoped debt.
-- Next exact action: execute `DB-01` fresh/legacy D1 migration rehearsal from
+- Next exact action: execute `REL-10` homepage detail-link contract from
   synchronized clean `main`; source expansion remains frozen.
 
 Canonical planning artifacts:
