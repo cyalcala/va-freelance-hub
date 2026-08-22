@@ -83,16 +83,24 @@ export function renderMarkers(incidentKey: string, healthyStreak: number): strin
 export function decideAlertLifecycle(input: LifecycleInput): LifecycleAction {
   const parsedThreshold = Math.trunc(input.healthyThreshold ?? 2);
   const threshold = Math.max(1, Number.isFinite(parsedThreshold) ? parsedThreshold : 2);
-  const issues = Array.isArray(input.openIssues) ? input.openIssues : [];
   // Stored keys are matched case-insensitively by parseIncidentKey; normalizing
   // here too guarantees a mixed-case caller cannot fork a second incident.
   const key = String(input.incidentKey).toLowerCase();
 
-  // The matching OPEN incident for this class, if any (first wins; the lifecycle
-  // guarantees at most one open per key).
-  const match = issues.find(
-    (i) => i && typeof i.number === "number" && parseIncidentKey(i.body) === key,
-  );
+  // The matching OPEN incident for this class, if any. The lifecycle guarantees
+  // at most one open issue per key, but a search-index race can transiently
+  // leave two keyed siblings; binding to the OLDEST (lowest number) keeps that
+  // invariant recoverable — the older incident is always the one advanced or
+  // closed, so the newer twin can never orphan it as permanently stale.
+  const candidates = Array.isArray(input.openIssues)
+    ? input.openIssues.filter(
+        (i) => i && typeof i.number === "number" && parseIncidentKey(i.body) === key,
+      )
+    : [];
+  const match =
+    candidates.length > 0
+      ? candidates.reduce((oldest, i) => (i.number < oldest.number ? i : oldest))
+      : undefined;
 
   if (input.state === "failing") {
     if (!match) return { action: "CREATE", incidentKey: key, healthyStreak: 0 };

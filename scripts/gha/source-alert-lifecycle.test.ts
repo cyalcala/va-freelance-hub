@@ -117,6 +117,27 @@ describe("decideAlertLifecycle — fail-closed and isolation", () => {
       issueNumber: 69,
     });
   });
+
+  test("duplicate keyed siblings bind to the OLDEST issue regardless of list order", () => {
+    // A search-index race can transiently leave two keyed twins; the evaluator
+    // must always advance/close the older one so the newer twin cannot orphan it.
+    const twins = [issue(74, KEY, 0), issue(72, KEY, 1)];
+    expect(decideAlertLifecycle({ incidentKey: KEY, state: "healthy", openIssues: twins, healthyThreshold: 2 })).toEqual({
+      action: "CLOSE",
+      issueNumber: 72,
+    });
+    const twinsReversed = [issue(72, KEY, 1), issue(74, KEY, 0)];
+    expect(
+      decideAlertLifecycle({ incidentKey: KEY, state: "healthy", openIssues: twinsReversed, healthyThreshold: 2 }),
+    ).toEqual({ action: "CLOSE", issueNumber: 72 });
+    // Recurrence during recovery also resets the OLDER twin's streak.
+    expect(decideAlertLifecycle({ incidentKey: KEY, state: "failing", openIssues: twinsReversed })).toEqual({
+      action: "UPDATE",
+      issueNumber: 72,
+      healthyStreak: 0,
+      reason: "recurred-during-recovery",
+    });
+  });
 });
 
 describe("decideAlertLifecycle — malformed input degrades safely", () => {

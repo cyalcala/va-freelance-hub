@@ -115,7 +115,9 @@ jobs:
                    last_attempt_at,
                    last_success_at,
                    last_count,
-                   CAST((julianday('now') - julianday(last_attempt_at)) * 24 AS INT) AS hours_since_attempt
+                   CAST((julianday('now') - julianday(last_attempt_at)) * 24 AS INT) AS hours_since_attempt,
+                   (SELECT CAST((julianday('now') - julianday(MAX(scraped_at))) * 24 AS INT)
+                      FROM opportunities WHERE is_active = 1) AS board_stale_hours
             FROM source_fetch_state
             WHERE source_id = '__ingest_diag__'
             LIMIT 1;
@@ -125,11 +127,13 @@ jobs:
           INGEST_ERROR=$(jq -r '.[0].results[0].last_error // ""' ../../ingest-diag.json)
           HOURS=$(jq -r '.[0].results[0].hours_since_attempt // ""' ../../ingest-diag.json)
           ROWS=$(jq -r '.[0].results | length' ../../ingest-diag.json)
+          BOARD_STALE=$(jq -r '.[0].results[0].board_stale_hours // ""' ../../ingest-diag.json)
 
           {
             echo "INGEST_DIAG_ERROR=$INGEST_ERROR"
             echo "INGEST_HOURS_SINCE=$HOURS"
             echo "INGEST_DIAG_ROWS=$ROWS"
+            echo "INGEST_BOARD_STALE_HOURS=$BOARD_STALE"
           } >> "$GITHUB_ENV"
 
       # ── OPS-05 incident lifecycle (ingestion-health) ─────────────────────
@@ -173,6 +177,19 @@ jobs:
             if [ "$HOURS_OK" = true ] && [ "${INGEST_HOURS_SINCE}" -ge 3 ]; then
               STALE_MSG="no scrape run in ${INGEST_HOURS_SINCE}h (clock may be stopped)"
               if [ -n "$REASONS" ]; then REASONS="${REASONS}; ${STALE_MSG}"; else REASONS="$STALE_MSG"; fi
+            fi
+            # Board-freshness backstop, mirroring the ingest watchdog exactly.
+            # Sentinel shares the `ingestion-health` incident key with the
+            # watchdog, so its healthy predicate must observe the SAME evidence
+            # set: otherwise Sentinel could auto-close a watchdog-opened
+            # "board frozen" incident on heartbeat freshness alone. Absent or
+            # unreadable board age skips the check (never false-alarms), same
+            # as scripts/gha/evaluate-ingest-health.mjs (36h threshold).
+            if [ -n "${INGEST_BOARD_STALE_HOURS:-}" ] && [ "${INGEST_BOARD_STALE_HOURS}" != "null" ] \
+               && [[ "${INGEST_BOARD_STALE_HOURS}" =~ ^[0-9]+$ ]] \
+               && [ "${INGEST_BOARD_STALE_HOURS}" -ge 36 ]; then
+              FROZEN_MSG="board frozen: no new visible job in ${INGEST_BOARD_STALE_HOURS}h (scrape green but publishing nothing)"
+              if [ -n "$REASONS" ]; then REASONS="${REASONS}; ${FROZEN_MSG}"; else REASONS="$FROZEN_MSG"; fi
             fi
             if [ -n "$REASONS" ]; then
               STATE=failing
