@@ -1,4 +1,5 @@
-import type { LinkVerdict } from "@va-hub/scraper";
+import type { LinkVerdict, UnreachableReason } from "@va-hub/scraper";
+import { UNREACHABLE_REASONS } from "@va-hub/scraper";
 
 const STRIKE_THRESHOLD = 3;
 const SYSTEMIC_UNREACHABLE_MIN_CHECKED = 10;
@@ -46,6 +47,30 @@ export function buildDirectoryHealthUpdate(input: {
     },
     reachedThreshold,
   };
+}
+
+/**
+ * OPS-04 diagnostic aggregation. A zeroed counter over the stable unreachable
+ * taxonomy, so the audit response always reports every reason (including the
+ * zero ones) and downstream digests can diff runs without missing keys.
+ */
+export function newUnreachableReasonTally(): Record<UnreachableReason, number> {
+  return Object.fromEntries(UNREACHABLE_REASONS.map((reason) => [reason, 0])) as Record<UnreachableReason, number>;
+}
+
+/**
+ * Increment the reason tally for one verdict. Only `unreachable` verdicts count;
+ * a missing reason (should not happen once the classifier populates it) buckets
+ * as UNKNOWN_NETWORK so totals always reconcile with the `unreachable` count.
+ * This is pure telemetry — it never touches strikes or visibility.
+ */
+export function recordUnreachable(
+  tally: Record<UnreachableReason, number>,
+  verdict: Pick<LinkVerdict, "status" | "unreachableReason">,
+): void {
+  if (verdict.status !== "unreachable") return;
+  const reason: UnreachableReason = verdict.unreachableReason ?? "UNKNOWN_NETWORK";
+  tally[reason] = (tally[reason] ?? 0) + 1;
 }
 
 export function directoryHealthStatus(checked: number, tally: Record<string, number>) {

@@ -1,10 +1,35 @@
 import type { APIRoute } from "astro";
 import { getDb, vaDirectory } from "@va-hub/db";
 import { eq, and, isNotNull, asc, sql } from "drizzle-orm";
-import { checkDirectoryLink } from "@va-hub/scraper";
+import { checkDirectoryLink, normalizeCheckUrl } from "@va-hub/scraper";
+import type { UnreachableReason } from "@va-hub/scraper";
 import { nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
-import { buildDirectoryHealthUpdate, directoryHealthStatus } from "@/lib/directory-health";
+import {
+  buildDirectoryHealthUpdate,
+  directoryHealthStatus,
+  newUnreachableReasonTally,
+  recordUnreachable,
+} from "@/lib/directory-health";
+
+// OPS-04: cap the number of redacted unreachable samples returned per run. Bare
+// hostnames only (no path/query/credentials); enough to line up the SAME hosts
+// across two runtimes for the cross-runtime comparison, small enough to keep the
+// response bounded and to never approach the "sample requires >10 hosts" stop.
+const UNREACHABLE_SAMPLE_CAP = 10;
+
+// Reduce a stored website to its bare hostname for diagnostic samples — never
+// emit the full URL, which could carry a path/query a directory row happens to
+// store. Returns "unknown" when the URL cannot be parsed.
+function redactHost(website: string | null | undefined): string {
+  const normalized = normalizeCheckUrl(website ?? null);
+  if (!normalized) return "unknown";
+  try {
+    return new URL(normalized).hostname || "unknown";
+  } catch {
+    return "unknown";
+  }
+}
 
 // Automated directory pulse (2026-07). Recurring link-health check over the
 // va_directory company list, mirroring the manual 2026-07 audit's classifier
@@ -74,6 +99,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.log(`[api/cron/directory-audit] Checking ${targets.length} company links (budget ${budget}).`);
 
     const tally: Record<string, number> = { ok: 0, bot_wall: 0, dead_http: 0, unreachable: 0, dead_dns: 0, parked: 0, no_url: 0 };
+    // OPS-04 diagnostic aggregation — does NOT affect strikes/visibility/gate.
+    const unreachableReasons = newUnreachableReasonTally();
+    const unreachableSamples: { host: string; code: string; reason: UnreachableReason }[] = [];
     let newlyFlagged = 0;
     const flaggedThisRun: { id: number; company: string; status: string; strikes: number }[] = [];
 
@@ -83,6 +111,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
         batch.map(async (row) => {
           const verdict = await checkDirectoryLink(row.website);
           tally[verdict.status] = (tally[verdict.status] ?? 0) + 1;
+          // OPS-04: record the failure taxonomy + a capped, redacted sample so
+          // two runs (and a same-host probe from another runtime) can be
+          // compared. Purely additive telemetry — strike accounting below is
+          // untouched.
+          recordUnreachable(unreachableReasons, verdict);
+          if (verdict.status === "unreachable" && unreachableSamples.length < UNREACHABLE_SAMPLE_CAP) {
+            unreachableSamples.push({
+              host: redactHost(row.website),
+              code: (verdict.unreachableCode ?? "").slice(0, 40),
+              reason: verdict.unreachableReason ?? "UNKNOWN_NETWORK",
+            });
+          }
           const checkedAt = nowUtcIso();
 
           const update = buildDirectoryHealthUpdate({
@@ -126,6 +166,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       budget,
       tally,
       ...health,
+      // OPS-04 diagnostic evidence (additive; consumers keep using tally/health).
+      unreachableReasons,
+      unreachableSamples: unreachableSamples.slice(0, UNREACHABLE_SAMPLE_CAP),
       newlyFlagged,
       flaggedThisRun,
       suspectedDeadWithStrikes: suspected,

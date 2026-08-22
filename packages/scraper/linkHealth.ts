@@ -18,12 +18,51 @@ import { linkCheckHeaders } from "./userAgent";
 // transient TLS/timeout/Cloudflare-egress failure.
 export type LinkStatus = "ok" | "bot_wall" | "dead_http" | "unreachable" | "dead_dns" | "parked" | "no_url";
 
+// Diagnostic subcategories for the "unreachable" verdict. The Workers runtime
+// cannot reliably distinguish a genuine NXDOMAIN from a transient TLS/timeout/
+// Cloudflare-egress failure, so we surface the actual fetch error shape so the
+// audit route can compare distributions across runtimes without changing the
+// strike/visibility semantics. OPS-04 evidence contract: small stable taxonomy,
+// no PII/secret in the short codes, no body logging.
+export type UnreachableReason =
+  | "TIMEOUT"
+  | "DNS_FAILURE"
+  | "TLS_FAILURE"
+  | "CONNECT_FAILURE"
+  | "EGRESS_BLOCKED"
+  | "REQUEST_ERROR"
+  | "UNKNOWN_NETWORK";
+
+export const UNREACHABLE_REASONS: readonly UnreachableReason[] = [
+  "TIMEOUT",
+  "DNS_FAILURE",
+  "TLS_FAILURE",
+  "CONNECT_FAILURE",
+  "EGRESS_BLOCKED",
+  "REQUEST_ERROR",
+  "UNKNOWN_NETWORK",
+] as const;
+
 export interface LinkVerdict {
   status: LinkStatus;
   /** One-line, human-readable basis for the verdict. */
   evidence: string;
   /** True for verdicts that should count a strike toward flagging. */
   isHardDead: boolean;
+  /**
+   * OPS-04 diagnostic: short, stable cause code from the underlying fetch
+   * error (e.g. "ENOTFOUND", "ECONNREFUSED", "AbortError"). Always present
+   * when status === "unreachable" so audit aggregations can reason about the
+   * failure distribution without re-parsing the evidence string. Capped to
+   * 40 chars to keep response payloads bounded.
+   */
+  unreachableCode?: string;
+  /**
+   * OPS-04 diagnostic: coarse reason category matching the short code. Always
+   * present when status === "unreachable". Never changes isHardDead or strike
+   * accounting — strikes are preserved by `buildDirectoryHealthUpdate`.
+   */
+  unreachableReason?: UnreachableReason;
 }
 
 // Phrases that mark a parked / for-sale domain (case-insensitive, checked
@@ -102,6 +141,92 @@ export function normalizeCheckUrl(raw: string | null | undefined): string | null
 }
 
 /**
+ * OPS-04 diagnostic classifier. Maps a thrown fetch error to a bounded,
+ * non-sensitive cause code and coarse reason category. Runtime-agnostic on
+ * purpose: Node/undici (local runs, GitHub Actions) surfaces a concrete
+ * `cause.code` (ENOTFOUND, ECONNREFUSED, CERT_HAS_EXPIRED, ...), while the
+ * Cloudflare Workers runtime collapses most transport faults into a generic
+ * `TypeError` whose name/message carries the only signal ("Network connection
+ * lost.", "Too many subrequests.", a timeout). Comparing the two distributions
+ * over the SAME hosts across runtimes is exactly how OPS-04 localizes an
+ * egress fault versus a genuinely-dead origin.
+ *
+ * The returned `code` is capped at 40 chars and derived only from the error's
+ * short code/name — never its message body, URL, or stack — so it cannot leak a
+ * host, credential, or secret into the aggregated evidence. This function never
+ * changes `status`/`isHardDead`; unreachable stays no-strike.
+ */
+export function classifyUnreachableError(err: unknown): { code: string; reason: UnreachableReason } {
+  const e = err as (Error & { cause?: { code?: unknown } | null; code?: unknown }) | undefined;
+  const causeCode = typeof e?.cause?.code === "string" ? e.cause.code : "";
+  const topCode = typeof e?.code === "string" ? (e.code as string) : "";
+  const name = typeof e?.name === "string" ? e.name : "";
+  const message = typeof e?.message === "string" ? e.message : "";
+
+  // Short, stable code for aggregation: prefer the concrete Node error code,
+  // then a top-level code, then the error name. NEVER the message body.
+  const code = (causeCode || topCode || name || "network failure").slice(0, 40);
+
+  // Category decision reads code + name (uppercased) first; the message is
+  // consulted last, only for the Workers runtime's generic code-less errors.
+  const codeName = `${causeCode} ${topCode} ${name}`.toUpperCase();
+  const msg = message.toLowerCase();
+
+  // TIMEOUT — AbortSignal.timeout() raises TimeoutError/AbortError; Node/undici
+  // raise ETIMEDOUT / ESOCKETTIMEDOUT / UND_ERR_*_TIMEOUT.
+  if (
+    /ABORT|TIMEOUT|ETIMEDOUT|ESOCKETTIMEDOUT|UND_ERR_(CONNECT_TIMEOUT|HEADERS_TIMEOUT|BODY_TIMEOUT)/.test(codeName)
+    || msg.includes("timed out") || msg.includes("timeout")
+  ) {
+    return { code, reason: "TIMEOUT" };
+  }
+
+  // DNS_FAILURE — name resolution failed.
+  if (/ENOTFOUND|EAI_AGAIN|EAI_FAIL|EAI_NONAME/.test(codeName) || msg.includes("could not resolve") || msg.includes(" dns ")) {
+    return { code, reason: "DNS_FAILURE" };
+  }
+
+  // TLS_FAILURE — certificate / handshake problems.
+  if (
+    /CERT|SSL|TLS|EPROTO|SELF_SIGNED|UNABLE_TO_VERIFY|ERR_TLS/.test(codeName)
+    || msg.includes("certificate") || msg.includes(" ssl") || msg.includes("handshake")
+  ) {
+    return { code, reason: "TLS_FAILURE" };
+  }
+
+  // CONNECT_FAILURE — TCP connect refused/reset/unreachable.
+  if (
+    /ECONNREFUSED|ECONNRESET|ECONNABORTED|EHOSTUNREACH|ENETUNREACH|EHOSTDOWN|EPIPE|UND_ERR_SOCKET/.test(codeName)
+    || msg.includes("connection refused") || msg.includes("connection reset") || msg.includes("connection closed")
+  ) {
+    return { code, reason: "CONNECT_FAILURE" };
+  }
+
+  // EGRESS_BLOCKED — Cloudflare-platform egress faults: the generic "Network
+  // connection lost." TypeError, subrequest-budget exhaustion, or an explicitly
+  // blocked egress path. On Workers these opaque transport errors most often
+  // masquerade as a dead origin, so they get their own coarse bucket that the
+  // cross-runtime comparison can then split into real vs platform failure.
+  if (
+    msg.includes("too many subrequests")
+    || msg.includes("network connection lost")
+    || msg.includes("egress")
+    || msg.includes("blocked")
+    || msg.includes("proxy")
+  ) {
+    return { code, reason: "EGRESS_BLOCKED" };
+  }
+
+  // REQUEST_ERROR — a fetch-layer error we could parse but not localize to a
+  // transport class (e.g. "fetch failed" / "failed to fetch" with no cause).
+  if (name === "TypeError" || msg.includes("fetch failed") || msg.includes("failed to fetch")) {
+    return { code, reason: "REQUEST_ERROR" };
+  }
+
+  return { code, reason: "UNKNOWN_NETWORK" };
+}
+
+/**
  * Fetch + classify one company website. Network failures (DNS, TLS, timeout,
  * Cloudflare-egress block) classify as "unreachable" with isHardDead=false —
  * NOT a strike. The Workers runtime cannot tell a genuinely-dead NXDOMAIN from
@@ -127,9 +252,13 @@ export async function checkDirectoryLink(rawUrl: string | null | undefined, time
     }
     return classifyLinkResponse(res.status, snippet);
   } catch (err) {
-    const message = (err as Error & { cause?: { code?: string } }).cause?.code
-      ?? (err as Error).name
-      ?? "network failure";
-    return { status: "unreachable", evidence: `Unreachable: ${String(message).slice(0, 80)} (not counted dead — needs human review)`, isHardDead: false };
+    const { code, reason } = classifyUnreachableError(err);
+    return {
+      status: "unreachable",
+      evidence: `Unreachable: ${code} [${reason}] (not counted dead — needs human review)`,
+      isHardDead: false,
+      unreachableCode: code,
+      unreachableReason: reason,
+    };
   }
 }

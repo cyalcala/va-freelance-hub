@@ -20,7 +20,7 @@ export {
 } from "./prospector";
 export type { AtsRef, RawCandidate, ClassifiedCandidate, ClassifyResult } from "./prospector";
 export { chunkArray, maxRowsPerD1Batch, D1_MAX_BOUND_PARAMETERS } from "./batch";
-export { checkDirectoryLink, classifyLinkResponse, normalizeCheckUrl } from "./linkHealth";
+export { checkDirectoryLink, classifyLinkResponse, normalizeCheckUrl, classifyUnreachableError, UNREACHABLE_REASONS } from "./linkHealth";
 export {
   COLLECTION_USER_AGENT,
   LINK_CHECK_USER_AGENT,
@@ -49,7 +49,7 @@ export {
   originOf,
 } from "./robotsGate";
 export type { RobotsCacheEntry, RobotsCacheStore, RobotsGateResult, RobotsGateDeps, RobotsMode } from "./robotsGate";
-export type { LinkStatus, LinkVerdict } from "./linkHealth";
+export type { LinkStatus, LinkVerdict, UnreachableReason } from "./linkHealth";
 export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validateAutoPauses } from "./pause";
 export type { AutoPauseEntry } from "./pause";
 export {

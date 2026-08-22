@@ -78,6 +78,14 @@ jobs:
             echo "| Newly de-verified (3-strike) | $(jq -r '.newlyFlagged // 0' directory.log) |"
             echo "| Suspected dead (1-2 strikes) | $(jq -r '.suspectedDeadWithStrikes // -1' directory.log) |"
             echo ""
+            echo "## Unreachable reason distribution (OPS-04 diagnostic — strikes unchanged)"
+            echo ""
+            echo "| Reason | Count |"
+            echo "| --- | ---: |"
+            for R in TIMEOUT DNS_FAILURE TLS_FAILURE CONNECT_FAILURE EGRESS_BLOCKED REQUEST_ERROR UNKNOWN_NETWORK; do
+              echo "| $R | $(jq -r --arg r "$R" '(.unreachableReasons[$r]) // 0' directory.log) |"
+            done
+            echo ""
             echo "## De-verified this run (3 consecutive hard-dead checks — awaiting human review)"
             echo ""
             jq -r '(.flaggedThisRun // []) | if length == 0 then "- (none this run)" else .[] | "- #\(.id) \(.company) — \(.status) x\(.strikes)" end' directory.log
@@ -113,6 +121,8 @@ jobs:
           echo "- **Hard-Dead Verdicts This Run**: $DEAD" >> $GITHUB_STEP_SUMMARY
           echo "- **Unreachable (ambiguous, strikes preserved)**: $UNREACHABLE" >> $GITHUB_STEP_SUMMARY
           echo "- **Unreachable Ratio**: $UNREACHABLE_RATIO" >> $GITHUB_STEP_SUMMARY
+          REASONS=$(jq -r '(.unreachableReasons // {}) | to_entries | map(select(.value > 0)) | map("\(.key)=\(.value)") | join(", ") | if . == "" then "none" else . end' directory.log || echo "n/a")
+          echo "- **Unreachable Reasons (OPS-04)**: $REASONS" >> $GITHUB_STEP_SUMMARY
           echo "- **Newly De-verified (3-strike, human review)**: $FLAGGED" >> $GITHUB_STEP_SUMMARY
           echo "- **Timestamp**: $(date)" >> $GITHUB_STEP_SUMMARY
 
