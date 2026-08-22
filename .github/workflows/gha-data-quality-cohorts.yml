@@ -66,24 +66,35 @@ jobs:
         run: |
           set -euo pipefail
           OUT="${RUNNER_TEMP}/data03"
-          bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc \
-            --json --file="${OUT}/cohorts.sql" > "${OUT}/cohorts-results.json"
-          echo "Cohort query result bytes: $(wc -c < "${OUT}/cohorts-results.json")"
+          mkdir -p "${OUT}/results"
+          # One single-statement --command per cohort: multi-statement --file
+          # returns only an aggregate summary, so each query is run on its own to
+          # get real result rows (clean JSON on stdout, same as the Medic pulse).
+          for name in $(jq -r '.queryOrder[]' "${OUT}/cohorts-meta.json"); do
+            echo "Running cohort: ${name}"
+            bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc \
+              --json --command "$(cat "${OUT}/queries/${name}.sql")" > "${OUT}/results/${name}.json"
+          done
 
       - name: Capture EXPLAIN QUERY PLAN evidence
         working-directory: apps/web
         run: |
           set -euo pipefail
           OUT="${RUNNER_TEMP}/data03"
-          bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc \
-            --json --file="${OUT}/cohorts-plans.sql" > "${OUT}/cohorts-plans-output.json"
+          mkdir -p "${OUT}/plans-results"
+          for f in "${OUT}"/plans/*.sql; do
+            name="$(basename "${f}" .sql)"
+            echo "Explaining: ${name}"
+            bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc \
+              --json --command "$(cat "${f}")" > "${OUT}/plans-results/${name}.json"
+          done
 
-      - name: Reconcile partitions (fails the run on any non-zero delta)
+      - name: Collect and reconcile partitions (fails the run on any non-zero delta)
         run: |
           set -euo pipefail
           OUT="${RUNNER_TEMP}/data03"
-          bun scripts/diagnostics/data-quality-cohorts.ts reconcile \
-            "${OUT}/cohorts-results.json" "${OUT}/cohorts-meta.json" | tee "${OUT}/reconciliation.json"
+          bun scripts/diagnostics/data-quality-cohorts.ts collect \
+            "${OUT}/results" "${OUT}/cohorts-meta.json" "${OUT}/cohorts-collected.json"
 
       - name: Upload cohort artifact
         if: always()
@@ -94,9 +105,9 @@ jobs:
             ${{ runner.temp }}/data03/cohorts.sql
             ${{ runner.temp }}/data03/cohorts-plans.sql
             ${{ runner.temp }}/data03/cohorts-meta.json
-            ${{ runner.temp }}/data03/cohorts-results.json
-            ${{ runner.temp }}/data03/cohorts-plans-output.json
-            ${{ runner.temp }}/data03/reconciliation.json
+            ${{ runner.temp }}/data03/cohorts-collected.json
+            ${{ runner.temp }}/data03/results/
+            ${{ runner.temp }}/data03/plans-results/
           if-no-files-found: warn
 
       - name: 📊 Cohort summary
@@ -113,13 +124,13 @@ jobs:
               cat "${OUT}/cohorts-meta.json"
               echo '```'
             fi
-            if [ -f "${OUT}/reconciliation.json" ]; then
+            if [ -f "${OUT}/cohorts-collected.json" ]; then
               echo ""
               echo "**Reconciliation**"
               echo '```json'
-              cat "${OUT}/reconciliation.json"
+              jq '.reconciliation' "${OUT}/cohorts-collected.json"
               echo '```'
             fi
             echo ""
-            echo "Download the \`data03-quality-cohorts\` artifact for raw JSON, plans, and the emitted SQL."
+            echo "Download the \`data03-quality-cohorts\` artifact for collected results, plans, and the emitted SQL."
           } >> "$GITHUB_STEP_SUMMARY"

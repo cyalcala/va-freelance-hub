@@ -333,6 +333,28 @@ export function extractByName(
   return byName;
 }
 
+/**
+ * Extract cohort name -> rows from a map of per-query wrangler outputs. Each
+ * value is the `[{results:[...],success,meta}]` array that a single-statement
+ * `wrangler d1 execute --command ... --json` returns. Multi-statement `--file`
+ * execution returns only an aggregate summary, so the runner executes one
+ * `--command` per cohort and this collector reassembles them in query order.
+ */
+export function collectByName(
+  perQuery: Record<string, unknown>,
+  meta: CohortMeta,
+): Record<string, Row[]> {
+  const byName: Record<string, Row[]> = {};
+  for (const name of meta.queryOrder) {
+    const wj = perQuery[name];
+    const arr: unknown[] = Array.isArray(wj) ? wj : [];
+    const first = arr[0] as Record<string, unknown> | undefined;
+    const rows = (first && (first["results"] as Row[] | undefined)) ?? [];
+    byName[name] = Array.isArray(rows) ? rows : [];
+  }
+  return byName;
+}
+
 // ─── CLI ──────────────────────────────────────────────────────────────────────
 
 function parseAsOf(argv: string[]): Date {
@@ -369,14 +391,65 @@ async function main(): Promise<void> {
       const { join } = await import("path");
       const outDir = rest[0];
       if (!outDir) throw new Error("emit requires an output directory argument");
-      mkdirSync(outDir, { recursive: true });
+      const queriesDir = join(outDir, "queries");
+      const plansDir = join(outDir, "plans");
+      mkdirSync(queriesDir, { recursive: true });
+      mkdirSync(plansDir, { recursive: true });
+      // Per-query single statements: the runner executes each via
+      // `wrangler d1 execute --command` so each returns real result rows.
+      for (const q of COHORT_QUERIES) {
+        writeFileSync(join(queriesDir, `${q.name}.sql`), q.sql(c) + "\n");
+        if (q.plan) {
+          writeFileSync(
+            join(plansDir, `${q.name}.sql`),
+            `EXPLAIN QUERY PLAN\n${q.sql(c)}\n`,
+          );
+        }
+      }
+      // Combined bundles are kept for human reference in the artifact.
       writeFileSync(join(outDir, "cohorts.sql"), emitSql(c));
       writeFileSync(join(outDir, "cohorts-plans.sql"), emitPlans(c));
       writeFileSync(
         join(outDir, "cohorts-meta.json"),
         JSON.stringify(emitMeta(c), null, 2) + "\n",
       );
-      process.stdout.write(`Wrote cohorts.sql, cohorts-plans.sql, cohorts-meta.json to ${outDir}\n`);
+      process.stdout.write(
+        `Wrote queries/*.sql, plans/*.sql, cohorts.sql, cohorts-plans.sql, cohorts-meta.json to ${outDir}\n`,
+      );
+      return;
+    }
+    case "collect": {
+      // Reassemble per-query `--command --json` outputs and reconcile.
+      const { readFileSync, readdirSync, writeFileSync } = await import("fs");
+      const { join } = await import("path");
+      const [resultsDir, metaPath, combinedOut] = rest;
+      if (!resultsDir || !metaPath) {
+        throw new Error("collect requires <resultsDir> <meta.json> [combinedOut.json]");
+      }
+      const meta = JSON.parse(readFileSync(metaPath, "utf-8")) as CohortMeta;
+      const perQuery: Record<string, unknown> = {};
+      const missing: string[] = [];
+      for (const name of meta.queryOrder) {
+        const path = join(resultsDir, `${name}.json`);
+        if (!readdirSync(resultsDir).includes(`${name}.json`)) {
+          missing.push(name);
+          continue;
+        }
+        perQuery[name] = JSON.parse(readFileSync(path, "utf-8"));
+      }
+      if (missing.length) {
+        throw new Error(`Missing per-query result files: ${missing.join(", ")}`);
+      }
+      const byName = collectByName(perQuery, meta);
+      const result = reconcile(byName);
+      const combined = { meta, byName, reconciliation: result };
+      const out = JSON.stringify(combined, null, 2) + "\n";
+      if (combinedOut) writeFileSync(combinedOut, out);
+      process.stdout.write(out);
+      if (!result.ok) {
+        process.stderr.write("Reconciliation FAILED: non-zero partition delta.\n");
+        process.exit(1);
+      }
       return;
     }
     case "reconcile": {
@@ -398,7 +471,7 @@ async function main(): Promise<void> {
     }
     default:
       process.stderr.write(
-        "Usage: data-quality-cohorts.ts <emit <dir>|sql|plans|meta|reconcile <results.json> <meta.json>> [--as-of ISO]\n",
+        "Usage: data-quality-cohorts.ts <emit <dir>|sql|plans|meta|collect <resultsDir> <meta.json> [out.json]|reconcile <results.json> <meta.json>> [--as-of ISO]\n",
       );
       process.exit(2);
   }

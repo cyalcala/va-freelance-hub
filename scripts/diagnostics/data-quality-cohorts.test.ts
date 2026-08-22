@@ -7,6 +7,7 @@ import {
   emitPlans,
   emitMeta,
   extractByName,
+  collectByName,
   reconcile,
 } from "./data-quality-cohorts";
 
@@ -260,6 +261,24 @@ describe("DATA-03 data-quality cohorts", () => {
     expect(reconcile(round).ok).toBe(true);
     // Also accepts the {result: [...]} wrapper shape.
     expect(reconcile(extractByName({ result: wranglerJson }, meta)).ok).toBe(true);
+  });
+
+  test("collectByName reassembles per-query --command outputs by name", () => {
+    const meta = emitMeta(CUTOFFS);
+    // Each single-statement `wrangler d1 execute --command --json` returns a
+    // one-element array: [{ results: [...], success, meta }].
+    const perQuery: Record<string, unknown> = {};
+    for (const name of meta.queryOrder) {
+      perQuery[name] = [
+        { results: byName[name], success: true, meta: { rows_read: 3, rows_written: 0 } },
+      ];
+    }
+    const collected = collectByName(perQuery, meta);
+    expect(collected["core_totals"][0]).toMatchObject({ total: 11, active: 7, inactive: 4 });
+    expect(reconcile(collected).ok).toBe(true);
+    // Missing/empty per-query output degrades to an empty cohort, not a throw.
+    const partial = { ...perQuery, source_cohorts: [] };
+    expect(collectByName(partial, meta)["source_cohorts"]).toEqual([]);
   });
 
   test("emitted SQL and plans are strictly read-only", () => {
