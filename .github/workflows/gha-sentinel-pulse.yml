@@ -51,6 +51,13 @@ jobs:
         with:
           token: ${{ secrets.SENTINEL_BOT_PAT || github.token }}
 
+      # OPS-05: the alert-lifecycle steps below execute decisions emitted by the
+      # pure scripts/gha/source-alert-lifecycle.ts, which runs on Bun.
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
       - name: Query Consecutive Failures (read-only)
         working-directory: apps/web
         run: |
@@ -125,82 +132,159 @@ jobs:
             echo "INGEST_DIAG_ROWS=$ROWS"
           } >> "$GITHUB_ENV"
 
-      - name: Alert On Ingestion Degradation
+      # ── OPS-05 incident lifecycle (ingestion-health) ─────────────────────
+      # The decision is the pure scripts/gha/source-alert-lifecycle.ts; this
+      # step only executes the CREATE | UPDATE | HOLD | CLOSE it emits against
+      # GitHub Issues. A stable hidden body marker dedupes Sentinel and the
+      # ingest watchdog onto ONE open incident per class, and a confirmed
+      # healthy streak auto-closes it. An unproven signal (diag row absent =
+      # post-deploy first run) maps to state "unknown", which the evaluator
+      # always HOLDs, so nothing can be closed on an unproven signal. No step
+      # here ever pauses, unpauses, or enables a source.
+      - name: Apply Ingestion Alert Lifecycle
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
-          # The row is created by the first scrape run after this change ships.
-          # Until then its absence is expected, not a failure.
-          if [ "${INGEST_DIAG_ROWS:-0}" = "0" ]; then
-            echo "No __ingest_diag__ row yet; skipping (first run after deploy creates it)."
-            exit 0
-          fi
-
-          # 18 missed 10-minute ticks. Long enough to ride out a transient
-          # Cloudflare incident, short enough to catch a dead clock same-day.
-          STALE_HOURS=3
-          REASONS=""
-
-          if [ -n "${INGEST_DIAG_ERROR:-}" ] && [ "${INGEST_DIAG_ERROR}" != "null" ]; then
-            REASONS="degraded run: ${INGEST_DIAG_ERROR}"
-          fi
-
-          if [ -n "${INGEST_HOURS_SINCE:-}" ] && [ "${INGEST_HOURS_SINCE}" != "null" ] \
-             && [ "${INGEST_HOURS_SINCE}" -ge "$STALE_HOURS" ]; then
-            STALE_MSG="no scrape run in ${INGEST_HOURS_SINCE}h (clock may be stopped)"
-            if [ -n "$REASONS" ]; then REASONS="${REASONS}; ${STALE_MSG}"; else REASONS="$STALE_MSG"; fi
-          fi
-
-          if [ -z "$REASONS" ]; then
-            echo "Ingestion healthy: last run clean, heartbeat within ${STALE_HOURS}h."
-            exit 0
-          fi
-
-          echo "::warning title=Ingestion degraded::${REASONS}"
-
-          TODAY=$(date -u +"%Y-%m-%d")
-          TITLE="Ingestion health alert (${TODAY})"
+          INCIDENT_KEY=ingestion-health
+          HEALTHY_THRESHOLD=2
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-          # One issue per UTC day, matching the Hunter alert cadence this replaces.
-          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
-            --search "in:title \"Ingestion health alert\"" --json number --jq 'length')
-          if [ "$EXISTING" -ne 0 ]; then
-            echo "An ingestion health issue is already open; not filing a duplicate."
-            exit 0
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+            --json number,body > open-issues.json
+          echo "Open source-health issues: $(jq 'length' open-issues.json)"
+
+          # State from the __ingest_diag__ heartbeat row.
+          if [ "${INGEST_DIAG_ROWS:-0}" = "0" ]; then
+            STATE=unknown
+          else
+            REASONS=""
+            if [ -n "${INGEST_DIAG_ERROR:-}" ] && [ "${INGEST_DIAG_ERROR}" != "null" ]; then
+              REASONS="degraded run: ${INGEST_DIAG_ERROR}"
+            fi
+            # A present row with an unreadable/NULL attempt age is NOT health —
+            # it is an unproven signal and must not bank a healthy observation.
+            HOURS_OK=false
+            if [ -n "${INGEST_HOURS_SINCE:-}" ] && [ "${INGEST_HOURS_SINCE}" != "null" ] \
+               && [[ "${INGEST_HOURS_SINCE}" =~ ^[0-9]+$ ]]; then
+              HOURS_OK=true
+            fi
+            if [ "$HOURS_OK" = true ] && [ "${INGEST_HOURS_SINCE}" -ge 3 ]; then
+              STALE_MSG="no scrape run in ${INGEST_HOURS_SINCE}h (clock may be stopped)"
+              if [ -n "$REASONS" ]; then REASONS="${REASONS}; ${STALE_MSG}"; else REASONS="$STALE_MSG"; fi
+            fi
+            if [ -n "$REASONS" ]; then
+              STATE=failing
+              echo "::warning title=Ingestion degraded::${REASONS}"
+            elif [ "$HOURS_OK" = true ]; then
+              STATE=healthy
+              echo "Ingestion healthy: last run clean, heartbeat within 3h."
+            else
+              STATE=unknown
+              echo "Ingestion heartbeat age unreadable; treating signal as unknown (no lifecycle action)."
+            fi
           fi
 
-          gh label create "source-health" --repo "$GITHUB_REPOSITORY" \
-            --description "Automated maintenance-bot health alerts" \
-            --color D93F0B --force || true
+          DECISION=$(bun scripts/gha/source-alert-lifecycle.ts \
+            --incident-key "$INCIDENT_KEY" --state "$STATE" \
+            --issues open-issues.json --threshold "$HEALTHY_THRESHOLD")
+          echo "Ingestion lifecycle decision (${STATE}): $DECISION"
+          ACTION=$(echo "$DECISION" | jq -r .action)
 
-          {
-            echo "The scrape pipeline reported a problem on its most recent run."
-            echo ""
-            echo "**Signals:** ${REASONS}"
-            echo ""
-            echo "| Field | Value |"
-            echo "| --- | --- |"
-            echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // "never"' ingest-diag.json) |"
-            echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // "never"' ingest-diag.json) |"
-            echo "| Signal count | $(jq -r '.[0].results[0].last_count // 0' ingest-diag.json) |"
-            echo ""
-            echo "Detection run: ${RUN_URL}"
-            echo ""
-            echo "Read the row directly with:"
-            echo '```sql'
-            echo "SELECT * FROM source_fetch_state WHERE source_id = '__ingest_diag__';"
-            echo '```'
-            echo ""
-            echo "Signal meanings are documented in \`apps/web/src/lib/run-diagnostics.ts\`."
-            echo "A stopped clock usually means the Cloudflare cron Worker"
-            echo "(\`workers/freshness-cron\`) is failing or its PROXY_SECRET is unset."
-          } > ingest-body.md
-
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" \
-            --label "source-health" --body-file ingest-body.md
+          if [ "$ACTION" = "CREATE" ]; then
+            gh label create source-health --repo "$GITHUB_REPOSITORY" --color D93F0B --force \
+              --description "Automated maintenance-bot health alerts" || true
+            # Adoption guard (no duplicate issue storm): Sentinel or a pre-OPS-05
+            # run may have filed an unkeyed "Ingestion health alert" issue. Adopt
+            # it (add markers + one comment) rather than filing a duplicate.
+            ADOPT=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+              --search 'in:title "Ingestion health alert"' --json number --jq '.[0].number // empty')
+            if [ -n "$ADOPT" ]; then
+              gh issue view "$ADOPT" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-body.md
+              if grep -qE '<!--[[:space:]]*incident-key:' cur-body.md; then
+                echo "Issue #${ADOPT} already carries the incident key; nothing adopted."
+                exit 0
+              fi
+              { cat cur-body.md; echo; echo "<!-- incident-key: ${INCIDENT_KEY} -->"; echo "<!-- healthy-streak: 0 -->"; } > incident-body.md
+              gh issue edit "$ADOPT" --repo "$GITHUB_REPOSITORY" --body-file incident-body.md
+              gh issue comment "$ADOPT" --repo "$GITHUB_REPOSITORY" \
+                --body "Adopted into the OPS-05 lifecycle; ingestion failure still present. Signal: ${REASONS}. Run: ${RUN_URL}"
+              echo "Adopted existing incident #${ADOPT}" | tee -a "$GITHUB_STEP_SUMMARY"
+            else
+              {
+                echo "The scrape pipeline reported a problem on its most recent run."
+                echo ""
+                echo "**Signals:** ${REASONS}"
+                echo ""
+                echo "| Field | Value |"
+                echo "| --- | --- |"
+                echo "| Schedule | Sentinel pulse daily at 01:30 UTC (best effort) |"
+                echo "| Last updated | ${NOW} |"
+                echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // \"never\"' ingest-diag.json) |"
+                echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // \"never\"' ingest-diag.json) |"
+                echo "| Signal count | $(jq -r '.[0].results[0].last_count // 0' ingest-diag.json) |"
+                echo ""
+                echo "Detection run: ${RUN_URL}"
+                echo ""
+                echo "Read the row directly with:"
+                echo '```sql'
+                echo "SELECT * FROM source_fetch_state WHERE source_id = '__ingest_diag__';"
+                echo '```'
+                echo ""
+                echo "Signal meanings are documented in \`apps/web/src/lib/run-diagnostics.ts\`."
+                echo "A stopped clock usually means the Cloudflare cron Worker"
+                echo "(\`workers/freshness-cron\`) is failing or its PROXY_SECRET is unset."
+                echo ""
+                echo "<!-- incident-key: ${INCIDENT_KEY} -->"
+                echo "<!-- healthy-streak: 0 -->"
+                echo ""
+                echo "_Managed by the OPS-05 source-alert lifecycle: auto-closes after ${HEALTHY_THRESHOLD} consecutive healthy observations. A human still owns any source pause/unpause decision._"
+              } > incident-body.md
+              URL=$(gh issue create --repo "$GITHUB_REPOSITORY" \
+                --title "Ingestion health alert ($(date -u +'%Y-%m-%d'))" \
+                --label source-health --body-file incident-body.md)
+              NUM=${URL##*/}
+              echo "Opened incident ${URL}" | tee -a "$GITHUB_STEP_SUMMARY"
+              # Post-create reconciliation (cross-workflow CREATE race): the
+              # ingest watchdog shares this key and may have created its own
+              # keyed incident in the same window. If an OLDER keyed sibling
+              # exists, close the duplicate this run just created — self-dedupe
+              # of an issue this run itself created keeps one-open-per-key true.
+              gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+                --json number,body > post-create.json
+              OLDER=$(jq --arg k "<!-- incident-key: ${INCIDENT_KEY} -->" --argjson n "$NUM" \
+                '[.[] | select((.body // "") | contains($k) and (.number < $n))] | map(.number) | .[0] // empty' post-create.json)
+              if [ -n "$OLDER" ]; then
+                gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" \
+                  --comment "Duplicate keyed incident created concurrently alongside #${OLDER}; keeping the older incident open and closing this one. (OPS-05 lifecycle self-dedupe.)"
+                echo "Closed duplicate incident #${NUM} in favor of #${OLDER}" | tee -a "$GITHUB_STEP_SUMMARY"
+              fi
+            fi
+          elif [ "$ACTION" = "UPDATE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            REASON=$(echo "$DECISION" | jq -r .reason)
+            N=$(echo "$DECISION" | jq -r '.healthyStreak // 0')
+            gh issue view "$NUM" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-body.md
+            grep -qE '<!--[[:space:]]*healthy-streak:' cur-body.md || printf '\n<!-- healthy-streak: 0 -->\n' >> cur-body.md
+            sed -E "s/(<!-- healthy-streak: )[0-9]+( -->)/\\1${N}\\2/" cur-body.md > incident-body.md
+            gh issue edit "$NUM" --repo "$GITHUB_REPOSITORY" --body-file incident-body.md
+            if [ "$REASON" = "recurred-during-recovery" ]; then
+              gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+                --body "Incident recurred during recovery (healthy streak reset to 0). Signal: ${REASONS}. Run: ${RUN_URL}"
+            else
+              gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+                --body "Healthy observation ${N}/${HEALTHY_THRESHOLD} recorded; auto-close on reaching ${HEALTHY_THRESHOLD}. Run: ${RUN_URL}"
+            fi
+            echo "Updated ingestion incident #${NUM} (${REASON})" | tee -a "$GITHUB_STEP_SUMMARY"
+          elif [ "$ACTION" = "CLOSE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" \
+              --comment "Auto-closed after ${HEALTHY_THRESHOLD} consecutive healthy ingestion observations. Recovery verified by run ${RUN_URL}. (Source pause/unpause decisions remain human-owned.)"
+            echo "Closed recovered ingestion incident #${NUM}" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "HOLD: $(echo "$DECISION" | jq -r '.reason // "no action"')"
+          fi
 
       - name: Query Enrichment Health
         working-directory: apps/web
@@ -228,82 +312,133 @@ jobs:
             echo "ENRICH_DIAG_ROWS=$ENRICH_ROWS"
           } >> "$GITHUB_ENV"
 
-      - name: Alert On Enrichment Degradation
+      # ── OPS-05 incident lifecycle (enrichment-health) ────────────────────
+      # Same contract as the ingestion lifecycle above: pure evaluator decides,
+      # this step only executes the action. Unknown (diag row absent) HOLDs.
+      - name: Apply Enrichment Alert Lifecycle
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-
-          # The row is created by the first enrichment run after this change ships.
-          # Until then its absence is expected, not a failure.
-          if [ "${ENRICH_DIAG_ROWS:-0}" = "0" ]; then
-            echo "No __enrich_diag__ row yet; skipping (first enrichment run after deploy creates it)."
-            exit 0
-          fi
-
-          # 36h = 3 missed 2x/day runs. Generous because GHA schedules drift, but
-          # short enough to catch a disabled workflow or a rotated PROXY_SECRET
-          # before the directory goes visibly stale.
-          STALE_HOURS=36
-          REASONS=""
-
-          if [ -n "${ENRICH_DIAG_ERROR:-}" ] && [ "${ENRICH_DIAG_ERROR}" != "null" ]; then
-            REASONS="degraded run: ${ENRICH_DIAG_ERROR}"
-          fi
-
-          if [ -n "${ENRICH_HOURS_SINCE:-}" ] && [ "${ENRICH_HOURS_SINCE}" != "null" ] \
-             && [ "${ENRICH_HOURS_SINCE}" -ge "$STALE_HOURS" ]; then
-            STALE_MSG="no enrichment run in ${ENRICH_HOURS_SINCE}h (clock may be stopped)"
-            if [ -n "$REASONS" ]; then REASONS="${REASONS}; ${STALE_MSG}"; else REASONS="$STALE_MSG"; fi
-          fi
-
-          if [ -z "$REASONS" ]; then
-            echo "Enrichment healthy: last run clean, heartbeat within ${STALE_HOURS}h."
-            exit 0
-          fi
-
-          echo "::warning title=Enrichment degraded::${REASONS}"
-
-          TODAY=$(date -u +"%Y-%m-%d")
-          TITLE="Directory enrichment health alert (${TODAY})"
+          INCIDENT_KEY=enrichment-health
+          HEALTHY_THRESHOLD=2
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
-            --search "in:title \"Directory enrichment health alert\"" --json number --jq 'length')
-          if [ "$EXISTING" -ne 0 ]; then
-            echo "An enrichment health issue is already open; not filing a duplicate."
-            exit 0
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+            --json number,body > open-enrich-issues.json
+
+          if [ "${ENRICH_DIAG_ROWS:-0}" = "0" ]; then
+            STATE=unknown
+          else
+            REASONS=""
+            if [ -n "${ENRICH_DIAG_ERROR:-}" ] && [ "${ENRICH_DIAG_ERROR}" != "null" ]; then
+              REASONS="degraded run: ${ENRICH_DIAG_ERROR}"
+            fi
+            # A present row with an unreadable/NULL attempt age is NOT health —
+            # it is an unproven signal and must not bank a healthy observation.
+            HOURS_OK=false
+            if [ -n "${ENRICH_HOURS_SINCE:-}" ] && [ "${ENRICH_HOURS_SINCE}" != "null" ] \
+               && [[ "${ENRICH_HOURS_SINCE}" =~ ^[0-9]+$ ]]; then
+              HOURS_OK=true
+            fi
+            if [ "$HOURS_OK" = true ] && [ "${ENRICH_HOURS_SINCE}" -ge 36 ]; then
+              STALE_MSG="no enrichment run in ${ENRICH_HOURS_SINCE}h (clock may be stopped)"
+              if [ -n "$REASONS" ]; then REASONS="${REASONS}; ${STALE_MSG}"; else REASONS="$STALE_MSG"; fi
+            fi
+            if [ -n "$REASONS" ]; then
+              STATE=failing
+              echo "::warning title=Enrichment degraded::${REASONS}"
+            elif [ "$HOURS_OK" = true ]; then
+              STATE=healthy
+              echo "Enrichment healthy: last run clean, heartbeat within 36h."
+            else
+              STATE=unknown
+              echo "Enrichment heartbeat age unreadable; treating signal as unknown (no lifecycle action)."
+            fi
           fi
 
-          gh label create "source-health" --repo "$GITHUB_REPOSITORY" \
-            --description "Automated maintenance-bot health alerts" \
-            --color D93F0B --force || true
+          DECISION=$(bun scripts/gha/source-alert-lifecycle.ts \
+            --incident-key "$INCIDENT_KEY" --state "$STATE" \
+            --issues open-enrich-issues.json --threshold "$HEALTHY_THRESHOLD")
+          echo "Enrichment lifecycle decision (${STATE}): $DECISION"
+          ACTION=$(echo "$DECISION" | jq -r .action)
 
-          {
-            echo "The directory enrichment pulse reported a problem."
-            echo ""
-            echo "**Signals:** ${REASONS}"
-            echo ""
-            echo "| Field | Value |"
-            echo "| --- | --- |"
-            echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // "never"' enrich-diag.json) |"
-            echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // "never"' enrich-diag.json) |"
-            echo "| Signal count | $(jq -r '.[0].results[0].last_count // 0' enrich-diag.json) |"
-            echo ""
-            echo "Detection run: ${RUN_URL}"
-            echo ""
-            echo "Read the row directly with:"
-            echo '```sql'
-            echo "SELECT * FROM source_fetch_state WHERE source_id = '__enrich_diag__';"
-            echo '```'
-            echo ""
-            echo "The enrichment pulse runs 2x/day via \`gha-enrichment-pulse.yml\`."
-            echo "A stopped clock usually means the workflow is disabled, the"
-            echo "PROXY_SECRET was rotated, or the route is 500ing."
-          } > enrich-body.md
-
-          gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" \
-            --label "source-health" --body-file enrich-body.md
+          if [ "$ACTION" = "CREATE" ]; then
+            gh label create source-health --repo "$GITHUB_REPOSITORY" --color D93F0B --force \
+              --description "Automated maintenance-bot health alerts" || true
+            ADOPT=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+              --search 'in:title "Directory enrichment health alert"' --json number --jq '.[0].number // empty')
+            if [ -n "$ADOPT" ]; then
+              gh issue view "$ADOPT" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-enrich-body.md
+              if grep -qE '<!--[[:space:]]*incident-key:' cur-enrich-body.md; then
+                echo "Issue #${ADOPT} already carries the incident key; nothing adopted."
+                exit 0
+              fi
+              { cat cur-enrich-body.md; echo; echo "<!-- incident-key: ${INCIDENT_KEY} -->"; echo "<!-- healthy-streak: 0 -->"; } > enrich-incident-body.md
+              gh issue edit "$ADOPT" --repo "$GITHUB_REPOSITORY" --body-file enrich-incident-body.md
+              gh issue comment "$ADOPT" --repo "$GITHUB_REPOSITORY" \
+                --body "Adopted into the OPS-05 lifecycle; enrichment failure still present. Signal: ${REASONS}. Run: ${RUN_URL}"
+              echo "Adopted existing incident #${ADOPT}" | tee -a "$GITHUB_STEP_SUMMARY"
+            else
+              {
+                echo "The directory enrichment pulse reported a problem."
+                echo ""
+                echo "**Signals:** ${REASONS}"
+                echo ""
+                echo "| Field | Value |"
+                echo "| --- | --- |"
+                echo "| Schedule | Sentinel pulse daily at 01:30 UTC (best effort) |"
+                echo "| Last updated | ${NOW} |"
+                echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // \"never\"' enrich-diag.json) |"
+                echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // \"never\"' enrich-diag.json) |"
+                echo "| Signal count | $(jq -r '.[0].results[0].last_count // 0' enrich-diag.json) |"
+                echo ""
+                echo "Detection run: ${RUN_URL}"
+                echo ""
+                echo "Read the row directly with:"
+                echo '```sql'
+                echo "SELECT * FROM source_fetch_state WHERE source_id = '__enrich_diag__';"
+                echo '```'
+                echo ""
+                echo "The enrichment pulse runs 2x/day via \`gha-enrichment-pulse.yml\`."
+                echo "A stopped clock usually means the workflow is disabled, the"
+                echo "PROXY_SECRET was rotated, or the route is 500ing."
+                echo ""
+                echo "<!-- incident-key: ${INCIDENT_KEY} -->"
+                echo "<!-- healthy-streak: 0 -->"
+                echo ""
+                echo "_Managed by the OPS-05 source-alert lifecycle: auto-closes after ${HEALTHY_THRESHOLD} consecutive healthy observations. A human still owns any source pause/unpause decision._"
+              } > enrich-incident-body.md
+              URL=$(gh issue create --repo "$GITHUB_REPOSITORY" \
+                --title "Directory enrichment health alert ($(date -u +'%Y-%m-%d'))" \
+                --label source-health --body-file enrich-incident-body.md)
+              echo "Opened incident ${URL}" | tee -a "$GITHUB_STEP_SUMMARY"
+            fi
+          elif [ "$ACTION" = "UPDATE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            REASON=$(echo "$DECISION" | jq -r .reason)
+            N=$(echo "$DECISION" | jq -r '.healthyStreak // 0')
+            gh issue view "$NUM" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-enrich-body.md
+            grep -qE '<!--[[:space:]]*healthy-streak:' cur-enrich-body.md || printf '\n<!-- healthy-streak: 0 -->\n' >> cur-enrich-body.md
+            sed -E "s/(<!-- healthy-streak: )[0-9]+( -->)/\\1${N}\\2/" cur-enrich-body.md > enrich-incident-body.md
+            gh issue edit "$NUM" --repo "$GITHUB_REPOSITORY" --body-file enrich-incident-body.md
+            if [ "$REASON" = "recurred-during-recovery" ]; then
+              gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+                --body "Incident recurred during recovery (healthy streak reset to 0). Signal: ${REASONS}. Run: ${RUN_URL}"
+            else
+              gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+                --body "Healthy observation ${N}/${HEALTHY_THRESHOLD} recorded; auto-close on reaching ${HEALTHY_THRESHOLD}. Run: ${RUN_URL}"
+            fi
+            echo "Updated enrichment incident #${NUM} (${REASON})" | tee -a "$GITHUB_STEP_SUMMARY"
+          elif [ "$ACTION" = "CLOSE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" \
+              --comment "Auto-closed after ${HEALTHY_THRESHOLD} consecutive healthy enrichment observations. Recovery verified by run ${RUN_URL}. (Source pause/unpause decisions remain human-owned.)"
+            echo "Closed recovered enrichment incident #${NUM}" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "HOLD: $(echo "$DECISION" | jq -r '.reason // "no action"')"
+          fi
 
       - name: Guard And Filter
         env:

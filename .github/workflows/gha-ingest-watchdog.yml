@@ -35,6 +35,11 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
       - name: Read Last Successful Worker Deployment
         id: worker
         run: |
@@ -82,60 +87,226 @@ jobs:
         run: |
           jq -r '.status + ": " + .reason' ingest-evaluation.json
 
-      - name: Deliver Alert Issue
-        if: ${{ steps.evaluation.outputs.alert == 'true' }}
-        env:
-          SYNTHETIC: ${{ inputs.simulate_outage == true }}
+      # ── OPS-05 incident lifecycle ────────────────────────────────────────
+      # A stable incident key (a hidden body marker, not the date-titled issue)
+      # lets repeated detections dedupe onto ONE open incident, and a healthy
+      # streak auto-closes it — replacing the old "skip if open, never close"
+      # behavior that left stale source-health issues piling up. The decision is
+      # the pure scripts/gha/source-alert-lifecycle.ts; these steps only execute
+      # the CREATE | UPDATE | HOLD | CLOSE it emits. No step here ever unpauses or
+      # enables a source; recovery only closes the tracking issue.
+      - name: Inventory Open Incidents
+        if: ${{ inputs.simulate_outage != true }}
         run: |
           set -euo pipefail
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+            --json number,body > open-issues.json
+          echo "Open source-health issues: $(jq 'length' open-issues.json)"
+
+      - name: Apply Failing Lifecycle
+        if: ${{ inputs.simulate_outage != true && steps.evaluation.outputs.alert == 'true' }}
+        env:
+          INCIDENT_KEY: ingestion-health
+          HEALTHY_THRESHOLD: '2'
+        run: |
+          set -euo pipefail
+          DECISION=$(bun scripts/gha/source-alert-lifecycle.ts \
+            --incident-key "$INCIDENT_KEY" --state failing \
+            --issues open-issues.json --threshold "$HEALTHY_THRESHOLD")
+          echo "Lifecycle decision: $DECISION"
+          ACTION=$(echo "$DECISION" | jq -r .action)
           REASON=$(jq -r .reason ingest-evaluation.json)
           DETECTED_AT=$(jq -r .evaluatedAt ingest-evaluation.json)
-          RUN_STARTED_AT=$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 
-          if [ "$SYNTHETIC" = "true" ]; then
-            TITLE="Synthetic ingestion watchdog alert (run ${GITHUB_RUN_ID})"
-            LABEL="watchdog-test"
-          else
-            TITLE="Ingestion health alert ($(date -u +'%Y-%m-%d'))"
-            LABEL="source-health"
-            EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
-              --search 'in:title "Ingestion health alert"' --json number --jq 'length')
-            if [ "$EXISTING" -ne 0 ]; then
-              echo "An ingestion health issue is already open; not filing a duplicate."
-              exit 0
+          if [ "$ACTION" = "CREATE" ]; then
+            gh label create source-health --repo "$GITHUB_REPOSITORY" --color D93F0B --force \
+              --description "Automated ingestion watchdog evidence" || true
+            # Dedup guard (MUST PRESERVE: no duplicate issue storm). The evaluator
+            # returns CREATE only when no *keyed* incident is open, but Sentinel or
+            # a pre-OPS-05 run may already have filed an unkeyed "Ingestion health
+            # alert". Adopt that existing issue into the lifecycle (add the tracking
+            # markers) rather than filing a duplicate. Adoption only ADDS markers and
+            # a comment — it never closes an issue.
+            ADOPT=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+              --search 'in:title "Ingestion health alert"' --json number --jq '.[0].number // empty')
+            if [ -n "$ADOPT" ]; then
+              gh issue view "$ADOPT" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-body.md
+              if grep -qE '<!--[[:space:]]*incident-key:' cur-body.md; then
+                # Already keyed (e.g. Sentinel filed it moments ago): idempotent
+                # skip — reruns produce HOLD-style silence, not duplicate noise.
+                echo "Issue #${ADOPT} already carries the incident key; nothing adopted." | tee -a "$GITHUB_STEP_SUMMARY"
+                exit 0
+              fi
+              { cat cur-body.md; echo; echo "<!-- incident-key: ${INCIDENT_KEY} -->"; echo "<!-- healthy-streak: 0 -->"; } > incident-body.md
+            else
+              {
+                echo "The ingestion heartbeat watchdog detected a failure."
+                echo
+                echo "**Signal:** ${REASON}"
+                echo
+                echo "| Evidence | Timestamp / value |"
+                echo "| --- | --- |"
+                echo "| Schedule | hourly at minute 17 UTC (best effort; no delivery SLA) |"
+                echo "| Last updated | ${NOW} |"
+                echo "| Detection evaluated | ${DETECTED_AT} |"
+                echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // \"never\"' ingest-diag.json) |"
+                echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // \"never\"' ingest-diag.json) |"
+                echo "| Newest visible job age | $(jq -r '.[0].results[0].board_stale_hours // \"n/a\"' ingest-diag.json)h |"
+                echo
+                echo "Latest detection run: ${RUN_URL}"
+                echo
+                echo "<!-- incident-key: ${INCIDENT_KEY} -->"
+                echo "<!-- healthy-streak: 0 -->"
+                echo
+                echo "_Managed by the OPS-05 source-alert lifecycle: auto-closes after ${HEALTHY_THRESHOLD} consecutive healthy observations. A human still owns any source pause/unpause decision._"
+              } > incident-body.md
+              URL=$(gh issue create --repo "$GITHUB_REPOSITORY" \
+                --title "Ingestion health alert ($(date -u +'%Y-%m-%d'))" \
+                --label source-health --body-file incident-body.md)
+              NUM=${URL##*/}
+              echo "Opened incident ${URL}" | tee -a "$GITHUB_STEP_SUMMARY"
+              # Post-create reconciliation (cross-workflow CREATE race): Sentinel
+              # shares this key and may have created its own keyed incident in
+              # the same window. If an OLDER keyed sibling exists, close the
+              # duplicate this run just created — self-dedupe of an issue this
+              # run itself created is safe and keeps one-open-per-key true.
+              gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+                --json number,body > post-create.json
+              OLDER=$(jq --arg k "<!-- incident-key: ${INCIDENT_KEY} -->" --argjson n "$NUM" \
+                '[.[] | select((.body // "") | contains($k) and (.number < $n))] | map(.number) | .[0] // empty' post-create.json)
+              if [ -n "$OLDER" ]; then
+                gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" \
+                  --comment "Duplicate keyed incident created concurrently alongside #${OLDER}; keeping the older incident open and closing this one. (OPS-05 lifecycle self-dedupe.)"
+                echo "Closed duplicate incident #${NUM} in favor of #${OLDER}" | tee -a "$GITHUB_STEP_SUMMARY"
+              fi
             fi
+          elif [ "$ACTION" = "UPDATE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            N=$(echo "$DECISION" | jq -r '.healthyStreak // 0')
+            gh issue view "$NUM" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-body.md
+            # Ensure the streak marker exists before substituting (a keyed body
+            # missing it would otherwise loop UPDATE forever without progress).
+            grep -qE '<!--[[:space:]]*healthy-streak:' cur-body.md || printf '\n<!-- healthy-streak: 0 -->\n' >> cur-body.md
+            sed -E "s/(<!-- healthy-streak: )[0-9]+( -->)/\\1${N}\\2/" cur-body.md > incident-body.md
+            gh issue edit "$NUM" --repo "$GITHUB_REPOSITORY" --body-file incident-body.md
+            gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+              --body "Incident recurred during recovery (healthy streak reset to 0). Signal: ${REASON}. Run: ${RUN_URL}"
+            echo "Updated incident #${NUM} (recurred)" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "HOLD: $(echo "$DECISION" | jq -r '.reason // "no action"')"
           fi
 
+      - name: Apply Recovery Lifecycle
+        if: ${{ inputs.simulate_outage != true && steps.evaluation.outputs.alert != 'true' }}
+        env:
+          INCIDENT_KEY: ingestion-health
+          HEALTHY_THRESHOLD: '2'
+        run: |
+          set -euo pipefail
+          STATUS=$(jq -r .status ingest-evaluation.json)
+          # Only a CONFIRMED-clean run counts toward recovery. The post-deploy
+          # grace window (status=grace) is "unknown" → the evaluator holds, so an
+          # unproven signal can never auto-close an open incident.
+          if [ "$STATUS" = "healthy" ]; then STATE=healthy; else STATE=unknown; fi
+          DECISION=$(bun scripts/gha/source-alert-lifecycle.ts \
+            --incident-key "$INCIDENT_KEY" --state "$STATE" \
+            --issues open-issues.json --threshold "$HEALTHY_THRESHOLD")
+          echo "Recovery decision (${STATE}): $DECISION"
+          ACTION=$(echo "$DECISION" | jq -r .action)
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          if [ "$ACTION" = "UPDATE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            N=$(echo "$DECISION" | jq -r .healthyStreak)
+            gh issue view "$NUM" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-body.md
+            grep -qE '<!--[[:space:]]*healthy-streak:' cur-body.md || printf '\n<!-- healthy-streak: 0 -->\n' >> cur-body.md
+            sed -E "s/(<!-- healthy-streak: )[0-9]+( -->)/\\1${N}\\2/" cur-body.md > rec-body.md
+            gh issue edit "$NUM" --repo "$GITHUB_REPOSITORY" --body-file rec-body.md
+            gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+              --body "Healthy observation ${N}/${HEALTHY_THRESHOLD} recorded; auto-close on reaching ${HEALTHY_THRESHOLD}. Run: ${RUN_URL}"
+            echo "Recovery progress on #${NUM}: ${N}/${HEALTHY_THRESHOLD}" | tee -a "$GITHUB_STEP_SUMMARY"
+          elif [ "$ACTION" = "CLOSE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" \
+              --comment "Auto-closed after ${HEALTHY_THRESHOLD} consecutive healthy ingestion observations. Recovery verified by run ${RUN_URL}. (Source pause/unpause decisions remain human-owned.)"
+            echo "Closed recovered incident #${NUM}" | tee -a "$GITHUB_STEP_SUMMARY"
+          else
+            echo "HOLD: $(echo "$DECISION" | jq -r '.reason // "no action"')"
+          fi
+
+      - name: Real Candidate Dry-Run (read-only)
+        if: ${{ inputs.simulate_outage == true }}
+        env:
+          INCIDENT_KEY: ingestion-health
+          HEALTHY_THRESHOLD: '2'
+        run: |
+          set -euo pipefail
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+            --json number,body > real-open.json
+          echo "### OPS-05 real-candidate dry-run (read-only, no action taken)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Open source-health issues: $(jq 'length' real-open.json)" >> "$GITHUB_STEP_SUMMARY"
+          for STATE in failing healthy; do
+            D=$(bun scripts/gha/source-alert-lifecycle.ts \
+              --incident-key "$INCIDENT_KEY" --state "$STATE" \
+              --issues real-open.json --threshold "$HEALTHY_THRESHOLD")
+            echo "- if a **${STATE}** run fired now, the lifecycle would: \`${D}\`" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+      - name: Synthetic Lifecycle Drill
+        if: ${{ inputs.simulate_outage == true }}
+        run: |
+          set -euo pipefail
+          KEY="synthetic-${GITHUB_RUN_ID}"
+          LABEL="watchdog-test"
+          THRESHOLD=2
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           gh label create "$LABEL" --repo "$GITHUB_REPOSITORY" --color D93F0B --force \
             --description "Automated ingestion watchdog evidence" || true
 
+          emit() { bun scripts/gha/source-alert-lifecycle.ts --incident-key "$KEY" --state "$1" --issues "$2" --threshold "$THRESHOLD"; }
+
+          # 1. CREATE (failing, none open)
+          echo '[]' > syn.json
+          D=$(emit failing syn.json); echo "step 1 CREATE: $D"
+          [ "$(echo "$D" | jq -r .action)" = "CREATE" ] || { echo "expected CREATE, got $D"; exit 1; }
           {
-            echo "The ingestion heartbeat watchdog detected a failure."
+            echo "Synthetic OPS-05 lifecycle drill (run ${GITHUB_RUN_ID}). Not a real incident — created, advanced, and closed within this run."
             echo
-            echo "**Signal:** ${REASON}"
-            echo
-            echo "| Evidence | Timestamp / value |"
-            echo "| --- | --- |"
-            echo "| Schedule | hourly at minute 17 UTC (best effort; no delivery SLA) |"
-            echo "| Workflow started | ${RUN_STARTED_AT} |"
-            echo "| Detection evaluated | ${DETECTED_AT} |"
-            echo "| Last attempt | $(jq -r '.[0].results[0].last_attempt_at // "never"' ingest-diag.json) |"
-            echo "| Last clean run | $(jq -r '.[0].results[0].last_success_at // "never"' ingest-diag.json) |"
-            echo "| Newest visible job age | $(jq -r '.[0].results[0].board_stale_hours // "n/a"' ingest-diag.json)h |"
-            echo
-            echo "Detection run: ${RUN_URL}"
-          } > ingest-body.md
+            echo "<!-- incident-key: ${KEY} -->"
+            echo "<!-- healthy-streak: 0 -->"
+          } > syn-body.md
+          URL=$(gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "Synthetic OPS-05 lifecycle drill (run ${GITHUB_RUN_ID})" \
+            --label "$LABEL" --body-file syn-body.md)
+          NUM=${URL##*/}
+          CREATED_AT=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${NUM}" --jq .created_at)
+          echo "created ${URL} at ${CREATED_AT}"
 
-          ISSUE_URL=$(gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" \
-            --label "$LABEL" --body-file ingest-body.md)
-          ISSUE_NUMBER=${ISSUE_URL##*/}
-          ISSUE_CREATED_AT=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}" --jq .created_at)
-          echo "Delivered issue ${ISSUE_URL} at ${ISSUE_CREATED_AT}"
-          echo "issue_url=${ISSUE_URL}" >> "$GITHUB_STEP_SUMMARY"
-          echo "issue_created_at=${ISSUE_CREATED_AT}" >> "$GITHUB_STEP_SUMMARY"
+          # 2. UPDATE healthy-progress (healthy, streak 0 -> 1)
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label "$LABEL" --json number,body \
+            --jq "[.[] | select(.number == ${NUM})]" > syn.json
+          D=$(emit healthy syn.json); echo "step 2 UPDATE: $D"
+          [ "$(echo "$D" | jq -r .action)" = "UPDATE" ] || { echo "expected UPDATE, got $D"; exit 1; }
+          SYN_N=$(echo "$D" | jq -r '.healthyStreak // 1')
+          sed -E "s/(<!-- healthy-streak: )[0-9]+( -->)/\\1${SYN_N}\\2/" syn-body.md > syn-body2.md
+          gh issue edit "$NUM" --repo "$GITHUB_REPOSITORY" --body-file syn-body2.md
+          gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+            --body "Synthetic healthy observation 1/${THRESHOLD}. Run ${RUN_URL}."
 
-          if [ "$SYNTHETIC" = "true" ]; then
-            gh issue close "$ISSUE_NUMBER" --repo "$GITHUB_REPOSITORY" \
-              --comment "Synthetic watchdog delivery verified by run ${RUN_URL}."
-          fi
+          # 3. CLOSE (healthy, streak 1 -> threshold reached)
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label "$LABEL" --json number,body \
+            --jq "[.[] | select(.number == ${NUM})]" > syn.json
+          D=$(emit healthy syn.json); echo "step 3 CLOSE: $D"
+          [ "$(echo "$D" | jq -r .action)" = "CLOSE" ] || { echo "expected CLOSE, got $D"; exit 1; }
+          gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" \
+            --comment "Synthetic drill: auto-closed after ${THRESHOLD} healthy observations. Verified by ${RUN_URL}."
+          CLOSED_AT=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${NUM}" --jq .closed_at)
+
+          {
+            echo "### OPS-05 synthetic lifecycle drill — PASS"
+            echo "- Issue: ${URL}"
+            echo "- CREATE at ${CREATED_AT}"
+            echo "- UPDATE (healthy 1/${THRESHOLD}) recorded"
+            echo "- CLOSE at ${CLOSED_AT}"
+          } >> "$GITHUB_STEP_SUMMARY"

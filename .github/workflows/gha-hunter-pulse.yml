@@ -387,80 +387,174 @@ jobs:
     if: ${{ always() && needs.hunt.result != 'cancelled' }}
     runs-on: ubuntu-latest
     permissions:
+      # contents: read is required by actions/checkout (the lifecycle script
+      # ships in the repo); issues: write covers every lifecycle mutation.
+      contents: read
       issues: write
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # OPS-05: the lifecycle decision is emitted by the pure
+      # scripts/gha/source-alert-lifecycle.ts, which runs on Bun.
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
       - name: Download Hunter Evidence
         uses: actions/download-artifact@v4
         with:
           name: hunter-health-${{ github.run_id }}
           path: .hunter-health
 
-      - name: Evaluate And File Alert
+      # ── OPS-05 incident lifecycle (hunter-source-health) ─────────────────
+      # Replaces the old date-titled "create once per day, never close" alert
+      # with a stable keyed incident that recovers: repeated detections dedupe
+      # onto ONE open issue, and two consecutive fully-healthy runs close it.
+      # The pure evaluator decides; this step only executes the action.
+      # Fail-closed classification: a failed/skipped hunt job, a missing or
+      # unparseable harvest.log, or a degenerate log with no inserted-count
+      # evidence ALL map to state "unknown" (HOLD) — absence of evidence never
+      # counts as recovery and can never close an open incident.
+      - name: Apply Source Health Alert Lifecycle
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HUNT_RESULT: ${{ needs.hunt.result }}
         run: |
           set -euo pipefail
-          LOG=.hunter-health/harvest.log
-          if [ ! -f "$LOG" ] || ! jq -e . "$LOG" >/dev/null 2>&1; then
-            echo "No parseable harvest.log; skipping alert evaluation."
-            exit 0
-          fi
-
-          FAILED_SOURCES=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' "$LOG")
-          EVENT_FAILED=$(jq -r '.fetchEventLog.failedBatches // 0' "$LOG")
-          TRIAGE_FAILURES=$(jq -r '.triageFailures // 0' "$LOG")
-          INSERT_FAILED=$(jq -r '.insertFailedBatches // 0' "$LOG")
-          CADENCE_OK=$(jq -r '.cadenceGuards.stateAvailable // true' "$LOG")
-
-          if [ "$FAILED_SOURCES" -eq 0 ] && [ "$EVENT_FAILED" -eq 0 ] && \
-             [ "$TRIAGE_FAILURES" -eq 0 ] && [ "$INSERT_FAILED" -eq 0 ] && \
-             [ "$CADENCE_OK" = "true" ]; then
-            echo "All internals healthy; no alert issue needed."
-            exit 0
-          fi
-
-          TODAY=$(date -u +"%Y-%m-%d")
-          TITLE="Source health alert (${TODAY})"
+          INCIDENT_KEY=hunter-source-health
+          HEALTHY_THRESHOLD=2
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          LOG=.hunter-health/harvest.log
 
-          EXISTING=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open \
-            --search "in:title \"$TITLE\"" --json number --jq 'length')
-          if [ "$EXISTING" -gt 0 ]; then
-            echo "Alert issue for $TODAY already open; skipping duplicate."
-            exit 0
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+            --json number,body > open-issues.json
+          echo "Open source-health issues: $(jq 'length' open-issues.json)"
+
+          if [ "$HUNT_RESULT" != "success" ]; then
+            STATE=unknown
+            REASONS="hunt job did not succeed (result=${HUNT_RESULT})"
+            FAILED_SOURCES=0; EVENT_FAILED=0; TRIAGE_FAILURES=0; INSERT_FAILED=0; CADENCE_OK=true
+          elif [ ! -f "$LOG" ] || ! jq -e . "$LOG" >/dev/null 2>&1; then
+            STATE=unknown
+            REASONS="harvest.log missing or unparseable"
+            FAILED_SOURCES=0; EVENT_FAILED=0; TRIAGE_FAILURES=0; INSERT_FAILED=0; CADENCE_OK=true
+          else
+            FAILED_SOURCES=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' "$LOG")
+            EVENT_FAILED=$(jq -r '.fetchEventLog.failedBatches // 0' "$LOG")
+            TRIAGE_FAILURES=$(jq -r '.triageFailures // 0' "$LOG")
+            INSERT_FAILED=$(jq -r '.insertFailedBatches // 0' "$LOG")
+            CADENCE_OK=$(jq -r '.cadenceGuards.stateAvailable // true' "$LOG")
+            INSERT_ERRORS=$(jq -r '(.insertErrors // []) | length' "$LOG")
+            INSERTED=$(jq -r '.inserted // empty' "$LOG")
+
+            if [ "$FAILED_SOURCES" -eq 0 ] && [ "$EVENT_FAILED" -eq 0 ] && \
+               [ "$TRIAGE_FAILURES" -eq 0 ] && [ "$INSERT_FAILED" -eq 0 ] && \
+               [ "$INSERT_ERRORS" -eq 0 ] && [ "$CADENCE_OK" = "true" ] && \
+               [ -n "$INSERTED" ]; then
+              STATE=healthy
+              REASONS=""
+              echo "All internals healthy."
+            elif [ -z "$INSERTED" ]; then
+              # Parseable but degenerate evidence (e.g. the `{}` placeholder
+              # left by a dead scrape call): not health, not failure — unknown.
+              STATE=unknown
+              REASONS="harvest.log has no inserted-count evidence"
+              echo "::notice title=Hunter evidence inconclusive::${REASONS}"
+            else
+              STATE=failing
+              REASONS="failedSources=${FAILED_SOURCES} fetchEventFailedBatches=${EVENT_FAILED} triageFailures=${TRIAGE_FAILURES} insertFailedBatches=${INSERT_FAILED} insertErrors=${INSERT_ERRORS} cadenceState=${CADENCE_OK}"
+              echo "::warning title=Hunter degradation::${REASONS}"
+            fi
           fi
 
-          {
-            echo "Automated Tier-1 maintenance alert from Hunter run: $RUN_URL"
-            echo ""
-            echo "| Signal | Value |"
-            echo "| --- | --- |"
-            echo "| Failed sources | $FAILED_SOURCES |"
-            echo "| Fetch-event log failed batches | $EVENT_FAILED |"
-            echo "| Triage failures (jobs dropped) | $TRIAGE_FAILURES |"
-            echo "| Insert failed batches | $INSERT_FAILED |"
-            echo "| Cadence state available | $CADENCE_OK |"
-            echo ""
-            if [ "$FAILED_SOURCES" -gt 0 ]; then
-              echo "### Failed sources"
-              jq -r '.sourceResults[]? | select(.ok == false) | "- \(.sourceName) (\(.sourceType)): \(.error)"' "$LOG"
-              echo ""
+          DECISION=$(bun scripts/gha/source-alert-lifecycle.ts \
+            --incident-key "$INCIDENT_KEY" --state "$STATE" \
+            --issues open-issues.json --threshold "$HEALTHY_THRESHOLD")
+          echo "Hunter lifecycle decision (${STATE}): $DECISION"
+          ACTION=$(echo "$DECISION" | jq -r .action)
+
+          if [ "$ACTION" = "CREATE" ]; then
+            gh label create "source-health" --repo "$GITHUB_REPOSITORY" \
+              --description "Automated maintenance-bot health alerts" \
+              --color D93F0B --force || true
+            # Adoption guard (no duplicate storm): adopt an existing unkeyed
+            # "Source health alert" issue instead of filing a duplicate.
+            ADOPT=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --label source-health \
+              --search 'in:title "Source health alert"' --json number --jq '.[0].number // empty')
+            if [ -n "$ADOPT" ]; then
+              gh issue view "$ADOPT" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-body.md
+              if grep -qE '<!--[[:space:]]*incident-key:' cur-body.md; then
+                echo "Issue #${ADOPT} already carries the incident key; nothing adopted."
+                exit 0
+              fi
+              { cat cur-body.md; echo; echo "<!-- incident-key: ${INCIDENT_KEY} -->"; echo "<!-- healthy-streak: 0 -->"; } > alert-body.md
+              gh issue edit "$ADOPT" --repo "$GITHUB_REPOSITORY" --body-file alert-body.md
+              gh issue comment "$ADOPT" --repo "$GITHUB_REPOSITORY" \
+                --body "Adopted into the OPS-05 lifecycle; degradation still present (${REASONS}). Run: ${RUN_URL}"
+              echo "Adopted existing incident #${ADOPT}" >> "$GITHUB_STEP_SUMMARY"
+            else
+              {
+                echo "Automated Tier-1 maintenance alert from Hunter run: $RUN_URL"
+                echo ""
+                echo "**Signals:** ${REASONS}"
+                echo ""
+                echo "| Signal | Value |"
+                echo "| --- | --- |"
+                echo "| Last updated | ${NOW} |"
+                echo "| Failed sources | ${FAILED_SOURCES} |"
+                echo "| Fetch-event log failed batches | ${EVENT_FAILED} |"
+                echo "| Triage failures (jobs dropped) | ${TRIAGE_FAILURES} |"
+                echo "| Insert failed batches | ${INSERT_FAILED} |"
+                echo "| Cadence state available | ${CADENCE_OK} |"
+                echo ""
+                if [ "${FAILED_SOURCES}" -gt 0 ]; then
+                  echo "### Failed sources"
+                  jq -r '.sourceResults[]? | select(.ok == false) | "- \(.sourceName) (\(.sourceType)): \(.error)"' "$LOG"
+                  echo ""
+                fi
+                echo "Triage guide: docs/major-audit-2026-07-04.md (durability rules)"
+                echo "and docs/scraper-troubleshooting.md. Sources that keep failing"
+                echo "get a pause recommendation from the daily Sentinel pulse."
+                echo ""
+                echo "<!-- incident-key: ${INCIDENT_KEY} -->"
+                echo "<!-- healthy-streak: 0 -->"
+                echo ""
+                echo "_Managed by the OPS-05 source-alert lifecycle: auto-closes after ${HEALTHY_THRESHOLD} consecutive fully-healthy Hunter runs. A human still owns any source pause/unpause decision._"
+              } > alert-body.md
+              ISSUE_URL=$(gh issue create --repo "$GITHUB_REPOSITORY" \
+                --title "Source health alert ($(date -u +"%Y-%m-%d"))" \
+                --label "source-health" \
+                --body-file alert-body.md)
+              echo "Alert issue created: $ISSUE_URL"
+              echo "ISSUE_URL=$ISSUE_URL" >> "$GITHUB_ENV"
             fi
-            echo "Triage guide: docs/major-audit-2026-07-04.md (durability rules)"
-            echo "and docs/scraper-troubleshooting.md. Sources that keep failing"
-            echo "get a pause recommendation from the daily Sentinel pulse."
-          } > alert-body.md
-
-          gh label create "source-health" --repo "$GITHUB_REPOSITORY" \
-            --description "Automated maintenance-bot health alerts" \
-            --color D93F0B --force || true
-
-          ISSUE_URL=$(gh issue create --repo "$GITHUB_REPOSITORY" \
-            --title "$TITLE" \
-            --label "source-health" \
-            --body-file alert-body.md)
-          echo "Alert issue created for $TODAY: $ISSUE_URL"
-          echo "ISSUE_URL=$ISSUE_URL" >> "$GITHUB_ENV"
+          elif [ "$ACTION" = "UPDATE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            REASON=$(echo "$DECISION" | jq -r .reason)
+            N=$(echo "$DECISION" | jq -r '.healthyStreak // 0')
+            gh issue view "$NUM" --repo "$GITHUB_REPOSITORY" --json body --jq .body > cur-body.md
+            grep -qE '<!--[[:space:]]*healthy-streak:' cur-body.md || printf '\n<!-- healthy-streak: 0 -->\n' >> cur-body.md
+            sed -E "s/(<!-- healthy-streak: )[0-9]+( -->)/\\1${N}\\2/" cur-body.md > alert-body.md
+            gh issue edit "$NUM" --repo "$GITHUB_REPOSITORY" --body-file alert-body.md
+            if [ "$REASON" = "recurred-during-recovery" ]; then
+              gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+                --body "Incident recurred during recovery (healthy streak reset to 0). Signals: ${REASONS}. Run: ${RUN_URL}"
+            else
+              gh issue comment "$NUM" --repo "$GITHUB_REPOSITORY" \
+                --body "Healthy observation ${N}/${HEALTHY_THRESHOLD} recorded; auto-close on reaching ${HEALTHY_THRESHOLD}. Run: ${RUN_URL}"
+            fi
+            echo "Updated hunter incident #${NUM} (${REASON})" >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$ACTION" = "CLOSE" ]; then
+            NUM=$(echo "$DECISION" | jq -r .issueNumber)
+            gh issue close "$NUM" --repo "$GITHUB_REPOSITORY" \
+              --comment "Auto-closed after ${HEALTHY_THRESHOLD} consecutive fully-healthy Hunter runs. Recovery verified by run ${RUN_URL}. (Source pause/unpause decisions remain human-owned.)"
+            echo "Closed recovered hunter incident #${NUM}" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "HOLD: $(echo "$DECISION" | jq -r '.reason // "no action"')"
+          fi
 
       # Tier-2 (2026-07-04): append a Workers AI diagnosis as an issue COMMENT.
       # The model's output is inert report text a human reads — it is never
