@@ -1,5 +1,58 @@
 # System Savepoint
 
+## Run 7 — TAX-02 owner-directed category expansion (2026-08-23, TERMINAL — KEEP)
+
+Status: **TAX-02 TERMINAL — KEEP** and freshness diagnosis delivered. Owner
+request (2026-08-23): find AI / writing / technical-writing / knowledge-
+management / content-production roles on the site, check Aug-22 job movement,
+strategize and implement; mandate §22 backs the category expansion.
+
+**What shipped** — Behavior `011b673` + critic revision `0d77acf` on
+synchronized `main`: two new public categories (`ai` = AI & AUTOMATION,
+`writing` = WRITING & CONTENT incl. technical writing, content production, KM)
+through the whole chain — triage prompt vocabulary, `validateTriageResult`
+whitelist + writing-family alias normalization (`copywriting`,
+`technical-writing`, `knowledge-management`, `content-production` → writing),
+shared mapper, `JOB_CATEGORY_MAP`, card dot colors, eval corpus v2, coverage
+guards extended to nine slugs. Counted reversible backfill: 28 title-matched AI
+rows → `ai`, 8 title-matched writing rows → `writing`; dry-run first with exact
+IDs (bare `%llm%` pattern removed after sample review caught "Enrollment
+Specialist"); 36/36 CAS-guarded UPDATEs applied `changes=1`; post-totals
+reconciled exactly (tech 455, other 237, admin 144, marketing 141, cs 120,
+finance 91, design 45, **ai 28, writing 8**, total 1269 unchanged); undo
+artifact committed at
+`docs/gauntlet/evidence/TAX-02-undo-artifact-20260823.json`. Live evidence:
+`/categories/ai` + `/categories/writing` HTTP 200 populated; homepage renders
+both cards. Verification: local full suite 642/0/1,548 at `011b673`, 543/0/1,311
+(scraper+web) after revision, typecheck/guardrails/build exit 0; CI/deploy runs
+`32615195950` and `32616479700` both success incl. production Pages deploy.
+Fresh independent critic REVISE(fix-forward); all five findings applied in-unit.
+Evidence: `docs/gauntlet/evidence/TAX-02-ai-writing-categories.md`.
+
+**Freshness verdict (read-only)** — Clock healthy (all identities ticked
+through 2026-08-23T03:00Z). The Aug-22 drop is weekend seasonality (Sat=4 vs
+Fri=28; prior Sun Aug 16=7) plus intentional SRC-4D Jobicy cadence skips. NOT
+executed (owner decision required): re-enabling paused writing/VA-heavy sources
+(`problogger`, `onlinejobs-ph`, `remote-co`, `authentic-jobs`, `jobspresso`,
+paused workable/breezy VA tokens) as future supply for the new categories —
+expansion freeze stays active until COMP-01B evidence matures.
+
+Out-of-contract candidates recorded in the evidence doc: `/api/ingest.ts`
+category whitelist hardening; stale dead-code comment in `triage-decision.ts`;
+legacy alias coercion revisit.
+
+Next exact actions:
+
+- On/after **2026-08-24T19:00Z**: SRC-4D read-only D1 post-rollup from
+  `source_fetch_events` since `2026-08-22T18:57:00Z`, append to
+  `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, then decide KEEP
+  or pause-Jobicy per contract.
+- On/after **2026-08-24T12:38Z**: begin COMP-01B complete-window observation
+  report + reviewer sign-off + canary/cadence monitoring + rollback drill.
+- Owner-gated (unchanged): worktree cleanup dispositions (REC-01),
+  SEC-LEGACY-01 rotation confirmation, paused-source re-enablement decisions.
+  Un-contracted candidate: DATA-05B residual provenance backfill.
+
 ## Run 6 orientation addendum — 2026-08-23 (PAUSED — both remaining gates time-immature)
 
 Decision: **PAUSED**. No dependency-ready approved unit exists today. Fresh

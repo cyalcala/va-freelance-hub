@@ -1142,6 +1142,42 @@ Migration-writing units are sequential even when their functional work is otherw
 | HANDOFF | G6 plus exact context packet, five-question answers, score, files/commands used, deviations, final disposition, and next drill improvement. |
 | STATUS | TERMINAL — KEEP (drill executed 2026-08-23: executor A stopped at pushed WIP checkpoint `0625e12`; fresh-context executor B resumed from artifacts alone with 5/5 correct probe answers and completed subject commit `b73d6d4` (+2 lines); independent critic SHIP 5/5, reproduced all test numbers exactly (focused 16/0/65, full G3 636/0/1,531); merged to main via `b07d86f`; CI/deploy `32612673834` success incl. production Pages deploy; drill branch retained as evidence; two documentation gaps found and fixed). Evidence: `docs/gauntlet/evidence/REC-02-resume-drill.md` |
 
+## TAX-02 — Owner-directed category expansion (AI & Automation, Writing & Content)
+
+| Field | Contract |
+| --- | --- |
+| UNIT ID | TAX-02 |
+| TITLE | Make AI roles and writing/content/knowledge-management roles first-class browsable categories |
+| MILESTONE | M8 — Job Taxonomy + Evals (owner-directed extension of the public taxonomy) |
+| PRIORITY | P1 user-visible product capability |
+| OBJECTIVE | Add `ai` (AI & AUTOMATION) and `writing` (WRITING & CONTENT incl. technical writing, content production, knowledge management) end-to-end: triage vocabulary → validation → shared mapper → UI maps → eval corpus; then counted reversible backfill of existing active rows. |
+| WHY THIS MATTERS | Owner cannot find AI/writing/technical-writing/KM/content-production roles on the board; mandate §22 names these as target product scope. Writing roles were scattered under design/marketing/finance/customer-service; AI roles sat inside ENGINEERING & IT. |
+| CURRENT EVIDENCE | Read-only D1 measurement 2026-08-23: tech 483 / other 238 / marketing 145 / admin 144 / customer-service 121 / finance 92 / design 46 active; ~28 title-matched AI roles (26 in tech); ~8 title-matched writing roles across five buckets; KM title hits 0, description hits 2. |
+| EVIDENCE STATUS | Gap VERIFIED by direct query; owner direction recorded in run instruction 2026-08-23. |
+| PREREQUISITES | DATA-06B stored-category contract accepted (display trusts stored column). |
+| DEPENDENCIES | DATA-06, DATA-06B. Independent of SRC-4D/COMP-01B time gates. |
+| DESIGN DECISIONS | KM folds into `writing` (zero current volume avoids a permanently empty page; explicit in prompt guidelines + alias normalization so future KM roles land there). No source changes; expansion freeze untouched. Paused writing/VA-heavy sources recorded as an owner-decision recommendation only. |
+| AFFECTED FILES / SYMBOLS | `packages/scraper/triage.ts` (`TriageResult.category`, `validateTriageResult`, prompt guidelines, mock categorizer); `packages/scraper/triage-decision.ts` (`mapTriageCategoryToUiCategory`); `apps/web/src/lib/categories.ts` (`JOB_CATEGORY_MAP`); `apps/web/src/components/OpportunitySearch.tsx` (`DOT_COLORS`); `packages/scraper/fixtures/triage-eval.json`; tests. |
+| BASELINE | Nine-slug taxonomy after unit vs seven before; corpus v1→v2. |
+| PRIMARY ADDY SKILL / WORKFLOW | `incremental-implementation`. |
+| OPTIONAL SUPERPOWERS MECHANISM | verification-before-completion + fresh independent critic before data mutation. |
+| ASSIGNED MODEL | Repository executor. |
+| CRITIC | Fresh independent reviewer; verdict REVISE(fix-forward) with five findings, all applied in-unit at `0d77acf`. |
+| ALLOWED SCOPE | Taxonomy code+tests+fixture; one counted reversible backfill bounded to ACTIVE rows; evidence docs. |
+| SMALLEST IMPLEMENTATION | Slice 1 vocabulary/mapping/UI/tests; Slice 2 read-only dry-run report with exact IDs; Slice 3 CAS-guarded per-row apply + undo artifact + live smoke. |
+| MUST PRESERVE | Stored-category display contract (DATA-06B); single decision path (DATA-06 anti-drift guard); no schema migration (D1 column is free text defaulting 'other'); G1–G12 invariants. |
+| DO NOT TOUCH / FORBIDDEN SCOPE | No new or re-enabled sources; no robots enforcement flip; no inactive-row rewrites; no scrape-route rewrite; no dependency additions. |
+| BACKFILL PATTERNS | Documented verbatim in `docs/gauntlet/evidence/TAX-02-ai-writing-categories.md`; bare `%llm%` removed after dry-run sample review caught "Enrollment Specialist". |
+| REGRESSION SURFACE | Homepage per-category preview/totals; `/categories/[slug]`; `/opportunities` filter chips; `/jobs/[id]` badge; triage publish path. |
+| TESTS | Focused mapping/whitelist/mock-categorizer tests; corpus v2 cases incl. alias normalization locks; nine-category coverage guard; UI stored-slug sweep extended to ai/writing. |
+| ACCEPTANCE | Local suites green pre/post revision; CI/deploy green on both behavior commits incl. Pages deploy; backfill reconciled exactly (ai=28, writing=8, total 1269 unchanged); live routes 200 and populated; undo artifact committed. |
+| ACCEPTANCE EVIDENCE | `docs/gauntlet/evidence/TAX-02-ai-writing-categories.md`. |
+| REVERT | Revert commits `011b673`+`0d77acf`; restore rows per undo artifact (`UPDATE ... SET category='<old>' WHERE id=<id> AND category='<new>'`). |
+| STOP CONDITIONS | Dry-run bucket >40 rows; any pattern false positive in sample review; CI red on unrelated tests. None fired. |
+| COMMIT PLAN | Behavior commit `011b673`; critic-revision commit `0d77acf`; docs+artifact commit. |
+| GITHUB BACKUP | CI/deploy runs `32615195950`, `32616479700`. |
+| STATUS | TERMINAL — KEEP (executed 2026-08-23; see acceptance evidence for full packet). |
+
 ## Execution checkpoints
 
 ### Checkpoint A — immediate safety

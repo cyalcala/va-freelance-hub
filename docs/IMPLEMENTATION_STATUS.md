@@ -1,5 +1,20 @@
 # Implementation Status
 
+## TAX-02 — Owner-directed category expansion — 2026-08-23
+
+Status: **TERMINAL — KEEP**. AI & AUTOMATION and WRITING & CONTENT (incl.
+technical writing, content production, knowledge management) are first-class
+categories end-to-end: triage vocabulary, validation whitelist + writing-family
+alias normalization, shared mapper, UI maps, eval corpus v2, and a counted
+reversible backfill (28 ai + 8 writing active rows; CAS-guarded; undo artifact
+committed). Live: `/categories/ai` and `/categories/writing` populated;
+homepage renders both cards. Freshness question resolved read-only: the Aug 22
+dip is weekend seasonality plus intentional SRC-4D Jobicy cadence skips — clock
+healthy through 2026-08-23T03:00Z. Behavior commits `011b673` + `0d77acf`;
+CI/deploy runs `32615195950`, `32616479700`; fresh critic REVISE(fix-forward)
+with all five findings applied. Evidence:
+`docs/gauntlet/evidence/TAX-02-ai-writing-categories.md`.
+
 ## Current Gauntlet Planning Checkpoint — 2026-08-22
 
 Status: **OPS-04 TERMINAL — KEEP**. Bounded egress diagnostics for the directory `unreachable` cohort are deployed and verified live: two Cloudflare cohorts plus a same-host non-Cloudflare probe localize the cause to a Cloudflare egress-side transport failure (`EGRESS_BLOCKED` against alive origins), not origin death. Strikes/visibility/threshold/budget/gate are byte-for-byte unchanged. DATA-03 remains KEEP (read-only quality baseline); OPS-06 remains KEEP as the last production-behavior baseline before OPS-04.
