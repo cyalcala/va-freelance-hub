@@ -95,7 +95,6 @@ export interface SourceDoctorResult {
 
 const DOCTOR_VERSION = "1.0.0";
 const FETCH_TIMEOUT_MS = 10_000;
-const MAX_BODY_BYTES = 256 * 1024;
 
 /** Memory-only robots cache for the doctor — no D1. */
 function createMemoryRobotsStore(): RobotsCacheStore {
@@ -227,7 +226,10 @@ async function probeStaticSource(
     if (res.ok) {
       const text = await res.text();
       bytesReceived.current += text.length;
-      body = text.slice(0, MAX_BODY_BYTES);
+      // Parse the full body: the text is already fully in memory, and
+      // truncating here once produced a false SCHEMA_BROKEN ("CDATA is not
+      // closed.") for any feed larger than the old 256 KiB slice (SRC-4E/REL-11).
+      body = text;
     } else {
       fetchError = `HTTP ${res.status}`;
     }

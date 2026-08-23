@@ -277,6 +277,39 @@ Allow: /remote-jobs.rss`;
     expect(result.diagnostic.requestCount).toBeGreaterThanOrEqual(1);
   });
 
+  it("parses a >256 KiB CDATA feed without false SCHEMA_BROKEN (REL-11)", async () => {
+    // Regression for the SRC-4E root cause: the doctor previously sliced every
+    // static body to 256 KiB before parsing, which cut large CDATA descriptions
+    // mid-section and threw "CDATA is not closed." -> SCHEMA_BROKEN.
+    const filler = "Senior virtual assistant role. Apply via the original listing. ".repeat(560); // ~35 KB
+    const items: string[] = [];
+    for (let i = 0; i < 8; i++) {
+      items.push(
+        `<item><title>Job ${i}</title><link>https://example.com/job/${i}</link>` +
+          `<description><![CDATA[<p>${filler} Item ${i}.</p>]]></description></item>`
+      );
+    }
+    const rssBody = `<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0"><channel><title>Big Feed</title>${items.join("\n")}</channel></rss>`;
+    expect(rssBody.length).toBeGreaterThan(256 * 1024);
+
+    const robotsBody = `User-agent: *\nAllow: /`;
+
+    const responses = new Map<string, { status: number; body: string; headers?: Record<string, string> }>();
+    responses.set("https://weworkremotely.com/remote-jobs.rss", { status: 200, body: rssBody, headers: { "content-type": "application/rss+xml" } });
+    responses.set("https://weworkremotely.com/robots.txt", { status: 200, body: robotsBody, headers: { "content-type": "text/plain" } });
+
+    global.fetch = createMockFetch(responses);
+
+    const result = await runSourceDoctor(ALLOWED_RSS_SOURCE_ID, { json: true });
+
+    expect(result.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(result.activePath.itemCount).toBe(8);
+    expect(result.diagnostic.requestCount).toBeLessThanOrEqual(2);
+    expect(result.diagnostic.mutations).toBe(0);
+    // Byte accounting must reflect the complete body, not a truncated slice.
+    expect(result.activePath.bytesReceived).toBe(rssBody.length);
+  });
+
   it("reports HEALTHY_WITH_RESULTS for allowed JSON source (remote-ok)", async () => {
     const jsonBody = JSON.stringify([
       { id: "1", title: "Job 1", url: "https://remoteok.com/job/1", description: "Desc 1" },
