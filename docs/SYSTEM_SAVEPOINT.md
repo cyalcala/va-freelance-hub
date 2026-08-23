@@ -38,11 +38,27 @@ report covering every active endpoint, reviewer sign-off, canary + full
 cadence monitoring, rollback drill. Owner blanket approval (this run) covers
 the sign-off role only when the objective evidence gate is complete.
 
-**REC-02 promoted to ready** — prerequisites met: REC-01 accepted, low-risk
-code units accepted, owner agreement to synthetic interruption granted this
-run via blanket approval. Selected subject: the recorded future candidate
-`ActivePath` typing cleanup in `packages/scraper/source-doctor.ts`
-(non-migration, non-security, typing-only, safe midpoint exists).
+**REC-02 IN PROGRESS — drill checkpoint pushed, awaiting fresh-executor
+resumption** — Subject: ActivePath typing cleanup in
+`packages/scraper/source-doctor.ts`. Executor A completed baseline + partial
+proof and STOPPED at an intentionally incomplete checkpoint:
+- Drill branch `rec02-drill/activepath-typing` (worktree
+  `.worktrees/rec02-drill`), base `5fb1418`, checkpoint commit `0625e12`
+  (pushed; labelled WIP/INCOMPLETE).
+- Completed by A: new runtime test "carries sourceName and sourceFamily after
+  a static probe" + module-level compile-time key pins in
+  `packages/scraper/source-doctor.test.ts`; focused suite 16 pass / 0 fail /
+  65 assertions at `0625e12`.
+- REMAINING WORK (executor B): add `sourceName?: string; sourceFamily?:
+  string;` to the `ActivePath` interface in
+  `packages/scraper/source-doctor.ts` (after line 68 `error?: string;`);
+  re-run focused suite; run full G3 (`bun run test`, expect ~636 tests);
+  typecheck unaffected (apps/web tsc does not cover packages/scraper);
+  then normal acceptance/disposition.
+- FORBIDDEN REDO: do not rewrite or duplicate the added test; do not touch
+  unrelated types; do not merge partial work to main.
+- Fresh executor must answer the five probe questions from artifacts only,
+  before acting; answers recorded in REC-02 evidence.
 
 - Branch: `main`; worktree clean at each commit; run started at `d7e7e15`
   (clean, synchronized with origin/main).
