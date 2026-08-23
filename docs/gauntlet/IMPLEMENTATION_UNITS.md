@@ -94,7 +94,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | REC-01 evidence only; no cleanup implementation. G4 applies. |
 | GITHUB BACKUP | Push the docs branch and record commit/PR; do not push branches discovered in old worktrees merely to “save” them without review. |
 | HANDOFF | G6 plus the exact path, branch, HEAD, dirty state, unique-commit status, and recommended disposition for all ten auxiliary/orphan entries. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (evidence `b2d7782`; CI run `32553970322`; zero filesystem/Git mutations; all ten auxiliary/orphan entries classified with retain/unknown dispositions; cleanup remains owner-gated). Evidence: `docs/gauntlet/evidence/REC-01-worktree-inventory.md` |
 
 ## DATA-05A — Contain cross-source apply poisoning and directory inference
 
@@ -424,7 +424,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Workflow/evaluator and minimal response metadata only. |
 | GITHUB BACKUP | G5; manual workflow run is required evidence. |
 | HANDOFF | G6 plus measured lock/run duration, call count, terminal state, and exact manual rerun instruction. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (behavior `62acf5a` replaced the Hunter 10×2s retry loop with one lock-aware invocation; CI run `32563188313`; local 481 tests, 1,113 assertions, 0 failures; manual Hunter dispatch `32563299530` completed single scrape invocation, terminal state `needs-rerun` after zero new jobs, lock `free`, backlog `0`, artifact uploaded) |
 
 ## DATA-03 — Refresh the read-only data-quality cohort baseline
 
@@ -479,7 +479,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Read-only generator/tests/report only. |
 | GITHUB BACKUP | G5; artifact must exclude secrets and bulky/raw records. |
 | HANDOFF | G6 plus cutoffs, SQL version/hash, totals, query plans, reconciliation, and explicit mutation prohibition. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (generator `1cca4b3` + per-command cohort fix `feb5f0b`; read-only D1 run `32565032655` with `rows_written: 0`; baseline 4,828 total / 1,283 active; all 10 reconciliation deltas `0`; stratified findings in evidence). Evidence: `docs/gauntlet/evidence/DATA-03-quality-baseline.md` |
 
 ## OPS-04 — Diagnose the directory unreachable spike
 
@@ -865,6 +865,61 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Jobicy/shared-origin cadence and tests only; no source expansion. |
 | GITHUB BACKUP | G5 with 48-hour evidence follow-up. |
 | HANDOFF | G6 plus provider guidance, pre/post event timings, chosen bounds, state key, starvation proof, and next review date. |
+| STATUS | VERIFYING — bounded shared-origin cadence fix deployed (behavior `90f3243`; CI/deploy `32592205884`; production Pages deploy ~2026-08-22T18:57Z starts the ≥48h post window; local G3 at that commit 602 tests, 1,403 assertions). Diagnosis evidence: `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`. Interim read-only observation 2026-08-22T22:18Z: both feeds HTTP 200 (no 429); `jobicy-supporting-apac` failed XML parse ("CDATA is not closed") → SCHEMA_BROKEN — favorable interim signal only, spun out as SRC-4E. ACCEPTANCE GATE: read-only D1 post-rollup on/after 2026-08-24T19:00Z, then KEEP or pause-Jobicy per contract. |
+
+## SRC-4E — Diagnose the Jobicy supporting-feed CDATA parse failure
+
+| Field | Contract |
+| --- | --- |
+| UNIT ID | SRC-4E |
+| TITLE | Diagnose why jobicy-supporting-apac fails XML parsing with "CDATA is not closed" |
+| MILESTONE | M5/M11 follow-on — Source Doctor and Controlled Source Quality |
+| PRIORITY | P1 source health (one of two enabled Jobicy feeds currently yields zero jobs) |
+| OBJECTIVE | Identify the root cause and failure class of the recurring "CDATA is not closed" parse error on `jobicy-supporting-apac` using production event evidence, code-path analysis, and a minimal synthetic reproduction; document a bounded fix proposal as a separate future unit. No parser change in this unit. |
+| WHY THIS MATTERS | Since at least 2026-08-22T22:18Z the supporting APAC feed returns SCHEMA_BROKEN on every parse attempt while the sibling admin-support feed parses; the defect silently zeroes an enabled source's yield. |
+| CURRENT EVIDENCE | Source Doctor 2026-08-22T22:18Z: HTTP 200 fetch succeeded, parse failed with "CDATA is not closed." Parser is `fast-xml-parser` 5.10.1 via the shared instance in `packages/scraper/rss.ts` (`processEntities: false`, `htmlEntities: true`). Durable per-event evidence exists in `source_fetch_events.error`. |
+| EVIDENCE STATUS | Failure VERIFIED live once; frequency/onset/root cause UNKNOWN pending read-only D1 analysis. |
+| ROOT CAUSE | Hypotheses ranked: (a) feed content contains a byte sequence that terminates or breaks a CDATA section early (e.g., bare `]]>` inside embedded HTML); (b) truncated response body cutting mid-CDATA; (c) parser-version-specific handling of nested/multiple CDATA sections. |
+| ROOT CAUSE CONFIDENCE | Low until reproduction matrix + event history are recorded. |
+| PREREQUISITES | Committed contract (this row); no live request to jobicy.com while SRC-4D's VERIFYING window is open. |
+| DEPENDENCIES | REC-01. Coordination constraint: SRC-4D post-rollup must be recorded before any live Jobicy probe in this unit. |
+| AFFECTED FILES / SYMBOLS | Read-only: `packages/scraper/rss.ts`; `packages/scraper/source-doctor.ts`; `source_fetch_events`. New: diagnosis evidence doc. Reproduction fixtures stay ephemeral (never committed). |
+| CALLERS / DEPENDENTS | Future bounded parser-hardening fix unit; source-health rollup semantics. |
+| BASELINE | Sibling feed `jobicy-admin-support-apac` parses the same origin/feed family successfully; supporting feed fails at `parser.parse(xml)` in `fetchRSSFeed` (`rss.ts`). |
+| PRIMARY ADDY SKILL / WORKFLOW | `debugging-and-error-recovery` (Steps 1–3 only: reproduce, localize, reduce). |
+| OPTIONAL SUPERPOWERS MECHANISM | Verification before completion. |
+| WHY DISTINCT VALUE | Root cause must be isolated from the cadence work (SRC-4D) and proven by reproduction before any tolerant-parse change is proposed. |
+| ASSIGNED MODEL | Unassigned; recommended capability: XML/parsing reliability executor. |
+| CRITIC | Independent reviewer for the eventual fix unit; this diagnosis unit needs none beyond recorded evidence. |
+| ESCALATION MODEL | Architecture reasoner if root cause requires replacing fast-xml-parser or changing ingestion architecture. |
+| WORKTREE REQUIRED | No (read-only + docs). |
+| ALLOWED SCOPE | Read-only D1 queries against `source_fetch_events`; local parse-path analysis; minimal synthetic fixtures run against the installed parser version in a temp directory; bounded fix proposal text. |
+| SMALLEST IMPLEMENTATION | One read-only D1 error-frequency/timing query set; one local reproduction matrix mapping candidate malformed-CDATA classes to exact parser errors; one evidence document with ranked root cause and proposed fix scope. |
+| MUST PRESERVE | Zero writes to production D1; zero network requests to jobicy.com during the SRC-4D window; existing parser behavior byte-for-byte unchanged. |
+| DO NOT TOUCH / FORBIDDEN SCOPE | No parser/code changes, no dependency change, no fixture commits containing source-derived text, no retries, no source enable/disable/pause, no D1 mutation, no live probes before SRC-4D closes. |
+| REGRESSION SURFACE | None (read-only unit). |
+| STEPS | Query D1 for CDATA/parse errors by source and time; confirm deterministic vs intermittent pattern; build synthetic fixture matrix reproducing the exact error string; rank hypotheses; write evidence doc with bounded fix proposal; update baton. |
+| TESTS | None added (no behavior change); verification is evidence completeness plus `changed_db=false` on every remote query. |
+| PROBES | Production D1 read-only SELECTs via the established wrangler pattern; local-only parse runs. No Jobicy HTTP requests. |
+| BENCHMARK / EVAL | Exact error string reproduced from a minimal fixture OR root cause otherwise evidenced; onset date and frequency quantified from durable events; fix proposal scoped small enough for one future unit. |
+| AUTOMATION OPPORTUNITY | Future fix unit may add a regression fixture test pinning the malformed class. |
+| AUTOMATION CLASS | MANUAL diagnosis; fix remains APPROVAL-GATED through its own unit. |
+| MATURITY TARGET | A3 DIAGNOSIS. |
+| OBSERVABILITY | Event counts, first/last occurrence timestamps, per-run determinism, duration_ms distribution, error-string variants. |
+| IDEMPOTENCY | Re-running queries produces identical counts for closed time windows. |
+| MAINTAINABILITY IMPACT | Converts a silent zero-yield source into a documented defect with a scoped remedy. |
+| SCALE IMPACT | None directly; informs whether tolerant parsing generalizes safely. |
+| HARDENING IMPACT | Removes an unexplained SCHEMA_BROKEN blind spot in source health. |
+| ACCEPTANCE | Root cause identified with production + reproduction evidence, or honestly recorded as undetermined with the exact missing evidence named. Terminal decision recorded. |
+| ACCEPTANCE EVIDENCE | `docs/gauntlet/evidence/SRC-4E-jobicy-supporting-cdata-diagnosis.md` with commands, outputs, repro matrix, and proposal. |
+| REVERT | Git revert of documentation commit only. |
+| STOP CONDITIONS | D1 access unavailable; events contradict the recorded failure signature; live probing becomes necessary while SRC-4D window is open (defer instead); root cause requires prohibited access tactics. |
+| ESCALATION | Owner decides between deferring past the SRC-4D window and pausing the broken feed. |
+| DOCUMENTATION | Evidence doc + baton update; STATUS row reflects terminal decision. |
+| COMMIT PLAN | Contract+STATUS-hygiene docs commit precedes execution; evidence/baton docs commit after. |
+| COMMIT BOUNDARY | Gauntlet documentation only. |
+| GITHUB BACKUP | G5 (docs commits). |
+| HANDOFF | G6 plus onset/frequency table, repro fixture recipe, ranked root cause, and proposed fix-unit scope. |
 | STATUS | PLANNED |
 
 ## OPS-05 — Close or roll up recovered source-health alerts
