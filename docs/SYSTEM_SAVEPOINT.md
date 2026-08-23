@@ -1,6 +1,67 @@
 # System Savepoint
 
-## Current Gauntlet Execution Savepoint — 2026-08-23 (run 4)
+## Current Gauntlet Execution Savepoint — 2026-08-23 (run 5)
+
+Status: **DATA-05B TERMINAL — KEEP (owner-approved CAS repair executed and
+proven)**.
+
+**DATA-05B** — The owner approved the six recorded candidate rows via the run
+instruction "all approved that needed to be approved all proceed"
+(2026-08-23). Executed exactly per contract: fresh read-only report
+re-collected (`changed_db=false`), byte-identical sha256
+`86d3a0002c0e48bd9c51285f7e1f10dc434da9e66d80e1470c24477c8d1d1be3` to the
+00:13Z report (zero drift); all six IDs matched expected values (no CAS
+drift); dry-run 6 planned / 0 skipped; six guarded per-row UPDATEs executed
+via wrangler, `changes=1` each (one transient `fetch failed` before any
+execution, retried safely under CAS); post-state SELECT shows all six rows
+`website IS NULL` + `website_source='repair_cleared'` + evidence-hash-prefixed
+`website_evidence`; post-totals reconciliation exact (with_website 344→338,
+note-evidence 35→29, shared-host 39→37, mismatch 17→11); undo artifact
+retained (`DATA-05B-undo-artifact-20260823T0146Z.json`); route smoke passed
+(all six companies render live, zero bogus hosts on probed pages, control row
+Lemon.io intact). Ambiguous rows 618/619/576 untouched. Local focused tests
+27 pass / typecheck exit 0 at `d7e7e15`. Evidence:
+`docs/gauntlet/evidence/DATA-05B-directory-website-provenance.md`.
+
+**SRC-4D remains VERIFYING (48h live window)** — behavior `90f3243`, CI/deploy
+`32592205884`; production Pages deploy ~2026-08-22T18:57Z starts the ≥48h
+post window. NEXT EXACT ACTION: on/after **2026-08-24T19:00Z** run the
+read-only D1 post-rollup from `source_fetch_events` since
+`2026-08-22T18:57:00Z`, append to
+`docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, then decide KEEP
+or pause-Jobicy per contract.
+
+**COMP-01B remains PLANNED (window not yet complete)** — prerequisite window
+(minimum 48h) matures on/after **2026-08-24T12:38Z** (COMP-01A deploy
+`32573525387` completed 2026-08-22T12:38Z). Requires reviewed observation
+report covering every active endpoint, reviewer sign-off, canary + full
+cadence monitoring, rollback drill. Owner blanket approval (this run) covers
+the sign-off role only when the objective evidence gate is complete.
+
+**REC-02 promoted to ready** — prerequisites met: REC-01 accepted, low-risk
+code units accepted, owner agreement to synthetic interruption granted this
+run via blanket approval. Selected subject: the recorded future candidate
+`ActivePath` typing cleanup in `packages/scraper/source-doctor.ts`
+(non-migration, non-security, typing-only, safe midpoint exists).
+
+- Branch: `main`; worktree clean at each commit; run started at `d7e7e15`
+  (clean, synchronized with origin/main).
+- Commits this run so far (pushed): `b3fb922` (DATA-05B acceptance evidence +
+  STATUS + artifacts).
+- CI/deploy this run: `32611329054` (`b3fb922`) success docs-only, deploy
+  correctly skipped.
+- Last Gauntlet decisions this run: DATA-05B — KEEP. Before that (run 4):
+  REL-11 KEEP; SRC-4E KEEP.
+- Current implementation unit queue:
+  `SRC-4D` VERIFYING (post-rollup due on/after 2026-08-24T19:00Z),
+  `COMP-01B` PLANNED (window matures 2026-08-24T12:38Z),
+  `REC-02` IN PROGRESS next (drill; subject = ActivePath typing cleanup),
+  future candidates: post-SRC-4D live Jobicy Doctor re-probe,
+  provenance backfill for company-consistent note rows (DATA-05B residual).
+- Ownership boundary unchanged: `remotephjobs.com` external;
+  `remotejobs-ph.pages.dev` is this project's production site.
+
+## Historical checkpoint — run 4 / REL-11 + SRC-4E (2026-08-23)
 
 Status: **SRC-4E TERMINAL — KEEP (diagnosis-only) and REL-11 TERMINAL — KEEP
 (behavior fix deployed)**.
