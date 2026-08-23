@@ -922,6 +922,61 @@ Migration-writing units are sequential even when their functional work is otherw
 | HANDOFF | G6 plus onset/frequency table, repro fixture recipe, ranked root cause, and proposed fix-unit scope. |
 | STATUS | TERMINAL — KEEP (diagnosis complete 2026-08-23: root cause is the Doctor's own `MAX_BODY_BYTES` 256 KiB body slice before parsing (`source-doctor.ts:230`), which cuts the 40-item supporting feed mid-CDATA and yields exactly "CDATA is not closed."; ingestion path parses full bodies and has recorded ZERO parse errors ever across 113,342 fetch events; minimal synthetic reproduction matrix confirms only truncation-mid-CDATA produces this error string; hypotheses a/c eliminated). The 2026-08-22T22:18Z SCHEMA_BROKEN observation is a measurement artifact; its HTTP-200-no-429 half remains valid for SRC-4D. Bounded fix proposal (REL-11 candidate) recorded in evidence; no code changed. Evidence: `docs/gauntlet/evidence/SRC-4E-jobicy-supporting-cdata-diagnosis.md` |
 
+## REL-11 — Fix Source Doctor RSS truncation false SCHEMA_BROKEN
+
+| Field | Contract |
+| --- | --- |
+| UNIT ID | REL-11 |
+| TITLE | Stop the Source Doctor reporting SCHEMA_BROKEN for feeds its own 256 KiB truncation broke |
+| MILESTONE | M5/M22 — Source Doctor correctness and maintainability hardening |
+| PRIORITY | P1 diagnostic truthfulness (spun out of accepted diagnosis unit SRC-4E) |
+| OBJECTIVE | Make the Doctor's static-source probe parse the complete fetched body so large CDATA-bearing feeds are judged on real content, and pin the fix with a >256 KiB regression test. |
+| WHY THIS MATTERS | `await res.text()` already holds the whole body in memory before the slice, so `text.slice(0, MAX_BODY_BYTES)` saves nothing and corrupts parse input: any feed over 256 KiB cut mid-CDATA yields a false "CDATA is not closed." → SCHEMA_BROKEN (observed on jobicy-supporting-apac 2026-08-22T22:18Z). A health diagnostic that manufactures schema failures erodes source-health trust. |
+| CURRENT EVIDENCE | SRC-4E KEEP diagnosis: reproduction matrix shows sliced >269 KB docs throw exactly "CDATA is not closed." while full docs parse; durable events contain zero ingestion-path parse errors across 113,342 rows. Evidence: `docs/gauntlet/evidence/SRC-4E-jobicy-supporting-cdata-diagnosis.md`. |
+| EVIDENCE STATUS | Root cause VERIFIED by diagnosis unit; fix NOT implemented until this unit. |
+| ROOT CAUSE | `packages/scraper/source-doctor.ts` slices every static-source body to 256 KiB (`MAX_BODY_BYTES`) between fetch and parse. |
+| ROOT CAUSE CONFIDENCE | High (reproduced locally). |
+| PREREQUISITES | SRC-4E diagnosis accepted (KEEP). No dependency on SRC-4D closure: no workflow or schedule invokes the Doctor, so deploying this fix cannot inject requests into SRC-4D's measurement window; live Jobicy re-probes remain forbidden until the SRC-4D post-rollup is recorded. |
+| DEPENDENCIES | REC-01, SRC-4E. Coordination constraint: zero HTTP requests to jobicy.com while SRC-4D VERIFYING window is open. |
+| AFFECTED FILES / SYMBOLS | `packages/scraper/source-doctor.ts` — static-source fetch block (`MAX_BODY_BYTES`, line ~230); `packages/scraper/source-doctor.test.ts` — one new regression test. |
+| CALLERS / DEPENDENTS | `scripts/source-doctor.ts` CLI; future COMP-01B evidence queries that may consume Doctor outcomes. |
+| BASELINE | Pre-fix: bodies >262,144 chars are parsed truncated; outcome depends on where byte 262,144 lands. |
+| PRIMARY ADDY SKILL / WORKFLOW | `incremental-implementation`. |
+| OPTIONAL SUPERPOWERS MECHANISM | Fresh independent critic + verification-before-completion. |
+| WHY DISTINCT VALUE | A health-semantics change should be challenged independently even when the diff is small; the critic guards against scope creep into parser/taxonomy behavior. |
+| ASSIGNED MODEL | Repository executor. |
+| CRITIC | Independent reviewer with no role in authorship; verifies diff minimality, test detection power (fails pre-fix), and no ingestion-path coupling. |
+| ESCALATION MODEL | Architecture reasoner only if a memory cap is later proven necessary. |
+| WORKTREE REQUIRED | No (single-file two-line behavior change + test; sole executor, clean synchronized main). |
+| ALLOWED SCOPE | Parse full fetched text in the static probe; remove the now-unused constant; add regression test; document. |
+| SMALLEST IMPLEMENTATION | `body = text;` replacing the slice; delete `MAX_BODY_BYTES`; new test builds a synthetic >256 KiB CDATA feed programmatically and expects HEALTHY_WITH_RESULTS plus full-length bytesReceived. |
+| MUST PRESERVE | Identical XMLParser options in both paths; ATS/JSON probe behavior untouched; nine-outcome taxonomy unchanged; request budget ≤2; zero mutations/AI/D1 writes; G1. |
+| DO NOT TOUCH / FORBIDDEN SCOPE | No rss.ts/scrape.ts/sources.ts/cadence changes; no new dependencies; no outcome renames/additions; no live network calls in tests beyond mocks; no jobicy.com requests during the SRC-4D window. |
+| REGRESSION SURFACE | Doctor static-source outcomes only; production ingestion unaffected (Doctor is CLI-only today). |
+| STEPS | Commit contract; write failing-focused regression understanding; apply two-line fix; focused vitest; full G3 (bun test/typecheck/build/guardrails); fresh critic; CI/deploy; evidence + baton. |
+| TESTS | New: ">256 KiB CDATA feed parses HEALTHY_WITH_RESULTS" (synthetic filler, programmatic build) asserting outcome, itemCount>0, requestCount≤2, mutations=0, bytesReceived equals full body length. Existing 14 doctor tests unchanged and green. |
+| PROBES | None live. Optional post-SRC-4D live re-probe of jobicy-supporting-apac is explicitly OUT OF SCOPE here and deferred to a future evidence run. |
+| BENCHMARK / EVAL | Regression test fails against pre-fix code (truncation reproduced), passes post-fix; full suite green; no other outcome flipped. |
+| AUTOMATION OPPORTUNITY | None beyond existing CI. |
+| AUTOMATION CLASS | GUARDED AUTOMATION (deterministic code fix). |
+| MATURITY TARGET | A5 for Doctor static-probe truthfulness. |
+| OBSERVABILITY | Existing probe details; optionally note full body length already recorded via bytesReceived. |
+| IDEMPOTENCY | Pure function of response body; repeated runs identical. |
+| MAINTAINABILITY IMPACT | Removes a misleading magic cap; aligns Doctor semantics with ingestion parser input. |
+| SCALE IMPACT | Memory profile unchanged (full body was always read); parsing cost scales with true feed size as ingestion already does. |
+| HARDENING IMPACT | Health diagnostics can no longer manufacture SCHEMA_BROKEN from self-inflicted truncation. |
+| ACCEPTANCE | Focused + full suites green; critic SHIP; CI/deploy green including Pages deploy; no ingestion-path file touched (diff-verified). |
+| ACCEPTANCE EVIDENCE | `docs/gauntlet/evidence/REL-11-doctor-rss-truncation-fix.md` with commands, counts, critic verdict, run IDs. |
+| REVERT | Revert the behavior commit; test-only/docs commits may remain. |
+| STOP CONDITIONS | Critic REVISE beyond bounded fixes; out-of-unit test failures; discovery that any caller depended on truncation. |
+| ESCALATION | Return to owner/planner with evidence. |
+| DOCUMENTATION | Contract row, evidence file, baton. |
+| COMMIT PLAN | Docs contract commit precedes; behavior+test commit second; evidence/baton docs commit last. |
+| COMMIT BOUNDARY | source-doctor.ts static probe + its test only. |
+| GITHUB BACKUP | G5 with CI/deploy run IDs. |
+| HANDOFF | G6 plus diff-scope proof, pre/post test-power evidence, critic verdict, run IDs. |
+| STATUS | PLANNED |
+
 ## OPS-05 — Close or roll up recovered source-health alerts
 
 | Field | Contract |
