@@ -1,6 +1,69 @@
 # System Savepoint
 
-## Current Gauntlet Planning Savepoint — 2026-08-23 (run 2)
+## Current Gauntlet Execution Savepoint — 2026-08-23 (run 3)
+
+Status: **DATA-05B VERIFYING — code deployed + fresh read-only report recorded;
+BLOCKED at the human-approved evidence gate (no mutation has occurred)**. The
+previous run's code slice is on origin/main at `6e31cd7f`: additive provenance
+migration `0033` (`df35fdf`), report/CAS-repair tooling + tests (`848abbe`),
+critic hardening (`6e31cd7f`). CI/deploy `32605834663` green on the exact SHA,
+including "Apply D1 migrations to production" (0033 applied) and Pages deploy;
+watchdog `32605596383` success. Local G3 at head: 634 tests, 0 failures, 1,523
+assertions; typecheck EXIT 0. This run executed both read-only report SELECTs
+against production D1 (`changed_db=false`, `rows_written=0`) and reconciled:
+456 rows / 344 with website / 0 classified; 344 unclassified; 35 with
+enrichment-note evidence; 39 rows in 19 shared-host groups; 17 name/host
+mismatch. Strongest repair candidates (PENDING OWNER REVIEW, nothing approved):
+546 Vidalytics→we-work-remotely.com, 548 Airalo→remotephjobs.ph, 557
+Sourcegraph→remote.ph, 575 Impact Clients→highperformancetrain.com, 577
+DuckDuckGo→remote.ph, 623 Kindred→remote-ph-jobs.com. Redacted artifact +
+sha256 and exact continuation path:
+`docs/gauntlet/evidence/DATA-05B-directory-website-provenance.md`. STOP
+CONDITION HONORED: contract classifies mutation APPROVAL-GATED; next action
+requires owner-approved evidence file (exact IDs + expected old values), then
+apply-sql dry-run → guarded per-row apply → undo artifact → route smoke.
+
+**SRC-4D remains VERIFYING (48h live window)** — unchanged gate: behavior
+commit `90f3243`, CI/deploy `32592205884`, production Pages deploy
+~2026-08-22T18:57Z starts the ≥48h post window. Interim read-only observation
+2026-08-22T22:18Z: both `jobicy.com` feeds HTTP 200 (no 429);
+`jobicy-supporting-apac` failed XML parse ("CDATA is not closed") →
+SCHEMA_BROKEN — favorable interim signal only, not acceptance evidence.
+NEXT EXACT ACTION: on/after 2026-08-24T19:00Z run the read-only D1 post-rollup
+(per `source_fetch_events` since `2026-08-22T18:57:00Z`), record it in
+`docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, then decide KEEP
+or pause-Jobicy per contract. Follow-up **SRC-4E — Jobicy supporting-feed CDATA
+parse failure** stays PROPOSED (needs bounded contract before any change).
+
+- Branch: `main`; worktree clean; this run started/ended at `6e31cd7f`
+  (`main` = `origin/main`; base for this run's docs commit).
+- DATA-05B code execution start: `5373eae` (clean synchronized tree).
+- Ownership boundary: `remotephjobs.com` is an external site;
+  `remotejobs-ph.pages.dev` is this project's production site. External-source
+  indexing is allowed only through the existing compliance policy and never
+  implies ownership.
+- Planning baseline: `bd84cc1`
+- Last accepted production behavior commits: `f00478c`/`041bc2c` (DATA-06B,
+  KEEP); `90f3243` (SRC-4D, VERIFYING); `6e31cd7f` (DATA-05B code slice,
+  deployed, awaiting approval-gated data step).
+- Doc-hygiene note: this run refreshed the DATA-05B STATUS row only; STATUS
+  rows for REC-01, OPS-06, DATA-03, and SRC-4D still lag their terminal
+  reality recorded in the baton/commit history; treat the baton as
+  authoritative until a dedicated docs pass refreshes them.
+- Current scheduled evidence: watchdog runs continue hourly; their payloads
+  remain evidence to inspect, not blanket health acceptance.
+- Last Gauntlet decision: `DATA-06B` — KEEP; this run's DATA-05B decision:
+  BLOCKED (approval gate) pending owner.
+- Current implementation unit queue:
+  `DATA-05B` **VERIFYING/BLOCKED at human-approved evidence gate** (see above),
+  `SRC-4D` **VERIFYING** (48h post-rollup due on/after 2026-08-24T19:00Z),
+  `SRC-4E` (PROPOSED — Jobicy supporting-feed CDATA parse failure; needs
+  bounded contract before any change),
+  `COMP-01B` (reviewed enforcement; gated on a complete reviewed robots observe
+  window plus per-source reviewer sign-off),
+  `REC-02` (resume drill; needs owner agreement to synthetic interruption).
+
+## Historical checkpoint — planning savepoint run 2 / DATA-06B KEEP (2026-08-23)
 
 Status: **DATA-06B TERMINAL — KEEP**. Owner product decision (2026-08-23):
 option (a) trust the stored `category` column on every surface. The

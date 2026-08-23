@@ -699,7 +699,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Provenance/repair only; no new enrichment provider or general directory cleanup. |
 | GITHUB BACKUP | G5; never commit raw secrets/full opportunity data; encrypt or omit sensitive undo data as policy requires. |
 | HANDOFF | G6 plus migration, report/evidence hashes, approved/applied/skipped IDs, restoration command, and unresolved anomalies. |
-| STATUS | PLANNED |
+| STATUS | VERIFYING — code slice deployed (`df35fdf` schema 0033, `848abbe` report/CAS tooling + tests, `6e31cd7f` critic hardening; CI/deploy `32605834663` applied the migration to production D1); fresh read-only remote report recorded 2026-08-23 (344 unclassified / 35 note-evidence / 39 shared-host / 17 mismatch; sha256 in evidence doc); BLOCKED at the human-approved evidence gate before any CAS mutation. Evidence: `docs/gauntlet/evidence/DATA-05B-directory-website-provenance.md` |
 
 ## DATA-06 — Converge taxonomy and triage decisions on one path
 
