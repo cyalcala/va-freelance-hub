@@ -97,4 +97,49 @@ describe("mapTriageCategoryToUiCategory", () => {
     expect(mapTriageCategoryToUiCategory("tech")).toBe("tech");
     expect(mapTriageCategoryToUiCategory("something-unknown")).toBe("other");
   });
+
+  test("passes owner-requested ai and writing categories through unchanged", () => {
+    expect(mapTriageCategoryToUiCategory("ai")).toBe("ai");
+    expect(mapTriageCategoryToUiCategory("writing")).toBe("writing");
+  });
+});
+
+describe("validateTriageResult category whitelist (TAX-02)", () => {
+  test("accepts ai and writing slugs and still coerces unknown ones", async () => {
+    for (const cat of ["ai", "writing"]) {
+      const env = makeEnv({
+        triage: { eligibleForFilipinos: true, reason: "worldwide", category: cat, tags: [] },
+      });
+      const d = await decideTriage(
+        { ...baseInput, title: cat === "ai" ? "AI Engineer" : "Technical Writer" },
+        { geoScope: "worldwide" },
+        env,
+      );
+      expect(d.kind).toBe("eligible");
+      if (d.kind === "eligible") expect(d.triage.category).toBe(cat);
+    }
+    const unknownEnv = makeEnv({
+      triage: {
+        eligibleForFilipinos: true,
+        reason: "worldwide",
+        category: "knowledge-management",
+        tags: [],
+      },
+    });
+    const d = await decideTriage(baseInput, { geoScope: "worldwide" }, unknownEnv);
+    expect(d.kind).toBe("eligible");
+    // Not whitelisted: coerced at validation, so KM-style roles must arrive as
+    // "writing" from the prompt itself.
+    if (d.kind === "eligible") expect(d.triage.category).toBe("other");
+  });
+
+  test("mock no-AI categorizer routes AI and writing titles to new buckets", async () => {
+    const { triageJob } = await import("./triage");
+    const aiResult = await triageJob("Senior AI Engineer", "Build LLM pipelines remotely");
+    expect(aiResult.category).toBe("ai");
+    const writingResult = await triageJob("Technical Writer", "Produce developer documentation");
+    expect(writingResult.category).toBe("writing");
+    const kmResult = await triageJob("Knowledge Manager", "Own the company knowledge management program");
+    expect(kmResult.category).toBe("writing");
+  });
 });

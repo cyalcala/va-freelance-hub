@@ -122,6 +122,10 @@ export function mapTriageCategoryToUiCategory(cat: string): string {
       return "customer-service";
     case "finance":
       return "finance";
+    case "ai":
+      return "ai";
+    case "writing":
+      return "writing";
     default:
       return "other";
   }

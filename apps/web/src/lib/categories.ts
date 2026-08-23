@@ -1,6 +1,8 @@
 import type { Opportunity } from '@/lib/db';
 
 export const JOB_CATEGORY_MAP: Record<string, { title: string, color: string }> = {
+  'ai': { title: 'AI & AUTOMATION', color: 'border-cyan-500/30' },
+  'writing': { title: 'WRITING & CONTENT', color: 'border-rose-500/30' },
   'customer-service': { title: 'CUSTOMER SERVICE', color: 'border-yellow-500/30' },
   'admin': { title: 'ADMIN & OPERATIONS', color: 'border-emerald-500/30' },
   'marketing': { title: 'MARKETING & SALES', color: 'border-orange-500/30' },

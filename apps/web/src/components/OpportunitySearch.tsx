@@ -14,6 +14,8 @@ const DOT_COLORS: Record<string, string> = {
   'marketing': 'bg-orange-500',
   'design': 'bg-violet-500',
   'tech': 'bg-blue-500',
+  'ai': 'bg-cyan-500',
+  'writing': 'bg-rose-500',
   'finance': 'bg-yellow-600',
   'other': 'bg-ink/30',
 };

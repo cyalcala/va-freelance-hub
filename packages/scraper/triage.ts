@@ -1,7 +1,7 @@
 export interface TriageResult {
   eligibleForFilipinos: boolean;
   reason: string;
-  category: "admin" | "design" | "tech" | "marketing" | "customer-service" | "finance" | "other";
+  category: "admin" | "design" | "tech" | "marketing" | "customer-service" | "finance" | "writing" | "ai" | "other";
   tags: string[];
   payRange: string | null;
   clientTimezone: string | null;
@@ -168,7 +168,7 @@ export function validateTriageResult(parsed: any): TriageResult {
     eligibleForFilipinos: parsed.eligibleForFilipinos,
     reason: parsed.reason || "AI classified",
     category: [
-      "admin", "design", "tech", "marketing", "customer-service", "finance", "other",
+      "admin", "design", "tech", "marketing", "customer-service", "finance", "writing", "ai", "other",
     ].includes(parsed.category) ? parsed.category : "other",
     tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
     payRange: typeof parsed.payRange === "string" ? parsed.payRange : null,
@@ -350,15 +350,38 @@ export async function triageJob(
     const tags: string[] = [];
     const text = `${title} ${cleanDescription}`.toLowerCase();
 
-    if (text.includes("admin") || text.includes("assistant") || text.includes("data entry")) {
+    if (
+      text.includes("ai engineer") ||
+      text.includes("ai specialist") ||
+      text.includes("ai operations") ||
+      text.includes("prompt engineer") ||
+      text.includes("machine learning") ||
+      text.includes("artificial intelligence") ||
+      text.includes("generative ai")
+    ) {
+      category = "ai";
+      tags.push("ai", "automation");
+    } else if (
+      text.includes("writer") ||
+      text.includes("writing") ||
+      text.includes("copywriter") ||
+      text.includes("content producer") ||
+      text.includes("content production") ||
+      text.includes("editorial") ||
+      text.includes("journalist") ||
+      text.includes("knowledge management")
+    ) {
+      category = "writing";
+      tags.push("writing", "content");
+    } else if (text.includes("admin") || text.includes("assistant") || text.includes("data entry")) {
       category = "admin";
       tags.push("assistant", "admin");
     } else if (text.includes("developer") || text.includes("engineer") || text.includes("code") || text.includes("tech")) {
       category = "tech";
       tags.push("software-development", "tech");
-    } else if (text.includes("design") || text.includes("writer") || text.includes("creative") || text.includes("copywriter")) {
+    } else if (text.includes("design") || text.includes("creative") || text.includes("illustrat")) {
       category = "design";
-      tags.push("creative", "content");
+      tags.push("creative", "design");
     } else if (text.includes("social") || text.includes("instagram") || text.includes("facebook") || text.includes("marketing")) {
       category = "marketing";
       tags.push("marketing", "social-media");
@@ -406,10 +429,12 @@ Requirements for output JSON schema:
 {
   "eligibleForFilipinos": boolean, // Set to false if: 1) the job requires residency/citizenship in specific non-PH regions (like US only, Europe only), 2) the job is written in a non-English language (German, French, etc.), 3) it requires local university enrollment or national student/apprentice schemes (like German Werkstudent, French Alternance/Apprentissage), 4) it contains localized legal gender abbreviations (like m/w/d, H/F), or 5) the source-listed location pins it to a specific non-PH country, state, or city. Otherwise, if the job is open globally, remote, or to the Philippines, set to true.
   "reason": "string", // Brief explanation of eligibility or location rules.
-  "category": "admin" | "design" | "tech" | "marketing" | "customer-service" | "finance" | "other", // Classify based on these guidelines:
+  "category": "admin" | "design" | "tech" | "marketing" | "customer-service" | "finance" | "writing" | "ai" | "other", // Classify based on these guidelines:
   // - "admin": virtual assistant, data entry, calendar/email management, HR, recruiting, executive assistant, scheduling, office operations.
-  // - "design": UI/UX, product design, graphic design, branding, illustration, copywriting, content writing, video editing, motion design, creative producer.
-  // - "tech": software engineering, web development, QA, devops, IT support, technical support, data analyst, product manager, scrum master.
+  // - "writing": technical writing, professional writing, content writing, copywriting, content production, editorial, journalism, documentation, knowledge management, knowledge base curation.
+  // - "ai": AI engineer, applied AI, AI operations, AI product roles, prompt engineering, machine learning, LLM/GenAI engineering, AI automation specialist.
+  // - "design": UI/UX, product design, graphic design, branding, illustration, video editing, motion design, creative producer.
+  // - "tech": software engineering, web development, QA, devops, IT support, technical support, data analyst, product manager, scrum master. (Pure AI/ML-specialist roles belong to "ai", not "tech".)
   // - "marketing": sales, business development, marketing coordinator, SEO, social media management, lead generation, CRM management, email marketing, growth.
   // - "customer-service": customer support, chat support, email support, helpdesk, ticketing, customer service representative.
   // - "finance": accounting, bookkeeping, financial analysis, billing, payroll, collections.
