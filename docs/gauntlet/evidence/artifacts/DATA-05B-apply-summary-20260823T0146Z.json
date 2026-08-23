@@ -1,0 +1,14 @@
+{
+  "unit": "DATA-05B",
+  "evidenceSha256": "dd3c1a54b2d0ee685cbbe32692711c85aebf80b84318b28f478359dcd3e1f847",
+  "planned": [
+    546,
+    548,
+    557,
+    575,
+    577,
+    623
+  ],
+  "skipped": [],
+  "note": "Apply each numbered .sql file once, in order, via wrangler d1 execute; record rows_written per file."
+}

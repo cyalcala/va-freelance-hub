@@ -1,0 +1,4434 @@
+{
+  "meta": {
+    "unit": "DATA-05B",
+    "generatedFrom": "wrangler-collect",
+    "queryOrder": [
+      "report-totals",
+      "report-rows"
+    ]
+  },
+  "totals": {
+    "total_rows": 456,
+    "with_website": 338,
+    "classified": 0
+  },
+  "rows": [
+    {
+      "id": 234,
+      "companyName": "Upwork",
+      "website": "https://www.upwork.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:53:26.529Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "upwork.com",
+      "flags": []
+    },
+    {
+      "id": 235,
+      "companyName": "FJ Accountants Limited",
+      "website": "https://fjaccountants.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T19:03:29.258Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "fjaccountants.com",
+      "flags": []
+    },
+    {
+      "id": 236,
+      "companyName": "Filipino Virtual Assistants (FVA)",
+      "website": "https://fvacademy.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:29.397Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "fvacademy.com",
+      "flags": []
+    },
+    {
+      "id": 237,
+      "companyName": "Intogreat Solutions",
+      "website": "https://intogreat.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:15.322Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "intogreat.com.au",
+      "flags": []
+    },
+    {
+      "id": 238,
+      "companyName": "Shepherd",
+      "website": "https://www.supportshepherd.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:18.207Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "supportshepherd.com",
+      "flags": []
+    },
+    {
+      "id": 239,
+      "companyName": "The Freelance Movement",
+      "website": "https://www.thefreelancemovement.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:34.899Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "thefreelancemovement.com",
+      "flags": []
+    },
+    {
+      "id": 240,
+      "companyName": "VA Bootcamp PH",
+      "website": "https://vabootcamp.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:26.561Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vabootcamp.ph",
+      "flags": []
+    },
+    {
+      "id": 241,
+      "companyName": "WHR Global Consulting",
+      "website": "https://whrglobal.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-21T19:13:47.466Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "whrglobal.com",
+      "flags": []
+    },
+    {
+      "id": 242,
+      "companyName": "Affordable Staff",
+      "website": "https://affordablestaff.com.au",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T13:18:21.752Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "affordablestaff.com.au",
+      "flags": []
+    },
+    {
+      "id": 243,
+      "companyName": "Diversify",
+      "website": "https://diversifyoss.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T07:28:44.239Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "diversifyoss.com",
+      "flags": []
+    },
+    {
+      "id": 244,
+      "companyName": "EzyVA",
+      "website": "https://ezyva.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:44.336Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ezyva.com",
+      "flags": []
+    },
+    {
+      "id": 245,
+      "companyName": "Hudson Remote Talent",
+      "website": "https://au.hudson.com/hudson-remote-talent",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:26.109Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "au.hudson.com",
+      "flags": []
+    },
+    {
+      "id": 246,
+      "companyName": "Shore360",
+      "website": "https://shore360.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:25.637Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "shore360.com",
+      "flags": []
+    },
+    {
+      "id": 247,
+      "companyName": "Vyla",
+      "website": "https://vyla.com.au",
+      "linkStatus": "dead_http",
+      "linkCheckedAt": "2026-08-21T07:28:44.214Z",
+      "linkEvidence": "HTTP 404",
+      "linkFailCount": 8,
+      "enrichWebsiteNote": 0,
+      "host": "vyla.com.au",
+      "flags": []
+    },
+    {
+      "id": 248,
+      "companyName": "Yoonet",
+      "website": "https://www.yoonet.io",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:23.809Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "yoonet.io",
+      "flags": []
+    },
+    {
+      "id": 249,
+      "companyName": "20Four7VA",
+      "website": "https://20four7va.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:26.742Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "20four7va.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 250,
+      "companyName": "24/7 Virtual Assistant",
+      "website": "https://20four7va.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:30.529Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "20four7va.com",
+      "flags": [
+        "name_host_mismatch",
+        "shared_host"
+      ]
+    },
+    {
+      "id": 251,
+      "companyName": "24x7 Direct",
+      "website": "https://www.24x7direct.com.au/",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T13:18:21.783Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "24x7direct.com.au",
+      "flags": []
+    },
+    {
+      "id": 252,
+      "companyName": "AUMTREND PH",
+      "website": "https://aumtrend.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.385Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "aumtrend.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 253,
+      "companyName": "AUMTREND PH INC",
+      "website": "https://aumtrend.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.407Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "aumtrend.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 254,
+      "companyName": "Access Offshoring",
+      "website": "https://accessoffshoring.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:54.515Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "accessoffshoring.com.au",
+      "flags": []
+    },
+    {
+      "id": 255,
+      "companyName": "AgentSync",
+      "website": "https://agentsync.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:22.334Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "agentsync.com.au",
+      "flags": []
+    },
+    {
+      "id": 256,
+      "companyName": "ArmA Sourcing",
+      "website": "https://armasourcing.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:23.471Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "armasourcing.com",
+      "flags": []
+    },
+    {
+      "id": 257,
+      "companyName": "Athena Executive Assistants",
+      "website": "https://jobs.athenago.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:23.696Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "jobs.athenago.com",
+      "flags": []
+    },
+    {
+      "id": 258,
+      "companyName": "Beepo",
+      "website": "https://www.beepo.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:43.847Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "beepo.com.au",
+      "flags": []
+    },
+    {
+      "id": 259,
+      "companyName": "Belay Solutions",
+      "website": "https://belaysolutions.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:23.441Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "belaysolutions.com",
+      "flags": []
+    },
+    {
+      "id": 260,
+      "companyName": "Big Outsource",
+      "website": "https://bigoutsource.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:15.223Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "bigoutsource.com",
+      "flags": []
+    },
+    {
+      "id": 261,
+      "companyName": "Boldly",
+      "website": "https://boldly.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:15.455Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "boldly.com",
+      "flags": []
+    },
+    {
+      "id": 262,
+      "companyName": "Booth & Partners",
+      "website": "https://boothandpartners.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:25.710Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "boothandpartners.com",
+      "flags": []
+    },
+    {
+      "id": 263,
+      "companyName": "Bottleneck Distant Assistants",
+      "website": "https://bottleneck.online/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:23.448Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "bottleneck.online",
+      "flags": []
+    },
+    {
+      "id": 264,
+      "companyName": "Capital EA",
+      "website": "capitalea.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:43.689Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "capitalea.com.au",
+      "flags": []
+    },
+    {
+      "id": 265,
+      "companyName": "Clear Admin People",
+      "website": "https://www.adminpeople.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:23.697Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "adminpeople.com.au",
+      "flags": []
+    },
+    {
+      "id": 266,
+      "companyName": "ClearDesk",
+      "website": "https://cleardesk.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:32.861Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "cleardesk.com",
+      "flags": []
+    },
+    {
+      "id": 267,
+      "companyName": "Cloudstaff",
+      "website": "https://www.cloudstaff.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:26.979Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "cloudstaff.com",
+      "flags": []
+    },
+    {
+      "id": 268,
+      "companyName": "Coconut VA",
+      "website": "https://coconutva.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:32.539Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "coconutva.com",
+      "flags": []
+    },
+    {
+      "id": 269,
+      "companyName": "Connext Global Solutions",
+      "website": "https://connextglobal.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:27.274Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "connextglobal.com",
+      "flags": []
+    },
+    {
+      "id": 270,
+      "companyName": "Cool Pixels",
+      "website": "https://www.coolpixels.com.au/",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T13:31:37.005Z",
+      "linkEvidence": "HTTP 526 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "coolpixels.com.au",
+      "flags": []
+    },
+    {
+      "id": 271,
+      "companyName": "CreaThink Solutions",
+      "website": "https://creathink-solutions.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:27.190Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "creathink-solutions.com",
+      "flags": []
+    },
+    {
+      "id": 272,
+      "companyName": "CrewBloom",
+      "website": "https://www.crewbloom.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:25.692Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "crewbloom.com",
+      "flags": []
+    },
+    {
+      "id": 273,
+      "companyName": "DigiWorks",
+      "website": "https://www.teamdigiworks.com/virtual-assistant-from-the-philippines",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:27.309Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "teamdigiworks.com",
+      "flags": []
+    },
+    {
+      "id": 274,
+      "companyName": "Digital SPS",
+      "website": "https://digitalsps.co.uk/hire-Philippines-virtual-assistant.php",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T19:03:29.248Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "digitalsps.co.uk",
+      "flags": []
+    },
+    {
+      "id": 275,
+      "companyName": "EVirtualAssistants",
+      "website": "https://www.evirtualassistants.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:25.365Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "evirtualassistants.com",
+      "flags": []
+    },
+    {
+      "id": 276,
+      "companyName": "Easy Outsourcing",
+      "website": "https://easy-outsourcing.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:39.033Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "easy-outsourcing.com",
+      "flags": []
+    },
+    {
+      "id": 277,
+      "companyName": "Elastic Path",
+      "website": "https://elasticpath.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T19:03:29.502Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "elasticpath.com",
+      "flags": []
+    },
+    {
+      "id": 278,
+      "companyName": "Fast Track FBA",
+      "website": "https://fasttrackfba.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:25.392Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "fasttrackfba.com",
+      "flags": []
+    },
+    {
+      "id": 279,
+      "companyName": "Flat Planet",
+      "website": "https://flatplanet.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:42.933Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "flatplanet.com.au",
+      "flags": []
+    },
+    {
+      "id": 280,
+      "companyName": "Galilee Business Support Services (GBSS)",
+      "website": "gbss.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:43.760Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "gbss.com.au",
+      "flags": []
+    },
+    {
+      "id": 281,
+      "companyName": "GetFriday",
+      "website": "https://www.getfriday.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:43.690Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "getfriday.com",
+      "flags": []
+    },
+    {
+      "id": 282,
+      "companyName": "Global Hola",
+      "website": "https://www.globalhola.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T19:03:29.248Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "globalhola.com",
+      "flags": []
+    },
+    {
+      "id": 283,
+      "companyName": "Global Teams",
+      "website": "https://globalteams.com.au/career-philippines/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:37.499Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "globalteams.com.au",
+      "flags": []
+    },
+    {
+      "id": 284,
+      "companyName": "Go2",
+      "website": "https://go2.io",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:44.283Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "go2.io",
+      "flags": []
+    },
+    {
+      "id": 285,
+      "companyName": "GoHireNow",
+      "website": "https://gohirenow.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:44.350Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "gohirenow.com",
+      "flags": []
+    },
+    {
+      "id": 286,
+      "companyName": "GoVirtuals",
+      "website": "https://govirtuals.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:47.242Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "govirtuals.com",
+      "flags": []
+    },
+    {
+      "id": 287,
+      "companyName": "Growth Assistant",
+      "website": "https://growthassistant.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:44.318Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "growthassistant.com",
+      "flags": []
+    },
+    {
+      "id": 288,
+      "companyName": "Hammerhead Virtual Assistants",
+      "website": "https://hammerheadva.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T13:31:32.077Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hammerheadva.com",
+      "flags": []
+    },
+    {
+      "id": 289,
+      "companyName": "Hello Rache",
+      "website": "https://hellorache.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:26.952Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hellorache.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 290,
+      "companyName": "HighCall",
+      "website": "https://highcallva.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:29.426Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "highcallva.com",
+      "flags": []
+    },
+    {
+      "id": 291,
+      "companyName": "Hilton Hotels Australia",
+      "website": "https://hilton.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:32.482Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hilton.com.au",
+      "flags": []
+    },
+    {
+      "id": 292,
+      "companyName": "HireTalent.ph",
+      "website": "https://hiretalent.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:44.373Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hiretalent.ph",
+      "flags": []
+    },
+    {
+      "id": 293,
+      "companyName": "Hit Rate Solutions",
+      "website": "https://hitratesolutions.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:52.347Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hitratesolutions.com",
+      "flags": []
+    },
+    {
+      "id": 294,
+      "companyName": "KDCI Outsourcing",
+      "website": "https://kdci.co",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:55.249Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "kdci.co",
+      "flags": []
+    },
+    {
+      "id": 295,
+      "companyName": "KPMG Canada",
+      "website": "https://kpmg.ca",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:36.000Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "kpmg.ca",
+      "flags": []
+    },
+    {
+      "id": 296,
+      "companyName": "Kaya Services",
+      "website": "https://kaya.services/",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T07:28:52.325Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "kaya.services",
+      "flags": []
+    },
+    {
+      "id": 297,
+      "companyName": "Kinetic Innovative Staffing",
+      "website": "https://www.kinetic.com.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:37.264Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "kinetic.com.ph",
+      "flags": []
+    },
+    {
+      "id": 298,
+      "companyName": "LinkedVA",
+      "website": "https://linkedva.com/careers/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:52.420Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "linkedva.com",
+      "flags": []
+    },
+    {
+      "id": 299,
+      "companyName": "MCVO Talent Outsourcing",
+      "website": "https://www.mcvotalent.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:40.561Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "mcvotalent.com",
+      "flags": []
+    },
+    {
+      "id": 300,
+      "companyName": "MS Virtual Assistant",
+      "website": "msvirtualassistant.com.au",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T13:31:36.335Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "msvirtualassistant.com.au",
+      "flags": []
+    },
+    {
+      "id": 301,
+      "companyName": "Magic (GetMagic)",
+      "website": "https://getmagic.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:52.311Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "getmagic.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 302,
+      "companyName": "Magic Virtual Assistant Services",
+      "website": "https://getmagic.pinpointhq.com",
+      "linkStatus": "dead_http",
+      "linkCheckedAt": "2026-08-21T13:31:36.723Z",
+      "linkEvidence": "HTTP 404",
+      "linkFailCount": 10,
+      "enrichWebsiteNote": 0,
+      "host": "getmagic.pinpointhq.com",
+      "flags": []
+    },
+    {
+      "id": 303,
+      "companyName": "Manpower Genius",
+      "website": "https://manpowergenius.com/guide-for-uk-businesses/unlocking-efficiency-and-talent-outsourcing-your-office-staff-to-the-philippines-with-manpower-genius/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:55.467Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "manpowergenius.com",
+      "flags": []
+    },
+    {
+      "id": 304,
+      "companyName": "MultiplyMii",
+      "website": "https://www.multiplymii.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:54.868Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "multiplymii.com",
+      "flags": []
+    },
+    {
+      "id": 305,
+      "companyName": "My Cloud Assistant",
+      "website": "https://www.mycloudassistant.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:44.886Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "mycloudassistant.com.au",
+      "flags": []
+    },
+    {
+      "id": 306,
+      "companyName": "My Freight Staff",
+      "website": "https://myfreightstaff.ph/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:41.493Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "myfreightstaff.ph",
+      "flags": []
+    },
+    {
+      "id": 307,
+      "companyName": "My Virtudesk",
+      "website": "https://myvirtudesk.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:32.754Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "myvirtudesk.com",
+      "flags": []
+    },
+    {
+      "id": 308,
+      "companyName": "MyOutDesk",
+      "website": "https://www.myoutdesk.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:55.002Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "myoutdesk.com",
+      "flags": []
+    },
+    {
+      "id": 309,
+      "companyName": "OVA Virtual",
+      "website": "https://ovavirtual.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:45.224Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ovavirtual.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 310,
+      "companyName": "OVA Virtual Assistant",
+      "website": "https://ovavirtual.com/",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-21T13:31:51.909Z",
+      "linkEvidence": "Unreachable: TimeoutError (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ovavirtual.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 311,
+      "companyName": "Officium",
+      "website": "https://officium.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:54.444Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "officium.ph",
+      "flags": []
+    },
+    {
+      "id": 312,
+      "companyName": "Olivia Pros",
+      "website": "https://www.oliviapros.ph/work-from-home-careers",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:32.824Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "oliviapros.ph",
+      "flags": []
+    },
+    {
+      "id": 313,
+      "companyName": "OneVirtual Global Business Solutions",
+      "website": "https://onevirtualsolutions.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:37.268Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "onevirtualsolutions.com",
+      "flags": []
+    },
+    {
+      "id": 314,
+      "companyName": "OnlineHelpers",
+      "website": "https://onlinehelpers.info/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:40.147Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "onlinehelpers.info",
+      "flags": []
+    },
+    {
+      "id": 315,
+      "companyName": "OnlineJobs",
+      "website": "https://www.onlinejobs.ph/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:44.623Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "onlinejobs.ph",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 316,
+      "companyName": "Outshore",
+      "website": "https://outshore.com.au/",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T02:04:43.647Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "outshore.com.au",
+      "flags": []
+    },
+    {
+      "id": 317,
+      "companyName": "Outsource Accelerator",
+      "website": "https://outsourceaccelerator.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:39.942Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "outsourceaccelerator.com",
+      "flags": []
+    },
+    {
+      "id": 318,
+      "companyName": "Outsource Access",
+      "website": "https://outsourceaccess.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:39.462Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "outsourceaccess.com",
+      "flags": []
+    },
+    {
+      "id": 319,
+      "companyName": "Outsource Philippines",
+      "website": "https://www.outsourcephilippines.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:53.086Z",
+      "linkEvidence": "Unreachable: TimeoutError (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "outsourcephilippines.com",
+      "flags": []
+    },
+    {
+      "id": 320,
+      "companyName": "Outsource Workers",
+      "website": "https://outsourceworkers.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:46.386Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "outsourceworkers.com.au",
+      "flags": []
+    },
+    {
+      "id": 321,
+      "companyName": "Outsourced.ph",
+      "website": "https://outsourced.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:44.943Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "outsourced.ph",
+      "flags": []
+    },
+    {
+      "id": 322,
+      "companyName": "Outsourcey",
+      "website": "https://outsourcey.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:53.172Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "outsourcey.com",
+      "flags": []
+    },
+    {
+      "id": 323,
+      "companyName": "Outsourcing Angel",
+      "website": "https://outsourcingangel.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:41.843Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "outsourcingangel.com",
+      "flags": []
+    },
+    {
+      "id": 324,
+      "companyName": "PMVA (Property Management Virtual Assistant)",
+      "website": "pmva.com.au",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-21T13:31:52.515Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "pmva.com.au",
+      "flags": []
+    },
+    {
+      "id": 325,
+      "companyName": "Pearl Talent",
+      "website": "https://www.pearltalent.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:44.653Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "pearltalent.com",
+      "flags": []
+    },
+    {
+      "id": 326,
+      "companyName": "Pen Brothers",
+      "website": "https://penbrothers.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:32.283Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "penbrothers.com",
+      "flags": []
+    },
+    {
+      "id": 327,
+      "companyName": "Pepper Virtual Assistants",
+      "website": "https://peppervirtualassistant.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:55.571Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "peppervirtualassistant.com",
+      "flags": []
+    },
+    {
+      "id": 328,
+      "companyName": "Philippines Recruitment UK",
+      "website": "https://philippinesrecruitment.co.uk/",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T13:31:44.213Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "philippinesrecruitment.co.uk",
+      "flags": []
+    },
+    {
+      "id": 329,
+      "companyName": "Pineapple Staffing",
+      "website": "https://pineapplestaffing.com/",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-21T13:31:52.282Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "pineapplestaffing.com",
+      "flags": []
+    },
+    {
+      "id": 330,
+      "companyName": "Platinum Outsourcing",
+      "website": "https://platinumoutsourcing.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:45.471Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "platinumoutsourcing.com.au",
+      "flags": []
+    },
+    {
+      "id": 331,
+      "companyName": "Prialto",
+      "website": "https://www.prialto.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:52.411Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "prialto.com",
+      "flags": []
+    },
+    {
+      "id": 332,
+      "companyName": "ProSource",
+      "website": "https://prosource.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:33.369Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "prosource.com.au",
+      "flags": []
+    },
+    {
+      "id": 333,
+      "companyName": "PropVA",
+      "website": "https://propva.co.uk",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:53.771Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "propva.co.uk",
+      "flags": []
+    },
+    {
+      "id": 334,
+      "companyName": "Prosper VA",
+      "website": "https://prosperva.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:42.806Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "prosperva.com",
+      "flags": []
+    },
+    {
+      "id": 335,
+      "companyName": "Quantum Virtual Assistants",
+      "website": "https://quantumvirtualassistant.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T13:31:52.295Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "quantumvirtualassistant.com",
+      "flags": []
+    },
+    {
+      "id": 336,
+      "companyName": "REassist",
+      "website": "https://reassist.net.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:47.234Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "reassist.net.au",
+      "flags": []
+    },
+    {
+      "id": 337,
+      "companyName": "Ramsay Health Care",
+      "website": "https://ramsayhealth.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:39.647Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ramsayhealth.com",
+      "flags": []
+    },
+    {
+      "id": 338,
+      "companyName": "Remote CoWorker",
+      "website": "https://remotecoworker.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:52.366Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotecoworker.com",
+      "flags": []
+    },
+    {
+      "id": 339,
+      "companyName": "Remote Raven",
+      "website": "https://hireremoteraven.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:32.475Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hireremoteraven.com",
+      "flags": []
+    },
+    {
+      "id": 340,
+      "companyName": "Remote Staff (Australia)",
+      "website": "https://www.remotestaff.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:43.313Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotestaff.com.au",
+      "flags": []
+    },
+    {
+      "id": 341,
+      "companyName": "Remote Staff Philippines",
+      "website": "https://www.remotestaff.ph/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:44.067Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotestaff.ph",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 342,
+      "companyName": "Remote Workmate",
+      "website": "https://remoteworkmate.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:32.494Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remoteworkmate.com",
+      "flags": []
+    },
+    {
+      "id": 343,
+      "companyName": "Rocket Station",
+      "website": "https://rocketstation.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:42.213Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "rocketstation.com",
+      "flags": []
+    },
+    {
+      "id": 344,
+      "companyName": "SOS VA Services / Smart Outsourcing Solution",
+      "website": "https://smartoutsourcingsolution.com/virtual-assistant-services-philippines/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:58.246Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "smartoutsourcingsolution.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 345,
+      "companyName": "Scale Virtually",
+      "website": "https://scalevirtually.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:32.289Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "scalevirtually.com",
+      "flags": []
+    },
+    {
+      "id": 346,
+      "companyName": "Scotiabank Canada",
+      "website": "https://scotiabank.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:39.413Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "scotiabank.com",
+      "flags": []
+    },
+    {
+      "id": 347,
+      "companyName": "SharkHelpers",
+      "website": "https://sharkhelpers.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:39.462Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "sharkhelpers.com",
+      "flags": []
+    },
+    {
+      "id": 348,
+      "companyName": "Smart Outsourcing Solution (SOS)",
+      "website": "https://smartoutsourcingsolution.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:58.573Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "smartoutsourcingsolution.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 349,
+      "companyName": "Sourcefit",
+      "website": "https://sourcefit.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:46.134Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "sourcefit.com",
+      "flags": []
+    },
+    {
+      "id": 350,
+      "companyName": "Sphere Rocket",
+      "website": "https://sphererocketva.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:46.198Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "sphererocketva.com",
+      "flags": []
+    },
+    {
+      "id": 351,
+      "companyName": "Staff Avenue",
+      "website": "https://staffavenue.co.uk/hire-virtual-staff-in-philippines/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:32.515Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "staffavenue.co.uk",
+      "flags": []
+    },
+    {
+      "id": 352,
+      "companyName": "Staff Domain",
+      "website": "https://staffdomain.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:57.942Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "staffdomain.com",
+      "flags": []
+    },
+    {
+      "id": 353,
+      "companyName": "StaffVirtual",
+      "website": "https://www.staffvirtual.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:40.020Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "staffvirtual.com",
+      "flags": []
+    },
+    {
+      "id": 354,
+      "companyName": "Staffing.com",
+      "website": "https://staffing.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:32.356Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "staffing.com",
+      "flags": []
+    },
+    {
+      "id": 355,
+      "companyName": "StaffingSolutions.io",
+      "website": "https://staffingsolutions.io",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:39.306Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "staffingsolutions.io",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 356,
+      "companyName": "StaffingSolutions.io (SSIO)",
+      "website": "https://staffingsolutions.io/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:39.309Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "staffingsolutions.io",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 357,
+      "companyName": "Stellar Staff",
+      "website": "https://stellarstaff.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:42.239Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "stellarstaff.com",
+      "flags": []
+    },
+    {
+      "id": 358,
+      "companyName": "SuperStaff",
+      "website": "https://superstaff.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:39.416Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "superstaff.com",
+      "flags": []
+    },
+    {
+      "id": 359,
+      "companyName": "Support Shepherd",
+      "website": "https://somewhere.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:42.303Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "somewhere.com",
+      "flags": [
+        "name_host_mismatch"
+      ]
+    },
+    {
+      "id": 360,
+      "companyName": "Surge Virtual Assistants",
+      "website": "https://surgefreelancingmarketplace.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:44.109Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "surgefreelancingmarketplace.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 361,
+      "companyName": "Talent Gateway",
+      "website": "https://talentgateway.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:42.533Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "talentgateway.com",
+      "flags": []
+    },
+    {
+      "id": 362,
+      "companyName": "TaskBullet",
+      "website": "https://www.taskbullet.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:42.676Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "taskbullet.com",
+      "flags": []
+    },
+    {
+      "id": 363,
+      "companyName": "The Property VA",
+      "website": "thepropertyva.co.uk",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:46.277Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "thepropertyva.co.uk",
+      "flags": []
+    },
+    {
+      "id": 364,
+      "companyName": "The VA Hub PH",
+      "website": "https://thevahub.org",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:46.663Z",
+      "linkEvidence": "Unreachable: TypeError (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "thevahub.org",
+      "flags": []
+    },
+    {
+      "id": 365,
+      "companyName": "UAssist.ME",
+      "website": "https://uassist.me",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:46.146Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "uassist.me",
+      "flags": []
+    },
+    {
+      "id": 366,
+      "companyName": "USource",
+      "website": "https://usource.me/services/virtual-assistants/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:47.504Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "usource.me",
+      "flags": []
+    },
+    {
+      "id": 367,
+      "companyName": "VA Masters",
+      "website": "https://vamasters.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:43.595Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vamasters.com",
+      "flags": []
+    },
+    {
+      "id": 368,
+      "companyName": "VA Platinum",
+      "website": "https://vaplatinum.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:43.981Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vaplatinum.com.au",
+      "flags": []
+    },
+    {
+      "id": 369,
+      "companyName": "VA Staffer",
+      "website": "https://vastaffer.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:43.391Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vastaffer.com",
+      "flags": []
+    },
+    {
+      "id": 370,
+      "companyName": "VAA Philippines",
+      "website": "https://www.vaaphilippines.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:44.112Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vaaphilippines.com",
+      "flags": []
+    },
+    {
+      "id": 371,
+      "companyName": "Value VA",
+      "website": "https://value-va.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T02:04:56.870Z",
+      "linkEvidence": "HTTP 500 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "value-va.com",
+      "flags": []
+    },
+    {
+      "id": 372,
+      "companyName": "Vaxtra",
+      "website": "vaxtra.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T19:13:47.497Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vaxtra.com",
+      "flags": []
+    },
+    {
+      "id": 373,
+      "companyName": "Virtalent UK",
+      "website": "virtalent.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:47.542Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtalent.com",
+      "flags": []
+    },
+    {
+      "id": 374,
+      "companyName": "Virtual Assistant Talent",
+      "website": "https://virtualassistanttalent.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:45.150Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualassistanttalent.com",
+      "flags": []
+    },
+    {
+      "id": 375,
+      "companyName": "Virtual Assistants Philippines",
+      "website": "https://virtualassistantsphilippines.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T02:04:44.898Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualassistantsphilippines.com",
+      "flags": []
+    },
+    {
+      "id": 376,
+      "companyName": "Virtual Champions",
+      "website": "https://virtualchampions.ph/",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.580Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualchampions.ph",
+      "flags": []
+    },
+    {
+      "id": 377,
+      "companyName": "Virtual Coworker",
+      "website": "https://virtualcoworker.com.au/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:46.202Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualcoworker.com.au",
+      "flags": []
+    },
+    {
+      "id": 378,
+      "companyName": "Virtual Done Well",
+      "website": "https://virtualdonewell.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.580Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualdonewell.com",
+      "flags": []
+    },
+    {
+      "id": 379,
+      "companyName": "Virtual Elves",
+      "website": "https://virtualelves.com.au/",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T02:04:55.632Z",
+      "linkEvidence": "HTTP 500 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualelves.com.au",
+      "flags": []
+    },
+    {
+      "id": 380,
+      "companyName": "Virtual Staff 365",
+      "website": "https://www.virtualstaff365.com.au/va-jobs-australia/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:55.930Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualstaff365.com.au",
+      "flags": []
+    },
+    {
+      "id": 381,
+      "companyName": "Virtual Staff Finder",
+      "website": "https://www.virtualstafffinder.com/careers/",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:58.808Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualstafffinder.com",
+      "flags": []
+    },
+    {
+      "id": 382,
+      "companyName": "VirtualHub PH",
+      "website": "https://virtualhub.ph/",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T02:04:45.353Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualhub.ph",
+      "flags": []
+    },
+    {
+      "id": 383,
+      "companyName": "VirtualStaff",
+      "website": "https://www.virtualstaff.ph/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:45.851Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualstaff.ph",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 384,
+      "companyName": "VirtualStaff.ph",
+      "website": "https://www.virtualstaff.ph/en-ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:45.734Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtualstaff.ph",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 385,
+      "companyName": "Virtudesk",
+      "website": "https://virtudesk.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T02:04:54.065Z",
+      "linkEvidence": "HTTP 526 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "virtudesk.com",
+      "flags": []
+    },
+    {
+      "id": 386,
+      "companyName": "Wing Assistant",
+      "website": "https://wingassistant.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:58.760Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "wingassistant.com",
+      "flags": []
+    },
+    {
+      "id": 387,
+      "companyName": "WoodBows",
+      "website": "https://www.woodbows.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:12.441Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "woodbows.com",
+      "flags": []
+    },
+    {
+      "id": 388,
+      "companyName": "WorkMate Pro",
+      "website": "https://www.workmatepro.com/",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.580Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "workmatepro.com",
+      "flags": []
+    },
+    {
+      "id": 389,
+      "companyName": "WorkspaceCo Outsourcing",
+      "website": "https://workspacecooutsourcing.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:14.153Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "workspacecooutsourcing.com",
+      "flags": []
+    },
+    {
+      "id": 390,
+      "companyName": "eVirtualAssistants",
+      "website": "https://www.evirtualassistants.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:58.760Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "evirtualassistants.com",
+      "flags": []
+    },
+    {
+      "id": 391,
+      "companyName": "iWork.ph",
+      "website": "https://iwork.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:10.132Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "iwork.ph",
+      "flags": []
+    },
+    {
+      "id": 392,
+      "companyName": "Amazon (Remote PH)",
+      "website": "https://www.amazon.jobs",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.345Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "amazon.jobs",
+      "flags": []
+    },
+    {
+      "id": 393,
+      "companyName": "ConnectUs Marketing Solutions",
+      "website": "https://connectusmarketing.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.401Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "connectusmarketing.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 394,
+      "companyName": "ConnectUs Marketing Solutions Inc.",
+      "website": "https://connectusmarketing.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.580Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "connectusmarketing.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 395,
+      "companyName": "SellerPrism",
+      "website": "https://sellerprism.agency/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:11.560Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "sellerprism.agency",
+      "flags": []
+    },
+    {
+      "id": 396,
+      "companyName": "SmartBuyGlasses",
+      "website": "https://www.smartbuyglasses.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T02:04:58.835Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "smartbuyglasses.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 397,
+      "companyName": "SmartBuyGlasses (Remote PH)",
+      "website": "https://www.smartbuyglasses.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:58.760Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "smartbuyglasses.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 398,
+      "companyName": "Surge Digital Agency",
+      "website": "https://surgefreelancingmarketplace.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:13.549Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "surgefreelancingmarketplace.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 399,
+      "companyName": "Centerstone",
+      "website": "https://centerstone.org",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.580Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "centerstone.org",
+      "flags": []
+    },
+    {
+      "id": 400,
+      "companyName": "Cognizant",
+      "website": "https://www.cognizant.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:58.760Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "cognizant.com",
+      "flags": []
+    },
+    {
+      "id": 401,
+      "companyName": "Concentrix",
+      "website": "https://www.concentrix.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:10.279Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "concentrix.com",
+      "flags": []
+    },
+    {
+      "id": 402,
+      "companyName": "Foundever (formerly Sitel)",
+      "website": "https://foundever.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:09.884Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "foundever.com",
+      "flags": []
+    },
+    {
+      "id": 403,
+      "companyName": "Genpact",
+      "website": "https://www.genpact.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.580Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "genpact.com",
+      "flags": []
+    },
+    {
+      "id": 404,
+      "companyName": "Global Strategic",
+      "website": "https://globalstrategic.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:39.866Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "globalstrategic.com",
+      "flags": []
+    },
+    {
+      "id": 405,
+      "companyName": "Majorel",
+      "website": "https://www.majorel.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:12.589Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "majorel.com",
+      "flags": []
+    },
+    {
+      "id": 406,
+      "companyName": "ModSquad",
+      "website": "https://modsquad.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.580Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "modsquad.com",
+      "flags": []
+    },
+    {
+      "id": 407,
+      "companyName": "Staff Boom",
+      "website": "https://staffboom.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:15.205Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "staffboom.com",
+      "flags": []
+    },
+    {
+      "id": 408,
+      "companyName": "Sutherland Global",
+      "website": "https://www.sutherlandglobal.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T02:04:59.580Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "sutherlandglobal.com",
+      "flags": []
+    },
+    {
+      "id": 409,
+      "companyName": "TELUS International",
+      "website": "https://www.telusdigital.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:10.208Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "telusdigital.com",
+      "flags": []
+    },
+    {
+      "id": 410,
+      "companyName": "TTEC",
+      "website": "https://www.ttec.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T07:18:09.890Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ttec.com",
+      "flags": []
+    },
+    {
+      "id": 411,
+      "companyName": "TaskUs",
+      "website": "https://www.taskus.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:10.563Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "taskus.com",
+      "flags": []
+    },
+    {
+      "id": 412,
+      "companyName": "Teleperformance",
+      "website": "https://www.teleperformance.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:38.264Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "teleperformance.com",
+      "flags": []
+    },
+    {
+      "id": 413,
+      "companyName": "Unity Communications",
+      "website": "https://unity-connect.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:09.957Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "unity-connect.com",
+      "flags": []
+    },
+    {
+      "id": 414,
+      "companyName": "VXI Global Solutions",
+      "website": "https://vxi.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:10.877Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vxi.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 415,
+      "companyName": "Accenture Philippines",
+      "website": "https://www.accenture.com/ph-en",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:12.909Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "accenture.com",
+      "flags": []
+    },
+    {
+      "id": 416,
+      "companyName": "Appen",
+      "website": "https://appen.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:10.708Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "appen.com",
+      "flags": []
+    },
+    {
+      "id": 417,
+      "companyName": "Crisp",
+      "website": "https://www.crisp.chat",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:11.072Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "crisp.chat",
+      "flags": []
+    },
+    {
+      "id": 418,
+      "companyName": "Radix Systems Services",
+      "website": "https://radixsys.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:15.466Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "radixsys.com",
+      "flags": []
+    },
+    {
+      "id": 419,
+      "companyName": "Wipro",
+      "website": "https://www.wipro.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:14.875Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "wipro.com",
+      "flags": []
+    },
+    {
+      "id": 420,
+      "companyName": "Jobrack",
+      "website": "https://jobrack.eu",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:13.118Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "jobrack.eu",
+      "flags": []
+    },
+    {
+      "id": 421,
+      "companyName": "OnlineJobs.ph",
+      "website": "https://www.onlinejobs.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:14.455Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "onlinejobs.ph",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 422,
+      "companyName": "Remote Jobs Philippines (Instagram)",
+      "website": "https://www.instagram.com/remotejobsph",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T07:18:13.141Z",
+      "linkEvidence": "HTTP 429 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "instagram.com",
+      "flags": []
+    },
+    {
+      "id": 423,
+      "companyName": "Remote Staff PH",
+      "website": "https://www.remotestaff.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:42.319Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotestaff.ph",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 424,
+      "companyName": "Remotive",
+      "website": "https://remotive.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:13.771Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotive.com",
+      "flags": []
+    },
+    {
+      "id": 425,
+      "companyName": "The Work at Home Woman",
+      "website": "https://www.theworkathomewoman.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:10.607Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "theworkathomewoman.com",
+      "flags": []
+    },
+    {
+      "id": 426,
+      "companyName": "ThinkRemote.org",
+      "website": "https://thinkremote.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:13.025Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "thinkremote.com",
+      "flags": []
+    },
+    {
+      "id": 427,
+      "companyName": "We Work Remotely",
+      "website": "https://weworkremotely.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:15.025Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "weworkremotely.com",
+      "flags": []
+    },
+    {
+      "id": 428,
+      "companyName": "Working Nomads",
+      "website": "https://www.workingnomads.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:14.554Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "workingnomads.com",
+      "flags": []
+    },
+    {
+      "id": 429,
+      "companyName": "ConnectOS",
+      "website": "https://connectos.co",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:36.309Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "connectos.co",
+      "flags": []
+    },
+    {
+      "id": 430,
+      "companyName": "EMAPTA",
+      "website": "https://emapta.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:13.037Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "emapta.com",
+      "flags": []
+    },
+    {
+      "id": 431,
+      "companyName": "Hammerjack",
+      "website": "https://hammerjack.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:14.458Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hammerjack.com.au",
+      "flags": []
+    },
+    {
+      "id": 432,
+      "companyName": "Knights of Online Sales (KOOS)",
+      "website": "https://koos.com.au",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:51:35.399Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "koos.com.au",
+      "flags": []
+    },
+    {
+      "id": 433,
+      "companyName": "MicroSourcing",
+      "website": "https://www.microsourcing.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:16.015Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "microsourcing.com",
+      "flags": []
+    },
+    {
+      "id": 434,
+      "companyName": "Remote Talent Australia",
+      "website": "https://remotetalent.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:35.813Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotetalent.com.au",
+      "flags": []
+    },
+    {
+      "id": 435,
+      "companyName": "Satellite Office",
+      "website": "https://www.satelliteoffice.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:37.478Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "satelliteoffice.com.au",
+      "flags": []
+    },
+    {
+      "id": 436,
+      "companyName": "The Remote Group",
+      "website": "https://theremotegroup.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:36.319Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "theremotegroup.com",
+      "flags": []
+    },
+    {
+      "id": 437,
+      "companyName": "Virtual Assistant Academy (VAA)",
+      "website": "https://www.vaa.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:26.069Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vaa.ph",
+      "flags": []
+    },
+    {
+      "id": 438,
+      "companyName": "Fiverr",
+      "website": "https://www.fiverr.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T07:18:15.735Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "fiverr.com",
+      "flags": []
+    },
+    {
+      "id": 439,
+      "companyName": "Hireable.ph",
+      "website": "https://hireable.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:35.977Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hireable.ph",
+      "flags": []
+    },
+    {
+      "id": 440,
+      "companyName": "Filipinocontractors.com",
+      "website": "http://filipinocontractors.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:37.410Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "filipinocontractors.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 441,
+      "companyName": "Galasya",
+      "website": "https://galasya.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:35.624Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "galasya.com",
+      "flags": []
+    },
+    {
+      "id": 442,
+      "companyName": "HireMe.ph",
+      "website": "http://HireMe.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:17.948Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hireme.ph",
+      "flags": []
+    },
+    {
+      "id": 443,
+      "companyName": "Husay.ph",
+      "website": "http://Husay.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:37.325Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "husay.ph",
+      "flags": []
+    },
+    {
+      "id": 444,
+      "companyName": "JobQuest.ph",
+      "website": "http://JobQuest.ph",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T10:51:43.103Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "jobquest.ph",
+      "flags": []
+    },
+    {
+      "id": 445,
+      "companyName": "Pesojobs",
+      "website": "https://pesojobs.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:23.092Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "pesojobs.ph",
+      "flags": []
+    },
+    {
+      "id": 446,
+      "companyName": "Pinoy Jobs Online",
+      "website": "https://pinoyjobsonline.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:36.208Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "pinoyjobsonline.ph",
+      "flags": []
+    },
+    {
+      "id": 447,
+      "companyName": "Remotify.ph",
+      "website": "http://Remotify.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:40.943Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotify.ph",
+      "flags": []
+    },
+    {
+      "id": 448,
+      "companyName": "RemoteTalent.ph",
+      "website": "http://RemoteTalent.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:37.656Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotetalent.ph",
+      "flags": []
+    },
+    {
+      "id": 449,
+      "companyName": "RemoteWork.ph",
+      "website": "http://RemoteWork.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:21.369Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotework.ph",
+      "flags": []
+    },
+    {
+      "id": 450,
+      "companyName": "Workmates.ph",
+      "website": "http://Workmates.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:35.698Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "workmates.ph",
+      "flags": []
+    },
+    {
+      "id": 451,
+      "companyName": "AngelList / Wellfound",
+      "website": "https://wellfound.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:36.605Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "wellfound.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 452,
+      "companyName": "Arc.dev",
+      "website": "https://arc.dev",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:36.666Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "arc.dev",
+      "flags": []
+    },
+    {
+      "id": 453,
+      "companyName": "Contra",
+      "website": "https://contra.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:38.744Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "contra.com",
+      "flags": []
+    },
+    {
+      "id": 454,
+      "companyName": "Dynamite Jobs",
+      "website": "https://dynamitejobs.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:38.940Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "dynamitejobs.com",
+      "flags": []
+    },
+    {
+      "id": 455,
+      "companyName": "FlexJobs",
+      "website": "https://www.flexjobs.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:51:38.552Z",
+      "linkEvidence": "HTTP 520 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "flexjobs.com",
+      "flags": []
+    },
+    {
+      "id": 456,
+      "companyName": "Freelancer.com",
+      "website": "https://www.freelancer.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:43.155Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "freelancer.com",
+      "flags": []
+    },
+    {
+      "id": 457,
+      "companyName": "Hubstaff Talent",
+      "website": "https://talent.hubstaff.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:36.839Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "talent.hubstaff.com",
+      "flags": []
+    },
+    {
+      "id": 458,
+      "companyName": "Indeed Remote",
+      "website": "https://www.indeed.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:51:41.207Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "indeed.com",
+      "flags": []
+    },
+    {
+      "id": 459,
+      "companyName": "JustRemote",
+      "website": "https://justremote.co",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:41.525Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "justremote.co",
+      "flags": []
+    },
+    {
+      "id": 460,
+      "companyName": "LinkedIn",
+      "website": "https://www.linkedin.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:38.639Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "linkedin.com",
+      "flags": []
+    },
+    {
+      "id": 461,
+      "companyName": "PeoplePerHour",
+      "website": "https://www.peopleperhour.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:42.851Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "peopleperhour.com",
+      "flags": []
+    },
+    {
+      "id": 462,
+      "companyName": "Remote OK",
+      "website": "https://remoteok.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:41.252Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remoteok.com",
+      "flags": []
+    },
+    {
+      "id": 463,
+      "companyName": "Remote.co",
+      "website": "https://remote.co",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:51:38.702Z",
+      "linkEvidence": "HTTP 520 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remote.co",
+      "flags": []
+    },
+    {
+      "id": 464,
+      "companyName": "Toptal",
+      "website": "https://www.toptal.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:41.260Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "toptal.com",
+      "flags": []
+    },
+    {
+      "id": 465,
+      "companyName": "Turing",
+      "website": "https://www.turing.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:38.610Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "turing.com",
+      "flags": []
+    },
+    {
+      "id": 466,
+      "companyName": "Athena",
+      "website": "https://www.athenago.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:41.436Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "athenago.com",
+      "flags": []
+    },
+    {
+      "id": 467,
+      "companyName": "Remotely PH",
+      "website": "https://remotly.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:22.076Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotly.ph",
+      "flags": [
+        "name_host_mismatch"
+      ]
+    },
+    {
+      "id": 468,
+      "companyName": "TranOps Inc.",
+      "website": "https://tranops.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:18.772Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "tranops.com",
+      "flags": []
+    },
+    {
+      "id": 469,
+      "companyName": "Legacy Property Buyers",
+      "website": "https://legacypropertybuyers.com",
+      "linkStatus": "parked",
+      "linkCheckedAt": "2026-08-22T10:51:41.382Z",
+      "linkEvidence": "Body contains \"hugedomains\" (HTTP 200)",
+      "linkFailCount": 4,
+      "enrichWebsiteNote": 0,
+      "host": "legacypropertybuyers.com",
+      "flags": []
+    },
+    {
+      "id": 470,
+      "companyName": "Web Smart Advisors",
+      "website": "https://websmartadvisors.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:42.383Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "websmartadvisors.com",
+      "flags": []
+    },
+    {
+      "id": 471,
+      "companyName": "Vaughan Visuals",
+      "website": "https://vaughanvisuals.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:19.250Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vaughanvisuals.com",
+      "flags": []
+    },
+    {
+      "id": 472,
+      "companyName": "BizVA",
+      "website": "https://www.bizva.ph/careers",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T19:03:22.995Z",
+      "linkEvidence": "Unreachable: TimeoutError [TIMEOUT] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "bizva.ph",
+      "flags": []
+    },
+    {
+      "id": 473,
+      "companyName": "Bottleneck",
+      "website": "https://bottleneck.ph/join-our-team/",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T10:51:43.381Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "bottleneck.ph",
+      "flags": []
+    },
+    {
+      "id": 474,
+      "companyName": "Cool Blue VA",
+      "website": "https://careers.coolblueva.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:51:42.812Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "careers.coolblueva.com",
+      "flags": []
+    },
+    {
+      "id": 475,
+      "companyName": "Elevate and Delegate",
+      "website": "https://elevateanddelegate.com/careers/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:25.050Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "elevateanddelegate.com",
+      "flags": []
+    },
+    {
+      "id": 476,
+      "companyName": "Filipino Contractors",
+      "website": "https://filipinocontractors.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:23.695Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "filipinocontractors.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 477,
+      "companyName": "GoTeam",
+      "website": "https://go.team/ph/",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:53:24.555Z",
+      "linkEvidence": "HTTP 500 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "go.team",
+      "flags": [
+        "name_host_mismatch"
+      ]
+    },
+    {
+      "id": 478,
+      "companyName": "HelloRache",
+      "website": "https://hellorache.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T10:51:42.634Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hellorache.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 479,
+      "companyName": "HiringCafe",
+      "website": "https://hiring.cafe",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:22.548Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hiring.cafe",
+      "flags": [
+        "name_host_mismatch"
+      ]
+    },
+    {
+      "id": 480,
+      "companyName": "Indeed PH",
+      "website": "https://ph.indeed.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T10:51:42.634Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ph.indeed.com",
+      "flags": []
+    },
+    {
+      "id": 481,
+      "companyName": "JobStreet PH",
+      "website": "https://ph.jobstreet.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T10:51:42.634Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ph.jobstreet.com",
+      "flags": []
+    },
+    {
+      "id": 482,
+      "companyName": "Kalibrr",
+      "website": "https://www.kalibrr.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:25.121Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "kalibrr.com",
+      "flags": []
+    },
+    {
+      "id": 483,
+      "companyName": "LiveWorld",
+      "website": "https://www.liveworld.com/careers/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:18.538Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "liveworld.com",
+      "flags": []
+    },
+    {
+      "id": 484,
+      "companyName": "Magic",
+      "website": "https://getmagic.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:18.472Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "getmagic.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 485,
+      "companyName": "MedVA",
+      "website": "https://medva.ph/careers/",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-21T07:28:52.047Z",
+      "linkEvidence": "Unreachable: TimeoutError (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "medva.ph",
+      "flags": []
+    },
+    {
+      "id": 486,
+      "companyName": "Mountain Mover",
+      "website": "https://ph.mymountainmover.com/",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:53:21.712Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ph.mymountainmover.com",
+      "flags": []
+    },
+    {
+      "id": 487,
+      "companyName": "Pineapple",
+      "website": "https://trypineapple.com/career/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:18.474Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "trypineapple.com",
+      "flags": []
+    },
+    {
+      "id": 488,
+      "companyName": "REVA Global",
+      "website": "https://revaglobal.ph/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:21.617Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "revaglobal.ph",
+      "flags": []
+    },
+    {
+      "id": 489,
+      "companyName": "Rapid Assistants",
+      "website": "https://www.rapidassistants.com/rapid-assistants-jobs",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:22.201Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "rapidassistants.com",
+      "flags": []
+    },
+    {
+      "id": 490,
+      "companyName": "RemoteStaff.ph",
+      "website": "http://RemoteStaff.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:29.052Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotestaff.ph",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 491,
+      "companyName": "Team Doxa",
+      "website": "https://philippinejobs.teamdoxa.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:23.818Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "philippinejobs.teamdoxa.com",
+      "flags": []
+    },
+    {
+      "id": 492,
+      "companyName": "The VA Hub",
+      "website": "https://thevahub.net/contact/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:15.401Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "thevahub.net",
+      "flags": []
+    },
+    {
+      "id": 493,
+      "companyName": "Wellfound (AngelList)",
+      "website": "https://wellfound.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:18.435Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "wellfound.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 494,
+      "companyName": "RocketAMS",
+      "website": "https://apply.workable.com/rocketams/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:18.571Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "apply.workable.com",
+      "flags": [
+        "name_host_mismatch",
+        "shared_host"
+      ]
+    },
+    {
+      "id": 495,
+      "companyName": "Vault Outsourcing",
+      "website": "https://vaultoutsourcing.com/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.085Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vaultoutsourcing.com",
+      "flags": []
+    },
+    {
+      "id": 496,
+      "companyName": "OneWorld Business Solutions",
+      "website": "https://oneworldbusiness.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:24.068Z",
+      "linkEvidence": "HTTP 202",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "oneworldbusiness.com.au",
+      "flags": []
+    },
+    {
+      "id": 497,
+      "companyName": "Stantaro",
+      "website": "https://stantaro.com.au",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:20.000Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "stantaro.com.au",
+      "flags": []
+    },
+    {
+      "id": 498,
+      "companyName": "Hunt St",
+      "website": "https://apply.workable.com/hunt-st/",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:23.387Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "apply.workable.com",
+      "flags": [
+        "name_host_mismatch",
+        "shared_host"
+      ]
+    },
+    {
+      "id": 499,
+      "companyName": "VA Workers PH",
+      "website": "https://vaworkersph.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:21.679Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vaworkersph.com",
+      "flags": []
+    },
+    {
+      "id": 500,
+      "companyName": "Kerja-Remote",
+      "website": "https://kerja-remote.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:37.549Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "kerja-remote.com",
+      "flags": []
+    },
+    {
+      "id": 501,
+      "companyName": "HireBasis",
+      "website": "https://www.hirebasis.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:21.680Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "hirebasis.com",
+      "flags": []
+    },
+    {
+      "id": 502,
+      "companyName": "Prosple",
+      "website": "https://ph.prosple.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:26.147Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ph.prosple.com",
+      "flags": []
+    },
+    {
+      "id": 503,
+      "companyName": "GigaBPO",
+      "website": "https://gigabpo.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:23.341Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "gigabpo.com",
+      "flags": []
+    },
+    {
+      "id": 504,
+      "companyName": "ClickUp",
+      "website": "https://clickup.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:23.396Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "clickup.com",
+      "flags": []
+    },
+    {
+      "id": 505,
+      "companyName": "Himalayas",
+      "website": "https://himalayas.app",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:24.950Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "himalayas.app",
+      "flags": []
+    },
+    {
+      "id": 506,
+      "companyName": "Remote.com",
+      "website": "https://remote.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:26.430Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remote.com",
+      "flags": []
+    },
+    {
+      "id": 507,
+      "companyName": "Remote Philippines",
+      "website": "https://remotephilippines.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:26.766Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "remotephilippines.com",
+      "flags": []
+    },
+    {
+      "id": 508,
+      "companyName": "Amentum",
+      "website": "https://www.amentumcareers.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:15.537Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "amentumcareers.com",
+      "flags": []
+    },
+    {
+      "id": 509,
+      "companyName": "Canva",
+      "website": "https://www.canva.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:53:23.311Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "canva.com",
+      "flags": []
+    },
+    {
+      "id": 510,
+      "companyName": "Wise",
+      "website": "https://wise.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:22.524Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "wise.com",
+      "flags": []
+    },
+    {
+      "id": 511,
+      "companyName": "Shopify",
+      "website": "https://www.shopify.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:24.773Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "shopify.com",
+      "flags": []
+    },
+    {
+      "id": 512,
+      "companyName": "Zapier",
+      "website": "https://zapier.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:24.897Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "zapier.com",
+      "flags": []
+    },
+    {
+      "id": 513,
+      "companyName": "Buffer",
+      "website": "https://buffer.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:18.438Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "buffer.com",
+      "flags": []
+    },
+    {
+      "id": 514,
+      "companyName": "GitLab",
+      "website": "https://about.gitlab.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:24.776Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "about.gitlab.com",
+      "flags": []
+    },
+    {
+      "id": 515,
+      "companyName": "Automattic",
+      "website": "https://automattic.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:26.422Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "automattic.com",
+      "flags": []
+    },
+    {
+      "id": 516,
+      "companyName": "Help Scout",
+      "website": "https://www.helpscout.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:18.516Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "helpscout.com",
+      "flags": []
+    },
+    {
+      "id": 517,
+      "companyName": "Doist",
+      "website": "https://doist.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.995Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "doist.com",
+      "flags": []
+    },
+    {
+      "id": 518,
+      "companyName": "Ghost",
+      "website": "https://ghost.org",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:15.247Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ghost.org",
+      "flags": []
+    },
+    {
+      "id": 519,
+      "companyName": "Basecamp / 37signals",
+      "website": "https://37signals.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:26.493Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "37signals.com",
+      "flags": []
+    },
+    {
+      "id": 520,
+      "companyName": "Visa",
+      "website": "https://www.visa.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:15.269Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "visa.com",
+      "flags": []
+    },
+    {
+      "id": 521,
+      "companyName": "Synchrony",
+      "website": "https://www.synchrony.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:15.250Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "synchrony.com",
+      "flags": []
+    },
+    {
+      "id": 522,
+      "companyName": "Wells Fargo",
+      "website": "https://www.wellsfargo.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:18.293Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "wellsfargo.com",
+      "flags": []
+    },
+    {
+      "id": 523,
+      "companyName": "Ernst & Young",
+      "website": "https://www.ey.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T13:18:22.098Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ey.com",
+      "flags": [
+        "name_host_mismatch",
+        "shared_host"
+      ]
+    },
+    {
+      "id": 524,
+      "companyName": "Macquarie Group",
+      "website": "https://www.macquarie.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:15.316Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "macquarie.com",
+      "flags": []
+    },
+    {
+      "id": 525,
+      "companyName": "Atlassian",
+      "website": "https://www.atlassian.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:15.727Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "atlassian.com",
+      "flags": []
+    },
+    {
+      "id": 526,
+      "companyName": "Nokia Manila / Networklabs",
+      "website": "https://www.nokia.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:20.439Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "nokia.com",
+      "flags": []
+    },
+    {
+      "id": 527,
+      "companyName": "Century Pacific",
+      "website": "https://centurypacific.com.ph",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:38.911Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "centurypacific.com.ph",
+      "flags": []
+    },
+    {
+      "id": 528,
+      "companyName": "WTW (Willis Towers Watson)",
+      "website": "https://www.wtwco.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T13:18:15.280Z",
+      "linkEvidence": "HTTP 429 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "wtwco.com",
+      "flags": []
+    },
+    {
+      "id": 529,
+      "companyName": "Time Etc",
+      "website": "https://www.timeetc.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:15.805Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "timeetc.com",
+      "flags": []
+    },
+    {
+      "id": 530,
+      "companyName": "Wishup",
+      "website": "https://wishup.co",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:20.693Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "wishup.co",
+      "flags": []
+    },
+    {
+      "id": 531,
+      "companyName": "Grafana Labs",
+      "website": "https://grafana.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:20.353Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "grafana.com",
+      "flags": []
+    },
+    {
+      "id": 532,
+      "companyName": "Ashby",
+      "website": "https://www.ashbyhq.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.315Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "ashbyhq.com",
+      "flags": []
+    },
+    {
+      "id": 533,
+      "companyName": "Supabase",
+      "website": "https://supabase.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.389Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "supabase.com",
+      "flags": []
+    },
+    {
+      "id": 534,
+      "companyName": "Nearform",
+      "website": "https://nearform.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:22.115Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "nearform.com",
+      "flags": []
+    },
+    {
+      "id": 535,
+      "companyName": "Camunda",
+      "website": "https://camunda.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.515Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "camunda.com",
+      "flags": []
+    },
+    {
+      "id": 536,
+      "companyName": "Tremendous",
+      "website": "https://www.tremendous.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:20.302Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "tremendous.com",
+      "flags": []
+    },
+    {
+      "id": 537,
+      "companyName": "Amplify",
+      "website": "https://www.amplify.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:15.509Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "amplify.com",
+      "flags": []
+    },
+    {
+      "id": 538,
+      "companyName": "Adobe",
+      "website": "https://www.adobe.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T13:18:20.270Z",
+      "linkEvidence": "HTTP 520 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "adobe.com",
+      "flags": []
+    },
+    {
+      "id": 539,
+      "companyName": "Alorica",
+      "website": "https://www.alorica.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T13:18:22.047Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "alorica.com",
+      "flags": []
+    },
+    {
+      "id": 540,
+      "companyName": "BCD Travel",
+      "website": "https://www.bcdtravel.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:15.192Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "bcdtravel.com",
+      "flags": []
+    },
+    {
+      "id": 541,
+      "companyName": "Conduent",
+      "website": "https://www.conduent.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T13:31:41.865Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "conduent.com",
+      "flags": []
+    },
+    {
+      "id": 542,
+      "companyName": "VXI",
+      "website": "https://www.vxi.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T19:03:29.525Z",
+      "linkEvidence": "Unreachable: Error [EGRESS_BLOCKED] (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 0,
+      "host": "vxi.com",
+      "flags": [
+        "shared_host"
+      ]
+    },
+    {
+      "id": 549,
+      "companyName": "Proxify AB",
+      "website": "https://career.proxify.io",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:16.074Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "career.proxify.io",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 550,
+      "companyName": "Lemon.io",
+      "website": "https://lemon.io",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:47.745Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "lemon.io",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 555,
+      "companyName": "TELUS Digital",
+      "website": "https://jobs.telusdigital.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T10:53:24.820Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "jobs.telusdigital.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 568,
+      "companyName": "VRChat",
+      "website": "https://careers.vrchat.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T07:28:52.259Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "careers.vrchat.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 573,
+      "companyName": "Mindrift",
+      "website": "https://mindrift.ai",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:55.593Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "mindrift.ai",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 576,
+      "companyName": "EY Studio+ Nederland",
+      "website": "https://ey.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:55.720Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "ey.com",
+      "flags": [
+        "enrichment_note_evidence",
+        "name_host_mismatch",
+        "shared_host"
+      ]
+    },
+    {
+      "id": 578,
+      "companyName": "Canonical",
+      "website": "https://jobs.canonical.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-21T07:28:54.979Z",
+      "linkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "jobs.canonical.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 580,
+      "companyName": "Wonderdog",
+      "website": "https://wonderdoghealth.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:45.923Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "wonderdoghealth.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 582,
+      "companyName": "Spiralyze",
+      "website": "https://spiralyze.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:09.922Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "spiralyze.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 585,
+      "companyName": "Rimini Street",
+      "website": "https://riministreet.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T07:18:15.822Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "riministreet.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 587,
+      "companyName": "Remote Talent Cloud",
+      "website": "https://remotetalentcloud.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:15.723Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "remotetalentcloud.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 599,
+      "companyName": "Hospitable",
+      "website": "https://hospitable.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T19:03:27.100Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "hospitable.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 607,
+      "companyName": "Bright! Tax",
+      "website": "https://brighttax.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:24.818Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "brighttax.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 612,
+      "companyName": "garden3d",
+      "website": "https://garden3d.net",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:52.479Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "garden3d.net",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 616,
+      "companyName": "RETR",
+      "website": "https://retr.app",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:10.087Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "retr.app",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 618,
+      "companyName": "Bright Vision Technologies",
+      "website": "https://bvteck.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T19:13:47.855Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "bvteck.com",
+      "flags": [
+        "enrichment_note_evidence",
+        "name_host_mismatch"
+      ]
+    },
+    {
+      "id": 619,
+      "companyName": "TE Connectivity",
+      "website": "https://te.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T07:18:16.006Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "te.com",
+      "flags": [
+        "enrichment_note_evidence",
+        "name_host_mismatch"
+      ]
+    },
+    {
+      "id": 620,
+      "companyName": "ICF",
+      "website": "https://icf.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:20.394Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "icf.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 621,
+      "companyName": "HighLevel",
+      "website": "https://gohighlevel.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:18.238Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "gohighlevel.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 622,
+      "companyName": "Faith Technologies",
+      "website": "https://faithtechinc.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:20.417Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "faithtechinc.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 624,
+      "companyName": "Native Camp",
+      "website": "https://nativecamp.net",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:26.696Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "nativecamp.net",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 638,
+      "companyName": "Palo Alto Networks",
+      "website": "https://paloaltonetworks.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.547Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "paloaltonetworks.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 641,
+      "companyName": "Hightouch",
+      "website": "https://hightouch.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:18.345Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "hightouch.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 645,
+      "companyName": "Reddit",
+      "website": "https://redditinc.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T13:18:21.333Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "redditinc.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 655,
+      "companyName": "Gartner",
+      "website": "https://gartner.com",
+      "linkStatus": "unreachable",
+      "linkCheckedAt": "2026-08-22T07:18:15.856Z",
+      "linkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "gartner.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 661,
+      "companyName": "TestGorilla",
+      "website": "https://testgorilla.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-21T07:28:55.277Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "testgorilla.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 674,
+      "companyName": "Webflow",
+      "website": "https://webflow.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T07:18:16.189Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "webflow.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 678,
+      "companyName": "Pixel One",
+      "website": "https://pixel-one.com",
+      "linkStatus": "ok",
+      "linkCheckedAt": "2026-08-22T10:53:26.456Z",
+      "linkEvidence": "HTTP 200",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "pixel-one.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    },
+    {
+      "id": 686,
+      "companyName": "6sense",
+      "website": "https://6sense.com",
+      "linkStatus": "bot_wall",
+      "linkCheckedAt": "2026-08-22T19:03:26.979Z",
+      "linkEvidence": "HTTP 403 (bot wall — site alive)",
+      "linkFailCount": 0,
+      "enrichWebsiteNote": 1,
+      "host": "6sense.com",
+      "flags": [
+        "enrichment_note_evidence"
+      ]
+    }
+  ],
+  "sharedHostGroups": [
+    {
+      "host": "remotestaff.ph",
+      "companies": [
+        "remote staff philippines",
+        "remote staff ph",
+        "remotestaff.ph"
+      ],
+      "ids": [
+        341,
+        423,
+        490
+      ]
+    },
+    {
+      "host": "20four7va.com",
+      "companies": [
+        "20four7va",
+        "24/7 virtual assistant"
+      ],
+      "ids": [
+        249,
+        250
+      ]
+    },
+    {
+      "host": "apply.workable.com",
+      "companies": [
+        "rocketams",
+        "hunt st"
+      ],
+      "ids": [
+        494,
+        498
+      ]
+    },
+    {
+      "host": "aumtrend.com",
+      "companies": [
+        "aumtrend ph",
+        "aumtrend ph inc"
+      ],
+      "ids": [
+        252,
+        253
+      ]
+    },
+    {
+      "host": "connectusmarketing.com",
+      "companies": [
+        "connectus marketing solutions",
+        "connectus marketing solutions inc."
+      ],
+      "ids": [
+        393,
+        394
+      ]
+    },
+    {
+      "host": "ey.com",
+      "companies": [
+        "ernst & young",
+        "ey studio+ nederland"
+      ],
+      "ids": [
+        523,
+        576
+      ]
+    },
+    {
+      "host": "filipinocontractors.com",
+      "companies": [
+        "filipinocontractors.com",
+        "filipino contractors"
+      ],
+      "ids": [
+        440,
+        476
+      ]
+    },
+    {
+      "host": "getmagic.com",
+      "companies": [
+        "magic (getmagic)",
+        "magic"
+      ],
+      "ids": [
+        301,
+        484
+      ]
+    },
+    {
+      "host": "hellorache.com",
+      "companies": [
+        "hello rache",
+        "hellorache"
+      ],
+      "ids": [
+        289,
+        478
+      ]
+    },
+    {
+      "host": "onlinejobs.ph",
+      "companies": [
+        "onlinejobs",
+        "onlinejobs.ph"
+      ],
+      "ids": [
+        315,
+        421
+      ]
+    },
+    {
+      "host": "ovavirtual.com",
+      "companies": [
+        "ova virtual",
+        "ova virtual assistant"
+      ],
+      "ids": [
+        309,
+        310
+      ]
+    },
+    {
+      "host": "smartbuyglasses.com",
+      "companies": [
+        "smartbuyglasses",
+        "smartbuyglasses (remote ph)"
+      ],
+      "ids": [
+        396,
+        397
+      ]
+    },
+    {
+      "host": "smartoutsourcingsolution.com",
+      "companies": [
+        "sos va services / smart outsourcing solution",
+        "smart outsourcing solution (sos)"
+      ],
+      "ids": [
+        344,
+        348
+      ]
+    },
+    {
+      "host": "staffingsolutions.io",
+      "companies": [
+        "staffingsolutions.io",
+        "staffingsolutions.io (ssio)"
+      ],
+      "ids": [
+        355,
+        356
+      ]
+    },
+    {
+      "host": "surgefreelancingmarketplace.com",
+      "companies": [
+        "surge virtual assistants",
+        "surge digital agency"
+      ],
+      "ids": [
+        360,
+        398
+      ]
+    },
+    {
+      "host": "virtualstaff.ph",
+      "companies": [
+        "virtualstaff",
+        "virtualstaff.ph"
+      ],
+      "ids": [
+        383,
+        384
+      ]
+    },
+    {
+      "host": "vxi.com",
+      "companies": [
+        "vxi global solutions",
+        "vxi"
+      ],
+      "ids": [
+        414,
+        542
+      ]
+    },
+    {
+      "host": "wellfound.com",
+      "companies": [
+        "angellist / wellfound",
+        "wellfound (angellist)"
+      ],
+      "ids": [
+        451,
+        493
+      ]
+    }
+  ],
+  "summary": {
+    "unclassifiedWebsiteRows": 338,
+    "withEnrichmentNoteEvidence": 29,
+    "inSharedHostGroups": 37,
+    "withNameHostMismatch": 11
+  },
+  "reconciliation": {
+    "ok": true,
+    "deltas": {
+      "rows_plus_classified_vs_with_website": 0,
+      "negative_margin": 0
+    }
+  }
+}

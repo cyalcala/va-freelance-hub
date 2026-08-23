@@ -1,0 +1,110 @@
+{
+  "unit": "DATA-05B",
+  "evidenceSha256": "dd3c1a54b2d0ee685cbbe32692711c85aebf80b84318b28f478359dcd3e1f847",
+  "evidenceApprovedBy": "cyalcala (repository owner) via autonomous executor run prompt, 2026-08-23: 'all approved that needed to be approved all proceed', referencing the exact candidate cohort recorded in docs/SYSTEM_SAVEPOINT.md and docs/gauntlet/evidence/DATA-05B-directory-website-provenance.md",
+  "evidenceApprovedAt": "2026-08-23T01:30:00Z",
+  "plannedAt": "2026-08-23T01:36:31.507Z",
+  "planned": [
+    {
+      "id": 546,
+      "companyName": "Vidalytics",
+      "expectedWebsite": "https://we-work-remotely.com",
+      "reason": "Retired heuristic wrote job-board host we-work-remotely.com from an enrichment note; company/host mismatch; link state b"
+    },
+    {
+      "id": 548,
+      "companyName": "Airalo",
+      "expectedWebsite": "https://remotephjobs.ph",
+      "reason": "Retired heuristic wrote external job-listing host remotephjobs.ph from an enrichment note; company/host mismatch; link s"
+    },
+    {
+      "id": 557,
+      "companyName": "Sourcegraph",
+      "expectedWebsite": "https://remote.ph",
+      "reason": "Retired heuristic wrote shared anomaly host remote.ph (also claimed by unrelated row 577 DuckDuckGo); unreachable; cross"
+    },
+    {
+      "id": 575,
+      "companyName": "Impact Clients",
+      "expectedWebsite": "https://highperformancetrain.com",
+      "reason": "Retired heuristic wrote highperformancetrain.com from a job URL enrichment note; not the Impact Clients corporate domain"
+    },
+    {
+      "id": 577,
+      "companyName": "DuckDuckGo",
+      "expectedWebsite": "https://remote.ph",
+      "reason": "Retired heuristic wrote shared anomaly host remote.ph (also claimed by unrelated row 557 Sourcegraph); DuckDuckGo's corp"
+    },
+    {
+      "id": 623,
+      "companyName": "Kindred",
+      "expectedWebsite": "https://remote-ph-jobs.com",
+      "reason": "Retired heuristic wrote remote-ph-jobs.com from a job URL enrichment note; company/host mismatch; link state bot_wall (H"
+    }
+  ],
+  "skipped": [],
+  "undo": [
+    {
+      "id": 546,
+      "companyName": "Vidalytics",
+      "oldWebsite": "https://we-work-remotely.com",
+      "oldLinkStatus": "bot_wall",
+      "oldLinkCheckedAt": "2026-08-22T13:18:18.155Z",
+      "oldLinkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "oldLinkFailCount": 0
+    },
+    {
+      "id": 548,
+      "companyName": "Airalo",
+      "oldWebsite": "https://remotephjobs.ph",
+      "oldLinkStatus": "bot_wall",
+      "oldLinkCheckedAt": "2026-08-22T13:18:21.440Z",
+      "oldLinkEvidence": "HTTP 525 (edge/origin transient — not counted dead)",
+      "oldLinkFailCount": 0
+    },
+    {
+      "id": 557,
+      "companyName": "Sourcegraph",
+      "oldWebsite": "https://remote.ph",
+      "oldLinkStatus": "unreachable",
+      "oldLinkCheckedAt": "2026-08-21T19:13:48.642Z",
+      "oldLinkEvidence": "Unreachable: Error (not counted dead — needs human review)",
+      "oldLinkFailCount": 0
+    },
+    {
+      "id": 575,
+      "companyName": "Impact Clients",
+      "oldWebsite": "https://highperformancetrain.com",
+      "oldLinkStatus": "ok",
+      "oldLinkCheckedAt": "2026-08-22T10:53:27.210Z",
+      "oldLinkEvidence": "HTTP 200",
+      "oldLinkFailCount": 0
+    },
+    {
+      "id": 577,
+      "companyName": "DuckDuckGo",
+      "oldWebsite": "https://remote.ph",
+      "oldLinkStatus": "ok",
+      "oldLinkCheckedAt": "2026-08-21T19:13:48.261Z",
+      "oldLinkEvidence": "HTTP 200",
+      "oldLinkFailCount": 0
+    },
+    {
+      "id": 623,
+      "companyName": "Kindred",
+      "oldWebsite": "https://remote-ph-jobs.com",
+      "oldLinkStatus": "bot_wall",
+      "oldLinkCheckedAt": "2026-08-22T07:18:14.457Z",
+      "oldLinkEvidence": "HTTP 530 (edge/origin transient — not counted dead)",
+      "oldLinkFailCount": 0
+    }
+  ],
+  "restoreStatementsPreview": [
+    "UPDATE va_directory\nSET website = 'https://we-work-remotely.com',\n    website_source = NULL,\n    website_evidence = NULL,\n    website_set_at = NULL,\n    link_status = 'bot_wall',\n    link_checked_at = '2026-08-22T13:18:18.155Z',\n    link_evidence = 'HTTP 530 (edge/origin transient — not counted dead)',\n    link_fail_count = 0,\n    notes = coalesce(notes || ' | ', '') || '[repair DATA-05B] restored website from undo artifact'\nWHERE id = 546\n  AND website IS NULL\n  AND website_source = 'repair_cleared';",
+    "UPDATE va_directory\nSET website = 'https://remotephjobs.ph',\n    website_source = NULL,\n    website_evidence = NULL,\n    website_set_at = NULL,\n    link_status = 'bot_wall',\n    link_checked_at = '2026-08-22T13:18:21.440Z',\n    link_evidence = 'HTTP 525 (edge/origin transient — not counted dead)',\n    link_fail_count = 0,\n    notes = coalesce(notes || ' | ', '') || '[repair DATA-05B] restored website from undo artifact'\nWHERE id = 548\n  AND website IS NULL\n  AND website_source = 'repair_cleared';",
+    "UPDATE va_directory\nSET website = 'https://remote.ph',\n    website_source = NULL,\n    website_evidence = NULL,\n    website_set_at = NULL,\n    link_status = 'unreachable',\n    link_checked_at = '2026-08-21T19:13:48.642Z',\n    link_evidence = 'Unreachable: Error (not counted dead — needs human review)',\n    link_fail_count = 0,\n    notes = coalesce(notes || ' | ', '') || '[repair DATA-05B] restored website from undo artifact'\nWHERE id = 557\n  AND website IS NULL\n  AND website_source = 'repair_cleared';",
+    "UPDATE va_directory\nSET website = 'https://highperformancetrain.com',\n    website_source = NULL,\n    website_evidence = NULL,\n    website_set_at = NULL,\n    link_status = 'ok',\n    link_checked_at = '2026-08-22T10:53:27.210Z',\n    link_evidence = 'HTTP 200',\n    link_fail_count = 0,\n    notes = coalesce(notes || ' | ', '') || '[repair DATA-05B] restored website from undo artifact'\nWHERE id = 575\n  AND website IS NULL\n  AND website_source = 'repair_cleared';",
+    "UPDATE va_directory\nSET website = 'https://remote.ph',\n    website_source = NULL,\n    website_evidence = NULL,\n    website_set_at = NULL,\n    link_status = 'ok',\n    link_checked_at = '2026-08-21T19:13:48.261Z',\n    link_evidence = 'HTTP 200',\n    link_fail_count = 0,\n    notes = coalesce(notes || ' | ', '') || '[repair DATA-05B] restored website from undo artifact'\nWHERE id = 577\n  AND website IS NULL\n  AND website_source = 'repair_cleared';",
+    "UPDATE va_directory\nSET website = 'https://remote-ph-jobs.com',\n    website_source = NULL,\n    website_evidence = NULL,\n    website_set_at = NULL,\n    link_status = 'bot_wall',\n    link_checked_at = '2026-08-22T07:18:14.457Z',\n    link_evidence = 'HTTP 530 (edge/origin transient — not counted dead)',\n    link_fail_count = 0,\n    notes = coalesce(notes || ' | ', '') || '[repair DATA-05B] restored website from undo artifact'\nWHERE id = 623\n  AND website IS NULL\n  AND website_source = 'repair_cleared';"
+  ]
+}

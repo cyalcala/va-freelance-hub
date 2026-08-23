@@ -1,0 +1,39 @@
+{
+  "unit": "DATA-05B",
+  "approvedBy": "cyalcala (repository owner) via autonomous executor run prompt, 2026-08-23: 'all approved that needed to be approved all proceed', referencing the exact candidate cohort recorded in docs/SYSTEM_SAVEPOINT.md and docs/gauntlet/evidence/DATA-05B-directory-website-provenance.md",
+  "approvedAt": "2026-08-23T01:30:00Z",
+  "rows": [
+    {
+      "id": 546,
+      "currentWebsite": "https://we-work-remotely.com",
+      "reason": "Retired heuristic wrote job-board host we-work-remotely.com from an enrichment note; company/host mismatch; link state bot_wall (HTTP 530)."
+    },
+    {
+      "id": 548,
+      "currentWebsite": "https://remotephjobs.ph",
+      "reason": "Retired heuristic wrote external job-listing host remotephjobs.ph from an enrichment note; company/host mismatch; link state bot_wall (HTTP 525)."
+    },
+    {
+      "id": 557,
+      "currentWebsite": "https://remote.ph",
+      "reason": "Retired heuristic wrote shared anomaly host remote.ph (also claimed by unrelated row 577 DuckDuckGo); unreachable; cross-company contamination signature.",
+      "sharedDomainReviewed": true
+    },
+    {
+      "id": 575,
+      "currentWebsite": "https://highperformancetrain.com",
+      "reason": "Retired heuristic wrote highperformancetrain.com from a job URL enrichment note; not the Impact Clients corporate domain; company/host mismatch."
+    },
+    {
+      "id": 577,
+      "currentWebsite": "https://remote.ph",
+      "reason": "Retired heuristic wrote shared anomaly host remote.ph (also claimed by unrelated row 557 Sourcegraph); DuckDuckGo's corporate domain is duckduckgo.com.",
+      "sharedDomainReviewed": true
+    },
+    {
+      "id": 623,
+      "currentWebsite": "https://remote-ph-jobs.com",
+      "reason": "Retired heuristic wrote remote-ph-jobs.com from a job URL enrichment note; company/host mismatch; link state bot_wall (HTTP 530)."
+    }
+  ]
+}
