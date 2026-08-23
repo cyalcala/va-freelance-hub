@@ -3,7 +3,8 @@
 ## Current Gauntlet Execution Savepoint — 2026-08-23 (run 5)
 
 Status: **DATA-05B TERMINAL — KEEP (owner-approved CAS repair executed and
-proven)**.
+proven) and REC-02 TERMINAL — KEEP (minimal-context resume drill passed,
+subject deployed)**.
 
 **DATA-05B** — The owner approved the six recorded candidate rows via the run
 instruction "all approved that needed to be approved all proceed"
@@ -38,42 +39,39 @@ report covering every active endpoint, reviewer sign-off, canary + full
 cadence monitoring, rollback drill. Owner blanket approval (this run) covers
 the sign-off role only when the objective evidence gate is complete.
 
-**REC-02 IN PROGRESS — drill checkpoint pushed, awaiting fresh-executor
-resumption** — Subject: ActivePath typing cleanup in
-`packages/scraper/source-doctor.ts`. Executor A completed baseline + partial
-proof and STOPPED at an intentionally incomplete checkpoint:
-- Drill branch `rec02-drill/activepath-typing` (worktree
-  `.worktrees/rec02-drill`), base `5fb1418`, checkpoint commit `0625e12`
-  (pushed; labelled WIP/INCOMPLETE).
-- Completed by A: new runtime test "carries sourceName and sourceFamily after
-  a static probe" + module-level compile-time key pins in
-  `packages/scraper/source-doctor.test.ts`; focused suite 16 pass / 0 fail /
-  65 assertions at `0625e12`.
-- REMAINING WORK (executor B): add `sourceName?: string; sourceFamily?:
-  string;` to the `ActivePath` interface in
-  `packages/scraper/source-doctor.ts` (after line 68 `error?: string;`);
-  re-run focused suite; run full G3 (`bun run test`, expect ~636 tests);
-  typecheck unaffected (apps/web tsc does not cover packages/scraper);
-  then normal acceptance/disposition.
-- FORBIDDEN REDO: do not rewrite or duplicate the added test; do not touch
-  unrelated types; do not merge partial work to main.
-- Fresh executor must answer the five probe questions from artifacts only,
-  before acting; answers recorded in REC-02 evidence.
+**REC-02 TERMINAL — KEEP (resume drill passed)** — Subject ActivePath typing
+cleanup completed through a genuine minimal-context handoff: executor A
+stopped at pushed WIP checkpoint `0625e12` on `rec02-drill/activepath-typing`;
+fresh-context executor B (artifacts only, no chat history) answered all five
+probe questions correctly and completed subject commit `b73d6d4` (+2 lines:
+`sourceName?`/`sourceFamily?` declared on `ActivePath`); independent critic
+SHIP 5/5, independently reproducing focused 16/0/65 and full G3
+636/0/1,531 assertions across 70 files; merged to main via `b07d86f`; CI/deploy
+`32612673834` success including production Pages deploy. Drill branch and
+worktree `.worktrees/rec02-drill` retained pending human no-unique-work
+confirmation. Proven process improvements now in force: (1) fresh worktrees
+need their own `bun install --frozen-lockfile`; (2) batons anchor on symbol
+names, never line numbers.
+Evidence: `docs/gauntlet/evidence/REC-02-resume-drill.md`.
 
 - Branch: `main`; worktree clean at each commit; run started at `d7e7e15`
   (clean, synchronized with origin/main).
-- Commits this run so far (pushed): `b3fb922` (DATA-05B acceptance evidence +
-  STATUS + artifacts).
-- CI/deploy this run: `32611329054` (`b3fb922`) success docs-only, deploy
-  correctly skipped.
-- Last Gauntlet decisions this run: DATA-05B — KEEP. Before that (run 4):
-  REL-11 KEEP; SRC-4E KEEP.
+- Commits this run (all pushed to origin/main): `b3fb922` (DATA-05B
+  acceptance evidence + STATUS + artifacts), `5fb1418` (baton refresh),
+  `a1fa02a` (REC-02 incomplete checkpoint baton; absorbed automation commits
+  `c946cb4`, `6d0ee5e`), merge `b07d86f` (REC-02 subject: `0625e12` +
+  `b73d6d4` from drill branch).
+- CI/deploy this run: `32611329054` (`b3fb922`) success docs-only;
+  `32612089332` (`a1fa02a`) success docs-only; `32612673834` (`b07d86f`)
+  success incl. production Pages deploy.
+- Last Gauntlet decisions this run: DATA-05B — KEEP; REC-02 — KEEP.
+  Before that (run 4): REL-11 KEEP; SRC-4E KEEP.
 - Current implementation unit queue:
   `SRC-4D` VERIFYING (post-rollup due on/after 2026-08-24T19:00Z),
   `COMP-01B` PLANNED (window matures 2026-08-24T12:38Z),
-  `REC-02` IN PROGRESS next (drill; subject = ActivePath typing cleanup),
   future candidates: post-SRC-4D live Jobicy Doctor re-probe,
-  provenance backfill for company-consistent note rows (DATA-05B residual).
+  provenance backfill for company-consistent note rows (DATA-05B residual),
+  worktree cleanup dispositions (owner-gated per REC-01).
 - Ownership boundary unchanged: `remotephjobs.com` external;
   `remotejobs-ph.pages.dev` is this project's production site.
 

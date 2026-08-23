@@ -1140,7 +1140,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Do not combine drill-process fixes with unrelated production behavior. |
 | GITHUB BACKUP | Mandatory pushed incomplete branch labelled non-mergeable, followed by final disposition and evidence commit. |
 | HANDOFF | G6 plus exact context packet, five-question answers, score, files/commands used, deviations, final disposition, and next drill improvement. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (drill executed 2026-08-23: executor A stopped at pushed WIP checkpoint `0625e12`; fresh-context executor B resumed from artifacts alone with 5/5 correct probe answers and completed subject commit `b73d6d4` (+2 lines); independent critic SHIP 5/5, reproduced all test numbers exactly (focused 16/0/65, full G3 636/0/1,531); merged to main via `b07d86f`; CI/deploy `32612673834` success incl. production Pages deploy; drill branch retained as evidence; two documentation gaps found and fixed). Evidence: `docs/gauntlet/evidence/REC-02-resume-drill.md` |
 
 ## Execution checkpoints
 
