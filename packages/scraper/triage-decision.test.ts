@@ -128,9 +128,9 @@ describe("validateTriageResult category whitelist (TAX-02)", () => {
     });
     const d = await decideTriage(baseInput, { geoScope: "worldwide" }, unknownEnv);
     expect(d.kind).toBe("eligible");
-    // Not whitelisted: coerced at validation, so KM-style roles must arrive as
-    // "writing" from the prompt itself.
-    if (d.kind === "eligible") expect(d.triage.category).toBe("other");
+    // TAX-02 critic fix: writing-family near-misses normalize at validation,
+    // so KM-style slugs land on WRITING & CONTENT instead of GENERAL & OTHER.
+    if (d.kind === "eligible") expect(d.triage.category).toBe("writing");
   });
 
   test("mock no-AI categorizer routes AI and writing titles to new buckets", async () => {

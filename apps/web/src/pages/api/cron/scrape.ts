@@ -26,7 +26,8 @@ import { disabledSources, rssSources, htmlSources, jsonSources, sources as stati
 // (triage-decision.ts) as the single source of truth. It was previously copied
 // here; the private duplicate was removed in DATA-06 so the inline scrape loop,
 // the inline pending-triage drain, and the Inngest drain can never drift on how
-// a listing's category is folded into the seven public slugs.
+// a listing's category is folded into the nine public slugs (TAX-02 added
+// "ai" and "writing" in 2026-08).
 
 type SourceType = "RSS" | "HTML" | "JSON" | "ATS";
 

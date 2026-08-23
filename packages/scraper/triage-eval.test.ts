@@ -94,7 +94,7 @@ describe("DATA-06 triage/taxonomy eval corpus", () => {
     });
   }
 
-  test("corpus covers every verdict kind and all seven board categories", () => {
+  test("corpus covers every verdict kind and all nine board categories", () => {
     // Re-run deterministically so the summary is independent of test ordering.
     const kinds: Record<string, number> = {};
     const cats: Record<string, number> = {};
@@ -107,7 +107,17 @@ describe("DATA-06 triage/taxonomy eval corpus", () => {
     for (const kind of ["eligible", "ineligible", "consensus-split", "ai-unavailable"]) {
       expect(kinds[kind] ?? 0).toBeGreaterThan(0);
     }
-    for (const cat of ["admin", "design", "tech", "marketing", "customer-service", "finance", "other"]) {
+    for (const cat of [
+      "admin",
+      "design",
+      "tech",
+      "marketing",
+      "customer-service",
+      "finance",
+      "writing",
+      "ai",
+      "other",
+    ]) {
       expect(cats[cat] ?? 0).toBeGreaterThan(0);
     }
     // Human-readable confusion-style summary in the test log.

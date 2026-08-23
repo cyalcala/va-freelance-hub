@@ -24,6 +24,8 @@ function makeOpportunity(overrides: Partial<Opportunity> = {}): Opportunity {
 describe("DATA-06B stored-category display contract", () => {
   test("stored non-other categories are returned unchanged", () => {
     const slugs = [
+      "ai",
+      "writing",
       "customer-service",
       "admin",
       "marketing",

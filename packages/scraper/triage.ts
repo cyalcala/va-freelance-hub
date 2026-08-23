@@ -160,16 +160,29 @@ export function parseModelOverride(override: unknown): string[] {
     .filter(Boolean);
 }
 
+// TAX-02: near-miss synonyms for the owner-priority writing family, normalized
+// at the single validation choke point BEFORE whitelist coercion. Cheap models
+// emitting e.g. "copywriting" or "knowledge-management" must land on the
+// flagship WRITING & CONTENT surface, not GENERAL & OTHER.
+const WRITING_FAMILY_ALIASES: ReadonlySet<string> = new Set([
+  "copywriting",
+  "technical-writing",
+  "knowledge-management",
+  "content-production",
+]);
+
 // Coerce a raw parsed model object into a validated TriageResult with safe
 // fallbacks. Shared by the Cloudflare ladder and the Gemini fallback so the two
 // providers can never drift on field validation.
 export function validateTriageResult(parsed: any): TriageResult {
+  const rawCategory = typeof parsed.category === "string" ? parsed.category.trim().toLowerCase() : "";
+  const normalizedCategory = WRITING_FAMILY_ALIASES.has(rawCategory) ? "writing" : rawCategory;
   return {
     eligibleForFilipinos: parsed.eligibleForFilipinos,
     reason: parsed.reason || "AI classified",
     category: [
       "admin", "design", "tech", "marketing", "customer-service", "finance", "writing", "ai", "other",
-    ].includes(parsed.category) ? parsed.category : "other",
+    ].includes(normalizedCategory) ? normalizedCategory as TriageResult["category"] : "other",
     tags: Array.isArray(parsed.tags) ? parsed.tags.slice(0, 5) : [],
     payRange: typeof parsed.payRange === "string" ? parsed.payRange : null,
     clientTimezone: typeof parsed.clientTimezone === "string" ? parsed.clientTimezone : null,
