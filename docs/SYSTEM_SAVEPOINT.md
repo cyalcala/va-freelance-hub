@@ -2,26 +2,41 @@
 
 ## Current Gauntlet Execution Savepoint — 2026-08-23 (run 4)
 
-Status: **SRC-4E TERMINAL — KEEP (diagnosis-only unit; no code changed)**. The
-Jobicy supporting-feed "CDATA is not closed" SCHEMA_BROKEN observation was a
-Source Doctor measurement artifact: `packages/scraper/source-doctor.ts:230`
-slices every static-source body to `MAX_BODY_BYTES` (256 KiB) before parsing,
-cutting the ~40-item supporting feed mid-CDATA, while the ingestion path parses
-full bodies via `conditionalFetchText`. Production D1 (read-only,
-`changed_db=false` throughout): ZERO parse errors ever across 113,342 fetch
-events; only Jobicy failures ever recorded are HTTP 429 pairs; supporting feed
-parsed 40 items as recently as 2026-08-22T21:10Z. Local synthetic reproduction
-matrix against installed fast-xml-parser 5.10.1 produces the exact error string
-only for truncation-mid-CDATA (8-item >269 KB doc sliced → THREW; bare/nested
-CDATA classes parse OK). CONSEQUENCE FOR SRC-4D: discount the SCHEMA_BROKEN
-half of the 2026-08-22T22:18Z observation; its HTTP-200-no-429 half remains a
-favorable interim signal; the D1 post-rollup gate is unchanged. Bounded fix
-proposal (REL-11 candidate: Doctor RSS truncation handling + regression test)
-recorded in evidence; live re-probe permitted only after SRC-4D closes.
+Status: **SRC-4E TERMINAL — KEEP (diagnosis-only) and REL-11 TERMINAL — KEEP
+(behavior fix deployed)**.
+
+**SRC-4E** — The Jobicy supporting-feed "CDATA is not closed" SCHEMA_BROKEN
+observation was a Source Doctor measurement artifact:
+`packages/scraper/source-doctor.ts` sliced every static-source body to
+`MAX_BODY_BYTES` (256 KiB) before parsing, cutting the ~40-item supporting feed
+mid-CDATA, while the ingestion path parses full bodies via
+`conditionalFetchText`. Production D1 (read-only, `changed_db=false`
+throughout): ZERO parse errors ever across 113,342 fetch events; only Jobicy
+failures ever recorded are HTTP 429 pairs; supporting feed parsed 40 items as
+recently as 2026-08-22T21:10Z. Local synthetic reproduction matrix against
+fast-xml-parser 5.10.1 produces the exact error string only for
+truncation-mid-CDATA. CONSEQUENCE FOR SRC-4D: discount the SCHEMA_BROKEN half
+of the 2026-08-22T22:18Z observation; its HTTP-200-no-429 half remains a
+favorable interim signal; the D1 post-rollup gate is unchanged.
 Evidence: `docs/gauntlet/evidence/SRC-4E-jobicy-supporting-cdata-diagnosis.md`.
+
+**REL-11** — Fix deployed: `f2a84be` makes the Doctor static probe parse the
+full fetched body (deletes `MAX_BODY_BYTES`) and adds a >256 KiB CDATA
+regression test (283,353-char synthetic fixture → HEALTHY_WITH_RESULTS,
+itemCount=8, full byte accounting). Red/green proven: same fixture through the
+old slice path throws exactly "CDATA is not closed.". Local G3 at `f2a84be`:
+635 tests, 0 failures, 1,529 assertions; typecheck/guardrails/build exit 0.
+Fresh independent critic **SHIP** (zero blocking/important findings; one
+cosmetic nit fixed pre-commit; one PRE-EXISTING out-of-contract finding
+recorded: `ActivePath` type lacks declared `sourceName`/`sourceFamily` fields
+assigned in code — future bounded typing unit candidate). CI/deploy
+**`32609833176` success on the exact SHA including production Pages deploy**.
+No live Jobicy re-probe performed or permitted yet (SRC-4D window still open).
+Evidence: `docs/gauntlet/evidence/REL-11-doctor-rss-truncation-fix.md`.
+
 Docs hygiene also done this run: STATUS rows for REC-01, OPS-06, DATA-03
 (terminal KEEP each) and SRC-4D (VERIFYING with gate details) refreshed from
-commit-history evidence; SRC-4E bounded contract added (`6f5a630`).
+commit-history evidence (`6f5a630`).
 
 **DATA-05B remains VERIFYING/BLOCKED at the human-approved evidence gate** —
 code deployed (`6e31cd7f`; CI/deploy `32605834663` applied migration 0033);
@@ -42,13 +57,15 @@ backoff skips / publication lag from `source_fetch_events` since
 `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, then decide KEEP
 or pause-Jobicy per contract.
 
-- Branch: `main`; worktree clean at commit time; run started at `0abe1a4`
+- Branch: `main`; worktree clean at each commit; run started at `0abe1a4`
   (clean, synchronized with origin/main).
-- Commits this run: `6f5a630` (lagging STATUS rows refresh + SRC-4E PLANNED
-  contract) + the SRC-4E evidence/baton docs commit (see git log).
-- Verification this run: all remote D1 queries read-only (`rows_written=0`);
-  `git diff --check` clean pre-commit; repro scratch deleted after capture;
-  no production code touched; CI watched on pushed SHAs (docs-only runs).
+- Commits this run (all pushed to origin/main): `6f5a630` (STATUS refresh +
+  SRC-4E PLANNED contract), `8237171` (SRC-4E diagnosis evidence + baton),
+  `90f52b8` (REL-11 PLANNED contract), `f2a84be` (REL-11 behavior + test),
+  plus the final docs/baton commit.
+- CI/deploy this run: `32608128086` (`6f5a630`) success docs-only;
+  `32608675912` (`8237171`) success docs-only, deploy skipped;
+  `32609833176` (`f2a84be`) success incl. production Pages deploy.
 - Ownership boundary: `remotephjobs.com` is an external site;
   `remotejobs-ph.pages.dev` is this project's production site. External-source
   indexing is allowed only through the existing compliance policy and never
@@ -56,19 +73,19 @@ or pause-Jobicy per contract.
 - Planning baseline: `bd84cc1`
 - Last accepted production behavior commits: `f00478c`/`041bc2c` (DATA-06B,
   KEEP); `90f3243` (SRC-4D, VERIFYING); `6e31cd7f` (DATA-05B code slice,
-  deployed, awaiting approval-gated data step).
+  deployed, awaiting approval-gated data step); `f2a84be` (REL-11, KEEP).
 - Current scheduled evidence: watchdog runs continue hourly; their payloads
   remain evidence to inspect, not blanket health acceptance.
-- Last Gauntlet decision: `SRC-4E` — KEEP (diagnosis). Before that: DATA-06B
-  KEEP; DATA-05B BLOCKED (approval gate).
+- Last Gauntlet decisions this run: `REL-11` — KEEP; `SRC-4E` — KEEP
+  (diagnosis). Before that: DATA-06B KEEP; DATA-05B BLOCKED (approval gate).
 - Current implementation unit queue:
   `SRC-4D` **VERIFYING** (post-rollup due on/after 2026-08-24T19:00Z),
-  `REL-11 candidate` (PROPOSED — Doctor RSS truncation fix; needs bounded
-  contract before any change; live re-probe only after SRC-4D closes),
   `DATA-05B` **BLOCKED at owner approval gate** (mutation step),
   `COMP-01B` (reviewed enforcement; gated on a complete reviewed robots observe
   window plus per-source reviewer sign-off),
-  `REC-02` (resume drill; needs owner agreement to synthetic interruption).
+  `REC-02` (resume drill; needs owner agreement to synthetic interruption),
+  future candidates recorded but not contracted: post-SRC-4D live Jobicy
+  Doctor re-probe (expect HEALTHY_WITH_RESULTS), `ActivePath` typing cleanup.
 
 ## Historical checkpoint — run 3 / DATA-05B deployed slice (2026-08-23)
 

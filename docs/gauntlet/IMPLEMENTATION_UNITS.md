@@ -975,7 +975,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | source-doctor.ts static probe + its test only. |
 | GITHUB BACKUP | G5 with CI/deploy run IDs. |
 | HANDOFF | G6 plus diff-scope proof, pre/post test-power evidence, critic verdict, run IDs. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (behavior `f2a84be`: static probe parses full body, `MAX_BODY_BYTES` deleted; regression test pins >256 KiB CDATA feed → HEALTHY_WITH_RESULTS with red/green proof — same fixture through the old slice path throws exactly "CDATA is not closed."; local G3 635 tests, 0 failures, 1,529 assertions; typecheck/guardrails/build exit 0; fresh critic SHIP with zero blocking findings; CI/deploy `32609833176` success incl. production deploy job). Pre-existing `ActivePath` typing oddity recorded in evidence for a future unit. Evidence: `docs/gauntlet/evidence/REL-11-doctor-rss-truncation-fix.md` |
 
 ## OPS-05 — Close or roll up recovered source-health alerts
 
