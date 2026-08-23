@@ -1,6 +1,76 @@
 # System Savepoint
 
-## Current Gauntlet Execution Savepoint — 2026-08-23 (run 3)
+## Current Gauntlet Execution Savepoint — 2026-08-23 (run 4)
+
+Status: **SRC-4E TERMINAL — KEEP (diagnosis-only unit; no code changed)**. The
+Jobicy supporting-feed "CDATA is not closed" SCHEMA_BROKEN observation was a
+Source Doctor measurement artifact: `packages/scraper/source-doctor.ts:230`
+slices every static-source body to `MAX_BODY_BYTES` (256 KiB) before parsing,
+cutting the ~40-item supporting feed mid-CDATA, while the ingestion path parses
+full bodies via `conditionalFetchText`. Production D1 (read-only,
+`changed_db=false` throughout): ZERO parse errors ever across 113,342 fetch
+events; only Jobicy failures ever recorded are HTTP 429 pairs; supporting feed
+parsed 40 items as recently as 2026-08-22T21:10Z. Local synthetic reproduction
+matrix against installed fast-xml-parser 5.10.1 produces the exact error string
+only for truncation-mid-CDATA (8-item >269 KB doc sliced → THREW; bare/nested
+CDATA classes parse OK). CONSEQUENCE FOR SRC-4D: discount the SCHEMA_BROKEN
+half of the 2026-08-22T22:18Z observation; its HTTP-200-no-429 half remains a
+favorable interim signal; the D1 post-rollup gate is unchanged. Bounded fix
+proposal (REL-11 candidate: Doctor RSS truncation handling + regression test)
+recorded in evidence; live re-probe permitted only after SRC-4D closes.
+Evidence: `docs/gauntlet/evidence/SRC-4E-jobicy-supporting-cdata-diagnosis.md`.
+Docs hygiene also done this run: STATUS rows for REC-01, OPS-06, DATA-03
+(terminal KEEP each) and SRC-4D (VERIFYING with gate details) refreshed from
+commit-history evidence; SRC-4E bounded contract added (`6f5a630`).
+
+**DATA-05B remains VERIFYING/BLOCKED at the human-approved evidence gate** —
+code deployed (`6e31cd7f`; CI/deploy `32605834663` applied migration 0033);
+fresh read-only report recorded (344 unclassified / 35 note-evidence / 39
+shared-host / 17 mismatch); NO mutation has occurred or is authorized without
+an owner-approved evidence file (exact IDs + expected old values), then
+apply-sql dry-run → guarded per-row apply → undo artifact → route smoke.
+
+**SRC-4D remains VERIFYING (48h live window)** — behavior `90f3243`, CI/deploy
+`32592205884`, production Pages deploy ~2026-08-22T18:57Z starts the ≥48h post
+window. Interim signals: HTTP 200s on both feeds (no 429) per the 22:18Z probe
+(parse half now attributed to the SRC-4E artifact); D1 shows paired cadence
+skips operating and only one post-deploy 429 pair event so far (00:00:39Z Aug
+23, supporting feed fetch-level). NEXT EXACT ACTION: on/after 2026-08-24T19:00Z
+run the read-only D1 post-rollup (per-feed attempts / HTTP 429s / deferrals /
+backoff skips / publication lag from `source_fetch_events` since
+`2026-08-22T18:57:00Z`), append it to
+`docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, then decide KEEP
+or pause-Jobicy per contract.
+
+- Branch: `main`; worktree clean at commit time; run started at `0abe1a4`
+  (clean, synchronized with origin/main).
+- Commits this run: `6f5a630` (lagging STATUS rows refresh + SRC-4E PLANNED
+  contract) + the SRC-4E evidence/baton docs commit (see git log).
+- Verification this run: all remote D1 queries read-only (`rows_written=0`);
+  `git diff --check` clean pre-commit; repro scratch deleted after capture;
+  no production code touched; CI watched on pushed SHAs (docs-only runs).
+- Ownership boundary: `remotephjobs.com` is an external site;
+  `remotejobs-ph.pages.dev` is this project's production site. External-source
+  indexing is allowed only through the existing compliance policy and never
+  implies ownership.
+- Planning baseline: `bd84cc1`
+- Last accepted production behavior commits: `f00478c`/`041bc2c` (DATA-06B,
+  KEEP); `90f3243` (SRC-4D, VERIFYING); `6e31cd7f` (DATA-05B code slice,
+  deployed, awaiting approval-gated data step).
+- Current scheduled evidence: watchdog runs continue hourly; their payloads
+  remain evidence to inspect, not blanket health acceptance.
+- Last Gauntlet decision: `SRC-4E` — KEEP (diagnosis). Before that: DATA-06B
+  KEEP; DATA-05B BLOCKED (approval gate).
+- Current implementation unit queue:
+  `SRC-4D` **VERIFYING** (post-rollup due on/after 2026-08-24T19:00Z),
+  `REL-11 candidate` (PROPOSED — Doctor RSS truncation fix; needs bounded
+  contract before any change; live re-probe only after SRC-4D closes),
+  `DATA-05B` **BLOCKED at owner approval gate** (mutation step),
+  `COMP-01B` (reviewed enforcement; gated on a complete reviewed robots observe
+  window plus per-source reviewer sign-off),
+  `REC-02` (resume drill; needs owner agreement to synthetic interruption).
+
+## Historical checkpoint — run 3 / DATA-05B deployed slice (2026-08-23)
 
 Status: **DATA-05B VERIFYING — code deployed + fresh read-only report recorded;
 BLOCKED at the human-approved evidence gate (no mutation has occurred)**. The

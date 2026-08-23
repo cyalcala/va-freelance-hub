@@ -920,7 +920,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Gauntlet documentation only. |
 | GITHUB BACKUP | G5 (docs commits). |
 | HANDOFF | G6 plus onset/frequency table, repro fixture recipe, ranked root cause, and proposed fix-unit scope. |
-| STATUS | PLANNED |
+| STATUS | TERMINAL — KEEP (diagnosis complete 2026-08-23: root cause is the Doctor's own `MAX_BODY_BYTES` 256 KiB body slice before parsing (`source-doctor.ts:230`), which cuts the 40-item supporting feed mid-CDATA and yields exactly "CDATA is not closed."; ingestion path parses full bodies and has recorded ZERO parse errors ever across 113,342 fetch events; minimal synthetic reproduction matrix confirms only truncation-mid-CDATA produces this error string; hypotheses a/c eliminated). The 2026-08-22T22:18Z SCHEMA_BROKEN observation is a measurement artifact; its HTTP-200-no-429 half remains valid for SRC-4D. Bounded fix proposal (REL-11 candidate) recorded in evidence; no code changed. Evidence: `docs/gauntlet/evidence/SRC-4E-jobicy-supporting-cdata-diagnosis.md` |
 
 ## OPS-05 — Close or roll up recovered source-health alerts
 
