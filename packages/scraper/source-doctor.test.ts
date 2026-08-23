@@ -8,6 +8,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   runSourceDoctor,
   DoctorOutcome,
+  type ActivePath,
   type SourceDoctorResult,
 } from "./source-doctor";
 import type { Source } from "./sources";
@@ -355,3 +356,32 @@ describe("Source Doctor V1 — outcome enumeration completeness", () => {
     expect(unique.size).toBe(9);
   });
 });
+
+describe("Source Doctor V1 — activePath provenance contract", () => {
+  it("carries sourceName and sourceFamily after a static probe", async () => {
+    const ALLOWED_RSS_SOURCE_ID = "we-work-remotely";
+    const rssBody = `<?xml version="1.0"?>
+<rss version="2.0"><channel><title>Test</title></channel></rss>`;
+    const robotsBody = `User-agent: *\nAllow: /`;
+
+    const responses = new Map<string, { status: number; body: string; headers?: Record<string, string> }>();
+    responses.set("https://weworkremotely.com/remote-jobs.rss", { status: 200, body: rssBody });
+    responses.set("https://weworkremotely.com/robots.txt", { status: 200, body: robotsBody });
+
+    global.fetch = createMockFetch(responses);
+
+    const result = await runSourceDoctor(ALLOWED_RSS_SOURCE_ID, { json: true });
+
+    expect(result.activePath.sourceName).toBe("We Work Remotely");
+    expect(result.activePath.sourceFamily).toBe("WeWorkRemotely");
+  });
+});
+
+// Compile-time pins: ActivePath must declare the provenance fields that
+// runSourceDoctor assigns at runtime (REL-11 critic finding). These are
+// inert at runtime; a typechecker flags them if the fields are missing.
+type ActivePathHasKey<K extends keyof ActivePath> = K;
+const _pinSourceName: ActivePathHasKey<"sourceName"> = "sourceName";
+const _pinSourceFamily: ActivePathHasKey<"sourceFamily"> = "sourceFamily";
+void _pinSourceName;
+void _pinSourceFamily;

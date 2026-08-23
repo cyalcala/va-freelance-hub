@@ -65,6 +65,8 @@ export interface ActivePath {
   parseError?: string;
   itemCount?: number;
   error?: string;
+  sourceName?: string;
+  sourceFamily?: string;
 }
 
 export interface DiagnosticProbe {
