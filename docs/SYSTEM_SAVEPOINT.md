@@ -1,5 +1,32 @@
 # System Savepoint
 
+## Run 6 orientation addendum — 2026-08-23 (PAUSED — both remaining gates time-immature)
+
+Decision: **PAUSED**. No dependency-ready approved unit exists today. Fresh
+orientation verified at `e541309` (`main` clean, synchronized with
+`origin/main`; no dirty or untracked files). All 20 unit contracts are
+TERMINAL — KEEP except `SRC-4D` (VERIFYING) and `COMP-01B` (PLANNED), both
+time-gated to 2026-08-24. Operational watermelon check passed: Prospector run
+`32611728775` clean (0 auto-added, mass-add guard false); directory health run
+`32612310746` healthy (28 OK / 7 bot-wall / 3 unreachable = 8% ratio / 0 newly
+de-verified); enrichment run `32582816172` processed 0 companies (DATA-05A
+containment holding); source health shows only the two known Jobicy 429s
+already owned by SRC-4D. No code, data, contract, or generated-report changes
+were made this run; this addendum is the only commit.
+
+Next exact actions (unchanged from the run 5 checkpoint below):
+
+- On/after **2026-08-24T19:00Z**: run the read-only D1 post-rollup from
+  `source_fetch_events` since `2026-08-22T18:57:00Z`, append to
+  `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, then decide
+  SRC-4D KEEP or pause-Jobicy per contract.
+- On/after **2026-08-24T12:38Z**: begin COMP-01B — complete-window observation
+  report covering every active endpoint, reviewer sign-off, canary + full
+  cadence monitoring, rollback drill.
+- Still owner-gated: worktree cleanup dispositions (REC-01), SEC-LEGACY-01
+  rotation confirmation. Un-contracted candidate (needs a new approved unit
+  before any work): DATA-05B residual provenance backfill.
+
 ## Current Gauntlet Execution Savepoint — 2026-08-23 (run 5)
 
 Status: **DATA-05B TERMINAL — KEEP (owner-approved CAS repair executed and
