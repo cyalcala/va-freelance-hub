@@ -144,3 +144,38 @@ Zero live HTTP requests were made to any source during this review (D1-only);
 the SRC-4D Jobicy freeze (until its post-rollup, due ≥2026-08-24T19:00Z) remains
 intact. Any future Doctor sweep for endpoint probes stays deferred until after that
 rollup is recorded.
+
+---
+
+## REL-12 interim production probe — 2026-08-24T21:06Z (FAVORABLE, NOT acceptance)
+
+Executor: autonomous Gauntlet run 9 (fresh-session cold resume per the
+continuity protocol). All queries read-only (`changed_db=false`,
+`rows_written=0`); zero live source requests. Final acceptance remains
+time-gated to ≥2026-08-25T11:30Z UTC while pre-fix cache entries age out.
+
+| Metric | Value |
+| --- | --- |
+| `robots_cache` rows | 11 |
+| Rows with non-null body / null error | **2** (first ever successful fetches) |
+| Successful origins | `https://jobicy.com`, `https://www.realworkfromanywhere.com` — both fetched 2026-08-24T16:30:14Z under the fixed gate, status 200, bodies 1,850 / 125 bytes |
+| Post-deploy real fetches (since 14:49:30Z) | 153 total: verdict `unknown` 142, **verdict `allowed` 11** |
+| `allowed` sources | jobicy-supporting-apac ×4, real-work-from-anywhere ×4, jobicy-admin-support-apac ×3 (last ticked 20:50:09Z) |
+| Residual unknown explanation | 9 origins still hold pre-fix Illegal-invocation entries inside their 24h TTL (`fetched_at` 05:50–11:20Z Aug 24 → expire ≤11:20Z Aug 25) |
+
+Interpretation: the exact origin-by-origin taper predicted in the contract is
+observed — only origins whose pre-fix entry had already expired at fetch time
+received fresh fixed-path consultations, and every such consultation produced a
+decidable `allowed` verdict. No new failure class appeared. This confirms the
+deploy works in production; it does not yet satisfy the COMP-01B re-review
+condition of a fresh complete ≥48h window dominated by decidable verdicts.
+
+Jobicy HTTP 403 watch item (SRC-4F candidate): **unchanged** — all six 403s and
+all five 429s remain clustered within 2026-08-23T00:00–06:30Z; both feeds have
+been failure-free since (14 and 15 consecutive successes, last ticks 20:00Z /
+20:50Z Aug 24). No escalation warranted today.
+
+Queries: same shapes as the reproducibility block above, with
+`timestamp >= '2026-08-24T14:49:30Z'` for the post-deploy event window, plus a
+per-origin `robots_cache` detail SELECT (`origin, fetched_at, status,
+LENGTH(body), error`).

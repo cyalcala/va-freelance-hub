@@ -1,5 +1,45 @@
 # System Savepoint
 
+## Run 9 — REL-12 interim production probe FAVORABLE (2026-08-24T21:06Z, still VERIFYING)
+
+Status: **REL-12 remains VERIFYING**; interim read-only production evidence is
+favorable. Fresh session cold-resumed at `755f753` clean, fast-forwarded
+docs-only to `b9a205c` (`origin/main` automation digest). Unit board unchanged:
+20 TERMINAL — KEEP, COMP-01B BLOCKED — NO FLIP (re-review gated behind REL-12),
+REL-12 the only non-terminal unit. No dependency-ready approved work existed,
+so this run collected the earliest meaningful production signal and checkpointed.
+
+**Interim probe results** (all queries `changed_db=false`, zero live source
+requests; full detail appended to
+`docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`):
+
+- First-ever successful `robots_cache` rows: `https://jobicy.com` +
+  `https://www.realworkfromanywhere.com` fetched 16:30:14Z under the fixed gate
+  (HTTP 200, bodies 1,850 / 125 bytes, null error).
+- First-ever decidable verdicts in `source_fetch_events`: 11 × `allowed`
+  post-deploy (jobicy-supporting-apac ×4, real-work-from-anywhere ×4,
+  jobicy-admin-support-apac ×3), last ticked 20:50:09Z.
+- Residual 142 post-deploy `unknown` fully explained by the predicted taper:
+  9 origins' pre-fix entries were still inside their 24h TTL at fetch time.
+- Jobicy HTTP 403 watch item (SRC-4F candidate): UNCHANGED — all six 403s /
+  five 429s remain clustered 2026-08-23T00:00–06:30Z; both feeds failure-free
+  since (14/15 consecutive successes). No escalation.
+
+Next exact actions (unchanged in substance):
+
+- **On/after 2026-08-25T11:30Z**: run the REL-12 acceptance probe (read-only
+  D1: `robots_cache` successes + post-deploy verdict distribution since
+  14:49:30Z Aug 24). All 9 remaining pre-fix entries will have expired by
+  11:20Z. If decidable verdicts dominate with explained residual unknowns →
+  flip REL-12 TERMINAL — KEEP.
+- **Then start COMP-01B re-review window**: fresh ≥48h decidable observe window
+  → re-run endpoint classification → reviewer sign-off → typed config → canary
+  → full cadence monitoring per original contract steps.
+- Watch item: Jobicy HTTP 403 rate across future windows (candidate SRC-4F if
+  growing).
+- Owner-gated (unchanged): REC-01 worktree dispositions, SEC-LEGACY-01 rotation,
+  paused-source re-enablement decisions.
+
 ## Run 8 — COMP-01B NO FLIP + REL-12 deployed (2026-08-24, VERIFYING)
 
 Status: **COMP-01B BLOCKED — NO FLIP (accepted safe outcome)** and
