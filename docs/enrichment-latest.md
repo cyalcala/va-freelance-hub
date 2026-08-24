@@ -1,7 +1,7 @@
 # Directory Enrichment — Latest
 
 Date: 2026-08-24
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32689828412
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32748823924
 
 | Metric | Value |
 | --- | ---: |
