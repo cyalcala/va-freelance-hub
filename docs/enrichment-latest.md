@@ -1,16 +1,16 @@
 # Directory Enrichment — Latest
 
-Date: 2026-08-23
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32649786177
+Date: 2026-08-24
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32689828412
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 1 |
+| Companies processed | 0 |
 | Websites set | 0 |
-| Hiring pages set | 1 |
+| Hiring pages set | 0 |
 | Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #531 Grafana Labs: hiring_page=https://boards.greenhouse.io/grafanalabs
+- (none this run)
