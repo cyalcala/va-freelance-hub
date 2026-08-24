@@ -1138,7 +1138,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Gate binding + its test only. |
 | GITHUB BACKUP | G5 with CI/deploy run ID. |
 | HANDOFF | G6 plus exact diff, test name, run ID, and the post-deploy probe command. |
-| STATUS | READY — dependency-free; highest-leverage P1 currently executable without touching SRC-4D's freeze. |
+| STATUS | VERIFYING (deployed 2026-08-24: behavior `d858383`, CI/deploy `32740931539` success incl. guardrails/tests/build/typecheck/worker-validate/Pages deploy, production live ~14:49:27Z. Focused 28/0, full G3 644/0/1,557 local at commit. Expected transient: pre-fix Illegal-invocation cache entries remain fresh until their 24h TTL expires (staggered through ≤2026-08-25T11:20Z), so `unknown` verdicts taper origin-by-origin; acceptance probe = first `robots_cache` rows with non-null body / null error + decidable verdicts in events. Post-deploy D1 probe results append to the COMP-01B evidence doc.) |
 
 ## REC-02 — Minimal-context interruption and resume drill
 

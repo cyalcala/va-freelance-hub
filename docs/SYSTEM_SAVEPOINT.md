@@ -1,11 +1,12 @@
 # System Savepoint
 
-## Run 8 — COMP-01B window review: NO FLIP; REL-12 contracted (2026-08-24)
+## Run 8 — COMP-01B NO FLIP + REL-12 deployed (2026-08-24, VERIFYING)
 
-Status: **COMP-01B BLOCKED — NO FLIP (accepted safe outcome)** + new unit
-**REL-12 READY**. Start state: synchronized clean `main` at `a319afc`
-(docs-only digest delta fast-forwarded from `4830da4`). All queries read-only
-(`changed_db=false`); zero live source requests (SRC-4D freeze intact).
+Status: **COMP-01B BLOCKED — NO FLIP (accepted safe outcome)** and
+**REL-12 DEPLOYED — VERIFYING**. Start state: synchronized clean `main` at
+`a319afc` (docs-only digest delta fast-forwarded from `4830da4`). All D1
+queries read-only (`changed_db=false`); zero live source requests (SRC-4D
+freeze intact).
 
 **Finding** — Complete ≥48h observe window (2026-08-22T12:40Z → 14:30Z,
 681 real fetches, 41 identities) contains **zero** `allowed` robots verdicts:
@@ -17,22 +18,30 @@ inject `fetchImpl`, so the production default path was never covered
 (watermelon). Enforcement flip would have blocked 100% of ingestion — the gate
 did exactly its job by forcing this review first.
 
+**REL-12 executed same run (TDD)** — failing-first receiver regression test
+(`receiver === globalThis` discriminates detached vs bound invocation; fails on
+bare-identifier pattern), one-line fix (`DEFAULT_FETCH_IMPL` wrapper through
+`globalThis.fetch(...)`), Bun-augmented `typeof fetch` typed via explicit
+signature cast. Verification at `d858383`: focused 28/0/58, full G3
+644/0/1,557, typecheck 0, guardrails 0, build complete; CI/deploy `32740931539`
+success incl. Pages production deploy ~2026-08-24T14:49:27Z.
+
 **Artifacts** — Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
 Units doc: COMP-01B STATUS → BLOCKED — NO FLIP with re-review conditions;
-REL-12 contract added (one-line binding fix + default-path regression test).
-No code changed this run yet.
+REL-12 contract added, STATUS → VERIFYING.
 
 Next exact actions:
 
-- **Execute REL-12** (dependency-free, does not touch jobicy.com): bind/wrap
-  default fetch in `robotsGate.ts`, add failing-first regression test, focused
-  suite + G3, push, watch CI/deploy.
 - On/after **2026-08-24T19:00Z**: SRC-4D read-only D1 post-rollup from
   `source_fetch_events` since `2026-08-22T18:57:00Z`, append to
   `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, decide KEEP or
   pause-Jobicy per contract.
-- After REL-12 deploy: start fresh ≥48h decidable robots window → reopen
-  COMP-01B re-review per contract steps.
+- REL-12 probe (any time after origin TTLs expire, staggered ≤2026-08-25T11:20Z):
+  read-only D1 check for first `robots_cache` rows with non-null body /
+  null-error and decidable verdicts post-deploy; append results to the COMP-01B
+  evidence doc, then flip REL-12 TERMINAL.
+- Then start fresh ≥48h decidable robots window → reopen COMP-01B re-review per
+  contract steps.
 - Owner-gated (unchanged): REC-01 worktree dispositions, SEC-LEGACY-01 rotation,
   paused-source re-enablement decisions.
 
