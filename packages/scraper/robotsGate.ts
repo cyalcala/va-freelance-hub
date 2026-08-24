@@ -42,6 +42,9 @@ export const ROBOTS_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 /** Upper bound on a stored robots.txt body. Real ones are a few KB. */
 export const ROBOTS_BODY_MAX_BYTES = 64 * 1024;
 
+const DEFAULT_FETCH_IMPL = ((input: RequestInfo | URL, init?: RequestInit) =>
+  globalThis.fetch(input, init)) as typeof fetch;
+
 export type RobotsMode = "observe" | "enforce";
 
 export interface RobotsCacheEntry {
@@ -252,7 +255,7 @@ export async function checkRobots(url: string, deps: RobotsGateDeps): Promise<Ro
     const entry = await fetchRobots(
       origin,
       {
-        fetchImpl: deps.fetchImpl ?? fetch,
+        fetchImpl: deps.fetchImpl ?? DEFAULT_FETCH_IMPL,
         userAgent: deps.userAgent ?? `Mozilla/5.0 (compatible; RemotePHJobsBot/1.0)`,
         timeoutMs: deps.timeoutMs ?? 10_000,
       },

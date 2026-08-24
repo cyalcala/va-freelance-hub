@@ -412,3 +412,26 @@ describe("checkRobots — ATS endpoint integration (COMP-01A)", () => {
     expect(result.evidence).toContain("ENOTFOUND");
   });
 });
+
+describe("checkRobots — platform fetch default (REL-12)", () => {
+  test("invokes globalThis.fetch with its receiver so workerd does not throw Illegal invocation", async () => {
+    const originalFetch = globalThis.fetch;
+    let receiver: unknown = "not-called";
+    const probe = function (this: unknown) {
+      receiver = this;
+      return Promise.resolve(response("User-agent: *\nAllow: /"));
+    };
+    globalThis.fetch = probe as typeof fetch;
+    try {
+      const result = await checkRobots("https://example.com/x", {
+        store: memoryStore(),
+        now,
+      });
+      expect(result.verdict).toBe("allowed");
+      expect(result.evidence).not.toContain("Illegal invocation");
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+    expect(receiver).toBe(globalThis);
+  });
+});
