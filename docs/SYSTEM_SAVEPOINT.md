@@ -1,5 +1,41 @@
 # System Savepoint
 
+## Run 8 — COMP-01B window review: NO FLIP; REL-12 contracted (2026-08-24)
+
+Status: **COMP-01B BLOCKED — NO FLIP (accepted safe outcome)** + new unit
+**REL-12 READY**. Start state: synchronized clean `main` at `a319afc`
+(docs-only digest delta fast-forwarded from `4830da4`). All queries read-only
+(`changed_db=false`); zero live source requests (SRC-4D freeze intact).
+
+**Finding** — Complete ≥48h observe window (2026-08-22T12:40Z → 14:30Z,
+681 real fetches, 41 identities) contains **zero** `allowed` robots verdicts:
+657 unknown from one deterministic defect, 24 provenance-less transients.
+Root cause VERIFIED: `robotsGate.ts:255` default `fetchImpl ?? fetch` invoked
+detached at `:186` → workerd Illegal invocation on every robots.txt fetch;
+`robots_cache` holds 11 origins / 0 successes / 0 bodies ever. Local tests all
+inject `fetchImpl`, so the production default path was never covered
+(watermelon). Enforcement flip would have blocked 100% of ingestion — the gate
+did exactly its job by forcing this review first.
+
+**Artifacts** — Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
+Units doc: COMP-01B STATUS → BLOCKED — NO FLIP with re-review conditions;
+REL-12 contract added (one-line binding fix + default-path regression test).
+No code changed this run yet.
+
+Next exact actions:
+
+- **Execute REL-12** (dependency-free, does not touch jobicy.com): bind/wrap
+  default fetch in `robotsGate.ts`, add failing-first regression test, focused
+  suite + G3, push, watch CI/deploy.
+- On/after **2026-08-24T19:00Z**: SRC-4D read-only D1 post-rollup from
+  `source_fetch_events` since `2026-08-22T18:57:00Z`, append to
+  `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, decide KEEP or
+  pause-Jobicy per contract.
+- After REL-12 deploy: start fresh ≥48h decidable robots window → reopen
+  COMP-01B re-review per contract steps.
+- Owner-gated (unchanged): REC-01 worktree dispositions, SEC-LEGACY-01 rotation,
+  paused-source re-enablement decisions.
+
 ## Run 7 — TAX-02 owner-directed category expansion (2026-08-23, TERMINAL — KEEP)
 
 Status: **TAX-02 TERMINAL — KEEP** and freshness diagnosis delivered. Owner

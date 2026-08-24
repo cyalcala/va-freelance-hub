@@ -1085,7 +1085,60 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Enforcement gating only; no source/cadence/parser changes. |
 | GITHUB BACKUP | G5 with canary/full observation run IDs. |
 | HANDOFF | G6 plus endpoint matrix, evidence window, reviewer, config, block/error/freshness metrics, and rollback trigger. |
-| STATUS | PLANNED |
+| STATUS | BLOCKED — NO FLIP (accepted safe outcome 2026-08-24; complete ≥48h window reviewed: 681 real fetches, verdict `allowed`=0, `unknown`=657 from a single gate defect — workerd Illegal-invocation on detached default `fetch` in robotsGate.ts:255/:186; zero successful robots.txt fetches ever cached. Enforcement flip would halt 100% ingestion. No source pause warranted. Re-review requires REL-12 deployed + fresh decidable ≥48h window. Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`) |
+
+## REL-12 — Fix robots gate Workers fetch binding (default path Illegal invocation)
+
+| Field | Contract |
+| --- | --- |
+| UNIT ID | REL-12 |
+| TITLE | Bind the robots gate's default fetch so robots.txt checks succeed in Workers |
+| MILESTONE | M6/M4 — Health Memory / reliability (unblocks COMP-01B re-review) |
+| PRIORITY | P1 compliance-evidence blocker (every robots decision in production is unknown) |
+| OBJECTIVE | Make the default `fetchImpl` invocable in Cloudflare workerd so the gate records real allowed/disallowed verdicts, then reopen the observe window for COMP-01B. |
+| WHY THIS MATTERS | Since the gate shipped, not one robots.txt fetch has succeeded in production (`robots_cache`: 11 origins, 0 ok, 0 bodies; 657/657 decisions unknown). Enforcement is impossible and consent evidence is absent while ingestion proceeds on fail-open unknowns. |
+| CURRENT EVIDENCE | `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`; error string identical across all 657 events; code path `robotsGate.ts:255` (`?? fetch`) + `:186` (detached call); local tests all inject `fetchImpl`, so default path untested and Node/bun tolerates detached fetch (watermelon). |
+| EVIDENCE STATUS | Root cause VERIFIED by production evidence string + code-path match + runtime-semantics explanation. |
+| ROOT CAUSE | Bare global `fetch` captured as a value and invoked detached; workerd native functions require their proper receiver. |
+| ROOT CAUSE CONFIDENCE | High. |
+| PREREQUISITES | None blocking; SRC-4D coordination constraint respected (no jobicy.com requests needed for this fix or its tests). |
+| DEPENDENCIES | Blocks COMP-01B re-review only. Independent of SRC-4D rollup timing (no live requests). |
+| AFFECTED FILES / SYMBOLS | `packages/scraper/robotsGate.ts` (`checkRobots` default deps, optional exported default wrapper), `packages/scraper/robotsGate.test.ts` (default-path regression test). No other files. |
+| CALLERS / DEPENDENTS | `apps/web/src/pages/api/cron/scrape.ts` static+ATS gates; `packages/scraper/source-doctor.ts` diagnostics (local CLI unaffected but shares the fix). |
+| BASELINE | 657/657 unknown via Illegal invocation; cache 0 ok / 0 bodies. Post-fix baseline target: production robots_cache accumulates entries with `error IS NULL` and bodies within one TTL cycle. |
+| PRIMARY ADDY SKILL / WORKFLOW | `systematic-debugging` (root cause already isolated) → `test-driven-development` → `verification-before-completion`. |
+| OPTIONAL SUPERPOWERS MECHANISM | Fresh independent critic on the diff. |
+| ASSIGNED MODEL | Any bounded executor; change is one line + one test. |
+| CRITIC | Independent reviewer confirming no behavior change for injected-fetch callers and no new dependencies. |
+| ESCALATION MODEL | Architecture reasoner only if workerd semantics contradict the fix. |
+| WORKTREE REQUIRED | No (single-file bounded fix per TAX-02 direct-to-main precedent). |
+| ALLOWED SCOPE | Default binding fix (e.g., `fetchImpl: deps.fetchImpl ?? ((input, init) => fetch(input, init))` or `fetch.bind(globalThis)`), one default-path regression test, docs/evidence updates. |
+| SMALLEST IMPLEMENTATION | Wrap/bind the fallback once at module scope; keep signature `typeof fetch`. |
+| MUST PRESERVE | Injected-`fetchImpl` behavior byte-for-byte; cache TTL/keying; verdict semantics; observe mode; G1–G12 invariants. |
+| DO NOT TOUCH / FORBIDDEN SCOPE | No enforcement flip, no mode/config changes, no cadence/source/parser changes, no new dependencies, no live-source requests in tests. |
+| REGRESSION SURFACE | Static + ATS robots provenance recording; Source Doctor robots fields; robotsCache writes. |
+| TESTS | New default-path test proving the default resolves through an explicit bound/wrapped invocation (must fail against old bare-identifier pattern); existing robotsGate/robots suites unchanged and green; focused suite then G3. |
+| PROBES | Post-deploy read-only D1 check after one clock cycle: new `robots_cache` rows with non-null body or explicit HTTP status (no Illegal-invocation errors); no live manual probes required. |
+| BENCHMARK / EVAL | Within one TTL cycle post-deploy: `unknown` share of real-fetch robots decisions collapses from 100% toward residual-only (genuinely unreachable origins), with each residual carrying its own distinct evidence string. |
+| AUTOMATION OPPORTUNITY | The COMP-01B observation queries become a generated compliance rollup (future unit candidate). |
+| AUTOMATION CLASS | A2 EVIDENCE COLLECTION after deploy verification query is scripted. |
+| MATURITY TARGET | A2. |
+| OBSERVABILITY | Existing event columns suffice (verdict/evidence/cache age). |
+| IDEMPOTENCY | Pure function change; no state migration. |
+| MAINTAINABILITY IMPACT | Restores intended single-gate semantics; removes silent universal-failure mode. |
+| SCALE IMPACT | Adds ≤1 robots.txt subrequest per origin per TTL (the originally designed budget); origin caching unchanged. |
+| HARDENING IMPACT | Converts compliance intent into functioning evidence collection. |
+| ACCEPTANCE | Focused suites green; G3 green; CI/deploy green incl. Pages; post-deploy D1 probe shows first successful robots entries. |
+| ACCEPTANCE EVIDENCE | Test output at commit SHA, CI/deploy run ID, follow-up read-only D1 probe appended to the COMP-01B evidence doc. |
+| REVERT | Single-commit revert restores prior (broken but stable) behavior; no data repair needed. |
+| STOP CONDITIONS | If wrapped invocation still fails in workerd (contradicts known runtime semantics), stop and escalate instead of iterating blind. |
+| ESCALATION | Owner informed; alternative transports (e.g., injected globalThis-bound reference) designed before retry. |
+| DOCUMENTATION | Append deployment + probe results to COMP-01B evidence doc; update this STATUS and the baton. |
+| COMMIT PLAN | One behavior commit (`fix(robots): bind default gate fetch for Workers`), one docs commit. |
+| COMMIT BOUNDARY | Gate binding + its test only. |
+| GITHUB BACKUP | G5 with CI/deploy run ID. |
+| HANDOFF | G6 plus exact diff, test name, run ID, and the post-deploy probe command. |
+| STATUS | READY — dependency-free; highest-leverage P1 currently executable without touching SRC-4D's freeze. |
 
 ## REC-02 — Minimal-context interruption and resume drill
 
