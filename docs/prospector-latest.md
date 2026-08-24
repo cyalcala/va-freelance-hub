@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-08-24
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32701719208
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32731505135
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 5 |
-| Auto-added this run | 1 |
+| Candidates considered | 6 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 3 |
 | Rejected for quality | 1 |
@@ -15,4 +15,5 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32701719
 
 ## Auto-added companies
 
-- Mechanical Orchard
+- Faire
+- BeyondTrust
