@@ -73,10 +73,13 @@ both jobicy feeds 20–21/22 — i.e., uniformly defective, no per-source signal
 | `unknown` | **every active endpoint** (20 fetching identities); plus 21 paused identities with zero fetch attempts |
 
 Coverage gap (minor, separate from the blocking defect): 24 real-fetch events across
-19 identities carry NULL robots fields despite `skipped=0`. INFERRED root cause:
-transient fetch failures record events through a path that does not attach last-known
-gate provenance. Low severity; candidate hardening note only — not a flip blocker and
-not part of REL-12 scope.
+19 identities carry NULL robots fields despite `skipped=0`. VERIFIED benign:
+all 24 timestamps fall within 2026-08-22T12:40:39Z–13:00:40Z — the first two clock
+cycles after the COMP-01A deploy (12:38Z) before new code fully propagated. A
+deployment-transition artifact, not an ongoing provenance hole (code inspection:
+both static and ATS paths attach last-known gate decisions even on failed fetches;
+`fetchSourceWithStatus` failures receive provenance from callers post-return).
+No hardening action required.
 
 ## Compliance posture during the window (honest record)
 
