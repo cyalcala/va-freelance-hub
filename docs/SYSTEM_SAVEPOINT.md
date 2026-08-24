@@ -30,20 +30,37 @@ success incl. Pages production deploy ~2026-08-24T14:49:27Z.
 Units doc: COMP-01B STATUS → BLOCKED — NO FLIP with re-review conditions;
 REL-12 contract added, STATUS → VERIFYING.
 
+**SRC-4D TERMINAL — KEEP (2026-08-24T19:01Z)** — complete ≥48h post-rollup
+executed read-only: zero paired same-ms failures (pre-fix signature gone),
+5 isolated 429s absorbed by capped backoff, turns balanced 18/19 (no
+starvation), bounded freshness (both feeds published within ~15 min of query).
+Watch item: new HTTP 403 class ×6 (supporting 4 / admin 2), feeds ~70% ok —
+escalate only if share grows; candidate SRC-4F. Evidence appended to
+`docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`.
+
+**REL-12 VERIFYING (deployed `d858383`, CI/deploy `32740931539`)** — SRC-4D's
+Jobicy freeze is now lifted (post-rollup recorded); scheduled robots.txt
+consultations proceed under the fixed gate. Production verification is purely
+TTL-staggered: all 11 cached pre-fix error entries expire between
+2026-08-24T16:00Z and 2026-08-25T11:20Z; acceptance signal = first
+`robots_cache` rows with non-null body / null error and decidable verdicts in
+events. Probe query is in the COMP-01B evidence doc.
+
 Next exact actions:
 
-- On/after **2026-08-24T19:00Z**: SRC-4D read-only D1 post-rollup from
-  `source_fetch_events` since `2026-08-22T18:57:00Z`, append to
-  `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`, decide KEEP or
-  pause-Jobicy per contract.
-- REL-12 probe (any time after origin TTLs expire, staggered ≤2026-08-25T11:20Z):
-  read-only D1 check for first `robots_cache` rows with non-null body /
-  null-error and decidable verdicts post-deploy; append results to the COMP-01B
-  evidence doc, then flip REL-12 TERMINAL.
-- Then start fresh ≥48h decidable robots window → reopen COMP-01B re-review per
-  contract steps.
+- **On/after 2026-08-25T11:30Z**: run the REL-12 acceptance probe (read-only
+  D1: `robots_cache` successes + post-deploy verdict distribution). If
+  decidable verdicts dominate with explained residual unknowns → flip REL-12
+  TERMINAL — KEEP.
+- **Then start COMP-01B re-review window**: fresh ≥48h decidable observe window
+  → re-run endpoint classification → reviewer sign-off → typed config → canary
+  → full cadence monitoring per original contract steps.
+- Watch item: Jobicy HTTP 403 rate across future windows (candidate SRC-4F if
+  growing).
 - Owner-gated (unchanged): REC-01 worktree dispositions, SEC-LEGACY-01 rotation,
   paused-source re-enablement decisions.
+
+## Run 8 prior context (superseded details retained below)
 
 ## Run 7 — TAX-02 owner-directed category expansion (2026-08-23, TERMINAL — KEEP)
 

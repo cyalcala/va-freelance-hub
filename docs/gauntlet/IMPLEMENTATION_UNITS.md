@@ -865,7 +865,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Jobicy/shared-origin cadence and tests only; no source expansion. |
 | GITHUB BACKUP | G5 with 48-hour evidence follow-up. |
 | HANDOFF | G6 plus provider guidance, pre/post event timings, chosen bounds, state key, starvation proof, and next review date. |
-| STATUS | VERIFYING — bounded shared-origin cadence fix deployed (behavior `90f3243`; CI/deploy `32592205884`; production Pages deploy ~2026-08-22T18:57Z starts the ≥48h post window; local G3 at that commit 602 tests, 1,403 assertions). Diagnosis evidence: `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md`. Interim read-only observation 2026-08-22T22:18Z: both feeds HTTP 200 (no 429); `jobicy-supporting-apac` failed XML parse ("CDATA is not closed") → SCHEMA_BROKEN — favorable interim signal only, spun out as SRC-4E. ACCEPTANCE GATE: read-only D1 post-rollup on/after 2026-08-24T19:00Z, then KEEP or pause-Jobicy per contract. |
+| STATUS | TERMINAL — KEEP (post-rollup executed read-only 2026-08-24T19:01Z over the complete ≥48h window: zero paired same-ms failures, 5 isolated 429s absorbed by capped backoff, turns balanced 18/19 with no starvation, bounded freshness — both feeds published within ~15 min of query; backoff exercised 49×. Watch item recorded: new HTTP 403 class ×6, feeds still ~70% ok; escalate to a diagnosis unit only if the share grows. Evidence: `docs/gauntlet/evidence/SRC-4D-jobicy-cadence-diagnosis.md` post-rollup section. Behavior `90f3243`; CI/deploy `32592205884`.) |
 
 ## SRC-4E — Diagnose the Jobicy supporting-feed CDATA parse failure
 

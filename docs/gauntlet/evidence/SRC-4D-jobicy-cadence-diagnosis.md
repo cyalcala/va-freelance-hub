@@ -110,3 +110,48 @@ publication lag from `source_fetch_events` on/after
 `2026-08-22T18:57:00Z`, showing reduced 429s, no same-invocation retries, no
 starvation (each feed receiving bounded turns), and bounded freshness. If 429s
 persist at minimum traffic, pause Jobicy instead of increasing load.
+
+## Post-rollup (executed read-only 2026-08-24T19:01Z, window ≥48h complete)
+
+Window: `source_fetch_events` since `2026-08-22T18:57:00Z` through
+`2026-08-24T19:00Z`. Query returned `changed_db=false`.
+
+| Feed | attempts | deferred turns | backoff skips | real fetches | ok | failed | last items fetched |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| jobicy-admin-support-apac | 127 | 4 | 29 | 18 | 13 | 5 | 2026-08-24T18:50:10Z |
+| jobicy-supporting-apac | 127 | 1 | 20 | 19 | 13 | 6 | 2026-08-24T18:40:09Z |
+
+Failure breakdown (isolated, never paired):
+
+| Feed | error | n |
+| --- | --- | --- |
+| admin-support | HTTP 429 | 3 |
+| admin-support | HTTP 403 | 2 |
+| supporting | HTTP 403 | 4 |
+| supporting | HTTP 429 | 2 |
+
+Same-millisecond paired failures since deploy: **0** (pre-fix signature was
+every 429 hitting both feeds at an identical timestamp).
+
+Acceptance evaluation against the contract benchmark:
+
+- **Reduced 429s**: met. Pre-fix, each allowance trip failed both feeds as a
+  pair; post-fix, 5 isolated 429s over ≥48h, absorbed by capped backoff
+  without retry amplification.
+- **No retries**: met. Zero same-invocation retries by construction; zero
+  paired failures observed.
+- **No starvation**: met. Real fetch turns split 18/19; both feeds publish.
+- **Bounded freshness**: met. Both feeds fetched items within ~15 minutes of
+  the rollup query.
+- Backoff machinery exercised in production: 49 backoff skips total.
+
+**VERDICT: TERMINAL — KEEP.**
+
+Watch item (not contract-triggering): 6× HTTP 403 (supporting 4, admin 2)
+appeared as a new failure class alongside residual 429s. Feeds still succeed
+~70% of attempts (26/37). If 403 share grows across future windows, open a
+dedicated diagnosis unit (candidate SRC-4F) before considering any pause;
+no action inside SRC-4D scope. Note: the jobicy.com robots-cache entry expired
+2026-08-24T16:10Z; subsequent scheduled consultations use the fixed REL-12
+gate, whose first successful jobicy.com/robots.txt read will land via normal
+ingestion machinery (SRC-4E's optional re-probe stays out of scope/deferred).
