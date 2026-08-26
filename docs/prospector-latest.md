@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-08-26
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32973327854
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33008350986
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 8 |
-| Auto-added this run | 4 |
+| Candidates considered | 4 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 3 |
 | Rejected for quality | 1 |
@@ -15,7 +15,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/32973327
 
 ## Auto-added companies
 
-- Keeper Security
-- IxDF - Interaction Design Foundation
-- Typeform
-- OfferUp
+- (none this run)
