@@ -24,9 +24,9 @@ function robots(overrides: Partial<RobotsGateResult>): RobotsGateResult {
   };
 }
 
-describe("COMP-01B WWR-only robots enforcement canary", () => {
-  test("enforces only WWR and defaults every known/unknown source to observe", () => {
-    expect(robotsModeForSourceId("we-work-remotely")).toBe("enforce");
+describe("COMP-01B robots enforcement rollback", () => {
+  test("defaults every known/unknown source to observe", () => {
+    expect(robotsModeForSourceId("we-work-remotely")).toBe("observe");
     for (const id of ["remotive", "remote-ok", "future-source", "ashby:future"]) {
       expect(robotsModeForSourceId(id)).toBe("observe");
     }

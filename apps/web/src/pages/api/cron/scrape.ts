@@ -48,7 +48,7 @@ type SourceType = "RSS" | "HTML" | "JSON" | "ATS";
  * enter the explicit canary set; every other and future ID defaults observe.
  * Removing the canary ID is the tested rollback.
  */
-const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely"]);
+const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set([]);
 
 export function robotsModeForSourceId(
   sourceId: string,
