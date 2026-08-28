@@ -179,3 +179,81 @@ Queries: same shapes as the reproducibility block above, with
 `timestamp >= '2026-08-24T14:49:30Z'` for the post-deploy event window, plus a
 per-origin `robots_cache` detail SELECT (`origin, fetched_at, status,
 LENGTH(body), error`).
+
+---
+
+## REL-12 final acceptance + COMP-01B re-review — 2026-08-28T01:50Z
+
+Executor: autonomous Gauntlet run 10. The session started from a clean
+synchronized `main` at `a8a8e10` after a safe fast-forward over 23 generated
+report commits. All production queries were read-only (`changed_db=false`,
+`changes=0`, `rows_written=0`); no live source requests or D1 mutations were
+made.
+
+### REL-12 verdict: TERMINAL — KEEP
+
+The mature post-TTL window starts at `2026-08-25T11:30:00Z`; its first event is
+`2026-08-25T17:10:09.537Z` and its latest event is
+`2026-08-28T01:50:09.140Z` (about 56 hours 40 minutes of observed events,
+exceeding the required 48 hours). It contains 8,299 events across all 41 source
+identities and 1,023 real fetches across 20 fetching identities.
+
+| Mature-window result | Value |
+| --- | ---: |
+| Decidable `allowed` real fetches | **848 (82.9%)** |
+| `disallowed` real fetches | 0 |
+| Residual `unknown` real fetches | **175 (17.1%)** |
+| Real fetches with null robots verdict | 0 |
+| Identities with only `allowed` verdicts | 15 |
+| Identities with residual `unknown` verdicts | 5 (all Ashby) |
+
+The REL-12 failure signature is absent from the mature window. Its final event
+was `2026-08-25T10:00:12.970Z`, before the acceptance cutoff. Every current
+`robots_cache` row has an explicit HTTP status and `error IS NULL`; ten of the
+eleven origins are HTTP 200 with stored bodies. The eleventh is the shared
+Ashby origin `https://api.ashbyhq.com`, which returns HTTP 401 with no body.
+Therefore the deployed binding fix eliminated the universal workerd failure
+and restored real robots decisions without changing injected-fetch behavior,
+cache semantics, source cadence, or observe mode.
+
+### COMP-01B re-review verdict: BLOCKED / NO FLIP
+
+The complete mature endpoint classification is:
+
+| Class | Fetching identities | Evidence |
+| --- | ---: | --- |
+| `pass` | **15** | 848 allowed, 0 unknown/null across Breezy, Greenhouse, Jobicy, Real Work From Anywhere, Remote OK, Remotive, and We Work Remotely |
+| `block/pause` | 0 | No `disallowed` verdict observed |
+| `unknown` | **5** | Amplify, Ashby, Camunda, Supabase, and Tremendous: 35/35 real fetches each report `robots.txt unreachable (HTTP 401); operator intent unknown` |
+| skip-only | 21 | Existing paused identities; no real fetch to classify |
+
+COMP-01B cannot proceed to a typed enforcement config or canary because its
+explicit stop condition fires when any active endpoint lacks evidence or has
+ambiguous robots intent. A global flip would fail closed on every Ashby fetch;
+selective enforcement is also premature until the Ashby access/robots posture
+receives a bounded source-specific review and approval. Observe mode remains
+unchanged, no source was enabled or paused by this evidence-only run, and
+source expansion remains frozen.
+
+Pause recommendation (not executed; source-policy mutation remains separately
+approval-gated): pause the five Ashby identities pending a bounded,
+human-reviewed robots/access-path resolution. That follow-up must determine
+from authoritative, source-supported evidence whether the correct robots
+origin/path or permitted public ATS access interpretation differs. If it cannot
+resolve the ambiguity, keep the identities paused. Do not bypass the HTTP 401
+or treat it as allow.
+
+Fresh independent critic: **REL-12 SHIP / KEEP; COMP-01B BLOCKED / NO FLIP**.
+The critic independently reproduced the read-only D1 results and confirmed
+that five active ambiguous endpoints directly fire the contract stop
+condition. It also flagged that all enabled ATS identities still carry
+`needs_review`; their compliance statuses must be reconciled during any future
+reviewer sign-off rather than inferred from a technically allowed robots
+verdict. No builder self-certification is used for these terminal decisions.
+
+### Reproducibility cutoff
+
+The mature-window queries reuse the SQL shapes above with
+`timestamp >= '2026-08-25T11:30:00Z'`, plus the full per-origin cache detail
+query. Query metadata reported `changed_db=false` and `rows_written=0` for
+every result.

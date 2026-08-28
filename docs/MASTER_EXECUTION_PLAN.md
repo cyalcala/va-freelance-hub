@@ -203,7 +203,7 @@ Manual extensions
 | P1 | OPS-04 | directory unreachable ratio rose to 43% | verified current signal |
 | P1 | SRC-4D | two Jobicy feeds receive 429 on one origin | verified current signal |
 | P1 | DATA-03 | quality cohort is dated and mutation decisions lack a fresh baseline | verified evidence gap |
-| P1 | COMP-01 | durable robots evidence and reviewed enforcement are incomplete | verified gap |
+| P1 | COMP-01 | durable robots evidence works after REL-12; reviewed enforcement remains blocked because five active Ashby identities receive HTTP 401 for the shared robots endpoint | verified residual policy/access-path gap; no flip |
 | P2 | REL-08 | source health lacks a single compliance-first semantic Doctor contract | verified fragmentation |
 | P2 | DATA-06 | taxonomy and triage paths can disagree | verified architecture and live symptoms |
 | P2 | REL-10 | homepage projection omits eligibility used by card routing | verified in code |
@@ -293,7 +293,7 @@ DATA-03, DATA-06, REL-08, and COMP-01 evidence gates pass.
 | Opportunity | Stage now | Next safe ratchet |
 | --- | --- | --- |
 | bad directory domains | recurring mutation, weak semantic guard | observe repeated-domain anomaly -> block unverified writes -> evidence-only repair |
-| source health | fetch events + generated rollup | native bounded Doctor with diagnostic codes and active path |
+| source health / robots evidence | fetch events + generated health rollup + accepted native Doctor; robots observation remains manually queried | generate a bounded robots observation rollup; keep per-source enforcement and ambiguous HTTP outcomes approval-gated |
 | rate limiting | HTTP status history | same-origin cadence recommendation, then guarded scheduler adjustment |
 | stale alerts | issues/reports accumulate | deterministic recovered-state close/rollup with audit trail |
 | data quality | weekly aggregate | reproducible read-only cohort and diffable benchmark |

@@ -1,5 +1,59 @@
 # System Savepoint
 
+## Run 10 — REL-12 KEEP; COMP-01B re-review BLOCKED / NO FLIP (2026-08-28)
+
+Status: **REL-12 TERMINAL — KEEP** and **COMP-01B remains BLOCKED — NO
+FLIP** after its mature re-review. Session cold-resumed from the repository
+contract, fast-forwarding clean `main` from `2786170` to synchronized
+`a8a8e10` (23 generated report commits). No interrupted local work existed.
+All production D1 queries were read-only (`changed_db=false`, `changes=0`,
+`rows_written=0`); no live source requests, config changes, or data mutations
+occurred.
+
+**REL-12 acceptance** — The mature post-TTL window contains 1,023 real fetches
+across 20 fetching identities over ~56h40m: 848 `allowed`, 175 `unknown`, zero
+`disallowed`, and zero null verdicts. The old workerd Illegal-invocation
+signature has zero mature events and was last seen at 2026-08-25T10:00:12Z.
+All 11 robots-cache origins now have explicit HTTP results with null internal
+error; ten are HTTP 200 with stored bodies. This satisfies the unit's deployed
+production acceptance gate.
+
+**COMP-01B re-review** — Endpoint matrix: 15 identities `pass`; five Ashby
+identities (`amplify`, `ashby`, `camunda`, `supabase`, `tremendous`) remain
+`unknown` on all 35 mature real fetches each because the shared
+`api.ashbyhq.com` robots request returns HTTP 401 and operator intent is
+unknown; 21 configured identities remain intentionally paused/skip-only. The
+contract stop condition therefore fires. No typed enforcement config, canary,
+rollback drill, source enablement, or bypass was attempted. Observe mode and
+the source-expansion freeze remain in force.
+
+Operational evidence remains healthy outside this compliance residual:
+source-health run `33069299055` reports 41 identities and zero failed attempts;
+directory run `33123135766` reports 8% unreachable and no new de-verifications;
+enrichment run `33130081546` processed zero rows (DATA-05A containment holds);
+prospector run `33121867026` auto-added zero candidates and did not trip the
+mass-add guard.
+
+Next exact actions:
+
+- Create/approve a bounded Ashby robots/access-path review before changing the
+  five active Ashby identities. Fresh independent critic recommends pausing
+  all five pending that human-reviewed resolution; if authoritative,
+  source-supported evidence cannot resolve the ambiguity, keep them paused.
+  Never treat HTTP 401 as allow and never bypass it.
+- Re-run COMP-01B only after every fetching identity has a reviewed `pass` or
+  `block/pause` disposition and the `needs_review` status of every enabled ATS
+  identity is reconciled; enforcement remains approval-gated per source.
+- Owner-gated (unchanged): REC-01 worktree dispositions, SEC-LEGACY-01
+  credential rotation confirmation, and paused-source re-enablement decisions.
+
+Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
+The automation-ratchet candidate remains a generated robots observation
+rollup; it was evaluated but not implemented because the current run is
+evidence-only and the Ashby policy decision is unresolved.
+Fresh independent critic verdict: REL-12 SHIP/KEEP; COMP-01B BLOCKED/NO FLIP.
+The critic independently reproduced the D1 window with zero writes.
+
 ## Run 9 — REL-12 interim production probe FAVORABLE (2026-08-24T21:06Z, still VERIFYING)
 
 Status: **REL-12 remains VERIFYING**; interim read-only production evidence is

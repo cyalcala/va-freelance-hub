@@ -1085,7 +1085,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Enforcement gating only; no source/cadence/parser changes. |
 | GITHUB BACKUP | G5 with canary/full observation run IDs. |
 | HANDOFF | G6 plus endpoint matrix, evidence window, reviewer, config, block/error/freshness metrics, and rollback trigger. |
-| STATUS | BLOCKED — NO FLIP (accepted safe outcome 2026-08-24; complete ≥48h window reviewed: 681 real fetches, verdict `allowed`=0, `unknown`=657 from a single gate defect — workerd Illegal-invocation on detached default `fetch` in robotsGate.ts:255/:186; zero successful robots.txt fetches ever cached. Enforcement flip would halt 100% ingestion. No source pause warranted. Re-review requires REL-12 deployed + fresh decidable ≥48h window. Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`) |
+| STATUS | BLOCKED — NO FLIP (re-review 2026-08-28; REL-12 fixed the universal gate defect, but the mature 56h40m window classifies only 15/20 fetching identities `pass`; five Ashby identities remain `unknown` on every real fetch because shared origin `https://api.ashbyhq.com/robots.txt` returns HTTP 401 and operator intent is unknown. Contract stop condition fires: no enforcement config/canary, no bypass, observe mode unchanged. Fresh independent critic confirmed BLOCK and recommends pausing the five Ashby identities pending a bounded, human-reviewed robots/access-path resolution; all enabled `needs_review` ATS statuses must also be reconciled before sign-off. Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`) |
 
 ## REL-12 — Fix robots gate Workers fetch binding (default path Illegal invocation)
 
@@ -1138,7 +1138,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Gate binding + its test only. |
 | GITHUB BACKUP | G5 with CI/deploy run ID. |
 | HANDOFF | G6 plus exact diff, test name, run ID, and the post-deploy probe command. |
-| STATUS | VERIFYING (deployed 2026-08-24: behavior `d858383`, CI/deploy `32740931539` success incl. guardrails/tests/build/typecheck/worker-validate/Pages deploy, production live ~14:49:27Z. Focused 28/0, full G3 644/0/1,557 local at commit. Expected transient: pre-fix Illegal-invocation cache entries remain fresh until their 24h TTL expires (staggered through ≤2026-08-25T11:20Z), so `unknown` verdicts taper origin-by-origin; acceptance probe = first `robots_cache` rows with non-null body / null error + decidable verdicts in events. Post-deploy D1 probe results append to the COMP-01B evidence doc.) |
+| STATUS | TERMINAL — KEEP (accepted 2026-08-28; behavior `d858383`, CI/deploy `32740931539` success, focused 28/0 and full G3 644/0/1,557 at commit. Mature post-TTL production window spans ~56h40m with 1,023 real fetches: 848 allowed, 175 source-specific unknown, 0 null verdicts. The Illegal-invocation signature has zero mature events and was last seen 2026-08-25T10:00:12Z. All 11 cache origins now have explicit HTTP results with null internal error; ten store HTTP-200 bodies, while Ashby's shared origin explicitly returns HTTP 401. Fix accepted; the Ashby policy ambiguity belongs to COMP-01B follow-up, not REL-12. Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`) |
 
 ## REC-02 — Minimal-context interruption and resume drill
 
