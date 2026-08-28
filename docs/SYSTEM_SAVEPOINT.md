@@ -1,5 +1,36 @@
 # System Savepoint
 
+## Run 11 — COMP-01C Ashby containment authorized (2026-08-28, IN_PROGRESS)
+
+Status: **COMP-01C IN_PROGRESS**. Clean synchronized `main` at `4c557c5`;
+no recovered local work. The owner instructed the executor to proceed again
+after the prior baton explicitly surfaced the Ashby approval gate, authorizing
+the bounded reversible pause slice recommended by the independent critic.
+
+Official-source review disproves the earlier permission assumption:
+
+- Ashby's Public Job Postings API documentation describes the endpoint as a
+  way to retrieve postings for “your organization” and populate its own
+  careers page:
+  `https://developers.ashbyhq.com/docs/public-job-posting-api`.
+- Ashby's documented path for a partner ingesting postings is a Dedicated
+  Partner Job Feed provisioned by Ashby, with each customer opting in:
+  `https://developers.ashbyhq.com/docs/dedicated-partner-job-feeds`.
+- Repository evidence contains no partner feed or explicit permission, and
+  mature production robots evidence remains HTTP 401/`unknown` for the shared
+  `api.ashbyhq.com` origin.
+
+Decision: pause exactly `ashby:supabase`, `ashby:camunda`,
+`ashby:tremendous`, `ashby:amplify`, and `ashby:ashby`; do not delete existing
+jobs or directory rows, reinterpret HTTP 401, change other ATS policies, or
+attempt an alternate endpoint. The installed `compliance-checker` skill was
+rejected as an advertising-copy workflow; `source-driven-development` owns the
+unit.
+
+Next exact action: commit this contract, then change the five declarative token
+policies plus a focused regression guard, run verification, obtain a fresh
+critic, push/deploy, and verify explicit paused skip events in D1.
+
 ## Run 10 — REL-12 KEEP; COMP-01B re-review BLOCKED / NO FLIP (2026-08-28)
 
 Status: **REL-12 TERMINAL — KEEP** and **COMP-01B remains BLOCKED — NO

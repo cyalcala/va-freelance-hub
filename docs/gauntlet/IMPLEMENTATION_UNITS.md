@@ -1140,6 +1140,59 @@ Migration-writing units are sequential even when their functional work is otherw
 | HANDOFF | G6 plus exact diff, test name, run ID, and the post-deploy probe command. |
 | STATUS | TERMINAL — KEEP (accepted 2026-08-28; behavior `d858383`, CI/deploy `32740931539` success, focused 28/0 and full G3 644/0/1,557 at commit. Mature post-TTL production window spans ~56h40m with 1,023 real fetches: 848 allowed, 175 source-specific unknown, 0 null verdicts. The Illegal-invocation signature has zero mature events and was last seen 2026-08-25T10:00:12Z. All 11 cache origins now have explicit HTTP results with null internal error; ten store HTTP-200 bodies, while Ashby's shared origin explicitly returns HTTP 401. Fix accepted; the Ashby policy ambiguity belongs to COMP-01B follow-up, not REL-12. Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`) |
 
+## COMP-01C — Pause Ashby tokens pending source-supported partner access
+
+| Field | Contract |
+| --- | --- |
+| UNIT ID | COMP-01C |
+| TITLE | Pause five Ashby ATS tokens until source-supported partner access or permission exists |
+| MILESTONE | M6/M15 — Compliance evidence and guarded source policy |
+| PRIORITY | P1 compliance containment; blocks COMP-01B re-review |
+| OBJECTIVE | Stop third-party polling of the five enabled Ashby posting endpoints while their robots endpoint returns HTTP 401 and Ashby's official documentation points third-party ingestion partners to an opt-in dedicated feed. |
+| WHY THIS MATTERS | Technical reachability is not permission. The existing token notes promoted five organizations from a live probe alone, while the mature robots window withholds consent and official docs distinguish an organization's own careers-page API from partner ingestion. |
+| CURRENT EVIDENCE | COMP-01B mature review: all five Ashby identities are 35/35 `unknown` with `robots.txt unreachable (HTTP 401); operator intent unknown`. Official Ashby docs: Public Job Postings API is for “your organization”/own careers page; Dedicated Partner Job Feeds are provisioned for partners and require each customer to opt in. |
+| EVIDENCE STATUS | Runtime evidence VERIFIED; official access-path distinction VERIFIED; no partner feed or explicit permission exists in repository evidence. |
+| ROOT CAUSE | The 2026-07-12 token review conflated an unauthenticated documented endpoint with source-supported third-party aggregation permission. |
+| ROOT CAUSE CONFIDENCE | High for containment; legal permission remains human/source authority. |
+| PREREQUISITES | REL-12 KEEP; COMP-01B mature re-review; independent critic pause recommendation; owner instruction 2026-08-28 to proceed again after the approval gate was surfaced. |
+| DEPENDENCIES | Reopens COMP-01B classification after deploy evidence; does not authorize other ATS status changes. |
+| AFFECTED FILES / SYMBOLS | `apps/web/src/pages/api/cron/scrape.ts` — five `ashby:*` entries in `ATS_TOKEN_POLICIES`; focused policy regression test; `docs/gauntlet/evidence/COMP-01C-ashby-access-review.md`; baton/problem register. |
+| CALLERS / DEPENDENTS | Cron scrape policy partition, source-fetch events/health rollup, COMP-01B endpoint matrix. |
+| BASELINE | Five enabled `needs_review` Ashby tokens make one real fetch each per eligible cadence and always carry `unknown` robots verdict. |
+| PRIMARY ADDY SKILL / WORKFLOW | `source-driven-development` (installed `compliance-checker` is advertising-copy-specific and invalid for ATS policy). |
+| OPTIONAL SUPERPOWERS MECHANISM | Verification-before-completion + fresh independent critic. |
+| WHY DISTINCT VALUE | Official source evidence decides the access path; an independent critic challenges the pause scope and avoids accidental platform-wide conclusions. |
+| ASSIGNED MODEL | Repository executor. |
+| CRITIC | Independent compliance/reliability reviewer; must verify official-source interpretation, exact five-token scope, and reversibility. |
+| WORKTREE REQUIRED | No; five declarative policy entries plus one focused guard test on clean synchronized main. |
+| ALLOWED SCOPE | Change only the five existing Ashby token policies to disabled/paused with current evidence notes; add a regression guard; document official sources and read-only pre/post events. |
+| SMALLEST IMPLEMENTATION | Set `enabled: false`, `complianceStatus: "paused"`, and one shared evidence-grounded pause note for the five Ashby token entries. |
+| MUST PRESERVE | Platform default pause, other ATS policies, directory rows, historical opportunities, source evidence, robots gate, cadence, linkback, and G1–G12. |
+| DO NOT TOUCH / FORBIDDEN SCOPE | No endpoint bypass, alternate undocumented origin, partner impersonation, credential use, deletion/archival, other ATS pauses, enforcement flip, or new source. |
+| REGRESSION SURFACE | ATS policy partition and skip reporting; five-source freshness intentionally stops. |
+| TESTS | Focused source-policy guard proves exactly the five known Ashby tokens are disabled/paused and carry the new supported-access note; then G3/typecheck/guardrails/build. |
+| PROBES | Post-deploy read-only D1 window: five Ashby identities are explicit policy skips, with zero real fetches/new unknown robots events; non-Ashby controls continue. |
+| BENCHMARK / EVAL | Five Ashby real fetches per eligible cadence → zero; five explicit paused skip events; no change to other identities. |
+| AUTOMATION OPPORTUNITY | Guard test prevents accidental re-enable without updating the reviewed policy contract. |
+| AUTOMATION CLASS | A5 approval-gated policy transition; A7 automated regression/production verification. |
+| MATURITY TARGET | A7 for pause enforcement; re-enable remains A5. |
+| OBSERVABILITY | Existing `source_fetch_events` skip reason/compliance status and generated source-health rollup. |
+| IDEMPOTENCY | Declarative pause repeatedly emits skip evidence and performs no source request. |
+| MAINTAINABILITY IMPACT | Corrects misleading comments/notes and pins the five-token disposition. |
+| SCALE IMPACT | Removes five hourly ATS requests plus shared robots consultation load. |
+| HARDENING IMPACT | Fails closed on ambiguous operator intent and routes future integration to the supported partner path. |
+| ACCEPTANCE | Focused/full tests and CI/deploy green; production events show all five paused/skipped with no real fetch; critic passes. |
+| ACCEPTANCE EVIDENCE | Official Ashby docs URLs, diff/test output, CI/deploy run, bounded read-only D1 post window, critic verdict. |
+| REVERT | Restore token-specific `needs_review` only after explicit Ashby/customer permission or a provisioned partner feed is documented; no data rollback needed. |
+| STOP CONDITIONS | Official docs contradict the access-path reading, pause affects non-Ashby sources, source identities cannot be distinguished, or owner revokes approval. |
+| ESCALATION | Contact Ashby through its documented partner-feed channel; keep sources paused while unresolved. |
+| DOCUMENTATION | Evidence report, unit status, problem register, implementation status, baton. |
+| COMMIT PLAN | Contract/evidence-plan commit; behavior/test/docs commit; production acceptance commit. |
+| COMMIT BOUNDARY | Five Ashby policies + guard test + unit evidence only. |
+| GITHUB BACKUP | G5 with exact-sha CI/deploy and post-deploy events. |
+| HANDOFF | G6 plus source URLs, five tokens, pause diff, test/run IDs, post-deploy cutoff, and re-enable authority. |
+| STATUS | IN_PROGRESS (authorized 2026-08-28; official-source review complete, behavior not yet changed) |
+
 ## REC-02 — Minimal-context interruption and resume drill
 
 | Field | Contract |
