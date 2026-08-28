@@ -1,5 +1,11 @@
 import { expect, test } from "bun:test";
-import { inspectDbPackageJson, inspectLegacyPackageJson, inspectRootPackageJson, inspectWorkflowText } from "./check-production-guardrails";
+import {
+  inspectDbPackageJson,
+  inspectLegacyPackageJson,
+  inspectRobotsEnforcementPolicy,
+  inspectRootPackageJson,
+  inspectWorkflowText,
+} from "./check-production-guardrails";
 
 test("rejects mutable runtime, install, and CLI inputs", () => {
   const result = inspectWorkflowText(
@@ -169,4 +175,52 @@ test("requires clock deployment checks and an evidence-producing watchdog", () =
   expect(inspectWorkflowText("gha-ingest-watchdog.yml", "schedule:\n  - cron: '30 1 * * *'").errors).toEqual([
     "gha-ingest-watchdog.yml: heartbeat watchdog must run hourly and use the shared evaluator",
   ]);
+});
+
+test("pins robots enforcement to the approved WWR-only canary", () => {
+  const approved = [
+    'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely"]);',
+    "function robotsModeForSourceId(sourceId: string)",
+    "const sourceMode = robotsModeForSourceId(source.id)",
+    "const atsMode = robotsModeForSourceId(key)",
+  ].join("\n");
+  expect(inspectRobotsEnforcementPolicy(approved).errors).toEqual([]);
+
+  const rolledBack = approved.replace('["we-work-remotely"]', "[]");
+  expect(inspectRobotsEnforcementPolicy(rolledBack).errors).toEqual([]);
+
+  const expanded = approved.replace(
+    '["we-work-remotely"]',
+    '["we-work-remotely", "remotive"]',
+  );
+  expect(inspectRobotsEnforcementPolicy(expanded).errors).toContain(
+    "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or WWR-only literal initializer",
+  );
+
+  for (const globalFlip of [
+    'const ROBOTS_MODE: RobotsMode = "enforce";',
+    'const ROBOTS_MODE = "enforce";',
+    'let ROBOTS_MODE: RobotsMode = "enforce";',
+    'var ROBOTS_MODE = "enforce";',
+  ]) {
+    expect(inspectRobotsEnforcementPolicy(globalFlip).errors).toContain(
+      "apps/web/src/pages/api/cron/scrape.ts: global robots enforcement is forbidden",
+    );
+  }
+
+  for (const bypass of [
+    "const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set([dynamicId]);",
+    'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely", ...extraIds]);',
+  ]) {
+    const candidate = approved.replace(
+      'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely"]);',
+      bypass,
+    );
+    expect(inspectRobotsEnforcementPolicy(candidate).errors).toContain(
+      "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or WWR-only literal initializer",
+    );
+  }
+  expect(inspectRobotsEnforcementPolicy("function robotsModeForSourceId() {}").errors).toContain(
+    "apps/web/src/pages/api/cron/scrape.ts: source-scoped robots enforce set is required",
+  );
 });

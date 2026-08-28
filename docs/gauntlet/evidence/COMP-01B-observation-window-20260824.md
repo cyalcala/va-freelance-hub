@@ -325,3 +325,35 @@ Canary acceptance requires at least one successful post-deploy WWR real fetch
 with `robots_mode=enforce`, an observe-mode non-canary real-fetch control,
 contained ATS skip continuity, and no freshness regression. Operational
 rollback proof remains required before terminal acceptance or expansion.
+
+---
+
+## WWR-only canary implementation — 2026-08-28 (local, not deployed)
+
+The required isolated worktree at
+`C:\Users\admin\Desktop\va-freelance-hub-comp01b-canary` on
+`codex/comp01b-canary` implements the bounded canary:
+
+- `we-work-remotely` alone selects `enforce`; every other known, unknown, and
+  future source ID selects `observe`.
+- Enforce-mode disallowed, unknown, and missing decisions return explicit
+  skipped results with mode, verdict, origin, evidence, and would-block truth.
+- Successful and observe-mode fetch results retain the same provenance,
+  including a null-decision record if the gate itself fails in observe mode.
+- The production guard accepts only the exact single WWR literal initializer
+  or the exact empty rollback initializer. It rejects expanded literals,
+  dynamic IDs, spreads, and typed or untyped global `const`/`let`/`var` flips.
+
+Local verification at the uncommitted implementation diff:
+
+- focused canary + guard tests: 20 pass, 0 fail, 68 assertions;
+- full G3: 657 pass, 0 fail, 1,662 assertions;
+- strict typecheck: pass;
+- production guardrails: pass;
+- Astro production build: pass.
+
+Fresh independent critic verdict: **SHIP**. It independently reran the focused
+20/0/68 gate and found no remaining guard, provenance, or fail-closed blocker.
+Production is unchanged. Remaining gates are the behavior commit, independently
+verified empty-set rollback commit, exact-SHA CI/deployment, and the event-based
+canary acceptance window.

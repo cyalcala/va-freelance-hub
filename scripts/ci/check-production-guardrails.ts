@@ -99,6 +99,37 @@ export function inspectWebPackageJson(text: string): GuardrailResult {
   return { errors, warnings: [] };
 }
 
+export function inspectRobotsEnforcementPolicy(text: string): GuardrailResult {
+  const errors: string[] = [];
+  const path = "apps/web/src/pages/api/cron/scrape.ts";
+
+  if (/\b(?:const|let|var)\s+ROBOTS_MODE\b\s*(?::[^=;]+)?=\s*["']enforce["']/.test(text)) {
+    errors.push(`${path}: global robots enforcement is forbidden`);
+  }
+
+  const declarations = [
+    ...text.matchAll(/const\s+ROBOTS_ENFORCE_SOURCE_IDS\b[^;]*;/g),
+  ].map((match) => match[0].trim());
+  const approvedInitializers = new Set([
+    'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely"]);',
+    "const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set([]);",
+  ]);
+  if (declarations.length === 0) {
+    errors.push(`${path}: source-scoped robots enforce set is required`);
+  } else if (declarations.length !== 1 || !approvedInitializers.has(declarations[0])) {
+    errors.push(`${path}: robots enforce set must use the exact empty or WWR-only literal initializer`);
+  }
+
+  if (!text.includes("robotsModeForSourceId(source.id)")) {
+    errors.push(`${path}: configured sources must use the source-scoped robots mode selector`);
+  }
+  if (!text.includes("robotsModeForSourceId(key)")) {
+    errors.push(`${path}: ATS sources must default through the source-scoped robots mode selector`);
+  }
+
+  return { errors, warnings: [] };
+}
+
 export function inspectWorkflowText(path: string, text: string): GuardrailResult {
   const errors: string[] = [];
   let foundUnfrozenInstall = false;
@@ -240,6 +271,9 @@ export async function auditProductionRepository(rootDirectory = join(import.meta
   );
   const dbResult = inspectDbPackageJson(await Bun.file(join(rootDirectory, "packages/db/package.json")).text());
   const webResult = inspectWebPackageJson(await Bun.file(join(rootDirectory, "apps/web/package.json")).text());
+  const robotsPolicyResult = inspectRobotsEnforcementPolicy(
+    await Bun.file(join(rootDirectory, "apps/web/src/pages/api/cron/scrape.ts")).text(),
+  );
   const errors: string[] = [];
   const warnings: string[] = [];
   for (const legacyConfig of ["wrangler.toml", "wrangler.jsonc"]) {
@@ -278,7 +312,7 @@ export async function auditProductionRepository(rootDirectory = join(import.meta
   if (!existsSync(join(rootDirectory, "docs/decisions/DEP-01-dependency-exceptions.md"))) {
     errors.push("docs/decisions/DEP-01-dependency-exceptions.md: dependency exception tracker must exist");
   }
-  return mergeResults(workflowResult, packageResult, legacyResult, dbResult, webResult, { errors, warnings });
+  return mergeResults(workflowResult, packageResult, legacyResult, dbResult, webResult, robotsPolicyResult, { errors, warnings });
 }
 
 if (import.meta.main) {

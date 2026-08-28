@@ -44,14 +44,18 @@ type SourceType = "RSS" | "HTML" | "JSON" | "ATS";
  * `robotsWouldBlock` counter in the scrape response has shown a full cycle of
  * real traffic.
  *
- * Flip checklist:
- *   1. robotsWouldBlock stays 0 across ~24h of runs, or every non-zero case is
- *      explained and accepted;
- *   2. robots_cache holds a row per active origin;
- *   3. record the decision in IMPLEMENTATION_STATUS.md, then change this to
- *      "enforce" in its own commit so it can be reverted alone.
+ * COMP-01B never uses a global flip. Only source IDs with reviewed evidence
+ * enter the explicit canary set; every other and future ID defaults observe.
+ * Removing the canary ID is the tested rollback.
  */
-const ROBOTS_MODE: RobotsMode = "observe";
+const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely"]);
+
+export function robotsModeForSourceId(
+  sourceId: string,
+  enforceSourceIds: ReadonlySet<string> = ROBOTS_ENFORCE_SOURCE_IDS,
+): RobotsMode {
+  return enforceSourceIds.has(sourceId) ? "enforce" : "observe";
+}
 
 interface SourceFetchResult {
   sourceId?: string;
@@ -1574,29 +1578,65 @@ async function recordIngestDiagnostics(
 /**
  * Consults robots.txt before a configured source is fetched (masterplan 4A).
  *
- * Runs in observe mode: the decision is computed, cached and reported, but a
- * would-block does not yet stop the fetch. Flip `ROBOTS_MODE` to "enforce"
- * once a cycle of live evidence shows which sources would be blocked and why.
- * See the staging note in packages/scraper/robotsGate.ts.
+ * Runs in the reviewed source-specific mode. Unknown and future sources stay
+ * observe unless added by a separate approved evidence unit.
  *
- * Returns null when the gate could not run at all, which is reported but never
- * fatal — a compliance check that can crash ingestion is a worse bug than the
- * gap it closes.
+ * Returns null when the gate could not run at all. The caller records that
+ * uncertainty and fails closed only for a reviewed enforce-mode source.
  */
 async function robotsCheckForSource(
   db: AppDb,
   source: Source,
 ): Promise<RobotsGateResult | null> {
+  const robotsMode = robotsModeForSourceId(source.id);
   try {
     return await checkRobots(source.url, {
       store: createRobotsStore(db),
-      mode: ROBOTS_MODE,
+      mode: robotsMode,
       userAgent: COLLECTION_USER_AGENT,
     });
   } catch (error) {
     console.warn(`[api/cron/scrape] Robots gate failed for ${source.name}:`, errorMessage(error));
     return null;
   }
+}
+
+export function attachConfiguredSourceRobotsEvidence(
+  result: SourceFetchResult,
+  source: Source,
+  robots: RobotsGateResult | null,
+  mode: RobotsMode,
+): SourceFetchResult {
+  result.robotsMode = robots?.mode ?? mode;
+  result.robotsVerdict = robots?.verdict ?? "unknown";
+  result.robotsEvidence = robots?.evidence ?? "robots gate failed before a decision";
+  result.robotsCrawlDelay = robots?.crawlDelay ?? null;
+  // A missing decision is unknown and would fail closed under enforcement,
+  // regardless of whether this particular fetch is still in observe mode.
+  result.robotsWouldBlock = robots?.wouldBlock ?? true;
+  try {
+    result.robotsOrigin = new URL(source.url).origin;
+  } catch {
+    result.robotsOrigin = null;
+  }
+  return result;
+}
+
+export function configuredSourceRobotsSkip(
+  source: Source,
+  robots: RobotsGateResult | null,
+  mode: RobotsMode,
+): SourceFetchResult | null {
+  if (robots?.allowed) return null;
+  if (!robots && mode === "observe") return null;
+
+  const evidence = robots?.evidence ?? "robots gate failed before a decision";
+  return attachConfiguredSourceRobotsEvidence(
+    skippedSourceResult(source, `robots.txt blocks or withholds this fetch — ${evidence}`),
+    source,
+    robots,
+    mode,
+  );
 }
 
 async function fetchConfiguredSourceWithStatus(
@@ -1621,10 +1661,10 @@ async function fetchConfiguredSourceWithStatus(
 
   // Checked before the cadence-passing fetch, so the robots decision is on
   // record for every request we actually make.
+  const robotsMode = robotsModeForSourceId(source.id);
   const robots = await robotsCheckForSource(db, source);
-  if (robots && !robots.allowed) {
-    return skippedSourceResult(source, `robots.txt disallows this fetch — ${robots.evidence}`);
-  }
+  const robotsSkip = configuredSourceRobotsSkip(source, robots, robotsMode);
+  if (robotsSkip) return robotsSkip;
 
   const result = await fetchSourceWithStatus(
     source.name,
@@ -1644,11 +1684,8 @@ async function fetchConfiguredSourceWithStatus(
   // Provenance: what robots.txt said, and whether honoring it would have
   // changed this fetch. This is the evidence the transparency ledger (4E) will
   // publish, and the data that decides when observe mode can flip to enforce.
+  attachConfiguredSourceRobotsEvidence(result, source, robots, robotsMode);
   if (robots) {
-    result.robotsVerdict = robots.verdict;
-    result.robotsEvidence = robots.evidence;
-    result.robotsCrawlDelay = robots.crawlDelay;
-    result.robotsWouldBlock = robots.wouldBlock;
     if (robots.wouldBlock) {
       console.warn(
         `[api/cron/scrape] robots would block ${source.name} in enforce mode: ${robots.evidence}`,
@@ -1939,12 +1976,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const key = atsSourceKey(agency);
       const atsUrl = atsEndpointUrl(agency.atsPlatform as any, agency.atsToken as string);
 
-      // Check robots.txt for the ATS endpoint origin (COMP-01A: ATS fetches now
-      // participate in the robots gate so every fetch attempt leaves a durable
-      // robots decision record. Runs in observe mode only.)
+      // Check robots.txt for the ATS endpoint origin. No current ATS ID is in
+      // the reviewed enforcement set, so all remain observe by default.
+      const robotsMode = robotsModeForSourceId(key);
       const robots = await checkRobots(atsUrl, {
         store: createRobotsStore(db),
-        mode: ROBOTS_MODE,
+        mode: robotsMode,
         userAgent: COLLECTION_USER_AGENT,
       }).catch((error) => {
         console.warn(`[api/cron/scrape] Robots gate failed for ATS ${agency.companyName} (${atsUrl}):`, errorMessage(error));
@@ -1952,19 +1989,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
 
       let result: SourceFetchResult;
-      if (robots && !robots.allowed) {
+      if ((!robots && robotsMode === "enforce") || (robots && !robots.allowed)) {
         result = skippedAtsResult({
           agency,
           policy,
-          skipReason: `robots.txt disallows this fetch — ${robots.evidence}`,
+          skipReason: `robots.txt blocks or withholds this fetch — ${robots?.evidence ?? "robots gate failed before a decision"}`,
         });
         // Still attach robots provenance so the event records the decision.
-        result.robotsVerdict = robots.verdict;
-        result.robotsEvidence = robots.evidence;
-        result.robotsCrawlDelay = robots.crawlDelay;
-        result.robotsWouldBlock = robots.wouldBlock;
-        result.robotsOrigin = robots.fromCache ? robots.evidence.includes("cached") ? null : new URL(atsUrl).origin : new URL(atsUrl).origin;
-        result.robotsMode = robots.mode;
+        result.robotsVerdict = robots?.verdict ?? "unknown";
+        result.robotsEvidence = robots?.evidence ?? "robots gate failed before a decision";
+        result.robotsCrawlDelay = robots?.crawlDelay ?? null;
+        result.robotsWouldBlock = robots?.wouldBlock ?? true;
+        result.robotsOrigin = new URL(atsUrl).origin;
+        result.robotsMode = robots?.mode ?? robotsMode;
       } else {
         result = await fetchSourceWithStatus(
           agency.companyName,
@@ -2049,8 +2086,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // skipped parse+triage (the freshness/efficiency win).
     const sourcesUnchanged = [...rssResults, ...htmlResults, ...jsonResults].filter((r) => r.notModified).length;
     const sourceResults = [...rssResults, ...htmlResults, ...jsonResults, ...skippedResults, ...atsResults, ...skippedAtsResults].map(sourceStatus);
-    // Masterplan 4A staging metric: how many fetches enforce mode would have
-    // skipped. This is the number that decides when ROBOTS_MODE can flip.
+    // Masterplan 4A staging metric: how many fetches source-scoped enforcement
+    // would skip. This remains truthful for observe-mode controls.
     const robotsWouldBlock = sourceResults.filter((r) => (r as any).robotsWouldBlock).length;
     const fetchEventLog = await recordSourceFetchEvents(db, sourceResults, observedAt);
     const cadenceGuards = {
