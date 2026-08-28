@@ -54,6 +54,12 @@ evidence-only and the Ashby policy decision is unresolved.
 Fresh independent critic verdict: REL-12 SHIP/KEEP; COMP-01B BLOCKED/NO FLIP.
 The critic independently reproduced the D1 window with zero writes.
 
+GitHub checkpoint: evidence/state commit `f8fa76b` is confirmed on
+`origin/main`; exact-sha Sovereign CI Guardrail run `33137293829` completed
+successfully (production guardrails, unit tests, app build, strict typecheck,
+and Freshness Worker validation). Production migration/deploy was correctly
+skipped for the documentation-only change.
+
 ## Run 9 — REL-12 interim production probe FAVORABLE (2026-08-24T21:06Z, still VERIFYING)
 
 Status: **REL-12 remains VERIFYING**; interim read-only production evidence is

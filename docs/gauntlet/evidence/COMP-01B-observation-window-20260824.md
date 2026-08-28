@@ -257,3 +257,9 @@ The mature-window queries reuse the SQL shapes above with
 `timestamp >= '2026-08-25T11:30:00Z'`, plus the full per-origin cache detail
 query. Query metadata reported `changed_db=false` and `rows_written=0` for
 every result.
+
+GitHub backup: evidence/state commit `f8fa76b` is present on `origin/main`.
+Exact-sha Sovereign CI Guardrail run `33137293829` completed successfully:
+production guardrails, unit tests, app build, strict typecheck, and Freshness
+Worker validation passed; production migration/deploy was correctly skipped
+for the documentation-only change.
