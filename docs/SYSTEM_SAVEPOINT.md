@@ -1,8 +1,9 @@
 # System Savepoint
 
-## Run 11 — COMP-01C Ashby containment (2026-08-28, VERIFYING)
+## Run 11 — COMP-01C Ashby containment (2026-08-28, TERMINAL — KEEP)
 
-Status: **COMP-01C VERIFYING**. Clean synchronized `main` at `4c557c5`;
+Status: **COMP-01C TERMINAL — KEEP**. Execution began from synchronized
+`main` at `4c557c5`;
 no recovered local work. The owner instructed the executor to proceed again
 after the prior baton explicitly surfaced the Ashby approval gate, authorizing
 the bounded reversible pause slice recommended by the independent critic.
@@ -42,10 +43,18 @@ and focused guard. Its one non-blocking wording precision was applied: the
 evidence describes the partner feed as Ashby's documented partner-ingestion
 path without claiming the documentation makes it legally exclusive.
 
-Next exact action: obtain the fresh independent critic, commit/push the
-behavior and evidence, watch exact-SHA CI/deploy, then query D1 read-only after
-the deploy cutoff. Accept only if all five identities are explicit policy
-skips with zero real fetches while non-Ashby controls continue.
+Behavior/evidence commit `79b17d6` passed exact-SHA Sovereign CI Guardrail and
+production deployment run `33138055473`; Cloudflare Pages deployment completed
+at `2026-08-28T03:10:22Z`. The first eligible Worker cycle at
+`2026-08-28T03:20:09.266Z` recorded one explicit `paused` skip for each of the
+five Ashby identities, zero Ashby real fetches, and 14 real fetches across 14
+non-Ashby controls. The D1 verification was read-only (`changed_db=false`,
+`changes=0`, `rows_written=0`) and no source endpoint was manually invoked.
+
+All COMP-01C acceptance gates pass. Next exact action: re-rank the residual
+COMP-01B policy gate. Ashby is now classified pause/block; review the remaining
+enabled `needs_review` ATS identities against official source-supported access
+paths before any enforcement flip. Source expansion remains frozen.
 
 ## Run 10 — REL-12 KEEP; COMP-01B re-review BLOCKED / NO FLIP (2026-08-28)
 

@@ -4,7 +4,7 @@ Date: 2026-08-28
 
 Contract baseline: `9b843af`
 
-Status: VERIFYING — local behavior complete; CI/deploy and production D1 evidence pending
+Status: TERMINAL — KEEP
 
 ## Decision
 
@@ -66,16 +66,25 @@ Test-first evidence:
 
 No D1 mutation or live source request was used during implementation.
 
-## Remaining acceptance gates
+## Acceptance evidence
 
 - Fresh independent critic: SHIP, no blocking findings. It independently
   confirmed the official-source reading, exact five-token boundary,
   reversibility, and guard-test adequacy. Its non-blocking wording precision
   was applied so the record does not overstate the partner path as exclusive.
-- Exact-SHA CI/deploy: pending.
-- Bounded post-deploy D1 read: pending. Acceptance requires all five identities
-  to emit explicit policy-skip events with zero real fetches after the deploy
-  cutoff, while non-Ashby controls continue to fetch.
+- Behavior/evidence commit: `79b17d6`.
+- Exact-SHA Sovereign CI Guardrail run `33138055473`: success. Validation,
+  tests, build, strict typecheck, Worker validation, D1 migration/integrity,
+  and Cloudflare Pages deployment all passed. Production deployment completed
+  at `2026-08-28T03:10:22Z`.
+- First eligible production cycle: `2026-08-28T03:20:09.266Z`. Each of the
+  five Ashby identities emitted exactly one event with `skipped=1`,
+  `compliance_status=paused`, and zero real fetches. Fourteen distinct
+  non-Ashby identities emitted 14 real fetches in the same cycle.
+- The post-deploy D1 query was read-only: `changed_db=false`, `changes=0`, and
+  `rows_written=0`. No source endpoint was manually invoked.
+
+All contract acceptance gates pass. COMP-01C is TERMINAL — KEEP.
 
 ## Re-enable authority
 

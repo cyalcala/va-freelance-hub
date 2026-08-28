@@ -1191,7 +1191,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Five Ashby policies + guard test + unit evidence only. |
 | GITHUB BACKUP | G5 with exact-sha CI/deploy and post-deploy events. |
 | HANDOFF | G6 plus source URLs, five tokens, pause diff, test/run IDs, post-deploy cutoff, and re-enable authority. |
-| STATUS | VERIFYING (2026-08-28; exactly five Ashby token policies are locally disabled/paused with a focused regression guard. Focused 2/0/19; full 646/0/1,576, typecheck, guardrails, and build pass. Fresh critic, exact-SHA CI/deploy, and post-deploy D1 skip evidence remain. Evidence: `docs/gauntlet/evidence/COMP-01C-ashby-access-review.md`) |
+| STATUS | TERMINAL — KEEP (accepted 2026-08-28; exactly five Ashby token policies disabled/paused. Focused 2/0/19; full 646/0/1,576, typecheck, guardrails, and build pass. Fresh critic SHIP. Behavior `79b17d6`; exact-SHA CI/deploy `33138055473` success. First eligible cycle at `2026-08-28T03:20:09.266Z`: five Ashby paused skips, zero Ashby real fetches, and 14 non-Ashby real-fetch controls. D1 evidence read-only. Evidence: `docs/gauntlet/evidence/COMP-01C-ashby-access-review.md`) |
 
 ## REC-02 — Minimal-context interruption and resume drill
 

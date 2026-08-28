@@ -2,7 +2,7 @@
 
 ## Current Gauntlet Checkpoint — 2026-08-28
 
-Status: **COMP-01C VERIFYING; REL-12 TERMINAL — KEEP; COMP-01B BLOCKED — NO
+Status: **COMP-01C TERMINAL — KEEP; REL-12 TERMINAL — KEEP; COMP-01B BLOCKED — NO
 FLIP**. The mature
 post-TTL production window proves the Workers fetch-binding fix: 848/1,023
 real fetches are `allowed`, the prior Illegal-invocation signature is absent,
@@ -14,8 +14,10 @@ source-expansion freeze remain unchanged. A fresh independent critic confirmed
 both decisions. That bounded containment is now implemented locally: exactly
 the five Ashby token policies are disabled/paused, with a regression guard and
 no effect on other ATS policies or stored jobs. Local verification passes
-646/0 tests with 1,576 assertions, typecheck, guardrails, and build. CI/deploy
-and post-deploy D1 skip evidence remain before acceptance. Evidence:
+646/0 tests with 1,576 assertions, typecheck, guardrails, and build. Exact-SHA
+CI/deploy `33138055473` succeeded for behavior `79b17d6`; the first eligible
+production cycle recorded five Ashby paused skips, zero Ashby real fetches, and
+14 non-Ashby real-fetch controls. Evidence:
 `docs/gauntlet/evidence/COMP-01C-ashby-access-review.md` and
 `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
 
