@@ -1,8 +1,8 @@
 # System Savepoint
 
-## Run 13 — COMP-01B reviewed enforcement rollout (2026-08-28, READY)
+## Run 13 — COMP-01B reviewed enforcement rollout (2026-08-28, TERMINAL — KEEP)
 
-Status: **COMP-01B FULL ROLLOUT READY — CANARY AND ROLLBACK PROVEN**. COMP-01C and COMP-01D
+Status: **COMP-01B TERMINAL — KEEP**. COMP-01C and COMP-01D
 are accepted KEEP, leaving exactly six `allowed` configured identities able to
 fetch. Fresh read-only D1 classification over ~58h30m records 543/543 allowed
 real fetches and zero disallowed, unknown/null, or would-block results:
@@ -18,12 +18,22 @@ CI/deploy `33141565761` then succeeded. At `04:30:09.265Z`, WWR fetched the same
 89 jobs in `observe`, with allowed/zero-would-block, alongside normal Remotive
 and Jobicy controls. Both D1 probes were read-only.
 
-The separate `codex/comp01b-expand` worktree now selects exactly the six mature
+The deployed exact-six rollout selects exactly the six mature
 543/543 reviewed identities for enforce and defaults every unknown/future/ATS
 identity to observe. Its guard accepts only that exact six-source literal or
 the exact empty rollback. Focused verification passes 20/0/73; full G3 passes
 657/0/1,667 plus typecheck, guardrails, and build. Fresh independent critic
-verdict is **SHIP for commit/deploy** after independently reproducing rollback.
+verdict was **SHIP for commit/deploy** after independently reproducing rollback.
+
+Exact-SHA rollout `4f5e8dd` deployed through CI/deploy `33142177229` at
+`04:35:13Z`. The full production window spans `04:40:09.239Z` through
+`05:40:09.144Z`: 18/18 real fetches are cleanly enforced, with zero stop events.
+WWR and Remotive are 7/7 each; RWFA, Remote OK, Jobicy Admin, and Jobicy
+Supporting are 1/1 each. Latest counts are 89, 20, 50, 26, 7, and 40. Every
+real result is `ok=1`, `enforce`, `allowed`, zero would-block, and error-null.
+All 14 contained Ashby/Greenhouse/Breezy identities remain at zero real fetches.
+Read-only probes report `changed_db=false`, `rows_written=0`. Independent critic
+reproduction returns **TERMINAL — KEEP**.
 
 Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
 Fresh independent critic independently reproduced 543/543 and returned **SHIP
@@ -32,10 +42,9 @@ default-observe selector, exact allowed/disallowed/unknown/error accounting,
 anti-global-flip guard, empty-set rollback test, contract-required isolated
 worktree, exact-SHA CI/deploy, and event-based production acceptance.
 
-Next exact action: commit/deploy the separate six-source rollout and monitor a
-full 60-minute production window. Stop and restore the exact empty set on any
-unknown/disallowed/null/would-block, gate error, enforced skip, or freshness
-regression. Source expansion beyond these six remains frozen.
+Next exact action: proceed to the next dependency-ready Gauntlet unit. Keep the
+exact-empty rollback and anti-expansion guard intact. Source expansion beyond
+these six remains frozen.
 
 ## Run 12 — COMP-01D residual ATS review (2026-08-28, TERMINAL — KEEP)
 

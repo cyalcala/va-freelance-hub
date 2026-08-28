@@ -394,6 +394,35 @@ partial, expanded, dynamic, spread, and global configurations.
 Verification: focused 20/0/73; full G3 657/0/1,667; typecheck, production
 guardrails, and build pass. Fresh independent critic verdict: **SHIP for
 commit/deploy**, after independently reproducing the production rollback proof.
-Acceptance still requires an exact-SHA deployment and a full 60-minute live
-window with no unknown/disallowed/null/would-block, gate error, enforced skip,
-or freshness regression.
+The remaining acceptance gate at that point was an exact-SHA deployment and a
+full 60-minute live window with no unknown/disallowed/null/would-block, gate
+error, enforced skip, or freshness regression; the section below records it.
+
+---
+
+## Six-source production acceptance — 2026-08-28 (TERMINAL — KEEP)
+
+Exact-six behavior `4f5e8dd` deployed through exact-SHA CI/deploy
+`33142177229`, completed at `04:35:13Z`. The accepted event window spans
+`04:40:09.239Z` through `05:40:09.144Z`:
+
+| Source | Real fetches | Clean enforced | Stop events | Latest count |
+| --- | ---: | ---: | ---: | ---: |
+| We Work Remotely | 7 | 7 | 0 | 89 |
+| Remotive | 7 | 7 | 0 | 20 |
+| Real Work From Anywhere | 1 | 1 | 0 | 50 |
+| Remote OK | 1 | 1 | 0 | 26 |
+| Jobicy Admin APAC | 1 | 1 | 0 | 7 |
+| Jobicy Supporting APAC | 1 | 1 | 0 | 40 |
+| **Total** | **18** | **18** | **0** | — |
+
+Every real fetch records `ok=1`, `robots_mode=enforce`,
+`robots_verdict=allowed`, `robots_would_block=0`, and null error. Cadence skips
+are expected and distinct from robots enforcement skips. All 14 contained
+Ashby/Greenhouse/Breezy identities record zero real fetches. Query metadata:
+`changed_db=false`, `rows_written=0`.
+
+Fresh independent critic reproduced the full matrix and returned
+**TERMINAL — KEEP**. Together with the accepted WWR canary and demonstrated
+live exact-empty rollback, COMP-01B satisfies its contract. Keep the rollback
+and anti-expansion guard; no further source expansion is authorized.

@@ -2,18 +2,15 @@
 
 ## Current Gauntlet Checkpoint — 2026-08-28
 
-Status: **COMP-01B FULL ROLLOUT READY — CANARY/ROLLBACK PROVEN; COMP-01D/COMP-01C/REL-12
+Status: **COMP-01B/COMP-01D/COMP-01C/REL-12
 TERMINAL — KEEP**. The mature
 post-TTL production window proves the Workers fetch-binding fix: 848/1,023
 real fetches are `allowed`, the prior Illegal-invocation signature is absent,
-and all 11 cache origins have explicit HTTP results. The 175 residual unknowns
-are fully isolated to five Ashby identities whose shared robots endpoint
-returns HTTP 401. Because 5/20 fetching identities remain ambiguous,
-COMP-01B's stop condition prevents enforcement. Observe mode and the
-source-expansion freeze remain unchanged. A fresh independent critic confirmed
-both decisions. That bounded containment is now implemented locally: exactly
-the five Ashby token policies are disabled/paused, with a regression guard and
-no effect on other ATS policies or stored jobs. Local verification passes
+and all 11 cache origins have explicit HTTP results. The historical 175
+unknowns were isolated to five Ashby identities and resolved conservatively by
+COMP-01C containment; exactly those five token policies remain disabled/paused,
+with a regression guard and no effect on other ATS policies or stored jobs.
+Local verification at that slice passed
 646/0 tests with 1,576 assertions, typecheck, guardrails, and build. Exact-SHA
 CI/deploy `33138055473` succeeded for behavior `79b17d6`; the first eligible
 production cycle recorded five Ashby paused skips, zero Ashby real fetches, and
@@ -21,7 +18,7 @@ production cycle recorded five Ashby paused skips, zero Ashby real fetches, and
 `docs/gauntlet/evidence/COMP-01C-ashby-access-review.md` and
 `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
 
-The next residual containment is implemented locally: five Greenhouse and four
+COMP-01D then contained five Greenhouse and four
 Breezy token policies are paused pending explicit aggregation terms/permission
 or an approved integration. Focused containment guards pass 5/0/56; full verification passes
 649/0/1,613 plus typecheck, guardrails, and build. Fresh critic verdict is SHIP.
@@ -35,10 +32,13 @@ Their mature ~58h30m window contains 543/543 allowed real fetches and zero
 disallowed, unknown/null, or would-block results. Canary CI/deploy `33141353808`
 produced a healthy WWR enforce event at `04:20:09Z`; rollback CI/deploy
 `33141565761` produced a healthy WWR observe event at `04:30:09Z`. The separate
-full-rollout branch enforces exactly the six reviewed identities, preserves
+full rollout `4f5e8dd` enforces exactly the six reviewed identities, preserves
 observe for unknown/future/ATS identities, and accepts only exact-six or empty
 configuration. Focused 20/0/73 and full 657/0/1,667 plus typecheck, guardrails,
-build pass. Fresh independent critic verdict: SHIP for commit/deploy. Evidence:
+build pass. Exact-SHA CI/deploy `33142177229` succeeded. Its 60-minute live
+window records 18/18 clean enforced real fetches across all six identities,
+zero stop events, and zero contained ATS real fetches. Fresh independent critic
+reproduced the evidence and returned TERMINAL — KEEP. Evidence:
 `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
 
 ## TAX-02 — Owner-directed category expansion — 2026-08-23
