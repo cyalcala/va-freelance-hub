@@ -608,40 +608,37 @@ const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
   },
 };
 
+const ASHBY_PARTNER_ACCESS_PAUSE_NOTE =
+  "Paused 2026-08-28: Ashby's public posting API is documented for an organization's own careers page; Ashby documents a Dedicated Partner Job Feed for partner ingestion with customer opt-in. No partner feed or permission is recorded, and robots HTTP 401 remains unknown. Keep paused; do not treat robots HTTP 401 as allow.";
+
 const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
-  // RemoteWork3.8 review 2026-07-12: Ashby public posting API (jobs.ashbyhq.com
-  // boards) is a documented job-board distribution endpoint; each token below
-  // was probed live and returns published, listed roles. Collect minimal
-  // metadata, link back to the Ashby-hosted posting, pause on objection.
+  // COMP-01C: all currently known Ashby tokens fail closed until Ashby or the
+  // represented customer provides source-supported partner access. The public
+  // endpoint remaining technically reachable does not override this policy.
   "ashby:supabase": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 51 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
   },
   "ashby:camunda": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 36 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
   },
   "ashby:tremendous": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 20 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
   },
   "ashby:amplify": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 35 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
   },
   "ashby:ashby": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "RemoteWork3.8 review 2026-07-12: public Ashby posting API returned 64 published jobs; link back to jobs.ashbyhq.com and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
   },
   "greenhouse:grafanalabs": {
     enabled: true,

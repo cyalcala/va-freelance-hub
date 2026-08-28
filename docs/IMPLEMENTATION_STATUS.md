@@ -2,7 +2,8 @@
 
 ## Current Gauntlet Checkpoint — 2026-08-28
 
-Status: **REL-12 TERMINAL — KEEP; COMP-01B BLOCKED — NO FLIP**. The mature
+Status: **COMP-01C VERIFYING; REL-12 TERMINAL — KEEP; COMP-01B BLOCKED — NO
+FLIP**. The mature
 post-TTL production window proves the Workers fetch-binding fix: 848/1,023
 real fetches are `allowed`, the prior Illegal-invocation signature is absent,
 and all 11 cache origins have explicit HTTP results. The 175 residual unknowns
@@ -10,9 +11,12 @@ are fully isolated to five Ashby identities whose shared robots endpoint
 returns HTTP 401. Because 5/20 fetching identities remain ambiguous,
 COMP-01B's stop condition prevents enforcement. Observe mode and the
 source-expansion freeze remain unchanged. A fresh independent critic confirmed
-both decisions and recommends pausing the five Ashby identities pending a
-human-reviewed, source-supported resolution; no pause mutation occurred in
-this evidence-only run. Full evidence:
+both decisions. That bounded containment is now implemented locally: exactly
+the five Ashby token policies are disabled/paused, with a regression guard and
+no effect on other ATS policies or stored jobs. Local verification passes
+646/0 tests with 1,576 assertions, typecheck, guardrails, and build. CI/deploy
+and post-deploy D1 skip evidence remain before acceptance. Evidence:
+`docs/gauntlet/evidence/COMP-01C-ashby-access-review.md` and
 `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
 
 ## TAX-02 — Owner-directed category expansion — 2026-08-23

@@ -1,8 +1,8 @@
 # System Savepoint
 
-## Run 11 — COMP-01C Ashby containment authorized (2026-08-28, IN_PROGRESS)
+## Run 11 — COMP-01C Ashby containment (2026-08-28, VERIFYING)
 
-Status: **COMP-01C IN_PROGRESS**. Clean synchronized `main` at `4c557c5`;
+Status: **COMP-01C VERIFYING**. Clean synchronized `main` at `4c557c5`;
 no recovered local work. The owner instructed the executor to proceed again
 after the prior baton explicitly surfaced the Ashby approval gate, authorizing
 the bounded reversible pause slice recommended by the independent critic.
@@ -13,8 +13,8 @@ Official-source review disproves the earlier permission assumption:
   way to retrieve postings for “your organization” and populate its own
   careers page:
   `https://developers.ashbyhq.com/docs/public-job-posting-api`.
-- Ashby's documented path for a partner ingesting postings is a Dedicated
-  Partner Job Feed provisioned by Ashby, with each customer opting in:
+- Ashby documents a Dedicated Partner Job Feed for partners ingesting
+  postings; Ashby provisions the feed and each customer opts in:
   `https://developers.ashbyhq.com/docs/dedicated-partner-job-feeds`.
 - Repository evidence contains no partner feed or explicit permission, and
   mature production robots evidence remains HTTP 401/`unknown` for the shared
@@ -27,9 +27,25 @@ attempt an alternate endpoint. The installed `compliance-checker` skill was
 rejected as an advertising-copy workflow; `source-driven-development` owns the
 unit.
 
-Next exact action: commit this contract, then change the five declarative token
-policies plus a focused regression guard, run verification, obtain a fresh
-critic, push/deploy, and verify explicit paused skip events in D1.
+Implementation is complete locally. Exactly the five named token policies are
+disabled/paused and share an evidence-grounded re-enable note; no other ATS
+policy or stored row changed. A focused test was written red-first and now
+passes 2/0 with 19 assertions. The full local gate passes 646/0 with 1,576
+assertions across 71 files, followed by strict typecheck, production
+guardrails, and the Astro server/client build.
+
+Evidence: `docs/gauntlet/evidence/COMP-01C-ashby-access-review.md`.
+
+Fresh independent critic verdict: **SHIP**, with no blocking findings. It
+confirmed the official-source reading, exact five-token scope, reversibility,
+and focused guard. Its one non-blocking wording precision was applied: the
+evidence describes the partner feed as Ashby's documented partner-ingestion
+path without claiming the documentation makes it legally exclusive.
+
+Next exact action: obtain the fresh independent critic, commit/push the
+behavior and evidence, watch exact-SHA CI/deploy, then query D1 read-only after
+the deploy cutoff. Accept only if all five identities are explicit policy
+skips with zero real fetches while non-Ashby controls continue.
 
 ## Run 10 — REL-12 KEEP; COMP-01B re-review BLOCKED / NO FLIP (2026-08-28)
 
