@@ -1,5 +1,34 @@
 # System Savepoint
 
+## Run 12 — COMP-01D residual ATS review (2026-08-28, IN_PROGRESS)
+
+Status: **COMP-01D IN_PROGRESS** after COMP-01C production acceptance. The
+residual COMP-01B gate contains nine enabled `needs_review` policies: five
+Greenhouse identities and four Breezy identities.
+
+Official-source review:
+
+- Greenhouse states Job Board GET data is publicly available without
+  authentication, but describes the API as exporting an organization's public
+  posts to its own custom career/application site. Its integration guidance
+  has the customer enable the integration and provide an API key.
+- Breezy requires authorization for all documented v3 API requests except
+  sign-in/health. Its partner workflow requires a partner key plus a customer
+  API token received after customer authorization. The repository adapter
+  instead polls a per-career-site `/json` route that Breezy's API reference
+  does not document as a partner integration path.
+
+Repository evidence contains no customer-enabled integration, partner
+authorization, or explicit permission for these nine identities. Decision:
+create a bounded reversible pause of exactly the five current Greenhouse and
+four current Breezy token policies. Preserve stored jobs, all other sources,
+robots observe mode, and the source-expansion freeze. Do not probe or substitute
+endpoints.
+
+Next exact action: commit the COMP-01D contract, implement provider-specific
+pause notes plus an exact-token regression guard, run the full gate, obtain a
+fresh critic, deploy, and verify the next scheduled D1 cycle read-only.
+
 ## Run 11 — COMP-01C Ashby containment (2026-08-28, TERMINAL — KEEP)
 
 Status: **COMP-01C TERMINAL — KEEP**. Execution began from synchronized

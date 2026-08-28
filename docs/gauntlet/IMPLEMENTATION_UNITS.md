@@ -1193,6 +1193,59 @@ Migration-writing units are sequential even when their functional work is otherw
 | HANDOFF | G6 plus source URLs, five tokens, pause diff, test/run IDs, post-deploy cutoff, and re-enable authority. |
 | STATUS | TERMINAL — KEEP (accepted 2026-08-28; exactly five Ashby token policies disabled/paused. Focused 2/0/19; full 646/0/1,576, typecheck, guardrails, and build pass. Fresh critic SHIP. Behavior `79b17d6`; exact-SHA CI/deploy `33138055473` success. First eligible cycle at `2026-08-28T03:20:09.266Z`: five Ashby paused skips, zero Ashby real fetches, and 14 non-Ashby real-fetch controls. D1 evidence read-only. Evidence: `docs/gauntlet/evidence/COMP-01C-ashby-access-review.md`) |
 
+## COMP-01D — Reconcile remaining enabled ATS access paths
+
+| Field | Contract |
+| --- | --- |
+| UNIT ID | COMP-01D |
+| TITLE | Pause nine residual `needs_review` Greenhouse/Breezy identities pending source-supported integration authority |
+| MILESTONE | M6/M15 — Compliance evidence and guarded source policy |
+| PRIORITY | P1 compliance containment; final identity-policy prerequisite for COMP-01B re-review |
+| OBJECTIVE | Reconcile the five enabled Greenhouse and four enabled Breezy token policies that remain `needs_review`; fail closed where the repository has no customer-enabled integration, partner authorization, or explicit permission. |
+| WHY THIS MATTERS | Public readability and robots allowance are transport facts, not sufficient authority for recurring third-party indexing. COMP-01B cannot sign off while active ATS policies remain intentionally unresolved. |
+| CURRENT EVIDENCE | Greenhouse officially makes Job Board GET data public without authentication but frames it as exporting an organization's public posts to its own custom career site; Greenhouse integration guidance has the customer enable the integration and provide an API key. Breezy's documented v3 API requires authorization for every request except sign-in/health; its partner guide requires a partner key plus a customer token after customer authorization. The production adapter instead reads an undocumented per-career-site `/json` route. |
+| EVIDENCE STATUS | Official access-path distinction VERIFIED; runtime robots evidence for these identities is decidable/allowed; no integration authorization or explicit permission exists in repository evidence. |
+| ROOT CAUSE | Earlier reviews promoted public/robots-allowed reachability to `needs_review` enablement without completing the source-supported third-party integration authority check. |
+| ROOT CAUSE CONFIDENCE | High for fail-closed containment; legal permission remains source/customer authority. |
+| PREREQUISITES | REL-12 KEEP; COMP-01C KEEP; owner instruction 2026-08-28 to continue until done. |
+| DEPENDENCIES | Reopens COMP-01B endpoint classification; does not itself authorize robots enforcement or any source expansion. |
+| AFFECTED FILES / SYMBOLS | `apps/web/src/pages/api/cron/scrape.ts` — five `greenhouse:*` and four `breezy:*` entries in `ATS_TOKEN_POLICIES`; focused policy guard; `docs/gauntlet/evidence/COMP-01D-residual-ats-access-review.md`; baton/problem register. |
+| CALLERS / DEPENDENTS | Cron scrape policy partition, source-fetch events/health rollup, COMP-01B endpoint matrix. |
+| BASELINE | Nine enabled `needs_review` ATS identities make recurring real fetches; their robots verdicts are decidable but their third-party access authority remains unrecorded. |
+| PRIMARY ADDY SKILL / WORKFLOW | `source-driven-development`. |
+| OPTIONAL SUPERPOWERS MECHANISM | Verification-before-completion + fresh independent critic. |
+| WHY DISTINCT VALUE | Official provider documentation separates public display mechanics from customer/partner integration authorization; the critic challenges the grouped nine-token boundary. |
+| ASSIGNED MODEL | Repository executor. |
+| CRITIC | Independent compliance/reliability reviewer; must verify both providers' official docs, exact nine-token scope, and reversibility. |
+| WORKTREE REQUIRED | No; declarative policy entries plus a focused guard on synchronized main. |
+| ALLOWED SCOPE | Disable/pause only the five current Greenhouse and four current Breezy token policies with provider-specific evidence notes; add regression coverage and read-only pre/post evidence. |
+| SMALLEST IMPLEMENTATION | Replace the nine enabled/`needs_review` policies with disabled/`paused` policies using one reviewed note per provider family. |
+| MUST PRESERVE | All other source policies, stored jobs/directory rows, public links, robots observe mode, cadence, source history, and G1–G12. |
+| DO NOT TOUCH / FORBIDDEN SCOPE | No source HTTP probe, endpoint substitution, credential creation/use, customer impersonation, deletion/archival, other policy change, enforcement flip, or source expansion. |
+| REGRESSION SURFACE | ATS policy partition and skip reporting; nine-source freshness intentionally stops. |
+| TESTS | Focused guard proves exactly the expected five Greenhouse and four Breezy tokens are disabled/paused with the correct provider note; Ashby guard remains green; then G3/typecheck/guardrails/build. |
+| PROBES | Post-deploy read-only D1 window: all nine explicit paused skips and zero real fetches; static/RSS/API controls continue. |
+| BENCHMARK / EVAL | Nine real ATS fetches per eligible cadence → zero; nine explicit policy skips; no other source change. |
+| AUTOMATION OPPORTUNITY | Regression guard prevents accidental re-enable without revisiting the reviewed authority contract. |
+| AUTOMATION CLASS | A5 approval-gated policy transition; A7 automated regression/production verification. |
+| MATURITY TARGET | A7 for pause enforcement; re-enable remains A5. |
+| OBSERVABILITY | Existing `source_fetch_events` skip reason/compliance status and source-health rollup. |
+| IDEMPOTENCY | Declarative pause emits evidence without contacting providers. |
+| MAINTAINABILITY IMPACT | Replaces ambiguous reachability notes with provider-specific re-enable conditions. |
+| SCALE IMPACT | Removes nine recurring ATS requests and robots consultations. |
+| HARDENING IMPACT | Closes the last active `needs_review` ATS policy gap before COMP-01B classification. |
+| ACCEPTANCE | Focused/full tests and CI/deploy green; critic SHIP; production events show nine paused skips, zero real fetches, and unaffected controls. |
+| ACCEPTANCE EVIDENCE | Official provider URLs, diff/test output, CI/deploy run, bounded read-only D1 window, critic verdict. |
+| REVERT | Re-enable a token only in a separate approved unit with customer-enabled integration, provider partner authorization, or explicit permission documented. |
+| STOP CONDITIONS | Official docs support unapproved third-party aggregation, exact identities cannot be distinguished, pause changes another source, or owner revokes approval. |
+| ESCALATION | Contact Greenhouse/Breezy through their documented integration channels; remain paused while unresolved. |
+| DOCUMENTATION | Evidence report, unit status, problem register, implementation status, baton. |
+| COMMIT PLAN | Contract commit; behavior/test/evidence commit; production acceptance commit. |
+| COMMIT BOUNDARY | Nine token policies + guard test + unit evidence only. |
+| GITHUB BACKUP | G5 with exact-SHA CI/deploy and post-deploy D1 evidence. |
+| HANDOFF | G6 plus provider URLs, token list, pause diff, test/run IDs, cutoff, and re-enable authority. |
+| STATUS | IN_PROGRESS (authorized 2026-08-28; official-source review complete, behavior not yet changed) |
+
 ## REC-02 — Minimal-context interruption and resume drill
 
 | Field | Contract |
