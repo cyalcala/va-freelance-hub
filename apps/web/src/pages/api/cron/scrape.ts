@@ -611,6 +611,12 @@ const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
 const ASHBY_PARTNER_ACCESS_PAUSE_NOTE =
   "Paused 2026-08-28: Ashby's public posting API is documented for an organization's own careers page; Ashby documents a Dedicated Partner Job Feed for partner ingestion with customer opt-in. No partner feed or permission is recorded, and robots HTTP 401 remains unknown. Keep paused; do not treat robots HTTP 401 as allow.";
 
+const GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE =
+  "Paused 2026-08-28: Greenhouse explicitly makes Job Board GET data public without authentication and frames it for an organization's own career site, but its docs do not expressly address recurring third-party aggregation or republishing. Under project fail-closed policy, keep paused pending explicit provider terms, clarification, customer permission, or an approved integration. Public readability is not aggregation authority.";
+
+const BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE =
+  "Paused 2026-08-28: Breezy's documented v3 API requires authorization, while the career-site /json route used here is absent from the current official API index. Its integration authority is undocumented and no explicit permission is recorded. Under project fail-closed policy, keep paused pending provider terms, clarification, customer permission, or an approved integration. Public readability is not aggregation authority.";
+
 const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
   // COMP-01C: all currently known Ashby tokens fail closed until Ashby or the
   // represented customer provides source-supported partner access. The public
@@ -641,58 +647,49 @@ const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
     complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
   },
   "greenhouse:grafanalabs": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "RemoteWork3.8 review 2026-07-12: Greenhouse Job Board API is public and returned published jobs; collect minimal metadata, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
   "greenhouse:nearform": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "RemoteWork3.8 review 2026-07-12: Greenhouse Job Board API returned 34 published jobs; collect minimal metadata, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
   "greenhouse:gitlab": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "Gold777 review 2026-07-03: Greenhouse Job Board API endpoint is public and returns published jobs; collect minimal factual metadata, include location context for triage, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
   "greenhouse:ghost": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "Gold777 review 2026-07-03: Greenhouse Job Board API endpoint is public and returns published jobs; collect minimal factual metadata, include location context for triage, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
   "greenhouse:remotecom": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "Gold777 review 2026-07-03: Greenhouse Job Board API endpoint is public and returns published jobs; collect minimal factual metadata, include location context for triage, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
   "breezy:20four7va": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "Goldilocks review 2026-06-12: public Breezy career endpoint is robots-allowed and CORS-readable; collect minimal factual metadata only, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
   "breezy:sourcefit": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "Goldilocks review 2026-06-12: public Breezy career endpoint is robots-allowed and CORS-readable; collect minimal factual metadata only, link back to ATS-hosted URLs, and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
   "breezy:vaaphilippines-recruitment": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "Goldilocks review 2026-06-12: public Breezy career endpoint is robots-allowed and CORS-readable but currently returns zero jobs; keep minimal monitored access and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
   "breezy:time-etc": {
-    enabled: true,
-    complianceStatus: "needs_review",
-    complianceNotes:
-      "Gold777 review 2026-07-03: public Breezy career endpoint is robots-allowed and returns published jobs; collect minimal factual metadata, include location context for triage, link back to Breezy-hosted URLs, and pause on objection or clarified hostile terms.",
+    enabled: false,
+    complianceStatus: "paused",
+    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
   },
 };
 

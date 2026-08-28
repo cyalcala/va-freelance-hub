@@ -1201,10 +1201,10 @@ Migration-writing units are sequential even when their functional work is otherw
 | TITLE | Pause nine residual `needs_review` Greenhouse/Breezy identities pending source-supported integration authority |
 | MILESTONE | M6/M15 — Compliance evidence and guarded source policy |
 | PRIORITY | P1 compliance containment; final identity-policy prerequisite for COMP-01B re-review |
-| OBJECTIVE | Reconcile the five enabled Greenhouse and four enabled Breezy token policies that remain `needs_review`; fail closed where the repository has no customer-enabled integration, partner authorization, or explicit permission. |
+| OBJECTIVE | Reconcile the five enabled Greenhouse and four enabled Breezy token policies that remain `needs_review`; fail closed where explicit aggregation terms/permission or an approved integration are not recorded. |
 | WHY THIS MATTERS | Public readability and robots allowance are transport facts, not sufficient authority for recurring third-party indexing. COMP-01B cannot sign off while active ATS policies remain intentionally unresolved. |
-| CURRENT EVIDENCE | Greenhouse officially makes Job Board GET data public without authentication but frames it as exporting an organization's public posts to its own custom career site; Greenhouse integration guidance has the customer enable the integration and provide an API key. Breezy's documented v3 API requires authorization for every request except sign-in/health; its partner guide requires a partner key plus a customer token after customer authorization. The production adapter instead reads an undocumented per-career-site `/json` route. |
-| EVIDENCE STATUS | Official access-path distinction VERIFIED; runtime robots evidence for these identities is decidable/allowed; no integration authorization or explicit permission exists in repository evidence. |
+| CURRENT EVIDENCE | Greenhouse officially makes Job Board GET data public without authentication and frames it as exporting an organization's public posts to its own custom career site, but does not expressly address recurring third-party aggregation/republishing. Breezy's documented v3 API requires authorization for every request except sign-in/health; the production adapter instead reads a per-career-site `/json` route absent from the current official API index. |
+| EVIDENCE STATUS | Greenhouse public/auth-free GET VERIFIED; Greenhouse aggregation authority UNRESOLVED. Breezy v3 auth and current-doc absence of `/json` VERIFIED; Breezy `/json` integration authority UNRESOLVED. Runtime robots evidence is decidable/allowed; no explicit permission exists in repository evidence. |
 | ROOT CAUSE | Earlier reviews promoted public/robots-allowed reachability to `needs_review` enablement without completing the source-supported third-party integration authority check. |
 | ROOT CAUSE CONFIDENCE | High for fail-closed containment; legal permission remains source/customer authority. |
 | PREREQUISITES | REL-12 KEEP; COMP-01C KEEP; owner instruction 2026-08-28 to continue until done. |
@@ -1214,7 +1214,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | BASELINE | Nine enabled `needs_review` ATS identities make recurring real fetches; their robots verdicts are decidable but their third-party access authority remains unrecorded. |
 | PRIMARY ADDY SKILL / WORKFLOW | `source-driven-development`. |
 | OPTIONAL SUPERPOWERS MECHANISM | Verification-before-completion + fresh independent critic. |
-| WHY DISTINCT VALUE | Official provider documentation separates public display mechanics from customer/partner integration authorization; the critic challenges the grouped nine-token boundary. |
+| WHY DISTINCT VALUE | Official provider documentation establishes the public/authenticated mechanics but leaves this third-party aggregation authority unresolved; the critic challenges the conservative policy and grouped nine-token boundary. |
 | ASSIGNED MODEL | Repository executor. |
 | CRITIC | Independent compliance/reliability reviewer; must verify both providers' official docs, exact nine-token scope, and reversibility. |
 | WORKTREE REQUIRED | No; declarative policy entries plus a focused guard on synchronized main. |
@@ -1236,7 +1236,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | HARDENING IMPACT | Closes the last active `needs_review` ATS policy gap before COMP-01B classification. |
 | ACCEPTANCE | Focused/full tests and CI/deploy green; critic SHIP; production events show nine paused skips, zero real fetches, and unaffected controls. |
 | ACCEPTANCE EVIDENCE | Official provider URLs, diff/test output, CI/deploy run, bounded read-only D1 window, critic verdict. |
-| REVERT | Re-enable a token only in a separate approved unit with customer-enabled integration, provider partner authorization, or explicit permission documented. |
+| REVERT | Re-enable a token only in a separate approved unit with explicit provider terms/clarification, provider/customer permission, or an approved integration documented. |
 | STOP CONDITIONS | Official docs support unapproved third-party aggregation, exact identities cannot be distinguished, pause changes another source, or owner revokes approval. |
 | ESCALATION | Contact Greenhouse/Breezy through their documented integration channels; remain paused while unresolved. |
 | DOCUMENTATION | Evidence report, unit status, problem register, implementation status, baton. |
@@ -1244,7 +1244,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Nine token policies + guard test + unit evidence only. |
 | GITHUB BACKUP | G5 with exact-SHA CI/deploy and post-deploy D1 evidence. |
 | HANDOFF | G6 plus provider URLs, token list, pause diff, test/run IDs, cutoff, and re-enable authority. |
-| STATUS | IN_PROGRESS (authorized 2026-08-28; official-source review complete, behavior not yet changed) |
+| STATUS | VERIFYING (2026-08-28; exactly five Greenhouse and four Breezy token policies are locally disabled/paused with provider-specific notes and an exact-token guard. Focused containment guards 5/0/56; full 649/0/1,613, typecheck, guardrails, and build pass. Fresh critic SHIP after evidence revisions. Exact-SHA CI/deploy and post-deploy D1 evidence remain. Evidence: `docs/gauntlet/evidence/COMP-01D-residual-ats-access-review.md`) |
 
 ## REC-02 — Minimal-context interruption and resume drill
 

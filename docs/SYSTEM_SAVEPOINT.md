@@ -9,17 +9,17 @@ Greenhouse identities and four Breezy identities.
 Official-source review:
 
 - Greenhouse states Job Board GET data is publicly available without
-  authentication, but describes the API as exporting an organization's public
-  posts to its own custom career/application site. Its integration guidance
-  has the customer enable the integration and provide an API key.
+  authentication and describes the API as exporting an organization's public
+  posts to its own custom career/application site. Its docs do not expressly
+  address recurring third-party aggregation or republishing; the API-key
+  integration article applies to candidate submission, not GET reads.
 - Breezy requires authorization for all documented v3 API requests except
-  sign-in/health. Its partner workflow requires a partner key plus a customer
-  API token received after customer authorization. The repository adapter
-  instead polls a per-career-site `/json` route that Breezy's API reference
-  does not document as a partner integration path.
+  sign-in/health. The repository adapter instead polls a per-career-site
+  `/json` route absent from Breezy's current official API index.
 
-Repository evidence contains no customer-enabled integration, partner
-authorization, or explicit permission for these nine identities. Decision:
+Repository evidence contains no explicit aggregation permission or approved
+integration for these nine identities. Decision under the project's stricter
+fail-closed policy:
 create a bounded reversible pause of exactly the five current Greenhouse and
 four current Breezy token policies. Preserve stored jobs, all other sources,
 robots observe mode, and the source-expansion freeze. Do not probe or substitute
@@ -28,6 +28,23 @@ endpoints.
 Next exact action: commit the COMP-01D contract, implement provider-specific
 pause notes plus an exact-token regression guard, run the full gate, obtain a
 fresh critic, deploy, and verify the next scheduled D1 cycle read-only.
+
+Local implementation is complete. The new test failed first against all nine
+old policies, then both containment guards passed 5/0 with 56 assertions. The
+full gate passes 649/0 with 1,613 assertions across 72 files, followed by strict
+typecheck, production guardrails, and the Astro build. No D1 mutation or source
+HTTP request occurred.
+
+Evidence: `docs/gauntlet/evidence/COMP-01D-residual-ats-access-review.md`.
+
+Fresh independent critic final verdict: **SHIP**, no blockers. Its evidence
+revisions were applied: Greenhouse GET/auth facts are separated from unresolved
+aggregation authority; the non-reproducible Breezy partner-guide claim was
+removed; provider notes are asserted directly; and the refreshed full suite is
+recorded at 649/0/1,613.
+
+Next exact action: behavior/evidence commit, exact-SHA CI/deploy, and first
+eligible D1 cycle verification.
 
 ## Run 11 — COMP-01C Ashby containment (2026-08-28, TERMINAL — KEEP)
 
