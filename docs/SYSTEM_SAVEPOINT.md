@@ -1,5 +1,35 @@
 # System Savepoint
 
+## Run 13 — COMP-01B source-scoped canary review (2026-08-28, READY)
+
+Status: **COMP-01B READY FOR CANARY — NO FLIP YET**. COMP-01C and COMP-01D
+are accepted KEEP, leaving exactly six `allowed` configured identities able to
+fetch. Fresh read-only D1 classification over ~58h30m records 543/543 allowed
+real fetches and zero disallowed, unknown/null, or would-block results:
+We Work Remotely 201, Remotive 201, Real Work From Anywhere 36, Remote OK 36,
+Jobicy admin 33, and Jobicy supporting 36. Query metadata is non-mutating;
+no source request was made.
+
+Proposed smallest reversible step: a typed source-ID mode selector with only
+`we-work-remotely` in the enforce canary set and default `observe` for every
+other/future identity. Test both canary and rollback mappings, deploy from the
+required isolated worktree, then monitor at least one full ten-minute canary
+cadence plus margin. Stop on any gate error, skip, would-block, or freshness
+regression. Do not add the other five sources until canary acceptance; their
+later full rollout requires a separate commit and 60-minute production window.
+
+Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
+Fresh independent critic independently reproduced 543/543 and returned **SHIP
+the WWR-only canary**, not global/full rollout. Required gates: typed
+default-observe selector, exact allowed/disallowed/unknown/error accounting,
+anti-global-flip guard, empty-set rollback test, contract-required isolated
+worktree, exact-SHA CI/deploy, and event-based production acceptance.
+
+Next exact action: commit/synchronize this approval, create the isolated
+worktree from that SHA, implement the WWR-only selector and tests, then deploy.
+Operational rollback proof remains required before terminal acceptance or any
+five-source expansion. Source expansion remains frozen.
+
 ## Run 12 — COMP-01D residual ATS review (2026-08-28, TERMINAL — KEEP)
 
 Status: **COMP-01D TERMINAL — KEEP** after COMP-01C production acceptance. The

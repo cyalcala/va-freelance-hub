@@ -263,3 +263,65 @@ Exact-sha Sovereign CI Guardrail run `33137293829` completed successfully:
 production guardrails, unit tests, app build, strict typecheck, and Freshness
 Worker validation passed; production migration/deploy was correctly skipped
 for the documentation-only change.
+
+---
+
+## Post-containment re-review — 2026-08-28 (READY FOR CANARY; NO FLIP YET)
+
+COMP-01C and COMP-01D are TERMINAL — KEEP. They pause the five ambiguous Ashby
+identities and the nine residual `needs_review` Greenhouse/Breezy identities.
+Their first eligible production cycles prove explicit policy skips and zero
+real fetches, without affecting non-target controls.
+
+The effective fetching set is now exactly six statically configured sources,
+all with `complianceStatus=allowed` and source-specific distribution/linkback
+notes: We Work Remotely, Remotive, Real Work From Anywhere, two Jobicy feeds,
+and Remote OK. A fresh read-only D1 reclassification from the mature cutoff
+through `2026-08-28T03:40:09.251Z` returned:
+
+| Source | Real fetches | Allowed | Disallowed | Unknown/null | Would block |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `we-work-remotely` | 201 | 201 | 0 | 0 | 0 |
+| `remotive` | 201 | 201 | 0 | 0 | 0 |
+| `real-work-from-anywhere` | 36 | 36 | 0 | 0 | 0 |
+| `remote-ok` | 36 | 36 | 0 | 0 | 0 |
+| `jobicy-admin-support-apac` | 33 | 33 | 0 | 0 | 0 |
+| `jobicy-supporting-apac` | 36 | 36 | 0 | 0 | 0 |
+| **Total** | **543** | **543** | **0** | **0** | **0** |
+
+Window: `2026-08-25T17:10:09.537Z` through
+`2026-08-28T03:40:09.251Z` (~58h30m), exceeding the 48-hour contract minimum.
+Query metadata: `changed_db=false`, `changes=0`, `rows_written=0`. No source
+request was made for the review.
+
+### Canary decision contract
+
+Evidence now passes the classification prerequisite, but it does not authorize
+a global flip. The smallest reversible next step is a typed source-scoped mode
+selector:
+
+- Canary only `we-work-remotely`, which has 201/201 allowed verdicts and a
+  ten-minute effective cadence.
+- Every other source ID—including future/unknown identities—defaults to
+  `observe`.
+- Paused sources remain policy-skipped before the robots gate.
+- Monitor at least one complete canary cadence plus margin. Accept only with a
+  real fetch, `robots_mode=enforce`, `robots_verdict=allowed`, zero would-block,
+  no new gate error, and normal non-canary controls.
+- Rollback is declarative: remove the one ID from the enforcement set and
+  redeploy. Exercise that selector in tests before deployment.
+- Only after canary acceptance may a separate commit add the other five
+  reviewed IDs, followed by a full 60-minute cadence window.
+
+Status: **READY FOR SOURCE-SCOPED CANARY; NO ENFORCEMENT CHANGE YET**. Source
+expansion remains frozen.
+
+Fresh independent critic: **SHIP the WWR-only canary**, not global enforcement
+or expansion. The critic independently reproduced the six-source D1 matrix
+exactly and requires: typed default-observe selection; allowed/disallowed/
+unknown/error route coverage; an anti-global-flip guard; isolated worktree;
+exact rollback mapping; exact-SHA CI/deploy; and event-based production proof.
+Canary acceptance requires at least one successful post-deploy WWR real fetch
+with `robots_mode=enforce`, an observe-mode non-canary real-fetch control,
+contained ATS skip continuity, and no freshness regression. Operational
+rollback proof remains required before terminal acceptance or expansion.

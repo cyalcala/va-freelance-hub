@@ -203,7 +203,7 @@ Manual extensions
 | P1 | OPS-04 | directory unreachable ratio rose to 43% | verified current signal |
 | P1 | SRC-4D | two Jobicy feeds receive 429 on one origin | verified current signal |
 | P1 | DATA-03 | quality cohort is dated and mutation decisions lack a fresh baseline | verified evidence gap |
-| P1 | COMP-01 | durable robots evidence works after REL-12; COMP-01C pauses five Ashby identities and COMP-01D pauses the residual five Greenhouse/four Breezy identities pending explicit aggregation authority | ATS containments KEEP; reopen reviewed enforcement classification; no flip yet |
+| P1 | COMP-01 | six-source post-containment matrix is 543/543 allowed over ~58h30m; source-scoped We Work Remotely enforce canary proposed with default observe elsewhere | READY for critic-reviewed canary; no flip yet |
 | P2 | REL-08 | source health lacks a single compliance-first semantic Doctor contract | verified fragmentation |
 | P2 | DATA-06 | taxonomy and triage paths can disagree | verified architecture and live symptoms |
 | P2 | REL-10 | homepage projection omits eligibility used by card routing | verified in code |

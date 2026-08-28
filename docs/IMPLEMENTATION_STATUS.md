@@ -2,9 +2,8 @@
 
 ## Current Gauntlet Checkpoint — 2026-08-28
 
-Status: **COMP-01D TERMINAL — KEEP; COMP-01C TERMINAL — KEEP; REL-12 TERMINAL — KEEP;
-COMP-01B BLOCKED — NO
-FLIP**. The mature
+Status: **COMP-01B READY FOR CANARY — NO FLIP YET; COMP-01D/COMP-01C/REL-12
+TERMINAL — KEEP**. The mature
 post-TTL production window proves the Workers fetch-binding fix: 848/1,023
 real fetches are `allowed`, the prior Illegal-invocation signature is absent,
 and all 11 cache origins have explicit HTTP results. The 175 residual unknowns
@@ -30,6 +29,14 @@ Exact-SHA CI/deploy `33139365159` succeeded for `a826661`; the first eligible
 cycle showed every target paused/skipped, zero target real fetches, and two
 unaffected real-fetch controls. Evidence:
 `docs/gauntlet/evidence/COMP-01D-residual-ats-access-review.md`.
+
+After those containments, exactly six `allowed` sources remain able to fetch.
+Their mature ~58h30m window contains 543/543 allowed real fetches and zero
+disallowed, unknown/null, or would-block results. The proposed next step is a
+typed `we-work-remotely`-only enforce canary with default observe everywhere
+else; fresh independent critic verdict is SHIP for that canary only. No
+enforcement change has occurred. Evidence:
+`docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
 
 ## TAX-02 — Owner-directed category expansion — 2026-08-23
 
