@@ -354,6 +354,12 @@ Local verification at the uncommitted implementation diff:
 
 Fresh independent critic verdict: **SHIP**. It independently reran the focused
 20/0/68 gate and found no remaining guard, provenance, or fail-closed blocker.
-Production is unchanged. Remaining gates are the behavior commit, independently
-verified empty-set rollback commit, exact-SHA CI/deployment, and the event-based
-canary acceptance window.
+Production is unchanged. Remaining gates are exact-SHA CI/deployment and the
+event-based canary acceptance window.
+
+Immutable pre-deploy artifacts:
+
+- canary behavior: `8663484`;
+- exact-empty rollback: `bf9a17e`, based directly on `8663484`;
+- rollback verification: 657 pass, 0 fail, 1,662 assertions, plus typecheck,
+  production guardrails, and build.

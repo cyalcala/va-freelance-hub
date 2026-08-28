@@ -31,9 +31,10 @@ anti-global-flip guard, empty-set rollback test, contract-required isolated
 worktree, exact-SHA CI/deploy, and event-based production acceptance.
 
 Fresh independent critic verdict: **SHIP**, with an independent focused rerun
-of 20/0/68 and no remaining blocker. Next exact action: commit the hardened
-diff, prepare and verify the exact empty-set rollback commit, then deploy the
-canary exact SHA.
+of 20/0/68 and no remaining blocker. Canary behavior is committed at `8663484`.
+Prepared rollback `bf9a17e` is based directly on that commit, changes the set
+to exact empty, and passes full G3 657/0/1,662 plus typecheck, guardrails, and
+build. Next exact action: synchronize and deploy the canary exact SHA.
 Operational rollback proof remains required before terminal acceptance or any
 five-source expansion. Source expansion remains frozen.
 
