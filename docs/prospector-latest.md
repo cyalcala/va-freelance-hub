@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-08-28
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33167110740
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33216527287
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 5 |
-| Auto-added this run | 0 |
+| Candidates considered | 8 |
+| Auto-added this run | 3 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 4 |
 | Rejected for quality | 1 |
@@ -15,4 +15,6 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33167110
 
 ## Auto-added companies
 
-- (none this run)
+- Zscaler
+- Toggl
+- Chime Financial, Inc
