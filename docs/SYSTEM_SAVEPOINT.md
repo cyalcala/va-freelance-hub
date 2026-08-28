@@ -1,8 +1,8 @@
 # System Savepoint
 
-## Run 13 — COMP-01B source-scoped canary (2026-08-28, VERIFYING LOCALLY)
+## Run 13 — COMP-01B reviewed enforcement rollout (2026-08-28, READY)
 
-Status: **COMP-01B CANARY IMPLEMENTED LOCALLY — NOT DEPLOYED**. COMP-01C and COMP-01D
+Status: **COMP-01B FULL ROLLOUT READY — CANARY AND ROLLBACK PROVEN**. COMP-01C and COMP-01D
 are accepted KEEP, leaving exactly six `allowed` configured identities able to
 fetch. Fresh read-only D1 classification over ~58h30m records 543/543 allowed
 real fetches and zero disallowed, unknown/null, or would-block results:
@@ -10,18 +10,20 @@ We Work Remotely 201, Remotive 201, Real Work From Anywhere 36, Remote OK 36,
 Jobicy admin 33, and Jobicy supporting 36. Query metadata is non-mutating;
 no source request was made.
 
-The isolated `codex/comp01b-canary` worktree now implements a typed source-ID mode selector with only
-`we-work-remotely` in the enforce canary set and default `observe` for every
-other/future identity. Enforce failures fail closed with complete provenance;
-successful and observe-mode results also retain provenance. The production
-guard accepts only the exact WWR literal or exact empty rollback initializer
-and rejects global, dynamic, spread, or expanded configurations. Focused
-verification passes 20/0/68; full G3 passes 657/0/1,662 plus typecheck,
-guardrails, and build. After critic re-review, commit and deploy from the
-required isolated worktree, then monitor at least one full ten-minute canary
-cadence plus margin. Stop on any gate error, skip, would-block, or freshness
-regression. Do not add the other five sources until canary acceptance; their
-later full rollout requires a separate commit and 60-minute production window.
+Canary exact-SHA CI/deploy `33141353808` succeeded. The first post-deploy WWR
+event at `2026-08-28T04:20:09.267Z` fetched 89 jobs with `enforce`, `allowed`,
+zero would-block, no skip/error; four observe-mode controls were normal and
+contained ATS identities remained skipped. The operational rollback exact-SHA
+CI/deploy `33141565761` then succeeded. At `04:30:09.265Z`, WWR fetched the same
+89 jobs in `observe`, with allowed/zero-would-block, alongside normal Remotive
+and Jobicy controls. Both D1 probes were read-only.
+
+The separate `codex/comp01b-expand` worktree now selects exactly the six mature
+543/543 reviewed identities for enforce and defaults every unknown/future/ATS
+identity to observe. Its guard accepts only that exact six-source literal or
+the exact empty rollback. Focused verification passes 20/0/73; full G3 passes
+657/0/1,667 plus typecheck, guardrails, and build. Fresh independent critic
+verdict is **SHIP for commit/deploy** after independently reproducing rollback.
 
 Evidence: `docs/gauntlet/evidence/COMP-01B-observation-window-20260824.md`.
 Fresh independent critic independently reproduced 543/543 and returned **SHIP
@@ -30,13 +32,10 @@ default-observe selector, exact allowed/disallowed/unknown/error accounting,
 anti-global-flip guard, empty-set rollback test, contract-required isolated
 worktree, exact-SHA CI/deploy, and event-based production acceptance.
 
-Fresh independent critic verdict: **SHIP**, with an independent focused rerun
-of 20/0/68 and no remaining blocker. Canary behavior is committed at `8663484`.
-Prepared rollback `bf9a17e` is based directly on that commit, changes the set
-to exact empty, and passes full G3 657/0/1,662 plus typecheck, guardrails, and
-build. Next exact action: synchronize and deploy the canary exact SHA.
-Operational rollback proof remains required before terminal acceptance or any
-five-source expansion. Source expansion remains frozen.
+Next exact action: commit/deploy the separate six-source rollout and monitor a
+full 60-minute production window. Stop and restore the exact empty set on any
+unknown/disallowed/null/would-block, gate error, enforced skip, or freshness
+regression. Source expansion beyond these six remains frozen.
 
 ## Run 12 — COMP-01D residual ATS review (2026-08-28, TERMINAL — KEEP)
 

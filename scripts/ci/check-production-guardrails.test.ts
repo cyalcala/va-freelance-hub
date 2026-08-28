@@ -177,24 +177,27 @@ test("requires clock deployment checks and an evidence-producing watchdog", () =
   ]);
 });
 
-test("pins robots enforcement to the approved WWR-only canary", () => {
+test("pins robots enforcement to the reviewed six-source rollout", () => {
   const approved = [
-    'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely"]);',
+    'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac", "jobicy-supporting-apac"]);',
     "function robotsModeForSourceId(sourceId: string)",
     "const sourceMode = robotsModeForSourceId(source.id)",
     "const atsMode = robotsModeForSourceId(key)",
   ].join("\n");
   expect(inspectRobotsEnforcementPolicy(approved).errors).toEqual([]);
 
-  const rolledBack = approved.replace('["we-work-remotely"]', "[]");
+  const reviewedIds = '["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac", "jobicy-supporting-apac"]';
+  const rolledBack = approved.replace(reviewedIds, "[]");
   expect(inspectRobotsEnforcementPolicy(rolledBack).errors).toEqual([]);
 
-  const expanded = approved.replace(
-    '["we-work-remotely"]',
-    '["we-work-remotely", "remotive"]',
-  );
+  const expanded = approved.replace(reviewedIds, reviewedIds.replace("]", ', "future-source"]'));
   expect(inspectRobotsEnforcementPolicy(expanded).errors).toContain(
-    "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or WWR-only literal initializer",
+    "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or reviewed six-source literal initializer",
+  );
+
+  const partial = approved.replace(reviewedIds, '["we-work-remotely"]');
+  expect(inspectRobotsEnforcementPolicy(partial).errors).toContain(
+    "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or reviewed six-source literal initializer",
   );
 
   for (const globalFlip of [
@@ -213,11 +216,11 @@ test("pins robots enforcement to the approved WWR-only canary", () => {
     'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely", ...extraIds]);',
   ]) {
     const candidate = approved.replace(
-      'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely"]);',
+      `const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(${reviewedIds});`,
       bypass,
     );
     expect(inspectRobotsEnforcementPolicy(candidate).errors).toContain(
-      "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or WWR-only literal initializer",
+      "apps/web/src/pages/api/cron/scrape.ts: robots enforce set must use the exact empty or reviewed six-source literal initializer",
     );
   }
   expect(inspectRobotsEnforcementPolicy("function robotsModeForSourceId() {}").errors).toContain(

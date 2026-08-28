@@ -111,13 +111,13 @@ export function inspectRobotsEnforcementPolicy(text: string): GuardrailResult {
     ...text.matchAll(/const\s+ROBOTS_ENFORCE_SOURCE_IDS\b[^;]*;/g),
   ].map((match) => match[0].trim());
   const approvedInitializers = new Set([
-    'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely"]);',
+    'const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set(["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac", "jobicy-supporting-apac"]);',
     "const ROBOTS_ENFORCE_SOURCE_IDS: ReadonlySet<string> = new Set([]);",
   ]);
   if (declarations.length === 0) {
     errors.push(`${path}: source-scoped robots enforce set is required`);
   } else if (declarations.length !== 1 || !approvedInitializers.has(declarations[0])) {
-    errors.push(`${path}: robots enforce set must use the exact empty or WWR-only literal initializer`);
+    errors.push(`${path}: robots enforce set must use the exact empty or reviewed six-source literal initializer`);
   }
 
   if (!text.includes("robotsModeForSourceId(source.id)")) {

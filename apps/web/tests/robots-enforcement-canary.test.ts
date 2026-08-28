@@ -24,10 +24,19 @@ function robots(overrides: Partial<RobotsGateResult>): RobotsGateResult {
   };
 }
 
-describe("COMP-01B robots enforcement rollback", () => {
-  test("defaults every known/unknown source to observe", () => {
-    expect(robotsModeForSourceId("we-work-remotely")).toBe("observe");
-    for (const id of ["remotive", "remote-ok", "future-source", "ashby:future"]) {
+describe("COMP-01B reviewed robots enforcement rollout", () => {
+  test("enforces exactly the six reviewed sources and defaults all others to observe", () => {
+    for (const id of [
+      "we-work-remotely",
+      "remotive",
+      "real-work-from-anywhere",
+      "remote-ok",
+      "jobicy-admin-support-apac",
+      "jobicy-supporting-apac",
+    ]) {
+      expect(robotsModeForSourceId(id)).toBe("enforce");
+    }
+    for (const id of ["future-source", "ashby:future", "greenhouse:future"]) {
       expect(robotsModeForSourceId(id)).toBe("observe");
     }
   });

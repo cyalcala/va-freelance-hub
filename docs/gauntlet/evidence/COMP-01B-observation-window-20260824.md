@@ -363,3 +363,37 @@ Immutable pre-deploy artifacts:
 - exact-empty rollback: `bf9a17e`, based directly on `8663484`;
 - rollback verification: 657 pass, 0 fail, 1,662 assertions, plus typecheck,
   production guardrails, and build.
+
+---
+
+## Canary and operational rollback — 2026-08-28 (accepted)
+
+Canary behavior reached production through exact-SHA CI/deploy run
+`33141353808`, which completed at `2026-08-28T04:17:55Z`. The first eligible
+cycle at `04:20:09.267Z` recorded WWR as a real successful fetch (`count=89`),
+`robots_mode=enforce`, `robots_verdict=allowed`, and
+`robots_would_block=0`, with no skip or error. Remotive, RWFA, Remote OK, and
+Jobicy Admin provided normal observe controls; all contained ATS identities
+remained policy-skipped.
+
+The prepared exact-empty rollback was then deployed as `3a1df39` through
+exact-SHA run `33141565761`, completed at `04:22:27Z`. The next cycle at
+`04:30:09.265Z` recorded WWR as a real successful fetch (`count=89`) in
+`robots_mode=observe`, allowed, zero would-block, with Remotive and Jobicy
+Supporting as normal observe controls. Both probes reported
+`changed_db=false` and `rows_written=0`.
+
+## Six-source rollout candidate — 2026-08-28 (ready, not deployed)
+
+The separate `codex/comp01b-expand` worktree selects exactly WWR, Remotive,
+RWFA, Remote OK, Jobicy Admin, and Jobicy Supporting for enforcement. Every
+unknown, future, and ATS ID defaults to observe. The production guard accepts
+only the exact reviewed six-source literal or exact empty rollback, rejecting
+partial, expanded, dynamic, spread, and global configurations.
+
+Verification: focused 20/0/73; full G3 657/0/1,667; typecheck, production
+guardrails, and build pass. Fresh independent critic verdict: **SHIP for
+commit/deploy**, after independently reproducing the production rollback proof.
+Acceptance still requires an exact-SHA deployment and a full 60-minute live
+window with no unknown/disallowed/null/would-block, gate error, enforced skip,
+or freshness regression.
