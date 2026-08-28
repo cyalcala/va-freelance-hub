@@ -4,7 +4,7 @@ Date: 2026-08-28
 
 Contract baseline: `d4e8a7f`
 
-Status: VERIFYING — local behavior complete; critic, CI/deploy, and production evidence pending
+Status: TERMINAL — KEEP
 
 ## Decision and exact scope
 
@@ -73,16 +73,28 @@ Test-first evidence:
 
 No D1 mutation or source HTTP request occurred during implementation.
 
-## Remaining acceptance gates
+## Acceptance evidence
 
 - Fresh independent critic: SHIP, no blockers, after two revision rounds. The
   first review corrected the Greenhouse GET/auth distinction and removed a
   non-reproducible Breezy partner-guide claim; the second strengthened the
   provider-note assertions and refreshed all test evidence.
-- Exact-SHA CI and Cloudflare Pages deployment.
-- First eligible post-deploy D1 cycle: nine explicit paused skips, zero real
-  fetches for the nine identities, and unaffected real-fetch controls. Query
-  must remain read-only.
+- Behavior/evidence commit: `a826661`.
+- Exact-SHA Sovereign CI Guardrail run `33139365159`: success. Validation,
+  tests, build, strict typecheck, Worker validation, D1 migration/integrity,
+  and Cloudflare Pages deployment all passed. Deployment completed at
+  `2026-08-28T03:37:14Z`.
+- First eligible production cycle: `2026-08-28T03:40:09.251Z`. Every one of
+  the nine target identities recorded `compliance_status=paused`, all target
+  events were skipped, and target real fetches were zero. `breezy:20four7va`
+  emitted two skip rows because more than one directory agency resolves to the
+  same token; both were policy skips and caused no provider request.
+- Unaffected controls in that cycle: `we-work-remotely` and `remotive` each
+  completed a real fetch.
+- The D1 query was read-only: `changed_db=false`, `changes=0`, and
+  `rows_written=0`. No source endpoint was manually invoked.
+
+All COMP-01D acceptance gates pass. Status is TERMINAL — KEEP.
 
 ## Re-enable authority
 

@@ -1,8 +1,8 @@
 # System Savepoint
 
-## Run 12 — COMP-01D residual ATS review (2026-08-28, IN_PROGRESS)
+## Run 12 — COMP-01D residual ATS review (2026-08-28, TERMINAL — KEEP)
 
-Status: **COMP-01D IN_PROGRESS** after COMP-01C production acceptance. The
+Status: **COMP-01D TERMINAL — KEEP** after COMP-01C production acceptance. The
 residual COMP-01B gate contains nine enabled `needs_review` policies: five
 Greenhouse identities and four Breezy identities.
 
@@ -43,8 +43,20 @@ aggregation authority; the non-reproducible Breezy partner-guide claim was
 removed; provider notes are asserted directly; and the refreshed full suite is
 recorded at 649/0/1,613.
 
-Next exact action: behavior/evidence commit, exact-SHA CI/deploy, and first
-eligible D1 cycle verification.
+Behavior/evidence commit `a826661` passed exact-SHA Sovereign CI Guardrail and
+Cloudflare deployment run `33139365159`; deployment completed at
+`2026-08-28T03:37:14Z`. The first eligible cycle at
+`2026-08-28T03:40:09.251Z` recorded every target identity as `paused`, all
+target events skipped, and zero target real fetches. `breezy:20four7va` emitted
+two skip rows because duplicate directory agencies resolve to the same token;
+neither row caused a request. `we-work-remotely` and `remotive` completed real
+fetches as unaffected controls. D1 verification was read-only
+(`changed_db=false`, `changes=0`, `rows_written=0`).
+
+All COMP-01D gates pass. Next exact action: re-open COMP-01B classification
+using the mature REL-12 observation evidence plus the accepted COMP-01C/D
+pause dispositions. Do not flip enforcement unless every remaining fetching
+identity is reviewed and the original canary/rollback contract is satisfied.
 
 ## Run 11 — COMP-01C Ashby containment (2026-08-28, TERMINAL — KEEP)
 

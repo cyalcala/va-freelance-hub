@@ -2,7 +2,7 @@
 
 ## Current Gauntlet Checkpoint — 2026-08-28
 
-Status: **COMP-01D VERIFYING; COMP-01C TERMINAL — KEEP; REL-12 TERMINAL — KEEP;
+Status: **COMP-01D TERMINAL — KEEP; COMP-01C TERMINAL — KEEP; REL-12 TERMINAL — KEEP;
 COMP-01B BLOCKED — NO
 FLIP**. The mature
 post-TTL production window proves the Workers fetch-binding fix: 848/1,023
@@ -25,8 +25,10 @@ production cycle recorded five Ashby paused skips, zero Ashby real fetches, and
 The next residual containment is implemented locally: five Greenhouse and four
 Breezy token policies are paused pending explicit aggregation terms/permission
 or an approved integration. Focused containment guards pass 5/0/56; full verification passes
-649/0/1,613 plus typecheck, guardrails, and build. Fresh critic verdict is SHIP;
-CI/deploy and D1 production evidence remain. Evidence:
+649/0/1,613 plus typecheck, guardrails, and build. Fresh critic verdict is SHIP.
+Exact-SHA CI/deploy `33139365159` succeeded for `a826661`; the first eligible
+cycle showed every target paused/skipped, zero target real fetches, and two
+unaffected real-fetch controls. Evidence:
 `docs/gauntlet/evidence/COMP-01D-residual-ats-access-review.md`.
 
 ## TAX-02 — Owner-directed category expansion — 2026-08-23

@@ -1244,7 +1244,7 @@ Migration-writing units are sequential even when their functional work is otherw
 | COMMIT BOUNDARY | Nine token policies + guard test + unit evidence only. |
 | GITHUB BACKUP | G5 with exact-SHA CI/deploy and post-deploy D1 evidence. |
 | HANDOFF | G6 plus provider URLs, token list, pause diff, test/run IDs, cutoff, and re-enable authority. |
-| STATUS | VERIFYING (2026-08-28; exactly five Greenhouse and four Breezy token policies are locally disabled/paused with provider-specific notes and an exact-token guard. Focused containment guards 5/0/56; full 649/0/1,613, typecheck, guardrails, and build pass. Fresh critic SHIP after evidence revisions. Exact-SHA CI/deploy and post-deploy D1 evidence remain. Evidence: `docs/gauntlet/evidence/COMP-01D-residual-ats-access-review.md`) |
+| STATUS | TERMINAL — KEEP (accepted 2026-08-28; exactly five Greenhouse and four Breezy token policies disabled/paused. Focused 5/0/56; full 649/0/1,613 plus typecheck, guardrails, and build. Fresh critic SHIP after evidence revisions. Behavior `a826661`; exact-SHA CI/deploy `33139365159` success. First eligible cycle at `2026-08-28T03:40:09.251Z`: every target paused/skipped, zero target real fetches; two non-target real-fetch controls. D1 read-only. Evidence: `docs/gauntlet/evidence/COMP-01D-residual-ats-access-review.md`) |
 
 ## REC-02 — Minimal-context interruption and resume drill
 
