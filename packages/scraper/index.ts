@@ -158,6 +158,18 @@ export type {
   DedupCheckResult,
 } from "./employer-intake";
 export {
+  buildPermissionEvidencePack,
+  attachPermissionToSourceAccount,
+  renderPermissionPackReport,
+  PERMISSION_LEASE_DAYS,
+} from "./partner-permission";
+export type {
+  PermissionStatus,
+  PermissionEvidencePackInput,
+  PermissionEvidencePack,
+  AttachedPermission,
+} from "./partner-permission";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
