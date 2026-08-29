@@ -94,6 +94,21 @@ export {
 } from "./source-lifecycle";
 export type { ComplianceState, OperationalState } from "./source-lifecycle";
 export {
+  ATS_PROVIDER_CONFIG,
+  providerConfigForPlatform,
+  buildCandidateRow,
+  distinctAtsCandidates,
+  countBacklog,
+  countReviewOverdue,
+  summarizeCandidates,
+  CANDIDATE_REVIEW_DEADLINE_DAYS,
+  CANDIDATE_MAX_PER_RUN,
+  CANDIDATE_ANOMALY_CEILING,
+  CANDIDATE_INSERT_COLUMNS,
+  maxRegistryRowsPerBatch,
+} from "./prospect-candidate";
+export type { ProviderConfig, CandidateRow } from "./prospect-candidate";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,

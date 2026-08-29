@@ -71,6 +71,26 @@ jobs:
             fi
           fi
 
+      - name: 🚨 Candidate Queue Guard Check (SP-06)
+        run: |
+          set -euo pipefail
+          if [ "$(jq -r '.durableCandidates.anomalyGuardTripped // false' prospect.log)" = "true" ]; then
+            DISCOVERED=$(jq -r '.durableCandidates.discoveredDistinct // 0' prospect.log)
+            RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo "::warning title=Candidate queue guard::$DISCOVERED distinct ATS tokens in one run exceeded candidate cap; none queued. Review $RUN_URL."
+            gh label create "source-health" --repo "$GITHUB_REPOSITORY" --description "Automated maintenance-bot health alerts" --color D93F0B --force || true
+            TITLE="Candidate queue guard tripped ($(date -u +%Y-%m-%d))"
+            if [ "$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "in:title \"$TITLE\"" --json number --jq 'length')" = "0" ]; then
+              printf 'The Prospector found %s distinct ATS candidates in one run (over candidate cap %s) and queued NONE.\n\nThis usually means a bulk new feed or parsing bug. Review the run: %s\n' "$DISCOVERED" "$(jq -r '.durableCandidates.anomalyGuardTripped' prospect.log)" "$RUN_URL" > cand-mass.md
+              gh issue create --repo "$GITHUB_REPOSITORY" --title "$TITLE" --label "source-health" --body-file cand-mass.md
+            fi
+          fi
+          # Alert when review deadlines are overdue (needs human triage)
+          OVERDUE=$(jq -r '.durableCandidates.overdue // 0' prospect.log)
+          if [ "$OVERDUE" -gt 0 ]; then
+            echo "::warning title=Candidate review debt::$OVERDUE candidate(s) past review deadline (14d). Triage backlog in source_registry."
+          fi
+
       - name: 🔌 Propose ATS-Enable (human-gated)
         run: |
           set -euo pipefail
@@ -128,10 +148,24 @@ jobs:
             echo "| Rejected for quality | $(jq -r '.rejectedForQuality // 0' prospect.log) |"
             echo "| ATS proposals filed | $(jq -r '(.atsProposals // []) | length' prospect.log) |"
             echo "| Mass-add guard tripped | $(jq -r '.massAddGuardTripped // false' prospect.log) |"
+            echo "| Durable candidates discovered (distinct ATS) | $(jq -r '.durableCandidates.discoveredDistinct // 0' prospect.log) |"
+            echo "| Durable candidates inserted | $(jq -r '.durableCandidates.inserted // 0' prospect.log) |"
+            echo "| Durable candidates refreshed | $(jq -r '.durableCandidates.refreshed // 0' prospect.log) |"
+            echo "| Durable candidates skipped (duplicate) | $(jq -r '.durableCandidates.skippedDuplicate // 0' prospect.log) |"
+            echo "| Durable candidates skipped (opt-out) | $(jq -r '.durableCandidates.skippedOptOut // 0' prospect.log) |"
+            echo "| Candidate backlog (needs_review/candidate) | $(jq -r '.durableCandidates.backlog // 0' prospect.log) |"
+            echo "| Candidate overdue (past 14d deadline) | $(jq -r '.durableCandidates.overdue // 0' prospect.log) |"
+            echo "| Candidate anomaly guard | $(jq -r '.durableCandidates.anomalyGuardTripped // false' prospect.log) |"
             echo ""
             echo "## Auto-added companies"
             echo ""
             jq -r '(.addedNames // []) | if length == 0 then "- (none this run)" else .[] | "- \(.)" end' prospect.log
+            echo ""
+            echo "## Durable candidate queue (SP-06, non-publishing)"
+            echo ""
+            echo "- Inserted: $(jq -r '(.durableCandidates.insertedIds // []) | if length==0 then "(none)" else join(", ") end' prospect.log)"
+            echo "- Refreshed: $(jq -r '(.durableCandidates.refreshedIds // []) | if length==0 then "(none)" else join(", ") end' prospect.log)"
+            echo "- Mode: $(jq -r '.durableCandidates.mode // "n/a"' prospect.log)"
           } > docs/prospector-latest.md
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -160,6 +194,11 @@ jobs:
             echo "- **Review-only**: $(jq -r '(.reviewOnly // []) | length' prospect.log)" >> $GITHUB_STEP_SUMMARY
             echo "- **Rejected (quality)**: $(jq -r '.rejectedForQuality // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
             echo "- **ATS proposals**: $(jq -r '(.atsProposals // []) | length' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Durable candidates discovered**: $(jq -r '.durableCandidates.discoveredDistinct // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Durable candidates inserted**: $(jq -r '.durableCandidates.inserted // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Durable candidates refreshed**: $(jq -r '.durableCandidates.refreshed // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Candidate backlog**: $(jq -r '.durableCandidates.backlog // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Candidate overdue**: $(jq -r '.durableCandidates.overdue // 0' prospect.log)" >> $GITHUB_STEP_SUMMARY
           else
             echo "- Prospector produced no parseable response." >> $GITHUB_STEP_SUMMARY
           fi
