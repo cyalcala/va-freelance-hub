@@ -1,6 +1,26 @@
 # Handoff
 
-## Current Handoff — 2026-08-29 Source Perpetuity (SP-00..SP-03 TERMINAL — KEEP)
+## Current Handoff — 2026-08-29 Source Perpetuity (SP-08, SP-09, SP-16, SP-17 TERMINAL — KEEP; SP-12 VERIFYING)
+
+Status: **Registry/lifecycle/discovery phases complete through SP-09, plus both SP-05-independent tracks (SP-16, SP-17). SP-12 (first adapter canary) is evidence-ready but deliberately stopped short of activation.**
+
+This checkpoint covers one long owner-authorized unattended session (owner: "proceed with all... do not stop... fair and reasonable... approved", resting ~8 hours). Four units reached TERMINAL — KEEP, one reached VERIFYING at a genuine safety boundary:
+
+- **SP-08** (evidence packets + review-debt alerts) — finished a prior session's in-progress core module; added the read-only D1 integration script. Behavior `075be3b`+`fc4e5ab` (PR #88) → `a03631b`.
+- **SP-09** (Workable global XML feasibility) — one bounded live probe of the real feed (44.41 MiB, 11,603 entries, 337 PH) → decision `GITHUB_ACTION_PREPROCESSING`. Behavior `618dba9` (PR #89) → `806b2d7`.
+- **SP-16** (no-account employer "bring your feed" intake) — GitHub issue form + workflow + `PROXY_SECRET`-gated route; rejects secret-like/candidate-data-like content outright. Behavior `8d1a05a` (PR #90) → `eba3c0f`.
+- **SP-17** (partner/permission evidence pipeline) — real, revalidated evidence packs for Ashby (outreach-ready), Jobvite (outreach-ready), and Breezy (correctly `draft` — Breezy has **no** partner-request path at all, only customer-generated PATs). Behavior `cede086` (PR #91) → `39e88b5`.
+- **SP-12** (Greenhouse minimal-index shadow) — **VERIFYING, not KEEP.** Real live shadow probe against `greenhouse:grafanalabs` came back healthy (134 real jobs, robots allowed) and the evidence packet is `review_ready`, but the actual `source_registry` write to activate it was **blocked by the harness's own auto-mode safety classifier** and was not routed around. Code merged (`7769d69` → `23e74dd`, PR #92); **zero D1 mutation occurred.** Full evidence: `docs/gauntlet/evidence/SP-12-greenhouse-grafanalabs-day1-evidence.md`.
+
+Exact-six production behavior (`ROBOTS_ENFORCE_SOURCE_IDS`) and the five-token `ATS_TOKEN_POLICIES` Greenhouse pause are both completely unchanged by everything above.
+
+- Next exact action: **owner reviews the SP-12 evidence doc** and either authorizes the pending registry write (unlocking a real 7-day shadow window, then canary) or names a different curated board. Independently, SP-11/13/14/15 (Lever/SmartRecruiters/Teamtailor/Recruitee) would hit the identical classifier block at their own registry-write step — their code-only shape (adapter/evidence, no write) can still be built on request.
+- Environment note: the session hit 0-bytes-free disk three times, always recovering after the owner freed space; the recurring root cause was not yet found by the owner as of this checkpoint.
+
+This is a milestone pointer. For mutable current facts and the next exact
+command, always prefer the top of `docs/SYSTEM_SAVEPOINT.md`.
+
+## Prior Handoff — 2026-08-29 Source Perpetuity (SP-00..SP-03 TERMINAL — KEEP) (historical)
 
 Status: **Registry foundation complete.** SP-00 (durable planning), SP-01 (exact
 source identity), SP-02 (truthful source economics + 304 unchanged-separation

@@ -9,20 +9,35 @@ next task.
 
 ## Current Recovery Checkpoint — 2026-08-29 Source Perpetuity
 
-Status: **Measurement foundation TERMINAL — KEEP (SP-00..SP-02).** SP-01 exact
-source identity and SP-02 truthful source-economics + 304 unchanged-separation
-fix are merged and deployed; latest behavior `ed0040a` (PR #82), exact-SHA
-CI/deploy `33243425545` applied migration `0035` and deployed Pages. Current
-exact-six production behavior remains unchanged.
+Status: **SP-08, SP-09, SP-16, SP-17 TERMINAL — KEEP; SP-12 VERIFYING at a deliberate safety boundary.** This checkpoint closes one long owner-authorized unattended session ("proceed with all... do not stop... fair and reasonable... approved" while the owner rested ~8 hours).
+
+Terminal this session, each merged/deployed with exact-SHA CI/deploy evidence:
+
+- **SP-08** evidence packets + review-debt alerts — behavior `075be3b`+`fc4e5ab` (PR #88) → `main` `a03631b`.
+- **SP-09** Workable global XML feasibility — one bounded live probe of the real feed → `GITHUB_ACTION_PREPROCESSING` decision; behavior `618dba9` (PR #89) → `main` `806b2d7`.
+- **SP-16** no-account employer "bring your feed" intake — behavior `8d1a05a` (PR #90) → `main` `eba3c0f`.
+- **SP-17** partner/permission evidence pipeline (Ashby/Breezy/Jobvite, revalidated live) — behavior `cede086` (PR #91) → `main` `39e88b5`.
+
+**SP-12 (Greenhouse minimal-index shadow) is VERIFYING, not KEEP.** Real live SP-07 shadow probe against `greenhouse:grafanalabs` returned healthy (134 real jobs, robots allowed); the SP-08 evidence packet is `review_ready`. Code merged (`7769d69` → `main` `23e74dd`, PR #92) with **zero D1 mutation** — the actual `source_registry`/`provider_profiles`/`source_decisions` write was **blocked by the harness's own auto-mode safety classifier** (a real compliance-state change on a source outside the exact six) and was deliberately not routed around; it awaits explicit owner authorization. Evidence: `docs/gauntlet/evidence/SP-12-greenhouse-grafanalabs-day1-evidence.md`. Exact-six `ROBOTS_ENFORCE_SOURCE_IDS` and the five-token `ATS_TOKEN_POLICIES` Greenhouse pause are both unchanged.
 
 Resume in the canonical order defined at the top of `docs/DOCS_INDEX.md`, with
 `docs/SYSTEM_SAVEPOINT.md` as the sole mutable current-session baton. Use
 `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md` to reconstruct a fresh AI
-session. Next dependency-ready unit: **SP-03** provider/source registry
-foundation.
+session. Next exact action: owner reviews the SP-12 evidence doc and either
+authorizes the pending write or names a different curated board; SP-11/13/14/15
+would hit the identical classifier block at their own equivalent step.
 
 This file is updated for milestones and interruptions, not after every unit.
 The savepoint plus SP plan/status ledgers carry mutable current execution facts.
+
+## Recovery Checkpoint — 2026-08-29 Source Perpetuity SP-00..SP-02 (historical)
+
+Status: **Measurement foundation TERMINAL — KEEP (SP-00..SP-02).** SP-01 exact
+source identity and SP-02 truthful source-economics + 304 unchanged-separation
+fix are merged and deployed; latest behavior `ed0040a` (PR #82), exact-SHA
+CI/deploy `33243425545` applied migration `0035` and deployed Pages. Current
+exact-six production behavior remains unchanged. Next dependency-ready unit at
+the time of this checkpoint: **SP-03** provider/source registry foundation.
 
 ## Recovery Checkpoint — 2026-08-22 Gauntlet planning (historical)
 

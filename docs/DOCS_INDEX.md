@@ -7,7 +7,7 @@ historical, and where to resume. Start here instead of guessing from filenames.
 
 ## Current Source Perpetuity Entry Point — 2026-08-29
 
-Status: **SP-00 IN PROGRESS (PLAN ONLY)**. The old Gauntlet is terminal history;
+Status: **SP-08, SP-09, SP-16, SP-17 TERMINAL — KEEP; SP-12 VERIFYING** (evidence-ready, real registry write withheld pending explicit owner confirmation — see `docs/HANDOFF.md` and the top of `docs/SYSTEM_SAVEPOINT.md` for the exact state). The old Gauntlet is terminal history;
 its G1-G9 execution rules still apply, but its unit queue is not the resume
 path. Current exact-six production behavior remains unchanged.
 
