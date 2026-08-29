@@ -1,6 +1,36 @@
 # Implementation Status
 
-## Current Gauntlet Checkpoint — 2026-08-28
+## Current Source Perpetuity Checkpoint — 2026-08-29
+
+Status: **SP-00 IN PROGRESS (PLAN ONLY)**. The owner approved a sustainable,
+adaptable source-replenishment planning program and a reusable AI bootloader.
+No runtime source, ATS policy, robots mode, workflow, secret, deployment, or D1
+row changed in SP-00.
+
+The durable planning package is:
+
+- `docs/SOURCE_PERPETUITY_STRATEGY.md` — balanced policy, portfolio design,
+  supply SLOs, evidence leases, and renewal loop;
+- `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md` — SP-00 through SP-20,
+  dependencies, acceptance gates, rollback, and one-unit execution contract;
+- `docs/decisions/ADR-006-controlled-source-replenishment.md` — accepted
+  planning decision and canonical state vocabulary; and
+- `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md` — repository-first prompt
+  that a new AI can paste and reuse.
+
+The prior 24-unit Gauntlet is terminal history. Its G1-G9 rules remain the
+shared execution contract, while current exact-six production behavior remains
+unchanged. SP-00 started from synchronized SHA
+`3f281d7832278ec6fd4261de3cf50d6374a795e0` on branch
+`codex/source-perpetuity-plan`. Its remaining gate is local verification,
+atomic GitHub backup, exact-SHA PR CI, merge, and docs-only deploy-skip proof.
+Only after SP-00 is terminal `KEEP` may SP-01 begin.
+
+Current exact action: finish SP-00 verification and GitHub evidence. The next
+implementation unit is SP-01, exact source identity, and it remains blocked on
+SP-00 acceptance.
+
+## Accepted Gauntlet Checkpoint — 2026-08-28 (historical)
 
 Status: **COMP-01B/COMP-01D/COMP-01C/REL-12
 TERMINAL — KEEP**. The mature
@@ -56,7 +86,7 @@ CI/deploy runs `32615195950`, `32616479700`; fresh critic REVISE(fix-forward)
 with all five findings applied. Evidence:
 `docs/gauntlet/evidence/TAX-02-ai-writing-categories.md`.
 
-## Current Gauntlet Planning Checkpoint — 2026-08-22
+## Gauntlet Planning Checkpoint — 2026-08-22 (historical)
 
 Status: **OPS-04 TERMINAL — KEEP**. Bounded egress diagnostics for the directory `unreachable` cohort are deployed and verified live: two Cloudflare cohorts plus a same-host non-Cloudflare probe localize the cause to a Cloudflare egress-side transport failure (`EGRESS_BLOCKED` against alive origins), not origin death. Strikes/visibility/threshold/budget/gate are byte-for-byte unchanged. DATA-03 remains KEEP (read-only quality baseline); OPS-06 remains KEEP as the last production-behavior baseline before OPS-04.
 
@@ -1737,9 +1767,10 @@ Current accepted completion: 100% of Lens 2.
 - Result: success
 - Evidence: `docs/major-audit-2026-06-06.md`
 
-## Next Task
+## Historical Next Task (superseded)
 
-Stopped by user request. Next AI should start from
+This older instruction is retained as history. It is superseded by the current
+Source Perpetuity checkpoint at the top of this file. The prior text said to start from
 `docs/gemini-masterplan-handoff-2026-06-13.md`, run
 `git status --short --branch`, and implement one small vertical slice from the
 masterplan. Prefer compact source-health history first unless fresh evidence

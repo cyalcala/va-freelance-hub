@@ -17,6 +17,34 @@ it does not claim that any production fix described below has been implemented.
 Model assignments are capability recommendations, not claims that a provider
 or integration is available.
 
+## 2026-08-29 Source Perpetuity authority overlay
+
+The 24-unit Gauntlet is terminal historical evidence. The next approved
+program is Source Perpetuity. The canonical read order is:
+
+1. `AGENTS.md`;
+2. `docs/SYSTEM_SAVEPOINT.md` — sole mutable session baton;
+3. `docs/SOURCE_PERPETUITY_STRATEGY.md`;
+4. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`;
+5. `docs/decisions/ADR-006-controlled-source-replenishment.md`;
+6. this master plan for wider architecture, safety, GitHub, and recovery
+   constraints;
+7. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 rules and terminal
+   history;
+8. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
+   `docs/AI_RECOVERY_TRAIL.md`; and
+9. current unit evidence, generated reports, code/tests, Git history, GitHub
+   runs, and fresh read-only production evidence.
+
+The new program refines only the dated blanket source-expansion posture in
+Section T, milestones M10/M11, related items in the do-not-touch/deferred lists,
+and the ambiguity stop rule. It preserves all other system invariants and the
+terminal evidence of the old unit ledger. Bounded non-publishing research is
+now allowed for a named source candidate; ambiguity still blocks promotion and
+production fetching. Current exact-six behavior remains frozen until a
+source-specific SP unit passes its own evidence, tests, canary, rollback,
+exact-SHA CI/deploy, and production gates.
+
 ## A. Executive assessment
 
 VA Freelance Hub is a working Cloudflare/Astro/D1 public job index with a
@@ -264,9 +292,10 @@ acceptance.
 | migration bootstrap gap | existing production migration succeeds | empty database full-chain rehearsal |
 | category leakage | job is active and page is green | labelled taxonomy evaluation and per-class confusion report |
 
-## L. Source health map
+## L. Historical source health map (refined by Source Perpetuity)
 
-The current portfolio has 41 reported identities: six enabled static sources,
+At the 2026-08-22 planning baseline, the portfolio had 41 reported identities:
+six enabled static sources,
 fourteen enabled ATS tokens still marked `needs_review`, and twenty-one
 paused/skipped identities. Current failures are limited to two Jobicy feeds
 returning 429. “Items seen” in the rollup is an event sum, not a unique-job
@@ -285,8 +314,10 @@ evidence:   HTTP/probe code, latency, schema verdict, plausible item count,
 ```
 
 A technical `ok` cannot promote compliance. Discovery can only create
-`needs_review` candidates. Source expansion is frozen until DATA-05, SEC-03,
-DATA-03, DATA-06, REL-08, and COMP-01 evidence gates pass.
+`needs_review` candidates. The old blanket freeze and named Gauntlet gates are
+terminal history; the Source Perpetuity overlay now permits bounded research
+and separately gated SP promotions while preserving fail-closed production
+behavior.
 
 ## M. Automation opportunity register
 
@@ -395,7 +426,10 @@ Do not revive `apps/web/resolve_next_30.py`; it remains quarantined history.
 
 ## T. Source expansion plan
 
-Expansion is currently frozen. After safety gates pass:
+**Historical precursor, refined by the 2026-08-29 Source Perpetuity overlay.**
+The sequence below remains conceptually valid, but the active unit graph,
+deadlines, state vocabulary, provider order, and acceptance gates now live in
+the source-perpetuity strategy and implementation plan.
 
 ```text
 Prospector candidate
@@ -479,8 +513,8 @@ M10/M11 expansion`, with M23 proving continuity after at least one safe unit.
 | M7 Thin Capability Extraction | CONDITIONAL | extract only small tested helpers needed by Doctor/decisions; no scrape-route rewrite |
 | M8 Job Taxonomy + Evals | PLANNED | DATA-06 unifies decision/category behavior and adds a labelled gate |
 | M9 Agent Reach Study | PLANNED COMPLETE | pinned study and matrix committed; inspiration only, no runtime adoption |
-| M10 Prospector -> Probe | GATED | after SEC-03/REL-08, candidates enter `needs_review` and shadow probing only |
-| M11 Controlled Source Expansion | FROZEN | one canary only after data, Doctor, taxonomy, compliance, and economics gates |
+| M10 Prospector -> Probe | SUPERSEDED AS ACTIVE QUEUE | SP-05 through SP-08 add the durable candidate, evidence, and shadow lifecycle; this row remains historical context |
+| M11 Controlled Source Expansion | ACTIVE IN SP PROGRAM | SP-09 through SP-17 permit one provider/mechanism canary at a time after the shared foundations; exact-six production behavior remains unchanged until each canary is accepted |
 | M12 Python Foundation | DEFERRED | offline versioned export/analysis only; no production dependency or writes |
 | M13 Source Anomaly Detection | PLANNED | DATA-05B repeated-domain guard plus evidence-derived anomaly thresholds |
 | M14 Agent Diagnostic Surface | DEFERRED | consider a thin report only after Doctor output proves a consumer need |
@@ -525,7 +559,8 @@ ambiguous “mostly done.”
 - Do not make Inngest the default without a new incident-backed decision.
 - Do not flip robots enforcement before durable evidence and the reviewed
   observe window pass.
-- Do not add sources while the expansion freeze is active.
+- Do not add a production source outside its dependency-ready SP unit. Preserve
+  exact-six behavior until the source-specific canary/rollback contract passes.
 - Do not perform a giant `scrape.ts` rewrite as part of a narrow fix.
 - Do not delete old worktrees before REC-01 classification and separate approval.
 - Do not expose or test legacy secret values.
@@ -535,10 +570,10 @@ ambiguous “mostly done.”
 
 - opportunity ranking/personalization without accounts;
 - labor-market intelligence and public trend reports;
-- adaptive source cadence beyond a bounded Jobicy experiment;
+- adaptive source cadence outside the SP-18 reviewed envelopes;
 - Python-based offline clustering/economics;
 - Exa-assisted discovery or an MCP status surface;
-- a broad source portfolio expansion;
+- source portfolio expansion outside the dependency-ordered SP program;
 - retention/retirement of Chef/content digests, direct ingest, and Inngest;
 - HTTP-provider-only AI portability;
 - large dashboard or operator UI.
@@ -555,7 +590,9 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 - dry-run counts exceed the declared blast radius;
 - a migration cannot be proven on an empty ephemeral database;
 - a test fails outside the unit and causality is unclear;
-- source terms/robots are ambiguous;
+- material source authority/robots evidence is unresolved for promotion or
+  production collection; bounded non-publishing evidence research may continue
+  only inside an approved SP unit;
 - an automated action would hard-delete data or affect an unbounded cohort;
 - live metrics worsen beyond the unit’s revert threshold;
 - another process changed an overlapping file or production state;
@@ -564,25 +601,18 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: DATA-05A, REL-09, SEC-03, DB-01, REL-10, OPS-06 deployed/accepted; DATA-03 read-only baseline KEEP; OPS-04 egress diagnostics KEEP; COMP-01A durable robots evidence KEEP (incl. DB layer); REL-08 Source Doctor V1 KEEP; DATA-06 taxonomy/triage-decision convergence deployed/accepted; OPS-05 source-alert incident lifecycle deployed/accepted with synthetic drill evidence; production clock healthy at latest evidence
-CURRENT BASELINES: Section F, captured 2026-08-22
-LAST ACCEPTED GAUNTLET UNIT: OPS-05 source-alert incident lifecycle — KEEP
-CURRENT UNIT: OPS-05 complete; SRC-4D or DATA-06B next
-CURRENT UNIT STATUS: TERMINAL OPS-05 verdict KEEP
-PRIMARY ADDY WORKFLOW: ci-cd-and-automation (OPS-05); spec-driven-development remains the plan-level default
-ACTIVE SUPERPOWERS MECHANISM: fresh independent critic + verification-before-completion
-CURRENT EXECUTOR: repository executor
-CURRENT WORKTREE / BRANCH: main at accepted behavior 7f0040b (OPS-05 behavior f1d5029 + revisions dc2699f, 7f0040b)
-NEXT UNIT: SRC-4D Jobicy cadence (diagnosis+fix now, KEEP needs 48h live evidence) or DATA-06B UI category consistency. DATA-05B dependency-ready but mutation needs human-approved evidence. COMP-01B gated on a complete reviewed robots observe window.
-BLOCKERS: SEC-LEGACY-01 requires owner/provider action; COMP-01B blocked on observe window; DATA-05B mutation blocked on human-approved evidence file
-CONTRADICTIONS: Section H recorded; the stale Section AI queue rows 8–11 remain superseded by the authoritative dependency tree (see the ordering-correction note under Section AI)
-AUTOMATION STATUS: OPS-05 CI/deploy runs 32587929436 / 32588597297 / 32589627739 passed (D1 migrations, FTS, Pages deploy); synthetic drill 32588713203 PASS via issue #72
-SOURCE HEALTH: 41 identities; two Jobicy 429 failures
-LAST VERIFIED COMMIT: accepted behavior 7f0040b
-LAST GITHUB BACKUP: 7f0040b on origin/main
-LAST VERIFICATION EVIDENCE: local 589/0/1,367 + guardrails/typecheck/build; fresh critic REVISE then SHIP; CI/deploy 32589627739; synthetic issue #72 created/advanced/closed 2026-08-22T17:45–17:46Z; real dry-run read-only (5 unkeyed issues → CREATE/HOLD)
-NEXT EXACT ACTION: re-sync main and execute SRC-4D (Jobicy same-origin cadence diagnosis) or DATA-06B (UI category consistency decision); fresh independent critic required for either
-NEXT RECOMMENDED MODEL: GitHub Actions/API automation executor + fresh ops critic
+CURRENT VERIFIED SYSTEM STATE: all 24 Gauntlet units are terminal historical evidence; exact-six source behavior is accepted; the active overlay is Source Perpetuity
+CURRENT BASELINES: re-measure from production; dated 2026-08-29 planning evidence is summarized in the strategy/savepoint
+LAST ACCEPTED GAUNTLET UNIT: COMP-01B reviewed enforcement rollout — TERMINAL KEEP
+CURRENT UNIT: SP-00 durable planning and recovery package
+CURRENT UNIT STATUS: IN PROGRESS until GitHub exact-SHA CI and docs-only integration evidence are recorded
+CURRENT EXECUTOR: repository planner
+CURRENT WORKTREE / BRANCH: see the top of docs/SYSTEM_SAVEPOINT.md; it is the sole mutable baton
+NEXT UNIT: SP-01 exact source identity, but only after SP-00 TERMINAL KEEP
+BLOCKERS: none for SP-00; source activations remain dependency-gated
+CONTRADICTIONS: dated source-freeze and old first-queue prose are superseded only as stated in the 2026-08-29 overlay
+SOURCE HEALTH: use current docs/*-latest.md and fresh read-only queries; old counts are historical
+NEXT EXACT ACTION: complete, push, CI-verify, merge, and checkpoint SP-00
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after
@@ -640,9 +670,10 @@ Before interruption or credit exhaustion:
 5. link any workflow run and generated evidence without claiming success early.
 
 The resuming executor must read, in order: `AGENTS.md`, the top of
-`SYSTEM_SAVEPOINT.md`, this plan, the relevant portable unit, then only the
-files/evidence named by that unit. It must verify the current SHA and state
-before continuing. REC-02 will test this with intentionally minimal context.
+`SYSTEM_SAVEPOINT.md`, `docs/SOURCE_PERPETUITY_STRATEGY.md`, the SP
+implementation plan, ADR-006, this master plan, then the shared G1-G9 contract
+and evidence named by the active unit. It must verify the current SHA and state
+before continuing. SP-20 will repeat the minimal-context resume drill.
 
 ## AH. Automation maturity map
 
@@ -681,7 +712,7 @@ units resumed from repository context alone, and evidence completeness per
 `KEEP` verdict. Token counts may be recorded when available but never substitute
 for correctness or safety.
 
-## AI. First execution queue
+## AI. Historical first execution queue (terminal; superseded as resume path)
 
 | Order | Unit | Executor recommendation | Dependency | Immediate result |
 | ---: | --- | --- | --- | --- |
@@ -698,9 +729,9 @@ for correctness or safety.
 | 11 | DATA-06 taxonomy/eval convergence | DeepSeek builder, Claude critic | DATA-03 | one decision contract and labelled gate |
 | 12 | REC-02 interruption drill | fresh Nemotron/DeepSeek-capable executor | at least one accepted behavior unit | prove portable resume and checkpoint discipline |
 
-The queue is ready after this plan is committed and pushed. Production fixes
-begin in separate units; this planning turn intentionally does not implement
-them.
+This queue was the 2026-08-22 execution path and is now terminal history. New
+sessions resume from the Source Perpetuity authority overlay and SP unit board,
+not from these rows.
 
 > **Ordering correction (2026-08-22, post-OPS-04).** This queue's rows 8–11
 > predate the finalized dependency tree in `docs/gauntlet/IMPLEMENTATION_UNITS.md`

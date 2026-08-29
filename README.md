@@ -44,7 +44,9 @@ The operating rules are:
   anti-automation terms.
 - Store minimal factual metadata needed for discovery.
 - Link users back to the original source to apply.
-- Pause sources when terms, technical behavior, or usefulness are unclear.
+- Block explicit restrictions and put unclear candidates through a bounded,
+  evidence-backed review; do not treat uncertainty as permission or as a
+  permanent invisible queue.
 - Keep opt-out and correction language visible in the data policy.
 
 Public visibility by itself is not treated as blanket permission to automate
@@ -54,6 +56,10 @@ collection, store records, and republish them.
 
 The recovery-driven roadmap is documented in:
 
+- `docs/SOURCE_PERPETUITY_STRATEGY.md`
+- `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+- `docs/decisions/ADR-006-controlled-source-replenishment.md`
+- `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
 - `docs/MASTER_EXECUTION_PLAN.md`
 - `docs/IMPLEMENTATION_STATUS.md`
 - `docs/AI_RECOVERY_TRAIL.md`
@@ -63,17 +69,23 @@ The recovery-driven roadmap is documented in:
 - `docs/gauntlet/IMPLEMENTATION_UNITS.md`
 - `docs/research/agent-reach-study-2026-08-22.md`
 
-As of the 2026-08-22 planning checkpoint, the project has:
+As of the 2026-08-29 planning checkpoint, the project has:
 
 - a working `/opportunities` route;
 - a healthy ten-minute Cloudflare Worker ingestion clock;
-- an accepted baseline of 454 tests and 1,209 assertions, plus CI/build/live
-  checks from deployment run `32475868471`;
+- an accepted exact-six production source boundary, deployed from behavior
+  commit `4f5e8dd` by run `33142177229` and retained by its observation window;
 - source-level fetch events, generated source/directory/enrichment evidence, and
   a durable pending-triage fallback;
-- a current planning queue led by containment of recurring directory-domain
-  contamination, followed by request-budget, hostname, and migration safety;
-- a source-expansion freeze until the safety and evaluation gates pass.
+- a terminal historical Gauntlet whose 24 units are not the current queue; and
+- an approved Source Perpetuity plan that preserves current behavior while
+  building exact source attribution, a registry/candidate lifecycle, supported
+  feeds, public-API canaries, employer/partner opt-in, reserves, and adaptive
+  replacement.
+
+Start a fresh planning or execution session with
+`docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`. Its counts and SHAs must be
+revalidated against the repository and production evidence before use.
 
 ## Architecture
 
@@ -106,7 +118,7 @@ bun --cwd apps/web dev
 Build the active app:
 
 ```bash
-npm run build --workspace apps/web
+bun run build
 ```
 
 The production API routes require `PROXY_SECRET` or `CRON_SECRET` for ingestion
@@ -121,7 +133,8 @@ gh run list --repo cyalcala/va-freelance-hub --limit 10
 ```
 
 ```bash
-node_modules/.bin/wrangler d1 execute remoteph-jobs-db --remote --command "SELECT COUNT(*) FROM opportunities WHERE is_active = 1;"
+cd apps/web
+bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --command "SELECT COUNT(*) FROM opportunities WHERE is_active = 1;"
 ```
 
 ```bash

@@ -5,7 +5,42 @@
 This index tells future AI agents which documents are canonical, which are
 historical, and where to resume. Start here instead of guessing from filenames.
 
-## Current Gauntlet Planning Checkpoint — 2026-08-22
+## Current Source Perpetuity Entry Point — 2026-08-29
+
+Status: **SP-00 IN PROGRESS (PLAN ONLY)**. The old Gauntlet is terminal history;
+its G1-G9 execution rules still apply, but its unit queue is not the resume
+path. Current exact-six production behavior remains unchanged.
+
+Read in this order:
+
+1. [`AGENTS.md`](../AGENTS.md) — repository scope, active architecture, and
+   standing constraints.
+2. [System Savepoint](./SYSTEM_SAVEPOINT.md) — sole mutable current-session
+   baton and next exact action.
+3. [Source Perpetuity Strategy](./SOURCE_PERPETUITY_STRATEGY.md) — durable
+   outcome, balanced public-index policy, portfolio model, SLOs, and boundaries.
+4. [Source Perpetuity Implementation Plan](./plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md)
+   — dependency-ordered SP-00 through SP-20 work units.
+5. [ADR-006](./decisions/ADR-006-controlled-source-replenishment.md) — accepted
+   planning decision, states, evidence leases, and consequences.
+6. [Master Execution Plan](./MASTER_EXECUTION_PLAN.md) — wider project
+   constraints; source sections marked superseded are historical.
+7. [Portable Gauntlet Ledger](./gauntlet/IMPLEMENTATION_UNITS.md) — shared
+   G1-G9 execution rules and terminal unit history.
+8. [Implementation Status](./IMPLEMENTATION_STATUS.md),
+   [Handoff](./HANDOFF.md), and [AI Recovery Trail](./AI_RECOVERY_TRAIL.md) —
+   status corroboration and milestone/interruption recovery history.
+9. Current evidence under `docs/gauntlet/evidence/`, generated
+   `docs/*-latest.md` reports, code/tests, Git history, GitHub runs, and fresh
+   read-only production evidence.
+
+For a new AI session, copy
+[Source Perpetuity Bootloader](./bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md)
+and its compact state block. Re-sync `main` before starting a unit because
+automation may advance it. Never infer current SHAs, counts, or run status from
+an older checkpoint.
+
+## Gauntlet Planning Checkpoint — 2026-08-22 (historical)
 
 Status: **PLANNING COMPLETE — KEEP**. Repository planning baseline was
 `bd84cc1`; the package is backed up at `d21cd9e` with successful validation run
@@ -103,7 +138,7 @@ The earlier 2026-08-10 production hardening audit
 (`docs/major-production-audit-2026-08-10.md`) has since been merged to `main`
 and independently verified; treat it as history, not as a pending checkpoint.
 
-## Canonical Recovery Trail
+## Historical Canonical Recovery Trail (superseded as resume order)
 
 Read these in order:
 
@@ -262,7 +297,8 @@ Read these in order:
 
 ## Current Resume Rule
 
-If the repo is clean, resume from the current focus in
-`docs/IMPLEMENTATION_STATUS.md` and the next safe task in `docs/HANDOFF.md`.
-If the user says stop, pause, or backup, only update the recovery docs and push
-that checkpoint.
+Read `AGENTS.md`, then use `docs/SYSTEM_SAVEPOINT.md` as the sole mutable
+current-session baton and follow the Source Perpetuity read order at the top of
+this index. Execute only one dependency-ready SP unit. If the user says stop,
+pause, or backup, preserve the exact state in the savepoint and push a
+recoverable milestone/interruption checkpoint without changing production.
