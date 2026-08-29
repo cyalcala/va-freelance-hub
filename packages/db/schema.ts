@@ -315,12 +315,62 @@ export const sourceRegistry = sqliteTable("source_registry", {
   operationalIdx: index("source_registry_operational_idx").on(table.operationalState),
 }));
 
+// ─── Opt-out / do-not-reingest registry (SP-05) ───────────────────────────────
+// Durable memory that a source must not re-enter shadow/canary/active even if
+// discovery rediscovers it. Separate from `source_registry.opt_out` so a
+// registry row reset cannot erase the durable signal.
+
+export const sourceOptOuts = sqliteTable("source_opt_outs", {
+  sourceId: text("source_id").primaryKey().notNull(),
+  providerId: text("provider_id"),
+  reason: text("reason").notNull(),
+  requestedBy: text("requested_by"),
+  evidenceUrl: text("evidence_url"),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  createdBy: text("created_by"),
+  notes: text("notes"),
+}, (table) => ({
+  providerIdx: index("source_opt_outs_provider_idx").on(table.providerId),
+}));
+
+// ─── Decision history (SP-05) ───────────────────────────────────────────────
+// Append-only log of every compliance/operational transition with actor +
+// reason. Source-id is kept without hard CASCADE so history survives.
+
+export const sourceDecisions = sqliteTable("source_decisions", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceId: text("source_id").notNull(),
+  fromCompliance: text("from_compliance"),
+  toCompliance: text("to_compliance", {
+    enum: ["needs_review", "allowed", "conditional", "awaiting_permission", "blocked", "deprecated"],
+  }).notNull(),
+  fromOperational: text("from_operational"),
+  toOperational: text("to_operational", {
+    enum: ["candidate", "shadow", "canary", "active", "review_due", "degraded", "quarantined", "paused", "retired"],
+  }).notNull(),
+  actor: text("actor").notNull(),
+  reason: text("reason").notNull(),
+  evidenceHash: text("evidence_hash"),
+  decidedAt: text("decided_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+}, (table) => ({
+  sourceIdx: index("source_decisions_source_idx").on(table.sourceId),
+  decidedAtIdx: index("source_decisions_decided_at_idx").on(table.decidedAt),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ProviderProfile = typeof providerProfiles.$inferSelect;
 export type NewProviderProfile = typeof providerProfiles.$inferInsert;
 export type SourceRegistryRow = typeof sourceRegistry.$inferSelect;
 export type NewSourceRegistryRow = typeof sourceRegistry.$inferInsert;
+export type SourceOptOut = typeof sourceOptOuts.$inferSelect;
+export type NewSourceOptOut = typeof sourceOptOuts.$inferInsert;
+export type SourceDecision = typeof sourceDecisions.$inferSelect;
+export type NewSourceDecision = typeof sourceDecisions.$inferInsert;
 
 export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;
