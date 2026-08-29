@@ -1,6 +1,16 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-17, TERMINAL — KEEP)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-12, VERIFYING — D1 write pending owner confirmation)
+
+Status: **SP-12 VERIFYING**. Greenhouse minimal-index shadow: the existing `fetchGreenhouse` adapter already implements the required minimal content scope (no new adapter needed). `packages/scraper/greenhouse-canary.ts` (pure, 11/0 tests) encodes the compliance decision + evidence-gated promotion logic. Real live SP-07 shadow probe against `boards-api.greenhouse.io/v1/boards/grafanalabs/jobs`: `HEALTHY_WITH_RESULTS`, 134 real jobs, schema ok, robots allowed. SP-08 evidence packet: `review_ready`, zero missing evidence. `decidePromotionToShadow`: `ok=true`.
+
+**The actual `source_registry`/`provider_profiles`/`source_decisions` write was blocked by the harness's own auto-mode safety classifier** and was not routed around — a real compliance-state change on a source outside the exact six, even into non-publishing `shadow`, is held for explicit owner confirmation. No D1 write occurred; `greenhouse:grafanalabs` is unchanged (still absent from the registry, still paused in the hard-coded fallback). Full evidence: `docs/gauntlet/evidence/SP-12-greenhouse-grafanalabs-day1-evidence.md`.
+
+- **CI/deploy:** PR `33261115225` (head `7769d69`, PR #92) validate 905/0 + build ok; main `33261164559` (head `23e74dd`) validate + deploy success (no schema change). Local gate `905/0/2940` (+11 from SP-17), typecheck 0, guardrails 0, build ok.
+
+Behavior `7769d69` (PR #92, squash) merged to `main` as `23e74dd`. **Next:** owner reviews the evidence doc and either authorizes the pending write (unlocking a real 7-day shadow observation, then canary) or names a different board. SP-11/13/14/15 would each hit the identical classifier block at their own registry-write step; their code-only shape (adapter/evidence, no write) remains available on request.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-29 (SP-17, TERMINAL — KEEP)
 
 Status: **SP-17 TERMINAL — KEEP**. Partner/permission evidence pipeline: `packages/scraper/partner-permission.ts` (pure `buildPermissionEvidencePack`/`attachPermissionToSourceAccount`/`renderPermissionPackReport`) + three real, revalidated evidence packs under `docs/gauntlet/evidence/`. Ashby (`integrations@ashbyhq.com`, hourly feed, customer opt-in) and Jobvite (partner-application form + phone) are `outreach_ready`; **Breezy has no documented partner path at all** — access is exclusively an employer-generated Personal Access Token, correctly captured as `draft` with `providerRoute`/`contactPath` honestly `null` rather than invented. 365-day lease reuses SP-05's `computePolicyExpiry`; revocation reuses SP-05's `source_opt_outs` — no new mechanism. Prepares artifacts only: no message sent, no source activated.
 

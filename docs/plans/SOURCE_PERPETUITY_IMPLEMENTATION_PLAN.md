@@ -134,7 +134,7 @@ unless the existing workflow does so automatically.
 | SP-09 | Workable global XML feasibility decision | SP-08 | TERMINAL — KEEP |
 | SP-10 | Workable shadow and one canary | SP-09 KEEP | PLANNED |
 | SP-11 | Lever public Postings API shadow and one canary | SP-08 | PLANNED |
-| SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | PLANNED |
+| SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | VERIFYING |
 | SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | PLANNED |
@@ -584,6 +584,24 @@ shadow/canary reports, exact-SHA CI/deploy and D1 evidence.
 **Estimated scope:** M.  
 **Rollback:** revert the canary board to candidate/dormant; preserve other
 Greenhouse pauses.
+
+**Status:** VERIFYING (2026-08-29). The existing `fetchGreenhouse` adapter
+already satisfies the minimal-content contract (title/canonical linkback/
+location summary only, never the full description) — no new adapter
+needed. `packages/scraper/greenhouse-canary.ts` (11/0 tests) encodes the
+compliance decision + evidence-gated promotion. Real live SP-07 probe
+against `greenhouse:grafanalabs` (one of the five already-known,
+COMP-01D-paused boards): `HEALTHY_WITH_RESULTS`, 134 jobs, robots allowed.
+SP-08 evidence packet `review_ready`; `decidePromotionToShadow` `ok=true`.
+Full evidence: `docs/gauntlet/evidence/SP-12-greenhouse-grafanalabs-day1-evidence.md`.
+Behavior `7769d69` (PR #92) merged as `23e74dd`; full gate `905/0/2940`,
+typecheck 0, guardrails 0, build ok. **The actual registry write (compliance
+decision + candidate→shadow promotion) was blocked by the harness's own
+safety classifier and is held for explicit owner confirmation — not routed
+around.** No D1 mutation occurred; the five-token `ATS_TOKEN_POLICIES`
+pause and the exact-six enforcement are both completely unchanged. **Next:**
+owner authorizes the write (or names a different board) before this unit
+can proceed to its real 7-day shadow/7-day canary observation windows.
 
 ### SP-13: SmartRecruiters public Posting API adapter
 
