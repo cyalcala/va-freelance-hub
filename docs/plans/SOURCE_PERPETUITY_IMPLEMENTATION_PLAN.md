@@ -1,0 +1,714 @@
+# Implementation Plan: Source Perpetuity Program
+
+**Status:** Approved for dependency-ordered execution; no implementation unit
+is implicitly approved to skip its own evidence gates.  
+**Date:** 2026-08-29  
+**Strategy:** `docs/SOURCE_PERPETUITY_STRATEGY.md`  
+**Decision:** `docs/decisions/ADR-006-controlled-source-replenishment.md`  
+**Resume prompt:** `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
+
+## Objective
+
+Turn the existing source collectors, ATS adapters, Prospector, Source Doctor,
+health history, and recovery workflow into a self-replenishing source
+portfolio that remains compliant, measurable, diversified, reversible, and
+easy for a fresh AI agent to continue.
+
+This is a planning-only program overlay. It does not unpause a source, change
+robots enforcement, mutate D1, contact a provider, or deploy runtime behavior.
+
+## Product boundary
+
+In scope:
+
+- supported public RSS/API/XML job distribution;
+- employer/customer opt-in and ATS partner feeds;
+- minimal factual indexing with canonical linkback;
+- source discovery, evidence, shadow, canary, activation, quarantine,
+  replacement, and renewal;
+- exact source economics and portfolio SLOs; and
+- repository-first recovery evidence.
+
+Out of scope:
+
+- auto-apply, application submission, candidate data, accounts, payments, or
+  subscriptions;
+- CAPTCHA/login/paywall bypass;
+- private, internal, unlisted, or draft postings;
+- unrestricted HTML scraping or full-description mirroring;
+- paid provider commitments without explicit owner approval; and
+- a global source enablement flip.
+
+## Architecture decisions
+
+- One durable registry will describe provider mechanisms, source accounts,
+  evidence leases, states, and content scope. Hard-coded policy becomes a
+  compatibility input during migration, not the permanent authority.
+- Compliance state and operational state remain independent.
+- Exact source identity is persisted on opportunities before source economics
+  drives automation.
+- Candidate discovery is non-publishing by default.
+- Every new provider mechanism starts with shadow evidence and one canary.
+- Public-index sources store minimal factual metadata unless stronger
+  syndication/permission evidence allows more.
+- Current exact-six production behavior stays unchanged until a source-specific
+  unit passes its guard, rollback, CI/deploy, and production window.
+- Large global feeds are feasibility-tested outside the ten-minute hot path
+  before a runtime is chosen.
+
+## Dependency graph
+
+```text
+SP-00 durable plan
+  -> SP-01 exact source identity
+      -> SP-02 truthful yield/funnel baseline
+          -> SP-03 provider/source registry schema
+              -> SP-04 behavior-preserving policy resolver
+                  -> SP-05 candidate lifecycle + evidence leases
+                      -> SP-06 Prospector candidate queue
+                      -> SP-07 runtime Source Doctor shadow
+                          -> SP-08 evidence/review-debt automation
+                              -> SP-09 Workable feasibility
+                                  -> SP-10 Workable shadow/canary
+                              -> SP-11 Lever shadow/canary
+                              -> SP-12 Greenhouse minimal-index canary
+                              -> SP-13 SmartRecruiters adapter/canary
+                              -> SP-14 Teamtailor RSS adapter/canary
+                              -> SP-15 Recruitee XML adapter/canary
+                      -> SP-16 employer feed intake
+                      -> SP-17 partner/permission pipeline
+
+Two accepted canaries among SP-10..SP-15
+  -> SP-18 adaptive cadence/quarantine/renewal
+      -> SP-19 portfolio SLO and replacement automation
+          -> SP-20 30-day perpetuity acceptance
+```
+
+SP-06 and SP-07 may be developed in parallel after SP-05 if their shared
+candidate/observation contracts are frozen first. Provider adapters may be
+implemented in parallel branches after SP-08, but production canaries are
+sequential: one provider mechanism at a time.
+
+## Universal unit contract
+
+Every executor must:
+
+1. read the authority chain and the unit contract;
+2. fetch `origin`, preserve unrelated work, restate full start SHA, branch, and
+   record whether automation advanced `main`;
+3. reproduce the relevant baseline with read-only evidence;
+4. implement only one unit, normally in no more than five files;
+5. add focused tests and run the smallest meaningful gate;
+6. run the full repository gate before a behavior commit:
+   `bun run test`, `bun run typecheck`, `bun run audit:guardrails`, and
+   `bun run build`;
+7. inspect the staged diff and scan it for credentials;
+8. commit and push an atomic slice;
+9. require exact-SHA CI and, for runtime behavior, exact-SHA deploy evidence;
+10. use scheduled production events and read-only D1 queries for acceptance;
+11. make exactly one shared G9 terminal decision (`KEEP`, `REVISE`, `REVERT`,
+    `BLOCKED`, `ESCALATE`, or `PAUSED`); and
+12. update this plan, `docs/IMPLEMENTATION_STATUS.md`, and the sole mutable
+    current-session baton `docs/SYSTEM_SAVEPOINT.md` with the SHA, run,
+    evidence, rollback, and next exact unit. Update the strategy/ADR only when
+    the decision changes; update handoff/recovery-trail prose only at a
+    milestone or interruption.
+
+Documentation-only units require `git diff --check`, path/link checks, and the
+CI gate appropriate to the repository. They do not trigger production deploys
+unless the existing workflow does so automatically.
+
+## Unit board
+
+| Unit | Outcome | Depends on | State |
+| --- | --- | --- | --- |
+| SP-00 | Durable strategy, plan, ADR, bootloader, and authority baton | Gauntlet terminal | IN PROGRESS |
+| SP-01 | Exact source identity on every new opportunity | SP-00 | PLANNED |
+| SP-02 | Truthful source funnel and supply baseline | SP-01 | PLANNED |
+| SP-03 | Provider/source registry foundation | SP-02 | PLANNED |
+| SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | PLANNED |
+| SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | PLANNED |
+| SP-06 | Prospector writes durable non-publishing candidates | SP-05 | PLANNED |
+| SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | PLANNED |
+| SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | PLANNED |
+| SP-09 | Workable global XML feasibility decision | SP-08 | PLANNED |
+| SP-10 | Workable shadow and one canary | SP-09 KEEP | PLANNED |
+| SP-11 | Lever public Postings API shadow and one canary | SP-08 | PLANNED |
+| SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | PLANNED |
+| SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | PLANNED |
+| SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | PLANNED |
+| SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | PLANNED |
+| SP-16 | Employer “bring your feed” intake | SP-05 | PLANNED |
+| SP-17 | Partner/permission evidence pipeline | SP-05 | PLANNED |
+| SP-18 | Adaptive operations and evidence renewal | Two source canaries KEEP | PLANNED |
+| SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
+| SP-20 | 30-day perpetuity acceptance and independent resume drill | SP-19 | PLANNED |
+
+Only SP-00 is dependency-ready now.
+
+## Phase 0 — Durable planning and truthful measurement
+
+### SP-00: Durable planning and recovery package
+
+**Description:** Record the accepted controlled-replenishment strategy,
+executable unit graph, ADR, repeatable bootloader, and top-authority baton.
+
+**Acceptance criteria:**
+
+- [ ] Strategy, implementation plan, ADR, and bootloader agree on terminology,
+      state machines, provider order, stop conditions, and non-goals.
+- [ ] System savepoint, master plan, status, unit ledger, and docs index route a
+      fresh AI to this program without rewriting the terminal Gauntlet.
+- [ ] Atomic docs commit is pushed; exact-SHA CI is green; no production source
+      behavior or D1 state changed.
+
+**Verification:**
+
+- [ ] `git diff --check`
+- [ ] internal referenced paths exist and bootloader anchor checks pass
+- [ ] exact-SHA Sovereign CI Guardrail is green
+
+**Dependencies:** Terminal Gauntlet and owner approval.  
+**Likely files:** documentation only.  
+**Estimated scope:** M (several docs, one logical planning package).  
+**Rollback:** revert the docs commit; production behavior is unchanged.
+
+### SP-01: Persist exact source identity
+
+**Description:** Add an immutable configured `source_id`/`source_key` to every
+new opportunity so source economics do not infer identity from display labels.
+Backfill is a separate read-only-first decision; do not guess ambiguous legacy
+rows.
+
+**Acceptance criteria:**
+
+- [ ] New static and ATS records persist the exact configured identity through
+      normalization, pending/retry, insert, and reactivation paths.
+- [ ] Migration is additive and nullable for legacy data; no ambiguous bulk
+      backfill occurs.
+- [ ] Tests prove two source IDs sharing one display platform remain distinct.
+
+**Verification:** focused schema/ingestion tests, full gate, fresh-D1 migration
+chain, exact-SHA deploy, and read-only count of new rows with missing identity.  
+**Dependencies:** SP-00.  
+**Likely files:** `packages/db/schema.ts`, one migration,
+`apps/web/src/pages/api/cron/scrape.ts`, focused tests.  
+**Estimated scope:** M.  
+**Rollback:** stop writing the new nullable column; retain additive schema.
+
+### SP-02: Build truthful source yield and funnel metrics
+
+**Description:** Replace repeated `items seen` as a supply proxy with exact
+per-source raw, normalized, deduplicated, geo-passed, triage-passed, inserted,
+and reactivated counts plus 7/14/30-day net-new accepted jobs.
+
+**Acceptance criteria:**
+
+- [ ] Intentional cadence/policy skips, unchanged feed inventory, zero-yield
+      fetches, and failures are reported separately.
+- [ ] A read-only baseline reports exact source/provider concentration and
+      identifies legacy rows whose source ID is unknown.
+- [ ] Weekly reports compare against a trailing baseline without double-counting
+      one source before/after a policy-state transition.
+
+**Verification:** deterministic rollup fixtures, D1 read-only reconciliation,
+full gate, and generated report review.  
+**Dependencies:** SP-01.  
+**Likely files:** source event schema/migration if required, scrape event writer,
+report script/workflow, tests.  
+**Estimated scope:** split into SP-02A event semantics and SP-02B report if more
+than five files are required.  
+**Rollback:** keep existing report and disable the new rollup; do not delete
+events.
+
+### Checkpoint A — measurement foundation
+
+- [ ] Every new job and source event has exact source identity.
+- [ ] Net-new accepted supply and concentration reconcile to D1.
+- [ ] No production source was enabled or disabled.
+- [ ] SP-00..SP-02 each have atomic GitHub/CI/evidence checkpoints.
+
+## Phase 1 — Registry and lifecycle foundation
+
+### SP-03: Add provider profiles and source registry
+
+**Description:** Add additive D1 tables/types for provider profiles and source
+accounts, including mechanism, exact hosts, auth class, evidence URLs,
+visibility/content scope, cadence envelope, policy lease, and independent
+compliance/operational states.
+
+**Acceptance criteria:**
+
+- [ ] Schema represents every current static and ATS source without changing
+      runtime behavior.
+- [ ] Constraints reject invalid state combinations and duplicate durable
+      source identities.
+- [ ] A read-only registry dump maps all known sources and flags unmapped
+      entries; it does not activate them.
+
+**Verification:** schema/constraint tests, fresh migration chain, mapping audit,
+full gate.  
+**Dependencies:** SP-02.  
+**Likely files:** schema, one migration, registry types/repository, tests.  
+**Estimated scope:** M.  
+**Rollback:** ignore additive registry tables; existing config remains authority.
+
+### SP-04: Introduce a behavior-preserving policy resolver
+
+**Description:** Resolve source policy through one typed interface backed by
+the registry while preserving every current allow/pause decision and exact-six
+robots configuration.
+
+**Acceptance criteria:**
+
+- [ ] Golden tests prove all current source identities produce byte-equivalent
+      policy decisions before and after the resolver.
+- [ ] Unknown providers/tokens remain non-publishing candidates, not active
+      sources.
+- [ ] Hard-coded configuration remains an explicit rollback adapter until the
+      registry rollout is accepted.
+
+**Verification:** policy parity matrix, adversarial unknown/dynamic tests, full
+gate, exact-SHA deploy, one full scheduled cycle with zero decision drift.  
+**Dependencies:** SP-03.  
+**Likely files:** new policy module, scrape route integration, tests.  
+**Estimated scope:** M.  
+**Rollback:** feature flag or single resolver switch returns to static policy.
+
+### SP-05: Add candidate lifecycle, evidence leases, and opt-out memory
+
+**Description:** Add durable non-publishing candidate/evidence records with
+review deadlines, policy expiry, permission state, opt-out/do-not-reingest,
+and reviewer decision history.
+
+**Acceptance criteria:**
+
+- [ ] State transitions follow the ADR and never promote a compliance hold
+      automatically.
+- [ ] Expired or denied evidence makes a source dormant/blocked without deleting
+      history or stored opportunities.
+- [ ] Opt-out identity is checked before a candidate can enter shadow/canary.
+
+**Verification:** state-machine tests, lease boundary tests, migration chain,
+full gate.  
+**Dependencies:** SP-04.  
+**Likely files:** schema/migration, lifecycle module, tests.  
+**Estimated scope:** M; split opt-out into SP-05B if file count grows.  
+**Rollback:** stop candidate processing; retain evidence history.
+
+### Checkpoint B — behavior-preserving governance
+
+- [ ] Current production decisions are unchanged for a complete scheduled cycle.
+- [ ] Unknown discoveries cannot publish.
+- [ ] Every policy decision has durable evidence and an expiry/deadline.
+- [ ] Registry rollback has been exercised in tests or a staging drill.
+
+## Phase 2 — Non-publishing discovery and evidence
+
+### SP-06: Make Prospector write durable candidates
+
+**Description:** Replace issue-only ATS discovery as the primary state with an
+idempotent D1 candidate queue. Issues become summaries/alerts of durable state,
+not the state itself.
+
+**Acceptance criteria:**
+
+- [ ] Exact-host ATS/career discoveries create or refresh one candidate without
+      publishing or changing source policy.
+- [ ] Candidate provenance links to accepted job/directory evidence and rejects
+      lookalike hosts and opt-outs.
+- [ ] Backlog, deadlines, and duplicate suppression are visible in a generated
+      report.
+
+**Verification:** Prospector fixtures, idempotency/mass-add guards, dry-run on
+production candidates, full gate.  
+**Dependencies:** SP-05.  
+**Likely files:** prospect route, Prospector package, workflow/report, tests.  
+**Estimated scope:** split route and workflow/report if required.  
+**Rollback:** disable candidate writes; current directory behavior remains.
+
+### SP-07: Extend Source Doctor to runtime candidate shadow probes
+
+**Description:** Let Source Doctor evaluate a registry candidate’s declared
+mechanism without adding it to the production scrape set or writing jobs.
+
+**Acceptance criteria:**
+
+- [ ] A candidate probe reports endpoint, auth class, visibility filter,
+      robots/evidence provenance, schema health, cadence, and sample funnel.
+- [ ] Shadow mode has zero opportunity writes and a strict request/item budget.
+- [ ] Unsupported auth, restriction, oversized payload, or ambiguous visibility
+      returns a stop disposition rather than trying an alternate path.
+
+**Verification:** mocked provider fixtures, D1 write-counter assertion, bounded
+live probe only when the unit contract names an approved endpoint, full gate.  
+**Dependencies:** SP-05.  
+**Likely files:** Source Doctor module/route, observation writer, tests.  
+**Estimated scope:** M.  
+**Rollback:** disable runtime-candidate probes; static doctor remains.
+
+### SP-08: Generate evidence packets and review-debt alerts
+
+**Description:** Produce one durable packet per candidate with official URLs,
+mechanism, host/auth/content/cadence/removal facts, expiry, shadow economics,
+decision deadline, and unresolved questions.
+
+**Acceptance criteria:**
+
+- [ ] Complete packets become `review_ready`; incomplete packets remain
+      candidates and list exact missing evidence.
+- [ ] Seven-, fourteen-, thirty-day, and pre-expiry deadlines create one
+      deduplicated alert/report with lifecycle resolution.
+- [ ] External content is treated as evidence, never as executable instructions.
+
+**Verification:** packet fixtures, deadline/idempotency tests, generated report
+review, full gate.  
+**Dependencies:** SP-06 and SP-07.  
+**Likely files:** evidence builder, workflow/report, tests.  
+**Estimated scope:** M.  
+**Rollback:** retain candidates and disable packet/alert job.
+
+### Checkpoint C — replenishment reserve
+
+- [ ] Discovery, evidence, and shadow operate without public job writes.
+- [ ] At least two review-ready reserve candidates exist or the report explains
+      why none meet the evidence contract.
+- [ ] Review debt cannot remain invisible or indefinitely open.
+- [ ] No provider activation has occurred.
+
+## Phase 3 — Supported distribution canaries
+
+### SP-09: Decide Workable global XML feasibility
+
+**Description:** Measure the official hourly global XML feed’s size, transfer
+cost, parse memory, schema stability, remote/PH candidate yield, duplicates,
+and appropriate runtime before building an adapter.
+
+**Acceptance criteria:**
+
+- [ ] Probe is bounded, read-only, no faster than provider guidance, and archives
+      only measurements/schema samples permitted by the evidence policy.
+- [ ] Decision selects Worker streaming, GitHub Action preprocessing, or
+      `PAUSED` with quantified Cloudflare/free-tier constraints.
+- [ ] No per-token Workable workaround is enabled.
+
+**Verification:** reproducible probe script/test, payload/checksum/timing report,
+zero D1 writes, independent review.  
+**Dependencies:** SP-08.  
+**Likely files:** diagnostic script, fixtures/tests, evidence report.  
+**Estimated scope:** S/M.  
+**Rollback:** delete local artifacts not intended for Git; no runtime change.
+
+### SP-10: Workable adapter, shadow, and one canary
+
+**Description:** If SP-09 is `KEEP`, implement the chosen official XML path,
+filter before expensive triage, and canary one bounded source cohort.
+
+**Acceptance criteria:**
+
+- [ ] Adapter retains canonical Workable URLs, respects hourly cadence, and
+      publishes only approved/listed jobs within minimal content scope.
+- [ ] Seven-day shadow shows bounded resources and positive unique eligible
+      yield; canary never exceeds 10% of new additions.
+- [ ] Source-scoped rollback stops Workable without affecting the exact six or
+      deleting stored jobs.
+
+**Verification:** XML fixtures, truncation/error/full-feed tests, shadow report,
+exact-SHA CI/deploy, seven-day canary, read-only D1 acceptance.  
+**Dependencies:** SP-09 `KEEP`.  
+**Likely files:** adapter module, registry profile, scrape/scheduled integration,
+tests, evidence. Split implementation/deploy evidence into separate commits.  
+**Estimated scope:** M per slice.  
+**Rollback:** disable the Workable registry source/profile.
+
+### SP-11: Lever public Postings API canary
+
+**Description:** Use the official public Postings API for one curated employer,
+minimal metadata, canonical linkback, and published jobs only.
+
+**Acceptance criteria:**
+
+- [ ] Public site/token provenance is exact and EU/global origin is explicit.
+- [ ] Shadow validates published-only visibility, removals, rate behavior, and
+      unique eligible yield before publication.
+- [ ] Seven-day canary and rollback are source-scoped.
+
+**Verification:** provider fixtures, visibility/removal tests, shadow/canary
+reports, exact-SHA CI/deploy and D1 evidence.  
+**Dependencies:** SP-08.  
+**Likely files:** existing ATS adapter/profile, tests, evidence.  
+**Estimated scope:** S/M.  
+**Rollback:** return the one Lever source to candidate/dormant.
+
+### SP-12: Greenhouse minimal-index canary
+
+**Description:** Reconcile the official public/no-auth Job Board GET evidence
+with project policy by testing one curated board in minimal-metadata mode.
+
+**Acceptance criteria:**
+
+- [ ] Adapter excludes application submission, internal/private data, and full
+      description storage under the public-index profile.
+- [ ] One board passes seven-day shadow and seven-day canary with canonical
+      attribution and source-scoped rollback.
+- [ ] The existing five-token blanket pause is not globally removed; each later
+      board enters through the registry lifecycle.
+
+**Verification:** minimal-content contract tests, exact-token guard update,
+shadow/canary reports, exact-SHA CI/deploy and D1 evidence.  
+**Dependencies:** SP-08.  
+**Likely files:** Greenhouse adapter/profile, policy resolver, tests, evidence.  
+**Estimated scope:** M.  
+**Rollback:** revert the canary board to candidate/dormant; preserve other
+Greenhouse pauses.
+
+### SP-13: SmartRecruiters public Posting API adapter
+
+**Description:** Add the official no-auth Posting API using one curated company
+identifier and API endpoints only.
+
+**Acceptance criteria:**
+
+- [ ] Pagination, active/public visibility, canonical apply URL, and minimal
+      content are deterministic and tested.
+- [ ] Seven-day shadow proves bounded requests and positive or explicitly
+      accepted zero-yield economics before canary.
+- [ ] One-company canary has a source-scoped rollback.
+
+**Verification:** fixtures, pagination/removal tests, shadow/canary reports,
+exact-SHA CI/deploy and D1 evidence.  
+**Dependencies:** SP-08.  
+**Likely files:** new adapter/profile, registry wiring, tests, evidence.  
+**Estimated scope:** M.  
+**Rollback:** disable the SmartRecruiters source profile.
+
+### SP-14: Teamtailor public RSS adapter
+
+**Description:** Add a per-career-domain `/jobs.rss` adapter with exact-domain
+provenance and provider-documented pagination.
+
+**Acceptance criteria:**
+
+- [ ] Offset/per-page behavior, public metadata, canonical URLs, and feed
+      disappearance semantics are tested.
+- [ ] One domain completes shadow and canary without HTML scraping.
+- [ ] Custom career domains require durable provider/provenance association,
+      not suffix guessing.
+
+**Verification:** RSS fixtures, exact-host/pagination tests, shadow/canary
+reports, exact-SHA CI/deploy and D1 evidence.  
+**Dependencies:** SP-08.  
+**Likely files:** RSS adapter/profile, provenance mapping, tests, evidence.  
+**Estimated scope:** M.  
+**Rollback:** disable the Teamtailor source profile.
+
+### SP-15: Recruitee XML adapter
+
+**Description:** Add company XML feeds, not the soon-tokened JSON Careers API,
+with explicit public/indexable status and durable opt-out handling.
+
+**Acceptance criteria:**
+
+- [ ] Only published public offers from exact company feeds are indexed; JSON
+      auth behavior is not bypassed.
+- [ ] Opt-out/do-not-reingest is verified before shadow, canary, and each
+      reconciliation.
+- [ ] One-company shadow/canary proves removal semantics and rollback.
+
+**Verification:** XML/indexability/opt-out fixtures, shadow/canary reports,
+exact-SHA CI/deploy and D1 evidence.  
+**Dependencies:** SP-08.  
+**Likely files:** XML adapter/profile, opt-out check, tests, evidence.  
+**Estimated scope:** M.  
+**Rollback:** disable the Recruitee source and retain opt-out history.
+
+### Checkpoint D — source portfolio expansion
+
+- [ ] At least two new provider mechanisms have terminal `KEEP` canaries.
+- [ ] Each mechanism has separate evidence, policy lease, rollback, and source
+      economics.
+- [ ] Current exact-six controls remain healthy.
+- [ ] No blocked or permission-only endpoint was substituted.
+
+## Phase 4 — Permission flywheel and adaptive operations
+
+### SP-16: Add no-account employer “bring your feed” intake
+
+**Description:** Create a GitHub issue template and/or public email-linked form
+that lets an employer provide a canonical feed/careers URL, authority statement,
+contact, content scope, and removal preference without adding user accounts.
+
+**Acceptance criteria:**
+
+- [ ] Submission is a candidate only and cannot publish automatically.
+- [ ] Required consent/provenance fields and privacy/minimal-data language are
+      clear; secrets and candidate data are rejected.
+- [ ] Intake deduplicates against source registry and opt-outs.
+
+**Verification:** template/form validation, abuse/privacy review, candidate
+creation dry run, build if a public page changes.  
+**Dependencies:** SP-05.  
+**Likely files:** issue template or Astro page, candidate intake route only if
+necessary, tests/docs. Prefer the smallest no-account path.  
+**Estimated scope:** S/M.  
+**Rollback:** remove/disable intake; candidates remain non-publishing.
+
+### SP-17: Create partner and customer-permission pipeline
+
+**Description:** Record outreach-ready evidence packs and a durable permission
+state for Ashby dedicated feeds, employer-authorized Breezy, Jobvite feeds, and
+other partner/customer paths. This unit prepares artifacts; it does not send
+messages or accept paid terms without owner authority.
+
+**Acceptance criteria:**
+
+- [ ] Each target has provider route, contact path, requested scope, data
+      minimization, attribution, cadence, removal, and no-candidate-data terms.
+- [ ] Permission evidence can be attached to a source account with a 365-day
+      lease and revocation handling.
+- [ ] No generic Ashby/Breezy/Jobvite source is activated by this unit.
+
+**Verification:** evidence-template tests/path review, ADR consistency check,
+owner review before any external communication.  
+**Dependencies:** SP-05.  
+**Likely files:** partner evidence templates/docs, registry permission types,
+tests if behavior changes.  
+**Estimated scope:** S/M.  
+**Rollback:** archive draft artifacts; runtime is unchanged.
+
+### SP-18: Add bounded adaptive cadence, quarantine, recovery, and renewal
+
+**Description:** Automate technical operations for already-allowed sources
+within provider minimum/maximum cadence and evidence leases. Never auto-recover
+a compliance hold.
+
+**Acceptance criteria:**
+
+- [ ] Cadence reacts only within the reviewed envelope and honors cache headers,
+      feed TTL, 429/backoff, and shared-origin budgets.
+- [ ] Three healthy probes across at least 72 hours may recover a technical
+      quarantine; compliance blocks require a new human-reviewed decision.
+- [ ] Evidence expiry quarantines future collection and starts renewal 30 days
+      early without deleting stored jobs.
+
+**Verification:** time/rate/state-machine simulations, adversarial compliance
+hold tests, shadow rollout, exact-SHA deploy and observation.  
+**Dependencies:** at least two new source canaries `KEEP`.  
+**Likely files:** scheduler/policy modules, registry state writer, tests. Split
+cadence and evidence renewal if more than five files.  
+**Estimated scope:** M per slice.  
+**Rollback:** static cadence and manual quarantine switch.
+
+### SP-19: Enforce portfolio SLO and automatic replacement triggers
+
+**Description:** Turn supply decline, concentration, empty reserve, and review
+debt into actionable, deduplicated alerts and candidate replenishment work.
+
+**Acceptance criteria:**
+
+- [ ] Reports use exact net-new accepted jobs and 7/14/30-day freshness, not
+      repeated item sightings.
+- [ ] Warning/incident/concentration/reserve thresholds match the strategy and
+      never auto-disable a productive source solely for concentration.
+- [ ] A retired/quarantined source creates a bounded replacement objective from
+      the reserve without auto-publishing it.
+
+**Verification:** historical replay fixtures, alert idempotency/lifecycle tests,
+read-only D1 reconciliation, synthetic source-loss drill.  
+**Dependencies:** SP-18.  
+**Likely files:** rollup script, workflow/alert lifecycle, tests, latest report.  
+**Estimated scope:** M.  
+**Rollback:** advisory-only reporting; disable automatic candidate promotion to
+review (never to publish).
+
+## Phase 5 — Perpetuity acceptance
+
+### SP-20: Run 30-day acceptance and independent resume drill
+
+**Description:** Observe a representative portfolio window, prove rollback and
+replacement, and verify a fresh AI can continue solely from GitHub docs and the
+bootloader.
+
+**Acceptance criteria:**
+
+- [ ] Thirty-day evidence meets the accepted supply, freshness, diversity,
+      reserve, reliability, evidence-lease, and opt-out contracts or records a
+      precise non-terminal disposition.
+- [ ] One synthetic/real technical quarantine and one source replacement are
+      completed without bypassing compliance or degrading control sources.
+- [ ] An independent fresh agent identifies the correct state, next unit,
+      stop conditions, and commands without private chat context.
+
+**Verification:** read-only D1 portfolio report, workflow/run evidence,
+rollback/replacement drill, independent critic/resume report, full gate.  
+**Dependencies:** SP-19 plus a mature 30-day window.  
+**Likely files:** evidence report and recovery docs; behavior only if a verified
+gap requires a separately planned remediation unit.  
+**Estimated scope:** M evidence unit.  
+**Rollback:** terminal decision can be `PAUSED`/`REVISE`; do not manufacture
+success from an immature window.
+
+### Final checkpoint
+
+- [ ] Ten source families, eight origins, and three acquisition channels are
+      met or an owner-approved evidence-based target supersedes them.
+- [ ] No provider/origin exceeds the accepted concentration envelope without a
+      visible replacement plan.
+- [ ] Two ready reserves exist and one replacement drill passed.
+- [ ] Public-index, supported-distribution, and permissioned channels are each
+      represented by at least one terminal `KEEP` source.
+- [ ] Bootloader resume drill passed from a fresh context.
+- [ ] Every accepted unit is committed, pushed, CI/deploy verified as required,
+      and recorded in the savepoint.
+
+## Risk register
+
+| Risk | Impact | Mitigation |
+| --- | --- | --- |
+| Global feed exceeds Worker memory/time | High | SP-09 feasibility before adapter; allow scheduled preprocessing/streaming or `PAUSED` |
+| “Public” is mistaken for unlimited content reuse | High | Mechanism evidence + minimal facts + linkback + content-scope field + opt-out |
+| One provider creates false diversity | High | Count provider/origin risk family, not token count |
+| Metrics reward repeated inventory | High | SP-01/02 exact source + net-new funnel before automation |
+| Registry migration changes current decisions | High | Golden parity matrix, compatibility resolver, one-cycle observation, rollback switch |
+| Candidate queue becomes silent backlog | Medium | Deadlines, evidence leases, review-debt reports, dormant terminal state |
+| Auto-recovery reopens a compliance block | High | Independent state axes; tests forbid compliance auto-promotion |
+| Feed disappearance mass-archives on partial fetch | High | Complete-feed proof required; errors/pagination ambiguity fail closed |
+| Partner approval never arrives | Medium | Public supported sources provide supply now; permission candidates become dormant after 30 days |
+| AI resumes from stale counts or chat memory | High | Bootloader, top-authority baton, read-only remeasurement, exact SHA/run evidence |
+| Bot commits advance `main` mid-unit | Medium | Fetch/restate SHA, short-lived branches, rebase/merge deliberately, atomic commits |
+
+## Open decisions that do not block SP-00
+
+- Which exact employer/site will be each provider’s first canary? Decide only
+  after SP-08 evidence packets and current production yield.
+- Whether Workable’s global feed fits Worker streaming or should be filtered in
+  a scheduled GitHub job. SP-09 owns the evidence-based choice.
+- Whether an employer intake needs a public Astro page or only a GitHub issue
+  template/email alias. Prefer the smallest privacy-preserving channel.
+- Whether Ashby public minimal indexing is ever needed after supported feeds
+  expand. Keep the dedicated partner path preferred.
+- Absolute job-volume SLOs. Use relative eight-week baselines until SP-02
+  produces exact source economics.
+
+## Agent handoff block
+
+At the end of every unit, update this compact state in the top savepoint and
+the plan/status ledgers. Do not replicate it into every recovery document:
+
+```text
+PROGRAM: Source Perpetuity
+UNIT: SP-XX <name>
+STATUS: PLANNED | IN PROGRESS | VERIFYING | TERMINAL — KEEP/REVISE/REVERT/BLOCKED/ESCALATE/PAUSED
+START SHA: <full sha>
+BEHAVIOR SHA: <full sha or none>
+DOCS SHA: <full sha or pending>
+CI/DEPLOY RUN: <url/id or none>
+PRODUCTION WINDOW: <timestamps or not applicable>
+MUTATIONS: <exact writes or none; include D1 changed_db/rows_written>
+EVIDENCE: <path>
+ROLLBACK: <exact source-scoped action>
+NEXT: <one dependency-ready unit and first command>
+BLOCKERS/STOP CONDITIONS: <none or exact evidence>
+```
+
+Use `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md` to start a fresh session.

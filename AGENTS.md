@@ -63,33 +63,42 @@ GitHub Actions daily/periodic maintenance
 
 ## Current Audit Baseline
 
-Read the current authority in this order:
+After reading this file, read the current authority in this order:
 
 1. `docs/SYSTEM_SAVEPOINT.md`
-2. `docs/MASTER_EXECUTION_PLAN.md`
-3. `docs/gauntlet/IMPLEMENTATION_UNITS.md`
-4. `docs/IMPLEMENTATION_STATUS.md`
-5. generated `docs/*-latest.md` operational evidence
+2. `docs/SOURCE_PERPETUITY_STRATEGY.md`
+3. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+4. `docs/decisions/ADR-006-controlled-source-replenishment.md`
+5. `docs/MASTER_EXECUTION_PLAN.md`
+6. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 execution rules and
+   terminal history
+7. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
+   `docs/AI_RECOVERY_TRAIL.md`
+8. current evidence and generated `docs/*-latest.md` operational reports
 
 The complete user-supplied Gauntlet source is archived verbatim at
 `docs/gauntlet/OPERATING_MANDATE.md`. It is immutable source evidence, not the
 compact default execution context; consult it for mandate audits or
 contradictions.
 
-Current 2026-08-22 planning baseline:
+Current 2026-08-29 planning baseline:
 
-- Planning began from clean synchronized `main`/`origin/main` at `bd84cc1`;
-  automation may advance it, so every unit must fetch and restate its start SHA.
-- Latest accepted behavior is `07f582b`, verified by CI/deploy run
-  `32475868471`: 454 tests, 0 failures, 1,209 assertions, plus typecheck,
-  guardrails, build, and live checks.
-- The ten-minute Worker clock and latest accepted pending queue are healthy.
-- Source health reports 41 identities; the two current failures are Jobicy
-  feeds returning HTTP 429.
-- The first implementation priority is DATA-05A: contain recurring unrelated
-  company-domain writes from directory enrichment.
-- Source expansion is frozen until the current data, hostname, Doctor,
-  taxonomy, and compliance evidence gates pass.
+- The prior Gauntlet is terminal historical evidence; its 24 units are not the
+  active queue. Do not reopen them without new failure evidence.
+- Exact-six source behavior is the accepted production boundary: We Work
+  Remotely, Remotive, Real Work From Anywhere, Remote OK, and two Jobicy APAC
+  feeds. Behavior commit `4f5e8dd` passed deployment run `33142177229` and its
+  accepted observation window.
+- The active next program is Source Perpetuity: replace indefinite blanket
+  freezes with evidence-tiered, source-specific replenishment while keeping the
+  exact six unchanged until each new source passes its own unit gates.
+- A 2026-08-29 read-only planning query found 1,277 active rows, 875
+  PH-eligible, and 597 PH-eligible seen within 14 days. These counts are dated
+  evidence, not current truth; every executor must re-measure.
+- SP-00 is the documentation/backup unit. After its terminal GitHub checkpoint,
+  SP-01 exact source attribution is the first implementation unit.
+- Automation may advance `origin/main`; every unit must fetch, preserve dirty
+  work, and restate its full start SHA.
 
 The June audits remain historical baselines. Do not use their counts or missing
 route findings as current production truth.
@@ -110,6 +119,10 @@ project's scope:
 
 Canonical recovery docs:
 
+- `docs/SOURCE_PERPETUITY_STRATEGY.md`
+- `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+- `docs/decisions/ADR-006-controlled-source-replenishment.md`
+- `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
 - `docs/MASTER_EXECUTION_PLAN.md`
 - `docs/gauntlet/OPERATING_MANDATE.md`
 - `docs/gauntlet/IMPLEMENTATION_UNITS.md`
@@ -123,7 +136,8 @@ Canonical recovery docs:
 ## Historical Percent-Based Roadmap (Accepted)
 
 These P0–P7 percentages describe the completed recovery program. The current
-Gauntlet uses dependency-ordered units in `docs/MASTER_EXECUTION_PLAN.md`.
+Source Perpetuity program uses dependency-ordered SP units in
+`docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`.
 
 | Phase | Weight | Focus |
 | --- | ---: | --- |
@@ -150,8 +164,14 @@ Rules:
 - Link users back to the original source to apply.
 - Avoid copying full descriptions unless the source license or terms allow it.
 - Keep a clear data policy and provide an opt-out/correction path.
-- Pause or mark sources as `needs_review` when terms are unclear or hostile to
-  automated collection.
+- Block explicit restrictions and unsupported access paths. Put genuinely
+  unclear candidates into a bounded `needs_review` workflow with an owner,
+  missing-evidence list, and deadline; do not leave an invisible permanent
+  pause and do not interpret uncertainty as permission to fetch.
+- A documented public/auth-free posting API may receive a conditional
+  minimal-metadata decision without bespoke “aggregation permitted” wording,
+  provided no applicable contrary evidence exists and the unit proves
+  attribution, linkback, cadence, opt-out, canary, and rollback.
 
 Public visibility alone does not make automated collection, storage, and
 republishing automatically compliant.
@@ -174,7 +194,8 @@ republishing automatically compliant.
   one-off decisions.
 - Treat "green outside, red inside" CI as a watermelon risk: CI success is not
   acceptance unless source-level health is also recorded.
-- Avoid ratholes by time-boxing source-specific fixes; pause a source when it
-  repeatedly fails or has compliance uncertainty.
+- Avoid ratholes by time-boxing source-specific review. Quarantine technical
+  failures, block explicit compliance conflicts, and move unresolved permission
+  candidates to dormant state with a dated next trigger.
 - Keep future agents oriented by updating the recovery docs after meaningful
   changes.

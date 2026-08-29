@@ -1,8 +1,18 @@
 # Portable Implementation Unit Contracts
 
-Status: **PLANNED — implementation not authorized by this document**
+Status: **TERMINAL HISTORICAL LEDGER — all 24 Gauntlet units are accepted and
+must not be reopened by this document**
 
-Prepared from repository state at `bd84cc1` on 2026-08-22. Before executing any unit, re-read `AGENTS.md`, inspect `git status`, confirm the current migration head, and replace stale baselines with fresh evidence.
+The Source Perpetuity program lives in
+`docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`. The shared G1-G9
+execution contract below remains binding for new SP units, but the unit records
+in this file are terminal evidence, not the current queue. Use the current
+`docs/SYSTEM_SAVEPOINT.md` for the one exact resume action.
+
+Prepared from repository state at `bd84cc1` on 2026-08-22. These baselines are
+historical. Before executing an SP unit, re-read `AGENTS.md`, inspect
+`git status`, confirm the current migration head, and replace stale baselines
+with fresh evidence.
 
 These are bounded work orders for interchangeable executors. They preserve the active Bun/Astro/Cloudflare Pages/D1 path, the public-indexing compliance policy, and the recovery-driven commit discipline. They do not authorize cleanup of old branches/worktrees, destructive D1 changes, source expansion, production writes, or external issue/PR mutations beyond the unit that explicitly names them.
 

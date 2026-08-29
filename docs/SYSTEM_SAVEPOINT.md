@@ -1,5 +1,56 @@
 # System Savepoint
 
+## Run 14 — Source Perpetuity planning package (2026-08-29, IN PROGRESS)
+
+Program: **Source Perpetuity**. Mode: **PLAN**. The owner approved a fair,
+reasonable, sustainable source strategy and requested a high-level plan that
+any AI can continue, a repeatable bootloader, complete documentation, and a
+GitHub backup.
+
+Execution began by fetching `origin` and fast-forwarding clean local `main`
+from `243790f` to `3f281d7`. Work continues on short-lived branch
+`codex/source-perpetuity-plan`; start SHA is
+`3f281d7832278ec6fd4261de3cf50d6374a795e0`. No scraper/runtime policy, source
+enablement, robots setting, workflow, secret, or D1 row has been changed.
+
+Planning evidence:
+
+- Prior Gauntlet is terminal history; exact-six source behavior remains the
+  accepted production boundary at behavior `4f5e8dd`, deployment run
+  `33142177229`.
+- A fresh read-only D1 cohort on 2026-08-29 reported 1,277 active rows, 875
+  PH-eligible, and 597 PH-eligible seen within 14 days. Current-six platforms
+  account for 347 of those recently seen eligible rows and 93 of 110 eligible
+  jobs first seen in seven days; WWR plus RWFA account for 278/347 of the
+  current-fetching cohort. Both queries returned `changed_db=false` and
+  `rows_written=0`.
+- The accepted planning direction keeps automated ATS as provider-supported
+  syndication adapters, separates compliance from operations, replaces
+  indefinite review with deadlines/evidence leases, and creates a perpetual
+  discover -> evidence -> shadow -> canary -> active -> renew/replace loop.
+- Official-source acquisition order begins with Workable global XML, then
+  Lever and Greenhouse canaries, followed by SmartRecruiters, Teamtailor, and
+  Recruitee. Ashby, Breezy, and Jobvite remain permission/partner-led during
+  the first wave.
+
+New planning authority:
+
+1. `docs/SOURCE_PERPETUITY_STRATEGY.md`
+2. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+3. `docs/decisions/ADR-006-controlled-source-replenishment.md`
+4. `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
+
+SP-00 is the only active unit. Its terminal gate is an internally consistent
+authority chain, clean docs/path checks, local verification, an atomic GitHub
+commit, PR exact-SHA CI, merge/backup on `main`, and confirmation that the
+docs-only release path skipped production deployment. Until that evidence is
+recorded, status remains **IN PROGRESS** and SP-01 must not start.
+
+Current rollback: revert only the SP-00 documentation commit; production
+behavior is unchanged. Next exact action: finish authority integration and
+cross-document review, verify locally, commit/push the planning branch, open a
+PR targeting `main`, and capture exact-SHA CI.
+
 ## Run 13 — COMP-01B reviewed enforcement rollout (2026-08-28, TERMINAL — KEEP)
 
 Status: **COMP-01B TERMINAL — KEEP**. COMP-01C and COMP-01D
