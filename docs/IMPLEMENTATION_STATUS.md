@@ -1,6 +1,16 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-03, TERMINAL — KEEP)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-04, TERMINAL — KEEP)
+
+Status: **SP-04 TERMINAL — KEEP**. One typed resolver `packages/scraper/policy-resolver.ts` (plus `loadRegistryPolicies` D1 loader) is backed by the additive `provider_profiles`/`source_registry` rows with nullable fallback to the hard-coded 26-source adapter. When the registry is empty (current production: 0 rows), every `resolvePolicy(id, row?)` equals `fallbackPolicy(id)` byte-for-byte, so static allow/paused, ATS token pauses, exact-six robots enforcement, and unknown/candidate fail-closed are unchanged.
+
+- **Resolver:** `RegistryComplianceState`/`RegistryOperationalState` (ADR-006 vocab), `ROBOTS_ENFORCE_SOURCE_IDS` mirror, `ATS_PLATFORM_POLICIES`/`ATS_TOKEN_POLICIES` byte-identical copies, `fallbackPolicy`/`resolvePolicy` with CHECK (`shadow/canary/active ⇒ allowed|conditional`) and durable `optOut` handling, `isPublishable`/`isShadowCanaryActive` mirrors, `KNOWN_SOURCE_IDS` = 26 (12 static + 14 ATS), `loadRegistryPolicies` returns empty Map on missing/table/empty without throwing. `scrape.ts` now imports `resolvePolicy`/`loadRegistryPolicies`, loads `activeRegistryPolicies` per-tick at `apps/web/src/pages/api/cron/scrape.ts:1809`, and consults it in `fetchConfiguredSourceWithStatus` and `atsPlatformPolicy` before the hard-coded fallback — rollback is to keep Map empty or revert the import.
+- **Verification:** focused `policy-resolver.test.ts` 34/0 (golden parity for all 26 ids, adversarial unknowns remain non-publishable, registry overlay authoritative, publishability matrix, robots mirror, reversible fallback) + `registry.test.ts` 16/0 + ATS containment 5/0; full gate `724 pass / 0 fail / 2387 assertions / 76 files`, `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok (Vite ~40s), rehearsal still `94/94`.
+- **CI/deploy:** PR run `33248125990` (head `c2ec9d9`, pull_request) validate 724/0 + guardrails + build ok (deploy skipped); main run `33248170437` (head `6abe887`, push) validate 724/0, `Apply D1 migrations` — *No migrations to apply* (registry still `0036`, additive) ✅, `Verify D1 FTS integrity` ✅, `Deploy to Cloudflare Pages` ✅ (`25744ab7` / `main`). No `source_registry` rows promoted; exact-six `ROBOTS_ENFORCE_SOURCE_IDS` unchanged at `apps/web/src/pages/api/cron/scrape.ts:52`.
+
+Behavior `6abe887` (PR #84, squash from `c2ec9d9`) merged to `main`; next dependency-ready unit is **SP-05**.
+
+## Source Perpetuity Checkpoint — 2026-08-29 (SP-03, TERMINAL — KEEP)
 
 Status: **SP-03 TERMINAL — KEEP**. Additive, nullable registry foundation with
 no runtime behavior change (rollback = ignore tables).

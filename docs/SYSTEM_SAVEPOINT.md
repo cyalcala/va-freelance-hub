@@ -1,5 +1,30 @@
 # System Savepoint
 
+## Run 20 — SP-04 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-04 registry-backed policy resolver)**.
+SP-04 is now **TERMINAL — KEEP**. One typed resolver (`packages/scraper/policy-resolver.ts`) is backed by `source_registry` with additive, nullable fallback to the hard-coded 26-source adapter; when the registry is empty (current production), every decision is byte-equivalent to the prior static + ATS maps, so ATS unknown/candidate handling, exact-six robots enforcement, and paused notes are unchanged.
+
+Deploy evidence:
+
+- Behavior/merge commit **`6abe887`** (PR #84) on `main` (squash from `c2ec9d9` on `codex/sp-04-policy-resolver`).
+- Sovereign CI Guardrail PR run **`33248125990`** (head `c2ec9d9`, pull_request): validate 724/0 pass + typecheck 0 + guardrails 0 + build ok; deploy skipped (PR path).
+- Sovereign CI Guardrail main run **`33248170437`** (head `6abe887`, push): validate 724/0 pass + typecheck 0 + guardrails 0 + build ok; **Apply D1 migrations** — *No migrations to apply* (SP-03 `0036` already on chain, registry still additive) ✅; **Verify D1 FTS integrity** ✅; **Deploy to Cloudflare Pages** ✅ (pages.dev `25744ab7` / `main`).
+- Local full gate at behavior `c2ec9d9`: `724 pass / 0 fail / 2387 assertions / 76 files`, `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok (Vite 40s). `registry.test.ts` 16/0 and `policy-resolver.test.ts` 34/0 still pass; ATS containment guards 5/0 still pass.
+
+Read-only acceptance (behavior-preserving, no source activation):
+
+- **Golden parity:** `policy-resolver.test.ts` 34/0 proves for all 26 `KNOWN_SOURCE_IDS` (12 static `sources.ts` + 14 `ATS_TOKEN_POLICIES`) that `resolvePolicy(id, null)` equals `fallbackPolicy(id)` byte-for-byte; 6 allowed static are `allowed/active/publishable`, 6 paused static are `blocked/paused`, 14 ATS tokens are `blocked/paused/fail-closed`. `KNOWN_SOURCE_IDS` is exactly 26, `ROBOTS_ENFORCE_SOURCE_IDS` is exactly six (`we-work-remotely`, `remotive`, `real-work-from-anywhere`, `remote-ok`, `jobicy-admin-support-apac`, `jobicy-supporting-apac`) at `apps/web/src/pages/api/cron/scrape.ts:52`.
+- **Adversarial unknowns:** 12 unknown + adversarial ids (`workable:unknownco`, `unknown:token:extra`, `WORKABLE:ACME`, etc.) remain non-publishable; unknown ATS platform `unknownplatform:token` is `blocked/paused` with explicit `unknown ATS platform` note; dynamic unknown token on known platform inherits that platform's `blocked/paused` note — none publish.
+- **Registry overlay:** `loadRegistryPolicies(db)` returns empty Map on current production (0 rows); `resolvePolicy` with a synthetic `allowed/active` row is `publishable`, with `allowed/shadow` is not, with `needs_review/active` is CHECK-violating and coerced to non-publishable, with `optOut=true` is always blocked. `isPublishable` mirrors the `CHECK (shadow/canary/active ⇒ allowed|conditional)` guard.
+- **One-cycle drift check:** after deploy `6abe887`, the per-tick `activeRegistryPolicies` Map was loaded empty (`Registry overlay: 0 source row(s)` would log only if >0) and every `fetchConfiguredSourceWithStatus` + `atsPlatformPolicy` fell through to the hard-coded adapter. No unknown/future/ATS identity became fetchable merely because configuration exists; `robotsModeForSourceId` still uses the exact-six literal. Production D1 still reports no `source_registry` rows to promote, and the exact-six controls are unchanged.
+
+Terminal decision: **KEEP**.
+
+Rollback: keep `activeRegistryPolicies` empty (ignore `source_registry`/`provider_profiles` tables) or revert the single `resolvePolicy`/`loadRegistryPolicies` import in `apps/web/src/pages/api/cron/scrape.ts:24,1809`; hard-coded `ATS_PLATFORM_POLICIES`/`ATS_TOKEN_POLICIES` remain the explicit rollback adapter. No row deletion required.
+
+Next exact action: **SP-05** (candidate lifecycle, evidence lease, opt-out states) is the single dependency-ready unit. Start from current `origin/main@6abe887`; re-measure D1 read-only before quoting any count.
+
 ## Run 19 — SP-03 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-03 provider/source registry)**.

@@ -126,7 +126,7 @@ unless the existing workflow does so automatically.
 | SP-01 | Exact source identity on every new opportunity | SP-00 | TERMINAL — KEEP |
 | SP-02 | Truthful source funnel and supply baseline | SP-01 | TERMINAL — KEEP |
 | SP-03 | Provider/source registry foundation | SP-02 | TERMINAL — KEEP |
-| SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | PLANNED |
+| SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | TERMINAL — KEEP |
 | SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | PLANNED |
 | SP-06 | Prospector writes durable non-publishing candidates | SP-05 | PLANNED |
 | SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | PLANNED |
@@ -152,8 +152,13 @@ SP-02 is TERMINAL — KEEP (behavior `ed0040a`, CI/deploy `33243425545`, migrati
 artifact `docs/source-economics-latest.md`).
 SP-03 is TERMINAL — KEEP (behavior `0331fa1`, CI/deploy `33247081804`, migration
 `0036` applied, read-only registry dump confirms 26-source coverage; artifact
-`scripts/diagnostics/source-registry.ts`). SP-04 is now the single
-dependency-ready unit.
+`scripts/diagnostics/source-registry.ts`).
+SP-04 is TERMINAL — KEEP (behavior `6abe887`, CI/deploy `33248170437`, PR
+`33248125990` 724/0 guardrails/build ok; no new migration, empty-registry
+fallback proves byte-equivalence for all 26 ids, adversarial unknowns remain
+non-publishable, exact-six robots unchanged; artifact
+`packages/scraper/policy-resolver.ts` + `policy-resolver.test.ts`). SP-05 is now
+the single dependency-ready unit.
 
 ## Phase 0 — Durable planning and truthful measurement
 
@@ -320,11 +325,11 @@ robots configuration.
 
 **Acceptance criteria:**
 
-- [ ] Golden tests prove all current source identities produce byte-equivalent
+- [x] Golden tests prove all current source identities produce byte-equivalent
       policy decisions before and after the resolver.
-- [ ] Unknown providers/tokens remain non-publishing candidates, not active
+- [x] Unknown providers/tokens remain non-publishing candidates, not active
       sources.
-- [ ] Hard-coded configuration remains an explicit rollback adapter until the
+- [x] Hard-coded configuration remains an explicit rollback adapter until the
       registry rollout is accepted.
 
 **Verification:** policy parity matrix, adversarial unknown/dynamic tests, full
@@ -333,6 +338,9 @@ gate, exact-SHA deploy, one full scheduled cycle with zero decision drift.
 **Likely files:** new policy module, scrape route integration, tests.  
 **Estimated scope:** M.  
 **Rollback:** feature flag or single resolver switch returns to static policy.
+
+**Status:** TERMINAL — KEEP (2026-08-29). Behavior-preserving resolver
+`packages/scraper/policy-resolver.ts` (`resolvePolicy`/`fallbackPolicy`/`loadRegistryPolicies`, `isPublishable` CHECK mirror, `ROBOTS_ENFORCE_SOURCE_IDS` mirror + 6-id literal, 26-id parity, ATS notes byte-identical) + `policy-resolver.test.ts` 34/0 (golden parity for all 26, adversarial 12 unknowns, registry overlay authoritative, publishability matrix, robots mirror, reversible fallback) + `apps/web/src/pages/api/cron/scrape.ts` registry overlay (`activeRegistryPolicies` per-tick, `fetchConfiguredSourceWithStatus` + `atsPlatformPolicy` consult `resolvePolicy` before hard-coded fallback). Full gate `724/0/2387`, typecheck 0, guardrails 0, build ok. PR `33248125990` 724/0, main `33248170437` no-migration ✅ FTS ✅ Pages `25744ab7` ✅ — empty-registry fallback proves zero drift; exact-six unchanged. **Next:** SP-05.
 
 ### SP-05: Add candidate lifecycle, evidence leases, and opt-out memory
 
