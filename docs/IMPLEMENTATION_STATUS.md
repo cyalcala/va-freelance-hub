@@ -2,7 +2,7 @@
 
 ## Current Source Perpetuity Checkpoint — 2026-08-29
 
-Status: **SP-00 IN PROGRESS (PLAN ONLY)**. The owner approved a sustainable,
+Status: **SP-00 TERMINAL — KEEP**. The owner approved a sustainable,
 adaptable source-replenishment planning program and a reusable AI bootloader.
 No runtime source, ATS policy, robots mode, workflow, secret, deployment, or D1
 row changed in SP-00.
@@ -20,15 +20,12 @@ The durable planning package is:
 
 The prior 24-unit Gauntlet is terminal history. Its G1-G9 rules remain the
 shared execution contract, while current exact-six production behavior remains
-unchanged. SP-00 started from synchronized SHA
-`3f281d7832278ec6fd4261de3cf50d6374a795e0` on branch
-`codex/source-perpetuity-plan`. Its remaining gate is local verification,
-atomic GitHub backup, exact-SHA PR CI, merge, and docs-only deploy-skip proof.
-Only after SP-00 is terminal `KEEP` may SP-01 begin.
+unchanged. SP-00 merged to `main` as PR #79, commit
+`bdc2aa95795b6c348f1d9db2a19cc15c4245d7a7`; exact-SHA Sovereign CI Guardrail
+`33236797132` succeeded with the production-deploy job correctly skipped
+(docs-only). SP-00 is terminal `KEEP`, and SP-01 is now dependency-ready.
 
-Current exact action: finish SP-00 verification and GitHub evidence. The next
-implementation unit is SP-01, exact source identity, and it remains blocked on
-SP-00 acceptance.
+Current exact action: begin SP-01, exact source identity.
 
 ## Accepted Gauntlet Checkpoint — 2026-08-28 (historical)
 

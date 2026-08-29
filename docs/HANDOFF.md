@@ -1,21 +1,22 @@
 # Handoff
 
-## Current Handoff — 2026-08-29 Source Perpetuity planning
+## Current Handoff — 2026-08-29 Source Perpetuity planning (SP-00 TERMINAL — KEEP)
 
-Status: **SP-00 IN PROGRESS (PLAN ONLY)**. The owner approved a sustainable
-source-replenishment program and reusable bootloader that any AI can continue.
-No production behavior or data changed.
+Status: **SP-00 TERMINAL — KEEP**. The Source Perpetuity planning package is
+merged to `main` (PR #79, merge commit `bdc2aa9`), with green exact-SHA CI and
+the production deploy skipped as docs-only. No production behavior or data
+changed.
 
 - Start SHA: `3f281d7832278ec6fd4261de3cf50d6374a795e0`.
-- Branch: `codex/source-perpetuity-plan`.
+- Planning branch tip: `6e08e82`; merged to `main` as
+  `bdc2aa95795b6c348f1d9db2a19cc15c4245d7a7`.
+- CI/deploy: Sovereign CI Guardrail run `33236797132` success; production
+  deploy skipped.
 - Current authority: strategy, SP implementation plan, ADR-006, and bootloader,
   routed by `docs/SYSTEM_SAVEPOINT.md` and `docs/DOCS_INDEX.md`.
 - Existing exact-six production sources and all contained ATS decisions remain
   unchanged.
-- Remaining SP-00 work: local gates, atomic commit/push, PR exact-SHA CI,
-  merge/backup, and docs-only deploy-skip confirmation.
-- Next dependency-ready implementation after acceptance: SP-01 exact source
-  identity. Do not begin it while SP-00 is in progress.
+- Next dependency-ready implementation: SP-01 exact source identity.
 
 This is a milestone/interruption pointer. For mutable current facts and the
 next exact command, always prefer the top of `docs/SYSTEM_SAVEPOINT.md`.

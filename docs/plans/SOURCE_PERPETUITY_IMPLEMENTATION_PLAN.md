@@ -122,7 +122,7 @@ unless the existing workflow does so automatically.
 
 | Unit | Outcome | Depends on | State |
 | --- | --- | --- | --- |
-| SP-00 | Durable strategy, plan, ADR, bootloader, and authority baton | Gauntlet terminal | IN PROGRESS |
+| SP-00 | Durable strategy, plan, ADR, bootloader, and authority baton | Gauntlet terminal | TERMINAL — KEEP |
 | SP-01 | Exact source identity on every new opportunity | SP-00 | PLANNED |
 | SP-02 | Truthful source funnel and supply baseline | SP-01 | PLANNED |
 | SP-03 | Provider/source registry foundation | SP-02 | PLANNED |
@@ -144,7 +144,7 @@ unless the existing workflow does so automatically.
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
 | SP-20 | 30-day perpetuity acceptance and independent resume drill | SP-19 | PLANNED |
 
-Only SP-00 is dependency-ready now.
+SP-01 is now the single dependency-ready unit; SP-02 and later wait on it.
 
 ## Phase 0 — Durable planning and truthful measurement
 
@@ -155,18 +155,18 @@ executable unit graph, ADR, repeatable bootloader, and top-authority baton.
 
 **Acceptance criteria:**
 
-- [ ] Strategy, implementation plan, ADR, and bootloader agree on terminology,
+- [x] Strategy, implementation plan, ADR, and bootloader agree on terminology,
       state machines, provider order, stop conditions, and non-goals.
-- [ ] System savepoint, master plan, status, unit ledger, and docs index route a
+- [x] System savepoint, master plan, status, unit ledger, and docs index route a
       fresh AI to this program without rewriting the terminal Gauntlet.
-- [ ] Atomic docs commit is pushed; exact-SHA CI is green; no production source
+- [x] Atomic docs commit is pushed; exact-SHA CI is green; no production source
       behavior or D1 state changed.
 
 **Verification:**
 
-- [ ] `git diff --check`
-- [ ] internal referenced paths exist and bootloader anchor checks pass
-- [ ] exact-SHA Sovereign CI Guardrail is green
+- [x] `git diff --check`
+- [x] internal referenced paths exist and bootloader anchor checks pass
+- [x] exact-SHA Sovereign CI Guardrail is green (run `33236797132`)
 
 **Dependencies:** Terminal Gauntlet and owner approval.  
 **Likely files:** documentation only.  

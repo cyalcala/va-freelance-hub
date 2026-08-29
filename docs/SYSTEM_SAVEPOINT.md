@@ -1,6 +1,29 @@
 # System Savepoint
 
-## Run 14 — Source Perpetuity planning package (2026-08-29, IN PROGRESS)
+## Run 15 — SP-00 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (docs-only closeout)**.
+
+Status: **SP-00 TERMINAL — KEEP**. The Source Perpetuity planning package
+finished its terminal acceptance gate on `main`. Planning branch
+`codex/source-perpetuity-plan` (tip `6e08e82`) merged to `main` as PR #79,
+commit `bdc2aa95795b6c348f1d9db2a19cc15c4245d7a7`, at `2026-08-29T05:42:51Z`.
+Exact-SHA Sovereign CI Guardrail run `33236797132` succeeded and its
+"Migrate and deploy production" job was **skipped** (docs-only). No source,
+ATS policy, robots mode, workflow, secret, or D1 row changed.
+
+SP-01 exact source identity is now the single dependency-ready next unit.
+
+- Merge/behavior(readme+docs) SHA: `bdc2aa95795b6c348f1d9db2a19cc15c4245d7a7`.
+- CI/deploy run: `33236797132` success; production deploy skipped.
+- Planning start SHA: `3f281d7832278ec6fd4261de3cf50d6374a795e0`.
+- Exact-six boundary re-verified intact in `scrape.ts`, `sources.ts`, and
+  production guardrails.
+
+Rollback: N/A (docs-only; production behavior unchanged).
+Next exact action: SP-01 exact source identity, starting from `bdc2aa9`.
+
+## Run 14 — Source Perpetuity planning package (2026-08-29, TERMINAL — KEEP)
 
 Program: **Source Perpetuity**. Mode: **PLAN**. The owner approved a fair,
 reasonable, sustainable source strategy and requested a high-level plan that
@@ -43,8 +66,8 @@ New planning authority:
 SP-00 is the only active unit. Its terminal gate is an internally consistent
 authority chain, clean docs/path checks, local verification, an atomic GitHub
 commit, PR exact-SHA CI, merge/backup on `main`, and confirmation that the
-docs-only release path skipped production deployment. Until that evidence is
-recorded, status remains **IN PROGRESS** and SP-01 must not start.
+docs-only release path skipped production deployment. Run 15 records the
+terminal **KEEP**; SP-01 is now dependency-ready.
 
 Current rollback: revert only the SP-00 documentation commit; production
 behavior is unchanged. Next exact action: finish authority integration and
