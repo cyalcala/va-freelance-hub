@@ -24,6 +24,23 @@ export function buildSourceIdsByUrl(results: readonly SourceResult[]): Map<strin
   return sourceIdsByUrl;
 }
 
+/**
+ * SP-01: stamp the exact configured source identity onto every item a source
+ * produced. `source_platform` is a display label (e.g. "Workable", "Jobicy")
+ * and cannot distinguish two sources that share it — two Workable tenants, or
+ * the two Jobicy APAC feeds. Source economics must key on the exact runtime
+ * identity instead, so identity is attached to the raw item here and rides the
+ * object through normalization, dedup, triage, and insert (each stage spreads
+ * `{ ...item }`). A result with no configured id yields `null`, never a guess.
+ */
+export function attachSourceIdentity<T extends { sourceUrl?: string | null }>(
+  results: readonly { sourceId?: string; items: readonly T[] }[],
+): (T & { sourceId: string | null })[] {
+  return results.flatMap((result) =>
+    result.items.map((item) => ({ ...item, sourceId: result.sourceId ?? null })),
+  );
+}
+
 /** Return each feed that must be fetched again because one of its items is unresolved. */
 export function sourceIdsForUrls(urls: readonly string[], sourceIdsByUrl: ReadonlyMap<string, ReadonlySet<string>>): Set<string> {
   const sourceIds = new Set<string>();

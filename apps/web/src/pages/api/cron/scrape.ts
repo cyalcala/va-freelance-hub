@@ -4,6 +4,7 @@ import { isNotNull, isNull, or, and, inArray, eq, lt, asc, gte, desc } from "dri
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 import {
+  attachSourceIdentity,
   buildSourceIdsByUrl,
   conditionalValidatorsForPersistence,
   sourceIdsForUrls,
@@ -1806,21 +1807,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
         fetchConfiguredSourceWithStatus(db, source, "RSS", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchRSSFeed(source, state))
       )
     );
-    const rssItems = rssResults.flatMap((result) => result.items);
+    // SP-01: stamp the exact configured source identity onto every item as it
+    // leaves its fetch result, so the identity rides the object through
+    // normalization, dedup, triage, and insert (each stage spreads `...item`).
+    const rssItems = attachSourceIdentity(rssResults);
 
     const htmlResults = await Promise.all(
       htmlSources.map((source) =>
         fetchConfiguredSourceWithStatus(db, source, "HTML", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchHTMLSource(source, state))
       )
     );
-    const htmlItems = htmlResults.flatMap((result) => result.items);
+    const htmlItems = attachSourceIdentity(htmlResults);
 
     const jsonResults = await Promise.all(
       jsonSources.map((source) =>
         fetchConfiguredSourceWithStatus(db, source, "JSON", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchJSONSource(source, state))
       )
     );
-    const jsonItems = jsonResults.flatMap((result) => result.items);
+    const jsonItems = attachSourceIdentity(jsonResults);
     const conditionalSourceResults = [...rssResults, ...htmlResults, ...jsonResults];
     const configuredSourcesById = new Map(staticSources.map((source) => [source.id, source]));
     const sourceIdsByUrl = buildSourceIdsByUrl(conditionalSourceResults);
@@ -2074,7 +2078,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       atsResults.push(await fetchOneAts(agency));
       await sleep(1_000);
     }
-    const atsItems = atsResults.flatMap((result) => result.items);
+    // SP-01: ATS results carry the exact `platform:token` identity (atsSourceKey),
+    // so two tenants on one ATS stay distinct even though they share a platform label.
+    const atsItems = attachSourceIdentity(atsResults);
 
     const skippedResults = disabledSources.map((source) => skippedSourceResult(source));
     const skippedAtsResults = [

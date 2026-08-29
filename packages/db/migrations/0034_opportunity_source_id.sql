@@ -1,0 +1,21 @@
+-- SP-01 (2026-08-29): persist the exact configured source identity on every
+-- new opportunity.
+--
+-- `source_platform` is a display label (e.g. "Workable", "Jobicy") and cannot
+-- distinguish two sources that share it — two Workable tenants, or the two
+-- Jobicy APAC feeds that render as one platform. Source economics (SP-02) must
+-- not infer identity from a display label, so this additive, nullable column
+-- records the exact runtime identity that produced each row: a static
+-- `source.id` (e.g. "we-work-remotely") or an ATS `platform:token` key
+-- (e.g. "workable:acme").
+--
+-- Additive and nullable by design. Legacy rows stay NULL (unknown identity);
+-- no bulk backfill is performed, because a shared display label cannot be
+-- resolved to one exact identity without ambiguity. Rows inserted from this
+-- migration onward carry their exact identity; any read-only-first backfill of
+-- legacy rows is a separately reviewed decision.
+--
+-- Rollback: stop writing the column in the scrape route; the additive, nullable
+-- schema is retained (dropping a column is unnecessary and non-additive).
+
+ALTER TABLE opportunities ADD COLUMN source_id TEXT;

@@ -19,6 +19,13 @@ export const opportunities = sqliteTable("opportunities", {
     .default("freelance"),
   sourceUrl: text("source_url").notNull().unique(),
   sourcePlatform: text("source_platform").notNull(), // e.g. "WeWorkRemotely", "Remotive", "OnlineJobs"
+  // Exact configured source identity (SP-01, migration 0034). Distinct from the
+  // display-oriented source_platform: a static source.id (e.g. "we-work-remotely")
+  // or an ATS platform:token key (e.g. "workable:acme"). Nullable + additive —
+  // legacy rows stay NULL (no ambiguous backfill); every row inserted from
+  // migration 0034 onward carries the identity that produced it, so source
+  // economics never infer identity from a shared display label.
+  sourceId: text("source_id"),
   tags: text("tags", { mode: "json" }).$type<string[]>().default([]),
   category: text("category").notNull().default("other"),
   locationType: text("location_type", { enum: ["remote", "hybrid", "onsite"] }).default("remote"),
