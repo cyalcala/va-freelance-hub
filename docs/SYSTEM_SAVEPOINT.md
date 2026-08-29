@@ -1,6 +1,6 @@
 # System Savepoint
 
-## Run 24 — SP-08 VERIFYING, PR #88 open (2026-08-29)
+## Run 24 — SP-08 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-08 evidence packets and review-debt alerts)**.
 Session resumed cold from a pasted bootloader with an all-`UNKNOWN` state block. Read-only preflight found `codex/sp-08-evidence-packets` already checked out with HEAD identical to `origin/main` (`ef68525`) and three uncommitted files: `packages/scraper/evidence-packet.ts` + `evidence-packet.test.ts` (a prior session's complete, already-passing 22/0 core module implementing all three SP-08 acceptance criteria) and the matching `packages/scraper/index.ts` re-export. The owner confirmed EXECUTE to finish the unit.
@@ -18,13 +18,20 @@ CI/deploy evidence:
 - Behavior commit **`075be3b`** on `codex/sp-08-evidence-packets`; pushed to `origin`; PR **[#88](https://github.com/cyalcala/va-freelance-hub/pull/88)** opened against `main`.
 - PR exact-SHA CI run **`33254178348`** (head `075be3b`, `pull_request`): `Validate project-owned code` success (guardrails, unit tests, build, typecheck, freshness-cron-worker validation all success); `Detect deployable changes`/`Migrate and deploy production` skipped (PR path, expected).
 
-No merge to `main` attempted — this session's memory of the project records that merges to `main` are classifier-blocked for the agent and are handed to the owner; also, a merge here would trigger the real `main`-push deploy job (Cloudflare Pages), which is a production-affecting action outside this unit's own explicit pre-approval (commit/push/PR are pre-approved; merge/deploy is not). No schema change and no `apps/web` runtime import of the new module exist yet, so the eventual `main`-push deploy is expected to be behavior-inert (no migration, Pages redeploy only), matching the SP-06/SP-07 precedent.
+Merge attempt was withheld pending explicit owner confirmation — this session's memory of the project records that merges to `main` are treated as classifier-blocked/owner-only, and a merge triggers the real `main`-push deploy job (Cloudflare Pages), a production-affecting action outside this unit's own explicit pre-approval (commit/push/PR are pre-approved; merge/deploy is not). The owner explicitly confirmed "you merge it now."
 
-Terminal decision: **VERIFYING** (PR #88 open, exact-SHA PR CI green; awaiting owner merge for the `main`-push deploy leg and its post-deploy read-only D1 acceptance before TERMINAL — KEEP).
+**Merge and deploy evidence:**
 
-Rollback: close/do not merge PR #88; `evidence-packet.ts`/`evidence-packets.ts` are additive and inert until imported — nothing else references them. Post-merge rollback: revert the squash commit; no D1 write exists to undo.
+- `gh pr merge 88 --squash --delete-branch` → fast-forwarded `main` `ef68525..a03631b`; squash merge commit **`a03631b0a7eb2a855000d66516ecf1ed6156db1b`**.
+- `main`-push exact-SHA CI/deploy run **`33254391095`** (head `a03631b`): `Validate project-owned code` success (guardrails + tests + build + typecheck + freshness-cron-worker); `Detect deployable changes` success; `Migrate and deploy production` success — the routine `sync_migrations.sql` bookkeeping step ran (9 queries, 8 rows written — ledger housekeeping executed on every deploy, not a new schema change) followed by `d1 migrations apply` reporting **`✅ No migrations to apply!`** (confirms no new migration, matching the SP-06/SP-07 code-only precedent), `Verify D1 full-text index integrity` ✅, `Deploy to Cloudflare Pages` ✅.
+- **Post-deploy read-only D1 re-check** (`wrangler d1 execute DB --remote --env production`): the `candidates` query again returned `changed_db=false`, `rows_written=0`, zero rows — production is stable and unchanged after deploy; the report remains truthfully empty.
+- Local repo fast-forwarded to `a03631b`; remote and local `codex/sp-08-evidence-packets` branches deleted (merged, no longer needed).
 
-Next exact action: **owner merges PR #88** (or explicitly authorizes the agent to merge); then observe the `main`-push exact-SHA CI/deploy run, re-run the same two read-only D1 queries post-deploy to confirm the report still reconciles, and record SP-08 as TERMINAL — KEEP. After that, SP-09 (Workable global XML feasibility) becomes the next dependency-ready unit; SP-11..SP-15 (Lever/Greenhouse/SmartRecruiters/Teamtailor/Recruitee) are also SP-08-dependency-ready and may proceed in parallel branches if their contracts are frozen first; SP-16/SP-17 remain ready after SP-05 independent of SP-08.
+Terminal decision: **KEEP**.
+
+Rollback: revert squash commit `a03631b` (or delete `packages/scraper/evidence-packet.ts`/`scripts/diagnostics/evidence-packets.ts` and their exports in `packages/scraper/index.ts`); no D1 write exists to undo, no migration to reverse.
+
+Next exact action: **SP-09** (Workable global XML feasibility decision) is the next dependency-ready unit. SP-11..SP-15 (Lever/Greenhouse/SmartRecruiters/Teamtailor/Recruitee) are also SP-08-dependency-ready and may proceed in parallel branches if their contracts are frozen first; SP-16/SP-17 remain ready after SP-05 independent of SP-08. Start from current `origin/main@a03631b`; re-measure D1 read-only before quoting any count.
 
 ## Run 23 — SP-07 TERMINAL — KEEP (2026-08-29)
 

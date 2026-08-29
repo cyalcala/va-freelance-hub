@@ -130,7 +130,7 @@ unless the existing workflow does so automatically.
 | SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | TERMINAL — KEEP |
 | SP-06 | Prospector writes durable non-publishing candidates | SP-05 | TERMINAL — KEEP |
 | SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | TERMINAL — KEEP |
-| SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | VERIFYING |
+| SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | TERMINAL — KEEP |
 | SP-09 | Workable global XML feasibility decision | SP-08 | PLANNED |
 | SP-10 | Workable shadow and one canary | SP-09 KEEP | PLANNED |
 | SP-11 | Lever public Postings API shadow and one canary | SP-08 | PLANNED |
@@ -164,7 +164,7 @@ opt-out/history + lifecycle graph + lease expiry → paused without delete prove
 compliance holds never auto-promote, expired → dormant, opt-out blocks
 shadow/canary; artifacts `packages/scraper/source-lifecycle.ts` +
 `source-lifecycle.test.ts` + `source-lifecycle.test.ts (db)`).
-SP-06 is TERMINAL — KEEP (behavior `407bfd3` squash from `4f38381`, CI/deploy `33250262171`, PR `33250226738` 793/0 guardrails/build ok; no migration, durable ATS candidate queue proves exact-host `needs_review`/`candidate` with FK/provider ensure, opt-out + duplicate suppression, 14d deadline, backlog/overdue visible; artifacts `packages/scraper/prospect-candidate.ts` + `prospect-candidate.test.ts` + `apps/web/src/pages/api/cron/prospect.ts`). SP-07 is TERMINAL — KEEP (behavior `fb9b6d7` squash from `4306407`, CI/deploy `33251582842`, PR `33251523995` 809/0 guardrails/build ok; no migration, bounded shadow probe proves endpoint/auth/visibility/robots/schema/cadence/funnel reporting, 2-req/512KiB budget, zero D1 writes, stop dispositions with no alternate path; artifacts `packages/scraper/candidate-shadow.ts` + `candidate-shadow.test.ts` 16/0). SP-08 is VERIFYING (behavior `075be3b`, PR `33254178348` (PR #88) 842/0 guardrails/build ok; no migration, no `apps/web` runtime change; live read-only production D1 confirms zero mutations and zero current candidate rows; artifacts `packages/scraper/evidence-packet.ts` + `evidence-packet.test.ts` 22/0 + `scripts/diagnostics/evidence-packets.ts` + `evidence-packets.test.ts` 11/0 + `docs/evidence-packets-latest.md`) — awaiting owner merge of PR #88 for the `main`-push deploy leg before TERMINAL. SP-16/SP-17 remain ready after SP-05 and may parallel if contracts frozen.
+SP-06 is TERMINAL — KEEP (behavior `407bfd3` squash from `4f38381`, CI/deploy `33250262171`, PR `33250226738` 793/0 guardrails/build ok; no migration, durable ATS candidate queue proves exact-host `needs_review`/`candidate` with FK/provider ensure, opt-out + duplicate suppression, 14d deadline, backlog/overdue visible; artifacts `packages/scraper/prospect-candidate.ts` + `prospect-candidate.test.ts` + `apps/web/src/pages/api/cron/prospect.ts`). SP-07 is TERMINAL — KEEP (behavior `fb9b6d7` squash from `4306407`, CI/deploy `33251582842`, PR `33251523995` 809/0 guardrails/build ok; no migration, bounded shadow probe proves endpoint/auth/visibility/robots/schema/cadence/funnel reporting, 2-req/512KiB budget, zero D1 writes, stop dispositions with no alternate path; artifacts `packages/scraper/candidate-shadow.ts` + `candidate-shadow.test.ts` 16/0). SP-08 is TERMINAL — KEEP (behavior `075be3b`+`fc4e5ab` squash-merged as `a03631b` on `main`, PR #88, PR CI `33254178348` 842/0 + main CI/deploy `33254391095` "No migrations to apply!" ✅ FTS ✅ Pages ✅; no `apps/web` runtime change; live read-only production D1 confirms zero mutations both pre- and post-deploy, zero current candidate rows; artifacts `packages/scraper/evidence-packet.ts` + `evidence-packet.test.ts` 22/0 + `scripts/diagnostics/evidence-packets.ts` + `evidence-packets.test.ts` 11/0 + `docs/evidence-packets-latest.md`). SP-09 (Workable feasibility) is now the single dependency-ready unit; SP-11..SP-15 are also SP-08-dependent and may parallel if contracts frozen; SP-16/SP-17 remain ready after SP-05.
 
 ## Phase 0 — Durable planning and truthful measurement
 
@@ -447,7 +447,7 @@ review, full gate.
 **Estimated scope:** M.  
 **Rollback:** retain candidates and disable packet/alert job.
 
-**Status:** VERIFYING (2026-08-29). `packages/scraper/evidence-packet.ts`
+**Status:** TERMINAL — KEEP (2026-08-29). `packages/scraper/evidence-packet.ts`
 (`buildEvidencePacket`/`deadlineBucket`/`isPreExpiryDue`/`alertForPacket`/`deduplicateAlerts`/`renderEvidenceReport`/`packetHashFor`)
 proves all three criteria in 22/0 fixture tests. `scripts/diagnostics/evidence-packets.ts`
 (`sql`/`meta`/`emit`/`collect`/`packets`/`report`, same CLI shape as
@@ -457,17 +457,18 @@ assertion, the D1-shaped join, incomplete-provider gap listing, overdue dedup,
 `collectByName` reassembly, an orphan-provider defensive case, and empty-registry
 honesty. No shadow evidence is fabricated: SP-07's probe has no persisted result
 table, so every real candidate correctly lists `"shadow probe not yet run"`.
-Behavior `075be3b` (PR #88); PR exact-SHA CI `33254178348` validate 842/0 +
-typecheck 0 + guardrails 0 + build ok (deploy skipped, PR path). Live read-only
-production D1 (`wrangler d1 execute DB --remote`) confirms `changed_db=false`,
-`rows_written=0`, and zero current `candidate` rows — SP-06's Prospector queue
-has not yet inserted one; `docs/evidence-packets-latest.md` reports this
-truthfully rather than fabricating a reserve. No schema or `apps/web` runtime
-change. Awaiting owner merge of PR #88 (agent merges to `main` are treated as
-owner-only in this project) for the `main`-push exact-SHA deploy leg and its
-post-deploy read-only D1 re-check before TERMINAL — KEEP. **Next:** owner
-merges PR #88; then **SP-09** (Workable global XML feasibility) becomes the
-next dependency-ready unit.
+Behavior `075be3b`+`fc4e5ab` (PR #88), owner-approved squash merge to `main` as
+**`a03631b`**. PR exact-SHA CI `33254178348` validate 842/0 + typecheck 0 +
+guardrails 0 + build ok (deploy skipped, PR path); `main`-push exact-SHA
+CI/deploy `33254391095` validate success, `d1 migrations apply` → **"No
+migrations to apply!"** (code-only, matching SP-06/SP-07), FTS integrity ✅,
+Cloudflare Pages deploy ✅. Live read-only production D1
+(`wrangler d1 execute DB --remote`) both pre- and post-deploy confirms
+`changed_db=false`, `rows_written=0`, and zero current `candidate` rows —
+SP-06's Prospector queue has not yet inserted one; `docs/evidence-packets-latest.md`
+reports this truthfully rather than fabricating a reserve. No schema or
+`apps/web` runtime change. **Next:** **SP-09** (Workable global XML
+feasibility) is the next dependency-ready unit.
 
 ### Checkpoint C — replenishment reserve
 
