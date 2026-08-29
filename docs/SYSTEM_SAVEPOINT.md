@@ -1,5 +1,50 @@
 # System Savepoint
 
+## Run 19 — SP-03 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-03 provider/source registry)**.
+SP-03 is now **TERMINAL — KEEP**. Additive, nullable registry foundation with
+no runtime behavior change; rollback is to ignore tables.
+
+Deploy evidence:
+
+- Behavior/merge commit **`0331fa1`** (PR #83) on `main`.
+- Sovereign CI Guardrail run **`33247081804`** (head `0331fa1`, main push):
+  validate 690/0 pass + typecheck 0 + guardrails 0 + build ok; **Apply D1
+  migrations** applied `0036_registry_foundation.sql` ✅ (Migrations to be
+  applied: `0036` ✅); FTS integrity ✅; **Deploy to Cloudflare Pages** ✅.
+- PR exact-SHA CI run **`33246958277`** (head `ac3e57d`, PR #83) Validate success,
+  deploy skipped (PR path).
+
+Read-only D1 acceptance (additive registry, no mutation of existing rows):
+
+- Fresh migration chain rehearsal `94/94` pass (fresh + legacy) after adding
+  `provider_profiles` + `source_registry` (indices `provider_family`,
+  `provider_id`, `compliance`, `operational`).
+- Registry dump `scripts/diagnostics/source-registry.ts sql` emits 4 SELECT-only
+  queries; `audit` maps 26 known static+ATS ids (12 `sources.ts` + 14
+  `ATS_TOKEN_POLICIES`) vs registry rows → 0 mapped / 26 unmapped on empty
+  registry (no activation) — correct for foundation.
+- Fixture `packages/db/registry.test.ts` 16/0 proves CHECKs: mechanism enum,
+  `cadence_max ≥ cadence_min`, `lease>0`, PK duplicate, FK, `shadow/canary/active
+  ⇒ allowed|conditional`, `opt_out IN (0,1)`, and 26-id parity with jobicy 2→1
+  family fold. Full gate `690 pass / 0 fail / 1764 assertions`.
+- Existing `opportunities.source_id` and `source_fetch_events` semantics
+  unchanged; exact-six `ROBOTS_ENFORCE_SOURCE_IDS` still `we-work-remotely`,
+  `remotive`, `real-work-from-anywhere`, `remote-ok`,
+  `jobicy-admin-support-apac`, `jobicy-supporting-apac` (verified in
+  `apps/web/src/pages/api/cron/scrape.ts:52`).
+
+Terminal decision: **KEEP**.
+
+Rollback: ignore additive `provider_profiles` + `source_registry` tables; existing
+`staticSources`/`ATS_TOKEN_POLICIES` remain authority until SP-04 resolver. No
+row deletion required.
+
+Next exact action: **SP-04** (registry-backed behavior-preserving policy resolver)
+is the single dependency-ready unit. Start from current `origin/main`; re-measure
+D1 read-only before quoting any count.
+
 ## Run 18 — SP-02 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-02 acceptance closeout)**.

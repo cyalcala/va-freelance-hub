@@ -1,6 +1,41 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-02, TERMINAL — KEEP)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-03, TERMINAL — KEEP)
+
+Status: **SP-03 TERMINAL — KEEP**. Additive, nullable registry foundation with
+no runtime behavior change (rollback = ignore tables).
+
+- **Tables:** `provider_profiles` (mechanism, auth_class, endpoint_pattern,
+  allowed_hosts, evidence_url/hash/captured_at, visibility/content scope,
+  cadence_min/max, rate_guidance, robots_handling, removal_semantics,
+  evidence_lease_days, default_compliance/operational states) and
+  `source_registry` (durable `source_id` PK = `opportunities.source_id`,
+  provider FK, display_name, endpoint_url, company_token,
+  discovery_provenance, independent compliance_state + operational_state,
+  review_deadline/policy_expiry/owner, last_decision, opt_out, health_rollup).
+  CHECKs enforce ADR-006 vocab (6 compliance, 9 operational), `shadow`/`canary`/
+  `active ⇒ allowed|conditional`, `opt_out IN (0,1)`, `cadence_max ≥ cadence_min`,
+  `lease>0`; PK rejects duplicate `source_id`; FK to provider is enforced.
+- **Coverage:** fixture inserts 12 static `sources.ts` ids + 14 ATS token ids
+  (`ashby:5`, `greenhouse:5`, `breezy:4`) = 26 distinct `source_id` (jobicy
+  2-feed → 1 family); `scripts/diagnostics/source-registry.ts` read-only dump
+  (`provider_profiles`, `source_registry`, group counts) + audit maps 26 known vs
+  registry rows and flags 26 unmapped on empty registry without activation.
+- **Migration:** `0036_registry_foundation.sql` `CREATE TABLE IF NOT EXISTS` +
+  indices (`provider_family`, `provider_id`, `compliance_state`,
+  `operational_state`); rehearsal `94/94` fresh+legacy pass.
+- **Verification:** focused `registry.test.ts` 16/0, full gate `690/0` (was
+  `674/0` +16), typecheck 0, guardrails 0, build ok, rehearsal 94/94, critic
+  SHIP (no blocking; SP-04 must validate `https://` + `allowed_hosts` before
+  fetch).
+
+Behavior `0331fa1` (PR #83) merged to `main`; exact-SHA Sovereign CI Guardrail
+run `33247081804` succeeded — validate (690 pass), `0036` applied (Migrations to
+be applied: `0036_registry_foundation.sql` ✅), FTS integrity, Pages deployed.
+No `apps/web` runtime reads new tables; exact-six `ROBOTS_ENFORCE_SOURCE_IDS`
+unchanged; next dependency-ready unit is **SP-04**.
+
+## Source Perpetuity Checkpoint — 2026-08-29 (SP-02, TERMINAL — KEEP)
 
 Status: **SP-02 TERMINAL — KEEP**. Delivered in two parts. **Part 1** — a
 read-only source-economics baseline keyed on the exact `source_id` SP-01
@@ -32,8 +67,8 @@ keying without double-counting). Beyond the criteria (optional, non-blocking):
 the exhaustive per-stage downstream funnel (raw→…→inserted attribution) and a
 recurring report workflow.
 
-Next exact action: **SP-03** (provider/source registry foundation) is the single
-dependency-ready unit.
+Next exact action at that checkpoint was SP-03; it is now TERMINAL — KEEP (see
+current checkpoint above).
 
 ## Source Perpetuity Checkpoint — 2026-08-29 (SP-01)
 

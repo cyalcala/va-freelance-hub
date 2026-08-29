@@ -1,20 +1,22 @@
 # Handoff
 
-## Current Handoff — 2026-08-29 Source Perpetuity (SP-00..SP-02 TERMINAL — KEEP)
+## Current Handoff — 2026-08-29 Source Perpetuity (SP-00..SP-03 TERMINAL — KEEP)
 
-Status: **Measurement foundation complete.** SP-00 (durable planning), SP-01
-(exact source identity), and SP-02 (truthful source economics + 304
-unchanged-separation fix) are all TERMINAL — KEEP. Latest behavior
-`ed0040a61598ff5086bd0733ed3e0bebcadc1d90` (PR #82); exact-SHA Sovereign CI
-Guardrail run `33243425545` applied migration `0035`, verified FTS integrity, and
-deployed Pages (~2026-08-29T08:34:27Z).
+Status: **Registry foundation complete.** SP-00 (durable planning), SP-01 (exact
+source identity), SP-02 (truthful source economics + 304 unchanged-separation
+fix), and SP-03 (provider/source registry foundation) are all TERMINAL — KEEP.
+Latest behavior `0331fa13bfda527e2420da3363e9a894e5466095` (PR #83); exact-SHA
+Sovereign CI Guardrail run `33247081804` applied migration `0036`, verified FTS
+integrity, and deployed Pages. Prior `ed0040a`/`33243425545` remain accepted.
 
-- Post-deploy read-only D1 acceptance reconciled with `changed_db=false`,
-  `rows_written=0`; unchanged 304 polls are separated from real fetches.
-- Existing exact-six production sources remain unchanged; legacy `NULL` rows are
-  not backfilled (1,267 active rows still unattributed).
-- Next dependency-ready implementation: **SP-03** provider/source registry
-  foundation.
+- Additive `provider_profiles` + `source_registry` introduce independent
+  compliance/operational states (ADR-006) and CHECKs, but no `apps/web`
+  runtime reads them yet — rollback is ignore tables.
+- Read-only dump `scripts/diagnostics/source-registry.ts` maps 26 known
+  static+ATS ids vs registry rows (0 mapped / 26 unmapped on empty registry).
+- Existing exact-six production sources remain unchanged; `690` tests pass.
+- Next dependency-ready implementation: **SP-04** registry-backed
+  behavior-preserving policy resolver.
 
 This is a milestone pointer. For mutable current facts and the next exact
 command, always prefer the top of `docs/SYSTEM_SAVEPOINT.md`.

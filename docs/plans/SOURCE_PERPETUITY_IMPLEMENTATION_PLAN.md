@@ -125,7 +125,7 @@ unless the existing workflow does so automatically.
 | SP-00 | Durable strategy, plan, ADR, bootloader, and authority baton | Gauntlet terminal | TERMINAL — KEEP |
 | SP-01 | Exact source identity on every new opportunity | SP-00 | TERMINAL — KEEP |
 | SP-02 | Truthful source funnel and supply baseline | SP-01 | TERMINAL — KEEP |
-| SP-03 | Provider/source registry foundation | SP-02 | PLANNED |
+| SP-03 | Provider/source registry foundation | SP-02 | TERMINAL — KEEP |
 | SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | PLANNED |
 | SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | PLANNED |
 | SP-06 | Prospector writes durable non-publishing candidates | SP-05 | PLANNED |
@@ -149,7 +149,10 @@ migration `0034` applied, read-only D1 acceptance confirmed 10/10 post-deploy
 rows stamped; evidence `docs/gauntlet/evidence/SP-01-exact-source-identity.md`).
 SP-02 is TERMINAL — KEEP (behavior `ed0040a`, CI/deploy `33243425545`, migration
 `0035` applied, read-only acceptance confirmed unchanged polls separated;
-artifact `docs/source-economics-latest.md`). SP-03 is now the single
+artifact `docs/source-economics-latest.md`).
+SP-03 is TERMINAL — KEEP (behavior `0331fa1`, CI/deploy `33247081804`, migration
+`0036` applied, read-only registry dump confirms 26-source coverage; artifact
+`scripts/diagnostics/source-registry.ts`). SP-04 is now the single
 dependency-ready unit.
 
 ## Phase 0 — Durable planning and truthful measurement
@@ -276,11 +279,11 @@ compliance/operational states.
 
 **Acceptance criteria:**
 
-- [ ] Schema represents every current static and ATS source without changing
+- [x] Schema represents every current static and ATS source without changing
       runtime behavior.
-- [ ] Constraints reject invalid state combinations and duplicate durable
+- [x] Constraints reject invalid state combinations and duplicate durable
       source identities.
-- [ ] A read-only registry dump maps all known sources and flags unmapped
+- [x] A read-only registry dump maps all known sources and flags unmapped
       entries; it does not activate them.
 
 **Verification:** schema/constraint tests, fresh migration chain, mapping audit,
@@ -289,6 +292,25 @@ full gate.
 **Likely files:** schema, one migration, registry types/repository, tests.  
 **Estimated scope:** M.  
 **Rollback:** ignore additive registry tables; existing config remains authority.
+
+**Status:** TERMINAL — KEEP (2026-08-29). Additive, nullable registry foundation:
+**Tables** `provider_profiles` (provider mechanism/family, auth_class, endpoint
+pattern, allowed_hosts, evidence lease, cadence envelope, default states) and
+`source_registry` (durable `source_id` = `opportunities.source_id`, provider
+FK, display_name, endpoint_url, independent compliance/operational states,
+review_deadline/policy_expiry/owner, opt_out). **Constraints:** CHECKs for
+mechanism/auth/lease/cadence/evidence, PK duplicate rejection, FK to provider,
+`CHECK (shadow/canary/active ⇒ allowed/conditional)` proven by 6 negative + 3
+positive fixtures, `opt_out IN (0,1)`, `cadence_max ≥ cadence_min`. **Coverage:**
+fixture inserts 12 static `sources.ts` + 14 ATS `ATS_TOKEN_POLICIES` token ids =
+26 distinct `source_id` with jobicy 2-feed → 1 family fold; read-only
+`scripts/diagnostics/source-registry.ts` (`sql`/`meta`/`audit`) maps 26 known vs
+0 registry rows → 26 unmapped (no activation). Behavior `0331fa1` (PR #83);
+exact-SHA CI/deploy `33247081804` applied `0036` and deployed Pages;
+local gate `690 pass / 0 fail / 1764 assertions`, typecheck 0, guardrails 0,
+build ok, `rehearse 94/94` fresh+legacy. **Beyond criteria (non-blocking):**
+resolver (SP-04) must validate `https://` + `allowed_hosts` before fetch;
+shared ATS list drift guard. **Next:** SP-04.
 
 ### SP-04: Introduce a behavior-preserving policy resolver
 
