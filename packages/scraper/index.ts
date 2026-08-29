@@ -73,6 +73,27 @@ export type {
   ResolvedPolicy,
 } from "./policy-resolver";
 export {
+  isValidOperationalTransition,
+  isComplianceAllowsShadowCanaryActive,
+  isComplianceHold,
+  isOptedOut,
+  canEnterShadow,
+  canEnterCanary,
+  canEnterActive,
+  isPromotionBlocked,
+  isReviewDeadlineOverdue,
+  isPolicyExpired,
+  isEvidenceLeaseExpired,
+  isRenewalDue,
+  computeReviewDeadline,
+  computePolicyExpiry,
+  applyLeaseExpiry,
+  validateTransition,
+  COMPLIANCE_STATES,
+  OPERATIONAL_STATES,
+} from "./source-lifecycle";
+export type { ComplianceState, OperationalState } from "./source-lifecycle";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
