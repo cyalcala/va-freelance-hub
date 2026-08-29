@@ -1,0 +1,85 @@
+name: 📮 Employer Feed Intake (SP-16)
+
+# No-account employer "bring your feed" intake. Triggered when an issue
+# carrying the `employer-feed-submission` label (auto-applied by
+# .github/ISSUE_TEMPLATE/employer-feed-intake.yml) is opened or edited. Posts
+# the raw issue body to the protected /api/cron/employer-intake route, which
+# re-parses and re-validates server-side (never trusts this workflow's own
+# reading of the body) and, only if valid/new/not-opted-out, inserts exactly
+# one non-publishing source_registry candidate. Comments the outcome back on
+# the issue. Never publishes anything and never touches any other source.
+
+on:
+  issues:
+    types: [opened, edited, labeled]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: gha-employer-intake-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  intake:
+    name: Parse & Register Candidate
+    if: contains(github.event.issue.labels.*.name, 'employer-feed-submission')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      INTAKE_API_URL: "https://remotejobs-ph.pages.dev/api/cron/employer-intake"
+    steps:
+      - name: 📮 Submit issue body for parsing/validation
+        run: |
+          set -euo pipefail
+          jq -n \
+            --arg num "${{ github.event.issue.number }}" \
+            --arg url "${{ github.event.issue.html_url }}" \
+            --arg body "${{ github.event.issue.body }}" \
+            '{issueNumber: ($num | tonumber), issueUrl: $url, issueBody: $body}' > payload.json
+          HTTP_CODE=$(curl -s -w "%{http_code}" -o intake.log --max-time 30 -X POST "$INTAKE_API_URL" \
+            -H "Authorization: Bearer $PROXY_SECRET" \
+            -H "Content-Type: application/json" \
+            --data-binary @payload.json)
+          echo "HTTP Status: $HTTP_CODE"
+          cat intake.log; echo ""
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            if [ "$HTTP_CODE" != "200" ]; then
+              echo "::error::Employer intake API returned HTTP $HTTP_CODE"
+              exit 1
+            fi
+          fi
+          if ! jq -e . intake.log >/dev/null 2>&1; then
+            echo "::error::Employer intake response was not valid JSON"
+            exit 1
+          fi
+
+      - name: 💬 Comment outcome on the issue
+        run: |
+          set -euo pipefail
+          OUTCOME=$(jq -r '.outcome // "unknown"' intake.log)
+          case "$OUTCOME" in
+            accepted)
+              SOURCE_ID=$(jq -r '.sourceId' intake.log)
+              DEADLINE=$(jq -r '.reviewDeadline' intake.log)
+              printf 'Thanks! This submission was accepted as a **candidate** for review.\n\n- Candidate id: `%s`\n- Review deadline: %s (14 days)\n\nThis does **not** publish anything automatically — a maintainer still reviews the submission (official public-access evidence, content scope, cadence) before it can ever enter a shadow probe, and it will never enter production without a separate reviewed decision. You do not need to do anything else; we will follow up here if we need more information.\n' "$SOURCE_ID" "$DEADLINE" > comment.md
+              ;;
+            duplicate)
+              REASON=$(jq -r '.reason' intake.log)
+              printf 'This feed is already known to us: %s\n\nNo new candidate was created. If you believe this is an error, reply here.\n' "$REASON" > comment.md
+              ;;
+            opted_out)
+              REASON=$(jq -r '.reason' intake.log)
+              printf 'This host is on our durable do-not-reingest list: %s\n\nIf you are the site owner and want this changed, reply here and a maintainer will follow up.\n' "$REASON" > comment.md
+              ;;
+            rejected)
+              ERRORS=$(jq -r '(.errors // ["unknown validation error"]) | map("- " + .) | join("\n")' intake.log)
+              printf 'This submission could not be accepted:\n\n%s\n\nPlease edit the issue to fix the above and it will be re-checked automatically. If a rejection mentions secret- or candidate-data-like content and you believe that is a false positive, edit the issue to remove the flagged text and resubmit — never post real secrets or personal data here even to explain the false positive.\n' "$ERRORS" > comment.md
+              ;;
+            *)
+              printf 'Could not process this submission (unexpected response). A maintainer will take a look.\n' > comment.md
+              ;;
+          esac
+          gh issue comment "${{ github.event.issue.number }}" --repo "$GITHUB_REPOSITORY" --body-file comment.md
