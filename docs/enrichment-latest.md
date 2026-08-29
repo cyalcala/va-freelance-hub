@@ -1,7 +1,7 @@
 # Directory Enrichment — Latest
 
-Date: 2026-08-28
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33185986454
+Date: 2026-08-29
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33247689790
 
 | Metric | Value |
 | --- | ---: |
@@ -13,4 +13,4 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33185986
 
 ## Enrichment details
 
-- #550 Lemon.io: auto-verified (1 verified, 7 PH-eligible jobs)
+- #558 Fingerprint: auto-verified (1 verified, 15 PH-eligible jobs)
