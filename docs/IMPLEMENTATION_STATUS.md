@@ -1,6 +1,39 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-01)
+
+Status: **SP-01 TERMINAL — KEEP**. Every newly ingested opportunity now
+persists the exact configured source identity in an additive, nullable
+`opportunities.source_id` column, so source economics no longer infer identity
+from the display-oriented `source_platform`. Static sources record `source.id`
+(e.g. `we-work-remotely`); ATS sources record `platform:token` (e.g.
+`workable:acme`), keeping two sources that share one display platform distinct.
+
+Change: schema + migration `0034_opportunity_source_id.sql`; a pure
+`attachSourceIdentity` helper (`apps/web/src/lib/conditional-state.ts`) that
+stamps each fetch result's id onto its raw items; and four stamp sites in
+`apps/web/src/pages/api/cron/scrape.ts` (RSS/HTML/JSON/ATS) so identity rides
+the item through normalization, dedup, triage, and all three insert paths.
+Legacy rows stay `NULL` — no ambiguous backfill. The exact-six robots literal,
+source policy, robots mode, and workflows are unchanged.
+
+Local gate at `ec57ba5`: 661 pass / 0 fail / 1677 assertions, typecheck 0,
+guardrails 0, build complete. Merged to `main` as PR #80 → `1a5d188`. Exact-SHA
+`main` CI/deploy `33240866482` succeeded: validate (real suite), migration
+`0034` applied `07:28:00Z`, FTS integrity verified, Pages deployed `~07:28:12Z`.
+Read-only D1 acceptance (both queries `changed_db=false`, `rows_written=0`): the
+first post-deploy tick (`07:30:09Z`) stamped 10/10 new rows with exact
+`source_id` (`real-work-from-anywhere` ×7, `remote-ok` ×3), 0 missing, while
+5,075 legacy rows remained `NULL`. Evidence:
+`docs/gauntlet/evidence/SP-01-exact-source-identity.md`.
+
+Follow-ups recorded (out of SP-01 scope): the separate digest ingest path
+(`apps/web/src/pages/api/ingest.ts`) and any read-only-first legacy backfill.
+
+Current exact action: begin **SP-02**, truthful source yield and funnel
+baseline (depends on SP-01).
+
+## Source Perpetuity Checkpoint — 2026-08-29 (SP-00, historical)
 
 Status: **SP-00 TERMINAL — KEEP**. The owner approved a sustainable,
 adaptable source-replenishment planning program and a reusable AI bootloader.
@@ -23,9 +56,8 @@ shared execution contract, while current exact-six production behavior remains
 unchanged. SP-00 merged to `main` as PR #79, commit
 `bdc2aa95795b6c348f1d9db2a19cc15c4245d7a7`; exact-SHA Sovereign CI Guardrail
 `33236797132` succeeded with the production-deploy job correctly skipped
-(docs-only). SP-00 is terminal `KEEP`, and SP-01 is now dependency-ready.
-
-Current exact action: begin SP-01, exact source identity.
+(docs-only). SP-00 is terminal `KEEP`; SP-01 followed and is also terminal
+`KEEP` (see the current checkpoint above).
 
 ## Accepted Gauntlet Checkpoint — 2026-08-28 (historical)
 

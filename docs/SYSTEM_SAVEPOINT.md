@@ -1,5 +1,58 @@
 # System Savepoint
 
+## Run 16 — SP-01 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (one unit)**. SP-01, the first
+implementation unit, is **TERMINAL — KEEP**. Every newly ingested opportunity
+now persists the exact configured source identity in an additive, nullable
+`opportunities.source_id` column, so source economics (SP-02) no longer infer
+identity from the display-oriented `source_platform`.
+
+Execution began from clean `main` at `1440352` (START_SHA), on short-lived
+branch `codex/sp-01-source-identity`. Change (5 files): schema + migration
+`0034_opportunity_source_id.sql`; a pure `attachSourceIdentity` helper
+(`apps/web/src/lib/conditional-state.ts`) that stamps each fetch result's id
+onto its raw items (`null` when a result has no configured id — never a guess);
+four stamp sites in `apps/web/src/pages/api/cron/scrape.ts` (RSS/HTML/JSON/ATS)
+so identity rides the item through `normalizeScrapedItems` (spreads `...item`),
+URL dedup, triage, and all three insert paths (approved / rejected / durable
+pending-triage). Static ids are `source.id`; ATS ids are `atsSourceKey`
+(`platform:token`), so two sources sharing one display platform stay distinct.
+
+No change to the exact-six robots enforcement literal, source policy, robots
+mode, cadence, secrets, or workflows.
+
+Verification and evidence:
+
+- Focused red→green tests in `apps/web/tests/conditional-state.test.ts`.
+- Local full gate at behavior `ec57ba5`: 661 pass / 0 fail / 1677 assertions,
+  typecheck 0, `audit:guardrails` 0, build complete.
+- Merged to `main` as PR #80 → squash commit **`1a5d188`**.
+- Branch exact-SHA CI (PR event) run `33240690700`: success; deploy skipped.
+- `main` exact-SHA CI/deploy run **`33240866482`: success** — validate ran the
+  real suite (661 pass); **Apply D1 migrations** applied `0034` ✅ at
+  `2026-08-29T07:28:00Z`; **Verify D1 FTS integrity** ✅; **Deploy to Cloudflare
+  Pages** ✅ (`~07:28:12Z`).
+- Read-only D1 acceptance (both queries `changed_db=false`, `rows_written=0`):
+  first post-deploy tick `07:30:09Z`; post-deploy inserts 10 total, **10 with
+  `source_id`, 0 missing**; exact identities `real-work-from-anywhere` ×7 and
+  `remote-ok` ×3 (distinct from their display labels); 5,075 legacy rows remain
+  `NULL` (no backfill). Evidence:
+  `docs/gauntlet/evidence/SP-01-exact-source-identity.md`.
+
+Rollback: revert the four `attachSourceIdentity` stamps in `scrape.ts`; the
+additive, nullable schema is retained (no column drop required).
+
+Follow-ups recorded (out of SP-01 scope, need their own units): exact identity
+on the separate digest ingest path (`apps/web/src/pages/api/ingest.ts`); any
+read-only-first backfill of legacy `NULL` rows.
+
+Next exact action: **SP-02** — truthful source yield and funnel baseline
+(exact per-source raw → normalized → deduped → geo → triage → inserted counts
+plus 7/14/30-day net-new), now the single dependency-ready unit. Start from the
+current `origin/main` after this acceptance checkpoint merges; re-measure D1
+read-only before quoting any count.
+
 ## Run 15 — SP-00 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (docs-only closeout)**.
