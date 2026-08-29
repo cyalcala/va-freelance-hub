@@ -134,7 +134,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
   const tables = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'd1_%'").all() as Array<{ name: string }>;
   const tableNames = new Set(tables.map((t) => t.name));
 
-  const requiredTables = ["opportunities", "va_directory", "content_digests", "source_fetch_state", "source_fetch_events", "robots_cache", "opportunities_fts"];
+  const requiredTables = ["opportunities", "va_directory", "content_digests", "source_fetch_state", "source_fetch_events", "robots_cache", "opportunities_fts", "provider_profiles", "source_registry"];
   for (const table of requiredTables) {
     assertions.push({
       name: `Table ${table} exists`,
@@ -213,6 +213,8 @@ function assertSchema(db: Database): SchemaAssertion[] {
     "source_fetch_state_last_attempt_idx", "source_fetch_events_source_id_idx",
     "source_fetch_events_timestamp_idx", "robots_cache_fetched_at_idx",
     "opportunities_source_url_unique", "content_digests_video_id_unique",
+    "provider_profiles_family_idx", "source_registry_provider_idx",
+    "source_registry_compliance_idx", "source_registry_operational_idx",
   ];
   for (const idx of requiredIndexes) {
     assertions.push({
@@ -275,10 +277,10 @@ function assertSchema(db: Database): SchemaAssertion[] {
     });
   }
 
-  // 9. d1_migrations ledger integrity
+  // 9. d1_migrations ledger integrity — derive expected count from the
+  // migrations directory so the check survives additive SP migrations (0034+).
   const migCount = db.query("SELECT COUNT(*) as c FROM d1_migrations").get() as { c: number };
-  // 33 migrations exist: 0000-0033, but 0004 is missing from the sequence.
-  const expectedMigrationCount = 33;
+  const expectedMigrationCount = readdirSync(MIGRATIONS_DIR).filter((f) => f.endsWith(".sql")).length;
   assertions.push({
     name: `d1_migrations ledger has expected count (${expectedMigrationCount} migrations)`,
     passed: migCount.c === expectedMigrationCount,

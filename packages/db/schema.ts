@@ -227,7 +227,100 @@ export const robotsCache = sqliteTable("robots_cache", {
   fetchedAtIdx: index("robots_cache_fetched_at_idx").on(table.fetchedAt),
 }));
 
+// ─── Provider profiles (SP-03) ────────────────────────────────────────────────
+// One row per provider mechanism/host family (e.g. "remotive-rss",
+// "jobicy-rss"). Providers are the correlated-risk unit for evidence lease,
+// rate guidance, and concentration (ADR-006 §7).
+
+export const providerProfiles = sqliteTable("provider_profiles", {
+  id: text("id").primaryKey().notNull(),
+  displayName: text("display_name").notNull(),
+  providerFamily: text("provider_family").notNull(),
+  mechanism: text("mechanism", {
+    enum: ["syndication_feed", "public_api", "customer_auth", "partner_feed", "rss_feed", "public_html", "public_json_api", "ats_api"],
+  }).notNull(),
+  authClass: text("auth_class", {
+    enum: ["none", "api_key", "oauth", "partner_token", "customer_auth"],
+  }).notNull(),
+  endpointPattern: text("endpoint_pattern"),
+  allowedHosts: text("allowed_hosts"),
+  evidenceUrl: text("evidence_url"),
+  evidenceHash: text("evidence_hash"),
+  evidenceCapturedAt: text("evidence_captured_at"),
+  visibilityFilter: text("visibility_filter", {
+    enum: ["published", "listed", "public", "indexable", "private"],
+  }),
+  contentScope: text("content_scope", {
+    enum: ["minimal", "full", "metadata_only"],
+  }),
+  cadenceMinMinutes: integer("cadence_min_minutes"),
+  cadenceMaxMinutes: integer("cadence_max_minutes"),
+  rateGuidance: text("rate_guidance"),
+  robotsHandling: text("robots_handling"),
+  removalSemantics: text("removal_semantics"),
+  evidenceLeaseDays: integer("evidence_lease_days").notNull().default(180),
+  defaultComplianceState: text("default_compliance_state", {
+    enum: ["needs_review", "allowed", "conditional", "awaiting_permission", "blocked", "deprecated"],
+  }).notNull(),
+  defaultOperationalState: text("default_operational_state", {
+    enum: ["candidate", "shadow", "canary", "active", "review_due", "degraded", "quarantined", "paused", "retired"],
+  }).notNull(),
+  notes: text("notes"),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+}, (table) => ({
+  familyIdx: index("provider_profiles_family_idx").on(table.providerFamily),
+}));
+
+// ─── Source registry (SP-03) ──────────────────────────────────────────────────
+// One row per durable source identity (e.g. "we-work-remotely",
+// "ashby:supabase"). The stable `source_id` is the same value persisted on
+// `opportunities.source_id` and `source_fetch_events.source_id`.
+
+export const sourceRegistry = sqliteTable("source_registry", {
+  sourceId: text("source_id").primaryKey().notNull(),
+  providerId: text("provider_id")
+    .notNull()
+    .references(() => providerProfiles.id),
+  displayName: text("display_name").notNull(),
+  endpointUrl: text("endpoint_url").notNull(),
+  companyToken: text("company_token"),
+  discoveryProvenance: text("discovery_provenance"),
+  complianceState: text("compliance_state", {
+    enum: ["needs_review", "allowed", "conditional", "awaiting_permission", "blocked", "deprecated"],
+  }).notNull(),
+  operationalState: text("operational_state", {
+    enum: ["candidate", "shadow", "canary", "active", "review_due", "degraded", "quarantined", "paused", "retired"],
+  }).notNull(),
+  reviewDeadline: text("review_deadline"),
+  policyExpiry: text("policy_expiry"),
+  owner: text("owner"),
+  lastDecision: text("last_decision"),
+  lastDecisionAt: text("last_decision_at"),
+  optOut: integer("opt_out", { mode: "boolean" }).notNull().default(false),
+  healthRollup: text("health_rollup"),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+}, (table) => ({
+  providerIdx: index("source_registry_provider_idx").on(table.providerId),
+  complianceIdx: index("source_registry_compliance_idx").on(table.complianceState),
+  operationalIdx: index("source_registry_operational_idx").on(table.operationalState),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+export type ProviderProfile = typeof providerProfiles.$inferSelect;
+export type NewProviderProfile = typeof providerProfiles.$inferInsert;
+export type SourceRegistryRow = typeof sourceRegistry.$inferSelect;
+export type NewSourceRegistryRow = typeof sourceRegistry.$inferInsert;
 
 export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;
