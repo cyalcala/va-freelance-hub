@@ -1,5 +1,73 @@
 # System Savepoint
 
+## Run 17 — SP-02 measurement + 304 truthfulness fix; VERIFYING (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (one unit)**. SP-02 (truthful
+source funnel and supply baseline) is delivered in one PR (#82) as two coherent
+parts. Part 1 (read-only source-economics baseline) is locally KEEP; part 2 (a
+runtime `not_modified` event field that makes the report honest) is a
+schema+migration+scrape.ts change and is **VERIFYING pending deploy**. SP-02
+becomes terminal after post-deploy read-only acceptance.
+
+Execution began from `main` at `dc13c60` (START_SHA), branch
+`codex/sp-02-source-economics` (later merged origin/main digest advances).
+
+Part 1 — measurement (no runtime change): pure module
+`scripts/diagnostics/source-economics.ts` (query emitter + reconciler + markdown
+renderer, same shape as `data-quality-cohorts.ts`) + fixture test + generated
+`docs/source-economics-latest.md`. Reports identity_coverage (exact-source_id
+fill vs legacy NULL gap); supply_totals + source_supply (net-new accepted active
+jobs at 7/14/30-day freshness, global and per exact source_id); fetch_outcomes
+(per-source real/unchanged/skip/failure/zero-yield from `source_fetch_events`,
+reserved `__` ids and out-of-window events excluded). Provider-family folding
+(ADR-006 §7 — two Jobicy feeds and per-tenant ATS `platform:token` ids collapse)
+and concentration SLO flags in tested TS; renderer marks concentration
+PROVISIONAL while coverage is low.
+
+Part 2 — 304 truthfulness fix (runtime): a conditional-fetch unchanged (304 /
+identical-body) event is recorded ok=1, skipped=0, with the **prior run's count
+carried forward** (`scrape.ts` ~L1681). That silently inflated economics — an
+unchanged poll read as a real fetch that produced N items ("items seen is not
+supply"). Fix: additive nullable `source_fetch_events.not_modified` (migration
+`0035`), populated in `recordSourceFetchEvents` (`FETCH_EVENT_COLUMNS` 18→19),
+and the report now separates `unchanged` and excludes it from real_fetches,
+items, and zero_yield (legacy NULL events coalesce to changed).
+
+Verification:
+
+- Fixture test runs the real SQL against in-memory `opportunities` +
+  `source_fetch_events` (with a 304 row proving the carried-forward 89 is
+  excluded from items). Local full gate at behavior `<this commit>`: 674 pass /
+  0 fail / 1736 assertions, typecheck 0, `audit:guardrails` 0, build complete.
+- Pre-deploy read-only production baseline (part 1 queries, via `--command` for
+  an honest `changed_db=false`/`rows_written=0` record; note wrangler `--file`
+  misreports `changed_db=true` with `rows_written=0`): 5,090 rows, 15 with
+  `source_id` (0.9% coverage — SP-01 shipped ~30 min earlier, no backfill),
+  active 1,278, net-new 7d/14d/30d = 150/430/579; reconciliation OK. The
+  committed baseline predates `not_modified`; it is regenerated post-deploy.
+
+Terminal decision: **VERIFYING** (part 1 KEEP locally; part 2 awaits deploy).
+
+Deploy/acceptance plan (owner merges #82 → `main` CI applies migration `0035`
+before the Pages deploy, same order as SP-01): after deploy, regenerate the
+read-only baseline (now with the `not_modified` column, all queries
+`changed_db=false`) and confirm unchanged 304 polls are separated from real
+fetches/items. Then SP-02 → TERMINAL KEEP.
+
+Rollback: revert the `not_modified` write in `scrape.ts` (additive schema kept);
+delete the diagnostic module/test/report. Nothing else references them.
+
+Remaining beyond SP-02's acceptance criteria (optional future enhancement, not
+blocking SP-03): the exhaustive per-stage downstream funnel
+(raw→normalized→deduped→geo→triage→inserted attribution), which would restructure
+where `source_fetch_events` is written; and a recurring report-generation
+workflow (the module is already workflow-ready via emit/collect/report).
+
+Next exact action: owner merges PR #82; then post-deploy read-only acceptance
+and mark SP-02 TERMINAL — KEEP; then **SP-03** (provider/source registry
+foundation) is the next dependency-ready unit. Re-measure D1 read-only before
+quoting any count.
+
 ## Run 16 — SP-01 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (one unit)**. SP-01, the first

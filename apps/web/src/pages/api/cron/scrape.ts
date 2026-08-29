@@ -1491,7 +1491,7 @@ interface FetchEventLogResult {
 // "too many SQL variables" — silently, because the failure only reached
 // console.warn. Chunk the insert and surface the outcome in the scrape
 // response so Hunter can annotate regressions.
-const FETCH_EVENT_COLUMNS = 18;
+const FETCH_EVENT_COLUMNS = 19;
 
 async function recordSourceFetchEvents(
   db: AppDb,
@@ -1518,6 +1518,9 @@ async function recordSourceFetchEvents(
     robotsCrawlDelay: r.robotsCrawlDelay ?? null,
     robotsWouldBlock: r.robotsWouldBlock ?? null,
     robotsMode: r.robotsMode ?? null,
+    // SP-02: mark unchanged-feed (304 / identical body) events so source
+    // economics can exclude their carried-forward counts from real supply.
+    notModified: r.notModified ?? false,
   }));
 
   const outcome: FetchEventLogResult = {

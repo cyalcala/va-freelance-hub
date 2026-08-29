@@ -124,7 +124,7 @@ unless the existing workflow does so automatically.
 | --- | --- | --- | --- |
 | SP-00 | Durable strategy, plan, ADR, bootloader, and authority baton | Gauntlet terminal | TERMINAL — KEEP |
 | SP-01 | Exact source identity on every new opportunity | SP-00 | TERMINAL — KEEP |
-| SP-02 | Truthful source funnel and supply baseline | SP-01 | PLANNED |
+| SP-02 | Truthful source funnel and supply baseline | SP-01 | VERIFYING (PR #82, deploy pending) |
 | SP-03 | Provider/source registry foundation | SP-02 | PLANNED |
 | SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | PLANNED |
 | SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | PLANNED |
@@ -232,6 +232,26 @@ report script/workflow, tests.
 than five files are required.  
 **Rollback:** keep existing report and disable the new rollup; do not delete
 events.
+
+**Status:** VERIFYING (PR #82, deploy pending). Delivered as one unit in two
+parts. **Part 1 — read-only source-economics baseline (KEEP locally):** pure
+module `scripts/diagnostics/source-economics.ts` (query emitter + reconciler +
+renderer) + fixture test + generated `docs/source-economics-latest.md`. Reports
+identity coverage (exact source_id fill vs legacy NULL gap), net-new accepted
+supply at 7/14/30-day freshness (global + per exact source_id), provider-family
+concentration (ADR-006 §7 fold of the two Jobicy feeds and ATS `platform:token`
+ids, with SLO flags and a low-coverage provisional caveat), and per-source
+real/unchanged/skip/failure/zero-yield outcomes. **Part 2 — 304 truthfulness fix
+(runtime, VERIFYING):** unchanged conditional fetches carry the prior count
+forward (`scrape.ts`), inflating economics; additive nullable
+`source_fetch_events.not_modified` (migration `0035`) + writer + report
+separation make `items`/`real_fetches` exclude unchanged polls. Full gate green;
+pre-deploy read-only baseline reconciled (`changed_db=false`). **Acceptance
+criteria:** 2 met; 1 met once part 2 deploys (skips, unchanged, zero-yield,
+failures all separated); 3 met (immutable-source_id keying + 7/14/30-day
+baseline). **Beyond criteria (optional, non-blocking):** the exhaustive
+per-stage downstream funnel (raw→…→inserted attribution) and a recurring report
+workflow.
 
 ### Checkpoint A — measurement foundation
 

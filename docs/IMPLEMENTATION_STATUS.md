@@ -1,6 +1,37 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-01)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-02, VERIFYING)
+
+Status: **SP-02 VERIFYING** (PR #82, deploy pending). Delivered in two parts.
+**Part 1** — a read-only source-economics baseline keyed on the exact
+`source_id` SP-01 persists (pure module `scripts/diagnostics/source-economics.ts`
++ fixture test + generated `docs/source-economics-latest.md`): identity coverage
+(exact-id fill vs the legacy NULL gap), net-new accepted supply at 7/14/30-day
+freshness (global + per exact source_id), provider-family concentration
+(ADR-006 §7 fold of the two Jobicy feeds and ATS `platform:token` ids, SLO flags,
+low-coverage provisional caveat), and per-source real/unchanged/skip/failure/
+zero-yield outcomes. **Part 2** (runtime) — a 304 truthfulness fix: unchanged
+conditional fetches carry the prior count forward (`scrape.ts`), so an additive
+nullable `source_fetch_events.not_modified` (migration `0035`) + writer + report
+separation stop unchanged polls from inflating `real_fetches`/`items`.
+
+Local full gate: 674 pass / 0 fail / 1736 assertions, typecheck 0, guardrails 0,
+build complete. Pre-deploy read-only production baseline reconciled (all queries
+`changed_db=false`, `rows_written=0`): 5,090 rows, 15 with `source_id` (0.9%
+coverage — SP-01 shipped ~30 min earlier, no backfill), active 1,278, net-new
+7d/14d/30d = 150/430/579.
+
+Acceptance: criterion 2 met; criterion 1 met once part 2 deploys (skips,
+unchanged, zero-yield, failures separated); criterion 3 met. Beyond the criteria
+(optional, non-blocking): the exhaustive per-stage downstream funnel
+(raw→…→inserted attribution) and a recurring report workflow.
+
+Current exact action: owner merges PR #82 → `main` CI applies migration `0035`
+before the Pages deploy → post-deploy read-only acceptance (regenerate baseline
+with `not_modified`) → mark SP-02 TERMINAL — KEEP → advance to **SP-03**
+(provider/source registry foundation).
+
+## Source Perpetuity Checkpoint — 2026-08-29 (SP-01)
 
 Status: **SP-01 TERMINAL — KEEP**. Every newly ingested opportunity now
 persists the exact configured source identity in an additive, nullable
@@ -30,8 +61,8 @@ first post-deploy tick (`07:30:09Z`) stamped 10/10 new rows with exact
 Follow-ups recorded (out of SP-01 scope): the separate digest ingest path
 (`apps/web/src/pages/api/ingest.ts`) and any read-only-first legacy backfill.
 
-Current exact action: begin **SP-02**, truthful source yield and funnel
-baseline (depends on SP-01).
+SP-02 followed and is IN PROGRESS (first slice KEEP — see the current checkpoint
+above).
 
 ## Source Perpetuity Checkpoint — 2026-08-29 (SP-00, historical)
 
