@@ -1,5 +1,32 @@
 # System Savepoint
 
+## Run 26 — SP-16 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-16 no-account employer "bring your feed" intake)**.
+Independently ready after SP-05 (not gated on SP-08/SP-09); built while SP-16 waited alongside the SP-09→SP-11..15 track.
+
+`.github/ISSUE_TEMPLATE/employer-feed-intake.yml` (structured GitHub issue form, explicit "do not paste secrets/resumes" warning, auto-labels `employer-feed-submission`) + `.github/workflows/gha-employer-intake.yml` (triggered on `issues: opened/edited/labeled`, posts the raw rendered body to the new route, comments the outcome back) + `packages/scraper/employer-intake.ts` (pure: `parseIssueForm` rejects the **entire** submission if secret-like content — API keys, private-key blocks, GitHub/AWS tokens — or candidate-personal-data-like markers — resume/CV, DOB, SSN, passport — appear *anywhere* in the body, before parsing individual fields; validates https feed URL / company name / plausible contact email / checked authorization box; `buildEmployerCandidateRow` keys the candidate by exact host so repeat submissions collapse to one durable row) + `apps/web/src/pages/api/cron/employer-intake.ts` (`PROXY_SECRET`-gated, same `isAuthorized` pattern as every other cron route; **re-parses and re-validates server-side**, never trusts the workflow's own reading; checks against live `source_registry`+`source_opt_outs`; ensures a synthetic `employer-submitted` provider profile — `customer_auth` mechanism — exists; inserts idempotently via `onConflictDoNothing`).
+
+Every accepted submission is `needs_review`/`candidate` — SP-05's compliance-holds-never-auto-promote rule applies identically; nothing here can enter shadow without a separate human-reviewed decision, exactly like any other Prospector/Doctor-discovered candidate.
+
+**Process note:** first drafted directly on `main` again by habit from the SP-09 slip; caught immediately this time before any commit and moved to `codex/sp-16-employer-intake` before committing.
+
+**Disk-space interruptions (environment, project-external):** hit 0 bytes free twice more during this unit (build attempt, then again right before the merge-readiness check) — each time on a schedule of roughly 20–40 minutes regardless of what work was running, which the owner is now actively investigating as a background process on their machine, not something this project causes. Work paused cleanly each time (no operation was attempted against a full disk) and resumed once the owner freed space.
+
+Deploy evidence:
+
+- Behavior commit **`8d1a05a`** on `codex/sp-16-employer-intake` (PR #90); merge commit **`eba3c0f`** on `main` (squash).
+- PR exact-SHA CI run **`33257941631`** (head `8d1a05a`, pull_request): validate 883/0 + build ok; deploy skipped (PR path).
+- `main`-push exact-SHA CI/deploy run **`33258746613`** (head `eba3c0f`): `Detect deployable changes` ✅, `Validate project-owned code` ✅, `Migrate and deploy production` ✅ (additive route only, no schema change so no meaningful migration delta).
+- Local full gate at behavior `8d1a05a`: `883 pass / 0 fail / 2878 assertions / 86 files` (+23 from SP-09's 860), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok.
+- **Post-deploy live check (safe, zero D1 writes):** unauthenticated `POST https://remotejobs-ph.pages.dev/api/cron/employer-intake` returns **HTTP 401** — confirms the route is live and auth-gated exactly like every other cron route. Real end-to-end acceptance (an actual employer opening a labeled issue) will happen organically the first time someone uses the intake path; this unit does not fabricate a synthetic issue to force that observation.
+
+Terminal decision: **KEEP**.
+
+Rollback: remove/disable `.github/workflows/gha-employer-intake.yml` (or delete the issue template so the label is never applied); the route staying deployed but uninvoked is inert. No D1 row exists to undo from this unit itself.
+
+Next exact action: **SP-17** (partner/permission evidence pipeline) is the other SP-05-independent ready unit — building it next. **SP-11..SP-15** (Lever/Greenhouse/SmartRecruiters/Teamtailor/Recruitee canaries) remain the SP-08/SP-09-dependency-ready units after that, one live canary at a time; **SP-10** (Workable adapter) needs a real multi-day shadow/canary window.
+
 ## Run 25 — SP-09 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-09 Workable global XML feed feasibility)**.

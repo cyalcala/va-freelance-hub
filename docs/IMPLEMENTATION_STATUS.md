@@ -1,6 +1,16 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-09, TERMINAL — KEEP)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-16, TERMINAL — KEEP)
+
+Status: **SP-16 TERMINAL — KEEP**. No-account employer "bring your feed" intake: `.github/ISSUE_TEMPLATE/employer-feed-intake.yml` + `.github/workflows/gha-employer-intake.yml` + `packages/scraper/employer-intake.ts` (pure) + `apps/web/src/pages/api/cron/employer-intake.ts` (`PROXY_SECRET`-gated). `parseIssueForm` rejects the entire submission if secret-like or candidate-personal-data-like content appears anywhere in the body, validates https URL/company/email/authorization checkbox, and `buildEmployerCandidateRow` keys by exact host. The route re-validates server-side (never trusts the workflow), checks live `source_registry`/`source_opt_outs`, and inserts idempotently. Every accepted submission is `needs_review`/`candidate` only — same compliance-holds-never-auto-promote rule as every other discovery path.
+
+- **CI/deploy:** PR `33257941631` (head `8d1a05a`, PR #90) validate 883/0 + build ok; main `33258746613` (head `eba3c0f`) validate + deploy success. Local gate `883/0/2878` (+23 from SP-09), typecheck 0, guardrails 0, build ok.
+- **Post-deploy check:** unauthenticated POST to the live route returns HTTP 401 (route deployed, auth-gated, zero D1 writes from the check itself).
+- **Environment note:** two more disk-full interruptions during this unit (recurring roughly every 20–40 min); owner is actively investigating the background cause. No operation was attempted against a full disk each time.
+
+Behavior `8d1a05a` (PR #90, squash) merged to `main` as `eba3c0f`. **Next:** SP-17 (partner/permission evidence pipeline) is the other SP-05-independent ready unit. SP-11..SP-15 (adapter canaries) remain SP-08/SP-09-dependent, one live canary at a time; SP-10 (Workable adapter) needs a real multi-day observation window.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-29 (SP-09, TERMINAL — KEEP)
 
 Status: **SP-09 TERMINAL — KEEP**. Workable global XML feed feasibility: one bounded live probe of `https://www.workable.com/boards/workable.xml` (official, public, no-auth, hourly cadence) measured **44.41 MiB, 11,603 raw `<job>` entries (10,000 distinct by `<url>`, 645 duplicated within the fetch), 2,421 remote, 337 PH**, schema exactly matching Workable's documentation. `scripts/diagnostics/workable-feasibility.ts` formalizes `analyzeFeed`/`classifyRuntime`/`renderReport` (18/0 fixture tests). **Decision: `GITHUB_ACTION_PREPROCESSING`** — both size and item count exceed a single source's share of the shared 10-minute scrape-tick budget; a dedicated hourly GHA job matches the feed's cadence and this repo's existing Prospector/directory-maintenance pattern. Zero D1 writes, no adapter enabled, no runtime change; the raw feed was measured then deleted, never persisted — only `docs/workable-feasibility-latest.md`'s computed measurements are retained.
 

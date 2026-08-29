@@ -138,7 +138,7 @@ unless the existing workflow does so automatically.
 | SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | PLANNED |
-| SP-16 | Employer “bring your feed” intake | SP-05 | PLANNED |
+| SP-16 | Employer “bring your feed” intake | SP-05 | TERMINAL — KEEP |
 | SP-17 | Partner/permission evidence pipeline | SP-05 | PLANNED |
 | SP-18 | Adaptive operations and evidence renewal | Two source canaries KEEP | PLANNED |
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
@@ -663,10 +663,10 @@ contact, content scope, and removal preference without adding user accounts.
 
 **Acceptance criteria:**
 
-- [ ] Submission is a candidate only and cannot publish automatically.
-- [ ] Required consent/provenance fields and privacy/minimal-data language are
+- [x] Submission is a candidate only and cannot publish automatically.
+- [x] Required consent/provenance fields and privacy/minimal-data language are
       clear; secrets and candidate data are rejected.
-- [ ] Intake deduplicates against source registry and opt-outs.
+- [x] Intake deduplicates against source registry and opt-outs.
 
 **Verification:** template/form validation, abuse/privacy review, candidate
 creation dry run, build if a public page changes.  
@@ -675,6 +675,19 @@ creation dry run, build if a public page changes.
 necessary, tests/docs. Prefer the smallest no-account path.  
 **Estimated scope:** S/M.  
 **Rollback:** remove/disable intake; candidates remain non-publishing.
+
+**Status:** TERMINAL — KEEP (2026-08-29). `.github/ISSUE_TEMPLATE/
+employer-feed-intake.yml` + `.github/workflows/gha-employer-intake.yml` +
+`packages/scraper/employer-intake.ts` (pure `parseIssueForm`/
+`buildEmployerCandidateRow`/`checkDuplicate`, 23/0 tests) +
+`apps/web/src/pages/api/cron/employer-intake.ts` (`PROXY_SECRET`-gated,
+re-validates server-side, idempotent insert). The whole submission is
+rejected if secret-like or candidate-personal-data-like content appears
+anywhere in the body; accepted submissions are always `needs_review`/
+`candidate` — never auto-promoted. Behavior `8d1a05a` (PR #90); main
+CI/deploy `33258746613` success; post-deploy unauthenticated-POST check
+returns 401 (route live, zero D1 writes from the check). Full gate
+`883/0/2878`, typecheck 0, guardrails 0, build ok. **Next:** SP-17.
 
 ### SP-17: Create partner and customer-permission pipeline
 
