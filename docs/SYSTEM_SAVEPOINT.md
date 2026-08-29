@@ -1,5 +1,31 @@
 # System Savepoint
 
+## Run 24 — SP-08 VERIFYING, PR #88 open (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-08 evidence packets and review-debt alerts)**.
+Session resumed cold from a pasted bootloader with an all-`UNKNOWN` state block. Read-only preflight found `codex/sp-08-evidence-packets` already checked out with HEAD identical to `origin/main` (`ef68525`) and three uncommitted files: `packages/scraper/evidence-packet.ts` + `evidence-packet.test.ts` (a prior session's complete, already-passing 22/0 core module implementing all three SP-08 acceptance criteria) and the matching `packages/scraper/index.ts` re-export. The owner confirmed EXECUTE to finish the unit.
+
+Delivered the missing integration slice: `scripts/diagnostics/evidence-packets.ts` (read-only `sql`/`meta`/`emit`/`collect`/`packets`/`report` CLI, same shape as `source-economics.ts`) joins `source_registry` (`operational_state='candidate'`) to `provider_profiles` and feeds `buildEvidencePacket`. No shadow evidence is fabricated — SP-07's `candidate-shadow.ts` probe has no persisted result table by design (`diagnostic.mutations=0`), so every real candidate honestly reports `"shadow probe not yet run"` until a probe result is separately supplied; this is expected, not a bug. `scripts/diagnostics/evidence-packets.test.ts` adds 11 fixture tests (read-only-query assertion, join, incomplete-provider gap listing, overdue dedup, `collectByName` reassembly, orphan-provider defensive handling, empty-registry honesty). `docs/evidence-packets-latest.md` is the committed, freshly-generated baseline.
+
+Verification:
+
+- Local: `packages/scraper/evidence-packet.test.ts` + `scripts/diagnostics/evidence-packets.test.ts` → 33/0/133 assertions. Full gate at behavior `075be3b`: `842 pass / 0 fail / 2783 assertions / 84 files` (+33 from SP-07's 809), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok (Vite ~61s server + ~10s client).
+- **Live read-only production D1** (`wrangler d1 execute DB --remote --env production`, confirmed authenticated): both `candidates` and `providers` queries returned `changed_db=false`, `rows_written=0`, and **zero rows** — `source_registry` currently has no `operational_state='candidate'` row in production (SP-06's Prospector queue hasn't inserted one yet). `docs/evidence-packets-latest.md` reports this truthfully (empty reserve, not fabricated).
+- Diff inspected for whitespace (`git diff --check` clean) and credential patterns (none found) before staging.
+
+CI/deploy evidence:
+
+- Behavior commit **`075be3b`** on `codex/sp-08-evidence-packets`; pushed to `origin`; PR **[#88](https://github.com/cyalcala/va-freelance-hub/pull/88)** opened against `main`.
+- PR exact-SHA CI run **`33254178348`** (head `075be3b`, `pull_request`): `Validate project-owned code` success (guardrails, unit tests, build, typecheck, freshness-cron-worker validation all success); `Detect deployable changes`/`Migrate and deploy production` skipped (PR path, expected).
+
+No merge to `main` attempted — this session's memory of the project records that merges to `main` are classifier-blocked for the agent and are handed to the owner; also, a merge here would trigger the real `main`-push deploy job (Cloudflare Pages), which is a production-affecting action outside this unit's own explicit pre-approval (commit/push/PR are pre-approved; merge/deploy is not). No schema change and no `apps/web` runtime import of the new module exist yet, so the eventual `main`-push deploy is expected to be behavior-inert (no migration, Pages redeploy only), matching the SP-06/SP-07 precedent.
+
+Terminal decision: **VERIFYING** (PR #88 open, exact-SHA PR CI green; awaiting owner merge for the `main`-push deploy leg and its post-deploy read-only D1 acceptance before TERMINAL — KEEP).
+
+Rollback: close/do not merge PR #88; `evidence-packet.ts`/`evidence-packets.ts` are additive and inert until imported — nothing else references them. Post-merge rollback: revert the squash commit; no D1 write exists to undo.
+
+Next exact action: **owner merges PR #88** (or explicitly authorizes the agent to merge); then observe the `main`-push exact-SHA CI/deploy run, re-run the same two read-only D1 queries post-deploy to confirm the report still reconciles, and record SP-08 as TERMINAL — KEEP. After that, SP-09 (Workable global XML feasibility) becomes the next dependency-ready unit; SP-11..SP-15 (Lever/Greenhouse/SmartRecruiters/Teamtailor/Recruitee) are also SP-08-dependency-ready and may proceed in parallel branches if their contracts are frozen first; SP-16/SP-17 remain ready after SP-05 independent of SP-08.
+
 ## Run 23 — SP-07 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-07 Source Doctor runtime candidate shadow probes)**.
