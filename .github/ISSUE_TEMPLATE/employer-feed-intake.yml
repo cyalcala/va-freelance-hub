@@ -1,0 +1,71 @@
+name: 📮 Employer feed submission
+description: >-
+  Submit your company's own public careers/job-feed URL for consideration.
+  No account needed. This never publishes automatically — a human reviews
+  every submission (SP-16, Source Perpetuity program).
+title: "Employer feed: <company name>"
+labels:
+  - employer-feed-submission
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for offering your company's job feed. A few things before you submit:
+
+        - This creates a **candidate** only. Nothing is published or scraped automatically — a maintainer reviews every submission before anything happens.
+        - Only submit a **public** careers page or job feed (RSS/XML/JSON) that you are authorized to share. Do not submit anything behind a login.
+        - **Do not paste API keys, passwords, tokens, resumes, or any candidate/applicant personal data into this form.** Submissions containing that content are automatically rejected.
+        - We store only the minimal facts needed for discovery (title, company, location, apply link) and always link back to your original posting.
+  - type: input
+    id: feed-url
+    attributes:
+      label: Feed or careers page URL
+      description: The full https:// URL of your public careers page or job feed.
+      placeholder: "https://careers.example.com/jobs.xml"
+    validations:
+      required: true
+  - type: input
+    id: company-name
+    attributes:
+      label: Company name
+      placeholder: "Example Corp"
+    validations:
+      required: true
+  - type: input
+    id: contact-email
+    attributes:
+      label: Contact email
+      description: A business contact we can reach for questions or a removal request.
+      placeholder: "hiring@example.com"
+    validations:
+      required: true
+  - type: checkboxes
+    id: authorization
+    attributes:
+      label: Authorization
+      options:
+        - label: >-
+            I confirm I am authorized to submit this feed on behalf of the
+            company named above, and that it contains only publicly listed
+            job postings (no login-gated, private, or draft content).
+          required: true
+  - type: textarea
+    id: content-scope
+    attributes:
+      label: Content scope preference
+      description: >-
+        Optional. Any preference on what we store/display (we default to
+        minimal facts: title, company, location, work type, apply link).
+      placeholder: "Minimal facts only, please."
+    validations:
+      required: false
+  - type: textarea
+    id: removal-preference
+    attributes:
+      label: Removal / opt-out preference
+      description: >-
+        Optional. How you'd like to request removal or updates in the
+        future (e.g. an email address, or "reply to this issue").
+      placeholder: "Email hiring@example.com to request removal at any time."
+    validations:
+      required: false

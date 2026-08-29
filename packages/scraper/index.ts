@@ -139,6 +139,25 @@ export type {
   DeadlineBucket,
 } from "./evidence-packet";
 export {
+  parseIssueForm,
+  containsSecretLikeContent,
+  containsCandidateDataMarkers,
+  buildEmployerCandidateRow,
+  employerSourceId,
+  checkDuplicate,
+  EMPLOYER_PROVIDER_ID,
+  EMPLOYER_PROVIDER_FAMILY,
+  EMPLOYER_REVIEW_DEADLINE_DAYS,
+} from "./employer-intake";
+export type {
+  ParsedEmployerIntake,
+  IntakeParseResult,
+  EmployerCandidateRow,
+  BuildEmployerCandidateInput,
+  IntakeOutcome,
+  DedupCheckResult,
+} from "./employer-intake";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
