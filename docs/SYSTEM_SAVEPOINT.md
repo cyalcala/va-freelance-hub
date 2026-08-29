@@ -1,5 +1,62 @@
 # System Savepoint
 
+## Run 17 — SP-02 first slice KEEP; SP-02 IN PROGRESS (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (one unit)**. SP-02 is a
+multi-slice measurement unit; the plan permits splitting it. This run shipped
+its **first slice — a read-only source-economics baseline** keyed on the exact
+`source_id` SP-01 persists — and it is **KEEP**. SP-02 overall remains **IN
+PROGRESS**; it is not terminal.
+
+Execution began from clean `main` at `dc13c60` (START_SHA), branch
+`codex/sp-02-source-economics`. Slice (3 files + baton): pure read-only module
+`scripts/diagnostics/source-economics.ts` (query emitter + reconciler +
+markdown renderer, same shape as `data-quality-cohorts.ts`), its fixture test,
+and the generated baseline `docs/source-economics-latest.md`. No runtime,
+schema, source-policy, or workflow change.
+
+What the slice measures (replacing "items seen" as a supply proxy):
+identity_coverage (exact-source_id fill vs the legacy NULL gap); supply_totals +
+source_supply (net-new accepted active jobs at 7/14/30-day freshness, global and
+per exact source_id); fetch_outcomes_7d (per-source real fetches vs intentional
+skips vs failures vs zero-yield, from `source_fetch_events`, reserved `__` ids
+and out-of-window events excluded). Provider-family folding (ADR-006 §7: count
+provider/origin family, not token — two Jobicy feeds and per-tenant ATS
+`platform:token` ids collapse) and concentration SLO flags are computed in
+tested TS; the renderer marks concentration PROVISIONAL while `source_id`
+coverage is low.
+
+Verification and evidence:
+
+- Focused fixture test `scripts/diagnostics/source-economics.test.ts` runs the
+  real SQL against in-memory `opportunities` + `source_fetch_events`; every
+  count hand-verifiable. Local full gate at `1b73e87`: 674 pass / 0 fail /
+  1735 assertions, typecheck 0, `audit:guardrails` 0, build complete.
+- Read-only production D1 baseline (all four queries `changed_db=false`,
+  `rows_written=0`; a wrangler `--file` meta artifact reports `changed_db=true`
+  with `rows_written=0`, so `--command` was used for the honest read-only
+  record): 5,090 rows, 15 with `source_id` (coverage 0.9% — SP-01 shipped ~30
+  min earlier, no backfill), active 1,278, net-new 7d/14d/30d = 150/430/579;
+  reconciliation OK (every partition delta zero). Baseline:
+  `docs/source-economics-latest.md`.
+
+Terminal decision (this slice): **KEEP**. Rollback: delete the diagnostic
+module, its test, and the generated report; nothing else references them.
+
+Remaining for SP-02 (each its own next slice, not started):
+- per-source downstream funnel event semantics
+  (raw→normalized→deduped→geo→triage→inserted attribution), which needs
+  restructuring where `source_fetch_events` is written (currently before the
+  pipeline runs) — a scrape.ts + migration slice;
+- separating unchanged-feed (304/notModified) inventory in the outcomes view;
+- a recurring report-generation workflow (deferred; the module is
+  workflow-ready via emit/collect/report).
+
+Next exact action: decide the next SP-02 slice (recommended: per-source funnel
+event semantics) or, if measurement is deemed sufficient, mark SP-02 terminal
+and advance to SP-03 (provider/source registry foundation). Re-measure D1
+read-only before quoting any count.
+
 ## Run 16 — SP-01 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (one unit)**. SP-01, the first
