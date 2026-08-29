@@ -8,7 +8,8 @@
     "./rss": "./rss.ts",
     "./html": "./html.ts",
     "./json": "./json.ts",
-    "./sources": "./sources.ts"
+    "./sources": "./sources.ts",
+    "./policy-resolver": "./policy-resolver.ts"
   },
   "dependencies": {
     "fast-xml-parser": "5.10.1",

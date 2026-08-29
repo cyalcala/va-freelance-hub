@@ -21,7 +21,7 @@ import {
 } from "@/lib/run-diagnostics";
 
 export const prerender = false;
-import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, mapTriageCategoryToUiCategory, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, findRepeatedCrossCompanyApplyHosts, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict, atsEndpointUrl } from "@va-hub/scraper";
+import { disabledSources, rssSources, htmlSources, jsonSources, sources as staticSources, fetchRSSFeed, fetchHTMLSource, fetchJSONSource, fetchATSFeed, triageJob, skepticEligibilityCheck, geoGate, decideTriage, mapTriageCategoryToUiCategory, chunkArray, maxRowsPerD1Batch, isAutoPaused, autoPauseNote, autoPauseEntries, findRepeatedCrossCompanyApplyHosts, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, errorMessage, type CollectionMethod, type ComplianceStatus, type Source, type ConditionalState, type SourceFetchOutput, checkRobots, COLLECTION_USER_AGENT, type RobotsGateResult, type RobotsMode, type RobotsVerdict, atsEndpointUrl, resolvePolicy, loadRegistryPolicies } from "@va-hub/scraper";
 
 // The AI-category → board-taxonomy mapper lives in `@va-hub/scraper`
 // (triage-decision.ts) as the single source of truth. It was previously copied
@@ -698,6 +698,20 @@ const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
   },
 };
 
+// SP-04: Registry overlay — additive source_registry rows are consulted before
+// the hard-coded fallback. When Map is empty (current production), fallback
+// yields byte-identical decisions. Rollback is to keep Map empty.
+let activeRegistryPolicies: Map<string, import("@va-hub/scraper").RegistryPolicyRow> = new Map();
+export function setActiveRegistryPolicies(map: Map<string, import("@va-hub/scraper").RegistryPolicyRow>): void {
+  activeRegistryPolicies = map;
+}
+export function getActiveRegistryPolicies(): Map<string, import("@va-hub/scraper").RegistryPolicyRow> {
+  return activeRegistryPolicies;
+}
+function registryRowFor(sourceId: string): import("@va-hub/scraper").RegistryPolicyRow | null {
+  return activeRegistryPolicies.get(sourceId) ?? null;
+}
+
 interface DuplicateAtsAgency {
   agency: AtsAgency;
   primaryCompanyName: string;
@@ -716,6 +730,30 @@ function atsSourceKey(agency: AtsAgency): string {
 function atsPlatformPolicy(agency: AtsAgency): AtsPlatformPolicy {
   const platform = agency.atsPlatform as AtsPlatform | null;
   const sourceKey = platform && agency.atsToken ? `${platform}:${agency.atsToken}` : null;
+  // SP-04: Registry overlay takes precedence when a row exists (already CHECK-validated).
+  // When activeRegistryPolicies is empty (current production), this branch is not taken
+  // and the hard-coded fallback below yields the identical decision.
+  if (sourceKey) {
+    const row = registryRowFor(sourceKey);
+    if (row) {
+      const resolved = resolvePolicy(sourceKey, row);
+      // Map registry vocab back to legacy ComplianceStatus for existing callers
+      // (ats fetch loop expects enabled + complianceNotes for skip reporting).
+      const complianceStatus: ComplianceStatus =
+        resolved.complianceState === "allowed"
+          ? "allowed"
+          : resolved.complianceState === "needs_review"
+            ? "needs_review"
+            : resolved.complianceState === "deprecated"
+              ? "deprecated"
+              : "paused";
+      return {
+        enabled: resolved.enabled,
+        complianceStatus,
+        complianceNotes: resolved.complianceNotes,
+      };
+    }
+  }
   // Sentinel auto-pauses (paused-sources.json) take precedence over static
   // token policies; the pause reason flows into skip reporting via notes.
   if (sourceKey && isAutoPaused(sourceKey)) {
@@ -1652,6 +1690,19 @@ async function fetchConfiguredSourceWithStatus(
   cadence: { deferReason?: string; backoffMinutes?: number } | undefined,
   fetcher: (state: ConditionalState | undefined) => Promise<SourceFetchOutput>
 ): Promise<SourceFetchResult> {
+  // SP-04: Registry overlay — when a row exists, its compliance/operational state
+  // is authoritative (already CHECK-guarded). When Map is empty (current prod)
+  // fallbackPolicy yields the identical static decision.
+  const registryRow = registryRowFor(source.id);
+  if (registryRow) {
+    const resolved = resolvePolicy(source.id, registryRow);
+    if (!resolved.enabled) {
+      return skippedSourceResult(
+        { ...source, complianceStatus: resolved.complianceState === "allowed" ? "allowed" : resolved.complianceState === "needs_review" ? "needs_review" : resolved.complianceState === "deprecated" ? "deprecated" : "paused", complianceNotes: resolved.complianceNotes } as Source,
+        resolved.complianceNotes,
+      );
+    }
+  }
   const prevState = sourceFetchStates.get(source.id);
   const skipReason = sourceCadenceSkipReason(source, prevState, observedAt, cadence?.backoffMinutes ?? 0);
   if (skipReason) {
@@ -1706,6 +1757,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
   const db = getDb(env);
   const observedAt = nowUtcIso();
+
+  // SP-04: Load registry overlay for this tick (additive, nullable). When the
+  // registry is empty (current production: 0 rows), the Map stays empty and
+  // every resolvePolicy call falls back byte-for-byte to the hard-coded adapter.
+  // This is the single resolver switch — rollback is to keep the Map empty.
+  try {
+    const registryMap = await loadRegistryPolicies(db);
+    setActiveRegistryPolicies(registryMap);
+    if (registryMap.size > 0) {
+      console.log(`[api/cron/scrape] Registry overlay: ${registryMap.size} source row(s) loaded.`);
+    }
+  } catch (err) {
+    console.warn("[api/cron/scrape] Registry overlay load failed; using hard-coded fallback:", err instanceof Error ? err.message : String(err));
+    setActiveRegistryPolicies(new Map());
+  }
 
   // Per-invocation Workers AI subrequest budget (see AI_SUBREQUEST_BUDGET_PER_RUN).
   // Every triage/sweep AI call below runs through this counter so the invocation

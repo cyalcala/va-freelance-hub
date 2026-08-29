@@ -53,6 +53,26 @@ export type { LinkStatus, LinkVerdict, UnreachableReason } from "./linkHealth";
 export { isAutoPaused, autoPauseNote, autoPauseEntries, applyAutoPauses, validateAutoPauses } from "./pause";
 export type { AutoPauseEntry } from "./pause";
 export {
+  resolvePolicy,
+  fallbackPolicy,
+  loadRegistryPolicies,
+  ATS_PLATFORM_POLICIES,
+  ATS_TOKEN_POLICIES,
+  ROBOTS_ENFORCE_SOURCE_IDS as RESOLVER_ROBOTS_ENFORCE_SOURCE_IDS,
+  robotsModeForSourceIdMirror,
+  isPublishable,
+  isShadowCanaryActive,
+  KNOWN_SOURCE_IDS,
+  KNOWN_STATIC_IDS,
+  KNOWN_ATS_IDS,
+} from "./policy-resolver";
+export type {
+  RegistryComplianceState,
+  RegistryOperationalState,
+  RegistryPolicyRow,
+  ResolvedPolicy,
+} from "./policy-resolver";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
