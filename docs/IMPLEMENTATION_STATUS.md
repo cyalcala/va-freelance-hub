@@ -1,6 +1,14 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-16, TERMINAL — KEEP)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-17, TERMINAL — KEEP)
+
+Status: **SP-17 TERMINAL — KEEP**. Partner/permission evidence pipeline: `packages/scraper/partner-permission.ts` (pure `buildPermissionEvidencePack`/`attachPermissionToSourceAccount`/`renderPermissionPackReport`) + three real, revalidated evidence packs under `docs/gauntlet/evidence/`. Ashby (`integrations@ashbyhq.com`, hourly feed, customer opt-in) and Jobvite (partner-application form + phone) are `outreach_ready`; **Breezy has no documented partner path at all** — access is exclusively an employer-generated Personal Access Token, correctly captured as `draft` with `providerRoute`/`contactPath` honestly `null` rather than invented. 365-day lease reuses SP-05's `computePolicyExpiry`; revocation reuses SP-05's `source_opt_outs` — no new mechanism. Prepares artifacts only: no message sent, no source activated.
+
+- **CI/deploy:** PR `33259720037` (head `cede086`, PR #91) validate 894/0 + build ok; main `33259776422` (head `39e88b5`) validate + deploy success. Local gate `894/0/2911` (+11 from SP-16), typecheck 0, guardrails 0, build ok.
+
+Behavior `cede086` (PR #91, squash) merged to `main` as `39e88b5`. **Next:** the SP-05-independent track (SP-16, SP-17) is fully drained. SP-11..SP-15 (adapter canaries) are the remaining SP-08/SP-09-dependent units, one live canary at a time — starting **SP-12 (Greenhouse)** next given this repo's existing deep evidence base (COMP-01B/C/D + SP-07's proven shadow prober). Its 7-day shadow/canary window cannot be compressed into one sitting.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-29 (SP-16, TERMINAL — KEEP)
 
 Status: **SP-16 TERMINAL — KEEP**. No-account employer "bring your feed" intake: `.github/ISSUE_TEMPLATE/employer-feed-intake.yml` + `.github/workflows/gha-employer-intake.yml` + `packages/scraper/employer-intake.ts` (pure) + `apps/web/src/pages/api/cron/employer-intake.ts` (`PROXY_SECRET`-gated). `parseIssueForm` rejects the entire submission if secret-like or candidate-personal-data-like content appears anywhere in the body, validates https URL/company/email/authorization checkbox, and `buildEmployerCandidateRow` keys by exact host. The route re-validates server-side (never trusts the workflow), checks live `source_registry`/`source_opt_outs`, and inserts idempotently. Every accepted submission is `needs_review`/`candidate` only — same compliance-holds-never-auto-promote rule as every other discovery path.
 

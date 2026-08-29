@@ -1,5 +1,33 @@
 # System Savepoint
 
+## Run 27 — SP-17 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-17 partner/permission evidence pipeline)**.
+The other SP-05-independent ready unit, built immediately after SP-16. Prepares artifacts only — sends no message, accepts no paid terms, activates no generic source, per the unit's own explicit boundary.
+
+`packages/scraper/partner-permission.ts` (pure): `buildPermissionEvidencePack` marks a pack `outreach_ready` only when all nine required fields (provider route, contact path, requested scope, data minimization, attribution, cadence, removal semantics, no-candidate-data terms, evidence URL) are present, else `draft` + exact `missingFields`. `attachPermissionToSourceAccount` computes the exact `source_registry.policyExpiry` a grant would attach — a **365-day** lease via SP-05's own `computePolicyExpiry` — and names `source_opt_outs` as the revocation mechanism (SP-05's existing durable memory; no new mechanism invented).
+
+Each of the three named permission-tier targets got a real, revalidated (fetched live this session, not carried over from the 2026-08-29 strategy doc without checking) evidence pack:
+
+- **Ashby** — `integrations@ashbyhq.com`, hourly JSON/XML dedicated partner feed, customer opts in via Ashby's own Admin section → **outreach_ready**.
+- **Breezy** — re-fetching `developer.breezy.hr/reference/authorization` found **no documented partner-request path at all**: every API call needs a Personal Access Token the *customer* (the employer) generates inside their own Breezy account. `providerRoute`/`contactPath` are honestly `null` → **draft**, with the pack's notes explicitly redirecting future work to employer opt-in (SP-16/directory-driven), not Breezy partner outreach — correcting what the strategy doc's summary table implied ("Permissioned only") without spelling out that there's no partner program to contact in the first place.
+- **Jobvite** — `/marketplace/partner-request/` application, demo-request path, and a phone line are documented → **outreach_ready**, though Jobvite's actual technical/API terms remain unknown until they respond (no developer docs URL was found).
+
+`docs/gauntlet/evidence/SP-17-partner-permission-{ashby,breezy,jobvite}.md` are generated directly from the tested `renderPermissionPackReport`, not hand-duplicated.
+
+Deploy evidence:
+
+- Behavior commit **`cede086`** on `codex/sp-17-partner-permission-pipeline` (PR #91); merge commit **`39e88b5`** on `main` (squash).
+- PR exact-SHA CI run **`33259720037`** (head `cede086`, pull_request): validate 894/0 + build ok; deploy skipped (PR path).
+- `main`-push exact-SHA CI/deploy run **`33259776422`** (head `39e88b5`): validate ✅, `Apply D1 migrations to production` ✅ (no new migration — additive code/docs only), `Verify D1 full-text index integrity` ✅, `Deploy to Cloudflare Pages` ✅.
+- Local full gate at behavior `cede086`: `894 pass / 0 fail / 2911 assertions / 87 files` (+11 from SP-16's 883), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok.
+
+Terminal decision: **KEEP**.
+
+Rollback: archive/delete the three evidence-pack docs and `partner-permission.ts`/`.test.ts`; nothing else references them (no export wired into any route). No D1 write to undo, no source activated.
+
+Next exact action: the SP-05-independent track (SP-16, SP-17) is now fully drained. **SP-11..SP-15** (Lever/Greenhouse/SmartRecruiters/Teamtailor/Recruitee canaries) are the remaining SP-08/SP-09-dependency-ready units — one live production canary at a time. Starting **SP-12 (Greenhouse minimal-index shadow/canary)** next: this repo already has the deepest evidence base for Greenhouse (COMP-01B/C/D official-source review history, SP-07's shadow prober already proven end-to-end against a real `boards-api.greenhouse.io` example). Implementing the adapter and starting its shadow; the unit's own 7-day shadow + 7-day canary observation window cannot be compressed into one sitting — will report VERIFYING/IN PROGRESS honestly, not a fabricated KEEP.
+
 ## Run 26 — SP-16 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-16 no-account employer "bring your feed" intake)**.

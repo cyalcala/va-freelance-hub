@@ -139,7 +139,7 @@ unless the existing workflow does so automatically.
 | SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-16 | Employer “bring your feed” intake | SP-05 | TERMINAL — KEEP |
-| SP-17 | Partner/permission evidence pipeline | SP-05 | PLANNED |
+| SP-17 | Partner/permission evidence pipeline | SP-05 | TERMINAL — KEEP |
 | SP-18 | Adaptive operations and evidence renewal | Two source canaries KEEP | PLANNED |
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
 | SP-20 | 30-day perpetuity acceptance and independent resume drill | SP-19 | PLANNED |
@@ -698,11 +698,11 @@ messages or accept paid terms without owner authority.
 
 **Acceptance criteria:**
 
-- [ ] Each target has provider route, contact path, requested scope, data
+- [x] Each target has provider route, contact path, requested scope, data
       minimization, attribution, cadence, removal, and no-candidate-data terms.
-- [ ] Permission evidence can be attached to a source account with a 365-day
+- [x] Permission evidence can be attached to a source account with a 365-day
       lease and revocation handling.
-- [ ] No generic Ashby/Breezy/Jobvite source is activated by this unit.
+- [x] No generic Ashby/Breezy/Jobvite source is activated by this unit.
 
 **Verification:** evidence-template tests/path review, ADR consistency check,
 owner review before any external communication.  
@@ -711,6 +711,23 @@ owner review before any external communication.
 tests if behavior changes.  
 **Estimated scope:** S/M.  
 **Rollback:** archive draft artifacts; runtime is unchanged.
+
+**Status:** TERMINAL — KEEP (2026-08-29). `packages/scraper/partner-permission.ts`
+(pure `buildPermissionEvidencePack`/`attachPermissionToSourceAccount`/
+`renderPermissionPackReport`, 11/0 tests) + three real evidence packs under
+`docs/gauntlet/evidence/`, each built from officially revalidated
+documentation fetched this session (not carried over unchecked). Ashby
+(`integrations@ashbyhq.com`, hourly feed, Ashby-Admin customer opt-in) and
+Jobvite (`/marketplace/partner-request/` + demo request + phone) are
+`outreach_ready`. **Breezy has no documented partner-request path at all** —
+API access is exclusively a Personal Access Token the customer/employer
+generates in their own account — correctly captured as `draft` with
+`providerRoute`/`contactPath` honestly `null`, redirecting future work to
+employer opt-in rather than partner outreach. 365-day lease reuses SP-05's
+`computePolicyExpiry`; revocation reuses SP-05's `source_opt_outs` — no new
+mechanism. Behavior `cede086` (PR #91); main CI/deploy `33259776422` success.
+Full gate `894/0/2911`, typecheck 0, guardrails 0, build ok. No message sent,
+no source activated. **Next:** SP-12 (Greenhouse canary).
 
 ### SP-18: Add bounded adaptive cadence, quarantine, recovery, and renewal
 
