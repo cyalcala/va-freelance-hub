@@ -1,5 +1,31 @@
 # System Savepoint
 
+## Run 21 — SP-05 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-05 candidate lifecycle, evidence leases, opt-out)**.
+SP-05 is now **TERMINAL — KEEP**. Additive lifecycle and durable memory layer: `source_opt_outs` (do-not-reingest, survives registry delete), `source_decisions` (append-only reviewer history, survives delete), and lease/deadline indices on `source_registry` introduce bounded deadlines and opt-out gating without mutating existing rows or changing `fetchConfiguredSourceWithStatus` publish behavior. Compliance holds never auto-promote, expired policy makes dormant `paused/review_due` without deleting history or opportunities, and opt-out is checked before any shadow/canary/active promotion.
+
+Deploy evidence:
+
+- Behavior/merge commit **`63139e3`** (PR #85) on `main` (squash from `ef6a0b1` on `codex/sp-05-candidate-lifecycle`).
+- Sovereign CI Guardrail PR run **`33249332214`** (head `ef6a0b1`, pull_request): validate 781/0 pass + typecheck 0 + guardrails 0 + build ok; deploy skipped (PR path).
+- Sovereign CI Guardrail main run **`33249370177`** (head `63139e3`, push): validate 781/0 pass + typecheck 0 + guardrails 0 + build ok; **Apply D1 migrations** applied `0037_source_lifecycle_opt_out.sql` ✅; **Verify D1 FTS integrity** ✅; **Deploy to Cloudflare Pages** ✅ (`main`).
+- Local full gate at behavior `ef6a0b1`: `781 pass / 0 fail / 2489 assertions / 78 files`, `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok (Vite 38s + 20s). `source-lifecycle.test.ts` (~41 tests) + `source-lifecycle.test.ts (db)` 12/0 + `registry.test.ts` 16/0 + `policy-resolver.test.ts` 34/0 + ATS containment 5/0 still pass.
+- Migration rehearsal `94/94` fresh+legacy pass after adding `source_opt_outs` + `source_decisions` + 3 lease indices.
+
+Read-only acceptance (no source activation, no delete):
+
+- **State machine:** `isValidOperationalTransition` 7 topology groups prove `candidate→shadow→canary→active→review_due→paused` is linear, `candidate→active` is blocked, `paused→active` blocked, `retired` terminal. `validateTransition` 7 cases prove `needs_review/blocked/awaiting_permission` cannot enter `shadow` and opt-out blocks even `allowed/shadow`; only `allowed|conditional + candidate→shadow` succeeds.
+- **Opt-out durability:** `source_opt_outs` PK rejects duplicate, orphan insert before registry row persists, survives `DELETE FROM source_registry` without cascade, and is indexed by `provider_id`. Resolver check `isOptedOut` prevents future Prospector candidate from re-entering shadow/canary even if discovery rediscovers it.
+- **Evidence leases & dormancy:** `isPolicyExpired`/`isReviewDeadlineOverdue` boundary at exact ISO, `computeReviewDeadline` +14d, `computePolicyExpiry` +leaseDays, `isRenewalDue` 30d lead window, and `applyLeaseExpiry` matrix proves `active/shadow/canary + past policy_expiry → review_due` (14-day grace, no delete), `review_due + still past → paused` (dormant, history retained), `paused/retired` stay, `degraded → quarantined`, `candidate` stays candidate. History rows in `source_decisions` survive registry delete; `opt_out` and `policy_expiry` indices exist. DB CHECK `active ⇒ allowed|conditional` still enforced (`needs_review+active` throws).
+- **One-cycle drift check:** after deploy `63139e3`, `activeRegistryPolicies` still empty on clean prod (no new source rows), `ROBOTS_ENFORCE_SOURCE_IDS` still exactly six at `apps/web/src/pages/api/cron/scrape.ts:52` and mirrored in `policy-resolver.ts:85`; no unknown/future/ATS identity became publishable. Production D1 has 0 `source_opt_outs` / 0 `source_decisions` rows to enforce; exact-six controls unchanged.
+
+Terminal decision: **KEEP**.
+
+Rollback: ignore additive `source_opt_outs`/`source_decisions`/lease-index tables (or revert the `source-lifecycle.ts` import in `packages/scraper/index.ts`); existing `source_registry`/`provider_profiles` and hard-coded ATS adapter remain authority. No row deletion required; history retained by design.
+
+Next exact action: **SP-06** (Prospector writes durable non-publishing candidates) is the single dependency-ready unit (SP-07 runtime Doctor also ready and may parallel if contracts frozen). Start from current `origin/main@63139e3`; re-measure D1 read-only before quoting any count.
+
 ## Run 20 — SP-04 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-04 registry-backed policy resolver)**.

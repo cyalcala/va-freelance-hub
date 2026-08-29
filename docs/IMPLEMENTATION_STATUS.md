@@ -1,6 +1,17 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-04, TERMINAL — KEEP)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-05, TERMINAL — KEEP)
+
+Status: **SP-05 TERMINAL — KEEP**. Additive lifecycle + durable memory: `source_opt_outs` (PK `source_id`, durable do-not-reingest, survives registry delete) and `source_decisions` (append-only `source_id → to_compliance/to_operational` with actor/reason/evidence_hash, survives delete) plus 3 lease indices on `source_registry` enforce bounded deadlines and opt-out gating without mutating existing rows. Lifecycle module `packages/scraper/source-lifecycle.ts` implements `isValidOperationalTransition`, `validateTransition`, `canEnterShadow/Canary/Active` (opt-out + `allowed|conditional` guard), lease helpers (`isPolicyExpired`, `computeReviewDeadline/PolicyExpiry`, `isRenewalDue`, `applyLeaseExpiry → review_due→paused` dormancy without delete), and `isOptedOut`.
+
+- **Tables:** `source_opt_outs` (`source_id` PK, `provider_id`, `reason`, `requested_by`, `evidence_url`, `created_at` + `provider_idx`), `source_decisions` (`id` PK, `source_id`, `from/to_compliance` CHECK 6, `from/to_operational` CHECK 9, `actor`, `reason`, `decided_at` + two indices). No `source_registry` column change; rollback is ignore tables.
+- **Module:** 7 operational topology groups, compliance-hold guard (`needs_review/blocked/awaiting_permission/deprecated` never shadow), opt-out set check before any promotion, lease boundary at exact ISO and 14-day grace, dormant `paused` without deleting history/opportunities.
+- **Verification:** `source-lifecycle.test.ts` ~41 state/lease/opt-out tests + `source-lifecycle.test.ts (db)` 12/0 dormancy/history/index tests + `registry.test.ts` 16/0 + `policy-resolver.test.ts` 34/0 + ATS 5/0; full gate `781 pass / 0 fail / 2489 assertions / 78 files`, `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok, rehearsal `94/94` fresh+legacy (migrations 0000-0037).
+- **CI/deploy:** PR `33249332214` (head `ef6a0b1`, pull_request) validate 781/0 + build ok (deploy skipped); main `33249370177` (head `63139e3`, push) validate 781/0, `Apply D1 migrations` applied `0037` ✅, `Verify D1 FTS integrity` ✅, `Deploy to Cloudflare Pages` ✅ (`main`). Exact-six `ROBOTS_ENFORCE_SOURCE_IDS` unchanged at `apps/web/src/pages/api/cron/scrape.ts:52`.
+
+Behavior `63139e3` (PR #85, squash from `ef6a0b1`) merged to `main`; next dependency-ready units are **SP-06** (Prospector durable candidate queue) and **SP-07** (Source Doctor shadow) — either may start if shared candidate/observation contracts are frozen.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-29 (SP-04, TERMINAL — KEEP)
 
 Status: **SP-04 TERMINAL — KEEP**. One typed resolver `packages/scraper/policy-resolver.ts` (plus `loadRegistryPolicies` D1 loader) is backed by the additive `provider_profiles`/`source_registry` rows with nullable fallback to the hard-coded 26-source adapter. When the registry is empty (current production: 0 rows), every `resolvePolicy(id, row?)` equals `fallbackPolicy(id)` byte-for-byte, so static allow/paused, ATS token pauses, exact-six robots enforcement, and unknown/candidate fail-closed are unchanged.
 

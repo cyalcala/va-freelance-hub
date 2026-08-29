@@ -127,7 +127,7 @@ unless the existing workflow does so automatically.
 | SP-02 | Truthful source funnel and supply baseline | SP-01 | TERMINAL — KEEP |
 | SP-03 | Provider/source registry foundation | SP-02 | TERMINAL — KEEP |
 | SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | TERMINAL — KEEP |
-| SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | PLANNED |
+| SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | TERMINAL — KEEP |
 | SP-06 | Prospector writes durable non-publishing candidates | SP-05 | PLANNED |
 | SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | PLANNED |
 | SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | PLANNED |
@@ -157,8 +157,14 @@ SP-04 is TERMINAL — KEEP (behavior `6abe887`, CI/deploy `33248170437`, PR
 `33248125990` 724/0 guardrails/build ok; no new migration, empty-registry
 fallback proves byte-equivalence for all 26 ids, adversarial unknowns remain
 non-publishable, exact-six robots unchanged; artifact
-`packages/scraper/policy-resolver.ts` + `policy-resolver.test.ts`). SP-05 is now
-the single dependency-ready unit.
+`packages/scraper/policy-resolver.ts` + `policy-resolver.test.ts`).
+SP-05 is TERMINAL — KEEP (behavior `63139e3`, CI/deploy `33249370177`, PR
+`33249332214` 781/0 guardrails/build ok; migration `0037` applied, durable
+opt-out/history + lifecycle graph + lease expiry → paused without delete proves
+compliance holds never auto-promote, expired → dormant, opt-out blocks
+shadow/canary; artifacts `packages/scraper/source-lifecycle.ts` +
+`source-lifecycle.test.ts` + `source-lifecycle.test.ts (db)`). SP-06 and SP-07
+are now the dependency-ready units (may parallel if contracts frozen).
 
 ## Phase 0 — Durable planning and truthful measurement
 
@@ -350,11 +356,11 @@ and reviewer decision history.
 
 **Acceptance criteria:**
 
-- [ ] State transitions follow the ADR and never promote a compliance hold
+- [x] State transitions follow the ADR and never promote a compliance hold
       automatically.
-- [ ] Expired or denied evidence makes a source dormant/blocked without deleting
+- [x] Expired or denied evidence makes a source dormant/blocked without deleting
       history or stored opportunities.
-- [ ] Opt-out identity is checked before a candidate can enter shadow/canary.
+- [x] Opt-out identity is checked before a candidate can enter shadow/canary.
 
 **Verification:** state-machine tests, lease boundary tests, migration chain,
 full gate.  
@@ -363,12 +369,14 @@ full gate.
 **Estimated scope:** M; split opt-out into SP-05B if file count grows.  
 **Rollback:** stop candidate processing; retain evidence history.
 
+**Status:** TERMINAL — KEEP (2026-08-29). `source_opt_outs` (durable PK, no cascade-delete, survives registry delete) + `source_decisions` (append-only, survives delete) + 3 lease indices (review_deadline/policy_expiry/opt_out) on `source_registry` (migration `0037` additive; rehearse `94/94` fresh+legacy). Lifecycle `packages/scraper/source-lifecycle.ts` proves 7-group topology (`candidate→shadow→canary→active→review_due→paused`, `degraded→quarantined`, `retired` terminal), compliance `allowed|conditional`-only shadow, opt-out blocks all promotion, lease `policyExpiry past → review_due (grace) → paused` dormancy without delete, and `validateTransition` CHECK. Behavior `63139e3` (PR #85) exact-SHA CI `33249332214` PR 781/0 + `33249370177` main applied `0037` ✅ FTS ✅ Pages ✅; full gate `781/0/2489` + `source-lifecycle` 41 + db 12 + `registry` 16 + `policy-resolver` 34; exact-six unchanged.
+
 ### Checkpoint B — behavior-preserving governance
 
-- [ ] Current production decisions are unchanged for a complete scheduled cycle.
-- [ ] Unknown discoveries cannot publish.
-- [ ] Every policy decision has durable evidence and an expiry/deadline.
-- [ ] Registry rollback has been exercised in tests or a staging drill.
+- [x] Current production decisions are unchanged for a complete scheduled cycle.
+- [x] Unknown discoveries cannot publish.
+- [x] Every policy decision has durable evidence and an expiry/deadline.
+- [x] Registry rollback has been exercised in tests or a staging drill.
 
 ## Phase 2 — Non-publishing discovery and evidence
 
