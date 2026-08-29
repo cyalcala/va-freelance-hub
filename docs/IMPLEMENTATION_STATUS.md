@@ -1,6 +1,16 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-05, TERMINAL — KEEP)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-06, TERMINAL — KEEP)
+
+Status: **SP-06 TERMINAL — KEEP**. Prospector candidate queue: `apps/web/src/pages/api/cron/prospect.ts` now creates/refreshes one idempotent `source_registry` row per exact-host ATS discovery as `needs_review`/`candidate` (14-day `review_deadline`, provenance JSON, no publish). Helpers in `packages/scraper/prospect-candidate.ts` (`providerConfigForPlatform`, `buildCandidateRow`, `distinctAtsCandidates`, `countBacklog`/`countReviewOverdue`) enforce FK provider ensure (`ats_api`/`none`), `source_opt_outs` guard, duplicate suppression (refresh provenance only), 50-distinct anomaly ceiling and 15/run drain, and backlog/overdue reporting in both JSON and `gha-prospector-pulse.yml` digest.
+
+- **Modules:** `ATS_PROVIDER_CONFIG` 5 ATS families, `CANDIDATE_MAX_PER_RUN=15`/`CANDIDATE_ANOMALY_CEILING=50`, endpoint via `atsEndpointUrl`, provenance `eligible-opportunity-sample`, chunked 6 rows/batch (100-bound).
+- **Verification:** `prospect-candidate.test.ts` 12/0 (provider 3, dedupe 3, opt-out/backlog 3, build 3) + `prospector.test.ts` 19/0 + `registry.test.ts` 16/0 + `source-lifecycle.test.ts (db)` 12/0 + `policy-resolver.test.ts` 34/0 + ATS 5/0; full gate `793 pass / 0 fail / 2551 assertions / 79 files`, `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok (Vite ~35s + 19s).
+- **CI/deploy:** PR `33250226738` (head `4f38381`, pull_request) validate 793/0 + build ok (deploy skipped); main `33250262171` (head `407bfd3`, push) validate 793/0, `Apply D1 migrations` — *No migrations to apply* (code only) ✅, `Verify D1 FTS integrity` ✅, `Deploy to Cloudflare Pages` ✅ (`main`). Exact-six `ROBOTS_ENFORCE_SOURCE_IDS` unchanged at `apps/web/src/pages/api/cron/scrape.ts:52`; no candidate promoted to shadow/canary/active.
+
+Behavior `407bfd3` (PR #86, squash from `4f38381`) merged to `main`; next dependency-ready unit is **SP-07** (Source Doctor runtime candidate shadow) — SP-08 needs SP-06+SP-07; SP-16/SP-17 also ready after SP-05 and may parallel if contracts frozen.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-29 (SP-05, TERMINAL — KEEP)
 
 Status: **SP-05 TERMINAL — KEEP**. Additive lifecycle + durable memory: `source_opt_outs` (PK `source_id`, durable do-not-reingest, survives registry delete) and `source_decisions` (append-only `source_id → to_compliance/to_operational` with actor/reason/evidence_hash, survives delete) plus 3 lease indices on `source_registry` enforce bounded deadlines and opt-out gating without mutating existing rows. Lifecycle module `packages/scraper/source-lifecycle.ts` implements `isValidOperationalTransition`, `validateTransition`, `canEnterShadow/Canary/Active` (opt-out + `allowed|conditional` guard), lease helpers (`isPolicyExpired`, `computeReviewDeadline/PolicyExpiry`, `isRenewalDue`, `applyLeaseExpiry → review_due→paused` dormancy without delete), and `isOptedOut`.
 
@@ -9,7 +19,7 @@ Status: **SP-05 TERMINAL — KEEP**. Additive lifecycle + durable memory: `sourc
 - **Verification:** `source-lifecycle.test.ts` ~41 state/lease/opt-out tests + `source-lifecycle.test.ts (db)` 12/0 dormancy/history/index tests + `registry.test.ts` 16/0 + `policy-resolver.test.ts` 34/0 + ATS 5/0; full gate `781 pass / 0 fail / 2489 assertions / 78 files`, `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok, rehearsal `94/94` fresh+legacy (migrations 0000-0037).
 - **CI/deploy:** PR `33249332214` (head `ef6a0b1`, pull_request) validate 781/0 + build ok (deploy skipped); main `33249370177` (head `63139e3`, push) validate 781/0, `Apply D1 migrations` applied `0037` ✅, `Verify D1 FTS integrity` ✅, `Deploy to Cloudflare Pages` ✅ (`main`). Exact-six `ROBOTS_ENFORCE_SOURCE_IDS` unchanged at `apps/web/src/pages/api/cron/scrape.ts:52`.
 
-Behavior `63139e3` (PR #85, squash from `ef6a0b1`) merged to `main`; next dependency-ready units are **SP-06** (Prospector durable candidate queue) and **SP-07** (Source Doctor shadow) — either may start if shared candidate/observation contracts are frozen.
+Behavior `63139e3` (PR #85, squash from `ef6a0b1`) merged to `main`; prior next was SP-06/SP-07.
 
 ## Prior Source Perpetuity Checkpoint — 2026-08-29 (SP-04, TERMINAL — KEEP)
 

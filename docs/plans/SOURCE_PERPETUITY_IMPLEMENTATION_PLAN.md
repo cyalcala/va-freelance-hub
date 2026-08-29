@@ -128,7 +128,7 @@ unless the existing workflow does so automatically.
 | SP-03 | Provider/source registry foundation | SP-02 | TERMINAL — KEEP |
 | SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | TERMINAL — KEEP |
 | SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | TERMINAL — KEEP |
-| SP-06 | Prospector writes durable non-publishing candidates | SP-05 | PLANNED |
+| SP-06 | Prospector writes durable non-publishing candidates | SP-05 | TERMINAL — KEEP |
 | SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | PLANNED |
 | SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | PLANNED |
 | SP-09 | Workable global XML feasibility decision | SP-08 | PLANNED |
@@ -163,8 +163,8 @@ SP-05 is TERMINAL — KEEP (behavior `63139e3`, CI/deploy `33249370177`, PR
 opt-out/history + lifecycle graph + lease expiry → paused without delete proves
 compliance holds never auto-promote, expired → dormant, opt-out blocks
 shadow/canary; artifacts `packages/scraper/source-lifecycle.ts` +
-`source-lifecycle.test.ts` + `source-lifecycle.test.ts (db)`). SP-06 and SP-07
-are now the dependency-ready units (may parallel if contracts frozen).
+`source-lifecycle.test.ts` + `source-lifecycle.test.ts (db)`).
+SP-06 is TERMINAL — KEEP (behavior `407bfd3` squash from `4f38381`, CI/deploy `33250262171`, PR `33250226738` 793/0 guardrails/build ok; no migration, durable ATS candidate queue proves exact-host `needs_review`/`candidate` with FK/provider ensure, opt-out + duplicate suppression, 14d deadline, backlog/overdue visible; artifacts `packages/scraper/prospect-candidate.ts` + `prospect-candidate.test.ts` + `apps/web/src/pages/api/cron/prospect.ts`). SP-07 is now the single dependency-ready unit (SP-08 needs SP-06+SP-07); SP-16/SP-17 also ready after SP-05 and may parallel if contracts frozen.
 
 ## Phase 0 — Durable planning and truthful measurement
 
@@ -388,11 +388,11 @@ not the state itself.
 
 **Acceptance criteria:**
 
-- [ ] Exact-host ATS/career discoveries create or refresh one candidate without
+- [x] Exact-host ATS/career discoveries create or refresh one candidate without
       publishing or changing source policy.
-- [ ] Candidate provenance links to accepted job/directory evidence and rejects
+- [x] Candidate provenance links to accepted job/directory evidence and rejects
       lookalike hosts and opt-outs.
-- [ ] Backlog, deadlines, and duplicate suppression are visible in a generated
+- [x] Backlog, deadlines, and duplicate suppression are visible in a generated
       report.
 
 **Verification:** Prospector fixtures, idempotency/mass-add guards, dry-run on
@@ -401,6 +401,8 @@ production candidates, full gate.
 **Likely files:** prospect route, Prospector package, workflow/report, tests.  
 **Estimated scope:** split route and workflow/report if required.  
 **Rollback:** disable candidate writes; current directory behavior remains.
+
+**Status:** TERMINAL — KEEP (2026-08-29). `packages/scraper/prospect-candidate.ts` (`ATS_PROVIDER_CONFIG` 5, `buildCandidateRow` needs_review/candidate 14d, `distinctAtsCandidates` dedupe, `countBacklog`/`countReviewOverdue`) + `prospect-candidate.test.ts` 12/0 + `apps/web/src/pages/api/cron/prospect.ts` durable queue (FK provider ensure, opt-out, duplicate/refresh, 50 anomaly/15 drain, backlog/overdue) + `gha-prospector-pulse.yml` candidate digest. Behavior `407bfd3` (PR #86 squash `4f38381`); CI `33250226738` PR 793/0 + `33250262171` main Pages ✅ (no migration). Proof: exact-host ATS only, lookalikes rejected, opt-out blocks, duplicate suppressed, backlog visible.
 
 ### SP-07: Extend Source Doctor to runtime candidate shadow probes
 

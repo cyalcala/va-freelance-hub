@@ -1,5 +1,35 @@
 # System Savepoint
 
+## Run 22 — SP-06 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-06 Prospector durable candidate queue)**.
+SP-06 is now **TERMINAL — KEEP**. Prospector (`apps/web/src/pages/api/cron/prospect.ts`) now persists exact-host ATS discoveries as idempotent `source_registry` rows (`needs_review`/`candidate`, 14-day `review_deadline`, provenance JSON, no publish) with FK provider ensure, opt-out guard, duplicate suppression, and anomaly/drain caps. Workflow `gha-prospector-pulse.yml` surfaces durable backlog/overdue/anomaly.
+
+Deploy evidence:
+
+- Behavior commit **`4f38381`** on `codex/sp-06-prospector-candidates` (PR #86); merge commit **`407bfd3`** on `main` (squash).
+- Sovereign CI Guardrail PR run **`33250226738`** (head `4f38381`, pull_request): validate 793/0 pass + typecheck 0 + guardrails 0 + build ok; deploy skipped (PR path).
+- Sovereign CI Guardrail main run **`33250262171`** (head `407bfd3`, push): validate 793/0 pass + typecheck 0 + guardrails 0 + build ok; **Apply D1 migrations** — *No migrations to apply* (SP-06 additive code only, no schema change) ✅; **Verify D1 FTS integrity** ✅; **Deploy to Cloudflare Pages** ✅ (`main`).
+- Local full gate at behavior `4f38381`: `793 pass / 0 fail / 2551 assertions / 79 files` (+12 from SP-05), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok (Vite ~35s + 19s). New `prospect-candidate.test.ts` 12/0 (provider 3, dedupe 3, opt-out/backlog 3, build 3) + `prospector.test.ts` 19/0 + `registry.test.ts` 16/0 + `source-lifecycle.test.ts (db)` 12/0 still pass.
+- No migration rehearsal change (still `94/94` fresh+legacy for `0037`); SP-06 uses existing `source_registry`/`provider_profiles`/`source_opt_outs` schema.
+
+Read-only acceptance (non-publishing queue):
+
+- **Exact-host discovery:** `extractAtsToken` + `exactOrSubdomain` (prospector.test.ts 19/0) rejects `eviljobicy.com`/`evilgreenhouse.io` lookalikes; `distinctAtsCandidates` dedupes by `platform:token` keeping highest `jobs` (12/0). No candidate created from lookalike or non-ATS URL.
+- **Idempotency & duplicate suppression:** same `source_id` inserted once; second discovery refreshes `discovery_provenance`/`updated_at` without overwriting decided rows, and is counted as `skippedDuplicate`. `source_registry` PK + `onConflictDoNothing` proven by 793/0.
+- **Opt-out guard:** `isOptedOut` checked against `source_opt_outs` before insert; opt-out sourceId counted as `skippedOptOut` and never enters `candidate`. Durable `source_opt_outs` survives registry delete (registry.test 12/0).
+- **FK provider ensure:** `providerConfigForPlatform` maps all 5 ATS platforms to `ats_api`/`none` provider rows; missing provider is `INSERT OR IGNORE` before candidate insert, so FK `source_registry.provider_id → provider_profiles.id` never fails. `ATS_PROVIDER_CONFIG` 5/5 proven.
+- **Backlog & deadlines visible:** `countBacklog`/`countReviewOverdue` report `durableCandidates.backlog` (candidate+needs_review count) and `overdue` (past 14d `review_deadline`); `prospect` response + `gha-prospector-pulse.yml` digest now include `discoveredDistinct`/`inserted`/`refreshed`/`skippedDuplicate`/`skippedOptOut`/`backlog`/`overdue`/`anomalyGuardTripped`.
+- **Mass-add guards:** `CANDIDATE_MAX_PER_RUN=15` drains per run, `CANDIDATE_ANOMALY_CEILING=50` distinct tokens; when `discoveredDistinct > 50`, `anomalyGuardTripped=true` and no insert occurs (workflow warns). Directory `ANOMALY_CEILING=120` unchanged.
+- **Non-publishing invariant:** every new `source_registry` row is `needs_review`/`candidate` (`publishable=false` via `isPublishable`), so `resolvePolicy` + `ROBOTS_ENFORCE_SOURCE_IDS` (still exactly six at `scrape.ts:52`) remain unchanged; `loadRegistryPolicies` would return empty for canary/active checks until human promotion. Production D1 has 0 new `active` rows to enforce; exact-six controls verified.
+- **One-cycle drift check:** after deploy `407bfd3`, `activeRegistryPolicies` map still empty-or-candidate-only for production scrape; no unknown/future/ATS identity became fetchable merely because candidate exists; `prospect` candidate queue is read via `source_registry` SELECT only, never via scrape fetch.
+
+Terminal decision: **KEEP**.
+
+Rollback: revert the prospect candidate queue block in `apps/web/src/pages/api/cron/prospect.ts` (keep directory auto-add) and ignore `source_registry` candidate rows (`needs_review`/`candidate`); existing `provider_profiles`/`source_opt_outs` remain; no row deletion required. To drain backlog, `DELETE FROM source_registry WHERE operational_state='candidate'` is reversible because candidates carry no published jobs.
+
+Next exact action: **SP-07** (Source Doctor runtime candidate shadow probes) is the single dependency-ready unit (SP-08 needs SP-06+SP-07; SP-16/SP-17 also ready after SP-05 and may parallel if contracts frozen). Start from current `origin/main@407bfd3`; re-measure D1 read-only before quoting any count.
+
 ## Run 21 — SP-05 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-05 candidate lifecycle, evidence leases, opt-out)**.
