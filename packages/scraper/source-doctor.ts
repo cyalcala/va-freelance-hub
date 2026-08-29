@@ -6,17 +6,10 @@
  * Outputs machine-readable JSON with exactly one terminal outcome.
  */
 
-import {
-  Source,
-  sources,
-  enabledSources,
-  disabledSources,
-  isEnabledSource,
-  type CollectionMethod,
-  type ComplianceStatus,
-} from "./sources";
+import type { Source, CollectionMethod, ComplianceStatus } from "./sources";
+import { sources, enabledSources, disabledSources, isEnabledSource } from "./sources";
 import { applyAutoPauses, autoPauseEntries } from "./pause";
-import { originOf, checkRobots, createRobotsStore, type RobotsCacheStore, type RobotsGateResult, type RobotsMode } from "./robotsGate";
+import { originOf, checkRobots, type RobotsCacheStore, type RobotsCacheEntry, type RobotsGateResult, type RobotsMode } from "./robotsGate";
 import { atsEndpointUrl, type AtsPlatform, fetchATSFeed } from "./ats";
 import { collectionHeaders } from "./userAgent";
 import { decodeHtmlEntities, xmlNodeText, xmlTextList } from "./text";
@@ -100,13 +93,13 @@ const FETCH_TIMEOUT_MS = 10_000;
 
 /** Memory-only robots cache for the doctor — no D1. */
 function createMemoryRobotsStore(): RobotsCacheStore {
-  const cache = new Map<string, Awaited<ReturnType<typeof checkRobots>>>();
+  const cache = new Map<string, RobotsCacheEntry>();
 
   return {
     async get(origin: string) {
       return cache.get(origin) ?? null;
     },
-    async put(entry: Awaited<ReturnType<typeof checkRobots>>) {
+    async put(entry: RobotsCacheEntry) {
       cache.set(entry.origin, entry);
     },
   };
@@ -118,7 +111,7 @@ function getSourceById(sourceId: string): Source | undefined {
 }
 
 function isAtsSource(source: Source): boolean {
-  return source.id.startsWith("ats:") || source.type === "ats";
+  return source.id.startsWith("ats:");
 }
 
 function getAtsPlatformAndToken(sourceId: string): { platform: AtsPlatform; token: string } | null {
@@ -654,4 +647,4 @@ export async function runSourceDoctor(
   return result;
 }
 
-export { DoctorOutcome, ActivePath, SourceDoctorResult, DOCTOR_VERSION };
+export { DOCTOR_VERSION };

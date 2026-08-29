@@ -109,6 +109,20 @@ export {
 } from "./prospect-candidate";
 export type { ProviderConfig, CandidateRow } from "./prospect-candidate";
 export {
+  runCandidateShadowProbe,
+  SHADOW_FETCH_TIMEOUT_MS,
+  SHADOW_MAX_BYTES,
+  SHADOW_MAX_REQUESTS,
+  SHADOW_MAX_ITEMS,
+  SHADOW_VERSION,
+} from "./candidate-shadow";
+export type {
+  CandidateShadowInput,
+  CandidateShadowResult,
+  CandidateShadowProbe,
+  CandidateProviderProfile,
+} from "./candidate-shadow";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
