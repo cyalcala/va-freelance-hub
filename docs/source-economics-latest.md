@@ -1,6 +1,6 @@
 # Source economics — latest (SP-02)
 
-- **As of:** 2026-08-29T07:58:06.207Z
+- **As of:** 2026-08-29T09:08:11.345Z
 - **Windows:** 7d/14d/30d net-new by `scraped_at`
 - **Reconciliation:** OK (every partition delta is zero)
 - Read-only report; regenerate with `scripts/diagnostics/source-economics.ts`.
@@ -43,51 +43,51 @@
 
 ## Fetch outcomes (last 7 days)
 
-Separates real fetches from intentional skips, failures, and zero-yield.
+Separates real (changed) fetches from unchanged 304 polls, intentional skips, failures, and true zero-yield. `items` counts only changed fetches, so carried-forward unchanged counts never read as new supply.
 
-| source_id | real fetches | skips | failures | zero-yield | items |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| remotive | 492 | 0 | 0 | 0 | 9467 |
-| we-work-remotely | 492 | 0 | 0 | 0 | 44485 |
-| real-work-from-anywhere | 83 | 409 | 0 | 0 | 4150 |
-| remote-ok | 83 | 409 | 0 | 0 | 2429 |
-| breezy:vaaphilippines-recruitment | 73 | 417 | 0 | 73 | 0 |
-| greenhouse:gitlab | 73 | 417 | 0 | 0 | 15364 |
-| greenhouse:grafanalabs | 73 | 417 | 0 | 0 | 10820 |
-| greenhouse:nearform | 73 | 417 | 0 | 0 | 1985 |
-| breezy:20four7va | 72 | 908 | 0 | 0 | 5906 |
-| breezy:sourcefit | 72 | 418 | 0 | 0 | 5412 |
-| breezy:time-etc | 72 | 418 | 0 | 0 | 72 |
-| greenhouse:remotecom | 72 | 418 | 0 | 0 | 15522 |
-| jobicy-supporting-apac | 72 | 411 | 9 | 0 | 2880 |
-| ashby:amplify | 71 | 419 | 0 | 0 | 2719 |
-| ashby:ashby | 71 | 419 | 0 | 0 | 4433 |
-| ashby:camunda | 71 | 419 | 0 | 0 | 2318 |
-| ashby:supabase | 71 | 419 | 0 | 0 | 4101 |
-| ashby:tremendous | 71 | 419 | 0 | 0 | 1761 |
-| greenhouse:ghost | 71 | 418 | 1 | 0 | 318 |
-| jobicy-admin-support-apac | 69 | 415 | 8 | 0 | 429 |
-| authentic-jobs | 0 | 492 | 0 | 0 | 0 |
-| dribbble | 0 | 492 | 0 | 0 | 0 |
-| jobspresso | 0 | 492 | 0 | 0 | 0 |
-| lever:vaultoutsourcing | 0 | 492 | 0 | 0 | 0 |
-| onlinejobs-ph | 0 | 492 | 0 | 0 | 0 |
-| problogger | 0 | 492 | 0 | 0 | 0 |
-| remote-co | 0 | 492 | 0 | 0 | 0 |
-| workable:coconutva | 0 | 492 | 0 | 0 | 0 |
-| workable:connectos | 0 | 492 | 0 | 0 | 0 |
-| workable:crewbloom | 0 | 492 | 0 | 0 | 0 |
-| workable:global-strategic | 0 | 492 | 0 | 0 | 0 |
-| workable:hello-rache | 0 | 492 | 0 | 0 | 0 |
-| workable:hunt-st | 0 | 492 | 0 | 0 | 0 |
-| workable:myoutdesk | 0 | 492 | 0 | 0 | 0 |
-| workable:outsource-access | 0 | 491 | 0 | 0 | 0 |
-| workable:pearltalent | 0 | 491 | 0 | 0 | 0 |
-| workable:pineapple-staffing | 0 | 491 | 0 | 0 | 0 |
-| workable:rocketams | 0 | 491 | 0 | 0 | 0 |
-| workable:staff-domain-inc | 0 | 491 | 0 | 0 | 0 |
-| workable:superstaff | 0 | 490 | 0 | 0 | 0 |
-| workable:virtualstaff365 | 0 | 490 | 0 | 0 | 0 |
+| source_id | real fetches | unchanged | skips | failures | zero-yield | items |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| remotive | 489 | 3 | 0 | 0 | 0 | 9399 |
+| we-work-remotely | 488 | 4 | 0 | 0 | 0 | 44104 |
+| real-work-from-anywhere | 83 | 0 | 409 | 0 | 0 | 4150 |
+| remote-ok | 82 | 1 | 409 | 0 | 0 | 2397 |
+| breezy:vaaphilippines-recruitment | 72 | 0 | 418 | 0 | 72 | 0 |
+| greenhouse:gitlab | 72 | 0 | 418 | 0 | 0 | 15160 |
+| greenhouse:grafanalabs | 72 | 0 | 418 | 0 | 0 | 10674 |
+| greenhouse:nearform | 72 | 0 | 418 | 0 | 0 | 1961 |
+| jobicy-supporting-apac | 72 | 1 | 411 | 8 | 0 | 2880 |
+| breezy:20four7va | 71 | 0 | 909 | 0 | 0 | 5824 |
+| breezy:sourcefit | 71 | 0 | 419 | 0 | 0 | 5335 |
+| breezy:time-etc | 71 | 0 | 419 | 0 | 0 | 71 |
+| greenhouse:remotecom | 71 | 0 | 419 | 0 | 0 | 15299 |
+| ashby:amplify | 70 | 0 | 420 | 0 | 0 | 2682 |
+| ashby:ashby | 70 | 0 | 420 | 0 | 0 | 4370 |
+| ashby:camunda | 70 | 0 | 420 | 0 | 0 | 2287 |
+| ashby:supabase | 70 | 0 | 420 | 0 | 0 | 4043 |
+| ashby:tremendous | 70 | 0 | 420 | 0 | 0 | 1737 |
+| greenhouse:ghost | 70 | 0 | 419 | 1 | 0 | 314 |
+| jobicy-admin-support-apac | 69 | 1 | 415 | 7 | 0 | 429 |
+| authentic-jobs | 0 | 0 | 492 | 0 | 0 | 0 |
+| dribbble | 0 | 0 | 492 | 0 | 0 | 0 |
+| jobspresso | 0 | 0 | 492 | 0 | 0 | 0 |
+| lever:vaultoutsourcing | 0 | 0 | 492 | 0 | 0 | 0 |
+| onlinejobs-ph | 0 | 0 | 492 | 0 | 0 | 0 |
+| problogger | 0 | 0 | 492 | 0 | 0 | 0 |
+| remote-co | 0 | 0 | 492 | 0 | 0 | 0 |
+| workable:coconutva | 0 | 0 | 492 | 0 | 0 | 0 |
+| workable:connectos | 0 | 0 | 492 | 0 | 0 | 0 |
+| workable:crewbloom | 0 | 0 | 492 | 0 | 0 | 0 |
+| workable:global-strategic | 0 | 0 | 492 | 0 | 0 | 0 |
+| workable:hello-rache | 0 | 0 | 492 | 0 | 0 | 0 |
+| workable:hunt-st | 0 | 0 | 492 | 0 | 0 | 0 |
+| workable:myoutdesk | 0 | 0 | 492 | 0 | 0 | 0 |
+| workable:outsource-access | 0 | 0 | 491 | 0 | 0 | 0 |
+| workable:pearltalent | 0 | 0 | 491 | 0 | 0 | 0 |
+| workable:pineapple-staffing | 0 | 0 | 491 | 0 | 0 | 0 |
+| workable:rocketams | 0 | 0 | 491 | 0 | 0 | 0 |
+| workable:staff-domain-inc | 0 | 0 | 491 | 0 | 0 | 0 |
+| workable:superstaff | 0 | 0 | 490 | 0 | 0 | 0 |
+| workable:virtualstaff365 | 0 | 0 | 490 | 0 | 0 | 0 |
 
 ## Notes
 

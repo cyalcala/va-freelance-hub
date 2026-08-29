@@ -1,5 +1,46 @@
 # System Savepoint
 
+## Run 18 — SP-02 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-02 acceptance closeout)**.
+SP-02 is now **TERMINAL — KEEP**. The runtime half — the additive nullable
+`source_fetch_events.not_modified` plus separation of unchanged 304 polls from
+real fetches/items — is merged and deployed; the read-only economics baseline is
+the committed acceptance artifact.
+
+Deploy evidence:
+
+- Behavior/merge commit **`ed0040a`** (PR #82) on `main`.
+- Sovereign CI Guardrail run **`33243425545`** (head `ed0040a`, main push):
+  validate (real suite + typecheck + guardrails + build) success; **Apply D1
+  migrations** applied `0035` ✅; FTS integrity ✅; **Deploy to Cloudflare
+  Pages** ✅ (started 08:34:19Z, completed 08:34:27Z).
+
+Read-only D1 acceptance (SP-02 queries via
+`bun scripts/diagnostics/source-economics.ts` emit → wrangler
+`d1 execute DB --remote --command <sql> --json` → collect → report; every query
+returned `changed_db=false`, `rows_written=0`, `success=true`):
+
+- Reconciliation OK (all nine partition deltas zero) at as-of
+  `2026-08-29T09:08:11Z`.
+- Fetch outcomes separate `unchanged` from `real_fetches`: remotive 489 real +
+  3 unchanged, we-work-remotely 488 + 4, remote-ok 82 + 1,
+  jobicy-supporting-apac 72 + 1, jobicy-admin-support-apac 69 + 1. Carried-forward
+  unchanged counts are excluded from `items` and `real_fetches`.
+- Identity coverage (no backfill): 5,090 rows, 15 with `source_id` (11 active),
+  1,267 active `NULL`. Net-new 7d/14d/30d = 150/430/579; active 1,278.
+- Regenerated `docs/source-economics-latest.md` is the committed artifact.
+
+Terminal decision: **KEEP**.
+
+Rollback (unchanged from Run 17): revert the `not_modified` write in `scrape.ts`
+(additive schema kept); delete the diagnostic module/test/report. Nothing else
+references them.
+
+Next exact action: **SP-03** (provider/source registry foundation) is the single
+dependency-ready unit. Start from current `origin/main`; re-measure D1 read-only
+before quoting any count.
+
 ## Run 17 — SP-02 measurement + 304 truthfulness fix; VERIFYING (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (one unit)**. SP-02 (truthful

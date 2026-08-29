@@ -9,18 +9,17 @@ next task.
 
 ## Current Recovery Checkpoint — 2026-08-29 Source Perpetuity
 
-Status: **SP-00 IN PROGRESS (PLAN ONLY)**. The repository is establishing a
-durable strategy, dependency-ordered implementation plan, ADR, and reusable
-bootloader for a diversified, renewable source portfolio. Current exact-six
-production behavior remains unchanged; there was no source, workflow,
-deployment, secret, or D1 mutation.
+Status: **Measurement foundation TERMINAL — KEEP (SP-00..SP-02).** SP-01 exact
+source identity and SP-02 truthful source-economics + 304 unchanged-separation
+fix are merged and deployed; latest behavior `ed0040a` (PR #82), exact-SHA
+CI/deploy `33243425545` applied migration `0035` and deployed Pages. Current
+exact-six production behavior remains unchanged.
 
 Resume in the canonical order defined at the top of `docs/DOCS_INDEX.md`, with
 `docs/SYSTEM_SAVEPOINT.md` as the sole mutable current-session baton. Use
 `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md` to reconstruct a fresh AI
-session. SP-00 began at full SHA
-`3f281d7832278ec6fd4261de3cf50d6374a795e0` on
-`codex/source-perpetuity-plan`; GitHub commit/PR/CI/merge evidence is pending.
+session. Next dependency-ready unit: **SP-03** provider/source registry
+foundation.
 
 This file is updated for milestones and interruptions, not after every unit.
 The savepoint plus SP plan/status ledgers carry mutable current execution facts.

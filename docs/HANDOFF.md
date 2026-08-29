@@ -1,25 +1,23 @@
 # Handoff
 
-## Current Handoff — 2026-08-29 Source Perpetuity planning (SP-00 TERMINAL — KEEP)
+## Current Handoff — 2026-08-29 Source Perpetuity (SP-00..SP-02 TERMINAL — KEEP)
 
-Status: **SP-00 TERMINAL — KEEP**. The Source Perpetuity planning package is
-merged to `main` (PR #79, merge commit `bdc2aa9`), with green exact-SHA CI and
-the production deploy skipped as docs-only. No production behavior or data
-changed.
+Status: **Measurement foundation complete.** SP-00 (durable planning), SP-01
+(exact source identity), and SP-02 (truthful source economics + 304
+unchanged-separation fix) are all TERMINAL — KEEP. Latest behavior
+`ed0040a61598ff5086bd0733ed3e0bebcadc1d90` (PR #82); exact-SHA Sovereign CI
+Guardrail run `33243425545` applied migration `0035`, verified FTS integrity, and
+deployed Pages (~2026-08-29T08:34:27Z).
 
-- Start SHA: `3f281d7832278ec6fd4261de3cf50d6374a795e0`.
-- Planning branch tip: `6e08e82`; merged to `main` as
-  `bdc2aa95795b6c348f1d9db2a19cc15c4245d7a7`.
-- CI/deploy: Sovereign CI Guardrail run `33236797132` success; production
-  deploy skipped.
-- Current authority: strategy, SP implementation plan, ADR-006, and bootloader,
-  routed by `docs/SYSTEM_SAVEPOINT.md` and `docs/DOCS_INDEX.md`.
-- Existing exact-six production sources and all contained ATS decisions remain
-  unchanged.
-- Next dependency-ready implementation: SP-01 exact source identity.
+- Post-deploy read-only D1 acceptance reconciled with `changed_db=false`,
+  `rows_written=0`; unchanged 304 polls are separated from real fetches.
+- Existing exact-six production sources remain unchanged; legacy `NULL` rows are
+  not backfilled (1,267 active rows still unattributed).
+- Next dependency-ready implementation: **SP-03** provider/source registry
+  foundation.
 
-This is a milestone/interruption pointer. For mutable current facts and the
-next exact command, always prefer the top of `docs/SYSTEM_SAVEPOINT.md`.
+This is a milestone pointer. For mutable current facts and the next exact
+command, always prefer the top of `docs/SYSTEM_SAVEPOINT.md`.
 
 ## Handoff — 2026-08-22 Gauntlet planning checkpoint (historical)
 
