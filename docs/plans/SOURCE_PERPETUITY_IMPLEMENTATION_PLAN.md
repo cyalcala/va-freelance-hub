@@ -131,7 +131,7 @@ unless the existing workflow does so automatically.
 | SP-06 | Prospector writes durable non-publishing candidates | SP-05 | TERMINAL — KEEP |
 | SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | TERMINAL — KEEP |
 | SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | TERMINAL — KEEP |
-| SP-09 | Workable global XML feasibility decision | SP-08 | PLANNED |
+| SP-09 | Workable global XML feasibility decision | SP-08 | TERMINAL — KEEP |
 | SP-10 | Workable shadow and one canary | SP-09 KEEP | PLANNED |
 | SP-11 | Lever public Postings API shadow and one canary | SP-08 | PLANNED |
 | SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | PLANNED |
@@ -164,7 +164,7 @@ opt-out/history + lifecycle graph + lease expiry → paused without delete prove
 compliance holds never auto-promote, expired → dormant, opt-out blocks
 shadow/canary; artifacts `packages/scraper/source-lifecycle.ts` +
 `source-lifecycle.test.ts` + `source-lifecycle.test.ts (db)`).
-SP-06 is TERMINAL — KEEP (behavior `407bfd3` squash from `4f38381`, CI/deploy `33250262171`, PR `33250226738` 793/0 guardrails/build ok; no migration, durable ATS candidate queue proves exact-host `needs_review`/`candidate` with FK/provider ensure, opt-out + duplicate suppression, 14d deadline, backlog/overdue visible; artifacts `packages/scraper/prospect-candidate.ts` + `prospect-candidate.test.ts` + `apps/web/src/pages/api/cron/prospect.ts`). SP-07 is TERMINAL — KEEP (behavior `fb9b6d7` squash from `4306407`, CI/deploy `33251582842`, PR `33251523995` 809/0 guardrails/build ok; no migration, bounded shadow probe proves endpoint/auth/visibility/robots/schema/cadence/funnel reporting, 2-req/512KiB budget, zero D1 writes, stop dispositions with no alternate path; artifacts `packages/scraper/candidate-shadow.ts` + `candidate-shadow.test.ts` 16/0). SP-08 is TERMINAL — KEEP (behavior `075be3b`+`fc4e5ab` squash-merged as `a03631b` on `main`, PR #88, PR CI `33254178348` 842/0 + main CI/deploy `33254391095` "No migrations to apply!" ✅ FTS ✅ Pages ✅; no `apps/web` runtime change; live read-only production D1 confirms zero mutations both pre- and post-deploy, zero current candidate rows; artifacts `packages/scraper/evidence-packet.ts` + `evidence-packet.test.ts` 22/0 + `scripts/diagnostics/evidence-packets.ts` + `evidence-packets.test.ts` 11/0 + `docs/evidence-packets-latest.md`). SP-09 (Workable feasibility) is now the single dependency-ready unit; SP-11..SP-15 are also SP-08-dependent and may parallel if contracts frozen; SP-16/SP-17 remain ready after SP-05.
+SP-06 is TERMINAL — KEEP (behavior `407bfd3` squash from `4f38381`, CI/deploy `33250262171`, PR `33250226738` 793/0 guardrails/build ok; no migration, durable ATS candidate queue proves exact-host `needs_review`/`candidate` with FK/provider ensure, opt-out + duplicate suppression, 14d deadline, backlog/overdue visible; artifacts `packages/scraper/prospect-candidate.ts` + `prospect-candidate.test.ts` + `apps/web/src/pages/api/cron/prospect.ts`). SP-07 is TERMINAL — KEEP (behavior `fb9b6d7` squash from `4306407`, CI/deploy `33251582842`, PR `33251523995` 809/0 guardrails/build ok; no migration, bounded shadow probe proves endpoint/auth/visibility/robots/schema/cadence/funnel reporting, 2-req/512KiB budget, zero D1 writes, stop dispositions with no alternate path; artifacts `packages/scraper/candidate-shadow.ts` + `candidate-shadow.test.ts` 16/0). SP-08 is TERMINAL — KEEP (behavior `075be3b`+`fc4e5ab` squash-merged as `a03631b` on `main`, PR #88, PR CI `33254178348` 842/0 + main CI/deploy `33254391095` "No migrations to apply!" ✅ FTS ✅ Pages ✅; no `apps/web` runtime change; live read-only production D1 confirms zero mutations both pre- and post-deploy, zero current candidate rows; artifacts `packages/scraper/evidence-packet.ts` + `evidence-packet.test.ts` 22/0 + `scripts/diagnostics/evidence-packets.ts` + `evidence-packets.test.ts` 11/0 + `docs/evidence-packets-latest.md`). SP-09 is TERMINAL — KEEP (behavior `618dba9` squash-merged as `806b2d7` on `main`, PR #89, PR CI `33256108988` 860/0 + main CI/deploy `33256179738` ✅; one bounded live probe of Workable's official global feed measured 44.41 MiB/11,603 entries — decision `GITHUB_ACTION_PREPROCESSING`; zero D1 writes, no adapter enabled; artifacts `scripts/diagnostics/workable-feasibility.ts` + `.test.ts` 18/0 + `docs/workable-feasibility-latest.md`). SP-11..SP-15 (Lever/Greenhouse/SmartRecruiters/Teamtailor/Recruitee) are all now SP-08-dependency-ready and may proceed in parallel branches (canaries stay sequential — one provider live at a time); SP-10 (Workable adapter) is also dependency-ready on SP-09 KEEP but needs a real multi-day shadow/canary window. SP-16/SP-17 remain ready after SP-05.
 
 ## Phase 0 — Durable planning and truthful measurement
 
@@ -488,11 +488,11 @@ and appropriate runtime before building an adapter.
 
 **Acceptance criteria:**
 
-- [ ] Probe is bounded, read-only, no faster than provider guidance, and archives
+- [x] Probe is bounded, read-only, no faster than provider guidance, and archives
       only measurements/schema samples permitted by the evidence policy.
-- [ ] Decision selects Worker streaming, GitHub Action preprocessing, or
+- [x] Decision selects Worker streaming, GitHub Action preprocessing, or
       `PAUSED` with quantified Cloudflare/free-tier constraints.
-- [ ] No per-token Workable workaround is enabled.
+- [x] No per-token Workable workaround is enabled.
 
 **Verification:** reproducible probe script/test, payload/checksum/timing report,
 zero D1 writes, independent review.  
@@ -500,6 +500,27 @@ zero D1 writes, independent review.
 **Likely files:** diagnostic script, fixtures/tests, evidence report.  
 **Estimated scope:** S/M.  
 **Rollback:** delete local artifacts not intended for Git; no runtime change.
+
+**Status:** TERMINAL — KEEP (2026-08-29). One bounded live probe (single HTTP
+GET) of `https://www.workable.com/boards/workable.xml` measured 44.41 MiB,
+11,603 raw `<job>` entries (10,000 distinct by `<url>`, 645 duplicated within
+the fetch), 2,421 `remote=true`, 337 `country=PH`, schema exactly matching
+Workable's own documentation (16/16 fields present). `scripts/diagnostics/
+workable-feasibility.ts` (`probe`/`analyze`/`report` CLI; pure `analyzeFeed`/
+`classifyRuntime`/`renderReport`) formalizes the decision rule, tested 18/0
+against a small synthetic fixture — never a stored copy of the live feed.
+**Decision: `GITHUB_ACTION_PREPROCESSING`** — both byte size and item count
+exceed a single source's reasonable share of the shared 10-minute scrape-tick
+budget (~6 other sources + AI triage in one invocation); a dedicated hourly
+GHA job matches the feed's own update cadence and this repo's existing
+Prospector/directory-maintenance pattern. Zero D1 writes, no per-token
+Workable adapter enabled, no runtime change. Behavior `618dba9` (PR #89);
+main CI/deploy `33256179738` success. Full gate `860/0/2829`, typecheck 0,
+guardrails 0, build ok. **Next:** SP-11..SP-15 (Lever/Greenhouse/
+SmartRecruiters/Teamtailor/Recruitee) are all now dependency-ready and may
+proceed in parallel branches; SP-10 (the actual Workable adapter) is also
+dependency-ready but needs a real multi-day shadow/canary window, not
+completable in one sitting.
 
 ### SP-10: Workable adapter, shadow, and one canary
 

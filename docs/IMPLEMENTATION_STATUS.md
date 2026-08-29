@@ -1,6 +1,16 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-08, TERMINAL — KEEP)
+## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-09, TERMINAL — KEEP)
+
+Status: **SP-09 TERMINAL — KEEP**. Workable global XML feed feasibility: one bounded live probe of `https://www.workable.com/boards/workable.xml` (official, public, no-auth, hourly cadence) measured **44.41 MiB, 11,603 raw `<job>` entries (10,000 distinct by `<url>`, 645 duplicated within the fetch), 2,421 remote, 337 PH**, schema exactly matching Workable's documentation. `scripts/diagnostics/workable-feasibility.ts` formalizes `analyzeFeed`/`classifyRuntime`/`renderReport` (18/0 fixture tests). **Decision: `GITHUB_ACTION_PREPROCESSING`** — both size and item count exceed a single source's share of the shared 10-minute scrape-tick budget; a dedicated hourly GHA job matches the feed's cadence and this repo's existing Prospector/directory-maintenance pattern. Zero D1 writes, no adapter enabled, no runtime change; the raw feed was measured then deleted, never persisted — only `docs/workable-feasibility-latest.md`'s computed measurements are retained.
+
+- **CI/deploy:** PR `33256108988` (head `618dba9`, PR #89) validate 860/0 + build ok; main `33256179738` (head `806b2d7`) validate + deploy success (no schema/runtime delta — diagnostics/docs only). Local gate `860/0/2829` (+18 from SP-08), typecheck 0, guardrails 0, build ok.
+- **Process note:** the behavior commit was briefly made directly on `main` by mistake, caught before any push, and moved onto `codex/sp-09-workable-feasibility` before the normal PR/CI/merge flow.
+- **Environment note:** the machine's C: drive hit 0 bytes free mid-session (pre-existing, unrelated to this project's own ~5 MB footprint). Owner freed space; work resumed. Future sessions should check `df -h` before large fetches/builds.
+
+Behavior `618dba9` (PR #89, squash) merged to `main` as `806b2d7`. **Next:** SP-11 (Lever), SP-12 (Greenhouse), SP-13 (SmartRecruiters), SP-14 (Teamtailor), SP-15 (Recruitee) are all SP-08-dependency-ready and may proceed in parallel branches (canaries stay sequential — one provider live at a time). SP-10 (Workable adapter) is also dependency-ready but its acceptance needs a real 7-day shadow/canary window that can't be compressed into one session. SP-16/SP-17 remain ready after SP-05.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-29 (SP-08, TERMINAL — KEEP)
 
 Status: **SP-08 TERMINAL — KEEP**. Evidence packets and review-debt alerts: `packages/scraper/evidence-packet.ts` (`buildEvidencePacket`, `deadlineBucket`, `isPreExpiryDue`, `alertForPacket`, `deduplicateAlerts`, `renderEvidenceReport`, `packetHashFor`) builds one durable packet per `source_registry` candidate joined to its `provider_profiles` row — complete evidence (https endpoint + `allowedHosts` match, `authClass=none`, explicit public `visibilityFilter`, cadence envelope, `evidenceUrl`, `reviewDeadline`, a run shadow probe) → `review_ready`; anything short → `candidate` with the exact missing-evidence list. 7/14/30-day + 30-day pre-expiry deadlines produce one deduplicated alert per `sourceId`. External fetched content is stored only as a byte/outcome hash, never executed.
 

@@ -1,5 +1,29 @@
 # System Savepoint
 
+## Run 25 — SP-09 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-09 Workable global XML feed feasibility)**.
+Owner authorized continuous unattended execution across the queue ("proceed with all... do not stop... approved") while resting for ~8 hours, extending prior per-unit merge approval into a standing authorization for this session, within the program's existing STOP conditions.
+
+Fetched the official Workable feed documentation (`https://help.workable.com/hc/en-us/articles/4420464031767-Utilizing-the-XML-Job-Feed`) to get the real feed URL, then ran one bounded live probe of `https://www.workable.com/boards/workable.xml` (public, no-auth, hourly cadence, explicitly for job boards/partners): **44.41 MiB, 11,603 raw `<job>` entries, 10,000 distinct by `<url>` (645 values duplicated within the single fetch — same posting emitted twice), 2,421 `remote=true`, 337 `country=PH`**, schema exactly matching documentation. `scripts/diagnostics/workable-feasibility.ts` (`probe`/`analyze`/`report` CLI, pure `analyzeFeed`/`classifyRuntime`/`renderReport`) formalizes the decision rule and is tested against a small synthetic fixture (18/0) — never a stored copy of the live feed. **Decision: `GITHUB_ACTION_PREPROCESSING`** — both byte size and item count exceed a single source's reasonable share of the shared 10-minute scrape-tick budget (~6 other sources + AI triage in one invocation); a dedicated hourly GHA job matches the feed's own cadence and has no such shared-budget constraint, mirroring this repo's existing Prospector/directory-maintenance pattern. The raw feed body was measured then deleted (disk-space-constrained environment — see below); only the computed `FeedAnalysis` is retained as evidence in `docs/workable-feasibility-latest.md`. Zero D1 writes; no per-token Workable adapter enabled; no runtime change.
+
+**Process note (self-corrected):** the behavior commit was first made directly on `main` by mistake (deviating from the established `codex/*` branch + PR + CI pattern every other SP unit used). Caught before any push — `origin/main` was unaffected. Moved the commit onto a new branch (`git branch codex/sp-09-workable-feasibility <sha>; git reset --hard origin/main`) and proceeded through the normal PR flow.
+
+**Disk-space incident (environment, not project):** mid-probe, the machine's C: drive hit 0 bytes free (pre-existing condition — a routine 46 MB feed download tipped it over, not the cause). Deleted the probe's own temp files immediately, paused all disk-writing work, and reported the finding to the owner rather than attempting any cleanup of unrelated files (out of scope / prohibited). Owner freed space and confirmed proceed; work resumed once real headroom existed. This machine's disk stayed tight throughout the rest of this run (own footprint negligible — `dist`/`.vite` caches together are ~5 MB — something else on the system is independently consuming space); future units should check `df -h` before any build/large-fetch step.
+
+Deploy evidence:
+
+- Behavior commit **`618dba9`** on `codex/sp-09-workable-feasibility` (PR #89); merge commit **`806b2d7`** on `main` (squash).
+- PR exact-SHA CI run **`33256108988`** (head `618dba9`, pull_request): validate 860/0 + build ok; deploy skipped (PR path).
+- `main`-push exact-SHA CI/deploy run **`33256179738`** (head `806b2d7`): validate success, `Migrate and deploy production` success (no schema/runtime change in this unit, so no meaningful migration/behavior delta — diagnostic script + docs only).
+- Local full gate at behavior `618dba9`: `860 pass / 0 fail / 2829 assertions / 85 files` (+18 from SP-08's 842), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok (slower than usual, ~160s, under disk pressure but completed cleanly).
+
+Terminal decision: **KEEP**.
+
+Rollback: delete `scripts/diagnostics/workable-feasibility.ts`/`.test.ts`/`docs/workable-feasibility-latest.md`; nothing else references them (no export from `packages/scraper/index.ts`, no runtime import). No D1 write to undo.
+
+Next exact action: **SP-11 (Lever public Postings API shadow/canary), SP-12 (Greenhouse minimal-index shadow/canary), SP-13 (SmartRecruiters), SP-14 (Teamtailor RSS), SP-15 (Recruitee XML)** are all SP-08-dependency-ready now and may proceed in parallel branches (production canaries remain sequential — one provider mechanism live at a time). **SP-10 (Workable adapter/shadow/canary)** is also now dependency-ready given SP-09 KEEP, but its own acceptance criteria require a real 7-day shadow + canary observation window that cannot be manufactured in one sitting — implement and start shadow, do not fabricate a premature KEEP. SP-16/SP-17 remain ready after SP-05 independent of SP-08/09.
+
 ## Run 24 — SP-08 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-08 evidence packets and review-debt alerts)**.
