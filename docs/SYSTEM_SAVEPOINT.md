@@ -1,5 +1,32 @@
 # System Savepoint
 
+## Run 23 — SP-07 TERMINAL — KEEP (2026-08-29)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-07 Source Doctor runtime candidate shadow probes)**.
+SP-07 is now **TERMINAL — KEEP**. Source Doctor (`packages/scraper/source-doctor.ts`) is extended by a new bounded shadow prober (`packages/scraper/candidate-shadow.ts`) that evaluates any durable `source_registry` candidate (`needs_review`/`candidate`, 14-day deadline) against its declared provider mechanism without adding the candidate to the production scrape set, without D1 opportunity writes, without AI calls, and with strict budgets. It reports endpoint/https/hostValid, authClass support, visibility/public/ambiguous, discoveryProvenance/evidenceUrl provenance, providerFamily/mechanism, cadence min/max/rate, robots verdict/wouldBlock, fetch status/latency/bytes, schemaHealth/itemCount, and a sample funnel (bytes/parsed/plausible/truncated/budgetExceeded). Unsupported auth (`api_key`/`oauth`/etc.), ambiguous/private visibility, host `allowedHosts` mismatch (exactOrSubdomain), robots wouldBlock, or oversized payload (>512 KiB) returns a `POLICY_BLOCKED`/`DEGRADED_ANOMALOUS` stop disposition without retrying an alternate endpoint.
+
+Deploy evidence:
+
+- Behavior commit **`4306407`** on `codex/sp-07-candidate-shadow` (PR #87); merge commit **`fb9b6d7`** on `main` (squash).
+- Sovereign CI Guardrail PR run **`33251523995`** (head `4306407`, pull_request): validate 809/0 pass + typecheck 0 + guardrails 0 + build ok; deploy skipped (PR path).
+- Sovereign CI Guardrail main run **`33251582842`** (head `fb9b6d7`, push): validate 809/0 pass + typecheck 0 + guardrails 0 + build ok; **Apply D1 migrations** — *No migrations to apply* (SP-07 additive code only, no schema change) ✅; **Verify D1 FTS integrity** ✅; **Deploy to Cloudflare Pages** ✅ (`main`).
+- Local full gate at behavior `4306407`: `809 pass / 0 fail / 2650 assertions / 80 files` (+16 from SP-06), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok (Vite ~31.9s + 13.7s). New `candidate-shadow.test.ts` 16/0 (reporting 2, budget/zero-write 3, stop dispositions 9, provenance 2) + `prospector.test.ts` 19/0 + `registry.test.ts` 16/0 + `source-lifecycle.test.ts (db)` 12/0 + `policy-resolver.test.ts` 34/0 still pass.
+- Source-doctor verbatimModuleSyntax fix (`Source` type-only, `RobotsCacheEntry`, ATS guard, single export) restores `typecheck 0` (was 11 errors); `candidate-shadow.ts` uses `type` imports correctly.
+
+Read-only acceptance (no publishing, no D1 mutation):
+
+- **Reporting:** shadow probe for `greenhouse:acme` returns endpoint `https://boards-api.greenhouse.io/v1/boards/acme/jobs` with `isHttps=true hostValid=true`, `auth.none supported=true`, `visibility published public=true ambiguous=false`, provenance `eligible-opportunity-sample` + `providerFamily=greenhouse mechanism=ats_api evidence=https://docs.greenhouse.io/job-board.html`, cadence `60/1440/60 req/min`, robots `allowed not wouldBlock`, schema `ok` with `2 plausible` and funnel `bytes=... parsed=2 plausible=2 budgetExceeded=false` → `HEALTHY_WITH_RESULTS`. RSS (`jobicy.com/rss`) path parses 2 items similarly.
+- **Zero-write & budget:** every probe returns `diagnostic.mutations=0`, `diagnostic.shadowMode=true`, `requestCount ≤2` (robots+fetch), `bytes ≤512 KiB`, `sampleFunnel.budgetExceeded=false`; a 350-job fixture (within byte budget) is capped at `SHADOW_MAX_ITEMS=200`. A mocked D1 `insert` counter stays `0` even though prospect would normally write — proof the probe never imports `getDb`. `HEALTHY_EMPTY` for 0-item feed, not `SCHEMA_BROKEN`.
+- **Stop dispositions (no alternate path):** `auth api_key` → `POLICY_BLOCKED fetchAttempted=false robots not fetched`; HTTP 401 → `POLICY_BLOCKED`; robots `Disallow: /v1/boards/` → `POLICY_BLOCKED fetchAttempted=false`; payload `>512 KiB` → `DEGRADED_ANOMALOUS not parsed` (bytes > budget); visibility `null`/`private`/`""` → `DEGRADED_ANOMALOUS`; lookalike `evilgreenhouse.io` vs `boards-api.greenhouse.io` → `POLICY_BLOCKED hostValid=false`; exact subdomain `boards-api.greenhouse.io` passes but sibling `evilboards-api.greenhouse.io` is blocked (exactOrSubdomain); HTTP 429 → `RATE_LIMITED` with exactly 2 calls (robots+fetch) and no retry; external `<script>alert(1)</script>` body is treated as evidence only, parsed as 1 plausible item without execution.
+- **Exact-six invariant:** `ROBOTS_ENFORCE_SOURCE_IDS` still exactly six at `apps/web/src/pages/api/cron/scrape.ts:52`; `loadRegistryPolicies` still empty on current prod (0 shadow/canary/active promotions); candidate shadow never touches `sourceRegistry` operationalState — promotion still requires human `canEnterShadow` + `validateTransition`. Production D1 has 0 new `active` rows.
+- **One-cycle drift check:** after deploy `fb9b6d7`, `activeRegistryPolicies` remains candidate-only; `prospect` queue still `needs_review`/`candidate` (`publishable=false`); shadow probes are available via `runCandidateShadowProbe` import but are not called by the scrape tick; no unknown/future ATS identity became fetchable; `candidate-shadow.ts` is not imported by `scrape.ts`.
+
+Terminal decision: **KEEP**.
+
+Rollback: remove/ignore `packages/scraper/candidate-shadow.ts` (and its export in `packages/scraper/index.ts`); static `source-doctor.ts` (`runSourceDoctor` for `sources.ts` ids) remains the fallback. No D1 rollback needed; candidate rows remain `candidate` with provenance. The `source-doctor.ts` type-fix is retained (it is a pure type-correctness change, not a behavior change).
+
+Next exact action: **SP-08** (evidence packets, deadlines, review-debt alerts) is the single dependency-ready unit (needs SP-06+SP-07, both KEEP). SP-16/SP-17 employer/partner intake also remain ready after SP-05 and may parallel if contracts frozen. Start from current `origin/main@fb9b6d7`; re-measure D1 read-only before quoting any count.
+
 ## Run 22 — SP-06 TERMINAL — KEEP (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-06 Prospector durable candidate queue)**.

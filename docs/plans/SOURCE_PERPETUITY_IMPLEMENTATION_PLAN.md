@@ -129,7 +129,7 @@ unless the existing workflow does so automatically.
 | SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | TERMINAL — KEEP |
 | SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | TERMINAL — KEEP |
 | SP-06 | Prospector writes durable non-publishing candidates | SP-05 | TERMINAL — KEEP |
-| SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | PLANNED |
+| SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | TERMINAL — KEEP |
 | SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | PLANNED |
 | SP-09 | Workable global XML feasibility decision | SP-08 | PLANNED |
 | SP-10 | Workable shadow and one canary | SP-09 KEEP | PLANNED |
@@ -164,7 +164,7 @@ opt-out/history + lifecycle graph + lease expiry → paused without delete prove
 compliance holds never auto-promote, expired → dormant, opt-out blocks
 shadow/canary; artifacts `packages/scraper/source-lifecycle.ts` +
 `source-lifecycle.test.ts` + `source-lifecycle.test.ts (db)`).
-SP-06 is TERMINAL — KEEP (behavior `407bfd3` squash from `4f38381`, CI/deploy `33250262171`, PR `33250226738` 793/0 guardrails/build ok; no migration, durable ATS candidate queue proves exact-host `needs_review`/`candidate` with FK/provider ensure, opt-out + duplicate suppression, 14d deadline, backlog/overdue visible; artifacts `packages/scraper/prospect-candidate.ts` + `prospect-candidate.test.ts` + `apps/web/src/pages/api/cron/prospect.ts`). SP-07 is now the single dependency-ready unit (SP-08 needs SP-06+SP-07); SP-16/SP-17 also ready after SP-05 and may parallel if contracts frozen.
+SP-06 is TERMINAL — KEEP (behavior `407bfd3` squash from `4f38381`, CI/deploy `33250262171`, PR `33250226738` 793/0 guardrails/build ok; no migration, durable ATS candidate queue proves exact-host `needs_review`/`candidate` with FK/provider ensure, opt-out + duplicate suppression, 14d deadline, backlog/overdue visible; artifacts `packages/scraper/prospect-candidate.ts` + `prospect-candidate.test.ts` + `apps/web/src/pages/api/cron/prospect.ts`). SP-07 is TERMINAL — KEEP (behavior `fb9b6d7` squash from `4306407`, CI/deploy `33251582842`, PR `33251523995` 809/0 guardrails/build ok; no migration, bounded shadow probe proves endpoint/auth/visibility/robots/schema/cadence/funnel reporting, 2-req/512KiB budget, zero D1 writes, stop dispositions with no alternate path; artifacts `packages/scraper/candidate-shadow.ts` + `candidate-shadow.test.ts` 16/0). SP-08 is now the single dependency-ready unit (needs SP-06+SP-07); SP-16/SP-17 also ready after SP-05 and may parallel if contracts frozen.
 
 ## Phase 0 — Durable planning and truthful measurement
 
@@ -411,10 +411,10 @@ mechanism without adding it to the production scrape set or writing jobs.
 
 **Acceptance criteria:**
 
-- [ ] A candidate probe reports endpoint, auth class, visibility filter,
+- [x] A candidate probe reports endpoint, auth class, visibility filter,
       robots/evidence provenance, schema health, cadence, and sample funnel.
-- [ ] Shadow mode has zero opportunity writes and a strict request/item budget.
-- [ ] Unsupported auth, restriction, oversized payload, or ambiguous visibility
+- [x] Shadow mode has zero opportunity writes and a strict request/item budget.
+- [x] Unsupported auth, restriction, oversized payload, or ambiguous visibility
       returns a stop disposition rather than trying an alternate path.
 
 **Verification:** mocked provider fixtures, D1 write-counter assertion, bounded
@@ -423,6 +423,8 @@ live probe only when the unit contract names an approved endpoint, full gate.
 **Likely files:** Source Doctor module/route, observation writer, tests.  
 **Estimated scope:** M.  
 **Rollback:** disable runtime-candidate probes; static doctor remains.
+
+**Status:** TERMINAL — KEEP (2026-08-29). `packages/scraper/candidate-shadow.ts` (`runCandidateShadowProbe`, `SHADOW_MAX_BYTES=512 KiB`/`SHADOW_MAX_REQUESTS=2`/`SHADOW_MAX_ITEMS=200`, provenance/cadence/robots/schema/funnel, stop guards) + `candidate-shadow.test.ts` 16/0 + `source-doctor.ts` verbatim fix + `packages/scraper/index.ts` export. Local gate `809/0/2650`, typecheck 0, guardrails 0, build ok. PR `33251523995` 809/0, main `33251582842` no-migration ✅ FTS ✅ Pages ✅ — candidate `greenhouse:acme` proves reporting/budget/zero-write/stop, exact-six unchanged.
 
 ### SP-08: Generate evidence packets and review-debt alerts
 
