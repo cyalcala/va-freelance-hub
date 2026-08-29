@@ -198,6 +198,12 @@ export const sourceFetchEvents = sqliteTable("source_fetch_events", {
   robotsCrawlDelay: integer("robots_crawl_delay"),
   robotsWouldBlock: integer("robots_would_block", { mode: "boolean" }),
   robotsMode: text("robots_mode"),
+  // Unchanged-feed marker (SP-02, migration 0035): true when this fetch was a
+  // conditional 304 / identical-body response. Such events carry the prior
+  // run's count forward, so source economics must exclude them from real
+  // fetches and item counts — an unchanged poll is not new supply. NULL =
+  // legacy event, treated as a real (changed) fetch.
+  notModified: integer("not_modified", { mode: "boolean" }),
 }, (table) => ({
   sourceIdIdx: index("source_fetch_events_source_id_idx").on(table.sourceId),
   timestampIdx: index("source_fetch_events_timestamp_idx").on(table.timestamp),

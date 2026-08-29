@@ -117,13 +117,20 @@ ORDER BY active DESC, source_id ASC;`,
     shape: "distribution",
     // Reserved diagnostic rows (__scrape_run_lock__, __sweep_diag__, …) are not
     // sources; exclude any id whose first two chars are "__".
+    //
+    // Unchanged-feed (304) events carry the prior run's count forward, so they
+    // are separated out: a "changed" real fetch is ok=1, skipped=0, and
+    // not_modified is 0/NULL. Legacy events (NULL not_modified) count as
+    // changed. items and zero_yield exclude unchanged polls so carried-forward
+    // counts never read as new supply.
     sql: (w) => `SELECT
   source_id,
-  SUM(CASE WHEN ok = 1 AND skipped = 0 THEN 1 ELSE 0 END) AS real_fetches,
+  SUM(CASE WHEN ok = 1 AND skipped = 0 AND coalesce(not_modified, 0) = 0 THEN 1 ELSE 0 END) AS real_fetches,
+  SUM(CASE WHEN ok = 1 AND skipped = 0 AND coalesce(not_modified, 0) = 1 THEN 1 ELSE 0 END) AS unchanged,
   SUM(CASE WHEN skipped = 1 THEN 1 ELSE 0 END) AS skips,
   SUM(CASE WHEN ok = 0 AND skipped = 0 THEN 1 ELSE 0 END) AS failures,
-  SUM(CASE WHEN ok = 1 AND skipped = 0 AND count = 0 THEN 1 ELSE 0 END) AS zero_yield,
-  SUM(CASE WHEN ok = 1 AND skipped = 0 THEN count ELSE 0 END) AS items
+  SUM(CASE WHEN ok = 1 AND skipped = 0 AND coalesce(not_modified, 0) = 0 AND count = 0 THEN 1 ELSE 0 END) AS zero_yield,
+  SUM(CASE WHEN ok = 1 AND skipped = 0 AND coalesce(not_modified, 0) = 0 THEN count ELSE 0 END) AS items
 FROM source_fetch_events
 WHERE unixepoch(timestamp) >= ${w.cut7}
   AND substr(source_id, 1, 2) <> '__'
@@ -452,13 +459,17 @@ export function renderReport(byName: Record<string, Row[]>, meta: EconMeta): str
 
   lines.push(`## Fetch outcomes (last 7 days)`);
   lines.push("");
-  lines.push(`Separates real fetches from intentional skips, failures, and zero-yield.`);
+  lines.push(
+    `Separates real (changed) fetches from unchanged 304 polls, intentional skips, ` +
+      `failures, and true zero-yield. \`items\` counts only changed fetches, so ` +
+      `carried-forward unchanged counts never read as new supply.`,
+  );
   lines.push("");
-  lines.push(`| source_id | real fetches | skips | failures | zero-yield | items |`);
-  lines.push(`| --- | ---: | ---: | ---: | ---: | ---: |`);
+  lines.push(`| source_id | real fetches | unchanged | skips | failures | zero-yield | items |`);
+  lines.push(`| --- | ---: | ---: | ---: | ---: | ---: | ---: |`);
   for (const r of outcomes) {
     lines.push(
-      `| ${String(r["source_id"])} | ${num(r["real_fetches"])} | ${num(r["skips"])} | ${num(r["failures"])} | ${num(r["zero_yield"])} | ${num(r["items"])} |`,
+      `| ${String(r["source_id"])} | ${num(r["real_fetches"])} | ${num(r["unchanged"])} | ${num(r["skips"])} | ${num(r["failures"])} | ${num(r["zero_yield"])} | ${num(r["items"])} |`,
     );
   }
   lines.push("");

@@ -68,19 +68,21 @@ CREATE TABLE source_fetch_events (
   ok INTEGER NOT NULL,
   skipped INTEGER NOT NULL,
   count INTEGER NOT NULL DEFAULT 0,
-  timestamp TEXT NOT NULL
+  timestamp TEXT NOT NULL,
+  not_modified INTEGER
 );
 `;
 
-interface EvtRow { source_id: string; ok: 0 | 1; skipped: 0 | 1; count: number; timestamp: string; }
+interface EvtRow { source_id: string; ok: 0 | 1; skipped: 0 | 1; count: number; timestamp: string; not_modified: 0 | 1 | null; }
 
 const EVT_ROWS: EvtRow[] = [
-  { source_id: "we-work-remotely", ok: 1, skipped: 0, count: 20, timestamp: "2026-08-28" }, // real, items 20
-  { source_id: "we-work-remotely", ok: 1, skipped: 0, count: 0, timestamp: "2026-08-27" }, // real, zero-yield
-  { source_id: "we-work-remotely", ok: 0, skipped: 1, count: 0, timestamp: "2026-08-26" }, // skip
-  { source_id: "remotive", ok: 0, skipped: 0, count: 0, timestamp: "2026-08-25" }, // failure
-  { source_id: "__scrape_run_lock__", ok: 1, skipped: 0, count: 0, timestamp: "2026-08-28" }, // reserved: excluded
-  { source_id: "real-work-from-anywhere", ok: 1, skipped: 0, count: 5, timestamp: "2026-08-10" }, // out of 7d window: excluded
+  { source_id: "we-work-remotely", ok: 1, skipped: 0, count: 20, timestamp: "2026-08-28", not_modified: 0 }, // real, items 20
+  { source_id: "we-work-remotely", ok: 1, skipped: 0, count: 0, timestamp: "2026-08-27", not_modified: 0 }, // real, zero-yield
+  { source_id: "we-work-remotely", ok: 1, skipped: 0, count: 89, timestamp: "2026-08-25", not_modified: 1 }, // unchanged 304: carried-forward 89 must NOT count as items
+  { source_id: "we-work-remotely", ok: 0, skipped: 1, count: 0, timestamp: "2026-08-26", not_modified: 0 }, // skip
+  { source_id: "remotive", ok: 0, skipped: 0, count: 0, timestamp: "2026-08-25", not_modified: 0 }, // failure
+  { source_id: "__scrape_run_lock__", ok: 1, skipped: 0, count: 0, timestamp: "2026-08-28", not_modified: 0 }, // reserved: excluded
+  { source_id: "real-work-from-anywhere", ok: 1, skipped: 0, count: 5, timestamp: "2026-08-10", not_modified: 0 }, // out of 7d window: excluded
 ];
 
 function buildDb(): Database {
@@ -93,9 +95,9 @@ function buildDb(): Database {
   );
   for (const r of OPP_ROWS) insOpp.run(r.title, r.source_platform, r.source_id, r.is_active, r.scraped_at);
   const insEvt = db.prepare(
-    `INSERT INTO source_fetch_events (source_id, ok, skipped, count, timestamp) VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO source_fetch_events (source_id, ok, skipped, count, timestamp, not_modified) VALUES (?, ?, ?, ?, ?, ?)`,
   );
-  for (const r of EVT_ROWS) insEvt.run(r.source_id, r.ok, r.skipped, r.count, r.timestamp);
+  for (const r of EVT_ROWS) insEvt.run(r.source_id, r.ok, r.skipped, r.count, r.timestamp, r.not_modified);
   return db;
 }
 
@@ -138,10 +140,12 @@ describe("SP-02 source economics", () => {
     expect(bySrc["(unknown)"]).toMatchObject({ active: 1, net_new_30d: 1, inactive: 1 });
   });
 
-  test("fetch_outcomes_7d separates real/skip/failure/zero-yield and honors window + reserved filters", () => {
+  test("fetch_outcomes_7d separates real/unchanged/skip/failure/zero-yield and honors window + reserved filters", () => {
     const byId = Object.fromEntries(byName["fetch_outcomes_7d"].map((r) => [r["source_id"], r]));
-    expect(byId["we-work-remotely"]).toMatchObject({ real_fetches: 2, skips: 1, failures: 0, zero_yield: 1, items: 20 });
-    expect(byId["remotive"]).toMatchObject({ real_fetches: 0, skips: 0, failures: 1, zero_yield: 0, items: 0 });
+    // The 304 (not_modified=1, count=89) is counted as unchanged, NOT a real
+    // fetch, and its carried-forward 89 is excluded from items (stays 20).
+    expect(byId["we-work-remotely"]).toMatchObject({ real_fetches: 2, unchanged: 1, skips: 1, failures: 0, zero_yield: 1, items: 20 });
+    expect(byId["remotive"]).toMatchObject({ real_fetches: 0, unchanged: 0, skips: 0, failures: 1, zero_yield: 0, items: 0 });
     // Reserved diagnostic id and the out-of-window RWFA event are excluded.
     expect(byId["__scrape_run_lock__"]).toBeUndefined();
     expect(byId["real-work-from-anywhere"]).toBeUndefined();
@@ -194,6 +198,7 @@ describe("SP-02 source economics", () => {
     expect(md).toContain("jobicy");
     expect(md).toContain("workable:acme");
     expect(md).toContain("⚠️ >70%"); // top-3 net-new concentration flag fires on this fixture
+    expect(md).toContain("unchanged"); // fetch-outcomes separates 304 polls
     // 90% of active rows are attributed here, so concentration is NOT provisional.
     expect(md).not.toContain("Provisional");
   });
