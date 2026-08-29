@@ -123,6 +123,22 @@ export type {
   CandidateProviderProfile,
 } from "./candidate-shadow";
 export {
+  buildEvidencePacket,
+  deadlineBucket,
+  isPreExpiryDue,
+  alertForPacket,
+  deduplicateAlerts,
+  renderEvidenceReport,
+  packetHashFor,
+} from "./evidence-packet";
+export type {
+  EvidencePacket,
+  EvidencePacketInput,
+  PacketStatus,
+  PacketAlert,
+  DeadlineBucket,
+} from "./evidence-packet";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
