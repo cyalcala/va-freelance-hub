@@ -123,7 +123,7 @@ unless the existing workflow does so automatically.
 | Unit | Outcome | Depends on | State |
 | --- | --- | --- | --- |
 | SP-00 | Durable strategy, plan, ADR, bootloader, and authority baton | Gauntlet terminal | TERMINAL — KEEP |
-| SP-01 | Exact source identity on every new opportunity | SP-00 | PLANNED |
+| SP-01 | Exact source identity on every new opportunity | SP-00 | TERMINAL — KEEP |
 | SP-02 | Truthful source funnel and supply baseline | SP-01 | PLANNED |
 | SP-03 | Provider/source registry foundation | SP-02 | PLANNED |
 | SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | PLANNED |
@@ -144,7 +144,10 @@ unless the existing workflow does so automatically.
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
 | SP-20 | 30-day perpetuity acceptance and independent resume drill | SP-19 | PLANNED |
 
-SP-01 is now the single dependency-ready unit; SP-02 and later wait on it.
+SP-01 is TERMINAL — KEEP (behavior `1a5d188`, CI/deploy `33240866482`,
+migration `0034` applied, read-only D1 acceptance confirmed 10/10 post-deploy
+rows stamped; evidence `docs/gauntlet/evidence/SP-01-exact-source-identity.md`).
+SP-02 is now the single dependency-ready unit; SP-03 and later wait on it.
 
 ## Phase 0 — Durable planning and truthful measurement
 
@@ -182,11 +185,11 @@ rows.
 
 **Acceptance criteria:**
 
-- [ ] New static and ATS records persist the exact configured identity through
+- [x] New static and ATS records persist the exact configured identity through
       normalization, pending/retry, insert, and reactivation paths.
-- [ ] Migration is additive and nullable for legacy data; no ambiguous bulk
+- [x] Migration is additive and nullable for legacy data; no ambiguous bulk
       backfill occurs.
-- [ ] Tests prove two source IDs sharing one display platform remain distinct.
+- [x] Tests prove two source IDs sharing one display platform remain distinct.
 
 **Verification:** focused schema/ingestion tests, full gate, fresh-D1 migration
 chain, exact-SHA deploy, and read-only count of new rows with missing identity.  
@@ -195,6 +198,15 @@ chain, exact-SHA deploy, and read-only count of new rows with missing identity.
 `apps/web/src/pages/api/cron/scrape.ts`, focused tests.  
 **Estimated scope:** M.  
 **Rollback:** stop writing the new nullable column; retain additive schema.
+
+**Status:** TERMINAL — KEEP (2026-08-29). Behavior `1a5d188` (PR #80), CI/deploy
+`33240866482` applied migration `0034` and deployed Pages; the first post-deploy
+scrape tick (`07:30:09Z`) stamped 10/10 new rows with exact `source_id`
+(`real-work-from-anywhere` ×7, `remote-ok` ×3), 5,075 legacy rows remained
+`NULL`, and both acceptance queries were read-only (`changed_db=false`).
+Evidence: `docs/gauntlet/evidence/SP-01-exact-source-identity.md`. Follow-ups
+recorded: digest ingest path (`apps/web/src/pages/api/ingest.ts`) and any
+read-only-first legacy backfill. **Next:** SP-02.
 
 ### SP-02: Build truthful source yield and funnel metrics
 
