@@ -170,6 +170,21 @@ export type {
   AttachedPermission,
 } from "./partner-permission";
 export {
+  buildGreenhouseProviderProfile,
+  buildGreenhouseCandidateRow,
+  decidePromotionToShadow,
+  GREENHOUSE_PROVIDER_ID,
+  GREENHOUSE_EVIDENCE_URL,
+  GREENHOUSE_ALLOWED_HOSTS,
+  GREENHOUSE_EVIDENCE_LEASE_DAYS,
+} from "./greenhouse-canary";
+export type {
+  GreenhouseProviderProfileRow,
+  GreenhouseBoardInput,
+  GreenhouseCandidateRow,
+  ShadowPromotionDecision,
+} from "./greenhouse-canary";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
