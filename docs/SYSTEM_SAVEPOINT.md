@@ -1,5 +1,40 @@
 # System Savepoint
 
+## Run 30 — SP-13 BLOCKED (real NO-GO, robots.txt) (2026-08-30)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-13 SmartRecruiters public Posting API adapter)**. First unit needing a genuinely NEW adapter — SmartRecruiters was not previously supported anywhere in this project, unlike SP-11 (Lever)/SP-12 (Greenhouse) which both reused existing `ats.ts` fetch functions.
+
+`packages/scraper/smartrecruiters.ts` (self-contained; does not extend `ats.ts`'s `AtsPlatform` union or touch `scrape.ts`'s live cron loop): `parseSmartRecruitersListResponse` filters `visibility==="PUBLIC"` and normalizes to minimal fields — the list endpoint carries no description content at all, so nothing needs active stripping. `hasMoreSmartRecruitersPages` is deterministic offset/limit/totalFound pagination. `deriveSmartRecruitersPostingUrl` reconstructs the canonical apply URL from `id`+slugified title (the list response omits it; a per-posting detail fetch would be an N+1 pattern this project avoids) — verified to exactly reproduce two real live postings, including one with a trailing space in the title (SmartRecruiters keeps a trailing hyphen; the slugify function reproduces this exactly). `packages/scraper/smartrecruiters-canary.ts` provides the profile/candidate-row builder, reusing SP-12's shared `decidePromotionToShadow` from `source-promotion.ts`.
+
+**Curated-company discovery repeated SP-11's lesson at a new layer.** Several guessed real companies (`visa`, `mcdonalds`, `bosch`, `skechers`, `ikea`, `yelp`, and others) all returned `HTTP 200` with `totalFound:0` — this is the API's lenient behavior for a non-existent or feed-disabled `companyIdentifier`, not proof of zero postings (the docs note not every customer plan has the public feed enabled). Settled on the vendor's own dogfooded account (`companyIdentifier=smartrecruiters`) — same pattern as SP-11's Lever choice — which had 2 real, genuinely open postings with correct `visibility`/pagination fields, confirming the schema.
+
+**Then the real finding: `api.smartrecruiters.com`'s own `robots.txt` disallows the entire host for every crawler except LinkedIn's bot specifically:**
+
+```
+User-agent: LinkedInBot
+Allow: /v1/companies/
+User-agent: *
+Disallow: /
+```
+
+Confirmed by a direct `curl` fetch, not just the probe's own read. This is host-wide (all SmartRecruiters customers share this one API origin), so it is not company-specific and there is no point trying a different one. The real, live SP-07 shadow probe correctly refused to fetch at all (`POLICY_BLOCKED`, `requestCount: 1`, stopped after the robots check); `buildEvidencePacket` correctly returned `status: candidate` with `missingEvidence` naming the robots block explicitly; `decidePromotionToShadow` correctly returned `ok: false`. **This is the evidence-gating machinery working exactly as designed** — refusing a source its own robots.txt disallows, matching this project's long-standing "public readability is not aggregation authority" posture already applied to Greenhouse and Breezy (SP-12, SP-17).
+
+**This is meaningfully different from SP-11/SP-12: there is no pending write to authorize.** The evidence itself is negative. This unit's outcome is a genuine dead end for the current robots-observe-then-enforce posture, not a hold awaiting owner sign-off. It would only become viable with explicit written permission or a documented partner path overriding the blanket disallow — the same evidence bar SP-17 already applies to the permission tier. None was sought or fabricated.
+
+Deploy evidence:
+
+- Behavior commit **`0b25e87`** on `codex/sp-13-smartrecruiters-adapter` (PR #94); merge commit **`5a0b915`** on `main` (squash). (First merge attempt hit a transient GitHub API TLS-handshake timeout with no state change — confirmed via `gh pr view` before retrying; the retry succeeded cleanly.)
+- PR exact-SHA CI run **`33291457568`** (head `0b25e87`, pull_request): validate 941/0 + build ok; deploy skipped (PR path).
+- `main`-push exact-SHA CI/deploy run **`33291789840`** (head `5a0b915`): validate ✅, migrate/deploy ✅ (no schema change).
+- Local full gate at behavior `0b25e87`: `941 pass / 0 fail / 3022 assertions / 92 files` (+19 from SP-11's 922), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok.
+- **Environment note:** disk swung from 894MB down to 152MB and back up to 894MB again across this one unit's gate steps; paced typecheck/guardrails/build each behind an explicit check, waiting out one low point before attempting the build. Nothing failed or was attempted against a critical disk state.
+
+Terminal decision: **BLOCKED** (a distinct status from VERIFYING — the code/evidence are complete and correct, but the finding itself forecloses activation under current policy, not merely awaiting confirmation).
+
+Rollback: N/A — no D1 write was ever attempted. Code is retained as correct, tested, and immediately reusable if explicit permission is later obtained.
+
+Next exact action: **SP-14 (Teamtailor public RSS adapter)** — needs a new RSS adapter plus a real curated company career-domain found via research (the plan explicitly warns against suffix-guessing custom domains, unlike this unit's identifier-guessing approach). After that, **SP-15 (Recruitee XML adapter)**. Both follow the same safe code+evidence-only shape; both may end in either a pending-confirmation VERIFYING (like SP-11/12) or a real BLOCKED finding (like this unit) — the outcome should be reported honestly either way, not steered toward one or the other.
+
 ## Run 29 — SP-11 VERIFYING, same shape as SP-12 (2026-08-30)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-11 Lever public Postings API canary)**. Owner said "proceed with all remaining work, all approved" then "proceed" past two disk-driven pauses; both explicitly did **not** re-open SP-12's classifier-blocked D1 write, which stays held for the owner's own review of the evidence.

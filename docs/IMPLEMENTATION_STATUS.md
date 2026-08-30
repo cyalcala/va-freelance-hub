@@ -1,6 +1,17 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-11, VERIFYING — same shape as SP-12)
+## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-13, BLOCKED — real robots.txt NO-GO)
+
+Status: **SP-13 BLOCKED**. SmartRecruiters Posting API adapter: `packages/scraper/smartrecruiters.ts` (new, self-contained parser/pagination/URL-derivation, verified against real live postings) + `packages/scraper/smartrecruiters-canary.ts` (profile + candidate row, reuses SP-12's shared decision guard). The vendor's own dogfooded account (`companyIdentifier=smartrecruiters`) has 2 real open postings confirming the schema, but **`api.smartrecruiters.com`'s own `robots.txt` disallows the entire host for every crawler except LinkedInBot** — confirmed by direct fetch. This is host-wide (applies to any SmartRecruiters customer, not just this one). The real, live SP-07 shadow probe correctly refused to fetch; the evidence packet correctly stayed incomplete; the promotion decision correctly returned `ok=false`.
+
+**Unlike SP-11/SP-12, this is not a pending-confirmation hold** — there is no write to authorize. The finding itself is negative: this source cannot be activated under the project's current robots-respecting policy, matching the same posture already applied to Greenhouse and Breezy. Full evidence: `docs/gauntlet/evidence/SP-13-smartrecruiters-day1-evidence.md`.
+
+- **CI/deploy:** PR `33291457568` (head `0b25e87`, PR #94) validate 941/0 + build ok; main `33291789840` (head `5a0b915`) validate + deploy success. Local gate `941/0/3022` (+19 from SP-11), typecheck 0, guardrails 0, build ok. (First merge attempt hit a transient GitHub API TLS-timeout with no state change; confirmed via `gh pr view` before a clean retry.)
+- **Environment note:** disk swung 894MB → 152MB → 894MB across this one unit; every gate step paced behind an explicit check.
+
+Behavior `0b25e87` (PR #94, squash) merged to `main` as `5a0b915`. **Next:** SP-14 (Teamtailor) — new RSS adapter, needs a real curated company career-domain via research (not suffix-guessing). Then SP-15 (Recruitee).
+
+## Prior Source Perpetuity Checkpoint — 2026-08-30 (SP-11, VERIFYING — same shape as SP-12)
 
 Status: **SP-11 VERIFYING**. Lever public Postings API canary: extracted `packages/scraper/source-promotion.ts` (provider-agnostic `decidePromotionToShadow`, 11/11 tests) out of SP-12's Greenhouse-only copy (left untouched) now that a second provider needs it. `packages/scraper/lever-canary.ts` (6/6 tests) reuses the existing `fetchLever` adapter — no new fetch code needed — with `contentScope=minimal_with_truncated_summary` honestly distinguishing it from Greenhouse's pure location-only scope, and `allowedHosts` covering both global and EU Lever origins.
 

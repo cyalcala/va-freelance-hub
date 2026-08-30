@@ -135,7 +135,7 @@ unless the existing workflow does so automatically.
 | SP-10 | Workable shadow and one canary | SP-09 KEEP | PLANNED |
 | SP-11 | Lever public Postings API shadow and one canary | SP-08 | VERIFYING |
 | SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | VERIFYING |
-| SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | PLANNED |
+| SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | BLOCKED (real robots.txt NO-GO) |
 | SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-16 | Employer “bring your feed” intake | SP-05 | TERMINAL — KEEP |
@@ -640,6 +640,24 @@ exact-SHA CI/deploy and D1 evidence.
 **Likely files:** new adapter/profile, registry wiring, tests, evidence.  
 **Estimated scope:** M.  
 **Rollback:** disable the SmartRecruiters source profile.
+
+**Status:** BLOCKED — real NO-GO finding (2026-08-30), not a pending hold.
+`packages/scraper/smartrecruiters.ts` (new, self-contained; does not touch
+`ats.ts`/`scrape.ts`) implements pagination/visibility-filter/canonical-URL-
+derivation, all verified against real live postings from the vendor's own
+dogfooded account (`companyIdentifier=smartrecruiters`, 2 real open roles,
+correct `visibility`/pagination schema). `packages/scraper/
+smartrecruiters-canary.ts` reuses SP-12's shared `decidePromotionToShadow`.
+**`api.smartrecruiters.com`'s own `robots.txt` disallows the entire host for
+every crawler except LinkedInBot** (confirmed by direct fetch) — host-wide,
+so it applies to any customer regardless of which company is chosen. The
+real live SP-07 probe correctly refused to fetch (`POLICY_BLOCKED`); the
+evidence packet correctly stayed `candidate` (not `review_ready`); the
+promotion decision correctly returned `ok=false`. Full evidence:
+`docs/gauntlet/evidence/SP-13-smartrecruiters-day1-evidence.md`. Behavior
+`0b25e87` (PR #94) merged as `5a0b915`; full gate `941/0/3022`, typecheck 0,
+guardrails 0, build ok. No D1 write — none was ever going to happen given
+the negative finding. **Next:** SP-14.
 
 ### SP-14: Teamtailor public RSS adapter
 
