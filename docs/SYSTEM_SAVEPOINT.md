@@ -1,5 +1,17 @@
 # System Savepoint
 
+## Run 33 — Classifier block reconfirmed live; pivoting to SP-10 (2026-08-30)
+
+Owner gave extended overnight authorization ("do not stop... 8 hours... all fair and reasonable all approved... document as you go in github and commit and backup") — near-identical phrasing to the "proceed with all, fair and reasonable" authorization Run 28 (SP-12) already tested against the classifier and found insufficient. Per that precedent, this was **not** treated as license to route around a system-level block; instead the block was re-verified live rather than assumed from history.
+
+**Live re-verification:** constructed the exact pending SQL for SP-11 (`provider_profiles`/`source_registry`/`source_decisions` for `lever:lever`, matching `buildLeverProviderProfile`/`buildLeverCandidateRow` field-for-field, `evidence_hash=40d7b6cbfe658129`) and ran `wrangler d1 execute DB --remote --env production --file=...` for real. Result: **`Permission for this action was denied by the Claude Code auto mode classifier. Reason: Blocked by classifier.`** — an actual, current, system-level denial, not historical caution being re-applied. The denial's own text: *"you should not attempt to work around this restriction... If you believe this capability is essential to complete the user's request, STOP and explain to the user what you were trying to do and why you need this permission. Let the user decide how to proceed... If you have other tasks that don't depend on this action, continue working on those."*
+
+No SQL was applied (`provider_profiles`/`source_registry`/`source_decisions` untouched; `lever:lever` still absent). Not retried for SP-12/14/15 — the block is identical and re-confirming it three more times would add nothing. Per the denial's own explicit "other tasks that don't depend on this action" instruction, work continues on **SP-10** (Workable adapter), the next dependency-ready unit whose adapter/pipeline build does not require this write until its own final promotion step.
+
+**One incidental finding while constructing the SQL:** `LeverProviderProfileRow.contentScope` is typed `"minimal_with_truncated_summary"` in `packages/scraper/lever-canary.ts`, but the DB's `provider_profiles.content_scope` CHECK constraint only allows `('minimal','full','metadata_only')` — that exact string would fail the CHECK if inserted verbatim. The attempted SQL mapped it to `'minimal'` for DB validity. Worth a small follow-up (widen the CHECK or normalize the TS value) whenever the pending writes are eventually authorized — not blocking, since the write itself is what's blocked.
+
+Next exact action for the pending writes: **owner runs the write personally** (this session can hand over exact, reviewed SQL/commands on request) or grants a Bash permission rule for this specific action class, per the denial's own suggested paths — a blanket chat "approved" does not and should not clear a classifier-level gate on production compliance-state changes.
+
 ## Run 32 — SP-15 VERIFYING; SP-11..SP-15 batch complete (2026-08-30)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-15 Recruitee company XML feed adapter)**. Last unit in the dependency-ready SP-11..SP-15 adapter-canary batch.
