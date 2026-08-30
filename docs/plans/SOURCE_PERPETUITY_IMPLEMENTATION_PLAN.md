@@ -137,7 +137,7 @@ unless the existing workflow does so automatically.
 | SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | VERIFYING |
 | SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | BLOCKED (real robots.txt NO-GO) |
 | SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | VERIFYING |
-| SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | PLANNED |
+| SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | VERIFYING |
 | SP-16 | Employer “bring your feed” intake | SP-05 | TERMINAL — KEEP |
 | SP-17 | Partner/permission evidence pipeline | SP-05 | TERMINAL — KEEP |
 | SP-18 | Adaptive operations and evidence renewal | Two source canaries KEEP | PLANNED |
@@ -715,6 +715,32 @@ exact-SHA CI/deploy and D1 evidence.
 **Likely files:** XML adapter/profile, opt-out check, tests, evidence.  
 **Estimated scope:** M.  
 **Rollback:** disable the Recruitee source and retain opt-out history.
+
+**Status:** VERIFYING (2026-08-30) — last unit in the SP-11..SP-15 batch.
+`packages/scraper/recruitee.ts` (new; targets the XML feed, not the
+token-gated Careers Site API) + `packages/scraper/recruitee-canary.ts`
+(reuses SP-12's shared promotion guard, explicitly demonstrates the
+opt-out gate per this unit's own plan emphasis). Fixed a real HTML-entity
+decoding gap caught by testing against genuine data. **Also fixed a real
+gap in the shared `candidate-shadow.ts` prober** (it only recognized
+RSS/Atom XML shapes; Recruitee's `<offers><offer>` schema caused a false
+`HEALTHY_EMPTY` for a target genuinely holding 91 real postings) — a
+small, additive, fully-tested change with zero regressions to any
+existing source (this session's first touch of a shared file). Curated
+target `myjewellery.recruitee.com` (real named company via TheirStack's
+customer list). Real live probe after the fix: `HEALTHY_WITH_RESULTS`, 91
+real jobs, robots allowed. Evidence packet `review_ready`; decision
+`ok=true`. Full evidence: `docs/gauntlet/evidence/
+SP-15-recruitee-myjewellery-day1-evidence.md`. Behavior `3be4a4f` (PR #96)
+merged as `db4cc26`; full gate `976/0/3117`, typecheck 0, guardrails 0,
+build ok. **Same as SP-11/12/14: the actual registry write was not
+attempted — held for explicit owner confirmation.**
+
+**Batch complete:** SP-11 (Lever, zero-yield), SP-12 (Greenhouse, 134
+jobs), SP-14 (Teamtailor, 13 jobs), and SP-15 (Recruitee, 91 jobs) all
+share the identical pending write decision; SP-13 (SmartRecruiters) is a
+real robots.txt NO-GO, not a pending hold. **Next:** owner reviews all
+four pending evidence docs together.
 
 ### Checkpoint D — source portfolio expansion
 

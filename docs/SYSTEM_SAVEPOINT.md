@@ -1,5 +1,40 @@
 # System Savepoint
 
+## Run 32 — SP-15 VERIFYING; SP-11..SP-15 batch complete (2026-08-30)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-15 Recruitee company XML feed adapter)**. Last unit in the dependency-ready SP-11..SP-15 adapter-canary batch.
+
+`packages/scraper/recruitee.ts` (self-contained; does not touch `ats.ts`/`scrape.ts`): targets the XML feed (`/api/feeds/offers.xml`) rather than Recruitee's separate token-gated Careers Site API, per the plan's explicit direction. `parseRecruiteeXml` normalizes each `<offer>` to minimal fields, actively excluding full-HTML `description`/`requirements`/`highlight` (verified live) and `mailbox_email` (a job-specific application-routing address, out of scope). `packages/scraper/recruitee-canary.ts` reuses SP-12's shared `decidePromotionToShadow` and adds two explicit tests demonstrating its opt-out gate, matching this unit's specific plan emphasis on opt-out/do-not-reingest verification (the mechanism already existed — SP-11..14 exercised it implicitly — this unit demonstrates it explicitly).
+
+**Real bug #1, caught by testing against genuine data:** this project's shared `processEntities:false` XML parser config (the same one `fetchRSSFeed` already uses) leaves numeric character references like `&#39;` undecoded. A real captured city name (`&#39;s-Hertogenbosch`) exposed this immediately as a failing test. Fixed by applying the project's existing `decodeHtmlEntities` helper to every extracted text field.
+
+**Real finding #2, more consequential — a genuine gap in shared tooling, not this unit's code:** the curated target (`myjewellery.recruitee.com`, a real named Dutch retailer found via TheirStack's public customer list, then confirmed live) initially returned `HEALTHY_EMPTY` from the shadow probe despite genuinely having 91 real open postings — independently confirmed via direct `curl` and this unit's own tested parser. Root cause: SP-07's shared, provider-agnostic `packages/scraper/candidate-shadow.ts` (`parseRssBodyCount`) only recognized standard RSS/Atom root shapes (`<rss><channel><item>`/`<feed><entry>`) — Recruitee's proprietary `<offers><offer>` schema fell outside what it recognized, silently reporting zero items rather than erroring. **Fixed with a small, additive change**: the function now also recognizes `parsed?.offers?.offer` and accepts `careers_url` as an identifying link field, alongside the existing shapes. This is the **first time this session touched a shared file** rather than adding new self-contained modules — done carefully: a new dedicated test (`candidate-shadow.test.ts`) covers this exact real-world shape, and the full 976-test suite confirms zero regressions to every existing RSS/Atom source. Re-running the live probe after the fix: **`HEALTHY_WITH_RESULTS`, 91 real postings**, robots allowed (`robots.txt` checked directly first — only `/v/` disallowed). Evidence packet `review_ready`; `decidePromotionToShadow` `ok=true`. Full evidence: `docs/gauntlet/evidence/SP-15-recruitee-myjewellery-day1-evidence.md`. Same STOP as SP-11/12/14: no D1 write attempted, held for explicit owner confirmation.
+
+Deploy evidence:
+
+- Behavior commit **`3be4a4f`** on `codex/sp-15-recruitee-xml` (PR #96); merge commit **`db4cc26`** on `main` (squash).
+- PR exact-SHA CI run **`33293585755`** (head `3be4a4f`, pull_request): validate 976/0 + build ok; deploy skipped (PR path).
+- `main`-push exact-SHA CI/deploy run **`33293616373`** (head `db4cc26`): validate ✅, migrate/deploy ✅ (no schema change).
+- Local full gate at behavior `3be4a4f`: `976 pass / 0 fail / 3117 assertions / 96 files` (+17 from SP-14's 959), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok.
+
+Terminal decision: **VERIFYING** — code merged and safe; zero D1 mutation. Not TERMINAL until the owner authorizes the write and the real 7-day shadow/7-day canary windows complete.
+
+Rollback: N/A for the D1 side (nothing written). The `candidate-shadow.ts` change is a pure-function addition; reverting it would only make `recruitee:myjewellery`-shaped feeds read as `HEALTHY_EMPTY` again — it does not change behavior for any existing RSS/Atom source.
+
+### SP-11..SP-15 batch summary (all five units now attempted)
+
+| Unit | Provider | Curated target | Outcome | Real yield |
+|---|---|---|---|---|
+| SP-11 | Lever | `lever:lever` (vendor's own board) | VERIFYING | `HEALTHY_EMPTY` — 0 postings, honest zero-yield |
+| SP-12 | Greenhouse | `greenhouse:grafanalabs` | VERIFYING | `HEALTHY_WITH_RESULTS` — 134 real jobs |
+| SP-13 | SmartRecruiters | `smartrecruiters:smartrecruiters` (vendor's own account) | **BLOCKED** | robots.txt disallows the host except LinkedInBot — real NO-GO, no pending write |
+| SP-14 | Teamtailor | `teamtailor:career.teamtailor.com` (vendor's own board) | VERIFYING | `HEALTHY_WITH_RESULTS` — 13 real jobs |
+| SP-15 | Recruitee | `recruitee:myjewellery` | VERIFYING | `HEALTHY_WITH_RESULTS` — 91 real jobs |
+
+Four sources (SP-11, SP-12, SP-14, SP-15) are evidence-ready and share the identical pending decision: a real `source_registry`/`provider_profiles`/`source_decisions` write, blocked every time by the harness's own auto-mode safety classifier, deliberately not routed around, awaiting the owner's explicit review of each evidence doc. One (SP-13) is a genuine dead end under current policy — no write was ever going to happen there regardless.
+
+Next exact action: **owner reviews all four pending evidence docs together** (`docs/gauntlet/evidence/SP-{11,12,14,15}-*-day1-evidence.md`) and SP-13's NO-GO finding, and decides which (if any) pending writes to authorize. No further SP unit in this batch remains to build without that decision — the next dependency-ready work (SP-10 Workable, once a real multi-day observation window is available; SP-16/17 already TERMINAL — KEEP) either needs the same kind of owner decision or a time window this session cannot compress.
+
 ## Run 31 — SP-14 VERIFYING, real positive-yield evidence (2026-08-30)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-14 Teamtailor public `/jobs.rss` adapter)**. Second genuinely-new adapter this run (after SP-13's SmartRecruiters), but this one landed a clean positive result rather than a robots.txt NO-GO.

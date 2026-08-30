@@ -1,6 +1,26 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-14, VERIFYING — real positive-yield evidence)
+## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-15, VERIFYING — SP-11..SP-15 batch complete)
+
+Status: **SP-15 VERIFYING; the SP-11..SP-15 adapter-canary batch is now fully attempted.** Recruitee XML feed adapter: `packages/scraper/recruitee.ts` (new, targets `/api/feeds/offers.xml`, not the token-gated Careers Site API) + `packages/scraper/recruitee-canary.ts` (reuses SP-12's shared decision guard, explicitly demonstrates the opt-out gate per this unit's plan emphasis). Caught and fixed a real HTML-entity-decoding gap (numeric entities left undecoded by this project's shared XML config) via testing against genuine captured data. Then found and fixed a real gap in the **shared** `packages/scraper/candidate-shadow.ts` prober — it only recognized RSS/Atom XML shapes, not Recruitee's `<offers><offer>` schema, causing a false `HEALTHY_EMPTY` for a curated target (`myjewellery.recruitee.com`) that genuinely has 91 real open postings. The fix is small and purely additive; the full 976-test suite confirms zero regressions to any existing source. Re-running live after the fix: `HEALTHY_WITH_RESULTS`, 91 real jobs, robots allowed. Evidence packet `review_ready`; decision `ok=true`. Full evidence: `docs/gauntlet/evidence/SP-15-recruitee-myjewellery-day1-evidence.md`.
+
+**Batch summary — all five adapter-canary units attempted this session:**
+
+| Unit | Provider | Outcome | Real finding |
+|---|---|---|---|
+| SP-11 | Lever | VERIFYING | 0 postings (honest zero-yield) |
+| SP-12 | Greenhouse | VERIFYING | 134 real jobs |
+| SP-13 | SmartRecruiters | **BLOCKED** | robots.txt disallows the host except LinkedInBot |
+| SP-14 | Teamtailor | VERIFYING | 13 real jobs |
+| SP-15 | Recruitee | VERIFYING | 91 real jobs |
+
+Four sources (SP-11/12/14/15) share the identical pending decision — a real registry write, classifier-blocked, awaiting explicit owner review of each evidence doc. SP-13 is a genuine dead end under current policy.
+
+- **CI/deploy:** PR `33293585755` (head `3be4a4f`, PR #96) validate 976/0 + build ok; main `33293616373` (head `db4cc26`) validate + deploy success. Local gate `976/0/3117` (+17 from SP-14), typecheck 0, guardrails 0, build ok.
+
+Behavior `3be4a4f` (PR #96, squash) merged to `main` as `db4cc26`. **Next:** owner reviews all four pending evidence docs together and decides on the pending writes; no further SP-11..15 work remains without that decision.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-30 (SP-14, VERIFYING — real positive-yield evidence)
 
 Status: **SP-14 VERIFYING**. Teamtailor public `/jobs.rss` adapter: `packages/scraper/teamtailor.ts` (new, self-contained, reuses this project's existing `fast-xml-parser` config) + `packages/scraper/teamtailor-canary.ts` (per-career-domain profile, reuses SP-12's shared decision guard). Curated target `career.teamtailor.com` — Teamtailor's own official support-doc worked example AND its own dogfooded careers page (same durable-provenance pattern as SP-11/SP-13). Checked `robots.txt` directly first (`/jobs.rss` not disallowed); real live probe: `HEALTHY_WITH_RESULTS`, **13 real open postings**, robots allowed. Evidence packet `review_ready`; decision `ok=true`. `<description>` (full HTML) actively discarded, matching Greenhouse's minimal-content precedent; `<link>` is a real direct canonical URL (unlike SP-13's derived one). Full evidence: `docs/gauntlet/evidence/SP-14-teamtailor-career-day1-evidence.md`.
 
