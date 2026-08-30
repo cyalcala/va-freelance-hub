@@ -1,6 +1,16 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-15, VERIFYING — SP-11..SP-15 batch complete)
+## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-10 code-only; safe work exhausted for tonight)
+
+Status: **SP-10 (Workable global feed) built code-only and merged, not evidence-ready.** The registry-write classifier block from SP-12's earlier discovery was **reconfirmed live tonight** (a real `wrangler d1 execute --remote` attempt for SP-11's pending write, explicitly denied by Claude Code's own auto-mode classifier, with an instruction not to route around it). Per that denial's own "other tasks that don't depend on this action" instruction, work continued on SP-10 — code-only, since it doesn't hit the block until its own eventual promotion step.
+
+Workable's feed is one global identity, not per-company. Real live evidence: 14.66 MiB / 3,741 entries / 654 after the real remote-OR-PH filter. The standard SP-07 shadow prober was run against it live and returned `UNREACHABLE` (8s timeout, feed too large) — reconfirming SP-09's `GITHUB_ACTION_PREPROCESSING` decision fresh. Two real bugs found and fixed (`allowedHosts` www-stripping mismatch; checked the DB CHECK constraint before writing `content_scope`). **No GitHub Actions workflow was built** — doing so would risk laundering the classifier-blocked write through CI rather than respecting it. Full evidence: `docs/gauntlet/evidence/SP-10-workable-global-feed-day1-evidence.md`.
+
+- **CI/deploy:** PR `33312496006` (head `e6269bf`, PR #97) validate 999/0 + build ok; main `33312606764` (head `e30ae8b`) validate + deploy success. Local gate `999/0/3170` (+23 from SP-10), typecheck 0, guardrails 0, build ok.
+
+**Safe work in Source Perpetuity is exhausted for tonight.** Every remaining unit sits behind the classifier-blocked write, real elapsed time that can't be compressed, or (SP-13) a genuine dead end. Nothing further was built rather than manufacture busywork. Next: owner reviews all five pending evidence docs (SP-10/11/12/14/15) and decides on the pending writes and SP-10's preprocessing-runtime design.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-30 (SP-15, VERIFYING — SP-11..SP-15 batch complete)
 
 Status: **SP-15 VERIFYING; the SP-11..SP-15 adapter-canary batch is now fully attempted.** Recruitee XML feed adapter: `packages/scraper/recruitee.ts` (new, targets `/api/feeds/offers.xml`, not the token-gated Careers Site API) + `packages/scraper/recruitee-canary.ts` (reuses SP-12's shared decision guard, explicitly demonstrates the opt-out gate per this unit's plan emphasis). Caught and fixed a real HTML-entity-decoding gap (numeric entities left undecoded by this project's shared XML config) via testing against genuine captured data. Then found and fixed a real gap in the **shared** `packages/scraper/candidate-shadow.ts` prober — it only recognized RSS/Atom XML shapes, not Recruitee's `<offers><offer>` schema, causing a false `HEALTHY_EMPTY` for a curated target (`myjewellery.recruitee.com`) that genuinely has 91 real open postings. The fix is small and purely additive; the full 976-test suite confirms zero regressions to any existing source. Re-running live after the fix: `HEALTHY_WITH_RESULTS`, 91 real jobs, robots allowed. Evidence packet `review_ready`; decision `ok=true`. Full evidence: `docs/gauntlet/evidence/SP-15-recruitee-myjewellery-day1-evidence.md`.
 

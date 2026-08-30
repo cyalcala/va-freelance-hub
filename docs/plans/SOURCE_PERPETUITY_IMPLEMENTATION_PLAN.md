@@ -132,7 +132,7 @@ unless the existing workflow does so automatically.
 | SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | TERMINAL — KEEP |
 | SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | TERMINAL — KEEP |
 | SP-09 | Workable global XML feasibility decision | SP-08 | TERMINAL — KEEP |
-| SP-10 | Workable shadow and one canary | SP-09 KEEP | PLANNED |
+| SP-10 | Workable shadow and one canary | SP-09 KEEP | IN PROGRESS (code-only, not evidence-ready) |
 | SP-11 | Lever public Postings API shadow and one canary | SP-08 | VERIFYING |
 | SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | VERIFYING |
 | SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | BLOCKED (real robots.txt NO-GO) |
@@ -543,6 +543,36 @@ exact-SHA CI/deploy, seven-day canary, read-only D1 acceptance.
 tests, evidence. Split implementation/deploy evidence into separate commits.  
 **Estimated scope:** M per slice.  
 **Rollback:** disable the Workable registry source/profile.
+
+**Status:** IN PROGRESS — code-only, not evidence-ready (2026-08-30).
+`packages/scraper/workable.ts` (pure parsing of the documented global XML
+feed; `filterPlausibleCandidates` is the actual coarse remote-OR-PH
+pre-filter SP-09 called for, explicitly not a substitute for `geoGate`) +
+`packages/scraper/workable-canary.ts` (one global identity
+`workable:global-feed`, not per-company). Two real bugs found and fixed:
+an `allowedHosts` www-stripping mismatch caught by running the real
+shadow prober live, and a DB CHECK-constraint check done *before* writing
+`content_scope` (avoiding SP-11's TS/DB enum mismatch). Real live evidence:
+14.66 MiB / 3,741 entries / 654 after the real filter (82.5% reduction).
+The real standard SP-07 shadow prober was run against this source and
+returned **`UNREACHABLE`** (8s timeout on this feed's real size) —
+reconfirming SP-09's `GITHUB_ACTION_PREPROCESSING` decision fresh, not
+just by citing its history; separately, the evidence packet's own 512 KiB
+shadow-byte ceiling makes `review_ready` structurally unreachable via the
+raw feed regardless. **Deliberately no GitHub Actions workflow was built**
+— the eventual registry-activation write is the same class of action
+confirmed blocked live by Claude Code's own auto-mode classifier this
+session (see `docs/SYSTEM_SAVEPOINT.md` Run 33); standing up new
+autonomous scheduled CI infrastructure that would eventually perform that
+write would risk laundering that denial rather than respecting it. Full
+evidence: `docs/gauntlet/evidence/SP-10-workable-global-feed-day1-evidence.md`.
+Behavior `e6269bf` (PR #97) merged as `e30ae8b`; full gate `999/0/3170`,
+typecheck 0, guardrails 0, build ok. **Not evidence-ready** — unlike
+SP-11/12/14/15, no registry write was even attempted; reaching
+`review_ready` needs a real preprocessing-runtime design decision plus,
+once running, real multi-day time. **Next:** owner decides the
+preprocessing runtime design and reviews this alongside SP-11/12/14/15's
+pending writes.
 
 ### SP-11: Lever public Postings API canary
 

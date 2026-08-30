@@ -1,5 +1,41 @@
 # System Savepoint
 
+## Run 34 — SP-10 code-only, not evidence-ready; safe work exhausted for tonight (2026-08-30)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-10 Workable global feed, code-only)**. Per Run 33's classifier denial ("If you have other tasks that don't depend on this action, continue working on those"), built SP-10's adapter/canary code — the next dependency-ready unit whose build doesn't require the blocked write until its own final promotion step.
+
+Workable's feed is **one global multi-employer identity** (`source_id workable:global-feed`), unlike every per-company adapter this session. `packages/scraper/workable.ts`: pure parsing of the documented XML schema, actively excluding `<description>` (full HTML). `filterPlausibleCandidates` is the actual preprocessing step SP-09 called for: a coarse remote-OR-PH pre-filter, explicitly documented as not a substitute for `geoGate`.
+
+**Two real bugs found and fixed:** (1) `prospector.ts`'s `hostOf()` strips a leading `www.` before host comparison — an initial `allowedHosts: "www.workable.com"` produced a false `POLICY_BLOCKED`, caught by running the real shadow prober live, not just unit tests; fixed to the bare apex `"workable.com"`. (2) Checked `provider_profiles.content_scope`'s CHECK constraint in the migration SQL *before* writing the profile, using the DB-valid `'minimal'` directly — deliberately avoiding the same TS/DB enum mismatch SP-11's `lever-canary.ts` has today (`"minimal_with_truncated_summary"` isn't a valid DB value; noted as an unresolved follow-up, not blocking since that write is also pending).
+
+**Real live evidence, gathered fresh rather than only cited from SP-09's history:** one bounded fetch of the actual feed measured 14.66 MiB / 3,741 raw entries / 654 after the real remote-OR-PH filter (82.5% reduction — SP-09's original numbers are still representative). Ran the real standard SP-07 shadow prober against this source anyway: **`UNREACHABLE`** — its 8-second fetch timeout aborts before this feed finishes downloading, before the byte-budget check is even reached. Separately, the evidence packet's own 512 KiB shadow-byte ceiling (`evidence-packet.ts:246`) means even a completed raw-feed fetch could never reach `review_ready` — structural, not a transient glitch. This is **not evidence-ready** and, unlike SP-11/12/14/15, no registry write was even attempted — there is no complete packet to act on. Full evidence: `docs/gauntlet/evidence/SP-10-workable-global-feed-day1-evidence.md`.
+
+**Deliberately not built: any GitHub Actions workflow for Workable preprocessing.** The eventual registry-activation write this source needs is the same class of action confirmed blocked live in Run 33. Standing up new autonomous scheduled CI infrastructure that would eventually perform that same write — just executed from a workflow instead of directly by this session — would risk laundering that denial rather than respecting it, and is independently a new standing integration (unattended, indefinite, hitting a real third party) that needs the owner's explicit, specific review before being turned on, not blanket "proceed with all" authorization. No `.github/workflows` file was created or modified.
+
+Deploy evidence:
+
+- Behavior commit **`e6269bf`** on `codex/sp-10-workable-preprocessing` (PR #97); merge commit **`e30ae8b`** on `main` (squash).
+- PR exact-SHA CI run **`33312496006`** (head `e6269bf`, pull_request): validate 999/0 + build ok; deploy skipped (PR path).
+- `main`-push exact-SHA CI/deploy run **`33312606764`** (head `e30ae8b`): validate ✅, migrate/deploy ✅ (no schema change).
+- Local full gate at behavior `e6269bf`: `999 pass / 0 fail / 3170 assertions / 98 files` (+23 from SP-15's 976), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok.
+
+Terminal decision: **not TERMINAL, not VERIFYING** — genuinely earlier-stage than SP-11/12/14/15. Code merged and safe; zero D1 mutation; no evidence packet has yet reached `review_ready` for this source, and reaching one needs a real design decision about the preprocessing runtime plus (once running) real multi-day time — not completable in any single session.
+
+Rollback: N/A (nothing written to D1; no scheduled infrastructure exists to disable).
+
+### Safe work in Source Perpetuity is exhausted for tonight
+
+With SP-10 merged, every remaining unit in the program now sits behind one of two walls that no further building can cross tonight:
+
+1. **The classifier-blocked registry write** (SP-11, SP-12, SP-14, SP-15 — all `review_ready`, all waiting on the identical confirmed-live block from Run 33).
+2. **Real elapsed time** that cannot be compressed into a session (the 7-day shadow + 7-day canary windows every one of those sources needs once promoted; SP-18/19/20 additionally need "two source canaries KEEP" as a prerequisite, which is downstream of wall 1 *and* wall 2 both).
+
+SP-13 (SmartRecruiters) is a third, different case: a genuine robots.txt NO-GO, not a pending hold — nothing further to do there regardless of authorization.
+
+**Nothing further was built or attempted beyond this point tonight** rather than manufacture busywork against these two walls. What would actually unblock more: the owner performs the pending D1 writes personally (exact SQL is ready to hand over on request), or grants a specific Bash permission rule for this action class, or works with this session interactively (non-auto-mode, each write confirmed individually) — none of which a blanket "proceed with all" authorization substitutes for, per Run 33's own precedent and its own precedent from Run 28 before it.
+
+Next exact action: **owner reviews all five pending evidence docs** (`docs/gauntlet/evidence/SP-{10,11,12,14,15}-*-day1-evidence.md`) and SP-13's NO-GO finding, and decides how to proceed on the pending writes and on SP-10's preprocessing-runtime design.
+
 ## Run 33 — Classifier block reconfirmed live; pivoting to SP-10 (2026-08-30)
 
 Owner gave extended overnight authorization ("do not stop... 8 hours... all fair and reasonable all approved... document as you go in github and commit and backup") — near-identical phrasing to the "proceed with all, fair and reasonable" authorization Run 28 (SP-12) already tested against the classifier and found insufficient. Per that precedent, this was **not** treated as license to route around a system-level block; instead the block was re-verified live rather than assumed from history.
