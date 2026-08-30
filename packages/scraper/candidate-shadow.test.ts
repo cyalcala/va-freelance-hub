@@ -149,6 +149,29 @@ describe("candidate-shadow — reporting (SP-07 criterion 1)", () => {
     expect(res.parse.itemCount).toBe(2);
     expect(res.endpoint.hostValid).toBe(true);
   });
+
+  it("handles a non-RSS/Atom XML job feed with its own wrapping root (Recruitee's <offers><offer>, SP-15)", async () => {
+    // Found live: myjewellery.recruitee.com/api/feeds/offers.xml genuinely
+    // has 91 real postings, but before this fix the generic parser only
+    // recognized <rss><channel><item>/<feed><entry> and reported
+    // itemCount:0 (HEALTHY_EMPTY) for this real, non-empty, real-world feed
+    // shape — a prober gap, not a zero-yield source.
+    const input = candidateInput({
+      sourceId: "recruitee:myjewellery",
+      endpointUrl: "https://myjewellery.recruitee.com/api/feeds/offers.xml",
+      provider: { id: "recruitee", providerFamily: "recruitee", mechanism: "xml_feed", authClass: "none", allowedHosts: "myjewellery.recruitee.com", visibilityFilter: "published", evidenceUrl: "https://docs.recruitee.com/docs/feed", cadenceMinMinutes: 60, cadenceMaxMinutes: 1440 },
+    } as any);
+    const xmlBody = `<?xml version="1.0" encoding="UTF-8"?><offers><offer><id>1</id><title>Floor Manager</title><careers_url>https://myjewellery.recruitee.com/o/floor-manager</careers_url></offer><offer><id>2</id><title>Test Engineer</title><careers_url>https://myjewellery.recruitee.com/o/test-engineer</careers_url></offer></offers>`;
+    const fetcher = mockFetchFor({
+      "https://myjewellery.recruitee.com/robots.txt": { status: 200, body: "User-agent: *\nDisallow: /v/", headers: { "content-type": "text/plain" } },
+      "https://myjewellery.recruitee.com/api/feeds/offers.xml": { status: 200, body: xmlBody, headers: { "content-type": "text/xml; charset=utf-8" } },
+    });
+    global.fetch = fetcher;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(res.parse.itemCount).toBe(2);
+    expect(res.sampleFunnel.plausibleItems).toBe(2);
+  });
 });
 
 describe("candidate-shadow — zero writes and strict budget (SP-07 criterion 2)", () => {
