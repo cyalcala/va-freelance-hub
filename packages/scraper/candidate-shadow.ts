@@ -196,9 +196,14 @@ function parseRssBodyCount(xml: string): { count: number; plausible: number } {
     const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", processEntities: false, htmlEntities: true });
     const parsed = parser.parse(xml);
     const channel = parsed?.rss?.channel ?? parsed?.feed;
-    const raw = channel?.item ?? channel?.entry ?? [];
+    // RSS <rss><channel><item> / Atom <feed><entry>, or a non-RSS/Atom XML
+    // job feed with its own wrapping root (e.g. Recruitee's
+    // <offers><offer>...</offer></offers>, SP-15) — real feeds this
+    // provider-agnostic prober needs to recognize without one branch per
+    // vendor's exact tag names.
+    const raw = channel?.item ?? channel?.entry ?? parsed?.offers?.offer ?? [];
     const items = Array.isArray(raw) ? raw : [raw];
-    const plausible = items.filter((it: any) => it && it.title && (it.link ?? it.id ?? it.guid)).length;
+    const plausible = items.filter((it: any) => it && it.title && (it.link ?? it.id ?? it.guid ?? it.careers_url)).length;
     const count = items.filter((it: any) => it && it.title).length;
     return { count: Math.min(count, SHADOW_MAX_ITEMS), plausible: Math.min(plausible, SHADOW_MAX_ITEMS) };
   } catch {

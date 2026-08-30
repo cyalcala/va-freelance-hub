@@ -248,6 +248,24 @@ export type {
   TeamtailorCandidateRow,
 } from "./teamtailor-canary";
 export {
+  recruiteeFeedUrl,
+  parseRecruiteeXml,
+  fetchRecruiteeFeed,
+} from "./recruitee";
+export type { NormalizedRecruiteePosting } from "./recruitee";
+export {
+  buildRecruiteeProviderProfile,
+  buildRecruiteeCandidateRow,
+  RECRUITEE_PROVIDER_ID,
+  RECRUITEE_EVIDENCE_URL,
+  RECRUITEE_EVIDENCE_LEASE_DAYS,
+} from "./recruitee-canary";
+export type {
+  RecruiteeProviderProfileRow,
+  RecruiteeCompanyInput,
+  RecruiteeCandidateRow,
+} from "./recruitee-canary";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
