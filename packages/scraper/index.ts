@@ -200,6 +200,34 @@ export type {
   LeverCandidateRow,
 } from "./lever-canary";
 export {
+  smartRecruitersListUrl,
+  deriveSmartRecruitersSlug,
+  deriveSmartRecruitersPostingUrl,
+  parseSmartRecruitersListResponse,
+  hasMoreSmartRecruitersPages,
+  fetchSmartRecruitersPostings,
+  SMARTRECRUITERS_JOBS_HOST,
+  SMARTRECRUITERS_API_HOST,
+} from "./smartrecruiters";
+export type {
+  SmartRecruitersRawPosting,
+  SmartRecruitersListResponse,
+  NormalizedSmartRecruitersPosting,
+} from "./smartrecruiters";
+export {
+  buildSmartRecruitersProviderProfile,
+  buildSmartRecruitersCandidateRow,
+  SMARTRECRUITERS_PROVIDER_ID,
+  SMARTRECRUITERS_EVIDENCE_URL,
+  SMARTRECRUITERS_ALLOWED_HOSTS,
+  SMARTRECRUITERS_EVIDENCE_LEASE_DAYS,
+} from "./smartrecruiters-canary";
+export type {
+  SmartRecruitersProviderProfileRow,
+  SmartRecruitersCompanyInput,
+  SmartRecruitersCandidateRow,
+} from "./smartrecruiters-canary";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
