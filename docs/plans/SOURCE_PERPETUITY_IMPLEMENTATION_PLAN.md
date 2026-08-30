@@ -133,7 +133,7 @@ unless the existing workflow does so automatically.
 | SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | TERMINAL — KEEP |
 | SP-09 | Workable global XML feasibility decision | SP-08 | TERMINAL — KEEP |
 | SP-10 | Workable shadow and one canary | SP-09 KEEP | PLANNED |
-| SP-11 | Lever public Postings API shadow and one canary | SP-08 | PLANNED |
+| SP-11 | Lever public Postings API shadow and one canary | SP-08 | VERIFYING |
 | SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | VERIFYING |
 | SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | PLANNED |
@@ -562,6 +562,24 @@ reports, exact-SHA CI/deploy and D1 evidence.
 **Likely files:** existing ATS adapter/profile, tests, evidence.  
 **Estimated scope:** S/M.  
 **Rollback:** return the one Lever source to candidate/dormant.
+
+**Status:** VERIFYING (2026-08-30). The existing `fetchLever` adapter already
+covers the fetch/parse (canonical `hostedUrl`, location/workplaceType, a
+500-char-truncated description). `packages/scraper/lever-canary.ts` (6/6
+tests) + the newly-extracted, provider-agnostic
+`packages/scraper/source-promotion.ts` (11/11 tests — SP-12's Greenhouse-only
+copy left untouched) encode the profile and evidence-gated promotion.
+Curated target: Lever's own careers board (`lever:lever`) after a dozen
+well-known-company guesses all 404'd against the live API. Real live probe:
+`HEALTHY_EMPTY` (robots allowed, valid empty JSON — honest zero-yield
+evidence). Evidence packet `review_ready`; decision `ok=true`. Full evidence:
+`docs/gauntlet/evidence/SP-11-lever-lever-day1-evidence.md`. Behavior
+`e03d167` (PR #93) merged as `070694e`; full gate `922/0/2979`, typecheck 0,
+guardrails 0, build ok. **Same as SP-12: the actual registry write was not
+attempted — classifier-blocked class of action, held for explicit owner
+confirmation.** **Next:** owner authorizes the write (or picks a different/
+currently-hiring Lever employer for canary-yield purposes) before this unit
+can proceed to its real 7-day shadow/canary windows.
 
 ### SP-12: Greenhouse minimal-index canary
 

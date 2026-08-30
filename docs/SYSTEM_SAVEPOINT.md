@@ -1,5 +1,30 @@
 # System Savepoint
 
+## Run 29 — SP-11 VERIFYING, same shape as SP-12 (2026-08-30)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-11 Lever public Postings API canary)**. Owner said "proceed with all remaining work, all approved" then "proceed" past two disk-driven pauses; both explicitly did **not** re-open SP-12's classifier-blocked D1 write, which stays held for the owner's own review of the evidence.
+
+Mirrors SP-12's structure exactly. Extracted `packages/scraper/source-promotion.ts` (11/11 tests) — the provider-agnostic `decidePromotionToShadow` (SP-05 lifecycle guard + SP-08 evidence-packet completeness + SP-07 shadow health) — out of SP-12's Greenhouse-only copy now that a second provider needs the identical logic. **SP-12's already-merged `greenhouse-canary.ts` was left untouched**, avoiding any reopening of already-accepted work. `packages/scraper/lever-canary.ts` (6/6 tests) provides the Lever provider profile (`contentScope=minimal_with_truncated_summary` — honestly distinguished from Greenhouse's location-only scope, since the existing `fetchLever` adapter stores a 500-char-truncated description too) and candidate-row builder; `allowedHosts` covers both `api.lever.co` (global) and `api.eu.lever.co` (EU), satisfying SP-11's "EU/global origin explicit" criterion.
+
+**Curated-target discovery took real work this time.** A dozen well-known "companies using Lever" names (Netflix, Figma, Reddit, Shopify, Klarna, Robinhood, etc., some pulled from third-party aggregator sites via WebSearch) all returned HTTP 404 against the live public API — those lists are stale. Settled on **Lever's own careers board** (token `lever`) — the vendor dogfooding its own product — as the most unambiguous provenance obtainable without further guessing.
+
+Real live SP-07 probe against `api.lever.co/v0/postings/lever?mode=json`: **`HEALTHY_EMPTY`** (HTTP 200, valid empty JSON array, robots allowed, 2 requests). Zero current postings is honest, real evidence — `HEALTHY_EMPTY` is one of the two outcomes `decidePromotionToShadow` accepts (alongside `HEALTHY_WITH_RESULTS`); `buildEvidencePacket` separately flags it as `unresolvedQuestions: ["shadow healthy but empty..."]` without blocking `review_ready` status. Evidence: `docs/gauntlet/evidence/SP-11-lever-lever-day1-evidence.md`. Same STOP as SP-12: the actual registry write was not attempted (classifier-blocked class of action), held for explicit owner confirmation.
+
+**Environment note — the most severe disk cycling yet.** During this single unit: 705MB → ran full suite (552s, flaky 1-fail run, likely environment-induced given the slow duration) → 250MB → re-ran clean (55s, 922/0, confirming the flake was transient and unrelated to SP-11's pure/no-I/O files) → 83MB → **0 bytes** → 312MB → 371MB (typecheck) → 374MB (guardrails) → 342MB (build succeeded). Paced every step behind an explicit disk check this time, holding at each low point rather than pushing through; no operation was attempted against a zero/critical disk state, and nothing failed or corrupted as a result.
+
+Deploy evidence:
+
+- Behavior commit **`e03d167`** on `codex/sp-11-lever-shadow` (PR #93); merge commit **`070694e`** on `main` (squash).
+- PR exact-SHA CI run **`33290057655`** (head `e03d167`, pull_request): validate 922/0 + build ok; deploy skipped (PR path).
+- `main`-push exact-SHA CI/deploy run **`33290103467`** (head `070694e`): validate ✅, migrate/deploy ✅ (no schema change).
+- Local full gate at behavior `e03d167`: `922 pass / 0 fail / 2979 assertions / 90 files` (+17 from SP-12's 905), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok.
+
+Terminal decision: **VERIFYING** — code merged and safe; zero D1 mutation. Not TERMINAL until the owner authorizes the write and the real 7-day shadow/7-day canary windows complete (and, separately, until either this zero-yield board or a currently-hiring Lever employer with equally exact provenance is chosen for the actual canary-yield criterion).
+
+Rollback: N/A (nothing written to D1).
+
+Next exact action: **owner reviews both SP-11 and SP-12's evidence docs together** and decides on the pending writes (or names different boards). Independently, **SP-13 (SmartRecruiters)** is next in the safe code+evidence-only track — it needs a genuinely new adapter (SmartRecruiters isn't in the existing `AtsPlatform` union) plus a real curated company found via research, unlike SP-11/SP-12's adapter reuse.
+
 ## Run 28 — SP-12 VERIFYING, D1 write withheld pending owner confirmation (2026-08-29)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-12 Greenhouse minimal-index shadow)**.

@@ -1,6 +1,19 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-29 (SP-12, VERIFYING — D1 write pending owner confirmation)
+## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-11, VERIFYING — same shape as SP-12)
+
+Status: **SP-11 VERIFYING**. Lever public Postings API canary: extracted `packages/scraper/source-promotion.ts` (provider-agnostic `decidePromotionToShadow`, 11/11 tests) out of SP-12's Greenhouse-only copy (left untouched) now that a second provider needs it. `packages/scraper/lever-canary.ts` (6/6 tests) reuses the existing `fetchLever` adapter — no new fetch code needed — with `contentScope=minimal_with_truncated_summary` honestly distinguishing it from Greenhouse's pure location-only scope, and `allowedHosts` covering both global and EU Lever origins.
+
+**Curated target: Lever's own careers board** (`lever:lever`), chosen after a dozen well-known "companies using Lever" guesses all 404'd against the live API (stale aggregator data) — the vendor dogfooding its own product is the most unambiguous provenance available. Real live probe: `HEALTHY_EMPTY` (HTTP 200, valid empty JSON, robots allowed) — zero current postings is honest evidence, not a failure. Evidence packet `review_ready`; `decidePromotionToShadow` `ok=true`. Full evidence: `docs/gauntlet/evidence/SP-11-lever-lever-day1-evidence.md`.
+
+**Same STOP as SP-12**: the actual `source_registry` write was not attempted — held for explicit owner confirmation rather than routed around.
+
+- **CI/deploy:** PR `33290057655` (head `e03d167`, PR #93) validate 922/0 + build ok; main `33290103467` (head `070694e`) validate + deploy success. Local gate `922/0/2979` (+17 from SP-12), typecheck 0, guardrails 0, build ok.
+- **Environment note:** most severe disk cycling of the whole session (705MB → 0 bytes → recovered in stages to 342MB across this one unit); paced every gate step behind an explicit disk check, nothing failed or was attempted against a critical disk state.
+
+Behavior `e03d167` (PR #93, squash) merged to `main` as `070694e`. **Next:** owner reviews SP-11 + SP-12's evidence together and decides on the pending writes. Independently, **SP-13 (SmartRecruiters)** is next — needs a genuinely new adapter (not an existing `ats.ts` reuse) plus real curated-company research.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-29 (SP-12, VERIFYING — D1 write pending owner confirmation)
 
 Status: **SP-12 VERIFYING**. Greenhouse minimal-index shadow: the existing `fetchGreenhouse` adapter already implements the required minimal content scope (no new adapter needed). `packages/scraper/greenhouse-canary.ts` (pure, 11/0 tests) encodes the compliance decision + evidence-gated promotion logic. Real live SP-07 shadow probe against `boards-api.greenhouse.io/v1/boards/grafanalabs/jobs`: `HEALTHY_WITH_RESULTS`, 134 real jobs, schema ok, robots allowed. SP-08 evidence packet: `review_ready`, zero missing evidence. `decidePromotionToShadow`: `ok=true`.
 
