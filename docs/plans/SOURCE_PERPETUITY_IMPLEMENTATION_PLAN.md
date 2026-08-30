@@ -136,7 +136,7 @@ unless the existing workflow does so automatically.
 | SP-11 | Lever public Postings API shadow and one canary | SP-08 | VERIFYING |
 | SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | VERIFYING |
 | SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | BLOCKED (real robots.txt NO-GO) |
-| SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | PLANNED |
+| SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | VERIFYING |
 | SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | PLANNED |
 | SP-16 | Employer “bring your feed” intake | SP-05 | TERMINAL — KEEP |
 | SP-17 | Partner/permission evidence pipeline | SP-05 | TERMINAL — KEEP |
@@ -678,6 +678,23 @@ reports, exact-SHA CI/deploy and D1 evidence.
 **Likely files:** RSS adapter/profile, provenance mapping, tests, evidence.  
 **Estimated scope:** M.  
 **Rollback:** disable the Teamtailor source profile.
+
+**Status:** VERIFYING (2026-08-30). `packages/scraper/teamtailor.ts` (new,
+self-contained; reuses this project's existing `fast-xml-parser` config)
+implements minimal-content parsing (13/13 tests, real captured fixtures)
+and the feed's actual full-page pagination heuristic (no total-count
+field). `packages/scraper/teamtailor-canary.ts` scopes `allowedHosts` per
+career domain and reuses SP-12's shared promotion guard. Curated target
+`career.teamtailor.com` — Teamtailor's own official support-doc worked
+example and its own dogfooded careers page, per the plan's own warning
+against suffix-guessing custom domains. `robots.txt` checked directly
+first (`/jobs.rss` not disallowed); real live probe: `HEALTHY_WITH_RESULTS`,
+13 real open postings, robots allowed. Evidence packet `review_ready`;
+decision `ok=true`. Full evidence: `docs/gauntlet/evidence/
+SP-14-teamtailor-career-day1-evidence.md`. Behavior `47ff048` (PR #95)
+merged as `d77c131`; full gate `959/0/3060`, typecheck 0, guardrails 0,
+build ok. **Same as SP-11/SP-12: the actual registry write was not
+attempted — held for explicit owner confirmation.** **Next:** SP-15.
 
 ### SP-15: Recruitee XML adapter
 

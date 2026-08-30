@@ -1,6 +1,17 @@
 # Implementation Status
 
-## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-13, BLOCKED — real robots.txt NO-GO)
+## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-14, VERIFYING — real positive-yield evidence)
+
+Status: **SP-14 VERIFYING**. Teamtailor public `/jobs.rss` adapter: `packages/scraper/teamtailor.ts` (new, self-contained, reuses this project's existing `fast-xml-parser` config) + `packages/scraper/teamtailor-canary.ts` (per-career-domain profile, reuses SP-12's shared decision guard). Curated target `career.teamtailor.com` — Teamtailor's own official support-doc worked example AND its own dogfooded careers page (same durable-provenance pattern as SP-11/SP-13). Checked `robots.txt` directly first (`/jobs.rss` not disallowed); real live probe: `HEALTHY_WITH_RESULTS`, **13 real open postings**, robots allowed. Evidence packet `review_ready`; decision `ok=true`. `<description>` (full HTML) actively discarded, matching Greenhouse's minimal-content precedent; `<link>` is a real direct canonical URL (unlike SP-13's derived one). Full evidence: `docs/gauntlet/evidence/SP-14-teamtailor-career-day1-evidence.md`.
+
+**Same STOP as SP-11/SP-12**: the actual `source_registry` write was not attempted — held for explicit owner confirmation.
+
+- **CI/deploy:** PR `33292611747` (head `47ff048`, PR #95) validate 959/0 + build ok; main `33292671585` (head `d77c131`) validate + deploy success. Local gate `959/0/3060` (+18 from SP-13), typecheck 0, guardrails 0, build ok.
+- **Environment note:** calmest disk sequence of the adapter-canary units — held ~800MB through test/typecheck/guardrails, dropped to 251MB after build (still succeeded).
+
+Behavior `47ff048` (PR #95, squash) merged to `main` as `d77c131`. **Next:** owner reviews SP-11/SP-12/SP-14's pending evidence (three sources ready for the same write decision) plus SP-13's real NO-GO. Independently, **SP-15 (Recruitee)** is the last unit in this batch — new XML adapter, real curated company via research, plus this project's opt-out check wired into evidence-gating for the first time.
+
+## Prior Source Perpetuity Checkpoint — 2026-08-30 (SP-13, BLOCKED — real robots.txt NO-GO)
 
 Status: **SP-13 BLOCKED**. SmartRecruiters Posting API adapter: `packages/scraper/smartrecruiters.ts` (new, self-contained parser/pagination/URL-derivation, verified against real live postings) + `packages/scraper/smartrecruiters-canary.ts` (profile + candidate row, reuses SP-12's shared decision guard). The vendor's own dogfooded account (`companyIdentifier=smartrecruiters`) has 2 real open postings confirming the schema, but **`api.smartrecruiters.com`'s own `robots.txt` disallows the entire host for every crawler except LinkedInBot** — confirmed by direct fetch. This is host-wide (applies to any SmartRecruiters customer, not just this one). The real, live SP-07 shadow probe correctly refused to fetch; the evidence packet correctly stayed incomplete; the promotion decision correctly returned `ok=false`.
 

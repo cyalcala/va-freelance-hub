@@ -1,5 +1,29 @@
 # System Savepoint
 
+## Run 31 — SP-14 VERIFYING, real positive-yield evidence (2026-08-30)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-14 Teamtailor public `/jobs.rss` adapter)**. Second genuinely-new adapter this run (after SP-13's SmartRecruiters), but this one landed a clean positive result rather than a robots.txt NO-GO.
+
+`packages/scraper/teamtailor.ts` (self-contained; does not extend `ats.ts`'s `AtsPlatform` union or touch `scrape.ts`'s live cron loop): `parseTeamtailorRssXml` reuses this project's existing `fast-xml-parser` dependency/config (the same one `fetchRSSFeed` already uses) to normalize each RSS `<item>` to minimal fields — title, canonical `<link>` (a real, direct URL this time, unlike SP-13's SmartRecruiters, which needed a derived/constructed link), posted date, remote status, a joined summary across possibly-multiple `<tt:location>` entries, department, role — and **actively discards `<description>` entirely**, verified live that it carries the full HTML job description, not a summary, matching `fetchGreenhouse`'s minimal-content precedent. `hasMoreTeamtailorPages` implements the feed's real pagination contract: no total-count field exists (unlike SmartRecruiters' `totalFound`), so the standard "keep paging while a full page comes back" heuristic applies. `packages/scraper/teamtailor-canary.ts` provides a per-career-domain provider profile (`allowedHosts` scoped to the exact domain, not a shared platform host — each Teamtailor company has its own domain) and reuses SP-12's shared `decidePromotionToShadow`.
+
+**Curated-domain discovery followed the plan's own explicit warning** against custom-domain suffix-guessing. Rather than assume any given company's careers domain is Teamtailor-powered, settled on `career.teamtailor.com` — the **exact worked example in Teamtailor's own official support documentation** (`support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide`), and genuinely the vendor's own dogfooded careers page (real live postings explicitly say "Working at Teamtailor..."). Same durable-provenance pattern as SP-11 (Lever's own board) and SP-13 (SmartRecruiters' own account) — the third time this session an ATS/RSS vendor's own dogfooded account has provided the cleanest possible provenance for a curated target.
+
+`career.teamtailor.com/robots.txt` was checked directly first (learning applied from SP-13's finding): it disallows `/app/`, `/messages/`, `/messenger/`, `/facebook/tab/`, `/jobs/internal/` — **`/jobs.rss` is not disallowed**. The real, live SP-07 shadow probe confirmed this: **`HEALTHY_WITH_RESULTS`**, HTTP 200, 84,177 bytes, **13 real open postings**, schema `ok`, robots allowed. This is genuine positive-yield evidence — stronger than SP-11's zero-postings result, and the opposite outcome from SP-13's robots-blocked NO-GO. Evidence packet: `review_ready`, zero missing evidence; `decidePromotionToShadow`: `ok=true`. Full evidence: `docs/gauntlet/evidence/SP-14-teamtailor-career-day1-evidence.md`. Same STOP as SP-11/SP-12: the actual registry write was not attempted, held for explicit owner confirmation.
+
+Deploy evidence:
+
+- Behavior commit **`47ff048`** on `codex/sp-14-teamtailor-rss` (PR #95); merge commit **`d77c131`** on `main` (squash).
+- PR exact-SHA CI run **`33292611747`** (head `47ff048`, pull_request): validate 959/0 + build ok; deploy skipped (PR path).
+- `main`-push exact-SHA CI/deploy run **`33292671585`** (head `d77c131`): validate ✅, migrate/deploy ✅ (no schema change).
+- Local full gate at behavior `47ff048`: `959 pass / 0 fail / 3060 assertions / 94 files` (+18 from SP-13's 941), `bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` ok.
+- **Environment note:** disk held comfortably between 800–820MB through test/typecheck/guardrails this unit, then dropped to 251MB after the build (still succeeded) — the calmest gate sequence of the adapter-canary units so far.
+
+Terminal decision: **VERIFYING** — code merged and safe; zero D1 mutation. Not TERMINAL until the owner authorizes the write and the real 7-day shadow/7-day canary windows complete.
+
+Rollback: N/A (nothing written to D1).
+
+Next exact action: **owner reviews SP-11/SP-12/SP-14's pending evidence together** (three sources ready for the same registry-write decision) and SP-13's real NO-GO finding, and decides on the pending writes. Independently, **SP-15 (Recruitee XML adapter)** is the last unit in this dependency-ready batch — needs a new XML adapter, a real curated company found via research (same provenance diligence as SP-11/13/14), and this project's existing opt-out check wired into the evidence-gating (a new criterion not yet exercised by SP-11–14).
+
 ## Run 30 — SP-13 BLOCKED (real NO-GO, robots.txt) (2026-08-30)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-13 SmartRecruiters public Posting API adapter)**. First unit needing a genuinely NEW adapter — SmartRecruiters was not previously supported anywhere in this project, unlike SP-11 (Lever)/SP-12 (Greenhouse) which both reused existing `ats.ts` fetch functions.
