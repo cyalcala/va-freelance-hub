@@ -266,6 +266,24 @@ export type {
   RecruiteeCandidateRow,
 } from "./recruitee-canary";
 export {
+  WORKABLE_FEED_URL,
+  parseWorkableXml,
+  filterPlausibleCandidates,
+  summarizeFilterStats,
+  summarizeLocation as summarizeWorkableLocation,
+  fetchWorkableFeed,
+} from "./workable";
+export type { NormalizedWorkablePosting, WorkableFilterStats } from "./workable";
+export {
+  buildWorkableProviderProfile,
+  buildWorkableCandidateRow,
+  WORKABLE_PROVIDER_ID,
+  WORKABLE_SOURCE_ID,
+  WORKABLE_EVIDENCE_URL,
+  WORKABLE_EVIDENCE_LEASE_DAYS,
+} from "./workable-canary";
+export type { WorkableProviderProfileRow, WorkableCandidateRow } from "./workable-canary";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
