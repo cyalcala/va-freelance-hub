@@ -228,6 +228,26 @@ export type {
   SmartRecruitersCandidateRow,
 } from "./smartrecruiters-canary";
 export {
+  teamtailorFeedUrl,
+  parseTeamtailorRssXml,
+  hasMoreTeamtailorPages,
+  fetchTeamtailorFeed,
+  TEAMTAILOR_RSS_PARAMS_DOC,
+} from "./teamtailor";
+export type { NormalizedTeamtailorPosting } from "./teamtailor";
+export {
+  buildTeamtailorProviderProfile,
+  buildTeamtailorCandidateRow,
+  TEAMTAILOR_PROVIDER_ID,
+  TEAMTAILOR_EVIDENCE_URL,
+  TEAMTAILOR_EVIDENCE_LEASE_DAYS,
+} from "./teamtailor-canary";
+export type {
+  TeamtailorProviderProfileRow,
+  TeamtailorCareerSiteInput,
+  TeamtailorCandidateRow,
+} from "./teamtailor-canary";
+export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
   sanitizeApplyUrlForSource,
