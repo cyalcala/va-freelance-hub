@@ -184,6 +184,21 @@ export type {
   GreenhouseCandidateRow,
   ShadowPromotionDecision,
 } from "./greenhouse-canary";
+export { decidePromotionToShadow as decideSourcePromotionToShadow } from "./source-promotion";
+export type { SourcePromotionDecision } from "./source-promotion";
+export {
+  buildLeverProviderProfile,
+  buildLeverCandidateRow,
+  LEVER_PROVIDER_ID,
+  LEVER_EVIDENCE_URL,
+  LEVER_ALLOWED_HOSTS,
+  LEVER_EVIDENCE_LEASE_DAYS,
+} from "./lever-canary";
+export type {
+  LeverProviderProfileRow,
+  LeverBoardInput,
+  LeverCandidateRow,
+} from "./lever-canary";
 export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,
