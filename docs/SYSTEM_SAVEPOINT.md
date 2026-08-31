@@ -60,8 +60,19 @@ permission to evade an environment-level denial.
 
 Repository checkpoint at unit start: branch
 `codex/decades-replenishment-masterplan`, start SHA
-`c5ba16dccd8621ba9b51f638b000ff4dc46d2b5f`. Final commit/run evidence is
-recorded in the acceptance follow-up for this docs slice.
+`c5ba16dccd8621ba9b51f638b000ff4dc46d2b5f`.
+
+Documentation authority commit
+`335749ec3d7a4747332b7b7274f9745ae7177678` is pushed in PR #99. Its exact-SHA
+Sovereign CI Guardrail run `33396459351` passed `Validate project-owned code`;
+the deploy-detection and production-deploy jobs correctly skipped this
+documentation-only change. The unrelated legacy Vercel check reports its known
+blocked account and is not the active Cloudflare production path. Local
+verification passed 999 tests / 0 failures / 3,170 expectations, production
+guardrails, strict typecheck, Astro build, `git diff --check`, local-link
+validation, and the bounded secret-pattern scan. Independent consistency,
+adversarial-governance, and fresh-AI resume reviews completed; all material
+content findings were corrected.
 
 Rollback: revert the planning/documentation commits; no runtime or D1 rollback
 exists because no behavior or production state changed.
