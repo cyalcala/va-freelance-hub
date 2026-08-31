@@ -63,16 +63,19 @@ Repository checkpoint at unit start: branch
 `c5ba16dccd8621ba9b51f638b000ff4dc46d2b5f`.
 
 Documentation authority commit
-`335749ec3d7a4747332b7b7274f9745ae7177678` is pushed in PR #99. Its exact-SHA
-Sovereign CI Guardrail run `33396459351` passed `Validate project-owned code`;
-the deploy-detection and production-deploy jobs correctly skipped this
-documentation-only change. The unrelated legacy Vercel check reports its known
-blocked account and is not the active Cloudflare production path. Local
-verification passed 999 tests / 0 failures / 3,170 expectations, production
-guardrails, strict typecheck, Astro build, `git diff --check`, local-link
-validation, and the bounded secret-pattern scan. Independent consistency,
-adversarial-governance, and fresh-AI resume reviews completed; all material
-content findings were corrected.
+`335749ec3d7a4747332b7b7274f9745ae7177678` plus evidence checkpoint
+`680d412b8d72828aad87f7bcd4c5336da2663ca5` passed PR #99 exact-head Sovereign
+CI run `33396592390`. PR #99 was squash-merged to `main` as
+`c3104212fec8371098a941e5634116a7f85f6de0`; exact-SHA main run `33396701562`
+passed guardrails, 999 tests, build, strict typecheck, and Freshness Cron Worker
+validation. Release-scope detection passed and production migration/deploy
+correctly skipped the documentation-only change. The unrelated legacy Vercel
+check reports its known blocked account and is not the active Cloudflare
+production path. Local verification also passed 999 tests / 0 failures / 3,170
+expectations, production guardrails, strict typecheck, Astro build,
+`git diff --check`, local-link validation, and the bounded secret-pattern scan.
+Independent consistency, adversarial-governance, and fresh-AI resume reviews
+completed; all material content findings were corrected.
 
 Rollback: revert the planning/documentation commits; no runtime or D1 rollback
 exists because no behavior or production state changed.
