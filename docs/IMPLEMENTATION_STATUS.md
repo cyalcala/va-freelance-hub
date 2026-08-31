@@ -1,5 +1,26 @@
 # Implementation Status
 
+## Current Source Replenishment Checkpoint — 2026-08-31 (planning authority only)
+
+Status: **Decades Source Replenishment Masterplan and ADR-007 accepted as
+documentation; exact-six production behavior unchanged.** The founder is no
+longer the target routine source-admission gate. The steady-state design uses
+constitutional, evidence-bound AI decisions and a capability-limited lifecycle
+gateway; external permission, contracts, spending, credentials, constitutional
+changes, genuine legal ambiguity, and appeals retain accountable
+human/organizational authority.
+
+This is not implemented autonomy. The current SP adapter evidence is honestly
+reclassified: SP-10 is code-only; SP-11/SP-12/SP-14/SP-15 are one-shot probes,
+not recurring shadows or capped canaries; SP-13 is a robots NO-GO. The registry
+and durable reserve were empty in the dated adoption audit, and one automatic
+ingestion clock showed material multi-hour gaps. No D1 write, source
+activation, workflow, runtime code, external contact, or purchase occurred.
+
+Resume from the top of `docs/SYSTEM_SAVEPOINT.md`. The next action is a bounded
+SP implementation-plan reconciliation, not the historically pending registry
+SQL.
+
 ## Current Source Perpetuity Checkpoint — 2026-08-30 (SP-10 code-only; safe work exhausted for tonight)
 
 Status: **SP-10 (Workable global feed) built code-only and merged, not evidence-ready.** The registry-write classifier block from SP-12's earlier discovery was **reconfirmed live tonight** (a real `wrangler d1 execute --remote` attempt for SP-11's pending write, explicitly denied by Claude Code's own auto-mode classifier, with an instruction not to route around it). Per that denial's own "other tasks that don't depend on this action" instruction, work continued on SP-10 — code-only, since it doesn't hit the block until its own eventual promotion step.

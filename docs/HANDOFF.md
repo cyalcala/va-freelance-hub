@@ -1,5 +1,27 @@
 # Handoff
 
+## Current Handoff — 2026-08-31 Decades Source Replenishment constitution
+
+Status: **Planning authority adopted; no production behavior change.** Read
+`docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` and ADR-007 after the savepoint. They
+establish constitutional, evidence-bound autonomous routine source governance
+as the permanent destination and remove the founder as a source-by-source
+approval bottleneck. They preserve external authority for contracts, payments,
+credentials, real permission, constitutional changes, genuine legal disputes,
+and contested appeals.
+
+Do not mistake the target for current behavior. Exact-six remains live; the
+registry was empty in the dated adoption audit; existing adapter results are
+one-shot probes; no recurring shadow dispatcher or mechanically capped canary
+exists; and the sole automatic freshness clock has shown material gaps. No D1,
+source, workflow, or runtime state changed in this documentation slice.
+
+Next: one bounded implementation-plan reconciliation. It must not begin with
+the old pending SQL. It should sequence clock continuity/fenced failover before
+recurrent shadow observations and the capped canary/typed transition gateway.
+For mutable facts, Git evidence, and exact blockers, always prefer the top of
+`docs/SYSTEM_SAVEPOINT.md`.
+
 ## Current Handoff — 2026-08-29 Source Perpetuity (SP-08, SP-09, SP-16, SP-17 TERMINAL — KEEP; SP-12 VERIFYING)
 
 Status: **Registry/lifecycle/discovery phases complete through SP-09, plus both SP-05-independent tracks (SP-16, SP-17). SP-12 (first adapter canary) is evidence-ready but deliberately stopped short of activation.**

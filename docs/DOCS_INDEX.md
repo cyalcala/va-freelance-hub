@@ -5,11 +5,15 @@
 This index tells future AI agents which documents are canonical, which are
 historical, and where to resume. Start here instead of guessing from filenames.
 
-## Current Source Perpetuity Entry Point — 2026-08-29
+## Current Source Replenishment Entry Point — 2026-08-31
 
-Status: **SP-08, SP-09, SP-16, SP-17 TERMINAL — KEEP; SP-12 VERIFYING** (evidence-ready, real registry write withheld pending explicit owner confirmation — see `docs/HANDOFF.md` and the top of `docs/SYSTEM_SAVEPOINT.md` for the exact state). The old Gauntlet is terminal history;
-its G1-G9 execution rules still apply, but its unit queue is not the resume
-path. Current exact-six production behavior remains unchanged.
+Status: **DECADES MASTERPLAN AND ADR-007 ADOPTED AS PLANNING AUTHORITY; NO
+PRODUCTION BEHAVIOR CHANGE.** SP-00 through SP-09 and SP-16/SP-17 are terminal;
+SP-10 is code-only; SP-11/SP-12/SP-14/SP-15 are one-shot probes rather than
+operating shadows/canaries; SP-13 is a robots NO-GO. The exact current state
+and next action live at the top of `docs/SYSTEM_SAVEPOINT.md`. The old Gauntlet
+is terminal history; its G1-G9 execution rules still apply, but its queue is not
+the resume path. Exact-six production behavior remains unchanged.
 
 Read in this order:
 
@@ -17,20 +21,26 @@ Read in this order:
    standing constraints.
 2. [System Savepoint](./SYSTEM_SAVEPOINT.md) — sole mutable current-session
    baton and next exact action.
-3. [Source Perpetuity Strategy](./SOURCE_PERPETUITY_STRATEGY.md) — durable
-   outcome, balanced public-index policy, portfolio model, SLOs, and boundaries.
-4. [Source Perpetuity Implementation Plan](./plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md)
+3. [Source Replenishment Masterplan](./SOURCE_REPLENISHMENT_MASTERPLAN.md) —
+   durable constitution for autonomy, continuity, reserves, community custody,
+   institutional succession, and fresh-AI recovery.
+4. [Source Perpetuity Strategy](./SOURCE_PERPETUITY_STRATEGY.md) — accepted
+   2026 bootstrap and transition strategy.
+5. [Source Perpetuity Implementation Plan](./plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md)
    — dependency-ordered SP-00 through SP-20 work units.
-5. [ADR-006](./decisions/ADR-006-controlled-source-replenishment.md) — accepted
+6. [ADR-007](./decisions/ADR-007-autonomous-constitutional-source-governance.md)
+   — accepted amendment removing routine founder approval from the target
+   steady state while preserving constrained, evidence-backed transitions.
+7. [ADR-006](./decisions/ADR-006-controlled-source-replenishment.md) — accepted
    planning decision, states, evidence leases, and consequences.
-6. [Master Execution Plan](./MASTER_EXECUTION_PLAN.md) — wider project
+8. [Master Execution Plan](./MASTER_EXECUTION_PLAN.md) — wider project
    constraints; source sections marked superseded are historical.
-7. [Portable Gauntlet Ledger](./gauntlet/IMPLEMENTATION_UNITS.md) — shared
+9. [Portable Gauntlet Ledger](./gauntlet/IMPLEMENTATION_UNITS.md) — shared
    G1-G9 execution rules and terminal unit history.
-8. [Implementation Status](./IMPLEMENTATION_STATUS.md),
+10. [Implementation Status](./IMPLEMENTATION_STATUS.md),
    [Handoff](./HANDOFF.md), and [AI Recovery Trail](./AI_RECOVERY_TRAIL.md) —
    status corroboration and milestone/interruption recovery history.
-9. Current evidence under `docs/gauntlet/evidence/`, generated
+11. Current evidence under `docs/gauntlet/evidence/`, generated
    `docs/*-latest.md` reports, code/tests, Git history, GitHub runs, and fresh
    read-only production evidence.
 
@@ -218,10 +228,6 @@ Read these in order:
    methodology and compliance decision.
 33. `docs/decisions/ADR-002-canonical-utc-iso-timestamps.md` - accepted
    timestamp normalization decision.
-
-## Agent Entry Points
-
-- `AGENTS.md` is the main cross-agent instruction file.
 
 ## Agent Entry Points
 

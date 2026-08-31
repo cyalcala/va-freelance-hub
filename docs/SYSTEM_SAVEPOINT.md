@@ -1,5 +1,89 @@
 # System Savepoint
 
+## Run 35 — Decades Source Replenishment constitution (2026-08-31)
+
+Program: **Source Replenishment / Source Perpetuity**. Mode: **PLAN**.
+Terminal decision: **KEEP as planning authority; zero production behavior
+change**.
+
+The owner directed that replenishment must survive decades, remain personally
+maintainable, become a community/organizational public utility, and not depend
+on the founder approving routine sources. Added
+`docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` and ADR-007. The accepted target is
+constitutional, evidence-bound autonomy: AI may eventually discover,
+adjudicate, shadow, canary, activate, renew, quarantine, replace, and retire
+ordinary sources without affirmative founder approval, but only through
+deterministic gates, independent evidence review, typed least-privilege
+transitions, replay, enforced source and aggregate blast-radius budgets, and
+rollback. Humans or the
+accountable organization retain contracts, payments, credentials, real
+external permission, constitutional changes, genuine legal disputes, and
+contested appeals.
+
+**Current behavior is deliberately unchanged.** Exact-six remains the
+production boundary. This documentation does not bypass an execution-environment
+permission denial, mutate D1, create a clock, activate a source, or claim the
+autonomous control plane exists.
+
+Fresh read-only audit evidence at `2026-08-31T12:45Z` found 1,233 active jobs,
+859 PH-eligible, 614 PH-eligible seen within 14 days, 122 first seen within
+seven days, and eight within 24 hours. Only 25 active rows had exact
+`source_id`; 834 of 859 PH-eligible active rows had `source_id=NULL`, so current
+concentration economics are not decision-grade. Every D1 query reported
+`success=true`, `changed_db=false`, and `rows_written=0`.
+
+The same audit found:
+
+- exactly six real-fetch identities; every ATS identity skipped;
+- zero rows in `provider_profiles`, `source_registry`, `source_decisions`, and
+  `source_opt_outs`, plus an empty durable candidate reserve;
+- one automatic ingestion clock, 53 observed ticks in 24 hours and 532 in
+  seven days, with a largest global gap of 15.17 hours; and
+- a live most-recent tick at the audit time, meaning recovery from the gap did
+  not remove the continuity risk.
+
+These values are a dated adoption snapshot and MUST be re-measured before use.
+
+Critical resume correction: SP-11/SP-12/SP-14/SP-15 produced one-shot,
+zero-write mechanism probes—not recurrent shadows, capped canaries, or ready
+reserves. A registry `shadow` label is not dispatched by the current policy
+resolver; several adapters are not in live cron enumeration; `canary` and
+`active` are currently equally publishable; and documented Lever, Teamtailor,
+and Recruitee profile objects conflict with current D1 CHECK values. No
+historically pending registry SQL is ready to execute. Raw provider postings
+are not unique Filipino-eligible accepted supply.
+
+Authority cutover: older checkpoints below accurately record the former
+owner-review gate and tool-classifier block. They no longer define the target
+governance policy, but this docs-only decision also does not grant a future AI
+permission to evade an environment-level denial.
+
+Repository checkpoint at unit start: branch
+`codex/decades-replenishment-masterplan`, start SHA
+`c5ba16dccd8621ba9b51f638b000ff4dc46d2b5f`.
+
+Documentation authority commit
+`335749ec3d7a4747332b7b7274f9745ae7177678` is pushed in PR #99. Its exact-SHA
+Sovereign CI Guardrail run `33396459351` passed `Validate project-owned code`;
+the deploy-detection and production-deploy jobs correctly skipped this
+documentation-only change. The unrelated legacy Vercel check reports its known
+blocked account and is not the active Cloudflare production path. Local
+verification passed 999 tests / 0 failures / 3,170 expectations, production
+guardrails, strict typecheck, Astro build, `git diff --check`, local-link
+validation, and the bounded secret-pattern scan. Independent consistency,
+adversarial-governance, and fresh-AI resume reviews completed; all material
+content findings were corrected.
+
+Rollback: revert the planning/documentation commits; no runtime or D1 rollback
+exists because no behavior or production state changed.
+
+Next exact action after this documentation checkpoint is accepted: perform one
+bounded **implementation-plan reconciliation** against the masterplan and
+ADR-007. Do not apply pending registry writes. The reconciliation should make
+clock continuity/fenced failover the first behavior foundation, then add a
+durable shadow dispatcher/observation store and a genuinely capped canary/typed
+transition plane before resuming source promotion.
+
 ## Run 34 — SP-10 code-only, not evidence-ready; safe work exhausted for tonight (2026-08-30)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-10 Workable global feed, code-only)**. Per Run 33's classifier denial ("If you have other tasks that don't depend on this action, continue working on those"), built SP-10's adapter/canary code — the next dependency-ready unit whose build doesn't require the blocked write until its own final promotion step.

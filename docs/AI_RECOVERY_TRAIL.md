@@ -7,6 +7,27 @@ depending on chat history. Every meaningful implementation move should be
 recoverable from GitHub: code, docs, verification, workflow evidence, and the
 next task.
 
+## Current Recovery Checkpoint — 2026-08-31 Source Replenishment constitution
+
+Status: **Durable masterplan and ADR-007 adopted as planning authority; zero
+production behavior change.** The authority chain now separates the permanent
+source constitution from the 2026 Source Perpetuity bootstrap strategy and its
+sole executable SP unit queue.
+
+The permanent destination is constitutional autonomous replenishment rather
+than founder approval for each ordinary source. That autonomy becomes valid
+only after recurrent shadow dispatch/observations, enforced canary bounds,
+schema-contract validation, typed least-privilege transitions, replay, and
+rollback have accepted implementation evidence. Exact-six remains the current
+production boundary. External permission, contracts, payments, credentials,
+constitutional changes, genuine legal disputes, and appeals still require
+accountable external/human/organizational authority.
+
+Resume at `docs/SYSTEM_SAVEPOINT.md`, then follow the read order in
+`docs/DOCS_INDEX.md`. The next action is a bounded implementation-plan
+reconciliation; do not replay historical registry SQL. This file remains a
+milestone pointer rather than a duplicate mutable-state log.
+
 ## Current Recovery Checkpoint — 2026-08-29 Source Perpetuity
 
 Status: **SP-08, SP-09, SP-16, SP-17 TERMINAL — KEEP; SP-12 VERIFYING at a deliberate safety boundary.** This checkpoint closes one long owner-authorized unattended session ("proceed with all... do not stop... fair and reasonable... approved" while the owner rested ~8 hours).
