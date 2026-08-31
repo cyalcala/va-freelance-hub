@@ -2,11 +2,16 @@
 
 ## Status
 
-Accepted
+Accepted; routine-admission governance amended by
+[`ADR-007`](./ADR-007-autonomous-constitutional-source-governance.md)
 
 This ADR accepts a planning direction. It does not activate a source, change a
-runtime policy, or relax an existing production guard. Every source activation
-remains a separately reviewed, tested, reversible, and deployable unit.
+runtime policy, or relax an existing production guard. Its 2026 bootstrap rule
+made every source activation a separately reviewed, tested, reversible, and
+deployable unit. ADR-007 supersedes only the permanent human-acceptance and
+per-identity deployment requirements after the autonomous control plane itself
+is implemented and accepted; the exact-six production boundary remains current
+until then.
 
 ## Date
 
@@ -92,7 +97,9 @@ Examples:
 
 `needs_review` is a bounded queue state, not a permanent compromise. Each
 review must end in a dated decision: allowed, conditional with named controls,
-awaiting permission, blocked, deprecated, or a documented owner escalation.
+awaiting permission, blocked, deprecated, or a documented ADR-007
+external-authority escalation. During the original bootstrap, that escalation
+was routed to the owner.
 `review_ready` is evidence-workflow status, not a third policy axis.
 
 ### 2. Classify access evidence instead of treating every public URL alike
@@ -216,13 +223,21 @@ candidate reserve
   publishing jobs.
 - **Canary:** one source identity runs at a conservative cadence and metadata
   cap. It must pass tests, source-level diagnostics, a defined observation
-  window, rollback rehearsal, and reviewer acceptance.
-- **Active:** promotion occurs in a separate exact-source deployment after the
-  canary evidence is accepted. Monitoring and the kill switch remain enabled.
+  window, and rollback rehearsal. During bootstrap it also requires reviewer
+  acceptance; after the ADR-007 control plane is accepted, a replayable
+  constitutional decision replaces routine human acceptance.
+- **Active:** during bootstrap, promotion occurs in a separate exact-source
+  deployment after the canary evidence is accepted. In the ADR-007 steady
+  state, a typed decision event may perform the bounded transition. Monitoring
+  and the kill switch remain enabled in either model.
 
 Shadow mode is not a loophole for unresolved access authority. No platform-wide
-flip, wildcard tenant approval, or automatic technical promotion is allowed.
-Each identity must be independently attributable and reversible.
+flip or wildcard tenant approval is allowed. Technical health alone never
+promotes a source. ADR-007 permits automatic promotion only after current
+authority, recurrent observation, enforced canary bounds, decision replay, and
+rollback all pass **and** the masterplan's complete named Autonomy Cutover
+Predicate is satisfied; this shorter list is non-exhaustive. Each identity must
+remain independently attributable and reversible.
 
 ### 7. Manage supply and concentration as service objectives
 
@@ -272,10 +287,13 @@ documentation, and customer/partner authority:
 This separation prevents a robots result from being misreported as a complete
 legal or ethical decision while preserving the project's stronger stop rules.
 
-### 9. Make every activation an auditable implementation unit
+### 9. Make every activation auditable
 
-This ADR authorizes the portfolio and planning model only. For every source
-activation, the implementation plan must name the exact identity and include:
+This ADR authorizes the portfolio and planning model only. During bootstrap,
+every source activation is an implementation unit. After the ADR-007 control
+plane is accepted, routine identities under an established mechanism may be
+auditable decision events instead. In either form, every activation names the
+exact identity and includes:
 
 - current official evidence and its lease;
 - metadata/display limits and attribution behavior;
@@ -354,7 +372,9 @@ registry and each production change remains exact and reviewable.
   explained accurately.
 - The reserve and SLOs expose concentration early, before job supply collapses.
 - Provider research can be reused while tenant activation remains exact and
-  separately reviewed.
+  independently auditable. During bootstrap it is separately reviewed; after
+  the complete ADR-007/masterplan cutover it may be a constitutional decision
+  event.
 - Evidence leases create recurring maintenance work. This is intentional:
   changing terms and endpoints cannot support a perpetual one-time approval.
 - Registry, reporting, and staged-promotion machinery add implementation and

@@ -56,8 +56,10 @@ collection, store records, and republish them.
 
 The recovery-driven roadmap is documented in:
 
+- `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
 - `docs/SOURCE_PERPETUITY_STRATEGY.md`
 - `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+- `docs/decisions/ADR-007-autonomous-constitutional-source-governance.md`
 - `docs/decisions/ADR-006-controlled-source-replenishment.md`
 - `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
 - `docs/MASTER_EXECUTION_PLAN.md`
@@ -69,19 +71,27 @@ The recovery-driven roadmap is documented in:
 - `docs/gauntlet/IMPLEMENTATION_UNITS.md`
 - `docs/research/agent-reach-study-2026-08-22.md`
 
-As of the 2026-08-29 planning checkpoint, the project has:
+As of the 2026-08-31 planning checkpoint, the project has:
 
 - a working `/opportunities` route;
-- a healthy ten-minute Cloudflare Worker ingestion clock;
+- a ten-minute Cloudflare Worker ingestion clock whose continuity must be
+  measured independently of workflow success;
 - an accepted exact-six production source boundary, deployed from behavior
   commit `4f5e8dd` by run `33142177229` and retained by its observation window;
 - source-level fetch events, generated source/directory/enrichment evidence, and
   a durable pending-triage fallback;
 - a terminal historical Gauntlet whose 24 units are not the current queue; and
-- an approved Source Perpetuity plan that preserves current behavior while
-  building exact source attribution, a registry/candidate lifecycle, supported
-  feeds, public-API canaries, employer/partner opt-in, reserves, and adaptive
-  replacement.
+- an approved Source Perpetuity bootstrap plan for exact attribution,
+  registry/lifecycle, supported feeds, employer/partner opt-in, reserves, and
+  adaptive replacement; and
+- an accepted decades-scale replenishment constitution: ordinary source
+  admission ultimately becomes evidence-bound and autonomous, while contracts,
+  payments, credentials, real permission, and constitutional changes retain
+  accountable human/organizational authority.
+
+The constitutional target is planning authority, not a claim of deployed
+autonomy. Exact-six production behavior remains current until the control plane
+and each transition are implemented, observed, and accepted.
 
 Start a fresh planning or execution session with
 `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`. Its counts and SHAs must be

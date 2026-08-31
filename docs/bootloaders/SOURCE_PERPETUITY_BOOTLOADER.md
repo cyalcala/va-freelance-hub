@@ -26,6 +26,17 @@ mode, one-unit boundary, source-promotion gates, STOP conditions, provider
 rules, secret/data safety, destructive-action limits, or the need for explicit
 authority when an action materially changes scope or risk.
 
+TARGET GOVERNANCE
+The founder is constitutional steward, not the permanent routine source
+approver. After the autonomous transition plane is implemented and accepted,
+AI may adjudicate and perform ordinary evidence-gated source lifecycle changes
+without affirmative founder approval. This does not let AI invent permission,
+accept contracts, spend money, grant itself credentials, bypass access or tool
+controls, or amend the constitution. Until that plane is proven, preserve the
+current bootstrap boundary and require the masterplan's complete named
+Autonomy Cutover Predicate; shorter summaries are non-exhaustive. Policy
+authority is not the same as execution-tool authority.
+
 PRODUCTION REALITY TO PRESERVE
 - Active runtime/package manager: Bun workspaces.
 - Active frontend/API: Astro under apps/web, with React islands only where
@@ -42,26 +53,31 @@ SOURCE OF TRUTH AND READ ORDER
 Read these before proposing or changing anything:
 1. AGENTS.md, including any nearer directory-specific instructions.
 2. docs/SYSTEM_SAVEPOINT.md — most recent accepted operational baton.
-3. docs/SOURCE_PERPETUITY_STRATEGY.md — durable intent, principles, portfolio
-   model, and decision boundaries for this program.
-4. docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md — dependency-ordered,
+3. docs/SOURCE_REPLENISHMENT_MASTERPLAN.md — durable source constitution,
+   autonomous governance, continuity, stewardship, and AI resume contract.
+4. docs/SOURCE_PERPETUITY_STRATEGY.md — accepted 2026 bootstrap/transition
+   strategy.
+5. docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md — dependency-ordered,
    bounded units and their acceptance gates.
-5. docs/decisions/ADR-006-controlled-source-replenishment.md — accepted
+6. docs/decisions/ADR-007-autonomous-constitutional-source-governance.md —
+   accepted governance amendment and bootstrap cutover rule.
+7. docs/decisions/ADR-006-controlled-source-replenishment.md — accepted
    architecture decision, state vocabulary, and consequences.
-6. docs/MASTER_EXECUTION_PLAN.md — wider project priorities and constraints.
-7. docs/gauntlet/IMPLEMENTATION_UNITS.md — shared execution, verification,
+8. docs/MASTER_EXECUTION_PLAN.md — wider project priorities and constraints.
+9. docs/gauntlet/IMPLEMENTATION_UNITS.md — shared execution, verification,
    handoff, stop, and terminal-decision contracts.
-8. docs/IMPLEMENTATION_STATUS.md, docs/HANDOFF.md, and
+10. docs/IMPLEMENTATION_STATUS.md, docs/HANDOFF.md, and
    docs/AI_RECOVERY_TRAIL.md — status corroboration and
    milestone/interruption recovery history. The savepoint is the sole mutable
    current-session baton.
-9. Relevant docs/gauntlet/evidence/*, generated docs/*-latest.md reports, code,
+11. Relevant docs/gauntlet/evidence/*, generated docs/*-latest.md reports, code,
    tests, Git history, GitHub runs, and read-only production evidence.
 
 The immutable operating mandate and historical audits are evidence, not an
 automatic statement of current production truth. If two authorities conflict,
-do not silently choose one. Prefer freshly verified code and production facts,
-record the contradiction, and STOP before any behavior or production change.
+do not silently choose one. Fresh code and production evidence settle factual
+claims; they do not silently amend policy. Preserve the safer state, record the
+contradiction, and STOP before any behavior or production change.
 
 MANDATORY SESSION PREFLIGHT
 1. State the requested mode: PLAN, EXECUTE, AUDIT, or RECOVER. Never confuse a
@@ -76,9 +92,14 @@ MANDATORY SESSION PREFLIGHT
 3. Preserve every unrelated dirty or untracked file. Do not reset, discard,
    overwrite, move, clean, or opportunistically reformat user work. If the
    approved unit overlaps dirty files, STOP and report the exact overlap.
-4. Reconcile the compact pasted state with repository and remote evidence.
+4. For production D1 SELECT evidence, use the repository-pinned Wrangler with
+   --command --json rather than --file; require success=true,
+   changed_db=false, and rows_written=0. Record UTC as-of time and exact query
+   filters. Treat policy skips separately from real fetches; ok=true on a skip
+   is not source supply.
+5. Reconcile the compact pasted state with repository and remote evidence.
    Label each material claim VERIFIED, INFERRED, HISTORICAL, or UNKNOWN.
-5. Name one next unit only, its prerequisites, allowed files/behavior, rollback
+6. Name one next unit only, its prerequisites, allowed files/behavior, rollback
    point, stop conditions, and acceptance evidence before taking action.
 
 MODE BOUNDARIES
@@ -121,9 +142,12 @@ scraping. Apply these rules together:
 - Never bypass a login, paywall, CAPTCHA, anti-bot control, blocked endpoint,
   access token requirement, or provider rate limit. Never rotate endpoints to
   evade a restriction.
-- Treat uncertain cases as a bounded review state with an owner, evidence need,
-  and re-review date. Do not let needs_review become an invisible permanent
-  backlog, and do not interpret uncertainty as permission to fetch.
+- Treat uncertain cases as a bounded review state with an accountable decision
+  authority, evidence need, and re-review date. Do not let needs_review become
+  an invisible permanent backlog, and do not interpret uncertainty as
+  permission to fetch. Routine AI disagreement means gather more evidence or
+  enter dated dormancy; human escalation is reserved for ADR-007
+  external-authority cases and contested appeals.
 - Prefer pausing a questionable identity while preserving already stored
   records and provenance. Do not delete data unless a separately approved,
   reversible unit explicitly requires it.
@@ -131,8 +155,9 @@ scraping. Apply these rules together:
   genuinely ambiguous legal or contractual questions to a qualified human.
 
 CURRENT PRODUCTION EXPANSION BOUNDARY
-Until a source-perpetuity implementation unit passes every approval and
-acceptance gate, preserve the exact six currently approved production sources:
+Until the transition-plane foundations and a source-specific bootstrap unit
+pass every acceptance gate, preserve the exact six currently approved
+production sources:
 1. We Work Remotely
 2. Remotive
 3. Real Work From Anywhere
@@ -143,21 +168,30 @@ acceptance gate, preserve the exact six currently approved production sources:
 Do not use this list as a forever strategy, but do not silently expand it.
 Unknown, future, and contained ATS identities must remain unable to become
 real-fetch production sources merely because configuration or a directory row
-exists. Each promotion needs the unit-defined official-source
-evidence, identity-specific policy, technical canary, rollback, and production
-acceptance. Preserve the exact-empty rollback and anti-global-expansion guard
-unless a later accepted unit explicitly supersedes them with equal or stronger
-protection.
+exists. Each bootstrap promotion needs unit-defined official-source evidence,
+identity-specific policy, recurrent stored shadow observations, enforced
+source-scoped and aggregate canary budgets, rollback, and production
+acceptance. A registry label,
+one-shot probe, raw posting count, or adapter module is not that evidence.
+Preserve the exact-empty rollback and anti-global-expansion guard unless a later
+accepted unit explicitly supersedes them with equal or stronger protection.
+The complete Autonomy Cutover Predicate in the masterplan governs autonomous
+admission; this boundary summary is non-exhaustive.
 
 CANONICAL SOURCE STATE VOCABULARY
 - Compliance: needs_review, allowed, conditional, awaiting_permission,
   blocked, deprecated.
 - Operations: candidate, shadow, canary, active, review_due, degraded,
   quarantined, paused, retired.
+- Portfolio: core, hot_reserve, warm_reserve, cold_reserve, experimental,
+  dormant, blocked_memory.
 - review_ready is an evidence-workflow status, not a compliance state.
+- A one-shot probe is an evidence event, not an operational state or a shadow.
 - Only compliance-allowed or compliance-conditional sources may enter shadow.
-  Compliance holds never auto-promote; technical auto-recovery applies only to
-  a source whose compliance decision remains current.
+  Technical health alone never promotes. After the ADR-007 transition plane is
+  accepted, current constitutional evidence may authorize an automated typed
+  transition; technical auto-recovery still applies only while authority is
+  current.
 
 PERPETUITY AND ADAPTABILITY TEST
 Every proposed source unit must improve a renewable system, not just add a URL.
@@ -167,7 +201,7 @@ At minimum, specify:
 - normalized stable identity and provenance;
 - fetch cadence, validator/cache behavior, budget, and rate-limit response;
 - quality, freshness, yield, duplicate, and failure measurements;
-- lifecycle states, review owner/SLA, pause and retirement rules;
+- lifecycle states, decision authority/SLO, pause and retirement rules;
 - canary population, promotion gate, rollback, and blast-radius containment;
 - how the source can be replaced without rewriting the ingestion spine.
 
@@ -292,7 +326,12 @@ Known dirty or untracked files (do not overwrite): UNKNOWN
 Current unit status: UNKNOWN
 Current terminal decision, if any: UNKNOWN
 Current blockers/STOP conditions: UNKNOWN
-Known owner approvals or constraints: Use repository evidence; UNKNOWN otherwise
+Known external-authority decisions or constraints: Use repository evidence; UNKNOWN otherwise
+Constitution/policy/schema versions: UNKNOWN
+Observed versus merely labeled capabilities: UNKNOWN
+Real fetching sources and registry/reserve counts: UNKNOWN
+Clock count, last heartbeat, and largest recent gap: UNKNOWN
+Evidence hashes and decision replay status: UNKNOWN
 Rollback point: UNKNOWN
 Next exact action believed to be ready: Rediscover and verify from repository
 Additional context (non-authoritative until verified): NONE

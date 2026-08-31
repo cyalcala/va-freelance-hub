@@ -17,6 +17,29 @@ it does not claim that any production fix described below has been implemented.
 Model assignments are capability recommendations, not claims that a provider
 or integration is available.
 
+## 2026-08-31 Source Replenishment constitutional overlay
+
+`docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` is the durable authority for
+decades-scale source governance. ADR-007 amends ADR-006 by removing mandatory
+founder/reviewer approval from the **target steady state** for ordinary source
+identities. It does not implement autonomous promotion or change production.
+
+The recovery read order for source work is now: `AGENTS.md`, current savepoint,
+Source Replenishment Masterplan, Source Perpetuity Strategy, SP implementation
+plan, ADR-007, ADR-006, then this wider plan and historical ledgers. The SP plan
+remains the only executable unit queue.
+
+During bootstrap, exact-six production behavior and source-specific units stay
+in force. Before routine admissions can become replayable decision events, the
+complete named **Autonomy Cutover Predicate** in the Source Replenishment
+Masterplan must pass; shorter summaries are non-exhaustive. A registry label,
+one-shot probe, adapter, HTTP success, or raw posting count is not proof of
+those capabilities.
+
+The replenishment loop is permanent. SP-20 may accept an initial 30-day
+capability epoch; it cannot declare source renewal, failover, replacement,
+restore, model portability, or succession permanently terminal.
+
 ## 2026-08-29 Source Perpetuity authority overlay
 
 The 24-unit Gauntlet is terminal historical evidence. The next approved
@@ -24,16 +47,18 @@ program is Source Perpetuity. The canonical read order is:
 
 1. `AGENTS.md`;
 2. `docs/SYSTEM_SAVEPOINT.md` — sole mutable session baton;
-3. `docs/SOURCE_PERPETUITY_STRATEGY.md`;
-4. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`;
-5. `docs/decisions/ADR-006-controlled-source-replenishment.md`;
-6. this master plan for wider architecture, safety, GitHub, and recovery
+3. `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`;
+4. `docs/SOURCE_PERPETUITY_STRATEGY.md`;
+5. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`;
+6. `docs/decisions/ADR-007-autonomous-constitutional-source-governance.md`;
+7. `docs/decisions/ADR-006-controlled-source-replenishment.md`;
+8. this master plan for wider architecture, safety, GitHub, and recovery
    constraints;
-7. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 rules and terminal
+9. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 rules and terminal
    history;
-8. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
+10. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
    `docs/AI_RECOVERY_TRAIL.md`; and
-9. current unit evidence, generated reports, code/tests, Git history, GitHub
+11. current unit evidence, generated reports, code/tests, Git history, GitHub
    runs, and fresh read-only production evidence.
 
 The new program refines only the dated blanket source-expansion posture in
@@ -48,8 +73,10 @@ exact-SHA CI/deploy, and production gates.
 ## A. Executive assessment
 
 VA Freelance Hub is a working Cloudflare/Astro/D1 public job index with a
-healthy ten-minute ingestion clock, broad automated maintenance, and a strong
-accepted test/deployment baseline. The old June emergency—missing
+configured ten-minute ingestion clock, broad automated maintenance, and a
+strong accepted test/deployment baseline. Later evidence found material clock
+continuity gaps; use the current savepoint rather than inferring health from
+configuration. The old June emergency—missing
 `/opportunities`, oversized category pages, and a frozen board—is no longer the
 current system.
 
@@ -255,8 +282,10 @@ Manual extensions
 - **Source origin:** two Jobicy feeds compete on one rate-limited origin.
 - **Event history:** cadence skips can generate roughly 5,900 rows/day at the
   current source/tick envelope; query/index cost must be measured.
-- **Human review:** compliance approval and ambiguous domain ownership cannot be
-  automated away.
+- **Governance:** ordinary bounded source admission may become constitutional
+  and autonomous under ADR-007. External permission, contracts, payments,
+  credentials, genuine legal ambiguity, contested appeals, and constitutional
+  changes cannot be fabricated or automated away.
 - **Continuity:** auto-commits advance `main`; stale worktrees and duplicated
   “current” docs increase resume cost.
 
@@ -601,18 +630,18 @@ Stop a unit and checkpoint `PARTIAL` or `BLOCKED` when:
 ## AC. EXECUTION_STATE
 
 ```text
-CURRENT VERIFIED SYSTEM STATE: all 24 Gauntlet units are terminal historical evidence; exact-six source behavior is accepted; the active overlay is Source Perpetuity
-CURRENT BASELINES: re-measure from production; dated 2026-08-29 planning evidence is summarized in the strategy/savepoint
+CURRENT VERIFIED SYSTEM STATE: all 24 Gauntlet units are terminal history; exact-six remains production; the durable target is the Source Replenishment Masterplan while the SP plan remains the executable bootstrap queue
+CURRENT BASELINES: re-measure from production; dated adoption evidence and current caveats are at the top of the savepoint
 LAST ACCEPTED GAUNTLET UNIT: COMP-01B reviewed enforcement rollout — TERMINAL KEEP
-CURRENT UNIT: SP-00 durable planning and recovery package
+CURRENT UNIT: Run 35 documentation-only Source Replenishment constitution
 CURRENT UNIT STATUS: IN PROGRESS until GitHub exact-SHA CI and docs-only integration evidence are recorded
 CURRENT EXECUTOR: repository planner
 CURRENT WORKTREE / BRANCH: see the top of docs/SYSTEM_SAVEPOINT.md; it is the sole mutable baton
-NEXT UNIT: SP-01 exact source identity, but only after SP-00 TERMINAL KEEP
-BLOCKERS: none for SP-00; source activations remain dependency-gated
-CONTRADICTIONS: dated source-freeze and old first-queue prose are superseded only as stated in the 2026-08-29 overlay
+NEXT UNIT: one bounded SP implementation-plan reconciliation after Run 35 is accepted
+BLOCKERS: autonomous cutover capabilities are not implemented; historical registry SQL is not ready or the next action
+CONTRADICTIONS: historical owner-review and probe-as-shadow prose is superseded only as stated in the 2026-08-31 overlay and newer batons
 SOURCE HEALTH: use current docs/*-latest.md and fresh read-only queries; old counts are historical
-NEXT EXACT ACTION: complete, push, CI-verify, merge, and checkpoint SP-00
+NEXT EXACT ACTION: complete, push, CI-verify, and checkpoint Run 35; then reconcile the SP plan without mutating production
 ```
 
 The top of `docs/SYSTEM_SAVEPOINT.md` is the authoritative mutable baton after

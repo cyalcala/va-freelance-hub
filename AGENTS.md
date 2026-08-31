@@ -63,25 +63,28 @@ GitHub Actions daily/periodic maintenance
 
 ## Current Audit Baseline
 
-After reading this file, read the current authority in this order:
+After reading this file, use this recovery read order. It is not policy
+precedence; source-domain precedence is defined in the masterplan:
 
 1. `docs/SYSTEM_SAVEPOINT.md`
-2. `docs/SOURCE_PERPETUITY_STRATEGY.md`
-3. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
-4. `docs/decisions/ADR-006-controlled-source-replenishment.md`
-5. `docs/MASTER_EXECUTION_PLAN.md`
-6. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 execution rules and
+2. `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
+3. `docs/SOURCE_PERPETUITY_STRATEGY.md`
+4. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+5. `docs/decisions/ADR-007-autonomous-constitutional-source-governance.md`
+6. `docs/decisions/ADR-006-controlled-source-replenishment.md`
+7. `docs/MASTER_EXECUTION_PLAN.md`
+8. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 execution rules and
    terminal history
-7. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
+9. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
    `docs/AI_RECOVERY_TRAIL.md`
-8. current evidence and generated `docs/*-latest.md` operational reports
+10. current evidence and generated `docs/*-latest.md` operational reports
 
 The complete user-supplied Gauntlet source is archived verbatim at
 `docs/gauntlet/OPERATING_MANDATE.md`. It is immutable source evidence, not the
 compact default execution context; consult it for mandate audits or
 contradictions.
 
-Current 2026-08-29 planning baseline:
+Current 2026-08-31 planning baseline:
 
 - The prior Gauntlet is terminal historical evidence; its 24 units are not the
   active queue. Do not reopen them without new failure evidence.
@@ -89,14 +92,25 @@ Current 2026-08-29 planning baseline:
   Remotely, Remotive, Real Work From Anywhere, Remote OK, and two Jobicy APAC
   feeds. Behavior commit `4f5e8dd` passed deployment run `33142177229` and its
   accepted observation window.
-- The active next program is Source Perpetuity: replace indefinite blanket
-  freezes with evidence-tiered, source-specific replenishment while keeping the
-  exact six unchanged until each new source passes its own unit gates.
-- A 2026-08-29 read-only planning query found 1,277 active rows, 875
-  PH-eligible, and 597 PH-eligible seen within 14 days. These counts are dated
-  evidence, not current truth; every executor must re-measure.
-- SP-00 is the documentation/backup unit. After its terminal GitHub checkpoint,
-  SP-01 exact source attribution is the first implementation unit.
+- The durable target is constitutional, evidence-bound autonomous source
+  replenishment under `SOURCE_REPLENISHMENT_MASTERPLAN.md` and ADR-007. The
+  founder is not the permanent routine source-approval gate.
+- This planning decision does not implement that autonomy. Exact-six behavior
+  remains unchanged until the complete named **Autonomy Cutover Predicate** in
+  the masterplan passes; shorter summaries elsewhere are non-exhaustive.
+- SP-00 through SP-09 and SP-16/SP-17 are terminal. SP-10 is code-only and not
+  evidence-ready; SP-11/SP-12/SP-14/SP-15 are one-shot mechanism probes, not
+  recurrent shadows or real canaries; SP-13 is a robots NO-GO. Verify the
+  current savepoint before relying on these dated classifications.
+- A 2026-08-31 read-only audit found the production registry and durable
+  candidate reserve empty, all ATS identities skipped, weak exact-source
+  attribution, and one automatic ingestion clock with material recent gaps.
+  These are dated observations, not current truth; every executor must
+  re-measure.
+- Do not begin with the historically pending registry SQL. First reconcile the
+  remaining SP unit contracts with the masterplan through an explicit bounded
+  planning decision; a state label alone does not dispatch a shadow or enforce
+  a canary.
 - Automation may advance `origin/main`; every unit must fetch, preserve dirty
   work, and restate its full start SHA.
 
@@ -119,8 +133,10 @@ project's scope:
 
 Canonical recovery docs:
 
+- `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
 - `docs/SOURCE_PERPETUITY_STRATEGY.md`
 - `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+- `docs/decisions/ADR-007-autonomous-constitutional-source-governance.md`
 - `docs/decisions/ADR-006-controlled-source-replenishment.md`
 - `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
 - `docs/MASTER_EXECUTION_PLAN.md`

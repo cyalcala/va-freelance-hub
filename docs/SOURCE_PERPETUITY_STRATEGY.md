@@ -1,10 +1,29 @@
 # Source Perpetuity Strategy
 
-**Status:** Accepted planning direction  
-**Date:** 2026-08-29  
-**Scope:** Sustainable, adaptable job-source supply for VA Freelance Hub  
-**Behavior change authorized by this document:** None. Every source activation
-remains a separate reviewed, tested, reversible implementation unit.
+**Status:** Accepted 2026 bootstrap/transition strategy; subordinate to the
+Source Replenishment Masterplan
+
+**Date:** 2026-08-29
+
+**Scope:** Sustainable, adaptable job-source supply for VA Freelance Hub
+
+**Behavior change authorized by this document:** None. During bootstrap, every
+source activation remains a separate tested, reversible implementation unit.
+
+## Relationship to the durable masterplan
+
+`docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` and ADR-007 are the durable authority
+for decades-scale source governance. They replace mandatory founder/reviewer
+acceptance as the target steady-state model with constitutional,
+evidence-bound autonomous admission.
+
+This strategy remains the accepted 2026 transition program. It does not prove
+the autonomous control plane exists. Until the complete named **Autonomy
+Cutover Predicate** in `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` passes, the
+exact-six boundary and source-specific bootstrap gates stay in force; any
+shorter gate summary is non-exhaustive. Older
+human-review wording in completed-unit history records the governance in force
+when that work occurred; it is not a permanent founder-approval requirement.
 
 ## Executive decision
 
@@ -414,9 +433,9 @@ Stop the current unit without broadening scope when any of these occurs:
 A stop creates a bounded follow-up or a dormant candidate. It does not justify
 an alternate undocumented endpoint.
 
-## Success definition
+## Initial program acceptance
 
-The program is terminal only when:
+The first Source Perpetuity capability epoch may be accepted when:
 
 - source supply meets the measured freshness SLO across a representative
   30-day window;
@@ -429,22 +448,28 @@ The program is terminal only when:
 - a fresh AI session can resume correctly using only repository docs and the
   reusable bootloader.
 
+That finite acceptance does not make replenishment terminal. Evidence renewal,
+source replacement, failover, restore, reserve, model-replacement, and
+succession drills continue permanently under the masterplan.
+
 ## Authority and recovery
 
 Read in this order:
 
 1. `AGENTS.md`, including any nearer directory-specific instructions
 2. `docs/SYSTEM_SAVEPOINT.md`
-3. this strategy
-4. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
-5. `docs/decisions/ADR-006-controlled-source-replenishment.md`
-6. `docs/MASTER_EXECUTION_PLAN.md` for wider project constraints and source
+3. `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
+4. this strategy
+5. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+6. `docs/decisions/ADR-007-autonomous-constitutional-source-governance.md`
+7. `docs/decisions/ADR-006-controlled-source-replenishment.md`
+8. `docs/MASTER_EXECUTION_PLAN.md` for wider project constraints and source
    sections explicitly marked as superseded
-7. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 execution rules and
+9. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 execution rules and
    terminal history
-8. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
+10. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
    `docs/AI_RECOVERY_TRAIL.md`
-9. current evidence and operational `docs/*-latest.md` reports
+11. current evidence and operational `docs/*-latest.md` reports
 
 The prior Gauntlet remains accepted historical evidence. This program does not
 reopen its terminal units; it builds the next controlled growth layer on top of

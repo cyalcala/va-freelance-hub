@@ -1,11 +1,39 @@
 # Implementation Plan: Source Perpetuity Program
 
 **Status:** Approved for dependency-ordered execution; no implementation unit
-is implicitly approved to skip its own evidence gates.  
-**Date:** 2026-08-29  
-**Strategy:** `docs/SOURCE_PERPETUITY_STRATEGY.md`  
-**Decision:** `docs/decisions/ADR-006-controlled-source-replenishment.md`  
+is implicitly approved to skip its own evidence gates.
+
+**Date:** 2026-08-29
+
+**Durable authority:** `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
+
+**Strategy:** `docs/SOURCE_PERPETUITY_STRATEGY.md`
+
+**Decisions:** `docs/decisions/ADR-007-autonomous-constitutional-source-governance.md`
+and `docs/decisions/ADR-006-controlled-source-replenishment.md`
+
 **Resume prompt:** `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
+
+## 2026-08-31 constitutional transition note
+
+ADR-007 replaces mandatory founder/reviewer approval as the target governance
+model for ordinary source identities. It does not retroactively turn a probe,
+registry label, or code module into an operating shadow/canary, and it does not
+grant broader tool credentials.
+
+Completed history below remains verbatim evidence of the rules and execution
+environment in force at the time. Before any remaining production-changing
+unit resumes, this plan requires a bounded reconciliation decision against the
+complete named **Autonomy Cutover Predicate** in the masterplan; shorter gate
+summaries in this plan are non-exhaustive. Do not begin by applying the
+historically pending registry SQL.
+
+After that control plane is implemented and accepted, routine exact identities
+under an established mechanism may become auditable decision events rather
+than deployments. New mechanisms, constitutional changes, contracts,
+purchases, credentials, and real external permission remain separately
+governed. This file remains the sole executable unit queue; the masterplan is
+not direct implementation authorization.
 
 ## Objective
 
@@ -36,7 +64,8 @@ Out of scope:
 - CAPTCHA/login/paywall bypass;
 - private, internal, unlisted, or draft postings;
 - unrestricted HTML scraping or full-description mirroring;
-- paid provider commitments without explicit owner approval; and
+- paid provider commitments without explicit accountable organizational
+  authority; and
 - a global source enablement flip.
 
 ## Architecture decisions
@@ -66,7 +95,7 @@ SP-00 durable plan
               -> SP-04 behavior-preserving policy resolver
                   -> SP-05 candidate lifecycle + evidence leases
                       -> SP-06 Prospector candidate queue
-                      -> SP-07 runtime Source Doctor shadow
+                      -> SP-07 one-shot runtime Source Doctor probe
                           -> SP-08 evidence/review-debt automation
                               -> SP-09 Workable feasibility
                                   -> SP-10 Workable shadow/canary
@@ -81,7 +110,7 @@ SP-00 durable plan
 Two accepted canaries among SP-10..SP-15
   -> SP-18 adaptive cadence/quarantine/renewal
       -> SP-19 portfolio SLO and replacement automation
-          -> SP-20 30-day perpetuity acceptance
+          -> SP-20 initial 30-day capability acceptance
 ```
 
 SP-06 and SP-07 may be developed in parallel after SP-05 if their shared
@@ -129,20 +158,29 @@ unless the existing workflow does so automatically.
 | SP-04 | Registry-backed behavior-preserving policy resolver | SP-03 | TERMINAL — KEEP |
 | SP-05 | Candidate lifecycle, evidence lease, opt-out states | SP-04 | TERMINAL — KEEP |
 | SP-06 | Prospector writes durable non-publishing candidates | SP-05 | TERMINAL — KEEP |
-| SP-07 | Source Doctor evaluates runtime candidates in shadow | SP-05 | TERMINAL — KEEP |
+| SP-07 | Source Doctor performs bounded one-shot candidate probes | SP-05 | TERMINAL — KEEP |
 | SP-08 | Evidence packets, deadlines, and review-debt reports | SP-06, SP-07 | TERMINAL — KEEP |
 | SP-09 | Workable global XML feasibility decision | SP-08 | TERMINAL — KEEP |
-| SP-10 | Workable shadow and one canary | SP-09 KEEP | IN PROGRESS (code-only, not evidence-ready) |
-| SP-11 | Lever public Postings API shadow and one canary | SP-08 | VERIFYING |
-| SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | VERIFYING |
+| SP-10 | Workable shadow and one canary | SP-09 KEEP | CODE-ONLY (not evidence-ready or dispatched) |
+| SP-11 | Lever public Postings API shadow and one canary | SP-08 | VERIFYING (one-shot probe only) |
+| SP-12 | Greenhouse minimal-index shadow and one canary | SP-08 | VERIFYING (one-shot probe only) |
 | SP-13 | SmartRecruiters adapter, shadow, and canary | SP-08 | BLOCKED (real robots.txt NO-GO) |
-| SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | VERIFYING |
-| SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | VERIFYING |
+| SP-14 | Teamtailor RSS adapter, shadow, and canary | SP-08 | VERIFYING (one-shot probe only) |
+| SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | VERIFYING (one-shot probe only) |
 | SP-16 | Employer “bring your feed” intake | SP-05 | TERMINAL — KEEP |
 | SP-17 | Partner/permission evidence pipeline | SP-05 | TERMINAL — KEEP |
 | SP-18 | Adaptive operations and evidence renewal | Two source canaries KEEP | PLANNED |
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
-| SP-20 | 30-day perpetuity acceptance and independent resume drill | SP-19 | PLANNED |
+| SP-20 | Initial 30-day capability acceptance and independent resume drill | SP-19 | PLANNED |
+
+The four one-shot provider probes above are not recurring shadows, canaries, or
+ready reserves. The current policy resolver does not dispatch non-publishable
+`shadow` rows, the static cron does not enumerate every new adapter, and
+`canary` does not yet enforce a source-level publication cap. A 2026-08-31
+schema audit also found the documented Lever, Teamtailor, and Recruitee profile
+objects incompatible with current D1 CHECK values. Those inserts require a
+schema/profile normalization decision and contract validation; they are not
+ready SQL. Raw provider counts are not unique Filipino-eligible accepted yield.
 
 SP-01 is TERMINAL — KEEP (behavior `1a5d188`, CI/deploy `33240866482`,
 migration `0034` applied, read-only D1 acceptance confirmed 10/10 post-deploy
@@ -867,7 +905,9 @@ a compliance hold.
 - [ ] Cadence reacts only within the reviewed envelope and honors cache headers,
       feed TTL, 429/backoff, and shared-origin budgets.
 - [ ] Three healthy probes across at least 72 hours may recover a technical
-      quarantine; compliance blocks require a new human-reviewed decision.
+      quarantine; authority blocks require a new constitutional evidence
+      decision, with human/organizational review only for an external-authority
+      case defined by ADR-007.
 - [ ] Evidence expiry quarantines future collection and starts renewal 30 days
       early without deleting stored jobs.
 
@@ -898,12 +938,14 @@ read-only D1 reconciliation, synthetic source-loss drill.
 **Dependencies:** SP-18.  
 **Likely files:** rollup script, workflow/alert lifecycle, tests, latest report.  
 **Estimated scope:** M.  
-**Rollback:** advisory-only reporting; disable automatic candidate promotion to
-review (never to publish).
+**Rollback:** advisory-only reporting; disable automatic lifecycle transitions.
+Before the accepted transition plane, replacement triggers create candidates
+only. Afterwards they may request only constitutionally valid, capped
+transitions—never a direct unobserved jump to active.
 
-## Phase 5 — Perpetuity acceptance
+## Phase 5 — Initial perpetuity-capability acceptance
 
-### SP-20: Run 30-day acceptance and independent resume drill
+### SP-20: Run initial 30-day acceptance and independent resume drill
 
 **Description:** Observe a representative portfolio window, prove rollback and
 replacement, and verify a fresh AI can continue solely from GitHub docs and the
@@ -931,7 +973,7 @@ success from an immature window.
 ### Final checkpoint
 
 - [ ] Ten source families, eight origins, and three acquisition channels are
-      met or an owner-approved evidence-based target supersedes them.
+      met or a versioned constitutional evidence-based target supersedes them.
 - [ ] No provider/origin exceeds the accepted concentration envelope without a
       visible replacement plan.
 - [ ] Two ready reserves exist and one replacement drill passed.
@@ -940,6 +982,11 @@ success from an immature window.
 - [ ] Bootloader resume drill passed from a fresh context.
 - [ ] Every accepted unit is committed, pushed, CI/deploy verified as required,
       and recorded in the savepoint.
+
+Passing this checkpoint certifies one maturity epoch only. It does not make the
+replenishment function terminal; renewal, replacement, failover, restore,
+reserve, model-replacement, and succession drills continue permanently under
+the masterplan.
 
 ## Risk register
 
