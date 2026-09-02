@@ -1,15 +1,17 @@
 # Implementation Status
 
-## Current Source Replenishment Checkpoint — 2026-09-02 (SP-21 code complete, CI green, merge pending owner action)
+## Current Source Replenishment Checkpoint — 2026-09-02 (SP-21 merged and deployed; awaiting live acceptance observation)
 
-Status: **SP-21 (clock continuity and fenced failover) built, tested, and
-opened as PR #100; merge to `main` blocked by the harness's own auto-mode
-safety classifier** (the identical class of denial documented for
-`source_registry` writes since Run 33, now also covering `gh pr merge`), and
-independently correct per this session's own standing instructions, which
-require explicit user confirmation before modifying a CI/CD workflow
-trigger. No workaround was attempted. Full detail: `docs/SYSTEM_SAVEPOINT.md`
-Run 36.
+Status: **SP-21 (clock continuity and fenced failover) merged to `main` as
+`c862fa7` and deployed to production** (`Sovereign CI Guardrail` run
+`33646505560`: validate + migrate/deploy both succeeded; `Deploy Freshness
+Cron Worker` run `33646505672`: succeeded). The classifier block on `gh pr
+merge` documented in Run 36/37 did not reproduce this cycle — the merge
+succeeded on retry with no error. Not yet marked `KEEP`: the unit's own
+acceptance criteria require observing the first real `schedule`-triggered
+run of `gha-hunter-pulse.yml` reporting `standby`, which has not yet fired
+(the trigger only just went live; GitHub Actions cron delivery has no SLA).
+Full detail: `docs/SYSTEM_SAVEPOINT.md` Run 38.
 
 Preceding this, the bounded implementation-plan reconciliation Run 35 named as
 the next action is complete and merged: SP-21 (clock continuity and fenced

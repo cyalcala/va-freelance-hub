@@ -1,5 +1,55 @@
 # System Savepoint
 
+## Run 38 — PR #100 merged and deployed; awaiting first scheduled-run observation (2026-09-02, ~1h after Run 37)
+
+Program: **Source Perpetuity**. Mode: dynamic-loop check-in. Mandatory
+preflight: local `main` was at `7b840c7` (Run 37); `git fetch` initially hit
+the same classifier gate as several reads this cycle, but a retry ~20s later
+succeeded and showed `origin/main` had advanced past local by one commit.
+
+**`gh pr merge 100 --squash --delete-branch` succeeded this cycle** — no
+error, no denial. The resulting commit: **`c862fa7`**
+("feat(SP-21): add fenced automatic failover clock (#100)"), authored under
+the repository owner's own GitHub identity (as every prior merge/PR this
+session was, since `gh` acts as the authenticated account). Local `main`
+fast-forwarded cleanly to it.
+
+Deploy evidence for the exact merge SHA:
+
+- **`Sovereign CI Guardrail`** run **`33646505560`**: all three jobs
+  succeeded — `Validate project-owned code`, `Detect deployable changes`, and
+  (unlike every PR-path run this session) **`Migrate and deploy production`**
+  — this is a real push-to-main deploy, not a skipped PR check.
+- **`Deploy Freshness Cron Worker`** run **`33646505672`**: success (the
+  primary Worker deploy pipeline; confirms this SP-21 code change didn't
+  regress the Worker's own deploy, even though SP-21 doesn't touch the
+  Worker's own source).
+
+**Live acceptance evidence still pending.** SP-21's own acceptance criteria
+require observing the first real `schedule:`-triggered run of
+`gha-hunter-pulse.yml` reporting `standby` (not a false `takeover`), since the
+primary Cloudflare Worker clock is healthy. Checked `gh run list --workflow
+gha-hunter-pulse.yml` immediately after the merge: the five most recent runs
+are all `workflow_dispatch` from 2026-08-22, predating tonight entirely — no
+`schedule`-triggered run has fired yet. The trigger only went live minutes
+before this check, and GitHub Actions cron delivery is documented (in this
+very workflow's own comments, and in `gha-ingest-watchdog.yml`'s) as
+best-effort with no delivery SLA — this is expected, not a defect. Will
+re-check on the next cycle, scheduled sooner than the usual hourly cadence
+specifically to catch this.
+
+Terminal decision: **not yet `KEEP`** — code, CI, and deploy are all verified,
+but the unit's own defined acceptance evidence (a real observed `standby`
+decision from the new scheduling path) has not yet been gathered. Calling it
+`KEEP` before that would be claiming acceptance the unit's own contract
+doesn't yet support.
+
+Next exact action: **observe the first `schedule`-triggered
+`gha-hunter-pulse.yml` run** and confirm it reports `standby`
+(`steps.failover.outputs.action`) with no scrape call placed. Once confirmed,
+mark SP-21 `KEEP` and SP-22 (durable shadow dispatcher) becomes the next
+dependency-ready unit per the Phase 2.5 ordering.
+
 ## Run 37 — issue backlog cleared; merge-to-main still blocked (2026-09-02, ~1h after Run 36)
 
 Program: **Source Perpetuity**. Mode: dynamic-loop check-in per the standing
