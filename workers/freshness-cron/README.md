@@ -27,11 +27,21 @@ npx wrangler secret put PROXY_SECRET
 # paste the SAME value as the Pages project's PROXY_SECRET
 ```
 
-Missing secret configuration is a deployment and runtime failure. The Worker
-is the sole production clock; the hourly GitHub watchdog files an issue when
-the durable heartbeat is absent after grace, degraded, or at least three hours
-stale. GitHub scheduling is best effort, so this is measured operational
-evidence rather than a guaranteed sub-three-hour delivery promise.
+Missing secret configuration is a deployment and runtime failure. This Worker
+is the **primary** production clock. Since SP-21
+(docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md), a fenced **secondary**
+clock also exists: `.github/workflows/gha-hunter-pulse.yml`'s `schedule:`
+trigger (every 15 minutes) reads the same durable heartbeat this Worker
+writes on every real run and takes over with one bounded scrape call only
+when the primary has genuinely stalled (default: no attempt in 30+ minutes —
+`packages/scraper/failover-clock.ts`). It is not a second unconditional
+clock — a healthy primary is never doubled. The hourly GitHub watchdog
+(`gha-ingest-watchdog.yml`) remains a separate, human-facing alert: it files
+an issue when the heartbeat is absent after grace, degraded, or at least
+three hours stale, regardless of whether the secondary clock already
+recovered ingestion. GitHub scheduling is best effort for both, so this
+bounds the primary's failure window on a best-effort basis, not a guaranteed
+delivery promise.
 
 ## Verify
 

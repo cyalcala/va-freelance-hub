@@ -291,3 +291,8 @@ export {
 } from "./urls";
 export { toContentHash } from "./contentHash";
 export { decodeHtmlEntities, safeFromCodePoint, xmlNodeText, xmlTextList, fixMojibake } from "./text";
+export {
+  decideFailoverTakeover,
+  DEFAULT_STALE_AFTER_MINUTES,
+} from "./failover-clock";
+export type { FailoverAction, FailoverDecision, FailoverEvidence } from "./failover-clock";

@@ -1,6 +1,18 @@
 name: 🏹 Sovereign Hunter Pulse
 
 on:
+  # SP-21 (docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md): a second,
+  # independent automatic scheduling path — distinct trigger, runtime, and
+  # administrator identity from the Cloudflare Worker Cron Trigger in
+  # workers/freshness-cron. FENCED, not a second unconditional clock: the
+  # "Determine Failover Necessity" step below reads the durable heartbeat and
+  # only proceeds to call the scrape endpoint when the primary has genuinely
+  # stalled (masterplan Section 11: "A second clock without fencing is
+  # duplicate traffic, not resilience"). GitHub schedules have no delivery
+  # SLA, so this bounds the primary's failure window to tens of minutes on a
+  # best-effort basis, not a guarantee — see workers/freshness-cron/README.md.
+  schedule:
+    - cron: '*/15 * * * *'
   workflow_dispatch:
     inputs:
       write_rollup:
@@ -45,9 +57,56 @@ jobs:
       - name: Install Dependencies
         run: bun install --frozen-lockfile
 
+      # ── SP-21 fenced failover: schedule-triggered runs only ──────────────
+      # A manual workflow_dispatch (the pre-existing Hunter fallback) always
+      # proceeds straight to the scrape call, unchanged. A schedule-triggered
+      # run is the new automatic secondary clock and must check the durable
+      # heartbeat first — the primary's own `__ingest_diag__` row, written on
+      # every real scrape attempt (recordIngestDiagnostics in scrape.ts) —
+      # before deciding whether to take over.
+      - name: Query Durable Clock Heartbeat (schedule only)
+        if: ${{ github.event_name == 'schedule' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          npx wrangler@4.120.0 d1 execute DB --remote --env production \
+            --config wrangler.jsonc --json --command "
+              SELECT last_attempt_at FROM source_fetch_state
+              WHERE source_id = '__ingest_diag__'
+              LIMIT 1;
+            " > ../../failover-diag.json \
+            || { echo "warning: heartbeat query failed; failover decision will fail safe to standby"; echo '[{"results":[]}]' > ../../failover-diag.json; }
+
+      - name: Determine Failover Necessity (schedule only)
+        id: failover
+        if: ${{ github.event_name == 'schedule' }}
+        run: |
+          set -euo pipefail
+          DECISION=$(bun scripts/gha/evaluate-failover-clock.ts failover-diag.json)
+          echo "Failover decision: $DECISION"
+          echo "action=$(echo "$DECISION" | jq -r .action)" >> "$GITHUB_OUTPUT"
+          echo "reason=$(echo "$DECISION" | jq -r .reason)" >> "$GITHUB_OUTPUT"
+
+      - name: Report Failover Standby (schedule only, no takeover)
+        if: ${{ github.event_name == 'schedule' && steps.failover.outputs.action != 'takeover' }}
+        run: |
+          {
+            echo "### 🕰️ SP-21 Failover Clock"
+            echo "- Action: ${{ steps.failover.outputs.action }} (no scrape call placed)"
+            echo "- Reason: ${{ steps.failover.outputs.reason }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Primary clock evidence: ${{ steps.failover.outputs.action }} — ${{ steps.failover.outputs.reason }}"
+
       - name: "Single Scrape Invocation (OPS-06: aligned with 8-min run lock)"
         id: hunt
+        if: ${{ github.event_name != 'schedule' || steps.failover.outputs.action == 'takeover' }}
         run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "SP-21 fenced takeover: ${{ steps.failover.outputs.reason }}"
+          fi
           echo "{}" > harvest.log
 
           HTTP_CODE=$(curl -s -w "%{http_code}" -o temp_harvest.log -X POST "$SCRAPE_API_URL" \
