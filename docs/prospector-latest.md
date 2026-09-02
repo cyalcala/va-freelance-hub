@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-09-02
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33591522168
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33624157775
 
 | Metric | Value |
 | --- | ---: |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33591522
 
 ## Auto-added companies
 
-- Percona
+- Upstart
 
 ## Durable candidate queue (SP-06, non-publishing)
 
