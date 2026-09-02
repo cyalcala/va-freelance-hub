@@ -1,6 +1,26 @@
 # Implementation Status
 
-## Current Source Replenishment Checkpoint — 2026-08-31 (planning authority only)
+## Current Source Replenishment Checkpoint — 2026-09-02 (continuity reconciliation, planning + one bounded behavior slice)
+
+Status: **Bounded implementation-plan reconciliation complete.** Added SP-21
+(clock continuity and fenced failover), SP-22 (durable shadow dispatcher and
+observation store), and SP-23 (capped canary and typed transition plane) to
+`docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md` as Phase 2.5, gating
+resumption of the historically pending SP-10..SP-15 registry writes and
+SP-18/19/20. This is the exact next action Run 35 named. No `source_registry`,
+`provider_profiles`, or `source_decisions` write occurred.
+
+A fresh code read while planning found `apps/web/src/pages/api/cron/scrape.ts`
+already has an atomic D1-backed run lock (`acquireRunLock`) built explicitly
+for two triggers calling the scrape endpoint, and
+`.github/workflows/gha-hunter-pulse.yml` is already fully lock-aware but has
+had no `schedule:` trigger since a 2026-07-31 audit (P-5) removed it as
+redundant Actions-minutes spend — a decision made before this masterplan's
+continuity requirement existed. SP-21 reverses that specific tradeoff: see
+`docs/SYSTEM_SAVEPOINT.md` for exact status once SP-21's own behavior slice
+executes.
+
+## Prior Source Replenishment Checkpoint — 2026-08-31 (planning authority only)
 
 Status: **Decades Source Replenishment Masterplan and ADR-007 accepted as
 documentation; exact-six production behavior unchanged.** The founder is no

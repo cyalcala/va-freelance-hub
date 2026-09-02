@@ -35,6 +35,49 @@ purchases, credentials, and real external permission remain separately
 governed. This file remains the sole executable unit queue; the masterplan is
 not direct implementation authorization.
 
+## 2026-09-02 continuity reconciliation
+
+This is the bounded reconciliation Run 35 (`docs/SYSTEM_SAVEPOINT.md`) named
+as the next exact action: name the control plane the masterplan's §11
+Continuity architecture and §17 maturity epochs require, before any further
+SP-10..SP-15 registry write resumes. Three new units are added — **SP-21
+(clock continuity and fenced failover)**, **SP-22 (durable shadow dispatcher
+and observation store)**, and **SP-23 (capped canary and typed transition
+plane)** — ordered exactly as Run 35 specified: clock continuity first, then
+the shadow dispatcher, then the capped canary plane, all before source
+promotion resumes. See the dependency graph and Phase 2.5 below for full unit
+contracts.
+
+This reconciliation is planning-only: it adds unit contracts and reorders the
+dependency graph. It does not itself write to `source_registry`,
+`provider_profiles`, or `source_decisions`, and it does not change exact-six
+production behavior. SP-21's own acceptance criteria may include a small,
+additive, non-publishing behavior slice (a second fenced scheduling path) —
+that is executed as its own separately gated unit, not as part of this
+reconciliation commit.
+
+A fresh re-read of the code (not just prior docs) while planning this found
+that `apps/web/src/pages/api/cron/scrape.ts` already implements an atomic,
+D1-backed run lock (`acquireRunLock`, an 8-minute TTL compare-and-swap over a
+reserved `source_fetch_state` row) explicitly because, per its own comment,
+"two triggers now firing the scrape endpoint — the GitHub Hunter and a
+Cloudflare Worker cron — [could] otherwise overlap and double-fetch every
+source." `.github/workflows/gha-hunter-pulse.yml` already contains full
+lock-aware terminal-state handling (`lock-held` → backoff to the 8-minute TTL)
+and is already fully wired to call the same authenticated `/api/cron/scrape`
+endpoint. **It currently has no `schedule:` trigger — only `workflow_dispatch`
+— so today it is a manual fallback, not a second automatic clock.** This was a
+deliberate 2026-07-31 decision (`docs/major-audit-2026-07-31.md` finding P-5:
+"Disable the Hunter GHA pulse's schedule trigger... The Workers cron is the
+reliable primary"), made before this masterplan existed and before the
+2026-08-31 audit found "one automatic ingestion clock" with a "largest global
+gap of 15.17 hours" was itself an accepted continuity risk. The masterplan's
+§11 requirement ("at least two automatic scheduling paths in distinct failure
+domains... A second clock without fencing is duplicate traffic, not
+resilience") now supersedes P-5's efficiency-only framing for the specific
+case where fencing already exists and is proven — SP-21 names this reversal
+explicitly rather than silently re-adding a schedule.
+
 ## Objective
 
 Turn the existing source collectors, ATS adapters, Prospector, Source Doctor,
@@ -107,16 +150,33 @@ SP-00 durable plan
                       -> SP-16 employer feed intake
                       -> SP-17 partner/permission pipeline
 
-Two accepted canaries among SP-10..SP-15
-  -> SP-18 adaptive cadence/quarantine/renewal
-      -> SP-19 portfolio SLO and replacement automation
-          -> SP-20 initial 30-day capability acceptance
+SP-04 policy resolver + SP-05 candidate lifecycle
+  -> SP-21 clock continuity and fenced failover
+      -> SP-22 durable shadow dispatcher and observation store (needs SP-07's
+                probe contract and SP-03/SP-04 registry)
+          -> SP-23 capped canary and typed transition plane (needs SP-05
+                    lifecycle states)
+              -> resume SP-10..SP-15 promotion (the historically pending
+                 registry writes, now executed as dispatched shadow +
+                 source-capped canary rather than one-shot probes)
+                  -> Two accepted canaries among SP-10..SP-15
+                      -> SP-18 adaptive cadence/quarantine/renewal
+                          -> SP-19 portfolio SLO and replacement automation
+                              -> SP-20 initial 30-day capability acceptance
 ```
 
 SP-06 and SP-07 may be developed in parallel after SP-05 if their shared
 candidate/observation contracts are frozen first. Provider adapters may be
 implemented in parallel branches after SP-08, but production canaries are
 sequential: one provider mechanism at a time.
+
+SP-21/SP-22/SP-23 are the 2026-09-02 continuity reconciliation (see below).
+They do not block SP-09/SP-10's feasibility/code-only work or SP-16/SP-17
+(already TERMINAL — KEEP), which have no dependency on shadow dispatch or
+canary caps. They DO gate any further write to `source_registry` for
+SP-10..SP-15 and gate SP-18/19/20 — the masterplan's Autonomy Cutover
+Predicate requires a real dispatched shadow and a genuinely capped canary
+before routine promotion, not just a registry state label.
 
 ## Universal unit contract
 
@@ -169,9 +229,16 @@ unless the existing workflow does so automatically.
 | SP-15 | Recruitee XML adapter, shadow, and canary | SP-08 | VERIFYING (one-shot probe only) |
 | SP-16 | Employer “bring your feed” intake | SP-05 | TERMINAL — KEEP |
 | SP-17 | Partner/permission evidence pipeline | SP-05 | TERMINAL — KEEP |
-| SP-18 | Adaptive operations and evidence renewal | Two source canaries KEEP | PLANNED |
+| SP-21 | Clock continuity and fenced failover | SP-04, SP-05 | PLANNED |
+| SP-22 | Durable shadow dispatcher and observation store | SP-21, SP-07, SP-03/04 | PLANNED |
+| SP-23 | Capped canary and typed transition plane | SP-22, SP-05 | PLANNED |
+| SP-18 | Adaptive operations and evidence renewal | SP-23 and two source canaries KEEP | PLANNED |
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
 | SP-20 | Initial 30-day capability acceptance and independent resume drill | SP-19 | PLANNED |
+
+SP-21/22/23 are the 2026-09-02 continuity reconciliation. They gate resuming
+the SP-10..SP-15 registry promotion and SP-18/19/20; they do not gate or
+reopen SP-00..SP-09/SP-16/SP-17, which are already TERMINAL — KEEP.
 
 The four one-shot provider probes above are not recurring shadows, canaries, or
 ready reserves. The current policy resolver does not dispatch non-publishable
@@ -515,6 +582,135 @@ feasibility) is the next dependency-ready unit.
       why none meet the evidence contract.
 - [ ] Review debt cannot remain invisible or indefinitely open.
 - [ ] No provider activation has occurred.
+
+## Phase 2.5 — Continuity and safe transition-plane foundation
+
+Added 2026-09-02 as the bounded reconciliation Run 35 named. These three units
+implement masterplan §11 (Continuity architecture) and §17 epoch 3 (Safe
+transition plane) and must reach at least VERIFYING before any further
+SP-10..SP-15 registry write resumes. They do not reopen or block SP-00..SP-09,
+SP-16, or SP-17, which are already TERMINAL — KEEP.
+
+### SP-21: Add clock continuity and fenced automatic failover
+
+**Description:** Give the freshness loop a genuine second automatic scheduling
+path in a distinct failure domain, safely fenced against the existing primary
+Cloudflare Worker Cron Trigger, so a stalled primary clock is bounded in
+minutes rather than surviving multi-hour gaps unrecovered (the 2026-08-31
+audit measured a 15.17-hour largest gap under today's single-clock setup).
+
+**Acceptance criteria:**
+
+- [ ] A second automatic trigger — independent trigger/infra identity from the
+      Cloudflare Worker cron — can call the freshness endpoint on its own
+      schedule.
+- [ ] Takeover is fenced: it never fires unconditionally against a healthy
+      primary, only when the durable heartbeat shows the primary has missed a
+      bounded number of ticks, and it performs one bounded call per stale
+      detection, never an unbounded retry storm.
+- [ ] When the heartbeat read itself is unavailable or inconclusive, the
+      failover path takes no action — a fail-safe default, not a blind guess.
+- [ ] The takeover decision is a pure, unit-tested function; the workflow only
+      executes what it returns.
+- [ ] No new D1 schema: reuses the existing `source_fetch_state`-backed run
+      lock (`acquireRunLock` in `scrape.ts`) already proven safe against
+      overlapping scrape invocations.
+
+**Verification:** fixture tests over the pure decision function
+(healthy/stale/unreadable/just-recovered), a `workflow_dispatch` dry run
+against production confirming a healthy primary yields no scrape call, full
+gate.  
+**Dependencies:** SP-04, SP-05 (both unaffected by this unit either way); no
+dependency on SP-06..SP-20.  
+**Likely files:** `packages/scraper/failover-clock.ts` + test,
+`.github/workflows/gha-hunter-pulse.yml`, `packages/scraper/index.ts` export,
+`workers/freshness-cron/README.md` note.  
+**Estimated scope:** S.  
+**Rollback:** remove the `schedule:` trigger from `gha-hunter-pulse.yml`; the
+Cloudflare Worker cron and the existing hourly watchdog are unaffected.
+
+### SP-22: Durable shadow dispatcher and observation store
+
+**Description:** Turn SP-07's one-shot candidate shadow probe into a
+recurring, scheduled dispatch over every registry row eligible for shadow
+observation, with a persisted observation history — closing the gap the
+2026-08-31 audit named explicitly: "a registry `shadow` label is not
+dispatched by the current policy resolver; several adapters are not in live
+cron enumeration."
+
+**Acceptance criteria:**
+
+- [ ] A scheduled job enumerates every registry row eligible for shadow
+      observation from the registry itself (not a hard-coded adapter list)
+      and runs SP-07's bounded probe against each, on a cadence isolated from
+      the exact-six freshness loop's request/AI budget.
+- [ ] Every observation is persisted (not just returned in a response) with a
+      timestamp, outcome, and evidence hash, so "recurrent shadow" is provable
+      from D1 history, not asserted from one manual run.
+- [ ] Dispatch remains non-publishing: it can never set `is_active` or insert
+      into `opportunities`, matching SP-07's existing zero-write guarantee.
+- [ ] A provider-profile object that fails current D1 CHECK constraints (the
+      2026-08-31 audit's Lever/Teamtailor/Recruitee finding) is rejected
+      before dispatch with a named validation error, never silently coerced.
+
+**Verification:** fixture tests over the enumeration/dispatch decision, a
+bounded live dry run against the existing candidate reserve, read-only D1
+reconciliation of persisted observations, full gate.  
+**Dependencies:** SP-21 (continuity foundation before a second recurring
+job-class), SP-07 (probe contract), SP-03/SP-04 (registry read).  
+**Likely files:** dispatcher module, additive observation-table migration,
+workflow, tests.  
+**Estimated scope:** M.  
+**Rollback:** disable the dispatcher's schedule; SP-07's manual probe path is
+unaffected; no opportunity data is ever touched.
+
+### SP-23: Capped canary and typed transition plane
+
+**Description:** Make `canary` a genuinely bounded, non-`active`-equivalent
+publication state with typed, replayable transition functions and automatic
+rollback — closing the audit's other named gap: "`canary` and `active` are
+currently equally publishable."
+
+**Acceptance criteria:**
+
+- [ ] A canary-state source's publication is capped (a percentage of new
+      additions or an absolute per-tick ceiling) and measurably distinct from
+      unrestricted `active` in the policy resolver, not just in registry
+      prose.
+- [ ] State transitions (`shadow -> canary -> active`, and every
+      quarantine/rollback path) are typed functions with exhaustive
+      preconditions; an invalid transition is rejected, not silently applied.
+- [ ] A canary breaching its cap or its evidence lease automatically reverts
+      to `shadow` without a fresh human/AI decision, and the reversion is
+      itself a replayable, logged decision.
+- [ ] Golden-parity tests prove the existing exact-six sources are unaffected
+      (all resolve `active`, uncapped, byte-identical to today).
+
+**Verification:** state-machine/typed-transition unit tests, cap-enforcement
+tests including a synthetic breach, golden-parity regression over the
+exact-six, full gate.  
+**Dependencies:** SP-22 (real observation history to promote from), SP-05
+(lifecycle states).  
+**Likely files:** transition-plane module, policy-resolver integration, tests.  
+**Estimated scope:** M.  
+**Rollback:** every source keeps resolving through the existing SP-04
+resolver path unchanged; do not wire the typed transitions into the live cron
+loop until this unit's own acceptance passes.
+
+**Next after SP-21/22/23 each reach KEEP:** resume the SP-10..SP-15 registry
+promotion decisions through the new dispatcher/canary plane instead of the
+one-shot probes, then SP-18/19/20.
+
+### Checkpoint C.5 — safe transition plane
+
+- [ ] A second automatic scheduling path exists, is fenced, and has been
+      observed taking over at least once (real or synthetic).
+- [ ] At least one registry row has a persisted, multi-observation shadow
+      history rather than a single one-shot probe result.
+- [ ] `canary` enforces a real publication cap distinct from `active` and every
+      transition is a typed, replayable function.
+- [ ] No historically pending SP-11/12/14/15 registry write has been applied
+      outside this plane.
 
 ## Phase 3 — Supported distribution canaries
 
@@ -913,7 +1109,9 @@ a compliance hold.
 
 **Verification:** time/rate/state-machine simulations, adversarial compliance
 hold tests, shadow rollout, exact-SHA deploy and observation.  
-**Dependencies:** at least two new source canaries `KEEP`.  
+**Dependencies:** SP-23 `KEEP` and at least two new source canaries `KEEP`
+promoted through the capped canary plane (2026-09-02 reconciliation; see
+Phase 2.5).  
 **Likely files:** scheduler/policy modules, registry state writer, tests. Split
 cadence and evidence renewal if more than five files.  
 **Estimated scope:** M per slice.  
