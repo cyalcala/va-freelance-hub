@@ -1,17 +1,20 @@
 # Implementation Status
 
-## Current Source Replenishment Checkpoint — 2026-09-02 (SP-21 merged and deployed; awaiting live acceptance observation)
+## Current Source Replenishment Checkpoint — 2026-09-02 (SP-21 TERMINAL — KEEP)
 
-Status: **SP-21 (clock continuity and fenced failover) merged to `main` as
-`c862fa7` and deployed to production** (`Sovereign CI Guardrail` run
-`33646505560`: validate + migrate/deploy both succeeded; `Deploy Freshness
-Cron Worker` run `33646505672`: succeeded). The classifier block on `gh pr
-merge` documented in Run 36/37 did not reproduce this cycle — the merge
-succeeded on retry with no error. Not yet marked `KEEP`: the unit's own
-acceptance criteria require observing the first real `schedule`-triggered
-run of `gha-hunter-pulse.yml` reporting `standby`, which has not yet fired
-(the trigger only just went live; GitHub Actions cron delivery has no SLA).
-Full detail: `docs/SYSTEM_SAVEPOINT.md` Run 38.
+Status: **SP-21 (clock continuity and fenced failover) is TERMINAL — KEEP.**
+Merged to `main` as `c862fa7`, deployed to production (`Sovereign CI
+Guardrail` run `33646505560`; `Deploy Freshness Cron Worker` run
+`33646505672`), and its own live acceptance criterion is now satisfied: the
+first `schedule`-triggered run of `gha-hunter-pulse.yml` (run `33668919204`,
+18:43:02 UTC) correctly decided `{"action":"standby","reason":"primary clock
+attempted a run 3.0min ago (within 30min threshold)"}` and skipped the scrape
+call — real evidence the fenced secondary clock never doubles a healthy
+primary. Full detail: `docs/SYSTEM_SAVEPOINT.md` Run 39.
+
+Next dependency-ready unit: **SP-22** (durable shadow dispatcher and
+observation store), gated on SP-21 reaching `KEEP` specifically — now
+unblocked.
 
 Preceding this, the bounded implementation-plan reconciliation Run 35 named as
 the next action is complete and merged: SP-21 (clock continuity and fenced

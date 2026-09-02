@@ -1,5 +1,53 @@
 # System Savepoint
 
+## Run 39 — SP-21 TERMINAL — KEEP: first scheduled run observed, correctly standby (2026-09-02, ~1h after Run 38)
+
+Program: **Source Perpetuity**. Mode: dynamic-loop check-in. **SP-21's own
+acceptance criterion is now satisfied with real live evidence.**
+
+The first `schedule`-triggered run of `gha-hunter-pulse.yml` fired at
+**18:43:02 UTC**, 3h35min post-merge (a genuinely long but, per Run 38's
+exhausted diagnostics, unexplained-not-broken GitHub-scheduler delay — see
+Run 38 for the full elimination trail). Run **`33668919204`**, `conclusion:
+success`. Step-level outcome, exactly as designed:
+
+- `Query Durable Clock Heartbeat (schedule only)` — success
+- `Determine Failover Necessity (schedule only)` — success. Exact decision
+  captured from the raw run log: **`{"action":"standby","reason":"primary
+  clock attempted a run 3.0min ago (within 30min threshold)",
+  "minutesSinceAttempt":2.97}`**
+- `Report Failover Standby (schedule only, no takeover)` — success (ran,
+  confirming the decision was not `takeover`)
+- `Single Scrape Invocation (OPS-06: aligned with 8-min run lock)` —
+  **skipped** — the exact behavior the unit's acceptance criteria require: no
+  scrape call was placed against a healthy primary.
+- Every downstream step (`Evaluate Hunter Health`, `Generate Pulse Summary`,
+  `Upload Hunter Evidence`) still completed successfully despite the upstream
+  skip, confirming the graceful-degradation path (empty `harvest.log` →
+  `{}` → zero-valued health checks → no false alert) works exactly as
+  designed and verified by the unit's own test suite before merge.
+
+This is real, live, unit-defined acceptance evidence — not a simulated or
+dry-run observation. The primary Cloudflare Worker clock was correctly
+identified as healthy (a real attempt 3 minutes prior) and the secondary path
+correctly stood down rather than doubling it.
+
+**Terminal decision: KEEP.** SP-21 (clock continuity and fenced automatic
+failover) is complete: code merged (`c862fa7`), deployed to production (CI
++ Freshness Cron Worker deploy both green), and now observed behaving
+correctly under real conditions.
+
+Rollback (unchanged, still valid, now doubly confirmed unnecessary): remove
+the `schedule:` trigger from `gha-hunter-pulse.yml`. The Cloudflare Worker
+cron and the hourly watchdog are both unaffected either way.
+
+Next exact action: **SP-22 (durable shadow dispatcher and observation
+store)** is now the dependency-ready unit per the Phase 2.5 ordering (it was
+gated on SP-21 reaching `KEEP` specifically to avoid stacking a second new
+recurring job-class before the first was proven in production — now
+resolved). SP-22 acceptance criteria and file list are already specified in
+`docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`.
+
 ## Run 38 — PR #100 merged and deployed; awaiting first scheduled-run observation (2026-09-02, ~1h after Run 37)
 
 Program: **Source Perpetuity**. Mode: dynamic-loop check-in. Mandatory
