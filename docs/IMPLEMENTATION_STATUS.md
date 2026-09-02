@@ -1,20 +1,26 @@
 # Implementation Status
 
-## Current Source Replenishment Checkpoint — 2026-09-02 (SP-21 TERMINAL — KEEP)
+## Current Source Replenishment Checkpoint — 2026-09-03 (SP-21 and SP-22 both TERMINAL — KEEP)
 
-Status: **SP-21 (clock continuity and fenced failover) is TERMINAL — KEEP.**
-Merged to `main` as `c862fa7`, deployed to production (`Sovereign CI
-Guardrail` run `33646505560`; `Deploy Freshness Cron Worker` run
-`33646505672`), and its own live acceptance criterion is now satisfied: the
-first `schedule`-triggered run of `gha-hunter-pulse.yml` (run `33668919204`,
-18:43:02 UTC) correctly decided `{"action":"standby","reason":"primary clock
-attempted a run 3.0min ago (within 30min threshold)"}` and skipped the scrape
-call — real evidence the fenced secondary clock never doubles a healthy
-primary. Full detail: `docs/SYSTEM_SAVEPOINT.md` Run 39.
+Status: **SP-21 (clock continuity and fenced failover) and SP-22 (durable
+shadow dispatcher and observation store) are both TERMINAL — KEEP.**
 
-Next dependency-ready unit: **SP-22** (durable shadow dispatcher and
-observation store), gated on SP-21 reaching `KEEP` specifically — now
-unblocked.
+SP-21: merged as `c862fa7`, deployed, and its live acceptance criterion
+satisfied — the first `schedule`-triggered run of `gha-hunter-pulse.yml`
+correctly decided `standby` against the healthy primary clock and skipped
+the scrape call. Full detail: `docs/SYSTEM_SAVEPOINT.md` Run 39.
+
+SP-22: merged as `491b39c`, deployed (including migration 0038, applied to
+production and verified live via a read-only `sqlite_master` check).
+Deliberately **not** wired to any GitHub Actions schedule — mirrors the
+SP-10 precedent that new recurring third-party-facing infrastructure needs
+the owner's own explicit review before activation. The route is deployed
+dormant; `source_registry` is empty in production, so it would dispatch
+nothing even if invoked today. Full detail: `docs/SYSTEM_SAVEPOINT.md`
+Run 40.
+
+Next dependency-ready unit: **SP-23** (capped canary and typed transition
+plane), gated on SP-22 `KEEP` (satisfied) and SP-05 (already `KEEP`).
 
 Preceding this, the bounded implementation-plan reconciliation Run 35 named as
 the next action is complete and merged: SP-21 (clock continuity and fenced

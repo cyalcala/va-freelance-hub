@@ -1,6 +1,29 @@
 # Handoff
 
-## Current Handoff — 2026-09-02 SP-21 TERMINAL — KEEP; SP-22 starting
+## Current Handoff — 2026-09-03 SP-21 and SP-22 both TERMINAL — KEEP; SP-23 next
+
+Status: **Two Phase 2.5 units landed this session.** SP-21 (clock continuity
+and fenced failover) and SP-22 (durable shadow dispatcher and observation
+store) are both complete, merged, deployed, and verified live. Full trail:
+`docs/SYSTEM_SAVEPOINT.md` Runs 36-40.
+
+SP-22 in brief: durable `source_shadow_observations` table (migration 0038,
+applied to production and confirmed live via a read-only check) plus a
+registry-driven dispatcher that reuses SP-07's bounded shadow probe.
+Deliberately **not** wired to any GitHub Actions schedule — a new recurring
+process reaching real third-party job boards needs the owner's own explicit
+review before activation (same reasoning SP-10 established). The route
+(`apps/web/src/pages/api/cron/shadow-dispatch.ts`) is deployed but dormant;
+`source_registry` is empty in production, so it dispatches nothing even if
+invoked today.
+
+**Next: SP-23** (capped canary and typed transition plane) is the next unit
+in the Phase 2.5 sequence, dependency-ready now that SP-22 is `KEEP`.
+Independently, the owner may choose to review and wire `shadow-dispatch.ts`
+to a real schedule once real `source_registry` rows exist — a decision
+deliberately left to the owner.
+
+## Prior Handoff — 2026-09-02 SP-21 TERMINAL — KEEP; SP-22 starting
 
 Status: **SP-21 (clock continuity and fenced automatic failover) is complete
 and accepted.** PR #100 merged (`c862fa7`), deployed to production, and its

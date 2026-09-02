@@ -1,5 +1,95 @@
 # System Savepoint
 
+## Run 40 — SP-22 TERMINAL — KEEP: durable shadow dispatcher merged and deployed (2026-09-03, immediately after Run 39)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-22 durable shadow
+dispatcher and observation store)**. Next dependency-ready unit per the
+Phase 2.5 ordering, unblocked the moment SP-21 reached `KEEP` in Run 39.
+
+On branch `codex/sp-22-shadow-dispatcher` (main was left clean; this session
+learned from its own SP-21 precedent and created the branch immediately,
+though the very first few edits briefly landed on `main`'s working tree
+before being moved — caught before any commit, no `main` history affected).
+
+Built: `packages/db/migrations/0038_shadow_observations.sql` (additive
+`source_shadow_observations` table — outcome CHECK enum matches
+`DoctorOutcome` verbatim, including the `INTERNAL_PIPELINE_FAILURE` value an
+early draft of this migration missed and a direct read of `source-doctor.ts`
+caught before commit); `packages/scraper/shadow-dispatcher.ts` (pure
+`selectEligibleForDispatch` — registry-driven, per-source cadence floor
+defaulting to 24h; pure `validateProviderProfileForDispatch` — rejects the
+exact real `contentScope: "minimal_with_truncated_summary"` mismatch the
+2026-08-31 audit found, before dispatch is attempted; pure
+`buildObservationRecord` — SHA-256 evidence hash via the existing
+`sha256Hex`; `dispatchShadowObservations` orchestrator with all I/O
+dependency-injected); `apps/web/src/pages/api/cron/shadow-dispatch.ts`
+(auth-gated route wiring real D1 + the real SP-07 probe).
+
+**Deliberately not wired to any GitHub Actions schedule**, mirroring the
+SP-10 precedent (Run 34): a new recurring process making bounded but real
+outbound requests to third-party job boards is a materially different risk
+class from SP-21's schedule (which only calls this project's own existing,
+already-authorized endpoint), and needs the owner's own explicit,
+specific review before being turned on. The route is deployed dormant —
+same shape as SP-16's employer-intake route. `source_registry` is empty in
+production, so a real invocation today would dispatch nothing regardless
+(covered by its own test: an empty registry returns a clean zero-valued
+summary, not an error).
+
+**Local-only migration validation before merge** (never touched production):
+applied `0038_shadow_observations.sql` to a **local** D1 instance
+(`wrangler d1 execute DB --local --env production`) — applied cleanly, and a
+live insert/insert-reject pair confirmed the `outcome` CHECK constraint
+actually enforces the intended enum (`SQLITE_CONSTRAINT_CHECK` on an invalid
+value), not just read from the SQL as written.
+
+Deploy evidence:
+
+- Behavior commit **`3846336`** on `codex/sp-22-shadow-dispatcher`; PR **#101**.
+- PR exact-SHA CI run **`33674796578`**: `Validate project-owned code`
+  success (tests/typecheck/guardrails/build all as discrete steps); deploy
+  correctly skipped (PR path).
+- `gh pr merge 101 --squash --delete-branch` **succeeded on the first
+  attempt this cycle** — the classifier block that stopped SP-21's first
+  merge attempt did not reproduce here.
+- `main`-push exact-SHA CI/deploy run **`33674952798`** (head `491b39c`):
+  `Validate project-owned code` success, `Detect deployable changes`
+  success, **`Migrate and deploy production` success** — migration 0038
+  applied to real production D1.
+- **Live production verification** (read-only, `changed_db=false`):
+  `SELECT name FROM sqlite_master WHERE type='table' AND
+  name='source_shadow_observations'` on `--remote --env production` returned
+  the row — the table genuinely exists in production, not just claimed by a
+  green CI checkmark. (One transient `code: 7403` auth error occurred on the
+  first live-verification attempt; a trivial `SELECT 1` immediately after
+  succeeded, and the real check then succeeded on retry — recorded as
+  transient, not investigated further, since it self-resolved and no
+  production state was ever at risk from a failed read-only SELECT.)
+- Full local gate at behavior `3846336`: `bun run test` **1037 pass / 0 fail
+  / 3230 assertions / 98 files** (+25 from SP-21's 1012), `bun run
+  typecheck` 0, `bun run audit:guardrails` 0, `bun run build` clean (no
+  Node-builtin leak — confirmed, since this was exactly the mistake caught
+  and fixed during SP-21's own build).
+
+Terminal decision: **KEEP**. Non-publishing invariant fully preserved: no
+write occurred to `opportunities`, `source_registry`, `provider_profiles`,
+or `source_decisions` at any point in this unit. The only new write path
+(`source_shadow_observations`) remains unreachable in production today
+(dormant route, empty registry) by design.
+
+Rollback: delete or leave unreferenced
+`apps/web/src/pages/api/cron/shadow-dispatch.ts`; the
+`source_shadow_observations` table can be dropped or ignored since nothing
+else reads it yet.
+
+Next exact action: **SP-23** (capped canary and typed transition plane) is
+the next unit in the Phase 2.5 sequence, gated on SP-22 reaching `KEEP`
+(satisfied) and SP-05's lifecycle states (already `TERMINAL — KEEP`).
+Independently, the owner may now choose to explicitly review and approve
+wiring `shadow-dispatch.ts` to a real schedule once real `source_registry`
+rows exist to dispatch against — that decision is deliberately left to the
+owner, not made by this session.
+
 ## Run 39 — SP-21 TERMINAL — KEEP: first scheduled run observed, correctly standby (2026-09-02, ~1h after Run 38)
 
 Program: **Source Perpetuity**. Mode: dynamic-loop check-in. **SP-21's own

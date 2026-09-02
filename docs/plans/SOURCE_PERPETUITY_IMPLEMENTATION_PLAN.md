@@ -230,7 +230,7 @@ unless the existing workflow does so automatically.
 | SP-16 | Employer “bring your feed” intake | SP-05 | TERMINAL — KEEP |
 | SP-17 | Partner/permission evidence pipeline | SP-05 | TERMINAL — KEEP |
 | SP-21 | Clock continuity and fenced failover | SP-04, SP-05 | TERMINAL — KEEP |
-| SP-22 | Durable shadow dispatcher and observation store | SP-21, SP-07, SP-03/04 | PLANNED |
+| SP-22 | Durable shadow dispatcher and observation store | SP-21, SP-07, SP-03/04 | TERMINAL — KEEP |
 | SP-23 | Capped canary and typed transition plane | SP-22, SP-05 | PLANNED |
 | SP-18 | Adaptive operations and evidence renewal | SP-23 and two source canaries KEEP | PLANNED |
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
