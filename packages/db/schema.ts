@@ -361,12 +361,47 @@ export const sourceDecisions = sqliteTable("source_decisions", {
   decidedAtIdx: index("source_decisions_decided_at_idx").on(table.decidedAt),
 }));
 
+// ─── Shadow observations (SP-22) ────────────────────────────────────────────
+// Durable history of every SP-07 shadow probe SP-22's dispatcher runs, so
+// "recurrent shadow" is provable from D1 rather than asserted from a single
+// manual run. Additive only; never written by the exact-six freshness loop.
+
+export const sourceShadowObservations = sqliteTable("source_shadow_observations", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceId: text("source_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  observedAt: text("observed_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+  dispatcherVersion: text("dispatcher_version").notNull(),
+  outcome: text("outcome", {
+    enum: [
+      "HEALTHY_WITH_RESULTS", "HEALTHY_EMPTY", "DEGRADED_ANOMALOUS",
+      "SCHEMA_BROKEN", "RATE_LIMITED", "UNREACHABLE", "POLICY_BLOCKED",
+      "INTERNAL_PIPELINE_FAILURE", "UNKNOWN",
+    ],
+  }).notNull(),
+  requestCount: integer("request_count").notNull().default(0),
+  bytesReceived: integer("bytes_received").notNull().default(0),
+  itemCount: integer("item_count").notNull().default(0),
+  plausibleItems: integer("plausible_items").notNull().default(0),
+  durationMs: integer("duration_ms").notNull().default(0),
+  stopReason: text("stop_reason"),
+  evidenceHash: text("evidence_hash").notNull(),
+  resultJson: text("result_json").notNull(),
+}, (table) => ({
+  sourceIdx: index("source_shadow_observations_source_idx").on(table.sourceId),
+  observedAtIdx: index("source_shadow_observations_observed_at_idx").on(table.observedAt),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ProviderProfile = typeof providerProfiles.$inferSelect;
 export type NewProviderProfile = typeof providerProfiles.$inferInsert;
 export type SourceRegistryRow = typeof sourceRegistry.$inferSelect;
 export type NewSourceRegistryRow = typeof sourceRegistry.$inferInsert;
+export type ShadowObservationRow = typeof sourceShadowObservations.$inferSelect;
+export type NewShadowObservationRow = typeof sourceShadowObservations.$inferInsert;
 export type SourceOptOut = typeof sourceOptOuts.$inferSelect;
 export type NewSourceOptOut = typeof sourceOptOuts.$inferInsert;
 export type SourceDecision = typeof sourceDecisions.$inferSelect;

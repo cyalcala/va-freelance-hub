@@ -296,3 +296,22 @@ export {
   DEFAULT_STALE_AFTER_MINUTES,
 } from "./failover-clock";
 export type { FailoverAction, FailoverDecision, FailoverEvidence } from "./failover-clock";
+export {
+  selectEligibleForDispatch,
+  validateProviderProfileForDispatch,
+  buildObservationRecord,
+  dispatchShadowObservations,
+  defaultRunProbe,
+  DISPATCHER_VERSION,
+  DEFAULT_MIN_REDISPATCH_MINUTES,
+  MAX_DISPATCHES_PER_RUN,
+} from "./shadow-dispatcher";
+export type {
+  DispatchProviderProfile,
+  DispatchRegistryRow,
+  EligibilityDecision,
+  ProviderValidationResult,
+  ShadowObservationRecord,
+  ShadowDispatchDeps,
+  ShadowDispatchSummary,
+} from "./shadow-dispatcher";
