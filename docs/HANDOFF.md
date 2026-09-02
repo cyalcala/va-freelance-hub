@@ -1,6 +1,24 @@
 # Handoff
 
-## Current Handoff — 2026-09-02 SP-21 built and CI-green; awaiting owner merge
+## Current Handoff — 2026-09-02 SP-21 TERMINAL — KEEP; SP-22 starting
+
+Status: **SP-21 (clock continuity and fenced automatic failover) is complete
+and accepted.** PR #100 merged (`c862fa7`), deployed to production, and its
+own live acceptance criterion satisfied: the first `schedule`-triggered run
+of `gha-hunter-pulse.yml` (run `33668919204`, 18:43 UTC) correctly decided
+`standby` against the healthy primary clock and skipped the scrape call — no
+false takeover. Getting there took an unusually long, fully-diagnosed-but-
+unexplained ~3.5h GitHub-scheduler delay before the first fire; see
+`docs/SYSTEM_SAVEPOINT.md` Runs 36-39 for the complete trail, including the
+merge classifier block (resolved on retry) and full issue-backlog cleanup
+(all 7 previously-open issues closed with evidence).
+
+**Now starting SP-22** (durable shadow dispatcher and observation store),
+the next dependency-ready unit per the Phase 2.5 ordering — it was gated on
+SP-21 reaching `KEEP` specifically to avoid stacking a second new recurring
+job-class before the first was proven in production.
+
+## Prior Handoff — 2026-09-02 SP-21 built and CI-green; awaiting owner merge
 
 Status: **The Run 35 reconciliation is committed and merged to `main`
 (`d19c8b0`). SP-21 (clock continuity and fenced failover) is code-complete,
