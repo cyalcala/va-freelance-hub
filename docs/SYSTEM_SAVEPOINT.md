@@ -1,5 +1,137 @@
 # System Savepoint
 
+## Run 36 — SP-21 code complete, CI green; merge-to-main blocked by classifier (2026-09-02)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-21 clock continuity and
+fenced failover)**, following Run 35's bounded reconciliation. Owner asked
+this session to work autonomously overnight ("~8 hours"), citing the
+project's own standing routine-work authorization; that authorization
+explicitly does not override STOP conditions, an execution-environment
+permission denial, or CI/CD-pipeline-change confirmation requirements, and
+none of those were bypassed here.
+
+**Step 1 — committed the pending reconciliation.** The working tree at
+session start already contained Run 35's named next action (SP-21/22/23 added
+to `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md` as Phase 2.5,
+`docs/IMPLEMENTATION_STATUS.md` updated to match) fully written but
+uncommitted. Verified it was docs-only (no `source_registry`/
+`provider_profiles`/`source_decisions` write, no behavior change), confirmed
+the masterplan Section 11 quote it cites is accurate, rebased onto
+`origin/main` (22 automated digest commits had landed since the prior
+session), and pushed directly: commit **`d19c8b0`**. Exact-SHA CI
+(`Sovereign CI Guardrail`, run **33630773712**) passed.
+
+**Step 2 — built SP-21.** On branch `codex/sp-21-clock-continuity`:
+
+- `packages/scraper/failover-clock.ts` — `decideFailoverTakeover`, a pure
+  decision function. Evidence: the primary Cloudflare Worker clock's last
+  real heartbeat (`source_fetch_state.__ingest_diag__.last_attempt_at`,
+  already written on every real scrape run via `recordIngestDiagnostics` in
+  `scrape.ts` — confirmed by reading the code, not assumed: it is NOT written
+  on a `run-lock-held` skip, so it genuinely reflects "last real run," not
+  "last ping"). Default threshold 30 minutes (three missed 10-minute primary
+  ticks) — deliberately tighter than the hourly watchdog's existing 3-hour
+  human-alert threshold (`scripts/gha/evaluate-ingest-health.mjs`), since this
+  bounds the gap in minutes, not hours. Unreadable/malformed/future-dated
+  evidence always fails safe to `"unknown"` (no action).
+- `scripts/gha/evaluate-failover-clock.ts` — thin CLI wrapper, mirroring
+  `scripts/gha/source-alert-lifecycle.ts`'s established pattern. **Real
+  finding, caught by an actual build, not just review:** the CLI was first
+  written directly inside `packages/scraper/failover-clock.ts` (matching the
+  plan's own suggested file list literally) with `node:fs/promises` imported
+  for its file-reading. `bun run build` then showed a real Vite warning: that
+  import was reachable through the `@va-hub/scraper` barrel (`index.ts`) the
+  production Pages Function bundles, leaking a Node builtin into the SSR
+  bundle. Moved the CLI out to `scripts/gha/` (a relative import back into
+  `packages/scraper`, since `@va-hub/scraper` does not resolve outside
+  `apps/web`'s own dependency graph — confirmed live, it throws `Cannot find
+  module`) so only the pure function ships in the bundle. Rebuilt clean, no
+  warning.
+- `.github/workflows/gha-hunter-pulse.yml` — adds a `schedule:` trigger
+  (`*/15 * * * *`), reversing the 2026-07-31 P-5 decision that removed the
+  Hunter's automatic schedule as redundant Actions-minutes spend (P-5 predates
+  this masterplan's continuity requirement and the fencing this unit adds).
+  A schedule-triggered run queries the heartbeat (read-only D1), runs the
+  decision function, and only proceeds to the existing single scrape call
+  when the decision is `takeover`; `standby`/`unknown` are reported to the
+  step summary and the scrape call is skipped entirely (verified the
+  downstream `Evaluate Hunter Health` step already tolerates a missing
+  `harvest.log`, and that the OPS-05 alert lifecycle degrades a
+  content-free/`{}` harvest log to `state=unknown` → `HOLD`, so a standby run
+  can never file or close a false incident). `workflow_dispatch` (the
+  pre-existing manual Hunter fallback) is completely unchanged — the new
+  steps are gated `if: github.event_name == 'schedule'`.
+- No new D1 schema: reuses the existing `source_fetch_state`-backed run lock
+  (`acquireRunLock`), already proven safe under two independent triggers
+  calling the same endpoint concurrently.
+- **Deliberately narrower than the masterplan's full description** of
+  independent clocks (Section 11 asks for a shared lease with epoch fencing
+  and per-slot idempotency keys). This unit reuses the existing simple
+  TTL-based run lock rather than building a new leasing primitive, matching
+  its "S" scope — the lock is what actually prevents concurrent double-fetch;
+  this unit's own job is only deciding whether to place the call at all. Not
+  claimed as full masterplan compliance.
+
+Verification: 13 new fixture tests (healthy, stale, unreadable — missing row,
+empty results, invalid timestamp — future-dated/clock-skew, just-recovered,
+custom threshold, exact-boundary cases at the threshold), full local gate
+`bun run test` **1012 pass / 0 fail / 3184 assertions / 97 files**,
+`bun run typecheck` 0, `bun run audit:guardrails` 0, `bun run build` clean.
+Manual CLI smoke test against fixture wrangler-shaped JSON (missing file →
+`unknown`; empty `results` → `unknown`; healthy → `standby`; stale → `takeover`).
+YAML syntax verified independently via `js-yaml` (not just visual read) after
+editing the workflow, confirming step order, `if:` conditions, and job
+structure.
+
+Deploy evidence:
+
+- Behavior commit **`4b72cfa`** on `codex/sp-21-clock-continuity`; PR **#100**
+  opened against `main`.
+- PR exact-SHA CI run **`33631865265`** (head `4b72cfa`): `Validate
+  project-owned code` **success** — guardrails, unit tests, build, strict
+  typecheck, and Freshness Cron Worker validation all passed as discrete
+  steps within that job. `Migrate and deploy production` and `Detect
+  deployable changes` correctly skipped (PR path, not a push to `main`). The
+  `Vercel` check failure is the long-documented unrelated legacy account
+  block (not the active Cloudflare production path); ignored per established
+  precedent.
+
+**STOP — merge-to-main blocked, not routed around.** `gh pr merge 100
+--squash --delete-branch` was denied by the harness's own auto-mode safety
+classifier ("Blocked by classifier... If you have other tasks that don't
+depend on this action, continue working on those"), the identical class of
+denial this program has documented for `source_registry`/`provider_profiles`/
+`source_decisions` writes since Run 33 — now evidently also covering PR
+merges to `main`, not only D1 writes. No alternate path was attempted (e.g. a
+direct `git push` fast-forwarding `main` to the same content): per the
+denial's own text, using a different tool to reach the identical goal is
+exactly the "work around this denial" it warns against, and this session's
+own standing instructions independently require explicit user confirmation
+before modifying a CI/CD pipeline (this PR adds a new workflow `schedule:`
+trigger) — a blanket overnight "proceed with all, fair and reasonable"
+authorization does not and should not clear either gate. **PR #100 is
+complete, CI-green, and unmerged**, exactly analogous to SP-11/12/14/15's
+evidence-ready-but-unwritten state.
+
+Terminal decision: **PAUSED** — code correct and merge-ready; blocked only on
+an execution-environment permission gate over the merge action itself, not on
+unresolved evidence, a compliance question, or a code defect.
+
+Rollback: N/A — nothing merged, nothing deployed, no schedule is live.
+`workers/freshness-cron` (the sole current production clock) and
+`gha-ingest-watchdog.yml` (the existing hourly alert) are both completely
+unaffected until/unless PR #100 is merged.
+
+Next exact action: **owner reviews and merges PR #100** (`gh pr merge 100
+--squash --delete-branch`, or via the GitHub UI), or grants a permission rule
+for this action class. Once merged, the next dependency-ready step is
+observing the first real scheduled run in Actions (should report `standby`
+under normal conditions, since the primary Cloudflare Worker clock is
+healthy) before treating SP-21 as `KEEP`. SP-22 (durable shadow dispatcher)
+and SP-23 (capped canary/typed transition plane) remain correctly gated
+behind SP-21 reaching `KEEP` in production, per the Phase 2.5 dependency
+ordering Run 35 specified — not merely behind this code existing on a branch.
+
 ## Run 35 — Decades Source Replenishment constitution (2026-08-31)
 
 Program: **Source Replenishment / Source Perpetuity**. Mode: **PLAN**.
