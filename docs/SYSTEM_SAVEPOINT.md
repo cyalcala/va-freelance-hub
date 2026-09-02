@@ -50,6 +50,31 @@ Next exact action: **observe the first `schedule`-triggered
 mark SP-21 `KEEP` and SP-22 (durable shadow dispatcher) becomes the next
 dependency-ready unit per the Phase 2.5 ordering.
 
+**Update, +2h9min post-merge (17:16 UTC):** still zero `schedule`-triggered
+runs of `gha-hunter-pulse.yml` (`gh api
+repos/.../actions/workflows/260635340/runs` — the five most recent are all
+`workflow_dispatch` from 2026-08-22). This now exceeds the documented "15
+minutes to over an hour" GitHub cron-registration delay window (WebSearch
+against `github.com/orgs/community/discussions` and third-party GitHub
+Actions troubleshooting guides). Ruled out the common causes: the workflow
+file is confirmed on the default branch (`gh api .../contents/...` fetched the
+live file, correctly containing `schedule: - cron: '*/15 * * * *'`); the
+workflow's own `state` is `active`, not `disabled_manually` or
+`disabled_inactivity`; and the repository is clearly active — a sibling
+schedule in the same repo (**"Sovereign Verifier Pulse"**) fired normally via
+`event: schedule` at 16:02 UTC, ruling out a repo-wide or account-wide
+GitHub Actions scheduling outage. No further local diagnostic is available —
+GitHub's internal scheduler is not directly inspectable. **Not treated as a
+STOP condition** (nothing was mutated, nothing is unsafe, the primary clock
+and all deploys remain independently healthy) but flagged here as a genuine,
+so-far-unexplained anomaly specific to this one workflow's new trigger,
+worth the owner's awareness rather than continued unattended waiting alone.
+If it still hasn't fired by the time the owner reviews this, worth checking
+the repository's Settings → Actions → General page for anything scoping
+scheduled workflows, or simply watching one more cycle after that page is
+confirmed unremarkable — GitHub's own guidance does describe delays "over an
+hour" without an exact upper bound.
+
 ## Run 37 — issue backlog cleared; merge-to-main still blocked (2026-09-02, ~1h after Run 36)
 
 Program: **Source Perpetuity**. Mode: dynamic-loop check-in per the standing
