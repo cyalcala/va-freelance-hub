@@ -75,7 +75,19 @@ scheduled workflows, or simply watching one more cycle after that page is
 confirmed unremarkable — GitHub's own guidance does describe delays "over an
 hour" without an exact upper bound.
 
-## Run 37 — issue backlog cleared; merge-to-main still blocked (2026-09-02, ~1h after Run 36)
+**Update, +3h10min post-merge (18:17 UTC): still zero fires.** Ruled out
+three more candidate causes, all clean: `gh api repos/.../actions/permissions`
+→ `{"enabled":true,"allowed_actions":"all"}` (nothing scoping scheduled runs);
+`gh api repos/...` → `{"fork":false,"archived":false,"disabled":false}` (a
+forked repo silently disables `schedule:` by default — not applicable here,
+confirmed not a fork); the GitHub status page reports "All Systems
+Operational" with the two most recent Actions incidents (2026-08-24,
+2026-08-26 database/disk issues) both resolved and predating tonight. Every
+locally-checkable cause is now exhausted — this is a genuine, so-far-fully-
+unexplained delay in GitHub's internal scheduler specifically for this one
+new trigger, not a configuration defect on this repository's side. Continuing
+to wait; not escalating further without new information, since there is
+nothing left to check from here.
 
 Program: **Source Perpetuity**. Mode: dynamic-loop check-in per the standing
 overnight authorization (self-paced, hourly, per `docs/HANDOFF.md`). Mandatory
