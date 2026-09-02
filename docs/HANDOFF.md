@@ -1,5 +1,35 @@
 # Handoff
 
+## Current Handoff — 2026-09-02 SP-21 built and CI-green; awaiting owner merge
+
+Status: **The Run 35 reconciliation is committed and merged to `main`
+(`d19c8b0`). SP-21 (clock continuity and fenced failover) is code-complete,
+fully tested, and open as PR #100 with exact-SHA CI green — but unmerged.**
+Owner authorized an unattended overnight session; the harness's own auto-mode
+safety classifier denied `gh pr merge` (the identical class of denial this
+program has documented for `source_registry` writes since Run 33, now also
+covering PR merges), and that denial is independently correct per this
+session's own standing instructions requiring explicit confirmation before a
+CI/CD pipeline change (PR #100 adds a workflow `schedule:` trigger). No
+workaround was attempted.
+
+**To resume:** review and merge
+[PR #100](https://github.com/cyalcala/va-freelance-hub/pull/100) (or grant a
+permission rule for `gh pr merge`). After merge, watch the first scheduled
+run of `gha-hunter-pulse.yml` in Actions — it should report `standby` (the
+primary Cloudflare Worker clock is healthy as of the last read-only check),
+not a false `takeover`. Only then does SP-21 become `KEEP`, unlocking SP-22
+(durable shadow dispatcher) per the Phase 2.5 ordering.
+
+The same classifier pattern also blocked closing four stale pre-OPS-05
+GitHub issues (#51-54) after two similar closes (#73, #74, with fresh
+recovery evidence) succeeded moments earlier — inconsistent within the same
+session, not a full `gh` outage (a read succeeded in between). Not retried a
+third time. Full detail, fresh read-only D1 evidence (exact-six boundary
+still holding: `source_registry`/`provider_profiles`/`source_decisions` all
+zero rows), and the complete unit-execution trail:
+`docs/SYSTEM_SAVEPOINT.md` Run 36.
+
 ## Current Handoff — 2026-08-31 Decades Source Replenishment constitution
 
 Status: **Planning authority adopted; no production behavior change.** Read
