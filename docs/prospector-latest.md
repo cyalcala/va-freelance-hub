@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-09-03
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33748878663
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33778689661
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 4 |
-| Auto-added this run | 2 |
+| Candidates considered | 2 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 1 |
 | Rejected for quality | 1 |
@@ -23,8 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33748878
 
 ## Auto-added companies
 
-- Ellipsis®
-- Airbnb
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
