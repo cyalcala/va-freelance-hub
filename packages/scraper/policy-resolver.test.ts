@@ -3,6 +3,7 @@ import {
   fallbackPolicy,
   resolvePolicy,
   isPublishable,
+  resolvePublicationEnvelope,
   ROBOTS_ENFORCE_SOURCE_IDS,
   robotsModeForSourceIdMirror,
   ATS_PLATFORM_POLICIES,
@@ -257,18 +258,60 @@ describe("registry overlay is authoritative when present", () => {
     expect(r.operationalState).toBe("active");
   });
 
-  test("conditional+active is publishable; conditional+canary also publishable", () => {
-    for (const op of ["active", "canary"] as const) {
-      const r = resolvePolicy("test:id", {
-        sourceId: "test:id",
-        providerId: "test",
-        complianceState: "conditional",
-        operationalState: op,
-        optOut: false,
-      });
-      expect(r.publishable).toBe(true);
-      expect(r.enabled).toBe(true);
-    }
+  test("conditional+active is publishable and enabled by the legacy loop", () => {
+    const r = resolvePolicy("test:id", {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "conditional",
+      operationalState: "active",
+      optOut: false,
+    });
+    expect(r.publishable).toBe(true);
+    expect(r.enabled).toBe(true);
+  });
+
+  test("conditional+canary is eligible only through the capped publication gateway", () => {
+    const row = {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "conditional" as const,
+      operationalState: "canary" as const,
+      optOut: false,
+      canaryMaxNewItemsPerTick: 3,
+    };
+    const r = resolvePolicy("test:id", row);
+
+    expect(r.publishable).toBe(true);
+    // The legacy hot path only knows a boolean and therefore cannot enforce a
+    // per-tick cap. It must not turn an inserted canary row into unlimited
+    // publication before the dedicated gateway consumes this envelope.
+    expect(r.enabled).toBe(false);
+    expect(resolvePublicationEnvelope(r, row)).toEqual({
+      mode: "capped",
+      maxNewItemsPerTick: 3,
+      reason: null,
+    });
+  });
+
+  test("a canary with a missing or invalid cap fails closed in the resolver", () => {
+    const policy = resolvePolicy("test:id", {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "allowed",
+      operationalState: "canary",
+      optOut: false,
+    });
+
+    expect(resolvePublicationEnvelope(policy, { canaryMaxNewItemsPerTick: null })).toEqual({
+      mode: "blocked",
+      maxNewItemsPerTick: 0,
+      reason: "canary requires a positive per-tick publication cap",
+    });
+    expect(resolvePublicationEnvelope(policy, { canaryMaxNewItemsPerTick: 1.5 })).toEqual({
+      mode: "blocked",
+      maxNewItemsPerTick: 0,
+      reason: "canary requires a positive per-tick publication cap",
+    });
   });
 
   test("allowed+shadow is NOT publishable (bounded fetch without publish)", () => {
@@ -361,6 +404,35 @@ describe("publishability matrix mirrors migration CHECK", () => {
     // optOut always blocks
     expect(isPublishable("allowed", "active", true)).toBe(false);
     expect(isPublishable("conditional", "canary", true)).toBe(false);
+  });
+});
+
+describe("SP-23 publication envelopes", () => {
+  test("the exact-six fallback remains active and uncapped without changing its resolved object", () => {
+    for (const id of allowedStaticIds()) {
+      const fallback = fallbackPolicy(id);
+      expect(resolvePolicy(id, null)).toEqual(fallback);
+      expect(resolvePublicationEnvelope(fallback, null)).toEqual({
+        mode: "unlimited",
+        maxNewItemsPerTick: null,
+        reason: null,
+      });
+    }
+  });
+
+  test("non-publishable states stay blocked regardless of any supplied cap", () => {
+    const shadow = resolvePolicy("test:id", {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "allowed",
+      operationalState: "shadow",
+      optOut: false,
+    });
+    expect(resolvePublicationEnvelope(shadow, { canaryMaxNewItemsPerTick: 99 })).toEqual({
+      mode: "blocked",
+      maxNewItemsPerTick: 0,
+      reason: "policy is not publishable",
+    });
   });
 });
 

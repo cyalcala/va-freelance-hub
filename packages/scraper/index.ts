@@ -61,6 +61,7 @@ export {
   ROBOTS_ENFORCE_SOURCE_IDS as RESOLVER_ROBOTS_ENFORCE_SOURCE_IDS,
   robotsModeForSourceIdMirror,
   isPublishable,
+  resolvePublicationEnvelope,
   isShadowCanaryActive,
   KNOWN_SOURCE_IDS,
   KNOWN_STATIC_IDS,
@@ -71,6 +72,7 @@ export type {
   RegistryOperationalState,
   RegistryPolicyRow,
   ResolvedPolicy,
+  PublicationEnvelope,
 } from "./policy-resolver";
 export {
   isValidOperationalTransition,

@@ -49,6 +49,8 @@ export interface RegistryPolicyRow {
   complianceState: RegistryComplianceState;
   operationalState: RegistryOperationalState;
   optOut: boolean | number;
+  /** SP-23: required positive ceiling whenever operationalState is canary. */
+  canaryMaxNewItemsPerTick?: number | null;
   endpointUrl?: string;
   displayName?: string;
   companyToken?: string | null;
@@ -281,12 +283,74 @@ export function isPublishable(compliance: RegistryComplianceState, operational: 
   return false;
 }
 
+/**
+ * A publication decision expressed with enough information for a cap-aware
+ * writer. This is deliberately separate from ResolvedPolicy so the exact-six
+ * fallback object remains byte-identical while the registry overlay gains a
+ * non-active-equivalent canary contract.
+ *
+ * `mode: capped` is not permission for the legacy boolean scrape loop to
+ * write. That loop has no atomic per-tick reservation, so `isEnabledForFetch`
+ * refuses canaries until the dedicated SP-23 gateway consumes this envelope
+ * together with decideCanaryPublication().
+ */
+export type PublicationEnvelope =
+  | {
+      mode: "unlimited";
+      maxNewItemsPerTick: null;
+      reason: null;
+    }
+  | {
+      mode: "capped";
+      maxNewItemsPerTick: number;
+      reason: null;
+    }
+  | {
+      mode: "blocked";
+      maxNewItemsPerTick: 0;
+      reason: "policy is not publishable" | "canary requires a positive per-tick publication cap";
+    };
+
+function isPositiveInteger(value: number | null | undefined): value is number {
+  return Number.isInteger(value) && value > 0;
+}
+
+/**
+ * Resolve the distinct public exposure envelope for a resolved registry policy.
+ * Active sources remain uncapped; every canary must carry an explicit positive
+ * cap. Missing, zero, fractional, and negative caps all fail closed.
+ */
+export function resolvePublicationEnvelope(
+  policy: Pick<ResolvedPolicy, "publishable" | "operationalState">,
+  registryRow?: Pick<RegistryPolicyRow, "canaryMaxNewItemsPerTick"> | null,
+): PublicationEnvelope {
+  if (!policy.publishable) {
+    return { mode: "blocked", maxNewItemsPerTick: 0, reason: "policy is not publishable" };
+  }
+  if (policy.operationalState === "active") {
+    return { mode: "unlimited", maxNewItemsPerTick: null, reason: null };
+  }
+  if (policy.operationalState === "canary") {
+    const cap = registryRow?.canaryMaxNewItemsPerTick;
+    if (!isPositiveInteger(cap)) {
+      return {
+        mode: "blocked",
+        maxNewItemsPerTick: 0,
+        reason: "canary requires a positive per-tick publication cap",
+      };
+    }
+    return { mode: "capped", maxNewItemsPerTick: cap, reason: null };
+  }
+  return { mode: "blocked", maxNewItemsPerTick: 0, reason: "policy is not publishable" };
+}
+
 export function isEnabledForFetch(compliance: RegistryComplianceState, operational: RegistryOperationalState, optOut: boolean): boolean {
-  // Fetch is allowed for canary/active only when publishable; degraded/quarantined
-  // etc. are not fetchable via this resolver (ops handles recovery separately).
-  // For SP-04, enabled == publishable (strictest). This keeps parity with the
-  // current static filter which only fetches `allowed` sources.
-  return isPublishable(compliance, operational, optOut);
+  // The legacy hot path has only a boolean and cannot reserve/enforce a
+  // per-tick canary cap. It may continue to fetch active sources, but a canary
+  // is fail-closed until the future single publication gateway consumes the
+  // SP-23 envelope and transition decision. This protects against a registry
+  // row being inserted before that gateway is live.
+  return operational === "active" && isPublishable(compliance, operational, optOut);
 }
 
 // ─── Fallback resolver (hard-coded, rollback adapter) ───────────────────────
@@ -465,7 +529,7 @@ export function resolvePolicy(
     sourceId,
     complianceState: compliance,
     operationalState: operational,
-    enabled: isPublishable(compliance, operational, false),
+    enabled: isEnabledForFetch(compliance, operational, false),
     publishable: isPublishable(compliance, operational, false),
     complianceNotes: `Registry: ${compliance}/${operational}`,
     optOut: false,
