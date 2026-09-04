@@ -47,7 +47,10 @@ export const OPERATIONAL_STATES: ReadonlySet<OperationalState> = new Set([
 const OPERATIONAL_EDGES: Record<OperationalState, ReadonlySet<OperationalState>> = {
   candidate: new Set(["shadow", "paused", "retired"]),
   shadow: new Set(["canary", "paused", "quarantined", "retired"]),
-  canary: new Set(["active", "paused", "quarantined", "degraded", "retired"]),
+  // SP-23: canary → shadow is an explicit rollback edge. The typed transition
+  // plane restricts it to automatic cap/lease failures; this graph only owns
+  // the state topology.
+  canary: new Set(["shadow", "active", "paused", "quarantined", "degraded", "retired"]),
   active: new Set(["review_due", "degraded", "quarantined", "paused", "retired"]),
   review_due: new Set(["active", "paused", "retired"]),
   degraded: new Set(["quarantined", "paused", "active", "retired"]),
@@ -227,9 +230,10 @@ export interface ExpiryResult {
  * Apply lease/deadline expiry without deleting history.
  *
  * Rules (strategy §evidence leases §5, ADR-006 §5):
- * - policyExpiry past → blocks new promotions; if operational is
- *   shadow/canary/active, move to review_due (14-day grace). If already
- *   review_due and still past expiry, move to paused. Paused/retired stay.
+ * - policyExpiry past → blocks new promotions; a public canary returns to
+ *   private shadow immediately, while shadow/active move to review_due
+ *   (14-day grace). If already review_due and still past expiry, move to
+ *   paused. Paused/retired stay.
  * - reviewDeadline past while still needs_review/candidate → stays candidate
  *   but is overdue (caller should surface review debt); no auto-promote.
  * - Never auto-promotes a compliance hold; never deletes rows.
@@ -253,8 +257,19 @@ export function applyLeaseExpiry(
     return noChange;
   }
 
-  // Shadow/canary/active with expired policy → review_due grace window
-  if (row.operationalState === "shadow" || row.operationalState === "canary" || row.operationalState === "active") {
+  // SP-23: a canary is public exposure, so an expired lease removes it from
+  // publication immediately but preserves private observation/history.
+  if (row.operationalState === "canary") {
+    return {
+      changed: true,
+      nextCompliance: row.complianceState,
+      nextOperational: "shadow",
+      reason: `policy_expiry ${row.policyExpiry} past ${nowIso} while canary → shadow (automatic public rollback, no delete)`,
+    };
+  }
+
+  // Shadow/active with expired policy → review_due grace window.
+  if (row.operationalState === "shadow" || row.operationalState === "active") {
     return {
       changed: true,
       nextCompliance: row.complianceState,
