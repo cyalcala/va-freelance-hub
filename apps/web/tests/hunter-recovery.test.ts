@@ -1,4 +1,5 @@
 import { expect, test, describe, beforeEach, afterEach } from "bun:test";
+import { resolve } from "node:path";
 
 interface HunterResponse {
   lockState?: string;
@@ -192,5 +193,27 @@ describe("Hunter recovery loop contract", () => {
     const diffMinutes = (nextSafeAt.getTime() - now.getTime()) / (1000 * 60);
     expect(diffMinutes).toBeGreaterThan(0);
     expect(diffMinutes).toBeLessThanOrEqual(10);
+  });
+});
+
+describe("Hunter workflow terminal-state contract", () => {
+  const workflowPath = resolve(import.meta.dir, "../../../.github/workflows/gha-hunter-pulse.yml");
+
+  test("classifies zero inserts with skipped jobs as success in execution and summary paths", async () => {
+    const workflow = await Bun.file(workflowPath).text();
+    const skippedOnlySuccessRules = workflow.match(
+      /elif \.inserted == 0 and \(\(\.skipped \| if type == "number" then \. > 0 else false end\)\) then "success"\r?\n\s+elif \.inserted == 0 then "needs-rerun"/g,
+    ) ?? [];
+
+    expect(skippedOnlySuccessRules).toHaveLength(2);
+  });
+
+  test("does not let empty optional summary fields determine shell step status", async () => {
+    const workflow = await Bun.file(workflowPath).text();
+
+    expect(workflow).toMatch(/if \[ -n "\$MESSAGE" \]; then\s+echo "Message: \$MESSAGE"\s+fi/);
+    expect(workflow).not.toContain('[ -n "$MESSAGE" ] && echo "Message: $MESSAGE"');
+    expect(workflow).not.toContain('[ -n "${NEXT_SAFE_AT:-}" ] &&');
+    expect(workflow).not.toContain('[ -n "${MESSAGE:-}" ] &&');
   });
 });

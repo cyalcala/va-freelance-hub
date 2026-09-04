@@ -134,7 +134,8 @@ jobs:
             elif .skipped == true and .reason == "run-lock-held" and .lockState == "held" then "lock-held"
             elif .inserted > 0 and .backlogRemaining > 0 then "backlog"
             elif .inserted > 0 then "success"
-            elif .inserted == 0 and (.skipped == 0 or .skipped == null) then "needs-rerun"
+            elif .inserted == 0 and ((.skipped | if type == "number" then . > 0 else false end)) then "success"
+            elif .inserted == 0 then "needs-rerun"
             else "needs-rerun"
             end
           ' harvest.log)
@@ -182,8 +183,12 @@ jobs:
           echo "Insert errors: $INSERT_ERRORS"
           echo "Backlog remaining: $BACKLOG"
           echo "Lock state: $LOCK_STATE"
-          [ -n "$NEXT_SAFE_AT" ] && echo "Next safe at: $NEXT_SAFE_AT"
-          [ -n "$MESSAGE" ] && echo "Message: $MESSAGE"
+          if [ -n "$NEXT_SAFE_AT" ]; then
+            echo "Next safe at: $NEXT_SAFE_AT"
+          fi
+          if [ -n "$MESSAGE" ]; then
+            echo "Message: $MESSAGE"
+          fi
 
       - name: Evaluate Hunter Health
         if: always()
@@ -278,8 +283,12 @@ jobs:
             echo "- Rejected Persisted (inactive): $(jq -r '.rejectedPersisted // 0' harvest.log || echo 0)"
             echo "- Dropped (no sourceUrl): $(jq -r '.droppedNoUrl // 0' harvest.log || echo 0)"
             echo "- Unmatched Auto-Pauses: $UNMATCHED_PAUSES"
-            [ -n "${NEXT_SAFE_AT:-}" ] && echo "- Next Safe At: ${NEXT_SAFE_AT}"
-            [ -n "${MESSAGE:-}" ] && echo "- Server Message: ${MESSAGE}"
+            if [ -n "${NEXT_SAFE_AT:-}" ]; then
+              echo "- Next Safe At: ${NEXT_SAFE_AT}"
+            fi
+            if [ -n "${MESSAGE:-}" ]; then
+              echo "- Server Message: ${MESSAGE}"
+            fi
           } > source-health-summary.md
 
           if [ "$FAILED_SOURCE_COUNT" -gt 0 ]; then
@@ -323,13 +332,18 @@ jobs:
             elif .skipped == true and .reason == "run-lock-held" and .lockState == "held" then "lock-held"
             elif .inserted > 0 and .backlogRemaining > 0 then "backlog"
             elif .inserted > 0 then "success"
-            elif .inserted == 0 and (.skipped == 0 or .skipped == null) then "needs-rerun"
+            elif .inserted == 0 and ((.skipped | if type == "number" then . > 0 else false end)) then "success"
+            elif .inserted == 0 then "needs-rerun"
             else "needs-rerun"
             end
           ' harvest.log)
           NEXT_SAFE_AT=$(jq -r '.retryAfter // .nextSafeAt // empty' harvest.log)
-          [ -z "$NEXT_SAFE_AT" ] && [ "$TERMINAL_STATE" = "lock-held" ] && NEXT_SAFE_AT=$(date -u -d "+8 minutes" +"%Y-%m-%dT%H:%M:%SZ")
-          [ -z "$NEXT_SAFE_AT" ] && [ "$TERMINAL_STATE" = "backlog" ] && NEXT_SAFE_AT=$(date -u -d "+8 minutes" +"%Y-%m-%dT%H:%M:%SZ")
+          if [ -z "$NEXT_SAFE_AT" ] && [ "$TERMINAL_STATE" = "lock-held" ]; then
+            NEXT_SAFE_AT=$(date -u -d "+8 minutes" +"%Y-%m-%dT%H:%M:%SZ")
+          fi
+          if [ -z "$NEXT_SAFE_AT" ] && [ "$TERMINAL_STATE" = "backlog" ]; then
+            NEXT_SAFE_AT=$(date -u -d "+8 minutes" +"%Y-%m-%dT%H:%M:%SZ")
+          fi
 
           echo "### 🏹 Sovereign Hunter Report" >> $GITHUB_STEP_SUMMARY
           echo "- **Status**: ✅ Signal Safari Concluded" >> $GITHUB_STEP_SUMMARY
@@ -342,7 +356,9 @@ jobs:
           echo "- **Failed Sources**: $FAILED_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
           echo "- **Zero-Count Successful Sources**: $ZERO_COUNT_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
           echo "- **Skipped Sources**: $SKIPPED_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
-          [ -n "$NEXT_SAFE_AT" ] && echo "- **Next Safe At**: $NEXT_SAFE_AT" >> $GITHUB_STEP_SUMMARY
+          if [ -n "$NEXT_SAFE_AT" ]; then
+            echo "- **Next Safe At**: $NEXT_SAFE_AT" >> $GITHUB_STEP_SUMMARY
+          fi
           if [ "$FAILED_SOURCE_COUNT" -gt 0 ]; then
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "#### Failed Sources" >> $GITHUB_STEP_SUMMARY
