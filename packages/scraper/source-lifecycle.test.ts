@@ -185,14 +185,22 @@ describe("applyLeaseExpiry — expired evidence makes dormant without delete", (
     expect(r.nextOperational).toBe("review_due");
   });
 
-  test("canary with expired policy → shadow so its public exposure stops immediately", () => {
+  test("canary with expired policy emits a typed rollback intent instead of an unlogged state mutation", () => {
     const r = applyLeaseExpiry(
       { sourceId: "s3", complianceState: "allowed", operationalState: "canary", policyExpiry: past },
       now,
     );
-    expect(r.changed).toBe(true);
-    expect(r.nextOperational).toBe("shadow");
-    expect(r.reason).toContain("shadow");
+    expect(r.changed).toBe(false);
+    expect(r.nextOperational).toBe("canary");
+    expect(r.reason).toContain("transition plane");
+    expect(r.automaticRollback).toEqual({
+      cause: "evidence_lease_expired",
+      sourceId: "s3",
+      from: { compliance: "allowed", operational: "canary" },
+      to: { compliance: "allowed", operational: "shadow" },
+      policyExpiry: past,
+      now,
+    });
   });
 
   test("review_due with still-expired → paused (dormant, history retained)", () => {

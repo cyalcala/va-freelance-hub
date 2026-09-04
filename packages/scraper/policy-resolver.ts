@@ -312,7 +312,7 @@ export type PublicationEnvelope =
     };
 
 function isPositiveInteger(value: number | null | undefined): value is number {
-  return Number.isInteger(value) && value > 0;
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
 }
 
 /**
@@ -569,7 +569,7 @@ export async function loadRegistryPolicies(db: any): Promise<Map<string, Registr
     } catch {
       // Fallback: raw query via db.execute / d1
       try {
-        const raw = await db.execute?.("SELECT source_id, provider_id, compliance_state, operational_state, opt_out, display_name, endpoint_url, company_token FROM source_registry");
+        const raw = await db.execute?.("SELECT source_id, provider_id, compliance_state, operational_state, opt_out, display_name, endpoint_url, company_token, canary_max_new_items_per_tick FROM source_registry");
         const list = (raw as any)?.results ?? (raw as any)?.rows ?? raw;
         if (Array.isArray(list)) {
           rows = list.map((r: any) => ({
@@ -581,6 +581,7 @@ export async function loadRegistryPolicies(db: any): Promise<Map<string, Registr
             displayName: r.display_name ?? r.displayName,
             endpointUrl: r.endpoint_url ?? r.endpointUrl,
             companyToken: r.company_token ?? r.companyToken,
+            canaryMaxNewItemsPerTick: r.canary_max_new_items_per_tick ?? r.canaryMaxNewItemsPerTick ?? null,
           }));
         }
       } catch {}

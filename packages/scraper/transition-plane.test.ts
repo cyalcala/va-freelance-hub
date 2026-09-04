@@ -132,6 +132,62 @@ describe("SP-23 typed transitions", () => {
     expect(decision.reason).toContain("lifecycle graph");
   });
 
+  test("rejects a graph-valid lifecycle edge until it has an explicit typed cause", () => {
+    const decision = decideTypedTransition(
+      transitionRequest({
+        from: { compliance: "allowed", operational: "candidate" },
+        to: { compliance: "allowed", operational: "shadow" },
+        cause: "requested_promotion",
+      }),
+    );
+
+    expect(decision.ok).toBe(false);
+    expect(decision.reason).toContain("requested_shadow_entry");
+  });
+
+  test("rejects compliance-axis changes and noncanonical source identifiers", () => {
+    const authorityChange = decideTypedTransition(
+      transitionRequest({
+        from: { compliance: "needs_review", operational: "candidate" },
+        to: { compliance: "allowed", operational: "candidate" },
+      }),
+    );
+    expect(authorityChange.ok).toBe(false);
+    expect(authorityChange.reason).toContain("compliance-axis");
+
+    const whitespaceSource = decideTypedTransition(
+      transitionRequest({ sourceId: " greenhouse:grafanalabs " }),
+    );
+    expect(whitespaceSource.ok).toBe(false);
+    expect(whitespaceSource.reason).toContain("canonical");
+  });
+
+  test("accepts a source-health quarantine only with source-scoped evidence", () => {
+    const missingEvidence = decideTypedTransition(
+      transitionRequest({
+        from: { compliance: "allowed", operational: "active" },
+        to: { compliance: "allowed", operational: "quarantined" },
+        cause: "health_quarantine",
+        evidenceHash: null,
+      }),
+    );
+    expect(missingEvidence.ok).toBe(false);
+    expect(missingEvidence.reason).toContain("evidence hash");
+
+    const quarantined = decideTypedTransition(
+      transitionRequest({
+        from: { compliance: "allowed", operational: "active" },
+        to: { compliance: "allowed", operational: "quarantined" },
+        cause: "health_quarantine",
+      }),
+    );
+    expect(quarantined).toMatchObject({
+      ok: true,
+      cause: "health_quarantine",
+      to: { compliance: "allowed", operational: "quarantined" },
+    });
+  });
+
   test("refuses canary to active promotion after its evidence lease expires", () => {
     const decision = decideTypedTransition(
       transitionRequest({
@@ -189,5 +245,9 @@ describe("SP-23 typed transitions", () => {
     if (!decision.ok) throw new Error("expected valid rollback transition");
 
     expect(replayTransitionEvent({ ...decision.event, inputHash: "not-the-original" })).toMatchObject({ ok: false });
+    expect(replayTransitionEvent({ ...decision.event, fromCompliance: "conditional" })).toMatchObject({ ok: false });
+    expect(replayTransitionEvent({ ...decision.event, toCompliance: "conditional" })).toMatchObject({ ok: false });
+    expect(replayTransitionEvent({ ...decision.event, decidedAt: "2030-01-01T00:00:00.000Z" })).toMatchObject({ ok: false });
+    expect(replayTransitionEvent({ ...decision.event, evidenceHash: "forged" })).toMatchObject({ ok: false });
   });
 });

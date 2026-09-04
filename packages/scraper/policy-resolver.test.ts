@@ -4,6 +4,7 @@ import {
   resolvePolicy,
   isPublishable,
   resolvePublicationEnvelope,
+  loadRegistryPolicies,
   ROBOTS_ENFORCE_SOURCE_IDS,
   robotsModeForSourceIdMirror,
   ATS_PLATFORM_POLICIES,
@@ -433,6 +434,36 @@ describe("SP-23 publication envelopes", () => {
       maxNewItemsPerTick: 0,
       reason: "policy is not publishable",
     });
+  });
+
+  test("raw registry fallback retains the canary cap instead of silently discarding it", async () => {
+    let query = "";
+    const db = {
+      select() {
+        return {
+          from() {
+            throw new Error("force raw fallback");
+          },
+        };
+      },
+      async execute(sql: string) {
+        query = sql;
+        return {
+          results: [{
+            source_id: "greenhouse:grafanalabs",
+            provider_id: "greenhouse",
+            compliance_state: "allowed",
+            operational_state: "canary",
+            opt_out: 0,
+            canary_max_new_items_per_tick: 3,
+          }],
+        };
+      },
+    };
+    const policies = await loadRegistryPolicies(db);
+
+    expect(query).toContain("canary_max_new_items_per_tick");
+    expect(policies.get("greenhouse:grafanalabs")?.canaryMaxNewItemsPerTick).toBe(3);
   });
 });
 

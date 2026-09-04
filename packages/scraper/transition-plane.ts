@@ -18,10 +18,15 @@ import {
 export const TRANSITION_PLANE_VERSION = "sp23-v1";
 
 export type TransitionCause =
+  | "requested_shadow_entry"
   | "requested_promotion"
   | "canary_cap_breach"
   | "evidence_lease_expired"
-  | "invalid_canary_cap";
+  | "invalid_canary_cap"
+  | "health_quarantine"
+  | "policy_expiry_review"
+  | "emergency_pause"
+  | "retirement";
 
 export interface LifecycleState {
   compliance: ComplianceState;
@@ -128,11 +133,23 @@ export type CanaryPublicationDecision =
     };
 
 function hasPositiveInteger(value: number | null | undefined): value is number {
-  return Number.isInteger(value) && value > 0;
+  return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+function hasNonNegativeInteger(value: number | null | undefined): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
 function validInstant(value: string | null | undefined): value is string {
   return typeof value === "string" && Number.isFinite(new Date(value).getTime());
+}
+
+function isCanonicalSourceId(value: string): boolean {
+  return value.length > 0 && value === value.trim() && !/\s/.test(value);
+}
+
+function hasEvidenceHash(value: string | null | undefined): value is string {
+  return typeof value === "string" && value.trim().length > 0;
 }
 
 function hasCurrentLease(policyExpiry: string | null | undefined, now: string): boolean {
@@ -198,13 +215,26 @@ function rejected(request: TypedTransitionRequest, reason: string): TypedTransit
  * clock, random ID, or I/O is read outside the supplied request.
  */
 export function decideTypedTransition(request: TypedTransitionRequest): TypedTransitionDecision {
-  if (!request.sourceId.trim()) return rejected(request, "sourceId is required");
+  if (!isCanonicalSourceId(request.sourceId)) {
+    return rejected(request, "sourceId must be a non-empty canonical identifier without whitespace");
+  }
   if (!validInstant(request.now)) return rejected(request, "evaluation instant is not a valid timestamp");
+
+  // SP-23 only changes the operational axis. Authority/compliance adjudication
+  // needs its own evidence contract and must not hitch a ride on a publication
+  // transition just because the lifecycle topology happens to permit it.
+  if (request.from.compliance !== request.to.compliance) {
+    return rejected(request, "compliance-axis changes require a separate adjudication gateway");
+  }
 
   const lifecycle = validateTransition(request.from, request.to, request.optOut, request.now);
   if (!lifecycle.ok) return rejected(request, lifecycle.reason);
 
   const isCanaryRollback = request.from.operational === "canary" && request.to.operational === "shadow";
+  const isShadowEntry = request.from.operational === "candidate" && request.to.operational === "shadow";
+  const isCanaryPromotion = request.from.operational === "shadow" && request.to.operational === "canary";
+  const isActivePromotion = request.from.operational === "canary" && request.to.operational === "active";
+
   if (isCanaryRollback) {
     if (
       request.cause !== "canary_cap_breach" &&
@@ -224,32 +254,64 @@ export function decideTypedTransition(request: TypedTransitionRequest): TypedTra
     if (request.cause === "evidence_lease_expired" && hasCurrentLease(request.policyExpiry, request.now)) {
       return rejected(request, "evidence lease has not expired");
     }
+    if (request.cause === "invalid_canary_cap" && hasPositiveInteger(request.canaryMaxNewItemsPerTick)) {
+      return rejected(request, "invalid canary cap rollback requires a missing or invalid cap");
+    }
+  } else if (
+    request.cause === "canary_cap_breach" ||
+    request.cause === "evidence_lease_expired" ||
+    request.cause === "invalid_canary_cap"
+  ) {
+    return rejected(request, `${request.cause} is only valid for canary → shadow automatic rollback`);
   }
 
-  const isCanaryPromotion = request.from.operational === "shadow" && request.to.operational === "canary";
-  if (isCanaryPromotion) {
-    if (request.cause !== "requested_promotion") {
-      return rejected(request, "shadow → canary requires a requested promotion cause");
+  if (isShadowEntry) {
+    if (request.cause !== "requested_shadow_entry") {
+      return rejected(request, "candidate → shadow requires requested_shadow_entry");
     }
-    if (!hasPositiveInteger(request.requiredShadowCount) || (request.observedShadowCount ?? 0) < request.requiredShadowCount) {
+    if (!hasEvidenceHash(request.evidenceHash)) {
+      return rejected(request, "shadow entry requires a source-scoped evidence hash");
+    }
+    if (!hasCurrentLease(request.policyExpiry, request.now)) {
+      return rejected(request, "shadow entry requires a current evidence lease");
+    }
+  } else if (isCanaryPromotion) {
+    if (request.cause !== "requested_promotion") return rejected(request, "shadow → canary requires a requested promotion cause");
+    if (
+      !hasPositiveInteger(request.requiredShadowCount) ||
+      !hasNonNegativeInteger(request.observedShadowCount) ||
+      request.observedShadowCount < request.requiredShadowCount
+    ) {
       return rejected(request, "insufficient qualifying shadow observations for canary promotion");
     }
+    if (!hasEvidenceHash(request.evidenceHash)) return rejected(request, "canary promotion requires a source-scoped evidence hash");
     if (!hasPositiveInteger(request.canaryMaxNewItemsPerTick)) {
       return rejected(request, "canary promotion requires a positive per-tick cap");
     }
     if (!hasCurrentLease(request.policyExpiry, request.now)) {
       return rejected(request, "canary promotion requires a current evidence lease");
     }
-  }
-
-  const isActivePromotion = request.from.operational === "canary" && request.to.operational === "active";
-  if (isActivePromotion) {
-    if (request.cause !== "requested_promotion") {
-      return rejected(request, "canary → active requires a requested promotion cause");
-    }
+  } else if (isActivePromotion) {
+    if (request.cause !== "requested_promotion") return rejected(request, "canary → active requires a requested promotion cause");
+    if (!hasEvidenceHash(request.evidenceHash)) return rejected(request, "canary → active requires a source-scoped evidence hash");
     if (!hasCurrentLease(request.policyExpiry, request.now)) {
       return rejected(request, "canary → active requires a current evidence lease");
     }
+  } else if (request.to.operational === "quarantined") {
+    if (request.cause !== "health_quarantine") return rejected(request, "transition to quarantined requires health_quarantine");
+    if (!hasEvidenceHash(request.evidenceHash)) return rejected(request, "health quarantine requires a source-scoped evidence hash");
+  } else if (request.to.operational === "review_due") {
+    if (request.cause !== "policy_expiry_review") return rejected(request, "transition to review_due requires policy_expiry_review");
+    if (request.from.operational !== "shadow" && request.from.operational !== "active") {
+      return rejected(request, "policy expiry review is only valid from shadow or active");
+    }
+    if (hasCurrentLease(request.policyExpiry, request.now)) return rejected(request, "policy expiry review requires an expired evidence lease");
+  } else if (request.to.operational === "paused") {
+    if (request.cause !== "emergency_pause") return rejected(request, "transition to paused requires emergency_pause");
+  } else if (request.to.operational === "retired") {
+    if (request.cause !== "retirement") return rejected(request, "transition to retired requires retirement");
+  } else if (!isCanaryRollback) {
+    return rejected(request, "lifecycle edge has no accepted SP-23 typed cause");
   }
 
   return {
@@ -299,6 +361,12 @@ function automaticRollback(input: CanaryPublicationInput, cause: Extract<Transit
  * event instead of selecting an arbitrary partial subset to expose publicly.
  */
 export function decideCanaryPublication(input: CanaryPublicationInput): CanaryPublicationDecision {
+  if (!isCanonicalSourceId(input.sourceId)) {
+    return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "sourceId must be a non-empty canonical identifier without whitespace" };
+  }
+  if (!validInstant(input.now)) {
+    return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "evaluation instant is not a valid timestamp" };
+  }
   if (!Number.isInteger(input.proposedNewItems) || input.proposedNewItems < 0) {
     return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "proposedNewItems must be a non-negative integer" };
   }
@@ -359,13 +427,19 @@ export function replayTransitionEvent(event: TransitionEvent): { ok: boolean; re
     proposedNewItems: input.proposedNewItems,
   });
   if (!decision.ok) return { ok: false, reason: `replay rejected input: ${decision.reason}` };
+  const expected = decision.event;
   if (
-    decision.event.inputHash !== event.inputHash ||
-    decision.event.decisionHash !== event.decisionHash ||
-    decision.event.sourceId !== event.sourceId ||
-    decision.event.fromOperational !== event.fromOperational ||
-    decision.event.toOperational !== event.toOperational ||
-    decision.event.cause !== event.cause
+    expected.inputJson !== event.inputJson ||
+    expected.inputHash !== event.inputHash ||
+    expected.decisionHash !== event.decisionHash ||
+    expected.sourceId !== event.sourceId ||
+    expected.fromCompliance !== event.fromCompliance ||
+    expected.fromOperational !== event.fromOperational ||
+    expected.toCompliance !== event.toCompliance ||
+    expected.toOperational !== event.toOperational ||
+    expected.cause !== event.cause ||
+    expected.decidedAt !== event.decidedAt ||
+    expected.evidenceHash !== event.evidenceHash
   ) {
     return { ok: false, reason: "replayed decision does not match stored event" };
   }

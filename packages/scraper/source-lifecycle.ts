@@ -224,16 +224,28 @@ export interface ExpiryResult {
   nextCompliance: ComplianceState;
   nextOperational: OperationalState;
   reason: string | null;
+  /**
+   * Canary exposure rollbacks must be applied through SP-23's typed decision
+   * and append-only ledger, never by persisting this helper's output directly.
+   */
+  automaticRollback?: {
+    cause: "evidence_lease_expired";
+    sourceId: string;
+    from: { compliance: ComplianceState; operational: "canary" };
+    to: { compliance: ComplianceState; operational: "shadow" };
+    policyExpiry: string | null | undefined;
+    now: string;
+  };
 }
 
 /**
  * Apply lease/deadline expiry without deleting history.
  *
  * Rules (strategy §evidence leases §5, ADR-006 §5):
- * - policyExpiry past → blocks new promotions; a public canary returns to
- *   private shadow immediately, while shadow/active move to review_due
- *   (14-day grace). If already review_due and still past expiry, move to
- *   paused. Paused/retired stay.
+ * - policyExpiry past → blocks new promotions; a public canary emits an
+ *   SP-23 typed rollback intent (rather than an unlogged state mutation),
+ *   while shadow/active move to review_due (14-day grace). If already
+ *   review_due and still past expiry, move to paused. Paused/retired stay.
  * - reviewDeadline past while still needs_review/candidate → stays candidate
  *   but is overdue (caller should surface review debt); no auto-promote.
  * - Never auto-promotes a compliance hold; never deletes rows.
@@ -257,14 +269,24 @@ export function applyLeaseExpiry(
     return noChange;
   }
 
-  // SP-23: a canary is public exposure, so an expired lease removes it from
-  // publication immediately but preserves private observation/history.
+  // SP-23: a canary is public exposure. Do not return a directly-persistable
+  // canary → shadow change here: future callers must send this intent through
+  // decideTypedTransition() and the append-only transition ledger so the
+  // automatic rollback is replayable and auditable.
   if (row.operationalState === "canary") {
     return {
-      changed: true,
+      changed: false,
       nextCompliance: row.complianceState,
-      nextOperational: "shadow",
-      reason: `policy_expiry ${row.policyExpiry} past ${nowIso} while canary → shadow (automatic public rollback, no delete)`,
+      nextOperational: "canary",
+      reason: `policy_expiry ${row.policyExpiry} past ${nowIso} while canary; requires SP-23 transition plane automatic rollback`,
+      automaticRollback: {
+        cause: "evidence_lease_expired",
+        sourceId: row.sourceId,
+        from: { compliance: row.complianceState, operational: "canary" },
+        to: { compliance: row.complianceState, operational: "shadow" },
+        policyExpiry: row.policyExpiry,
+        now: nowIso,
+      },
     };
   }
 

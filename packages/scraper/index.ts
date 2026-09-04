@@ -96,6 +96,29 @@ export {
 } from "./source-lifecycle";
 export type { ComplianceState, OperationalState } from "./source-lifecycle";
 export {
+  TRANSITION_PLANE_VERSION,
+  decideTypedTransition,
+  decideCanaryPublication,
+  replayTransitionEvent,
+} from "./transition-plane";
+export type {
+  TransitionCause,
+  LifecycleState,
+  TypedTransitionRequest,
+  TypedTransitionDecision,
+  TransitionEvent,
+  TransitionEventInput,
+  CanaryPublicationInput,
+  CanaryPublicationDecision,
+} from "./transition-plane";
+export { applyTypedTransition } from "./transition-gateway";
+export type {
+  ApplyTypedTransitionRequest,
+  ApplyTypedTransitionResult,
+  TransitionGatewayDatabase,
+  TransitionGatewayStatement,
+} from "./transition-gateway";
+export {
   ATS_PROVIDER_CONFIG,
   providerConfigForPlatform,
   buildCandidateRow,
