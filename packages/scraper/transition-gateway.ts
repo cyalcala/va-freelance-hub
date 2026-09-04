@@ -145,24 +145,36 @@ export async function applyTypedTransition(
   if (!decision.ok) return { persisted: false, decision };
 
   const event = decision.event;
-  await db
-    .prepare(INSERT_TRANSITION_EVENT_SQL)
-    .bind(
-      event.input.version,
-      event.sourceId,
-      event.fromCompliance,
-      event.fromOperational,
-      event.toCompliance,
-      event.toOperational,
-      event.cause,
-      event.decidedAt,
-      event.evidenceHash,
-      event.inputJson,
-      event.inputHash,
-      event.decisionHash,
-    )
-    .run();
+  try {
+    await db
+      .prepare(INSERT_TRANSITION_EVENT_SQL)
+      .bind(
+        event.input.version,
+        event.sourceId,
+        event.fromCompliance,
+        event.fromOperational,
+        event.toCompliance,
+        event.toOperational,
+        event.cause,
+        event.decidedAt,
+        event.evidenceHash,
+        event.inputJson,
+        event.inputHash,
+        event.decisionHash,
+      )
+      .run();
+  } catch {
+    // A source can change after the read above. The migration rejects that
+    // stale event atomically; surface it as a normal failed decision so a
+    // caller can re-read/retry rather than treating the race as an exception.
+    return {
+      persisted: false,
+      decision: {
+        ok: false,
+        reason: "transition persistence was rejected by the current source-state guard",
+      },
+    };
+  }
 
   return { persisted: true, decision };
 }
-

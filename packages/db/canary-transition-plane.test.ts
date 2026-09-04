@@ -60,7 +60,9 @@ function insertTransitionEvent(db: Database, values: {
   requiredShadowCount?: number | null;
   proposedNewItems?: number | null;
   decisionHash?: string;
+  now?: string;
 }): void {
+  const now = values.now ?? NOW;
   const input = {
     version: "sp23-v1",
     sourceId: values.sourceId,
@@ -70,7 +72,7 @@ function insertTransitionEvent(db: Database, values: {
     toOperational: values.toOperational,
     optOut: false,
     cause: values.cause,
-    now: NOW,
+    now,
     policyExpiry: values.policyExpiry ?? FUTURE_LEASE,
     evidenceHash: values.evidenceHash ?? "evidence-sha",
     observedShadowCount: values.observedShadowCount ?? 3,
@@ -88,7 +90,7 @@ function insertTransitionEvent(db: Database, values: {
     ) VALUES (
       'sp23-v1', '${values.sourceId}',
       'allowed', '${values.fromOperational}', 'allowed', '${values.toOperational}',
-      '${values.cause}', '${NOW}', ${sqlNullable(values.evidenceHash ?? "evidence-sha")},
+      '${values.cause}', '${now}', ${sqlNullable(values.evidenceHash ?? "evidence-sha")},
       '${inputJson.replaceAll("'", "''")}', 'input-${decisionHash}', '${decisionHash}'
     )`,
   );
@@ -102,6 +104,18 @@ function promoteCandidateToShadow(db: Database, sourceId: string, cap: number | 
     cause: "requested_shadow_entry",
     cap,
   });
+}
+
+function insertQualifyingShadowObservations(db: Database, sourceId: string, count = 3): void {
+  for (let index = 0; index < count; index += 1) {
+    db.exec(
+      `INSERT INTO source_shadow_observations (
+        source_id, provider_id, dispatcher_version, outcome, evidence_hash, result_json
+      ) VALUES (
+        '${sourceId}', 'provider-1', 'sp22-v1', 'HEALTHY_WITH_RESULTS', 'observation-${index}', '{}'
+      )`,
+    );
+  }
 }
 
 describe("SP-23 source_registry canary constraint", () => {
@@ -129,6 +143,7 @@ describe("SP-23 source_registry canary constraint", () => {
       `UPDATE source_registry SET operational_state='canary' WHERE source_id='valid'`,
     )).toThrow();
     promoteCandidateToShadow(db, "valid", 2);
+    insertQualifyingShadowObservations(db, "valid");
     expect(() => insertTransitionEvent(db, {
       sourceId: "valid",
       fromOperational: "shadow",
@@ -157,6 +172,7 @@ describe("SP-23 source_transition_events", () => {
     insertProvider(db);
     insertCandidate(db, { sourceId: "greenhouse:test", cap: 3 });
     promoteCandidateToShadow(db, "greenhouse:test", 3);
+    insertQualifyingShadowObservations(db, "greenhouse:test");
     insertTransitionEvent(db, {
       sourceId: "greenhouse:test",
       fromOperational: "shadow",
@@ -228,6 +244,84 @@ describe("SP-23 source_transition_events", () => {
         'requested_shadow_entry', '${NOW}', 'not json', 'input', 'bad-json'
       )`,
     )).toThrow();
+    db.close();
+  });
+
+  test("fails closed for invalid event timestamps, graph-invalid quarantine, and an old-hash raw replay", () => {
+    const db = freshDb();
+    insertProvider(db);
+
+    insertCandidate(db, { sourceId: "invalid-timestamp", cap: 2 });
+    promoteCandidateToShadow(db, "invalid-timestamp", 2);
+    expect(() => insertTransitionEvent(db, {
+      sourceId: "invalid-timestamp",
+      fromOperational: "shadow",
+      toOperational: "canary",
+      cause: "requested_promotion",
+      cap: 2,
+      now: "not-a-date",
+    })).toThrow();
+    expect((db.query(
+      `SELECT operational_state FROM source_registry WHERE source_id='invalid-timestamp'`,
+    ).get() as { operational_state: string }).operational_state).toBe("shadow");
+
+    insertCandidate(db, { sourceId: "invalid-quarantine" });
+    expect(() => insertTransitionEvent(db, {
+      sourceId: "invalid-quarantine",
+      fromOperational: "candidate",
+      toOperational: "quarantined",
+      cause: "health_quarantine",
+    })).toThrow();
+    expect((db.query(
+      `SELECT operational_state FROM source_registry WHERE source_id='invalid-quarantine'`,
+    ).get() as { operational_state: string }).operational_state).toBe("candidate");
+
+    insertCandidate(db, { sourceId: "self-declared-observations", cap: 2 });
+    promoteCandidateToShadow(db, "self-declared-observations", 2);
+    expect(() => insertTransitionEvent(db, {
+      sourceId: "self-declared-observations",
+      fromOperational: "shadow",
+      toOperational: "canary",
+      cause: "requested_promotion",
+      cap: 2,
+      observedShadowCount: 3,
+      requiredShadowCount: 3,
+    })).toThrow();
+    expect((db.query(
+      `SELECT operational_state FROM source_registry WHERE source_id='self-declared-observations'`,
+    ).get() as { operational_state: string }).operational_state).toBe("shadow");
+
+    insertCandidate(db, { sourceId: "old-hash-replay", cap: 2 });
+    promoteCandidateToShadow(db, "old-hash-replay", 2);
+    insertQualifyingShadowObservations(db, "old-hash-replay");
+    insertTransitionEvent(db, {
+      sourceId: "old-hash-replay",
+      fromOperational: "shadow",
+      toOperational: "canary",
+      cause: "requested_promotion",
+      cap: 2,
+      decisionHash: "original-promotion-hash",
+    });
+    insertTransitionEvent(db, {
+      sourceId: "old-hash-replay",
+      fromOperational: "canary",
+      toOperational: "shadow",
+      cause: "canary_cap_breach",
+      cap: 2,
+      proposedNewItems: 3,
+      decisionHash: "latest-rollback-hash",
+    });
+    expect(() => db.exec(
+      `UPDATE source_registry
+       SET operational_state='canary', last_transition_hash='original-promotion-hash'
+       WHERE source_id='old-hash-replay'`,
+    )).toThrow();
+    expect((db.query(
+      `SELECT operational_state FROM source_registry WHERE source_id='old-hash-replay'`,
+    ).get() as { operational_state: string }).operational_state).toBe("shadow");
+    expect((db.query(
+      `SELECT COUNT(*) AS count FROM source_transition_apply_permits`,
+    ).get() as { count: number }).count).toBe(0);
     db.close();
   });
 });

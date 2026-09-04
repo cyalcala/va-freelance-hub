@@ -46,7 +46,9 @@ export const OPERATIONAL_STATES: ReadonlySet<OperationalState> = new Set([
 // decision only — auto-recovery from degraded/quarantined is bounded.
 const OPERATIONAL_EDGES: Record<OperationalState, ReadonlySet<OperationalState>> = {
   candidate: new Set(["shadow", "paused", "retired"]),
-  shadow: new Set(["canary", "paused", "quarantined", "retired"]),
+  // An expired evidence lease sends a shadow source to review_due just as it
+  // does an active source; applyLeaseExpiry has always modeled that outcome.
+  shadow: new Set(["canary", "review_due", "paused", "quarantined", "retired"]),
   // SP-23: canary → shadow is an explicit rollback edge. The typed transition
   // plane restricts it to automatic cap/lease failures; this graph only owns
   // the state topology.

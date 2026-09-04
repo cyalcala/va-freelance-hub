@@ -92,6 +92,15 @@ CREATE INDEX IF NOT EXISTS source_transition_events_source_decided_idx
 CREATE UNIQUE INDEX IF NOT EXISTS source_transition_events_decision_hash_unique
   ON source_transition_events (decision_hash);
 
+-- This one-row permit exists only during the event trigger's own registry
+-- update. It prevents a raw source_registry UPDATE from reusing an older
+-- event hash to replay a previously applied transition without appending a
+-- fresh immutable event. It is empty outside that atomic trigger execution.
+CREATE TABLE IF NOT EXISTS source_transition_apply_permits (
+  source_id TEXT PRIMARY KEY,
+  decision_hash TEXT NOT NULL UNIQUE
+);
+
 -- The event must be a canonical projection of its replay input, must start
 -- from the live row, and may only use one of the explicit SP-23 paths. This
 -- catches stale compare-and-swap attempts even if a caller has re-read an old
@@ -100,6 +109,9 @@ CREATE TRIGGER IF NOT EXISTS source_transition_events_validate_insert
 BEFORE INSERT ON source_transition_events
 FOR EACH ROW
 BEGIN
+  SELECT CASE WHEN julianday(NEW.decided_at) IS NULL
+    THEN RAISE(ABORT, 'transition event decided_at must be a parseable timestamp') END;
+
   SELECT CASE WHEN
     json_extract(NEW.input_json, '$.version') IS NOT NEW.transition_plane_version
     OR json_extract(NEW.input_json, '$.sourceId') IS NOT NEW.source_id
@@ -125,6 +137,21 @@ BEGIN
   SELECT CASE WHEN NEW.from_compliance <> NEW.to_compliance
     THEN RAISE(ABORT, 'SP-23 transition events cannot change the compliance axis') END;
 
+  -- Mirror the operational topology in source-lifecycle.ts at the persistence
+  -- boundary. The TypeScript gateway is the normal authority, but an event
+  -- row must never admit an edge the pure validator would reject.
+  SELECT CASE WHEN NOT (
+    NEW.from_operational = NEW.to_operational
+    OR (NEW.from_operational = 'candidate' AND NEW.to_operational IN ('shadow','paused','retired'))
+    OR (NEW.from_operational = 'shadow' AND NEW.to_operational IN ('canary','review_due','paused','quarantined','retired'))
+    OR (NEW.from_operational = 'canary' AND NEW.to_operational IN ('shadow','active','paused','quarantined','degraded','retired'))
+    OR (NEW.from_operational = 'active' AND NEW.to_operational IN ('review_due','degraded','quarantined','paused','retired'))
+    OR (NEW.from_operational = 'review_due' AND NEW.to_operational IN ('active','paused','retired'))
+    OR (NEW.from_operational = 'degraded' AND NEW.to_operational IN ('quarantined','paused','active','retired'))
+    OR (NEW.from_operational = 'quarantined' AND NEW.to_operational IN ('paused','retired','active'))
+    OR (NEW.from_operational = 'paused' AND NEW.to_operational IN ('candidate','retired'))
+  ) THEN RAISE(ABORT, 'transition event operational edge is not allowed by lifecycle graph') END;
+
   SELECT CASE WHEN NEW.cause IN ('requested_shadow_entry','requested_promotion')
     AND (
       EXISTS (SELECT 1 FROM source_opt_outs WHERE source_id = NEW.source_id)
@@ -146,15 +173,23 @@ BEGIN
     THEN RAISE(ABORT, 'automatic canary rollback must be canary to shadow') END;
 
   SELECT CASE WHEN NEW.cause = 'health_quarantine'
-    AND NOT (NEW.to_operational = 'quarantined' AND NEW.evidence_hash IS NOT NULL AND trim(NEW.evidence_hash) <> '')
+    AND NOT (
+      NEW.from_operational IN ('shadow','canary','active','degraded','quarantined')
+      AND NEW.to_operational = 'quarantined'
+      AND NEW.evidence_hash IS NOT NULL
+      AND trim(NEW.evidence_hash) <> ''
+    )
     THEN RAISE(ABORT, 'health_quarantine requires a target quarantine and evidence') END;
 
   SELECT CASE WHEN NEW.cause = 'policy_expiry_review'
     AND NOT (NEW.from_operational IN ('shadow','active') AND NEW.to_operational = 'review_due')
     THEN RAISE(ABORT, 'policy_expiry_review must be shadow or active to review_due') END;
 
-  SELECT CASE WHEN NEW.cause = 'emergency_pause' AND NEW.to_operational <> 'paused'
-    THEN RAISE(ABORT, 'emergency_pause must target paused') END;
+  SELECT CASE WHEN NEW.cause = 'emergency_pause'
+    AND NOT (
+      NEW.from_operational IN ('candidate','shadow','canary','active','review_due','degraded','quarantined','paused')
+      AND NEW.to_operational = 'paused'
+    ) THEN RAISE(ABORT, 'emergency_pause must follow the lifecycle graph and target paused') END;
 
   SELECT CASE WHEN NEW.cause = 'retirement' AND NEW.to_operational <> 'retired'
     THEN RAISE(ABORT, 'retirement must target retired') END;
@@ -168,13 +203,24 @@ BEGIN
   SELECT CASE WHEN NEW.cause = 'requested_promotion'
     AND NEW.to_operational = 'canary'
     AND (
-      (SELECT canary_max_new_items_per_tick IS NULL
-              OR typeof(canary_max_new_items_per_tick) <> 'integer'
-              OR canary_max_new_items_per_tick <= 0
-       FROM source_registry WHERE source_id = NEW.source_id)
-      OR CAST(json_extract(NEW.input_json, '$.observedShadowCount') AS INTEGER) < CAST(json_extract(NEW.input_json, '$.requiredShadowCount') AS INTEGER)
-      OR CAST(json_extract(NEW.input_json, '$.requiredShadowCount') AS INTEGER) <= 0
-      OR NEW.evidence_hash IS NULL
+       (SELECT canary_max_new_items_per_tick IS NULL
+               OR typeof(canary_max_new_items_per_tick) <> 'integer'
+               OR canary_max_new_items_per_tick <= 0
+        FROM source_registry WHERE source_id = NEW.source_id)
+       OR typeof(json_extract(NEW.input_json, '$.observedShadowCount')) <> 'integer'
+       OR typeof(json_extract(NEW.input_json, '$.requiredShadowCount')) <> 'integer'
+       OR CAST(json_extract(NEW.input_json, '$.requiredShadowCount') AS INTEGER) <= 0
+       OR CAST(json_extract(NEW.input_json, '$.observedShadowCount') AS INTEGER) <> (
+         SELECT COUNT(*) FROM source_shadow_observations
+         WHERE source_id = NEW.source_id
+           AND outcome IN ('HEALTHY_WITH_RESULTS', 'HEALTHY_EMPTY')
+       )
+       OR (
+         SELECT COUNT(*) FROM source_shadow_observations
+         WHERE source_id = NEW.source_id
+           AND outcome IN ('HEALTHY_WITH_RESULTS', 'HEALTHY_EMPTY')
+       ) < CAST(json_extract(NEW.input_json, '$.requiredShadowCount') AS INTEGER)
+       OR NEW.evidence_hash IS NULL
       OR trim(NEW.evidence_hash) = ''
     ) THEN RAISE(ABORT, 'canary promotion requires cap, evidence, and qualifying shadow observations') END;
 
@@ -209,6 +255,9 @@ CREATE TRIGGER IF NOT EXISTS source_transition_events_apply_registry_state
 AFTER INSERT ON source_transition_events
 FOR EACH ROW
 BEGIN
+  INSERT INTO source_transition_apply_permits (source_id, decision_hash)
+  VALUES (NEW.source_id, NEW.decision_hash);
+
   UPDATE source_registry
   SET compliance_state = NEW.to_compliance,
       operational_state = NEW.to_operational,
@@ -217,17 +266,27 @@ BEGIN
       last_decision_at = NEW.decided_at,
       updated_at = NEW.decided_at
   WHERE source_id = NEW.source_id;
+
+  DELETE FROM source_transition_apply_permits
+  WHERE source_id = NEW.source_id
+    AND decision_hash = NEW.decision_hash;
 END;
 
 CREATE TRIGGER IF NOT EXISTS source_registry_state_requires_transition_event
-BEFORE UPDATE OF compliance_state, operational_state ON source_registry
+BEFORE UPDATE OF compliance_state, operational_state, last_transition_hash ON source_registry
 FOR EACH ROW
 WHEN NEW.compliance_state IS NOT OLD.compliance_state
   OR NEW.operational_state IS NOT OLD.operational_state
+  OR NEW.last_transition_hash IS NOT OLD.last_transition_hash
 BEGIN
   SELECT CASE WHEN NOT EXISTS (
-    SELECT 1 FROM source_transition_events AS event
-    WHERE event.decision_hash = NEW.last_transition_hash
+    SELECT 1
+    FROM source_transition_apply_permits AS permit
+    INNER JOIN source_transition_events AS event
+      ON event.source_id = permit.source_id
+     AND event.decision_hash = permit.decision_hash
+    WHERE permit.source_id = OLD.source_id
+      AND permit.decision_hash = NEW.last_transition_hash
       AND event.source_id = OLD.source_id
       AND event.from_compliance = OLD.compliance_state
       AND event.from_operational = OLD.operational_state

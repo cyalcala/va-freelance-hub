@@ -15,6 +15,7 @@ class FakeStatement implements TransitionGatewayStatement {
     private readonly query: string,
     private readonly response: unknown,
     private readonly runs: Array<{ query: string; values: unknown[] }>,
+    private readonly runError?: Error,
   ) {}
 
   bind(...values: unknown[]): TransitionGatewayStatement {
@@ -28,6 +29,7 @@ class FakeStatement implements TransitionGatewayStatement {
 
   async run(): Promise<unknown> {
     this.runs.push({ query: this.query, values: this.values });
+    if (this.runError) throw this.runError;
     return { success: true };
   }
 }
@@ -36,7 +38,10 @@ class FakeDatabase implements TransitionGatewayDatabase {
   readonly runs: Array<{ query: string; values: unknown[] }> = [];
   private readonly responseQueues: Record<string, unknown[]>;
 
-  constructor(responses: Record<string, unknown[]>) {
+  constructor(
+    responses: Record<string, unknown[]>,
+    private readonly insertError?: Error,
+  ) {
     this.responseQueues = Object.fromEntries(
       Object.entries(responses).map(([key, value]) => [key, [...value]]),
     );
@@ -51,7 +56,7 @@ class FakeDatabase implements TransitionGatewayDatabase {
           ? "observations"
           : "insert";
     const response = this.responseQueues[key]?.shift() ?? null;
-    return new FakeStatement(query, response, this.runs);
+    return new FakeStatement(query, response, this.runs, key === "insert" ? this.insertError : undefined);
   }
 }
 
@@ -127,5 +132,25 @@ describe("SP-23 transition gateway", () => {
     expect(optedOutResult.persisted).toBe(false);
     expect(optedOutResult.decision).toMatchObject({ ok: false });
     expect(optedOut.runs).toHaveLength(0);
+  });
+
+  test("turns an insert-time stale transition rejection into a controlled non-persisted result", async () => {
+    const db = new FakeDatabase({
+      registry: [shadowSnapshot()],
+      optOut: [null],
+      observations: [{ qualifying_count: 3 }],
+    }, new Error("transition event does not match current source registry state"));
+
+    const result = await applyTypedTransition(db, {
+      sourceId: "greenhouse:grafanalabs",
+      to: { compliance: "allowed", operational: "canary" },
+      cause: "requested_promotion",
+      now: NOW,
+      evidenceHash: "shadow-evidence-sha",
+      requiredShadowCount: 3,
+    });
+
+    expect(result).toMatchObject({ persisted: false, decision: { ok: false } });
+    expect(db.runs).toHaveLength(1);
   });
 });
