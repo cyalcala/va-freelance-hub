@@ -53,6 +53,19 @@ SP-23B's immutable current-evidence admission contract. No new source, historica
 registry SQL or shadow schedule is enabled by this checkpoint. Rollback keeps
 canaries disabled and retains additive schema/history and durable opt-outs.
 
+Release attempt: PR **#104** merged as
+`8fdbbe361966465dcdec30c02b7121fd2712ffab` after exact-head PR CI
+`33967957174` passed (`0310762e3b9ea1a6c18caf9f14de8938e7ad48ef`). Main
+run `33968012516` passed validation but stopped in migration 0039 with D1
+`incomplete input: SQLITE_ERROR`, before read-only verification or Pages
+deployment. The prior app continued serving `/opportunities` with HTTP 200 at
+13:14:50 UTC. This is a failed release, not production acceptance. The SQL
+contains unparenthesized trigger CASE expressions matching upstream D1
+[issue 4727](https://github.com/cloudflare/workers-sdk/issues/4727); Git and
+working-copy SQL are LF, ruling out the separate CRLF issue. A bounded syntax
+compatibility repair and transport regression are in progress. The retired
+Vercel integration's account failure is unrelated to the active release gate.
+
 ## Run 41 — SP-23 control plane implemented — VERIFYING, not production-accepted (2026-09-05)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-23 capped canary and
