@@ -312,13 +312,13 @@ export type PublicationEnvelope =
     };
 
 function isPositiveInteger(value: number | null | undefined): value is number {
-  return typeof value === "number" && Number.isInteger(value) && value > 0;
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
 /**
  * Resolve the distinct public exposure envelope for a resolved registry policy.
  * Active sources remain uncapped; every canary must carry an explicit positive
- * cap. Missing, zero, fractional, and negative caps all fail closed.
+ * cap. Missing, zero, fractional, negative, or non-safe caps all fail closed.
  */
 export function resolvePublicationEnvelope(
   policy: Pick<ResolvedPolicy, "publishable" | "operationalState">,
@@ -488,6 +488,21 @@ export function resolvePolicy(
 ): ResolvedPolicy {
   if (!registryRow) return fallbackPolicy(sourceId);
 
+  if (registryRow.sourceId !== sourceId) {
+    return {
+      sourceId,
+      complianceState: "needs_review",
+      operationalState: "paused",
+      enabled: false,
+      publishable: false,
+      complianceNotes: `Registry identity mismatch: requested ${sourceId}, received ${registryRow.sourceId} — coerced to non-publishable.`,
+      optOut: false,
+      kind: sourceId.includes(":") ? "ats" : "static",
+      sourceName: sourceId,
+      robotsMode: robotsModeForSourceIdMirror(sourceId),
+    };
+  }
+
   const compliance = registryRow.complianceState;
   const operational = registryRow.operationalState;
   const optOut = Boolean(registryRow.optOut);
@@ -548,47 +563,110 @@ export const KNOWN_SOURCE_IDS = [...KNOWN_STATIC_IDS, ...KNOWN_ATS_IDS];
 // ─── D1 loader (graceful when table missing) ────────────────────────────────
 
 /**
- * Load all source_registry rows into a Map keyed by source_id.
- * Returns empty Map when DB is unavailable, table is missing, or query fails —
- * the caller must fall back to `fallbackPolicy`. Never throws.
+ * A durable opt-out must continue to block a source after its registry row is
+ * removed. Represent ledger-only IDs as an opt-out overlay rather than falling
+ * through to the exact-six static adapter.
+ */
+function durableOptOutOverlay(sourceId: string): RegistryPolicyRow {
+  return {
+    sourceId,
+    providerId: "durable-opt-out",
+    complianceState: "needs_review",
+    operationalState: "paused",
+    optOut: true,
+    displayName: sourceId,
+  };
+}
+
+/**
+ * Load all source_registry rows into a Map keyed by source_id, with durable
+ * source_opt_outs overlaid on the registry cache bit.
+ *
+ * A successful empty result is the explicit pre-cutover fallback adapter. A
+ * read failure is deliberately distinct and rejects: silently turning an
+ * unavailable governance ledger into the static exact-six fallback could
+ * re-enable a paused or opted-out source.
  */
 export async function loadRegistryPolicies(db: any): Promise<Map<string, RegistryPolicyRow>> {
-  const map = new Map<string, RegistryPolicyRow>();
+  let rows: RegistryPolicyRow[];
+
   try {
-    if (!db || typeof db.select !== "function") return map;
-    // Use raw SQL via drizzle or plain query — handle both shapes.
-    // Prefer a direct `db.select` on the typed table if available; fall back to
-    // raw execute so this works even when the import is not wired.
-    let rows: RegistryPolicyRow[] = [];
+    if (!db || typeof db.select !== "function") {
+      throw new Error("typed registry reader is unavailable");
+    }
+    const { sourceRegistry, sourceOptOuts } = await import("@va-hub/db");
+    if (!sourceRegistry || !sourceOptOuts) throw new Error("typed registry tables are unavailable");
+
+    const result = await db.select().from(sourceRegistry);
+    const optOutRows = await db
+      .select({ sourceId: sourceOptOuts.sourceId })
+      .from(sourceOptOuts);
+    if (!Array.isArray(result) || !Array.isArray(optOutRows)) {
+      throw new Error("typed registry reader returned an unverifiable result");
+    }
+
+    const durableOptOutIds = new Set(
+      (optOutRows as Array<{ sourceId: string }>).map((row) => row.sourceId),
+    );
+    rows = (result as RegistryPolicyRow[]).map((row) => ({
+      ...row,
+      optOut: Boolean(row.optOut) || durableOptOutIds.has(row.sourceId),
+    }));
+    const registryIds = new Set(rows.map((row) => row.sourceId));
+    for (const sourceId of durableOptOutIds) {
+      if (!registryIds.has(sourceId)) rows.push(durableOptOutOverlay(sourceId));
+    }
+  } catch (typedError) {
+    // Prefer a raw D1 query when the typed import/adapter is not wired, but
+    // require an independently verifiable result from it as well.
     try {
-      const { sourceRegistry } = await import("@va-hub/db");
-      if (sourceRegistry) {
-        const result = await db.select().from(sourceRegistry);
-        rows = result as RegistryPolicyRow[];
+      if (!db || typeof db.execute !== "function") {
+        throw new Error("raw registry reader is unavailable");
       }
-    } catch {
-      // Fallback: raw query via db.execute / d1
-      try {
-        const raw = await db.execute?.("SELECT source_id, provider_id, compliance_state, operational_state, opt_out, display_name, endpoint_url, company_token, canary_max_new_items_per_tick FROM source_registry");
-        const list = (raw as any)?.results ?? (raw as any)?.rows ?? raw;
-        if (Array.isArray(list)) {
-          rows = list.map((r: any) => ({
-            sourceId: r.source_id ?? r.sourceId,
-            providerId: r.provider_id ?? r.providerId,
-            complianceState: r.compliance_state ?? r.complianceState,
-            operationalState: r.operational_state ?? r.operationalState,
-            optOut: Boolean(r.opt_out ?? r.optOut),
-            displayName: r.display_name ?? r.displayName,
-            endpointUrl: r.endpoint_url ?? r.endpointUrl,
-            companyToken: r.company_token ?? r.companyToken,
-            canaryMaxNewItemsPerTick: r.canary_max_new_items_per_tick ?? r.canaryMaxNewItemsPerTick ?? null,
-          }));
-        }
-      } catch {}
+      const raw = await db.execute(`
+        SELECT source_id, provider_id, compliance_state, operational_state,
+               opt_out, display_name, endpoint_url, company_token,
+               canary_max_new_items_per_tick,
+               CASE WHEN opt_out <> 0 OR EXISTS (
+                 SELECT 1 FROM source_opt_outs
+                 WHERE source_opt_outs.source_id = source_registry.source_id
+               ) THEN 1 ELSE 0 END AS effective_opt_out
+        FROM source_registry
+        UNION ALL
+        SELECT source_opt_outs.source_id, 'durable-opt-out' AS provider_id,
+               'needs_review' AS compliance_state, 'paused' AS operational_state,
+               1 AS opt_out, source_opt_outs.source_id AS display_name,
+               NULL AS endpoint_url, NULL AS company_token,
+               NULL AS canary_max_new_items_per_tick, 1 AS effective_opt_out
+        FROM source_opt_outs
+        WHERE NOT EXISTS (
+          SELECT 1 FROM source_registry
+          WHERE source_registry.source_id = source_opt_outs.source_id
+        )
+      `);
+      const list = (raw as any)?.results ?? (raw as any)?.rows ?? raw;
+      if (!Array.isArray(list)) throw new Error("raw registry reader returned an unverifiable result");
+      rows = list.map((r: any) => ({
+        sourceId: r.source_id ?? r.sourceId,
+        providerId: r.provider_id ?? r.providerId,
+        complianceState: r.compliance_state ?? r.complianceState,
+        operationalState: r.operational_state ?? r.operationalState,
+        optOut: Boolean(r.effective_opt_out ?? r.effectiveOptOut ?? r.opt_out ?? r.optOut),
+        displayName: r.display_name ?? r.displayName,
+        endpointUrl: r.endpoint_url ?? r.endpointUrl,
+        companyToken: r.company_token ?? r.companyToken,
+        canaryMaxNewItemsPerTick: r.canary_max_new_items_per_tick ?? r.canaryMaxNewItemsPerTick ?? null,
+      }));
+    } catch (rawError) {
+      const typedMessage = typedError instanceof Error ? typedError.message : String(typedError);
+      const rawMessage = rawError instanceof Error ? rawError.message : String(rawError);
+      throw new Error(`registry policy snapshot unavailable: typed=${typedMessage}; raw=${rawMessage}`);
     }
-    for (const row of rows) {
-      if (row?.sourceId) map.set(row.sourceId, row);
-    }
-  } catch {}
+  }
+
+  const map = new Map<string, RegistryPolicyRow>();
+  for (const row of rows) {
+    if (row?.sourceId) map.set(row.sourceId, row);
+  }
   return map;
 }

@@ -259,6 +259,24 @@ describe("registry overlay is authoritative when present", () => {
     expect(r.operationalState).toBe("active");
   });
 
+  test("a registry row for another source cannot authorize this source", () => {
+    const policy = resolvePolicy("remotive", {
+      sourceId: "we-work-remotely",
+      providerId: "we-work-remotely",
+      complianceState: "allowed",
+      operationalState: "active",
+      optOut: false,
+    });
+    expect(policy).toMatchObject({
+      sourceId: "remotive",
+      complianceState: "needs_review",
+      operationalState: "paused",
+      enabled: false,
+      publishable: false,
+    });
+    expect(policy.complianceNotes).toContain("identity mismatch");
+  });
+
   test("conditional+active is publishable and enabled by the legacy loop", () => {
     const r = resolvePolicy("test:id", {
       sourceId: "test:id",
@@ -309,6 +327,11 @@ describe("registry overlay is authoritative when present", () => {
       reason: "canary requires a positive per-tick publication cap",
     });
     expect(resolvePublicationEnvelope(policy, { canaryMaxNewItemsPerTick: 1.5 })).toEqual({
+      mode: "blocked",
+      maxNewItemsPerTick: 0,
+      reason: "canary requires a positive per-tick publication cap",
+    });
+    expect(resolvePublicationEnvelope(policy, { canaryMaxNewItemsPerTick: Number.MAX_SAFE_INTEGER + 1 })).toEqual({
       mode: "blocked",
       maxNewItemsPerTick: 0,
       reason: "canary requires a positive per-tick publication cap",
@@ -436,6 +459,84 @@ describe("SP-23 publication envelopes", () => {
     });
   });
 
+  test("durable opt-out memory overrides an allowed active registry cache row", async () => {
+    let selectCall = 0;
+    const db = {
+      select() {
+        selectCall += 1;
+        return {
+          from() {
+            if (selectCall === 1) {
+              return [{
+                sourceId: "greenhouse:grafanalabs",
+                providerId: "greenhouse",
+                complianceState: "allowed",
+                operationalState: "active",
+                optOut: false,
+              }];
+            }
+            return [{ sourceId: "greenhouse:grafanalabs" }];
+          },
+        };
+      },
+    };
+    const policies = await loadRegistryPolicies(db);
+    const row = policies.get("greenhouse:grafanalabs");
+    if (!row) throw new Error("expected registry policy row");
+
+    expect(row.optOut).toBe(true);
+    expect(resolvePolicy("greenhouse:grafanalabs", row)).toMatchObject({
+      optOut: true,
+      enabled: false,
+      publishable: false,
+    });
+  });
+
+  test("durable opt-out memory blocks an exact-six fallback after its registry row is removed", async () => {
+    let selectCall = 0;
+    const db = {
+      select() {
+        selectCall += 1;
+        return {
+          from() {
+            return selectCall === 1 ? [] : [{ sourceId: "remotive" }];
+          },
+        };
+      },
+    };
+    const policies = await loadRegistryPolicies(db);
+    const row = policies.get("remotive");
+    if (!row) throw new Error("expected durable opt-out overlay");
+
+    expect(row).toMatchObject({
+      sourceId: "remotive",
+      optOut: true,
+      operationalState: "paused",
+    });
+    expect(resolvePolicy("remotive", row)).toMatchObject({
+      optOut: true,
+      enabled: false,
+      publishable: false,
+    });
+  });
+
+  test("does not convert an unavailable registry or durable ledger into an active fallback", async () => {
+    const db = {
+      select() {
+        return {
+          from() {
+            throw new Error("typed D1 outage");
+          },
+        };
+      },
+      async execute() {
+        throw new Error("raw D1 outage");
+      },
+    };
+
+    await expect(loadRegistryPolicies(db)).rejects.toThrow("registry policy snapshot unavailable");
+  });
+
   test("raw registry fallback retains the canary cap instead of silently discarding it", async () => {
     let query = "";
     const db = {
@@ -463,6 +564,7 @@ describe("SP-23 publication envelopes", () => {
     const policies = await loadRegistryPolicies(db);
 
     expect(query).toContain("canary_max_new_items_per_tick");
+    expect(query).toContain("source_opt_outs");
     expect(policies.get("greenhouse:grafanalabs")?.canaryMaxNewItemsPerTick).toBe(3);
   });
 });
