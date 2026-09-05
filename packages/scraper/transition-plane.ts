@@ -8,7 +8,6 @@
  * canary contract explicit, testable, and replayable.
  */
 
-import { hashString } from "./contentHash";
 import {
   validateTransition,
   type ComplianceState,
@@ -133,23 +132,51 @@ export type CanaryPublicationDecision =
     };
 
 function hasPositiveInteger(value: number | null | undefined): value is number {
-  return typeof value === "number" && Number.isInteger(value) && value > 0;
+  return typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 }
 
 function hasNonNegativeInteger(value: number | null | undefined): value is number {
-  return typeof value === "number" && Number.isInteger(value) && value >= 0;
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
 }
 
+function hasOptionalSafeInteger(value: number | null | undefined): boolean {
+  return value === null || value === undefined || (
+    typeof value === "number" && Number.isSafeInteger(value)
+  );
+}
+
+const STRICT_UTC_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+
 function validInstant(value: string | null | undefined): value is string {
-  return typeof value === "string" && Number.isFinite(new Date(value).getTime());
+  if (typeof value !== "string" || !STRICT_UTC_INSTANT.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
 }
 
 function isCanonicalSourceId(value: string): boolean {
-  return value.length > 0 && value === value.trim() && !/\s/.test(value);
+  // Keep durable identities portable across TypeScript and SQLite. This
+  // deliberately admits the established namespace separators (`:`, `.`, `_`,
+  // `-`) while excluding Unicode lookalikes and every whitespace code point.
+  return /^[a-z0-9:._-]+$/.test(value);
 }
 
 function hasEvidenceHash(value: string | null | undefined): value is string {
-  return typeof value === "string" && value.trim().length > 0;
+  // Evidence is a durable source-scoped token (for example `sha256:...`),
+  // rather than arbitrary prose or a URL. Keeping it ASCII gives the D1 JSON
+  // packet and JavaScript replay one unambiguous UTF-8 representation.
+  return typeof value === "string" && /^[A-Za-z0-9._:-]+$/.test(value);
+}
+
+/**
+ * SQLite can independently verify this exact UTF-8 hex encoding with
+ * `hex(input_json)`. It is an audit/replay fingerprint, deliberately not a
+ * cryptographic hash or the masterplan's future tamper-evident ledger.
+ */
+function canonicalInputFingerprint(inputJson: string): string {
+  return Array.from(
+    new TextEncoder().encode(inputJson),
+    (byte) => byte.toString(16).padStart(2, "0"),
+  ).join("").toUpperCase();
 }
 
 function hasCurrentLease(policyExpiry: string | null | undefined, now: string): boolean {
@@ -180,15 +207,10 @@ function buildEventInput(request: TypedTransitionRequest): TransitionEventInput 
 function buildEvent(request: TypedTransitionRequest): TransitionEvent {
   const input = buildEventInput(request);
   const inputJson = JSON.stringify(input);
-  const inputHash = hashString(inputJson);
-  const decisionHash = hashString(JSON.stringify({
-    version: TRANSITION_PLANE_VERSION,
-    sourceId: request.sourceId,
-    from: request.from,
-    to: request.to,
-    cause: request.cause,
-    inputHash,
-  }));
+  const inputHash = canonicalInputFingerprint(inputJson);
+  // The canonical input contains every decision field, so one SQL-verifiable
+  // fingerprint serves as both the input and immutable decision identity.
+  const decisionHash = inputHash;
   return {
     sourceId: request.sourceId,
     fromCompliance: request.from.compliance,
@@ -216,9 +238,17 @@ function rejected(request: TypedTransitionRequest, reason: string): TypedTransit
  */
 export function decideTypedTransition(request: TypedTransitionRequest): TypedTransitionDecision {
   if (!isCanonicalSourceId(request.sourceId)) {
-    return rejected(request, "sourceId must be a non-empty canonical identifier without whitespace");
+    return rejected(request, "sourceId must be a non-empty lowercase ASCII canonical identifier");
   }
   if (!validInstant(request.now)) return rejected(request, "evaluation instant is not a valid timestamp");
+  if (
+    !hasOptionalSafeInteger(request.observedShadowCount)
+    || !hasOptionalSafeInteger(request.requiredShadowCount)
+    || !hasOptionalSafeInteger(request.canaryMaxNewItemsPerTick)
+    || !hasOptionalSafeInteger(request.proposedNewItems)
+  ) {
+    return rejected(request, "transition numeric fields must be JavaScript-safe integers or null");
+  }
 
   // SP-23 only changes the operational axis. Authority/compliance adjudication
   // needs its own evidence contract and must not hitch a ride on a publication
@@ -227,10 +257,16 @@ export function decideTypedTransition(request: TypedTransitionRequest): TypedTra
     return rejected(request, "compliance-axis changes require a separate adjudication gateway");
   }
 
-  const lifecycle = validateTransition(request.from, request.to, request.optOut, request.now);
+  const isCanaryRollback = request.from.operational === "canary" && request.to.operational === "shadow";
+  // An automatic canary exit must be able to complete even if an opt-out or a
+  // compliance hold arrived after the source entered canary. It is an exit,
+  // not a new shadow entry: publication remains zero and the resolver's
+  // opt-out/compliance gates still prevent any future fetch or exposure.
+  const lifecycle = isCanaryRollback
+    ? { ok: true, reason: "automatic canary exit" }
+    : validateTransition(request.from, request.to, request.optOut, request.now);
   if (!lifecycle.ok) return rejected(request, lifecycle.reason);
 
-  const isCanaryRollback = request.from.operational === "canary" && request.to.operational === "shadow";
   const isShadowEntry = request.from.operational === "candidate" && request.to.operational === "shadow";
   const isCanaryPromotion = request.from.operational === "shadow" && request.to.operational === "canary";
   const isActivePromotion = request.from.operational === "canary" && request.to.operational === "active";
@@ -362,13 +398,27 @@ function automaticRollback(input: CanaryPublicationInput, cause: Extract<Transit
  */
 export function decideCanaryPublication(input: CanaryPublicationInput): CanaryPublicationDecision {
   if (!isCanonicalSourceId(input.sourceId)) {
-    return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "sourceId must be a non-empty canonical identifier without whitespace" };
+    return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "sourceId must be a non-empty lowercase ASCII canonical identifier" };
   }
   if (!validInstant(input.now)) {
     return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "evaluation instant is not a valid timestamp" };
   }
-  if (!Number.isInteger(input.proposedNewItems) || input.proposedNewItems < 0) {
-    return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "proposedNewItems must be a non-negative integer" };
+  if (!Number.isSafeInteger(input.proposedNewItems) || input.proposedNewItems < 0) {
+    return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "proposedNewItems must be a non-negative JavaScript-safe integer" };
+  }
+  if (input.operational === "canary") {
+    // Prioritize the durable exit event over eligibility checks. Otherwise an
+    // opt-out arriving in the same tick could block publication but leave an
+    // expired or over-cap canary in its public lifecycle state.
+    if (!hasPositiveInteger(input.canaryMaxNewItemsPerTick)) {
+      return automaticRollback(input, "invalid_canary_cap");
+    }
+    if (!hasCurrentLease(input.policyExpiry, input.now)) {
+      return automaticRollback(input, "evidence_lease_expired");
+    }
+    if (input.proposedNewItems > input.canaryMaxNewItemsPerTick) {
+      return automaticRollback(input, "canary_cap_breach");
+    }
   }
   if (input.optOut || (input.compliance !== "allowed" && input.compliance !== "conditional")) {
     return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: "source is not publication-eligible" };
@@ -384,26 +434,17 @@ export function decideCanaryPublication(input: CanaryPublicationInput): CanaryPu
   if (input.operational !== "canary") {
     return { action: "block", publicationMode: "blocked", allowedNewItems: 0, cap: null, reason: `operational state ${input.operational} is not publicly publishable` };
   }
-  if (!hasPositiveInteger(input.canaryMaxNewItemsPerTick)) {
-    return automaticRollback(input, "invalid_canary_cap");
-  }
-  if (!hasCurrentLease(input.policyExpiry, input.now)) {
-    return automaticRollback(input, "evidence_lease_expired");
-  }
-  if (input.proposedNewItems > input.canaryMaxNewItemsPerTick) {
-    return automaticRollback(input, "canary_cap_breach");
-  }
   return {
     action: "allow",
     publicationMode: "capped",
     allowedNewItems: input.proposedNewItems,
-    cap: input.canaryMaxNewItemsPerTick,
+    cap: input.canaryMaxNewItemsPerTick ?? null,
   };
 }
 
 /** Re-run a stored event using only its canonical input packet. */
 export function replayTransitionEvent(event: TransitionEvent): { ok: boolean; reason: string } {
-  if (hashString(event.inputJson) !== event.inputHash) {
+  if (canonicalInputFingerprint(event.inputJson) !== event.inputHash) {
     return { ok: false, reason: "input hash does not match serialized input" };
   }
   let input: TransitionEventInput;

@@ -43,6 +43,13 @@ function transitionRequest(overrides: Partial<TypedTransitionRequest> = {}): Typ
   };
 }
 
+function inputFingerprint(inputJson: string): string {
+  return Array.from(
+    new TextEncoder().encode(inputJson),
+    (byte) => byte.toString(16).padStart(2, "0"),
+  ).join("").toUpperCase();
+}
+
 describe("SP-23 canary publication decisions", () => {
   test("keeps an active source unlimited while a canary is explicitly capped", () => {
     const active = decideCanaryPublication(
@@ -110,6 +117,17 @@ describe("SP-23 canary publication decisions", () => {
       transition: { ok: true, cause: "invalid_canary_cap", to: { operational: "shadow" } },
     });
   });
+
+  test("records a zero-publication automatic rollback even if a durable opt-out arrives with the breach", () => {
+    const decision = decideCanaryPublication(canaryInput({ optOut: true, proposedNewItems: 4 }));
+
+    expect(decision).toMatchObject({
+      action: "rollback_to_shadow",
+      publicationMode: "blocked",
+      allowedNewItems: 0,
+      transition: { ok: true, cause: "canary_cap_breach", to: { operational: "shadow" } },
+    });
+  });
 });
 
 describe("SP-23 typed transitions", () => {
@@ -160,6 +178,52 @@ describe("SP-23 typed transitions", () => {
     );
     expect(whitespaceSource.ok).toBe(false);
     expect(whitespaceSource.reason).toContain("canonical");
+
+    const unicodeWhitespaceSource = decideTypedTransition(
+      transitionRequest({ sourceId: `greenhouse:${String.fromCharCode(160)}grafanalabs` }),
+    );
+    expect(unicodeWhitespaceSource.ok).toBe(false);
+    expect(unicodeWhitespaceSource.reason).toContain("canonical");
+  });
+
+  test("rejects numeric values outside JavaScript's exact integer domain", () => {
+    const unsafeInteger = Number.MAX_SAFE_INTEGER + 1;
+    const typed = decideTypedTransition(
+      transitionRequest({ observedShadowCount: unsafeInteger }),
+    );
+    expect(typed.ok).toBe(false);
+    expect(typed.reason).toContain("safe integers");
+
+    const publication = decideCanaryPublication(
+      canaryInput({ proposedNewItems: unsafeInteger }),
+    );
+    expect(publication).toMatchObject({
+      action: "block",
+      publicationMode: "blocked",
+      allowedNewItems: 0,
+    });
+    if (publication.action !== "block") throw new Error("expected unsafe numeric publication to be blocked");
+    expect(publication.reason).toContain("safe integer");
+  });
+
+  test("requires UTC ISO instants so stored lease decisions replay identically", () => {
+    const timezoneLessNow = decideTypedTransition(
+      transitionRequest({ now: "2026-09-05 00:00:00.000" }),
+    );
+    expect(timezoneLessNow.ok).toBe(false);
+    expect(timezoneLessNow.reason).toContain("timestamp");
+
+    const timezoneLessLease = decideTypedTransition(
+      transitionRequest({ policyExpiry: "2026-10-05 00:00:00.000" }),
+    );
+    expect(timezoneLessLease.ok).toBe(false);
+    expect(timezoneLessLease.reason).toContain("current evidence lease");
+
+    const sqliteOnlyHour = decideTypedTransition(
+      transitionRequest({ policyExpiry: "2030-01-01T24:00:00.000Z" }),
+    );
+    expect(sqliteOnlyHour.ok).toBe(false);
+    expect(sqliteOnlyHour.reason).toContain("current evidence lease");
   });
 
   test("accepts a source-health quarantine only with source-scoped evidence", () => {
@@ -186,6 +250,27 @@ describe("SP-23 typed transitions", () => {
       cause: "health_quarantine",
       to: { compliance: "allowed", operational: "quarantined" },
     });
+  });
+
+  test("rejects ECMAScript-whitespace-only evidence both before and during replay", () => {
+    const canonical = decideTypedTransition(transitionRequest());
+    if (!canonical.ok) throw new Error("expected a canonical promotion fixture");
+
+    for (const evidenceHash of ["\t", String.fromCharCode(160)]) {
+      expect(decideTypedTransition(transitionRequest({ evidenceHash }))).toMatchObject({ ok: false });
+
+      const input = { ...canonical.event.input, evidenceHash };
+      const inputJson = JSON.stringify(input);
+      const fingerprint = inputFingerprint(inputJson);
+      expect(replayTransitionEvent({
+        ...canonical.event,
+        evidenceHash,
+        input,
+        inputJson,
+        inputHash: fingerprint,
+        decisionHash: fingerprint,
+      })).toMatchObject({ ok: false });
+    }
   });
 
   test("refuses canary to active promotion after its evidence lease expires", () => {
@@ -231,6 +316,24 @@ describe("SP-23 typed transitions", () => {
     });
     if (!rollback.ok) throw new Error("expected valid rollback transition");
     expect(replayTransitionEvent(rollback.event)).toEqual({ ok: true, reason: "replay matches" });
+  });
+
+  test("permits an automatic canary exit when durable opt-out arrives after entry", () => {
+    const rollback = decideTypedTransition(
+      transitionRequest({
+        from: { compliance: "allowed", operational: "canary" },
+        to: { compliance: "allowed", operational: "shadow" },
+        cause: "canary_cap_breach",
+        optOut: true,
+        proposedNewItems: 4,
+      }),
+    );
+
+    expect(rollback).toMatchObject({
+      ok: true,
+      cause: "canary_cap_breach",
+      to: { operational: "shadow" },
+    });
   });
 
   test("detects a tampered replay event instead of silently accepting it", () => {

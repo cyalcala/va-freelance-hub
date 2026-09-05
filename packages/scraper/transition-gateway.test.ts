@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   applyTypedTransition,
   type TransitionGatewayDatabase,
+  type TransitionGatewayRunResult,
   type TransitionGatewayStatement,
 } from "./transition-gateway";
 
@@ -16,6 +17,7 @@ class FakeStatement implements TransitionGatewayStatement {
     private readonly response: unknown,
     private readonly runs: Array<{ query: string; values: unknown[] }>,
     private readonly runError?: Error,
+    private readonly runResult: TransitionGatewayRunResult = { success: true },
   ) {}
 
   bind(...values: unknown[]): TransitionGatewayStatement {
@@ -30,7 +32,7 @@ class FakeStatement implements TransitionGatewayStatement {
   async run(): Promise<unknown> {
     this.runs.push({ query: this.query, values: this.values });
     if (this.runError) throw this.runError;
-    return { success: true };
+    return this.runResult;
   }
 }
 
@@ -40,7 +42,10 @@ class FakeDatabase implements TransitionGatewayDatabase {
 
   constructor(
     responses: Record<string, unknown[]>,
-    private readonly insertError?: Error,
+    private readonly insertOptions: {
+      error?: Error;
+      result?: TransitionGatewayRunResult;
+    } = {},
   ) {
     this.responseQueues = Object.fromEntries(
       Object.entries(responses).map(([key, value]) => [key, [...value]]),
@@ -56,7 +61,13 @@ class FakeDatabase implements TransitionGatewayDatabase {
           ? "observations"
           : "insert";
     const response = this.responseQueues[key]?.shift() ?? null;
-    return new FakeStatement(query, response, this.runs, key === "insert" ? this.insertError : undefined);
+    return new FakeStatement(
+      query,
+      response,
+      this.runs,
+      key === "insert" ? this.insertOptions.error : undefined,
+      key === "insert" ? this.insertOptions.result : undefined,
+    );
   }
 }
 
@@ -139,7 +150,7 @@ describe("SP-23 transition gateway", () => {
       registry: [shadowSnapshot()],
       optOut: [null],
       observations: [{ qualifying_count: 3 }],
-    }, new Error("transition event does not match current source registry state"));
+    }, { error: new Error("transition event does not match current source registry state") });
 
     const result = await applyTypedTransition(db, {
       sourceId: "greenhouse:grafanalabs",
@@ -151,6 +162,49 @@ describe("SP-23 transition gateway", () => {
     });
 
     expect(result).toMatchObject({ persisted: false, decision: { ok: false } });
+    expect(db.runs).toHaveLength(1);
+  });
+
+  test("fails closed when D1 resolves an unsuccessful event write", async () => {
+    const db = new FakeDatabase({
+      registry: [shadowSnapshot()],
+      optOut: [null],
+      observations: [{ qualifying_count: 3 }],
+    }, { result: { success: false } });
+
+    const result = await applyTypedTransition(db, {
+      sourceId: "greenhouse:grafanalabs",
+      to: { compliance: "allowed", operational: "canary" },
+      cause: "requested_promotion",
+      now: NOW,
+      evidenceHash: "shadow-evidence-sha",
+      requiredShadowCount: 3,
+    });
+
+    expect(result).toMatchObject({ persisted: false, decision: { ok: false } });
+    expect(db.runs).toHaveLength(1);
+  });
+
+  test("persists a zero-publication canary rollback even when durable opt-out arrived after entry", async () => {
+    const db = new FakeDatabase({
+      registry: [shadowSnapshot({ operational_state: "canary" })],
+      optOut: [{ source_id: "greenhouse:grafanalabs" }],
+      insert: [null],
+    });
+
+    const result = await applyTypedTransition(db, {
+      sourceId: "greenhouse:grafanalabs",
+      to: { compliance: "allowed", operational: "shadow" },
+      cause: "canary_cap_breach",
+      now: NOW,
+      evidenceHash: "cap-breach-evidence",
+      proposedNewItems: 4,
+    });
+
+    expect(result).toMatchObject({
+      persisted: true,
+      decision: { ok: true, cause: "canary_cap_breach", to: { operational: "shadow" } },
+    });
     expect(db.runs).toHaveLength(1);
   });
 });

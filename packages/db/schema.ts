@@ -298,12 +298,14 @@ export const sourceRegistry = sqliteTable("source_registry", {
   }).notNull(),
   reviewDeadline: text("review_deadline"),
   policyExpiry: text("policy_expiry"),
-  // SP-23: nullable while dormant; positive integer is enforced by the
-  // canary-state migration trigger before any public exposure is possible.
+  // SP-23: nullable while dormant; a positive JavaScript-safe integer is
+  // enforced by the canary-state migration trigger before public exposure.
   canaryMaxNewItemsPerTick: integer("canary_max_new_items_per_tick"),
   owner: text("owner"),
   lastDecision: text("last_decision"),
   lastDecisionAt: text("last_decision_at"),
+  // SP-23's SQL-verifiable `hex(input_json)` replay fingerprint; not a
+  // cryptographic hash or tamper-evident ledger anchor.
   lastTransitionHash: text("last_transition_hash"),
   optOut: integer("opt_out", { mode: "boolean" }).notNull().default(false),
   healthRollup: text("health_rollup"),
@@ -366,9 +368,10 @@ export const sourceDecisions = sqliteTable("source_decisions", {
 }));
 
 // ─── Typed transition history (SP-23) ───────────────────────────────────────
-// Append-only replay records applied by the transition-event trigger. These
-// fingerprints make replay deterministic but are intentionally not presented
-// as the masterplan's future tamper-evident ledger.
+// Append-only replay records applied by the transition-event trigger. Both
+// fingerprint columns are the exact SQL-verifiable `hex(input_json)` encoding,
+// which makes the packet replayable without claiming cryptographic integrity or
+// the masterplan's future tamper-evident ledger.
 
 export const sourceTransitionEvents = sqliteTable("source_transition_events", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),

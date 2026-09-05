@@ -19,7 +19,16 @@ import {
 export interface TransitionGatewayStatement {
   bind(...values: unknown[]): TransitionGatewayStatement;
   first<T>(): Promise<T | null>;
-  run(): Promise<unknown>;
+  run(): Promise<TransitionGatewayRunResult>;
+}
+
+/** Minimal D1 write result used to fail closed on a resolved unsuccessful run. */
+export interface TransitionGatewayRunResult {
+  success: boolean;
+  meta?: {
+    changes?: number;
+    rows_written?: number;
+  };
 }
 
 /** Structural subset of a Cloudflare D1 binding; no arbitrary execute API. */
@@ -146,7 +155,7 @@ export async function applyTypedTransition(
 
   const event = decision.event;
   try {
-    await db
+    const write = await db
       .prepare(INSERT_TRANSITION_EVENT_SQL)
       .bind(
         event.input.version,
@@ -163,6 +172,15 @@ export async function applyTypedTransition(
         event.decisionHash,
       )
       .run();
+    if (!write.success) {
+      return {
+        persisted: false,
+        decision: {
+          ok: false,
+          reason: "transition persistence returned an unsuccessful D1 write result",
+        },
+      };
+    }
   } catch {
     // A source can change after the read above. The migration rejects that
     // stale event atomically; surface it as a normal failed decision so a
