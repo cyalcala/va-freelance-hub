@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-09-05
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33944852338
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33961171888
 
 | Metric | Value |
 | --- | ---: |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/33944852
 
 ## Auto-added companies
 
-- Uptalent.io
+- Discord
 
 ## Durable candidate queue (SP-06, non-publishing)
 
