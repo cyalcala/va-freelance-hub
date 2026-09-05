@@ -61,6 +61,7 @@ export {
   ROBOTS_ENFORCE_SOURCE_IDS as RESOLVER_ROBOTS_ENFORCE_SOURCE_IDS,
   robotsModeForSourceIdMirror,
   isPublishable,
+  resolvePublicationEnvelope,
   isShadowCanaryActive,
   KNOWN_SOURCE_IDS,
   KNOWN_STATIC_IDS,
@@ -71,6 +72,7 @@ export type {
   RegistryOperationalState,
   RegistryPolicyRow,
   ResolvedPolicy,
+  PublicationEnvelope,
 } from "./policy-resolver";
 export {
   isValidOperationalTransition,
@@ -93,6 +95,29 @@ export {
   OPERATIONAL_STATES,
 } from "./source-lifecycle";
 export type { ComplianceState, OperationalState } from "./source-lifecycle";
+export {
+  TRANSITION_PLANE_VERSION,
+  decideTypedTransition,
+  decideCanaryPublication,
+  replayTransitionEvent,
+} from "./transition-plane";
+export type {
+  TransitionCause,
+  LifecycleState,
+  TypedTransitionRequest,
+  TypedTransitionDecision,
+  TransitionEvent,
+  TransitionEventInput,
+  CanaryPublicationInput,
+  CanaryPublicationDecision,
+} from "./transition-plane";
+export { applyTypedTransition } from "./transition-gateway";
+export type {
+  ApplyTypedTransitionRequest,
+  ApplyTypedTransitionResult,
+  TransitionGatewayDatabase,
+  TransitionGatewayStatement,
+} from "./transition-gateway";
 export {
   ATS_PROVIDER_CONFIG,
   providerConfigForPlatform,

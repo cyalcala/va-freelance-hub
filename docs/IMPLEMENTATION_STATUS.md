@@ -1,5 +1,52 @@
 # Implementation Status
 
+## Current checkpoint — 2026-09-05 independent review and caller repair
+
+SP-23 remains **VERIFYING**. Independent review repaired a live policy-loading
+failure: an unavailable registry/opt-out snapshot now stops the scrape tick with
+HTTP 503 before source requests or publication. Policy state is request-local;
+healthy exact-six fallback remains unchanged. Migration/transition hardening is
+an inactive foundation, not completed source expansion. The execution plan now
+names the remaining current-evidence admission and shared-publication/rollback
+slices. See `docs/SYSTEM_SAVEPOINT.md` Run 42 for exact validation, release state,
+fresh production evidence and the single next action; the older checkpoint below
+is historical.
+
+## Current Source Replenishment Checkpoint — 2026-09-05 (SP-23 control plane VERIFYING)
+
+Status: **SP-23 (capped canary and typed transition plane) is implemented at
+the code/control-plane level and remains VERIFYING — not `KEEP`, not deployed,
+and not production-accepted.**
+
+The branch `codex/sp-23-transition-plane` contains a deterministic typed
+transition plane (`f6c6d21`), a resolver publication envelope that distinguishes
+unlimited `active` from a positive capped `canary` (`d3ae321`), and guarded
+transition persistence in migration 0039 (`d909d96`). The event gate rereads
+registry/opt-out/lease/observation facts and stores one append-only decision;
+the migration then applies the matching source-state change atomically. Local
+tests exercise invalid transitions, malformed/stale events, cap breach
+rollback, and a candidate-to-shadow-to-canary-to-shadow integration sequence.
+
+This does **not** make a live canary publishable through an uncontrolled path.
+Until a later unified publisher reserves and counts final canonical candidates
+across every ingestion route, the existing live scraper leaves registry canary
+rows disabled. Exact-six fallback sources remain active/uncapped and have
+golden-parity coverage. Migration 0039 is not applied to production at this
+checkpoint; no source registry/profile row was activated, no shadow dispatcher
+schedule was added, and no opportunity publication behavior changed.
+
+The same branch also includes `c634e1e`, which corrects `gha-hunter-pulse.yml`
+so a healthy scrape with zero inserts and numeric skipped work preserves its
+successful outcome under `bash -e`. It changes neither source configuration nor
+the schedule.
+
+Remaining evidence before any status change: independent review, full
+exact-SHA PR CI, normal production deployment/migration application, read-only
+production verification, and real recurrent observation of an approved source
+through the future unified publisher boundary. The complete Autonomy Cutover
+Predicate remains unmet; do not resume SP-10..SP-15 registry promotion from
+this checkpoint.
+
 ## Current Source Replenishment Checkpoint — 2026-09-03 (SP-21 and SP-22 both TERMINAL — KEEP)
 
 Status: **SP-21 (clock continuity and fenced failover) and SP-22 (durable

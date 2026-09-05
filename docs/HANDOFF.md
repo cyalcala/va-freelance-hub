@@ -1,5 +1,49 @@
 # Handoff
 
+## Current handoff — 2026-09-05 independent review continuation
+
+Read `docs/SYSTEM_SAVEPOINT.md` Run 42 before the earlier checkpoint below.
+Independent review found and repaired scrape's catch-and-fallback behavior on
+registry/opt-out read failure; failed policy verification now returns HTTP 503
+before ingestion and the policy map belongs to one request. The review and fresh
+production baseline are preserved in `docs/gauntlet/evidence/SP-23-*-2026-09-05.md`.
+SP-23 remains VERIFYING. Its remaining current-evidence admission and cumulative
+publication/rollback slices are explicitly bounded in the execution plan.
+Foundation deployment is not source-admission or autonomy acceptance.
+
+## Current Handoff — 2026-09-05 SP-23 control plane implemented — VERIFYING, not KEEP
+
+Status: **SP-23's code-level control plane is implemented and locally
+verified, but it is neither production-accepted nor `KEEP`.** The current
+branch is `codex/sp-23-transition-plane`; its relevant behavior commits are
+`f6c6d21` (deterministic typed transition plane), `d3ae321` (capped resolver
+envelope), and `d909d96` (migration 0039 plus guarded durable transition
+events/gateway). `c634e1e` separately fixes Hunter's false failure status for
+a healthy zero-insert scrape.
+
+The safety boundary is deliberate: a `canary` has a distinct positive
+per-tick cap in the resolver, while the legacy live scrape loop keeps canary
+rows disabled until a dedicated unified publication boundary exists. That
+future boundary must account for final canonical public candidates across all
+insertion paths; it has not been wired here. Exact-six fallback behavior stays
+active, uncapped, and parity-tested. No source has been newly activated, promoted,
+or scheduled for new shadow/canary activity, and no opportunity publication
+behavior has changed.
+
+Migration `0039_canary_transition_plane.sql` is only committed on this branch
+at this handoff. It has local integration evidence but no exact-SHA PR CI,
+production deployment, or read-only production migration confirmation yet.
+Do not call the append-only replay fingerprints a tamper-evident ledger; that
+stronger cutover requirement remains future work.
+
+**Next exact action:** complete independent review and branch validation, then
+use the normal PR/deploy path and record its exact SHA/run/read-only D1
+evidence. Keep SP-23 `VERIFYING` until that succeeds. Afterwards, source
+promotion still remains blocked on a separately scoped unified publisher
+gateway and real recurrent shadow/canary observation evidence; do not resume
+the historical SP-10..SP-15 registry SQL, enable shadow-dispatch scheduling,
+or alter exact-six merely from this schema/control-plane work.
+
 ## Current Handoff — 2026-09-03 SP-21 and SP-22 both TERMINAL — KEEP; SP-23 next
 
 Status: **Two Phase 2.5 units landed this session.** SP-21 (clock continuity

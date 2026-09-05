@@ -1,5 +1,109 @@
 # System Savepoint
 
+## Run 42 — SP-23 independent review and live caller repair (2026-09-05)
+
+Program: **Source Perpetuity**. Unit: **SP-23, inactive foundation slice**.
+Execution remains **VERIFYING**, not `KEEP` or source-admission acceptance.
+Start SHA `a5b73f2d00242f37638d9e7314433c080b664679` on
+`codex/sp-23-transition-plane`; fetched `origin/main` is
+`3b46e9291eb64912c4e539a6625f90018320f760`. Automation advanced main by eight
+documentation commits. All pre-existing dirty work and `.tmp.driveupload/`
+were preserved.
+
+Independent transition/SQL and resolver/caller reviews completed. The latter
+found a production integration defect: the scrape route swallowed governance
+read failure and reinstated the static fallback. It now returns HTTP 503
+`registry-policy-unavailable` before lock acquisition, source requests or
+publication. Each tick holds its own policy snapshot. Healthy empty governance
+tables preserve exact-six behavior; durable opt-outs remain authoritative even
+after a registry row is removed. A nullable-cap type error was also repaired.
+
+Evidence:
+
+- `docs/gauntlet/evidence/SP-23-control-plane-review-2026-09-05.md` records
+  independent review, repaired defects, migration rehearsal and the complete
+  remaining publication-path inventory.
+- `docs/gauntlet/evidence/SP-23-production-baseline-2026-09-05.md` records fresh
+  GitHub/D1-derived evidence: six fetching identities, an empty reported
+  candidate queue, recent primary heartbeat, and up to 307.4 minutes between
+  observed secondary scheduled runs. Raw sightings are not accepted supply.
+- Direct D1 CLI verification is unavailable because this shell has no existing
+  Cloudflare API token. Registry/provider totals, current accepted 1/7-day
+  supply and production 0039 state are not inferred from stale docs.
+- Fresh and legacy migration rehearsals through 0039 pass, 94 schema assertions
+  and no failures. Final local gate: **1,086 tests pass, 0 fail, 3,450 assertions
+  across 104 files**; typecheck, guardrails and Astro build pass. Code hardening
+  is `9e249e1`; the live caller repair is `5e8e12f`. Main's automation updates
+  were merged without conflicts. Exact-SHA CI/deploy is recorded when known.
+- The release job now executes a fixed SELECT after migration and before Pages
+  deploy, verifies the 0039 ledger/table/two columns/all 18 named triggers, and
+  retains a JSON artifact. It requires `changed_db=false` and `rows_written=0`
+  and includes fixed-time eligible first-storage and governance counts. This
+  uses existing release credentials and creates no new schedule.
+
+The implementation plan now bounds SP-23's remaining slices: A inactive
+foundation, B current-evidence admission, C shared publication/rollback, then
+one source-specific recurrent observation. This resolves the otherwise circular
+requirement to finish a real canary before starting its first controlled shadow.
+It does not waive any admission gate or the complete Autonomy Cutover Predicate.
+
+Next exact action: finish the normal reviewed PR/CI/migration/deploy path for
+the inactive foundation, record its exact SHA and evidence, then implement
+SP-23B's immutable current-evidence admission contract. No new source, historical
+registry SQL or shadow schedule is enabled by this checkpoint. Rollback keeps
+canaries disabled and retains additive schema/history and durable opt-outs.
+
+## Run 41 — SP-23 control plane implemented — VERIFYING, not production-accepted (2026-09-05)
+
+Program: **Source Perpetuity**. Mode: **EXECUTE (SP-23 capped canary and
+typed transition plane)**. This is a code-and-local-verification checkpoint,
+not a source-admission, deployment, or autonomy-cutover decision.
+
+The branch `codex/sp-23-transition-plane` implements the missing transition
+control plane in three behavior commits: `f6c6d21` adds deterministic,
+replayable canary decisions and typed lifecycle validation; `d3ae321` makes
+the resolver expose a distinct, per-tick capped canary publication envelope;
+and `d909d96` adds migration `0039_canary_transition_plane.sql`, guarded
+append-only transition events, and a capability-limited transition gateway.
+The migration permits source state changes only through an event whose stored
+facts match the current registry, opt-out, lease, cap, and observation state.
+It also rejects direct creation of a new source in `shadow`, `canary`, or
+`active`.
+
+The implementation is intentionally fail-closed at the live boundary. A
+registry `canary` can be described and capped by the resolver, but the legacy
+scrape loop does not enable it until a future unified publication gateway can
+reserve/count final canonical candidates across every insertion path. This
+prevents a canary from accidentally inheriting `active`'s unlimited legacy
+path. The exact-six fallback remains `active`, uncapped, and parity-tested;
+no existing source behavior changed.
+
+`0039` is schema/code on this branch only at this checkpoint. No production D1
+migration has been applied, no `source_registry` or `provider_profiles` row
+has been activated or promoted, no shadow-dispatch schedule has been enabled,
+and no opportunity publication path has been rewired. The companion Hunter
+workflow correction `c634e1e` fixes a false failed outcome when a healthy
+scrape has zero inserts and numeric skipped items; it does not change the
+scrape schedule or source portfolio.
+
+Local evidence includes focused transition, resolver, gateway, and migration
+integration tests plus a full repository test/typecheck pass. This is useful
+implementation evidence, but it is not deployment acceptance: normal PR CI,
+the migration's production application/read-only verification, and real
+recurrent observations of an approved source remain outstanding.
+
+**Status: VERIFYING — explicitly not `KEEP` and not production-accepted.**
+The SP-23 acceptance boxes in the implementation plan remain intentionally
+unmarked. The complete Autonomy Cutover Predicate still requires more than
+this control-plane slice, including a live unified publication boundary and
+real source-backed recurrent shadow/canary evidence.
+
+Next exact action: finish independent review and the normal branch validation
+path, then obtain exact-SHA CI/deploy and read-only D1 evidence before changing
+this status. Even after that, do not resume SP-10..SP-15 registry promotions,
+activate a source, or schedule shadow dispatch merely because `0039` exists;
+those actions require their own bounded gateway and real observation evidence.
+
 ## Run 40 — SP-22 TERMINAL — KEEP: durable shadow dispatcher merged and deployed (2026-09-03, immediately after Run 39)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-22 durable shadow

@@ -698,19 +698,9 @@ const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
   },
 };
 
-// SP-04: Registry overlay — additive source_registry rows are consulted before
-// the hard-coded fallback. When Map is empty (current production), fallback
-// yields byte-identical decisions. Rollback is to keep Map empty.
-let activeRegistryPolicies: Map<string, import("@va-hub/scraper").RegistryPolicyRow> = new Map();
-export function setActiveRegistryPolicies(map: Map<string, import("@va-hub/scraper").RegistryPolicyRow>): void {
-  activeRegistryPolicies = map;
-}
-export function getActiveRegistryPolicies(): Map<string, import("@va-hub/scraper").RegistryPolicyRow> {
-  return activeRegistryPolicies;
-}
-function registryRowFor(sourceId: string): import("@va-hub/scraper").RegistryPolicyRow | null {
-  return activeRegistryPolicies.get(sourceId) ?? null;
-}
+// A policy snapshot belongs to one authenticated tick. Keep it request-local
+// so an overlapping request cannot replace policy while this tick is fetching.
+type RegistryPolicies = ReadonlyMap<string, import("@va-hub/scraper").RegistryPolicyRow>;
 
 interface DuplicateAtsAgency {
   agency: AtsAgency;
@@ -727,14 +717,14 @@ function atsSourceKey(agency: AtsAgency): string {
   return `${agency.atsPlatform}:${agency.atsToken}`;
 }
 
-function atsPlatformPolicy(agency: AtsAgency): AtsPlatformPolicy {
+function atsPlatformPolicy(agency: AtsAgency, registryPolicies: RegistryPolicies): AtsPlatformPolicy {
   const platform = agency.atsPlatform as AtsPlatform | null;
   const sourceKey = platform && agency.atsToken ? `${platform}:${agency.atsToken}` : null;
   // SP-04: Registry overlay takes precedence when a row exists (already CHECK-validated).
-  // When activeRegistryPolicies is empty (current production), this branch is not taken
+  // When registryPolicies is empty (current production), this branch is not taken
   // and the hard-coded fallback below yields the identical decision.
   if (sourceKey) {
-    const row = registryRowFor(sourceKey);
+    const row = registryPolicies.get(sourceKey);
     if (row) {
       const resolved = resolvePolicy(sourceKey, row);
       // Map registry vocab back to legacy ComplianceStatus for existing callers
@@ -778,10 +768,6 @@ function atsPlatformPolicy(agency: AtsAgency): AtsPlatformPolicy {
   };
 }
 
-function atsComplianceNotes(agency: AtsAgency): string {
-  return atsPlatformPolicy(agency).complianceNotes;
-}
-
 function skippedAtsResult({ agency, policy, skipReason }: SkippedAtsAgency): SourceFetchResult {
   return {
     sourceId: atsSourceKey(agency),
@@ -799,10 +785,10 @@ function skippedAtsResult({ agency, policy, skipReason }: SkippedAtsAgency): Sou
   };
 }
 
-function skippedDuplicateAtsResult({ agency, primaryCompanyName }: DuplicateAtsAgency): SourceFetchResult {
+function skippedDuplicateAtsResult({ agency, primaryCompanyName }: DuplicateAtsAgency, registryPolicies: RegistryPolicies): SourceFetchResult {
   return skippedAtsResult({
     agency,
-    policy: atsPlatformPolicy(agency),
+    policy: atsPlatformPolicy(agency, registryPolicies),
     skipReason: `Duplicate ATS token already fetched for ${primaryCompanyName}; skipped to avoid duplicate requests and duplicate source URLs.`,
   });
 }
@@ -1688,12 +1674,13 @@ async function fetchConfiguredSourceWithStatus(
   sourceFetchStates: Map<string, SourceFetchState>,
   observedAt: string,
   cadence: { deferReason?: string; backoffMinutes?: number } | undefined,
-  fetcher: (state: ConditionalState | undefined) => Promise<SourceFetchOutput>
+  fetcher: (state: ConditionalState | undefined) => Promise<SourceFetchOutput>,
+  registryPolicies: RegistryPolicies,
 ): Promise<SourceFetchResult> {
   // SP-04: Registry overlay — when a row exists, its compliance/operational state
   // is authoritative (already CHECK-guarded). When Map is empty (current prod)
   // fallbackPolicy yields the identical static decision.
-  const registryRow = registryRowFor(source.id);
+  const registryRow = registryPolicies.get(source.id);
   if (registryRow) {
     const resolved = resolvePolicy(source.id, registryRow);
     if (!resolved.enabled) {
@@ -1750,28 +1737,14 @@ async function fetchConfiguredSourceWithStatus(
   return result;
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {}): APIRoute {
+  return async ({ request, locals }) => {
   const startedAt = Date.now();
   console.log("[api/cron/scrape] Starting execution...");
   
   const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
-  const db = getDb(env);
+  const db = (dependencies.getDb ?? getDb)(env);
   const observedAt = nowUtcIso();
-
-  // SP-04: Load registry overlay for this tick (additive, nullable). When the
-  // registry is empty (current production: 0 rows), the Map stays empty and
-  // every resolvePolicy call falls back byte-for-byte to the hard-coded adapter.
-  // This is the single resolver switch — rollback is to keep the Map empty.
-  try {
-    const registryMap = await loadRegistryPolicies(db);
-    setActiveRegistryPolicies(registryMap);
-    if (registryMap.size > 0) {
-      console.log(`[api/cron/scrape] Registry overlay: ${registryMap.size} source row(s) loaded.`);
-    }
-  } catch (err) {
-    console.warn("[api/cron/scrape] Registry overlay load failed; using hard-coded fallback:", err instanceof Error ? err.message : String(err));
-    setActiveRegistryPolicies(new Map());
-  }
 
   // Per-invocation Workers AI subrequest budget (see AI_SUBREQUEST_BUDGET_PER_RUN).
   // Every triage/sweep AI call below runs through this counter so the invocation
@@ -1810,6 +1783,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!isAuthorized(request, proxySecret)) {
     console.warn("[api/cron/scrape] Unauthorized access attempt");
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  // A verified empty registry and opt-out ledger retain the exact-six adapter.
+  // Unavailable governance state must abort before the run lock, backlog
+  // publication, or any source fetch; it must never become an empty fallback.
+  let registryPolicies: RegistryPolicies;
+  try {
+    registryPolicies = await loadRegistryPolicies(db);
+    if (registryPolicies.size > 0) {
+      console.log(`[api/cron/scrape] Registry overlay: ${registryPolicies.size} source row(s) loaded.`);
+    }
+  } catch (error) {
+    console.error("[api/cron/scrape] Registry policy snapshot unavailable; refusing ingestion:", errorMessage(error));
+    return new Response(JSON.stringify({
+      error: "Source policy verification is temporarily unavailable. Retry shortly.",
+      reason: "registry-policy-unavailable",
+      runDurationMs: Date.now() - startedAt,
+    }), {
+      status: 503,
+      headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    });
   }
 
   try {
@@ -1873,7 +1867,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const rssResults = await Promise.all(
       rssSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "RSS", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchRSSFeed(source, state))
+        fetchConfiguredSourceWithStatus(db, source, "RSS", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchRSSFeed(source, state), registryPolicies)
       )
     );
     // SP-01: stamp the exact configured source identity onto every item as it
@@ -1883,14 +1877,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const htmlResults = await Promise.all(
       htmlSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "HTML", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchHTMLSource(source, state))
+        fetchConfiguredSourceWithStatus(db, source, "HTML", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchHTMLSource(source, state), registryPolicies)
       )
     );
     const htmlItems = attachSourceIdentity(htmlResults);
 
     const jsonResults = await Promise.all(
       jsonSources.map((source) =>
-        fetchConfiguredSourceWithStatus(db, source, "JSON", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchJSONSource(source, state))
+        fetchConfiguredSourceWithStatus(db, source, "JSON", sourceFetchStates, observedAt, cadenceForSource(source), (state) => fetchJSONSource(source, state), registryPolicies)
       )
     );
     const jsonItems = attachSourceIdentity(jsonResults);
@@ -1979,7 +1973,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const policySkippedAtsAgencies: SkippedAtsAgency[] = [];
 
     for (const agency of sortedAtsAgencies) {
-      const policy = atsPlatformPolicy(agency);
+      const policy = atsPlatformPolicy(agency, registryPolicies);
       if (!policy.enabled) {
         policySkippedAtsAgencies.push({
           agency,
@@ -2032,7 +2026,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         if (Number.isFinite(elapsed) && elapsed < ATS_MIN_INTERVAL_MS) {
           cadenceSkippedAts.push({
             agency,
-            policy: atsPlatformPolicy(agency),
+            policy: atsPlatformPolicy(agency, registryPolicies),
             skipReason: `Cadence guard: last fetched ${prev.lastAttemptAt}; 60-min minimum.`,
           });
           continue;
@@ -2045,7 +2039,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const nonWorkableFetchList = cadencePassedAgencies.filter((a) => a.atsPlatform !== "workable");
 
     const fetchOneAts = async (agency: typeof uniqueAtsAgencies[number]): Promise<SourceFetchResult> => {
-      const policy = atsPlatformPolicy(agency);
+      const policy = atsPlatformPolicy(agency, registryPolicies);
       const key = atsSourceKey(agency);
       const atsUrl = atsEndpointUrl(agency.atsPlatform as any, agency.atsToken as string);
 
@@ -2154,7 +2148,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const skippedResults = disabledSources.map((source) => skippedSourceResult(source));
     const skippedAtsResults = [
       ...policySkippedAtsAgencies.map(skippedAtsResult),
-      ...duplicateAtsAgencies.map(skippedDuplicateAtsResult),
+      ...duplicateAtsAgencies.map((duplicate) => skippedDuplicateAtsResult(duplicate, registryPolicies)),
       ...cadenceSkippedAts.map(skippedAtsResult),
     ];
     // Conditional-fetch efficiency: how many feeds were unchanged this run and
@@ -2837,4 +2831,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.error("[api/cron/scrape] Error during scraping task:", error);
     return new Response(JSON.stringify({ error: "Internal Server Error", runDurationMs: Date.now() - startedAt }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
-};
+  };
+}
+
+export const POST = createScrapeHandler();

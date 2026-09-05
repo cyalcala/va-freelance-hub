@@ -30,7 +30,8 @@ describe("operational transition graph", () => {
   test("canary → active allowed", () => {
     expect(isValidOperationalTransition("canary", "active")).toBe(true);
   });
-  test("active → review_due → paused is the expiry path", () => {
+  test("shadow/active → review_due → paused is the expiry path", () => {
+    expect(isValidOperationalTransition("shadow", "review_due")).toBe(true);
     expect(isValidOperationalTransition("active", "review_due")).toBe(true);
     expect(isValidOperationalTransition("review_due", "paused")).toBe(true);
     expect(isValidOperationalTransition("active", "paused")).toBe(true);
@@ -185,12 +186,22 @@ describe("applyLeaseExpiry — expired evidence makes dormant without delete", (
     expect(r.nextOperational).toBe("review_due");
   });
 
-  test("canary with expired policy → review_due", () => {
+  test("canary with expired policy emits a typed rollback intent instead of an unlogged state mutation", () => {
     const r = applyLeaseExpiry(
       { sourceId: "s3", complianceState: "allowed", operationalState: "canary", policyExpiry: past },
       now,
     );
-    expect(r.nextOperational).toBe("review_due");
+    expect(r.changed).toBe(false);
+    expect(r.nextOperational).toBe("canary");
+    expect(r.reason).toContain("transition plane");
+    expect(r.automaticRollback).toEqual({
+      cause: "evidence_lease_expired",
+      sourceId: "s3",
+      from: { compliance: "allowed", operational: "canary" },
+      to: { compliance: "allowed", operational: "shadow" },
+      policyExpiry: past,
+      now,
+    });
   });
 
   test("review_due with still-expired → paused (dormant, history retained)", () => {

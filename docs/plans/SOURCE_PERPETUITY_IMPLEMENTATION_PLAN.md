@@ -56,6 +56,32 @@ additive, non-publishing behavior slice (a second fenced scheduling path) —
 that is executed as its own separately gated unit, not as part of this
 reconciliation commit.
 
+## 2026-09-05 SP-23 implementation checkpoint
+
+SP-23's transition-control-plane implementation is now **VERIFYING**, not
+`KEEP` and not production-accepted. The branch
+`codex/sp-23-transition-plane` adds deterministic typed/replayable transition
+decisions, a resolver-level `canary_max_new_items_per_tick` envelope distinct
+from unlimited `active`, and migration 0039's guarded append-only
+`source_transition_events` path. Local unit and SQLite integration tests cover
+invalid transitions, cap/lease rollback, replay material, and exact-six
+resolver parity.
+
+This is deliberately not a source activation. Migration 0039 is schema/code
+pending the normal deployment path; no source registry/profile row is
+promoted, no shadow-dispatch schedule is enabled, and exact-six production
+behavior is unchanged. The legacy scrape loop keeps registry `canary` rows
+disabled rather than letting them use an unlimited path. A future unified
+publication boundary must reserve/count final canonical candidates across all
+publication paths before a cap can be live-enforced for any source.
+
+The SP-23 acceptance boxes below remain intentionally unmarked. Required next
+evidence includes independent review, exact-SHA CI/deploy and read-only
+production verification, then real recurrent observation of an approved source
+through the eventual publisher boundary. These facts do not satisfy the
+complete Autonomy Cutover Predicate and do not authorize resuming the
+historically pending SP-10..SP-15 registry writes.
+
 A fresh re-read of the code (not just prior docs) while planning this found
 that `apps/web/src/pages/api/cron/scrape.ts` already implements an atomic,
 D1-backed run lock (`acquireRunLock`, an 8-minute TTL compare-and-swap over a
@@ -231,7 +257,7 @@ unless the existing workflow does so automatically.
 | SP-17 | Partner/permission evidence pipeline | SP-05 | TERMINAL — KEEP |
 | SP-21 | Clock continuity and fenced failover | SP-04, SP-05 | TERMINAL — KEEP |
 | SP-22 | Durable shadow dispatcher and observation store | SP-21, SP-07, SP-03/04 | TERMINAL — KEEP |
-| SP-23 | Capped canary and typed transition plane | SP-22, SP-05 | PLANNED |
+| SP-23 | Capped canary and typed transition plane | SP-22, SP-05 | VERIFYING (control plane implemented; deployment and real-source evidence pending) |
 | SP-18 | Adaptive operations and evidence renewal | SP-23 and two source canaries KEEP | PLANNED |
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
 | SP-20 | Initial 30-day capability acceptance and independent resume drill | SP-19 | PLANNED |
@@ -700,6 +726,35 @@ loop until this unit's own acceptance passes.
 **Next after SP-21/22/23 each reach KEEP:** resume the SP-10..SP-15 registry
 promotion decisions through the new dispatcher/canary plane instead of the
 one-shot probes, then SP-18/19/20.
+
+### SP-23 bounded continuation after independent review (2026-09-05)
+
+These are implementation slices within SP-23, not new governance authority or
+a second queue. Deployment of the inactive foundation does not mark SP-23
+`KEEP`. The original acceptance boxes remain open until real enforcement and
+observation support them. Review evidence:
+`docs/gauntlet/evidence/SP-23-control-plane-review-2026-09-05.md`.
+
+| Slice | Scope and acceptance | Rollback |
+| --- | --- | --- |
+| A: inactive foundation | Typed transition/SQL guards, resolver envelope and fail-closed request-local registry loading. Require full local gates, exact-SHA PR/main CI, migration/deploy evidence and read-only D1 verification. No source activation. | Keep canary dispatch disabled; preserve additive schema/history. Restore code only to a version compatible with the deployed schema and durable opt-outs. |
+| B: current-evidence admission | Gateway loads validated provider/source identity and immutable current evidence. A versioned server-owned policy selects thresholds and qualifying observation span. Bind observations and decisions to source/profile/endpoint/evidence revisions. Reject fabricated/wrong-source/expired evidence, old or duplicate observations, later disqualifying failures, opt-outs and races. Replay identifies the evidence actually used. | Disable promotion while retaining pause/quarantine/rollback and evidence. |
+| C: shared publication and automatic rollback | One atomic publication operation for every public writer: revalidate policy/lease/opt-out, deduplicate canonical candidates, reserve cumulative source exposure using a shared server-defined tick and retry key, publish and record actual IDs. Persist cap/lease rollback, fence stale publishers and withdraw affected exposure. Concurrency, retries, hidden-to-public changes, empty ticks and cache/search withdrawal must be tested; exact-six remains uncapped. | Disable canary publication centrally, withdraw its scoped exposure and retain the ledger. Never restore an unlimited legacy canary path. |
+
+Required C call sites are scrape's accepted inserts, inline triage, gate-only
+release and reactivation; direct `/api/ingest`; and Inngest triage drain. Direct
+ingest must establish exact identity server-side. Exposure accounting must not
+remove an opportunity supported independently by an unaffected source.
+
+After B/C implementation gates pass, one named SP-10..SP-15 source unit may
+prepare current evidence/profile/candidate configuration, enter shadow through
+the gateway, run bounded recurring observations, and proceed to its capped
+canary only when that source's observation contract passes. Real source-scoped
+cap/rollback and recurrent observation evidence closes SP-23 acceptance; do not
+create a circular rule requiring a completed real canary before the first
+controlled observation can start. This is source-specific bootstrap execution,
+not general autonomous admission. No routine permanent founder approval gate
+is added; external permission and constitutional exceptions remain governed.
 
 ### Checkpoint C.5 — safe transition plane
 

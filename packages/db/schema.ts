@@ -298,9 +298,15 @@ export const sourceRegistry = sqliteTable("source_registry", {
   }).notNull(),
   reviewDeadline: text("review_deadline"),
   policyExpiry: text("policy_expiry"),
+  // SP-23: nullable while dormant; a positive JavaScript-safe integer is
+  // enforced by the canary-state migration trigger before public exposure.
+  canaryMaxNewItemsPerTick: integer("canary_max_new_items_per_tick"),
   owner: text("owner"),
   lastDecision: text("last_decision"),
   lastDecisionAt: text("last_decision_at"),
+  // SP-23's SQL-verifiable `hex(input_json)` replay fingerprint; not a
+  // cryptographic hash or tamper-evident ledger anchor.
+  lastTransitionHash: text("last_transition_hash"),
   optOut: integer("opt_out", { mode: "boolean" }).notNull().default(false),
   healthRollup: text("health_rollup"),
   createdAt: text("created_at")
@@ -361,6 +367,48 @@ export const sourceDecisions = sqliteTable("source_decisions", {
   decidedAtIdx: index("source_decisions_decided_at_idx").on(table.decidedAt),
 }));
 
+// ─── Typed transition history (SP-23) ───────────────────────────────────────
+// Append-only replay records applied by the transition-event trigger. Both
+// fingerprint columns are the exact SQL-verifiable `hex(input_json)` encoding,
+// which makes the packet replayable without claiming cryptographic integrity or
+// the masterplan's future tamper-evident ledger.
+
+export const sourceTransitionEvents = sqliteTable("source_transition_events", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  transitionPlaneVersion: text("transition_plane_version").notNull(),
+  sourceId: text("source_id").notNull(),
+  fromCompliance: text("from_compliance", {
+    enum: ["needs_review", "allowed", "conditional", "awaiting_permission", "blocked", "deprecated"],
+  }).notNull(),
+  fromOperational: text("from_operational", {
+    enum: ["candidate", "shadow", "canary", "active", "review_due", "degraded", "quarantined", "paused", "retired"],
+  }).notNull(),
+  toCompliance: text("to_compliance", {
+    enum: ["needs_review", "allowed", "conditional", "awaiting_permission", "blocked", "deprecated"],
+  }).notNull(),
+  toOperational: text("to_operational", {
+    enum: ["candidate", "shadow", "canary", "active", "review_due", "degraded", "quarantined", "paused", "retired"],
+  }).notNull(),
+  cause: text("cause", {
+    enum: [
+      "requested_shadow_entry", "requested_promotion",
+      "canary_cap_breach", "evidence_lease_expired", "invalid_canary_cap",
+      "health_quarantine", "policy_expiry_review", "emergency_pause", "retirement",
+    ],
+  }).notNull(),
+  decidedAt: text("decided_at").notNull(),
+  evidenceHash: text("evidence_hash"),
+  inputJson: text("input_json").notNull(),
+  inputHash: text("input_hash").notNull(),
+  decisionHash: text("decision_hash").notNull(),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`(datetime('now'))`),
+}, (table) => ({
+  sourceDecidedIdx: index("source_transition_events_source_decided_idx").on(table.sourceId, table.decidedAt),
+  decisionHashIdx: uniqueIndex("source_transition_events_decision_hash_unique").on(table.decisionHash),
+}));
+
 // ─── Shadow observations (SP-22) ────────────────────────────────────────────
 // Durable history of every SP-07 shadow probe SP-22's dispatcher runs, so
 // "recurrent shadow" is provable from D1 rather than asserted from a single
@@ -406,6 +454,8 @@ export type SourceOptOut = typeof sourceOptOuts.$inferSelect;
 export type NewSourceOptOut = typeof sourceOptOuts.$inferInsert;
 export type SourceDecision = typeof sourceDecisions.$inferSelect;
 export type NewSourceDecision = typeof sourceDecisions.$inferInsert;
+export type SourceTransitionEvent = typeof sourceTransitionEvents.$inferSelect;
+export type NewSourceTransitionEvent = typeof sourceTransitionEvents.$inferInsert;
 
 export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;

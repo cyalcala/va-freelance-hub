@@ -3,6 +3,8 @@ import {
   fallbackPolicy,
   resolvePolicy,
   isPublishable,
+  resolvePublicationEnvelope,
+  loadRegistryPolicies,
   ROBOTS_ENFORCE_SOURCE_IDS,
   robotsModeForSourceIdMirror,
   ATS_PLATFORM_POLICIES,
@@ -257,18 +259,83 @@ describe("registry overlay is authoritative when present", () => {
     expect(r.operationalState).toBe("active");
   });
 
-  test("conditional+active is publishable; conditional+canary also publishable", () => {
-    for (const op of ["active", "canary"] as const) {
-      const r = resolvePolicy("test:id", {
-        sourceId: "test:id",
-        providerId: "test",
-        complianceState: "conditional",
-        operationalState: op,
-        optOut: false,
-      });
-      expect(r.publishable).toBe(true);
-      expect(r.enabled).toBe(true);
-    }
+  test("a registry row for another source cannot authorize this source", () => {
+    const policy = resolvePolicy("remotive", {
+      sourceId: "we-work-remotely",
+      providerId: "we-work-remotely",
+      complianceState: "allowed",
+      operationalState: "active",
+      optOut: false,
+    });
+    expect(policy).toMatchObject({
+      sourceId: "remotive",
+      complianceState: "needs_review",
+      operationalState: "paused",
+      enabled: false,
+      publishable: false,
+    });
+    expect(policy.complianceNotes).toContain("identity mismatch");
+  });
+
+  test("conditional+active is publishable and enabled by the legacy loop", () => {
+    const r = resolvePolicy("test:id", {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "conditional",
+      operationalState: "active",
+      optOut: false,
+    });
+    expect(r.publishable).toBe(true);
+    expect(r.enabled).toBe(true);
+  });
+
+  test("conditional+canary is eligible only through the capped publication gateway", () => {
+    const row = {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "conditional" as const,
+      operationalState: "canary" as const,
+      optOut: false,
+      canaryMaxNewItemsPerTick: 3,
+    };
+    const r = resolvePolicy("test:id", row);
+
+    expect(r.publishable).toBe(true);
+    // The legacy hot path only knows a boolean and therefore cannot enforce a
+    // per-tick cap. It must not turn an inserted canary row into unlimited
+    // publication before the dedicated gateway consumes this envelope.
+    expect(r.enabled).toBe(false);
+    expect(resolvePublicationEnvelope(r, row)).toEqual({
+      mode: "capped",
+      maxNewItemsPerTick: 3,
+      reason: null,
+    });
+  });
+
+  test("a canary with a missing or invalid cap fails closed in the resolver", () => {
+    const policy = resolvePolicy("test:id", {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "allowed",
+      operationalState: "canary",
+      optOut: false,
+    });
+
+    expect(resolvePublicationEnvelope(policy, { canaryMaxNewItemsPerTick: null })).toEqual({
+      mode: "blocked",
+      maxNewItemsPerTick: 0,
+      reason: "canary requires a positive per-tick publication cap",
+    });
+    expect(resolvePublicationEnvelope(policy, { canaryMaxNewItemsPerTick: 1.5 })).toEqual({
+      mode: "blocked",
+      maxNewItemsPerTick: 0,
+      reason: "canary requires a positive per-tick publication cap",
+    });
+    expect(resolvePublicationEnvelope(policy, { canaryMaxNewItemsPerTick: Number.MAX_SAFE_INTEGER + 1 })).toEqual({
+      mode: "blocked",
+      maxNewItemsPerTick: 0,
+      reason: "canary requires a positive per-tick publication cap",
+    });
   });
 
   test("allowed+shadow is NOT publishable (bounded fetch without publish)", () => {
@@ -361,6 +428,144 @@ describe("publishability matrix mirrors migration CHECK", () => {
     // optOut always blocks
     expect(isPublishable("allowed", "active", true)).toBe(false);
     expect(isPublishable("conditional", "canary", true)).toBe(false);
+  });
+});
+
+describe("SP-23 publication envelopes", () => {
+  test("the exact-six fallback remains active and uncapped without changing its resolved object", () => {
+    for (const id of allowedStaticIds()) {
+      const fallback = fallbackPolicy(id);
+      expect(resolvePolicy(id, null)).toEqual(fallback);
+      expect(resolvePublicationEnvelope(fallback, null)).toEqual({
+        mode: "unlimited",
+        maxNewItemsPerTick: null,
+        reason: null,
+      });
+    }
+  });
+
+  test("non-publishable states stay blocked regardless of any supplied cap", () => {
+    const shadow = resolvePolicy("test:id", {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "allowed",
+      operationalState: "shadow",
+      optOut: false,
+    });
+    expect(resolvePublicationEnvelope(shadow, { canaryMaxNewItemsPerTick: 99 })).toEqual({
+      mode: "blocked",
+      maxNewItemsPerTick: 0,
+      reason: "policy is not publishable",
+    });
+  });
+
+  test("durable opt-out memory overrides an allowed active registry cache row", async () => {
+    let selectCall = 0;
+    const db = {
+      select() {
+        selectCall += 1;
+        return {
+          from() {
+            if (selectCall === 1) {
+              return [{
+                sourceId: "greenhouse:grafanalabs",
+                providerId: "greenhouse",
+                complianceState: "allowed",
+                operationalState: "active",
+                optOut: false,
+              }];
+            }
+            return [{ sourceId: "greenhouse:grafanalabs" }];
+          },
+        };
+      },
+    };
+    const policies = await loadRegistryPolicies(db);
+    const row = policies.get("greenhouse:grafanalabs");
+    if (!row) throw new Error("expected registry policy row");
+
+    expect(row.optOut).toBe(true);
+    expect(resolvePolicy("greenhouse:grafanalabs", row)).toMatchObject({
+      optOut: true,
+      enabled: false,
+      publishable: false,
+    });
+  });
+
+  test("durable opt-out memory blocks an exact-six fallback after its registry row is removed", async () => {
+    let selectCall = 0;
+    const db = {
+      select() {
+        selectCall += 1;
+        return {
+          from() {
+            return selectCall === 1 ? [] : [{ sourceId: "remotive" }];
+          },
+        };
+      },
+    };
+    const policies = await loadRegistryPolicies(db);
+    const row = policies.get("remotive");
+    if (!row) throw new Error("expected durable opt-out overlay");
+
+    expect(row).toMatchObject({
+      sourceId: "remotive",
+      optOut: true,
+      operationalState: "paused",
+    });
+    expect(resolvePolicy("remotive", row)).toMatchObject({
+      optOut: true,
+      enabled: false,
+      publishable: false,
+    });
+  });
+
+  test("does not convert an unavailable registry or durable ledger into an active fallback", async () => {
+    const db = {
+      select() {
+        return {
+          from() {
+            throw new Error("typed D1 outage");
+          },
+        };
+      },
+      async execute() {
+        throw new Error("raw D1 outage");
+      },
+    };
+
+    await expect(loadRegistryPolicies(db)).rejects.toThrow("registry policy snapshot unavailable");
+  });
+
+  test("raw registry fallback retains the canary cap instead of silently discarding it", async () => {
+    let query = "";
+    const db = {
+      select() {
+        return {
+          from() {
+            throw new Error("force raw fallback");
+          },
+        };
+      },
+      async execute(sql: string) {
+        query = sql;
+        return {
+          results: [{
+            source_id: "greenhouse:grafanalabs",
+            provider_id: "greenhouse",
+            compliance_state: "allowed",
+            operational_state: "canary",
+            opt_out: 0,
+            canary_max_new_items_per_tick: 3,
+          }],
+        };
+      },
+    };
+    const policies = await loadRegistryPolicies(db);
+
+    expect(query).toContain("canary_max_new_items_per_tick");
+    expect(query).toContain("source_opt_outs");
+    expect(policies.get("greenhouse:grafanalabs")?.canaryMaxNewItemsPerTick).toBe(3);
   });
 });
 

@@ -7,6 +7,39 @@ depending on chat history. Every meaningful implementation move should be
 recoverable from GitHub: code, docs, verification, workflow evidence, and the
 next task.
 
+## Current Recovery Checkpoint — 2026-09-05 SP-23 control plane
+
+Continuation: `docs/SYSTEM_SAVEPOINT.md` Run 42 supersedes the release/next-action
+facts below. Independent review repaired the live scrape caller's fail-open
+fallback on registry/opt-out errors, removed shared policy state, and bounded
+the remaining SP-23 admission/publication work. Fresh dated production evidence
+separates raw sightings and scheduler outcomes from accepted supply. SP-23 still
+does not have KEEP or autonomous-admission acceptance.
+
+Status: **SP-23 is implemented/control-plane VERIFYING, explicitly not
+`KEEP` and not production-accepted.** The branch
+`codex/sp-23-transition-plane` contains commits `f6c6d21`, `d3ae321`, and
+`d909d96`: deterministic typed transitions, a capped canary resolver envelope,
+and schema migration 0039 with an append-only guarded transition-event path.
+It also contains `c634e1e`, a narrow Hunter workflow status repair for healthy
+zero-insert scrapes.
+
+The code is deliberately not a live source expansion. Registry canaries remain
+disabled in the legacy scrape loop until a later unified publisher can apply
+the source cap to final canonical public candidates across every insertion
+path. Exact-six fallback behavior remains active and uncapped. At this
+checkpoint migration 0039 is not deployed, no registry/profile source has
+been activated or promoted, no shadow-dispatch schedule has been enabled, and
+no opportunity publication path has changed.
+
+Recover by reading `docs/SYSTEM_SAVEPOINT.md` Run 41, then the Source
+Replenishment Masterplan and SP implementation plan. The next evidence is
+independent review plus exact-SHA CI/deploy/read-only D1 confirmation. Do not
+turn SP-23 into `KEEP`, restart historical registry SQL, or infer autonomy from
+the deterministic replay fingerprints: a real unified publisher and recurrent
+real-source shadow/canary observations remain required by the complete
+Autonomy Cutover Predicate.
+
 ## Current Recovery Checkpoint — 2026-08-31 Source Replenishment constitution
 
 Status: **Durable masterplan and ADR-007 adopted as planning authority; zero
