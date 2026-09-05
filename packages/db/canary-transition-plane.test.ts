@@ -25,6 +25,38 @@ function freshDb(): Database {
   return db;
 }
 
+test("0039 preserves complete triggers through installed Wrangler transport for LF and CRLF", async () => {
+  const { unstable_splitSqlQuery } = await import("wrangler");
+  const migration = readFileSync(join(import.meta.dir, "./migrations", "0039_canary_transition_plane.sql"), "utf-8");
+
+  // D1's remote parser has rejected unparenthesized trigger CASE expressions
+  // even when local SQLite and Wrangler accept them (workers-sdk#4727).
+  // Retain the documented portable syntax in addition to testing the local
+  // transport; this does not claim to emulate the remote service parser.
+  const executableSql = migration.replace(/--[^\n]*/g, "");
+  expect(executableSql).not.toMatch(/(?<!\()\bCASE\b/);
+
+  for (const newline of ["\n", "\r\n"]) {
+    const sql = migration.replace(/\r?\n/g, newline);
+    const statements = unstable_splitSqlQuery(sql);
+    // Two ALTERs, one table, two indexes, and eighteen complete triggers.
+    expect(statements).toHaveLength(23);
+    const db = freshPreTransitionPlaneDb();
+    try {
+      for (const statement of statements) db.exec(statement);
+      expect((db.query("SELECT COUNT(*) AS count FROM sqlite_master WHERE type='trigger'").get() as { count: number }).count).toBe(18);
+      insertProvider(db);
+      insertCandidate(db, { sourceId: "transport-candidate", cap: 2 });
+      promoteCandidateToShadow(db, "transport-candidate", 2);
+      expect((db.query("SELECT operational_state FROM source_registry WHERE source_id='transport-candidate'").get() as { operational_state: string }).operational_state).toBe("shadow");
+      expect(() => db.exec("UPDATE source_registry SET operational_state='active' WHERE source_id='transport-candidate'")).toThrow();
+      expect(() => db.exec("DELETE FROM source_transition_events")).toThrow();
+    } finally {
+      db.close();
+    }
+  }
+});
+
 function insertProvider(db: Database, id = "provider-1"): void {
   db.exec(
     `INSERT INTO provider_profiles (id, display_name, provider_family, mechanism, auth_class, evidence_lease_days, default_compliance_state, default_operational_state)

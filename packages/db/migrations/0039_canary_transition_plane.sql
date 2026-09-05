@@ -235,6 +235,11 @@ BEGIN
   SELECT RAISE(ABORT, 'source_transition_events immutable identity already exists');
 END;
 
+-- Parenthesize CASE expressions inside trigger bodies for D1 remote-query
+-- parser compatibility (cloudflare/workers-sdk#4727). SQLite and Wrangler
+-- local splitting accept the unparenthesized form, which is insufficient
+-- production transport verification. These parentheses preserve every guard.
+--
 -- The event must be a canonical projection of its replay input, must start
 -- from the live row, and may only use one of the explicit SP-23 paths. This
 -- catches stale compare-and-swap attempts even if a caller has re-read an old
@@ -243,30 +248,30 @@ CREATE TRIGGER IF NOT EXISTS source_transition_events_validate_insert
 BEFORE INSERT ON source_transition_events
 FOR EACH ROW
 BEGIN
-  SELECT CASE WHEN NEW.transition_plane_version <> 'sp23-v1'
-    THEN RAISE(ABORT, 'unsupported transition plane version') END;
+  SELECT (CASE WHEN NEW.transition_plane_version <> 'sp23-v1'
+    THEN RAISE(ABORT, 'unsupported transition plane version') END);
 
-  SELECT CASE WHEN typeof(NEW.source_id) <> 'text'
+  SELECT (CASE WHEN typeof(NEW.source_id) <> 'text'
     OR instr(NEW.source_id, char(0)) <> 0
     OR length(NEW.source_id) = 0
     OR NEW.source_id GLOB '*[^a-z0-9:._-]*'
-    THEN RAISE(ABORT, 'transition event source_id must be a non-empty lowercase ASCII canonical identifier') END;
+    THEN RAISE(ABORT, 'transition event source_id must be a non-empty lowercase ASCII canonical identifier') END);
 
   -- Event evidence is a compact source-scoped identifier, not arbitrary text
   -- or a URL. Restrict it to an ASCII token grammar so SQLite's byte-oriented
   -- JSON storage and JavaScript's UTF-8 replay always observe the same packet.
-  SELECT CASE WHEN NEW.evidence_hash IS NOT NULL
+  SELECT (CASE WHEN NEW.evidence_hash IS NOT NULL
     AND (
       typeof(NEW.evidence_hash) <> 'text'
       OR instr(NEW.evidence_hash, char(0)) <> 0
       OR length(NEW.evidence_hash) = 0
       OR NEW.evidence_hash GLOB '*[^A-Za-z0-9._:-]*'
-    ) THEN RAISE(ABORT, 'transition event evidence_hash must be a non-empty ASCII token') END;
+    ) THEN RAISE(ABORT, 'transition event evidence_hash must be a non-empty ASCII token') END);
 
   -- SQLite integers can exceed JavaScript's exact numeric range. Reject any
   -- such packet before it can be stored, otherwise JSON.parse would round it
   -- and the replay verifier could not reconstruct the canonical bytes.
-  SELECT CASE WHEN
+  SELECT (CASE WHEN
     (typeof(json_extract(NEW.input_json, '$.observedShadowCount')) = 'integer'
       AND (
         CAST(json_extract(NEW.input_json, '$.observedShadowCount') AS INTEGER) < -9007199254740991
@@ -287,21 +292,21 @@ BEGIN
         CAST(json_extract(NEW.input_json, '$.proposedNewItems') AS INTEGER) < -9007199254740991
         OR CAST(json_extract(NEW.input_json, '$.proposedNewItems') AS INTEGER) > 9007199254740991
       ))
-    THEN RAISE(ABORT, 'transition event numeric fields must be JavaScript-safe integers') END;
+    THEN RAISE(ABORT, 'transition event numeric fields must be JavaScript-safe integers') END);
 
-  SELECT CASE WHEN length(NEW.decided_at) <> 24
+  SELECT (CASE WHEN length(NEW.decided_at) <> 24
     OR NEW.decided_at NOT GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]Z'
     OR substr(NEW.decided_at, 12, 2) NOT BETWEEN '00' AND '23'
     OR strftime('%Y-%m-%dT%H:%M:%fZ', NEW.decided_at) IS NOT NEW.decided_at
     OR julianday(NEW.decided_at) IS NULL
     OR abs(julianday(NEW.decided_at) - julianday('now')) > (5.0 / 1440.0)
-    THEN RAISE(ABORT, 'transition event decided_at must be a canonical UTC timestamp within five minutes of D1 time') END;
+    THEN RAISE(ABORT, 'transition event decided_at must be a canonical UTC timestamp within five minutes of D1 time') END);
 
-  SELECT CASE WHEN NEW.input_hash <> hex(NEW.input_json)
+  SELECT (CASE WHEN NEW.input_hash <> hex(NEW.input_json)
     OR NEW.decision_hash <> hex(NEW.input_json)
-    THEN RAISE(ABORT, 'transition event fingerprints must be the canonical input encoding') END;
+    THEN RAISE(ABORT, 'transition event fingerprints must be the canonical input encoding') END);
 
-  SELECT CASE WHEN
+  SELECT (CASE WHEN
     json_extract(NEW.input_json, '$.version') IS NOT NEW.transition_plane_version
     OR json_extract(NEW.input_json, '$.sourceId') IS NOT NEW.source_id
     OR json_extract(NEW.input_json, '$.fromCompliance') IS NOT NEW.from_compliance
@@ -311,26 +316,26 @@ BEGIN
     OR json_extract(NEW.input_json, '$.cause') IS NOT NEW.cause
     OR json_extract(NEW.input_json, '$.now') IS NOT NEW.decided_at
     OR json_extract(NEW.input_json, '$.evidenceHash') IS NOT NEW.evidence_hash
-  THEN RAISE(ABORT, 'transition event fields must match canonical replay input') END;
+  THEN RAISE(ABORT, 'transition event fields must match canonical replay input') END);
 
-  SELECT CASE WHEN NOT EXISTS (
+  SELECT (CASE WHEN NOT EXISTS (
     SELECT 1 FROM source_registry AS source
     WHERE source.source_id = NEW.source_id
       AND source.compliance_state = NEW.from_compliance
       AND source.operational_state = NEW.from_operational
       AND json_extract(NEW.input_json, '$.policyExpiry') IS source.policy_expiry
       AND json_extract(NEW.input_json, '$.canaryMaxNewItemsPerTick') IS source.canary_max_new_items_per_tick
-      AND CAST(json_extract(NEW.input_json, '$.optOut') AS INTEGER) = CASE
+      AND CAST(json_extract(NEW.input_json, '$.optOut') AS INTEGER) = (CASE
         WHEN source.opt_out <> 0
           OR EXISTS (SELECT 1 FROM source_opt_outs WHERE source_id = NEW.source_id)
-        THEN 1 ELSE 0 END
-  ) THEN RAISE(ABORT, 'transition event does not match current source registry state') END;
+        THEN 1 ELSE 0 END)
+  ) THEN RAISE(ABORT, 'transition event does not match current source registry state') END);
 
   -- A replay packet is byte-canonical, not merely JSON-shaped: its exact
   -- field order, values, types, and key set must be what transition-plane.ts
   -- emits. This rejects reordered, whitespace-padded, duplicate, or extra-key
   -- packets even when their extracted fields would otherwise look valid.
-  SELECT CASE WHEN NEW.input_json IS NOT (
+  SELECT (CASE WHEN NEW.input_json IS NOT (
     SELECT json_object(
       'version', NEW.transition_plane_version,
       'sourceId', NEW.source_id,
@@ -352,15 +357,15 @@ BEGIN
     )
     FROM source_registry AS source
     WHERE source.source_id = NEW.source_id
-  ) THEN RAISE(ABORT, 'transition event input_json must be the exact canonical replay packet') END;
+  ) THEN RAISE(ABORT, 'transition event input_json must be the exact canonical replay packet') END);
 
-  SELECT CASE WHEN NEW.from_compliance <> NEW.to_compliance
-    THEN RAISE(ABORT, 'SP-23 transition events cannot change the compliance axis') END;
+  SELECT (CASE WHEN NEW.from_compliance <> NEW.to_compliance
+    THEN RAISE(ABORT, 'SP-23 transition events cannot change the compliance axis') END);
 
   -- Mirror the operational topology in source-lifecycle.ts at the persistence
   -- boundary. The TypeScript gateway is the normal authority, but an event
   -- row must never admit an edge the pure validator would reject.
-  SELECT CASE WHEN NOT (
+  SELECT (CASE WHEN NOT (
     NEW.from_operational = NEW.to_operational
     OR (NEW.from_operational = 'candidate' AND NEW.to_operational IN ('shadow','paused','retired'))
     OR (NEW.from_operational = 'shadow' AND NEW.to_operational IN ('canary','review_due','paused','quarantined','retired'))
@@ -370,37 +375,37 @@ BEGIN
     OR (NEW.from_operational = 'degraded' AND NEW.to_operational IN ('quarantined','paused','active','retired'))
     OR (NEW.from_operational = 'quarantined' AND NEW.to_operational IN ('paused','retired','active'))
     OR (NEW.from_operational = 'paused' AND NEW.to_operational IN ('candidate','retired'))
-  ) THEN RAISE(ABORT, 'transition event operational edge is not allowed by lifecycle graph') END;
+  ) THEN RAISE(ABORT, 'transition event operational edge is not allowed by lifecycle graph') END);
 
-  SELECT CASE WHEN NEW.cause IN ('requested_shadow_entry','requested_promotion')
+  SELECT (CASE WHEN NEW.cause IN ('requested_shadow_entry','requested_promotion')
     AND (
       EXISTS (SELECT 1 FROM source_opt_outs WHERE source_id = NEW.source_id)
       OR (SELECT opt_out FROM source_registry WHERE source_id = NEW.source_id) <> 0
-    ) THEN RAISE(ABORT, 'opted-out source cannot enter shadow or public promotion') END;
+    ) THEN RAISE(ABORT, 'opted-out source cannot enter shadow or public promotion') END);
 
-  SELECT CASE WHEN NEW.cause = 'requested_shadow_entry'
+  SELECT (CASE WHEN NEW.cause = 'requested_shadow_entry'
     AND NOT (NEW.from_operational = 'candidate' AND NEW.to_operational = 'shadow' AND NEW.evidence_hash IS NOT NULL)
-    THEN RAISE(ABORT, 'requested_shadow_entry must be evidenced candidate to shadow') END;
+    THEN RAISE(ABORT, 'requested_shadow_entry must be evidenced candidate to shadow') END);
 
-  SELECT CASE WHEN NEW.cause = 'requested_promotion'
+  SELECT (CASE WHEN NEW.cause = 'requested_promotion'
     AND NOT (
       (NEW.from_operational = 'shadow' AND NEW.to_operational = 'canary')
       OR (NEW.from_operational = 'canary' AND NEW.to_operational = 'active')
-    ) THEN RAISE(ABORT, 'requested_promotion must be shadow to canary or canary to active') END;
+    ) THEN RAISE(ABORT, 'requested_promotion must be shadow to canary or canary to active') END);
 
-  SELECT CASE WHEN NEW.cause IN ('canary_cap_breach','evidence_lease_expired','invalid_canary_cap')
+  SELECT (CASE WHEN NEW.cause IN ('canary_cap_breach','evidence_lease_expired','invalid_canary_cap')
     AND NOT (NEW.from_operational = 'canary' AND NEW.to_operational = 'shadow')
-    THEN RAISE(ABORT, 'automatic canary rollback must be canary to shadow') END;
+    THEN RAISE(ABORT, 'automatic canary rollback must be canary to shadow') END);
 
-  SELECT CASE WHEN NEW.cause = 'health_quarantine'
+  SELECT (CASE WHEN NEW.cause = 'health_quarantine'
     AND NOT (
       NEW.from_operational IN ('shadow','canary','active','degraded','quarantined')
       AND NEW.to_operational = 'quarantined'
       AND NEW.evidence_hash IS NOT NULL
     )
-    THEN RAISE(ABORT, 'health_quarantine requires a target quarantine and evidence') END;
+    THEN RAISE(ABORT, 'health_quarantine requires a target quarantine and evidence') END);
 
-  SELECT CASE WHEN NEW.cause = 'policy_expiry_review'
+  SELECT (CASE WHEN NEW.cause = 'policy_expiry_review'
     AND NOT (
       NEW.from_operational IN ('shadow','active')
       AND NEW.to_operational = 'review_due'
@@ -418,18 +423,18 @@ BEGIN
          FROM source_registry WHERE source_id = NEW.source_id)
       )
     )
-    THEN RAISE(ABORT, 'policy_expiry_review requires shadow/active and an expired or invalid lease') END;
+    THEN RAISE(ABORT, 'policy_expiry_review requires shadow/active and an expired or invalid lease') END);
 
-  SELECT CASE WHEN NEW.cause = 'emergency_pause'
+  SELECT (CASE WHEN NEW.cause = 'emergency_pause'
     AND NOT (
       NEW.from_operational IN ('candidate','shadow','canary','active','review_due','degraded','quarantined','paused')
       AND NEW.to_operational = 'paused'
-    ) THEN RAISE(ABORT, 'emergency_pause must follow the lifecycle graph and target paused') END;
+    ) THEN RAISE(ABORT, 'emergency_pause must follow the lifecycle graph and target paused') END);
 
-  SELECT CASE WHEN NEW.cause = 'retirement' AND NEW.to_operational <> 'retired'
-    THEN RAISE(ABORT, 'retirement must target retired') END;
+  SELECT (CASE WHEN NEW.cause = 'retirement' AND NEW.to_operational <> 'retired'
+    THEN RAISE(ABORT, 'retirement must target retired') END);
 
-  SELECT CASE WHEN NEW.cause IN ('requested_shadow_entry','requested_promotion')
+  SELECT (CASE WHEN NEW.cause IN ('requested_shadow_entry','requested_promotion')
     AND (
       (SELECT policy_expiry IS NULL
               OR julianday(policy_expiry) IS NULL
@@ -440,9 +445,9 @@ BEGIN
               OR julianday(policy_expiry) <= julianday('now')
               OR julianday(policy_expiry) <= julianday(NEW.decided_at)
        FROM source_registry WHERE source_id = NEW.source_id)
-    ) THEN RAISE(ABORT, 'promotion requires a current source evidence lease') END;
+    ) THEN RAISE(ABORT, 'promotion requires a current source evidence lease') END);
 
-  SELECT CASE WHEN NEW.cause = 'requested_promotion'
+  SELECT (CASE WHEN NEW.cause = 'requested_promotion'
     AND NEW.to_operational = 'canary'
     AND (
        (SELECT canary_max_new_items_per_tick IS NULL
@@ -463,22 +468,22 @@ BEGIN
            AND outcome IN ('HEALTHY_WITH_RESULTS', 'HEALTHY_EMPTY')
        ) < CAST(json_extract(NEW.input_json, '$.requiredShadowCount') AS INTEGER)
        OR NEW.evidence_hash IS NULL
-    ) THEN RAISE(ABORT, 'canary promotion requires cap, evidence, and qualifying shadow observations') END;
+    ) THEN RAISE(ABORT, 'canary promotion requires cap, evidence, and qualifying shadow observations') END);
 
-  SELECT CASE WHEN NEW.cause = 'requested_promotion'
+  SELECT (CASE WHEN NEW.cause = 'requested_promotion'
     AND NEW.to_operational = 'active'
     AND NEW.evidence_hash IS NULL
-    THEN RAISE(ABORT, 'active promotion requires source-scoped evidence') END;
+    THEN RAISE(ABORT, 'active promotion requires source-scoped evidence') END);
 
-  SELECT CASE WHEN NEW.cause = 'canary_cap_breach'
+  SELECT (CASE WHEN NEW.cause = 'canary_cap_breach'
     AND (
       typeof(json_extract(NEW.input_json, '$.canaryMaxNewItemsPerTick')) <> 'integer'
       OR typeof(json_extract(NEW.input_json, '$.proposedNewItems')) <> 'integer'
       OR CAST(json_extract(NEW.input_json, '$.canaryMaxNewItemsPerTick') AS INTEGER) <= 0
       OR CAST(json_extract(NEW.input_json, '$.proposedNewItems') AS INTEGER) <= CAST(json_extract(NEW.input_json, '$.canaryMaxNewItemsPerTick') AS INTEGER)
-    ) THEN RAISE(ABORT, 'canary cap breach event requires proposed items above the cap') END;
+    ) THEN RAISE(ABORT, 'canary cap breach event requires proposed items above the cap') END);
 
-  SELECT CASE WHEN NEW.cause = 'evidence_lease_expired'
+  SELECT (CASE WHEN NEW.cause = 'evidence_lease_expired'
     AND (SELECT policy_expiry IS NOT NULL
                 AND length(policy_expiry) = 24
                 AND policy_expiry GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9].[0-9][0-9][0-9]Z'
@@ -490,14 +495,14 @@ BEGIN
                   OR julianday(policy_expiry) > julianday(NEW.decided_at)
                 )
          FROM source_registry WHERE source_id = NEW.source_id)
-    THEN RAISE(ABORT, 'evidence lease rollback requires an expired or invalid lease') END;
+    THEN RAISE(ABORT, 'evidence lease rollback requires an expired or invalid lease') END);
 
-  SELECT CASE WHEN NEW.cause = 'invalid_canary_cap'
+  SELECT (CASE WHEN NEW.cause = 'invalid_canary_cap'
     AND (SELECT canary_max_new_items_per_tick IS NOT NULL
                 AND typeof(canary_max_new_items_per_tick) = 'integer'
                 AND canary_max_new_items_per_tick > 0
          FROM source_registry WHERE source_id = NEW.source_id)
-    THEN RAISE(ABORT, 'invalid cap rollback requires a missing or invalid cap') END;
+    THEN RAISE(ABORT, 'invalid cap rollback requires a missing or invalid cap') END);
 END;
 
 -- A successful immutable event is the only route that changes the operational
@@ -525,7 +530,7 @@ FOR EACH ROW
 WHEN NEW.operational_state IS NOT OLD.operational_state
   OR NEW.last_transition_hash IS NOT OLD.last_transition_hash
 BEGIN
-  SELECT CASE WHEN NOT EXISTS (
+  SELECT (CASE WHEN NOT EXISTS (
     SELECT 1
     FROM source_transition_events AS event
     WHERE event.decision_hash = NEW.last_transition_hash
@@ -539,7 +544,7 @@ BEGIN
       AND event.from_operational = OLD.operational_state
       AND event.to_compliance = NEW.compliance_state
       AND event.to_operational = NEW.operational_state
-  ) THEN RAISE(ABORT, 'source_registry lifecycle state requires a matching immutable transition event') END;
+  ) THEN RAISE(ABORT, 'source_registry lifecycle state requires a matching immutable transition event') END);
 END;
 
 CREATE TRIGGER IF NOT EXISTS source_transition_events_append_only_update
