@@ -9,6 +9,13 @@ next task.
 
 ## Current Recovery Checkpoint — 2026-09-05 SP-23 control plane
 
+Latest: Run **43** in `docs/SYSTEM_SAVEPOINT.md` records verified production
+deployment `436441d239d0133168b794a1b73aacb34833bf63`, CI/deploy **33968921265**,
+read-only D1 schema/supply evidence and successful site smoke. SP-23 remains
+VERIFYING (REVISE); **SP-23B current-evidence admission is next**. No source
+activation or new schedule occurred. Earlier Run 42 and the text below preserve
+the implementation/release history, not the latest production state.
+
 Continuation: `docs/SYSTEM_SAVEPOINT.md` Run 42 supersedes the release/next-action
 facts below. Independent review repaired the live scrape caller's fail-open
 fallback on registry/opt-out errors, removed shared policy state, and bounded

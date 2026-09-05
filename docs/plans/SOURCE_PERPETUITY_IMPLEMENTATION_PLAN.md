@@ -58,6 +58,14 @@ reconciliation commit.
 
 ## 2026-09-05 SP-23 implementation checkpoint
 
+Release update: slice A deployed at **436441d239d0133168b794a1b73aacb34833bf63**,
+run **33968921265**. A read-only D1 artifact verifies migration 0039 and all 18
+guards; registry/profile/candidate/transition/shadow-observation counts are zero.
+Full local gate: 1,087 tests pass plus typecheck/guardrails/build. **SP-23 remains
+VERIFYING (REVISE); SP-23B current-evidence admission is next.** See Run 43 and
+the bounded continuation below; deployment of slice A closes no real-canary
+acceptance box. The earlier code checkpoint below is historical.
+
 SP-23's transition-control-plane implementation is now **VERIFYING**, not
 `KEEP` and not production-accepted. The branch
 `codex/sp-23-transition-plane` adds deterministic typed/replayable transition
@@ -257,7 +265,7 @@ unless the existing workflow does so automatically.
 | SP-17 | Partner/permission evidence pipeline | SP-05 | TERMINAL — KEEP |
 | SP-21 | Clock continuity and fenced failover | SP-04, SP-05 | TERMINAL — KEEP |
 | SP-22 | Durable shadow dispatcher and observation store | SP-21, SP-07, SP-03/04 | TERMINAL — KEEP |
-| SP-23 | Capped canary and typed transition plane | SP-22, SP-05 | VERIFYING (control plane implemented; deployment and real-source evidence pending) |
+| SP-23 | Capped canary and typed transition plane | SP-22, SP-05 | VERIFYING (slice A deployed/verified; B admission, C publication/rollback and real-source evidence pending) |
 | SP-18 | Adaptive operations and evidence renewal | SP-23 and two source canaries KEEP | PLANNED |
 | SP-19 | Portfolio SLO and automatic replacement triggers | SP-18 | PLANNED |
 | SP-20 | Initial 30-day capability acceptance and independent resume drill | SP-19 | PLANNED |

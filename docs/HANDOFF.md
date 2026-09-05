@@ -1,5 +1,16 @@
 # Handoff
 
+## Current handoff — 2026-09-05 verified production foundation
+
+Read `docs/SYSTEM_SAVEPOINT.md` **Run 43**. Foundation deployed at
+`436441d239d0133168b794a1b73aacb34833bf63`, CI/deploy **33968921265**, after
+PRs #104–#106. Migration 0039 and all 18 guards are confirmed by a retained
+read-only D1 artifact. The live site passes smoke checks. SP-23 stays VERIFYING;
+retain this foundation and implement **SP-23B current-evidence admission** next,
+then shared publication/rollback and real source observation. No source or
+schedule was activated. Current counts and the two repaired release failures
+are preserved in the savepoint rather than inferred from green CI.
+
 ## Current handoff — 2026-09-05 independent review continuation
 
 Read `docs/SYSTEM_SAVEPOINT.md` Run 42 before the earlier checkpoint below.

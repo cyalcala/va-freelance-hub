@@ -1,0 +1,42 @@
+[
+  {
+    "results": [
+      {
+        "as_of": "2026-09-05T13:27:59.704Z",
+        "migration_0039_rows": 1,
+        "transition_table_count": 1,
+        "registry_column_count": 2,
+        "named_trigger_count": 18,
+        "missing_triggers_json": "[]",
+        "registry_count": 0,
+        "provider_profile_count": 0,
+        "candidate_count": 0,
+        "transition_event_count": 0,
+        "shadow_observation_count": 0,
+        "eligible_active": 837,
+        "eligible_active_missing_source_id": 734,
+        "eligible_first_storage_1d": 17,
+        "eligible_first_storage_7d": 91,
+        "per_source_supply_json": "[{\"source_id\":null,\"eligible_active\":734,\"first_storage_1d\":0,\"first_storage_7d\":0},{\"source_id\":\"jobicy-supporting-apac\",\"eligible_active\":6,\"first_storage_1d\":1,\"first_storage_7d\":6},{\"source_id\":\"real-work-from-anywhere\",\"eligible_active\":33,\"first_storage_1d\":5,\"first_storage_7d\":26},{\"source_id\":\"remote-ok\",\"eligible_active\":7,\"first_storage_1d\":1,\"first_storage_7d\":6},{\"source_id\":\"we-work-remotely\",\"eligible_active\":57,\"first_storage_1d\":10,\"first_storage_7d\":53}]"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 73.3864
+      },
+      "duration": 73.3864,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 68538368,
+      "rows_read": 6203,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

@@ -1,5 +1,14 @@
 # SP-23 production supply and clock baseline — 2026-09-05
 
+**Later verified update:** the normal release subsequently captured read-only
+D1 evidence at 13:27:59.704Z, stored in
+`SP-23-production-verification-2026-09-05/source-transition-evidence.json`.
+It confirms migration 0039/all 18 guards, zero registry/profile/candidate/event/
+shadow rows, and positive-PH eligible active first-storage proxies of 17/24h
+and 91/7d. This resolves those earlier access-limited measurements; the initial
+audit boundary and findings below remain historical evidence. See savepoint
+Run 43 for the final deployment, concentration and attribution analysis.
+
 This is a bounded read-only evidence collection, not production acceptance or
 source admission. Repository HEAD at collection was
 `a5b73f2d00242f37638d9e7314433c080b664679`; the observed `origin/main` was

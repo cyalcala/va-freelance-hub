@@ -1,5 +1,86 @@
 # System Savepoint
 
+## Run 43 — SP-23 foundation deployed and measured; admission/publication still VERIFYING (2026-09-05)
+
+Program: **Source Perpetuity**. SP-23 slice A has code, CI, migration, read-only
+D1 and deployment evidence. **SP-23 remains VERIFYING. G9 decision: REVISE** —
+retain the verified foundation and finish slices B/C plus real source observation;
+this is not whole-unit KEEP or autonomous source admission.
+
+Accepted deployment SHA: **`436441d239d0133168b794a1b73aacb34833bf63`**.
+The normal review sequence was PR **#104** (foundation), **#105** (D1 trigger
+syntax repair), and **#106** (explicit CLI SQL option value). The earlier failed
+release attempts remain in Run 42; they are not erased or called successful.
+
+- Final PR #106 exact-head CI **33968860622** passed at
+  `8dcf14d515167fdca66a88122ddc33a92398d8f1`.
+- Exact-main CI/deploy **33968921265** passed at the accepted deployment SHA:
+  validation, migrations, read-only source verification, FTS integrity and
+  **Pages deployment all succeeded**. Deployment:
+  `https://876cb4a5.remotejobs-ph.pages.dev`.
+- Full local behavior gate: **1,087 pass / 0 fail / 3,461 assertions / 104 files**;
+  typecheck, guardrails and build pass. The complete fresh/legacy migration
+  rehearsal passed; the added installed-Wrangler transport regression preserves
+  23 complete statements and all 18 triggers for LF/CRLF.
+- Read-only D1 artifact, fixed `as_of=2026-09-05T13:27:59.704Z`:
+  `docs/gauntlet/evidence/SP-23-production-verification-2026-09-05/source-transition-evidence.json`.
+  Metadata proves **success=true, changed_db=false, rows_written=0**. Migration
+  0039 is present once, the transition table and both registry columns exist,
+  and all **18 named triggers** exist with zero missing guards. Artifact SHA-256:
+  `2668cdb4aefea9837a33885efddd89b4b9c8fbffb5a839f21e4d54202b59d331`.
+- Post-deploy HEAD smoke at 13:30:13–14 UTC: deployment-specific
+  `/opportunities`, canonical `/`, `/opportunities`, and `/directory` all HTTP 200.
+
+### Current supply truth
+
+At the fixed D1 instant, **837 active positive-PH-eligibility rows**, **17 first
+stored in 24 hours**, and **91 first stored in seven days** were measured.
+These are eligible active first-storage proxies, not proof of original posting
+date, canonical net-new acceptance or every public-display filter. No immediate
+supply uplift is attributed to this control-plane deployment.
+
+| Exact source | 24h first storage | 7d first storage |
+| --- | ---: | ---: |
+| We Work Remotely | 10 | 53 |
+| Real Work From Anywhere | 5 | 26 |
+| Remote OK | 1 | 6 |
+| Jobicy supporting APAC | 1 | 6 |
+
+The top two provide **79/91 (86.8%)** of the seven-day proxy. Of 837 eligible
+active rows, **734 lack exact source attribution**, all outside the measured
+first-storage windows. This is legacy coverage debt, not evidence that current
+new rows are missing identity. Remotive and Jobicy admin/support contribute no
+rows to these positive-eligibility first-storage windows despite being allowed
+feeds; raw sightings do not establish accepted yield.
+
+Production **source_registry=0, provider_profiles=0, candidates=0,
+transition_events=0, shadow_observations=0**. Together with the current exact-six
+fetch report, this confirms there is no operating admission/reserve/shadow loop.
+The earlier baseline also records secondary scheduling gaps up to 307.4 minutes;
+recent primary heartbeat does not prove uninterrupted ten-minute delivery.
+
+### Current boundary and next action
+
+The deployed scrape now stops on unavailable registry/opt-out policy and uses
+request-local policy state. Canary rows remain disabled in the legacy loop.
+No source was activated, no new schedule enabled, and no source/permission
+decision was fabricated. Source expansion remains unfinished.
+
+**Next exact action: implement SP-23B current-evidence admission**, as bounded
+in the implementation plan: immutable current evidence/profile/endpoint binding,
+server-owned observation policy, revision-scoped qualifying observations and
+replay references. Then SP-23C must enforce cumulative publication/rollback at
+every writer before source-specific recurrent observation can close acceptance.
+The complete Autonomy Cutover Predicate remains unmet. Recommended capability:
+state-machine/data-integrity implementation with an independent adversarial
+reviewer. Rollback retains schema/history and durable opt-outs, disables canary
+publication centrally, and never restores an unlimited canary fallback.
+
+Unrelated `.tmp.driveupload/` remains untouched. Task-created diagnostic folders
+`.tmp-sp23-cli-parse/` and `.tmp-sp23-d1-evidence/` remain because automatic
+approval review rejected their cleanup as blocked by policy. They are not staged
+or required runtime state.
+
 ## Run 42 — SP-23 independent review and live caller repair (2026-09-05)
 
 Program: **Source Perpetuity**. Unit: **SP-23, inactive foundation slice**.
