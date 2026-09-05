@@ -40,6 +40,23 @@ The replenishment loop is permanent. SP-20 may accept an initial 30-day
 capability epoch; it cannot declare source renewal, failover, replacement,
 restore, model portability, or succession permanently terminal.
 
+## 2026-09-05 SP-23 implementation note
+
+The current executable source queue records SP-23 as **VERIFYING** at the
+control-plane level, not `KEEP` or production acceptance. Branch
+`codex/sp-23-transition-plane` adds deterministic typed transitions, a
+resolver-level capped-canary envelope, and migration 0039's guarded,
+append-only transition-event mechanism. That work is intentionally held behind
+the existing live scraper: a registry `canary` remains disabled there until a
+separately scoped unified publisher can enforce its cap over final canonical
+candidates across every insertion path.
+
+At this checkpoint migration 0039 is not deployed, no source is activated or
+promoted, no new dispatcher schedule is enabled, and exact-six fallback
+behavior is unchanged. PR CI, deployment/read-only D1 evidence, and recurrent
+real-source observations remain required before SP-23 can be reconsidered;
+the full Autonomy Cutover Predicate remains unsatisfied.
+
 ## 2026-08-29 Source Perpetuity authority overlay
 
 The 24-unit Gauntlet is terminal historical evidence. The next approved
