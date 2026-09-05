@@ -42,6 +42,12 @@ restore, model portability, or succession permanently terminal.
 
 ## 2026-09-05 SP-23 implementation note
 
+Current release facts are in `docs/SYSTEM_SAVEPOINT.md` Run 43: the inactive
+foundation is deployed and read-only verified at `436441d`, run `33968921265`.
+SP-23 remains VERIFYING, with current-evidence admission (slice B), cumulative
+publication/rollback (slice C), and real source observation still outstanding.
+The earlier implementation checkpoint below is historical.
+
 The current executable source queue records SP-23 as **VERIFYING** at the
 control-plane level, not `KEEP` or production acceptance. Branch
 `codex/sp-23-transition-plane` adds deterministic typed transitions, a

@@ -1,5 +1,20 @@
 # Implementation Status
 
+## Current checkpoint — 2026-09-05 foundation deployed; SP-23 VERIFYING
+
+SP-23 slice A is deployed and verified at
+`436441d239d0133168b794a1b73aacb34833bf63`, run **33968921265**. Read-only D1
+confirms migration 0039, its table/two columns/all 18 guards, and zero registry,
+profile, candidate, transition or shadow-observation rows. Eligible active
+first-storage proxies are **17/24h and 91/7d**, with 86.8% of seven-day supply
+from two sources. Tests: **1,087 pass**, typecheck/build/guardrails pass.
+
+**SP-23 remains VERIFYING; decision REVISE**, retaining the foundation while
+current-evidence admission, cumulative publication/rollback and real source
+observation remain unfinished. Next: **SP-23B**. Run 43 in
+`docs/SYSTEM_SAVEPOINT.md` is the current evidence/rollback/next-action baton;
+the checkpoints below are historical.
+
 ## Current checkpoint — 2026-09-05 independent review and caller repair
 
 SP-23 remains **VERIFYING**. Independent review repaired a live policy-loading
