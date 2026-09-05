@@ -126,7 +126,7 @@ jobs:
           # --file is Wrangler's bulk import path, which discards SELECT rows.
           # Read the fixed, tested SQL file into the read-only query transport.
           bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --json \
-            --command "$(cat ../../scripts/ci/verify-source-transition.sql)" > ../../source-transition-evidence.json
+            --command="$(cat ../../scripts/ci/verify-source-transition.sql)" > ../../source-transition-evidence.json
           jq . ../../source-transition-evidence.json
           jq -e '
             type == "array" and length == 1 and

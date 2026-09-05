@@ -66,6 +66,17 @@ working-copy SQL are LF, ruling out the separate CRLF issue. A bounded syntax
 compatibility repair and transport regression are in progress. The retired
 Vercel integration's account failure is unrelated to the active release gate.
 
+Repair PR **#105**, exact-head CI `33968585871` at
+`d67bac7611242bf6b6e1adaa49da1d4d0d1c4255`, merged as
+`a517374c304c413f720aece9d4d2e1263bb3b329`. Main run **33968654265 applied
+migration 0039 successfully**, confirming the remote trigger syntax repair.
+Pages deployment remained held: the subsequent read-only verification command
+was rejected by CLI option parsing because its SQL argument began with `--`.
+Use `--command=...` so the leading SQL comment is unambiguously a value. The
+local post-repair full gate passed 1,087 tests / 3,461 assertions, typecheck,
+guardrails and build. Production application and read-only verification are
+distinct; the latter remains pending this quoting correction.
+
 ## Run 41 — SP-23 control plane implemented — VERIFYING, not production-accepted (2026-09-05)
 
 Program: **Source Perpetuity**. Mode: **EXECUTE (SP-23 capped canary and

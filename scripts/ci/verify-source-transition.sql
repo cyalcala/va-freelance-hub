@@ -1,5 +1,5 @@
 -- SP-23 production acceptance evidence: one read-only statement and one clock.
--- Execute with --command "$(cat this-file)"; Wrangler --file uses the import
+-- Execute with --command="$(cat this-file)"; Wrangler --file uses the import
 -- transport, which discards SELECT results and may interrupt database service.
 WITH
 clock AS (SELECT strftime('%Y-%m-%dT%H:%M:%fZ', 'now') AS as_of),
