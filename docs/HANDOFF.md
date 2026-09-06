@@ -1,5 +1,12 @@
 # Handoff
 
+## Current handoff — 2026-09-06 EX-02 shadow admit ready to deploy
+
+Read Run 51. EX-01 KEEP. EX-02 code admits `greenhouse:grafanalabs` to
+non-publishing shadow via `/api/cron/source-admit` after a live probe.
+After merge/deploy, dispatch `gha-source-admit.yml`. Do not schedule
+shadow-dispatch until that row exists.
+
 ## Current handoff — 2026-09-06 EX-01 KEEP; EX-02 next
 
 Read Run 50. Exact-six yield is classified. Do not loosen geo-gate. Next:
