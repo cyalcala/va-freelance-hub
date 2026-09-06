@@ -11,8 +11,10 @@ exceeds the cap rolls back to shadow and publishes nothing. A later batch in the
 same tick that would exceed the remaining cap is blocked without a partial
 publish. Hidden pending/rejected inserts are not exposure.
 
-Wired: scrape accepted inserts, `/api/ingest` public inserts, Inngest
+Wired and deployed: scrape accepted inserts, `/api/ingest` public inserts, Inngest
 triage-drain publish, inline pending-triage drain, gate-eligible recovery, and
 stale/link reactivation. Tests without `env.DB.prepare` keep the legacy write
-path. Production 0041 evidence:
+path. Production 0041 apply evidence:
 `docs/gauntlet/evidence/SP-23C-production-verification-2026-09-06/source-transition-evidence.json`.
+Production ledger-proof artifact (0041 fields, 22 triggers):
+`docs/gauntlet/evidence/SP-23C-ledger-proof-2026-09-06/source-transition-evidence.json`.

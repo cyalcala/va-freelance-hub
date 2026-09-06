@@ -1,5 +1,44 @@
 # System Savepoint
 
+## Run 48 — SP-23C writers deployed; 0041 ledger proven live; still VERIFYING (2026-09-06)
+
+Program: **Source Perpetuity**. Unit: **SP-23C**. Status: **VERIFYING**.
+G9: **REVISE** — retain the deployed publication ledger and every public writer;
+this is not whole-unit KEEP, source activation, or supply recovery.
+
+Accepted remaining-writer deployment SHA:
+**`1b20975b718d0013ec20728725e3b9ed5b3cbbb1`**. PR **#112** squash-merged.
+Exact-main CI/deploy **34018873511** passed: validation, D1 migrations, read-only
+verification with the 0041 jq contract, FTS integrity, and Pages deployment
+`https://15087e61.remotejobs-ph.pages.dev`. Canonical `/`, `/opportunities`, and
+`/directory` returned HTTP 200 after that deploy.
+
+Read-only D1 artifact, `as_of=2026-09-06T07:21:23.158Z`:
+`docs/gauntlet/evidence/SP-23C-ledger-proof-2026-09-06/source-transition-evidence.json`.
+Metadata: **success=true, changed_db=false, rows_written=0**. SHA-256:
+`B564F4C2EF19C77E1CB854C20992D2D9B67D811283BFEC84622A7CFE51C6B36A`.
+
+Proven live: `migration_0041_rows=1`, `publication_ledger_table_count=1`,
+`publication_ledger_count=0`, `named_trigger_count=22`, missing triggers `[]`.
+0039/0040 and the admission table remain present. Registry/profile/candidate/
+transition/shadow-observation counts remain **0**.
+
+Public writers now in production: scrape accepted inserts, `/api/ingest`, Inngest
+triage drain, inline pending-triage drain, gate-eligible recovery, and stale/link
+reactivation. Exact-six stays unlimited. Canary fetch remains disabled.
+Hidden pending/rejected inserts are not exposure.
+
+### Current supply truth
+
+**825** eligible active rows, **7** first stored in 24 hours, **94** in seven
+days. Top two sources provide **80/94 (85.1%)** of the seven-day proxy. This
+deployment did not add supply.
+
+**Next exact action:** stop. Do **not** resume SP-10..SP-15 registry writes,
+enable shadow-dispatch scheduling, or treat SP-23 as KEEP. Real source-scoped
+shadow observation is a later, separately authorized bootstrap, not this
+checkpoint.
+
 ## Run 47 — SP-23C remaining public activations wired; 0041 live; still VERIFYING (2026-09-06)
 
 Program: **Source Perpetuity**. Unit: **SP-23C**. Status: **IN_PROGRESS / VERIFYING**.

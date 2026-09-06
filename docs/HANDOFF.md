@@ -1,5 +1,13 @@
 # Handoff
 
+## Current handoff — 2026-09-06 SP-23C writers live; ledger proven; STOP
+
+Read `docs/SYSTEM_SAVEPOINT.md` **Run 48**. SP-23C public writers and migration
+0041 are in production at `1b20975b718d0013ec20728725e3b9ed5b3cbbb1` (PR #112,
+run 34018873511). The read-only artifact proves the ledger table, 22 named
+triggers, and zero ledger rows. Registry remains empty. SP-23 stays **VERIFYING**.
+**Stop.** Do not activate a source or schedule shadow dispatch.
+
 ## Current handoff — 2026-09-06 SP-23C remaining writers + production 0041
 
 Read `docs/SYSTEM_SAVEPOINT.md` **Run 47**. Migration **0041** is in production
