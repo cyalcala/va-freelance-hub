@@ -134,7 +134,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
   const tables = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'd1_%'").all() as Array<{ name: string }>;
   const tableNames = new Set(tables.map((t) => t.name));
 
-  const requiredTables = ["opportunities", "va_directory", "content_digests", "source_fetch_state", "source_fetch_events", "robots_cache", "opportunities_fts", "provider_profiles", "source_registry"];
+  const requiredTables = ["opportunities", "va_directory", "content_digests", "source_fetch_state", "source_fetch_events", "robots_cache", "opportunities_fts", "provider_profiles", "source_registry", "source_publication_ledger"];
   for (const table of requiredTables) {
     assertions.push({
       name: `Table ${table} exists`,
@@ -215,6 +215,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
     "opportunities_source_url_unique", "content_digests_video_id_unique",
     "provider_profiles_family_idx", "source_registry_provider_idx",
     "source_registry_compliance_idx", "source_registry_operational_idx",
+    "source_publication_ledger_tick_idx",
   ];
   for (const idx of requiredIndexes) {
     assertions.push({

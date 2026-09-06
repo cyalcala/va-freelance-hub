@@ -12,7 +12,8 @@ import {
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
 import { d1Changes } from "@/lib/d1-result";
-import { publicationDbFromEnv, publishGroupedInserts } from "@/lib/publish-opportunities";
+import { publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts } from "@/lib/publish-opportunities";
+import { publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -366,6 +367,7 @@ export async function drainPendingTriageInline(
   aiBudget: { exhausted: () => boolean },
   observedAt: string,
   limit: number = PENDING_DRAIN_PER_TICK,
+  publicationDb?: ReturnType<typeof publicationDbFromEnv>,
 ): Promise<PendingDrainStats> {
   const stats: PendingDrainStats = { claimed: 0, published: 0, rejected: 0, quarantined: 0, deferred: 0 };
   if (aiBudget.exhausted()) return stats;
@@ -382,6 +384,7 @@ export async function drainPendingTriageInline(
     locationRaw: string | null;
     sourceUrl: string;
     applicationUrl: string | null;
+    sourceId: string | null;
   }>;
   try {
     pending = await db
@@ -394,6 +397,7 @@ export async function drainPendingTriageInline(
         locationRaw: opportunities.locationRaw,
         sourceUrl: opportunities.sourceUrl,
         applicationUrl: opportunities.applicationUrl,
+        sourceId: opportunities.sourceId,
       })
       .from(opportunities)
       .where(and(eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage")))
@@ -469,7 +473,7 @@ export async function drainPendingTriageInline(
       const mergedTags = Array.from(new Set([...baseTags, triage.category, ...(triage.tags || [])]))
         .filter(Boolean)
         .map((t) => (typeof t === "string" ? t.toLowerCase().trim() : t));
-      await db.update(opportunities).set({
+      const publishRow = () => db.update(opportunities).set({
         isActive: true,
         inactiveReason: null,
         geoScope: gate.geoScope,
@@ -488,6 +492,26 @@ export async function drainPendingTriageInline(
         type: triage.employmentType === "contract" ? "freelance" : (triage.employmentType || "freelance"),
         updatedAt: observedAt,
       }).where(eq(opportunities.id, item.id));
+      if (publicationDb) {
+        const sourceId = item.sourceId && /^[a-z0-9:._-]+$/.test(item.sourceId) ? item.sourceId : "unattributed";
+        const published = await publishPublicExposure(publicationDb, {
+          sourceId,
+          now: observedAt,
+          tickKey: publicationTickKey("scrape-drain", observedAt),
+          retryKey: `scrape-drain:${item.id}:${observedAt}`,
+          proposedCount: 1,
+          persist: async () => {
+            await publishRow();
+            return { publishedCount: 1, ids: [item.id] };
+          },
+        });
+        if (!published.ok || published.publishedCount === 0) {
+          stats.deferred += 1;
+          continue;
+        }
+      } else {
+        await publishRow();
+      }
       stats.published += 1;
     } catch (err) {
       // Durable-write truth: a failed write is not credited; the row stays
@@ -515,7 +539,7 @@ async function maybeDrainPendingTriage(
   where: string,
 ): Promise<PendingDrainStats> {
   if (!enabled) return EMPTY_PENDING_DRAIN;
-  const stats = await drainPendingTriageInline(db, aiEnv, aiBudget, observedAt);
+  const stats = await drainPendingTriageInline(db, aiEnv, aiBudget, observedAt, PENDING_DRAIN_PER_TICK, publicationDbFromEnv(aiEnv));
   if (stats.claimed > 0) {
     console.log(
       `[api/cron/scrape] Pending-triage drain (${where}): claimed ${stats.claimed}, published ${stats.published}, rejected ${stats.rejected}, quarantined ${stats.quarantined}, deferred ${stats.deferred}.`,
@@ -537,28 +561,110 @@ export const GATE_ELIGIBLE_GEO_SCOPES = ["worldwide", "apac_incl_ph", "ph_only"]
 // and lets the unclear sweep AI-re-vet/enrich them later — phEligibility stays
 // "unclear", so a false positive is deactivated and a category refined on a
 // later tick. No neurons, one D1 write, idempotent (a no-op once drained).
+const GATE_ELIGIBLE_PENDING = () => and(
+  eq(opportunities.isActive, false),
+  eq(opportunities.inactiveReason, "pending-triage"),
+  inArray(opportunities.geoScope, [...GATE_ELIGIBLE_GEO_SCOPES]),
+);
+
 export async function recoverGateEligiblePending(
   db: AppDb,
   observedAt: string,
+  publicationDb?: ReturnType<typeof publicationDbFromEnv> | null,
 ): Promise<number> {
+  const publishSet = {
+    isActive: true,
+    inactiveReason: null,
+    geoEvidence: "Geo-gate eligible; auto-published pending AI re-vet",
+    updatedAt: observedAt,
+    lastSeenInFeedAt: observedAt,
+  };
   try {
-    const res = await db
-      .update(opportunities)
-      .set({
-        isActive: true,
-        inactiveReason: null,
-        geoEvidence: "Geo-gate eligible; auto-published pending AI re-vet",
-        updatedAt: observedAt,
-        lastSeenInFeedAt: observedAt,
-      })
-      .where(and(
-        eq(opportunities.isActive, false),
-        eq(opportunities.inactiveReason, "pending-triage"),
-        inArray(opportunities.geoScope, [...GATE_ELIGIBLE_GEO_SCOPES]),
-      ));
-    return d1Changes(res);
+    if (!publicationDb) {
+      const res = await db.update(opportunities).set(publishSet).where(GATE_ELIGIBLE_PENDING());
+      return d1Changes(res);
+    }
+    const pending = await db
+      .select({ id: opportunities.id, sourceId: opportunities.sourceId })
+      .from(opportunities)
+      .where(GATE_ELIGIBLE_PENDING());
+    if (pending.length === 0) return 0;
+    const result = await publishGroupedActivations(
+      publicationDb,
+      pending,
+      observedAt,
+      "scrape-gate",
+      async (ids) => {
+        let publishedCount = 0;
+        for (const batch of chunkArray(ids, 50)) {
+          const res = await db.update(opportunities).set(publishSet).where(inArray(opportunities.id, batch));
+          publishedCount += d1Changes(res);
+        }
+        return { publishedCount, ids };
+      },
+    );
+    return result.published;
   } catch (err) {
     console.warn(`[api/cron/scrape] Gate-eligible pending recovery failed:`, errorMessage(err));
+    return 0;
+  }
+}
+
+export async function reactivateFeedConfirmedJobs(
+  db: AppDb,
+  urls: string[],
+  observedAt: string,
+  publicationDb?: ReturnType<typeof publicationDbFromEnv> | null,
+): Promise<number> {
+  if (urls.length === 0) return 0;
+  const BATCH_SIZE = 50;
+  const publishSet = {
+    isActive: true,
+    inactiveReason: null,
+    failedVerificationCount: 0,
+    lastSeenInFeedAt: observedAt,
+    updatedAt: observedAt,
+  };
+  const recoverableWhere = (batch: string[]) => and(
+    inArray(opportunities.sourceUrl, batch),
+    eq(opportunities.isActive, false),
+    inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
+  );
+  try {
+    if (!publicationDb) {
+      let reactivated = 0;
+      for (const batch of chunkArray(urls, BATCH_SIZE)) {
+        const res = await db.update(opportunities).set(publishSet).where(recoverableWhere(batch));
+        reactivated += d1Changes(res);
+      }
+      return reactivated;
+    }
+    const rows: Array<{ id: number; sourceId: string | null }> = [];
+    for (const batch of chunkArray(urls, BATCH_SIZE)) {
+      const found = await db
+        .select({ id: opportunities.id, sourceId: opportunities.sourceId })
+        .from(opportunities)
+        .where(recoverableWhere(batch));
+      rows.push(...found);
+    }
+    if (rows.length === 0) return 0;
+    const result = await publishGroupedActivations(
+      publicationDb,
+      rows,
+      observedAt,
+      "scrape-reactivate",
+      async (ids) => {
+        let publishedCount = 0;
+        for (const batch of chunkArray(ids, BATCH_SIZE)) {
+          const res = await db.update(opportunities).set(publishSet).where(inArray(opportunities.id, batch));
+          publishedCount += d1Changes(res);
+        }
+        return { publishedCount, ids };
+      },
+    );
+    return result.published;
+  } catch (err) {
+    console.warn(`[api/cron/scrape] Feed-confirmed reactivation failed:`, errorMessage(err));
     return 0;
   }
 }
@@ -1834,12 +1940,14 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       });
     }
 
+    const publicationDb = publicationDbFromEnv(env);
+
     // Board-freshness fallback: publish geo-gate-eligible `pending-triage` rows
     // without AI so real eligible jobs are not hidden for days behind the scarce
     // neuron budget (see recoverGateEligiblePending). Inline mode only — under a
     // durable-triage opt-in the Inngest worker owns that queue. Idempotent.
     if (!triageViaInngest) {
-      const recovered = await recoverGateEligiblePending(db, observedAt);
+      const recovered = await recoverGateEligiblePending(db, observedAt, publicationDb);
       if (recovered > 0) {
         console.log(`[api/cron/scrape] Board-freshness fallback: published ${recovered} gate-eligible pending-triage listing(s) without AI.`);
       }
@@ -2278,23 +2386,12 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     // this system previously archived for staleness or link health; policy and
     // quality rejections remain inactive even when a feed repeats their URL.
     if (recoverableInactiveUrls.size > 0) {
-      let reactivated = 0;
-      for (const batch of chunkArray(Array.from(recoverableInactiveUrls), BATCH_SIZE)) {
-        const res = await db.update(opportunities)
-          .set({
-            isActive: true,
-            inactiveReason: null,
-            failedVerificationCount: 0,
-            lastSeenInFeedAt: observedAt,
-            updatedAt: observedAt,
-          })
-          .where(and(
-            inArray(opportunities.sourceUrl, batch),
-            eq(opportunities.isActive, false),
-            inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
-          ));
-        reactivated += d1Changes(res);
-      }
+      const reactivated = await reactivateFeedConfirmedJobs(
+        db,
+        Array.from(recoverableInactiveUrls),
+        observedAt,
+        publicationDb,
+      );
       console.log(`[api/cron/scrape] Reactivated ${reactivated} feed-confirmed jobs previously archived by the system.`);
     }
 
@@ -2652,7 +2749,6 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     let attemptedInsert = 0;
     let insertFailedBatches = 0;
     const insertErrors: InsertError[] = [];
-    const publicationDb = publicationDbFromEnv(env);
     attemptedInsert += triagedItems.length;
     if (publicationDb && triagedItems.length > 0) {
       try {

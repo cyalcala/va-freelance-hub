@@ -21,7 +21,11 @@ expected_triggers(name) AS (VALUES
   ('source_transition_events_apply_registry_state'),
   ('source_registry_state_requires_transition_event'),
   ('source_transition_events_append_only_update'),
-  ('source_transition_events_append_only_delete')
+  ('source_transition_events_append_only_delete'),
+  ('source_publication_ledger_reject_caller_id'),
+  ('source_publication_ledger_append_only_update'),
+  ('source_publication_ledger_append_only_delete'),
+  ('source_publication_ledger_validate_insert')
 ),
 eligible AS (
   SELECT source_id, unixepoch(scraped_at) AS first_storage_at
@@ -49,7 +53,10 @@ SELECT
   clock.as_of,
   (SELECT COUNT(*) FROM d1_migrations WHERE name = '0039_canary_transition_plane.sql') AS migration_0039_rows,
   (SELECT COUNT(*) FROM d1_migrations WHERE name = '0040_current_evidence_admission.sql') AS migration_0040_rows,
+  (SELECT COUNT(*) FROM d1_migrations WHERE name = '0041_publication_ledger.sql') AS migration_0041_rows,
   (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'source_admission_evidence') AS admission_table_count,
+  (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'source_publication_ledger') AS publication_ledger_table_count,
+  (SELECT COUNT(*) FROM source_publication_ledger) AS publication_ledger_count,
   (SELECT COUNT(*) FROM pragma_table_info('source_registry') WHERE name = 'governance_revision')
     + (SELECT COUNT(*) FROM pragma_table_info('provider_profiles') WHERE name = 'governance_revision') AS governance_column_count,
   (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'source_transition_events') AS transition_table_count,

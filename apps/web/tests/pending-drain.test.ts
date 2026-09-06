@@ -3,6 +3,7 @@ import {
   drainPendingTriageInline,
   PENDING_DRAIN_PER_TICK,
 } from "../src/pages/api/cron/scrape";
+import { FakePublicationDatabase } from "./publication-db-fake";
 
 // Regression coverage for the 2026-08-18/19 board freeze recovery.
 //
@@ -193,5 +194,33 @@ describe("drainPendingTriageInline", () => {
 
     // The publish write threw, so it counts as deferred, not published.
     expect(stats).toMatchObject({ claimed: 1, published: 0, deferred: 1 });
+  });
+
+  it("defers an eligible row when the publication gateway blocks exposure", async () => {
+    const { db, calls } = makeFakeDb([{ ...pendingRow(1), sourceId: "greenhouse:test" }]);
+    const { env } = makeEnv([ELIGIBLE, SKEPTIC_AGREES]);
+    const publicationDb = new FakePublicationDatabase({
+      registry: [{
+        sourceId: "greenhouse:test",
+        compliance: "allowed",
+        operational: "shadow",
+        optOut: 0,
+        policyExpiry: null,
+        canaryMaxNewItemsPerTick: null,
+      }],
+      optOut: [null],
+    });
+
+    const stats = await drainPendingTriageInline(
+      db,
+      env,
+      makeBudget(),
+      OBSERVED,
+      PENDING_DRAIN_PER_TICK,
+      publicationDb,
+    );
+
+    expect(stats).toMatchObject({ claimed: 1, published: 0, deferred: 1 });
+    expect(calls.updates.length).toBe(0);
   });
 });
