@@ -1,5 +1,26 @@
 # System Savepoint
 
+## Run 49 — Apex expansion strategy documented; still not underway (2026-09-06)
+
+Program: **Source Perpetuity / Apex Expansion**. Status: **PLANNED**.
+No source was activated. No schedule was enabled. Exact-six is unchanged.
+
+Owner asked for the widest fair net and more jobs every day. Strategy and
+loop are backed up on GitHub:
+
+- `docs/superpowers/specs/2026-09-06-apex-source-expansion-design.md`
+- `docs/gauntlet/EXPANSION_LOOP.md`
+
+Recommended approach: **parallel shadow, serial canary** (Approach B). First
+execution unit after approval: **EX-01** exact-six accepted-yield diagnosis.
+First new publisher, if observations pass: **EX-07** capped Grafana Labs
+Greenhouse canary. SmartRecruiters / OnlineJobs.ph / Dribbble / Authentic Jobs
+stay out.
+
+**Next exact action:** owner approves Approach B (or names a subset). Then
+write the implementation plan and execute EX-01. Do not dump historical
+SP-10..SP-15 registry SQL.
+
 ## Run 48 — SP-23C writers deployed; 0041 ledger proven live; still VERIFYING (2026-09-06)
 
 Program: **Source Perpetuity**. Unit: **SP-23C**. Status: **VERIFYING**.

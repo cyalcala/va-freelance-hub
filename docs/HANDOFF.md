@@ -1,5 +1,14 @@
 # Handoff
 
+## Current handoff — 2026-09-06 apex expansion strategy; not yet executing
+
+Read `docs/SYSTEM_SAVEPOINT.md` **Run 49**. SP-23C is live. Expansion is
+**not** underway. Strategy: Approach B (parallel shadow, serial canary). Loop:
+`docs/gauntlet/EXPANSION_LOOP.md`. Spec:
+`docs/superpowers/specs/2026-09-06-apex-source-expansion-design.md`.
+Next after owner approval: EX-01, then EX-02 Grafana Labs shadow. No registry
+write in this checkpoint.
+
 ## Current handoff — 2026-09-06 SP-23C writers live; ledger proven; STOP
 
 Read `docs/SYSTEM_SAVEPOINT.md` **Run 48**. SP-23C public writers and migration

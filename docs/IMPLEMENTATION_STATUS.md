@@ -1,5 +1,11 @@
 # Implementation Status
 
+## Current checkpoint — 2026-09-06 apex expansion planned; not executing
+
+SP-23C writers are live. Daily job volume is still exact-six yield. An apex
+expansion spec and G1–G9 loop are documented and awaiting owner approval of
+Approach B. See Run 49. Do not treat the spec as source activation.
+
 ## Current checkpoint — 2026-09-06 SP-23C writers live; 0041 ledger proven; STOP
 
 SP-23C remaining public activation writers are deployed at
