@@ -133,8 +133,10 @@ jobs:
             all(.[]; .success == true and .meta.changed_db == false and .meta.rows_written == 0) and
             (.[0].results | length == 1) and
             (.[0].results[0] |
-              .migration_0039_rows == 1 and .transition_table_count == 1 and
-              .registry_column_count == 2 and .named_trigger_count == 18 and
+              .migration_0039_rows == 1 and .migration_0040_rows == 1 and
+              .admission_table_count == 1 and .governance_column_count == 2 and
+              .transition_table_count == 1 and .registry_column_count == 2 and
+              .named_trigger_count == 18 and
               (.missing_triggers_json | fromjson | length == 0))
           ' ../../source-transition-evidence.json
 
