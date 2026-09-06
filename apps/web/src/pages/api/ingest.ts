@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
-import { getDb, opportunities } from "@va-hub/db";
+import { getDb, opportunities, type NewOpportunity } from "@va-hub/db";
 import { chunkArray, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
+import { publicationDbFromEnv, publishGroupedInserts } from "@/lib/publish-opportunities";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
 import { isAuthorized } from "@/lib/auth";
@@ -56,6 +57,7 @@ async function normalizeOpportunityForInsert(item: unknown, observedAt: string) 
     type: enumOrFallback(input.type, JOB_TYPES, "freelance"),
     sourceUrl: sourceUrl ?? "",
     sourcePlatform: str(input.sourcePlatform) ?? "ingest",
+    sourceId: str(input.sourceId)?.toLowerCase() ?? null,
     tags: rawTags,
     category: str(input.category) ?? "other",
     locationType: enumOrFallback(input.locationType, LOCATION_TYPES, "remote"),
@@ -146,15 +148,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Insert with deduplication based on sourceUrl, chunked to avoid SQLite limits
     let insertedCount = 0;
-    for (const chunk of chunkArray(normalizedItems, DIRECT_INGEST_BATCH_SIZE)) {
-      // Bare onConflictDoNothing (no target) mirrors the scrape route: absorbs
-      // BOTH source_url and content_hash unique conflicts. A targeted conflict
-      // on source_url alone would throw on a content_hash collision.
+    const publicationDb = publicationDbFromEnv(env);
+    const publicItems = normalizedItems.filter((row) => row.isActive);
+    const hiddenItems = normalizedItems.filter((row) => !row.isActive);
+    const insertChunk = async (chunk: NewOpportunity[]) => {
       const result = await db.insert(opportunities)
         .values(chunk)
         .onConflictDoNothing()
         .returning({ id: opportunities.id });
-      insertedCount += result.length;
+      return result.length;
+    };
+    if (publicationDb && publicItems.length > 0) {
+      const published = await publishGroupedInserts(publicationDb, insertChunk, publicItems, observedAt, "ingest");
+      if (published.failed) throw new Error("publication gateway rejected direct ingest");
+      insertedCount += published.published;
+    } else {
+      for (const chunk of chunkArray(publicItems, DIRECT_INGEST_BATCH_SIZE)) {
+        insertedCount += await insertChunk(chunk);
+      }
+    }
+    for (const chunk of chunkArray(hiddenItems, DIRECT_INGEST_BATCH_SIZE)) {
+      insertedCount += await insertChunk(chunk);
     }
 
     return new Response(JSON.stringify({

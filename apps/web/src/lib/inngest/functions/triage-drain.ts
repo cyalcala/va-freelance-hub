@@ -5,7 +5,10 @@ import {
   decideTriage,
   mapTriageCategoryToUiCategory,
   sanitizeApplyUrlForSource,
+  publishPublicExposure,
+  publicationTickKey,
 } from "@va-hub/scraper";
+import { publicationDbFromEnv } from "@/lib/publish-opportunities";
 import { inngest, type CfBindings } from "../client";
 
 // How many `pending-triage` rows one cron pass claims. Kept small on purpose:
@@ -25,6 +28,7 @@ type PendingRow = {
   locationRaw: string | null;
   sourceUrl: string;
   applicationUrl: string | null;
+  sourceId: string | null;
 };
 
 /**
@@ -66,6 +70,7 @@ export const triageDrain = inngest.createFunction(
           locationRaw: opportunities.locationRaw,
           sourceUrl: opportunities.sourceUrl,
           applicationUrl: opportunities.applicationUrl,
+          sourceId: opportunities.sourceId,
         })
         .from(opportunities)
         .where(
@@ -157,7 +162,7 @@ export const triageDrain = inngest.createFunction(
             .filter(Boolean)
             .map((t) => (typeof t === "string" ? t.toLowerCase().trim() : t));
 
-          await db
+          const publishRow = async () => db
             .update(opportunities)
             .set({
               isActive: true,
@@ -185,6 +190,24 @@ export const triageDrain = inngest.createFunction(
               updatedAt: observedAt,
             })
             .where(eq(opportunities.id, row.id));
+          const publicationDb = publicationDbFromEnv(env);
+          if (publicationDb) {
+            const sourceId = row.sourceId && /^[a-z0-9:._-]+$/.test(row.sourceId) ? row.sourceId : "unattributed";
+            const published = await publishPublicExposure(publicationDb, {
+              sourceId,
+              now: observedAt,
+              tickKey: publicationTickKey("triage-drain", observedAt),
+              retryKey: `triage-drain:${row.id}:${observedAt}`,
+              proposedCount: 1,
+              persist: async () => {
+                await publishRow();
+                return { publishedCount: 1, ids: [row.id] };
+              },
+            });
+            if (!published.ok || published.publishedCount === 0) return "deferred" as const;
+          } else {
+            await publishRow();
+          }
           return "published" as const;
         }),
       ),

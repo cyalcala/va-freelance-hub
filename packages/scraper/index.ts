@@ -114,6 +114,13 @@ export type {
   CanaryPublicationDecision,
 } from "./transition-plane";
 export { applyTypedTransition } from "./transition-gateway";
+export { publishPublicExposure, publicationTickKey, loadPublicationPolicy, wrapD1Binding } from "./publication-gateway";
+export type {
+  PublicationDatabase,
+  PublicationStatement,
+  PublishPublicExposureRequest,
+  PublishPublicExposureResult,
+} from "./publication-gateway";
 export type {
   ApplyTypedTransitionRequest,
   ApplyTypedTransitionResult,

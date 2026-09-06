@@ -1,5 +1,21 @@
 # System Savepoint
 
+## Run 46 — SP-23C publication gateway implemented locally; still VERIFYING (2026-09-06)
+
+Program: **Source Perpetuity**. Unit: **SP-23C**. Status: **IN_PROGRESS / VERIFYING**.
+Branch `codex/sp-23c-publication-gateway`. Local G3: **1158 pass / 0 fail / 3679
+assertions / 109 files**; typecheck, guardrails, build, and rehearsal through 0041
+pass.
+
+Public scrape inserts, direct ingest, and Inngest triage-drain publishes now
+reserve exposure through the 0041 ledger. Exact-six stays unlimited. Canary fetch
+remains disabled. Inline drain, gate-eligible recovery, and stale/link
+reactivation are still direct writes and remain on this unit's remaining list.
+No source was activated.
+
+**Next:** PR/CI/deploy 0041, then finish the remaining public activation writers
+before any source observation.
+
 ## Run 45 — SP-23B deployed; current-evidence admission live, still VERIFYING (2026-09-06)
 
 Program: **Source Perpetuity**. Unit: **SP-23B**. Status: **VERIFYING**. G9:

@@ -12,6 +12,7 @@ import {
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
 import { d1Changes } from "@/lib/d1-result";
+import { publicationDbFromEnv, publishGroupedInserts } from "@/lib/publish-opportunities";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -2651,9 +2652,35 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     let attemptedInsert = 0;
     let insertFailedBatches = 0;
     const insertErrors: InsertError[] = [];
+    const publicationDb = publicationDbFromEnv(env);
+    attemptedInsert += triagedItems.length;
+    if (publicationDb && triagedItems.length > 0) {
+      try {
+        const published = await publishGroupedInserts(
+          publicationDb,
+          async (batch) => {
+            const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
+            if (res && (res as any).meta && typeof (res as any).meta.changes === "number") return d1Changes(res);
+            throw new Error("D1 insert metadata did not include meta.changes");
+          },
+          triagedItems,
+          observedAt,
+          "scrape",
+        );
+        actualChanges = published.published;
+        if (published.failed) {
+          insertFailedBatches += 1;
+          markItemsForRetry(triagedItems);
+          insertErrors.push({ batchStart: 0, batchSize: triagedItems.length, error: "publication gateway rejected public insert" });
+        }
+      } catch (err) {
+        insertFailedBatches += 1;
+        markItemsForRetry(triagedItems);
+        insertErrors.push({ batchStart: 0, batchSize: triagedItems.length, error: errorMessage(err) });
+      }
+    } else {
     for (let i = 0; i < triagedItems.length; i += D1_INSERT_BATCH_SIZE) {
       const batch = triagedItems.slice(i, i + D1_INSERT_BATCH_SIZE);
-      attemptedInsert += batch.length;
       try {
         console.log(`[api/cron/scrape] Inserting batch of ${batch.length} items (index ${i}).`);
         const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
@@ -2678,6 +2705,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         });
         console.error(`[api/cron/scrape] Batch insert failed (index ${i}):`, err);
       }
+    }
     }
 
     // 6b. Persist triage-rejected items as inactive rows so their URLs join
