@@ -56,89 +56,96 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
     }
     if (!env.DB?.prepare) return json(503, { error: "Cloudflare D1 binding is required" });
 
-    const now = nowFn();
+    const clock = nowFn();
     const profile = buildGreenhouseProviderProfile();
     const candidate = buildGreenhouseCandidateRow({
       token: "grafanalabs",
       companyName: "Grafana Labs",
-      nowIso: now,
+      nowIso: clock,
     });
-    const evidenceHash = await hash(`${profile.evidenceUrl}\n${now}`);
-    const provider = {
-      id: GREENHOUSE_PROVIDER_ID,
-      providerFamily: profile.providerFamily,
-      mechanism: profile.mechanism,
-      authClass: profile.authClass,
-      endpointPattern: profile.endpointPattern,
-      allowedHosts: profile.allowedHosts,
-      evidenceUrl: profile.evidenceUrl,
-      evidenceHash,
-      evidenceCapturedAt: now,
-      visibilityFilter: profile.visibilityFilter,
-      contentScope: profile.contentScope,
-      cadenceMinMinutes: profile.cadenceMinMinutes,
-      cadenceMaxMinutes: profile.cadenceMaxMinutes,
-      rateGuidance: profile.rateGuidance,
-      robotsHandling: profile.robotsHandling,
-      removalSemantics: profile.removalSemantics,
-      evidenceLeaseDays: GREENHOUSE_EVIDENCE_LEASE_DAYS,
-      governanceRevision: 1,
-    };
-    const source = {
-      sourceId: candidate.sourceId,
-      providerId: candidate.providerId,
-      displayName: candidate.displayName,
-      endpointUrl: candidate.endpointUrl,
-      companyToken: candidate.companyToken,
-      discoveryProvenance: candidate.discoveryProvenance,
-      complianceState: candidate.complianceState,
-      operationalState: "candidate" as const,
-      reviewDeadline: candidate.reviewDeadline,
-      policyExpiry: candidate.policyExpiry,
-      canaryMaxNewItemsPerTick: null,
-      optOut: false,
-      governanceRevision: 1,
-      lastTransitionHash: null,
-    };
-    const probe = await runProbe({
-      sourceId: source.sourceId,
-      providerId: source.providerId,
-      displayName: source.displayName,
-      endpointUrl: source.endpointUrl,
-      companyToken: source.companyToken,
-      discoveryProvenance: source.discoveryProvenance,
-      complianceState: source.complianceState,
-      operationalState: source.operationalState,
-      reviewDeadline: source.reviewDeadline,
-      policyExpiry: source.policyExpiry,
-      provider: {
-        id: provider.id,
-        providerFamily: provider.providerFamily,
-        mechanism: provider.mechanism,
-        authClass: provider.authClass,
-        endpointPattern: provider.endpointPattern,
-        allowedHosts: provider.allowedHosts,
-        evidenceUrl: provider.evidenceUrl,
-        evidenceLeaseDays: provider.evidenceLeaseDays,
-        visibilityFilter: provider.visibilityFilter,
-        contentScope: provider.contentScope,
-        cadenceMinMinutes: provider.cadenceMinMinutes,
-        cadenceMaxMinutes: provider.cadenceMaxMinutes,
-        rateGuidance: provider.rateGuidance,
-        robotsHandling: provider.robotsHandling,
-      },
-    });
-    const db = wrapDb(env.DB) as TransitionGatewayDatabase & AdmissionDatabase;
-    const result = await admit(db, {
-      now,
-      source,
-      provider,
-      probe,
-      primaryEvidence: [{ url: provider.evidenceUrl!, contentSha256: evidenceHash, capturedAt: now }],
-      adjudicationRef: "ex-02-owner-approved-approach-b-sp12-review-ready",
-    });
-    if (!result.ok) return json(409, { outcome: "rejected", reason: result.reason, sourceId });
-    return json(200, { outcome: "shadow", sourceId: result.sourceId, published: 0 });
+    try {
+      const probe = await runProbe({
+        sourceId: candidate.sourceId,
+        providerId: candidate.providerId,
+        displayName: candidate.displayName,
+        endpointUrl: candidate.endpointUrl,
+        companyToken: candidate.companyToken,
+        discoveryProvenance: candidate.discoveryProvenance,
+        complianceState: candidate.complianceState,
+        operationalState: "candidate",
+        reviewDeadline: candidate.reviewDeadline,
+        policyExpiry: candidate.policyExpiry,
+        provider: {
+          id: GREENHOUSE_PROVIDER_ID,
+          providerFamily: profile.providerFamily,
+          mechanism: profile.mechanism,
+          authClass: profile.authClass,
+          endpointPattern: profile.endpointPattern,
+          allowedHosts: profile.allowedHosts,
+          evidenceUrl: profile.evidenceUrl,
+          evidenceLeaseDays: GREENHOUSE_EVIDENCE_LEASE_DAYS,
+          visibilityFilter: profile.visibilityFilter,
+          contentScope: profile.contentScope,
+          cadenceMinMinutes: profile.cadenceMinMinutes,
+          cadenceMaxMinutes: profile.cadenceMaxMinutes,
+          rateGuidance: profile.rateGuidance,
+          robotsHandling: profile.robotsHandling,
+        },
+      });
+      const now = probe.timestamp;
+      const evidenceHash = await hash(`${profile.evidenceUrl}\n${now}`);
+      const provider = {
+        id: GREENHOUSE_PROVIDER_ID,
+        providerFamily: profile.providerFamily,
+        mechanism: profile.mechanism,
+        authClass: profile.authClass,
+        endpointPattern: profile.endpointPattern,
+        allowedHosts: profile.allowedHosts,
+        evidenceUrl: profile.evidenceUrl,
+        evidenceHash,
+        evidenceCapturedAt: now,
+        visibilityFilter: profile.visibilityFilter,
+        contentScope: profile.contentScope,
+        cadenceMinMinutes: profile.cadenceMinMinutes,
+        cadenceMaxMinutes: profile.cadenceMaxMinutes,
+        rateGuidance: profile.rateGuidance,
+        robotsHandling: profile.robotsHandling,
+        removalSemantics: profile.removalSemantics,
+        evidenceLeaseDays: GREENHOUSE_EVIDENCE_LEASE_DAYS,
+        governanceRevision: 1,
+      };
+      const source = {
+        sourceId: candidate.sourceId,
+        providerId: candidate.providerId,
+        displayName: candidate.displayName,
+        endpointUrl: candidate.endpointUrl,
+        companyToken: candidate.companyToken,
+        discoveryProvenance: candidate.discoveryProvenance,
+        complianceState: candidate.complianceState,
+        operationalState: "candidate" as const,
+        reviewDeadline: candidate.reviewDeadline,
+        policyExpiry: candidate.policyExpiry,
+        canaryMaxNewItemsPerTick: null,
+        optOut: false,
+        governanceRevision: 1,
+        lastTransitionHash: null,
+      };
+      const db = wrapDb(env.DB) as TransitionGatewayDatabase & AdmissionDatabase;
+      const result = await admit(db, {
+        now,
+        source,
+        provider,
+        probe,
+        primaryEvidence: [{ url: provider.evidenceUrl!, contentSha256: evidenceHash, capturedAt: now }],
+        adjudicationRef: "ex-02-owner-approved-approach-b-sp12-review-ready",
+      });
+      if (!result.ok) {
+        return json(409, { outcome: "rejected", reason: result.reason, sourceId, probeOutcome: probe.diagnostic.outcome });
+      }
+      return json(200, { outcome: "shadow", sourceId: result.sourceId, published: 0, probeOutcome: probe.diagnostic.outcome });
+    } catch (err) {
+      return json(500, { outcome: "error", sourceId, reason: err instanceof Error ? err.message : String(err) });
+    }
   };
 }
 

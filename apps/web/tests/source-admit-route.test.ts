@@ -72,6 +72,6 @@ describe("source-admit route", () => {
     });
     const response = await handler(requestContext({ sourceId: "greenhouse:grafanalabs" }));
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ outcome: "shadow", sourceId: "greenhouse:grafanalabs", published: 0 });
+    expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "greenhouse:grafanalabs", published: 0 });
   });
 });
