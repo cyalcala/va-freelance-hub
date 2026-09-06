@@ -10,6 +10,8 @@
  * here on verifying opt-out/do-not-reingest before shadow.
  *
  * Official docs: https://docs.recruitee.com/docs/feed
+ * Mechanism is `syndication_feed` (same CHECK value Workable uses for its
+ * public XML feed). `xml_feed` is not in provider_profiles.mechanism.
  */
 
 import { computeReviewDeadline, computePolicyExpiry } from "./source-lifecycle";
@@ -23,7 +25,7 @@ export interface RecruiteeProviderProfileRow {
   id: string;
   displayName: string;
   providerFamily: string;
-  mechanism: "xml_feed";
+  mechanism: "syndication_feed";
   authClass: "none";
   endpointPattern: string;
   allowedHosts: string;
@@ -49,7 +51,7 @@ export function buildRecruiteeProviderProfile(companySubdomain: string): Recruit
     id: RECRUITEE_PROVIDER_ID,
     displayName: "Recruitee",
     providerFamily: "recruitee",
-    mechanism: "xml_feed",
+    mechanism: "syndication_feed",
     authClass: "none",
     endpointPattern: "https://{companySubdomain}.recruitee.com/api/feeds/offers.xml",
     allowedHosts: host,
