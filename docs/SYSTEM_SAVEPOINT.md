@@ -1,5 +1,52 @@
 # System Savepoint
 
+## Run 47 — SP-23C remaining public activations wired; 0041 live; still VERIFYING (2026-09-06)
+
+Program: **Source Perpetuity**. Unit: **SP-23C**. Status: **IN_PROGRESS / VERIFYING**.
+G9: **REVISE** — retain the deployed publication ledger and remaining-writer
+wiring; this is not whole-unit KEEP, source activation, or supply recovery.
+
+Accepted publication-ledger deployment SHA:
+**`c49d2f4d2d5453d1e2652785558c77a5f88cf27a`**. PR **#111** squash-merged.
+Exact-main CI/deploy **34018206215** passed: validation, D1 migrations including
+**0041_publication_ledger.sql** (Wrangler apply ✅), read-only verification
+against the then-current 0039/0040 jq contract, FTS integrity, and Pages
+deployment `https://f2875d45.remotejobs-ph.pages.dev`. Canonical `/`,
+`/opportunities`, and `/directory` returned HTTP 200 at 07:16:30–31Z.
+
+Read-only D1 artifact, `as_of=2026-09-06T07:06:38.191Z`:
+`docs/gauntlet/evidence/SP-23C-production-verification-2026-09-06/source-transition-evidence.json`.
+Metadata: **success=true, changed_db=false, rows_written=0**. SHA-256:
+`C32CA4485C5DB249C669DECBB9BDB9FDB50B550F3A124A592E191B83CF9EF27C`.
+That artifact still uses the pre-0041 verify SQL, so it does **not** contain
+`migration_0041_rows` or ledger counts. It does prove 0039/0040, 18 named
+transition triggers, and empty registry after 0041 applied. The remaining-writer
+branch now extends verify SQL/jq to require `migration_0041_rows=1`,
+`publication_ledger_table_count=1`, `publication_ledger_count`, and **22** named
+triggers so the next exact-main deploy proves the ledger schema.
+
+### Remaining public writers (this branch)
+
+Inline pending-triage drain, gate-eligible pending recovery, and stale/link
+reactivation now reserve hidden-to-public flips through `publishPublicExposure`
+/ `publishGroupedActivations`. Exact-six stays unlimited. Canary fetch remains
+disabled. Tests without `env.DB.prepare` keep the legacy write path.
+
+Local G3: **1168 pass / 0 fail / 3708 assertions / 111 files**; typecheck,
+guardrails, build, and rehearsal through 0041 (**96/96** fresh+legacy) pass.
+
+### Current supply truth (unchanged by 0041)
+
+**825** eligible active rows, **7** first stored in 24 hours, **94** in seven
+days. Registry/profile/candidate/transition/shadow-observation counts remain
+**0**. Top two sources still provide **80/94 (85.1%)** of the seven-day proxy.
+
+**Next exact action:** merge this remaining-writer branch through the normal PR
+path, then record the follow-up exact-SHA CI/deploy that proves 0041 in the
+read-only artifact. Do **not** resume SP-10..SP-15 registry writes, enable
+shadow-dispatch scheduling, or treat this as SP-23 KEEP. Real source
+observation remains the later close-out, not this checkpoint.
+
 ## Run 46 — SP-23C publication gateway implemented locally; still VERIFYING (2026-09-06)
 
 Program: **Source Perpetuity**. Unit: **SP-23C**. Status: **IN_PROGRESS / VERIFYING**.

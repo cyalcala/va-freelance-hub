@@ -1,5 +1,14 @@
 # Implementation Status
 
+## Current checkpoint — 2026-09-06 SP-23C remaining writers; 0041 live; still VERIFYING
+
+SP-23C publication ledger is deployed at
+`c49d2f4d2d5453d1e2652785558c77a5f88cf27a`, run **34018206215**. Remaining
+public activation writers are implemented locally. Local G3: **1168/0/3708**,
+rehearsal **96/96**. Registry remains empty. SP-23 remains **VERIFYING**. Next:
+PR/deploy remaining writers so production verify SQL asserts 0041. Do not
+activate a source. See Run 47.
+
 ## Current checkpoint — 2026-09-06 SP-23B deployed; SP-23 still VERIFYING
 
 SP-23B is deployed at `61a70c94205f5d1e05490da16a7144a7f5c05df7`, run

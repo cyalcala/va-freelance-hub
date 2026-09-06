@@ -1,5 +1,14 @@
 # Handoff
 
+## Current handoff — 2026-09-06 SP-23C remaining writers + production 0041
+
+Read `docs/SYSTEM_SAVEPOINT.md` **Run 47**. Migration **0041** is in production
+at `c49d2f4d2d5453d1e2652785558c77a5f88cf27a` (PR #111, run 34018206215).
+Remaining public activation writers (inline drain, gate-eligible recovery,
+stale/link reactivation) are implemented on `fix/sp-23c-remaining-activations`.
+SP-23 stays **VERIFYING**. No source or schedule was activated. Next: PR/CI/deploy
+this branch so verify SQL proves the ledger, then stop short of SP-10..SP-15.
+
 ## Current handoff — 2026-09-06 SP-23B deployed
 
 Read `docs/SYSTEM_SAVEPOINT.md` **Run 45**. SP-23B is in production at
