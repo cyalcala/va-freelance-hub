@@ -56,6 +56,17 @@ additive, non-publishing behavior slice (a second fenced scheduling path) —
 that is executed as its own separately gated unit, not as part of this
 reconciliation commit.
 
+## 2026-09-06 apex expansion planning note
+
+Planning-only. SP-23C writers and migration 0041 are in production; the
+registry remains empty. The owner asked for the widest fair daily-job net.
+That program is specified in
+`docs/superpowers/specs/2026-09-06-apex-source-expansion-design.md` and
+looped in `docs/gauntlet/EXPANSION_LOOP.md`. It resumes SP-10..SP-15 through
+the SP-23 plane one identity at a time. It does not authorize a batch
+registry dump, Band 4 hosts, or implementation before Approach B is approved.
+See savepoint Run 49.
+
 ## 2026-09-05 SP-23 implementation checkpoint
 
 Release update: slice A deployed at **436441d239d0133168b794a1b73aacb34833bf63**,

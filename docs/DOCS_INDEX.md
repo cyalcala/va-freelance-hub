@@ -20,7 +20,10 @@ Read in this order:
 1. [`AGENTS.md`](../AGENTS.md) — repository scope, active architecture, and
    standing constraints.
 2. [System Savepoint](./SYSTEM_SAVEPOINT.md) — sole mutable current-session
-   baton and next exact action.
+   baton and next exact action. If the savepoint names apex expansion, also
+   read [Apex Source Expansion Design](./superpowers/specs/2026-09-06-apex-source-expansion-design.md)
+   and [Expansion Gauntlet Loop](./gauntlet/EXPANSION_LOOP.md). Those files are
+   planning until the savepoint says a named EX unit is in progress.
 3. [Source Replenishment Masterplan](./SOURCE_REPLENISHMENT_MASTERPLAN.md) —
    durable constitution for autonomy, continuity, reserves, community custody,
    institutional succession, and fresh-AI recovery.
