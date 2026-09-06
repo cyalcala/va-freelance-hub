@@ -159,7 +159,7 @@ describe("candidate-shadow — reporting (SP-07 criterion 1)", () => {
     const input = candidateInput({
       sourceId: "recruitee:myjewellery",
       endpointUrl: "https://myjewellery.recruitee.com/api/feeds/offers.xml",
-      provider: { id: "recruitee", providerFamily: "recruitee", mechanism: "xml_feed", authClass: "none", allowedHosts: "myjewellery.recruitee.com", visibilityFilter: "published", evidenceUrl: "https://docs.recruitee.com/docs/feed", cadenceMinMinutes: 60, cadenceMaxMinutes: 1440 },
+      provider: { id: "recruitee", providerFamily: "recruitee", mechanism: "syndication_feed", authClass: "none", allowedHosts: "myjewellery.recruitee.com", visibilityFilter: "published", evidenceUrl: "https://docs.recruitee.com/docs/feed", cadenceMinMinutes: 60, cadenceMaxMinutes: 1440 },
     } as any);
     const xmlBody = `<?xml version="1.0" encoding="UTF-8"?><offers><offer><id>1</id><title>Floor Manager</title><careers_url>https://myjewellery.recruitee.com/o/floor-manager</careers_url></offer><offer><id>2</id><title>Test Engineer</title><careers_url>https://myjewellery.recruitee.com/o/test-engineer</careers_url></offer></offers>`;
     const fetcher = mockFetchFor({

@@ -5,17 +5,21 @@ import {
   admitReviewedSourceToShadow,
   buildGreenhouseCandidateRow,
   buildGreenhouseProviderProfile,
+  buildRecruiteeCandidateRow,
+  buildRecruiteeProviderProfile,
   defaultRunProbe,
   sha256Hex,
   wrapD1Binding,
   GREENHOUSE_EVIDENCE_LEASE_DAYS,
   GREENHOUSE_PROVIDER_ID,
+  RECRUITEE_EVIDENCE_LEASE_DAYS,
+  RECRUITEE_PROVIDER_ID,
   type AdmissionDatabase,
   type TransitionGatewayDatabase,
 } from "@va-hub/scraper";
 
 export const prerender = false;
-export const SOURCE_ADMIT_ALLOWLIST = ["greenhouse:grafanalabs"] as const;
+export const SOURCE_ADMIT_ALLOWLIST = ["greenhouse:grafanalabs", "recruitee:myjewellery"] as const;
 
 type HandlerDependencies = {
   admit?: typeof admitReviewedSourceToShadow;
@@ -30,6 +34,37 @@ function json(status: number, body: unknown): Response {
     status,
     headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
+}
+
+function admitTarget(sourceId: string, clock: string) {
+  if (sourceId === "greenhouse:grafanalabs") {
+    const profile = buildGreenhouseProviderProfile();
+    const candidate = buildGreenhouseCandidateRow({
+      token: "grafanalabs",
+      companyName: "Grafana Labs",
+      nowIso: clock,
+    });
+    return {
+      profile,
+      candidate,
+      providerId: GREENHOUSE_PROVIDER_ID,
+      leaseDays: GREENHOUSE_EVIDENCE_LEASE_DAYS,
+      adjudicationRef: "ex-02-owner-approved-approach-b-sp12-review-ready",
+    };
+  }
+  const profile = buildRecruiteeProviderProfile("myjewellery");
+  const candidate = buildRecruiteeCandidateRow({
+    companySubdomain: "myjewellery",
+    companyName: "My Jewellery",
+    nowIso: clock,
+  });
+  return {
+    profile,
+    candidate,
+    providerId: RECRUITEE_PROVIDER_ID,
+    leaseDays: RECRUITEE_EVIDENCE_LEASE_DAYS,
+    adjudicationRef: "ex-04-owner-approved-approach-b-sp15-review-ready",
+  };
 }
 
 export function createSourceAdmitHandler(dependencies: HandlerDependencies = {}): APIRoute {
@@ -52,17 +87,12 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
       return json(400, { error: "JSON body with sourceId is required" });
     }
     if (!(SOURCE_ADMIT_ALLOWLIST as readonly string[]).includes(sourceId)) {
-      return json(400, { error: "sourceId is not on the EX-02 allowlist", sourceId });
+      return json(400, { error: "sourceId is not on the admission allowlist", sourceId });
     }
     if (!env.DB?.prepare) return json(503, { error: "Cloudflare D1 binding is required" });
 
     const clock = nowFn();
-    const profile = buildGreenhouseProviderProfile();
-    const candidate = buildGreenhouseCandidateRow({
-      token: "grafanalabs",
-      companyName: "Grafana Labs",
-      nowIso: clock,
-    });
+    const { profile, candidate, providerId, leaseDays, adjudicationRef } = admitTarget(sourceId, clock);
     try {
       const probe = await runProbe({
         sourceId: candidate.sourceId,
@@ -76,14 +106,14 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         reviewDeadline: candidate.reviewDeadline,
         policyExpiry: candidate.policyExpiry,
         provider: {
-          id: GREENHOUSE_PROVIDER_ID,
+          id: providerId,
           providerFamily: profile.providerFamily,
           mechanism: profile.mechanism,
           authClass: profile.authClass,
           endpointPattern: profile.endpointPattern,
           allowedHosts: profile.allowedHosts,
           evidenceUrl: profile.evidenceUrl,
-          evidenceLeaseDays: GREENHOUSE_EVIDENCE_LEASE_DAYS,
+          evidenceLeaseDays: leaseDays,
           visibilityFilter: profile.visibilityFilter,
           contentScope: profile.contentScope,
           cadenceMinMinutes: profile.cadenceMinMinutes,
@@ -95,7 +125,7 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
       const now = probe.timestamp;
       const evidenceHash = await hash(`${profile.evidenceUrl}\n${now}`);
       const provider = {
-        id: GREENHOUSE_PROVIDER_ID,
+        id: providerId,
         providerFamily: profile.providerFamily,
         mechanism: profile.mechanism,
         authClass: profile.authClass,
@@ -111,7 +141,7 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         rateGuidance: profile.rateGuidance,
         robotsHandling: profile.robotsHandling,
         removalSemantics: profile.removalSemantics,
-        evidenceLeaseDays: GREENHOUSE_EVIDENCE_LEASE_DAYS,
+        evidenceLeaseDays: leaseDays,
         governanceRevision: 1,
       };
       const source = {
@@ -137,7 +167,7 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         provider,
         probe,
         primaryEvidence: [{ url: provider.evidenceUrl!, contentSha256: evidenceHash, capturedAt: now }],
-        adjudicationRef: "ex-02-owner-approved-approach-b-sp12-review-ready",
+        adjudicationRef,
       });
       if (!result.ok) {
         return json(409, { outcome: "rejected", reason: result.reason, sourceId, probeOutcome: probe.diagnostic.outcome });

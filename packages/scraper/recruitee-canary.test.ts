@@ -13,7 +13,7 @@ describe("recruitee-canary — provider profile (per-company, XML feed not the t
   it("scopes allowedHosts to exactly the given company subdomain", () => {
     const profile = buildRecruiteeProviderProfile("myjewellery");
     expect(profile.id).toBe(RECRUITEE_PROVIDER_ID);
-    expect(profile.mechanism).toBe("xml_feed");
+    expect(profile.mechanism).toBe("syndication_feed");
     expect(profile.authClass).toBe("none");
     expect(profile.allowedHosts).toBe("myjewellery.recruitee.com");
     expect(profile.contentScope).toBe("minimal");
@@ -54,7 +54,7 @@ function shadowFixture(overrides: Partial<CandidateShadowResult> = {}): Candidat
     endpoint: { url: "https://myjewellery.recruitee.com/api/feeds/offers.xml", isHttps: true, host: "myjewellery.recruitee.com", allowedHosts: "myjewellery.recruitee.com", hostValid: true },
     auth: { class: "none", supported: true },
     visibility: { filter: "published", isPublic: true, ambiguous: false },
-    provenance: { discoveryProvenance: JSON.stringify({ provenance: "sp-15-curated-company" }), evidenceUrl: "https://docs.recruitee.com/docs/feed", providerFamily: "recruitee", mechanism: "xml_feed" },
+    provenance: { discoveryProvenance: JSON.stringify({ provenance: "sp-15-curated-company" }), evidenceUrl: "https://docs.recruitee.com/docs/feed", providerFamily: "recruitee", mechanism: "syndication_feed" },
     cadence: { minMinutes: 60, maxMinutes: 1440, rateGuidance: "no documented limit" },
     robots: { checked: true, verdict: "allowed", wouldBlock: false, evidence: "only /v/ disallowed", fromCache: false },
     fetch: { attempted: true, status: 200, latencyMs: 250, bytesReceived: 400000, contentType: "application/xml" },
@@ -81,7 +81,7 @@ function packetFixture(overrides: Partial<EvidencePacketInput> = {}, shadow = sh
     provider: {
       id: "recruitee",
       providerFamily: "recruitee",
-      mechanism: "xml_feed",
+      mechanism: "syndication_feed",
       authClass: "none",
       allowedHosts: "myjewellery.recruitee.com",
       evidenceUrl: "https://docs.recruitee.com/docs/feed",

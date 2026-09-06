@@ -19,8 +19,8 @@ function requestContext(body: unknown, authorized = true, hasDb = true) {
 }
 
 describe("source-admit route", () => {
-  test("allowlist is Grafana Labs only for EX-02", () => {
-    expect([...SOURCE_ADMIT_ALLOWLIST]).toEqual(["greenhouse:grafanalabs"]);
+  test("allowlist is Grafana Labs and Recruitee My Jewellery", () => {
+    expect([...SOURCE_ADMIT_ALLOWLIST]).toEqual(["greenhouse:grafanalabs", "recruitee:myjewellery"]);
   });
 
   test("unauthorized requests do not probe or write", async () => {
@@ -73,5 +73,39 @@ describe("source-admit route", () => {
     const response = await handler(requestContext({ sourceId: "greenhouse:grafanalabs" }));
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "greenhouse:grafanalabs", published: 0 });
+  });
+
+  test("admits Recruitee My Jewellery to shadow without publishing jobs", async () => {
+    const handler = createSourceAdmitHandler({
+      now: () => NOW,
+      hash: async () => "a".repeat(64),
+      wrapDb: () => ({ prepare() { throw new Error("unused"); } }) as any,
+      runProbe: async (input) => ({
+        version: SHADOW_VERSION,
+        timestamp: NOW,
+        sourceId: input.sourceId,
+        providerId: input.providerId,
+        displayName: input.displayName,
+        endpoint: { url: input.endpointUrl, isHttps: true, host: "myjewellery.recruitee.com", allowedHosts: input.provider.allowedHosts ?? null, hostValid: true },
+        auth: { class: "none", supported: true },
+        visibility: { filter: "published", isPublic: true, ambiguous: false },
+        provenance: { discoveryProvenance: input.discoveryProvenance ?? null, evidenceUrl: input.provider.evidenceUrl ?? null, providerFamily: "recruitee", mechanism: "syndication_feed" },
+        cadence: { minMinutes: 60, maxMinutes: 1440, rateGuidance: input.provider.rateGuidance ?? null },
+        robots: { checked: true, verdict: "allowed", wouldBlock: false, evidence: "allow", fromCache: false },
+        fetch: { attempted: true, status: 200, latencyMs: 1, bytesReceived: 10, contentType: "application/xml" },
+        parse: { attempted: true, schemaHealth: "ok", itemCount: 1 },
+        sampleFunnel: { bytesReceived: 10, parsedItems: 1, plausibleItems: 1, truncated: false, budgetExceeded: false },
+        diagnostic: { outcome: "HEALTHY_WITH_RESULTS", probes: [], requestCount: 2, bytesReceived: 10, durationMs: 2, mutations: 0, shadowMode: true },
+      }),
+      admit: async (_db, input) => {
+        expect(input.source.sourceId).toBe("recruitee:myjewellery");
+        expect(input.source.operationalState).toBe("candidate");
+        expect(input.provider.mechanism).toBe("syndication_feed");
+        return { ok: true, sourceId: input.source.sourceId };
+      },
+    });
+    const response = await handler(requestContext({ sourceId: "recruitee:myjewellery" }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "recruitee:myjewellery", published: 0 });
   });
 });
