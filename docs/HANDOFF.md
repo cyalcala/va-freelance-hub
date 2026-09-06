@@ -1,5 +1,12 @@
 # Handoff
 
+## Current handoff — 2026-09-06 SP-23B deployed
+
+Read `docs/SYSTEM_SAVEPOINT.md` **Run 45**. SP-23B is in production at
+`61a70c94205f5d1e05490da16a7144a7f5c05df7` (PR #109, run 34017375225). Migration
+0040 is live. Registry remains empty. Next: **SP-23C** shared publication and
+automatic rollback. No source or schedule was activated.
+
 ## Current handoff — 2026-09-06 SP-23B current-evidence admission
 
 Read `docs/SYSTEM_SAVEPOINT.md` **Run 44**. Branch

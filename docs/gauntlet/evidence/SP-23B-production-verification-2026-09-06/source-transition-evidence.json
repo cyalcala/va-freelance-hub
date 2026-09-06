@@ -1,0 +1,46 @@
+[
+  {
+    "results": [
+      {
+        "as_of": "2026-09-06T06:47:40.454Z",
+        "migration_0039_rows": 1,
+        "migration_0040_rows": 1,
+        "admission_table_count": 1,
+        "governance_column_count": 2,
+        "transition_table_count": 1,
+        "registry_column_count": 2,
+        "named_trigger_count": 18,
+        "missing_triggers_json": "[]",
+        "registry_count": 0,
+        "provider_profile_count": 0,
+        "candidate_count": 0,
+        "transition_event_count": 0,
+        "shadow_observation_count": 0,
+        "eligible_active": 825,
+        "eligible_active_missing_source_id": 719,
+        "eligible_first_storage_1d": 7,
+        "eligible_first_storage_7d": 94,
+        "per_source_supply_json": "[{\"source_id\":null,\"eligible_active\":719,\"first_storage_1d\":0,\"first_storage_7d\":0},{\"source_id\":\"jobicy-supporting-apac\",\"eligible_active\":7,\"first_storage_1d\":1,\"first_storage_7d\":7},{\"source_id\":\"real-work-from-anywhere\",\"eligible_active\":34,\"first_storage_1d\":0,\"first_storage_7d\":27},{\"source_id\":\"remote-ok\",\"eligible_active\":8,\"first_storage_1d\":1,\"first_storage_7d\":7},{\"source_id\":\"we-work-remotely\",\"eligible_active\":57,\"first_storage_1d\":5,\"first_storage_7d\":53}]",
+        "first_storage_outcomes_7d_json": "[{\"source_id\":\"jobicy-supporting-apac\",\"is_active\":0,\"ph_eligibility\":\"unclear\",\"inactive_reason\":\"policy-rejected\",\"row_count\":1},{\"source_id\":\"jobicy-supporting-apac\",\"is_active\":1,\"ph_eligibility\":\"eligible_likely\",\"inactive_reason\":null,\"row_count\":6},{\"source_id\":\"jobicy-supporting-apac\",\"is_active\":1,\"ph_eligibility\":\"eligible_verified\",\"inactive_reason\":null,\"row_count\":1},{\"source_id\":\"real-work-from-anywhere\",\"is_active\":0,\"ph_eligibility\":\"ineligible\",\"inactive_reason\":\"policy-rejected\",\"row_count\":1},{\"source_id\":\"real-work-from-anywhere\",\"is_active\":0,\"ph_eligibility\":\"unclear\",\"inactive_reason\":\"policy-rejected\",\"row_count\":2},{\"source_id\":\"real-work-from-anywhere\",\"is_active\":1,\"ph_eligibility\":\"eligible_likely\",\"inactive_reason\":null,\"row_count\":26},{\"source_id\":\"real-work-from-anywhere\",\"is_active\":1,\"ph_eligibility\":\"eligible_verified\",\"inactive_reason\":null,\"row_count\":1},{\"source_id\":\"remote-ok\",\"is_active\":0,\"ph_eligibility\":\"ineligible\",\"inactive_reason\":\"policy-rejected\",\"row_count\":17},{\"source_id\":\"remote-ok\",\"is_active\":0,\"ph_eligibility\":\"unclear\",\"inactive_reason\":\"policy-rejected\",\"row_count\":8},{\"source_id\":\"remote-ok\",\"is_active\":1,\"ph_eligibility\":\"eligible_likely\",\"inactive_reason\":null,\"row_count\":7},{\"source_id\":\"remotive\",\"is_active\":0,\"ph_eligibility\":\"ineligible\",\"inactive_reason\":\"policy-rejected\",\"row_count\":7},{\"source_id\":\"we-work-remotely\",\"is_active\":0,\"ph_eligibility\":\"ineligible\",\"inactive_reason\":\"policy-rejected\",\"row_count\":8},{\"source_id\":\"we-work-remotely\",\"is_active\":0,\"ph_eligibility\":\"unclear\",\"inactive_reason\":\"policy-rejected\",\"row_count\":1},{\"source_id\":\"we-work-remotely\",\"is_active\":1,\"ph_eligibility\":\"eligible_likely\",\"inactive_reason\":null,\"row_count\":53}]"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 67.6673
+      },
+      "duration": 67.6673,
+      "changes": 0,
+      "last_row_id": 944,
+      "changed_db": false,
+      "size_after": 69554176,
+      "rows_read": 16941,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

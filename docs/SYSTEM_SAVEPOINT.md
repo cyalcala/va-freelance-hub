@@ -1,5 +1,47 @@
 # System Savepoint
 
+## Run 45 — SP-23B deployed; current-evidence admission live, still VERIFYING (2026-09-06)
+
+Program: **Source Perpetuity**. Unit: **SP-23B**. Status: **VERIFYING**. G9:
+**REVISE** — retain the deployed admission foundation and implement SP-23C.
+This is not whole-unit KEEP, source activation, or supply recovery.
+
+Accepted deployment SHA: **`61a70c94205f5d1e05490da16a7144a7f5c05df7`**.
+PR **#109** squash-merged. Exact-main CI/deploy **34017375225** passed:
+validation, D1 migrations including **0040**, read-only verification (jq required
+`migration_0040_rows=1`, admission table, governance columns), FTS integrity, and
+Pages deployment. Head SHA of the merged PR commits was `7ae8936` (verification
+gate) on top of `3220283` (behavior).
+
+Read-only D1 artifact, `as_of=2026-09-06T06:47:40.454Z`:
+`docs/gauntlet/evidence/SP-23B-production-verification-2026-09-06/source-transition-evidence.json`.
+Metadata: **success=true, changed_db=false, rows_written=0**. SHA-256:
+`AFB6E20920DD2F894C17EF7B89AD20930D0AA0B1D115CDC629D5360BFF13AA7D`.
+Canonical `/`, `/opportunities`, and `/directory` returned HTTP 200 at 06:48:52Z.
+
+### Current supply truth
+
+**825** eligible active rows, **7** first stored in 24 hours, **94** in seven days.
+Registry/profile/candidate/transition/shadow-observation counts remain **0**.
+This deployment did not add supply.
+
+| Exact source | 24h first storage | 7d first storage |
+| --- | ---: | ---: |
+| We Work Remotely | 5 | 53 |
+| Real Work From Anywhere | 0 | 27 |
+| Remote OK | 1 | 7 |
+| Jobicy supporting APAC | 1 | 7 |
+
+The top two provide **80/94 (85.1%)** of the seven-day proxy. 24h yield is lower
+than Run 43's 17. Seven-day outcomes also show rejected/unclear storage
+(especially Remote OK), so low visible supply is both thin incoming accepted
+rows and later pipeline holds.
+
+**Next exact action: implement SP-23C shared publication and automatic rollback**
+at every public writer (scrape accepted inserts, inline/gate-only release,
+reactivation, `/api/ingest`, Inngest triage drain). Exact-six stays uncapped.
+Do not activate a source or schedule shadow dispatch from this checkpoint.
+
 ## Run 44 — SP-23B current-evidence admission implemented locally; still VERIFYING (2026-09-06)
 
 Program: **Source Perpetuity**. Unit: **SP-23B**. Status: **IN_PROGRESS / VERIFYING**,
