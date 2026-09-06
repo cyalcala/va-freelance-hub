@@ -38,10 +38,13 @@ jobs:
             echo "PROXY_SECRET is required"
             exit 1
           fi
-          curl -fsS -X POST "$ADMIT_API_URL" \
+          HTTP=$(curl -sS -o admit.json -w "%{http_code}" -X POST "$ADMIT_API_URL" \
             -H "Authorization: Bearer ${PROXY_SECRET}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg id "${{ inputs.source_id }}" '{sourceId:$id}')" \
-            | tee admit.json
+            -d "$(jq -n --arg id "${{ inputs.source_id }}" '{sourceId:$id}')")
+          cat admit.json
+          echo
+          echo "HTTP $HTTP"
+          jq . admit.json
           jq -e '.outcome == "shadow" and .published == 0' admit.json
           echo "Admitted $(jq -r .sourceId admit.json) to shadow with zero public jobs." >> "$GITHUB_STEP_SUMMARY"

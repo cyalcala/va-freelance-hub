@@ -13,6 +13,7 @@ import {
 } from "./admission-evidence";
 import { applyTypedTransition, type TransitionGatewayDatabase } from "./transition-gateway";
 import type { CandidateShadowResult } from "./candidate-shadow";
+import { errorMessage } from "./contentHash";
 
 export interface AdmitReviewedSourceInput {
   now: string;
@@ -50,6 +51,7 @@ export async function admitReviewedSourceToShadow(
   const probe = validateAdmissionProbe(input.probe, input.source, input.provider, input.now);
   if (!probe.ok) return probe;
 
+  try {
   const providerWrite = await db.prepare(INSERT_PROVIDER_SQL).bind(
     input.provider.id,
     input.provider.id,
@@ -113,4 +115,7 @@ export async function admitReviewedSourceToShadow(
     return { ok: false, reason: "reason" in shadow.decision ? shadow.decision.reason : "typed shadow transition was not persisted" };
   }
   return { ok: true, sourceId: input.source.sourceId };
+  } catch (err) {
+    return { ok: false, reason: errorMessage(err) };
+  }
 }
