@@ -34,7 +34,26 @@ const INSERT_PROVIDER_SQL = `INSERT INTO provider_profiles (
   cadence_min_minutes, cadence_max_minutes, rate_guidance, robots_handling, removal_semantics,
   evidence_lease_days, default_compliance_state, default_operational_state, notes
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'needs_review', 'candidate', ?)
-ON CONFLICT(id) DO NOTHING`;
+ON CONFLICT(id) DO UPDATE SET
+  display_name=excluded.display_name,
+  provider_family=excluded.provider_family,
+  mechanism=excluded.mechanism,
+  auth_class=excluded.auth_class,
+  endpoint_pattern=excluded.endpoint_pattern,
+  allowed_hosts=excluded.allowed_hosts,
+  evidence_url=excluded.evidence_url,
+  evidence_hash=excluded.evidence_hash,
+  evidence_captured_at=excluded.evidence_captured_at,
+  visibility_filter=excluded.visibility_filter,
+  content_scope=excluded.content_scope,
+  cadence_min_minutes=excluded.cadence_min_minutes,
+  cadence_max_minutes=excluded.cadence_max_minutes,
+  rate_guidance=excluded.rate_guidance,
+  robots_handling=excluded.robots_handling,
+  removal_semantics=excluded.removal_semantics,
+  evidence_lease_days=excluded.evidence_lease_days,
+  notes=excluded.notes
+WHERE NOT EXISTS(SELECT 1 FROM source_admission_evidence WHERE provider_id=excluded.id)`;
 
 const INSERT_CANDIDATE_SQL = `INSERT INTO source_registry (
   source_id, provider_id, display_name, endpoint_url, company_token, discovery_provenance,
@@ -74,6 +93,11 @@ export async function admitReviewedSourceToShadow(
     "EX-02 reviewed public board admission",
   ).run();
   if (!providerWrite.success) return { ok: false, reason: "provider profile write was unsuccessful" };
+  const storedProvider = await db.prepare(
+    "SELECT governance_revision AS governanceRevision FROM provider_profiles WHERE id=?",
+  ).bind(input.provider.id).first<{ governanceRevision: number }>();
+  if (!storedProvider) return { ok: false, reason: "provider profile write was unsuccessful" };
+  const provider = { ...input.provider, governanceRevision: storedProvider.governanceRevision };
 
   const candidateWrite = await db.prepare(INSERT_CANDIDATE_SQL).bind(
     input.source.sourceId,
@@ -92,7 +116,7 @@ export async function admitReviewedSourceToShadow(
 
   const built = await buildAdmissionEvidence({
     source: input.source,
-    provider: input.provider,
+    provider,
     probe: input.probe,
     primaryEvidence: input.primaryEvidence,
     authorityActions: ["recurrent_private_shadow", "public_minimal_metadata_canary"],
@@ -102,7 +126,7 @@ export async function admitReviewedSourceToShadow(
   });
   if (!built.ok) return built;
 
-  const persisted = await persistAdmissionEvidence(db, input.source, input.provider, built, input.now);
+  const persisted = await persistAdmissionEvidence(db, input.source, provider, built, input.now);
   if (!persisted.ok) return persisted;
 
   const shadow = await applyTypedTransition(db, {

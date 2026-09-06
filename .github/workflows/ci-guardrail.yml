@@ -134,7 +134,8 @@ jobs:
             (.[0].results | length == 1) and
             (.[0].results[0] |
               .migration_0039_rows == 1 and .migration_0040_rows == 1 and
-              .migration_0041_rows == 1 and .publication_ledger_table_count == 1 and
+              .migration_0041_rows == 1 and .migration_0042_rows == 1 and
+              .publication_ledger_table_count == 1 and
               .admission_table_count == 1 and .governance_column_count == 2 and
               .transition_table_count == 1 and .registry_column_count == 2 and
               .named_trigger_count == 22 and

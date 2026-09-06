@@ -40,6 +40,7 @@ function freshDb(): Database {
     "0039_canary_transition_plane.sql",
     "0040_current_evidence_admission.sql",
     "0041_publication_ledger.sql",
+    "0042_d1_like_glob_limit.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -79,6 +80,35 @@ test("rejects an unhealthy probe before writing registry state", async () => {
   });
   expect(result.ok).toBe(false);
   expect(sqlite.query(`SELECT COUNT(*) AS n FROM source_registry`).get() as { n: number }).toEqual({ n: 0 });
+});
+
+test("retries admission when a leftover provider profile exists without evidence", async () => {
+  const sqlite = freshDb();
+  sqlite.exec(`INSERT INTO provider_profiles (
+    id, display_name, provider_family, mechanism, auth_class, allowed_hosts, evidence_url,
+    evidence_hash, evidence_captured_at, visibility_filter, content_scope, cadence_min_minutes,
+    cadence_max_minutes, robots_handling, removal_semantics, evidence_lease_days,
+    default_compliance_state, default_operational_state
+  ) VALUES (
+    'greenhouse', 'Greenhouse', 'greenhouse', 'ats_api', 'none', 'boards-api.greenhouse.io',
+    'https://developers.greenhouse.io/job-board.html', '${"b".repeat(64)}',
+    strftime('%Y-%m-%dT%H:%M:%fZ','now'), 'published', 'minimal', 1440, 2880, 'enforce',
+    'remove on disappearance', 30, 'needs_review', 'candidate'
+  )`);
+  const db = new BunGatewayDatabase(sqlite) as TransitionGatewayDatabase & AdmissionDatabase;
+  const fixture = await liveAdmissionFixture();
+  const result = await admitReviewedSourceToShadow(db, {
+    now: new Date().toISOString(),
+    source: fixture.source,
+    provider: fixture.provider,
+    probe: fixture.packet.probe,
+    primaryEvidence: fixture.packet.primaryEvidence,
+    adjudicationRef: fixture.packet.adjudicationRef,
+  });
+  expect(result).toEqual({ ok: true, sourceId: fixture.source.sourceId });
+  const row = sqlite.query(`SELECT operational_state FROM source_registry WHERE source_id=?`)
+    .get(fixture.source.sourceId) as { operational_state: string };
+  expect(row.operational_state).toBe("shadow");
 });
 
 test("refuses to start admission from a non-candidate operational state", async () => {
