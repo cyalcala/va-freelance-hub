@@ -13,7 +13,7 @@ describe("teamtailor-canary — provider profile (per-career-domain, SP-14 crite
   it("scopes allowedHosts to exactly the given career domain, not a shared platform host", () => {
     const profile = buildTeamtailorProviderProfile("career.teamtailor.com");
     expect(profile.id).toBe(TEAMTAILOR_PROVIDER_ID);
-    expect(profile.mechanism).toBe("rss");
+    expect(profile.mechanism).toBe("rss_feed");
     expect(profile.authClass).toBe("none");
     expect(profile.allowedHosts).toBe("career.teamtailor.com");
     expect(profile.contentScope).toBe("minimal");
@@ -48,7 +48,7 @@ function shadowFixture(overrides: Partial<CandidateShadowResult> = {}): Candidat
     endpoint: { url: "https://career.teamtailor.com/jobs.rss", isHttps: true, host: "career.teamtailor.com", allowedHosts: "career.teamtailor.com", hostValid: true },
     auth: { class: "none", supported: true },
     visibility: { filter: "published", isPublic: true, ambiguous: false },
-    provenance: { discoveryProvenance: JSON.stringify({ provenance: "sp-14-curated-career-domain" }), evidenceUrl: "https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide", providerFamily: "teamtailor", mechanism: "rss" },
+    provenance: { discoveryProvenance: JSON.stringify({ provenance: "sp-14-curated-career-domain" }), evidenceUrl: "https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide", providerFamily: "teamtailor", mechanism: "rss_feed" },
     cadence: { minMinutes: 60, maxMinutes: 1440, rateGuidance: "no documented limit" },
     robots: { checked: true, verdict: "allowed", wouldBlock: false, evidence: "no matching disallow for /jobs.rss", fromCache: false },
     fetch: { attempted: true, status: 200, latencyMs: 200, bytesReceived: 84177, contentType: "application/rss+xml" },
@@ -75,7 +75,7 @@ function packetFixture(overrides: Partial<EvidencePacketInput> = {}, shadow = sh
     provider: {
       id: "teamtailor",
       providerFamily: "teamtailor",
-      mechanism: "rss",
+      mechanism: "rss_feed",
       authClass: "none",
       allowedHosts: "career.teamtailor.com",
       evidenceUrl: "https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide",
