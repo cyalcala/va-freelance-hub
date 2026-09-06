@@ -1,5 +1,14 @@
 # Implementation Status
 
+## Current checkpoint — 2026-09-06 SP-23C writers live; 0041 ledger proven; STOP
+
+SP-23C remaining public activation writers are deployed at
+`1b20975b718d0013ec20728725e3b9ed5b3cbbb1`, run **34018873511**. Read-only D1
+proves `migration_0041_rows=1`, ledger table present, **22** named triggers, and
+`publication_ledger_count=0`. Registry remains empty. Supply unchanged:
+**7/24h, 94/7d**. SP-23 remains **VERIFYING**. **Next: stop.** Do not activate a
+source. See Run 48.
+
 ## Current checkpoint — 2026-09-06 SP-23C remaining writers; 0041 live; still VERIFYING
 
 SP-23C publication ledger is deployed at
