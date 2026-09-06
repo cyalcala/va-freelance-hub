@@ -114,6 +114,8 @@ export type {
   CanaryPublicationDecision,
 } from "./transition-plane";
 export { applyTypedTransition } from "./transition-gateway";
+export { admitReviewedSourceToShadow } from "./source-admission";
+export type { AdmitReviewedSourceInput, AdmitReviewedSourceResult } from "./source-admission";
 export { publishPublicExposure, publicationTickKey, loadPublicationPolicy, wrapD1Binding } from "./publication-gateway";
 export type {
   PublicationDatabase,
