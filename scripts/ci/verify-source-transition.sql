@@ -49,13 +49,9 @@ storage_outcomes AS (
   WHERE unixepoch(scraped_at) BETWEEN unixepoch(clock.as_of) - 604800 AND unixepoch(clock.as_of)
   GROUP BY source_id, is_active, ph_eligibility, inactive_reason
 ),
-exact_six(source_id) AS (
-  SELECT 'we-work-remotely' UNION ALL
-  SELECT 'remotive' UNION ALL
-  SELECT 'real-work-from-anywhere' UNION ALL
-  SELECT 'remote-ok' UNION ALL
-  SELECT 'jobicy-admin-support-apac' UNION ALL
-  SELECT 'jobicy-supporting-apac'
+exact_six AS (
+  SELECT value AS source_id
+  FROM json_each('["we-work-remotely","remotive","real-work-from-anywhere","remote-ok","jobicy-admin-support-apac","jobicy-supporting-apac"]')
 )
 SELECT
   clock.as_of,

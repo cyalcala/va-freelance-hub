@@ -50,6 +50,7 @@ describe("SP-23 read-only production evidence SQL", () => {
       expect(exactSix).toContainEqual({
         source_id: "jobicy-admin-support-apac", eligible_active: 0, first_storage_1d: 0, first_storage_7d: 0,
       });
+      expect(uncommented).not.toMatch(/\bUNION\b/i);
       expect(db.query("SELECT total_changes() AS n").get()).toEqual(before);
     } finally { db.close(); }
   });
