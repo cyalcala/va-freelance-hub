@@ -7,6 +7,7 @@
  * `decidePromotionToShadow` from `./source-promotion`.
  *
  * Official docs: https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide
+ * Mechanism is `rss_feed`, the provider_profiles CHECK value. `rss` is not legal.
  */
 
 import { computeReviewDeadline, computePolicyExpiry } from "./source-lifecycle";
@@ -20,7 +21,7 @@ export interface TeamtailorProviderProfileRow {
   id: string;
   displayName: string;
   providerFamily: string;
-  mechanism: "rss";
+  mechanism: "rss_feed";
   authClass: "none";
   endpointPattern: string;
   allowedHosts: string;
@@ -48,7 +49,7 @@ export function buildTeamtailorProviderProfile(careerDomain: string): Teamtailor
     id: TEAMTAILOR_PROVIDER_ID,
     displayName: "Teamtailor",
     providerFamily: "teamtailor",
-    mechanism: "rss",
+    mechanism: "rss_feed",
     authClass: "none",
     endpointPattern: "https://{careerDomain}/jobs.rss",
     allowedHosts: careerDomain,

@@ -7,6 +7,8 @@ import {
   buildGreenhouseProviderProfile,
   buildRecruiteeCandidateRow,
   buildRecruiteeProviderProfile,
+  buildTeamtailorCandidateRow,
+  buildTeamtailorProviderProfile,
   defaultRunProbe,
   sha256Hex,
   wrapD1Binding,
@@ -14,12 +16,18 @@ import {
   GREENHOUSE_PROVIDER_ID,
   RECRUITEE_EVIDENCE_LEASE_DAYS,
   RECRUITEE_PROVIDER_ID,
+  TEAMTAILOR_EVIDENCE_LEASE_DAYS,
+  TEAMTAILOR_PROVIDER_ID,
   type AdmissionDatabase,
   type TransitionGatewayDatabase,
 } from "@va-hub/scraper";
 
 export const prerender = false;
-export const SOURCE_ADMIT_ALLOWLIST = ["greenhouse:grafanalabs", "recruitee:myjewellery"] as const;
+export const SOURCE_ADMIT_ALLOWLIST = [
+  "greenhouse:grafanalabs",
+  "recruitee:myjewellery",
+  "teamtailor:career.teamtailor.com",
+] as const;
 
 type HandlerDependencies = {
   admit?: typeof admitReviewedSourceToShadow;
@@ -52,18 +60,33 @@ function admitTarget(sourceId: string, clock: string) {
       adjudicationRef: "ex-02-owner-approved-approach-b-sp12-review-ready",
     };
   }
-  const profile = buildRecruiteeProviderProfile("myjewellery");
-  const candidate = buildRecruiteeCandidateRow({
-    companySubdomain: "myjewellery",
-    companyName: "My Jewellery",
+  if (sourceId === "recruitee:myjewellery") {
+    const profile = buildRecruiteeProviderProfile("myjewellery");
+    const candidate = buildRecruiteeCandidateRow({
+      companySubdomain: "myjewellery",
+      companyName: "My Jewellery",
+      nowIso: clock,
+    });
+    return {
+      profile,
+      candidate,
+      providerId: RECRUITEE_PROVIDER_ID,
+      leaseDays: RECRUITEE_EVIDENCE_LEASE_DAYS,
+      adjudicationRef: "ex-04-owner-approved-approach-b-sp15-review-ready",
+    };
+  }
+  const profile = buildTeamtailorProviderProfile("career.teamtailor.com");
+  const candidate = buildTeamtailorCandidateRow({
+    careerDomain: "career.teamtailor.com",
+    companyName: "Teamtailor",
     nowIso: clock,
   });
   return {
     profile,
     candidate,
-    providerId: RECRUITEE_PROVIDER_ID,
-    leaseDays: RECRUITEE_EVIDENCE_LEASE_DAYS,
-    adjudicationRef: "ex-04-owner-approved-approach-b-sp15-review-ready",
+    providerId: TEAMTAILOR_PROVIDER_ID,
+    leaseDays: TEAMTAILOR_EVIDENCE_LEASE_DAYS,
+    adjudicationRef: "ex-05-owner-approved-approach-b-sp14-review-ready",
   };
 }
 
