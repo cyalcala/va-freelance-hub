@@ -1,7 +1,8 @@
 # SP-23B current-evidence admission
 
-Status: **VERIFYING** (local G3 passed; not deployed). This is an implementation
-slice of SP-23, not a source activation or autonomy-cutover decision.
+Status: **VERIFYING** (deployed at `61a70c9`, run 34017375225; not KEEP). This is
+an implementation slice of SP-23, not a source activation or autonomy-cutover
+decision.
 
 ## Bounded work contract
 

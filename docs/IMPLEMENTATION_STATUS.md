@@ -1,5 +1,13 @@
 # Implementation Status
 
+## Current checkpoint — 2026-09-06 SP-23B deployed; SP-23 still VERIFYING
+
+SP-23B is deployed at `61a70c94205f5d1e05490da16a7144a7f5c05df7`, run
+**34017375225**. Read-only D1 confirms migration 0040, the admission table, and
+governance columns, with registry still empty. Eligible first-storage proxies:
+**7/24h and 94/7d**, 85.1% of seven-day supply from two sources. SP-23 remains
+**VERIFYING**. Next: **SP-23C**. See Run 45.
+
 ## Current checkpoint — 2026-09-06 SP-23B local implementation; SP-23 still VERIFYING
 
 SP-23B current-evidence admission is implemented on
