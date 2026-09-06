@@ -48,6 +48,14 @@ storage_outcomes AS (
   FROM opportunities CROSS JOIN clock
   WHERE unixepoch(scraped_at) BETWEEN unixepoch(clock.as_of) - 604800 AND unixepoch(clock.as_of)
   GROUP BY source_id, is_active, ph_eligibility, inactive_reason
+),
+exact_six(source_id) AS (
+  SELECT 'we-work-remotely' UNION ALL
+  SELECT 'remotive' UNION ALL
+  SELECT 'real-work-from-anywhere' UNION ALL
+  SELECT 'remote-ok' UNION ALL
+  SELECT 'jobicy-admin-support-apac' UNION ALL
+  SELECT 'jobicy-supporting-apac'
 )
 SELECT
   clock.as_of,
@@ -73,5 +81,14 @@ SELECT
   (SELECT COUNT(*) FROM eligible WHERE first_storage_at BETWEEN unixepoch(clock.as_of) - 86400 AND unixepoch(clock.as_of)) AS eligible_first_storage_1d,
   (SELECT COUNT(*) FROM eligible WHERE first_storage_at BETWEEN unixepoch(clock.as_of) - 604800 AND unixepoch(clock.as_of)) AS eligible_first_storage_7d,
   (SELECT json_group_array(json_object('source_id', source_id, 'eligible_active', eligible_active, 'first_storage_1d', COALESCE(first_storage_1d, 0), 'first_storage_7d', COALESCE(first_storage_7d, 0))) FROM source_supply) AS per_source_supply_json,
-  (SELECT json_group_array(json_object('source_id', source_id, 'is_active', is_active, 'ph_eligibility', ph_eligibility, 'inactive_reason', inactive_reason, 'row_count', row_count)) FROM storage_outcomes) AS first_storage_outcomes_7d_json
+  (SELECT json_group_array(json_object('source_id', source_id, 'is_active', is_active, 'ph_eligibility', ph_eligibility, 'inactive_reason', inactive_reason, 'row_count', row_count)) FROM storage_outcomes) AS first_storage_outcomes_7d_json,
+  (SELECT json_group_array(json_object(
+      'source_id', exact_six.source_id,
+      'eligible_active', COALESCE(source_supply.eligible_active, 0),
+      'first_storage_1d', COALESCE(source_supply.first_storage_1d, 0),
+      'first_storage_7d', COALESCE(source_supply.first_storage_7d, 0)
+    ))
+    FROM exact_six
+    LEFT JOIN source_supply ON source_supply.source_id = exact_six.source_id
+  ) AS exact_six_supply_json
 FROM clock;

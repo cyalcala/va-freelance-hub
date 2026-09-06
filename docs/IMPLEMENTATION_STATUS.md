@@ -1,5 +1,11 @@
 # Implementation Status
 
+## Current checkpoint — 2026-09-06 EX-01 KEEP; expansion executing
+
+EX-01 diagnosed exact-six yield and taught production verify SQL to report
+zeros for all six identities. Geo-gate unchanged. Next: EX-02 Grafana Labs
+shadow. See Run 50.
+
 ## Current checkpoint — 2026-09-06 apex expansion planned; not executing
 
 SP-23C writers are live. Daily job volume is still exact-six yield. An apex

@@ -1,5 +1,11 @@
 # Handoff
 
+## Current handoff — 2026-09-06 EX-01 KEEP; EX-02 next
+
+Read Run 50. Exact-six yield is classified. Do not loosen geo-gate. Next:
+EX-02 Grafana Labs shadow admission with a **fresh** probe.
+Plan: `docs/superpowers/plans/2026-09-06-apex-expansion-ex01-ex02.md`.
+
 ## Current handoff — 2026-09-06 apex expansion strategy; not yet executing
 
 Read `docs/SYSTEM_SAVEPOINT.md` **Run 49**. SP-23C is live. Expansion is

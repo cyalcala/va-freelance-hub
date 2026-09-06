@@ -1,6 +1,6 @@
 # Apex Expansion Gauntlet Loop
 
-**Status:** Proposed. Planning only. G1–G9 from
+**Status:** Approach B approved. EX-01 KEEP. G1–G9 from
 `docs/gauntlet/IMPLEMENTATION_UNITS.md` remain binding. This file is the
 repeatable expansion queue after SP-23C. It does not activate a source by
 existing.
