@@ -1,0 +1,47 @@
+name: EX-02 Source Shadow Admit
+
+# Manual only. Admits one allowlisted identity to non-publishing shadow.
+# Does not scrape jobs onto the public board.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_id:
+        description: "Allowlisted source_id (EX-02: greenhouse:grafanalabs)"
+        required: true
+        default: "greenhouse:grafanalabs"
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gha-source-admit
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  admit:
+    name: Admit reviewed source to shadow
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      ADMIT_API_URL: "https://remotejobs-ph.pages.dev/api/cron/source-admit"
+    steps:
+      - name: POST source-admit
+        run: |
+          set -euo pipefail
+          if [ -z "${PROXY_SECRET:-}" ]; then
+            echo "PROXY_SECRET is required"
+            exit 1
+          fi
+          curl -fsS -X POST "$ADMIT_API_URL" \
+            -H "Authorization: Bearer ${PROXY_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --arg id "${{ inputs.source_id }}" '{sourceId:$id}')" \
+            | tee admit.json
+          jq -e '.outcome == "shadow" and .published == 0' admit.json
+          echo "Admitted $(jq -r .sourceId admit.json) to shadow with zero public jobs." >> "$GITHUB_STEP_SUMMARY"

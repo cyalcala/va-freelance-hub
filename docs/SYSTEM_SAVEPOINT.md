@@ -1,5 +1,20 @@
 # System Savepoint
 
+## Run 51 — EX-02 Grafana Labs shadow admission implemented locally (2026-09-06)
+
+UNIT ID: EX-02
+PHASE: INTEGRATE
+STATUS: IN_PROGRESS / VERIFYING
+IDENTITY: greenhouse:grafanalabs
+
+Admission orchestrator + allowlisted `/api/cron/source-admit` + manual GHA
+dispatch are on this branch. Shadow is non-publishing. Canary fetch remains
+off. Shadow-dispatch remains unscheduled. Live production write happens only
+after this unit deploys and the admit workflow is dispatched.
+
+**Next exact action:** PR/CI/deploy EX-02, dispatch `gha-source-admit.yml` for
+`greenhouse:grafanalabs`, then read-only D1 proof of one shadow row.
+
 ## Run 50 — EX-01 exact-six yield diagnosed; Jobicy admin silent zero (2026-09-06)
 
 UNIT ID: EX-01
