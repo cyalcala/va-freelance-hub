@@ -1,0 +1,46 @@
+name: EX-03 Shadow Dispatch
+
+# Hourly observation of live shadow rows. Does not scrape jobs onto the
+# public board and does not admit or promote sources. Dispatcher cadence
+# still floors each identity (Grafana Labs: 60 minutes).
+
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gha-shadow-dispatch
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  dispatch:
+    name: Dispatch shadow observations
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+      SHADOW_DISPATCH_API_URL: "https://remotejobs-ph.pages.dev/api/cron/shadow-dispatch"
+    steps:
+      - name: POST shadow-dispatch
+        run: |
+          set -euo pipefail
+          if [ -z "${PROXY_SECRET:-}" ]; then
+            echo "PROXY_SECRET is required"
+            exit 1
+          fi
+          HTTP=$(curl -sS -o dispatch.json -w "%{http_code}" -X POST "$SHADOW_DISPATCH_API_URL" \
+            -H "Authorization: Bearer ${PROXY_SECRET}" \
+            -H "Content-Type: application/json")
+          cat dispatch.json
+          echo
+          echo "HTTP $HTTP"
+          jq . dispatch.json
+          jq -e '.totalRegistryRows >= 1' dispatch.json
+          echo "Shadow dispatch rows=$(jq -r .totalRegistryRows dispatch.json) eligible=$(jq -r .eligible dispatch.json) dispatched=$(jq -r .dispatched dispatch.json)" >> "$GITHUB_STEP_SUMMARY"
