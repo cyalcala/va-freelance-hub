@@ -345,11 +345,9 @@ export function resolvePublicationEnvelope(
 }
 
 export function isEnabledForFetch(compliance: RegistryComplianceState, operational: RegistryOperationalState, optOut: boolean): boolean {
-  // The legacy hot path has only a boolean and cannot reserve/enforce a
-  // per-tick canary cap. It may continue to fetch active sources, but a canary
-  // is fail-closed until the future single publication gateway consumes the
-  // SP-23 envelope and transition decision. This protects against a registry
-  // row being inserted before that gateway is live.
+  // Canary rows stay unfetched here even though SP-23C now owns public writes.
+  // Enabling canary fetch is a source-specific bootstrap step after admission
+  // and observation, not an automatic consequence of the publication ledger.
   return operational === "active" && isPublishable(compliance, operational, optOut);
 }
 

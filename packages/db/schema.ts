@@ -432,6 +432,20 @@ export const sourceAdmissionEvidence = sqliteTable("source_admission_evidence", 
   sourceIdx: index("source_admission_evidence_source_idx").on(table.sourceId, table.id),
 }));
 
+export const sourcePublicationLedger = sqliteTable("source_publication_ledger", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceId: text("source_id").notNull(),
+  tickKey: text("tick_key").notNull(),
+  retryKey: text("retry_key").notNull().unique(),
+  mode: text("mode", { enum: ["unlimited", "capped", "blocked", "rolled_back"] }).notNull(),
+  proposedCount: integer("proposed_count").notNull(),
+  publishedCount: integer("published_count").notNull(),
+  publishedIdsJson: text("published_ids_json").notNull(),
+  decidedAt: text("decided_at").notNull(),
+}, (table) => ({
+  tickIdx: index("source_publication_ledger_tick_idx").on(table.sourceId, table.tickKey, table.id),
+}));
+
 // ─── Shadow observations (SP-22) ────────────────────────────────────────────
 // Durable history of every SP-07 shadow probe SP-22's dispatcher runs, so
 // "recurrent shadow" is provable from D1 rather than asserted from a single
@@ -487,6 +501,8 @@ export type SourceTransitionEvent = typeof sourceTransitionEvents.$inferSelect;
 export type NewSourceTransitionEvent = typeof sourceTransitionEvents.$inferInsert;
 export type SourceAdmissionEvidence = typeof sourceAdmissionEvidence.$inferSelect;
 export type NewSourceAdmissionEvidence = typeof sourceAdmissionEvidence.$inferInsert;
+export type SourcePublicationLedgerRow = typeof sourcePublicationLedger.$inferSelect;
+export type NewSourcePublicationLedgerRow = typeof sourcePublicationLedger.$inferInsert;
 
 export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;
