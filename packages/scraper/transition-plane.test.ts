@@ -336,6 +336,31 @@ describe("SP-23 typed transitions", () => {
     });
   });
 
+  test("replays a v2 shadow-entry packet including its current admission context", () => {
+    const decision = decideTypedTransition(
+      transitionRequest({
+        from: { compliance: "allowed", operational: "candidate" },
+        to: { compliance: "allowed", operational: "shadow" },
+        cause: "requested_shadow_entry",
+        observedShadowCount: null,
+        requiredShadowCount: null,
+        admission: {
+          admissionEvidenceId: 1,
+          sourceGovernanceRevision: 1,
+          providerGovernanceRevision: 1,
+          observationPolicyVersion: "sp23-shadow-7d-v1",
+          shadowEntryHash: null,
+          qualifyingObservationIds: [],
+        },
+      }),
+    );
+    expect(decision.ok).toBe(true);
+    if (!decision.ok) throw new Error(decision.reason);
+    expect(decision.event.input.version).toBe("sp23-v2");
+    expect(decision.event.input.admission?.admissionEvidenceId).toBe(1);
+    expect(replayTransitionEvent(decision.event)).toEqual({ ok: true, reason: "replay matches" });
+  });
+
   test("detects a tampered replay event instead of silently accepting it", () => {
     const decision = decideTypedTransition(
       transitionRequest({

@@ -35,10 +35,23 @@ source_supply AS (
     SUM(first_storage_at BETWEEN unixepoch(clock.as_of) - 604800 AND unixepoch(clock.as_of)) AS first_storage_7d
   FROM eligible CROSS JOIN clock
   GROUP BY source_id
+),
+-- Rows first stored in the window, grouped by their CURRENT disposition.
+-- This exposes pending/rejected storage without claiming a historical funnel
+-- or mistaking every stored row for a newly accepted public opportunity.
+storage_outcomes AS (
+  SELECT source_id, is_active, ph_eligibility, inactive_reason, COUNT(*) AS row_count
+  FROM opportunities CROSS JOIN clock
+  WHERE unixepoch(scraped_at) BETWEEN unixepoch(clock.as_of) - 604800 AND unixepoch(clock.as_of)
+  GROUP BY source_id, is_active, ph_eligibility, inactive_reason
 )
 SELECT
   clock.as_of,
   (SELECT COUNT(*) FROM d1_migrations WHERE name = '0039_canary_transition_plane.sql') AS migration_0039_rows,
+  (SELECT COUNT(*) FROM d1_migrations WHERE name = '0040_current_evidence_admission.sql') AS migration_0040_rows,
+  (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'source_admission_evidence') AS admission_table_count,
+  (SELECT COUNT(*) FROM pragma_table_info('source_registry') WHERE name = 'governance_revision')
+    + (SELECT COUNT(*) FROM pragma_table_info('provider_profiles') WHERE name = 'governance_revision') AS governance_column_count,
   (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'source_transition_events') AS transition_table_count,
   (SELECT COUNT(*) FROM pragma_table_info('source_registry') WHERE name IN ('canary_max_new_items_per_tick', 'last_transition_hash')) AS registry_column_count,
   (SELECT COUNT(*) FROM sqlite_master WHERE type = 'trigger' AND name IN (SELECT name FROM expected_triggers)) AS named_trigger_count,
@@ -52,5 +65,6 @@ SELECT
   (SELECT COUNT(*) FROM eligible WHERE source_id IS NULL) AS eligible_active_missing_source_id,
   (SELECT COUNT(*) FROM eligible WHERE first_storage_at BETWEEN unixepoch(clock.as_of) - 86400 AND unixepoch(clock.as_of)) AS eligible_first_storage_1d,
   (SELECT COUNT(*) FROM eligible WHERE first_storage_at BETWEEN unixepoch(clock.as_of) - 604800 AND unixepoch(clock.as_of)) AS eligible_first_storage_7d,
-  (SELECT json_group_array(json_object('source_id', source_id, 'eligible_active', eligible_active, 'first_storage_1d', COALESCE(first_storage_1d, 0), 'first_storage_7d', COALESCE(first_storage_7d, 0))) FROM source_supply) AS per_source_supply_json
+  (SELECT json_group_array(json_object('source_id', source_id, 'eligible_active', eligible_active, 'first_storage_1d', COALESCE(first_storage_1d, 0), 'first_storage_7d', COALESCE(first_storage_7d, 0))) FROM source_supply) AS per_source_supply_json,
+  (SELECT json_group_array(json_object('source_id', source_id, 'is_active', is_active, 'ph_eligibility', ph_eligibility, 'inactive_reason', inactive_reason, 'row_count', row_count)) FROM storage_outcomes) AS first_storage_outcomes_7d_json
 FROM clock;

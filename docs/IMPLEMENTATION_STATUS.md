@@ -1,5 +1,14 @@
 # Implementation Status
 
+## Current checkpoint — 2026-09-06 SP-23B local implementation; SP-23 still VERIFYING
+
+SP-23B current-evidence admission is implemented on
+`codex/sp-23b-current-evidence` and locally verified (**1152/0/3665**,
+typecheck/build/guardrails, rehearsal 94/94 including migration 0040). SP-23
+remains **VERIFYING**; decision **REVISE**. No source, schedule, or publication
+path was activated. Next: normal PR/deploy for 0040, then **SP-23C**. See
+`docs/SYSTEM_SAVEPOINT.md` Run 44. The checkpoints below are historical.
+
 ## Current checkpoint — 2026-09-05 foundation deployed; SP-23 VERIFYING
 
 SP-23 slice A is deployed and verified at

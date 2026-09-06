@@ -8,9 +8,9 @@ import {
   type TransitionGatewayRunResult,
   type TransitionGatewayStatement,
 } from "./transition-gateway";
+import { persistAdmissionEvidence, type AdmissionDatabase } from "./admission-evidence";
+import { liveAdmissionFixture } from "./test-fixtures/admission";
 import { replayTransitionEvent, type TransitionEvent } from "./transition-plane";
-
-const NOW = new Date().toISOString();
 
 class BunStatement implements TransitionGatewayStatement {
   private values: unknown[] = [];
@@ -28,13 +28,12 @@ class BunStatement implements TransitionGatewayStatement {
 
   async run(): Promise<TransitionGatewayRunResult> {
     this.db.query(this.query).run(...this.values);
-    return { success: true };
+    return { success: true, meta: { last_row_id: Number(this.db.query("SELECT last_insert_rowid() AS id").get()?.id) } };
   }
 }
 
 class BunGatewayDatabase implements TransitionGatewayDatabase {
   constructor(private readonly db: Database) {}
-
   prepare(query: string): TransitionGatewayStatement {
     return new BunStatement(this.db, query);
   }
@@ -48,79 +47,91 @@ function freshDb(): Database {
     "0037_source_lifecycle_opt_out.sql",
     "0038_shadow_observations.sql",
     "0039_canary_transition_plane.sql",
+    "0040_current_evidence_admission.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
-  db.exec(`INSERT INTO provider_profiles (id, display_name, provider_family, mechanism, auth_class, evidence_lease_days, default_compliance_state, default_operational_state)
-    VALUES ('greenhouse', 'Greenhouse', 'greenhouse', 'ats_api', 'none', 180, 'allowed', 'candidate')`);
-  db.exec(`INSERT INTO source_registry (
-    source_id, provider_id, display_name, endpoint_url, compliance_state,
-    operational_state, policy_expiry, canary_max_new_items_per_tick
-  ) VALUES (
-    'greenhouse:grafanalabs', 'greenhouse', 'Grafana Labs', 'https://boards.greenhouse.io/grafanalabs', 'allowed',
-    'candidate', '2030-01-01T00:00:00.000Z', 3
-  )`);
   return db;
 }
 
-test("SP-23 gateway persists event-backed shadow, canary, and automatic cap rollback transitions atomically", async () => {
+function seedSource(db: Database, fixture: Awaited<ReturnType<typeof liveAdmissionFixture>>): void {
+  const { source, provider } = fixture;
+  db.query(`INSERT INTO provider_profiles (
+    id, display_name, provider_family, mechanism, auth_class, endpoint_pattern, allowed_hosts,
+    evidence_url, evidence_hash, evidence_captured_at, visibility_filter, content_scope,
+    cadence_min_minutes, cadence_max_minutes, rate_guidance, robots_handling, removal_semantics,
+    evidence_lease_days, default_compliance_state, default_operational_state
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'allowed', 'candidate')`).run(
+    provider.id, provider.id, provider.providerFamily, provider.mechanism, provider.authClass,
+    provider.endpointPattern, provider.allowedHosts, provider.evidenceUrl, provider.evidenceHash,
+    provider.evidenceCapturedAt, provider.visibilityFilter, provider.contentScope,
+    provider.cadenceMinMinutes, provider.cadenceMaxMinutes, provider.rateGuidance,
+    provider.robotsHandling, provider.removalSemantics, provider.evidenceLeaseDays,
+  );
+  db.query(`INSERT INTO source_registry (
+    source_id, provider_id, display_name, endpoint_url, company_token, discovery_provenance,
+    compliance_state, operational_state, review_deadline, policy_expiry, canary_max_new_items_per_tick
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, 'candidate', ?, ?, ?)`).run(
+    source.sourceId, source.providerId, source.displayName, source.endpointUrl, source.companyToken,
+    source.discoveryProvenance, source.complianceState, source.reviewDeadline, source.policyExpiry,
+    source.canaryMaxNewItemsPerTick,
+  );
+}
+
+test("SP-23B gateway persists evidenced shadow entry and rejects v1 or under-observed canary promotion", async () => {
   const db = freshDb();
   const gateway = new BunGatewayDatabase(db);
+  const fixture = await liveAdmissionFixture();
+  seedSource(db, fixture);
+  const now = new Date().toISOString();
+  const persisted = await persistAdmissionEvidence(gateway as unknown as AdmissionDatabase, fixture.source, fixture.provider, {
+    packet: fixture.packet, packetJson: fixture.evidence.packetJson, packetSha256: fixture.evidence.packetSha256,
+  }, now);
+  if (!persisted.ok) throw new Error(persisted.reason);
 
   const shadow = await applyTypedTransition(gateway, {
-    sourceId: "greenhouse:grafanalabs",
-    to: { compliance: "allowed", operational: "shadow" },
+    sourceId: fixture.source.sourceId,
+    to: { compliance: fixture.source.complianceState, operational: "shadow" },
     cause: "requested_shadow_entry",
-    now: NOW,
-    evidenceHash: "evidence-shadow-entry",
+    now: new Date().toISOString(),
+    evidenceHash: "ignored-caller-token",
   });
   expect(shadow.persisted).toBe(true);
+  expect((db.query(
+    `SELECT operational_state, last_transition_hash FROM source_registry WHERE source_id=?`,
+  ).get(fixture.source.sourceId) as { operational_state: string; last_transition_hash: string }).operational_state).toBe("shadow");
 
-  for (let i = 0; i < 3; i += 1) {
-    db.exec(`INSERT INTO source_shadow_observations (
-      source_id, provider_id, dispatcher_version, outcome, evidence_hash, result_json
-    ) VALUES (
-      'greenhouse:grafanalabs', 'greenhouse', 'sp22-v1', 'HEALTHY_WITH_RESULTS', 'observation-${i}', '{}'
-    )`);
-  }
+  expect(() => db.exec(`INSERT INTO source_transition_events (
+    transition_plane_version, source_id, from_compliance, from_operational, to_compliance, to_operational,
+    cause, decided_at, evidence_hash, input_json, input_hash, decision_hash
+  ) VALUES ('sp23-v1', '${fixture.source.sourceId}', '${fixture.source.complianceState}', 'shadow',
+    '${fixture.source.complianceState}', 'canary', 'requested_promotion', '${new Date().toISOString()}',
+    'old-token', '{}', '00', '00')`)).toThrow(/sp23-v2|current evidence|canonical replay/i);
 
   const canary = await applyTypedTransition(gateway, {
-    sourceId: "greenhouse:grafanalabs",
-    to: { compliance: "allowed", operational: "canary" },
+    sourceId: fixture.source.sourceId,
+    to: { compliance: fixture.source.complianceState, operational: "canary" },
     cause: "requested_promotion",
-    now: NOW,
-    evidenceHash: "evidence-shadow-promotion",
-    requiredShadowCount: 3,
+    now: new Date().toISOString(),
+    requiredShadowCount: 1,
   });
-  expect(canary.persisted).toBe(true);
+  expect(canary.persisted).toBe(false);
 
-  // The durable opt-out ledger may update before a legacy registry cache bit.
-  // An automatic canary exit must still persist with optOut=true in its
-  // canonical replay packet, rather than leaving the source in canary.
-  db.exec(`INSERT INTO source_opt_outs (source_id, provider_id, reason)
-    VALUES ('greenhouse:grafanalabs', 'greenhouse', 'test durable opt-out')`);
-
-  const rollback = await applyTypedTransition(gateway, {
-    sourceId: "greenhouse:grafanalabs",
-    to: { compliance: "allowed", operational: "shadow" },
-    cause: "canary_cap_breach",
-    now: NOW,
-    evidenceHash: "evidence-cap-breach",
-    proposedNewItems: 4,
+  const pause = await applyTypedTransition(gateway, {
+    sourceId: fixture.source.sourceId,
+    to: { compliance: fixture.source.complianceState, operational: "paused" },
+    cause: "emergency_pause",
+    now: new Date().toISOString(),
   });
-  expect(rollback).toMatchObject({ persisted: true, decision: { ok: true, cause: "canary_cap_breach" } });
+  expect(pause.persisted).toBe(true);
   expect((db.query(
-    `SELECT operational_state FROM source_registry WHERE source_id='greenhouse:grafanalabs'`,
-  ).get() as { operational_state: string }).operational_state).toBe("shadow");
-  expect((db.query(
-      `SELECT COUNT(*) AS count FROM source_transition_events WHERE source_id='greenhouse:grafanalabs'`,
-  ).get() as { count: number }).count).toBe(3);
+    `SELECT operational_state FROM source_registry WHERE source_id=?`,
+  ).get(fixture.source.sourceId) as { operational_state: string }).operational_state).toBe("paused");
+
   const stored = db.query(
     `SELECT source_id, from_compliance, from_operational, to_compliance, to_operational,
             cause, decided_at, evidence_hash, input_json, input_hash, decision_hash
-     FROM source_transition_events
-     WHERE source_id='greenhouse:grafanalabs'
-     ORDER BY id DESC LIMIT 1`,
+     FROM source_transition_events WHERE cause='requested_shadow_entry' LIMIT 1`,
   ).get() as {
     source_id: string;
     from_compliance: TransitionEvent["fromCompliance"];
@@ -149,6 +160,7 @@ test("SP-23 gateway persists event-backed shadow, canary, and automatic cap roll
     decisionHash: stored.decision_hash,
   };
   expect(replayTransitionEvent(rehydrated)).toEqual({ ok: true, reason: "replay matches" });
-  expect(rehydrated.input.optOut).toBe(true);
+  expect(rehydrated.input.version).toBe("sp23-v2");
+  expect(JSON.parse(stored.input_json).admission.qualifyingObservationIds).toEqual([]);
   db.close();
 });
