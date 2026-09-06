@@ -1,5 +1,21 @@
 # System Savepoint
 
+## Run 50 — EX-01 exact-six yield diagnosed; Jobicy admin silent zero (2026-09-06)
+
+UNIT ID: EX-01
+PHASE: REPAIR
+STATUS: TERMINAL — KEEP (diagnosis + measurement only)
+IDENTITY: exact-six (no new host)
+
+Classifier and verify-SQL zero-fill are on this branch. Geo-gate is unchanged.
+Remotive is fetching-but-ineligible. Remote OK high reject is PH filter.
+RWFA empty 24h is not a dead adapter. **jobicy-admin-support-apac** is
+silent_zero_storage (repairable later via fetch-event inspection).
+
+**Next exact action:** EX-02 admit `greenhouse:grafanalabs` to shadow through
+current SP-23B evidence after a live re-probe. Do not use the 2026-08-29
+stale probe. Do not enable canary fetch or shadow-dispatch schedule in EX-02.
+
 ## Run 49 — Apex expansion strategy documented; still not underway (2026-09-06)
 
 Program: **Source Perpetuity / Apex Expansion**. Status: **PLANNED**.

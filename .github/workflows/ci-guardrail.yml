@@ -138,7 +138,8 @@ jobs:
               .admission_table_count == 1 and .governance_column_count == 2 and
               .transition_table_count == 1 and .registry_column_count == 2 and
               .named_trigger_count == 22 and
-              (.missing_triggers_json | fromjson | length == 0))
+              (.missing_triggers_json | fromjson | length == 0) and
+              (.exact_six_supply_json | fromjson | length == 6))
           ' ../../source-transition-evidence.json
 
       - name: Upload D1 source transition evidence

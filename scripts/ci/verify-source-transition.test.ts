@@ -45,6 +45,11 @@ describe("SP-23 read-only production evidence SQL", () => {
       const rows = JSON.parse(String(result.per_source_supply_json)) as Array<Record<string, unknown>>;
       expect(rows.reduce((sum, row) => sum + Number(row.first_storage_7d), 0)).toBe(2);
       expect(rows.some(row => row.source_id === null)).toBe(true);
+      const exactSix = JSON.parse(String(result.exact_six_supply_json)) as Array<Record<string, unknown>>;
+      expect(exactSix).toHaveLength(6);
+      expect(exactSix).toContainEqual({
+        source_id: "jobicy-admin-support-apac", eligible_active: 0, first_storage_1d: 0, first_storage_7d: 0,
+      });
       expect(db.query("SELECT total_changes() AS n").get()).toEqual(before);
     } finally { db.close(); }
   });
