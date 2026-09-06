@@ -1,5 +1,15 @@
 # Handoff
 
+## Current handoff — 2026-09-06 SP-23B current-evidence admission
+
+Read `docs/SYSTEM_SAVEPOINT.md` **Run 44**. Branch
+`codex/sp-23b-current-evidence`. SP-23B is implemented and locally verified;
+SP-23 stays **VERIFYING**. Migration 0040, gateway/policy binding, and
+revision-scoped observations are on this branch only until the normal PR path
+deploys them. No source was activated. Next: PR/CI/deploy/read-only D1 for 0040,
+then SP-23C shared publication/rollback. Do not treat local tests as production
+acceptance or supply recovery.
+
 ## Current handoff — 2026-09-05 verified production foundation
 
 Read `docs/SYSTEM_SAVEPOINT.md` **Run 43**. Foundation deployed at

@@ -14,7 +14,7 @@
  */
 
 import { checkRobots, originOf, type RobotsCacheStore } from "./robotsGate";
-import { XMLParser } from "fast-xml-parser";
+import { XMLParser, XMLValidator } from "fast-xml-parser";
 import type { DoctorOutcome } from "./source-doctor";
 import { exactOrSubdomain, hostOf } from "./prospector";
 
@@ -24,7 +24,7 @@ export const SHADOW_FETCH_TIMEOUT_MS = 8_000;
 export const SHADOW_MAX_BYTES = 512 * 1024; // 512 KiB — oversize → DEGRADED_ANOMALOUS stop
 export const SHADOW_MAX_REQUESTS = 2; // robots.txt + candidate fetch
 export const SHADOW_MAX_ITEMS = 200;
-export const SHADOW_VERSION = "1.0.0";
+export const SHADOW_VERSION = "1.1.0";
 
 // ─── Input / Output ─────────────────────────────────────────────────────────
 
@@ -191,46 +191,87 @@ function visibilityIsAmbiguous(filter: string | null): boolean {
   return !["published", "listed", "public", "indexable", "private"].includes(f);
 }
 
-function parseRssBodyCount(xml: string): { count: number; plausible: number } {
-  try {
-    const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", processEntities: false, htmlEntities: true });
-    const parsed = parser.parse(xml);
-    const channel = parsed?.rss?.channel ?? parsed?.feed;
-    // RSS <rss><channel><item> / Atom <feed><entry>, or a non-RSS/Atom XML
-    // job feed with its own wrapping root (e.g. Recruitee's
-    // <offers><offer>...</offer></offers>, SP-15) — real feeds this
-    // provider-agnostic prober needs to recognize without one branch per
-    // vendor's exact tag names.
-    const raw = channel?.item ?? channel?.entry ?? parsed?.offers?.offer ?? [];
-    const items = Array.isArray(raw) ? raw : [raw];
-    const plausible = items.filter((it: any) => it && it.title && (it.link ?? it.id ?? it.guid ?? it.careers_url)).length;
-    const count = items.filter((it: any) => it && it.title).length;
-    return { count: Math.min(count, SHADOW_MAX_ITEMS), plausible: Math.min(plausible, SHADOW_MAX_ITEMS) };
-  } catch {
-    return { count: 0, plausible: 0 };
+interface ParsedSample { count: number; plausible: number; truncated: boolean }
+
+function countJobSample(items: unknown[], xml = false): ParsedSample {
+  const sample = items.slice(0, SHADOW_MAX_ITEMS);
+  const hasText = (value: unknown) => typeof value === "string" && value.trim().length > 0;
+  let plausible = 0;
+  for (const value of sample) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("job collection contains a non-object item");
+    const item = value as Record<string, any>;
+    if (![item.title, item.text, item.name].some(hasText)) throw new Error("job collection item lacks a title");
+    const links = [item.absolute_url, item.hostedUrl, item.jobUrl, item.url, item.link];
+    if (xml) links.push(item.id, item.guid, item.careers_url, item.link?.["@_href"]);
+    if (links.some(hasText)) plausible++;
   }
+  return { count: sample.length, plausible, truncated: items.length > SHADOW_MAX_ITEMS };
 }
 
-function parseJsonBodyCount(jsonText: string): { count: number; plausible: number } {
-  try {
-    const data = JSON.parse(jsonText);
-    if (Array.isArray(data)) {
-      const plausible = data.filter((it: any) => it && (it.url || it.hostedUrl || it.absolute_url || it.jobUrl || it.link)).length;
-      return { count: Math.min(data.length, SHADOW_MAX_ITEMS), plausible: Math.min(plausible, SHADOW_MAX_ITEMS) };
+function parseRssBodyCount(xml: string): ParsedSample {
+  if (XMLValidator.validate(xml) !== true) throw new Error("malformed XML feed");
+  const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_", processEntities: false, htmlEntities: true });
+  const parsed = parser.parse(xml);
+  // Only a recognized collection can prove emptiness. HTML/error documents
+  // and changed root envelopes are schema failures even when well-formed.
+  let raw: unknown;
+  if (parsed?.rss && Object.hasOwn(parsed.rss, "channel")) raw = parsed.rss.channel?.item ?? [];
+  else if (Object.hasOwn(parsed ?? {}, "feed")) raw = parsed.feed?.entry ?? [];
+  else if (Object.hasOwn(parsed ?? {}, "offers")) raw = parsed.offers?.offer ?? [];
+  else throw new Error("unrecognized XML job collection");
+  return countJobSample(Array.isArray(raw) ? raw : [raw], true);
+}
+
+function parseJsonBodyCount(jsonText: string): ParsedSample {
+  const data = JSON.parse(jsonText);
+  if (Array.isArray(data)) return countJobSample(data);
+  if (data && typeof data === "object") {
+    for (const key of ["jobs", "results", "data", "items"]) {
+      if (!Object.hasOwn(data, key)) continue;
+      if (!Array.isArray(data[key])) throw new Error(`job collection ${key} is not an array`);
+      return countJobSample(data[key]);
     }
-    if (data && typeof data === "object") {
-      const jobs = (data as any).jobs || (data as any).results || (data as any).data || (data as any).items;
-      if (Array.isArray(jobs)) {
-        const plausible = jobs.filter((it: any) => it && (it.title || it.text || it.name) && (it.absolute_url || it.hostedUrl || it.jobUrl || it.url || it.link)).length;
-        return { count: Math.min(jobs.length, SHADOW_MAX_ITEMS), plausible: Math.min(plausible, SHADOW_MAX_ITEMS) };
-      }
-      // Single object that is itself a job?
-      if ((data as any).title && ((data as any).url || (data as any).link)) return { count: 1, plausible: 1 };
-    }
-    return { count: 0, plausible: 0 };
-  } catch {
-    return { count: 0, plausible: 0 };
+    if (data.title && (data.url || data.link)) return countJobSample([data]);
   }
+  throw new Error("unrecognized JSON job collection");
+}
+
+/** Count UTF-8 bytes, not JS string length, and cancel as soon as the budget is exceeded. */
+async function readUtf8BodyWithBudget(
+  res: { body?: ReadableStream<Uint8Array> | null; text?: () => Promise<string> },
+  maxBytes: number,
+): Promise<{ text: string | null; bytes: number; overBudget: boolean }> {
+  const reader = res.body?.getReader?.();
+  if (!reader) {
+    const text = await res.text!();
+    const bytes = new TextEncoder().encode(text).byteLength;
+    return bytes > maxBytes ? { text: null, bytes, overBudget: true } : { text, bytes, overBudget: false };
+  }
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value?.byteLength) continue;
+      bytes += value.byteLength;
+      if (bytes > maxBytes) {
+        await reader.cancel("shadow byte budget exceeded");
+        return { text: null, bytes, overBudget: true };
+      }
+      chunks.push(value);
+    }
+  } catch (error) {
+    try { await reader.cancel(); } catch { /* already closed */ }
+    throw error;
+  }
+  const merged = new Uint8Array(bytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { text: new TextDecoder("utf-8").decode(merged), bytes, overBudget: false };
 }
 
 // ─── Core probe ─────────────────────────────────────────────────────────────
@@ -251,7 +292,9 @@ export async function runCandidateShadowProbe(
 ): Promise<CandidateShadowResult> {
   const start = Date.now();
   const timestamp = new Date().toISOString();
-  const fetchImpl = deps.fetchImpl ?? (globalThis.fetch as typeof fetch);
+  const rawFetch = deps.fetchImpl ?? (globalThis.fetch as typeof fetch);
+  const fetchImpl = ((url: Parameters<typeof fetch>[0], init?: RequestInit) =>
+    rawFetch(url, { ...init, redirect: "manual" })) as typeof fetch;
   const robotsStore = deps.robotsStore ?? createMemoryRobotsStore();
   const probes: CandidateShadowProbe[] = [];
   let requestCount = 0;
@@ -264,6 +307,7 @@ export async function runCandidateShadowProbe(
   let schemaHealth: "ok" | "broken" | "empty" | "not_attempted" = "not_attempted";
   let itemCount = 0;
   let plausibleItems = 0;
+  let sampleTruncated = false;
   let parseError: string | undefined;
   let stopReason: string | undefined;
   let outcome: DoctorOutcome = "UNKNOWN";
@@ -355,35 +399,37 @@ export async function runCandidateShadowProbe(
   fetchAttempted = true;
   const fetchStart = Date.now();
   let body: string | null = null;
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), SHADOW_FETCH_TIMEOUT_MS);
   try {
-    const controller = new AbortController();
-    const tid = setTimeout(() => controller.abort(), SHADOW_FETCH_TIMEOUT_MS);
     const res = await (fetchImpl as any)(input.endpointUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; RemotePHJobsBot/1.0; +CandidateShadow/1.0)", Accept: input.provider.mechanism === "ats_api" || input.provider.mechanism.includes("api") ? "application/json" : "application/rss+xml, application/xml, application/json, text/xml" },
       signal: controller.signal,
-      redirect: "follow",
+      redirect: "manual",
     });
-    clearTimeout(tid);
     fetchLatencyMs = Date.now() - fetchStart;
     fetchStatus = (res as any).status;
     contentType = (res as any).headers?.get?.("content-type") ?? null;
     requestCount += 1;
 
     if ((res as any).ok) {
-      const text = await (res as any).text();
-      // Budget: oversized payload → stop disposition, do not parse
-      if (text.length > SHADOW_MAX_BYTES) {
-        bytesReceived = text.length;
-        stopReason = `oversized payload ${text.length} bytes > budget ${SHADOW_MAX_BYTES} — no alternate endpoint attempted`;
+      const read = await readUtf8BodyWithBudget(res, SHADOW_MAX_BYTES);
+      bytesReceived = read.bytes;
+      if (read.overBudget) {
+        stopReason = `oversized payload ${read.bytes} bytes > budget ${SHADOW_MAX_BYTES} — no alternate endpoint attempted`;
         outcome = "DEGRADED_ANOMALOUS";
         probes.push({ name: "fetch", passed: false, detail: stopReason });
         return buildResult();
       }
-      body = text;
-      bytesReceived = text.length;
+      body = read.text;
       probes.push({ name: "fetch", passed: true, detail: `HTTP ${fetchStatus} ${bytesReceived} bytes ${fetchLatencyMs}ms ct=${contentType ?? "unknown"}` });
     } else {
       probes.push({ name: "fetch", passed: false, detail: `HTTP ${fetchStatus}` });
+      if (fetchStatus && fetchStatus >= 300 && fetchStatus < 400) {
+        stopReason = `HTTP ${fetchStatus} redirect is not followed`;
+        outcome = "POLICY_BLOCKED";
+        return buildResult();
+      }
       if (fetchStatus === 429) { outcome = "RATE_LIMITED"; return buildResult(); }
       if (fetchStatus && fetchStatus >= 500) { outcome = "UNREACHABLE"; return buildResult(); }
       if (fetchStatus === 401 || fetchStatus === 403) { outcome = "POLICY_BLOCKED"; stopReason = `HTTP ${fetchStatus} — explicit restriction`; return buildResult(); }
@@ -399,6 +445,8 @@ export async function runCandidateShadowProbe(
     else if (lower.includes("timeout") || lower.includes("abort") || lower.includes("enotfound") || lower.includes("econnrefused") || lower.includes("dns")) outcome = "UNREACHABLE";
     else outcome = "UNREACHABLE";
     return buildResult();
+  } finally {
+    clearTimeout(tid);
   }
 
   // ---- parse (bounded, never exec) ----
@@ -411,35 +459,12 @@ export async function runCandidateShadowProbe(
     return buildResult();
   }
   try {
-    const mechanism = input.provider.mechanism;
-    let parsed: { count: number; plausible: number } | null = null;
-    if (mechanism === "ats_api") {
-      parsed = parseJsonBodyCount(body);
-      // If JSON fails and body looks like XML, fall through to RSS parse as schema check (still evidence-only)
-      if (parsed.count === 0 && body.trim().startsWith("<")) parsed = parseRssBodyCount(body);
-    } else if (mechanism === "rss_feed" || mechanism === "syndication_feed" || contentType?.includes("xml") || body.trim().startsWith("<")) {
-      parsed = parseRssBodyCount(body);
-    } else if (mechanism.includes("json") || mechanism === "public_api" || contentType?.includes("json")) {
-      parsed = parseJsonBodyCount(body);
-    } else {
-      // heuristic: try both
-      parsed = parseJsonBodyCount(body);
-      if (parsed.count === 0) parsed = parseRssBodyCount(body);
-    }
+    const trimmed = body.trim();
+    const parsed = trimmed.startsWith("<") ? parseRssBodyCount(trimmed) : parseJsonBodyCount(trimmed);
     itemCount = parsed.count;
     plausibleItems = parsed.plausible;
+    sampleTruncated = parsed.truncated;
     if (parsed.count === 0 && parsed.plausible === 0) {
-      // Distinguish true empty vs broken: if JSON threw internally we already returned 0, treat as empty if parse didn't throw
-      // For XML, a non-throwing parse that yields 0 is HEALTHY_EMPTY unless body was clearly not XML/JSON
-      const looksLikeJson = contentType?.includes("json") || body.trim().startsWith("{") || body.trim().startsWith("[");
-      const looksLikeXml = body.trim().startsWith("<");
-      if (!looksLikeJson && !looksLikeXml) {
-        parseError = "body is neither JSON nor XML";
-        schemaHealth = "broken";
-        probes.push({ name: "parse", passed: false, detail: parseError });
-        outcome = "SCHEMA_BROKEN";
-        return buildResult();
-      }
       schemaHealth = "empty";
       probes.push({ name: "parse", passed: true, detail: "0 items — HEALTHY_EMPTY" });
       outcome = "HEALTHY_EMPTY";
@@ -479,7 +504,7 @@ export async function runCandidateShadowProbe(
       robots: { checked: robotsVerdict !== undefined, verdict: robotsVerdict, wouldBlock: robotsWouldBlock, evidence: robotsEvidence, fromCache: robotsFromCache },
       fetch: { attempted: fetchAttempted, status: fetchStatus, latencyMs: fetchLatencyMs, bytesReceived, contentType },
       parse: { attempted: parseAttempted, schemaHealth, itemCount, error: parseError },
-      sampleFunnel: { bytesReceived, parsedItems: itemCount, plausibleItems, truncated: bytesReceived > SHADOW_MAX_BYTES, budgetExceeded },
+      sampleFunnel: { bytesReceived, parsedItems: itemCount, plausibleItems, truncated: sampleTruncated || bytesReceived > SHADOW_MAX_BYTES, budgetExceeded },
       diagnostic: {
         outcome,
         probes: [...probes],

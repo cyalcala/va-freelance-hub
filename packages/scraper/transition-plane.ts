@@ -15,6 +15,16 @@ import {
 } from "./source-lifecycle";
 
 export const TRANSITION_PLANE_VERSION = "sp23-v1";
+export const ADMISSION_TRANSITION_PLANE_VERSION = "sp23-v2";
+
+export interface TransitionAdmissionContext {
+  admissionEvidenceId: number;
+  sourceGovernanceRevision: number;
+  providerGovernanceRevision: number;
+  observationPolicyVersion: "sp23-shadow-7d-v1";
+  shadowEntryHash: string | null;
+  qualifyingObservationIds: number[];
+}
 
 export type TransitionCause =
   | "requested_shadow_entry"
@@ -45,6 +55,8 @@ export interface TypedTransitionRequest {
   requiredShadowCount?: number | null;
   canaryMaxNewItemsPerTick?: number | null;
   proposedNewItems?: number | null;
+  /** Supplied only by the current-evidence gateway; SQL revalidates every reference. */
+  admission?: TransitionAdmissionContext;
 }
 
 export interface TransitionEventInput {
@@ -63,6 +75,7 @@ export interface TransitionEventInput {
   requiredShadowCount: number | null;
   canaryMaxNewItemsPerTick: number | null;
   proposedNewItems: number | null;
+  admission?: TransitionAdmissionContext;
 }
 
 export interface TransitionEvent {
@@ -186,7 +199,7 @@ function hasCurrentLease(policyExpiry: string | null | undefined, now: string): 
 
 function buildEventInput(request: TypedTransitionRequest): TransitionEventInput {
   return {
-    version: TRANSITION_PLANE_VERSION,
+    version: request.admission ? ADMISSION_TRANSITION_PLANE_VERSION : TRANSITION_PLANE_VERSION,
     sourceId: request.sourceId,
     fromCompliance: request.from.compliance,
     fromOperational: request.from.operational,
@@ -201,6 +214,14 @@ function buildEventInput(request: TypedTransitionRequest): TransitionEventInput 
     requiredShadowCount: request.requiredShadowCount ?? null,
     canaryMaxNewItemsPerTick: request.canaryMaxNewItemsPerTick ?? null,
     proposedNewItems: request.proposedNewItems ?? null,
+    ...(request.admission ? { admission: {
+      admissionEvidenceId: request.admission.admissionEvidenceId,
+      sourceGovernanceRevision: request.admission.sourceGovernanceRevision,
+      providerGovernanceRevision: request.admission.providerGovernanceRevision,
+      observationPolicyVersion: request.admission.observationPolicyVersion,
+      shadowEntryHash: request.admission.shadowEntryHash,
+      qualifyingObservationIds: [...request.admission.qualifyingObservationIds],
+    } } : {}),
   };
 }
 
@@ -270,6 +291,25 @@ export function decideTypedTransition(request: TypedTransitionRequest): TypedTra
   const isShadowEntry = request.from.operational === "candidate" && request.to.operational === "shadow";
   const isCanaryPromotion = request.from.operational === "shadow" && request.to.operational === "canary";
   const isActivePromotion = request.from.operational === "canary" && request.to.operational === "active";
+
+  if (request.admission) {
+    const context = request.admission;
+    if (!hasPositiveInteger(context.admissionEvidenceId) || !hasPositiveInteger(context.sourceGovernanceRevision)
+      || !hasPositiveInteger(context.providerGovernanceRevision) || context.observationPolicyVersion !== "sp23-shadow-7d-v1"
+      || !Array.isArray(context.qualifyingObservationIds) || !context.qualifyingObservationIds.every(hasPositiveInteger)
+      || new Set(context.qualifyingObservationIds).size !== context.qualifyingObservationIds.length) {
+      return rejected(request, "current admission context references are invalid");
+    }
+    if (!isShadowEntry && !isCanaryPromotion) return rejected(request, "current admission context only supports shadow entry and capped canary promotion");
+    if (isShadowEntry && (context.shadowEntryHash !== null || context.qualifyingObservationIds.length !== 0)) {
+      return rejected(request, "shadow entry must start a new observation epoch");
+    }
+    if (isCanaryPromotion && (!hasEvidenceHash(context.shadowEntryHash)
+      || request.requiredShadowCount !== 8 || context.qualifyingObservationIds.length < 8
+      || request.observedShadowCount !== context.qualifyingObservationIds.length)) {
+      return rejected(request, "canary admission requires the server-owned observation policy and exact references");
+    }
+  }
 
   if (isCanaryRollback) {
     if (
@@ -466,6 +506,7 @@ export function replayTransitionEvent(event: TransitionEvent): { ok: boolean; re
     requiredShadowCount: input.requiredShadowCount,
     canaryMaxNewItemsPerTick: input.canaryMaxNewItemsPerTick,
     proposedNewItems: input.proposedNewItems,
+    admission: input.admission,
   });
   if (!decision.ok) return { ok: false, reason: `replay rejected input: ${decision.reason}` };
   const expected = decision.event;

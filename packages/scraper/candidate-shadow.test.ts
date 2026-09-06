@@ -223,6 +223,27 @@ describe("candidate-shadow — zero writes and strict budget (SP-07 criterion 2)
     expect(res.parse.itemCount).toBe(SHADOW_MAX_ITEMS);
     expect(res.parse.itemCount).toBeLessThanOrEqual(SHADOW_MAX_ITEMS);
     expect(res.diagnostic.bytesReceived).toBe(greenJobs.length);
+    expect(res.sampleFunnel.truncated).toBe(true);
+  });
+
+  it("enforces actual UTF-8 bytes and cancels the oversized response stream", async () => {
+    vi.useRealTimers();
+    const input = candidateInput();
+    const body = JSON.stringify({ jobs: [{ title: "職".repeat(180_000), url: "https://example.com/1" }] });
+    expect(body.length).toBeLessThan(SHADOW_MAX_BYTES);
+    const encoded = new TextEncoder().encode(body);
+    let cancelled = false;
+    const fetcher = vi.fn(async (url: any) => String(url).endsWith("/robots.txt")
+      ? new Response("User-agent: *\nAllow: /")
+      : new Response(new ReadableStream({
+        start(controller) { controller.enqueue(encoded); },
+        cancel() { cancelled = true; },
+      }), { headers: { "content-type": "application/json" } }));
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("DEGRADED_ANOMALOUS");
+    expect(res.diagnostic.bytesReceived).toBe(encoded.byteLength);
+    expect(res.parse.attempted).toBe(false);
+    expect(cancelled).toBe(true);
   });
 
   it("empty feed yields HEALTHY_EMPTY not SCHEMA_BROKEN", async () => {
@@ -239,11 +260,66 @@ describe("candidate-shadow — zero writes and strict budget (SP-07 criterion 2)
     expect(res.parse.itemCount).toBe(0);
     expect(res.diagnostic.mutations).toBe(0);
   });
+
+  it.each([
+    ["malformed JSON", '{"jobs":[', "application/json"],
+    ["HTTP-200 error object", '{"error":"temporarily unavailable"}', "application/json"],
+    ["unknown JSON envelope", '{"renamed_jobs":[]}', "application/json"],
+    ["null response", 'null', "application/json"],
+    ["non-job array", '[1,2]', "application/json"],
+    ["malformed job collection", '{"jobs":[{"id":1}]}', "application/json"],
+    ["HTML error page", '<html><body>Service unavailable</body></html>', "text/html"],
+    ["malformed XML", '<rss><channel><item></channel>', "application/xml"],
+    ["unknown XML root", '<renamed_jobs/>', "application/xml"],
+  ])("reports %s as SCHEMA_BROKEN, never a successful empty observation", async (_label, body, contentType) => {
+    const input = candidateInput();
+    const fetcher = mockFetchFor({
+      "https://boards-api.greenhouse.io/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      [input.endpointUrl]: { status: 200, body, headers: { "content-type": contentType } },
+    });
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher });
+    expect(res.diagnostic.outcome).toBe("SCHEMA_BROKEN");
+    expect(res.parse.schemaHealth).toBe("broken");
+    expect(res.parse.error).toBeTruthy();
+    expect(res.diagnostic.requestCount).toBe(2);
+    expect(res.diagnostic.mutations).toBe(0);
+  });
+
+  it.each([
+    ['[]', "application/json"],
+    ['{"jobs":[]}', "application/json"],
+    ['<rss><channel><title>Jobs</title></channel></rss>', "application/rss+xml"],
+    ['<feed xmlns="http://www.w3.org/2005/Atom"/>', "application/atom+xml"],
+    ['<offers/>', "application/xml"],
+  ])("keeps recognized empty collection %s healthy", async (body, contentType) => {
+    const input = candidateInput();
+    const fetcher = mockFetchFor({
+      "https://boards-api.greenhouse.io/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      [input.endpointUrl]: { status: 200, body, headers: { "content-type": contentType } },
+    });
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher });
+    expect(res.diagnostic.outcome).toBe("HEALTHY_EMPTY");
+    expect(res.parse.schemaHealth).toBe("empty");
+  });
 });
 
 describe("candidate-shadow — stop dispositions, no alternate path (SP-07 criterion 3)", () => {
   beforeEach(() => vi.useFakeTimers({ now: new Date("2026-08-29T12:00:00.000Z") }));
   afterEach(() => { vi.useRealTimers(); global.fetch = originalFetch; });
+
+  it.each([true, false])("does not follow redirects from robots=%s or fetch after unknown robots", async (redirectRobots) => {
+    const input = candidateInput();
+    const fetcher = vi.fn(async (url: any, init?: RequestInit) => {
+      expect(init?.redirect).toBe("manual");
+      if (String(url).endsWith("/robots.txt") && !redirectRobots) return new Response("User-agent: *\nAllow: /");
+      return new Response(null, { status: 302, headers: { location: "https://unreviewed.example/jobs" } });
+    });
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("POLICY_BLOCKED");
+    expect(res.parse.attempted).toBe(false);
+    expect(res.fetch.attempted).toBe(!redirectRobots);
+    expect(fetcher.mock.calls.length).toBe(redirectRobots ? 1 : 2);
+  });
 
   it("unsupported auth → POLICY_BLOCKED, no fetch attempted, no alternate", async () => {
     const input = candidateInput({ provider: { authClass: "api_key", allowedHosts: "boards-api.greenhouse.io" } } as any);

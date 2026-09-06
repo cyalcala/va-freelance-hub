@@ -1,5 +1,30 @@
 # System Savepoint
 
+## Run 44 — SP-23B current-evidence admission implemented locally; still VERIFYING (2026-09-06)
+
+Program: **Source Perpetuity**. Unit: **SP-23B**. Status: **IN_PROGRESS / VERIFYING**,
+not `KEEP`, not deployed, not source admission. Branch
+`codex/sp-23b-current-evidence` on start SHA
+`3c70efe6a18a1c2ab3f4500c3dbcdbcd82c63f7c`.
+
+Slice B binds shadow entry and canary promotion to immutable current evidence, a
+server-owned `sp23-shadow-7d-v1` observation policy, and revision-scoped
+observations. Migration **0040** is additive. The dispatcher remains unscheduled.
+No source was activated. Exact-six behavior is unchanged. This does not increase
+measured job supply.
+
+Local G3: **1152 pass / 0 fail / 3665 assertions / 107 files**; typecheck,
+guardrails, Astro build, and fresh/legacy migration rehearsal through 0040
+(**94/94**) pass. Probe parser failures are `SCHEMA_BROKEN`, not `HEALTHY_EMPTY`.
+UTF-8 byte budgets cancel oversized streams. Replay of v2 packets includes the
+admission context.
+
+**Next exact action:** push this branch through the normal PR path, then record
+exact-SHA CI, production migration 0040, and read-only D1 evidence. After that,
+**SP-23C** must enforce cumulative publication/rollback at every writer before
+any real source observation can close SP-23. Do not resume SP-10..SP-15 registry
+writes from this checkpoint.
+
 ## Run 43 — SP-23 foundation deployed and measured; admission/publication still VERIFYING (2026-09-05)
 
 Program: **Source Perpetuity**. SP-23 slice A has code, CI, migration, read-only

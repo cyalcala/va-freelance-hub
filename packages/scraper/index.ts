@@ -97,6 +97,7 @@ export {
 export type { ComplianceState, OperationalState } from "./source-lifecycle";
 export {
   TRANSITION_PLANE_VERSION,
+  ADMISSION_TRANSITION_PLANE_VERSION,
   decideTypedTransition,
   decideCanaryPublication,
   replayTransitionEvent,
@@ -108,6 +109,7 @@ export type {
   TypedTransitionDecision,
   TransitionEvent,
   TransitionEventInput,
+  TransitionAdmissionContext,
   CanaryPublicationInput,
   CanaryPublicationDecision,
 } from "./transition-plane";
@@ -118,6 +120,27 @@ export type {
   TransitionGatewayDatabase,
   TransitionGatewayStatement,
 } from "./transition-gateway";
+export {
+  ADMISSION_EVIDENCE_VERSION,
+  OBSERVATION_POLICY_VERSION,
+  ADMISSION_POLICY,
+  buildAdmissionEvidence,
+  persistAdmissionEvidence,
+  loadCurrentAdmissionEvidence,
+  validateAdmissionPacket,
+  validateAdmissionProbe,
+  isAdmissionInstant,
+} from "./admission-evidence";
+export type {
+  AdmissionSourceSnapshot,
+  AdmissionProviderSnapshot,
+  AdmissionEvidenceRecord,
+  AdmissionEvidencePacket,
+  CurrentAdmissionEvidenceResult,
+  PrimaryAdmissionEvidence,
+  AdmissionAuthorityAction,
+  AdmissionDatabase,
+} from "./admission-evidence";
 export {
   ATS_PROVIDER_CONFIG,
   providerConfigForPlatform,

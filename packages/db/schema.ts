@@ -234,6 +234,7 @@ export const robotsCache = sqliteTable("robots_cache", {
 
 export const providerProfiles = sqliteTable("provider_profiles", {
   id: text("id").primaryKey().notNull(),
+  governanceRevision: integer("governance_revision").notNull().default(1),
   displayName: text("display_name").notNull(),
   providerFamily: text("provider_family").notNull(),
   mechanism: text("mechanism", {
@@ -283,6 +284,7 @@ export const providerProfiles = sqliteTable("provider_profiles", {
 
 export const sourceRegistry = sqliteTable("source_registry", {
   sourceId: text("source_id").primaryKey().notNull(),
+  governanceRevision: integer("governance_revision").notNull().default(1),
   providerId: text("provider_id")
     .notNull()
     .references(() => providerProfiles.id),
@@ -409,6 +411,27 @@ export const sourceTransitionEvents = sqliteTable("source_transition_events", {
   decisionHashIdx: uniqueIndex("source_transition_events_decision_hash_unique").on(table.decisionHash),
 }));
 
+// Immutable source-scoped admission proof. A material source/provider edit
+// advances its governance revision, so old snapshots cannot become current
+// again by restoring an earlier configuration (the ABA case).
+export const sourceAdmissionEvidence = sqliteTable("source_admission_evidence", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceId: text("source_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  sourceGovernanceRevision: integer("source_governance_revision").notNull(),
+  providerGovernanceRevision: integer("provider_governance_revision").notNull(),
+  endpointUrl: text("endpoint_url").notNull(),
+  policyVersion: text("policy_version").notNull(),
+  capturedAt: text("captured_at").notNull(),
+  expiresAt: text("expires_at").notNull(),
+  adjudicationRef: text("adjudication_ref").notNull(),
+  packetJson: text("packet_json").notNull(),
+  packetSha256: text("packet_sha256").notNull().unique(),
+  createdAt: text("created_at").notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),
+}, (table) => ({
+  sourceIdx: index("source_admission_evidence_source_idx").on(table.sourceId, table.id),
+}));
+
 // ─── Shadow observations (SP-22) ────────────────────────────────────────────
 // Durable history of every SP-07 shadow probe SP-22's dispatcher runs, so
 // "recurrent shadow" is provable from D1 rather than asserted from a single
@@ -437,9 +460,15 @@ export const sourceShadowObservations = sqliteTable("source_shadow_observations"
   stopReason: text("stop_reason"),
   evidenceHash: text("evidence_hash").notNull(),
   resultJson: text("result_json").notNull(),
+  // Nullable only for historical pre-0040 rows; all new inserts are bound.
+  admissionEvidenceId: integer("admission_evidence_id"),
+  shadowEntryHash: text("shadow_entry_hash"),
+  dispatchKey: text("dispatch_key"),
 }, (table) => ({
   sourceIdx: index("source_shadow_observations_source_idx").on(table.sourceId),
   observedAtIdx: index("source_shadow_observations_observed_at_idx").on(table.observedAt),
+  dispatchKeyIdx: uniqueIndex("source_shadow_observations_dispatch_key_unique").on(table.dispatchKey).where(sql`${table.dispatchKey} IS NOT NULL`),
+  admissionWindowIdx: index("source_shadow_observations_admission_window_idx").on(table.admissionEvidenceId, table.shadowEntryHash, table.observedAt, table.id),
 }));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -456,6 +485,8 @@ export type SourceDecision = typeof sourceDecisions.$inferSelect;
 export type NewSourceDecision = typeof sourceDecisions.$inferInsert;
 export type SourceTransitionEvent = typeof sourceTransitionEvents.$inferSelect;
 export type NewSourceTransitionEvent = typeof sourceTransitionEvents.$inferInsert;
+export type SourceAdmissionEvidence = typeof sourceAdmissionEvidence.$inferSelect;
+export type NewSourceAdmissionEvidence = typeof sourceAdmissionEvidence.$inferInsert;
 
 export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;

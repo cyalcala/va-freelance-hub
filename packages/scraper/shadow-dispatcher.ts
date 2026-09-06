@@ -22,13 +22,18 @@
 
 import {
   runCandidateShadowProbe,
+  SHADOW_VERSION,
+  SHADOW_MAX_BYTES,
+  SHADOW_MAX_REQUESTS,
   type CandidateShadowInput,
   type CandidateShadowResult,
 } from "./candidate-shadow";
 import { sha256Hex } from "./contentHash";
 import type { DoctorOutcome } from "./source-doctor";
+import type { CurrentAdmissionEvidenceResult } from "./admission-evidence";
+import { hostOf } from "./prospector";
 
-export const DISPATCHER_VERSION = "1.0.0";
+export const DISPATCHER_VERSION = "2.0.0";
 
 // Registry rows have no per-source cadence unless their provider specifies
 // one (provider_profiles.cadence_min_minutes). A shadow probe's purpose is
@@ -112,6 +117,10 @@ export function selectEligibleForDispatch(
     if (row.optOut) {
       return { sourceId: row.sourceId, eligible: false, reason: "source is opted out" };
     }
+    if (!row.policyExpiry || !canonicalInstant(row.policyExpiry)
+      || Date.parse(row.policyExpiry) <= now.getTime()) {
+      return { sourceId: row.sourceId, eligible: false, reason: "source evidence lease is missing, invalid, or expired" };
+    }
     const provider = providerById.get(row.providerId);
     if (!provider) {
       return { sourceId: row.sourceId, eligible: false, reason: `no provider profile found for providerId "${row.providerId}"` };
@@ -119,6 +128,9 @@ export function selectEligibleForDispatch(
     const lastObservedAt = lastObservedAtBySourceId.get(row.sourceId);
     if (lastObservedAt) {
       const lastObservedTime = new Date(lastObservedAt).getTime();
+      if (!canonicalInstant(lastObservedAt)) {
+        return { sourceId: row.sourceId, eligible: false, reason: "last observation timestamp is invalid" };
+      }
       if (Number.isFinite(lastObservedTime)) {
         const minutesSince = (now.getTime() - lastObservedTime) / 60_000;
         const minInterval = provider.cadenceMinMinutes ?? DEFAULT_MIN_REDISPATCH_MINUTES;
@@ -186,20 +198,94 @@ export interface ShadowObservationRecord {
   stopReason: string | null;
   evidenceHash: string;
   resultJson: string;
+  admissionEvidenceId: number;
+  shadowEntryHash: string;
+  dispatchKey: string;
+}
+
+type AdmissionContext = Extract<CurrentAdmissionEvidenceResult, { ok: true }>;
+
+export interface ShadowObservationContext {
+  input: CandidateShadowInput;
+  admissionEvidenceId: number;
+  shadowEntryHash: string;
+  dispatchKey: string;
+  startedAt: string;
+  completedAt: string;
+}
+
+function canonicalInstant(value: string): boolean {
+  const parsed = Date.parse(value);
+  return Number.isFinite(parsed) && new Date(parsed).toISOString() === value;
+}
+
+const OUTCOMES = new Set<DoctorOutcome>([
+  "HEALTHY_WITH_RESULTS", "HEALTHY_EMPTY", "DEGRADED_ANOMALOUS", "SCHEMA_BROKEN",
+  "RATE_LIMITED", "UNREACHABLE", "POLICY_BLOCKED", "INTERNAL_PIPELINE_FAILURE", "UNKNOWN",
+]);
+
+/** Verify projections even for failures: a failed real probe remains evidence. */
+function validateObservationResult(result: CandidateShadowResult, context: ShadowObservationContext): void {
+  const { input } = context;
+  const reject = () => { throw new Error("shadow probe result does not match its dispatched identity and evidence facts"); };
+  if (!result || result.version !== SHADOW_VERSION || result.sourceId !== input.sourceId
+    || result.providerId !== input.providerId || result.displayName !== input.displayName
+    || result.endpoint?.url !== input.endpointUrl || result.endpoint?.host !== hostOf(input.endpointUrl)
+    || result.endpoint?.allowedHosts !== (input.provider.allowedHosts ?? null)
+    || result.endpoint?.isHttps !== true || result.endpoint?.hostValid !== true
+    || result.auth?.class !== input.provider.authClass || result.auth?.supported !== true
+    || result.visibility?.filter !== input.provider.visibilityFilter
+    || result.visibility?.isPublic !== true || result.visibility?.ambiguous !== false
+    || result.provenance?.providerFamily !== input.provider.providerFamily
+    || result.provenance?.mechanism !== input.provider.mechanism
+    || result.provenance?.evidenceUrl !== (input.provider.evidenceUrl ?? null)
+    || result.provenance?.discoveryProvenance !== (input.discoveryProvenance ?? null)
+    || result.cadence?.minMinutes !== (input.provider.cadenceMinMinutes ?? null)
+    || result.cadence?.maxMinutes !== (input.provider.cadenceMaxMinutes ?? null)
+    || result.cadence?.rateGuidance !== (input.provider.rateGuidance ?? null)) reject();
+  if (!canonicalInstant(result.timestamp) || !canonicalInstant(context.startedAt) || !canonicalInstant(context.completedAt)
+    || Date.parse(result.timestamp) < Date.parse(context.startedAt)
+    || Date.parse(result.timestamp) > Date.parse(context.completedAt)) reject();
+  if (!result.diagnostic || !OUTCOMES.has(result.diagnostic.outcome)
+    || result.diagnostic.mutations !== 0 || result.diagnostic.shadowMode !== true
+    || !Array.isArray(result.diagnostic.probes)
+    || !result.fetch || !result.parse || !result.sampleFunnel || !result.robots) reject();
+  const counts = [result.diagnostic.requestCount, result.diagnostic.bytesReceived, result.diagnostic.durationMs,
+    result.fetch.bytesReceived, result.parse.itemCount, result.sampleFunnel.bytesReceived,
+    result.sampleFunnel.parsedItems, result.sampleFunnel.plausibleItems];
+  if (counts.some(value => !Number.isSafeInteger(value) || value < 0)
+    || result.fetch.bytesReceived !== result.diagnostic.bytesReceived
+    || result.sampleFunnel.bytesReceived !== result.diagnostic.bytesReceived
+    || result.sampleFunnel.parsedItems !== result.parse.itemCount
+    || result.sampleFunnel.plausibleItems > result.parse.itemCount
+    || result.sampleFunnel.budgetExceeded !== (result.diagnostic.bytesReceived > SHADOW_MAX_BYTES || result.diagnostic.requestCount > SHADOW_MAX_REQUESTS)
+    || (result.stopReason !== undefined && typeof result.stopReason !== "string")) reject();
+  if (result.diagnostic.outcome === "HEALTHY_WITH_RESULTS" || result.diagnostic.outcome === "HEALTHY_EMPTY") {
+    if (!result.fetch.attempted || !result.fetch.status || result.fetch.status < 200 || result.fetch.status >= 300
+      || !result.parse.attempted || !["ok", "empty"].includes(result.parse.schemaHealth)
+      || !result.robots.checked || result.robots.wouldBlock !== false || result.stopReason
+      || result.sampleFunnel.budgetExceeded
+      || (result.diagnostic.outcome === "HEALTHY_WITH_RESULTS") !== (result.sampleFunnel.plausibleItems > 0)) reject();
+  }
 }
 
 export async function buildObservationRecord(
-  sourceId: string,
-  providerId: string,
   result: CandidateShadowResult,
-  observedAt: string,
+  context: ShadowObservationContext,
 ): Promise<ShadowObservationRecord> {
-  const resultJson = JSON.stringify(result);
+  validateObservationResult(result, context);
+  if (!Number.isSafeInteger(context.admissionEvidenceId) || context.admissionEvidenceId <= 0
+    || !context.shadowEntryHash || !context.dispatchKey) throw new Error("shadow admission binding is required");
+  const resultJson = JSON.stringify({ ...result, admissionBinding: {
+    evidenceId: context.admissionEvidenceId,
+    shadowEntryHash: context.shadowEntryHash,
+    dispatchKey: context.dispatchKey,
+  } });
   const evidenceHash = await sha256Hex(resultJson);
   return {
-    sourceId,
-    providerId,
-    observedAt,
+    sourceId: context.input.sourceId,
+    providerId: context.input.providerId,
+    observedAt: result.timestamp,
     dispatcherVersion: DISPATCHER_VERSION,
     outcome: result.diagnostic.outcome,
     requestCount: result.diagnostic.requestCount,
@@ -210,6 +296,9 @@ export async function buildObservationRecord(
     stopReason: result.stopReason ?? null,
     evidenceHash,
     resultJson,
+    admissionEvidenceId: context.admissionEvidenceId,
+    shadowEntryHash: context.shadowEntryHash,
+    dispatchKey: context.dispatchKey,
   };
 }
 
@@ -217,12 +306,13 @@ export async function buildObservationRecord(
 
 export interface ShadowDispatchDeps {
   loadRegistryRows: () => Promise<DispatchRegistryRow[]>;
-  loadProviderProfiles: () => Promise<Map<string, DispatchProviderProfile>>;
-  loadLastObservedAt: () => Promise<Map<string, string>>;
+  loadAdmissionContext: (sourceId: string, nowIso: string) => Promise<CurrentAdmissionEvidenceResult>;
+  loadLastObservedAt: (context: AdmissionContext) => Promise<string | null>;
   runProbe: (input: CandidateShadowInput) => Promise<CandidateShadowResult>;
   persistObservation: (record: ShadowObservationRecord) => Promise<void>;
   now?: () => Date;
   maxDispatchesPerRun?: number;
+  createDispatchKey?: () => string;
 }
 
 export interface ShadowDispatchSummary {
@@ -231,9 +321,49 @@ export interface ShadowDispatchSummary {
   dispatched: number;
   skippedIneligible: number;
   skippedInvalidProvider: number;
+  skippedInvalidEvidence: number;
   skippedRunCap: number;
   invalidProviderErrors: Array<{ sourceId: string; errors: string[] }>;
   outcomes: Record<string, number>;
+  probeFailures: number;
+  rejectedProbeResults: number;
+  evidenceErrors: Array<{ sourceId: string; reason: string }>;
+}
+
+function inputForContext(context: AdmissionContext): CandidateShadowInput {
+  const { source, provider } = context;
+  return {
+    sourceId: source.sourceId,
+    providerId: source.providerId,
+    displayName: source.displayName,
+    endpointUrl: source.endpointUrl,
+    companyToken: source.companyToken,
+    discoveryProvenance: source.discoveryProvenance,
+    complianceState: source.complianceState,
+    operationalState: source.operationalState,
+    reviewDeadline: source.reviewDeadline,
+    policyExpiry: source.policyExpiry,
+    provider,
+  };
+}
+
+function failedProbeResult(input: CandidateShadowInput, startedAt: string, completedAt: string): CandidateShadowResult {
+  return {
+    version: SHADOW_VERSION, timestamp: startedAt, sourceId: input.sourceId, providerId: input.providerId,
+    displayName: input.displayName,
+    endpoint: { url: input.endpointUrl, isHttps: true, host: hostOf(input.endpointUrl), allowedHosts: input.provider.allowedHosts ?? null, hostValid: true },
+    auth: { class: input.provider.authClass, supported: true },
+    visibility: { filter: input.provider.visibilityFilter ?? null, isPublic: true, ambiguous: false },
+    provenance: { discoveryProvenance: input.discoveryProvenance ?? null, evidenceUrl: input.provider.evidenceUrl ?? null,
+      providerFamily: input.provider.providerFamily, mechanism: input.provider.mechanism },
+    cadence: { minMinutes: input.provider.cadenceMinMinutes ?? null, maxMinutes: input.provider.cadenceMaxMinutes ?? null, rateGuidance: input.provider.rateGuidance ?? null },
+    robots: { checked: false }, fetch: { attempted: false, bytesReceived: 0 },
+    parse: { attempted: false, schemaHealth: "not_attempted", itemCount: 0 },
+    sampleFunnel: { bytesReceived: 0, parsedItems: 0, plausibleItems: 0, truncated: false, budgetExceeded: false },
+    diagnostic: { outcome: "INTERNAL_PIPELINE_FAILURE", probes: [], requestCount: 0, bytesReceived: 0,
+      durationMs: Math.max(0, Date.parse(completedAt) - Date.parse(startedAt)), mutations: 0, shadowMode: true },
+    stopReason: "probe did not return a valid source-bound observation; request and item counts are unknown",
+  };
 }
 
 /**
@@ -245,17 +375,12 @@ export interface ShadowDispatchSummary {
  * readers/writer still gets the real probe behavior.
  */
 export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Promise<ShadowDispatchSummary> {
-  const now = deps.now?.() ?? new Date();
+  const now = deps.now ?? (() => new Date());
   const maxDispatches = deps.maxDispatchesPerRun ?? MAX_DISPATCHES_PER_RUN;
-
-  const [registryRows, providerById, lastObservedAtBySourceId] = await Promise.all([
-    deps.loadRegistryRows(),
-    deps.loadProviderProfiles(),
-    deps.loadLastObservedAt(),
-  ]);
-
-  const eligibility = selectEligibleForDispatch(registryRows, providerById, lastObservedAtBySourceId, now);
-  const rowsBySourceId = new Map(registryRows.map((r) => [r.sourceId, r]));
+  if (!Number.isSafeInteger(maxDispatches) || maxDispatches < 0 || maxDispatches > MAX_DISPATCHES_PER_RUN) {
+    throw new Error("invalid shadow dispatch run cap");
+  }
+  const registryRows = await deps.loadRegistryRows();
 
   const summary: ShadowDispatchSummary = {
     totalRegistryRows: registryRows.length,
@@ -263,26 +388,40 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     dispatched: 0,
     skippedIneligible: 0,
     skippedInvalidProvider: 0,
+    skippedInvalidEvidence: 0,
     skippedRunCap: 0,
     invalidProviderErrors: [],
     outcomes: {},
+    probeFailures: 0,
+    rejectedProbeResults: 0,
+    evidenceErrors: [],
   };
 
-  for (const decision of eligibility) {
-    if (!decision.eligible) {
+  for (const enumerated of registryRows) {
+    if (enumerated.operationalState !== "shadow") {
       summary.skippedIneligible += 1;
       continue;
     }
-    summary.eligible += 1;
-
     if (summary.dispatched >= maxDispatches) {
       summary.skippedRunCap += 1;
       continue;
     }
 
-    const row = rowsBySourceId.get(decision.sourceId);
-    const provider = row ? providerById.get(row.providerId) : undefined;
-    if (!row || !provider) continue; // unreachable given eligibility already checked both
+    // This loader rechecks current source/profile revisions, exact endpoint,
+    // immutable authority evidence, leases and durable opt-outs immediately
+    // before each probe. Enumeration is never an authority snapshot.
+    const context = await deps.loadAdmissionContext(enumerated.sourceId, now().toISOString());
+    if (!context.ok) {
+      summary.skippedInvalidEvidence += 1;
+      summary.evidenceErrors.push({ sourceId: enumerated.sourceId, reason: context.reason });
+      continue;
+    }
+    const { source: row, provider, evidence } = context;
+    if (row.sourceId !== enumerated.sourceId || row.providerId !== provider.id || !row.lastTransitionHash) {
+      summary.skippedInvalidEvidence += 1;
+      summary.evidenceErrors.push({ sourceId: enumerated.sourceId, reason: "current source and admission identity do not match a shadow entry" });
+      continue;
+    }
 
     const validation = validateProviderProfileForDispatch(provider);
     if (!validation.ok) {
@@ -291,37 +430,36 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
       continue;
     }
 
-    const input: CandidateShadowInput = {
-      sourceId: row.sourceId,
-      providerId: row.providerId,
-      displayName: row.displayName,
-      endpointUrl: row.endpointUrl,
-      companyToken: row.companyToken ?? null,
-      discoveryProvenance: row.discoveryProvenance ?? null,
-      complianceState: row.complianceState as CandidateShadowInput["complianceState"],
-      operationalState: row.operationalState as CandidateShadowInput["operationalState"],
-      reviewDeadline: row.reviewDeadline ?? null,
-      policyExpiry: row.policyExpiry ?? null,
-      provider: {
-        id: provider.id,
-        providerFamily: provider.providerFamily,
-        mechanism: provider.mechanism,
-        authClass: provider.authClass,
-        endpointPattern: provider.endpointPattern ?? null,
-        allowedHosts: provider.allowedHosts ?? null,
-        evidenceUrl: provider.evidenceUrl ?? null,
-        evidenceLeaseDays: provider.evidenceLeaseDays ?? null,
-        visibilityFilter: provider.visibilityFilter ?? null,
-        contentScope: provider.contentScope ?? null,
-        cadenceMinMinutes: provider.cadenceMinMinutes ?? null,
-        cadenceMaxMinutes: provider.cadenceMaxMinutes ?? null,
-        rateGuidance: provider.rateGuidance ?? null,
-        robotsHandling: provider.robotsHandling ?? null,
-      },
-    };
-
-    const result = await deps.runProbe(input);
-    const record = await buildObservationRecord(row.sourceId, row.providerId, result, now.toISOString());
+    const lastObservedAt = await deps.loadLastObservedAt(context);
+    const startedAt = now().toISOString();
+    const [eligibility] = selectEligibleForDispatch([row], new Map([[provider.id, provider]]),
+      new Map(lastObservedAt ? [[row.sourceId, lastObservedAt]] : []), new Date(startedAt));
+    if (!eligibility.eligible || !canonicalInstant(evidence.expiresAt) || Date.parse(evidence.expiresAt) <= Date.parse(startedAt)) {
+      summary.skippedIneligible += 1;
+      continue;
+    }
+    summary.eligible += 1;
+    const input = inputForContext(context);
+    const binding = { input, admissionEvidenceId: evidence.id, shadowEntryHash: row.lastTransitionHash,
+      dispatchKey: deps.createDispatchKey?.() ?? crypto.randomUUID(), startedAt, completedAt: startedAt };
+    let result: CandidateShadowResult;
+    try {
+      result = await deps.runProbe(input);
+    } catch {
+      summary.probeFailures += 1;
+      result = failedProbeResult(input, startedAt, now().toISOString());
+    }
+    binding.completedAt = now().toISOString();
+    let record: ShadowObservationRecord;
+    try {
+      record = await buildObservationRecord(result, binding);
+    } catch {
+      summary.rejectedProbeResults += 1;
+      result = failedProbeResult(input, startedAt, binding.completedAt);
+      record = await buildObservationRecord(result, binding);
+    }
+    // 0040 rechecks the revision/evidence/entry binding and opt-out at insertion.
+    // A stale-context write rejects; it never gets counted as stored evidence.
     await deps.persistObservation(record);
 
     summary.dispatched += 1;

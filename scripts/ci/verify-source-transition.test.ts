@@ -8,19 +8,19 @@ const migrationDir = resolve(import.meta.dir, "../../packages/db/migrations");
 
 function fixture() {
   const db = new Database(":memory:");
-  for (const name of ["0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql", "0038_shadow_observations.sql", "0039_canary_transition_plane.sql"]) {
+  for (const name of ["0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql", "0038_shadow_observations.sql", "0039_canary_transition_plane.sql", "0040_current_evidence_admission.sql"]) {
     db.exec(readFileSync(resolve(migrationDir, name), "utf8"));
   }
   db.exec(`CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
-    INSERT INTO d1_migrations (name) VALUES ('0039_canary_transition_plane.sql');
-    CREATE TABLE opportunities (source_id TEXT, scraped_at TEXT, is_active INTEGER, ph_eligibility TEXT);
+    INSERT INTO d1_migrations (name) VALUES ('0039_canary_transition_plane.sql'), ('0040_current_evidence_admission.sql');
+    CREATE TABLE opportunities (source_id TEXT, scraped_at TEXT, is_active INTEGER, ph_eligibility TEXT, inactive_reason TEXT);
     INSERT INTO opportunities VALUES
-      ('we-work-remotely', datetime('now', '-1 hour'), 1, 'eligible_verified'),
-      (NULL, datetime('now', '-2 days'), 1, 'eligible_likely'),
-      ('remotive', datetime('now', '-8 days'), 1, 'eligible_likely'),
-      ('remotive', datetime('now', '+1 day'), 1, 'eligible_likely'),
-      ('remotive', datetime('now', '-1 hour'), 0, 'eligible_verified'),
-      ('remotive', datetime('now', '-1 hour'), 1, 'ineligible');`);
+      ('we-work-remotely', datetime('now', '-1 hour'), 1, 'eligible_verified', NULL),
+      (NULL, datetime('now', '-2 days'), 1, 'eligible_likely', NULL),
+      ('remotive', datetime('now', '-8 days'), 1, 'eligible_likely', NULL),
+      ('remotive', datetime('now', '+1 day'), 1, 'eligible_likely', NULL),
+      ('remotive', datetime('now', '-1 hour'), 0, 'eligible_verified', 'pending-triage'),
+      ('remotive', datetime('now', '-1 hour'), 1, 'ineligible', NULL);`);
   return db;
 }
 
@@ -35,7 +35,8 @@ describe("SP-23 read-only production evidence SQL", () => {
       const before = db.query("SELECT total_changes() AS n").get();
       db.exec("PRAGMA query_only = ON");
       const result = db.query(sql).get() as Record<string, unknown>;
-      expect(result).toMatchObject({ migration_0039_rows: 1, transition_table_count: 1, registry_column_count: 2,
+      expect(result).toMatchObject({ migration_0039_rows: 1, migration_0040_rows: 1, admission_table_count: 1,
+        governance_column_count: 2, transition_table_count: 1, registry_column_count: 2,
         named_trigger_count: 18, missing_triggers_json: "[]", registry_count: 0, provider_profile_count: 0,
         candidate_count: 0, transition_event_count: 0, shadow_observation_count: 0,
         eligible_active: 4, eligible_active_missing_source_id: 1, eligible_first_storage_1d: 1, eligible_first_storage_7d: 2 });
@@ -55,6 +56,21 @@ describe("SP-23 read-only production evidence SQL", () => {
       expect(result.migration_0039_rows).toBe(0);
       expect(result.named_trigger_count).toBe(17);
       expect(JSON.parse(String(result.missing_triggers_json))).toEqual(["source_transition_events_append_only_delete"]);
+    } finally { db.close(); }
+  });
+
+  test("separates recent first-storage outcomes from currently eligible supply", () => {
+    const db = fixture();
+    try {
+      db.exec("PRAGMA query_only = ON");
+      const result = db.query(sql).get() as Record<string, unknown>;
+      const rows = JSON.parse(String(result.first_storage_outcomes_7d_json)) as Array<Record<string, unknown>>;
+      expect(rows.reduce((sum, row) => sum + Number(row.row_count), 0)).toBe(4);
+      expect(rows).toContainEqual({ source_id: "remotive", is_active: 0,
+        ph_eligibility: "eligible_verified", inactive_reason: "pending-triage", row_count: 1 });
+      expect(rows).toContainEqual({ source_id: "remotive", is_active: 1,
+        ph_eligibility: "ineligible", inactive_reason: null, row_count: 1 });
+      expect(result.eligible_first_storage_7d).toBe(2);
     } finally { db.close(); }
   });
 });
