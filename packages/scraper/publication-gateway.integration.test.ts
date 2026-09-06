@@ -29,6 +29,7 @@ function freshDb(): Database {
     "0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql",
     "0038_shadow_observations.sql", "0039_canary_transition_plane.sql",
     "0040_current_evidence_admission.sql", "0041_publication_ledger.sql",
+    "0042_d1_like_glob_limit.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }

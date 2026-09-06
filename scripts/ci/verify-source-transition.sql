@@ -58,6 +58,7 @@ SELECT
   (SELECT COUNT(*) FROM d1_migrations WHERE name = '0039_canary_transition_plane.sql') AS migration_0039_rows,
   (SELECT COUNT(*) FROM d1_migrations WHERE name = '0040_current_evidence_admission.sql') AS migration_0040_rows,
   (SELECT COUNT(*) FROM d1_migrations WHERE name = '0041_publication_ledger.sql') AS migration_0041_rows,
+  (SELECT COUNT(*) FROM d1_migrations WHERE name = '0042_d1_like_glob_limit.sql') AS migration_0042_rows,
   (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'source_admission_evidence') AS admission_table_count,
   (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'source_publication_ledger') AS publication_ledger_table_count,
   (SELECT COUNT(*) FROM source_publication_ledger) AS publication_ledger_count,
