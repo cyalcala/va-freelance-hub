@@ -1,5 +1,34 @@
 # System Savepoint
 
+## Run 60 — APEX-W6 / EX-11 Direct ATS Scaling: Canonical & Wikimedia Admission (2026-09-07)
+
+UNIT ID: APEX-W6 (EX-11)
+PHASE: ADMIT / SHADOW
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `greenhouse:canonical`, `greenhouse:wikimedia`
+
+### Direct ATS Scaling & Shadow Admission Findings
+- **Registry allowlist scaled**:
+  - `apps/web/src/pages/api/cron/source-admit.ts`: Admitted two high-yield remote employers to `SOURCE_ADMIT_ALLOWLIST`:
+    - **Canonical (`greenhouse:canonical`)**: 302 active postings on official Greenhouse board, with 95 postings explicitly designated *Home based - Worldwide* or *Home based - Asia*.
+    - **Wikimedia Foundation (`greenhouse:wikimedia`)**: 18 active postings on official Greenhouse board, with 15+ remote-friendly knowledge work roles.
+  - Display name mapping and Tier A fast-track adjudication references mapped (`ex-08-greenhouse-canonical-tier-a-fast-track`, `ex-08-greenhouse-wikimedia-tier-a-fast-track`).
+- **Production Invariant Strictly Preserved**:
+  - Shadow admission mode only (`operationalState: 'shadow'`).
+  - Evaluated safely via hourly shadow dispatch without mutating public listings.
+  - Zero leakage: `isPublishable` strictly returns `false` for `shadow`.
+- **Evidence Authored**:
+  - `docs/gauntlet/evidence/EX-11-canonical-wikimedia-greenhouse-admission.md` compiled with live endpoint measurements and compliance parameters.
+- **Verification Evidence**:
+  - `apps/web/tests/source-admit-route.test.ts`: 8/8 unit tests passing (added allowlist & Canonical admission assertions).
+  - Monorepo test suite: **1,211/1,211 tests pass across 119 files** (8.5s).
+  - Python test suite: 7/7 tests pass cleanly.
+  - `bun run audit:guardrails`: Clean (0 violations).
+  - `bun run typecheck`: Clean (0 errors).
+  - `bun run build`: Clean (32s).
+- **Next exact action**: APEX Wave 7 (Discovery Value & UI Facets).
+
 ## Run 59 — APEX-W5 Product Intelligence & Python Analytical Tooling (2026-09-07)
 
 UNIT ID: APEX-W5

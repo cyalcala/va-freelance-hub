@@ -2,10 +2,10 @@
 
 **Program**: APEX-10X (10x Qualified Opportunity Engine & Governance)
 **As of**: 2026-09-07
-**Current Wave**: Wave 5 (Product Intelligence & Analytics)
+**Current Wave**: Wave 6 (Direct ATS Scaling / EX-11)
 **Status**: ACTIVE
-**Working Branch**: `feat/apex-w5-product-intelligence`
-**Base Branch**: `feat/apex-w4-zero-waste-triage` (PR #130)
+**Working Branch**: `feat/apex-w6-direct-ats-expansion`
+**Base Branch**: `feat/apex-w5-product-intelligence` (PR #131)
 
 ---
 
@@ -19,7 +19,8 @@
 | **#128** | `feat/apex-w2-governance` | APEX-W2 Two-Speed Governance (ADR-008 & Risk Tiers) | **SUCCESS** | OPEN (Clean) |
 | **#129** | `feat/apex-w3-ex08-greenhouse` | APEX-W3 Greenhouse Multi-Board Shadow Admission (EX-08) | **SUCCESS** | OPEN (Clean) |
 | **#130** | `feat/apex-w4-zero-waste-triage` | APEX-W4 Zero-Waste Triage (Deterministic Geo & Heuristics) | **SUCCESS** | OPEN (Clean) |
-| **Current** | `feat/apex-w5-product-intelligence` | APEX-W5 Product Intelligence & Python Analytical Tooling | Local PASS (1,211 tests) | In Progress |
+| **#131** | `feat/apex-w5-product-intelligence` | APEX-W5 Product Intelligence & Python Analytical Tooling | **SUCCESS** | OPEN (Clean) |
+| **Current** | `feat/apex-w6-direct-ats-expansion` | APEX-W6 Direct ATS Scaling: Canonical & Wikimedia (EX-11) | Local PASS (1,211 tests) | In Progress |
 
 ---
 

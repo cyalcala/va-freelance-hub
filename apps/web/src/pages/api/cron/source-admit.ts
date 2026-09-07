@@ -31,6 +31,8 @@ export const SOURCE_ADMIT_ALLOWLIST = [
   "greenhouse:remotecom",
   "greenhouse:nearform",
   "greenhouse:ghost",
+  "greenhouse:canonical",
+  "greenhouse:wikimedia",
 ] as const;
 
 type HandlerDependencies = {
@@ -57,6 +59,8 @@ function admitTarget(sourceId: string, clock: string) {
       remotecom: "Remote.com",
       nearform: "Nearform",
       ghost: "Ghost Foundation",
+      canonical: "Canonical",
+      wikimedia: "Wikimedia Foundation",
     };
     const companyName = names[token] ?? token;
     const profile = buildGreenhouseProviderProfile();

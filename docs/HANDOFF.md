@@ -1,6 +1,32 @@
 # Handoff
 
-## Current handoff — 2026-09-07 APEX-W5 Product Intelligence & Python Analytical Tooling
+## Current handoff — 2026-09-07 APEX-W6 / EX-11 Direct ATS Scaling: Canonical & Wikimedia Shadow Admission
+
+Read Run 60.
+- **WHAT IS TRUE NOW?**
+  The production exact-six invariant is strictly preserved. Ingestion clock is healthy. 1,211/1,211 monorepo tests pass across 119 files. 7/7 Python analytical tests pass cleanly. Typecheck, guardrails, and Astro build are 100% clean. PRs #125, #126, #127, #128, #129, #130, and #131 are opened and passing CI on GitHub.
+- **WHAT WAS JUST COMPLETED?**
+  1. Wave 6 direct ATS expansion (EX-11):
+     - Expanded `SOURCE_ADMIT_ALLOWLIST` in `apps/web/src/pages/api/cron/source-admit.ts` for two Tier A Greenhouse employers: Canonical (`greenhouse:canonical`, 302 postings, 95 worldwide/Asia remote) and Wikimedia Foundation (`greenhouse:wikimedia`, 18 postings, 15+ remote).
+     - Applied Tier A fast-track adjudication references under ADR-008 (`ex-08-greenhouse-canonical-tier-a-fast-track`, `ex-08-greenhouse-wikimedia-tier-a-fast-track`).
+     - Added test coverage in `apps/web/tests/source-admit-route.test.ts` (8/8 tests pass).
+     - Compiled evidence pack: `docs/gauntlet/evidence/EX-11-canonical-wikimedia-greenhouse-admission.md`.
+  2. Safety:
+     - Strict non-publishing shadow mode (`operationalState: 'shadow'`).
+     - Zero public opportunities published; evaluated safely via hourly GHA shadow dispatch.
+- **WHAT IS CURRENTLY BEING WORKED?**
+  Committing Wave 6 to `feat/apex-w6-direct-ats-expansion`, opening PR #132, and executing Wave 7 (Discovery Value & UI Facets).
+- **WHAT FAILED?**
+  None. Live curl and Python probes of `canonical` and `wikimedia` endpoints verified HTTP 200, valid schema, and active hiring volume.
+- **WHAT MUST NOT BE REDONE?**
+  Do not admit unverified, defunct, or fictional mock boards (e.g. `leverdemo`). Do not loosen exact-six invariant.
+- **WHAT EXACT COMMAND/TASK SHOULD THE NEXT AI START WITH?**
+  `$env:PATH = "$HOME\.bun\bin;$env:PATH"; bun test`
+  Then view PR #132: `gh pr view 132`.
+- **WHAT EVIDENCE PROVES THE CURRENT STATE?**
+  1,211 tests pass across 119 files. Typecheck and guardrails clean. PR #131 Sovereign CI workflow passed.
+
+## Current handoff — 2026-09-07 APEX-W5 Product Intelligence & Python Analytical Tooling (HISTORICAL)
 
 Read Run 59.
 - **WHAT IS TRUE NOW?**
