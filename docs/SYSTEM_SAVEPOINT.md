@@ -1,5 +1,20 @@
 # System Savepoint
 
+## Run 55 — APEX-W1 Source Economics Telemetry (2026-09-07)
+
+UNIT ID: APEX-W1
+PHASE: IMPLEMENT / MEASURE
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: none (source economics telemetry)
+
+### Telemetry Implementation Findings
+- **Telemetry expanded**: `scripts/diagnostics/source-economics.ts` extended with `triage_outcomes_7d` and yield efficiency reporting.
+- **Metrics enabled**: Per-source breakdown of Philippines eligibility (`eligible`, `unclear`, `ineligible`, `policy_rejected`), `qualified_rate`, `yield_per_fetch`, and `yield_per_100_items`.
+- **Zero-mutation read-only safety**: SQL queries remain purely read-only (`SELECT`), maintaining full mathematical reconciliation where all deltas equal 0.
+- **Verification**: `bun test scripts/diagnostics/source-economics.test.ts` (14/14 pass), full monorepo suite passes (1,190/1,190 pass), typecheck and guardrails clean.
+- **Next exact action**: APEX Wave 2 / APEX-W2 (Two-Speed Source Governance ADR & admission rules) and EX-08 (Greenhouse multi-board qualification).
+
 ## Run 54 — APEX 10X Wave 0 Reality Reconciliation & Control Plane (2026-09-07)
 
 UNIT ID: APEX-W0

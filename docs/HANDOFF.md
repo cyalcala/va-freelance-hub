@@ -1,6 +1,13 @@
 # Handoff
 
-## Current handoff — 2026-09-07 APEX 10X Wave 0 Reality Reconciliation & Control Plane
+## Current handoff — 2026-09-07 APEX-W1 Source Economics Telemetry
+
+Read Run 55.
+- **Wave 1 Complete**: `scripts/diagnostics/source-economics.ts` extended with `triage_outcomes_7d` and yield efficiency reporting. Per-source qualification yield, conversion rates, and fetch yield metrics tested and operational.
+- **PR Status**: PR #125 (Issue #123 + EX-06) and PR #126 (APEX-W0 Control Plane) passing CI on GitHub.
+- **Next Unit**: APEX-W2 (Two-Speed Source Governance ADR & admission rules) and EX-08 (Greenhouse multi-board qualification: GitLab, Remote.com, Nearform, Ghost).
+
+## Current handoff — 2026-09-07 APEX 10X Wave 0 Reality Reconciliation & Control Plane (HISTORICAL)
 
 Read Run 54. START_SHA `b225b3e6cdad28328818c3587cce0176b788fcc5`.
 - **PR #125**: Opened for `fix/clock-catch-diagnostics-123` containing Issue #123 unhandled-error heartbeat diagnostics (`b33f8e1`) and EX-06 Lever Postings API qualification (`b225b3e`).

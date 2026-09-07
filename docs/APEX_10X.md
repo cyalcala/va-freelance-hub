@@ -145,8 +145,8 @@ Measured from Cloudflare D1, GitHub Actions logs, and git tree:
 | **EX-08** | Remaining Greenhouse Boards | **PLANNED** | EX-06 | SP-12 / D1 directory tokens | Probe & admit GitLab, Remote.com |
 | **EX-09** | Workable GHA Shadow | **PLANNED** | EX-08 | SP-10 | Hourly GHA feed preprocessor |
 | **EX-10** | Prospector Candidate Drain | **PLANNED** | EX-09 | SP-06 | Drain into QUALIFY/PROBE |
-| **APEX-W0** | Reality Reconciliation | **ACTIVE** | — | `docs/APEX_10X.md`, `CURRENT.md` | Commit & publish control plane |
-| **APEX-W1** | Source Economics Telemetry | **PLANNED** | APEX-W0 | `source-economics.ts` | Real-time D1 metrics aggregation |
+| **APEX-W0** | Reality Reconciliation | **DONE** | — | PR #126 | Established control plane |
+| **APEX-W1** | Source Economics Telemetry | **DONE** | APEX-W0 | `scripts/diagnostics/source-economics.ts` | Yield per fetch & triage metrics |
 | **APEX-W2** | Two-Speed Source Governance | **PLANNED** | APEX-W1 | ADR-007 addendum | Structured admission fast-path |
 
 ---
