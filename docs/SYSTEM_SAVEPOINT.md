@@ -13,16 +13,14 @@ IDENTITY: none (shift & compensation intelligence, Python analytical tooling)
   - Implemented pure regex and token classifier returning `day_shift` (AU/NZ/AEST/PHT/SGT), `mid_shift` (UK/EU/GMT/BST/CET), `night_shift` (US/CA/EST/PST/CST/EDT/PDT), `flexible` (async/anywhere/own hours), or `unknown`.
   - Tested across 8 comprehensive test cases in `packages/scraper/shiftClassifier.test.ts` (100% pass).
   - Preserved deterministic truth: never invents unstated shift timings.
-- **Compensation Normalization (`packages/scraper/compensation.ts`)**:
-  - Implemented normalized compensation parser extracting min/max salary, currency (USD, PHP, EUR, GBP, AUD, CAD), period (`hourly`, `monthly`, `yearly`), and computed `monthlyEquivalentMin` / `monthlyEquivalentMax` (assuming standard 160h work month).
-  - Tested across 6 comprehensive test cases in `packages/scraper/compensation.test.ts` (100% pass).
-  - Strict compliance: never assumes or invents missing compensation figures or FX rates.
+- **Compensation Normalization (PARKED)**:
+  - Parked per explicit user directive (2026-09-07: "I dont need compensation normalization, park that"). Raw salary strings preserved in D1 without unnecessary normalization abstraction.
 - **Python Analytical Tooling (`scripts/analytics/`)**:
   - `anomaly_detector.py`: Median Absolute Deviation (MAD) anomaly detector for volume/escalation spikes and volume collapse detection against rolling historical medians. Zero external dependencies (Python 3.13 standard library: `statistics`, `math`, `sys`, `json`).
   - `yield_model.py`: Herfindahl-Hirschman Index (HHI) portfolio concentration model, economic yield evaluator, and recommendation engine.
   - `test_analytics.py`: 7/7 unit tests passing cleanly via `py -m unittest`.
 - **Verification Evidence**:
-  - Monorepo test suite: **1,212/1,212 tests pass across 119 files** (9.78s).
+  - Monorepo test suite: **1,206/1,206 tests pass across 118 files** (9.5s).
   - Python test suite: 7/7 tests pass cleanly.
   - `bun run audit:guardrails`: Clean (0 violations).
   - `bun run typecheck`: Clean (0 errors).

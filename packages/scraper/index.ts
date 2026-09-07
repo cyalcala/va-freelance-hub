@@ -374,5 +374,3 @@ export type {
 } from "./shadow-dispatcher";
 export { classifyShift } from "./shiftClassifier";
 export type { ShiftCategory, ShiftInfo, ShiftClassifierInput } from "./shiftClassifier";
-export { normalizeCompensation } from "./compensation";
-export type { NormalizedCompensation } from "./compensation";

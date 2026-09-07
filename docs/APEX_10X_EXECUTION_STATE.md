@@ -19,7 +19,7 @@
 | **#128** | `feat/apex-w2-governance` | APEX-W2 Two-Speed Governance (ADR-008 & Risk Tiers) | **SUCCESS** | OPEN (Clean) |
 | **#129** | `feat/apex-w3-ex08-greenhouse` | APEX-W3 Greenhouse Multi-Board Shadow Admission (EX-08) | **SUCCESS** | OPEN (Clean) |
 | **#130** | `feat/apex-w4-zero-waste-triage` | APEX-W4 Zero-Waste Triage (Deterministic Geo & Heuristics) | **SUCCESS** | OPEN (Clean) |
-| **Current** | `feat/apex-w5-product-intelligence` | APEX-W5 Product Intelligence & Python Analytical Tooling | Local PASS (1,212 tests) | In Progress |
+| **Current** | `feat/apex-w5-product-intelligence` | APEX-W5 Product Intelligence & Python Analytical Tooling | Local PASS (1,206 tests) | In Progress |
 
 ---
 
