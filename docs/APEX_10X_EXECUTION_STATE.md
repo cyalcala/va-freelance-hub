@@ -2,10 +2,10 @@
 
 **Program**: APEX-10X (10x Qualified Opportunity Engine & Governance)
 **As of**: 2026-09-07
-**Current Wave**: Wave 4 (Zero-Waste Triage)
+**Current Wave**: Wave 5 (Product Intelligence & Analytics)
 **Status**: ACTIVE
-**Working Branch**: `feat/apex-w4-zero-waste-triage`
-**Base Branch**: `origin/main` (top SHA `49fdc77dd0ec9a419c8d6d634dbd0b67484d0fe2`)
+**Working Branch**: `feat/apex-w5-product-intelligence`
+**Base Branch**: `feat/apex-w4-zero-waste-triage` (PR #130)
 
 ---
 
@@ -18,7 +18,8 @@
 | **#127** | `feat/apex-w1-source-economics` | APEX-W1 Source Economics Telemetry & Triage Yield | **SUCCESS** | OPEN (Clean) |
 | **#128** | `feat/apex-w2-governance` | APEX-W2 Two-Speed Governance (ADR-008 & Risk Tiers) | **SUCCESS** | OPEN (Clean) |
 | **#129** | `feat/apex-w3-ex08-greenhouse` | APEX-W3 Greenhouse Multi-Board Shadow Admission (EX-08) | **SUCCESS** | OPEN (Clean) |
-| **Current** | `feat/apex-w4-zero-waste-triage` | APEX-W4 Zero-Waste Triage (Deterministic Geo & Heuristics) | Local PASS (1,198 tests) | In Progress |
+| **#130** | `feat/apex-w4-zero-waste-triage` | APEX-W4 Zero-Waste Triage (Deterministic Geo & Heuristics) | **SUCCESS** | OPEN (Clean) |
+| **Current** | `feat/apex-w5-product-intelligence` | APEX-W5 Product Intelligence & Python Analytical Tooling | Local PASS (1,212 tests) | In Progress |
 
 ---
 

@@ -11,6 +11,8 @@ node_modules/
 # graphify-out/ is regenerable /graphify skill output.
 .claude/
 graphify-out/
+.tmp*
+pr-body.txt
 
 # Environment and local Cloudflare secrets. Keep examples tracked.
 .env*
@@ -43,6 +45,11 @@ apps/web/.astro/content.d.ts
 # Bun
 bun.lockb
 *.bun
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 
 # Turso local
 .turso/

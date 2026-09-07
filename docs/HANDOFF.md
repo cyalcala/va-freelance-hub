@@ -1,6 +1,32 @@
 # Handoff
 
-## Current handoff — 2026-09-07 APEX-W4 Zero-Waste Triage & Canonical APEX Documentation
+## Current handoff — 2026-09-07 APEX-W5 Product Intelligence & Python Analytical Tooling
+
+Read Run 59.
+- **WHAT IS TRUE NOW?**
+  The production exact-six invariant is strictly preserved. Ingestion clock is healthy. 1,212/1,212 monorepo tests pass across 119 files. 7/7 Python analytical tests pass cleanly. Typecheck and guardrails are 100% clean. PRs #125, #126, #127, #128, #129, and #130 are opened and passing CI on GitHub.
+- **WHAT WAS JUST COMPLETED?**
+  1. Product Intelligence:
+     - Shift & Timezone Classifier (`packages/scraper/shiftClassifier.ts` + `shiftClassifier.test.ts`): Day Shift (AU/NZ/PHT), Mid Shift (UK/EU), Night Shift (US/CA), Flexible (async/anywhere), and Unknown.
+     - Compensation Normalization (`packages/scraper/compensation.ts` + `compensation.test.ts`): Min/max extraction, currency classification, period normalization, and monthly equivalent projection.
+     - Scraper package exports updated (`packages/scraper/index.ts`).
+  2. Python Analytical Tooling (`scripts/analytics/`):
+     - `anomaly_detector.py`: Rolling MAD anomaly detector and volume collapse detection.
+     - `yield_model.py`: Herfindahl-Hirschman Index (HHI) concentration evaluation and source economics modeling.
+     - `test_analytics.py`: 7/7 standard library tests passing.
+- **WHAT IS CURRENTLY BEING WORKED?**
+  Committing Wave 5 to `feat/apex-w5-product-intelligence`, opening PR #131, and advancing to Wave 6 (Prospector 2.0 Candidate Automation).
+- **WHAT FAILED?**
+  None. Initial `test_analytics.py` invocation needed `sys.path` insertion for non-package invocation; resolved immediately.
+- **WHAT MUST NOT BE REDONE?**
+  Do not invent missing salaries or shifts. Do not introduce external pip dependencies for Python analytics. Preserve zero-cost architecture.
+- **WHAT EXACT COMMAND/TASK SHOULD THE NEXT AI START WITH?**
+  `$env:PATH = "$HOME\.bun\bin;$env:PATH"; bun test`
+  Then inspect PR #131: `gh pr view 131`.
+- **WHAT EVIDENCE PROVES THE CURRENT STATE?**
+  1,212 bun tests pass across 119 files. 7 python tests pass. PR #130 Sovereign CI run 34131848099 passed.
+
+## Current handoff — 2026-09-07 APEX-W4 Zero-Waste Triage & Canonical APEX Documentation (HISTORICAL)
 
 Read Run 58.
 - **WHAT IS TRUE NOW?**

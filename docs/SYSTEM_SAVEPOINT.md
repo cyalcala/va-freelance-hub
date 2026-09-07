@@ -1,5 +1,34 @@
 # System Savepoint
 
+## Run 59 — APEX-W5 Product Intelligence & Python Analytical Tooling (2026-09-07)
+
+UNIT ID: APEX-W5
+PHASE: IMPLEMENT / VERIFY
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: none (shift & compensation intelligence, Python analytical tooling)
+
+### Product Intelligence & Analytical Tooling Findings
+- **Shift & Timezone Intelligence (`packages/scraper/shiftClassifier.ts`)**:
+  - Implemented pure regex and token classifier returning `day_shift` (AU/NZ/AEST/PHT/SGT), `mid_shift` (UK/EU/GMT/BST/CET), `night_shift` (US/CA/EST/PST/CST/EDT/PDT), `flexible` (async/anywhere/own hours), or `unknown`.
+  - Tested across 8 comprehensive test cases in `packages/scraper/shiftClassifier.test.ts` (100% pass).
+  - Preserved deterministic truth: never invents unstated shift timings.
+- **Compensation Normalization (`packages/scraper/compensation.ts`)**:
+  - Implemented normalized compensation parser extracting min/max salary, currency (USD, PHP, EUR, GBP, AUD, CAD), period (`hourly`, `monthly`, `yearly`), and computed `monthlyEquivalentMin` / `monthlyEquivalentMax` (assuming standard 160h work month).
+  - Tested across 6 comprehensive test cases in `packages/scraper/compensation.test.ts` (100% pass).
+  - Strict compliance: never assumes or invents missing compensation figures or FX rates.
+- **Python Analytical Tooling (`scripts/analytics/`)**:
+  - `anomaly_detector.py`: Median Absolute Deviation (MAD) anomaly detector for volume/escalation spikes and volume collapse detection against rolling historical medians. Zero external dependencies (Python 3.13 standard library: `statistics`, `math`, `sys`, `json`).
+  - `yield_model.py`: Herfindahl-Hirschman Index (HHI) portfolio concentration model, economic yield evaluator, and recommendation engine.
+  - `test_analytics.py`: 7/7 unit tests passing cleanly via `py -m unittest`.
+- **Verification Evidence**:
+  - Monorepo test suite: **1,212/1,212 tests pass across 119 files** (9.78s).
+  - Python test suite: 7/7 tests pass cleanly.
+  - `bun run audit:guardrails`: Clean (0 violations).
+  - `bun run typecheck`: Clean (0 errors).
+  - Invariant preserved: Exact-six live publishing invariant strictly maintained.
+- **Next exact action**: APEX Wave 6 (Prospector 2.0 Candidate Automation).
+
 ## Run 58 — APEX-W4 Zero-Waste Triage & Canonical Documentation (2026-09-07)
 
 UNIT ID: APEX-W4
