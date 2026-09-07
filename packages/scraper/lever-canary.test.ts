@@ -21,9 +21,9 @@ describe("lever-canary — provider profile (SP-11 criterion: EU/global origin e
     expect(profile.evidenceLeaseDays).toBe(180);
   });
 
-  it("content scope is honestly labeled minimal_with_truncated_summary, not bare minimal", () => {
+  it("content scope uses the CHECK-legal minimal value and notes the 500-character truncation", () => {
     const profile = buildLeverProviderProfile();
-    expect(profile.contentScope).toBe("minimal_with_truncated_summary");
+    expect(profile.contentScope).toBe("minimal");
     expect(profile.notes).toContain("500-character-truncated");
   });
 });
@@ -35,6 +35,12 @@ describe("lever-canary — candidate row (SP-11 criterion: exact token provenanc
     expect(row.complianceState).toBe("conditional");
     expect(row.operationalState).toBe("candidate");
     expect(row.endpointUrl).toBe("https://api.lever.co/v0/postings/lever?mode=json");
+  });
+
+  it("builds the official Postings API demo board leverdemo", () => {
+    const row = buildLeverCandidateRow({ token: "leverdemo", companyName: "Lever Demo", nowIso: "2026-09-06T00:00:00.000Z" });
+    expect(row.sourceId).toBe("lever:leverdemo");
+    expect(row.endpointUrl).toBe("https://api.lever.co/v0/postings/leverdemo?mode=json");
   });
 
   it("14-day review deadline, 180-day evidence lease", () => {
@@ -88,7 +94,7 @@ function packetFixture(overrides: Partial<EvidencePacketInput> = {}, shadow = sh
       evidenceUrl: "https://github.com/lever/postings-api",
       evidenceLeaseDays: 180,
       visibilityFilter: "published",
-      contentScope: "minimal_with_truncated_summary",
+      contentScope: "minimal",
       cadenceMinMinutes: 60,
       cadenceMaxMinutes: 1440,
       rateGuidance: "no documented limit",

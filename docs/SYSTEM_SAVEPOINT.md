@@ -1,6 +1,50 @@
 # System Savepoint
 
-## Run 51 — EX-02 Grafana Labs shadow admission implemented locally (2026-09-06)
+## Run 53 — EX-06 Lever Postings API qualified; retarget required (2026-09-07)
+
+UNIT ID: EX-06
+PHASE: QUALIFY
+STATUS: TERMINAL — KEEP (mechanism qualified, candidate retarget classified)
+G9: KEEP
+IDENTITY: lever:lever (probe-only)
+
+### Qualification Findings
+- **Platform mechanism verified**: Lever Postings API (`github.com/lever/postings-api`, `api.lever.co`, `api.eu.lever.co`) is unauthenticated GET, robots.txt explicitly allows `/` (`Crawl-delay: 1`), and `fetchLever` maps `title`, `hostedUrl`, `categories.location`, `workplaceType`, and a 500-character truncated snippet.
+- **Provider profile**: `contentScope` aligned to CHECK-legal `"minimal"` (notes document truncation).
+- **Probe outcomes**:
+  - `lever:lever`: HTTP 200, valid empty JSON array (`HEALTHY_EMPTY`, 0 active postings).
+  - `lever:leverdemo`: HTTP 200, 12 postings, but all 12 are explicitly fictional demonstration listings ("Welcome to the Demo Job Listing for Lever! This is a fictional job created solely for demonstration purposes..."). Unmasked and **REJECTED**. Fictional listings must not contaminate candidate queue or board.
+  - `lever:vaultoutsourcing` (directory ID 495): HTTP 404 (`Document not found`). **REJECTED**.
+  - `lever:elasticpath` (directory ID 277): HTTP 404 (`Document not found`). **REJECTED**.
+- **Classification**: **`RETARGET_REQUIRED`**. Lever mechanism is qualified and compliant, but candidate admission is held until an authentic hiring employer token with active remote/PH postings is identified with exact provenance.
+- **Invariants preserved**: Zero mutations to `source_registry`, `provider_profiles`, or `opportunities`. No Canary promotion. Exact-six public fetch/publish preserved.
+- **Verification**: `bun test packages/scraper/lever-canary.test.ts` (8/8 pass), full suite passes (1189/1189 tests across 117 files).
+- Evidence: `docs/gauntlet/evidence/EX-06-lever-qualification.md`.
+
+**Next exact action:** Ship Issue #123 unhandled-error heartbeat fix and EX-06 Lever qualification. Then evaluate EX-08 (Greenhouse remaining boards integration) or next unblocked expansion unit (EX-07 remains HARD BLOCKED).
+
+## Run 52 — Issue #123 clock audit: CLOCK_HEALTHY_HUNTER_STANDBY; EX-06 unblocked (2026-09-07)
+
+UNIT ID: ISSUE-123-AUDIT
+PHASE: AUDIT / OBSERVE
+STATUS: TERMINAL — KEEP (read-only production audit and reconciliation)
+G9: KEEP
+IDENTITY: none (clock & pipeline audit)
+
+### Reconciled State
+- Stale Run 51 reconciled: Git reality contains EX-01 (`360ece9`, `1aac624`), EX-02 (`4b7e515`, `cc5a1f1`, `aa29dd7`), EX-03 (`32b8760`), EX-04 (`6f86055`), and EX-05 (`c1b903c`). START_SHA / HEAD is `b7ca611251f7178b0e50dc729fad982ecf957bc4` (matching `origin/main`).
+- Issue #123 classification: **`CLOCK_HEALTHY_HUNTER_STANDBY`**.
+- The primary Cloudflare Worker clock (`workers/freshness-cron`) is actively beating every 10 minutes: fresh production runs verified at `2026-09-07T11:20:10.683Z`, `11:30:11.620Z`, and `11:40:08.423Z`.
+- Latest `__ingest_diag__`: attempt `2026-09-07T11:40:08.423Z`, clean success `2026-09-07T11:40:08.423Z`, `last_error: null`, `last_count: 0`.
+- Latest `source_fetch_events`: row 166651 at `2026-09-07T11:40:08.423Z`.
+- Hunter secondary clock (`.github/workflows/gha-hunter-pulse.yml`, `*/15 * * * *`) is deliberately in STANDBY: `decideFailoverTakeover` evaluates primary attempt age (~3m < 30m threshold) and emits `action: standby`.
+- Root cause of historical #123 alert (04:43Z): a ~12.3h gap between `2026-09-06T22:58:38Z` and `2026-09-07T11:20:10Z` occurred where Worker runs reached lock acquisition (`__scrape_run_lock__`), but crashed before diagnostic/event recording, while blocking Hunter via `run-lock-held`. Once the underlying issue cleared, Worker executions resumed cleanly at 11:20Z. Watchdog recovery streak will auto-advance on the next scheduled run (:17 UTC).
+- Next eligible expansion unit: **`EX-06 — Lever QUALIFY / retarget`** (Mode: QUALIFY only).
+- **EX-07 remains HARD BLOCKED** (requires 7 days of stored, valid shadow observations under `sp23-shadow-7d-v1`).
+
+**Next exact action:** Begin EX-06 (Lever QUALIFY / retarget) in QUALIFY mode. Probe only, no publish, no canary, no exact-six mutation.
+
+## Run 51 — EX-02 Grafana Labs shadow admission implemented locally (2026-09-06) (HISTORICAL)
 
 UNIT ID: EX-02
 PHASE: INTEGRATE

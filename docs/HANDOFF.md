@@ -1,6 +1,23 @@
 # Handoff
 
-## Current handoff — 2026-09-06 EX-02 shadow admit ready to deploy
+## Current handoff — 2026-09-07 EX-06 Lever qualified; retarget required; Issue #123 heartbeat fix ready
+
+Read Run 53. START_SHA `49fdc77dd0ec9a419c8d6d634dbd0b67484d0fe2`.
+- **Issue #123**: Root-cause fix implemented: catch-all in `/api/cron/scrape` now stamps `__ingest_diag__` with `unhandledError=` so crashing runs cannot mimic a dead clock. Tests pass (`apps/web/tests/scrape-unhandled-error.test.ts`).
+- **EX-06**: Lever Postings API mechanism is qualified (`ats_api`, `api.lever.co`, `api.eu.lever.co`, robots allowed, minimal scope). Curated target probes: `lever:lever` is `HEALTHY_EMPTY` (0 open jobs); `leverdemo` consists of fictional mock listings and was unmasked & **REJECTED**; directory tokens (495, 277) are 404 defunct. Target classification: **`RETARGET_REQUIRED`**. Shadow admission is held until an authentic hiring employer with genuine remote/PH postings is identified with exact provenance.
+- **EX-07**: Remains **HARD BLOCKED** (requires 7 full days of shadow observations under `sp23-shadow-7d-v1`; as of 2026-09-07T12:59Z, earliest observation is 2026-09-06T08:46Z, ~1.2 days elapsed).
+- **Next Unit**: EX-08 (Remaining known Greenhouse boards integration) or next unblocked unit.
+
+## Current handoff — 2026-09-07 Issue #123 clock audit: CLOCK_HEALTHY_HUNTER_STANDBY (HISTORICAL)
+
+Read Run 52. Stale Run 51 reconciled against Git (EX-01 through EX-05 deployed).
+Issue #123 audit complete: primary Cloudflare Worker clock is actively beating
+every 10 minutes (verified at `11:20Z`, `11:30Z`, `11:40Z` on 2026-09-07). Ingestion
+heartbeat (`__ingest_diag__`) is clean and fresh (`11:40:08.423Z`). Hunter is
+deliberately standing by under SP-21 fencing. Next unit: **EX-06 (Lever QUALIFY /
+retarget)** in QUALIFY mode only. EX-07 remains HARD BLOCKED.
+
+## Current handoff — 2026-09-06 EX-02 shadow admit ready to deploy (HISTORICAL)
 
 Read Run 51. EX-01 KEEP. EX-02 code admits `greenhouse:grafanalabs` to
 non-publishing shadow via `/api/cron/source-admit` after a live probe.
