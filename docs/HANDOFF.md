@@ -4,10 +4,11 @@
 
 Read Run 59.
 - **WHAT IS TRUE NOW?**
-  The production exact-six invariant is strictly preserved. Ingestion clock is healthy. 1,206/1,206 monorepo tests pass across 118 files. 7/7 Python analytical tests pass cleanly. Typecheck and guardrails are 100% clean. PRs #125, #126, #127, #128, #129, and #130 are opened and passing CI on GitHub.
+  The production exact-six invariant is strictly preserved. Ingestion clock is healthy. 1,211/1,211 monorepo tests pass across 119 files. 7/7 Python analytical tests pass cleanly. Typecheck, guardrails, and Astro build are 100% clean. PRs #125, #126, #127, #128, #129, and #130 are opened and passing CI on GitHub.
 - **WHAT WAS JUST COMPLETED?**
   1. Product Intelligence:
      - Shift & Timezone Classifier (`packages/scraper/shiftClassifier.ts` + `shiftClassifier.test.ts`): Day Shift (AU/NZ/PHT), Mid Shift (UK/EU), Night Shift (US/CA), Flexible (async/anywhere), and Unknown. 8/8 tests pass.
+     - Job Detail Page Shift Integration (`apps/web/src/pages/jobs/[id].astro` + `apps/web/tests/job-detail-shift.test.ts`): Displays Philippine working hours and shift category. 5/5 tests pass.
      - Compensation Normalization: Explicitly parked per user directive (2026-09-07: "I dont need compensation normalization, park that"). Raw pay strings preserved in D1 without unnecessary abstraction.
      - Scraper package exports updated (`packages/scraper/index.ts`).
   2. Python Analytical Tooling (`scripts/analytics/`):

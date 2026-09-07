@@ -9,10 +9,10 @@ G9: KEEP
 IDENTITY: none (shift & compensation intelligence, Python analytical tooling)
 
 ### Product Intelligence & Analytical Tooling Findings
-- **Shift & Timezone Intelligence (`packages/scraper/shiftClassifier.ts`)**:
+- **Shift & Timezone Intelligence (`packages/scraper/shiftClassifier.ts` & `apps/web/src/pages/jobs/[id].astro`)**:
   - Implemented pure regex and token classifier returning `day_shift` (AU/NZ/AEST/PHT/SGT), `mid_shift` (UK/EU/GMT/BST/CET), `night_shift` (US/CA/EST/PST/CST/EDT/PDT), `flexible` (async/anywhere/own hours), or `unknown`.
-  - Tested across 8 comprehensive test cases in `packages/scraper/shiftClassifier.test.ts` (100% pass).
-  - Preserved deterministic truth: never invents unstated shift timings.
+  - Tested across 8 test cases in `packages/scraper/shiftClassifier.test.ts` and 5 test cases in `apps/web/tests/job-detail-shift.test.ts` (100% pass).
+  - Integrated into Astro job detail page view (`apps/web/src/pages/jobs/[id].astro`), displaying approximate Philippine working hours (e.g. `6:00 AM - 3:00 PM PHT (AEST / APAC)`) with zero fabrication.
 - **Compensation Normalization (PARKED)**:
   - Parked per explicit user directive (2026-09-07: "I dont need compensation normalization, park that"). Raw salary strings preserved in D1 without unnecessary normalization abstraction.
 - **Python Analytical Tooling (`scripts/analytics/`)**:
@@ -20,10 +20,11 @@ IDENTITY: none (shift & compensation intelligence, Python analytical tooling)
   - `yield_model.py`: Herfindahl-Hirschman Index (HHI) portfolio concentration model, economic yield evaluator, and recommendation engine.
   - `test_analytics.py`: 7/7 unit tests passing cleanly via `py -m unittest`.
 - **Verification Evidence**:
-  - Monorepo test suite: **1,206/1,206 tests pass across 118 files** (9.5s).
+  - Monorepo test suite: **1,211/1,211 tests pass across 119 files** (8.53s).
   - Python test suite: 7/7 tests pass cleanly.
   - `bun run audit:guardrails`: Clean (0 violations).
   - `bun run typecheck`: Clean (0 errors).
+  - `bun run build`: Server & client bundles compile cleanly in 32s.
   - Invariant preserved: Exact-six live publishing invariant strictly maintained.
 - **Next exact action**: APEX Wave 6 (Prospector 2.0 Candidate Automation).
 

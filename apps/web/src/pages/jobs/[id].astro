@@ -4,7 +4,7 @@ import { getDb, opportunities } from '@va-hub/db';
 import { and, eq, inArray } from 'drizzle-orm';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
 import { serializeJsonLd } from '@/lib/json-ld';
-import { sanitizeSourceUrl } from '@va-hub/scraper';
+import { sanitizeSourceUrl, classifyShift } from '@va-hub/scraper';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 
 export const prerender = false;
@@ -54,6 +54,12 @@ if (dataUnavailable) {
 if (!job) {
   return new Response('Not found', { status: 404 });
 }
+
+const shiftInfo = classifyShift({
+  clientTimezone: job.clientTimezone,
+  description: job.description,
+  title: job.title,
+});
 
 // --- Source-aware description display (ADR-003) ---
 const DESCRIPTION_ALLOWED_PLATFORMS = new Set([
@@ -275,6 +281,12 @@ jsonLd.directApply = false;
           <div>
             <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Timezone</p>
             <p class="text-sm font-semibold text-ink">{job.clientTimezone}</p>
+          </div>
+        )}
+        {shiftInfo.category !== 'unknown' && shiftInfo.phWorkingHours && (
+          <div>
+            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Shift / Working Hours</p>
+            <p class="text-sm font-semibold text-ink">{shiftInfo.phWorkingHours}</p>
           </div>
         )}
         {Array.isArray(job.tags) && job.tags.length > 0 && (
