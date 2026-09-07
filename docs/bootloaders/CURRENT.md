@@ -1,15 +1,12 @@
 # Current resume pointer
 
-**As of 2026-09-07.** Use this file only as a pointer.
+**As of 2026-09-07.** Paste the prompt inside
+[`2026-09-07-APEX-EXPANSION-BOOTLOADER.md`](./2026-09-07-APEX-EXPANSION-BOOTLOADER.md).
 
-1. Standing rules: [`SOURCE_PERPETUITY_BOOTLOADER.md`](./SOURCE_PERPETUITY_BOOTLOADER.md)
-2. Filled state and next action: [`2026-09-07-APEX-EXPANSION-BOOTLOADER.md`](./2026-09-07-APEX-EXPANSION-BOOTLOADER.md)
-3. Queue: [`../gauntlet/EXPANSION_LOOP.md`](../gauntlet/EXPANSION_LOOP.md)
+That prompt *is* the gauntlet loop (`docs/gauntlet/EXPANSION_LOOP.md`) plus
+G1–G9 and the improved skill routing (`using-superpowers`, `task-observer`,
+`executing-plans`, TDD, verification-before-completion, etc.).
 
-`docs/SYSTEM_SAVEPOINT.md` Run 51 is stale versus `origin/main` (EX-01..EX-05
-already merged). The dated bootloader is the current baton until Run 52 is
-prepended after a fresh measurement.
+Standing policy only: [`SOURCE_PERPETUITY_BOOTLOADER.md`](./SOURCE_PERPETUITY_BOOTLOADER.md).
 
-Next exact action: AUDIT GitHub issue #123 (ingestion heartbeat / possible
-stopped clock), then either a bounded clock repair or EX-06 Lever QUALIFY.
-Do not start EX-07.
+This tick: MEASURE issue #123 / clock. Then EX-06. Not EX-07.
