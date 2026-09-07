@@ -1,6 +1,17 @@
 # Handoff
 
-## Current handoff — 2026-09-07 EX-06 Lever qualified; retarget required; Issue #123 heartbeat fix ready
+## Current handoff — 2026-09-07 APEX 10X Wave 0 Reality Reconciliation & Control Plane
+
+Read Run 54. START_SHA `b225b3e6cdad28328818c3587cce0176b788fcc5`.
+- **PR #125**: Opened for `fix/clock-catch-diagnostics-123` containing Issue #123 unhandled-error heartbeat diagnostics (`b33f8e1`) and EX-06 Lever Postings API qualification (`b225b3e`).
+- **Control Plane Live**:
+  - `docs/APEX_10X.md`: Master architectural blueprint, verified empirical baseline (1,278 active listings, 7-10 qualified jobs/day, 6 allowed feeds, 3 shadows), Workstreams A-T catalog, and execution tracker.
+  - `docs/bootloaders/2026-09-07-APEX-10X-BOOTLOADER.md`: Self-contained, repo-bound AI bootloader prompt.
+  - `docs/bootloaders/CURRENT.md`: Direct pointer to 2026-09-07 APEX 10X bootloader.
+- **EX-07 Status**: Remains **HARD BLOCKED** under `sp23-shadow-7d-v1` until 7 full days of shadow observations are logged in D1 (~2026-09-13T09:00Z).
+- **Next Unit**: EX-08 (Greenhouse remaining boards qualification: GitLab, Remote.com, Nearform, Ghost) and APEX-W1 (Source Economics Telemetry in D1).
+
+## Current handoff — 2026-09-07 EX-06 Lever qualified; retarget required; Issue #123 heartbeat fix ready (HISTORICAL)
 
 Read Run 53. START_SHA `49fdc77dd0ec9a419c8d6d634dbd0b67484d0fe2`.
 - **Issue #123**: Root-cause fix implemented: catch-all in `/api/cron/scrape` now stamps `__ingest_diag__` with `unhandledError=` so crashing runs cannot mimic a dead clock. Tests pass (`apps/web/tests/scrape-unhandled-error.test.ts`).

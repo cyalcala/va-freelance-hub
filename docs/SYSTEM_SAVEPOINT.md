@@ -1,5 +1,24 @@
 # System Savepoint
 
+## Run 54 — APEX 10X Wave 0 Reality Reconciliation & Control Plane (2026-09-07)
+
+UNIT ID: APEX-W0
+PHASE: RECONCILE / CONTROL_PLANE
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: none (governance & control plane)
+
+### Reconciliation Findings
+- **Reality established**: 1,278 active listings in D1; exact-six allowed feeds active in production; 3 mechanisms/identities admitted in non-publishing shadow (`greenhouse:grafanalabs`, `recruitee:myjewellery`, `teamtailor:career.teamtailor.com`).
+- **Clock audit verified**: Dual clock operational. Cloudflare Worker `freshness-cron` beating every 10 min; Hunter pulse standing by with failover fencing. Issue #123 unhandled-error degraded heartbeat fix implemented in `scrape.ts` and PR #125 opened.
+- **EX-06 Lever qualification**: Qualified unauthenticated GET mechanism (`api.lever.co`), classified `RETARGET_REQUIRED` after rejecting fictional demo listings (`leverdemo`) and 404 defunct tokens (495, 277).
+- **Control plane authored**:
+  - `docs/APEX_10X.md`: Authoritative architecture, 10X baseline, Workstreams A-T catalog, master execution tracker, FinOps guardrails ($0 hobby tier envelope).
+  - `docs/bootloaders/2026-09-07-APEX-10X-BOOTLOADER.md`: Self-contained, repo-bound AI bootloader prompt with compact state block and G1-G9 gates.
+  - `docs/bootloaders/CURRENT.md`: Clean pointer to 2026-09-07 APEX 10X bootloader.
+- **Invariants preserved**: Zero mutations to exact-six production ingestion. Zero schema breaking changes. Full test suite (1,189/1,189 pass across 117 files), typecheck, guardrails, and Astro production build all verified clean.
+- **Next exact action**: Monitor PR #125 CI. Next expansion unit is EX-08 (Greenhouse remaining boards qualification: GitLab, Remote.com, Nearform, Ghost) and APEX-W1 (Source Economics Telemetry in D1). EX-07 remains HARD BLOCKED until 7 days of shadow observations elapse (~2026-09-13).
+
 ## Run 53 — EX-06 Lever Postings API qualified; retarget required (2026-09-07)
 
 UNIT ID: EX-06
