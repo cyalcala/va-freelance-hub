@@ -1,6 +1,38 @@
 # Handoff
 
-## Current handoff — 2026-09-07 APEX-W3 / EX-08 Greenhouse Multi-Board Admission
+## Current handoff — 2026-09-07 APEX-W4 Zero-Waste Triage & Canonical APEX Documentation
+
+Read Run 58.
+- **WHAT IS TRUE NOW?**
+  The production exact-six invariant is strictly preserved. Ingestion clock is healthy. 1,198/1,198 tests pass across 117 files. Typecheck, guardrails, and Astro production build are 100% clean. PRs #125, #126, #127, #128, and #129 have all passed Sovereign CI Guardrails on GitHub.
+- **WHAT WAS JUST COMPLETED?**
+  1. Wave 4 implementation: deterministic Stage 0/1 location and regex gating (`geoGate.ts`, `triage.ts`, golden fixtures #18-#23 in `geoGate.test.ts`, assertions in `triage.test.ts`). Structured US state codes (e.g. `, CA`, `- TX`), country locks in titles (e.g. `(US Remote)`), security clearances, W2/C2C tax locks, and no-visa-sponsorship patterns are now rejected deterministically with 0 LLM calls.
+  2. Canonical documentation suite authored:
+     - `docs/APEX_10X_WORKSTREAM_LEDGER.md` (34 workstreams classified)
+     - `docs/benchmarks/APEX_10X_BASELINE_2026-09-07.md` (baseline metrics & 3 limiting constraints)
+     - `docs/APEX_10X_MASTERPLAN.md`
+     - `docs/APEX_10X_ARCHITECTURE.md`
+     - `docs/APEX_10X_EXECUTION_STATE.md`
+     - `docs/SOURCE_CAPABILITIES.md`
+     - `docs/SOURCE_ECONOMICS.md`
+     - `docs/SOURCE_HEALTH.md`
+     - `docs/JOB_TAXONOMY.md`
+     - `docs/PYTHON_TOOLING.md`
+     - `docs/EVALS.md`
+     - `docs/bootloaders/CURRENT.md`
+- **WHAT IS CURRENTLY BEING WORKED?**
+  Pushing branch `feat/apex-w4-zero-waste-triage`, opening PR #130, observing Sovereign CI Guardrail, and preparing Wave 5 (Execution Isolation & Resilience).
+- **WHAT FAILED?**
+  No test failures. Early attempt to run `write_to_file` with `ArtifactMetadata` on workspace path threw expected permission error; cleanly resolved by omitting `ArtifactMetadata` for project workspace files.
+- **WHAT MUST NOT BE REDONE?**
+  Do NOT loosen `geoGate.ts` to inflate numbers. Do NOT graduate EX-07 until 7 full days of shadow observation are logged. Do NOT rewrite working Cloudflare/Astro/D1 code.
+- **WHAT EXACT COMMAND/TASK SHOULD THE NEXT AI START WITH?**
+  `$env:PATH = "$HOME\.bun\bin;$env:PATH"; bun test`
+  Then verify PR #130 on GitHub: `gh pr view 130`.
+- **WHAT EVIDENCE PROVES THE CURRENT STATE?**
+  `bun test` passes 1,198 tests across 117 files. `bun run audit:guardrails`, `bun run typecheck`, and `bun run build` exit code 0. GitHub Actions runs 34127300033..34129134844 green.
+
+## Current handoff — 2026-09-07 APEX-W3 / EX-08 Greenhouse Multi-Board Admission (HISTORICAL)
 
 Read Run 57.
 - **Wave 3 Complete**: Expanded `SOURCE_ADMIT_ALLOWLIST` in `apps/web/src/pages/api/cron/source-admit.ts` for four Tier A remote-first employer boards: GitLab (`greenhouse:gitlab`), Remote.com (`greenhouse:remotecom`), Nearform (`greenhouse:nearform`), and Ghost Foundation (`greenhouse:ghost`).

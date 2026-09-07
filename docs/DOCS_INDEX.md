@@ -5,7 +5,27 @@
 This index tells future AI agents which documents are canonical, which are
 historical, and where to resume. Start here instead of guessing from filenames.
 
-## Current Source Replenishment Entry Point — 2026-08-31
+## Authoritative APEX-10X Transformation Entry Point — 2026-09-07
+
+Status: **APEX-10X MASTER STRATEGY ACTIVE; WAVE 4 ZERO-WASTE TRIAGE & CANONICAL GOVERNANCE COMPLETE.**
+Exact-six production behavior remains unchanged; all direct ATS sources operate under non-publishing shadow evaluation until Autonomy Cutover Predicate passes.
+
+Canonical documents to read:
+1. [`docs/bootloaders/CURRENT.md`](./bootloaders/CURRENT.md) — live resume pointer.
+2. [`docs/APEX_10X_MASTERPLAN.md`](./APEX_10X_MASTERPLAN.md) — master strategy, authority order, flywheel, and gauntlet rules.
+3. [`docs/APEX_10X_WORKSTREAM_LEDGER.md`](./APEX_10X_WORKSTREAM_LEDGER.md) — exhaustive continuity ledger for all 34 workstreams.
+4. [`docs/APEX_10X_ARCHITECTURE.md`](./APEX_10X_ARCHITECTURE.md) — system topology and component contracts.
+5. [`docs/APEX_10X_EXECUTION_STATE.md`](./APEX_10X_EXECUTION_STATE.md) — active execution state and PR lineage.
+6. [`docs/benchmarks/APEX_10X_BASELINE_2026-09-07.md`](./benchmarks/APEX_10X_BASELINE_2026-09-07.md) — empirical baseline and top 3 bottlenecks.
+7. [`docs/SOURCE_CAPABILITIES.md`](./SOURCE_CAPABILITIES.md) — reusable ATS capability specifications (Greenhouse, Lever, Ashby, Workable, etc.).
+8. [`docs/SOURCE_ECONOMICS.md`](./SOURCE_ECONOMICS.md) — telemetry, yield per fetch, waste ratio, adaptive polling.
+9. [`docs/SOURCE_HEALTH.md`](./SOURCE_HEALTH.md) — Source Doctor and structured Failure Taxonomy.
+10. [`docs/JOB_TAXONOMY.md`](./JOB_TAXONOMY.md) — 9 canonical board role families and anti-drift contracts.
+11. [`docs/PYTHON_TOOLING.md`](./PYTHON_TOOLING.md) — offline modeling and anomaly detection scope.
+12. [`docs/EVALS.md`](./EVALS.md) — frozen test fixtures and precision/recall criteria.
+13. [`docs/SYSTEM_SAVEPOINT.md`](./SYSTEM_SAVEPOINT.md) — current and historical run checkpoints.
+
+## Current Source Replenishment Entry Point — 2026-08-31 (Historical Planning Baseline)
 
 Status: **DECADES MASTERPLAN AND ADR-007 ADOPTED AS PLANNING AUTHORITY; NO
 PRODUCTION BEHAVIOR CHANGE.** SP-00 through SP-09 and SP-16/SP-17 are terminal;

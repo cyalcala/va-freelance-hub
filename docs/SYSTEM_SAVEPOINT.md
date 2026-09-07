@@ -1,5 +1,32 @@
 # System Savepoint
 
+## Run 58 — APEX-W4 Zero-Waste Triage & Canonical Documentation (2026-09-07)
+
+UNIT ID: APEX-W4
+PHASE: IMPLEMENT / VERIFY
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: none (deterministic triage gating & canonical documentation)
+
+### Zero-Waste Triage & Canonical Governance Findings
+- **Stage 0 & 1 Deterministic Pre-Filtering Scaled**:
+  - `packages/scraper/geoGate.ts`: Added `STRUCTURED_US_LOCATION_REGEX` (e.g. "US", "USA", "United States"), `US_STATE_CODE_LOCATION_REGEX` (e.g. `, CA`, `- TX`), `TITLE_COUNTRY_LOCK_REGEX` (e.g. `(US Remote)`), and expanded `RESIDENCE_LOCK_REGEX` with national security clearances (`Top Secret`, `TS/SCI`), domestic tax/employment locks (`W2 only`, `C2C only`), and citizenship/visa restrictions (`No visa sponsorship`, `US citizen required`).
+  - `packages/scraper/triage.ts`: Synchronized `GEOGRAPHIC_EXCLUSION_REGEX` with identical deterministic disqualifiers, eliminating unused imports and ensuring zero LLM subrequest burn on obviously ineligible roles.
+  - `packages/scraper/geoGate.test.ts`: Added fixtures #18 through #23 asserting 100% precision on new exclusion patterns (34/34 tests pass).
+  - `packages/scraper/triage.test.ts`: Added assertions for security clearance, W2/C2C, and regional locks (7/7 tests pass).
+- **Canonical APEX Documentation Established**:
+  - `docs/APEX_10X_WORKSTREAM_LEDGER.md`: Exhaustive continuity ledger tracking all 34 active, complement, and planned workstreams.
+  - `docs/benchmarks/APEX_10X_BASELINE_2026-09-07.md`: Empirical baseline ($B_0 = 8.5$, $\text{APEX\_10X\_TARGET} = 85$ jobs/day) and proof of top 3 constraints.
+  - Canonical specs: `docs/APEX_10X_MASTERPLAN.md`, `docs/APEX_10X_ARCHITECTURE.md`, `docs/APEX_10X_EXECUTION_STATE.md`, `docs/SOURCE_CAPABILITIES.md`, `docs/SOURCE_ECONOMICS.md`, `docs/SOURCE_HEALTH.md`, `docs/JOB_TAXONOMY.md`, `docs/PYTHON_TOOLING.md`, `docs/EVALS.md`.
+  - Pointers: `docs/bootloaders/CURRENT.md`, `docs/HANDOFF.md`, `docs/DOCS_INDEX.md`.
+- **Verification Evidence**:
+  - Monorepo test suite: **1,198/1,198 tests pass across 117 files** (10.93s).
+  - `bun run audit:guardrails`: Clean (0 violations).
+  - `bun run typecheck`: Clean (0 errors).
+  - `bun run build`: Server and client bundles built cleanly (41s).
+  - Freshness cron: Typecheck and wrangler dry-run clean.
+- **Next exact action**: APEX Wave 5 (Execution Isolation & Batch Resilience).
+
 ## Run 57 — APEX-W3 / EX-08 Greenhouse Multi-Board Admission (2026-09-07)
 
 UNIT ID: APEX-W3 (EX-08)

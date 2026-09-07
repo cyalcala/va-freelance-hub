@@ -47,13 +47,13 @@ export interface GeoVerdict {
 // ─── Positive signals ────────────────────────────────────────────────────────
 
 const PH_POSITIVE_REGEX =
-  /\b(philippines|philippine|filipino|filipina|manila|cebu|davao|quezon city|makati|taguig|pasig|iloilo|bacolod|baguio|cagayan de oro|ph[- ]based)\b/i;
+  /\b(philippines|philippine|filipino|filipina|manila|cebu|davao|quezon city|makati|taguig|pasig|iloilo|bacolod|baguio|cagayan de oro|angeles city|mandaluyong|alabang|bonifacio global city|bgc|ph[- ]based|remote[- ]ph|ph[- ]remote|philippines[- ]remote)\b/i;
 
 const APAC_POSITIVE_REGEX =
   /\b(apac|asia[- ]pacific|south[- ]?east asia|southeast asia|asia)\b/i;
 
 const WORLDWIDE_REGEX =
-  /\b(anywhere in the world|worldwide|work from anywhere|anywhere|global(?:ly)?[- ]remote|remote[- ]global|100% remote|fully remote|open to all locations|location[- ]independent|probably worldwide)\b/i;
+  /\b(anywhere in the world|worldwide|work from anywhere|anywhere|global(?:ly)?[- ]remote|remote[- ]global|100% remote|fully remote|open to all locations|location[- ]independent|probably worldwide|remote\s*[-–—\/]\s*(?:anywhere|worldwide|global)|remote\s*\((?:anywhere|worldwide|global)\)|fully distributed|distributed team|all locations)\b/i;
 
 // ─── Negative signals ────────────────────────────────────────────────────────
 
@@ -126,10 +126,35 @@ const RESIDENCE_LOCK_REGEX = new RegExp(
     "local(?:ly)? (?:candidates|applicants) only",
     "(?:us|uk|eu|canada|australia)[- ]only",
     "only (?:us|uk|eu|canadian|australian) (?:candidates|applicants|residents)",
+    "(?:active )?(?:security|secret|top secret|ts\/sci) clearance (?:is )?required",
+    "must (?:have|hold|possess) (?:an? )?(?:active )?(?:security|secret|top secret|ts\/sci) clearance",
+    "w-?2 only",
+    "c2c only",
+    "no c2c",
+    "us tax resident",
+    "must be (?:a )?us citizen",
+    "us citizenship (?:is )?required",
+    "no (?:visa )?sponsorship (?:is )?(?:available|provided)",
+    "sponsorship is not available",
+    "unable to sponsor (?:visas?|work authorization)",
+    "(?:australia|canad(?:a|ian)|germany|france|netherlands|spain|italy)[- ]only",
+    "must (?:be )?(?:based|located|residing|reside|live|living) in (?:the )?(?:us|usa|united states|uk|canada|australia|germany|france|spain|netherlands)",
   ].join("|") +
   ")",
   "i",
 );
+
+// US tokens in structured location strings where conversational "us" does not exist.
+const STRUCTURED_US_LOCATION_REGEX =
+  /\b(us|usa|u\.s\.a?\.?|united states(?: of america)?)\b/i;
+
+// Two-letter US state postal abbreviations formatted as ", CA" or "- CA" in structured location
+const US_STATE_CODE_LOCATION_REGEX =
+  /(?:^|,\s*|-\s*)(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|ID|IL|IA|KS|KY|LA|ME|MD|MA|MI|MN|MS|MO|MT|NE|NV|NH|NJ|NM|NY|NC|ND|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VT|VA|WA|WV|WI|WY|DC)(?:\b|$)/i;
+
+// Title-level country/regional pins: "Role (US Remote)", "Role - US Only", "Role [USA]"
+const TITLE_COUNTRY_LOCK_REGEX =
+  /(?:[\(\[\-–—\/]\s*(?:us|usa|u\.s\.|uk|canada|australia|emea|latam|europe|eu)\s*(?:only|remote)?[\)\]]?|\b(?:us|usa|u\.s\.|uk|canada|australia|emea|latam|europe|eu)\s+only\b|\b(?:us|usa|u\.s\.|uk|canada|australia)[- ]remote\b)/i;
 
 // Onsite/hybrid — TITLE and LOCATION string only (never free description).
 const ONSITE_TITLE_REGEX = /\b(on[- ]?site|in[- ]office|hybrid)\b/i;
@@ -257,6 +282,13 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
     if (regionExcl) {
       return verdict("region_excl_ph", "ineligible", `Region excludes PH: "${regionExcl}" in "${locationRaw}"`);
     }
+    if (STRUCTURED_US_LOCATION_REGEX.test(locationRaw)) {
+      return verdict("country_locked", "ineligible", `Location pinned to US: "${locationRaw}"`);
+    }
+    const stateCode = firstMatch(US_STATE_CODE_LOCATION_REGEX, locationRaw);
+    if (stateCode) {
+      return verdict("country_locked", "ineligible", `Location contains US state code: "${stateCode}" in "${locationRaw}"`);
+    }
     const place =
       firstMatch(US_STATE_REGEX, locationRaw) ??
       firstMatch(COUNTRY_REGEX, locationRaw) ??
@@ -270,6 +302,10 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
   if (ONSITE_TITLE_REGEX.test(title) || (locationRaw && ONSITE_TITLE_REGEX.test(locationRaw))) {
     const marker = firstMatch(ONSITE_TITLE_REGEX, title) ?? firstMatch(ONSITE_TITLE_REGEX, locationRaw);
     return verdict("country_locked", "ineligible", `Not fully remote: "${marker}" marker`);
+  }
+  const titleLock = firstMatch(TITLE_COUNTRY_LOCK_REGEX, title);
+  if (titleLock) {
+    return verdict("country_locked", "ineligible", `Title contains country restriction: "${titleLock.trim()}"`);
   }
   const titlePlace = firstMatch(US_STATE_REGEX, title) ?? firstMatch(CITY_REGEX, title);
   if (titlePlace) {

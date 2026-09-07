@@ -36,6 +36,11 @@ describe("isObviousGeoRestriction", () => {
     expect(isObviousGeoRestriction("Virtual Assistant (US Only)", "")).toBe(true);
     expect(isObviousGeoRestriction("Developer", "United Kingdom Only")).toBe(true);
     expect(isObviousGeoRestriction("Marketing Coordinator", "US timezone only")).toBe(true);
+    expect(isObviousGeoRestriction("Systems Engineer", "Must possess active security clearance")).toBe(true);
+    expect(isObviousGeoRestriction("Fullstack Dev", "W-2 only; no C2C arrangements.")).toBe(true);
+    expect(isObviousGeoRestriction("Content Writer", "No visa sponsorship available at this time.")).toBe(true);
+    expect(isObviousGeoRestriction("Support Rep", "EMEA only remote position.")).toBe(true);
+    expect(isObviousGeoRestriction("Product Designer", "Australia only")).toBe(true);
   });
 
   it("should NOT match standard global roles", () => {

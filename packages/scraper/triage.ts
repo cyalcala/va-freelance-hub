@@ -11,10 +11,6 @@ export interface TriageResult {
   companyName: string | null;
   /** Safe, bounded provider/error signatures when the entire cascade fails. */
   providerFailures?: string[];
-  // True when no AI model actually classified this job (binding missing or
-  // every model failed). Callers must treat such results as UNCLASSIFIED and
-  // must not persist them as eligible — previously these failed open and an
-  // AI outage silently filled the board with unfiltered listings.
   aiUnavailable?: boolean;
 }
 
@@ -23,6 +19,7 @@ const GEOGRAPHIC_EXCLUSION_REGEX = new RegExp(
   "\\b(" +
   [
     "us only",
+    "usa only",
     "united states only",
     "us citizens? only",
     "us residents? only",
@@ -31,22 +28,41 @@ const GEOGRAPHIC_EXCLUSION_REGEX = new RegExp(
     "uk residents? only",
     "canada only",
     "canadian residents? only",
+    "australia only",
+    "australian residents? only",
     "europe only",
     "european residents? only",
+    "eu only",
+    "emea only",
+    "latam only",
     "must be in the us",
     "must reside in the us",
     "must be located in the us",
     "must be us resident",
+    "must reside in (?:the )?(?:uk|canada|australia)",
+    "must be located in (?:the )?(?:uk|canada|australia)",
     "authorized to work in the us",
     "authorized to work in us",
     "citizenship required",
+    "us citizenship required",
+    "must be a us citizen",
     "work from the us",
     "us timezone only",
     "est only",
     "pst only",
     "mst only",
     "cst only",
-    "north america only"
+    "north america only",
+    "active security clearance",
+    "security clearance required",
+    "top secret",
+    "ts/sci",
+    "w-?2 only",
+    "c2c only",
+    "no c2c",
+    "sponsorship is not available",
+    "no visa sponsorship",
+    "unable to sponsor",
   ].join("|") +
   ")\\b",
   "i"
@@ -77,9 +93,6 @@ const LOCAL_OR_NON_ENGLISH_REGEX = new RegExp(
   "i"
 );
 
-/**
- * Perform a fast, low-cost regex/heuristic check for geo-restrictions
- */
 export function isObviousGeoRestriction(title: string, description: string): boolean {
   const content = `${title} ${description}`.toLowerCase();
   return GEOGRAPHIC_EXCLUSION_REGEX.test(content);
