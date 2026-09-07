@@ -1,183 +1,173 @@
-# Apex Expansion — Session Bootloader (2026-09-07)
+# Apex Expansion Gauntlet Bootloader — 2026-09-07
 
-Use this file to resume `cyalcala/va-freelance-hub` after EX-01..EX-05 landed
-and the standing Source Perpetuity template went stale against git.
+This is the session prompt. It is the loop in
+[`docs/gauntlet/EXPANSION_LOOP.md`](../gauntlet/EXPANSION_LOOP.md), wired to
+the improved skill routing already used by EX-01/EX-02 plans. Chat history is
+not authority. `SYSTEM_SAVEPOINT.md` Run 51 is stale versus git.
 
-The reusable policy prompt is still
+Standing policy (do not paste unless the executor has never seen this repo):
 [`SOURCE_PERPETUITY_BOOTLOADER.md`](./SOURCE_PERPETUITY_BOOTLOADER.md).
-Paste that first. Then paste the compact state and first-action block below.
-Chat history is never authoritative.
 
-`docs/SYSTEM_SAVEPOINT.md` Run 51 and the top of `docs/HANDOFF.md` are
-**HISTORICAL relative to origin/main**. They still say EX-02 is waiting to
-deploy. Git and GitHub Actions already contain EX-01 through EX-05. Do not
-re-implement those units. Prepend a new savepoint run after this session's
-first verified measurement.
-
-## What already continued (do not redo)
-
-Verified from `origin/main` commit history on 2026-09-07. Exact-SHA CI/deploy
-IDs below the merge commits must be re-checked before calling any of these
-KEEP in a new session.
-
-| ID | Phase | Merge commit | PR | What it did | What it did not do |
-| --- | --- | --- | ---: | --- | --- |
-| EX-01 | REPAIR | `360ece99dd0dd19ea74a85aef27ca5689354db90` | 115 | Classified exact-six yield; verify SQL emits silent zeros | Did not loosen geo-gate |
-| EX-01 follow | REPAIR | `1aac624e4aa8bd3b3ab9e9b072555321f13d5281` | 117 | Avoided D1 compound SELECT limit in exact-six verify SQL | No source change |
-| EX-02 | INTEGRATE | `4b7e5158350d05f41ad100b0d38377dd1d4f7e53` | 116 | Admit `greenhouse:grafanalabs` to non-publishing shadow | No public jobs |
-| EX-02 follow | REPAIR | `cc5a1f1a6bf51f0a215009e2c359455d45828972` | 118 | Admit route returns failure reasons instead of HTTP 500 | No publish |
-| EX-02 follow | REPAIR | `aa29dd7d8ec33eec63c29e05599390afc92d0a8e` | 119 | Dropped D1-illegal 92-byte ISO GLOB so admit can insert | No publish |
-| EX-03 | OBSERVE | `32b8760ec2c59406fa6cb72b6e3e724241759364` | 120 | Hourly `gha-shadow-dispatch.yml` for existing shadow rows | Does not scrape or admit |
-| EX-04 | INTEGRATE | `6f8605549162ffa6c7273ca8af61878ac05f3626` | 121 | Admit Recruitee `myjewellery` to non-publishing shadow | No publish |
-| EX-05 | INTEGRATE | `c1b903ce481f33832d0b7201ec940f3ded098b4d` | 122 | Admit Teamtailor `career.teamtailor.com` to non-publishing shadow | No publish |
-
-Manual `gha-source-admit.yml` was dispatched five times by the owner after
-those merges. Treat live registry row counts as UNKNOWN until a fresh
-read-only D1 query. The static ATS scrape list still marks those identities
-`paused`; that is expected. Shadow observation is the registry + dispatcher
-path, not the exact-six scrape loop.
-
-Latest default-branch SHA at bootloader authoring:
-`b7ca611251f7178b0e50dc729fad982ecf957bc4` (docs-only enrichment digest).
-Automated digest commits continue to move `origin/main`. Re-fetch.
-
-## What must continue next
-
-Queue authority: [`docs/gauntlet/EXPANSION_LOOP.md`](../gauntlet/EXPANSION_LOOP.md).
-Repair live yield before opening new hosts. Shadow several mechanisms before
-the first capped canary. One unit per session.
-
-1. **Immediate — AUDIT the open clock gap, then only repair if a named unit
-   exists.** Open issue
-   [#123](https://github.com/cyalcala/va-freelance-hub/issues/123)
-   `Ingestion health alert (2026-09-07)`: watchdog signal
-   `no scrape run in 5h (clock may be stopped)` at `2026-09-07T04:43:43Z`,
-   detection run `34084153140`. The 2026-09-07 source-health rollup
-   (`docs/source-health-latest.md`, run `34091193473`) still shows last
-   `source_fetch_events` attempt `2026-09-06T22:58:38.728Z` for every row.
-   That is a continuity defect on the primary ten-minute Worker / Hunter
-   standby path. Classify it before EX-06. Do not globally disable ingestion.
-   Do not treat a skipped ATS identity as a dead clock.
-2. **After the clock is classified healthy or fenced — EX-06 QUALIFY.**
-   Retarget Lever to a currently-hiring public board and re-probe. Lever is
-   still `lever:vaultoutsourcing` paused in the static list. EX-06 does not
-   publish and does not enable canary fetch.
-3. **Do not start EX-07.** First capped canary (`greenhouse:grafanalabs`)
-   requires recurrent stored shadow observations that pass `sp23-shadow-7d-v1`.
-   EX-03 only started 2026-09-06. A one-shot probe is not a seven-day shadow.
-4. **Do not replay SP-10..SP-15 registry SQL.** Exact-six public fetch set is
-   unchanged until a later EXPAND unit.
-5. Optional later queue, still one at a time: EX-08 remaining Greenhouse
-   boards, EX-09 Workable global XML preprocessor, EX-12 Jobicy categories,
-   EX-13 concentration/failover if top-two still exceed 80% of 7d yield.
-
-Exact-six accepted-yield classes from EX-01 (artifact as-of
-`2026-09-06T07:21:23.158Z`; re-measure):
-
-- `we-work-remotely` eligible_inflow
-- `real-work-from-anywhere` eligible_quiet_24h
-- `remote-ok` eligible_with_high_reject (PH filter working)
-- `remotive` fetching_but_ineligible — do not loosen geo-gate
-- `jobicy-supporting-apac` eligible_inflow
-- `jobicy-admin-support-apac` silent_zero_storage — repairable later via
-  `source_fetch_events`, not by adding a host
-
-## Copy/paste first response contract
+## Paste this prompt
 
 ```text
-You are resuming cyalcala/va-freelance-hub on 2026-09-07+ apex expansion.
+You are inside the Apex Expansion Gauntlet Loop for cyalcala/va-freelance-hub.
+You are not a freeform coder. You run one loop tick.
 
-Read SOURCE_PERPETUITY_BOOTLOADER.md standing rules first. Then obey this
-session contract.
+LOOP (from docs/gauntlet/EXPANSION_LOOP.md)
+forever:
+  1. MEASURE supply (read-only)
+  2. PICK the highest-priority unfinished EX unit that is unblocked
+  3. INVOKE the phase skills BEFORE any other tools
+  4. EXECUTE exactly that unit (one phase: DISCOVER|QUALIFY|PROBE|INTEGRATE|OBSERVE|REPAIR|REPLACE|EXPAND)
+  5. RECORD G3 locally, G5 on GitHub, G6 savepoint, G9 decision
+  6. if G8 stop → stop and hand off; else the next session continues the loop
 
-Requested mode if the owner did not name one: AUDIT (clock gap / issue #123),
-then recommend exactly one next unit. Do not EXECUTE a production-changing
-unit from this bootloader alone.
+This session is ONE tick. Never combine units. Never treat a plan as shipped.
 
-Preflight:
-- git fetch origin && git status --short && git rev-parse HEAD && git rev-parse origin/main
-- Preserve dirty/untracked files. Do not reset --hard or clean.
-- Read AGENTS.md, this bootloader, docs/gauntlet/EXPANSION_LOOP.md, then the
-  top of docs/SYSTEM_SAVEPOINT.md. If savepoint still starts at Run 51, treat
-  this bootloader as the newer baton and say so.
-- Re-read docs/source-health-latest.md, issue #123, latest watchdog and
-  shadow-dispatch runs, and a read-only D1 snapshot if credentials exist.
-- Label every material claim VERIFIED, INFERRED, HISTORICAL, or UNKNOWN.
+APPROACH B (binding)
+Parallel shadow, serial canary. Repair live yield before new hosts. Shadow
+several mechanisms before the first capped canary. Canary one identity at a
+time. Discovery never publishes. Exact-six stays uncapped. Canary never uses
+the unlimited scrape path. Hidden pending/rejected rows are not jobs.
 
-Forbidden in this first tick:
-- Loosen geo-gate
+AUTHORITY — read in this order before acting
+1. AGENTS.md
+2. docs/gauntlet/EXPANSION_LOOP.md
+3. docs/gauntlet/IMPLEMENTATION_UNITS.md — G1–G9 only (old 24-unit queue is terminal history)
+4. docs/superpowers/specs/2026-09-06-apex-source-expansion-design.md
+5. docs/bootloaders/2026-09-07-APEX-EXPANSION-BOOTLOADER.md (this file's state block)
+6. Top of docs/SYSTEM_SAVEPOINT.md — if it still starts at Run 51, this file wins for next-action routing; prepend Run 52 after MEASURE
+7. Fresh git / Actions / issue / docs/*-latest.md evidence
+Do not open OPERATING_MANDATE.md unless G8 contradiction requires a mandate audit.
+
+SKILLS — invoke by reading the skill file BEFORE tools, every tick
+All ticks:
+  using-superpowers
+  task-observer
+  project AGENTS.md
+Then by phase / need:
+  MEASURE / AUDIT / clock gap     → systematic-debugging, debugging-and-error-recovery
+  Design or approach change       → brainstorming THEN writing-plans
+  Named implementation plan       → executing-plans (checkbox tasks only; do not invent a second plan mid-tick)
+  Code                            → test-driven-development, incremental-implementation, verification-before-completion
+  GitHub / PR                     → git-workflow-and-versioning, astro-pr-writer
+  Production watch                → long-running-background-tasks
+  Robots / terms / identity       → security-and-hardening, compliance-checker, source-driven-development
+  Parallel read-only probes       → dispatching-parallel-agents (read-only)
+  Score next EX unit              → expansion-score if registered; scoring is not a registry write
+If a skill file is missing in this runtime, say MISSING SKILL and follow the
+same contract from EXPANSION_LOOP.md + G1–G9. Do not skip the contract.
+
+G1–G9 (binding, compact)
+G1 Preserve Cloudflare/Astro/D1, public-index rules, unrelated dirty files.
+G2 Preflight: git status --short, fetch origin, full START_SHA, origin/main SHA,
+   label every inherited count/run VERIFIED|INFERRED|HISTORICAL|UNKNOWN.
+G3 Narrowest test first. Production code finishes with fresh
+   bun run test && bun run typecheck && bun run audit:guardrails && bun run build.
+G4 One unit per behavioral PR. Evidence commit may follow. No opportunistic cleanup.
+G5 Push branch, normal PR path, record exact-SHA CI/deploy. No secrets in git.
+G6 Savepoint card after the tick (template below). HANDOFF / AI_RECOVERY_TRAIL
+   only on milestone or interruption.
+G7 Cheapest capable model; independent critic when the unit names one.
+G8 STOP before scope-broadening, destructive cleanup, irreversible D1 writes,
+   new paid service, new scheduler, Band 4 fetch, unreviewed compliance change,
+   canary in the legacy scrape loop, or SP-10..SP-15 registry SQL dump.
+G9 Exactly one terminal decision: KEEP | REVISE | REVERT | BLOCKED | ESCALATE | PAUSED.
+
+QUEUE (do not rewind finished units)
+EX-01 REPAIR  KEEP on git — exact-six yield classified; do not loosen geo-gate
+EX-02 INTEGRATE merged — greenhouse:grafanalabs shadow admit (live row UNKNOWN until D1)
+EX-03 OBSERVE merged — hourly gha-shadow-dispatch.yml (non-publishing)
+EX-04 INTEGRATE merged — recruitee:myjewellery shadow admit
+EX-05 INTEGRATE merged — teamtailor:career.teamtailor.com shadow admit
+EX-06 QUALIFY  next expansion unit AFTER clock MEASURE is clean
+EX-07 EXPAND   BLOCKED until shadow observations pass sp23-shadow-7d-v1
+EX-08..EX-13   later; one identity / one mechanism per tick
+
+THIS TICK — default if the owner names nothing else
+Phase: MEASURE then maybe REPAIR.
+Why first: issue #123 ingestion-health (no scrape run in 5h at 2026-09-07T04:43:43Z,
+run 34084153140). source-health-latest.md 2026-09-07 last attempt
+2026-09-06T22:58:38.728Z. Repair live yield / clock before EX-06.
+Skills first: using-superpowers, task-observer, systematic-debugging.
+Allowed: read-only git, Actions, issue #123, source-health-latest.md,
+Hunter/watchdog/Worker evidence, read-only D1 (wrangler --command --json;
+success=true, changed_db=false, rows_written=0).
+Forbidden: EX-06+EX-07 same tick; geo-gate change; canary fetch on; Band 4;
+publish Grafana/Recruitee/Teamtailor/Lever; rebuild SP-21 from scratch.
+Pick rule after MEASURE:
+  - clock dead or Hunter falsely covering a dead Worker → this tick becomes
+    bounded REPAIR of existing SP-21 continuity (do not design a new scheduler)
+  - clock healthy / #123 stale watchdog → G9 REVISE docs, then next tick is EX-06
+  - contradiction among docs/code/prod → G8 STOP, G9 BLOCKED or ESCALATE
+
+FIRST RESPONSE (before any mutation)
+- skills invoked (files actually read)
+- START_SHA, origin/main SHA, dirty-state summary
+- MEASURE result: last fetch-event time, Worker vs Hunter, #123 class
+- picked unit ID + phase + why unblocked
+- unit card (copy from EXPANSION_LOOP)
+- forbidden scope for this tick
+- one next exact command
+
+UNIT CARD to write into SYSTEM_SAVEPOINT Run 52+
+UNIT ID:
+PHASE: DISCOVER | QUALIFY | PROBE | INTEGRATE | OBSERVE | REPAIR | REPLACE | EXPAND
+STATUS: PLANNED | IN_PROGRESS | VERIFYING | TERMINAL
+G9: KEEP | REVISE | REVERT | BLOCKED | ESCALATE | PAUSED
+IDENTITY:
+SKILLS INVOKED:
+FILES:
+COMMANDS / RESULTS:
+EVIDENCE:
+ROLLBACK:
+NEXT EXACT ACTION:
+
+NEVER
+- Fetch Band 4 (SmartRecruiters, OnlineJobs.ph HTML, Dribbble, Authentic Jobs)
+- Treat a one-shot probe as a seven-day shadow
+- Count hidden pending/rejected as public jobs
+- Promote on HTTP 200 alone
+- Apply historical pending registry SQL as a batch
 - Enable canary fetch in the legacy scrape loop
-- Publish jobs from Grafana / Recruitee / Teamtailor / Lever
-- Fetch Band 4 hosts (OnlineJobs.ph HTML, Dribbble, Authentic Jobs, SmartRecruiters)
-- Replay historical SP-10..SP-15 registry SQL
-- Combine EX-06 with EX-07
-- Spend money, rotate secrets, or add a paid service
-
-First named action after preflight:
-1. Classify issue #123 and the last source_fetch_events timestamp.
-2. If the primary clock is stopped, the unit is a bounded REPAIR of clock
-   continuity / Hunter standby (SP-21 already exists; do not rebuild it).
-   Measure whether Hunter scheduled standby is correctly skipping a healthy
-   Worker or incorrectly covering a dead Worker.
-3. If the clock is healthy and #123 is a stale or incomplete watchdog row,
-   close-out is documentation + evidence, then EX-06 is the next expansion unit.
-4. End AUDIT with one next exact command and one terminal decision:
-   KEEP, REVISE, REVERT, BLOCKED, ESCALATE, or PAUSED.
-
-Update docs/SYSTEM_SAVEPOINT.md as Run 52+ after the measurement, then
-docs/IMPLEMENTATION_STATUS.md. Touch docs/HANDOFF.md and
-docs/AI_RECOVERY_TRAIL.md only if this session is a milestone or interruption.
 ```
 
-## Compact state block
+## Compact state (paste after the prompt if the executor will not clone yet)
 
 ```text
-SOURCE PERPETUITY / APEX EXPANSION RESUME STATE
-As-of time/timezone: 2026-09-07T17:31:00-07:00 (authoring; not a D1 as-of)
-Requested mode (PLAN | EXECUTE | AUDIT | RECOVER): AUDIT
-Requested unit ID or planning question: Classify #123 clock gap; do not start EX-06 until that returns
-Last known branch/worktree: origin/main
-Last known full HEAD/START SHA: b7ca611251f7178b0e50dc729fad982ecf957bc4 (digest; re-fetch)
-Last known origin/main SHA: same as above at authoring; UNKNOWN after next digest
-Last accepted behavior SHA: c1b903ce481f33832d0b7201ec940f3ded098b4d (EX-05 Teamtailor shadow admit)
-Last evidence/docs SHA: HISTORICAL — savepoint Run 51 predates EX-02 deploy
-Last exact-SHA CI/deploy run and URL: UNKNOWN (re-open PRs #115-#122 and their main deploy runs)
-Last bounded production/D1 evidence window: HISTORICAL 2026-09-06T07:21:23.158Z (SP-23C ledger proof). Registry/shadow counts after EX-02..EX-05 are UNKNOWN until a fresh read-only query.
-Known dirty or untracked files (do not overwrite): UNKNOWN in this remote session
-Current unit status: EX-01 KEEP (diagnosis). EX-02..EX-05 merged to main; production row proof UNKNOWN. EX-06 PLANNED, blocked by clock audit. EX-07 blocked on 7-day shadow observations.
-Current terminal decision, if any: none for this bootloader session
-Current blockers/STOP conditions: open issue #123 ingestion heartbeat; stale savepoint/handoff vs git; no fresh D1 registry/shadow counts in this authoring session
-Known external-authority decisions or constraints: Approach B (parallel shadow, serial canary) approved in EXPANSION_LOOP.md. Founder is not required for ordinary in-scope audit/docs. Autonomy Cutover Predicate still unmet. Canary publication still off.
-Constitution/policy/schema versions: migrations 0039-0042 expected in production; confirm. Publication ledger 0041 live as of Run 48. D1 GLOB length repair 0042 shipped with EX-02 follow.
-Observed versus merely labeled capabilities: shadow-admit route and hourly shadow-dispatch workflow exist on main. Static ATS scrape identities remain paused. Exact-six still the only public fetch set.
-Real fetching sources (static allowed list): we-work-remotely, remotive, real-work-from-anywhere, remote-ok, jobicy-admin-support-apac, jobicy-supporting-apac
-Registry/reserve counts: UNKNOWN after EX-02..EX-05 admits; were 0 at 2026-09-06T07:21:23Z
-Shadow identities intended: greenhouse:grafanalabs, recruitee:myjewellery, teamtailor:career.teamtailor.com — VERIFY live before treating as operating shadows
-Canary identities: none
-Public job publication from new sources: none
-Open ops issue: https://github.com/cyalcala/va-freelance-hub/issues/123
-Latest source-health rollup: docs/source-health-latest.md date 2026-09-07, run 34091193473, last attempt 2026-09-06T22:58:38.728Z, 0 failed attempts, 11410 items seen, many rows are policy skips not fetches
-Latest directory-health: docs/directory-health-latest.md date 2026-09-07, run 34085979704, 40 checked, 31 OK, 0 dead
-Live site: https://remotejobs-ph.pages.dev
-Next exact action: AUDIT #123 + last fetch-event time + Hunter standby vs Worker heartbeat. Then either bounded clock REPAIR or EX-06 Lever QUALIFY. Never EX-07 in the same tick.
+GAUNTLET RESUME STATE 2026-09-07
+Loop: docs/gauntlet/EXPANSION_LOOP.md Approach B
+Authoring SHA: b7ca611251f7178b0e50dc729fad982ecf957bc4 (digest; re-fetch)
+Last behavior SHA: c1b903ce481f33832d0b7201ec940f3ded098b4d (EX-05)
+Savepoint: Run 51 HISTORICAL (says EX-02 not deployed; git disagrees)
+D1 as-of last proven: 2026-09-06T07:21:23.158Z — registry was 0 then; NOW UNKNOWN
+Exact-six live fetch: we-work-remotely, remotive, real-work-from-anywhere,
+  remote-ok, jobicy-admin-support-apac, jobicy-supporting-apac
+Intended shadows (VERIFY in D1): greenhouse:grafanalabs, recruitee:myjewellery,
+  teamtailor:career.teamtailor.com
+Canary: none
+Open blocker: https://github.com/cyalcala/va-freelance-hub/issues/123
+Source-health: docs/source-health-latest.md run 34091193473
+Site: https://remotejobs-ph.pages.dev
+This tick: MEASURE #123 / clock. Next expansion unit only after that: EX-06.
 ```
 
-## Read order for the next executor
+## Finished-unit ledger (do not redo)
 
-1. `AGENTS.md`
-2. This file
-3. `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md` (standing rules)
-4. `docs/gauntlet/EXPANSION_LOOP.md`
-5. `docs/superpowers/specs/2026-09-06-apex-source-expansion-design.md`
-6. Top of `docs/SYSTEM_SAVEPOINT.md` (expect stale Run 51)
-7. `docs/gauntlet/evidence/EX-01-exact-six-yield-2026-09-06.md`
-8. `docs/source-health-latest.md` and issue #123
-9. `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` and ADR-007 only if the unit
-   would change governance or cutover
+| ID | Phase | Merge | PR | Note |
+| --- | --- | --- | ---: | --- |
+| EX-01 | REPAIR | `360ece99` + `1aac624e` | 115, 117 | Yield classes + zero-fill verify SQL |
+| EX-02 | INTEGRATE | `4b7e5158` + `cc5a1f1a` + `aa29dd7d` | 116, 118, 119 | Grafana shadow admit + admit 500 + D1 GLOB |
+| EX-03 | OBSERVE | `32b8760e` | 120 | Hourly shadow-dispatch |
+| EX-04 | INTEGRATE | `6f860554` | 121 | Recruitee myjewellery shadow |
+| EX-05 | INTEGRATE | `c1b903ce` | 122 | Teamtailor career.teamtailor.com shadow |
 
-## Stop conditions inherited from the expansion loop
+Static ATS list still shows those tokens `paused`. That is correct. Public
+scrape remains exact-six. Shadow is registry + dispatcher.
 
-STOP before mutation when robots/terms contradict the classification, a
-registry write is classifier-blocked without owner confirmation, a new paid
-service appears, a schedule would fetch a third party before a shadow row
-exists, or any Band 4 host is about to be fetched.
+EX-01 classes (re-measure; artifact 2026-09-06T07:21:23Z):
+`we-work-remotely` eligible_inflow; `real-work-from-anywhere` eligible_quiet_24h;
+`remote-ok` eligible_with_high_reject; `remotive` fetching_but_ineligible;
+`jobicy-supporting-apac` eligible_inflow; `jobicy-admin-support-apac`
+silent_zero_storage (repair later via fetch-events, not a new host).
