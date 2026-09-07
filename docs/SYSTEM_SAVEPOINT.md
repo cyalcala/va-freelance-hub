@@ -1,5 +1,23 @@
 # System Savepoint
 
+## Run 56 — APEX-W2 Two-Speed Risk-Proportional Source Governance (2026-09-07)
+
+UNIT ID: APEX-W2
+PHASE: DECIDE / IMPLEMENT
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: none (governance policy & resolver)
+
+### Governance Findings
+- **ADR-008 accepted**: Established three explicit risk tiers:
+  - **Tier A**: Direct structured public sources (official ATS APIs, documented RSS). Fast-track 3-day shadow observation, up to 10 items/tick canary ceiling.
+  - **Tier B**: Variable / partner APIs. Standard 7-day shadow observation, up to 5 items/tick canary ceiling.
+  - **Tier C**: HTML scraping / fragile surfaces. Strict 14-day shadow observation, 2 items/tick ceiling.
+- **Code implementation**: Added `SourceRiskTier`, `RISK_TIER_POLICIES`, and `classifySourceRiskTier` to `packages/scraper/policy-resolver.ts`.
+- **Invariants preserved**: Band 4 hosts remain blocked; opt-out memory is absolute; robots.txt and concentration limits enforced.
+- **Verification**: `bun test packages/scraper/policy-resolver.test.ts` (44/44 pass), full monorepo suite clean (1,190/1,190 pass), typecheck and guardrails clean.
+- **Next exact action**: APEX Wave 3 / EX-08 (Direct ATS Registry Expansion: Greenhouse multi-board qualification).
+
 ## Run 55 — APEX-W1 Source Economics Telemetry (2026-09-07)
 
 UNIT ID: APEX-W1

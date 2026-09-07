@@ -147,7 +147,8 @@ Measured from Cloudflare D1, GitHub Actions logs, and git tree:
 | **EX-10** | Prospector Candidate Drain | **PLANNED** | EX-09 | SP-06 | Drain into QUALIFY/PROBE |
 | **APEX-W0** | Reality Reconciliation | **DONE** | — | PR #126 | Established control plane |
 | **APEX-W1** | Source Economics Telemetry | **DONE** | APEX-W0 | `scripts/diagnostics/source-economics.ts` | Yield per fetch & triage metrics |
-| **APEX-W2** | Two-Speed Source Governance | **PLANNED** | APEX-W1 | ADR-007 addendum | Structured admission fast-path |
+| **APEX-W2** | Two-Speed Source Governance | **DONE** | APEX-W1 | ADR-008, `policy-resolver.ts` | Tier A/B/C classification & policies |
+| **APEX-W3** | Direct ATS Registry Expansion | **PLANNED** | APEX-W2 | EX-08 | Greenhouse multi-board admission |
 
 ---
 

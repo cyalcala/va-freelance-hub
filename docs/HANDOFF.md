@@ -1,6 +1,13 @@
 # Handoff
 
-## Current handoff — 2026-09-07 APEX-W1 Source Economics Telemetry
+## Current handoff — 2026-09-07 APEX-W2 Two-Speed Source Governance
+
+Read Run 56.
+- **Wave 2 Complete**: Accepted ADR-008 (`docs/decisions/ADR-008-two-speed-source-governance.md`) and implemented `classifySourceRiskTier` and `RISK_TIER_POLICIES` in `packages/scraper/policy-resolver.ts`.
+- **Three Tiers Established**: Tier A (3-day shadow, 10-cap fast track for direct ATS/RSS), Tier B (7-day shadow, 5-cap), Tier C (14-day shadow, 2-cap for HTML).
+- **Next Unit**: APEX-W3 / EX-08 (Direct ATS Registry Expansion: Greenhouse multi-board qualification).
+
+## Current handoff — 2026-09-07 APEX-W1 Source Economics Telemetry (HISTORICAL)
 
 Read Run 55.
 - **Wave 1 Complete**: `scripts/diagnostics/source-economics.ts` extended with `triage_outcomes_7d` and yield efficiency reporting. Per-source qualification yield, conversion rates, and fetch yield metrics tested and operational.

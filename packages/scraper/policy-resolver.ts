@@ -78,6 +78,60 @@ export interface ResolvedPolicy {
   robotsMode: "enforce" | "observe";
 }
 
+// ─── APEX-W2 Risk-Proportional Source Governance ─────────────────────────────
+export type SourceRiskTier = "tier_a" | "tier_b" | "tier_c";
+
+export interface RiskTierPolicy {
+  tier: SourceRiskTier;
+  description: string;
+  minShadowDays: number;
+  requiresRobotsCheck: boolean;
+  canaryMaxLimit: number;
+  fastTrackEligible: boolean;
+}
+
+export const RISK_TIER_POLICIES: Record<SourceRiskTier, RiskTierPolicy> = {
+  tier_a: {
+    tier: "tier_a",
+    description: "Direct structured public ATS / RSS feeds with low fragility and explicit public endpoints",
+    minShadowDays: 3,
+    requiresRobotsCheck: true,
+    canaryMaxLimit: 10,
+    fastTrackEligible: true,
+  },
+  tier_b: {
+    tier: "tier_b",
+    description: "Public but variable or partner interfaces with potential schema drift",
+    minShadowDays: 7,
+    requiresRobotsCheck: true,
+    canaryMaxLimit: 5,
+    fastTrackEligible: false,
+  },
+  tier_c: {
+    tier: "tier_c",
+    description: "HTML scraping or fragile unstandardized surfaces requiring DOM extraction",
+    minShadowDays: 14,
+    requiresRobotsCheck: true,
+    canaryMaxLimit: 2,
+    fastTrackEligible: false,
+  },
+};
+
+export function classifySourceRiskTier(
+  mechanism: string,
+  authClass: string = "none",
+  isHtml: boolean = false,
+): SourceRiskTier {
+  if (isHtml || mechanism === "public_html") return "tier_c";
+  if (mechanism === "ats_api" && (authClass === "none" || authClass === "partner_token")) {
+    return "tier_a";
+  }
+  if (mechanism === "rss_feed" || mechanism === "public_json_api" || mechanism === "syndication_feed") {
+    return "tier_a";
+  }
+  return "tier_b";
+}
+
 // ─── Exact-six robots literal (mirrored, not authoritative) ─────────────────
 // The authoritative literal lives in `apps/web/src/pages/api/cron/scrape.ts`
 // and is guardrailed by `check-production-guardrails.ts`. This mirror is used

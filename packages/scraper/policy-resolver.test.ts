@@ -12,6 +12,8 @@ import {
   KNOWN_SOURCE_IDS,
   KNOWN_STATIC_IDS,
   KNOWN_ATS_IDS,
+  classifySourceRiskTier,
+  RISK_TIER_POLICIES,
 } from "./policy-resolver";
 import { sources } from "./sources";
 
@@ -628,5 +630,21 @@ describe("fallback covers every known id; resolver is reversible", () => {
       expect(b).toEqual(a);
       expect(c).toEqual(a);
     }
+  });
+
+  test("classifySourceRiskTier maps ATS and structured feeds to Tier A, variable to Tier B, and HTML to Tier C", () => {
+    expect(classifySourceRiskTier("ats_api", "none")).toBe("tier_a");
+    expect(classifySourceRiskTier("rss_feed", "none")).toBe("tier_a");
+    expect(classifySourceRiskTier("public_json_api", "none")).toBe("tier_a");
+    expect(classifySourceRiskTier("public_api", "api_key")).toBe("tier_b");
+    expect(classifySourceRiskTier("public_html", "none")).toBe("tier_c");
+    expect(classifySourceRiskTier("ats_api", "none", true)).toBe("tier_c");
+
+    expect(RISK_TIER_POLICIES.tier_a.minShadowDays).toBe(3);
+    expect(RISK_TIER_POLICIES.tier_a.fastTrackEligible).toBe(true);
+    expect(RISK_TIER_POLICIES.tier_b.minShadowDays).toBe(7);
+    expect(RISK_TIER_POLICIES.tier_b.fastTrackEligible).toBe(false);
+    expect(RISK_TIER_POLICIES.tier_c.minShadowDays).toBe(14);
+    expect(RISK_TIER_POLICIES.tier_c.fastTrackEligible).toBe(false);
   });
 });
