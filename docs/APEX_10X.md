@@ -142,13 +142,13 @@ Measured from Cloudflare D1, GitHub Actions logs, and git tree:
 | **EX-05** | Teamtailor Career Shadow | **DONE** | EX-04 | PR #122 (`c1b903c`) | Shadow row in D1 |
 | **EX-06** | Lever Postings Qualification | **QUALIFIED** | EX-05 | `b225b3e` (`EX-06-lever-qualification.md`) | Retarget candidate employer |
 | **EX-07** | Grafana Capped Canary | **HARD BLOCKED** | `sp23-shadow-7d-v1` | ~1.2/7 days elapsed (earliest 2026-09-06T08:46Z) | Await 7 full days of shadow |
-| **EX-08** | Remaining Greenhouse Boards | **PLANNED** | EX-06 | SP-12 / D1 directory tokens | Probe & admit GitLab, Remote.com |
+| **EX-08** | Remaining Greenhouse Boards | **DONE** | EX-06 | `EX-08-greenhouse-multi-board-admission.md` | Admitted to shadow allowlist |
 | **EX-09** | Workable GHA Shadow | **PLANNED** | EX-08 | SP-10 | Hourly GHA feed preprocessor |
 | **EX-10** | Prospector Candidate Drain | **PLANNED** | EX-09 | SP-06 | Drain into QUALIFY/PROBE |
 | **APEX-W0** | Reality Reconciliation | **DONE** | — | PR #126 | Established control plane |
 | **APEX-W1** | Source Economics Telemetry | **DONE** | APEX-W0 | `scripts/diagnostics/source-economics.ts` | Yield per fetch & triage metrics |
 | **APEX-W2** | Two-Speed Source Governance | **DONE** | APEX-W1 | ADR-008, `policy-resolver.ts` | Tier A/B/C classification & policies |
-| **APEX-W3** | Direct ATS Registry Expansion | **PLANNED** | APEX-W2 | EX-08 | Greenhouse multi-board admission |
+| **APEX-W3** | Direct ATS Registry Expansion | **DONE** | APEX-W2 | EX-08, `source-admit.ts` | Greenhouse multi-board admission |
 
 ---
 

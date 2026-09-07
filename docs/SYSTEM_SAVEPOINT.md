@@ -1,5 +1,21 @@
 # System Savepoint
 
+## Run 57 — APEX-W3 / EX-08 Greenhouse Multi-Board Admission (2026-09-07)
+
+UNIT ID: APEX-W3 (EX-08)
+PHASE: ADMIT / SHADOW
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `greenhouse:gitlab`, `greenhouse:remotecom`, `greenhouse:nearform`, `greenhouse:ghost`
+
+### Greenhouse Expansion Findings
+- **Registry allowlist scaled**: `apps/web/src/pages/api/cron/source-admit.ts` expanded to include four remote-first employer boards: GitLab (`greenhouse:gitlab`), Remote.com (`greenhouse:remotecom`), Nearform (`greenhouse:nearform`), Ghost Foundation (`greenhouse:ghost`).
+- **Tier A fast-track governance applied**: Adjudication references mapped to `ex-08-greenhouse-${token}-tier-a-fast-track` under ADR-008.
+- **Production invariant preserved**: Non-publishing shadow mode enforced. Zero public job mutations during shadow evaluation.
+- **Evidence compiled**: `docs/gauntlet/evidence/EX-08-greenhouse-multi-board-admission.md`.
+- **Verification**: Unit tests in `apps/web/tests/source-admit-route.test.ts` (7/7 pass), monorepo test suite clean (1,192/1,192 pass across 117 files), typecheck clean, production guardrails clean, Astro server/client build verified.
+- **Next exact action**: APEX Wave 4 (Zero-Waste Triage: expand deterministic geo/taxonomy filters to cut LLM escalation rates).
+
 ## Run 56 — APEX-W2 Two-Speed Risk-Proportional Source Governance (2026-09-07)
 
 UNIT ID: APEX-W2

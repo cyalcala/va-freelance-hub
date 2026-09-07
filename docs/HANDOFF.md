@@ -1,6 +1,15 @@
 # Handoff
 
-## Current handoff — 2026-09-07 APEX-W2 Two-Speed Source Governance
+## Current handoff — 2026-09-07 APEX-W3 / EX-08 Greenhouse Multi-Board Admission
+
+Read Run 57.
+- **Wave 3 Complete**: Expanded `SOURCE_ADMIT_ALLOWLIST` in `apps/web/src/pages/api/cron/source-admit.ts` for four Tier A remote-first employer boards: GitLab (`greenhouse:gitlab`), Remote.com (`greenhouse:remotecom`), Nearform (`greenhouse:nearform`), and Ghost Foundation (`greenhouse:ghost`).
+- **Tier A Governance Applied**: Mapped adjudication references under ADR-008 (`ex-08-greenhouse-${token}-tier-a-fast-track`).
+- **Exact-Six Invariant Preserved**: Non-publishing shadow admission verified; zero public listings mutated.
+- **Evidence Documented**: `docs/gauntlet/evidence/EX-08-greenhouse-multi-board-admission.md`.
+- **Next Unit**: APEX Wave 4 (Zero-Waste Triage: expand deterministic geo/taxonomy filters to cut LLM escalation rates).
+
+## Current handoff — 2026-09-07 APEX-W2 Two-Speed Source Governance (HISTORICAL)
 
 Read Run 56.
 - **Wave 2 Complete**: Accepted ADR-008 (`docs/decisions/ADR-008-two-speed-source-governance.md`) and implemented `classifySourceRiskTier` and `RISK_TIER_POLICIES` in `packages/scraper/policy-resolver.ts`.
