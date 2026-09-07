@@ -18,6 +18,11 @@ Astro.response.headers.set(
 
 const PAGE_SIZE = 30;
 const TYPE_OPTIONS = ['VA', 'freelance', 'project', 'full-time', 'part-time'];
+const GEO_SCOPE_OPTIONS = [
+  { value: 'ph_only', label: '🇵🇭 PH-exclusive' },
+  { value: 'apac_incl_ph', label: '⏰ APAC-friendly' },
+  { value: 'worldwide', label: '🌍 Worldwide' },
+];
 
 const searchParams = Astro.url.searchParams;
 const parsedRequest = parseJobBoardRequest(searchParams);
@@ -30,6 +35,7 @@ const { query, page: currentPage } = parsedRequest;
 const category = searchParams.get('category') || '';
 const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
+const geoScope = searchParams.get('geoScope') || '';
 const offset = (currentPage - 1) * PAGE_SIZE;
 
 let pageJobs: OpportunityCardData[] = [];
@@ -44,6 +50,7 @@ function buildPageUrl(page: number) {
   if (category) params.set('category', category);
   if (type) params.set('type', type);
   if (platform) params.set('platform', platform);
+  if (geoScope) params.set('geoScope', geoScope);
   if (page > 1) params.set('page', String(page));
   const qs = params.toString();
   return qs ? `/opportunities?${qs}` : '/opportunities';
@@ -65,6 +72,10 @@ try {
     filters.push(eq(opportunities.sourcePlatform, platform));
   }
 
+  if (geoScope && GEO_SCOPE_OPTIONS.some((opt) => opt.value === geoScope)) {
+    filters.push(eq(opportunities.geoScope, geoScope as any));
+  }
+
   if (query) {
     const ftsMatch = query
       .split(/\s+/)
@@ -77,6 +88,7 @@ try {
       category: category && JOB_CATEGORY_MAP[category] ? category : undefined,
       type: type && TYPE_OPTIONS.includes(type) ? type : undefined,
       platform: platform || undefined,
+      geoScope: geoScope && GEO_SCOPE_OPTIONS.some((opt) => opt.value === geoScope) ? geoScope : undefined,
       limit: PAGE_SIZE,
       offset,
     });
@@ -182,7 +194,7 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
       action="/opportunities"
       class="scroll-mt-20 sticky top-[4.5rem] z-40 mt-8 mb-8 bg-parchment/85 backdrop-blur-xl border border-ink/[0.08] rounded-2xl p-2.5 shadow-soft"
     >
-      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.6fr)_repeat(3,minmax(0,0.8fr))_auto] gap-2">
+      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,0.8fr))_auto] gap-2">
         <label class="sr-only" for="q">Search jobs</label>
         <input
           id="q"
@@ -229,6 +241,18 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
           ))}
         </select>
 
+        <label class="sr-only" for="geoScope">Eligibility</label>
+        <select
+          id="geoScope"
+          name="geoScope"
+          class="w-full h-12 px-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
+        >
+          <option value="">All geo scopes</option>
+          {GEO_SCOPE_OPTIONS.map((option) => (
+            <option value={option.value} selected={geoScope === option.value}>{option.label}</option>
+          ))}
+        </select>
+
         <button
           type="submit"
           class="h-12 bg-accent hover:bg-accent-hover text-white px-6 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98]"
@@ -242,7 +266,7 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
       <p class="tabular-nums">
         Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
       </p>
-      {(query || category || type || platform) && (
+      {(query || category || type || platform || geoScope) && (
         <a href="/opportunities" class="text-accent hover:text-accent-hover transition-colors">
           Clear filters
         </a>

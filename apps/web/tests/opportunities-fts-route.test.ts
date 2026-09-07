@@ -92,8 +92,23 @@ test("FTS search preserves filters, ranking, card fields, and safe links", () =>
     expect(html).toContain("Beta");
     expect(html).toContain("Aug 11");
     expect(html).toContain(">VA<");
-    expect(html).toContain("Worldwide applicants");
+    const geoQuery = buildOpportunityFtsQueries({
+      ftsMatch: '"assistant"',
+      geoScope: "apac_incl_ph",
+      limit: 30,
+      offset: 0,
+    });
+    const geoCount = database
+      .query(geoQuery.countSql)
+      .get(...geoQuery.filterParams) as { total: number };
+    const geoRows = database
+      .query(geoQuery.pageSql)
+      .all(...geoQuery.pageParams) as OpportunityCardData[];
+    expect(geoCount.total).toBe(1);
+    expect(geoRows[0].id).toBe(2);
+    expect(geoRows[0].geoScope).toBe("apac_incl_ph");
   } finally {
     database.close();
   }
 });
+

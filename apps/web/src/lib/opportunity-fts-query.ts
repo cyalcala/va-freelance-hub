@@ -3,6 +3,7 @@ export interface OpportunityFtsQueryOptions {
   category?: string;
   type?: string;
   platform?: string;
+  geoScope?: string;
   limit: number;
   offset: number;
 }
@@ -48,6 +49,10 @@ export function buildOpportunityFtsQueries(
   if (options.platform) {
     conditions.push("o.source_platform = ?");
     filterParams.push(options.platform);
+  }
+  if (options.geoScope) {
+    conditions.push("o.geo_scope = ?");
+    filterParams.push(options.geoScope);
   }
 
   const fromAndWhere = `FROM opportunities o
