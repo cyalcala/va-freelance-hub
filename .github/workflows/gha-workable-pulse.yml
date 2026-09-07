@@ -1,0 +1,54 @@
+﻿name: 💼 Workable Global Feed Preprocessor (EX-09)
+
+# Standalone preprocessor for Workable global XML feed (SP-09 / SP-10 / EX-09).
+# Runs outside the 10-minute Cloudflare Worker scrape tick to prevent
+# subrequest and memory exhaustion.
+# Performs ZERO Cloudflare D1 writes and preserves the exact-six production invariant.
+
+on:
+  schedule:
+    - cron: '45 3 * * *' # Daily at 03:45 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: gha-workable-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  preprocess:
+    name: Preprocess Workable Feed
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Install Monorepo Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Workable Preprocessor
+        run: bun scripts/gha/workable-preprocessor.ts
+
+      - name: Commit Updated Evidence Digest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -f docs/workable-candidates-latest.md ]; then
+            git add docs/workable-candidates-latest.md
+            if ! git diff --staged --quiet; then
+              git commit -m "docs: update workable global feed candidates digest [skip ci]"
+              git push origin HEAD:${{ github.ref }}
+            else
+              echo "No changes in candidate feed digest."
+            fi
+          fi
