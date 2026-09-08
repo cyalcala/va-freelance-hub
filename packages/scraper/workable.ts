@@ -30,7 +30,14 @@
  * budget.
  */
 
+import { XMLValidator } from "fast-xml-parser";
+
 export const WORKABLE_FEED_URL = "https://www.workable.com/boards/workable.xml";
+
+/** Keep XML validation inside the workspace that declares the parser dependency. */
+export function isWellFormedWorkableXml(xml: string): boolean {
+  return XMLValidator.validate(xml) === true;
+}
 
 function extractJobBlocks(xml: string): string[] {
   const out: string[] = [];

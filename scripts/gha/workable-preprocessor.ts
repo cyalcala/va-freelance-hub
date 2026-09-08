@@ -14,10 +14,10 @@
 
 import { writeFileSync, readFileSync, statSync } from "fs";
 import { resolve } from "path";
-import { XMLValidator } from "fast-xml-parser";
 import { checkRobots, type RobotsCacheEntry } from "../../packages/scraper/robotsGate";
 import {
   parseWorkableXml,
+  isWellFormedWorkableXml,
   filterPlausibleCandidates,
   summarizeFilterStats,
   WORKABLE_FEED_URL,
@@ -61,7 +61,7 @@ export function generatePreprocessorResult(
   generatedAt: string = new Date().toISOString()
 ): PreprocessorResult {
   if (Buffer.byteLength(xml, "utf8") > MAX_FEED_BYTES) throw new Error("Workable feed exceeds byte budget");
-  if (XMLValidator.validate(xml) !== true
+  if (!isWellFormedWorkableXml(xml)
     || !/^\s*(?:<\?xml[^?]*\?>\s*)?<source>/.test(xml)
     || !/<\/source>\s*$/.test(xml)
     || !/<publisher>\s*(?:<!\[CDATA\[)?Workable(?:\]\]>)?\s*<\/publisher>/.test(xml)) {
