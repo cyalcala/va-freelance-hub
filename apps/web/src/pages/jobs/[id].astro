@@ -283,10 +283,11 @@ jsonLd.directApply = false;
             <p class="text-sm font-semibold text-ink">{job.clientTimezone}</p>
           </div>
         )}
-        {shiftInfo.category !== 'unknown' && shiftInfo.phWorkingHours && (
+        {shiftInfo.category !== 'unknown' && (
           <div>
-            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Shift / Working Hours</p>
-            <p class="text-sm font-semibold text-ink">{shiftInfo.phWorkingHours}</p>
+            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Schedule mentioned</p>
+            <p class="text-sm font-semibold text-ink">{shiftInfo.category.replaceAll('_', ' ')}</p>
+            <p class="text-xs text-ink/50">Confirm exact hours in the original listing.</p>
           </div>
         )}
         {Array.isArray(job.tags) && job.tags.length > 0 && (
