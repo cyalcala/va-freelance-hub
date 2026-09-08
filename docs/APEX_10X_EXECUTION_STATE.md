@@ -20,7 +20,9 @@
 | **#129** | `feat/apex-w3-ex08-greenhouse` | APEX-W3 Greenhouse Multi-Board Shadow Admission (EX-08) | **SUCCESS** | OPEN (Clean) |
 | **#130** | `feat/apex-w4-zero-waste-triage` | APEX-W4 Zero-Waste Triage (Deterministic Geo & Heuristics) | **SUCCESS** | OPEN (Clean) |
 | **#131** | `feat/apex-w5-product-intelligence` | APEX-W5 Product Intelligence & Python Analytical Tooling | **SUCCESS** | OPEN (Clean) |
-| **Current** | `feat/apex-w6-direct-ats-expansion` | APEX-W6 Direct ATS Scaling: Canonical & Wikimedia (EX-11) | Local PASS (1,211 tests) | In Progress |
+| **#132** | `feat/apex-w6-direct-ats-expansion` | APEX-W6 Direct ATS Scaling: Canonical & Wikimedia (EX-11) | **SUCCESS** | OPEN (Clean) |
+| **#133** | `feat/apex-w7-search-discovery` | APEX-W7 Search & Discovery Polish (FTS GeoScope Facets) | **SUCCESS** | OPEN (Clean) |
+| **#134** | `feat/apex-w8-ex09-workable-action` | APEX-W8 Workable XML Feed Preprocessor Action (EX-09) | Local PASS (1,215 tests) | OPEN (Clean) |
 
 ---
 
