@@ -108,7 +108,7 @@ export async function admitReviewedSourceToShadow(
   // policy snapshot. Detect a different proposal before creating an orphan
   // candidate or attempting evidence that SQL will reject against that snapshot.
   const mismatchedFields = (Object.keys(storedProvider) as (keyof AdmissionProviderSnapshot)[])
-    .filter(key => key !== "governanceRevision" && storedProvider[key] !== input.provider[key]);
+    .filter(key => key !== "governanceRevision" && key !== "evidenceCapturedAt" && storedProvider[key] !== input.provider[key]);
   if (mismatchedFields.length > 0) {
     return {
       ok: false,
@@ -116,6 +116,13 @@ export async function admitReviewedSourceToShadow(
     };
   }
   const provider = storedProvider;
+  // An identical content hash and policy contract may reuse the immutable
+  // provider capture. A later fetch must not renew all existing source windows.
+  const providerExpiresAt = new Date(Date.parse(provider.evidenceCapturedAt!) + provider.evidenceLeaseDays * 86_400_000).toISOString();
+  const source = { ...input.source, policyExpiry: input.source.policyExpiry! < providerExpiresAt ? input.source.policyExpiry : providerExpiresAt };
+  const primaryEvidence = input.primaryEvidence.map(entry => entry.url === provider.evidenceUrl
+    && entry.contentSha256 === provider.evidenceHash ? { ...entry, capturedAt: provider.evidenceCapturedAt! } : entry);
+  if (!source.policyExpiry || source.policyExpiry <= input.now) return { ok: false, reason: "Shared provider evidence lease has expired" };
 
   const candidateWrite = await db.prepare(INSERT_CANDIDATE_SQL).bind(
     input.source.sourceId,
@@ -126,25 +133,25 @@ export async function admitReviewedSourceToShadow(
     input.source.discoveryProvenance,
     input.source.complianceState,
     input.source.reviewDeadline,
-    input.source.policyExpiry,
+    source.policyExpiry,
     input.source.canaryMaxNewItemsPerTick,
     "ex-02",
   ).run();
   if (!candidateWrite.success) return { ok: false, reason: "source registry candidate write was unsuccessful" };
 
   const built = await buildAdmissionEvidence({
-    source: input.source,
+    source,
     provider,
     probe: input.probe,
-    primaryEvidence: input.primaryEvidence,
+    primaryEvidence,
     authorityActions: ["recurrent_private_shadow", "public_minimal_metadata_canary"],
     adjudicationRef: input.adjudicationRef,
     capturedAt: input.probe.timestamp,
-    expiresAt: input.source.policyExpiry!,
+    expiresAt: source.policyExpiry!,
   });
   if (!built.ok) return built;
 
-  const persisted = await persistAdmissionEvidence(db, input.source, provider, built, input.now);
+  const persisted = await persistAdmissionEvidence(db, source, provider, built, input.now);
   if (!persisted.ok) return persisted;
 
   const shadow = await applyTypedTransition(db, {

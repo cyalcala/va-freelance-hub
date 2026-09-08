@@ -1,0 +1,23 @@
+[
+  {
+    "url": "https://docs.greenhouse.io/job-board.html",
+    "sha256": "666dca356fa154a91e382fe55c007d004c67abb79fb6f7f97055e2d1668c5794",
+    "capturedAt": "2026-09-08T10:31:58.825Z",
+    "bytes": 142149,
+    "status": 200
+  },
+  {
+    "url": "https://docs.recruitee.com/docs/feed",
+    "sha256": "0a67a92f9250e383021e07039e1178c33c6b787259a0e5b3fdaab967919ca389",
+    "capturedAt": "2026-09-08T10:31:59.930Z",
+    "bytes": 170236,
+    "status": 200
+  },
+  {
+    "url": "https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide",
+    "sha256": "07695645200ad560c2a86bbcc22d9b6631c3492c92427ab78e4ba98bcd3edb11",
+    "capturedAt": "2026-09-08T10:32:01.513Z",
+    "bytes": 95399,
+    "status": 200
+  }
+]

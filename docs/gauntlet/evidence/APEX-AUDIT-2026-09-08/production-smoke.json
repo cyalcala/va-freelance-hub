@@ -1,0 +1,47 @@
+{
+  "at": "2026-09-08T10:28:57.568Z",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 172768,
+      "geoFacet": true
+    },
+    {
+      "path": "/opportunities?geo=worldwide",
+      "status": 200,
+      "bytes": 80160,
+      "geoFacet": true
+    },
+    {
+      "path": "/opportunities?q=writer&geo=worldwide",
+      "status": 200,
+      "bytes": 28527,
+      "geoFacet": true
+    },
+    {
+      "path": "/directory",
+      "status": 200,
+      "bytes": 74702,
+      "geoFacet": false
+    },
+    {
+      "path": "/data-policy",
+      "status": 200,
+      "bytes": 10600,
+      "geoFacet": false
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "bytes": 10103,
+      "geoFacet": false
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "bytes": 123834,
+      "geoFacet": false
+    }
+  ]
+}
