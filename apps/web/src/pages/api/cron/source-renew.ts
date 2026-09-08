@@ -29,6 +29,7 @@ export function createSourceRenewHandler(deps: {
       return json(400, { error: "An allowlisted providerId and preview/renew mode are required" });
     }
     if (!env.DB?.prepare || !env.DB?.batch) return json(503, { error: "Native D1 batch binding required" });
+    let stage = "load_current_evidence";
     try {
       const rows = await env.DB.prepare("SELECT source_id AS sourceId FROM source_registry WHERE provider_id=? ORDER BY source_id")
         .bind(input.providerId).all();
@@ -44,6 +45,7 @@ export function createSourceRenewHandler(deps: {
       const hashes: Record<string, string> = {};
       const urls = [...new Set(contexts.flatMap(context => context.packet.primaryEvidence.map(entry => entry.url)))];
       for (const url of urls) {
+        stage = "capture_primary_document";
         const content = await (deps.capture ?? fetchPrimaryEvidence)(url);
         const capturedAt = now();
         captures.push({ url, content, capturedAt });
@@ -60,16 +62,19 @@ export function createSourceRenewHandler(deps: {
         return json(409, { error: "Reviewed capture or expected group changed; preview and review again" });
       }
       const probes = [];
+      stage = "probe_sources";
       for (const context of contexts) {
         probes.push(await (deps.probe ?? defaultRunProbe)({ ...context.source, provider: context.provider }));
       }
+      stage = "atomic_renewal";
       const result = await (deps.renew ?? renewProviderEvidence)(env.DB, {
         providerId: input.providerId, expectedProviderRevision: revision, expectedEvidenceIds, captures, probes, now: now(),
         adjudication: { decision: "renew_existing_scope", reference: ADJUDICATION, reviewedContentHashes: hashes },
       });
       return json(result.ok ? 200 : 409, { ...result, published: 0, observationWindowRestarted: result.ok });
-    } catch {
-      return json(503, { error: "Evidence renewal unavailable; inspect durable state before retrying" });
+    } catch (error) {
+      return json(503, { error: error instanceof Error ? error.message.slice(0, 300) : "Evidence renewal unavailable",
+        stage, commitState: stage === "atomic_renewal" ? "unknown" : "not_attempted" });
     }
   };
 }
