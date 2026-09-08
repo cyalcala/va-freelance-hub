@@ -253,7 +253,18 @@ describe("current-evidence shadow dispatcher", () => {
   test("enforces the bounded per-run cap", async () => {
     const result = await dispatchShadowObservations(deps({ loadRegistryRows: async () => Array.from({ length: 5 }, (_, i) => registryRow({ sourceId: `s${i}` })),
       loadAdmissionContext: async sourceId => context(registryRow({ sourceId })), maxDispatchesPerRun: 2 }));
-    expect(result.dispatched).toBe(2); expect(result.skippedRunCap).toBe(3); expect(MAX_DISPATCHES_PER_RUN).toBe(20);
-    await expect(dispatchShadowObservations(deps({ maxDispatchesPerRun: 21 }))).rejects.toThrow("run cap");
+    expect(result.dispatched).toBe(2); expect(result.skippedRunCap).toBe(3); expect(MAX_DISPATCHES_PER_RUN).toBe(12);
+    await expect(dispatchShadowObservations(deps({ maxDispatchesPerRun: 13 }))).rejects.toThrow("run cap");
+  });
+  test("invalid evidence consumes the authority-read budget even when nothing dispatches", async () => {
+    let reads = 0;
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => Array.from({ length: 30 }, (_, i) => registryRow({ sourceId: `s${i}` })),
+      loadAdmissionContext: async () => { reads++; return { ok: false, reason: "invalid current epoch" }; },
+    }));
+    expect(reads).toBe(12);
+    expect(result.dispatched).toBe(0);
+    expect(result.skippedInvalidEvidence).toBe(12);
+    expect(result.skippedRunCap).toBe(18);
   });
 });

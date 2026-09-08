@@ -45,6 +45,7 @@ function database(options: { empty?: boolean; writeSuccess?: boolean; writeError
   const writes: Array<Record<string, unknown>> = [];
   const conditions: Array<{ sql: string; params: unknown[] }> = [];
   const db = {
+    async all() { reads.push("registry"); return options.empty ? [] : [{ ...source }]; },
     select() {
       return { from(table: unknown) {
         if (table === sourceRegistry) { reads.push("registry"); return Promise.resolve(options.empty ? [] : [{ ...source }]); }

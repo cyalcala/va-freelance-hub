@@ -1,11 +1,12 @@
 import type { APIRoute } from "astro";
-import { getDb, sourceRegistry, sourceShadowObservations } from "@va-hub/db";
+import { getDb, sourceShadowObservations } from "@va-hub/db";
 import { and, eq, sql } from "drizzle-orm";
 import { isAuthorized } from "@/lib/auth";
 import {
   dispatchShadowObservations,
   defaultRunProbe,
   loadCurrentAdmissionEvidence,
+  MAX_DISPATCHES_PER_RUN,
   type DispatchRegistryRow,
 } from "@va-hub/scraper";
 
@@ -32,22 +33,23 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
     try {
       if (!env.DB) throw new Error("Cloudflare D1 binding is required");
       const db = dependencies.getDb(env);
+      const windowHour = Math.floor((dependencies.now?.() ?? new Date()).getTime() / 3_600_000);
+      if (!Number.isSafeInteger(windowHour) || windowHour < 0) throw new Error("Invalid shadow window clock");
       const summary = await dispatchShadowObservations({
         loadRegistryRows: async () => {
-          const rows = await db.select().from(sourceRegistry);
-          return rows.map((r): DispatchRegistryRow => ({
-            sourceId: r.sourceId,
-            providerId: r.providerId,
-            displayName: r.displayName,
-            endpointUrl: r.endpointUrl,
-            companyToken: r.companyToken,
-            discoveryProvenance: r.discoveryProvenance,
-            complianceState: r.complianceState,
-            operationalState: r.operationalState,
-            optOut: Boolean(r.optOut),
-            reviewDeadline: r.reviewDeadline,
-            policyExpiry: r.policyExpiry,
-          }));
+          // Rotate bounded windows even if the first group has invalid evidence
+          // or is cadence-held. A permanently failing source cannot starve later
+          // identities. This enumeration never substitutes for the fresh loader.
+          const rows = await db.all<DispatchRegistryRow>(sql`SELECT
+            source_id AS sourceId, provider_id AS providerId, display_name AS displayName,
+            endpoint_url AS endpointUrl, company_token AS companyToken, discovery_provenance AS discoveryProvenance,
+            compliance_state AS complianceState, operational_state AS operationalState,
+            opt_out AS optOut, review_deadline AS reviewDeadline, policy_expiry AS policyExpiry
+            FROM source_registry WHERE operational_state='shadow' ORDER BY source_id
+            LIMIT ${MAX_DISPATCHES_PER_RUN} OFFSET (${windowHour} % max(1,
+              (SELECT (COUNT(*)+${MAX_DISPATCHES_PER_RUN - 1})/${MAX_DISPATCHES_PER_RUN}
+               FROM source_registry WHERE operational_state='shadow'))) * ${MAX_DISPATCHES_PER_RUN}`);
+          return rows.map(r => ({ ...r, optOut: Boolean(r.optOut) }));
         },
         // Reuse the promotion gateway's read-only authority loader on the
         // native D1 binding. Enumeration rows never authorize the fetch.
@@ -73,7 +75,8 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
         },
       });
 
-      return new Response(JSON.stringify(summary), {
+      return new Response(JSON.stringify({ ...summary,
+        registryWindow: { hour: windowHour, limit: MAX_DISPATCHES_PER_RUN, countScope: "enumerated_shadow_window" } }), {
         status: 200,
         headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       });

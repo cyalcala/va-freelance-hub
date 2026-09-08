@@ -9,9 +9,9 @@ function reader(current: Awaited<ReturnType<typeof admissionFixture>>, optOut: u
       return {
         bind() { return this; },
         async first<T>() {
-          return structuredClone(query.includes("FROM source_registry") ? current.source
-            : query.includes("FROM provider_profiles") ? current.provider
-            : query.includes("FROM source_admission_evidence") ? current.evidence : optOut) as T;
+          expect(query).toContain("AS sourceJson");
+          return { sourceJson: JSON.stringify(current.source), providerJson: JSON.stringify(current.provider),
+            evidenceJson: JSON.stringify(current.evidence), durableOptOut: optOut ? 1 : 0 } as T;
         },
         async run() { throw new Error("read-only validation attempted a write"); },
       };
