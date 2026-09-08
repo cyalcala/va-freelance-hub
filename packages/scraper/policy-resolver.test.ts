@@ -634,6 +634,8 @@ describe("fallback covers every known id; resolver is reversible", () => {
 
   test("classifySourceRiskTier maps ATS and structured feeds to Tier A, variable to Tier B, and HTML to Tier C", () => {
     expect(classifySourceRiskTier("ats_api", "none")).toBe("tier_a");
+    expect(classifySourceRiskTier("ats_api", "partner_token")).toBe("tier_b");
+    expect(classifySourceRiskTier("rss_feed", "api_key")).toBe("tier_b");
     expect(classifySourceRiskTier("rss_feed", "none")).toBe("tier_a");
     expect(classifySourceRiskTier("public_json_api", "none")).toBe("tier_a");
     expect(classifySourceRiskTier("public_api", "api_key")).toBe("tier_b");

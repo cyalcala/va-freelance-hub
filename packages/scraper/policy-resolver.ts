@@ -78,7 +78,8 @@ export interface ResolvedPolicy {
   robotsMode: "enforce" | "observe";
 }
 
-// ─── APEX-W2 Risk-Proportional Source Governance ─────────────────────────────
+// ─── APEX-W2 advisory risk classification (not admission authority) ──────────
+// Admission/transition still enforce ADMISSION_POLICY, not these proposed tiers.
 export type SourceRiskTier = "tier_a" | "tier_b" | "tier_c";
 
 export interface RiskTierPolicy {
@@ -123,7 +124,8 @@ export function classifySourceRiskTier(
   isHtml: boolean = false,
 ): SourceRiskTier {
   if (isHtml || mechanism === "public_html") return "tier_c";
-  if (mechanism === "ats_api" && (authClass === "none" || authClass === "partner_token")) {
+  if (authClass !== "none") return "tier_b";
+  if (mechanism === "ats_api") {
     return "tier_a";
   }
   if (mechanism === "rss_feed" || mechanism === "public_json_api" || mechanism === "syndication_feed") {
