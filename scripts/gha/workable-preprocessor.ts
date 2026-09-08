@@ -15,6 +15,7 @@
 import { writeFileSync, readFileSync, statSync } from "fs";
 import { resolve } from "path";
 import { XMLValidator } from "fast-xml-parser";
+import { checkRobots, type RobotsCacheEntry } from "../../packages/scraper/robotsGate";
 import {
   parseWorkableXml,
   filterPlausibleCandidates,
@@ -36,6 +37,8 @@ export interface PreprocessorResult {
 
 export const MAX_FEED_BYTES = 128 * 1024 * 1024;
 export const FEED_TIMEOUT_MS = 120_000;
+export const WORKABLE_USER_AGENT_TOKEN = "va-freelance-hub-workable-preprocessor";
+const WORKABLE_USER_AGENT = `${WORKABLE_USER_AGENT_TOKEN}/1.0 (+https://github.com/cyalcala/va-freelance-hub)`;
 
 function markdownText(value: string): string {
   return value.replace(/[\r\n\t]+/g, " ").replace(/&/g, "&amp;")
@@ -187,9 +190,38 @@ export async function runPreprocessor(opts: {
     });
     try {
       xml = await Promise.race([timeout, (async () => {
+        const cache = new Map<string, RobotsCacheEntry>();
+        const robots = await checkRobots(WORKABLE_FEED_URL, {
+          mode: "enforce",
+          userAgentToken: WORKABLE_USER_AGENT_TOKEN,
+          userAgent: WORKABLE_USER_AGENT,
+          timeoutMs: Math.min(timeoutMs, 10_000),
+          store: {
+            get: async (origin) => cache.get(origin) ?? null,
+            put: async (entry) => { cache.set(entry.origin, entry); },
+          },
+          fetchImpl: ((input: RequestInfo | URL, init?: RequestInit) => fetchImpl(input, {
+            ...init,
+            redirect: "error",
+            signal: init?.signal ? AbortSignal.any([controller.signal, init.signal]) : controller.signal,
+          })) as typeof fetch,
+        });
+        if (!robots.allowed || robots.verdict !== "allowed") throw new Error(`Workable robots ${robots.verdict}: ${robots.evidence}`);
+        const delayMs = (robots.crawlDelay ?? 0) * 1000;
+        if (!Number.isFinite(delayMs) || delayMs < 0 || delayMs > 60_000) throw new Error("Workable robots crawl-delay exceeds the 60-second wait budget");
+        if (delayMs > 0) {
+          await new Promise<void>((resolveDelay, rejectDelay) => {
+            if (controller.signal.aborted) { rejectDelay(new Error("Workable feed timed out")); return; }
+            const onAbort = () => { clearTimeout(delayTimer); rejectDelay(new Error("Workable feed timed out")); };
+            const delayTimer = setTimeout(() => { controller.signal.removeEventListener("abort", onAbort); resolveDelay(); }, delayMs);
+            controller.signal.addEventListener("abort", onAbort, { once: true });
+          });
+        }
+        controller.signal.throwIfAborted();
         const res = await fetchImpl(WORKABLE_FEED_URL, {
           signal: controller.signal,
-          headers: { "User-Agent": "va-freelance-hub-workable-preprocessor/1.0 (+https://github.com/cyalcala/va-freelance-hub)" },
+          redirect: "error",
+          headers: { "User-Agent": WORKABLE_USER_AGENT },
         });
         if (!res.ok) throw new Error(`Workable feed HTTP ${res.status}`);
         if (!res.body) throw new Error("Workable feed body is missing");

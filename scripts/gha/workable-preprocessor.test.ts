@@ -3,6 +3,7 @@ import {
   generatePreprocessorResult,
   renderMarkdownReport,
   runPreprocessor,
+  WORKABLE_USER_AGENT_TOKEN,
 } from "./workable-preprocessor";
 
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
@@ -17,6 +18,10 @@ function temporaryOutput(): string {
 afterEach(() => {
   for (const directory of tempDirectories.splice(0)) rmSync(directory, { recursive: true, force: true });
 });
+function allowedRobotsThenFeed(body: string, headers?: Headers): typeof fetch {
+  return (async (input: RequestInfo | URL) => new Response(String(input).endsWith("/robots.txt")
+    ? "User-agent: *\nAllow: /" : body, String(input).endsWith("/robots.txt") ? {} : { headers })) as typeof fetch;
+}
 const SAMPLE_XML = `<?xml version="1.0" encoding="utf-8"?>
 <source>
   <publisher>Workable</publisher>
@@ -74,7 +79,7 @@ describe("Workable Preprocessor (EX-09)", () => {
   });
 
   test("runPreprocessor executes with mock fetch without D1 writes", async () => {
-    const mockFetch = async () => new Response(SAMPLE_XML, { status: 200 });
+    const mockFetch = allowedRobotsThenFeed(SAMPLE_XML);
     const res = await runPreprocessor({
       fetchImpl: mockFetch as any,
       outputPath: temporaryOutput(),
@@ -88,7 +93,7 @@ describe("Workable Preprocessor (EX-09)", () => {
     const outputPath = temporaryOutput();
     writeFileSync(outputPath, "last healthy digest");
     for (const body of ["<html>Maintenance</html>", "<source><publisher>Workable</publisher></source>", SAMPLE_XML.replaceAll("referencenumber", "newreference"), SAMPLE_XML.replace("</source>", "")]) {
-      await expect(runPreprocessor({ outputPath, fetchImpl: (async () => new Response(body)) as unknown as typeof fetch })).rejects.toThrow();
+      await expect(runPreprocessor({ outputPath, fetchImpl: allowedRobotsThenFeed(body) })).rejects.toThrow();
       expect(readFileSync(outputPath, "utf8")).toBe("last healthy digest");
     }
   });
@@ -103,7 +108,7 @@ describe("Workable Preprocessor (EX-09)", () => {
     const outputPath = temporaryOutput();
     writeFileSync(outputPath, "last healthy digest");
     for (const headers of [new Headers({ "content-length": "999999" }), new Headers()]) {
-      await expect(runPreprocessor({ outputPath, maxBytes: 32, fetchImpl: (async () => new Response(SAMPLE_XML, { headers })) as unknown as typeof fetch })).rejects.toThrow("byte budget");
+      await expect(runPreprocessor({ outputPath, maxBytes: 32, fetchImpl: allowedRobotsThenFeed(SAMPLE_XML, headers) })).rejects.toThrow("byte budget");
       expect(readFileSync(outputPath, "utf8")).toBe("last healthy digest");
     }
   });
@@ -113,11 +118,61 @@ describe("Workable Preprocessor (EX-09)", () => {
     const outputPath = temporaryOutput();
     writeFileSync(outputPath, "last healthy digest");
     await expect(runPreprocessor({ outputPath, timeoutMs: 10, fetchImpl: (async (_url: RequestInfo | URL, init?: RequestInit) => {
+      if (String(_url).endsWith("/robots.txt")) return new Response("User-agent: *\nAllow: /");
       signal = init?.signal as AbortSignal;
       return new Response(new ReadableStream({ start() {} }));
     }) as unknown as typeof fetch })).rejects.toThrow("timed out");
     expect(signal?.aborted).toBe(true);
     expect(readFileSync(outputPath, "utf8")).toBe("last healthy digest");
+  });
+
+  test("checks matching bot robots rules before the feed and refuses redirects", async () => {
+    const calls: string[] = [];
+    await runPreprocessor({ outputPath: temporaryOutput(), fetchImpl: (async (input: RequestInfo | URL, init?: RequestInit) => {
+      calls.push(String(input));
+      expect(init?.redirect).toBe("error");
+      expect(new Headers(init?.headers).get("User-Agent")).toContain(WORKABLE_USER_AGENT_TOKEN);
+      return new Response(String(input).endsWith("/robots.txt")
+        ? `User-agent: *\nDisallow: /\n\nUser-agent: ${WORKABLE_USER_AGENT_TOKEN}\nAllow: /boards/` : SAMPLE_XML);
+    }) as typeof fetch });
+    expect(calls).toEqual(["https://www.workable.com/robots.txt", "https://www.workable.com/boards/workable.xml"]);
+  });
+
+  test("blocked and unknown robots decisions prevent any feed request or digest overwrite", async () => {
+    for (const response of [() => new Response(`User-agent: ${WORKABLE_USER_AGENT_TOKEN}\nDisallow: /boards/`), () => new Response("Unavailable", { status: 503 })]) {
+      const calls: string[] = [];
+      const outputPath = temporaryOutput();
+      writeFileSync(outputPath, "last healthy digest");
+      await expect(runPreprocessor({ outputPath, fetchImpl: (async (input: RequestInfo | URL) => { calls.push(String(input)); return response(); }) as typeof fetch })).rejects.toThrow("robots");
+      expect(calls).toEqual(["https://www.workable.com/robots.txt"]);
+      expect(readFileSync(outputPath, "utf8")).toBe("last healthy digest");
+    }
+  });
+
+  test("honors a short crawl delay and rejects delays beyond the bounded wait", async () => {
+    let robotsReturnedAt = 0;
+    let elapsed = 0;
+    await runPreprocessor({ outputPath: temporaryOutput(), fetchImpl: (async (input: RequestInfo | URL) => {
+      if (String(input).endsWith("/robots.txt")) {
+        robotsReturnedAt = performance.now();
+        return new Response("User-agent: *\nAllow: /\nCrawl-delay: 0.02");
+      }
+      elapsed = performance.now() - robotsReturnedAt;
+      return new Response(SAMPLE_XML);
+    }) as typeof fetch });
+    expect(elapsed).toBeGreaterThanOrEqual(18);
+    let requests = 0;
+    await expect(runPreprocessor({ outputPath: temporaryOutput(), fetchImpl: (async () => { requests++; return new Response("User-agent: *\nAllow: /\nCrawl-delay: 61"); }) as unknown as typeof fetch })).rejects.toThrow("crawl-delay");
+    expect(requests).toBe(1);
+  });
+
+  test("valid fixture runs remain completely offline", async () => {
+    const xmlSource = temporaryOutput();
+    writeFileSync(xmlSource, SAMPLE_XML);
+    let requests = 0;
+    const result = await runPreprocessor({ xmlSource, outputPath: temporaryOutput(), fetchImpl: (async () => { requests++; throw new Error("Unexpected network access"); }) as unknown as typeof fetch });
+    expect(requests).toBe(0);
+    expect(result.stats.totalParsed).toBe(3);
   });
 
   test("deduplicates original URLs before candidate counts and samples", () => {
