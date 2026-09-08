@@ -1,7 +1,8 @@
 /** Read primary documentation for content hashing, never URL/timestamp hashing. */
 export async function fetchPrimaryEvidence(url: string, fetchImpl: typeof fetch = fetch): Promise<string> {
   const response = await fetchImpl(url, {
-    redirect: "error",
+    // Workers accepts manual/follow only. Reject 3xx through the HTTP gate below.
+    redirect: "manual",
     signal: AbortSignal.timeout(15_000),
     headers: { "User-Agent": "va-freelance-hub-evidence/1.0" },
   });
