@@ -320,3 +320,28 @@ describe("scanLandingPageForGeoLock", () => {
     expect(scanLandingPageForGeoLock("<html><body><div id=root></div></body></html>")).toBeNull();
   });
 });
+
+
+describe("APEX geographic regression precision", () => {
+  it("does not read country prefixes inside ordinary title words", () => {
+    for (const title of ["Technical Writer - User Experience", "Designer (Usability)", "Accountant - Europeanization project"]) {
+      expect(geoGate({ title, locationRaw: "Remote" }).phEligibility).toBe("unclear");
+    }
+    for (const title of ["Writer (US Remote)", "Writer [USA]", "Writer - UK Only", "Writer (U.S.)"]) {
+      expect(geoGate({ title }).phEligibility).toBe("ineligible");
+    }
+  });
+  it("keeps distribution and interface wording geographically ambiguous", () => {
+    for (const description of ["We are a distributed team.", "Join our fully distributed team.", "Browse all locations."]) {
+      expect(geoGate({ title: "Writer", locationRaw: "Remote", description }).phEligibility).toBe("unclear");
+    }
+  });
+  it("does not infer country restrictions from sponsorship or corporate contracting", () => {
+    for (const description of ["No C2C.", "C2C only.", "No visa sponsorship is available.", "Sponsorship is not available.", "Unable to sponsor visas."]) {
+      expect(geoGate({ title: "Writer", locationRaw: "Remote", description }).phEligibility).toBe("unclear");
+      expect(geoGate({ title: "Writer", description: `${description} Open to candidates worldwide.` }).phEligibility).toBe("eligible_likely");
+    }
+    expect(geoGate({ title: "Writer", description: "W2 only; no C2C." }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Writer", description: "Must be a US citizen; no visa sponsorship is available." }).phEligibility).toBe("ineligible");
+  });
+});

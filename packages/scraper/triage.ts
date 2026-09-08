@@ -53,16 +53,9 @@ const GEOGRAPHIC_EXCLUSION_REGEX = new RegExp(
     "mst only",
     "cst only",
     "north america only",
-    "active security clearance",
-    "security clearance required",
-    "top secret",
-    "ts/sci",
+    "(?:active )?(?:security|secret|top secret|ts/sci) clearance (?:is )?required",
+    "must (?:have|hold|possess) (?:an? )?(?:active )?(?:security|secret|top secret|ts/sci) clearance",
     "w-?2 only",
-    "c2c only",
-    "no c2c",
-    "sponsorship is not available",
-    "no visa sponsorship",
-    "unable to sponsor",
   ].join("|") +
   ")\\b",
   "i"

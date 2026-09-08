@@ -53,7 +53,7 @@ const APAC_POSITIVE_REGEX =
   /\b(apac|asia[- ]pacific|south[- ]?east asia|southeast asia|asia)\b/i;
 
 const WORLDWIDE_REGEX =
-  /\b(anywhere in the world|worldwide|work from anywhere|anywhere|global(?:ly)?[- ]remote|remote[- ]global|100% remote|fully remote|open to all locations|location[- ]independent|probably worldwide|remote\s*[-–—\/]\s*(?:anywhere|worldwide|global)|remote\s*\((?:anywhere|worldwide|global)\)|fully distributed|distributed team|all locations)\b/i;
+  /\b(anywhere in the world|worldwide|work from anywhere|anywhere|global(?:ly)?[- ]remote|remote[- ]global|100% remote|fully remote|open to all locations|location[- ]independent|probably worldwide|remote\s*[-–—\/]\s*(?:anywhere|worldwide|global)|remote\s*\((?:anywhere|worldwide|global)\))\b/i;
 
 // ─── Negative signals ────────────────────────────────────────────────────────
 
@@ -129,14 +129,9 @@ const RESIDENCE_LOCK_REGEX = new RegExp(
     "(?:active )?(?:security|secret|top secret|ts\/sci) clearance (?:is )?required",
     "must (?:have|hold|possess) (?:an? )?(?:active )?(?:security|secret|top secret|ts\/sci) clearance",
     "w-?2 only",
-    "c2c only",
-    "no c2c",
     "us tax resident",
     "must be (?:a )?us citizen",
     "us citizenship (?:is )?required",
-    "no (?:visa )?sponsorship (?:is )?(?:available|provided)",
-    "sponsorship is not available",
-    "unable to sponsor (?:visas?|work authorization)",
     "(?:australia|canad(?:a|ian)|germany|france|netherlands|spain|italy)[- ]only",
     "must (?:be )?(?:based|located|residing|reside|live|living) in (?:the )?(?:us|usa|united states|uk|canada|australia|germany|france|spain|netherlands)",
   ].join("|") +
@@ -154,7 +149,7 @@ const US_STATE_CODE_LOCATION_REGEX =
 
 // Title-level country/regional pins: "Role (US Remote)", "Role - US Only", "Role [USA]"
 const TITLE_COUNTRY_LOCK_REGEX =
-  /(?:[\(\[\-–—\/]\s*(?:us|usa|u\.s\.|uk|canada|australia|emea|latam|europe|eu)\s*(?:only|remote)?[\)\]]?|\b(?:us|usa|u\.s\.|uk|canada|australia|emea|latam|europe|eu)\s+only\b|\b(?:us|usa|u\.s\.|uk|canada|australia)[- ]remote\b)/i;
+  /(?:[\(\[\-–—\/]\s*(?:us|usa|u\.s\.|uk|canada|australia|emea|latam|europe|eu)(?![a-z])\s*(?:only|remote)?[\)\]]?|\b(?:us|usa|u\.s\.|uk|canada|australia|emea|latam|europe|eu)\s+only\b|\b(?:us|usa|u\.s\.|uk|canada|australia)[- ]remote\b)/i;
 
 // Onsite/hybrid — TITLE and LOCATION string only (never free description).
 const ONSITE_TITLE_REGEX = /\b(on[- ]?site|in[- ]office|hybrid)\b/i;
