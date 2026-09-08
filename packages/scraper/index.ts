@@ -374,14 +374,3 @@ export type {
 } from "./shadow-dispatcher";
 export { classifyShift } from "./shiftClassifier";
 export type { ShiftCategory, ShiftInfo, ShiftClassifierInput } from "./shiftClassifier";
-export {
-  WORKABLE_FEED_URL,
-  parseWorkableXml,
-  filterPlausibleCandidates,
-  summarizeFilterStats,
-  fetchWorkableFeed,
-} from "./workable";
-export type {
-  NormalizedWorkablePosting,
-  WorkableFilterStats,
-} from "./workable";
