@@ -101,3 +101,66 @@ closed, preserving last-good output. No claim of live Workable acceptance; next
 step is bounded streaming/minimal-field preprocessing or a measured safe budget.
 Source renewal is the next separate slice; no past observations will be counted
 as new primary-content evidence.
+
+## Evidence-renewal and streaming releases
+
+PR #136 merged as e4ce720ce58825f79579d744b7c4d0d9415c548d.
+PR CI34216088585 passed 1,252 tests; production Pages34216203545 passed.
+Renewal appends a new admission epoch using native D1 atomic batch guards and
+fresh content captures/probes. Old packets/observations stay immutable. Tests
+cover mid-batch rollback, group/revision races and old-epoch disqualification.
+PR #137 (c6ddba78ad36d0350c04c8174bf7e364e6493d34) added bounded authenticated
+stage diagnostics; production34216611134 passed. Preview exposed Workers'
+unsupported redirect:error option before any write. PR #138 uses manual mode
+and explicit HTTP rejection; local regression/typecheck pass. CI caught a stale
+redirect expectation and then Bun mock typing; fixed before acceptance.
+
+Independent Workable review caught nested-job silent omission and oversized XML
+token allocation. Streaming now rejects both before publishing a digest, while
+SAX discards descriptions. Limits:512MiB raw,32MiB metadata,16KiB fields/markup,
+100,000 jobs,120s, with temporary cleanup. Python3.9+ stdlib required; platform
+launchers are checked, no downloads/pip dependency. Focused16 Bun +8 Python tests
+pass, including a synthetic132MiB feed and low-memory adversarial token tests.
+A local live attempt on September8 ended ECONNRESET and preserved last-good
+output. This is not a successful production feed acceptance.
+
+Read-only probes found healthy GitLab, Remote.com, Nearform, Ghost and Wikimedia
+feeds. Canonical exceeded the current524288-byte probe limit (540269 bytes) and
+is withheld; no alternate endpoint or publication override used. See
+greenhouse-probes.json. Source counts are probe samples, not qualified supply.
+PR #124 closed as superseded; its branch/history remain available.
+
+A thread heartbeat, apex-source-recovery-and-qualification, is scheduled every
+six hours to continue bounded authorized work and check qualification. It stays
+quiet on unchanged/non-actionable state. GitHub daily economics and Workable,
+hourly GitHub shadow, and independent Cloudflare shadow clocks remain active.
+The desktop heartbeat depends on app scheduling availability; it is not a
+replacement for deployed ingestion clocks.
+
+## Live acceptance and bounded follow-up
+
+PR #138 merged as7db386070b0654ec320514abbcdc8a32dc5d9be4; PR CI34217630933
+and production34217731133 passed. Independent reviewer confirmed both XML
+findings closed. GitHub Workable34217743529 failed at512MiB in30s; this is a
+measured resource boundary, not successful preprocessing. Daily bulk scheduling
+is made dormant; manual run remains, next review2026-09-15 or earlier supported
+bounded feed evidence. Do not repeat bulk downloads merely to produce green CI.
+
+Native D1 renewal succeeded: Greenhouse revision3/evidence4 and Recruitee
+revision2/evidence5. GitLab and Remote.com admitted to shadow (published0).
+Readback confirms five shadow identities; manual shadow34218062832 passed.
+Renewed epochs start September8, not September6. Three healthy Greenhouse
+candidates (Nearform/Ghost/Wikimedia) remain staged until renewal/dispatch
+capacity is measured; route renewal currently supports at most4 identities per
+provider, and expanding the group must not create an unrenewable evidence set.
+Canonical remains withheld at the524288-byte probe bound.
+
+Teamtailor raw HTML varied with a per-request CSP nonce. The same nonce appears
+in link/script attributes and data-n-css. A reviewed exact-URL canonicalization
+replaces only that unique44-character Base64 token; all other HTML stays
+hash-significant. Two fresh captures match ac78d16e06d1eae6f0da138bde040586db0a6216464c3cb0480816afe42dda26.
+Absent/multiple nonce formats fail closed. Article content was reread and still
+documents public RSS metadata sharing, original job link and100-job default.
+This is a content hash with a documented transport-nonce normalization, not a
+URL/time fingerprint or ignored substantive difference. Final Teamtailor native
+renewal follows deployment and an exact preview/hash comparison.

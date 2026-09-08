@@ -6,8 +6,8 @@
 # Performs ZERO Cloudflare D1 writes and preserves the exact-six production invariant.
 
 on:
-  schedule:
-    - cron: '45 3 * * *' # Daily at 03:45 UTC
+  # Dormant after live run34217743529 exceeded512MiB. Resume scheduling only
+  # after a reviewed supported bounded feed passes; next review2026-09-15.
   workflow_dispatch:
 
 concurrency:

@@ -39,3 +39,11 @@ never delete append-only evidence or restore an invalid hash as accepted truth.
 Tests exercise real SQLite migration guards, mid-batch rollback, concurrent group
 and revision changes, unchanged leases/authority, and old-observation rejection.
 Independent review found no release blocker; native D1 acceptance remains required.
+
+September8 addendum: Teamtailor's primary article injects an otherwise
+content-independent per-response CSPnonce. Reviewed exact-URL normalization
+replaces only the unique44-character Base64 nonce token wherever repeated;
+article/links/other markup stay hash-significant. Missing/multiple nonce schema
+blocks. Two captures hash identically (teamtailor-canonical-capture.json), and
+article semantic review is unchanged. This canonical content is the adjudicated
+input; raw response nonce rotation is not a new permission decision.
