@@ -270,9 +270,6 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
 
   // 4. Structured location string → the most authoritative signal we hold.
   if (locationRaw) {
-    if (WORLDWIDE_REGEX.test(locationRaw)) {
-      return verdict("worldwide", "eligible_likely", `Location listed: "${locationRaw}"`);
-    }
     const regionExcl = firstMatch(REGION_EXCL_PH_REGEX, locationRaw);
     if (regionExcl) {
       return verdict("region_excl_ph", "ineligible", `Region excludes PH: "${regionExcl}" in "${locationRaw}"`);
@@ -313,7 +310,13 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
     return verdict("region_excl_ph", "ineligible", `Residence/authorization lock: "${lock.slice(0, 60)}"`);
   }
 
-  // 7. Explicit worldwide language in the text.
+  // 7. Worldwide metadata is a positive hint, never an override for explicit
+  // country, title, or work-authorization restrictions checked above.
+  if (WORLDWIDE_REGEX.test(locationRaw)) {
+    return verdict("worldwide", "eligible_likely", `Location listed: "${locationRaw}"`);
+  }
+
+  // Explicit worldwide language in the text.
   if (WORLDWIDE_REGEX.test(titleAndDesc)) {
     return verdict("worldwide", "eligible_likely", "Worldwide/anywhere language in posting");
   }

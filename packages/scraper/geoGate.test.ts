@@ -345,3 +345,22 @@ describe("APEX geographic regression precision", () => {
     expect(geoGate({ title: "Writer", description: "Must be a US citizen; no visa sponsorship is available." }).phEligibility).toBe("ineligible");
   });
 });
+
+
+describe("worldwide metadata precedence", () => {
+  it("preserves explicit citizenship and residence restrictions", () => {
+    for (const description of ["Must be a US citizen.", "US citizenship is required.", "Must reside in Canada.", "US work authorization required."]) {
+      const result = geoGate({ title: "Remote Writer", locationRaw: "Worldwide", description });
+      expect(result.phEligibility).toBe("ineligible");
+      expect(result.evidence).toContain("lock");
+    }
+  });
+  it("preserves country pins and onsite requirements despite worldwide hints", () => {
+    expect(geoGate({ title: "Writer (US Remote)", locationRaw: "Worldwide" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Writer (Hybrid)", locationRaw: "Worldwide" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Writer", locationRaw: "Worldwide, US only" }).phEligibility).toBe("ineligible");
+  });
+  it("retains worldwide eligibility for timezone overlap without a residence lock", () => {
+    expect(geoGate({ title: "Writer", locationRaw: "Worldwide", description: "Must overlap four hours with US business hours." }).phEligibility).toBe("eligible_likely");
+  });
+});
