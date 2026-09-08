@@ -8,6 +8,11 @@ import {
 import { sha256Hex } from "./contentHash";
 import type { CandidateShadowResult } from "./candidate-shadow";
 
+// The route and core share the same bounded provider capacity. Real SQLite
+// route tests count the complete path, including each atomic batch statement.
+export const MAX_RENEWAL_IDENTITIES = 6;
+export const MAX_RENEWAL_PRIMARY_DOCUMENTS = 16;
+
 export interface EvidenceRenewalDatabase extends AdmissionDatabase {
   /** Native D1 batch semantics: all statements commit or all roll back on error. */
   batch(statements: AdmissionStatement[]): Promise<{ success: boolean }[]>;
@@ -50,10 +55,10 @@ export async function renewProviderEvidence(db: EvidenceRenewalDatabase, input: 
     }
     const raw = await db.prepare(GROUP_SQL).bind(input.providerId).first<{ members: string }>();
     const members = JSON.parse(raw?.members ?? "[]") as GroupRow[];
-    if (!members.length || members.length > 16 || members.some(row => row.state !== "shadow" || row.optedOut || !row.entry)
+    if (!members.length || members.length > MAX_RENEWAL_IDENTITIES || members.some(row => row.state !== "shadow" || row.optedOut || !row.entry)
       || JSON.stringify(Object.keys(input.expectedEvidenceIds).sort()) !== JSON.stringify(members.map(row => row.sourceId).sort())
       || members.some(row => row.evidenceId !== input.expectedEvidenceIds[row.sourceId])) {
-      return reject("Renewal requires the exact current provider group of 1–16 non-opted-out shadow identities");
+      return reject(`Renewal requires the exact current provider group of 1–${MAX_RENEWAL_IDENTITIES} non-opted-out shadow identities`);
     }
     const current: Current[] = [];
     for (const member of members) {
@@ -69,7 +74,7 @@ export async function renewProviderEvidence(db: EvidenceRenewalDatabase, input: 
     const oldProvider = current[0].provider;
     if (current.some(context => JSON.stringify(context.provider) !== JSON.stringify(oldProvider))) return reject("Provider snapshot changed");
     const urls = [...new Set(current.flatMap(context => context.packet.primaryEvidence.map(entry => entry.url)))].sort();
-    if (input.captures.length !== urls.length || urls.length > 16
+    if (input.captures.length !== urls.length || urls.length > MAX_RENEWAL_PRIMARY_DOCUMENTS
       || JSON.stringify(input.captures.map(capture => capture.url).sort()) !== JSON.stringify(urls)
       || JSON.stringify(Object.keys(input.adjudication.reviewedContentHashes).sort()) !== JSON.stringify(urls)) {
       return reject("Fresh reviewed captures must cover every existing primary evidence reference exactly once");

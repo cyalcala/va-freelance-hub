@@ -314,23 +314,28 @@ export async function buildAdmissionEvidence(input: BuildAdmissionEvidenceInput)
   return { ok: true, packet, packetJson, packetSha256: await sha256Hex(packetJson) };
 }
 
-const LOAD_SOURCE_SQL = `SELECT source_id AS sourceId, provider_id AS providerId, display_name AS displayName,
- endpoint_url AS endpointUrl, company_token AS companyToken, discovery_provenance AS discoveryProvenance,
- compliance_state AS complianceState, operational_state AS operationalState, review_deadline AS reviewDeadline,
- policy_expiry AS policyExpiry, canary_max_new_items_per_tick AS canaryMaxNewItemsPerTick,
- opt_out AS optOut, governance_revision AS governanceRevision, last_transition_hash AS lastTransitionHash
- FROM source_registry WHERE source_id = ?`;
-const LOAD_PROVIDER_SQL = `SELECT id, provider_family AS providerFamily, mechanism, auth_class AS authClass,
- endpoint_pattern AS endpointPattern, allowed_hosts AS allowedHosts, evidence_url AS evidenceUrl,
- evidence_hash AS evidenceHash, evidence_captured_at AS evidenceCapturedAt, visibility_filter AS visibilityFilter,
- content_scope AS contentScope, cadence_min_minutes AS cadenceMinMinutes, cadence_max_minutes AS cadenceMaxMinutes,
- rate_guidance AS rateGuidance, robots_handling AS robotsHandling, removal_semantics AS removalSemantics,
- evidence_lease_days AS evidenceLeaseDays, governance_revision AS governanceRevision FROM provider_profiles WHERE id = ?`;
-const LOAD_EVIDENCE_SQL = `SELECT id, source_id AS sourceId, provider_id AS providerId,
- source_governance_revision AS sourceGovernanceRevision, provider_governance_revision AS providerGovernanceRevision,
- endpoint_url AS endpointUrl, policy_version AS policyVersion, captured_at AS capturedAt, expires_at AS expiresAt,
- adjudication_ref AS adjudicationRef, packet_json AS packetJson, packet_sha256 AS packetSha256
- FROM source_admission_evidence WHERE source_id = ? ORDER BY id DESC LIMIT 1`;
+// One statement gives a coherent current snapshot and leaves D1 query headroom
+// for bounded renewal groups. No snapshot is cached across requests/phases.
+const LOAD_CURRENT_SQL = `SELECT
+ json_object('sourceId',s.source_id,'providerId',s.provider_id,'displayName',s.display_name,
+ 'endpointUrl',s.endpoint_url,'companyToken',s.company_token,'discoveryProvenance',s.discovery_provenance,
+ 'complianceState',s.compliance_state,'operationalState',s.operational_state,'reviewDeadline',s.review_deadline,
+ 'policyExpiry',s.policy_expiry,'canaryMaxNewItemsPerTick',s.canary_max_new_items_per_tick,
+ 'optOut',s.opt_out,'governanceRevision',s.governance_revision,'lastTransitionHash',s.last_transition_hash) AS sourceJson,
+ CASE WHEN p.id IS NULL THEN NULL ELSE json_object('id',p.id,'providerFamily',p.provider_family,
+ 'mechanism',p.mechanism,'authClass',p.auth_class,'endpointPattern',p.endpoint_pattern,'allowedHosts',p.allowed_hosts,
+ 'evidenceUrl',p.evidence_url,'evidenceHash',p.evidence_hash,'evidenceCapturedAt',p.evidence_captured_at,
+ 'visibilityFilter',p.visibility_filter,'contentScope',p.content_scope,'cadenceMinMinutes',p.cadence_min_minutes,
+ 'cadenceMaxMinutes',p.cadence_max_minutes,'rateGuidance',p.rate_guidance,'robotsHandling',p.robots_handling,
+ 'removalSemantics',p.removal_semantics,'evidenceLeaseDays',p.evidence_lease_days,'governanceRevision',p.governance_revision) END AS providerJson,
+ CASE WHEN e.id IS NULL THEN NULL ELSE json_object('id',e.id,'sourceId',e.source_id,'providerId',e.provider_id,
+ 'sourceGovernanceRevision',e.source_governance_revision,'providerGovernanceRevision',e.provider_governance_revision,
+ 'endpointUrl',e.endpoint_url,'policyVersion',e.policy_version,'capturedAt',e.captured_at,'expiresAt',e.expires_at,
+ 'adjudicationRef',e.adjudication_ref,'packetJson',e.packet_json,'packetSha256',e.packet_sha256) END AS evidenceJson,
+ EXISTS(SELECT 1 FROM source_opt_outs o WHERE o.source_id=s.source_id) AS durableOptOut
+ FROM source_registry s LEFT JOIN provider_profiles p ON p.id=s.provider_id
+ LEFT JOIN source_admission_evidence e ON e.id=(SELECT MAX(latest.id) FROM source_admission_evidence latest WHERE latest.source_id=s.source_id)
+ WHERE s.source_id=?`;
 const INSERT_EVIDENCE_SQL = `INSERT INTO source_admission_evidence (
  source_id, provider_id, source_governance_revision, provider_governance_revision,
  endpoint_url, policy_version, captured_at, expires_at, adjudication_ref, packet_json, packet_sha256
@@ -374,14 +379,16 @@ export async function persistAdmissionEvidence(
 
 export async function loadCurrentAdmissionEvidence(db: AdmissionDatabase, sourceId: string, now: string): Promise<CurrentAdmissionEvidenceResult> {
   try {
-    const source = await db.prepare(LOAD_SOURCE_SQL).bind(sourceId).first<AdmissionSourceSnapshot>();
+    const snapshot = await db.prepare(LOAD_CURRENT_SQL).bind(sourceId).first<{
+      sourceJson: string; providerJson: string | null; evidenceJson: string | null; durableOptOut: number;
+    }>();
+    const source = snapshot ? JSON.parse(snapshot.sourceJson) as AdmissionSourceSnapshot : null;
     if (!source || source.sourceId !== sourceId) return { ok: false, reason: "current source identity is unavailable" };
-    const optOut = await db.prepare("SELECT source_id FROM source_opt_outs WHERE source_id = ? LIMIT 1").bind(sourceId).first<{ source_id: string }>();
-    source.optOut = Boolean(source.optOut) || Boolean(optOut);
+    source.optOut = Boolean(source.optOut) || Boolean(snapshot!.durableOptOut);
     if (source.optOut) return { ok: false, reason: "current durable opt-out blocks admission" };
-    const provider = await db.prepare(LOAD_PROVIDER_SQL).bind(source.providerId).first<AdmissionProviderSnapshot>();
+    const provider = snapshot!.providerJson ? JSON.parse(snapshot!.providerJson) as AdmissionProviderSnapshot : null;
     if (!provider || provider.id !== source.providerId) return { ok: false, reason: "current provider identity is unavailable" };
-    const evidence = await db.prepare(LOAD_EVIDENCE_SQL).bind(sourceId).first<AdmissionEvidenceRecord>();
+    const evidence = snapshot!.evidenceJson ? JSON.parse(snapshot!.evidenceJson) as AdmissionEvidenceRecord : null;
     if (!evidence || !positiveInteger(evidence.id) || !sha256(evidence.packetSha256)
       || typeof evidence.packetJson !== "string" || new TextEncoder().encode(evidence.packetJson).byteLength > MAX_PACKET_BYTES
       || await sha256Hex(evidence.packetJson) !== evidence.packetSha256) {

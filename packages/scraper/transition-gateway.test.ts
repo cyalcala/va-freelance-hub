@@ -55,6 +55,14 @@ class FakeDatabase implements TransitionGatewayDatabase {
   }
 
   prepare(query: string): TransitionGatewayStatement {
+    if (query.includes("AS sourceJson")) {
+      return new FakeStatement(query, {
+        sourceJson: JSON.stringify(this.responseQueues.registry?.shift() ?? null),
+        providerJson: JSON.stringify(this.responseQueues.provider?.shift() ?? null),
+        evidenceJson: JSON.stringify(this.responseQueues.evidence?.shift() ?? null),
+        durableOptOut: this.responseQueues.optOut?.shift() ? 1 : 0,
+      }, this.runs);
+    }
     const key = query.includes("FROM source_admission_evidence")
       ? "evidence"
       : query.includes("FROM provider_profiles")

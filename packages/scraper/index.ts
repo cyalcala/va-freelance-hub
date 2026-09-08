@@ -373,6 +373,6 @@ export type {
   ShadowDispatchSummary,
 } from "./shadow-dispatcher";
 export { classifyShift } from "./shiftClassifier";
-export { renewProviderEvidence } from "./source-evidence-renewal";
+export { renewProviderEvidence, MAX_RENEWAL_IDENTITIES, MAX_RENEWAL_PRIMARY_DOCUMENTS } from "./source-evidence-renewal";
 export type { EvidenceRenewalDatabase, RenewProviderEvidenceInput } from "./source-evidence-renewal";
 export type { ShiftCategory, ShiftInfo, ShiftClassifierInput } from "./shiftClassifier";

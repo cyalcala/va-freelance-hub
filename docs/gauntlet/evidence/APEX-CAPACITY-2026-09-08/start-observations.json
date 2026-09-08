@@ -1,0 +1,72 @@
+[
+  {
+    "results": [
+      {
+        "source_id": "greenhouse:gitlab",
+        "admission_evidence_id": 6,
+        "observations": 1,
+        "latest": "2026-09-08T10:56:42.296Z"
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "admission_evidence_id": 1,
+        "observations": 13,
+        "latest": "2026-09-08T09:48:42.676Z"
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "admission_evidence_id": 4,
+        "observations": 1,
+        "latest": "2026-09-08T10:56:36.534Z"
+      },
+      {
+        "source_id": "greenhouse:remotecom",
+        "admission_evidence_id": 7,
+        "observations": 1,
+        "latest": "2026-09-08T10:56:43.809Z"
+      },
+      {
+        "source_id": "recruitee:myjewellery",
+        "admission_evidence_id": 2,
+        "observations": 12,
+        "latest": "2026-09-08T09:48:44.309Z"
+      },
+      {
+        "source_id": "recruitee:myjewellery",
+        "admission_evidence_id": 5,
+        "observations": 1,
+        "latest": "2026-09-08T10:56:38.092Z"
+      },
+      {
+        "source_id": "teamtailor:career.teamtailor.com",
+        "admission_evidence_id": 3,
+        "observations": 13,
+        "latest": "2026-09-08T10:56:40.144Z"
+      },
+      {
+        "source_id": "teamtailor:career.teamtailor.com",
+        "admission_evidence_id": 8,
+        "observations": 1,
+        "latest": "2026-09-08T11:20:21.807Z"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 8.8384
+      },
+      "duration": 8.8384,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 74113024,
+      "rows_read": 86,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

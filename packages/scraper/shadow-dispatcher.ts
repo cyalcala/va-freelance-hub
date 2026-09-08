@@ -46,7 +46,10 @@ export const DEFAULT_MIN_REDISPATCH_MINUTES = 24 * 60;
 // The registry is empty in production as of this unit (2026-09-02); this cap
 // exists so a future large registry can never turn one dispatch run into an
 // unbounded fan-out of third-party requests.
-export const MAX_DISPATCHES_PER_RUN = 20;
+// Free D1 budget: one enumeration plus at most12*(evidence+cadence+write)=37
+// statements. Probe budget is at most24 external requests. Count attempted
+// authority reads too, so invalid/cadence-held rows cannot bypass the bound.
+export const MAX_DISPATCHES_PER_RUN = 12;
 
 // ─── Input shapes (deliberately minimal subsets of the real Drizzle rows, so
 // this module has no compile-time dependency on @va-hub/db) ──────────────────
@@ -397,12 +400,13 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     evidenceErrors: [],
   };
 
+  let authorityChecks = 0;
   for (const enumerated of registryRows) {
     if (enumerated.operationalState !== "shadow") {
       summary.skippedIneligible += 1;
       continue;
     }
-    if (summary.dispatched >= maxDispatches) {
+    if (summary.dispatched >= maxDispatches || authorityChecks >= MAX_DISPATCHES_PER_RUN) {
       summary.skippedRunCap += 1;
       continue;
     }
@@ -410,6 +414,7 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     // This loader rechecks current source/profile revisions, exact endpoint,
     // immutable authority evidence, leases and durable opt-outs immediately
     // before each probe. Enumeration is never an authority snapshot.
+    authorityChecks++;
     const context = await deps.loadAdmissionContext(enumerated.sourceId, now().toISOString());
     if (!context.ok) {
       summary.skippedInvalidEvidence += 1;

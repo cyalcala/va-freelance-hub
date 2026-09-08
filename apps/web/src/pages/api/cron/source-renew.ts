@@ -2,7 +2,8 @@ import type { APIRoute } from "astro";
 import { isAuthorized } from "@/lib/auth";
 import { readJsonBodyLimited } from "@/lib/request-body";
 import { fetchPrimaryEvidence } from "@/lib/primary-evidence";
-import { loadCurrentAdmissionEvidence, defaultRunProbe, sha256Hex, renewProviderEvidence } from "@va-hub/scraper";
+import { loadCurrentAdmissionEvidence, defaultRunProbe, sha256Hex, renewProviderEvidence,
+  MAX_RENEWAL_IDENTITIES, MAX_RENEWAL_PRIMARY_DOCUMENTS } from "@va-hub/scraper";
 
 export const prerender = false;
 const PROVIDERS = new Set(["greenhouse", "recruitee", "teamtailor"]);
@@ -33,7 +34,9 @@ export function createSourceRenewHandler(deps: {
     try {
       const rows = await env.DB.prepare("SELECT source_id AS sourceId FROM source_registry WHERE provider_id=? ORDER BY source_id")
         .bind(input.providerId).all();
-      if (!rows.success || !rows.results?.length || rows.results.length > 4) return json(409, { error: "Renewal route supports 1–4 existing shadow identities per provider" });
+      if (!rows.success || !rows.results?.length || rows.results.length > MAX_RENEWAL_IDENTITIES) return json(409, {
+        error: `Renewal route supports 1–${MAX_RENEWAL_IDENTITIES} existing shadow identities per provider`,
+      });
       const contexts = [];
       for (const row of rows.results) {
         const context = await (deps.load ?? loadCurrentAdmissionEvidence)(env.DB, row.sourceId, now());
@@ -44,6 +47,11 @@ export function createSourceRenewHandler(deps: {
       const captures = [];
       const hashes: Record<string, string> = {};
       const urls = [...new Set(contexts.flatMap(context => context.packet.primaryEvidence.map(entry => entry.url)))];
+      // Bound the union before any capture. A per-packet limit alone permits
+      // six different sets of 16 references to exceed the external-request cap.
+      if (urls.length > MAX_RENEWAL_PRIMARY_DOCUMENTS) return json(409, {
+        error: `Renewal route supports at most ${MAX_RENEWAL_PRIMARY_DOCUMENTS} distinct primary documents per provider`,
+      });
       for (const url of urls) {
         stage = "capture_primary_document";
         const content = await (deps.capture ?? fetchPrimaryEvidence)(url);
