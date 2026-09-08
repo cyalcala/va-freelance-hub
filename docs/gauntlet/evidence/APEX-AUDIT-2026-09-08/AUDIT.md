@@ -117,11 +117,11 @@ redirect expectation and then Bun mock typing; fixed before acceptance.
 
 Independent Workable review caught nested-job silent omission and oversized XML
 token allocation. Streaming now rejects both before publishing a digest, while
-SAX discards descriptions. Limits:512MiB raw,32MiB metadata,16KiB fields/markup,
-100,000 jobs,120s, with temporary cleanup. Python3.9+ stdlib required; platform
+SAX discards descriptions. Limits:512 MiB raw,32 MiB metadata,16 KiB fields/markup,
+100,000 jobs,120 seconds, with temporary cleanup. Python3.9+ stdlib required; platform
 launchers are checked, no downloads/pip dependency. Focused16 Bun +8 Python tests
-pass, including a synthetic132MiB feed and low-memory adversarial token tests.
-A local live attempt on September8 ended ECONNRESET and preserved last-good
+pass, including a synthetic132 MiB feed and low-memory adversarial token tests.
+A local live attempt on September 8 ended ECONNRESET and preserved last-good
 output. This is not a successful production feed acceptance.
 
 Read-only probes found healthy GitLab, Remote.com, Nearform, Ghost and Wikimedia
@@ -141,7 +141,7 @@ replacement for deployed ingestion clocks.
 
 PR #138 merged as7db386070b0654ec320514abbcdc8a32dc5d9be4; PR CI34217630933
 and production34217731133 passed. Independent reviewer confirmed both XML
-findings closed. GitHub Workable34217743529 failed at512MiB in30s; this is a
+findings closed. GitHub Workable34217743529 failed at 512 MiB in 30 seconds; this is a
 measured resource boundary, not successful preprocessing. Daily bulk scheduling
 is made dormant; manual run remains, next review2026-09-15 or earlier supported
 bounded feed evidence. Do not repeat bulk downloads merely to produce green CI.
@@ -149,7 +149,7 @@ bounded feed evidence. Do not repeat bulk downloads merely to produce green CI.
 Native D1 renewal succeeded: Greenhouse revision3/evidence4 and Recruitee
 revision2/evidence5. GitLab and Remote.com admitted to shadow (published0).
 Readback confirms five shadow identities; manual shadow34218062832 passed.
-Renewed epochs start September8, not September6. Three healthy Greenhouse
+Renewed epochs start September 8, not September 6. Three healthy Greenhouse
 candidates (Nearform/Ghost/Wikimedia) remain staged until renewal/dispatch
 capacity is measured; route renewal currently supports at most4 identities per
 provider, and expanding the group must not create an unrenewable evidence set.
@@ -157,10 +157,37 @@ Canonical remains withheld at the524288-byte probe bound.
 
 Teamtailor raw HTML varied with a per-request CSP nonce. The same nonce appears
 in link/script attributes and data-n-css. A reviewed exact-URL canonicalization
-replaces only that unique44-character Base64 token; all other HTML stays
+replaces only that unique 44-character Base64 token; all other HTML stays
 hash-significant. Two fresh captures match ac78d16e06d1eae6f0da138bde040586db0a6216464c3cb0480816afe42dda26.
 Absent/multiple nonce formats fail closed. Article content was reread and still
 documents public RSS metadata sharing, original job link and100-job default.
 This is a content hash with a documented transport-nonce normalization, not a
 URL/time fingerprint or ignored substantive difference. Final Teamtailor native
 renewal follows deployment and an exact preview/hash comparison.
+
+
+## Final native checkpoint — 2026-09-08
+
+PR #139 merged as6d45fd42880b3e314c4fccdebb0a4f454580359a; PR CI34218291043
+and production34218427110 succeeded. Exact release tests:1,256 Bun across124
+files,15 Python analytics/projector tests, build/typecheck/guardrails/Worker checks.
+Teamtailor native renewal succeeded: provider revision2, evidence8, published0.
+Final readback confirms current evidence IDs Grafana4, Recruitee5, GitLab6,
+Remote.com7, Teamtailor8. First four have one current-epoch observation on one
+UTC date; Teamtailor's new epoch awaits its next cadence-eligible observation.
+Old packets and observations remain intact and do not qualify the new epochs.
+A transient CLI readback7403 authorization response cleared on one read-only
+retry; no mutation was repeated. Native renewal also performed its own readback.
+
+Five real non-publishing shadows is verified; the full observation/cutover gate
+is not satisfied. Shadow run34218062832 recorded5 eligible/5 dispatched, five
+HEALTHY_WITH_RESULTS, zero evidence errors. Independent Cloudflare shadow clock
+is deployed/tested; specific scheduled-tick production acceptance still needs
+fresh observation attribution. Keep this separate from the manual GHA success.
+
+Next bounded unit: measure and test native D1/subrequest budget for provider-group
+renewal and the shadow dispatcher before further Greenhouse admission. Complete
+current-epoch cadence evidence and the full cutover predicate; do not promote on
+a date alone. Workable resource review is dormant until September15 or a supported
+bounded feed appears. No 10x result or exact billing claim. Original workstreams,
+legacy PR history and compensation pause remain preserved.
