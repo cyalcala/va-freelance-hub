@@ -12,6 +12,7 @@ test("captures actual UTF-8 primary content with bounded request options", async
 
 test("rejects unsuccessful, empty, and oversized primary evidence", async () => {
   for (const response of [new Response("blocked", { status: 403 }), new Response("  "), new Response("x".repeat(2 * 1024 * 1024 + 1))]) {
-    await expect(fetchPrimaryEvidence("https://example.com/docs", (async () => response) as typeof fetch)).rejects.toThrow();
+    await expect(fetchPrimaryEvidence("https://example.com/docs", (async () => response) as unknown as typeof fetch)).rejects.toThrow();
   }
 });
+

@@ -94,10 +94,28 @@ export async function admitReviewedSourceToShadow(
   ).run();
   if (!providerWrite.success) return { ok: false, reason: "provider profile write was unsuccessful" };
   const storedProvider = await db.prepare(
-    "SELECT governance_revision AS governanceRevision FROM provider_profiles WHERE id=?",
-  ).bind(input.provider.id).first<{ governanceRevision: number }>();
+    `SELECT id, provider_family AS providerFamily, mechanism, auth_class AS authClass,
+      endpoint_pattern AS endpointPattern, allowed_hosts AS allowedHosts, evidence_url AS evidenceUrl,
+      evidence_hash AS evidenceHash, evidence_captured_at AS evidenceCapturedAt,
+      visibility_filter AS visibilityFilter, content_scope AS contentScope,
+      cadence_min_minutes AS cadenceMinMinutes, cadence_max_minutes AS cadenceMaxMinutes,
+      rate_guidance AS rateGuidance, robots_handling AS robotsHandling,
+      removal_semantics AS removalSemantics, evidence_lease_days AS evidenceLeaseDays,
+      governance_revision AS governanceRevision FROM provider_profiles WHERE id=?`,
+  ).bind(input.provider.id).first<AdmissionProviderSnapshot>();
   if (!storedProvider) return { ok: false, reason: "provider profile write was unsuccessful" };
-  const provider = { ...input.provider, governanceRevision: storedProvider.governanceRevision };
+  // Once a provider has immutable evidence, admission cannot renew its shared
+  // policy snapshot. Detect a different proposal before creating an orphan
+  // candidate or attempting evidence that SQL will reject against that snapshot.
+  const mismatchedFields = (Object.keys(storedProvider) as (keyof AdmissionProviderSnapshot)[])
+    .filter(key => key !== "governanceRevision" && storedProvider[key] !== input.provider[key]);
+  if (mismatchedFields.length > 0) {
+    return {
+      ok: false,
+      reason: `Shared provider evidence renewal required for ${input.provider.id}: proposed ${mismatchedFields.join(", ")} differ from the persisted snapshot; renew through the reviewed evidence workflow before retrying admission`,
+    };
+  }
+  const provider = storedProvider;
 
   const candidateWrite = await db.prepare(INSERT_CANDIDATE_SQL).bind(
     input.source.sourceId,

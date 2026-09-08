@@ -125,3 +125,41 @@ test("refuses to start admission from a non-candidate operational state", async 
   });
   expect(result).toEqual({ ok: false, reason: "admission starts from candidate, not a live operational state" });
 });
+
+test("shared provider mismatch requires renewal without orphaning a candidate or changing existing evidence", async () => {
+  const sqlite = freshDb();
+  const db = new BunGatewayDatabase(sqlite) as TransitionGatewayDatabase & AdmissionDatabase;
+  const fixture = await liveAdmissionFixture();
+  const input = {
+    now: new Date().toISOString(), source: fixture.source, provider: fixture.provider,
+    probe: fixture.packet.probe, primaryEvidence: fixture.packet.primaryEvidence,
+    adjudicationRef: fixture.packet.adjudicationRef,
+  };
+  expect((await admitReviewedSourceToShadow(db, input)).ok).toBe(true);
+  const before = {
+    providers: sqlite.query("SELECT * FROM provider_profiles").all(),
+    sources: sqlite.query("SELECT * FROM source_registry").all(),
+    evidence: sqlite.query("SELECT * FROM source_admission_evidence").all(),
+  };
+  const source = { ...fixture.source, sourceId: "greenhouse:second", companyToken: "second",
+    endpointUrl: "https://boards-api.greenhouse.io/v1/boards/second/jobs" };
+  const probe = { ...input.probe, sourceId: source.sourceId,
+    endpoint: { ...input.probe.endpoint, url: source.endpointUrl } };
+  for (const proposal of [
+    { ...fixture.provider, evidenceHash: "b".repeat(64) },
+    { ...fixture.provider, evidenceCapturedAt: new Date(Date.parse(fixture.provider.evidenceCapturedAt!) - 1000).toISOString() },
+    { ...fixture.provider, removalSemantics: "Different reviewed removal policy" },
+  ]) {
+    const result = await admitReviewedSourceToShadow(db, { ...input, source, probe, provider: proposal });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toContain("Shared provider evidence renewal required");
+    expect(sqlite.query("SELECT * FROM provider_profiles").all()).toEqual(before.providers);
+    expect(sqlite.query("SELECT * FROM source_registry").all()).toEqual(before.sources);
+    expect(sqlite.query("SELECT * FROM source_admission_evidence").all()).toEqual(before.evidence);
+  }
+  // The rejection left no duplicate identity behind; matching reviewed evidence
+  // still permits a second company on this provider without invalidating the first.
+  expect(await admitReviewedSourceToShadow(db, { ...input, source, probe })).toEqual({ ok: true, sourceId: source.sourceId });
+  expect(sqlite.query("SELECT * FROM provider_profiles").all()).toEqual(before.providers);
+  expect(sqlite.query("SELECT * FROM source_admission_evidence WHERE source_id=?").all(fixture.source.sourceId)).toEqual(before.evidence);
+});
