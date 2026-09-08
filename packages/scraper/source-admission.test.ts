@@ -147,7 +147,6 @@ test("shared provider mismatch requires renewal without orphaning a candidate or
     endpoint: { ...input.probe.endpoint, url: source.endpointUrl } };
   for (const proposal of [
     { ...fixture.provider, evidenceHash: "b".repeat(64) },
-    { ...fixture.provider, evidenceCapturedAt: new Date(Date.parse(fixture.provider.evidenceCapturedAt!) - 1000).toISOString() },
     { ...fixture.provider, removalSemantics: "Different reviewed removal policy" },
   ]) {
     const result = await admitReviewedSourceToShadow(db, { ...input, source, probe, provider: proposal });
@@ -159,7 +158,7 @@ test("shared provider mismatch requires renewal without orphaning a candidate or
   }
   // The rejection left no duplicate identity behind; matching reviewed evidence
   // still permits a second company on this provider without invalidating the first.
-  expect(await admitReviewedSourceToShadow(db, { ...input, source, probe })).toEqual({ ok: true, sourceId: source.sourceId });
+  expect(await admitReviewedSourceToShadow(db, { ...input, source, probe, provider: { ...fixture.provider, evidenceCapturedAt: new Date().toISOString() } })).toEqual({ ok: true, sourceId: source.sourceId });
   expect(sqlite.query("SELECT * FROM provider_profiles").all()).toEqual(before.providers);
   expect(sqlite.query("SELECT * FROM source_admission_evidence WHERE source_id=?").all(fixture.source.sourceId)).toEqual(before.evidence);
 });

@@ -336,6 +336,20 @@ const INSERT_EVIDENCE_SQL = `INSERT INTO source_admission_evidence (
  endpoint_url, policy_version, captured_at, expires_at, adjudication_ref, packet_json, packet_sha256
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
+/** Prepare a prevalidated packet for an atomic provider renewal batch. */
+export function prepareAdmissionEvidenceInsert(
+  db: AdmissionDatabase,
+  source: AdmissionSourceSnapshot,
+  provider: AdmissionProviderSnapshot,
+  built: { packet: AdmissionEvidencePacket; packetJson: string; packetSha256: string },
+): AdmissionStatement {
+  return db.prepare(INSERT_EVIDENCE_SQL).bind(
+    source.sourceId, source.providerId, source.governanceRevision, provider.governanceRevision,
+    source.endpointUrl, built.packet.policyVersion, built.packet.capturedAt, built.packet.expiresAt,
+    built.packet.adjudicationRef, built.packetJson, built.packetSha256,
+  );
+}
+
 /** Privileged bootstrap write. SQL rechecks identity, leases, and packet bindings. */
 export async function persistAdmissionEvidence(
   db: AdmissionDatabase,
@@ -350,11 +364,7 @@ export async function persistAdmissionEvidence(
     return { ok: false, reason: "admission packet digest is invalid" };
   }
   try {
-    const write = await db.prepare(INSERT_EVIDENCE_SQL).bind(
-      source.sourceId, source.providerId, source.governanceRevision, provider.governanceRevision,
-      source.endpointUrl, built.packet.policyVersion, built.packet.capturedAt, built.packet.expiresAt,
-      built.packet.adjudicationRef, built.packetJson, built.packetSha256,
-    ).run();
+    const write = await prepareAdmissionEvidenceInsert(db, source, provider, built).run();
     if (!write.success) return { ok: false, reason: "admission evidence persistence returned an unsuccessful write" };
   } catch {
     return { ok: false, reason: "admission evidence was rejected by current identity or lease guards" };

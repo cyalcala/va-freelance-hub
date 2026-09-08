@@ -77,3 +77,27 @@ Lessons: test with the pinned CI runtime; never treat mocked admission as a D1
 write; never turn geographical keyword fragments into eligibility; never count
 HTTP200 alone as health; never derive exact work hours from timezone metadata;
 never label a URL/time fingerprint as a content hash.
+
+## First repair release accepted
+
+PR #135 merged as 7a2cd94e50d4873fca7b352956ee56fc8d0fb7c2.
+PR CI 34215018419 passed on f79127bddd2f0a8c22d1d1ac27272cf4b74d9b95.
+Production Pages CI/deployment 34215162977 and Worker deployment 34215162793
+both passed. Pages deployment: https://37af3a8b.remotejobs-ph.pages.dev.
+1,244 tests pass on pinned Bun 1.3.14; typecheck/build/guardrails/Worker verification
+and Python 7 tests pass. Manual shadow 34215262873 passed; first automated
+source-economics run 34215259661 passed and backed up its report. Public route
+smoke returned HTTP200 for homepage, opportunity/search queries, directory,
+data policy, privacy and sitemap (production-smoke.json).
+
+CI also caught an unpinned Wrangler command (34214613875) and an import outside
+its declaring workspace (34214771460); both repaired before merge. Retired
+Vercel account-block check is irrelevant to active Cloudflare deployment.
+PRs #125–134 were automatically merged through retained ancestry; #124 is an
+obsolete bootloader proposal and should not supersede CURRENT.md.
+
+Live Workable preprocessing exceeded the explicit 128 MiB ceiling and failed
+closed, preserving last-good output. No claim of live Workable acceptance; next
+step is bounded streaming/minimal-field preprocessing or a measured safe budget.
+Source renewal is the next separate slice; no past observations will be counted
+as new primary-content evidence.
