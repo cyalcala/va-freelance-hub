@@ -36,9 +36,28 @@ describe("isObviousGeoRestriction", () => {
     expect(isObviousGeoRestriction("Virtual Assistant (US Only)", "")).toBe(true);
     expect(isObviousGeoRestriction("Developer", "United Kingdom Only")).toBe(true);
     expect(isObviousGeoRestriction("Marketing Coordinator", "US timezone only")).toBe(true);
+    expect(isObviousGeoRestriction("Systems Engineer", "Must possess active security clearance")).toBe(true);
+    expect(isObviousGeoRestriction("Fullstack Dev", "W-2 only; no C2C arrangements.")).toBe(true);
+    expect(isObviousGeoRestriction("Content Writer", "Must be a US citizen; no visa sponsorship available.")).toBe(true);
+    expect(isObviousGeoRestriction("Support Rep", "EMEA only remote position.")).toBe(true);
+    expect(isObviousGeoRestriction("Product Designer", "Australia only")).toBe(true);
   });
 
   it("should NOT match standard global roles", () => {
     expect(isObviousGeoRestriction("Senior React Developer", "Open to candidates worldwide.")).toBe(false);
+  });
+});
+
+
+describe("triage restriction precision", () => {
+  it("does not infer a country lock from contract or sponsorship terms", () => {
+    for (const description of ["No C2C arrangements.", "C2C only.", "No visa sponsorship available.", "Sponsorship is not available.", "Unable to sponsor visas."]) {
+      expect(isObviousGeoRestriction("Remote writer", description)).toBe(false);
+    }
+  });
+  it("requires a clearance obligation rather than a bare security term", () => {
+    expect(isObviousGeoRestriction("Writer", "Write about top secret projects and TS/SCI policies.")).toBe(false);
+    expect(isObviousGeoRestriction("Writer", "An active TS/SCI clearance is required.")).toBe(true);
+    expect(isObviousGeoRestriction("Writer", "Must hold an active top secret clearance.")).toBe(true);
   });
 });

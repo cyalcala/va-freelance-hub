@@ -58,6 +58,13 @@ export type RunDiagnosticsInput = {
   droppedNoUrl?: number;
   /** False when cadence state could not be read, so guards degraded open. */
   cadenceStateAvailable?: boolean;
+  /**
+   * Raw message of an exception that escaped the whole scrape tick and forced
+   * the catch-all HTTP 500. Sanitized into an `unhandledError=` signal so a
+   * crashing run still advances the heartbeat instead of mimicking a stopped
+   * clock (issue #123: runs died with zero durable evidence).
+   */
+  unhandledError?: string;
 };
 
 export type RunDiagnosticsSummary = {
@@ -149,6 +156,12 @@ export function summarizeRunDiagnostics(input: RunDiagnosticsInput): RunDiagnost
   // state, which is not the same as reporting that it was unavailable.
   if (input.cadenceStateAvailable === false) {
     signals.push("cadenceStateUnavailable");
+  }
+
+  // Sanitized like provider samples: single-line, bounded, capped count of one.
+  const unhandledError = (input.unhandledError ?? "").replace(/\s+/g, " ").trim().slice(0, 180);
+  if (unhandledError) {
+    signals.push(`unhandledError=${unhandledError}`);
   }
 
   if (signals.length === 0) {

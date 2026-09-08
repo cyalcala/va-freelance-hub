@@ -1,0 +1,64 @@
+[
+  {
+    "results": [
+      {
+        "source_id": "we-work-remotely",
+        "eligible": 52,
+        "unclear": 3,
+        "ineligible": 8,
+        "policy_rejected": 10,
+        "total_stored": 63
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "eligible": 26,
+        "unclear": 1,
+        "ineligible": 0,
+        "policy_rejected": 1,
+        "total_stored": 27
+      },
+      {
+        "source_id": "remote-ok",
+        "eligible": 6,
+        "unclear": 6,
+        "ineligible": 15,
+        "policy_rejected": 21,
+        "total_stored": 27
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "eligible": 5,
+        "unclear": 1,
+        "ineligible": 0,
+        "policy_rejected": 1,
+        "total_stored": 6
+      },
+      {
+        "source_id": "remotive",
+        "eligible": 0,
+        "unclear": 0,
+        "ineligible": 6,
+        "policy_rejected": 6,
+        "total_stored": 6
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 14.7047
+      },
+      "duration": 14.7047,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 73838592,
+      "rows_read": 5388,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

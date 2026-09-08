@@ -185,6 +185,63 @@ describe("geoGate — golden fixtures", () => {
     // "Remote" alone carries no geographic guarantee — goes to the AI layer.
     expect(v.phEligibility).toBe("unclear");
   });
+
+  it("#18 Structured location 'US' or 'Remote, US' → country_locked, ineligible", () => {
+    const v1 = geoGate({ title: "Software Engineer", locationRaw: "US" });
+    expect(v1.phEligibility).toBe("ineligible");
+    expect(v1.geoScope).toBe("country_locked");
+
+    const v2 = geoGate({ title: "Software Engineer", locationRaw: "Remote, US" });
+    expect(v2.phEligibility).toBe("ineligible");
+    expect(v2.geoScope).toBe("country_locked");
+
+    const v3 = geoGate({ title: "Software Engineer", locationRaw: "Remote (US)" });
+    expect(v3.phEligibility).toBe("ineligible");
+    expect(v3.geoScope).toBe("country_locked");
+  });
+
+  it("#19 US state postal abbreviation in locationRaw (Austin, TX) → country_locked, ineligible", () => {
+    const v = geoGate({ title: "DevOps Engineer", locationRaw: "Austin, TX" });
+    expect(v.phEligibility).toBe("ineligible");
+    expect(v.geoScope).toBe("country_locked");
+  });
+
+  it("#20 Title-level country lock: '(US Remote)' or '- US Only' → country_locked, ineligible", () => {
+    const v1 = geoGate({ title: "Frontend Developer (US Remote)" });
+    expect(v1.phEligibility).toBe("ineligible");
+    expect(v1.geoScope).toBe("country_locked");
+
+    const v2 = geoGate({ title: "Product Designer - US Only" });
+    expect(v2.phEligibility).toBe("ineligible");
+    expect(v2.geoScope).toBe("country_locked");
+  });
+
+  it("#21 Security clearance requirement in description → region_excl_ph, ineligible", () => {
+    const v = geoGate({
+      title: "Cloud Architect",
+      description: "Active Top Secret / TS/SCI clearance is required for this position.",
+    });
+    expect(v.phEligibility).toBe("ineligible");
+    expect(v.geoScope).toBe("region_excl_ph");
+  });
+
+  it("#22 Tax / domestic employment locks (W2 only, no C2C) → region_excl_ph, ineligible", () => {
+    const v = geoGate({
+      title: "Full Stack Developer",
+      description: "Contract opportunity. W2 only, no C2C candidates.",
+    });
+    expect(v.phEligibility).toBe("ineligible");
+    expect(v.geoScope).toBe("region_excl_ph");
+  });
+
+  it("#23 Citizenship and no-sponsorship lock → region_excl_ph, ineligible", () => {
+    const v = geoGate({
+      title: "Backend Engineer",
+      description: "Must be a US citizen; no visa sponsorship provided.",
+    });
+    expect(v.phEligibility).toBe("ineligible");
+    expect(v.geoScope).toBe("region_excl_ph");
+  });
 });
 
 describe("detectDominantLanguage", () => {
@@ -261,5 +318,49 @@ describe("scanLandingPageForGeoLock", () => {
 
   it("stays silent on near-empty pages (SPA shells)", () => {
     expect(scanLandingPageForGeoLock("<html><body><div id=root></div></body></html>")).toBeNull();
+  });
+});
+
+
+describe("APEX geographic regression precision", () => {
+  it("does not read country prefixes inside ordinary title words", () => {
+    for (const title of ["Technical Writer - User Experience", "Designer (Usability)", "Accountant - Europeanization project"]) {
+      expect(geoGate({ title, locationRaw: "Remote" }).phEligibility).toBe("unclear");
+    }
+    for (const title of ["Writer (US Remote)", "Writer [USA]", "Writer - UK Only", "Writer (U.S.)"]) {
+      expect(geoGate({ title }).phEligibility).toBe("ineligible");
+    }
+  });
+  it("keeps distribution and interface wording geographically ambiguous", () => {
+    for (const description of ["We are a distributed team.", "Join our fully distributed team.", "Browse all locations."]) {
+      expect(geoGate({ title: "Writer", locationRaw: "Remote", description }).phEligibility).toBe("unclear");
+    }
+  });
+  it("does not infer country restrictions from sponsorship or corporate contracting", () => {
+    for (const description of ["No C2C.", "C2C only.", "No visa sponsorship is available.", "Sponsorship is not available.", "Unable to sponsor visas."]) {
+      expect(geoGate({ title: "Writer", locationRaw: "Remote", description }).phEligibility).toBe("unclear");
+      expect(geoGate({ title: "Writer", description: `${description} Open to candidates worldwide.` }).phEligibility).toBe("eligible_likely");
+    }
+    expect(geoGate({ title: "Writer", description: "W2 only; no C2C." }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Writer", description: "Must be a US citizen; no visa sponsorship is available." }).phEligibility).toBe("ineligible");
+  });
+});
+
+
+describe("worldwide metadata precedence", () => {
+  it("preserves explicit citizenship and residence restrictions", () => {
+    for (const description of ["Must be a US citizen.", "US citizenship is required.", "Must reside in Canada.", "US work authorization required."]) {
+      const result = geoGate({ title: "Remote Writer", locationRaw: "Worldwide", description });
+      expect(result.phEligibility).toBe("ineligible");
+      expect(result.evidence).toContain("lock");
+    }
+  });
+  it("preserves country pins and onsite requirements despite worldwide hints", () => {
+    expect(geoGate({ title: "Writer (US Remote)", locationRaw: "Worldwide" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Writer (Hybrid)", locationRaw: "Worldwide" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Writer", locationRaw: "Worldwide, US only" }).phEligibility).toBe("ineligible");
+  });
+  it("retains worldwide eligibility for timezone overlap without a residence lock", () => {
+    expect(geoGate({ title: "Writer", locationRaw: "Worldwide", description: "Must overlap four hours with US business hours." }).phEligibility).toBe("eligible_likely");
   });
 });

@@ -74,6 +74,20 @@ const SCRAPED_EPOCH = "unixepoch(scraped_at)";
  */
 export const ECONOMICS_QUERIES: EconQuery[] = [
   {
+    name: "qualified_supply",
+    shape: "single",
+    // Separate the strict qualified KPI from the older active-row inventory,
+    // which also contains unclear eligibility. First-stored is a publication
+    // proxy; do not describe it as a complete historical publication ledger.
+    sql: (w) => `SELECT
+  COUNT(*) AS qualified_active,
+  SUM(CASE WHEN ${SCRAPED_EPOCH} >= ${w.cut7} THEN 1 ELSE 0 END) AS qualified_new_7d,
+  SUM(CASE WHEN ${SCRAPED_EPOCH} >= ${w.cut30} THEN 1 ELSE 0 END) AS qualified_new_30d
+FROM opportunities
+WHERE is_active = 1 AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+  AND ${SCRAPED_EPOCH} <= ${Math.floor(w.asOf.getTime() / 1000)};`,
+  },
+  {
     name: "identity_coverage",
     shape: "single",
     sql: () => `SELECT
@@ -136,6 +150,21 @@ WHERE unixepoch(timestamp) >= ${w.cut7}
   AND substr(source_id, 1, 2) <> '__'
 GROUP BY source_id
 ORDER BY real_fetches DESC, source_id ASC;`,
+  },
+  {
+    name: "triage_outcomes_7d",
+    shape: "distribution",
+    sql: (w) => `SELECT
+  coalesce(source_id, '(unknown)') AS source_id,
+  SUM(CASE WHEN ph_eligibility IN ('eligible_verified', 'eligible_likely') THEN 1 ELSE 0 END) AS eligible,
+  SUM(CASE WHEN ph_eligibility = 'unclear' THEN 1 ELSE 0 END) AS unclear,
+  SUM(CASE WHEN ph_eligibility = 'ineligible' THEN 1 ELSE 0 END) AS ineligible,
+  SUM(CASE WHEN inactive_reason = 'policy-rejected' THEN 1 ELSE 0 END) AS policy_rejected,
+  COUNT(*) AS total_stored
+FROM opportunities
+WHERE unixepoch(scraped_at) >= ${w.cut7}
+GROUP BY coalesce(source_id, '(unknown)')
+ORDER BY total_stored DESC, source_id ASC;`,
   },
 ];
 
@@ -309,6 +338,11 @@ export function reconcile(byName: Record<string, Row[]>): ReconResult {
   deltas["source_net14_sum_vs_totals"] = sumBy(supply, "net_new_14d") - num(totals["net_new_14d"]);
   deltas["source_net30_sum_vs_totals"] = sumBy(supply, "net_new_30d") - num(totals["net_new_30d"]);
 
+  const triage = byName["triage_outcomes_7d"] ?? [];
+  deltas["triage_stored_sum_vs_outcomes"] =
+    sumBy(triage, "total_stored") -
+    (sumBy(triage, "eligible") + sumBy(triage, "unclear") + sumBy(triage, "ineligible"));
+
   const unknown = num(id["active_null_source_id"]);
   if (unknown > 0) {
     notes.push(
@@ -375,6 +409,7 @@ export function renderReport(byName: Record<string, Row[]>, meta: EconMeta): str
   const totals = byName["supply_totals"]?.[0] ?? {};
   const supply = byName["source_supply"] ?? [];
   const outcomes = byName["fetch_outcomes_7d"] ?? [];
+  const triage = byName["triage_outcomes_7d"] ?? [];
   const families = foldProviderFamilies(supply);
   const recon = reconcile(byName);
   const conc30 = summarizeConcentration(families, "net_new_30d");
@@ -401,6 +436,13 @@ export function renderReport(byName: Record<string, Row[]>, meta: EconMeta): str
   lines.push(`- Read-only report; regenerate with \`scripts/diagnostics/source-economics.ts\`.`);
   lines.push("");
 
+  const qualified = byName["qualified_supply"]?.[0];
+  if (qualified) {
+    lines.push("## Qualified supply (strict eligibility; first-stored proxy)", "");
+    lines.push("Excludes unclear/ineligible rows. Historical publication and later deactivation are not fully reconstructed.", "");
+    lines.push("| qualified active | qualified new 7d | per day (7d) | qualified new 30d | per day (30d) |", "| ---: | ---: | ---: | ---: | ---: |");
+    lines.push(`| ${num(qualified.qualified_active)} | ${num(qualified.qualified_new_7d)} | ${(num(qualified.qualified_new_7d) / 7).toFixed(2)} | ${num(qualified.qualified_new_30d)} | ${(num(qualified.qualified_new_30d) / 30).toFixed(2)} |`, "");
+  }
   lines.push(`## Identity coverage (SP-01)`);
   lines.push("");
   lines.push(`| total | with source_id | null source_id | coverage | active null-id |`);
@@ -473,6 +515,44 @@ export function renderReport(byName: Record<string, Row[]>, meta: EconMeta): str
     );
   }
   lines.push("");
+
+  if (triage.length > 0) {
+    lines.push(`## Geo & eligibility triage outcomes (last 7 days)`);
+    lines.push("");
+    lines.push(`Breakdown of stored opportunities by Philippines eligibility verdict.`);
+    lines.push("");
+    lines.push(`| source_id | eligible | unclear | ineligible | policy_rejected | total | qualified_rate |`);
+    lines.push(`| --- | ---: | ---: | ---: | ---: | ---: | ---: |`);
+    for (const r of triage) {
+      const tot = num(r["total_stored"]);
+      const elig = num(r["eligible"]);
+      const qRate = tot > 0 ? elig / tot : 0;
+      lines.push(
+        `| ${String(r["source_id"])} | ${elig} | ${num(r["unclear"])} | ${num(r["ineligible"])} | ${num(r["policy_rejected"])} | ${tot} | ${pct(qRate)} |`,
+      );
+    }
+    lines.push("");
+
+    lines.push(`## Yield efficiency (last 7 days)`);
+    lines.push("");
+    lines.push(`Yield per real (changed) fetch and per 100 items seen.`);
+    lines.push("");
+    lines.push(`| source_id | real fetches | items seen | eligible stored | yield / fetch | yield / 100 items |`);
+    lines.push(`| --- | ---: | ---: | ---: | ---: | ---: |`);
+    const triageBySource = new Map(triage.map((r) => [String(r["source_id"]), num(r["eligible"])]));
+    for (const r of outcomes) {
+      const sid = String(r["source_id"]);
+      const realFetches = num(r["real_fetches"]);
+      const items = num(r["items"]);
+      const eligible = triageBySource.get(sid) ?? 0;
+      const ypf = realFetches > 0 ? (eligible / realFetches).toFixed(2) : "0.00";
+      const y100 = items > 0 ? ((eligible / items) * 100).toFixed(2) : "0.00";
+      lines.push(
+        `| ${sid} | ${realFetches} | ${items} | ${eligible} | ${ypf} | ${y100} |`,
+      );
+    }
+    lines.push("");
+  }
 
   if (recon.notes.length > 0) {
     lines.push(`## Notes`);

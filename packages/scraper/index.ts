@@ -372,3 +372,5 @@ export type {
   ShadowDispatchDeps,
   ShadowDispatchSummary,
 } from "./shadow-dispatcher";
+export { classifyShift } from "./shiftClassifier";
+export type { ShiftCategory, ShiftInfo, ShiftClassifierInput } from "./shiftClassifier";

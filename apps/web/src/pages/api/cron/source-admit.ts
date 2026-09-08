@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { isAuthorized } from "@/lib/auth";
 import { nowUtcIso } from "@/lib/time";
+import { fetchPrimaryEvidence } from "@/lib/primary-evidence";
 import {
   admitReviewedSourceToShadow,
   buildGreenhouseCandidateRow,
@@ -27,6 +28,12 @@ export const SOURCE_ADMIT_ALLOWLIST = [
   "greenhouse:grafanalabs",
   "recruitee:myjewellery",
   "teamtailor:career.teamtailor.com",
+  "greenhouse:gitlab",
+  "greenhouse:remotecom",
+  "greenhouse:nearform",
+  "greenhouse:ghost",
+  "greenhouse:canonical",
+  "greenhouse:wikimedia",
 ] as const;
 
 type HandlerDependencies = {
@@ -35,6 +42,7 @@ type HandlerDependencies = {
   wrapDb?: typeof wrapD1Binding;
   hash?: typeof sha256Hex;
   now?: () => string;
+  fetchEvidence?: typeof fetchPrimaryEvidence;
 };
 
 function json(status: number, body: unknown): Response {
@@ -45,11 +53,22 @@ function json(status: number, body: unknown): Response {
 }
 
 function admitTarget(sourceId: string, clock: string) {
-  if (sourceId === "greenhouse:grafanalabs") {
+  if (sourceId.startsWith("greenhouse:")) {
+    const token = sourceId.replace("greenhouse:", "");
+    const names: Record<string, string> = {
+      grafanalabs: "Grafana Labs",
+      gitlab: "GitLab",
+      remotecom: "Remote.com",
+      nearform: "Nearform",
+      ghost: "Ghost Foundation",
+      canonical: "Canonical",
+      wikimedia: "Wikimedia Foundation",
+    };
+    const companyName = names[token] ?? token;
     const profile = buildGreenhouseProviderProfile();
     const candidate = buildGreenhouseCandidateRow({
-      token: "grafanalabs",
-      companyName: "Grafana Labs",
+      token,
+      companyName,
       nowIso: clock,
     });
     return {
@@ -57,7 +76,9 @@ function admitTarget(sourceId: string, clock: string) {
       candidate,
       providerId: GREENHOUSE_PROVIDER_ID,
       leaseDays: GREENHOUSE_EVIDENCE_LEASE_DAYS,
-      adjudicationRef: "ex-02-owner-approved-approach-b-sp12-review-ready",
+      adjudicationRef: token === "grafanalabs"
+        ? "ex-02-owner-approved-approach-b-sp12-review-ready"
+        : `ex-08-greenhouse-${token}-tier-a-fast-track`,
     };
   }
   if (sourceId === "recruitee:myjewellery") {
@@ -96,6 +117,7 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
   const wrapDb = dependencies.wrapDb ?? wrapD1Binding;
   const hash = dependencies.hash ?? sha256Hex;
   const nowFn = dependencies.now ?? nowUtcIso;
+  const fetchEvidence = dependencies.fetchEvidence ?? fetchPrimaryEvidence;
 
   return async ({ request, locals }) => {
     const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
@@ -146,7 +168,9 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         },
       });
       const now = probe.timestamp;
-      const evidenceHash = await hash(`${profile.evidenceUrl}\n${now}`);
+      // Capture actual reviewed primary-document content. A URL plus the clock
+      // is not a content fingerprint and cannot support replayable evidence.
+      const evidenceHash = await hash(await fetchEvidence(profile.evidenceUrl));
       const provider = {
         id: providerId,
         providerFamily: profile.providerFamily,

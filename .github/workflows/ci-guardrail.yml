@@ -40,6 +40,9 @@ jobs:
       - name: Run unit tests
         run: bun run test
 
+      - name: Run Python analytics tests
+        run: python3 -m unittest discover -s scripts/analytics -p 'test_*.py'
+
       - name: Build app
         run: bun run build
 

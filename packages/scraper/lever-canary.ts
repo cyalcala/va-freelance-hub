@@ -37,7 +37,7 @@ export interface LeverProviderProfileRow {
   evidenceUrl: string;
   evidenceLeaseDays: number;
   visibilityFilter: "published";
-  contentScope: "minimal_with_truncated_summary";
+  contentScope: "minimal";
   cadenceMinMinutes: number;
   cadenceMaxMinutes: number;
   rateGuidance: string;
@@ -60,7 +60,7 @@ export function buildLeverProviderProfile(): LeverProviderProfileRow {
     evidenceUrl: LEVER_EVIDENCE_URL,
     evidenceLeaseDays: LEVER_EVIDENCE_LEASE_DAYS,
     visibilityFilter: "published",
-    contentScope: "minimal_with_truncated_summary",
+    contentScope: "minimal",
     cadenceMinMinutes: 60,
     cadenceMaxMinutes: 1440,
     rateGuidance: "Public Postings API GET is unauthenticated with no documented per-minute limit; this project's own 60-minute ATS cadence guard applies regardless.",
@@ -68,7 +68,7 @@ export function buildLeverProviderProfile(): LeverProviderProfileRow {
     removalSemantics: "Deactivate within one successful reconciliation cycle once a posting disappears from a complete feed pull.",
     defaultComplianceState: "needs_review",
     defaultOperationalState: "candidate",
-    notes: "The public Postings API (github.com/lever/postings-api) is RESTful, unauthenticated for GET, and exposes only published/listed postings across separate global (api.lever.co) and EU (api.eu.lever.co) origins. The existing fetchLever adapter stores title, canonical hostedUrl, location/workplaceType, and a 500-character-truncated description snippet — not the full posting. Application submission (POST) is out of scope and never used.",
+    notes: "The public Postings API (github.com/lever/postings-api) is RESTful, unauthenticated for GET, and exposes only published/listed postings across separate global (api.lever.co) and EU (api.eu.lever.co) origins. The existing fetchLever adapter stores title, canonical hostedUrl, location/workplaceType, and a 500-character-truncated description snippet — not the full posting. content_scope is CHECK-legal 'minimal'; the truncation is recorded here rather than as an illegal enum. Application submission (POST) is out of scope and never used. EX-06 qualified the Postings API mechanism: lever:lever is HEALTHY_EMPTY (0 open roles), while documentation board leverdemo consists entirely of fictional demonstration listings and is REJECTED. Lever candidate admission is held pending an authentic hiring employer with genuine remote/VA postings.",
   };
 }
 

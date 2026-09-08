@@ -2953,6 +2953,10 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     }), { status: 200, headers: { "Content-Type": "application/json" } });
   } catch (error) {
     console.error("[api/cron/scrape] Error during scraping task:", error);
+    // A crashing run must still stamp the heartbeat: without this write the
+    // clock is indistinguishable from stopped (issue #123). recordIngestDiagnostics
+    // never throws, so it cannot mask the 500 below.
+    await recordIngestDiagnostics(db, observedAt, { unhandledError: errorMessage(error) });
     return new Response(JSON.stringify({ error: "Internal Server Error", runDurationMs: Date.now() - startedAt }), { status: 500, headers: { "Content-Type": "application/json" } });
   }
   };

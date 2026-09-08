@@ -27,7 +27,9 @@ CREATE TABLE opportunities (
   source_platform TEXT NOT NULL,
   source_id TEXT,
   is_active INTEGER NOT NULL DEFAULT 1,
-  scraped_at TEXT NOT NULL
+  scraped_at TEXT NOT NULL,
+  ph_eligibility TEXT,
+  inactive_reason TEXT
 );
 `;
 
@@ -37,28 +39,30 @@ interface OppRow {
   source_id: string | null;
   is_active: 0 | 1;
   scraped_at: string;
+  ph_eligibility?: string;
+  inactive_reason?: string | null;
 }
 
 // Every count below is independently verifiable from these rows.
 const OPP_ROWS: OppRow[] = [
   // we-work-remotely: 3 active (net7=1, net14=2, net30=2), 1 inactive
-  { title: "W1", source_platform: "WeWorkRemotely", source_id: "we-work-remotely", is_active: 1, scraped_at: "2026-08-28" },
-  { title: "W2", source_platform: "WeWorkRemotely", source_id: "we-work-remotely", is_active: 1, scraped_at: "2026-08-20" },
-  { title: "W3", source_platform: "WeWorkRemotely", source_id: "we-work-remotely", is_active: 1, scraped_at: "2026-07-01" },
-  { title: "W4", source_platform: "WeWorkRemotely", source_id: "we-work-remotely", is_active: 0, scraped_at: "2026-05-01" },
+  { title: "W1", source_platform: "WeWorkRemotely", source_id: "we-work-remotely", is_active: 1, scraped_at: "2026-08-28", ph_eligibility: "eligible_likely" },
+  { title: "W2", source_platform: "WeWorkRemotely", source_id: "we-work-remotely", is_active: 1, scraped_at: "2026-08-20", ph_eligibility: "eligible_verified" },
+  { title: "W3", source_platform: "WeWorkRemotely", source_id: "we-work-remotely", is_active: 1, scraped_at: "2026-07-01", ph_eligibility: "eligible_likely" },
+  { title: "W4", source_platform: "WeWorkRemotely", source_id: "we-work-remotely", is_active: 0, scraped_at: "2026-05-01", ph_eligibility: "ineligible", inactive_reason: "policy-rejected" },
   // real-work-from-anywhere: 1 active (all windows)
-  { title: "R1", source_platform: "RealWorkFromAnywhere", source_id: "real-work-from-anywhere", is_active: 1, scraped_at: "2026-08-27" },
+  { title: "R1", source_platform: "RealWorkFromAnywhere", source_id: "real-work-from-anywhere", is_active: 1, scraped_at: "2026-08-27", ph_eligibility: "eligible_verified" },
   // remote-ok: 1 active (net30 only)
-  { title: "O1", source_platform: "RemoteOK", source_id: "remote-ok", is_active: 1, scraped_at: "2026-08-10" },
+  { title: "O1", source_platform: "RemoteOK", source_id: "remote-ok", is_active: 1, scraped_at: "2026-08-10", ph_eligibility: "eligible_likely" },
   // two Jobicy feeds — one provider family, distinct source_ids
-  { title: "J1", source_platform: "Jobicy", source_id: "jobicy-admin-support-apac", is_active: 1, scraped_at: "2026-08-25" },
-  { title: "J2", source_platform: "Jobicy", source_id: "jobicy-supporting-apac", is_active: 1, scraped_at: "2026-08-26" },
+  { title: "J1", source_platform: "Jobicy", source_id: "jobicy-admin-support-apac", is_active: 1, scraped_at: "2026-08-25", ph_eligibility: "eligible_likely" },
+  { title: "J2", source_platform: "Jobicy", source_id: "jobicy-supporting-apac", is_active: 1, scraped_at: "2026-08-26", ph_eligibility: "eligible_likely" },
   // two Workable tenants — one provider family, distinct platform:token ids
-  { title: "K1", source_platform: "Workable", source_id: "workable:acme", is_active: 1, scraped_at: "2026-08-24" },
-  { title: "K2", source_platform: "Workable", source_id: "workable:globex", is_active: 1, scraped_at: "2026-08-23" },
+  { title: "K1", source_platform: "Workable", source_id: "workable:acme", is_active: 1, scraped_at: "2026-08-24", ph_eligibility: "eligible_likely" },
+  { title: "K2", source_platform: "Workable", source_id: "workable:globex", is_active: 1, scraped_at: "2026-08-23", ph_eligibility: "eligible_likely" },
   // legacy null source_id: 1 active (net30 only) + 1 inactive
-  { title: "L1", source_platform: "OldFeed", source_id: null, is_active: 1, scraped_at: "2026-08-05" },
-  { title: "L2", source_platform: "OldFeed", source_id: null, is_active: 0, scraped_at: "2026-06-01" },
+  { title: "L1", source_platform: "OldFeed", source_id: null, is_active: 1, scraped_at: "2026-08-05", ph_eligibility: "eligible_likely" },
+  { title: "L2", source_platform: "OldFeed", source_id: null, is_active: 0, scraped_at: "2026-06-01", ph_eligibility: "ineligible", inactive_reason: "policy-rejected" },
 ];
 
 const EVT_DDL = `
@@ -90,10 +94,20 @@ function buildDb(): Database {
   db.exec(OPP_DDL);
   db.exec(EVT_DDL);
   const insOpp = db.prepare(
-    `INSERT INTO opportunities (title, source_platform, source_id, is_active, scraped_at)
-     VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO opportunities (title, source_platform, source_id, is_active, scraped_at, ph_eligibility, inactive_reason)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
   );
-  for (const r of OPP_ROWS) insOpp.run(r.title, r.source_platform, r.source_id, r.is_active, r.scraped_at);
+  for (const r of OPP_ROWS) {
+    insOpp.run(
+      r.title,
+      r.source_platform,
+      r.source_id,
+      r.is_active,
+      r.scraped_at,
+      r.ph_eligibility ?? (r.is_active ? "eligible_likely" : "ineligible"),
+      r.inactive_reason ?? null,
+    );
+  }
   const insEvt = db.prepare(
     `INSERT INTO source_fetch_events (source_id, ok, skipped, count, timestamp, not_modified) VALUES (?, ?, ?, ?, ?, ?)`,
   );
@@ -149,6 +163,14 @@ describe("SP-02 source economics", () => {
     // Reserved diagnostic id and the out-of-window RWFA event are excluded.
     expect(byId["__scrape_run_lock__"]).toBeUndefined();
     expect(byId["real-work-from-anywhere"]).toBeUndefined();
+  });
+
+  test("triage_outcomes_7d groups stored opportunities by source and eligibility", () => {
+    const byId = Object.fromEntries(byName["triage_outcomes_7d"].map((r) => [r["source_id"], r]));
+    expect(byId["we-work-remotely"]).toMatchObject({ eligible: 1, unclear: 0, ineligible: 0, total_stored: 1 });
+    expect(byId["real-work-from-anywhere"]).toMatchObject({ eligible: 1, total_stored: 1 });
+    expect(byId["jobicy-admin-support-apac"]).toMatchObject({ eligible: 1, total_stored: 1 });
+    expect(byId["jobicy-supporting-apac"]).toMatchObject({ eligible: 1, total_stored: 1 });
   });
 
   test("reconcile: every partition delta is zero and the unknown-id gap is flagged", () => {
@@ -248,4 +270,18 @@ describe("SP-02 source economics", () => {
     expect(sql).toContain(String(WINDOWS.cut30));
     expect(sql).not.toContain("'now'");
   });
+});
+
+test("qualified supply excludes unclear, inactive, and future first-stored rows", () => {
+  const sqlite = new Database(":memory:");
+  sqlite.exec(OPP_DDL);
+  const insert = sqlite.prepare("INSERT INTO opportunities(title,source_platform,is_active,scraped_at,ph_eligibility) VALUES ('role','feed',?,?,?)");
+  insert.run(1, '2026-08-28', 'eligible_verified');
+  insert.run(1, '2026-08-20', 'eligible_likely');
+  insert.run(1, '2026-08-28', 'unclear');
+  insert.run(0, '2026-08-28', 'eligible_verified');
+  insert.run(1, '2026-09-01', 'eligible_verified');
+  const query = ECONOMICS_QUERIES.find(q => q.name === "qualified_supply")!;
+  expect(sqlite.query(query.sql(WINDOWS)).get()).toEqual({ qualified_active: 2, qualified_new_7d: 1, qualified_new_30d: 2 });
+  sqlite.close();
 });

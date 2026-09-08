@@ -1,0 +1,532 @@
+{
+  "meta": {
+    "unit": "SP-02",
+    "asOf": "2026-09-08T09:59:29.962Z",
+    "cut7Unix": 1788256769,
+    "cut14Unix": 1787651969,
+    "cut30Unix": 1786269569,
+    "queryOrder": [
+      "qualified_supply",
+      "identity_coverage",
+      "supply_totals",
+      "source_supply",
+      "fetch_outcomes_7d",
+      "triage_outcomes_7d"
+    ]
+  },
+  "byName": {
+    "qualified_supply": [
+      {
+        "qualified_active": 832,
+        "qualified_new_7d": 89,
+        "qualified_new_30d": 487
+      }
+    ],
+    "identity_coverage": [
+      {
+        "total": 5254,
+        "active": 1126,
+        "inactive": 4128,
+        "with_source_id": 179,
+        "null_source_id": 5075,
+        "active_with_source_id": 125,
+        "active_null_source_id": 1001
+      }
+    ],
+    "supply_totals": [
+      {
+        "active": 1126,
+        "net_new_7d": 90,
+        "net_new_14d": 217,
+        "net_new_30d": 538
+      }
+    ],
+    "source_supply": [
+      {
+        "source_id": "(unknown)",
+        "source_platform": "20Four7VA",
+        "active": 1001,
+        "net_new_7d": 0,
+        "net_new_14d": 92,
+        "net_new_30d": 413,
+        "inactive": 4074
+      },
+      {
+        "source_id": "we-work-remotely",
+        "source_platform": "WeWorkRemotely",
+        "active": 73,
+        "net_new_7d": 53,
+        "net_new_14d": 73,
+        "net_new_30d": 73,
+        "inactive": 12
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "source_platform": "RealWorkFromAnywhere",
+        "active": 34,
+        "net_new_7d": 26,
+        "net_new_14d": 34,
+        "net_new_30d": 34,
+        "inactive": 3
+      },
+      {
+        "source_id": "remote-ok",
+        "source_platform": "RemoteOK",
+        "active": 10,
+        "net_new_7d": 6,
+        "net_new_14d": 10,
+        "net_new_30d": 10,
+        "inactive": 31
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "source_platform": "Jobicy",
+        "active": 8,
+        "net_new_7d": 5,
+        "net_new_14d": 8,
+        "net_new_30d": 8,
+        "inactive": 1
+      },
+      {
+        "source_id": "remotive",
+        "source_platform": "Remotive",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 7
+      }
+    ],
+    "fetch_outcomes_7d": [
+      {
+        "source_id": "remotive",
+        "real_fetches": 127,
+        "unchanged": 565,
+        "skips": 0,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 2366
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "real_fetches": 112,
+        "unchanged": 0,
+        "skips": 578,
+        "failures": 2,
+        "zero_yield": 0,
+        "items": 5600
+      },
+      {
+        "source_id": "remote-ok",
+        "real_fetches": 51,
+        "unchanged": 62,
+        "skips": 578,
+        "failures": 1,
+        "zero_yield": 0,
+        "items": 1004
+      },
+      {
+        "source_id": "we-work-remotely",
+        "real_fetches": 46,
+        "unchanged": 645,
+        "skips": 0,
+        "failures": 1,
+        "zero_yield": 0,
+        "items": 4195
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "real_fetches": 21,
+        "unchanged": 88,
+        "skips": 583,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 840
+      },
+      {
+        "source_id": "jobicy-admin-support-apac",
+        "real_fetches": 3,
+        "unchanged": 107,
+        "skips": 582,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 17
+      },
+      {
+        "source_id": "ashby:amplify",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:ashby",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:camunda",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:supabase",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "ashby:tremendous",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "authentic-jobs",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 1384,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "breezy:time-etc",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "breezy:vaaphilippines-recruitment",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "dribbble",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "greenhouse:ghost",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "greenhouse:gitlab",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "greenhouse:nearform",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "greenhouse:remotecom",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "jobspresso",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "lever:vaultoutsourcing",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "onlinejobs-ph",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "problogger",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "remote-co",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:coconutva",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:connectos",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 692,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:crewbloom",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:global-strategic",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:hello-rache",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:hunt-st",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:myoutdesk",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:outsource-access",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:pearltalent",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:pineapple-staffing",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:rocketams",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:staff-domain-inc",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 691,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:superstaff",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 690,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      },
+      {
+        "source_id": "workable:virtualstaff365",
+        "real_fetches": 0,
+        "unchanged": 0,
+        "skips": 690,
+        "failures": 0,
+        "zero_yield": 0,
+        "items": 0
+      }
+    ],
+    "triage_outcomes_7d": [
+      {
+        "source_id": "we-work-remotely",
+        "eligible": 52,
+        "unclear": 3,
+        "ineligible": 8,
+        "policy_rejected": 10,
+        "total_stored": 63
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "eligible": 26,
+        "unclear": 1,
+        "ineligible": 0,
+        "policy_rejected": 1,
+        "total_stored": 27
+      },
+      {
+        "source_id": "remote-ok",
+        "eligible": 6,
+        "unclear": 6,
+        "ineligible": 15,
+        "policy_rejected": 21,
+        "total_stored": 27
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "eligible": 5,
+        "unclear": 1,
+        "ineligible": 0,
+        "policy_rejected": 1,
+        "total_stored": 6
+      },
+      {
+        "source_id": "remotive",
+        "eligible": 0,
+        "unclear": 0,
+        "ineligible": 6,
+        "policy_rejected": 6,
+        "total_stored": 6
+      }
+    ]
+  },
+  "reconciliation": {
+    "ok": true,
+    "deltas": {
+      "total_vs_active_plus_inactive": 0,
+      "total_vs_with_plus_null_source_id": 0,
+      "active_vs_active_with_plus_null_source_id": 0,
+      "supply_totals_active_vs_identity": 0,
+      "source_active_sum_vs_active": 0,
+      "source_inactive_sum_vs_inactive": 0,
+      "source_net7_sum_vs_totals": 0,
+      "source_net14_sum_vs_totals": 0,
+      "source_net30_sum_vs_totals": 0,
+      "triage_stored_sum_vs_outcomes": 0
+    },
+    "notes": [
+      "1001 active rows still have no source_id (legacy, pre-migration 0034). They are attributed to '(unknown)' and excluded from provider concentration; a separately reviewed read-only-first backfill may resolve them."
+    ]
+  }
+}
