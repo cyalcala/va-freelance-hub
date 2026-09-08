@@ -1,1 +1,13 @@
-{"providerId":"teamtailor","expectedProviderRevision":1,"expectedEvidenceIds":{"teamtailor:career.teamtailor.com":3},"reviewedContentHashes":{"https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide":"60a75b9478b477a48bdcbe63600d42a5427da6d52a23ad2e32e35dfe8709271e"},"adjudicationRef":"apex-audit-2026-09-08-primary-renewal","published":0,"note":"Read the primary documents and record the semantic decision before submitting renew; preview performs no writes."}
+{
+  "providerId": "teamtailor",
+  "expectedProviderRevision": 1,
+  "expectedEvidenceIds": {
+    "teamtailor:career.teamtailor.com": 3
+  },
+  "reviewedContentHashes": {
+    "https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide": "ac78d16e06d1eae6f0da138bde040586db0a6216464c3cb0480816afe42dda26"
+  },
+  "adjudicationRef": "apex-audit-2026-09-08-primary-renewal",
+  "published": 0,
+  "note": "Read the primary documents and record the semantic decision before submitting renew; preview performs no writes."
+}

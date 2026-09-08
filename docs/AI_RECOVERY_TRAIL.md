@@ -6,10 +6,10 @@ Current truth is in [execution state](APEX_10X_EXECUTION_STATE.md) and
 [audit evidence](gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md). September 7
 Wave 0–8 completion/admission claims below were branch-local, not production.
 Start main 727ca4a06dda26b9dcddddf5824238cfdd5ce137; repairs are on
-codex/apex-audit-repair. PR #134 failed CI; duplicate exports are repaired.
+the accepted PR135–139 release chain. PR134 duplicate exports are repaired.
 Geo restrictions, shift fabrication, shadow health/clock, Workable validation,
 primary evidence, and shared-provider orphan bugs are repaired with tests.
-Three live shadow identities remain; six new allowlist entries are not admitted.
+Five live shadows now exist; GitLab and Remote.com were truly admitted. Greenhouse/Recruitee evidence renewed September8; old epochs do not qualify.
 Strict qualified first-stored baseline is 89/7 = 12.71/day, not 8.5/day.
 No source promotion or 10x success is claimed. Final CI/release evidence is
 recorded in the current audit; do not replay historical next actions below.
@@ -327,3 +327,4 @@ When the user asks to stop, pause, or only back up progress:
    `docs/SYSTEM_SAVEPOINT.md` with the exact pause point.
 5. Commit, push, and watch CI for the docs-only recovery checkpoint.
 6. Record the checkpoint evidence before ending the turn.
+
