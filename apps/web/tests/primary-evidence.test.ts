@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { fetchPrimaryEvidence } from "../src/lib/primary-evidence";
 
 test("captures actual UTF-8 primary content with bounded request options", async () => {
-  const mock = (async (_url, options) => {
+  const mock = (async (_url: unknown, options?: RequestInit) => {
     expect(options?.redirect).toBe("manual");
     expect(options?.signal).toBeDefined();
     return new Response("Primary documentation: café");
@@ -25,5 +25,6 @@ test("rejects redirects without fetching the destination", async () => {
   await expect(fetchPrimaryEvidence("https://example.com/docs", mock)).rejects.toThrow("HTTP 302");
   expect(calls).toBe(1);
 });
+
 
 
