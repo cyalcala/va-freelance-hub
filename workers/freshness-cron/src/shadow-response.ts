@@ -19,7 +19,7 @@ export function assessShadowResponse(body: string): string {
     }
     total += count as number;
   }
-  if (total !== value.dispatched || value.dispatched + value.skippedRunCap !== value.eligible) {
+  if (total !== value.dispatched || value.dispatched !== value.eligible) {
     throw new Error("Shadow dispatch counts do not reconcile");
   }
   return `shadow dispatched=${value.dispatched}, eligible=${value.eligible}`;

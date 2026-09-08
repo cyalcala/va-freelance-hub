@@ -74,6 +74,20 @@ const SCRAPED_EPOCH = "unixepoch(scraped_at)";
  */
 export const ECONOMICS_QUERIES: EconQuery[] = [
   {
+    name: "qualified_supply",
+    shape: "single",
+    // Separate the strict qualified KPI from the older active-row inventory,
+    // which also contains unclear eligibility. First-stored is a publication
+    // proxy; do not describe it as a complete historical publication ledger.
+    sql: (w) => `SELECT
+  COUNT(*) AS qualified_active,
+  SUM(CASE WHEN ${SCRAPED_EPOCH} >= ${w.cut7} THEN 1 ELSE 0 END) AS qualified_new_7d,
+  SUM(CASE WHEN ${SCRAPED_EPOCH} >= ${w.cut30} THEN 1 ELSE 0 END) AS qualified_new_30d
+FROM opportunities
+WHERE is_active = 1 AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+  AND ${SCRAPED_EPOCH} <= ${Math.floor(w.asOf.getTime() / 1000)};`,
+  },
+  {
     name: "identity_coverage",
     shape: "single",
     sql: () => `SELECT
@@ -422,6 +436,13 @@ export function renderReport(byName: Record<string, Row[]>, meta: EconMeta): str
   lines.push(`- Read-only report; regenerate with \`scripts/diagnostics/source-economics.ts\`.`);
   lines.push("");
 
+  const qualified = byName["qualified_supply"]?.[0];
+  if (qualified) {
+    lines.push("## Qualified supply (strict eligibility; first-stored proxy)", "");
+    lines.push("Excludes unclear/ineligible rows. Historical publication and later deactivation are not fully reconstructed.", "");
+    lines.push("| qualified active | qualified new 7d | per day (7d) | qualified new 30d | per day (30d) |", "| ---: | ---: | ---: | ---: | ---: |");
+    lines.push(`| ${num(qualified.qualified_active)} | ${num(qualified.qualified_new_7d)} | ${(num(qualified.qualified_new_7d) / 7).toFixed(2)} | ${num(qualified.qualified_new_30d)} | ${(num(qualified.qualified_new_30d) / 30).toFixed(2)} |`, "");
+  }
   lines.push(`## Identity coverage (SP-01)`);
   lines.push("");
   lines.push(`| total | with source_id | null source_id | coverage | active null-id |`);

@@ -271,3 +271,17 @@ describe("SP-02 source economics", () => {
     expect(sql).not.toContain("'now'");
   });
 });
+
+test("qualified supply excludes unclear, inactive, and future first-stored rows", () => {
+  const sqlite = new Database(":memory:");
+  sqlite.exec(OPP_DDL);
+  const insert = sqlite.prepare("INSERT INTO opportunities(title,source_platform,is_active,scraped_at,ph_eligibility) VALUES ('role','feed',?,?,?)");
+  insert.run(1, '2026-08-28', 'eligible_verified');
+  insert.run(1, '2026-08-20', 'eligible_likely');
+  insert.run(1, '2026-08-28', 'unclear');
+  insert.run(0, '2026-08-28', 'eligible_verified');
+  insert.run(1, '2026-09-01', 'eligible_verified');
+  const query = ECONOMICS_QUERIES.find(q => q.name === "qualified_supply")!;
+  expect(sqlite.query(query.sql(WINDOWS)).get()).toEqual({ qualified_active: 2, qualified_new_7d: 1, qualified_new_30d: 2 });
+  sqlite.close();
+});
