@@ -9,12 +9,14 @@
 // this Worker and the GitHub Hunter to both trigger it — overlaps are deduped.
 
 import { assessSuccessfulScrapeResponse } from "./scrape-response";
+import { assessShadowResponse } from "./shadow-response";
 
 export interface Env {
   // Set once with: wrangler secret put PROXY_SECRET (in this Worker's dir).
   PROXY_SECRET: string;
   // Configured in wrangler.toml [vars].
   SCRAPE_URL: string;
+  SHADOW_DISPATCH_URL?: string;
 }
 
 // Length-independent comparison so a timing side-channel cannot leak the secret
@@ -47,8 +49,13 @@ export async function ping(env: Env): Promise<void> {
 
 export default {
   // Scheduled (cron) entrypoint.
-  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     ctx.waitUntil(ping(env));
+    // Independent promise: a scrape failure cannot suppress shadow observations.
+    // Once per hour, using scheduled time rather than delayed execution time.
+    if (env.SHADOW_DISPATCH_URL && new Date(event.scheduledTime).getUTCMinutes() === 20) {
+      ctx.waitUntil(pingShadow(env));
+    }
   },
   // Manual trigger for testing, AUTHENTICATED. Previously this handler ignored
   // the request entirely and fired a full scrape for anyone who found the URL —
@@ -70,3 +77,14 @@ export default {
     }
   },
 };
+
+export async function pingShadow(env: Env): Promise<void> {
+  if (!env.PROXY_SECRET || !env.SHADOW_DISPATCH_URL) throw new Error("Shadow clock is not configured");
+  const response = await fetch(env.SHADOW_DISPATCH_URL, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${env.PROXY_SECRET}`, "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!response.ok) throw new Error(`shadow endpoint returned HTTP ${response.status}`);
+  console.log(`[freshness-cron] ${assessShadowResponse(await response.text())}`);
+}

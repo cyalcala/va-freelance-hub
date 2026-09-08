@@ -16,6 +16,7 @@ crons = ["*/10 * * * *"]
 
 [vars]
 SCRAPE_URL = "https://remotejobs-ph.pages.dev/api/cron/scrape"
+SHADOW_DISPATCH_URL = "https://remotejobs-ph.pages.dev/api/cron/shadow-dispatch"
 
 # PROXY_SECRET is a Worker SECRET (not a var). Set it once, in this directory:
 #   npx wrangler secret put PROXY_SECRET
