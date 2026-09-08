@@ -6,8 +6,8 @@ import {
   WORKABLE_USER_AGENT_TOKEN,
 } from "./workable-preprocessor";
 
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
-import { join } from "path";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync, readdirSync } from "fs";
+import { join, dirname } from "path";
 import { tmpdir } from "os";
 const tempDirectories: string[] = [];
 function temporaryOutput(): string {
@@ -75,7 +75,7 @@ describe("Workable Preprocessor (EX-09)", () => {
     expect(report).toContain("OFFLINE_PREPROCESSED");
     expect(report).toContain("Total Parsed Postings");
     expect(report).toContain("Virtual Assistant / Operations Specialist");
-    expect(report).toContain("Preserves $0 infrastructure budget");
+    expect(report).toContain("No new paid service; billing has not been independently measured.");
   });
 
   test("runPreprocessor executes with mock fetch without D1 writes", async () => {
@@ -96,7 +96,7 @@ describe("Workable Preprocessor (EX-09)", () => {
       await expect(runPreprocessor({ outputPath, fetchImpl: allowedRobotsThenFeed(body) })).rejects.toThrow();
       expect(readFileSync(outputPath, "utf8")).toBe("last healthy digest");
     }
-  });
+  }, 30_000);
 
   test("missing explicit fixtures never fall back to a network fetch", async () => {
     let fetched = false;
@@ -173,6 +173,50 @@ describe("Workable Preprocessor (EX-09)", () => {
     const result = await runPreprocessor({ xmlSource, outputPath: temporaryOutput(), fetchImpl: (async () => { requests++; throw new Error("Unexpected network access"); }) as unknown as typeof fetch });
     expect(requests).toBe(0);
     expect(result.stats.totalParsed).toBe(3);
+  });
+
+  test("streams beyond the old 128 MiB ceiling and discards descriptions before loading metadata", async () => {
+    const outputPath = temporaryOutput();
+    const tempRoot = dirname(outputPath);
+    const [first, ...rest] = SAMPLE_XML.split("</job>");
+    const encoder = new TextEncoder();
+    const prefix = encoder.encode(`${first}<description><![CDATA[`);
+    const suffix = encoder.encode(`]]></description></job>${rest.join("</job>")}`);
+    const chunk = new Uint8Array(1024 * 1024).fill(120);
+    let part = 0;
+    const result = await runPreprocessor({ outputPath, tempRoot, timeoutMs: 60_000,
+      fetchImpl: (async (input: RequestInfo | URL) => {
+        if (String(input).endsWith("/robots.txt")) return new Response("User-agent: *\nAllow: /");
+        const response = new Response(new ReadableStream<Uint8Array>({ pull(controller) {
+          if (part === 0) controller.enqueue(prefix);
+          else if (part <= 132) controller.enqueue(chunk);
+          else { controller.enqueue(suffix); controller.close(); }
+          part++;
+        } }));
+        response.text = async () => { throw new Error("Must not buffer the raw XML with Response.text"); };
+        return response;
+      }) as typeof fetch,
+    });
+    expect(result.stats.totalParsed).toBe(3);
+    expect(result.stats.plausibleCandidates).toBe(2);
+    expect(readFileSync(outputPath, "utf8")).not.toContain("xxxxxxxxxx");
+    expect(readdirSync(tempRoot)).toEqual(["digest.md"]);
+  }, 30_000);
+
+  test("streaming schema failures, size failures, and timeouts remove temporary downloads", async () => {
+    const outputPath = temporaryOutput();
+    const tempRoot = dirname(outputPath);
+    writeFileSync(outputPath, "previous healthy digest");
+    for (const options of [
+      { fetchImpl: allowedRobotsThenFeed(SAMPLE_XML.replace("</source>", "")) },
+      { maxBytes: 32, fetchImpl: allowedRobotsThenFeed(SAMPLE_XML) },
+      { timeoutMs: 10, fetchImpl: (async (input: RequestInfo | URL) => String(input).endsWith("/robots.txt")
+        ? new Response("User-agent: *\nAllow: /") : new Response(new ReadableStream({ start() {} }))) as typeof fetch },
+    ]) {
+      await expect(runPreprocessor({ outputPath, tempRoot, ...options })).rejects.toThrow();
+      expect(readdirSync(tempRoot)).toEqual(["digest.md"]);
+      expect(readFileSync(outputPath, "utf8")).toBe("previous healthy digest");
+    }
   });
 
   test("deduplicates original URLs before candidate counts and samples", () => {
