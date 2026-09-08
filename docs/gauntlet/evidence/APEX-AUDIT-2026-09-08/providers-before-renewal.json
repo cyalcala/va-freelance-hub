@@ -1,0 +1,45 @@
+[
+  {
+    "results": [
+      {
+        "id": "greenhouse",
+        "evidence_url": "https://docs.greenhouse.io/job-board.html",
+        "evidence_hash": "8db50e156f91bd0e2fe1f2d9739117efa3327d211c0de1d5e91706524ac5ba7a",
+        "evidence_captured_at": "2026-09-06T08:40:58.949Z",
+        "governance_revision": 2
+      },
+      {
+        "id": "recruitee",
+        "evidence_url": "https://docs.recruitee.com/docs/feed",
+        "evidence_hash": "63a2ba4441256f61a34ccf0493ab535c0646f2e679eadc4d5c14c533e5fd7d8f",
+        "evidence_captured_at": "2026-09-06T08:57:26.369Z",
+        "governance_revision": 1
+      },
+      {
+        "id": "teamtailor",
+        "evidence_url": "https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide",
+        "evidence_hash": "6be57cdbda4355c3565c310d04faa71f4288b1ec3f84623ec633c3766263c6f6",
+        "evidence_captured_at": "2026-09-06T09:02:42.125Z",
+        "governance_revision": 1
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.1424
+      },
+      "duration": 0.1424,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 73891840,
+      "rows_read": 3,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

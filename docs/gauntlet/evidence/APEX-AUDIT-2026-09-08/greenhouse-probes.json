@@ -1,0 +1,658 @@
+[
+  {
+    "version": "1.1.0",
+    "timestamp": "2026-09-08T10:35:29.573Z",
+    "sourceId": "greenhouse:gitlab",
+    "providerId": "greenhouse",
+    "displayName": "gitlab",
+    "endpoint": {
+      "url": "https://boards-api.greenhouse.io/v1/boards/gitlab/jobs",
+      "isHttps": true,
+      "host": "boards-api.greenhouse.io",
+      "allowedHosts": "boards-api.greenhouse.io,boards.greenhouse.io",
+      "hostValid": true
+    },
+    "auth": {
+      "class": "none",
+      "supported": true
+    },
+    "visibility": {
+      "filter": "published",
+      "isPublic": true,
+      "ambiguous": false
+    },
+    "provenance": {
+      "discoveryProvenance": "{\"companyName\":\"gitlab\",\"token\":\"gitlab\",\"decidedAt\":\"2026-09-08T10:35:29.572Z\",\"provenance\":\"sp-12-curated-board\",\"complianceBasis\":\"documented public/no-auth Job Board GET (docs.greenhouse.io/job-board.html); minimal-metadata conditional decision per Source Perpetuity strategy operating posture\"}",
+      "evidenceUrl": "https://docs.greenhouse.io/job-board.html",
+      "providerFamily": "greenhouse",
+      "mechanism": "ats_api"
+    },
+    "cadence": {
+      "minMinutes": 60,
+      "maxMinutes": 1440,
+      "rateGuidance": "Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+    },
+    "robots": {
+      "checked": true,
+      "verdict": "allowed",
+      "wouldBlock": false,
+      "evidence": "No matching rule for /v1/boards/gitlab/jobs; default allow",
+      "fromCache": false
+    },
+    "fetch": {
+      "attempted": true,
+      "status": 200,
+      "latencyMs": 236,
+      "bytesReceived": 159246,
+      "contentType": "application/json"
+    },
+    "parse": {
+      "attempted": true,
+      "schemaHealth": "ok",
+      "itemCount": 200
+    },
+    "sampleFunnel": {
+      "bytesReceived": 159246,
+      "parsedItems": 200,
+      "plausibleItems": 200,
+      "truncated": true,
+      "budgetExceeded": false
+    },
+    "diagnostic": {
+      "outcome": "HEALTHY_WITH_RESULTS",
+      "probes": [
+        {
+          "name": "endpoint",
+          "passed": true,
+          "detail": "url=https://boards-api.greenhouse.io/v1/boards/gitlab/jobs https=true host=boards-api.greenhouse.io allowed=boards-api.greenhouse.io,boards.greenhouse.io valid=true"
+        },
+        {
+          "name": "auth",
+          "passed": true,
+          "detail": "authClass=none supported=true"
+        },
+        {
+          "name": "visibility",
+          "passed": true,
+          "detail": "filter=published public=true ambiguous=false"
+        },
+        {
+          "name": "provenance",
+          "passed": true,
+          "detail": "provider=greenhouse mechanism=ats_api evidence=https://docs.greenhouse.io/job-board.html discovery=present"
+        },
+        {
+          "name": "cadence",
+          "passed": true,
+          "detail": "min=60 max=1440 rate=Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+        },
+        {
+          "name": "robots",
+          "passed": true,
+          "detail": "verdict=allowed wouldBlock=false evidence=No matching rule for /v1/boards/gitlab/jobs; default allow"
+        },
+        {
+          "name": "fetch",
+          "passed": true,
+          "detail": "HTTP 200 159246 bytes 236ms ct=application/json"
+        },
+        {
+          "name": "parse",
+          "passed": true,
+          "detail": "200 items (200 plausible) schema ok"
+        }
+      ],
+      "requestCount": 2,
+      "bytesReceived": 159246,
+      "durationMs": 761,
+      "mutations": 0,
+      "shadowMode": true
+    }
+  },
+  {
+    "version": "1.1.0",
+    "timestamp": "2026-09-08T10:35:30.334Z",
+    "sourceId": "greenhouse:remotecom",
+    "providerId": "greenhouse",
+    "displayName": "remotecom",
+    "endpoint": {
+      "url": "https://boards-api.greenhouse.io/v1/boards/remotecom/jobs",
+      "isHttps": true,
+      "host": "boards-api.greenhouse.io",
+      "allowedHosts": "boards-api.greenhouse.io,boards.greenhouse.io",
+      "hostValid": true
+    },
+    "auth": {
+      "class": "none",
+      "supported": true
+    },
+    "visibility": {
+      "filter": "published",
+      "isPublic": true,
+      "ambiguous": false
+    },
+    "provenance": {
+      "discoveryProvenance": "{\"companyName\":\"remotecom\",\"token\":\"remotecom\",\"decidedAt\":\"2026-09-08T10:35:30.334Z\",\"provenance\":\"sp-12-curated-board\",\"complianceBasis\":\"documented public/no-auth Job Board GET (docs.greenhouse.io/job-board.html); minimal-metadata conditional decision per Source Perpetuity strategy operating posture\"}",
+      "evidenceUrl": "https://docs.greenhouse.io/job-board.html",
+      "providerFamily": "greenhouse",
+      "mechanism": "ats_api"
+    },
+    "cadence": {
+      "minMinutes": 60,
+      "maxMinutes": 1440,
+      "rateGuidance": "Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+    },
+    "robots": {
+      "checked": true,
+      "verdict": "allowed",
+      "wouldBlock": false,
+      "evidence": "No matching rule for /v1/boards/remotecom/jobs; default allow",
+      "fromCache": false
+    },
+    "fetch": {
+      "attempted": true,
+      "status": 200,
+      "latencyMs": 243,
+      "bytesReceived": 172430,
+      "contentType": "application/json"
+    },
+    "parse": {
+      "attempted": true,
+      "schemaHealth": "ok",
+      "itemCount": 194
+    },
+    "sampleFunnel": {
+      "bytesReceived": 172430,
+      "parsedItems": 194,
+      "plausibleItems": 194,
+      "truncated": false,
+      "budgetExceeded": false
+    },
+    "diagnostic": {
+      "outcome": "HEALTHY_WITH_RESULTS",
+      "probes": [
+        {
+          "name": "endpoint",
+          "passed": true,
+          "detail": "url=https://boards-api.greenhouse.io/v1/boards/remotecom/jobs https=true host=boards-api.greenhouse.io allowed=boards-api.greenhouse.io,boards.greenhouse.io valid=true"
+        },
+        {
+          "name": "auth",
+          "passed": true,
+          "detail": "authClass=none supported=true"
+        },
+        {
+          "name": "visibility",
+          "passed": true,
+          "detail": "filter=published public=true ambiguous=false"
+        },
+        {
+          "name": "provenance",
+          "passed": true,
+          "detail": "provider=greenhouse mechanism=ats_api evidence=https://docs.greenhouse.io/job-board.html discovery=present"
+        },
+        {
+          "name": "cadence",
+          "passed": true,
+          "detail": "min=60 max=1440 rate=Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+        },
+        {
+          "name": "robots",
+          "passed": true,
+          "detail": "verdict=allowed wouldBlock=false evidence=No matching rule for /v1/boards/remotecom/jobs; default allow"
+        },
+        {
+          "name": "fetch",
+          "passed": true,
+          "detail": "HTTP 200 172430 bytes 243ms ct=application/json"
+        },
+        {
+          "name": "parse",
+          "passed": true,
+          "detail": "194 items (194 plausible) schema ok"
+        }
+      ],
+      "requestCount": 2,
+      "bytesReceived": 172430,
+      "durationMs": 814,
+      "mutations": 0,
+      "shadowMode": true
+    }
+  },
+  {
+    "version": "1.1.0",
+    "timestamp": "2026-09-08T10:35:31.148Z",
+    "sourceId": "greenhouse:nearform",
+    "providerId": "greenhouse",
+    "displayName": "nearform",
+    "endpoint": {
+      "url": "https://boards-api.greenhouse.io/v1/boards/nearform/jobs",
+      "isHttps": true,
+      "host": "boards-api.greenhouse.io",
+      "allowedHosts": "boards-api.greenhouse.io,boards.greenhouse.io",
+      "hostValid": true
+    },
+    "auth": {
+      "class": "none",
+      "supported": true
+    },
+    "visibility": {
+      "filter": "published",
+      "isPublic": true,
+      "ambiguous": false
+    },
+    "provenance": {
+      "discoveryProvenance": "{\"companyName\":\"nearform\",\"token\":\"nearform\",\"decidedAt\":\"2026-09-08T10:35:31.148Z\",\"provenance\":\"sp-12-curated-board\",\"complianceBasis\":\"documented public/no-auth Job Board GET (docs.greenhouse.io/job-board.html); minimal-metadata conditional decision per Source Perpetuity strategy operating posture\"}",
+      "evidenceUrl": "https://docs.greenhouse.io/job-board.html",
+      "providerFamily": "greenhouse",
+      "mechanism": "ats_api"
+    },
+    "cadence": {
+      "minMinutes": 60,
+      "maxMinutes": 1440,
+      "rateGuidance": "Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+    },
+    "robots": {
+      "checked": true,
+      "verdict": "allowed",
+      "wouldBlock": false,
+      "evidence": "No matching rule for /v1/boards/nearform/jobs; default allow",
+      "fromCache": false
+    },
+    "fetch": {
+      "attempted": true,
+      "status": 200,
+      "latencyMs": 233,
+      "bytesReceived": 25170,
+      "contentType": "application/json"
+    },
+    "parse": {
+      "attempted": true,
+      "schemaHealth": "ok",
+      "itemCount": 33
+    },
+    "sampleFunnel": {
+      "bytesReceived": 25170,
+      "parsedItems": 33,
+      "plausibleItems": 33,
+      "truncated": false,
+      "budgetExceeded": false
+    },
+    "diagnostic": {
+      "outcome": "HEALTHY_WITH_RESULTS",
+      "probes": [
+        {
+          "name": "endpoint",
+          "passed": true,
+          "detail": "url=https://boards-api.greenhouse.io/v1/boards/nearform/jobs https=true host=boards-api.greenhouse.io allowed=boards-api.greenhouse.io,boards.greenhouse.io valid=true"
+        },
+        {
+          "name": "auth",
+          "passed": true,
+          "detail": "authClass=none supported=true"
+        },
+        {
+          "name": "visibility",
+          "passed": true,
+          "detail": "filter=published public=true ambiguous=false"
+        },
+        {
+          "name": "provenance",
+          "passed": true,
+          "detail": "provider=greenhouse mechanism=ats_api evidence=https://docs.greenhouse.io/job-board.html discovery=present"
+        },
+        {
+          "name": "cadence",
+          "passed": true,
+          "detail": "min=60 max=1440 rate=Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+        },
+        {
+          "name": "robots",
+          "passed": true,
+          "detail": "verdict=allowed wouldBlock=false evidence=No matching rule for /v1/boards/nearform/jobs; default allow"
+        },
+        {
+          "name": "fetch",
+          "passed": true,
+          "detail": "HTTP 200 25170 bytes 233ms ct=application/json"
+        },
+        {
+          "name": "parse",
+          "passed": true,
+          "detail": "33 items (33 plausible) schema ok"
+        }
+      ],
+      "requestCount": 2,
+      "bytesReceived": 25170,
+      "durationMs": 530,
+      "mutations": 0,
+      "shadowMode": true
+    }
+  },
+  {
+    "version": "1.1.0",
+    "timestamp": "2026-09-08T10:35:31.679Z",
+    "sourceId": "greenhouse:ghost",
+    "providerId": "greenhouse",
+    "displayName": "ghost",
+    "endpoint": {
+      "url": "https://boards-api.greenhouse.io/v1/boards/ghost/jobs",
+      "isHttps": true,
+      "host": "boards-api.greenhouse.io",
+      "allowedHosts": "boards-api.greenhouse.io,boards.greenhouse.io",
+      "hostValid": true
+    },
+    "auth": {
+      "class": "none",
+      "supported": true
+    },
+    "visibility": {
+      "filter": "published",
+      "isPublic": true,
+      "ambiguous": false
+    },
+    "provenance": {
+      "discoveryProvenance": "{\"companyName\":\"ghost\",\"token\":\"ghost\",\"decidedAt\":\"2026-09-08T10:35:31.679Z\",\"provenance\":\"sp-12-curated-board\",\"complianceBasis\":\"documented public/no-auth Job Board GET (docs.greenhouse.io/job-board.html); minimal-metadata conditional decision per Source Perpetuity strategy operating posture\"}",
+      "evidenceUrl": "https://docs.greenhouse.io/job-board.html",
+      "providerFamily": "greenhouse",
+      "mechanism": "ats_api"
+    },
+    "cadence": {
+      "minMinutes": 60,
+      "maxMinutes": 1440,
+      "rateGuidance": "Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+    },
+    "robots": {
+      "checked": true,
+      "verdict": "allowed",
+      "wouldBlock": false,
+      "evidence": "No matching rule for /v1/boards/ghost/jobs; default allow",
+      "fromCache": false
+    },
+    "fetch": {
+      "attempted": true,
+      "status": 200,
+      "latencyMs": 234,
+      "bytesReceived": 2340,
+      "contentType": "application/json"
+    },
+    "parse": {
+      "attempted": true,
+      "schemaHealth": "ok",
+      "itemCount": 4
+    },
+    "sampleFunnel": {
+      "bytesReceived": 2340,
+      "parsedItems": 4,
+      "plausibleItems": 4,
+      "truncated": false,
+      "budgetExceeded": false
+    },
+    "diagnostic": {
+      "outcome": "HEALTHY_WITH_RESULTS",
+      "probes": [
+        {
+          "name": "endpoint",
+          "passed": true,
+          "detail": "url=https://boards-api.greenhouse.io/v1/boards/ghost/jobs https=true host=boards-api.greenhouse.io allowed=boards-api.greenhouse.io,boards.greenhouse.io valid=true"
+        },
+        {
+          "name": "auth",
+          "passed": true,
+          "detail": "authClass=none supported=true"
+        },
+        {
+          "name": "visibility",
+          "passed": true,
+          "detail": "filter=published public=true ambiguous=false"
+        },
+        {
+          "name": "provenance",
+          "passed": true,
+          "detail": "provider=greenhouse mechanism=ats_api evidence=https://docs.greenhouse.io/job-board.html discovery=present"
+        },
+        {
+          "name": "cadence",
+          "passed": true,
+          "detail": "min=60 max=1440 rate=Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+        },
+        {
+          "name": "robots",
+          "passed": true,
+          "detail": "verdict=allowed wouldBlock=false evidence=No matching rule for /v1/boards/ghost/jobs; default allow"
+        },
+        {
+          "name": "fetch",
+          "passed": true,
+          "detail": "HTTP 200 2340 bytes 234ms ct=application/json"
+        },
+        {
+          "name": "parse",
+          "passed": true,
+          "detail": "4 items (4 plausible) schema ok"
+        }
+      ],
+      "requestCount": 2,
+      "bytesReceived": 2340,
+      "durationMs": 459,
+      "mutations": 0,
+      "shadowMode": true
+    }
+  },
+  {
+    "version": "1.1.0",
+    "timestamp": "2026-09-08T10:35:32.139Z",
+    "sourceId": "greenhouse:canonical",
+    "providerId": "greenhouse",
+    "displayName": "canonical",
+    "endpoint": {
+      "url": "https://boards-api.greenhouse.io/v1/boards/canonical/jobs",
+      "isHttps": true,
+      "host": "boards-api.greenhouse.io",
+      "allowedHosts": "boards-api.greenhouse.io,boards.greenhouse.io",
+      "hostValid": true
+    },
+    "auth": {
+      "class": "none",
+      "supported": true
+    },
+    "visibility": {
+      "filter": "published",
+      "isPublic": true,
+      "ambiguous": false
+    },
+    "provenance": {
+      "discoveryProvenance": "{\"companyName\":\"canonical\",\"token\":\"canonical\",\"decidedAt\":\"2026-09-08T10:35:32.138Z\",\"provenance\":\"sp-12-curated-board\",\"complianceBasis\":\"documented public/no-auth Job Board GET (docs.greenhouse.io/job-board.html); minimal-metadata conditional decision per Source Perpetuity strategy operating posture\"}",
+      "evidenceUrl": "https://docs.greenhouse.io/job-board.html",
+      "providerFamily": "greenhouse",
+      "mechanism": "ats_api"
+    },
+    "cadence": {
+      "minMinutes": 60,
+      "maxMinutes": 1440,
+      "rateGuidance": "Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+    },
+    "robots": {
+      "checked": true,
+      "verdict": "allowed",
+      "wouldBlock": false,
+      "evidence": "No matching rule for /v1/boards/canonical/jobs; default allow",
+      "fromCache": false
+    },
+    "fetch": {
+      "attempted": true,
+      "status": 200,
+      "latencyMs": 239,
+      "bytesReceived": 540269,
+      "contentType": "application/json"
+    },
+    "parse": {
+      "attempted": false,
+      "schemaHealth": "not_attempted",
+      "itemCount": 0
+    },
+    "sampleFunnel": {
+      "bytesReceived": 540269,
+      "parsedItems": 0,
+      "plausibleItems": 0,
+      "truncated": true,
+      "budgetExceeded": true
+    },
+    "diagnostic": {
+      "outcome": "DEGRADED_ANOMALOUS",
+      "probes": [
+        {
+          "name": "endpoint",
+          "passed": true,
+          "detail": "url=https://boards-api.greenhouse.io/v1/boards/canonical/jobs https=true host=boards-api.greenhouse.io allowed=boards-api.greenhouse.io,boards.greenhouse.io valid=true"
+        },
+        {
+          "name": "auth",
+          "passed": true,
+          "detail": "authClass=none supported=true"
+        },
+        {
+          "name": "visibility",
+          "passed": true,
+          "detail": "filter=published public=true ambiguous=false"
+        },
+        {
+          "name": "provenance",
+          "passed": true,
+          "detail": "provider=greenhouse mechanism=ats_api evidence=https://docs.greenhouse.io/job-board.html discovery=present"
+        },
+        {
+          "name": "cadence",
+          "passed": true,
+          "detail": "min=60 max=1440 rate=Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+        },
+        {
+          "name": "robots",
+          "passed": true,
+          "detail": "verdict=allowed wouldBlock=false evidence=No matching rule for /v1/boards/canonical/jobs; default allow"
+        },
+        {
+          "name": "fetch",
+          "passed": false,
+          "detail": "oversized payload 540269 bytes > budget 524288 — no alternate endpoint attempted"
+        }
+      ],
+      "requestCount": 2,
+      "bytesReceived": 540269,
+      "durationMs": 492,
+      "mutations": 0,
+      "shadowMode": true
+    },
+    "stopReason": "oversized payload 540269 bytes > budget 524288 — no alternate endpoint attempted"
+  },
+  {
+    "version": "1.1.0",
+    "timestamp": "2026-09-08T10:35:32.631Z",
+    "sourceId": "greenhouse:wikimedia",
+    "providerId": "greenhouse",
+    "displayName": "wikimedia",
+    "endpoint": {
+      "url": "https://boards-api.greenhouse.io/v1/boards/wikimedia/jobs",
+      "isHttps": true,
+      "host": "boards-api.greenhouse.io",
+      "allowedHosts": "boards-api.greenhouse.io,boards.greenhouse.io",
+      "hostValid": true
+    },
+    "auth": {
+      "class": "none",
+      "supported": true
+    },
+    "visibility": {
+      "filter": "published",
+      "isPublic": true,
+      "ambiguous": false
+    },
+    "provenance": {
+      "discoveryProvenance": "{\"companyName\":\"wikimedia\",\"token\":\"wikimedia\",\"decidedAt\":\"2026-09-08T10:35:32.631Z\",\"provenance\":\"sp-12-curated-board\",\"complianceBasis\":\"documented public/no-auth Job Board GET (docs.greenhouse.io/job-board.html); minimal-metadata conditional decision per Source Perpetuity strategy operating posture\"}",
+      "evidenceUrl": "https://docs.greenhouse.io/job-board.html",
+      "providerFamily": "greenhouse",
+      "mechanism": "ats_api"
+    },
+    "cadence": {
+      "minMinutes": 60,
+      "maxMinutes": 1440,
+      "rateGuidance": "Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+    },
+    "robots": {
+      "checked": true,
+      "verdict": "allowed",
+      "wouldBlock": false,
+      "evidence": "No matching rule for /v1/boards/wikimedia/jobs; default allow",
+      "fromCache": false
+    },
+    "fetch": {
+      "attempted": true,
+      "status": 200,
+      "latencyMs": 265,
+      "bytesReceived": 10841,
+      "contentType": "application/json"
+    },
+    "parse": {
+      "attempted": true,
+      "schemaHealth": "ok",
+      "itemCount": 18
+    },
+    "sampleFunnel": {
+      "bytesReceived": 10841,
+      "parsedItems": 18,
+      "plausibleItems": 18,
+      "truncated": false,
+      "budgetExceeded": false
+    },
+    "diagnostic": {
+      "outcome": "HEALTHY_WITH_RESULTS",
+      "probes": [
+        {
+          "name": "endpoint",
+          "passed": true,
+          "detail": "url=https://boards-api.greenhouse.io/v1/boards/wikimedia/jobs https=true host=boards-api.greenhouse.io allowed=boards-api.greenhouse.io,boards.greenhouse.io valid=true"
+        },
+        {
+          "name": "auth",
+          "passed": true,
+          "detail": "authClass=none supported=true"
+        },
+        {
+          "name": "visibility",
+          "passed": true,
+          "detail": "filter=published public=true ambiguous=false"
+        },
+        {
+          "name": "provenance",
+          "passed": true,
+          "detail": "provider=greenhouse mechanism=ats_api evidence=https://docs.greenhouse.io/job-board.html discovery=present"
+        },
+        {
+          "name": "cadence",
+          "passed": true,
+          "detail": "min=60 max=1440 rate=Job Board GET is public/no-auth; no documented per-minute limit — this project's own 60-minute ATS cadence guard applies regardless."
+        },
+        {
+          "name": "robots",
+          "passed": true,
+          "detail": "verdict=allowed wouldBlock=false evidence=No matching rule for /v1/boards/wikimedia/jobs; default allow"
+        },
+        {
+          "name": "fetch",
+          "passed": true,
+          "detail": "HTTP 200 10841 bytes 265ms ct=application/json"
+        },
+        {
+          "name": "parse",
+          "passed": true,
+          "detail": "18 items (18 plausible) schema ok"
+        }
+      ],
+      "requestCount": 2,
+      "bytesReceived": 10841,
+      "durationMs": 569,
+      "mutations": 0,
+      "shadowMode": true
+    }
+  }
+]

@@ -22,9 +22,20 @@ export async function fetchPrimaryEvidence(url: string, fetchImpl: typeof fetch 
     }
     content += decoder.decode();
     if (!content.trim()) throw new Error("Primary evidence is empty");
-    return content;
+    return canonicalPrimaryContent(url, content);
   } finally {
     await reader.cancel();
     reader.releaseLock();
   }
+}
+
+/** Intercom renders a fresh CSP nonce into otherwise identical article HTML.
+ * Normalize only that exact nonce token on this reviewed primary document.
+ * All article text, links, markup and policy changes remain hash-significant.
+ */
+export function canonicalPrimaryContent(url: string, content: string): string {
+  if (url !== "https://support.teamtailor.com/en/articles/11171756-rss-feed-how-to-guide") return content;
+  const nonces = [...new Set([...content.matchAll(/\bnonce="([A-Za-z0-9+/]{43}=)"/g)].map(match => match[1]))];
+  if (nonces.length !== 1) throw new Error("Teamtailor primary-document nonce schema changed; review required");
+  return content.replaceAll(nonces[0], "[reviewed-csp-nonce]");
 }
