@@ -1,0 +1,71 @@
+6cd88cb31bf655eb0fbc8fc6cbf4d4ce756792aa 2026-09-08 18:13:28 +0800 feat(observability): automate qualified supply measurement and correct capped shadow accounting
+578e652975894ef1b9bc884ee19ee7b7114f5943 2026-09-08 18:13:28 +0800 fix(admission): reject shared provider drift before inserting candidates
+a90882be1432bcb38f8dff1da1e590647f93702a 2026-09-08 18:11:39 +0800 fix(workable): bound and validate feed preprocessing before replacing evidence
+ebf42423cd6c012fa6e09129bb83affa4634e9ee 2026-09-08 18:08:10 +0800 fix(governance): keep authenticated sources out of advisory fast track
+286a6c7993f30eaf254e9d2ca1cccb2a3e8fb229 2026-09-08 18:08:08 +0800 fix(governance): hash fetched primary evidence and protect admission inputs
+2b14f075177a8b2ae07f977ca151619784b5170a 2026-09-08 18:08:07 +0800 fix(automation): dispatch hourly shadows from Cloudflare and reject degraded summaries
+e86dec2415323a92df03a2bb155d2c3ddb4d2116 2026-09-08 18:05:06 +0800 fix(eligibility): honor explicit restrictions before worldwide metadata
+91be9019f95cc98c58e8784fd3a6279a213260a7 2026-09-08 18:02:08 +0800 fix(jobs): show source-stated shifts without invented working hours
+835b3d2be7747e62d754deeac7deb76652f9a5e2 2026-09-08 18:02:06 +0800 fix(eligibility): require actual geographic evidence in deterministic gates
+73dc2e0f3c4748e4ff8faa222b949aa0b7c0338a 2026-09-08 18:02:02 +0800 fix(ci): remove duplicate Workable exports and verify Python analytics
+9a087f16da97375878099c52fb24e55e41f0c2a6 2026-09-08 17:57:06 +0800 Merge remote-tracking branch 'origin/main' into codex/apex-audit-repair
+199c218801054a99ca4be253a082c6e232c55aa6 2026-09-08 17:57:06 +0800 docs: preserve inherited APEX PR status update before audit
+727ca4a06dda26b9dcddddf5824238cfdd5ce137 2026-09-08 08:17:59 +0000 docs: update enrichment digest
+7ea440cadcbec273ced3dc75f65a55b4ac54a9d5 2026-09-08 06:23:51 +0000 docs: update daily source health
+26f31f62fba51405105ac98f20e4a8f0b692f563 2026-09-08 05:15:13 +0000 docs: update directory health digest
+92d50c4e2452ef568f74d3276ea15c0794bf1d99 2026-09-08 04:40:06 +0000 docs: update prospector digest
+6d42c7f8d91ab46d41f7585876489de7136dd06f 2026-09-07 21:47:01 +0000 docs: update directory health digest
+a2ced1df1ef097475075fe7c842a3d2c00f05d0b 2026-09-07 21:32:19 +0000 docs: update prospector digest
+3538229cc563a8142ddf533b4e56cda8447548c3 2026-09-08 05:32:05 +0800 feat(APEX-W8): implement Workable global feed preprocessor action (EX-09)
+1118a537dd7d4d6becf958b722ef2f240c65f1de 2026-09-08 05:27:54 +0800 feat(APEX-W7): implement geo-scope faceted search filtering in opportunities index
+a2b49c0068f7bd5dc85d72b0b974b0f80a935925 2026-09-07 19:21:31 +0000 docs: update enrichment digest
+a1b0016191f1a358a5eec123a06dd01e669396fd 2026-09-07 22:40:10 +0800 feat(APEX-W6): admit Tier A Greenhouse employers (Canonical & Wikimedia) to shadow registry (EX-11)
+da483af303d346a765bd02ec62d1b71487f63883 2026-09-07 22:33:29 +0800 feat(APEX-W5): integrate shift intelligence into job detail view
+78e51e4824716966f73e9e2624ed3f19bd7a783d 2026-09-07 22:28:36 +0800 feat(APEX-W5): implement shift intelligence and Python analytics (compensation parked per directive)
+79b9a84feff66c98e902f44649b4e97c7c8157ff 2026-09-07 22:25:47 +0800 feat(APEX-W5): implement shift & compensation intelligence and Python analytical tooling
+67c8d7e23b5329cd2b922fe5300a1a3d9d1695af 2026-09-07 22:13:45 +0800 feat(APEX-W4): implement zero-waste deterministic triage gating and author canonical APEX specifications
+3a5bcd7e5beaff2da98b56857bc28213278b0f76 2026-09-07 21:44:39 +0800 feat(APEX-W3): scale direct ATS registry with Tier A Greenhouse multi-board admission (EX-08)
+46d6320e4db563cec41e97f882491a67b762f48f 2026-09-07 21:38:50 +0800 feat(APEX-W2): adopt ADR-008 two-speed risk-proportional source governance
+28952039ca66995bd9dc8d3dd77102e36b279321 2026-09-07 21:36:11 +0800 feat(APEX-W1): implement source economics telemetry and triage yield reporting
+a79645f077c5547443833340a3fea793a3b9f521 2026-09-07 21:27:19 +0800 feat(APEX-W0): author APEX 10X masterplan, bootloader, and control plane
+b225b3e6cdad28328818c3587cce0176b788fcc5 2026-09-07 21:09:21 +0800 feat(EX-06): qualify Lever Postings API and classify candidate retarget
+b33f8e167b92704af9c6d590fa1291b8fb04be21 2026-09-07 21:07:24 +0800 fix(ingest): record degraded heartbeat on unhandled scrape error (#123)
+49fdc77807ab80f63d617c0396574dbe3717d4fc 2026-09-07 13:01:22 +0000 docs: update directory health digest
+63af19e1c0e1c10c18b177e3084aab1cd76fe978 2026-09-07 12:37:16 +0000 docs: update prospector digest
+52cef4f70f9df309a5616d305c363644f5c51e49 2026-09-07 17:38:51 +0800 docs: point CURRENT at gauntlet-loop bootloader prompt
+422cc8c54391720418041c23c80ba4a3ff3ed838 2026-09-07 17:38:44 +0800 docs: rewrite bootloader as gauntlet-loop + skills prompt
+0b2ce47f6f0772857f96025023e6bd6509c75463 2026-09-07 17:34:15 +0800 docs: point current resume at 2026-09-07 apex bootloader
+e795c095aac387da7e186fc2c325ea67c89506de 2026-09-07 17:34:05 +0800 docs: add 2026-09-07 apex expansion resume bootloader
+b7ca611251f7178b0e50dc729fad982ecf957bc4 2026-09-07 08:35:50 +0000 docs: update enrichment digest
+971e05d7365dcc74e57a3b1602ca414e1801f6f7 2026-09-07 06:31:27 +0000 docs: update daily source health
+783ca03c3298f08e11be95329765936466363396 2026-09-07 05:14:05 +0000 docs: update directory health digest
+43f29b7efe36c557eafd5ea4930731049ba52488 2026-09-07 04:44:56 +0000 docs: update prospector digest
+3099f6250c72250bfe88250267718a88c42c7fc1 2026-09-06 20:50:02 +0000 docs: update directory health digest
+2b0f2cf49df7824aba88f6d7bdf80baae02c6daa 2026-09-06 20:26:03 +0000 docs: update prospector digest
+d7c0143495eb7a4d5ebe6d8fb3094381affda0ec 2026-09-06 17:39:30 +0000 docs: update enrichment digest
+a1f0d349a9404ff1013fb5e2101f46a2f0e11f75 2026-09-06 15:47:45 +0000 docs: update directory health digest
+f5ca5e167a605ac50af4eda00e337a2a639590d7 2026-09-06 15:29:29 +0000 docs: update prospector digest
+4d3652cde3922b232a5f6a24bacc62de4174eb18 2026-09-06 11:21:27 +0000 docs: update directory health digest
+2e23fb941c76df732b90724230dedd5caa25ab5d 2026-09-06 11:00:11 +0000 docs: update prospector digest
+c1b903ce481f33832d0b7201ec940f3ded098b4d 2026-09-06 17:00:54 +0800 feat(EX-05): admit Teamtailor career site to non-publishing shadow (#122)
+6f8605549162ffa6c7273ca8af61878ac05f3626 2026-09-06 16:54:21 +0800 feat(EX-04): admit Recruitee My Jewellery to non-publishing shadow (#121)
+32b8760ec2c59406fa6cb72b6e3e724241759364 2026-09-06 16:46:27 +0800 feat(EX-03): schedule hourly non-publishing shadow-dispatch (#120)
+aa29dd7d8ec33eec63c29e05599390afc92d0a8e 2026-09-06 16:38:47 +0800 fix(EX-02): replace D1-illegal 92-byte ISO GLOB in live triggers (#119)
+cc5a1f1a6bf51f0a215009e2c359455d45828972 2026-09-06 16:13:26 +0800 fix(EX-02): return admit failure reasons instead of opaque HTTP 500 (#118)
+1aac624e4aa8bd3b3ab9e9b072555321f13d5281 2026-09-06 16:05:29 +0800 fix(EX-01): avoid D1 compound SELECT limit in exact-six verify SQL (#117)
+fccd96521dd06a3bd863706998e6a18fc16d8caa 2026-09-06 08:05:25 +0000 docs: update enrichment digest
+4b7e5158350d05f41ad100b0d38377dd1d4f7e53 2026-09-06 16:01:13 +0800 Admit Grafana Labs to non-publishing shadow (#116)
+360ece99dd0dd19ea74a85aef27ca5689354db90 2026-09-06 15:54:48 +0800 feat(EX-01): classify exact-six yield and report silent zeros (#115)
+ece667234d23c26530b822a3a673464fc907b155 2026-09-06 15:45:53 +0800 docs: record apex expansion strategy and gauntlet loop (#114)
+bf6df28b657cc8f2003ec37ffc292865894d11df 2026-09-06 15:24:46 +0800 docs(SP-23C): record production ledger proof and stop short of source activation (#113)
+1b20975b718d0013ec20728725e3b9ed5b3cbbb1 2026-09-06 15:20:18 +0800 Route remaining public job activations through the publication ledger (#112)
+c49d2f4d2d5453d1e2652785558c77a5f88cf27a 2026-09-06 15:05:24 +0800 feat(SP-23C): add shared publication ledger and route public writers through it (#111)
+2cffbec8decc21927c1f639b607106f1fa091b20 2026-09-06 14:52:26 +0800 docs(SP-23B): record production 0040 verification and current supply (#110)
+61a70c94205f5d1e05490da16a7144a7f5c05df7 2026-09-06 14:46:29 +0800 feat(SP-23B): current-evidence admission and server-owned observation policy (#109)
+2166a0cdd5034e7f4df9b99915d8c188ab7f2aa3 2026-09-06 06:46:02 +0000 docs: update weekly health digest
+e6ebfaadcfc11baea05d720a29dae941dab10e95 2026-09-06 06:23:43 +0000 docs: update daily source health
+25d230d26b575990a64ea27d3d0c5c3df285c9b8 2026-09-06 05:06:13 +0000 docs: update directory health digest
+7d7bcdcfb8065ff073fc702a18ef5bff0d0c2a94 2026-09-06 04:42:27 +0000 docs: update prospector digest
+e6c533b36f5930963e4a8ac02e1b462f9b7df696 2026-09-05 20:43:29 +0000 docs: update directory health digest
+9b9647c2cda4618f04540b65f73f44db3009df9c 2026-09-05 20:23:18 +0000 docs: update prospector digest
+de0f53db315af91b4abab44887fe954a046d6f8f 2026-09-05 17:30:57 +0000 docs: update enrichment digest

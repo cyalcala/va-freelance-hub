@@ -331,3 +331,10 @@ current-session baton and follow the Source Perpetuity read order at the top of
 this index. Execute only one dependency-ready SP unit. If the user says stop,
 pause, or backup, preserve the exact state in the savepoint and push a
 recoverable milestone/interruption checkpoint without changing production.
+
+## September 8 audit recovery
+
+- [Current pointer](bootloaders/CURRENT.md)
+- [Audit and exact release evidence](gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md)
+- [Measured baseline](benchmarks/APEX_10X_BASELINE_2026-09-08.md)
+- [Original APEX mandate](gauntlet/APEX_10X_OPERATING_MANDATE.md)

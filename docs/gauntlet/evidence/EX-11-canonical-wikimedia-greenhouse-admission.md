@@ -1,3 +1,5 @@
+> **2026-09-08 audit correction:** Historical branch narrative below is not current production evidence. See `docs/gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md` and `docs/benchmarks/APEX_10X_BASELINE_2026-09-08.md`. Only three sources are in live shadow; additional allowlist entries are not admissions. Risk tiers are advisory; seven-day server policy remains enforced. Numeric estimates and exact-zero billing claims are unverified.
+
 # EX-11 — Canonical and Wikimedia Tier A Greenhouse Shadow Admission
 
 **Unit ID:** EX-11 (APEX-W6)  

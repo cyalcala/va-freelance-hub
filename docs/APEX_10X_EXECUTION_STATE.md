@@ -1,49 +1,38 @@
 # APEX-10X Execution State
 
-**Program**: APEX-10X (10x Qualified Opportunity Engine & Governance)
-**As of**: 2026-09-07
-**Current Wave**: Wave 6 (Direct ATS Scaling / EX-11)
-**Status**: ACTIVE
-**Working Branch**: `feat/apex-w6-direct-ats-expansion`
-**Base Branch**: `feat/apex-w5-product-intelligence` (PR #131)
+As of 2026-09-08. Primary executor: Codex. Status: VERIFYING / REVISE.
+Working branch: `codex/apex-audit-repair`. Start main:
+`727ca4a06dda26b9dcddddf5824238cfdd5ce137`.
 
----
+Canonical evidence: [September 6–8 audit](gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md).
+[Measured baseline](benchmarks/APEX_10X_BASELINE_2026-09-08.md).
+[Workstream continuity](APEX_10X_WORKSTREAM_LEDGER.md).
 
-## 1. Stacked Branch & PR Lineage
+| Gauntlet | Evidence status | Next action |
+| --- | --- | --- |
+| G1 reconciliation | Completed against GitHub and D1; PRs #124–134 open at start | Preserve original history; integrate reviewed repairs |
+| G2 baseline | Qualified first-stored proxy 89/7 = 12.71/day; 487/30 = 16.23/day | Daily measurements; full publication KPI still provisional |
+| G3 architecture | Existing stack retained; ADR-008 tiers advisory, not enforced | Specify evidence renewal before new admission |
+| G4 portfolio | Three live shadows; six further Greenhouse allowlist entries code-only | Renew invalid historical primary-evidence fingerprints |
+| G5 triage | False positive/negative geo regressions fixed with fixtures | Observe source-level yield after release |
+| G6 execution | Heartbeat catch, shadow failure validation, hourly Cloudflare shadow trigger | Verify deployed scheduled execution |
+| G7 discovery | Geo facets retained; misleading shift hours removed | Production smoke after release |
+| G8 review | Two independent reviews; concrete bugs repaired | Final CI and deployment checks |
+| G9 deploy/measure | Await exact-commit production evidence | Merge through PR, observe Pages/Worker, checkpoint |
 
-| PR # | Branch | Wave / Feature | CI Status | Merged? |
-| :--- | :--- | :--- | :--- | :--- |
-| **#125** | `fix/clock-catch-diagnostics-123` | Issue #123 (Heartbeat Catch-All) + EX-06 (Lever Qualification) | **SUCCESS** | OPEN (Clean) |
-| **#126** | `docs/apex-10x-wave-0` | APEX-W0 Masterplan, Control Plane & Bootloader | **SUCCESS** | OPEN (Clean) |
-| **#127** | `feat/apex-w1-source-economics` | APEX-W1 Source Economics Telemetry & Triage Yield | **SUCCESS** | OPEN (Clean) |
-| **#128** | `feat/apex-w2-governance` | APEX-W2 Two-Speed Governance (ADR-008 & Risk Tiers) | **SUCCESS** | OPEN (Clean) |
-| **#129** | `feat/apex-w3-ex08-greenhouse` | APEX-W3 Greenhouse Multi-Board Shadow Admission (EX-08) | **SUCCESS** | OPEN (Clean) |
-| **#130** | `feat/apex-w4-zero-waste-triage` | APEX-W4 Zero-Waste Triage (Deterministic Geo & Heuristics) | **SUCCESS** | OPEN (Clean) |
-| **#131** | `feat/apex-w5-product-intelligence` | APEX-W5 Product Intelligence & Python Analytical Tooling | **SUCCESS** | OPEN (Clean) |
-| **#132** | `feat/apex-w6-direct-ats-expansion` | APEX-W6 Direct ATS Scaling: Canonical & Wikimedia (EX-11) | **SUCCESS** | OPEN (Clean) |
-| **#133** | `feat/apex-w7-search-discovery` | APEX-W7 Search & Discovery Polish (FTS GeoScope Facets) | **SUCCESS** | OPEN (Clean) |
-| **#134** | `feat/apex-w8-ex09-workable-action` | APEX-W8 Workable XML Feed Preprocessor Action (EX-09) | Local PASS (1,215 tests) | OPEN (Clean) |
+No 10x completion claim. Provisional target 127.14 qualified first-stored jobs/day
+uses a fixed 89/7 baseline; historical publication and deactivation prevent an
+exact retrospective publication rate. Original 8.5/day baseline is superseded.
+Unknown costs/provider usage/rejection rates must stay unknown.
 
----
+Production exact-six publication invariant preserved. No automatic source
+promotion enabled. Eight distinct UTC observation dates spanning seven days are
+required by current server policy; date alone never authorizes canary. Existing
+URL/time-based primary evidence needs reviewed renewal before acceptance; new
+proposals now hash actual fetched content and reject provider mismatches before
+creating candidates. Compensation normalization stays PAUSED.
 
-## 2. Gauntlet Progress Tracker (G1–G9)
-
-| Gauntlet Phase | Description | Status | Evidence |
-| :--- | :--- | :--- | :--- |
-| **G1: Orient & Reconcile** | Repository truth, branch lineage, active PRs, migrations audited. | **DONE** | Workstream ledger authored (`APEX_10X_WORKSTREAM_LEDGER.md`) |
-| **G2: Baseline & Bottleneck** | Empirical yield and 3 limiting constraints measured. | **DONE** | Benchmark report authored (`APEX_10X_BASELINE_2026-09-07.md`) |
-| **G3: Architecture Contract** | Multi-stage pipeline, registry, and governance contracts formalized. | **DONE** | ADR-008, `APEX_10X_ARCHITECTURE.md`, `APEX_10X_MASTERPLAN.md` |
-| **G4: Source Portfolio** | Greenhouse multi-board (GitLab, Remote.com, Nearform, Ghost) admitted. | **SHADOW_VERIFIED** | `EX-08-greenhouse-multi-board-admission.md`, PR #129 |
-| **G5: Zero-Waste Triage** | Stage 0/1 deterministic location and regex gating implemented. | **ACTIVE** | `geoGate.ts`, `geoGate.test.ts`, `triage.ts`, `triage.test.ts` |
-| **G6: Durable Execution** | Crash resilience, heartbeat catch-all, subrequest budget containment. | **DONE_VERIFIED** | Issue #123 fix in PR #125, Inngest durable drain fallback |
-| **G7: Discovery Value** | D1 FTS5 full-text search and structured category routing operational. | **OPERATIONAL** | Migrations 0026, 0027; UI category contract tests clean |
-| **G8: Adversarial Review** | Adversarial review for false negatives and boundary conditions. | **ACTIVE** | 34 golden fixtures + 39 eval tests green |
-| **G9: Deploy & Measure** | Pull requests open, CI passing, shadow dispatch running hourly. | **MONITORING** | GHA runs 34127300033..34129134844 green |
-
----
-
-## 3. Active Blockers & Invariants
-
-- **EX-07 Canary Graduation**: HARD BLOCKED on `sp23-shadow-7d-v1`. Requires 7 full days of shadow observations logged in D1 before capped canary admission. Earliest observation: 2026-09-06T08:46Z. Estimated completion: ~2026-09-13T09:00Z.
-- **Production Exact-Six Invariant**: 100% PRESERVED. Zero unauthorized sources publishing live listings.
-- **Infrastructure Cost**: Exactly \$0.00 / month across all services.
+Next exact unit: finish release verification and D1 Time Travel recovery capture;
+then implement/review an additive evidence-renewal lifecycle with atomic provider
+and source snapshots, immutable decisions, rollback, tests and renewed shadow
+windows. Do not overwrite historical evidence or silently shorten requirements.

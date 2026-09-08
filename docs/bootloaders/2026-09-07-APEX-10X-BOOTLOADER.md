@@ -1,3 +1,5 @@
+> **2026-09-08 audit correction:** Historical branch narrative below is not current production evidence. See `docs/gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md` and `docs/benchmarks/APEX_10X_BASELINE_2026-09-08.md`. Only three sources are in live shadow; additional allowlist entries are not admissions. Risk tiers are advisory; seven-day server policy remains enforced. Numeric estimates and exact-zero billing claims are unverified.
+
 # VA FREELANCE HUB — APEX 10X AUTONOMOUS GAUNTLET BOOTLOADER
 
 Use this prompt to resume or continue the APEX 10X execution epoch in any fresh AI session.

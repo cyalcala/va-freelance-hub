@@ -1,0 +1,78 @@
+[
+  {
+    "results": [
+      {
+        "source_id": "(unknown)",
+        "source_platform": "20Four7VA",
+        "active": 1001,
+        "net_new_7d": 0,
+        "net_new_14d": 92,
+        "net_new_30d": 413,
+        "inactive": 4074
+      },
+      {
+        "source_id": "we-work-remotely",
+        "source_platform": "WeWorkRemotely",
+        "active": 73,
+        "net_new_7d": 53,
+        "net_new_14d": 73,
+        "net_new_30d": 73,
+        "inactive": 12
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "source_platform": "RealWorkFromAnywhere",
+        "active": 34,
+        "net_new_7d": 26,
+        "net_new_14d": 34,
+        "net_new_30d": 34,
+        "inactive": 3
+      },
+      {
+        "source_id": "remote-ok",
+        "source_platform": "RemoteOK",
+        "active": 10,
+        "net_new_7d": 6,
+        "net_new_14d": 10,
+        "net_new_30d": 10,
+        "inactive": 31
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "source_platform": "Jobicy",
+        "active": 8,
+        "net_new_7d": 5,
+        "net_new_14d": 8,
+        "net_new_30d": 8,
+        "inactive": 1
+      },
+      {
+        "source_id": "remotive",
+        "source_platform": "Remotive",
+        "active": 0,
+        "net_new_7d": 0,
+        "net_new_14d": 0,
+        "net_new_30d": 0,
+        "inactive": 7
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 49.799
+      },
+      "duration": 49.799,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 73838592,
+      "rows_read": 10514,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]
