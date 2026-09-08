@@ -12,6 +12,19 @@ In accordance with Section 6 of the APEX-10X Master Mandate:
 
 ---
 
+## Current pause and deployed capacity — 2026-09-08
+
+All workstreams below are preserved. The owner paused work and authorized only
+completing the pending deployment and documenting it. PR #141 capacity code is
+DEPLOYED (production34222392137 attempt 2 success); further implementation and
+admissions are PAUSED. The six-hour task automation remains PAUSED. Current
+source state remains five shadows; Nearform/Ghost/Wikimedia are not admitted.
+Use [paused handoff](gauntlet/evidence/APEX-CAPACITY-2026-09-08/PAUSE_HANDOFF.md).
+The route now supports six renewal identities; real integration measured28 SQL/
+28 external worst case and dispatch37 SQL/24 external for twelve due sources.
+Earlier capacity-blocked wording below is superseded; the next admission batch
+is deferred by the owner's pause, not by an unimplemented capacity fix.
+
 ## 2026-09-08 evidence overlay
 
 This ledger preserves all workstreams. The Wave 0–8 PRs were unmerged at audit start; code and mocked tests do not prove deployment/admission. All three providers renewed on September 8; GitLab and Remote.com truly admitted to shadow. Nearform/Ghost/Wikimedia remain staged on measured group capacity, and Canonical exceeds its probe byte budget. EX-07 cannot graduate merely on September 13: current evidence must satisfy the full server predicate. ADR-008 tiers are advisory only. Updated baseline is in `benchmarks/APEX_10X_BASELINE_2026-09-08.md`. Workable live GHA exceeded 512 MiB; its daily bulk schedule is dormant pending supported bounded-feed review on September 15. Source economics now has daily aggregate measurement. Shift hints no longer invent hours. New recovery/clock repairs are tracked in `APEX_10X_EXECUTION_STATE.md`.

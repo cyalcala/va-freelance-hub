@@ -1,0 +1,318 @@
+[
+  {
+    "results": [
+      {
+        "source_id": "ashby:amplify",
+        "source_name": "Amplify",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "ashby:ashby",
+        "source_name": "Ashby",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "ashby:camunda",
+        "source_name": "Camunda",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "ashby:supabase",
+        "source_name": "Supabase",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "ashby:tremendous",
+        "source_name": "Tremendous",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "authentic-jobs",
+        "source_name": "Authentic Jobs",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "source_name": "20Four7VA",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "source_name": "24/7 Virtual Assistant",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "source_name": "Sourcefit",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "breezy:time-etc",
+        "source_name": "Time Etc",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "breezy:vaaphilippines-recruitment",
+        "source_name": "VAA Philippines",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "dribbble",
+        "source_name": "Dribbble Jobs",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "greenhouse:ghost",
+        "source_name": "Ghost",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "greenhouse:gitlab",
+        "source_name": "GitLab",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "greenhouse:grafanalabs",
+        "source_name": "Grafana Labs",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "greenhouse:nearform",
+        "source_name": "Nearform",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "greenhouse:remotecom",
+        "source_name": "Remote.com",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "jobicy-admin-support-apac",
+        "source_name": "Jobicy Admin Support APAC",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "source_name": "Jobicy Customer Support APAC",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "jobspresso",
+        "source_name": "Jobspresso",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "lever:vaultoutsourcing",
+        "source_name": "Vault Outsourcing",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "onlinejobs-ph",
+        "source_name": "OnlineJobs.ph",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "problogger",
+        "source_name": "ProBlogger",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "source_name": "Real Work From Anywhere",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "remote-co",
+        "source_name": "Remote.co",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "remote-ok",
+        "source_name": "Remote OK",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "remotive",
+        "source_name": "Remotive",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "we-work-remotely",
+        "source_name": "We Work Remotely",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:coconutva",
+        "source_name": "Coconut VA",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:connectos",
+        "source_name": "ConnectOS",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:crewbloom",
+        "source_name": "CrewBloom",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:global-strategic",
+        "source_name": "Global Strategic",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:hello-rache",
+        "source_name": "Hello Rache",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:hunt-st",
+        "source_name": "Hunt St",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:myoutdesk",
+        "source_name": "MyOutDesk",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:outsource-access",
+        "source_name": "Outsource Access",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:pearltalent",
+        "source_name": "Pearl Talent",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:pineapple-staffing",
+        "source_name": "Pineapple Staffing",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:rocketams",
+        "source_name": "RocketAMS",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:staff-domain-inc",
+        "source_name": "Staff Domain",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:superstaff",
+        "source_name": "SuperStaff",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      },
+      {
+        "source_id": "workable:virtualstaff365",
+        "source_name": "Virtual Staff 365",
+        "events": 12,
+        "failed_events": 0,
+        "latest": "2026-09-08T11:40:18.752Z"
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 11.3026
+      },
+      "duration": 11.3026,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 74133504,
+      "rows_read": 1504,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

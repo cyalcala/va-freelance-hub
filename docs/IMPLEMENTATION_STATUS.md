@@ -1,5 +1,24 @@
 # Implementation Status
 
+## 2026-09-08 — PAUSED after completed capacity deployment (current)
+
+The owner paused execution, then authorized documentation backup and completion
+of ONLY the pending deployment. That deployment is complete. No source admission,
+provider renewal, further implementation or automation restart is authorized by
+this closeout. The six-hour task heartbeat remains PAUSED; existing production
+clocks continue.
+
+Read [CURRENT](bootloaders/CURRENT.md), then the
+[paused handoff](gauntlet/evidence/APEX-CAPACITY-2026-09-08/PAUSE_HANDOFF.md).
+PR #141 merged c3f5951ae387ad0a6f9023d4bbe48dc618678841. Production run34222392137
+attempt 1 was cancelled; explicitly authorized attempt 2 SUCCEEDED. Capacity code
+is now deployed, with read-only preview/public smoke200. No deployment is pending.
+The joined evidence loader, six-source renewal and bounded twelve-source shadow
+windows passed1,264 Bun tests plus Python/build/typecheck/Worker validation.
+Five shadows remain last verified; Nearform/Ghost/Wikimedia were NOT admitted.
+Follow the paused handoff's exact resume procedure only after owner authorization.
+Older active/next-action summaries below are historical and do not override pause.
+
 ## 2026-09-08 — APEX audit and repair (current)
 
 Current truth is in [execution state](APEX_10X_EXECUTION_STATE.md) and

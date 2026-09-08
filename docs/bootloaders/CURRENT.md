@@ -1,22 +1,30 @@
 # Current resume pointer
 
-Program: APEX-10X; as of 2026-09-08; status ACTIVE / verified repairs, observation pending.
-Working branch: `codex/apex-accepted-checkpoint`; fetch main before continuing.
-Last accepted behavior main: `6d45fd42880b3e314c4fccdebb0a4f454580359a` (PR #139).
+**PAUSED by owner.** The owner authorized only completing the pending capacity
+deployment and documenting/backing up the result. Do not admit sources, renew
+provider evidence, continue implementation, or re-enable the follow-up without
+another explicit resume instruction.
 
-1. [Execution state](../APEX_10X_EXECUTION_STATE.md)
-2. [September 6–8 audit and release evidence](../gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md)
-3. [Measured baseline](../benchmarks/APEX_10X_BASELINE_2026-09-08.md)
-4. [Workstream ledger](../APEX_10X_WORKSTREAM_LEDGER.md)
+1. [Paused handoff and exact resume procedure](../gauntlet/evidence/APEX-CAPACITY-2026-09-08/PAUSE_HANDOFF.md)
+2. [Execution state](../APEX_10X_EXECUTION_STATE.md)
+3. [Capacity measurements and review](../gauntlet/evidence/APEX-CAPACITY-2026-09-08/REPORT.md)
+4. [Earlier audit and releases](../gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md)
 
-Five real shadows; all three providers have renewed evidence (IDs 4, 5, 8). GitLab and Remote.com are newly shadow-admitted (IDs 6, 7). No source promotion or new job publication.
-Qualified first-stored proxy 12.71/day (7d); provisional target 127.14/day.
-Workable live GHA exceeded 512 MiB; daily bulk schedule dormant, next review September 15.
-Native renewal/readback is complete. Next:
-measure shadow dispatcher/renewal group capacity before further admission.
-Observe current evidence over 8 UTC dates spanning 7 days; no calendar-only gate.
-Six-hour thread heartbeat continues bounded work; deployed clocks run separately.
-Next command: `git fetch origin; git status -sb`.
+Capacity code is merged as `c3f5951ae387ad0a6f9023d4bbe48dc618678841` (PR #141).
+Deployment run `34222392137`: attempt 1 cancelled; explicitly authorized attempt 2
+SUCCEEDED. Capacity code is deployed at https://280f2e6b.remotejobs-ph.pages.dev.
+Read-only preview and public-route smoke passed; no further deployment is pending.
+Documentation branch: `codex/apex-paused-handoff`.
 
+Last verified source state: five shadows, evidence IDs4–8. Nearform, Ghost and
+Wikimedia remain UNADMITTED. No source promotion or public job publication was
+performed in the capacity slice. Six-hour task automation is PAUSED. Existing
+production schedules continue; Workable daily bulk preprocessing is dormant.
 
+Provisional qualified first-stored baseline 12.71/day; target 127.14/day. No 10x
+claim. Qualification still needs eight UTC dates spanning seven days tied to
+current evidence plus the complete Autonomy Cutover Predicate.
 
+After explicit resume: fetch, inspect intervening changes, verify deployment,
+then freshly probe/admit the three staged sources within the measured capacity.
+Safe first commands: `git fetch origin` then `git status -sb`.

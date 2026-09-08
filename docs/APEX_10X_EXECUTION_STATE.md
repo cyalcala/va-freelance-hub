@@ -1,50 +1,57 @@
 # APEX-10X Execution State
 
-As of2026-09-08. Primary executor: Codex. Status ACTIVE; repairs deployed,
-qualified-supply expansion still requires current observation evidence.
-Working branch `codex/apex-accepted-checkpoint`; original main
-`727ca4a06dda26b9dcddddf5824238cfdd5ce137`.
-Last accepted behavior main `6d45fd42880b3e314c4fccdebb0a4f454580359a`.
+**PAUSED — owner-authorized deployment and documentation only.**
+As of 2026-09-08. Working documentation branch: `codex/apex-paused-handoff`.
+The follow-up automation `apex-source-recovery-and-qualification` is PAUSED.
+The documentation request and deployment-only exception do not resume other work.
 
-Canonical evidence: [September 6–8 audit](gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md).
-[Measured baseline](benchmarks/APEX_10X_BASELINE_2026-09-08.md).
-[Workstream continuity](APEX_10X_WORKSTREAM_LEDGER.md).
+Canonical continuation: [paused handoff](gauntlet/evidence/APEX-CAPACITY-2026-09-08/PAUSE_HANDOFF.md).
+[Capacity evidence](gauntlet/evidence/APEX-CAPACITY-2026-09-08/REPORT.md).
+[Earlier audit](gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md).
+[Baseline](benchmarks/APEX_10X_BASELINE_2026-09-08.md).
+[Preserved workstreams](APEX_10X_WORKSTREAM_LEDGER.md).
 
-| Gauntlet | Evidence status | Next action |
-| --- | --- | --- |
-| G1 reconciliation |136 runs inspected; PR125–134 integrated; obsolete124 closed | Preserve history and follow canonical current pointer |
-| G2 baseline | Qualified first-stored89/7=12.71/day;487/30=16.23/day | Daily economics; actual publication KPI still provisional |
-| G3 architecture | Current Cloudflare/Astro/D1 retained; atomic renewal implemented | Measure group subrequest capacity before scaling |
-| G4 portfolio | Five live shadows; Greenhouse/Recruitee renewed; GitLab/Remote.com admitted | Teamtailor renewal verified; staged Nearform/Ghost/Wikimedia |
-| G5 triage | Geo false positives/negatives and source-stated shifts repaired | Observe qualified yield; preserve strict restrictions |
-| G6 execution | Independent hourly Worker shadow, GHA validation, daily economics deployed | Verify current-evidence cadence; heartbeat every 6 hours |
-| G7 discovery | Search/geo facets retained, invented shift hours removed | Monitor public route and source quality |
-| G8 review | Independent reviews repaired XML/schema/memory issues | Keep pinned-runtime CI and truthful live checks |
-| G9 deploy/measure | PR #135–138 deployed; PR #139 normalization deployed and native renewal verified | Observe current epochs and measure group capacity |
+| Item | Exact state |
+| --- | --- |
+| Capacity unit start | dda9c168d6ac39a53ec85b3ac0bd45cb1a541774 |
+| Behavior commit |1efb8aa04febaba2ef7d97970bf07880692e5442|
+| Merged main |c3f5951ae387ad0a6f9023d4bbe48dc618678841 — PR #141|
+| PR CI |34222288113 success|
+| Production run |34222392137 initial attempt cancelled before migrations/deploy; explicitly authorized attempt 2 SUCCEEDED; capacity code deployed|
+| Prior accepted deployment |6d45fd42880b3e314c4fccdebb0a4f454580359a — run34218427110|
+| Verification |1,264 Bun tests,15 Python tests,build,typecheck,guardrails,Worker checks|
+| Native source mutations during capacity slice |None|
+| Current real shadows |Five; current evidence IDs4–8|
+| Next admissions |Nearform, Ghost, Wikimedia — NOT executed|
+| Task automation |PAUSED; existing production clocks were not stopped|
 
-No 10x completion claim. Provisional target 127.14 qualified first-stored jobs/day
-uses fixed 89/7 baseline; historical publication/deactivation prevent an exact
-retrospective publication rate. Original8.5/day baseline superseded. Unknown
-provider usage/cost/rejection rates stay unknown; no measured$0 claim.
+The joined evidence loader now uses one coherent SQL snapshot and retains the
+same immutable digest/revision/authority/lease and durable opt-out checks.
+Six-source renewal measured 28 SQL statements/28 external requests at maximum
+sixteen primary documents. Twelve-source dispatch measured 37 SQL/24 external;
+invalid and cadence-held rows consume bounded authority reads. Hourly windows
+rotate beyond invalid early rows. No cached authority or shortened evidence gate.
+These changes are deployed at https://280f2e6b.remotejobs-ph.pages.dev. Read-only
+Greenhouse preview and public-route smoke passed; see deployment-smoke.json.
 
-Exact-six publication boundary remains. Renewal and two admissions wrote only
-source governance evidence; no new jobs or promotions. Current server policy
-requires 8 distinct UTC dates spanning 7 days tied to current admission evidence.
-September 6 observations do not count toward September 8 renewal epochs.
-ADR008 tier summaries remain advisory; full cutover predicate remains required.
-Compensation normalization stays PAUSED, all ledger workstreams preserved.
+G1–G8 reconciliation, baseline, capacity implementation and review are recorded.
+G9 capacity deployment is VERIFIED; documentation backup is the authorized closeout;
+further source expansion and observation work remains paused. No 10x completion.
+The fixed qualified first-stored proxy 89/7=12.71/day and target 127.14/day remain
+provisional, not exact historical publication throughput or independently measured
+billing. Unknown attribution, usage and rejection metrics remain unknown.
 
-Workable: reviewed streaming code/tests pass, but live GHA34217743529 exceeded
-512 MiB. Daily bulk schedule is dormant; manual diagnostic retained. Next review
-2026-09-15 or earlier documented supported bounded-feed evidence. Canonical
-Greenhouse probe exceeds524288 bytes; withhold without endpoint workaround.
-Nearform/Ghost/Wikimedia healthy probes remain staged; avoid admitting a group
-larger than the renewal route can safely refresh (current route cap4/provider).
+Exact-six publication boundary remains. Eight distinct UTC observation dates
+spanning seven days must bind to current admission evidence, plus every named
+Autonomy Cutover Predicate condition. Old September 6 evidence epochs do not count
+toward September 8 renewals. ADR008 tier summaries remain advisory. Compensation
+normalization remains PAUSED; no ledger workstream was dropped.
 
-Next exact unit: add measured
-subrequest-budget coverage for source renewal/dispatch before further bounded
-shadow admission. Observe qualifying current epochs; do not shorten any gate.
-Readback and immutable evidence are required before retrying uncertain D1 writes.
-D1 TimeTravel bookmark and aggregate read-only evidence are backed up in audit.
+Canonical remains withheld at524288-byte probe bound. Workable exceeded 512MiB
+in GHA34217743529; daily bulk schedule dormant, next review September 15 or earlier
+supported bounded-feed evidence. Do not retry bulk downloads to manufacture green.
 
-
+After explicit resume: fetch/preserve dirty work, restate full SHA, remeasure
+intervening workflows and current evidence, confirm deployed capacity, then fresh
+allowed probes and sequential shadow admission for the three staged sources.
+Do not renew merely to test capacity: it would restart observation epochs.

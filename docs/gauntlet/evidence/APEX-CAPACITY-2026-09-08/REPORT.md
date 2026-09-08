@@ -1,6 +1,6 @@
 # APEX source capacity — 2026-09-08
 
-Status: VERIFYING. Start main dda9c168d6ac39a53ec85b3ac0bd45cb1a541774.
+Status: DEPLOYED; further execution PAUSED by owner. Start main dda9c168d6ac39a53ec85b3ac0bd45cb1a541774.
 Branch codex/apex-source-capacity. User authorized continuing all work.
 Only new main change since ca29be0 was prospector digest dda9c16, workflow
 34220309711 successful. No replay of terminal units or fresh evidence renewal.
@@ -67,3 +67,21 @@ An initial full run exposed three gateway fixtures tied to the old four-query
 loader; updated those mocks to joined snapshots and reran the full suite green.
 Focused integration tests count executed SQL, not manually asserted formulas.
 CI will repeat using pinned Bun1.3.14 and perform build/Worker verification.
+
+
+## Deployment-only closeout and pause
+
+PR141 merged as c3f5951ae387ad0a6f9023d4bbe48dc618678841; PR CI34222288113 passed.
+The owner paused work. Production34222392137 attempt1 was cancelled before any
+migrations/deployment. The owner then explicitly authorized completing ONLY that
+deployment and documenting progress. Attempt2 succeeded at12:31:44Z September8:
+https://280f2e6b.remotejobs-ph.pages.dev. Validation, build, D1 migrations/checks,
+full-text verification and Pages deployment completed. See both saved attempt
+records; the earlier cancelled state is historical, not the final outcome.
+
+Read-only smoke at12:32:52Z returned200 for Greenhouse renewal preview (revision3,
+evidence4/6/7, published0), homepage and opportunities. No source admission,
+provider renewal or source promotion was run during closeout. Five shadows remain
+last verified; Nearform/Ghost/Wikimedia remain unadmitted. Task automation remains
+PAUSED; existing production clocks continue. Follow PAUSE_HANDOFF.md, not the
+historical pre-release next actions above. No further deployment is pending.
