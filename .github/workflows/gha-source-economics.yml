@@ -33,7 +33,7 @@ jobs:
           bun scripts/diagnostics/source-economics.ts emit "$OUT"
           mkdir -p "$OUT/results"
           for name in $(jq -r '.queryOrder[]' "$OUT/economics-meta.json"); do
-            bunx wrangler d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --json \
+            bunx wrangler@4.120.0 d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --json \
               --command "$(cat "$OUT/queries/$name.sql")" > "$OUT/results/$name.json"
             jq -e 'all(.[]; .success == true and .meta.rows_written == 0 and .meta.changed_db == false)' "$OUT/results/$name.json"
           done
