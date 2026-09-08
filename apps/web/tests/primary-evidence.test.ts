@@ -6,7 +6,7 @@ test("captures actual UTF-8 primary content with bounded request options", async
     expect(options?.redirect).toBe("manual");
     expect(options?.signal).toBeDefined();
     return new Response("Primary documentation: café");
-  }) as typeof fetch;
+  }) as unknown as typeof fetch;
   expect(await fetchPrimaryEvidence("https://example.com/docs", mock)).toBe("Primary documentation: café");
 });
 
@@ -21,8 +21,9 @@ test("rejects redirects without fetching the destination", async () => {
   const mock = (async () => {
     calls++;
     return new Response(null, { status: 302, headers: { Location: "https://elsewhere.example/docs" } });
-  }) as typeof fetch;
+  }) as unknown as typeof fetch;
   await expect(fetchPrimaryEvidence("https://example.com/docs", mock)).rejects.toThrow("HTTP 302");
   expect(calls).toBe(1);
 });
+
 
