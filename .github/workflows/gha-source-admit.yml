@@ -30,6 +30,7 @@ jobs:
     env:
       PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
       ADMIT_API_URL: "https://remotejobs-ph.pages.dev/api/cron/source-admit"
+      SOURCE_ID: ${{ inputs.source_id }}
     steps:
       - name: POST source-admit
         run: |
@@ -41,10 +42,11 @@ jobs:
           HTTP=$(curl -sS -o admit.json -w "%{http_code}" -X POST "$ADMIT_API_URL" \
             -H "Authorization: Bearer ${PROXY_SECRET}" \
             -H "Content-Type: application/json" \
-            -d "$(jq -n --arg id "${{ inputs.source_id }}" '{sourceId:$id}')")
+            -d "$(jq -n --arg id "$SOURCE_ID" '{sourceId:$id}')")
           cat admit.json
           echo
           echo "HTTP $HTTP"
+          test "$HTTP" = "200"
           jq . admit.json
           jq -e '.outcome == "shadow" and .published == 0' admit.json
           echo "Admitted $(jq -r .sourceId admit.json) to shadow with zero public jobs." >> "$GITHUB_STEP_SUMMARY"

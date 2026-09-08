@@ -55,7 +55,8 @@ describe("source-admit route", () => {
   test("admits Grafana Labs to shadow without publishing jobs", async () => {
     const handler = createSourceAdmitHandler({
       now: () => NOW,
-      hash: async () => "a".repeat(64),
+      fetchEvidence: async () => "actual primary source document",
+      hash: async (content) => { expect(content).toBe("actual primary source document"); return "a".repeat(64); },
       wrapDb: () => ({ prepare() { throw new Error("unused"); } }) as any,
       runProbe: async (input) => ({
         version: SHADOW_VERSION,
@@ -88,7 +89,8 @@ describe("source-admit route", () => {
   test("admits Recruitee My Jewellery to shadow without publishing jobs", async () => {
     const handler = createSourceAdmitHandler({
       now: () => NOW,
-      hash: async () => "a".repeat(64),
+      fetchEvidence: async () => "actual primary source document",
+      hash: async (content) => { expect(content).toBe("actual primary source document"); return "a".repeat(64); },
       wrapDb: () => ({ prepare() { throw new Error("unused"); } }) as any,
       runProbe: async (input) => ({
         version: SHADOW_VERSION,
@@ -122,7 +124,8 @@ describe("source-admit route", () => {
   test("admits Teamtailor career site to shadow without publishing jobs", async () => {
     const handler = createSourceAdmitHandler({
       now: () => NOW,
-      hash: async () => "a".repeat(64),
+      fetchEvidence: async () => "actual primary source document",
+      hash: async (content) => { expect(content).toBe("actual primary source document"); return "a".repeat(64); },
       wrapDb: () => ({ prepare() { throw new Error("unused"); } }) as any,
       runProbe: async (input) => ({
         version: SHADOW_VERSION,
@@ -156,7 +159,8 @@ describe("source-admit route", () => {
   test("admits EX-08 greenhouse:gitlab to shadow under Tier A fast-track", async () => {
     const handler = createSourceAdmitHandler({
       now: () => NOW,
-      hash: async () => "a".repeat(64),
+      fetchEvidence: async () => "actual primary source document",
+      hash: async (content) => { expect(content).toBe("actual primary source document"); return "a".repeat(64); },
       wrapDb: () => ({ prepare() { throw new Error("unused"); } }) as any,
       runProbe: async (input) => ({
         version: SHADOW_VERSION,
@@ -191,7 +195,8 @@ describe("source-admit route", () => {
   test("admits greenhouse:canonical to shadow under Tier A fast-track with Canonical displayName", async () => {
     const handler = createSourceAdmitHandler({
       now: () => NOW,
-      hash: async () => "a".repeat(64),
+      fetchEvidence: async () => "actual primary source document",
+      hash: async (content) => { expect(content).toBe("actual primary source document"); return "a".repeat(64); },
       wrapDb: () => ({ prepare() { throw new Error("unused"); } }) as any,
       runProbe: async (input) => ({
         version: SHADOW_VERSION,
@@ -223,3 +228,4 @@ describe("source-admit route", () => {
     expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "greenhouse:canonical", published: 0 });
   });
 });
+

@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { isAuthorized } from "@/lib/auth";
 import { nowUtcIso } from "@/lib/time";
+import { fetchPrimaryEvidence } from "@/lib/primary-evidence";
 import {
   admitReviewedSourceToShadow,
   buildGreenhouseCandidateRow,
@@ -41,6 +42,7 @@ type HandlerDependencies = {
   wrapDb?: typeof wrapD1Binding;
   hash?: typeof sha256Hex;
   now?: () => string;
+  fetchEvidence?: typeof fetchPrimaryEvidence;
 };
 
 function json(status: number, body: unknown): Response {
@@ -115,6 +117,7 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
   const wrapDb = dependencies.wrapDb ?? wrapD1Binding;
   const hash = dependencies.hash ?? sha256Hex;
   const nowFn = dependencies.now ?? nowUtcIso;
+  const fetchEvidence = dependencies.fetchEvidence ?? fetchPrimaryEvidence;
 
   return async ({ request, locals }) => {
     const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
@@ -165,7 +168,9 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         },
       });
       const now = probe.timestamp;
-      const evidenceHash = await hash(`${profile.evidenceUrl}\n${now}`);
+      // Capture actual reviewed primary-document content. A URL plus the clock
+      // is not a content fingerprint and cannot support replayable evidence.
+      const evidenceHash = await hash(await fetchEvidence(profile.evidenceUrl));
       const provider = {
         id: providerId,
         providerFamily: profile.providerFamily,
