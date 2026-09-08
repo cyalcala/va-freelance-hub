@@ -40,6 +40,7 @@ jobs:
         run: bun scripts/gha/workable-preprocessor.ts
 
       - name: Commit Updated Evidence Digest
+        if: github.ref == 'refs/heads/main'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -47,7 +48,12 @@ jobs:
             git add docs/workable-candidates-latest.md
             if ! git diff --staged --quiet; then
               git commit -m "docs: update workable global feed candidates digest [skip ci]"
-              git push origin HEAD:${{ github.ref }}
+              for attempt in 1 2 3; do
+                git fetch origin main
+                git rebase origin/main
+                if git push origin HEAD:main; then exit 0; fi
+              done
+              exit 1
             else
               echo "No changes in candidate feed digest."
             fi

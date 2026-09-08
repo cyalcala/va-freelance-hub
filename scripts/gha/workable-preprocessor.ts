@@ -12,8 +12,9 @@
  * 5. Performs ZERO Cloudflare D1 writes and ZERO live board publishing.
  */
 
-import { writeFileSync, existsSync } from "fs";
+import { writeFileSync, readFileSync, statSync } from "fs";
 import { resolve } from "path";
+import { XMLValidator } from "fast-xml-parser";
 import {
   parseWorkableXml,
   filterPlausibleCandidates,
@@ -29,6 +30,26 @@ export interface PreprocessorResult {
   stats: WorkableFilterStats;
   topCompanies: Array<{ company: string; count: number }>;
   sampleCandidates: NormalizedWorkablePosting[];
+  rawParsedPostings: number;
+  duplicatePostings: number;
+}
+
+export const MAX_FEED_BYTES = 128 * 1024 * 1024;
+export const FEED_TIMEOUT_MS = 120_000;
+
+function markdownText(value: string): string {
+  return value.replace(/[\r\n\t]+/g, " ").replace(/&/g, "&amp;")
+    .replace(/[<>|`*_[\]\\]/g, (char) => `&#${char.charCodeAt(0)};`);
+}
+
+function markdownLink(label: string, value: string): string {
+  try {
+    const url = new URL(value);
+    if (!["https:", "http:"].includes(url.protocol) || url.username || url.password) return markdownText(label);
+    // Preserve the provider URL itself; only escape Markdown delimiters.
+    const target = value.replace(/[\s<>|()[\]\\]/g, (char) => encodeURIComponent(char).replace(/[()]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`));
+    return `[${markdownText(label)}](${target})`;
+  } catch { return markdownText(label); }
 }
 
 export function generatePreprocessorResult(
@@ -36,8 +57,22 @@ export function generatePreprocessorResult(
   url: string = WORKABLE_FEED_URL,
   generatedAt: string = new Date().toISOString()
 ): PreprocessorResult {
-  const all = parseWorkableXml(xml);
-  const plausible = filterPlausibleCandidates(all);
+  if (Buffer.byteLength(xml, "utf8") > MAX_FEED_BYTES) throw new Error("Workable feed exceeds byte budget");
+  if (XMLValidator.validate(xml) !== true
+    || !/^\s*(?:<\?xml[^?]*\?>\s*)?<source>/.test(xml)
+    || !/<\/source>\s*$/.test(xml)
+    || !/<publisher>\s*(?:<!\[CDATA\[)?Workable(?:\]\]>)?\s*<\/publisher>/.test(xml)) {
+    throw new Error("Workable feed is malformed or has an unexpected source/publisher schema");
+  }
+  const raw = parseWorkableXml(xml);
+  const rawJobCount = (xml.replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, "").match(/<job(?:\s[^>]*)?>/g) ?? []).length;
+  if (!rawJobCount || raw.length !== rawJobCount) {
+    throw new Error("Workable feed is empty or contains unsupported job schema; preserving the previous digest");
+  }
+  const all = [...new Map(raw.map((job) => [job.url, job])).values()];
+  // A multi-location posting may repeat a URL with different location flags;
+  // retain a plausible variant regardless of which duplicate appears last.
+  const plausible = [...new Map(filterPlausibleCandidates(raw).map((job) => [job.url, job])).values()];
   const stats = summarizeFilterStats(all, plausible);
 
   // Group by company
@@ -59,6 +94,8 @@ export function generatePreprocessorResult(
     stats,
     topCompanies,
     sampleCandidates,
+    rawParsedPostings: raw.length,
+    duplicatePostings: raw.length - all.length,
   };
 }
 
@@ -69,14 +106,16 @@ export function renderMarkdownReport(result: PreprocessorResult): string {
     "# Workable Global Feed Candidates (Latest Preprocessor Digest)",
     "",
     `**Generated At**: \`${generatedAt}\``,
-    `**Source URL**: [${sourceUrl}](${sourceUrl})`,
+    `**Source URL**: ${markdownLink(sourceUrl, sourceUrl)}`,
     "**Operational State**: `OFFLINE_PREPROCESSED` (Zero D1 mutations; exact-six production invariant preserved)",
     "",
     "## 1. Volume & Filter Efficiency",
     "",
     "| Metric | Value | Notes |",
     "| :--- | :--- | :--- |",
-    `| **Total Parsed Postings** | \`${stats.totalParsed.toLocaleString()}\` | Raw valid postings in global XML feed |`,
+    `| **Raw Parsed Postings** | \`${result.rawParsedPostings.toLocaleString()}\` | Valid entries before within-feed deduplication |`,
+    `| **Duplicate Postings Removed** | \`${result.duplicatePostings.toLocaleString()}\` | Same original posting URL |`,
+    `| **Total Parsed Postings** | \`${stats.totalParsed.toLocaleString()}\` | Unique posting URLs before filtering |`,
     `| **Plausible Candidates** | \`${stats.plausibleCandidates.toLocaleString()}\` | \`remote=true\` OR \`country=PH\` |`,
     `| **Coarse Reduction Rate** | \`${stats.reductionPercent}%\` | Payload reduction before downstream triage |`,
     "",
@@ -90,7 +129,7 @@ export function renderMarkdownReport(result: PreprocessorResult): string {
     lines.push("| *(None)* | 0 |");
   } else {
     for (const c of topCompanies) {
-      lines.push(`| **${c.company}** | ${c.count} |`);
+      lines.push(`| **${markdownText(c.company)}** | ${c.count} |`);
     }
   }
 
@@ -107,7 +146,7 @@ export function renderMarkdownReport(result: PreprocessorResult): string {
   } else {
     for (const s of sampleCandidates) {
       const loc = [s.city, s.state, s.country].filter(Boolean).join(", ") || (s.remote ? "Remote" : "Unspecified");
-      lines.push(`| [${s.title}](${s.url}) | ${s.company} | ${loc} | \`${s.referenceNumber}\` |`);
+      lines.push(`| ${markdownLink(s.title, s.url)} | ${markdownText(s.company)} | ${markdownText(loc)} | ${markdownText(s.referenceNumber)} |`);
     }
   }
 
@@ -125,24 +164,60 @@ export async function runPreprocessor(opts: {
   xmlSource?: string;
   outputPath?: string;
   fetchImpl?: typeof fetch;
+  maxBytes?: number;
+  timeoutMs?: number;
 } = {}): Promise<PreprocessorResult> {
   const fetchImpl = opts.fetchImpl ?? fetch;
+  const maxBytes = Math.min(opts.maxBytes ?? MAX_FEED_BYTES, MAX_FEED_BYTES);
+  const timeoutMs = Math.min(opts.timeoutMs ?? FEED_TIMEOUT_MS, FEED_TIMEOUT_MS);
+  if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0 || !Number.isSafeInteger(timeoutMs) || timeoutMs <= 0) {
+    throw new Error("Workable feed budgets must be positive integers");
+  }
   let xml: string;
 
-  if (opts.xmlSource && existsSync(opts.xmlSource)) {
-    const { readFileSync } = await import("fs");
+  if (opts.xmlSource !== undefined) {
+    if (statSync(opts.xmlSource).size > maxBytes) throw new Error("Workable fixture exceeds byte budget");
     xml = readFileSync(opts.xmlSource, "utf-8");
   } else {
-    const res = await fetchImpl(WORKABLE_FEED_URL, {
-      headers: {
-        "User-Agent": "va-freelance-hub-workable-preprocessor/1.0 (+https://github.com/cyalcala/va-freelance-hub)",
-      },
+    const controller = new AbortController();
+    let reader: ReadableStreamDefaultReader<Uint8Array> | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => { controller.abort(); reject(new Error("Workable feed timed out")); }, timeoutMs);
     });
-    if (!res.ok) throw new Error(`Workable feed HTTP ${res.status}`);
-    xml = await res.text();
+    try {
+      xml = await Promise.race([timeout, (async () => {
+        const res = await fetchImpl(WORKABLE_FEED_URL, {
+          signal: controller.signal,
+          headers: { "User-Agent": "va-freelance-hub-workable-preprocessor/1.0 (+https://github.com/cyalcala/va-freelance-hub)" },
+        });
+        if (!res.ok) throw new Error(`Workable feed HTTP ${res.status}`);
+        if (!res.body) throw new Error("Workable feed body is missing");
+        reader = res.body.getReader();
+        if (Number(res.headers.get("content-length")) > maxBytes) throw new Error("Workable feed exceeds byte budget");
+        const decoder = new TextDecoder("utf-8", { fatal: true });
+        const chunks: string[] = [];
+        let bytes = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          bytes += value.byteLength;
+          if (bytes > maxBytes) throw new Error("Workable feed exceeds byte budget");
+          chunks.push(decoder.decode(value, { stream: true }));
+        }
+        chunks.push(decoder.decode());
+        return chunks.join("");
+      })()]);
+    } finally {
+      clearTimeout(timer);
+      controller.abort();
+      void reader?.cancel().catch(() => {});
+    }
   }
 
-  const result = generatePreprocessorResult(xml);
+  if (Buffer.byteLength(xml, "utf8") > maxBytes) throw new Error("Workable feed exceeds byte budget");
+
+  const result = generatePreprocessorResult(xml, opts.xmlSource ? `Local fixture: ${opts.xmlSource}` : WORKABLE_FEED_URL);
   const markdown = renderMarkdownReport(result);
 
   const targetPath = opts.outputPath ?? resolve(process.cwd(), "docs/workable-candidates-latest.md");
