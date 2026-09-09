@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-09-09
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34345544676
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34378154331
 
 | Metric | Value |
 | --- | ---: |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34345544
 
 ## Auto-added companies
 
-- Salesloft
+- UTTR
 
 ## Durable candidate queue (SP-06, non-publishing)
 
