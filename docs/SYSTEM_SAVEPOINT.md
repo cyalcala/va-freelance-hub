@@ -38,6 +38,30 @@ IDENTITY: `breezy:20four7va`, `breezy:sourcefit`
   - Typecheck and guardrails: 0 errors, 0 violations.
 - **Next exact action**: Deploy commit and admit `breezy:sourcefit` to shadow mode; implement Prospector 2.0 ATS candidate generation.
 
+### Run 63 — Prospector 2.0 ATS Mining & EX-BREEZY-2 Philippine Agency Expansion (2026-09-11)
+
+UNIT ID: EX-PROSPECTOR-2 / EX-BREEZY-2
+PHASE: QUALIFY / MINING / SCALE
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `breezy:yokly`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `ashby:supabase`, `ashby:camunda`, `ashby:ashby`, `ashby:amplify`, `workable:rocketams`, `workable:hunt-st`
+
+- **Prospector 2.0 ATS Candidate Mining Deployed & Verified**:
+  - Wired `buildAtsCandidateMiningQuery` and `buildDirectoryAtsMiningQuery` into `apps/web/src/pages/api/cron/prospect.ts`.
+  - Pulse run `34614483380` executed live: discovered 13 distinct ATS candidates.
+  - Inserted 7 new durable candidates into `source_registry` (`operational_state = 'candidate'`, `compliance_state = 'needs_review'`): `ashby:supabase`, `ashby:camunda`, `ashby:ashby`, `ashby:amplify`, `breezy:time-etc`, `workable:rocketams`, `workable:hunt-st`.
+  - Idempotently deduplicated 6 candidates already active in shadow.
+  - Auto-ensured `ashby` and `workable` FK records in `provider_profiles`.
+  - Verified remote D1 counts: zero public leakage (`count(*) = 5,331`, `active_count = 1,119`).
+- **EX-BREEZY-2: Three High-Signal Philippine VA Agencies Qualified**:
+  - **Yokly (`breezy:yokly`)**: 11 active remote roles for Filipino talent (Operations VAs, Marketing Automation, Client Experience, Full Stack Dev).
+  - **Remote Craft (`breezy:remote-craft`)**: 15 active remote roles for Filipino talent (Executive Assistant, General VA, Cold Caller, Customer Service Representative, Operations Manager, Creative Designer, Software Engineer).
+  - **VALUE Virtual Assistants (`breezy:value-virtual-assistants`)**: 6 active remote roles for Filipino talent (Operations & Bookkeeping Assistant, Video Editor, Freelance Social Media Manager, Bookkeeper).
+  - Probed live: all 3 achieved `HEALTHY_WITH_RESULTS` with valid robots allow and minimal metadata extraction.
+  - Scaled allowlist in `apps/web/src/pages/api/cron/source-admit.ts` with Tier A fast-track adjudication references.
+  - Documented in `docs/gauntlet/evidence/EX-BREEZY-2-ph-va-agencies-qualification.md`.
+  - Tests passing: `source-admit-route.test.ts` (11/11 pass), monorepo suite 1,280/1,280 pass.
+
 ### Run 61 — EX-BREEZY: Philippines-First Breezy HR Capability & Agency Qualification (2026-09-11)
 
 UNIT ID: EX-BREEZY

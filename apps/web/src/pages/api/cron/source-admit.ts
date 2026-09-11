@@ -42,6 +42,9 @@ export const SOURCE_ADMIT_ALLOWLIST = [
   "breezy:sourcefit",
   "breezy:time-etc",
   "breezy:vaaphilippines-recruitment",
+  "breezy:yokly",
+  "breezy:remote-craft",
+  "breezy:value-virtual-assistants",
 ] as const;
 
 type HandlerDependencies = {
@@ -111,6 +114,9 @@ function admitTarget(sourceId: string, clock: string) {
       "sourcefit": "Sourcefit",
       "time-etc": "Time Etc",
       "vaaphilippines-recruitment": "VAA Philippines",
+      "yokly": "Yokly",
+      "remote-craft": "Remote Craft",
+      "value-virtual-assistants": "VALUE Virtual Assistants",
     };
     const companyName = names[token] ?? token;
     const profile = buildBreezyProviderProfile(token);
