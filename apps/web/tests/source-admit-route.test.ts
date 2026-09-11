@@ -387,5 +387,63 @@ describe("source-admit route", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "workable:coconutva", published: 0 });
   });
+
+  test("reuses persisted unexpired provider evidence hash and timestamp without refetching", async () => {
+    let fetchCount = 0;
+    const existingHash = "c".repeat(64);
+    const existingCapturedAt = "2026-09-01T00:00:00.000Z";
+    const handler = createSourceAdmitHandler({
+      now: () => NOW,
+      fetchEvidence: async () => { fetchCount += 1; return "different document"; },
+      hash: async () => "d".repeat(64),
+      wrapDb: () => ({
+        prepare: (sql: string) => ({
+          bind: () => ({
+            first: async () => {
+              if (sql.includes("provider_profiles")) {
+                return {
+                  id: "workable",
+                  evidenceUrl: "https://help.workable.com/hc/en-us/articles/4420464031767-Utilizing-the-XML-Job-Feed",
+                  evidenceHash: existingHash,
+                  evidenceCapturedAt: existingCapturedAt,
+                  evidenceLeaseDays: 180,
+                };
+              }
+              return null;
+            },
+          }),
+        }),
+      }) as any,
+      runProbe: async (input) => ({
+        version: SHADOW_VERSION,
+        timestamp: NOW,
+        sourceId: input.sourceId,
+        providerId: input.providerId,
+        displayName: input.displayName,
+        endpoint: { url: input.endpointUrl, isHttps: true, host: "apply.workable.com", allowedHosts: input.provider.allowedHosts ?? null, hostValid: true },
+        auth: { class: "none", supported: true },
+        visibility: { filter: "published", isPublic: true, ambiguous: false },
+        provenance: { discoveryProvenance: input.discoveryProvenance ?? null, evidenceUrl: input.provider.evidenceUrl ?? null, providerFamily: "workable", mechanism: "ats_api" },
+        cadence: { minMinutes: 60, maxMinutes: 1440, rateGuidance: input.provider.rateGuidance ?? null },
+        robots: { checked: true, verdict: "allowed", wouldBlock: false, evidence: "allow", fromCache: false },
+        fetch: { attempted: true, status: 200, latencyMs: 1, bytesReceived: 10, contentType: "application/json" },
+        parse: { attempted: true, schemaHealth: "ok", itemCount: 11 },
+        sampleFunnel: { bytesReceived: 10, parsedItems: 11, plausibleItems: 11, truncated: false, budgetExceeded: false },
+        diagnostic: { outcome: "HEALTHY_WITH_RESULTS", probes: [], requestCount: 2, bytesReceived: 10, durationMs: 2, mutations: 0, shadowMode: true },
+      }),
+      admit: async (_db, input) => {
+        expect(input.provider.evidenceHash).toBe(existingHash);
+        expect(input.provider.evidenceCapturedAt).toBe(existingCapturedAt);
+        expect(input.primaryEvidence[0].contentSha256).toBe(existingHash);
+        expect(input.primaryEvidence[0].capturedAt).toBe(existingCapturedAt);
+        return { ok: true, sourceId: input.source.sourceId };
+      },
+    });
+    const response = await handler(requestContext({ sourceId: "workable:rocketams" }));
+    expect(response.status).toBe(200);
+    expect(fetchCount).toBe(0);
+    expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "workable:rocketams", published: 0 });
+  });
 });
+
 

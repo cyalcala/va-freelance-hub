@@ -28,6 +28,7 @@ import {
   WORKABLE_EVIDENCE_LEASE_DAYS,
   WORKABLE_PROVIDER_ID,
   type AdmissionDatabase,
+  type AdmissionProviderSnapshot,
   type TransitionGatewayDatabase,
 } from "@va-hub/scraper";
 
@@ -240,9 +241,33 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         },
       });
       const now = probe.timestamp;
-      // Capture actual reviewed primary-document content. A URL plus the clock
-      // is not a content fingerprint and cannot support replayable evidence.
-      const evidenceHash = await hash(await fetchEvidence(profile.evidenceUrl));
+      const db = wrapDb(env.DB) as TransitionGatewayDatabase & AdmissionDatabase;
+      let evidenceHash = "";
+      let evidenceCapturedAt = now;
+      try {
+        const existingProvider = await db.prepare(
+          `SELECT id, evidence_url AS evidenceUrl, evidence_hash AS evidenceHash,
+            evidence_captured_at AS evidenceCapturedAt, evidence_lease_days AS evidenceLeaseDays
+          FROM provider_profiles WHERE id=?`
+        ).bind(providerId).first<AdmissionProviderSnapshot>();
+
+        const existingLease = existingProvider?.evidenceCapturedAt && existingProvider.evidenceLeaseDays
+          ? Date.parse(existingProvider.evidenceCapturedAt) + existingProvider.evidenceLeaseDays * 86_400_000
+          : 0;
+
+        if (existingProvider && existingProvider.evidenceUrl === profile.evidenceUrl && existingProvider.evidenceHash && existingProvider.evidenceCapturedAt && existingLease > Date.parse(now)) {
+          evidenceHash = existingProvider.evidenceHash;
+          evidenceCapturedAt = existingProvider.evidenceCapturedAt;
+        }
+      } catch {
+        // DB read error or unmocked in unit test - fall through to fresh fetch
+      }
+
+      if (!evidenceHash) {
+        // Capture actual reviewed primary-document content. A URL plus the clock
+        // is not a content fingerprint and cannot support replayable evidence.
+        evidenceHash = await hash(await fetchEvidence(profile.evidenceUrl));
+      }
       const provider = {
         id: providerId,
         providerFamily: profile.providerFamily,
@@ -252,7 +277,7 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         allowedHosts: profile.allowedHosts,
         evidenceUrl: profile.evidenceUrl,
         evidenceHash,
-        evidenceCapturedAt: now,
+        evidenceCapturedAt,
         visibilityFilter: profile.visibilityFilter,
         contentScope: profile.contentScope,
         cadenceMinMinutes: profile.cadenceMinMinutes,
@@ -279,13 +304,12 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         governanceRevision: 1,
         lastTransitionHash: null,
       };
-      const db = wrapDb(env.DB) as TransitionGatewayDatabase & AdmissionDatabase;
       const result = await admit(db, {
         now,
         source,
         provider,
         probe,
-        primaryEvidence: [{ url: provider.evidenceUrl!, contentSha256: evidenceHash, capturedAt: now }],
+        primaryEvidence: [{ url: provider.evidenceUrl!, contentSha256: evidenceHash, capturedAt: evidenceCapturedAt }],
         adjudicationRef,
       });
       if (!result.ok) {
