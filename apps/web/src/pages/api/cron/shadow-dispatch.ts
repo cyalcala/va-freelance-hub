@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getDb, sourceShadowObservations } from "@va-hub/db";
 import { and, eq, sql } from "drizzle-orm";
 import { isAuthorized } from "@/lib/auth";
+import { createRobotsStore } from "@/lib/robots-store";
 import {
   dispatchShadowObservations,
   defaultRunProbe,
@@ -9,6 +10,7 @@ import {
   createMemoryRobotsStore,
   MAX_DISPATCHES_PER_RUN,
   type DispatchRegistryRow,
+  type RobotsCacheStore,
 } from "@va-hub/scraper";
 
 export const prerender = false;
@@ -18,6 +20,7 @@ type ShadowDispatchHandlerDependencies = {
   loadAdmissionEvidence: typeof loadCurrentAdmissionEvidence;
   runProbe: typeof defaultRunProbe;
   now?: () => Date;
+  createRobotsStore?: (db: any) => RobotsCacheStore;
 };
 
 // SP-23B: dormant, revision-bound observation endpoint. This implementation
@@ -36,7 +39,9 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
       const db = dependencies.getDb(env);
       const windowHour = Math.floor((dependencies.now?.() ?? new Date()).getTime() / 3_600_000);
       if (!Number.isSafeInteger(windowHour) || windowHour < 0) throw new Error("Invalid shadow window clock");
-      const robotsStore = createMemoryRobotsStore();
+      const robotsStore = dependencies.createRobotsStore
+        ? dependencies.createRobotsStore(db)
+        : createMemoryRobotsStore();
       const summary = await dispatchShadowObservations({
         loadRegistryRows: async () => {
           // Rotate bounded windows even if the first group has invalid evidence
@@ -92,4 +97,9 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
   };
 }
 
-export const POST = createShadowDispatchHandler({ getDb, loadAdmissionEvidence: loadCurrentAdmissionEvidence, runProbe: defaultRunProbe });
+export const POST = createShadowDispatchHandler({
+  getDb,
+  loadAdmissionEvidence: loadCurrentAdmissionEvidence,
+  runProbe: defaultRunProbe,
+  createRobotsStore,
+});

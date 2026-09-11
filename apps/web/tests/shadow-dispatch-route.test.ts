@@ -130,4 +130,31 @@ describe("shadow route current-evidence boundary", () => {
       expect(await response.json()).toEqual({ error: "Shadow dispatch evidence or observation storage unavailable" });
     });
   }
+
+  test("uses injected createRobotsStore when provided", async () => {
+    const { db } = database();
+    let robotsStoreCreated = 0;
+    const mockStore = {
+      get: async () => null,
+      put: async () => {},
+    };
+    const handler = createShadowDispatchHandler({
+      getDb: () => db as any,
+      now: () => new Date(NOW),
+      loadAdmissionEvidence: async () => admission(),
+      runProbe: async (input, options: any) => {
+        expect(options.robotsStore).toBe(mockStore);
+        return probe(input);
+      },
+      createRobotsStore: (injectedDb) => {
+        expect(injectedDb).toBe(db as any);
+        robotsStoreCreated++;
+        return mockStore;
+      },
+    });
+    const response = await handler(requestContext({}));
+    expect(response.status).toBe(200);
+    expect(robotsStoreCreated).toBe(1);
+  });
 });
+

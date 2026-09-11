@@ -475,4 +475,39 @@ describe("checkRobots — platform fetch default (REL-12)", () => {
     const cached429 = await store2.get("https://apply.workable.com");
     expect(cached429).toBeNull(); // 429 MUST NOT be cached!
   });
+
+  test("uses stale cached 200 robots.txt as fallback during transient 429 (RFC 9309)", async () => {
+    const store = memoryStore();
+    // Seed store with an expired entry (older than 24 hours)
+    const expiredFetchedAt = new Date(NOW.getTime() - 25 * 60 * 60 * 1000).toISOString();
+    await store.put({
+      origin: "https://apply.workable.com",
+      fetchedAt: expiredFetchedAt,
+      status: 200,
+      body: "User-agent: *\nAllow: /",
+      crawlDelay: null,
+      contentSignals: null,
+      error: null,
+    });
+
+    // Fresh fetch returns 429
+    let calls = 0;
+    const fetchImpl429 = async () => {
+      calls++;
+      return response("Too Many Requests", 429);
+    };
+
+    const result = await checkRobots("https://apply.workable.com/api/v1/widget/accounts/test", {
+      store,
+      now,
+      fetchImpl: fetchImpl429,
+    });
+
+    // Stale cache should have saved the decision!
+    expect(result.verdict).toBe("allowed");
+    expect(result.fromCache).toBe(true);
+    expect(result.evidence).toContain("stale cache fallback");
+    expect(calls).toBe(2); // attempted fetch + retry
+  });
 });
+

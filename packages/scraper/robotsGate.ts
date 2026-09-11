@@ -284,6 +284,17 @@ export async function checkRobots(url: string, deps: RobotsGateDeps): Promise<Ro
       now,
     );
 
+    // RFC 9309 §2.3.1.4: If fresh fetch failed due to transient 429 or network error,
+    // and we have a previously cached valid 200 robots.txt, use it as fallback rather than failing.
+    if ((entry.status === 429 || entry.error) && cached && cached.status === 200 && cached.body) {
+      const staleDecision = decideFromEntry(cached, url, userAgentToken);
+      return result({
+        ...staleDecision,
+        evidence: `${staleDecision.evidence} (stale cache fallback on HTTP ${entry.status || entry.error})`,
+        fromCache: true,
+      });
+    }
+
     // A cache write failure must not fail the decision — worst case we refetch
     // robots.txt next tick, which is impolite but not incorrect.
     // Do not cache transient rate limits (429) or fetch errors so subsequent
