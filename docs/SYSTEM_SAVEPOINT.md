@@ -38,6 +38,35 @@ IDENTITY: `breezy:20four7va`, `breezy:sourcefit`
   - Typecheck and guardrails: 0 errors, 0 violations.
 - **Next exact action**: Deploy commit and admit `breezy:sourcefit` to shadow mode; implement Prospector 2.0 ATS candidate generation.
 
+### Run 64 — EX-WORKABLE: Workable ATS Careers Widget API Integration & Agency Expansion (2026-09-11)
+
+UNIT ID: EX-WORKABLE
+PHASE: QUALIFY / INTEGRATION / SCALE
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `workable:coconutva`, `workable:crewbloom`, `workable:pearltalent`, `workable:rocketams`, `workable:hunt-st`, `workable:hello-rache`
+
+- **Workable Careers Widget API Discovery & Integration**:
+  - Replaced failing/unsupported v3 POST endpoint with official unauthenticated public widget endpoint: `https://apply.workable.com/api/v1/widget/accounts/{token}`.
+  - Returns clean JSON with `{ name, description, jobs: [...] }` containing complete metadata (title, shortcode, url, telecommuting, locations, published_on).
+  - Explicitly permitted by `https://apply.workable.com/robots.txt` (`Disallow: `).
+  - 100% compatible with `candidate-shadow.ts` (`parseJsonBodyCount`).
+  - Updated `atsEndpointUrl`, `fetchWorkable`, `ATS_PROVIDER_CONFIG.workable.endpointPattern`.
+  - Implemented `buildWorkableAtsProviderProfile` and `buildWorkableAtsCandidateRow` in `workable-canary.ts`.
+- **High-Yield Philippine Remote Agencies Qualified (540 Jobs Total)**:
+  - **Pearl Talent (`workable:pearltalent`)**: 235 active remote roles for Filipino talent.
+  - **Hunt St (`workable:hunt-st`)**: 153 active remote roles.
+  - **CrewBloom (`workable:crewbloom`)**: 97 active remote roles.
+  - **Coconut VA (`workable:coconutva`)**: 41 active remote roles.
+  - **RocketAMS (`workable:rocketams`)**: 11 active remote roles.
+  - **Hello Rache (`workable:hello-rache`)**: 3 active remote healthcare VA roles.
+  - All 6 passed candidate shadow probes with 100% `HEALTHY_WITH_RESULTS` and zero robots block.
+- **Allowlist & Tests**:
+  - Added all 6 Workable agency targets to `SOURCE_ADMIT_ALLOWLIST` in `source-admit.ts`.
+  - Added Workable admission test in `source-admit-route.test.ts` (12/12 pass).
+  - Tested: `prospect-candidate.test.ts` (12/12 pass), `robotsGate.test.ts` (28/28 pass).
+- **Next exact action**: Deploy commit, admit Workable candidates to shadow mode in production D1, and trigger shadow dispatch.
+
 ### Run 63 — Prospector 2.0 ATS Mining & EX-BREEZY-2 Philippine Agency Expansion (2026-09-11)
 
 UNIT ID: EX-PROSPECTOR-2 / EX-BREEZY-2

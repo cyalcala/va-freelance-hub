@@ -23,6 +23,10 @@ import {
   buildBreezyProviderProfile,
   BREEZY_EVIDENCE_LEASE_DAYS,
   BREEZY_PROVIDER_ID,
+  buildWorkableAtsCandidateRow,
+  buildWorkableAtsProviderProfile,
+  WORKABLE_EVIDENCE_LEASE_DAYS,
+  WORKABLE_PROVIDER_ID,
   type AdmissionDatabase,
   type TransitionGatewayDatabase,
 } from "@va-hub/scraper";
@@ -45,6 +49,12 @@ export const SOURCE_ADMIT_ALLOWLIST = [
   "breezy:yokly",
   "breezy:remote-craft",
   "breezy:value-virtual-assistants",
+  "workable:coconutva",
+  "workable:crewbloom",
+  "workable:pearltalent",
+  "workable:rocketams",
+  "workable:hunt-st",
+  "workable:hello-rache",
 ] as const;
 
 type HandlerDependencies = {
@@ -131,6 +141,31 @@ function admitTarget(sourceId: string, clock: string) {
       providerId: BREEZY_PROVIDER_ID,
       leaseDays: BREEZY_EVIDENCE_LEASE_DAYS,
       adjudicationRef: `ex-ph-agency-breezy-${token}-tier-a-fast-track`,
+    };
+  }
+  if (sourceId.startsWith("workable:")) {
+    const token = sourceId.replace("workable:", "");
+    const names: Record<string, string> = {
+      "coconutva": "Coconut VA",
+      "crewbloom": "CrewBloom",
+      "pearltalent": "Pearl Talent",
+      "rocketams": "RocketAMS",
+      "hunt-st": "Hunt St",
+      "hello-rache": "Hello Rache",
+    };
+    const companyName = names[token] ?? token;
+    const profile = buildWorkableAtsProviderProfile();
+    const candidate = buildWorkableAtsCandidateRow({
+      token,
+      companyName,
+      nowIso: clock,
+    });
+    return {
+      profile,
+      candidate,
+      providerId: WORKABLE_PROVIDER_ID,
+      leaseDays: WORKABLE_EVIDENCE_LEASE_DAYS,
+      adjudicationRef: `ex-ph-agency-workable-${token}-tier-a-fast-track`,
     };
   }
   const profile = buildTeamtailorProviderProfile("career.teamtailor.com");

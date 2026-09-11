@@ -54,7 +54,7 @@ export function atsEndpointUrl(platform: AtsPlatform, token: string): string {
     case "greenhouse":
       return `https://boards-api.greenhouse.io/v1/boards/${token}/jobs`;
     case "workable":
-      return `https://apply.workable.com/api/v3/accounts/${token}/jobs`;
+      return `https://apply.workable.com/api/v1/widget/accounts/${token}`;
     case "breezy":
       return `https://${token}.breezy.hr/json`;
     case "ashby":
@@ -199,21 +199,21 @@ export async function fetchAshby(token: string, companyName: string): Promise<Ne
 }
 
 async function fetchWorkable(token: string, companyName: string): Promise<NewOpportunity[]> {
-  const res = await fetch(`https://apply.workable.com/api/v3/accounts/${token}/jobs`, {
-    method: "POST", // Workable API often requires POST for the jobs listing
-    headers: collectionHeaders({ "Content-Type": "application/json" }),
-    body: JSON.stringify({ query: "", location: [], department: [], worktype: [], remote: [] }),
+  const res = await fetch(`https://apply.workable.com/api/v1/widget/accounts/${token}`, {
+    headers: collectionHeaders({ Accept: "application/json" }),
     signal: AbortSignal.timeout(15_000),
   });
   if (!res.ok) throw new Error(`Workable HTTP ${res.status}`);
-  const data = await res.json() as any;
-  
-  const jobs = data.results || [];
+  const data = (await res.json()) as any;
+
+  const jobs = Array.isArray(data?.jobs) ? data.jobs : [];
   return jobs
-    .filter((job: any) => job && job.title && job.shortcode)
+    .filter((job: any) => job && job.title && (job.url || job.shortcode))
     .map((job: any) => {
       const title = normalizeText(job.title);
-      const sourceUrl = `https://apply.workable.com/${token}/j/${job.shortcode}/`;
+      const sourceUrl = job.url || `https://apply.workable.com/${token}/j/${job.shortcode}/`;
+      const locationParts = [job.city, job.state, job.country].filter(Boolean);
+      const locationRaw = normalizeText(locationParts.join(", ")) || (job.telecommuting ? "Remote" : null);
       return {
         title,
         company: companyName,
@@ -221,13 +221,10 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
         sourceUrl,
         sourcePlatform: companyName,
         tags: [companyName.toLowerCase()],
-        locationType: "remote",
-        // Geo masterplan L0: Workable v3 results carry location objects.
-        locationRaw:
-          normalizeText([job?.location?.city, job?.location?.region, job?.location?.country].filter(Boolean).join(", ")) ||
-          (typeof job?.location === "string" ? normalizeText(job.location) : "") || null,
+        locationType: "remote" as const,
+        locationRaw: job.telecommuting === false ? `${locationRaw ?? ""} (onsite)`.trim() : locationRaw,
         description: null,
-        postedAt: safeNormalizeDate(job.published_on),
+        postedAt: safeNormalizeDate(job.published_on || job.created_at),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
       };

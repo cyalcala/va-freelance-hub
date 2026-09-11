@@ -119,3 +119,104 @@ export function buildWorkableCandidateRow(input: { nowIso: string; reviewDeadlin
     optOut: 0,
   };
 }
+
+export const WORKABLE_ATS_EVIDENCE_URL = "https://help.workable.com/hc/en-us/articles/115015865688-Adding-the-Workable-Job-Widget-to-your-website";
+export const WORKABLE_ATS_ALLOWED_HOSTS = "apply.workable.com";
+
+export interface WorkableAtsProviderProfileRow {
+  id: string;
+  displayName: string;
+  providerFamily: string;
+  mechanism: "ats_api";
+  authClass: "none";
+  endpointPattern: string;
+  allowedHosts: string;
+  evidenceUrl: string;
+  evidenceLeaseDays: number;
+  visibilityFilter: "published";
+  contentScope: "minimal";
+  cadenceMinMinutes: number;
+  cadenceMaxMinutes: number;
+  rateGuidance: string;
+  robotsHandling: "observe";
+  removalSemantics: string;
+  defaultComplianceState: "needs_review";
+  defaultOperationalState: "candidate";
+  notes: string;
+}
+
+export function buildWorkableAtsProviderProfile(): WorkableAtsProviderProfileRow {
+  return {
+    id: WORKABLE_PROVIDER_ID,
+    displayName: "Workable",
+    providerFamily: "workable",
+    mechanism: "ats_api",
+    authClass: "none",
+    endpointPattern: "https://apply.workable.com/api/v1/widget/accounts/{token}",
+    allowedHosts: WORKABLE_ATS_ALLOWED_HOSTS,
+    evidenceUrl: WORKABLE_ATS_EVIDENCE_URL,
+    evidenceLeaseDays: WORKABLE_EVIDENCE_LEASE_DAYS,
+    visibilityFilter: "published",
+    contentScope: "minimal",
+    cadenceMinMinutes: 60,
+    cadenceMaxMinutes: 1440,
+    rateGuidance: "Public careers widget API GET is unauthenticated; 60-minute ATS cadence guard applies.",
+    robotsHandling: "observe",
+    removalSemantics: "Deactivate within one successful reconciliation cycle once a posting disappears from a complete feed pull.",
+    defaultComplianceState: "needs_review",
+    defaultOperationalState: "candidate",
+    notes: "Workable public /api/v1/widget/accounts/{token} careers widget endpoint. Captures minimal discovery metadata (title, company, URL, locations, remote/telecommuting status, published date). Never scrapes full description HTML. Canonical linkback to company application page.",
+  };
+}
+
+export interface WorkableAtsBoardInput {
+  token: string;
+  companyName: string;
+  nowIso: string;
+  reviewDeadlineDays?: number;
+}
+
+export interface WorkableAtsCandidateRow {
+  sourceId: string;
+  providerId: string;
+  displayName: string;
+  endpointUrl: string;
+  companyToken: string;
+  discoveryProvenance: string;
+  complianceState: "conditional";
+  operationalState: "candidate";
+  reviewDeadline: string;
+  policyExpiry: string;
+  owner: string;
+  lastDecision: string;
+  lastDecisionAt: string;
+  optOut: 0;
+}
+
+export function buildWorkableAtsCandidateRow(input: WorkableAtsBoardInput): WorkableAtsCandidateRow {
+  const sourceId = `workable:${input.token}`;
+  const endpointUrl = `https://apply.workable.com/api/v1/widget/accounts/${input.token}`;
+  const provenance = JSON.stringify({
+    companyName: input.companyName,
+    token: input.token,
+    decidedAt: input.nowIso,
+    provenance: "ex-workable-curated-board",
+    complianceBasis: "documented public/no-auth Workable widget API GET (help.workable.com); minimal discovery metadata conditional decision per Source Perpetuity strategy operating posture",
+  });
+  return {
+    sourceId,
+    providerId: WORKABLE_PROVIDER_ID,
+    displayName: input.companyName,
+    endpointUrl,
+    companyToken: input.token,
+    discoveryProvenance: provenance,
+    complianceState: "conditional",
+    operationalState: "candidate",
+    reviewDeadline: computeReviewDeadline(input.nowIso, input.reviewDeadlineDays ?? 14),
+    policyExpiry: computePolicyExpiry(input.nowIso, WORKABLE_EVIDENCE_LEASE_DAYS),
+    owner: "ex-workable",
+    lastDecision: "conditional minimal-content decision (documented public/no-auth Workable widget API GET)",
+    lastDecisionAt: input.nowIso,
+    optOut: 0,
+  };
+}

@@ -346,12 +346,22 @@ export type { NormalizedWorkablePosting, WorkableFilterStats } from "./workable"
 export {
   buildWorkableProviderProfile,
   buildWorkableCandidateRow,
+  buildWorkableAtsProviderProfile,
+  buildWorkableAtsCandidateRow,
   WORKABLE_PROVIDER_ID,
   WORKABLE_SOURCE_ID,
   WORKABLE_EVIDENCE_URL,
   WORKABLE_EVIDENCE_LEASE_DAYS,
+  WORKABLE_ATS_EVIDENCE_URL,
+  WORKABLE_ATS_ALLOWED_HOSTS,
 } from "./workable-canary";
-export type { WorkableProviderProfileRow, WorkableCandidateRow } from "./workable-canary";
+export type {
+  WorkableProviderProfileRow,
+  WorkableCandidateRow,
+  WorkableAtsProviderProfileRow,
+  WorkableAtsBoardInput,
+  WorkableAtsCandidateRow,
+} from "./workable-canary";
 export {
   findRepeatedCrossCompanyApplyHosts,
   sanitizeApplyUrl,

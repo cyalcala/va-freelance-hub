@@ -68,7 +68,7 @@ export const ATS_PROVIDER_CONFIG: Record<AtsPlatform, ProviderConfig> = {
     displayName: "Workable",
     mechanism: "ats_api",
     authClass: "none",
-    endpointPattern: "https://apply.workable.com/api/v3/accounts/{token}/jobs",
+    endpointPattern: "https://apply.workable.com/api/v1/widget/accounts/{token}",
     allowedHosts: "apply.workable.com",
   },
 };

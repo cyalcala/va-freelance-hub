@@ -69,7 +69,7 @@ describe("buildCandidateRow", () => {
       { platform: "ashby", token: "supabase", expected: "https://api.ashbyhq.com/posting-api/job-board/supabase" },
       { platform: "breezy", token: "acme", expected: "https://acme.breezy.hr/json" },
       { platform: "lever", token: "vaultoutsourcing", expected: "https://api.lever.co/v0/postings/vaultoutsourcing?mode=json" },
-      { platform: "workable", token: "hunt-st", expected: "https://apply.workable.com/api/v3/accounts/hunt-st/jobs" },
+      { platform: "workable", token: "hunt-st", expected: "https://apply.workable.com/api/v1/widget/accounts/hunt-st" },
       { platform: "greenhouse", token: "gitlab", expected: "https://boards-api.greenhouse.io/v1/boards/gitlab/jobs" },
     ];
     for (const c of cases) {

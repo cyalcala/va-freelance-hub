@@ -347,7 +347,7 @@ describe("checkRobots — ATS endpoint integration (COMP-01A)", () => {
 
   test("checks robots for a Workable ATS endpoint", async () => {
     const store = memoryStore();
-    const result = await checkRobots("https://apply.workable.com/api/v3/accounts/test/jobs", {
+    const result = await checkRobots("https://apply.workable.com/api/v1/widget/accounts/test", {
       store,
       now,
       mode: "observe",
