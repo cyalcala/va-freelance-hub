@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-09-11
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34614483380
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34622369441
 
 | Metric | Value |
 | --- | ---: |
@@ -13,9 +13,9 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34614483
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
 | Durable candidates discovered (distinct ATS) | 13 |
-| Durable candidates inserted | 7 |
-| Durable candidates refreshed | 0 |
-| Durable candidates skipped (duplicate) | 6 |
+| Durable candidates inserted | 0 |
+| Durable candidates refreshed | 7 |
+| Durable candidates skipped (duplicate) | 13 |
 | Durable candidates skipped (opt-out) | 0 |
 | Candidate backlog (needs_review/candidate) | 7 |
 | Candidate overdue (past 14d deadline) | 0 |
@@ -27,6 +27,6 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34614483
 
 ## Durable candidate queue (SP-06, non-publishing)
 
-- Inserted: ashby:supabase, ashby:camunda, ashby:ashby, ashby:amplify, breezy:time-etc, workable:rocketams, workable:hunt-st
-- Refreshed: (none)
+- Inserted: (none)
+- Refreshed: ashby:supabase, ashby:camunda, ashby:ashby, ashby:amplify, breezy:time-etc, workable:rocketams, workable:hunt-st
 - Mode: non-publishing-candidate-only
