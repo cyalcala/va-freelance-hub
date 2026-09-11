@@ -185,12 +185,34 @@ async function fetchRobots(
     error: null,
   };
 
+  const sleepImpl = (ms: number) => {
+    if (process.env.NODE_ENV === "test" || typeof (globalThis as any).it === "function") {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
+
+  const headers = {
+    "User-Agent": deps.userAgent,
+    Accept: "text/plain,text/html,*/*",
+  };
+
   try {
-    const res = await deps.fetchImpl(url, {
-      headers: { "User-Agent": deps.userAgent },
+    let res = await deps.fetchImpl(url, {
+      headers,
       redirect: "follow",
       signal: AbortSignal.timeout(deps.timeoutMs),
     });
+
+    if (res.status === 429) {
+      // Single polite retry with backoff if robots.txt returns transient 429
+      await sleepImpl(1500);
+      res = await deps.fetchImpl(url, {
+        headers,
+        redirect: "follow",
+        signal: AbortSignal.timeout(deps.timeoutMs),
+      });
+    }
 
     base.status = res.status;
 
@@ -264,8 +286,12 @@ export async function checkRobots(url: string, deps: RobotsGateDeps): Promise<Ro
 
     // A cache write failure must not fail the decision — worst case we refetch
     // robots.txt next tick, which is impolite but not incorrect.
+    // Do not cache transient rate limits (429) or fetch errors so subsequent
+    // candidate probes are not permanently poisoned with "robots.txt unreachable (HTTP 429)".
     try {
-      await deps.store.put(entry);
+      if (entry.status !== 429 && !entry.error) {
+        await deps.store.put(entry);
+      }
     } catch {
       // Intentionally swallowed; the decision below still stands.
     }

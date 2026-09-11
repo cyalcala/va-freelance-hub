@@ -434,4 +434,45 @@ describe("checkRobots — platform fetch default (REL-12)", () => {
     }
     expect(receiver).toBe(globalThis);
   });
+
+  test("retries transient 429 on robots.txt and does not cache 429 in store", async () => {
+    const store = memoryStore();
+    let calls = 0;
+    const fetchImpl = async () => {
+      calls++;
+      if (calls === 1) return response("Too Many Requests", 429);
+      return response("User-agent: *\nAllow: /", 200);
+    };
+
+    const result = await checkRobots("https://apply.workable.com/api/v1/widget/accounts/test", {
+      store,
+      now,
+      fetchImpl,
+    });
+
+    expect(result.verdict).toBe("allowed");
+    expect(calls).toBe(2);
+    const cached = await store.get("https://apply.workable.com");
+    expect(cached).not.toBeNull();
+    expect(cached?.status).toBe(200);
+
+    // Now test permanent 429 is not cached
+    const store2 = memoryStore();
+    let calls2 = 0;
+    const fetchImpl429 = async () => {
+      calls2++;
+      return response("Too Many Requests", 429);
+    };
+
+    const result429 = await checkRobots("https://apply.workable.com/api/v1/widget/accounts/test", {
+      store: store2,
+      now,
+      fetchImpl: fetchImpl429,
+    });
+
+    expect(result429.verdict).toBe("unknown");
+    expect(calls2).toBe(2); // initial + 1 retry
+    const cached429 = await store2.get("https://apply.workable.com");
+    expect(cached429).toBeNull(); // 429 MUST NOT be cached!
+  });
 });

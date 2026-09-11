@@ -372,7 +372,9 @@ export async function runCandidateShadowProbe(
       timeoutMs: SHADOW_FETCH_TIMEOUT_MS,
       fetchImpl,
     });
-    requestCount += 1;
+    if (!robotsRes.fromCache) {
+      requestCount += 1;
+    }
     robotsVerdict = robotsRes.verdict;
     robotsWouldBlock = robotsRes.wouldBlock;
     robotsEvidence = robotsRes.evidence;
@@ -399,11 +401,23 @@ export async function runCandidateShadowProbe(
   fetchAttempted = true;
   const fetchStart = Date.now();
   let body: string | null = null;
+  const fetchHeaders = {
+    "User-Agent": "Mozilla/5.0 (compatible; RemotePHJobsBot/1.0; +CandidateShadow/1.0)",
+    Accept: input.provider.mechanism === "ats_api" || input.provider.mechanism.includes("api")
+      ? "application/json"
+      : "application/rss+xml, application/xml, application/json, text/xml",
+  };
+  const sleepImpl = (ms: number) => {
+    if (process.env.NODE_ENV === "test" || typeof (globalThis as any).it === "function") {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  };
   const controller = new AbortController();
   const tid = setTimeout(() => controller.abort(), SHADOW_FETCH_TIMEOUT_MS);
   try {
-    const res = await (fetchImpl as any)(input.endpointUrl, {
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; RemotePHJobsBot/1.0; +CandidateShadow/1.0)", Accept: input.provider.mechanism === "ats_api" || input.provider.mechanism.includes("api") ? "application/json" : "application/rss+xml, application/xml, application/json, text/xml" },
+    let res = await (fetchImpl as any)(input.endpointUrl, {
+      headers: fetchHeaders,
       signal: controller.signal,
       redirect: "manual",
     });
@@ -411,6 +425,29 @@ export async function runCandidateShadowProbe(
     fetchStatus = (res as any).status;
     contentType = (res as any).headers?.get?.("content-type") ?? null;
     requestCount += 1;
+
+    // Retry once with backoff if an unauthenticated ATS GET returns transient 429
+    if (fetchStatus === 429 && (input.provider.mechanism === "ats_api" || input.provider.mechanism.includes("api")) && input.provider.authClass === "none") {
+      await sleepImpl(1500);
+      const retryController = new AbortController();
+      const retryTid = setTimeout(() => retryController.abort(), SHADOW_FETCH_TIMEOUT_MS);
+      try {
+        const retryRes = await (fetchImpl as any)(input.endpointUrl, {
+          headers: fetchHeaders,
+          signal: retryController.signal,
+          redirect: "manual",
+        });
+        if ((retryRes as any).ok || (retryRes as any).status !== 429) {
+          res = retryRes;
+          fetchStatus = (res as any).status;
+          contentType = (res as any).headers?.get?.("content-type") ?? null;
+        }
+      } catch {
+        // preserve original 429 response
+      } finally {
+        clearTimeout(retryTid);
+      }
+    }
 
     if ((res as any).ok) {
       const read = await readUtf8BodyWithBudget(res, SHADOW_MAX_BYTES);

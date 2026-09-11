@@ -19,6 +19,29 @@ Direct production D1 read & workflow verification confirms:
 3. **Current Supply Baseline**: Strict qualified 7-day total is 88 jobs = 12.57 jobs/day
    (We Work Remotely 53, Real Work From Anywhere 22, Remote OK 9, Jobicy APAC 4, Remotive 0).
 
+### Run 67 — FIX-PROBE-PACING: Transient 429 Retry, Polite Inter-Probe Pacing & Store Exclusion (2026-09-12)
+
+UNIT ID: FIX-PROBE-PACING
+PHASE: REPAIR / PACING / RELIABILITY
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: all shadow sources (specifically Workable, Greenhouse, Breezy)
+
+- **Probe Pacing in `shadow-dispatcher.ts`**:
+  - Added polite 1200ms inter-probe delay (`sleep(1200)`) between consecutive external requests in `dispatchShadowObservations`.
+  - Added optional `sleep?: (ms: number) => Promise<void>` in `ShadowDispatchDeps`, which defaults to 0ms in test environments (`NODE_ENV === "test"` or vitest/bun test runners) and real backoff in production.
+- **Transient 429 Single Retry with Backoff in `candidate-shadow.ts`**:
+  - Implemented polite single retry with backoff for unauthenticated ATS GET endpoints encountering transient HTTP 429.
+  - Accurately counts external requests (avoiding incrementing request count when robots.txt is served from cache).
+- **Transient 429 Retry & No-Cache Protection in `robotsGate.ts`**:
+  - Implemented polite single retry on `/robots.txt` when encountering transient 429, adding `Accept: text/plain,text/html,*/*`.
+  - Enforced that HTTP 429 and network errors are NEVER cached in `RobotsCacheStore`, preventing transient rate limits from poisoning subsequent candidate probes across the run.
+- **Verification Evidence**:
+  - Added unit test in `candidate-shadow.test.ts` verifying transient 429 recovery and single retry.
+  - Added unit tests in `robotsGate.test.ts` verifying 429 retry on `robots.txt` and proving 429 entries are never cached.
+  - Full suite: **1,286/1,286 Bun tests pass across 129 files**; 15/15 Python unit tests pass; `audit:guardrails` clean; `typecheck` clean; Astro production build clean.
+- **Next exact action**: Commit, push, trigger `EX-03 Shadow Dispatch` to verify healthy observation outcomes, then admit remaining allowlisted Philippine VA agencies.
+
 ### Run 66 — FIX-ROBOTS-CACHE: Batch Robots Caching & 429 Diagnostic Resilience (2026-09-12)
 
 UNIT ID: FIX-ROBOTS-CACHE

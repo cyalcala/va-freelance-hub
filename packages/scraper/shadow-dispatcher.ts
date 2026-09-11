@@ -316,6 +316,7 @@ export interface ShadowDispatchDeps {
   now?: () => Date;
   maxDispatchesPerRun?: number;
   createDispatchKey?: () => string;
+  sleep?: (ms: number) => Promise<void>;
 }
 
 export interface ShadowDispatchSummary {
@@ -444,6 +445,18 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
       continue;
     }
     summary.eligible += 1;
+
+    // Polite inter-probe delay between external requests
+    if (summary.dispatched > 0) {
+      const sleepImpl = deps.sleep ?? ((ms: number) => {
+        if (process.env.NODE_ENV === "test" || typeof (globalThis as any).it === "function") {
+          return Promise.resolve();
+        }
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      });
+      await sleepImpl(1200);
+    }
+
     const input = inputForContext(context);
     const binding = { input, admissionEvidenceId: evidence.id, shadowEntryHash: row.lastTransitionHash,
       dispatchKey: deps.createDispatchKey?.() ?? crypto.randomUUID(), startedAt, completedAt: startedAt };

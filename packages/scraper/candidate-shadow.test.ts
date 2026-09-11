@@ -483,7 +483,7 @@ describe("candidate-shadow — stop dispositions, no alternate path (SP-07 crite
     expect(resBad.diagnostic.outcome).toBe("POLICY_BLOCKED");
   });
 
-  it("rate limited (429) → RATE_LIMITED without retry", async () => {
+  it("rate limited (429) → RATE_LIMITED after single retry on unauthenticated ATS GET", async () => {
     const input = candidateInput();
     const fetcher = mockFetchFor({
       "https://boards-api.greenhouse.io/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
@@ -492,9 +492,37 @@ describe("candidate-shadow — stop dispositions, no alternate path (SP-07 crite
     global.fetch = fetcher;
     const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
     expect(res.diagnostic.outcome).toBe("RATE_LIMITED");
-    expect(fetcher.mock.calls.length).toBe(2);
+    expect(fetcher.mock.calls.length).toBe(3); // robots + initial job fetch + single retry
     // Must not attempt alternate URL
     expect(res.fetch.attempted).toBe(true);
+  });
+
+  it("recovers from transient 429 on unauthenticated ATS GET retry", async () => {
+    const input = candidateInput();
+    let jobsCalls = 0;
+    const fetcher = vi.fn(async (url: any) => {
+      const urlStr = String(url);
+      if (urlStr.endsWith("/robots.txt")) {
+        return new Response("User-agent: *\nAllow: /\n", { status: 200, headers: { "content-type": "text/plain" } });
+      }
+      if (urlStr.includes("/jobs")) {
+        jobsCalls++;
+        if (jobsCalls === 1) {
+          return new Response("Too Many Requests", { status: 429, headers: { "content-type": "text/plain" } });
+        }
+        return new Response(JSON.stringify({ jobs: [{ id: "1", title: "Remote VA", absolute_url: "https://boards.greenhouse.io/acme/jobs/1", location: { name: "Philippines" } }] }), {
+          status: 200,
+          headers: { "content-type": "application/json" },
+        });
+      }
+      return new Response("Not found", { status: 404 });
+    });
+    global.fetch = fetcher as any;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(jobsCalls).toBe(2); // 1st was 429, 2nd was 200
+    expect(res.parse.itemCount).toBe(1);
+    expect(res.fetch.status).toBe(200);
   });
 
   it("external content never executed — body treated as evidence only", async () => {
