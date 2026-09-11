@@ -1,22 +1,42 @@
 # System Savepoint
 
-## 2026-09-11 — RESUMED by owner: Autonomous Source-Expansion Gauntlet (current)
+## 2026-09-12 — RESUMED by owner: Autonomous Source-Expansion Gauntlet (current)
 
-Explicit OWNER RESUME AUTHORIZATION granted on 2026-09-11. Prime Directive: transform
+Explicit OWNER RESUME AUTHORIZATION granted on 2026-09-11 / 2026-09-12. Prime Directive: transform
 VA Freelance Hub into a durable Philippines-centered remote job discovery system
 sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
-Direct production D1 read verification confirms:
-1. **Registry & Shadow State**: 8 active shadows in `source_registry` (`greenhouse:grafanalabs`,
+Direct production D1 read & workflow verification confirms:
+1. **Registry & Shadow State**: 11 active shadows in `source_registry` (`greenhouse:grafanalabs`,
    `recruitee:myjewellery`, `teamtailor:career.teamtailor.com`, `greenhouse:gitlab`,
-   `greenhouse:remotecom`, `greenhouse:nearform`, `greenhouse:ghost`, `greenhouse:wikimedia`).
-   Nearform, Ghost, and Wikimedia were admitted with evidence IDs 9, 10, 11 on 2026-09-11.
-   259 shadow observations recorded; earliest cohort has 6 distinct UTC observation dates.
+   `greenhouse:remotecom`, `greenhouse:nearform`, `greenhouse:ghost`, `greenhouse:wikimedia`,
+   `breezy:20four7va`, `workable:coconutva`, `workable:crewbloom`).
+   `workable:coconutva` and `workable:crewbloom` were admitted in GHA runs 34649757920 and 34649812610.
+   259+ shadow observations recorded; earliest cohort has 6 distinct UTC observation dates.
    Zero public leakage from shadow sources verified.
 2. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows
    out of 5,331 total in `opportunities`).
 3. **Current Supply Baseline**: Strict qualified 7-day total is 88 jobs = 12.57 jobs/day
    (We Work Remotely 53, Real Work From Anywhere 22, Remote OK 9, Jobicy APAC 4, Remotive 0).
+
+### Run 65 — RESUME & RECONCILE: Baseline Verification & Shadow Dispatch Diagnostic (2026-09-12)
+
+UNIT ID: EX-RESUME-RECONCILE
+PHASE: RECONCILE / DIAGNOSE
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: all current active & shadow sources
+
+- **Baseline & Verification Proven Clean**:
+  - HEAD at `46e143af8f70c93d2d7c6c0a04e214727fbcedab` matches `origin/main` cleanly.
+  - Test suite: **1,282/1,282 Bun tests pass across 129 files**; 15/15 Python unit tests pass.
+  - Typecheck and production guardrails clean (0 errors, 0 violations).
+- **Shadow Dispatch Rate-Limit Root Cause Diagnosed**:
+  - `gha-shadow-dispatch.yml` run `34650961715` failed because `shadow-dispatch.ts` ran candidate probes without a shared batch `RobotsCacheStore`.
+  - Rapid sequential requests from the same worker instance to `apply.workable.com/robots.txt` triggered Cloudflare HTTP 429 rate limiting.
+  - `candidate-shadow.ts` classified HTTP 429 on robots as `wouldBlock = true` -> `POLICY_BLOCKED`, causing `assessShadowResponse` to fail the run.
+  - Identified targeted fix: instantiate a shared `createMemoryRobotsStore()` across the dispatch batch, and classify HTTP 429 as `RATE_LIMITED`.
+- **Next exact action**: Implement batch-scoped robots caching in `shadow-dispatch.ts` and outcome resilience in `candidate-shadow.ts`.
 ### Run 62 — EX-BREEZY-ADMIT: 20Four7VA Shadow Admission & Shared Provider Reconciliation (2026-09-11)
 
 UNIT ID: EX-BREEZY-ADMIT
