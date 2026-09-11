@@ -1,32 +1,32 @@
 # Prospector Latest
 
 Date: 2026-09-11
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34593881699
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34614483380
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 2 |
-| Auto-added this run | 1 |
+| Candidates considered | 1 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 1 |
 | Rejected for quality | 0 |
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
-| Durable candidates discovered (distinct ATS) | 0 |
-| Durable candidates inserted | 0 |
+| Durable candidates discovered (distinct ATS) | 13 |
+| Durable candidates inserted | 7 |
 | Durable candidates refreshed | 0 |
-| Durable candidates skipped (duplicate) | 0 |
+| Durable candidates skipped (duplicate) | 6 |
 | Durable candidates skipped (opt-out) | 0 |
-| Candidate backlog (needs_review/candidate) | 0 |
+| Candidate backlog (needs_review/candidate) | 7 |
 | Candidate overdue (past 14d deadline) | 0 |
 | Candidate anomaly guard | false |
 
 ## Auto-added companies
 
-- AssemblyAI
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
-- Inserted: (none)
+- Inserted: ashby:supabase, ashby:camunda, ashby:ashby, ashby:amplify, breezy:time-etc, workable:rocketams, workable:hunt-st
 - Refreshed: (none)
 - Mode: non-publishing-candidate-only
