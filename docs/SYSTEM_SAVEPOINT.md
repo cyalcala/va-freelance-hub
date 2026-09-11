@@ -17,6 +17,27 @@ Direct production D1 read verification confirms:
    out of 5,331 total in `opportunities`).
 3. **Current Supply Baseline**: Strict qualified 7-day total is 88 jobs = 12.57 jobs/day
    (We Work Remotely 53, Real Work From Anywhere 22, Remote OK 9, Jobicy APAC 4, Remotive 0).
+### Run 62 — EX-BREEZY-ADMIT: 20Four7VA Shadow Admission & Shared Provider Reconciliation (2026-09-11)
+
+UNIT ID: EX-BREEZY-ADMIT
+PHASE: ADMIT / SHADOW
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `breezy:20four7va`, `breezy:sourcefit`
+
+- **20Four7VA Admitted to Shadow Mode in Production D1**:
+  - Successfully dispatched via workflow `EX-02 Source Shadow Admit` (`gha-source-admit.yml`, run `34612178893`).
+  - Stored in `source_registry` with `operational_state = 'shadow'`, `compliance_state = 'conditional'`, evidence ID 12.
+  - Zero public leakage: 0 published jobs from admission (`published: 0`).
+- **Shared Provider Reconciliation (`packages/scraper/breezy-canary.ts`)**:
+  - Reconciled `buildBreezyProviderProfile` to provide canonical `allowedHosts: "20four7va.breezy.hr,breezy.hr"`.
+  - Guarantees shared provider snapshot consistency across all subsequent Breezy source admissions (`sourcefit`, `time-etc`, `vaaphilippines-recruitment`).
+  - Added unit test in `apps/web/tests/source-admit-route.test.ts` (10/10 pass).
+- **Verification Evidence**:
+  - Monorepo test suite: **1,278/1,278 Bun tests pass across 129 files**.
+  - Typecheck and guardrails: 0 errors, 0 violations.
+- **Next exact action**: Deploy commit and admit `breezy:sourcefit` to shadow mode; implement Prospector 2.0 ATS candidate generation.
+
 ### Run 61 — EX-BREEZY: Philippines-First Breezy HR Capability & Agency Qualification (2026-09-11)
 
 UNIT ID: EX-BREEZY

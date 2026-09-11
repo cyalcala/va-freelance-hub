@@ -56,11 +56,7 @@ export interface BreezyProviderProfileRow {
   notes: string;
 }
 
-export function buildBreezyProviderProfile(companyToken?: string): BreezyProviderProfileRow {
-  const allowedHosts = companyToken
-    ? `${companyToken}.breezy.hr,breezy.hr`
-    : "breezy.hr";
-
+export function buildBreezyProviderProfile(_companyToken?: string): BreezyProviderProfileRow {
   return {
     id: BREEZY_PROVIDER_ID,
     displayName: "Breezy HR",
@@ -68,7 +64,7 @@ export function buildBreezyProviderProfile(companyToken?: string): BreezyProvide
     mechanism: "ats_api",
     authClass: "none",
     endpointPattern: "https://{companyToken}.breezy.hr/json",
-    allowedHosts,
+    allowedHosts: "20four7va.breezy.hr,breezy.hr",
     evidenceUrl: BREEZY_EVIDENCE_URL,
     evidenceLeaseDays: BREEZY_EVIDENCE_LEASE_DAYS,
     visibilityFilter: "published",

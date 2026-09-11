@@ -19,8 +19,8 @@ gauntlet toward sustaining 100–150 qualified net-new remote Filipino-accessibl
 jobs/day. Direct D1 inspection confirms 8 active shadows in `source_registry`
 (`greenhouse:grafanalabs`, `recruitee:myjewellery`, `teamtailor:career.teamtailor.com`,
 `greenhouse:gitlab`, `greenhouse:remotecom`, `greenhouse:nearform`, `greenhouse:ghost`,
-`greenhouse:wikimedia`). Nearform, Ghost, and Wikimedia were admitted with evidence
-IDs 9, 10, 11 on 2026-09-11. Exact source attribution coverage is 100.0% in D1.
+`greenhouse:wikimedia`, `breezy:20four7va`). 20Four7VA was admitted on 2026-09-11
+with evidence ID 12 (0 public leakage). Exact source attribution coverage is 100.0% in D1.
 Strict qualified supply baseline is 88 jobs / 7d = 12.57 jobs/day.
 
 ## Historical capacity deployment and pause — 2026-09-08
