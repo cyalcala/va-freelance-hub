@@ -289,7 +289,14 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         adjudicationRef,
       });
       if (!result.ok) {
-        return json(409, { outcome: "rejected", reason: result.reason, sourceId, probeOutcome: probe.diagnostic.outcome });
+        return json(409, {
+          outcome: "rejected",
+          reason: result.reason,
+          sourceId,
+          probeOutcome: probe.diagnostic.outcome,
+          stopReason: probe.stopReason,
+          probes: probe.diagnostic.probes,
+        });
       }
       return json(200, { outcome: "shadow", sourceId: result.sourceId, published: 0, probeOutcome: probe.diagnostic.outcome });
     } catch (err) {
