@@ -12,7 +12,18 @@ In accordance with Section 6 of the APEX-10X Master Mandate:
 
 ---
 
-## Current pause and deployed capacity — 2026-09-08
+## Resumed by Owner — 2026-09-11
+
+The owner explicitly authorized the RESUME of the autonomous source-expansion
+gauntlet toward sustaining 100–150 qualified net-new remote Filipino-accessible
+jobs/day. Direct D1 inspection confirms 8 active shadows in `source_registry`
+(`greenhouse:grafanalabs`, `recruitee:myjewellery`, `teamtailor:career.teamtailor.com`,
+`greenhouse:gitlab`, `greenhouse:remotecom`, `greenhouse:nearform`, `greenhouse:ghost`,
+`greenhouse:wikimedia`). Nearform, Ghost, and Wikimedia were admitted with evidence
+IDs 9, 10, 11 on 2026-09-11. Exact source attribution coverage is 100.0% in D1.
+Strict qualified supply baseline is 88 jobs / 7d = 12.57 jobs/day.
+
+## Historical capacity deployment and pause — 2026-09-08
 
 All workstreams below are preserved. The owner paused work and authorized only
 completing the pending deployment and documenting it. PR #141 capacity code is

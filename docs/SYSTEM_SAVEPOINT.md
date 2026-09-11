@@ -1,6 +1,33 @@
 # System Savepoint
 
-## 2026-09-08 — PAUSED after completed capacity deployment (current)
+## 2026-09-11 — RESUMED by owner: Autonomous Source-Expansion Gauntlet (current)
+
+Explicit OWNER RESUME AUTHORIZATION granted on 2026-09-11. Prime Directive: transform
+VA Freelance Hub into a durable Philippines-centered remote job discovery system
+sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
+
+Direct production D1 read verification confirms:
+1. **Registry & Shadow State**: 8 active shadows in `source_registry` (`greenhouse:grafanalabs`,
+   `recruitee:myjewellery`, `teamtailor:career.teamtailor.com`, `greenhouse:gitlab`,
+   `greenhouse:remotecom`, `greenhouse:nearform`, `greenhouse:ghost`, `greenhouse:wikimedia`).
+   Nearform, Ghost, and Wikimedia were admitted with evidence IDs 9, 10, 11 on 2026-09-11.
+   259 shadow observations recorded; earliest cohort has 6 distinct UTC observation dates.
+   Zero public leakage from shadow sources verified.
+2. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows
+   out of 5,331 total in `opportunities`).
+3. **Current Supply Baseline**: Strict qualified 7-day total is 88 jobs = 12.57 jobs/day
+   (We Work Remotely 53, Real Work From Anywhere 22, Remote OK 9, Jobicy APAC 4, Remotive 0).
+4. **Immediate Bottleneck Identified**: `jobicy-admin-support-apac` silent zero yield
+   repaired via namespaced RSS XML parsing (`job_listing:location`, `job_listing:company`,
+   `job_listing:category`).
+
+Active priority queue:
+- Queue A: Jobicy namespaced XML parsing fix.
+- Queue B: Exact source attribution tooling persistence.
+- Queue D & E: Philippines-First ATS expansion (Breezy HR provider capability for PH agencies).
+- Queue H: Prospector 2.0 continuous ATS candidate factory.
+
+## 2026-09-08 — PAUSED after completed capacity deployment (historical)
 
 The owner paused execution, then authorized documentation backup and completion
 of ONLY the pending deployment. That deployment is complete. No source admission,

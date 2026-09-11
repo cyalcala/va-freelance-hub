@@ -1,57 +1,37 @@
 # APEX-10X Execution State
 
-**PAUSED — owner-authorized deployment and documentation only.**
-As of 2026-09-08. Working documentation branch: `codex/apex-paused-handoff`.
-The follow-up automation `apex-source-recovery-and-qualification` is PAUSED.
-The documentation request and deployment-only exception do not resume other work.
+**RESUMED — Owner-authorized autonomous source-expansion gauntlet.**
+As of 2026-09-11. Prime Directive: sustain 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
-Canonical continuation: [paused handoff](gauntlet/evidence/APEX-CAPACITY-2026-09-08/PAUSE_HANDOFF.md).
-[Capacity evidence](gauntlet/evidence/APEX-CAPACITY-2026-09-08/REPORT.md).
-[Earlier audit](gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md).
-[Baseline](benchmarks/APEX_10X_BASELINE_2026-09-08.md).
-[Preserved workstreams](APEX_10X_WORKSTREAM_LEDGER.md).
+Canonical continuation:
+1. [CURRENT pointer](bootloaders/CURRENT.md)
+2. [Workstream ledger](APEX_10X_WORKSTREAM_LEDGER.md)
+3. [System savepoint](SYSTEM_SAVEPOINT.md)
+4. [Source economics latest](source-economics-latest.md)
+5. [Source health latest](source-health-latest.md)
 
 | Item | Exact state |
 | --- | --- |
-| Capacity unit start | dda9c168d6ac39a53ec85b3ac0bd45cb1a541774 |
-| Behavior commit |1efb8aa04febaba2ef7d97970bf07880692e5442|
-| Merged main |c3f5951ae387ad0a6f9023d4bbe48dc618678841 — PR #141|
-| PR CI |34222288113 success|
-| Production run |34222392137 initial attempt cancelled before migrations/deploy; explicitly authorized attempt 2 SUCCEEDED; capacity code deployed|
-| Prior accepted deployment |6d45fd42880b3e314c4fccdebb0a4f454580359a — run34218427110|
-| Verification |1,264 Bun tests,15 Python tests,build,typecheck,guardrails,Worker checks|
-| Native source mutations during capacity slice |None|
-| Current real shadows |Five; current evidence IDs4–8|
-| Next admissions |Nearform, Ghost, Wikimedia — NOT executed|
-| Task automation |PAUSED; existing production clocks were not stopped|
+| Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11) |
+| Prime Directive | Floor: 100 / Stretch: 150 qualified net-new remote PH-accessible jobs/day |
+| Base Commit | `e69f637a795fad8ccdd86cedfd92f155dacb1890` (matching `origin/main`) |
+| Deployed Capacity Code | `c3f5951ae387ad0a6f9023d4bbe48dc618678841` (PR #141) at https://280f2e6b.remotejobs-ph.pages.dev |
+| Verification | 1,270 Bun tests pass (128 files), 15 Python tests pass, typecheck & guardrails clean |
+| D1 Registry Shadows | 8 active: `greenhouse:grafanalabs`, `recruitee:myjewellery`, `teamtailor:career.teamtailor.com`, `greenhouse:gitlab`, `greenhouse:remotecom`, `greenhouse:nearform`, `greenhouse:ghost`, `greenhouse:wikimedia` |
+| Shadow Observations | 259 total recorded; 6 distinct UTC dates for earliest cohorts; 0 public leakage |
+| Identity Attribution | 100.0% coverage in production D1 (0 null source_id rows out of 5,331) |
+| Current 7d Qualified Baseline | 88 jobs / 7 days = 12.57 jobs/day (WWR 53, RWFA 22, Remote OK 9, Jobicy 4, Remotive 0) |
+| Clocks | Primary Cloudflare Worker `freshness-cron` beating every 10 min; secondary Hunter in standby |
 
-The joined evidence loader now uses one coherent SQL snapshot and retains the
-same immutable digest/revision/authority/lease and durable opt-out checks.
-Six-source renewal measured 28 SQL statements/28 external requests at maximum
-sixteen primary documents. Twelve-source dispatch measured 37 SQL/24 external;
-invalid and cadence-held rows consume bounded authority reads. Hourly windows
-rotate beyond invalid early rows. No cached authority or shortened evidence gate.
-These changes are deployed at https://280f2e6b.remotejobs-ph.pages.dev. Read-only
-Greenhouse preview and public-route smoke passed; see deployment-smoke.json.
+### Reconciled Production Reality (2026-09-11)
+Direct D1 read verification confirms:
+- Nearform, Ghost, and Wikimedia were admitted with evidence IDs 9, 10, 11 on 2026-09-11.
+- Hourly shadow dispatcher is active and executing across all 8 shadow identities without public leakage.
+- Legacy null-source_id debt is completely resolved (0 nulls).
+- Jobicy admin/support zero-yield diagnosed: namespaced tags (`job_listing:*`) omitted by scraper.
 
-G1–G8 reconciliation, baseline, capacity implementation and review are recorded.
-G9 capacity deployment is VERIFIED; documentation backup is the authorized closeout;
-further source expansion and observation work remains paused. No 10x completion.
-The fixed qualified first-stored proxy 89/7=12.71/day and target 127.14/day remain
-provisional, not exact historical publication throughput or independently measured
-billing. Unknown attribution, usage and rejection metrics remain unknown.
-
-Exact-six publication boundary remains. Eight distinct UTC observation dates
-spanning seven days must bind to current admission evidence, plus every named
-Autonomy Cutover Predicate condition. Old September 6 evidence epochs do not count
-toward September 8 renewals. ADR008 tier summaries remain advisory. Compensation
-normalization remains PAUSED; no ledger workstream was dropped.
-
-Canonical remains withheld at524288-byte probe bound. Workable exceeded 512MiB
-in GHA34217743529; daily bulk schedule dormant, next review September 15 or earlier
-supported bounded-feed evidence. Do not retry bulk downloads to manufacture green.
-
-After explicit resume: fetch/preserve dirty work, restate full SHA, remeasure
-intervening workflows and current evidence, confirm deployed capacity, then fresh
-allowed probes and sequential shadow admission for the three staged sources.
-Do not renew merely to test capacity: it would restart observation epochs.
+### Active Execution Queue
+1. **Queue A (Yield Repair)**: Fix Jobicy namespaced XML parsing in `packages/scraper/rss.ts` to capture location, company, and category.
+2. **Queue B (Attribution Tooling)**: Commit deterministic attribution backfill generator and unit tests.
+3. **Queue D & E (PH-First ATS)**: Implement Breezy HR capability adapter (`packages/scraper/breezy.ts`) for Philippine agencies (`20four7va`, `sourcefit`, `time-etc`).
+4. **Queue H (Prospector 2.0)**: Upgrade Prospector to automatically extract ATS tokens from careers pages and file durable candidate recommendations.
