@@ -162,3 +162,35 @@ test("shared provider mismatch requires renewal without orphaning a candidate or
   expect(sqlite.query("SELECT * FROM provider_profiles").all()).toEqual(before.providers);
   expect(sqlite.query("SELECT * FROM source_admission_evidence WHERE source_id=?").all(fixture.source.sourceId)).toEqual(before.evidence);
 });
+
+test("admits a candidate that was already seeded in source_registry with candidate/needs_review", async () => {
+  const sqlite = freshDb();
+  const db = new BunGatewayDatabase(sqlite) as TransitionGatewayDatabase & AdmissionDatabase;
+  const fixture = await liveAdmissionFixture();
+  // Simulate pre-existing seeded candidate row
+  sqlite.exec(`INSERT INTO provider_profiles (id, display_name, provider_family, mechanism, auth_class, default_compliance_state, default_operational_state)
+    VALUES ('${fixture.source.providerId}', 'Test Provider', 'test', 'ats_api', 'none', 'needs_review', 'candidate')`);
+  sqlite.exec(`INSERT INTO source_registry (
+    source_id, provider_id, display_name, endpoint_url, company_token,
+    compliance_state, operational_state, governance_revision
+  ) VALUES (
+    '${fixture.source.sourceId}', '${fixture.source.providerId}', 'Pre-seeded Display Name',
+    '${fixture.source.endpointUrl}', '${fixture.source.companyToken}',
+    'needs_review', 'candidate', 3
+  )`);
+  const result = await admitReviewedSourceToShadow(db, {
+    now: new Date().toISOString(),
+    source: fixture.source,
+    provider: fixture.provider,
+    probe: fixture.packet.probe,
+    primaryEvidence: fixture.packet.primaryEvidence,
+    adjudicationRef: fixture.packet.adjudicationRef,
+  });
+  expect(result).toEqual({ ok: true, sourceId: fixture.source.sourceId });
+  const row = sqlite.query(`SELECT operational_state, compliance_state, governance_revision FROM source_registry WHERE source_id=?`)
+    .get(fixture.source.sourceId) as { operational_state: string; compliance_state: string; governance_revision: number };
+  expect(row.operational_state).toBe("shadow");
+  expect(row.compliance_state).toBe(fixture.source.complianceState);
+  expect(row.governance_revision).toBeGreaterThan(3);
+});
+

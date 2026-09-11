@@ -58,7 +58,20 @@ WHERE NOT EXISTS(SELECT 1 FROM source_admission_evidence WHERE provider_id=exclu
 const INSERT_CANDIDATE_SQL = `INSERT INTO source_registry (
   source_id, provider_id, display_name, endpoint_url, company_token, discovery_provenance,
   compliance_state, operational_state, review_deadline, policy_expiry, canary_max_new_items_per_tick, owner
-) VALUES (?, ?, ?, ?, ?, ?, ?, 'candidate', ?, ?, ?, ?)`;
+) VALUES (?, ?, ?, ?, ?, ?, ?, 'candidate', ?, ?, ?, ?)
+ON CONFLICT(source_id) DO UPDATE SET
+  provider_id=excluded.provider_id,
+  display_name=excluded.display_name,
+  endpoint_url=excluded.endpoint_url,
+  company_token=excluded.company_token,
+  discovery_provenance=excluded.discovery_provenance,
+  compliance_state=excluded.compliance_state,
+  review_deadline=excluded.review_deadline,
+  policy_expiry=excluded.policy_expiry,
+  canary_max_new_items_per_tick=excluded.canary_max_new_items_per_tick,
+  owner=excluded.owner
+WHERE source_registry.operational_state = 'candidate'
+  AND NOT EXISTS(SELECT 1 FROM source_admission_evidence WHERE source_id=excluded.source_id)`;
 
 export async function admitReviewedSourceToShadow(
   db: TransitionGatewayDatabase & AdmissionDatabase,
@@ -139,24 +152,45 @@ export async function admitReviewedSourceToShadow(
   ).run();
   if (!candidateWrite.success) return { ok: false, reason: "source registry candidate write was unsuccessful" };
 
+  const storedSource = await db.prepare(
+    `SELECT source_id AS sourceId, provider_id AS providerId, display_name AS displayName,
+      endpoint_url AS endpointUrl, company_token AS companyToken, discovery_provenance AS discoveryProvenance,
+      compliance_state AS complianceState, operational_state AS operationalState,
+      review_deadline AS reviewDeadline, policy_expiry AS policyExpiry,
+      canary_max_new_items_per_tick AS canaryMaxNewItemsPerTick,
+      opt_out AS optOut, governance_revision AS governanceRevision,
+      last_transition_hash AS lastTransitionHash FROM source_registry WHERE source_id=?`,
+  ).bind(input.source.sourceId).first<AdmissionSourceSnapshot>();
+  if (!storedSource) return { ok: false, reason: "source registry candidate write was unsuccessful" };
+  storedSource.optOut = Boolean(storedSource.optOut);
+  if (storedSource.operationalState !== "candidate") {
+    return { ok: false, reason: `source is already in operational state ${storedSource.operationalState}` };
+  }
+  if (storedSource.optOut) {
+    return { ok: false, reason: "current durable opt-out blocks admission" };
+  }
+  if (storedSource.complianceState !== "allowed" && storedSource.complianceState !== "conditional") {
+    return { ok: false, reason: "source compliance state must be allowed or conditional for admission" };
+  }
+
   const built = await buildAdmissionEvidence({
-    source,
+    source: storedSource,
     provider,
     probe: input.probe,
     primaryEvidence,
     authorityActions: ["recurrent_private_shadow", "public_minimal_metadata_canary"],
     adjudicationRef: input.adjudicationRef,
     capturedAt: input.probe.timestamp,
-    expiresAt: source.policyExpiry!,
+    expiresAt: storedSource.policyExpiry!,
   });
   if (!built.ok) return built;
 
-  const persisted = await persistAdmissionEvidence(db, source, provider, built, input.now);
+  const persisted = await persistAdmissionEvidence(db, storedSource, provider, built, input.now);
   if (!persisted.ok) return persisted;
 
   const shadow = await applyTypedTransition(db, {
     sourceId: input.source.sourceId,
-    to: { compliance: input.source.complianceState, operational: "shadow" },
+    to: { compliance: storedSource.complianceState, operational: "shadow" },
     cause: "requested_shadow_entry",
     now: input.now,
   });
