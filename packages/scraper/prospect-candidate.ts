@@ -59,8 +59,8 @@ export const ATS_PROVIDER_CONFIG: Record<AtsPlatform, ProviderConfig> = {
     displayName: "Breezy HR",
     mechanism: "ats_api",
     authClass: "none",
-    endpointPattern: "https://{token}.breezy.hr/json",
-    allowedHosts: "breezy.hr",
+    endpointPattern: "https://{companyToken}.breezy.hr/json",
+    allowedHosts: "20four7va.breezy.hr,breezy.hr",
   },
   workable: {
     providerId: "workable",

@@ -12,11 +12,17 @@ import {
   maxRegistryRowsPerBatch,
   countBacklog,
   countReviewOverdue,
+  extractAtsToken,
+  isQualityCompanyName,
+  normalizeCompanyName,
+  inferNiche,
 } from "@va-hub/scraper";
 import { nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 import {
   buildProspectCandidateQuery,
+  buildAtsCandidateMiningQuery,
+  buildDirectoryAtsMiningQuery,
 } from "@/lib/prospect-query";
 
 export const prerender = false;
@@ -165,7 +171,51 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let insertedCandidateIds: string[] = [];
     let refreshedCandidateIds: string[] = [];
     try {
-      const classifiedWithAts = [...autoAdd, ...review];
+      const minedCandidates: ClassifiedCandidate[] = [];
+      try {
+        const [oppAtsRows, dirAtsRows] = await Promise.all([
+          db.all<{ company: string; jobs: number; sampleUrl: string | null; category: string | null }>(
+            buildAtsCandidateMiningQuery(100),
+          ),
+          db.all<{ company: string; jobs: number; sampleUrl: string | null; category: string | null }>(
+            buildDirectoryAtsMiningQuery(100),
+          ),
+        ]);
+        for (const r of oppAtsRows) {
+          if (r.sampleUrl && isQualityCompanyName(r.company)) {
+            const atsRef = extractAtsToken(r.sampleUrl);
+            if (atsRef) {
+              minedCandidates.push({
+                companyName: r.company.trim(),
+                normalized: normalizeCompanyName(r.company),
+                jobs: Number(r.jobs) || 1,
+                sampleUrl: r.sampleUrl,
+                atsRef,
+                niche: inferNiche(r.category),
+              });
+            }
+          }
+        }
+        for (const r of dirAtsRows) {
+          if (r.sampleUrl && isQualityCompanyName(r.company)) {
+            const atsRef = extractAtsToken(r.sampleUrl);
+            if (atsRef) {
+              minedCandidates.push({
+                companyName: r.company.trim(),
+                normalized: normalizeCompanyName(r.company),
+                jobs: Number(r.jobs) || 1,
+                sampleUrl: r.sampleUrl,
+                atsRef,
+                niche: inferNiche(r.category),
+              });
+            }
+          }
+        }
+      } catch (miningErr) {
+        console.warn("[api/cron/prospect] ATS candidate mining query failed:", errorMessage(miningErr));
+      }
+
+      const classifiedWithAts = [...autoAdd, ...review, ...minedCandidates];
       const distinctMap = distinctAtsCandidates(classifiedWithAts, now);
       durableCandidateStats.discoveredDistinct = distinctMap.size;
 

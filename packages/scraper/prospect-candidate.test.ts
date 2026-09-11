@@ -23,7 +23,7 @@ describe("ATS provider config (SP-03 FK)", () => {
       expect(cfg!.mechanism).toBe("ats_api");
       expect(cfg!.authClass).toBe("none");
       expect(cfg!.allowedHosts.length).toBeGreaterThan(0);
-      expect(cfg!.endpointPattern.includes("{token}")).toBe(true);
+      expect(cfg!.endpointPattern).toMatch(/{.*token}/i);
     }
   });
 

@@ -66,6 +66,7 @@ const TRUSTED_HOSTS = [
   "remotive.com",
   "boards.greenhouse.io",
   "boards-api.greenhouse.io",
+  "job-boards.greenhouse.io",
   "jobs.ashbyhq.com",
   "api.ashbyhq.com",
   "jobs.lever.co",
