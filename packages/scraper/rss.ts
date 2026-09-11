@@ -30,6 +30,11 @@ interface RawRSSItem {
   // signal, previously discarded, now captured for the geo-gate.
   region?: unknown;
   location?: unknown;
+  // Namespaced Jobicy / WordPress job-manager RSS tags
+  "job_listing:location"?: unknown;
+  "job_listing:company"?: unknown;
+  "job_listing:job_type"?: unknown;
+  "job_listing:category"?: unknown;
 }
 
 function normalizeText(raw: string | undefined): string {
@@ -113,12 +118,15 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState): Pr
       const tags: string[] = [
         ...source.tags,
         ...xmlTextList(item.category),
+        ...xmlTextList(item["job_listing:category"]),
       ].slice(0, 10);
 
       const rawDate = item.pubDate ?? item.published;
 
       let finalTitle = title;
-      let extractedCompany = normalizeText(xmlNodeText(item["dc:creator"] ?? item.author) ?? undefined) || null;
+      let extractedCompany = normalizeText(
+        xmlNodeText(item["dc:creator"] ?? item.author ?? item["job_listing:company"]) ?? undefined
+      ) || null;
 
       // Pre-process missing company names from "Company: Job Title" format (e.g. WeWorkRemotely)
       if (!extractedCompany && finalTitle.includes(":")) {
@@ -137,7 +145,12 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState): Pr
         sourcePlatform: source.platform,
         tags,
         locationType: "remote" as const,
-        locationRaw: normalizeText(xmlNodeText(item.region) ?? xmlNodeText(item.location) ?? undefined) || null,
+        locationRaw: normalizeText(
+          xmlNodeText(item.region) ??
+          xmlNodeText(item.location) ??
+          xmlNodeText(item["job_listing:location"]) ??
+          undefined
+        ) || null,
         payRange: null,
         description: normalizeText(xmlNodeText(item.description) ?? undefined).slice(0, 1500) || null,
         postedAt: normalizeDate(rawDate),
