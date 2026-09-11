@@ -17,15 +17,32 @@ Direct production D1 read verification confirms:
    out of 5,331 total in `opportunities`).
 3. **Current Supply Baseline**: Strict qualified 7-day total is 88 jobs = 12.57 jobs/day
    (We Work Remotely 53, Real Work From Anywhere 22, Remote OK 9, Jobicy APAC 4, Remotive 0).
-4. **Immediate Bottleneck Identified**: `jobicy-admin-support-apac` silent zero yield
-   repaired via namespaced RSS XML parsing (`job_listing:location`, `job_listing:company`,
-   `job_listing:category`).
+### Run 61 — EX-BREEZY: Philippines-First Breezy HR Capability & Agency Qualification (2026-09-11)
 
-Active priority queue:
-- Queue A: Jobicy namespaced XML parsing fix.
-- Queue B: Exact source attribution tooling persistence.
-- Queue D & E: Philippines-First ATS expansion (Breezy HR provider capability for PH agencies).
-- Queue H: Prospector 2.0 continuous ATS candidate factory.
+UNIT ID: EX-BREEZY
+PHASE: QUALIFY / CAPABILITY
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `breezy:20four7va`, `breezy:sourcefit`, `breezy:time-etc`, `breezy:vaaphilippines-recruitment`
+
+- **Breezy HR Reusable Capability Built (`packages/scraper/breezy-canary.ts`)**:
+  - Implemented `buildBreezyProviderProfile` and `buildBreezyCandidateRow` targeting public unauthenticated `/json` endpoints on career portals.
+  - Minimal discovery metadata extraction (never full HTML descriptions); direct canonical apply links.
+  - Evaluated against robots.txt: explicitly allowed on career subdomains (`Allow: /`, `Disallow: /css`, `/fonts`, etc.).
+- **Live Endpoint Verification**:
+  - `20Four7VA`: 98 active jobs verified live (virtual assistant, executive support, patient care coordination).
+  - `Sourcefit`: 78 active jobs verified live (AI automation specialist, tech support, accounting, Eastwood Quezon City / PH).
+  - Combined 176 active Philippine-accessible knowledge work jobs.
+- **Admission Pipeline Wired (`apps/web/src/pages/api/cron/source-admit.ts`)**:
+  - Added all 4 Breezy agency tokens to `SOURCE_ADMIT_ALLOWLIST`.
+  - Wired `admitTarget` with Tier A fast-track adjudication references (`ex-ph-agency-breezy-${token}-tier-a-fast-track`).
+  - Strict shadow mode: non-publishing, 0 public job leakage.
+- **Evidence & Verification**:
+  - Authored: `docs/gauntlet/evidence/EX-BREEZY-ph-agency-capability-qualification.md`.
+  - Updated: `docs/SOURCE_CAPABILITIES.md`, `docs/APEX_10X_WORKSTREAM_LEDGER.md`.
+  - Tests: `packages/scraper/breezy-canary.test.ts` (6/6 pass), `apps/web/tests/source-admit-route.test.ts` (9/9 pass).
+  - Full suite: **1,277/1,277 Bun tests pass across 129 files**; typecheck and guardrails clean.
+- **Next exact action**: Shadow admission and hourly observation dispatch for Breezy identities; Prospector 2.0 ATS candidate generation.
 
 ## 2026-09-08 — PAUSED after completed capacity deployment (historical)
 

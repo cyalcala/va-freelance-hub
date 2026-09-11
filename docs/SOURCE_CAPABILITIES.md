@@ -61,7 +61,15 @@ SourceCapability
 - **Implementation**: `packages/scraper/teamtailor.ts`
 - **Status**: Shadow admitted (EX-05 Teamtailor).
 
-### 2.7 Standard RSS 2.0 / Atom / JSON Feeds
+### 2.7 Breezy HR Public JSON API
+- **Endpoint Pattern**: `https://{company}.breezy.hr/json`
+- **Method**: Public, authentication-free HTTP GET.
+- **Payload**: Minimal JSON array with `name`, `url`, `locations`, `salary`, `published_date`, `is_remote`.
+- **Implementation**: `packages/scraper/breezy-canary.ts`, `packages/scraper/ats.ts`
+- **Status**: Qualified mechanism (EX-BREEZY); allowlisted for shadow admission (20Four7VA, Sourcefit, Time Etc, VAA Philippines).
+- **Robots / Policy**: Explicitly allowed by `robots.txt` on career subdomains and `breezy.hr`; minimal discovery metadata only.
+
+### 2.8 Standard RSS 2.0 / Atom / JSON Feeds
 - **Payload**: Standard syndicated feeds parsed via fast regex / XML parser.
 - **Status**: Active production path for exact-six feeds (`we-work-remotely`, `remotive`, `real-work-from-anywhere`, `remote-ok`, `jobicy`).
 

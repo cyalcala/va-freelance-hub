@@ -241,6 +241,18 @@ export type {
   GreenhouseCandidateRow,
   ShadowPromotionDecision,
 } from "./greenhouse-canary";
+export {
+  buildBreezyProviderProfile,
+  buildBreezyCandidateRow,
+  BREEZY_PROVIDER_ID,
+  BREEZY_EVIDENCE_URL,
+  BREEZY_EVIDENCE_LEASE_DAYS,
+} from "./breezy-canary";
+export type {
+  BreezyProviderProfileRow,
+  BreezyBoardInput,
+  BreezyCandidateRow,
+} from "./breezy-canary";
 export { decidePromotionToShadow as decideSourcePromotionToShadow } from "./source-promotion";
 export type { SourcePromotionDecision } from "./source-promotion";
 export {

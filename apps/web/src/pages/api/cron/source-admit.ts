@@ -19,6 +19,10 @@ import {
   RECRUITEE_PROVIDER_ID,
   TEAMTAILOR_EVIDENCE_LEASE_DAYS,
   TEAMTAILOR_PROVIDER_ID,
+  buildBreezyCandidateRow,
+  buildBreezyProviderProfile,
+  BREEZY_EVIDENCE_LEASE_DAYS,
+  BREEZY_PROVIDER_ID,
   type AdmissionDatabase,
   type TransitionGatewayDatabase,
 } from "@va-hub/scraper";
@@ -34,6 +38,10 @@ export const SOURCE_ADMIT_ALLOWLIST = [
   "greenhouse:ghost",
   "greenhouse:canonical",
   "greenhouse:wikimedia",
+  "breezy:20four7va",
+  "breezy:sourcefit",
+  "breezy:time-etc",
+  "breezy:vaaphilippines-recruitment",
 ] as const;
 
 type HandlerDependencies = {
@@ -94,6 +102,29 @@ function admitTarget(sourceId: string, clock: string) {
       providerId: RECRUITEE_PROVIDER_ID,
       leaseDays: RECRUITEE_EVIDENCE_LEASE_DAYS,
       adjudicationRef: "ex-04-owner-approved-approach-b-sp15-review-ready",
+    };
+  }
+  if (sourceId.startsWith("breezy:")) {
+    const token = sourceId.replace("breezy:", "");
+    const names: Record<string, string> = {
+      "20four7va": "20Four7VA",
+      "sourcefit": "Sourcefit",
+      "time-etc": "Time Etc",
+      "vaaphilippines-recruitment": "VAA Philippines",
+    };
+    const companyName = names[token] ?? token;
+    const profile = buildBreezyProviderProfile(token);
+    const candidate = buildBreezyCandidateRow({
+      token,
+      companyName,
+      nowIso: clock,
+    });
+    return {
+      profile,
+      candidate,
+      providerId: BREEZY_PROVIDER_ID,
+      leaseDays: BREEZY_EVIDENCE_LEASE_DAYS,
+      adjudicationRef: `ex-ph-agency-breezy-${token}-tier-a-fast-track`,
     };
   }
   const profile = buildTeamtailorProviderProfile("career.teamtailor.com");
