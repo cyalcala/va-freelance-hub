@@ -144,7 +144,7 @@ export interface CandidateShadowResult {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function createMemoryRobotsStore(): RobotsCacheStore {
+export function createMemoryRobotsStore(): RobotsCacheStore {
   const cache = new Map<string, Awaited<ReturnType<typeof checkRobots>>>();
   return {
     async get(origin: string) {
@@ -381,7 +381,7 @@ export async function runCandidateShadowProbe(
 
     if (robotsWouldBlock) {
       stopReason = `robots wouldBlock verdict=${robotsVerdict} evidence=${(robotsEvidence ?? "").slice(0, 160)}`;
-      outcome = "POLICY_BLOCKED";
+      outcome = robotsEvidence?.includes("429") ? "RATE_LIMITED" : "POLICY_BLOCKED";
       probes.push({ name: "stop_guard", passed: false, detail: stopReason });
       return buildResult();
     }

@@ -166,6 +166,7 @@ export {
 } from "./prospect-candidate";
 export type { ProviderConfig, CandidateRow } from "./prospect-candidate";
 export {
+  createMemoryRobotsStore,
   runCandidateShadowProbe,
   SHADOW_FETCH_TIMEOUT_MS,
   SHADOW_MAX_BYTES,

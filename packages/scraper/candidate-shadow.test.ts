@@ -11,6 +11,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
+  createMemoryRobotsStore,
   runCandidateShadowProbe,
   SHADOW_MAX_BYTES,
   SHADOW_MAX_REQUESTS,
@@ -363,6 +364,41 @@ describe("candidate-shadow — stop dispositions, no alternate path (SP-07 crite
     expect(res.stopReason).toMatch(/robots wouldBlock/i);
     expect(res.fetch.attempted).toBe(false);
     expect(fetcher.mock.calls.length).toBe(1); // only robots
+  });
+
+  it("robots unreachable (HTTP 429) → RATE_LIMITED stop, no fetch", async () => {
+    const input = candidateInput();
+    const fetcher = mockFetchFor({
+      "https://boards-api.greenhouse.io/robots.txt": { status: 429, body: "Too Many Requests", headers: { "content-type": "text/plain" } },
+      "https://boards-api.greenhouse.io/v1/boards/acme/jobs": { status: 200, body: JSON.stringify({ jobs: [] }), headers: { "content-type": "application/json" } },
+    });
+    global.fetch = fetcher;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("RATE_LIMITED");
+    expect(res.stopReason).toMatch(/robots wouldBlock/i);
+    expect(res.fetch.attempted).toBe(false);
+  });
+
+  it("shared robotsStore reuses cached robots.txt across multiple candidate probes", async () => {
+    const input1 = candidateInput({ sourceId: "greenhouse:acme1", endpointUrl: "https://boards-api.greenhouse.io/v1/boards/acme1/jobs" });
+    const input2 = candidateInput({ sourceId: "greenhouse:acme2", endpointUrl: "https://boards-api.greenhouse.io/v1/boards/acme2/jobs" });
+    const fetcher = mockFetchFor({
+      "https://boards-api.greenhouse.io/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      "https://boards-api.greenhouse.io/v1/boards/acme1/jobs": { status: 200, body: JSON.stringify({ jobs: [] }), headers: { "content-type": "application/json" } },
+      "https://boards-api.greenhouse.io/v1/boards/acme2/jobs": { status: 200, body: JSON.stringify({ jobs: [] }), headers: { "content-type": "application/json" } },
+    });
+    global.fetch = fetcher;
+    const store = createMemoryRobotsStore();
+    const res1 = await runCandidateShadowProbe(input1, { fetchImpl: fetcher as any, robotsStore: store });
+    expect(res1.robots.checked).toBe(true);
+    expect(res1.robots.fromCache).toBe(false);
+
+    const res2 = await runCandidateShadowProbe(input2, { fetchImpl: fetcher as any, robotsStore: store });
+    expect(res2.robots.checked).toBe(true);
+    expect(res2.robots.fromCache).toBe(true);
+
+    const robotsCalls = fetcher.mock.calls.filter((c: any) => typeof c[0] === "string" && c[0].includes("robots.txt"));
+    expect(robotsCalls.length).toBe(1);
   });
 
   it("oversized payload → DEGRADED_ANOMALOUS stop, no parse", async () => {

@@ -6,6 +6,7 @@ import {
   dispatchShadowObservations,
   defaultRunProbe,
   loadCurrentAdmissionEvidence,
+  createMemoryRobotsStore,
   MAX_DISPATCHES_PER_RUN,
   type DispatchRegistryRow,
 } from "@va-hub/scraper";
@@ -35,6 +36,7 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
       const db = dependencies.getDb(env);
       const windowHour = Math.floor((dependencies.now?.() ?? new Date()).getTime() / 3_600_000);
       if (!Number.isSafeInteger(windowHour) || windowHour < 0) throw new Error("Invalid shadow window clock");
+      const robotsStore = createMemoryRobotsStore();
       const summary = await dispatchShadowObservations({
         loadRegistryRows: async () => {
           // Rotate bounded windows even if the first group has invalid evidence
@@ -65,7 +67,7 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
           ));
           return rows[0]?.lastObservedAt ?? null;
         },
-        runProbe: dependencies.runProbe,
+        runProbe: (input) => (dependencies.runProbe as any)(input, { robotsStore }),
         now: dependencies.now,
         persistObservation: async (record) => {
           // Migration 0040 checks the live revisions, evidence, shadow entry

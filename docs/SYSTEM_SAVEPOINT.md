@@ -19,6 +19,27 @@ Direct production D1 read & workflow verification confirms:
 3. **Current Supply Baseline**: Strict qualified 7-day total is 88 jobs = 12.57 jobs/day
    (We Work Remotely 53, Real Work From Anywhere 22, Remote OK 9, Jobicy APAC 4, Remotive 0).
 
+### Run 66 — FIX-ROBOTS-CACHE: Batch Robots Caching & 429 Diagnostic Resilience (2026-09-12)
+
+UNIT ID: FIX-ROBOTS-CACHE
+PHASE: REPAIR / OBSERVABILITY / SCALE
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: all shadow sources (specifically Workable, Greenhouse, Breezy)
+
+- **Root-Cause Repaired: Batch-Scoped Robots Caching**:
+  - `apps/web/src/pages/api/cron/shadow-dispatch.ts`: Instantiated a batch-scoped `createMemoryRobotsStore()` across the dispatch loop.
+  - Passes `{ robotsStore }` to `runProbe`, guaranteeing that all candidates sharing an origin (`apply.workable.com`, `boards-api.greenhouse.io`, `*.breezy.hr`) fetch `robots.txt` at most once per dispatch run.
+  - Completely eliminates sequential 429 rate limiting caused by uncached probes hitting Workable or ATS endpoints.
+- **Accurate Diagnostic Classification in `candidate-shadow.ts`**:
+  - Categorized HTTP 429 responses on robots.txt as `RATE_LIMITED` rather than `POLICY_BLOCKED`.
+  - Exported `createMemoryRobotsStore` in `packages/scraper/index.ts`.
+- **Verification Evidence**:
+  - Added unit test in `packages/scraper/candidate-shadow.test.ts` proving shared `robotsStore` reuses cached robots.txt and makes only 1 external HTTP request across multiple candidate probes.
+  - Added unit test proving HTTP 429 yields `RATE_LIMITED`.
+  - Full test suite: **1,284/1,284 Bun tests pass across 129 files**; 15/15 Python tests pass; typecheck and guardrails clean; full client/server build clean.
+- **Next exact action**: Deploy commit and dispatch remaining high-yield Philippine VA agencies into shadow mode.
+
 ### Run 65 — RESUME & RECONCILE: Baseline Verification & Shadow Dispatch Diagnostic (2026-09-12)
 
 UNIT ID: EX-RESUME-RECONCILE
