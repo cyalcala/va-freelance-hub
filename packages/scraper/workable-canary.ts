@@ -120,7 +120,7 @@ export function buildWorkableCandidateRow(input: { nowIso: string; reviewDeadlin
   };
 }
 
-export const WORKABLE_ATS_EVIDENCE_URL = "https://help.workable.com/hc/en-us/articles/115015865688-Adding-the-Workable-Job-Widget-to-your-website";
+export const WORKABLE_ATS_EVIDENCE_URL = WORKABLE_EVIDENCE_URL;
 export const WORKABLE_ATS_ALLOWED_HOSTS = "apply.workable.com";
 
 export interface WorkableAtsProviderProfileRow {
