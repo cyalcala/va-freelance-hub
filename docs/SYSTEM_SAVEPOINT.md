@@ -17,6 +17,27 @@ Direct production D1 read & workflow verification confirms:
 2. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,336 total in `opportunities`).
 3. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
 
+### Run 71 — FIX-PROSPECTOR-SHORTLINKS: Reserved Slugs & Workable Shortlink Rejection in extractAtsToken (2026-09-12)
+
+UNIT ID: FIX-PROSPECTOR-SHORTLINKS
+PHASE: DISCOVERY / PROSPECTOR / RESILIENCE
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `packages/scraper/prospector.ts`, `apps/web/src/pages/api/cron/prospect.ts`
+
+- **Workable Shortlink & Reserved Slug Hardening (`packages/scraper/prospector.ts`)**:
+  - Filtered Workable job shortlinks (`https://apply.workable.com/j/{id}`) where the company slug is absent from the URL path, preventing `extractAtsToken` from misidentifying `"j"` as a company token.
+  - Added `WORKABLE_RESERVED_SLUGS` (`j`, `api`, `widget`, `accounts`, `resources`, `www`, `help`, `blog`, `jobs`, `auth`, `login`, `careers`, `feed`, `privacy`, `terms`, `view`, `company`, etc.).
+  - Added support for Workable widget API paths (`/api/v1/widget/accounts/{token}`) while rejecting reserved paths.
+  - Added reserved slug blocklists for Breezy (`BREEZY_RESERVED_SUBDOMAINS`) and Greenhouse (`GREENHOUSE_RESERVED_SLUGS`).
+- **Comprehensive Unit & Integration Testing**:
+  - Added 6 unit tests in `packages/scraper/prospector.test.ts` asserting rejection of shortlinks, marketing paths, and internal endpoints. All 20 tests in `prospector.test.ts` and 1,290 suite tests passing cleanly.
+- **Production Verification**:
+  - Code committed (`656b1c3`) and deployed via CI Run `34661036914` to Cloudflare Pages.
+  - Live Sovereign Prospector pulse ([Run `34661138924`](https://github.com/cyalcala/va-freelance-hub/actions/runs/34661138924)) executed in 10s: discovered 13 distinct ATS candidates, refreshed 5 non-publishing durable candidates, with zero invalid token leakages.
+  - Live EX-03 Shadow Dispatch ([Run `34661198821`](https://github.com/cyalcala/va-freelance-hub/actions/runs/34661198821)) executed in 37s: 12/12 dispatched, 12/12 `HEALTHY_WITH_RESULTS`, 0 probe failures, 0 rejected results.
+  - D1 Observation state reached 337 total observations across 7 distinct UTC days. Earliest cohort (`greenhouse:grafanalabs`, `recruitee:myjewellery`) reached Day 7 of 8.
+
 ### Run 70 — FIX-ROBOTS-D1-CACHE: D1-Backed Robots Store & RFC 9309 Stale Fallback (2026-09-12)
 
 UNIT ID: FIX-ROBOTS-D1-CACHE

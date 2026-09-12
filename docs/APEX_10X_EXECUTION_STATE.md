@@ -14,16 +14,20 @@ Canonical continuation:
 | --- | --- |
 | Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11 / 2026-09-12) |
 | Prime Directive | Floor: 100 / Stretch: 150 qualified net-new remote PH-accessible jobs/day |
-| Base Commit | `fa2700c` (matching `origin/main`) |
+| Base Commit | `656b1c3` (matching `origin/main`) |
 | Verification | 1,290 Bun tests pass (129 files), 15 Python tests pass, typecheck & guardrails clean |
 | D1 Registry Shadows | 19 total in shadow state (Workable x6, Breezy x5, Greenhouse x6, Recruitee x1, Teamtailor x1) |
-| Shadow Observations | 325+ total recorded; 0 public leakage (`published: 0` invariant strictly verified) |
+| Shadow Observations | 337 total recorded across 7 distinct UTC days; 0 public leakage (`published: 0` invariant strictly verified) |
 | Identity Attribution | 100.0% coverage in production D1 (0 null source_id rows out of 5,336) |
 | Current 7d Qualified Baseline | 86 jobs / 7 days = 12.29 jobs/day (WWR 51, RWFA 25, Remote OK 10, Jobicy 3, Remotive 0) |
 | Clocks | Primary Cloudflare Worker `freshness-cron` beating every 10 min; secondary Hunter in standby |
 
 ### Reconciled Production Reality (2026-09-12)
 Direct measurement and workflow inspection confirms:
+- **Prospector Shortlink & Reserved Slug Hardening (Run 71, `656b1c3`)**:
+  - `packages/scraper/prospector.ts`: Filtered Workable job shortlinks (`/j/{id}`) where company slug is absent from the URL, preventing `"j"` from being extracted as a company token.
+  - Added reserved slug blocklists for Workable, Breezy, and Greenhouse.
+  - Verified live via Sovereign Prospector pulse ([Run `34661138924`](https://github.com/cyalcala/va-freelance-hub/actions/runs/34661138924)) and EX-03 Shadow Dispatch ([Run `34661198821`](https://github.com/cyalcala/va-freelance-hub/actions/runs/34661198821)).
 - **All 6 Workable Philippine Agencies Admitted to Shadow**:
   - `workable:pearltalent` (235 active roles)
   - `workable:hunt-st` (153 active roles)
@@ -39,7 +43,7 @@ Direct measurement and workflow inspection confirms:
   - `152da42`: In `source-admit.ts`, reused unexpired persisted provider evidence to eliminate hash drift from dynamic third-party help center pages.
 - **D1-Backed Robots Cache & RFC 9309 Fallback Repaired**:
   - `19dfe24`: Connected production `shadow-dispatch.ts` to persistent D1 `createRobotsStore(db)` and added RFC 9309 §2.3.1.4 stale cache fallback on transient 429/network errors.
-  - Verified shadow dispatch workflow (`34659778831`) passes cleanly with HTTP 200, 0 probe failures, and 0 errors.
+  - Verified shadow dispatch workflow (`34661198821`) passes cleanly with HTTP 200, 12/12 dispatched, 12/12 `HEALTHY_WITH_RESULTS`, 0 probe failures, and 0 errors.
 - **Legacy Attribution & Board Safety**:
   - 100.0% attribution coverage verified (0 null `source_id` rows).
   - Exact-six publishing invariant strictly maintained on the public board (`published: 0` for all 19 shadow sources).
