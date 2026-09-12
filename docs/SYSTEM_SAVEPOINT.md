@@ -7,15 +7,46 @@ VA Freelance Hub into a durable Philippines-centered remote job discovery system
 sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
 Direct production D1 read & workflow verification confirms:
-1. **Registry & Shadow State**: 19 active shadows in `source_registry`:
-   - Workable (6): `workable:coconutva`, `workable:crewbloom`, `workable:hello-rache`, `workable:hunt-st`, `workable:pearltalent`, `workable:rocketams`.
+1. **Registry & Shadow State**: 20 active shadows in `source_registry`:
+   - Workable (7): `workable:coconutva`, `workable:crewbloom`, `workable:hello-rache`, `workable:hunt-st`, `workable:pearltalent`, `workable:pineapple-staffing`, `workable:rocketams`.
    - Breezy (5): `breezy:20four7va`, `breezy:remote-craft`, `breezy:sourcefit`, `breezy:value-virtual-assistants`, `breezy:yokly`.
    - Greenhouse (6): `greenhouse:ghost`, `greenhouse:gitlab`, `greenhouse:grafanalabs`, `greenhouse:nearform`, `greenhouse:remotecom`, `greenhouse:wikimedia`.
    - Recruitee (1): `recruitee:myjewellery`.
    - Teamtailor (1): `teamtailor:career.teamtailor.com`.
    Over 540 active remote Philippine roles in shadow observation across Workable agencies alone. Zero public leakage verified (`published: 0`).
-2. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,336 total in `opportunities`).
-3. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
+2. **Candidate Backlog**: 15 durable candidates in `needs_review/candidate` across Ashby, Breezy, Workable, and Lever.
+3. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,348 total in `opportunities`).
+4. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
+
+### Run 74 — FEAT-PINEAPPLE-SHADOW-ADMIT: Live Admission of Pineapple Staffing & Prospector Pulse (2026-09-13)
+
+UNIT ID: FEAT-PINEAPPLE-SHADOW-ADMIT
+PHASE: ADMISSION / SHADOW-OPERATION / PROSPECTOR
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `apps/web/src/pages/api/cron/source-admit.ts`, `docs/prospector-latest.md`
+
+- **Production Shadow Admission: Pineapple Staffing (`workable:pineapple-staffing`)**:
+  - Dispatched `gha-source-admit.yml` run `34725118883` against production Cloudflare Pages API.
+  - Successfully admitted `workable:pineapple-staffing` to `source_registry` with:
+    - `operational_state = 'shadow'`
+    - `compliance_state = 'conditional'`
+    - `canary_max_new_items_per_tick = 1` (pre-populated compliant canary throttle)
+    - `governance_revision = 1`
+    - `source_admission_evidence` ID 23 (180-day lease to 2027-03-10)
+  - First hourly shadow probe recorded `HEALTHY_WITH_RESULTS` with 3 active VA roles (Business VA, Legal VA, Multimedia VA).
+  - Exact-six publishing invariant strictly maintained: 0 active opportunities published on the public board (`is_active = 1` only for exact-six feeds).
+- **Sovereign Prospector Pulse Dispatched (`34725347183`)**:
+  - Successfully harvested newly unlocked ATS candidates from `va_directory` via `COALESCE(hiring_page_url, website)`.
+  - Discovered and inserted 10 new authentic ATS candidates into `source_registry` (`needs_review/candidate`):
+    - `workable:myoutdesk`, `workable:outsource-access`, `workable:staff-domain-inc`, `workable:superstaff`, `breezy:vaaphilippines-recruitment`, `workable:virtualstaff365`, `workable:global-strategic`, `workable:connectos`, `lever:vaultoutsourcing`, `ashby:tremendous`.
+  - Refreshed 5 candidates (`ashby:supabase`, `ashby:camunda`, `ashby:ashby`, `ashby:amplify`, `breezy:time-etc`).
+  - Durable candidate queue backlog increased from 5 to 15 distinct candidates.
+- **Shadow Observation Maturity Audit**:
+  - Top 5 candidates (`greenhouse:grafanalabs`, `greenhouse:gitlab`, `greenhouse:remotecom`, `recruitee:myjewellery`, `teamtailor:career.teamtailor.com`) have 56–60 healthy observations across 5 distinct UTC days under current evidence lease (IDs 4–8, captured 2026-09-08).
+  - Day 8 threshold under current evidence policy arrives on 2026-09-15.
+- **Verification**:
+  - 1,292 tests pass across 129 files (`bun test`); TypeScript typecheck clean; production CI guardrails clean.
 
 ### Run 73 — FEAT-DIRECTORY-ATS-MINING: Unlocking va_directory ATS Candidates & Pineapple Staffing Admission (2026-09-13)
 

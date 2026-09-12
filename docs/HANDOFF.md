@@ -1,6 +1,15 @@
 # Handoff
 
-## 2026-09-08 — PAUSED after completed capacity deployment (current)
+## 2026-09-13 — RESUMED: Pineapple Staffing Shadow Admission & Prospector Expansion (current)
+
+Explicit OWNER RESUME AUTHORIZATION granted. Execution active and progressing.
+- **Production Status**: 20 active shadow sources in `source_registry` (7 Workable, 5 Breezy, 6 Greenhouse, 1 Recruitee, 1 Teamtailor). 15 durable candidates in `needs_review/candidate`.
+- **Recent Admissions**: `workable:pineapple-staffing` admitted via workflow `34725118883` with `canary_max_new_items_per_tick: 1` and evidence ID 23. First shadow observation logged.
+- **Prospector Harvesting**: Workflow `34725347183` harvested `va_directory` via `COALESCE(hiring_page_url, website)`, queuing 10 new authentic ATS candidates.
+- **Exact-Six Publishing Invariant**: 100% strictly enforced (`published: 0` for all non-exact-six feeds).
+- **Test Baseline**: 1,292 passed, 0 failed across 129 test files; strict typecheck and CI guardrails clean.
+
+## 2026-09-08 — PAUSED after completed capacity deployment (historical)
 
 The owner paused execution, then authorized documentation backup and completion
 of ONLY the pending deployment. That deployment is complete. No source admission,
