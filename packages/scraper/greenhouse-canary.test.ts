@@ -30,6 +30,7 @@ describe("greenhouse-canary — candidate row (SP-12 criterion 3: existing five-
     expect(row.complianceState).toBe("conditional");
     expect(row.operationalState).toBe("candidate");
     expect(row.endpointUrl).toBe("https://boards-api.greenhouse.io/v1/boards/grafanalabs/jobs");
+    expect(row.canaryMaxNewItemsPerTick).toBe(1);
   });
 
   it("14-day review deadline and 180-day evidence lease from the decision instant", () => {

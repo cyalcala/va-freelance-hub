@@ -100,6 +100,7 @@ export interface BreezyCandidateRow {
   operationalState: "candidate";
   reviewDeadline: string;
   policyExpiry: string;
+  canaryMaxNewItemsPerTick: number;
   owner: string;
   lastDecision: string;
   lastDecisionAt: string;
@@ -128,6 +129,7 @@ export function buildBreezyCandidateRow(input: BreezyBoardInput): BreezyCandidat
     operationalState: "candidate",
     reviewDeadline: computeReviewDeadline(input.nowIso, input.reviewDeadlineDays ?? 14),
     policyExpiry: computePolicyExpiry(input.nowIso, BREEZY_EVIDENCE_LEASE_DAYS),
+    canaryMaxNewItemsPerTick: 1,
     owner: "techwriter-bot",
     lastDecision: "conditional minimal-index decision (public no-auth /json endpoint)",
     lastDecisionAt: input.nowIso,

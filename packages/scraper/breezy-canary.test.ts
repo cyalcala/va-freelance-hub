@@ -38,6 +38,7 @@ describe("breezy-canary — candidate row for PH agencies", () => {
     expect(row.companyToken).toBe("20four7va");
     expect(row.displayName).toBe("20Four7VA");
     expect(row.reviewDeadline).toBe("2026-09-25T12:00:00.000Z");
+    expect(row.canaryMaxNewItemsPerTick).toBe(1);
   });
 
   it("builds Sourcefit candidate row with exact provenance", () => {

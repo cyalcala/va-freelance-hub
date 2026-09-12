@@ -101,6 +101,7 @@ export interface GreenhouseCandidateRow {
   operationalState: "candidate";
   reviewDeadline: string;
   policyExpiry: string;
+  canaryMaxNewItemsPerTick: number;
   owner: string;
   lastDecision: string;
   lastDecisionAt: string;
@@ -136,6 +137,7 @@ export function buildGreenhouseCandidateRow(input: GreenhouseBoardInput): Greenh
     operationalState: "candidate",
     reviewDeadline: computeReviewDeadline(input.nowIso, input.reviewDeadlineDays ?? 14),
     policyExpiry: computePolicyExpiry(input.nowIso, GREENHOUSE_EVIDENCE_LEASE_DAYS),
+    canaryMaxNewItemsPerTick: 1,
     owner: "sp-12",
     lastDecision: "conditional minimal-index decision (documented public/no-auth Job Board GET)",
     lastDecisionAt: input.nowIso,

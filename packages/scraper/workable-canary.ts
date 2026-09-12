@@ -90,6 +90,7 @@ export interface WorkableCandidateRow {
   operationalState: "candidate";
   reviewDeadline: string;
   policyExpiry: string;
+  canaryMaxNewItemsPerTick: number;
   owner: string;
   lastDecision: string;
   lastDecisionAt: string;
@@ -113,6 +114,7 @@ export function buildWorkableCandidateRow(input: { nowIso: string; reviewDeadlin
     operationalState: "candidate",
     reviewDeadline: computeReviewDeadline(input.nowIso, input.reviewDeadlineDays ?? 14),
     policyExpiry: computePolicyExpiry(input.nowIso, WORKABLE_EVIDENCE_LEASE_DAYS),
+    canaryMaxNewItemsPerTick: 1,
     owner: "sp-10",
     lastDecision: "conditional minimal-content decision (documented public/no-auth global XML feed, GITHUB_ACTION_PREPROCESSING runtime)",
     lastDecisionAt: input.nowIso,
@@ -187,6 +189,7 @@ export interface WorkableAtsCandidateRow {
   operationalState: "candidate";
   reviewDeadline: string;
   policyExpiry: string;
+  canaryMaxNewItemsPerTick: number;
   owner: string;
   lastDecision: string;
   lastDecisionAt: string;
@@ -214,6 +217,7 @@ export function buildWorkableAtsCandidateRow(input: WorkableAtsBoardInput): Work
     operationalState: "candidate",
     reviewDeadline: computeReviewDeadline(input.nowIso, input.reviewDeadlineDays ?? 14),
     policyExpiry: computePolicyExpiry(input.nowIso, WORKABLE_EVIDENCE_LEASE_DAYS),
+    canaryMaxNewItemsPerTick: 1,
     owner: "ex-workable",
     lastDecision: "conditional minimal-content decision (documented public/no-auth Workable widget API GET)",
     lastDecisionAt: input.nowIso,

@@ -299,7 +299,7 @@ export function createSourceAdmitHandler(dependencies: HandlerDependencies = {})
         operationalState: "candidate" as const,
         reviewDeadline: candidate.reviewDeadline,
         policyExpiry: candidate.policyExpiry,
-        canaryMaxNewItemsPerTick: null,
+        canaryMaxNewItemsPerTick: candidate.canaryMaxNewItemsPerTick ?? 1,
         optOut: false,
         governanceRevision: 1,
         lastTransitionHash: null,

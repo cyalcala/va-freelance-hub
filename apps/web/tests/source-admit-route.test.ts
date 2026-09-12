@@ -91,6 +91,7 @@ describe("source-admit route", () => {
       admit: async (_db, input) => {
         expect(input.source.sourceId).toBe("greenhouse:grafanalabs");
         expect(input.source.operationalState).toBe("candidate");
+        expect(input.source.canaryMaxNewItemsPerTick).toBe(1);
         return { ok: true, sourceId: input.source.sourceId };
       },
     });

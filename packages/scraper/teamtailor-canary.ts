@@ -86,6 +86,7 @@ export interface TeamtailorCandidateRow {
   operationalState: "candidate";
   reviewDeadline: string;
   policyExpiry: string;
+  canaryMaxNewItemsPerTick: number;
   owner: string;
   lastDecision: string;
   lastDecisionAt: string;
@@ -113,6 +114,7 @@ export function buildTeamtailorCandidateRow(input: TeamtailorCareerSiteInput): T
     operationalState: "candidate",
     reviewDeadline: computeReviewDeadline(input.nowIso, input.reviewDeadlineDays ?? 14),
     policyExpiry: computePolicyExpiry(input.nowIso, TEAMTAILOR_EVIDENCE_LEASE_DAYS),
+    canaryMaxNewItemsPerTick: 1,
     owner: "sp-14",
     lastDecision: "conditional minimal-content decision (documented public/no-auth /jobs.rss)",
     lastDecisionAt: input.nowIso,

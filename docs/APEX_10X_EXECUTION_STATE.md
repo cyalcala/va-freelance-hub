@@ -24,6 +24,9 @@ Canonical continuation:
 
 ### Reconciled Production Reality (2026-09-12)
 Direct measurement and workflow inspection confirms:
+- **Default Canary Cap in Candidate Builders & Admission Route (Run 72)**:
+  - Wired `canaryMaxNewItemsPerTick: 1` in candidate row builders for Greenhouse, Recruitee, Teamtailor, Breezy, and Workable ATS.
+  - Updated `apps/web/src/pages/api/cron/source-admit.ts` to propagate `candidate.canaryMaxNewItemsPerTick ?? 1` to align with Migration 0042 `source_transition_events_validate_insert` requirements for canary promotion.
 - **Prospector Shortlink & Reserved Slug Hardening (Run 71, `656b1c3`)**:
   - `packages/scraper/prospector.ts`: Filtered Workable job shortlinks (`/j/{id}`) where company slug is absent from the URL, preventing `"j"` from being extracted as a company token.
   - Added reserved slug blocklists for Workable, Breezy, and Greenhouse.

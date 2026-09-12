@@ -17,6 +17,27 @@ Direct production D1 read & workflow verification confirms:
 2. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,336 total in `opportunities`).
 3. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
 
+### Run 72 — FEAT-CANARY-CAP-DEFAULT: Default canaryMaxNewItemsPerTick in Candidate Builders & Admission Route (2026-09-12)
+
+UNIT ID: FEAT-CANARY-CAP-DEFAULT
+PHASE: TRANSITION / CANARY-READINESS / GOVERNANCE
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `packages/scraper/*-canary.ts`, `apps/web/src/pages/api/cron/source-admit.ts`
+
+- **Canary Cap Alignment with Migration 0042 & Transition Plane**:
+  - In `packages/scraper/transition-plane.ts` and database trigger `source_transition_events_validate_insert`, canary promotion (`cause = 'requested_promotion'`, `to_operational = 'canary'`) strictly requires `canary_max_new_items_per_tick` to be an integer > 0.
+  - Previous candidate row builders left `canary_max_new_items_per_tick` as `null`, which risked rejection upon Day 8 observation maturity.
+- **Candidate Row Builders Hardened**:
+  - Updated `GreenhouseCandidateRow`, `RecruiteeCandidateRow`, `TeamtailorCandidateRow`, `BreezyCandidateRow`, `WorkableCandidateRow`, and `WorkableAtsCandidateRow` to include `canaryMaxNewItemsPerTick: number`.
+  - Configured all candidate row builders (`buildGreenhouseCandidateRow`, `buildRecruiteeCandidateRow`, `buildTeamtailorCandidateRow`, `buildBreezyCandidateRow`, `buildWorkableCandidateRow`, `buildWorkableAtsCandidateRow`) to default `canaryMaxNewItemsPerTick: 1` (single-item canary throttle under ADR-008).
+- **Admission Route Wired (`apps/web/src/pages/api/cron/source-admit.ts`)**:
+  - Updated line 302 to propagate `canaryMaxNewItemsPerTick: candidate.canaryMaxNewItemsPerTick ?? 1` instead of hardcoded `null`.
+  - Ensures newly admitted sources enter candidate/shadow state with complete, immutable canary envelope pre-bound in `source_admission_evidence.packet_json`.
+- **Verification & Test Coverage**:
+  - Added assertions in `apps/web/tests/source-admit-route.test.ts`, `packages/scraper/greenhouse-canary.test.ts`, and `packages/scraper/breezy-canary.test.ts`.
+  - All 51 unit tests across the canary suites pass; full guardrails, strict TypeScript typecheck, and production Astro build clean.
+
 ### Run 71 — FIX-PROSPECTOR-SHORTLINKS: Reserved Slugs & Workable Shortlink Rejection in extractAtsToken (2026-09-12)
 
 UNIT ID: FIX-PROSPECTOR-SHORTLINKS

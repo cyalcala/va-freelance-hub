@@ -88,6 +88,7 @@ export interface RecruiteeCandidateRow {
   operationalState: "candidate";
   reviewDeadline: string;
   policyExpiry: string;
+  canaryMaxNewItemsPerTick: number;
   owner: string;
   lastDecision: string;
   lastDecisionAt: string;
@@ -115,6 +116,7 @@ export function buildRecruiteeCandidateRow(input: RecruiteeCompanyInput): Recrui
     operationalState: "candidate",
     reviewDeadline: computeReviewDeadline(input.nowIso, input.reviewDeadlineDays ?? 14),
     policyExpiry: computePolicyExpiry(input.nowIso, RECRUITEE_EVIDENCE_LEASE_DAYS),
+    canaryMaxNewItemsPerTick: 1,
     owner: "sp-15",
     lastDecision: "conditional minimal-content decision (documented public/no-auth XML feed)",
     lastDecisionAt: input.nowIso,
