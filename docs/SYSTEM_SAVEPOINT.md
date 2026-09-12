@@ -7,19 +7,67 @@ VA Freelance Hub into a durable Philippines-centered remote job discovery system
 sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
 Direct production D1 read & workflow verification confirms:
-1. **Registry & Shadow State**: 11 active shadows in `source_registry` (`greenhouse:grafanalabs`,
-   `recruitee:myjewellery`, `teamtailor:career.teamtailor.com`, `greenhouse:gitlab`,
-   `greenhouse:remotecom`, `greenhouse:nearform`, `greenhouse:ghost`, `greenhouse:wikimedia`,
-   `breezy:20four7va`, `workable:coconutva`, `workable:crewbloom`).
-   `workable:coconutva` and `workable:crewbloom` were admitted in GHA runs 34649757920 and 34649812610.
-   259+ shadow observations recorded; earliest cohort has 6 distinct UTC observation dates.
-   Zero public leakage from shadow sources verified.
-2. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows
-   out of 5,331 total in `opportunities`).
-3. **Current Supply Baseline**: Strict qualified 7-day total is 88 jobs = 12.57 jobs/day
-   (We Work Remotely 53, Real Work From Anywhere 22, Remote OK 9, Jobicy APAC 4, Remotive 0).
+1. **Registry & Shadow State**: 19 active shadows in `source_registry`:
+   - Workable (6): `workable:coconutva`, `workable:crewbloom`, `workable:hello-rache`, `workable:hunt-st`, `workable:pearltalent`, `workable:rocketams`.
+   - Breezy (5): `breezy:20four7va`, `breezy:remote-craft`, `breezy:sourcefit`, `breezy:value-virtual-assistants`, `breezy:yokly`.
+   - Greenhouse (6): `greenhouse:ghost`, `greenhouse:gitlab`, `greenhouse:grafanalabs`, `greenhouse:nearform`, `greenhouse:remotecom`, `greenhouse:wikimedia`.
+   - Recruitee (1): `recruitee:myjewellery`.
+   - Teamtailor (1): `teamtailor:career.teamtailor.com`.
+   Over 540 active remote Philippine roles in shadow observation across Workable agencies alone. Zero public leakage verified (`published: 0`).
+2. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,336 total in `opportunities`).
+3. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
 
-### Run 67 — FIX-PROBE-PACING: Transient 429 Retry, Polite Inter-Probe Pacing & Store Exclusion (2026-09-12)
+### Run 70 — FIX-ROBOTS-D1-CACHE: D1-Backed Robots Store & RFC 9309 Stale Fallback (2026-09-12)
+
+UNIT ID: FIX-ROBOTS-D1-CACHE
+PHASE: REPAIR / COMPLIANCE / RELIABILITY
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: all shadow sources (specifically `apply.workable.com` and multi-source ATS origins)
+
+- **D1-Backed Robots Cache Integration (`apps/web/src/pages/api/cron/shadow-dispatch.ts`)**:
+  - Connected production `shadow-dispatch` route to persistent D1 `createRobotsStore(db)` (from `@/lib/robots-store.ts`), replacing the ephemeral in-memory store.
+  - Cached `https://apply.workable.com` robots.txt (status 200, `ai-input=yes`) in D1 `robots_cache`, eliminating redundant external robots fetches for all 6 Workable agency feeds.
+- **RFC 9309 §2.3.1.4 Stale Cache Fallback (`packages/scraper/robotsGate.ts`)**:
+  - Implemented RFC 9309 guidance: when a fresh robots.txt fetch returns transient HTTP 429 or network error, checkRobots gracefully falls back to the previously cached valid 200 robots.txt rather than failing or assuming Disallow.
+  - Added unit test in `packages/scraper/robotsGate.test.ts` verifying stale cache fallback.
+- **Verification Evidence**:
+  - Dispatched `EX-03 Shadow Dispatch` (`gha-shadow-dispatch.yml`, run `34659778831`).
+  - Succeeded with HTTP 200, 0 probe failures, 0 rejected results, and 0 errors (`assessShadowResponse` verified).
+
+### Run 69 — EX-WORKABLE-COHORT-ADMIT: Full Workable Philippine Agency Cohort Admission (2026-09-12)
+
+UNIT ID: EX-WORKABLE-COHORT-ADMIT
+PHASE: ADMIT / SHADOW
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `workable:pearltalent`, `workable:hunt-st`, `workable:rocketams`, `workable:hello-rache`
+
+- **All Remaining Allowlisted Workable Agencies Admitted to Shadow Mode**:
+  - `workable:pearltalent`: Admitted to shadow (Run `34658461748`, HTTP 200, 235 active remote roles).
+  - `workable:hunt-st`: Admitted to shadow (Run `34658575112`, HTTP 200, 153 active remote roles).
+  - `workable:rocketams`: Admitted to shadow (Run `34658981349`, HTTP 200, 11 active remote roles).
+  - `workable:hello-rache`: Admitted to shadow (Run `34659025370`, HTTP 200, 3 active remote roles).
+- **Zero Board Leakage Verified**:
+  - All admissions confirmed `published: 0`.
+  - Direct measurement in D1 `opportunities`: 0 active jobs from Workable (`is_active = 0` for all 66 historical rows).
+  - Total Workable shadow inventory under observation: 540 active remote Philippine roles.
+
+### Run 68 — FIX-ADMISSION-STABILITY: Pre-Existing Candidate Transition & Provider Hash Stability (2026-09-12)
+
+UNIT ID: FIX-ADMISSION-STABILITY
+PHASE: REPAIR / GOVERNANCE / ADMISSION
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `source-admission.ts`, `source-admit.ts`
+
+- **Candidate-to-Shadow UPSERT Transition (`packages/scraper/source-admission.ts`, commit `d32aa1e`)**:
+  - Added `ON CONFLICT(source_id) DO UPDATE SET ... WHERE operational_state = 'candidate'` to `INSERT_CANDIDATE_SQL`.
+  - Enables pre-existing candidate rows discovered by Prospector (`hunt-st`, `rocketams`) to transition cleanly to shadow mode without unique constraint failures.
+  - Dynamically reloads `storedSource` after write to accurately capture trigger-bumped governance revisions.
+- **Provider Evidence Hash Stability (`apps/web/src/pages/api/cron/source-admit.ts`, commit `152da42`)**:
+  - Reuses unexpired persisted provider evidence from `provider_profiles` to eliminate hash drift from dynamic third-party help center pages (e.g. Zendesk HTML / Cloudflare Ray IDs).
+
 
 UNIT ID: FIX-PROBE-PACING
 PHASE: REPAIR / PACING / RELIABILITY
