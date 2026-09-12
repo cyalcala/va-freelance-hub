@@ -12,18 +12,26 @@ Canonical continuation:
 
 | Item | Exact state |
 | --- | --- |
-| Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11 / 2026-09-12) |
+| Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11 / 2026-09-12 / 2026-09-13) |
 | Prime Directive | Floor: 100 / Stretch: 150 qualified net-new remote PH-accessible jobs/day |
-| Base Commit | `656b1c3` (matching `origin/main`) |
-| Verification | 1,290 Bun tests pass (129 files), 15 Python tests pass, typecheck & guardrails clean |
-| D1 Registry Shadows | 19 total in shadow state (Workable x6, Breezy x5, Greenhouse x6, Recruitee x1, Teamtailor x1) |
-| Shadow Observations | 337 total recorded across 7 distinct UTC days; 0 public leakage (`published: 0` invariant strictly verified) |
-| Identity Attribution | 100.0% coverage in production D1 (0 null source_id rows out of 5,336) |
+| Base Commit | `38f41d7` (matching `origin/main`) |
+| Verification | 1,292 Bun tests pass (129 files), 7 Python tests pass, typecheck & guardrails clean |
+| D1 Registry Shadows | 20 total in shadow state (Workable x7, Breezy x5, Greenhouse x6, Recruitee x1, Teamtailor x1) |
+| Durable Candidate Queue | 15 distinct ATS candidates in `needs_review/candidate` (Ashby, Breezy, Workable, Lever) |
+| Shadow Observations | 467+ total recorded across 7 distinct UTC days; 0 public leakage (`published: 0` invariant strictly verified) |
+| Identity Attribution | 100.0% coverage in production D1 (0 null source_id rows out of 5,348) |
 | Current 7d Qualified Baseline | 86 jobs / 7 days = 12.29 jobs/day (WWR 51, RWFA 25, Remote OK 10, Jobicy 3, Remotive 0) |
 | Clocks | Primary Cloudflare Worker `freshness-cron` beating every 10 min; secondary Hunter in standby |
 
 ### Reconciled Production Reality (2026-09-13)
 Direct measurement and workflow inspection confirms:
+- **Pineapple Staffing Admitted to Production Shadow (Run 74)**:
+  - Dispatched `gha-source-admit.yml` ([Run `34725118883`](https://github.com/cyalcala/va-freelance-hub/actions/runs/34725118883)) admitting `workable:pineapple-staffing` with `canary_max_new_items_per_tick: 1` and evidence ID 23.
+  - First hourly shadow probe logged `HEALTHY_WITH_RESULTS` with 3 active roles (Business VA, Legal VA, Multimedia VA). 0 public leakage.
+- **Sovereign Prospector Pulse Harvest (`34725347183`)**:
+  - Successfully harvested `va_directory` using `COALESCE(hiring_page_url, website)`.
+  - Discovered and inserted 10 new authentic ATS candidates into `source_registry` (`needs_review/candidate`): `workable:myoutdesk`, `workable:outsource-access`, `workable:staff-domain-inc`, `workable:superstaff`, `breezy:vaaphilippines-recruitment`, `workable:virtualstaff365`, `workable:global-strategic`, `workable:connectos`, `lever:vaultoutsourcing`, `ashby:tremendous`.
+  - Refreshed 5 existing candidates. Total candidate queue backlog now 15 distinct candidates.
 - **Directory ATS Candidate Mining & Pineapple Staffing (Run 73)**:
   - Updated `buildDirectoryAtsMiningQuery` with `COALESCE(d.hiring_page_url, d.website)` unlocking 23+ ATS-using companies in `va_directory`.
   - Added `canaryMaxNewItemsPerTick: 1` to `buildCandidateRow` in `packages/scraper/prospect-candidate.ts`.

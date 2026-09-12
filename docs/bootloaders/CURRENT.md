@@ -10,19 +10,20 @@ sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 4. [Source health latest](../source-health-latest.md)
 5. [Source economics latest](../source-economics-latest.md)
 
-Capacity code is deployed at `c3f5951ae387ad0a6f9023d4bbe48dc618678841` (PR #141)
-at https://280f2e6b.remotejobs-ph.pages.dev.
-D1 reality confirmed via direct production query:
-- 8 active shadows in `source_registry`: Grafana Labs, My Jewellery, Teamtailor,
-  GitLab, Remote.com, Nearform, Ghost Foundation, Wikimedia Foundation.
-- 259 shadow observations across 6 distinct UTC dates (earliest cohorts).
-- Nearform, Ghost, and Wikimedia admitted with evidence IDs 9, 10, 11 on 2026-09-11.
-- Zero public leakage verified from all shadow sources.
-- Exact source attribution backfill complete in D1: 100.0% coverage (0 null source_id rows out of 5,331).
-- Measured strict qualified 7d baseline: 88 jobs / 7 days = 12.57 jobs/day.
+Capacity & candidate infrastructure deployed at `38f41d7` on branch `main`.
+Production D1 reality confirmed via direct query:
+- 20 active shadows in `source_registry`:
+  - Workable (7): `coconutva`, `crewbloom`, `hello-rache`, `hunt-st`, `pearltalent`, `pineapple-staffing`, `rocketams`.
+  - Breezy (5): `20four7va`, `remote-craft`, `sourcefit`, `value-virtual-assistants`, `yokly`.
+  - Greenhouse (6): `ghost`, `gitlab`, `grafanalabs`, `nearform`, `remotecom`, `wikimedia`.
+  - Recruitee (1): `myjewellery`.
+  - Teamtailor (1): `career.teamtailor.com`.
+- 15 durable candidates queued in `needs_review/candidate` (Ashby x5, Breezy x2, Workable x7, Lever x1).
+- Over 540 active remote Philippine roles observed in shadow across agencies; zero public leakage (`published: 0` invariant strictly preserved).
+- 467+ shadow observations across 7 distinct UTC days; top cohort (Grafana, GitLab, Remote.com, My Jewellery, Teamtailor) on Day 5 under current evidence lease, progressing to Day 8 maturity on 2026-09-15.
+- Exact source attribution at 100.0% coverage in D1 (0 null source_id rows out of 5,348).
+- Measured strict qualified 7d baseline: 86 jobs / 7 days = 12.29 jobs/day.
 
 Active execution queue:
-1. Queue A: Fix Jobicy namespaced XML parsing in `rss.ts` to unblock silent-zero admin/support yield.
-2. Queue B: Exact source attribution backfill tooling persistence and regression tests.
-3. Queue D & E: Philippines-First ATS expansion (Breezy HR capability for 20Four7VA, Sourcefit, Time Etc).
-4. Queue H: Prospector 2.0 continuous ATS candidate factory.
+1. Accumulate shadow observation history across all 20 sources toward Day 8 qualification.
+2. Review and advance candidate queue backlog (15 candidates) under ADR-008 fast-track guidelines.
