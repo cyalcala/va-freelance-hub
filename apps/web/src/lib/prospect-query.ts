@@ -63,22 +63,22 @@ export function buildAtsCandidateMiningQuery(limit = 100) {
 }
 
 /**
- * Mine curated va_directory website links pointing to known ATS platforms.
+ * Mine curated va_directory hiring page or website links pointing to known ATS platforms.
  */
 export function buildDirectoryAtsMiningQuery(limit = 100) {
   return sql`
     SELECT d.company_name AS company,
            1 AS jobs,
-           d.website AS sampleUrl,
+           COALESCE(d.hiring_page_url, d.website) AS sampleUrl,
            d.niche AS category
     FROM va_directory d
-    WHERE d.website IS NOT NULL
+    WHERE COALESCE(d.hiring_page_url, d.website) IS NOT NULL
       AND (
-        d.website LIKE '%greenhouse.io%'
-        OR d.website LIKE '%lever.co%'
-        OR d.website LIKE '%ashbyhq.com%'
-        OR d.website LIKE '%breezy.hr%'
-        OR d.website LIKE '%workable.com%'
+        COALESCE(d.hiring_page_url, d.website) LIKE '%greenhouse.io%'
+        OR COALESCE(d.hiring_page_url, d.website) LIKE '%lever.co%'
+        OR COALESCE(d.hiring_page_url, d.website) LIKE '%ashbyhq.com%'
+        OR COALESCE(d.hiring_page_url, d.website) LIKE '%breezy.hr%'
+        OR COALESCE(d.hiring_page_url, d.website) LIKE '%workable.com%'
       )
     LIMIT ${limit}
   `;

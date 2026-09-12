@@ -58,6 +58,7 @@ describe("buildCandidateRow", () => {
     expect(row.optOut).toBe(0);
     expect(row.reviewDeadline).toBe(computeReviewDeadline(now, CANDIDATE_REVIEW_DEADLINE_DAYS));
     expect(row.policyExpiry).toBeNull();
+    expect(row.canaryMaxNewItemsPerTick).toBe(1);
     expect(row.owner).toBe("prospector");
     const prov = JSON.parse(row.discoveryProvenance);
     expect(prov.sampleUrl).toBe("https://boards.greenhouse.io/acme/jobs/123");

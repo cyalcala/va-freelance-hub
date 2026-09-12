@@ -17,6 +17,28 @@ Direct production D1 read & workflow verification confirms:
 2. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,336 total in `opportunities`).
 3. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
 
+### Run 73 — FEAT-DIRECTORY-ATS-MINING: Unlocking va_directory ATS Candidates & Pineapple Staffing Admission (2026-09-13)
+
+UNIT ID: FEAT-DIRECTORY-ATS-MINING
+PHASE: DISCOVERY / PROSPECTOR / EXPANSION
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `apps/web/src/lib/prospect-query.ts`, `apps/web/src/pages/api/cron/source-admit.ts`, `packages/scraper/prospect-candidate.ts`
+
+- **Directory ATS Mining Query Fixed (`apps/web/src/lib/prospect-query.ts`)**:
+  - `buildDirectoryAtsMiningQuery` previously only inspected `d.website`, which missed all companies where the ATS application link was stored in `d.hiring_page_url`.
+  - Updated to `COALESCE(d.hiring_page_url, d.website)`, instantly unlocking 23+ authentic ATS-using Philippine agency profiles from `va_directory` for automated candidate mining.
+  - Updated test in `apps/web/tests/prospect-query.test.ts` to assert coverage for both `website` and `hiring_page_url`.
+- **Candidate Row Builders Default Canary Cap**:
+  - In `packages/scraper/prospect-candidate.ts`, added `canaryMaxNewItemsPerTick: 1` to `CandidateRow` and `buildCandidateRow`.
+  - Ensures auto-discovered candidates enter `source_registry` with a compliant canary throttle pre-populated.
+- **Admitted Workable Philippine VA Agency: Pineapple Staffing**:
+  - Verified live endpoint `https://apply.workable.com/api/v1/widget/accounts/pineapple-staffing` returns 3 active VA roles (Business VA, Legal VA, Multimedia VA).
+  - Added `workable:pineapple-staffing` to `SOURCE_ADMIT_ALLOWLIST` in `apps/web/src/pages/api/cron/source-admit.ts` under Tier A fast-track.
+  - Added unit test in `apps/web/tests/source-admit-route.test.ts` verifying safe shadow admission without public job leakage.
+- **Verification**:
+  - All 14 tests in `source-admit-route.test.ts` pass; 12 tests in `prospect-candidate.test.ts` pass; 4 tests in `prospect-query.test.ts` pass; full typecheck and guardrails clean.
+
 ### Run 72 — FEAT-CANARY-CAP-DEFAULT: Default canaryMaxNewItemsPerTick in Candidate Builders & Admission Route (2026-09-12)
 
 UNIT ID: FEAT-CANARY-CAP-DEFAULT

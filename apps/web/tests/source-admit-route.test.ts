@@ -43,6 +43,7 @@ describe("source-admit route", () => {
       "workable:rocketams",
       "workable:hunt-st",
       "workable:hello-rache",
+      "workable:pineapple-staffing",
     ]);
   });
 
@@ -387,6 +388,44 @@ describe("source-admit route", () => {
     const response = await handler(requestContext({ sourceId: "workable:coconutva" }));
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "workable:coconutva", published: 0 });
+  });
+
+  test("admits workable:pineapple-staffing to shadow under Tier A fast-track with Pineapple Staffing displayName", async () => {
+    const handler = createSourceAdmitHandler({
+      now: () => NOW,
+      fetchEvidence: async () => "workable evidence document",
+      hash: async () => "b".repeat(64),
+      wrapDb: () => ({ prepare() { throw new Error("unused"); } }) as any,
+      runProbe: async (input) => ({
+        version: SHADOW_VERSION,
+        timestamp: NOW,
+        sourceId: input.sourceId,
+        providerId: input.providerId,
+        displayName: input.displayName,
+        endpoint: { url: input.endpointUrl, isHttps: true, host: "apply.workable.com", allowedHosts: input.provider.allowedHosts ?? null, hostValid: true },
+        auth: { class: "none", supported: true },
+        visibility: { filter: "published", isPublic: true, ambiguous: false },
+        provenance: { discoveryProvenance: input.discoveryProvenance ?? null, evidenceUrl: input.provider.evidenceUrl ?? null, providerFamily: "workable", mechanism: "ats_api" },
+        cadence: { minMinutes: 60, maxMinutes: 1440, rateGuidance: input.provider.rateGuidance ?? null },
+        robots: { checked: true, verdict: "allowed", wouldBlock: false, evidence: "allow", fromCache: false },
+        fetch: { attempted: true, status: 200, latencyMs: 1, bytesReceived: 10, contentType: "application/json" },
+        parse: { attempted: true, schemaHealth: "ok", itemCount: 3 },
+        sampleFunnel: { bytesReceived: 10, parsedItems: 3, plausibleItems: 3, truncated: false, budgetExceeded: false },
+        diagnostic: { outcome: "HEALTHY_WITH_RESULTS", probes: [], requestCount: 2, bytesReceived: 10, durationMs: 2, mutations: 0, shadowMode: true },
+      }),
+      admit: async (_db, input) => {
+        expect(input.source.sourceId).toBe("workable:pineapple-staffing");
+        expect(input.source.operationalState).toBe("candidate");
+        expect(input.source.displayName).toBe("Pineapple Staffing");
+        expect(input.source.canaryMaxNewItemsPerTick).toBe(1);
+        expect(input.provider.allowedHosts).toBe("apply.workable.com");
+        expect(input.adjudicationRef).toBe("ex-ph-agency-workable-pineapple-staffing-tier-a-fast-track");
+        return { ok: true, sourceId: input.source.sourceId };
+      },
+    });
+    const response = await handler(requestContext({ sourceId: "workable:pineapple-staffing" }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "workable:pineapple-staffing", published: 0 });
   });
 
   test("reuses persisted unexpired provider evidence hash and timestamp without refetching", async () => {

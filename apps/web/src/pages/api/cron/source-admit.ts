@@ -56,6 +56,7 @@ export const SOURCE_ADMIT_ALLOWLIST = [
   "workable:rocketams",
   "workable:hunt-st",
   "workable:hello-rache",
+  "workable:pineapple-staffing",
 ] as const;
 
 type HandlerDependencies = {
@@ -153,6 +154,7 @@ function admitTarget(sourceId: string, clock: string) {
       "rocketams": "RocketAMS",
       "hunt-st": "Hunt St",
       "hello-rache": "Hello Rache",
+      "pineapple-staffing": "Pineapple Staffing",
     };
     const companyName = names[token] ?? token;
     const profile = buildWorkableAtsProviderProfile();

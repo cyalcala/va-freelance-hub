@@ -22,8 +22,12 @@ Canonical continuation:
 | Current 7d Qualified Baseline | 86 jobs / 7 days = 12.29 jobs/day (WWR 51, RWFA 25, Remote OK 10, Jobicy 3, Remotive 0) |
 | Clocks | Primary Cloudflare Worker `freshness-cron` beating every 10 min; secondary Hunter in standby |
 
-### Reconciled Production Reality (2026-09-12)
+### Reconciled Production Reality (2026-09-13)
 Direct measurement and workflow inspection confirms:
+- **Directory ATS Candidate Mining & Pineapple Staffing (Run 73)**:
+  - Updated `buildDirectoryAtsMiningQuery` with `COALESCE(d.hiring_page_url, d.website)` unlocking 23+ ATS-using companies in `va_directory`.
+  - Added `canaryMaxNewItemsPerTick: 1` to `buildCandidateRow` in `packages/scraper/prospect-candidate.ts`.
+  - Verified live endpoint for Pineapple Staffing (3 active VA roles) and added `workable:pineapple-staffing` to `SOURCE_ADMIT_ALLOWLIST`.
 - **Default Canary Cap in Candidate Builders & Admission Route (Run 72)**:
   - Wired `canaryMaxNewItemsPerTick: 1` in candidate row builders for Greenhouse, Recruitee, Teamtailor, Breezy, and Workable ATS.
   - Updated `apps/web/src/pages/api/cron/source-admit.ts` to propagate `candidate.canaryMaxNewItemsPerTick ?? 1` to align with Migration 0042 `source_transition_events_validate_insert` requirements for canary promotion.

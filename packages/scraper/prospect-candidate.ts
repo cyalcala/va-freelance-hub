@@ -94,6 +94,7 @@ export interface CandidateRow {
   operationalState: "candidate";
   reviewDeadline: string;
   policyExpiry: string | null;
+  canaryMaxNewItemsPerTick: number | null;
   owner: string;
   lastDecision: string;
   lastDecisionAt: string;
@@ -136,6 +137,7 @@ export function buildCandidateRow(input: BuildCandidateInput): CandidateRow {
     operationalState: "candidate",
     reviewDeadline: computeReviewDeadline(nowIso, CANDIDATE_REVIEW_DEADLINE_DAYS),
     policyExpiry: null,
+    canaryMaxNewItemsPerTick: 1,
     owner: "prospector",
     lastDecision: "prospector candidate",
     lastDecisionAt: nowIso,

@@ -98,16 +98,17 @@ test("buildAtsCandidateMiningQuery selects eligible opportunities with ATS appli
   }
 });
 
-test("buildDirectoryAtsMiningQuery selects directory entries with ATS website URLs", () => {
+test("buildDirectoryAtsMiningQuery selects directory entries with ATS website URLs or hiring_page_url", () => {
   const database = new Database(":memory:");
   try {
     database.exec(`
       CREATE TABLE va_directory (
-        company_name TEXT, website TEXT, niche TEXT
+        company_name TEXT, website TEXT, niche TEXT, hiring_page_url TEXT
       );
       INSERT INTO va_directory VALUES
-        ('Breezy Agency', 'https://agency.breezy.hr', 'global-va'),
-        ('Standard Agency', 'https://standardagency.com', 'admin');
+        ('Breezy Agency', 'https://agency.breezy.hr', 'global-va', NULL),
+        ('Workable Agency', 'https://workableagency.com', 'admin', 'https://apply.workable.com/workable-agency'),
+        ('Standard Agency', 'https://standardagency.com', 'admin', 'https://standardagency.com/careers');
     `);
 
     const dialect = new SQLiteSyncDialect();
@@ -119,10 +120,13 @@ test("buildDirectoryAtsMiningQuery selects directory entries with ATS website UR
       category: string;
     }>;
 
-    expect(rows.length).toBe(1);
+    expect(rows.length).toBe(2);
     expect(rows[0].company).toBe("Breezy Agency");
     expect(rows[0].sampleUrl).toBe("https://agency.breezy.hr");
     expect(rows[0].category).toBe("global-va");
+    expect(rows[1].company).toBe("Workable Agency");
+    expect(rows[1].sampleUrl).toBe("https://apply.workable.com/workable-agency");
+    expect(rows[1].category).toBe("admin");
   } finally {
     database.close();
   }
