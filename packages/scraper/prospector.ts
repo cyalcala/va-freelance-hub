@@ -105,6 +105,22 @@ export function isTrustedSourceUrl(url: string | null | undefined): boolean {
   return TRUSTED_HOSTS.some((trusted) => exactOrSubdomain(host, trusted));
 }
 
+const WORKABLE_RESERVED_SLUGS = new Set([
+  "j", "api", "widget", "accounts", "resources", "www", "help",
+  "blog", "jobs", "auth", "login", "careers", "career", "feed",
+  "feeds", "about", "privacy", "terms", "cookie-policy", "view",
+  "company", "companies", "job", "search",
+]);
+
+const BREEZY_RESERVED_SUBDOMAINS = new Set([
+  "breezy", "app", "auth", "login", "help", "support",
+  "status", "blog", "resources", "careers", "api", "cdn",
+]);
+
+const GREENHOUSE_RESERVED_SLUGS = new Set([
+  "embed", "v1", "v2", "api", "about", "jobs", "job",
+]);
+
 /**
  * Extract an ATS platform + org token from a job's source URL, if the URL is
  * a recognizable ATS posting link. Enables auto-discovery of ATS feeds without
@@ -126,7 +142,7 @@ export function extractAtsToken(url: string | null | undefined): AtsRef | null {
     // boards.greenhouse.io/{token}/... or /v1/boards/{token}/...
     const m = path.match(/(?:\/v\d+\/boards)?\/([^/]+)/);
     const token = clean(m?.[1] === "boards" ? undefined : m?.[1]);
-    return token ? { platform: "greenhouse", token } : null;
+    return token && !GREENHOUSE_RESERVED_SLUGS.has(token) ? { platform: "greenhouse", token } : null;
   }
   if (exactOrSubdomain(host, "ashbyhq.com")) {
     // jobs.ashbyhq.com/{token}/... or /posting-api/job-board/{token}
@@ -142,13 +158,13 @@ export function extractAtsToken(url: string | null | undefined): AtsRef | null {
   if (exactOrSubdomain(host, "breezy.hr")) {
     // {token}.breezy.hr
     const sub = host.replace(/\.breezy\.hr$/, "");
-    return sub && sub !== "breezy" ? { platform: "breezy", token: sub } : null;
+    return sub && !BREEZY_RESERVED_SUBDOMAINS.has(sub) ? { platform: "breezy", token: sub } : null;
   }
   if (exactOrSubdomain(host, "workable.com")) {
-    // apply.workable.com/{token}/...
-    const m = path.match(/\/([^/]+)/);
-    const token = clean(m?.[1]);
-    return token ? { platform: "workable", token } : null;
+    // apply.workable.com/{token}/... or /api/v1/widget/accounts/{token}
+    const apiMatch = path.match(/(?:\/api\/v\d+\/widget\/accounts)?\/([^/]+)/);
+    const token = clean(apiMatch?.[1]);
+    return token && !WORKABLE_RESERVED_SLUGS.has(token) ? { platform: "workable", token } : null;
   }
   return null;
 }

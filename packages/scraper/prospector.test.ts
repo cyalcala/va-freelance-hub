@@ -116,6 +116,16 @@ describe("extractAtsToken", () => {
     expect(extractAtsToken("https://jobs.lever.co/acme/uuid")).toEqual({ platform: "lever", token: "acme" });
     expect(extractAtsToken("https://myco.breezy.hr/p/abc")).toEqual({ platform: "breezy", token: "myco" });
     expect(extractAtsToken("https://apply.workable.com/hunt-st/j/ABC/")).toEqual({ platform: "workable", token: "hunt-st" });
+    expect(extractAtsToken("https://apply.workable.com/api/v1/widget/accounts/hunt-st")).toEqual({ platform: "workable", token: "hunt-st" });
+  });
+
+  test("rejects Workable shortlinks and reserved slugs without company token", () => {
+    expect(extractAtsToken("https://apply.workable.com/j/24BFD1BADD")).toBeNull();
+    expect(extractAtsToken("https://apply.workable.com/j/ABC12345/")).toBeNull();
+    expect(extractAtsToken("https://apply.workable.com/careers")).toBeNull();
+    expect(extractAtsToken("https://apply.workable.com/resources/blog")).toBeNull();
+    expect(extractAtsToken("https://app.breezy.hr/login")).toBeNull();
+    expect(extractAtsToken("https://boards.greenhouse.io/v1/boards/embed")).toBeNull();
   });
 
   test("aggregator and junk urls yield null", () => {
