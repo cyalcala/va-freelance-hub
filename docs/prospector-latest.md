@@ -1,7 +1,7 @@
 # Prospector Latest
 
-Date: 2026-09-12
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34725347183
+Date: 2026-09-13
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34738864173
 
 | Metric | Value |
 | --- | ---: |
@@ -13,11 +13,11 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34725347
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
 | Durable candidates discovered (distinct ATS) | 29 |
-| Durable candidates inserted | 10 |
-| Durable candidates refreshed | 5 |
-| Durable candidates skipped (duplicate) | 19 |
+| Durable candidates inserted | 0 |
+| Durable candidates refreshed | 14 |
+| Durable candidates skipped (duplicate) | 29 |
 | Durable candidates skipped (opt-out) | 0 |
-| Candidate backlog (needs_review/candidate) | 15 |
+| Candidate backlog (needs_review/candidate) | 14 |
 | Candidate overdue (past 14d deadline) | 0 |
 | Candidate anomaly guard | false |
 
@@ -27,6 +27,6 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34725347
 
 ## Durable candidate queue (SP-06, non-publishing)
 
-- Inserted: workable:myoutdesk, workable:outsource-access, workable:staff-domain-inc, workable:superstaff, breezy:vaaphilippines-recruitment, workable:virtualstaff365, workable:global-strategic, workable:connectos, lever:vaultoutsourcing, ashby:tremendous
-- Refreshed: ashby:supabase, ashby:camunda, ashby:ashby, ashby:amplify, breezy:time-etc
+- Inserted: (none)
+- Refreshed: ashby:supabase, ashby:camunda, ashby:ashby, ashby:amplify, workable:myoutdesk, workable:outsource-access, workable:staff-domain-inc, workable:superstaff, breezy:vaaphilippines-recruitment, workable:virtualstaff365, workable:global-strategic, workable:connectos, lever:vaultoutsourcing, ashby:tremendous
 - Mode: non-publishing-candidate-only
