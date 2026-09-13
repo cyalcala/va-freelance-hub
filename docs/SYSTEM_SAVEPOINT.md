@@ -7,16 +7,51 @@ VA Freelance Hub into a durable Philippines-centered remote job discovery system
 sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
 Direct production D1 read & workflow verification confirms:
-1. **Registry & Shadow State**: 20 active shadows in `source_registry`:
+1. **Registry & Shadow State**: 21 active shadows in `source_registry`:
    - Workable (7): `workable:coconutva`, `workable:crewbloom`, `workable:hello-rache`, `workable:hunt-st`, `workable:pearltalent`, `workable:pineapple-staffing`, `workable:rocketams`.
-   - Breezy (5): `breezy:20four7va`, `breezy:remote-craft`, `breezy:sourcefit`, `breezy:value-virtual-assistants`, `breezy:yokly`.
+   - Breezy (6): `breezy:20four7va`, `breezy:remote-craft`, `breezy:sourcefit`, `breezy:time-etc`, `breezy:value-virtual-assistants`, `breezy:yokly`.
    - Greenhouse (6): `greenhouse:ghost`, `greenhouse:gitlab`, `greenhouse:grafanalabs`, `greenhouse:nearform`, `greenhouse:remotecom`, `greenhouse:wikimedia`.
    - Recruitee (1): `recruitee:myjewellery`.
    - Teamtailor (1): `teamtailor:career.teamtailor.com`.
-   Over 540 active remote Philippine roles in shadow observation across Workable agencies alone. Zero public leakage verified (`published: 0`).
-2. **Candidate Backlog**: 15 durable candidates in `needs_review/candidate` across Ashby, Breezy, Workable, and Lever.
+   Over 540 active remote Philippine roles in shadow observation across Workable & Breezy agencies alone. Zero public leakage verified (`published: 0`).
+2. **Candidate Backlog**: 14 durable candidates in `needs_review/candidate` across Ashby, Breezy, Workable, and Lever.
 3. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,348 total in `opportunities`).
 4. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
+
+### Run 75 — FEAT-TIME-ETC-SHADOW-ADMIT: Live Admission of Time Etc & Shadow Dispatch Execution (2026-09-13)
+
+UNIT ID: FEAT-TIME-ETC-SHADOW-ADMIT
+PHASE: ADMISSION / SHADOW-OPERATION / OBSERVATION
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `apps/web/src/pages/api/cron/source-admit.ts`, `docs/SYSTEM_SAVEPOINT.md`
+
+- **Production Shadow Admission: Time Etc (`breezy:time-etc`)**:
+  - Dispatched `gha-source-admit.yml` ([Run `34726239182`](https://github.com/cyalcala/va-freelance-hub/actions/runs/34726239182)) against production Cloudflare Pages API.
+  - Successfully admitted `breezy:time-etc` to `source_registry` with:
+    - `operational_state = 'shadow'`
+    - `compliance_state = 'conditional'`
+    - `canary_max_new_items_per_tick = 1` (pre-populated compliant canary throttle)
+    - `governance_revision = 10`
+    - `source_admission_evidence` ID 24 (valid to 2027-03-10)
+    - `source_transition_events` ID 21 (`from_operational = 'candidate'`, `to_operational = 'shadow'`, `cause = 'requested_shadow_entry'`)
+  - Initial admission probe recorded `HEALTHY_WITH_RESULTS` with 1 active role (`Role at Time etc - New Pipeline`).
+  - Exact-six publishing invariant strictly maintained: `published: 0` verified. Zero public board leakage.
+- **Production Registry Capacity: 21 Active Shadow Sources**:
+  - Workable (7): `coconutva`, `crewbloom`, `hello-rache`, `hunt-st`, `pearltalent`, `pineapple-staffing`, `rocketams`.
+  - Breezy (6): `20four7va`, `remote-craft`, `sourcefit`, `time-etc`, `value-virtual-assistants`, `yokly`.
+  - Greenhouse (6): `ghost`, `gitlab`, `grafanalabs`, `nearform`, `remotecom`, `wikimedia`.
+  - Recruitee (1): `myjewellery`.
+  - Teamtailor (1): `career.teamtailor.com`.
+- **Shadow Observation Dispatch (`34726310784`)**:
+  - Dispatched `gha-shadow-dispatch.yml` ([Run `34726310784`](https://github.com/cyalcala/va-freelance-hub/actions/runs/34726310784)).
+  - Executed cleanly (`HTTP 200`), rotating window 1 (`totalRegistryRows = 9`, `dispatched = 1`, `recruitee:myjewellery` healthy with 88 items).
+  - Window 0 (rows 1–12, including all Breezy & Greenhouse identities) scheduled for next rotating hourly tick.
+  - 532+ total observations recorded across 7 distinct UTC days; top cohort (Grafana, Teamtailor, My Jewellery) at 7 distinct days and 70+ observations; GitLab/Remote.com at 5 distinct days and 56–60 observations; 13 sources at 2 distinct days; Pineapple Staffing at 1 distinct day; Time Etc at 0 distinct days.
+- **Durable Candidate Queue Standing**:
+  - 14 durable candidates in `needs_review/candidate` (Ashby x5, Breezy x1, Workable x7, Lever x1).
+- **Verification**:
+  - 1,292 tests pass across 129 files (`bun test`); TypeScript typecheck clean; production CI guardrails clean.
 
 ### Run 74 — FEAT-PINEAPPLE-SHADOW-ADMIT: Live Admission of Pineapple Staffing & Prospector Pulse (2026-09-13)
 

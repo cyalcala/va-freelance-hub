@@ -4,12 +4,14 @@
 
 Explicit OWNER RESUME AUTHORIZATION granted. Autonomous engineering loop active:
 - **Base Commit**: Pushed to `main` with full CI passing on GitHub Actions.
-- **Production Truth**: 20 active shadow sources in D1 `source_registry` (Workable x7, Breezy x5, Greenhouse x6, Recruitee x1, Teamtailor x1).
-- **Candidate Queue**: 15 durable candidates in `needs_review/candidate` discovered via `va_directory` ATS mining (`COALESCE(hiring_page_url, website)`).
+- **Production Truth**: 21 active shadow sources in D1 `source_registry` (Workable x7, Breezy x6, Greenhouse x6, Recruitee x1, Teamtailor x1).
+- **Candidate Queue**: 14 durable candidates in `needs_review/candidate` discovered via `va_directory` ATS mining (`COALESCE(hiring_page_url, website)`).
+- **Recent Shadow Admission**: `breezy:time-etc` admitted to shadow mode with `canary_max_new_items_per_tick: 1` and evidence ID 24. First probe `HEALTHY_WITH_RESULTS` (1 active role).
+- **Shadow Observations**: 532+ total observations across 7 distinct UTC days; top cohort at 7 distinct days; zero public leakage (`published: 0` invariant strictly verified).
 - **Canary Enforcement**: `canary_max_new_items_per_tick: 1` defaulted in candidate builders and wired into `source-admit` route.
 - **Verification**: 1,292 passed, 0 failed across 129 test files; strict typecheck and CI guardrails clean.
 - **Current Canonical Pointers**:
-  - Savepoint: [SYSTEM_SAVEPOINT.md](SYSTEM_SAVEPOINT.md) (Run 74)
+  - Savepoint: [SYSTEM_SAVEPOINT.md](SYSTEM_SAVEPOINT.md) (Run 75)
   - Handoff: [HANDOFF.md](HANDOFF.md)
   - Execution State: [APEX_10X_EXECUTION_STATE.md](APEX_10X_EXECUTION_STATE.md)
   - Bootloader: [CURRENT.md](bootloaders/CURRENT.md)

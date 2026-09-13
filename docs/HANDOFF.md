@@ -1,11 +1,11 @@
 # Handoff
 
-## 2026-09-13 — RESUMED: Pineapple Staffing Shadow Admission & Prospector Expansion (current)
+## 2026-09-13 — RESUMED: Time Etc Shadow Admission & Shadow Dispatch Execution (current)
 
 Explicit OWNER RESUME AUTHORIZATION granted. Execution active and progressing.
-- **Production Status**: 20 active shadow sources in `source_registry` (7 Workable, 5 Breezy, 6 Greenhouse, 1 Recruitee, 1 Teamtailor). 15 durable candidates in `needs_review/candidate`.
-- **Recent Admissions**: `workable:pineapple-staffing` admitted via workflow `34725118883` with `canary_max_new_items_per_tick: 1` and evidence ID 23. First shadow observation logged.
-- **Prospector Harvesting**: Workflow `34725347183` harvested `va_directory` via `COALESCE(hiring_page_url, website)`, queuing 10 new authentic ATS candidates.
+- **Production Status**: 21 active shadow sources in `source_registry` (7 Workable, 6 Breezy, 6 Greenhouse, 1 Recruitee, 1 Teamtailor). 14 durable candidates in `needs_review/candidate`.
+- **Recent Admissions**: `breezy:time-etc` admitted via workflow `34726239182` with `canary_max_new_items_per_tick: 1` and evidence ID 24. First probe logged `HEALTHY_WITH_RESULTS` (1 active role).
+- **Shadow Dispatch**: Workflow `34726310784` executed rotating observation window 1 (`totalRegistryRows = 9`, `dispatched = 1`, `recruitee:myjewellery` healthy with 88 items).
 - **Exact-Six Publishing Invariant**: 100% strictly enforced (`published: 0` for all non-exact-six feeds).
 - **Test Baseline**: 1,292 passed, 0 failed across 129 test files; strict typecheck and CI guardrails clean.
 

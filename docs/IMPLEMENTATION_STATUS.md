@@ -5,8 +5,9 @@
 Explicit OWNER RESUME AUTHORIZATION granted. Active execution toward the Prime Directive:
 sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
-- **Production Shadow Capacity**: 20 active shadow sources in D1 `source_registry` (Workable x7, Breezy x5, Greenhouse x6, Recruitee x1, Teamtailor x1). Over 540 active remote Philippine roles observed in shadow across agencies; zero public leakage (`published: 0` invariant strictly preserved).
-- **Candidate Factory Backlog**: 15 durable candidates in `needs_review/candidate` (Ashby x5, Breezy x2, Workable x7, Lever x1) harvested directly from `va_directory` via `COALESCE(hiring_page_url, website)`.
+- **Production Shadow Capacity**: 21 active shadow sources in D1 `source_registry` (Workable x7, Breezy x6, Greenhouse x6, Recruitee x1, Teamtailor x1). Over 540 active remote Philippine roles observed in shadow across agencies; zero public leakage (`published: 0` invariant strictly preserved).
+- **Recent Shadow Admission**: `breezy:time-etc` admitted to shadow mode via workflow `34726239182` with `canary_max_new_items_per_tick: 1` and evidence ID 24.
+- **Candidate Factory Backlog**: 14 durable candidates in `needs_review/candidate` (Ashby x5, Breezy x1, Workable x7, Lever x1) harvested directly from `va_directory` via `COALESCE(hiring_page_url, website)`.
 - **Canary Envelope Alignment**: Candidate builders and `source-admit` route wired with `canaryMaxNewItemsPerTick: 1` matching Migration 0042 / SP-23 transition plane constraints.
 - **Verification Baseline**: 1,292 passed, 0 failed across 129 test files (`bun test`); strict typecheck and sovereign CI guardrails clean.
 
