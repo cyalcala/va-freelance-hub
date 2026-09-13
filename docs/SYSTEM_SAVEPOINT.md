@@ -50,10 +50,11 @@ IDENTITY: `apps/web/src/pages/api/cron/source-admit.ts`, `docs/SYSTEM_SAVEPOINT.
   - 532+ total observations recorded across 7 distinct UTC days; top cohort (Grafana, Teamtailor, My Jewellery) at 7 distinct days and 70+ observations; GitLab/Remote.com at 5 distinct days and 56–60 observations; 13 sources at 2 distinct days; Pineapple Staffing at 1 distinct day; Time Etc at 0 distinct days.
 - **Durable Candidate Queue Standing**:
   - 14 durable candidates in `needs_review/candidate` (Ashby x5, Breezy x1, Workable x7, Lever x1).
-- **Owner Strategic Directive & Promotion Insight**:
-  - The founder noted: the 13 shadow Philippine agencies across Workable (Pearl Talent, Hunt St, CrewBloom, Coconut VA, Hello Rache, Pineapple Staffing, RocketAMS) and Breezy (20Four7VA, Sourcefit, Time Etc, etc.) have historically proven they hire Filipinos; their core business model is Filipino recruitment. Sitting on 700+ verified remote Philippine roles while the public board yields only 12.3 jobs/day unnecessarily delays discovery value.
+- **Owner Strategic Directive & Ratified Decision**:
+  - The founder evaluated the trade-offs of accelerated promotion vs. empirical observation for the 13 shadow Philippine agencies across Workable and Breezy (700+ active roles).
   - Formulated comprehensive architectural and governance reflection in [`docs/plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md`](plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md).
-  - Evaluated four concrete pathways: (1) Standard Autonomy Clock (matures 2026-09-15 / 2026-09-18); (2) Codify ADR-008 Tier A 3-day observation threshold (matures 2026-09-14); (3) Owner Executive Exemption into Canary mode with per-tick throttle (immediate rate-safe publication); (4) Static boundary expansion in `scrape.ts`.
+  - **Decided**: The founder explicitly selected **Pathway 1 (The S-Tier Patience & Constitutional Gauntlet)**. The system will avoid manual overrides and adhere strictly to its full 7-day empirical span (`604,800,000 ms`) and 8 distinct UTC days across all shadow identities, preserving uncompromised agentic engineering credibility.
+  - **Milestones**: Top tier (`grafanalabs`, `teamtailor`, `myjewellery`) qualifies under the Autonomy Cutover Predicate starting 2026-09-14/15; Philippine agencies qualify starting 2026-09-18.
 - **Verification**:
   - 1,292 tests pass across 129 files (`bun test`); TypeScript typecheck clean; production CI guardrails clean.
 

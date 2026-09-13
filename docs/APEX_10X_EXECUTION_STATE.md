@@ -31,9 +31,9 @@ Direct measurement and workflow inspection confirms:
   - Total shadow registry capacity expanded to 21 active sources.
 - **Shadow Dispatch Observation Window Executed (`34726310784`)**:
   - Rotating observation window 1 executed cleanly (`HTTP 200`), observing `recruitee:myjewellery` with 88 healthy items.
-- **Owner Strategic Directive & Promotion Reflection**:
-  - Founder posed strategic question: Why prolong shadow observation for 13 Workable/Breezy agencies when their core business is Filipino placement and their historical legitimacy is proven?
-  - Detailed analysis published in [`docs/plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md`](plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md). Evaluated D1 triggers (Migration 0042 lifecycle enforcements), API rate limits (Workable 429 guards), and 4 transition paths (Standard Clock, ADR-008 Tier A 3-day Fast-Track, Owner Executive Exemption to Canary, and Static Boundary Expansion).
+- **Owner Strategic Directive & Ratified Decision**:
+  - Detailed trade-off analysis between immediate promotion and empirical observation compiled in [`docs/plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md`](plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md).
+  - Founder ratified **Pathway 1 (Patience & Constitutional Gauntlet)**, prioritizing uncompromised architectural integrity and empirical evidence over artificial shortcuts. The system will let the 7-day empirical span (`604,800,000 ms`) and 8 distinct UTC days mature organically without manual bypasses. Top tier graduates 2026-09-14/15; Philippine agencies graduate 2026-09-18.
 - **Pineapple Staffing Admitted to Production Shadow (Run 74)**:
   - Dispatched `gha-source-admit.yml` ([Run `34725118883`](https://github.com/cyalcala/va-freelance-hub/actions/runs/34725118883)) admitting `workable:pineapple-staffing` with `canary_max_new_items_per_tick: 1` and evidence ID 23.
   - First hourly shadow probe logged `HEALTHY_WITH_RESULTS` with 3 active roles (Business VA, Legal VA, Multimedia VA). 0 public leakage.

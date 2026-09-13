@@ -116,3 +116,18 @@ However, **instant unthrottled promotion (`shadow -> active` in one second)** wo
 1. Preserve the **canary governor** (`canary_max_new_items_per_tick: 2-5`) so jobs flow to the public board immediately without infrastructure disruption.
 2. Formally adopt **ADR-008 Tier A Fast-Track** (reducing the required observation period from 8 days to 3 days for verified direct ATS agencies), which matures the earliest Philippine agencies starting **2026-09-14**.
 3. Or dispatch an **Owner Executive Exemption** promoting the 13 reviewed agencies to `canary` mode immediately.
+
+---
+
+## 6. Executive Resolution & Ratification (2026-09-13)
+
+**Decided by Founder/Owner**: **Pathway 1 (The S-Tier Patience & Constitutional Gauntlet)**.
+
+### Rationale & Strategic Commitment:
+1. **Uncompromised System Narrative**:
+   - The founder explicitly chose to avoid shortcuts, emergency manual overrides, or premature trigger bypasses.
+   - The platform will allow the autonomous observation clock to run its full 7-day empirical span (`604,800,000 ms`) and 8 distinct UTC days across all shadow identities.
+2. **Execution Roadmap**:
+   - **Phase 1 (2026-09-14 to 2026-09-15)**: Top mature shadow cohort (`greenhouse:grafanalabs`, `teamtailor:career.teamtailor.com`, `recruitee:myjewellery`, `greenhouse:gitlab`, `greenhouse:remotecom`) completes Day 8 qualification and triggers the formal **Autonomy Cutover Predicate** audit.
+   - **Phase 2 (2026-09-15 to 2026-09-18)**: The 13 Workable & Breezy Philippine agency identities complete their 7-day observation cycle under the hourly rotating shadow dispatcher (`gha-shadow-dispatch.yml`).
+   - **Phase 3 (2026-09-18 onwards)**: Seamless, autonomous graduation into `canary` mode with `canary_max_new_items_per_tick = 2`, unlocking over 700+ remote Philippine roles to the public board under 100% verified constitutional governance.

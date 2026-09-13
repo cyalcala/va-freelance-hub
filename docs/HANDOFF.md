@@ -7,7 +7,7 @@ Explicit OWNER RESUME AUTHORIZATION granted. Execution active and progressing.
 - **Recent Admissions**: `breezy:time-etc` admitted via workflow `34726239182` with `canary_max_new_items_per_tick: 1` and evidence ID 24. First probe logged `HEALTHY_WITH_RESULTS` (1 active role).
 - **Shadow Dispatch**: Workflow `34726310784` executed rotating observation window 1 (`totalRegistryRows = 9`, `dispatched = 1`, `recruitee:myjewellery` healthy with 88 items).
 - **Exact-Six Publishing Invariant**: 100% strictly enforced (`published: 0` for all non-exact-six feeds).
-- **Owner Promotion Directive & Analysis**: Founder insight regarding instant promotion of the 13 verified Philippine agencies documented in [ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md](plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md), analyzing database triggers, rate limit protections, and four actionable transition pathways.
+- **Owner Strategic Directive & Ratified Decision**: Evaluated accelerated promotion vs. empirical observation in [ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md](plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md). The founder ratified **Pathway 1 (Patience & Constitutional Gauntlet)**, committing to the full 7-day empirical observation span across all 21 shadow identities without manual bypasses. Top tier matures on 2026-09-14/15; Philippine agencies mature on 2026-09-18.
 - **Test Baseline**: 1,292 passed, 0 failed across 129 test files; strict typecheck and CI guardrails clean.
 
 ## 2026-09-08 — PAUSED after completed capacity deployment (historical)
