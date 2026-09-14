@@ -25,6 +25,7 @@ Production D1 reality confirmed via direct query:
 - Measured strict qualified 7d baseline: 86 jobs / 7 days = 12.29 jobs/day.
 
 Active execution queue:
-1. Accumulate shadow observation history across all 21 sources toward Day 8 qualification.
-2. Monitor rotating shadow dispatch windows (Window 0 at next hour covers all Breezy & Greenhouse identities).
-3. Audit candidate queue backlog (14 candidates) under ADR-008 fast-track guidelines.
+1. Crawl4AI OSS + Cloudflare Kitesurf bounded experiment completed & documented in [EXPERIMENT_CRAWL4AI_KITESURF.md](../experiments/EXPERIMENT_CRAWL4AI_KITESURF.md) (verdict: Crawl4AI KEEP_EXPERIMENTAL, Kitesurf NOT_NEEDED; deterministic ATS mining proven superior).
+2. Accumulate shadow observation history across all 21 sources toward Day 8 qualification.
+3. Monitor rotating shadow dispatch windows (Window 0 at next hour covers all Breezy & Greenhouse identities).
+4. Audit candidate queue backlog (14 candidates) under ADR-008 fast-track guidelines.

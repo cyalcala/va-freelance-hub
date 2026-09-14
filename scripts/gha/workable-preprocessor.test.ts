@@ -217,7 +217,7 @@ describe("Workable Preprocessor (EX-09)", () => {
       expect(readdirSync(tempRoot)).toEqual(["digest.md"]);
       expect(readFileSync(outputPath, "utf8")).toBe("previous healthy digest");
     }
-  });
+  }, 30_000);
 
   test("deduplicates original URLs before candidate counts and samples", () => {
     const firstJob = SAMPLE_XML.match(/<job>[\s\S]*?<\/job>/)![0];

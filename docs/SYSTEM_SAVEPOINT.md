@@ -18,6 +18,35 @@ Direct production D1 read & workflow verification confirms:
 3. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,348 total in `opportunities`).
 4. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
 
+### Run 76 — EXP-CRAWL4AI-KITESURF: Bounded Evaluation of Crawl4AI OSS & Cloudflare Kitesurf (2026-09-14)
+
+UNIT ID: EXP-CRAWL4AI-KITESURF
+PHASE: EXPERIMENT / OBSERVABILITY / ISOLATION
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `packages/scraper/crawl4ai-capability.ts`, `packages/scraper/kitesurf-capability.ts`, `packages/scraper/experimental-orchestrator.ts`, `docs/experiments/EXPERIMENT_CRAWL4AI_KITESURF.md`
+
+- **Surgical Mission & Prime Directive Preservation**:
+  - Introduced Crawl4AI OSS and Cloudflare Kitesurf strictly as bounded experimental capabilities beside the control group.
+  - Parked capabilities remained strictly parked: Browser Use, Browser Harness, OpenObserve, Firecrawl, Agent-Reach.
+  - Zero modification to existing patience-mode shadow cohort (21 sources across Workable, Breezy, Greenhouse, Recruitee, Teamtailor).
+  - Strict publication invariant: `is_active = 0` verified across all experimental data paths. Zero public board leakage.
+- **Experimental Cohort & Empirical Results (30 Sources)**:
+  - Formed 30-candidate cohort of authentic Philippine VA agencies and remote employers from `va_directory` lacking ATS adapters (`ats === null`).
+  - Crawl4AI attempted all 30 sources:
+    - 21 returned `EMPTY_NO_JOBS` (no discrete job vacancies on static HTML marketing sites).
+    - 2 returned `POLICY_BLOCKED` (Cloudflare HTTP 403 / bot protection).
+    - 1 returned `CRAWL_EXHAUSTED` (timeout).
+    - 6 returned raw link matches (13 links total: e.g. `"Careers"`, `"Job Openings"`, `"Apply for Jobs"`). All 13 were navigational false positives and rightly rejected by deterministic role filters as `ROLE_IRRELEVANT`.
+  - Kitesurf Escalation: 0 sources exhibited unhydrated SPA job promises qualifying for browser escalation.
+  - Primary Success KPI: **0 net-new validated PH-eligible relevant remote jobs/day**.
+- **Strategic Verdict**:
+  - **Crawl4AI**: `KEEP_EXPERIMENTAL` for targeted offline utilities; `REJECT` for production routine promotion.
+  - **Kitesurf**: `NOT_NEEDED` for routine ingestion; `KEEP_AS_FALLBACK`.
+  - Deterministic ATS adapters (Workable, Breezy, Greenhouse) remain vastly superior, supplying 710+ authentic remote Philippine roles at zero browser compute cost.
+- **Verification**:
+  - 1,306 tests pass across 130 files (`bun test`); 3/3 Python experiment tests pass (`test_crawl4ai_runner.py`); 15/15 Python analytics tests pass; TypeScript typecheck and production guardrails clean (0 errors, 0 violations).
+
 ### Run 75 — FEAT-TIME-ETC-SHADOW-ADMIT: Live Admission of Time Etc & Shadow Dispatch Execution (2026-09-13)
 
 UNIT ID: FEAT-TIME-ETC-SHADOW-ADMIT

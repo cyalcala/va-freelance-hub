@@ -1,0 +1,272 @@
+[
+  {
+    "id": "exp:supportshepherd",
+    "companyName": "Support Shepherd",
+    "careerUrl": "https://supportshepherd.com",
+    "domain": "supportshepherd.com",
+    "sourceNiche": "global-va",
+    "directoryId": 359,
+    "discoveryProvenance": "va_directory-id-359-no-ats"
+  },
+  {
+    "id": "exp:multiplymii",
+    "companyName": "MultiplyMii",
+    "careerUrl": "https://www.multiplymii.com",
+    "domain": "multiplymii.com",
+    "sourceNiche": "global-va",
+    "directoryId": 304,
+    "discoveryProvenance": "va_directory-id-304-no-ats"
+  },
+  {
+    "id": "exp:go2",
+    "companyName": "Go2",
+    "careerUrl": "https://go2.io",
+    "domain": "go2.io",
+    "sourceNiche": "global-va",
+    "directoryId": 284,
+    "discoveryProvenance": "va_directory-id-284-no-ats"
+  },
+  {
+    "id": "exp:growthassistant",
+    "companyName": "Growth Assistant",
+    "careerUrl": "https://growthassistant.com",
+    "domain": "growthassistant.com",
+    "sourceNiche": "global-va",
+    "directoryId": 287,
+    "discoveryProvenance": "va_directory-id-287-no-ats"
+  },
+  {
+    "id": "exp:taskbullet",
+    "companyName": "TaskBullet",
+    "careerUrl": "https://www.taskbullet.com",
+    "domain": "taskbullet.com",
+    "sourceNiche": "global-va",
+    "directoryId": 362,
+    "discoveryProvenance": "va_directory-id-362-no-ats"
+  },
+  {
+    "id": "exp:wingassistant",
+    "companyName": "Wing Assistant",
+    "careerUrl": "https://wingassistant.com",
+    "domain": "wingassistant.com",
+    "sourceNiche": "global-va",
+    "directoryId": 386,
+    "discoveryProvenance": "va_directory-id-386-no-ats"
+  },
+  {
+    "id": "exp:myvirtudesk",
+    "companyName": "My Virtudesk",
+    "careerUrl": "https://myvirtudesk.com",
+    "domain": "myvirtudesk.com",
+    "sourceNiche": "global-va",
+    "directoryId": 307,
+    "discoveryProvenance": "va_directory-id-307-no-ats"
+  },
+  {
+    "id": "exp:cloudstaff",
+    "companyName": "Cloudstaff",
+    "careerUrl": "https://www.cloudstaff.com",
+    "domain": "cloudstaff.com",
+    "sourceNiche": "australian-dayshift",
+    "directoryId": 267,
+    "discoveryProvenance": "va_directory-id-267-no-ats"
+  },
+  {
+    "id": "exp:connextglobal",
+    "companyName": "Connext Global Solutions",
+    "careerUrl": "https://connextglobal.com",
+    "domain": "connextglobal.com",
+    "sourceNiche": "global-va",
+    "directoryId": 269,
+    "discoveryProvenance": "va_directory-id-269-no-ats"
+  },
+  {
+    "id": "exp:beepo",
+    "companyName": "Beepo",
+    "careerUrl": "https://www.beepo.com.au",
+    "domain": "beepo.com.au",
+    "sourceNiche": "global-va",
+    "directoryId": 258,
+    "discoveryProvenance": "va_directory-id-258-no-ats"
+  },
+  {
+    "id": "exp:boothandpartners",
+    "companyName": "Booth & Partners",
+    "careerUrl": "https://boothandpartners.com",
+    "domain": "boothandpartners.com",
+    "sourceNiche": "global-va",
+    "directoryId": 262,
+    "discoveryProvenance": "va_directory-id-262-no-ats"
+  },
+  {
+    "id": "exp:bottleneck",
+    "companyName": "Bottleneck Distant Assistants",
+    "careerUrl": "https://bottleneck.online",
+    "domain": "bottleneck.online",
+    "sourceNiche": "global-va",
+    "directoryId": 263,
+    "discoveryProvenance": "va_directory-id-263-no-ats"
+  },
+  {
+    "id": "exp:cleardesk",
+    "companyName": "ClearDesk",
+    "careerUrl": "https://cleardesk.com",
+    "domain": "cleardesk.com",
+    "sourceNiche": "global-va",
+    "directoryId": 266,
+    "discoveryProvenance": "va_directory-id-266-no-ats"
+  },
+  {
+    "id": "exp:ezyva",
+    "companyName": "EzyVA",
+    "careerUrl": "https://ezyva.com",
+    "domain": "ezyva.com",
+    "sourceNiche": "australian-dayshift",
+    "directoryId": 244,
+    "discoveryProvenance": "va_directory-id-244-no-ats"
+  },
+  {
+    "id": "exp:shore360",
+    "companyName": "Shore360",
+    "careerUrl": "https://shore360.com",
+    "domain": "shore360.com",
+    "sourceNiche": "australian-dayshift",
+    "directoryId": 246,
+    "discoveryProvenance": "va_directory-id-246-no-ats"
+  },
+  {
+    "id": "exp:yoonet",
+    "companyName": "Yoonet",
+    "careerUrl": "https://www.yoonet.io",
+    "domain": "yoonet.io",
+    "sourceNiche": "australian-dayshift",
+    "directoryId": 248,
+    "discoveryProvenance": "va_directory-id-248-no-ats"
+  },
+  {
+    "id": "exp:affordablestaff",
+    "companyName": "Affordable Staff",
+    "careerUrl": "https://affordablestaff.com.au",
+    "domain": "affordablestaff.com.au",
+    "sourceNiche": "australian-dayshift",
+    "directoryId": 242,
+    "discoveryProvenance": "va_directory-id-242-no-ats"
+  },
+  {
+    "id": "exp:kinetic",
+    "companyName": "Kinetic Innovative Staffing",
+    "careerUrl": "https://www.kinetic.com.ph",
+    "domain": "kinetic.com.ph",
+    "sourceNiche": "global-va",
+    "directoryId": 297,
+    "discoveryProvenance": "va_directory-id-297-no-ats"
+  },
+  {
+    "id": "exp:linkedva",
+    "companyName": "LinkedVA",
+    "careerUrl": "https://linkedva.com/careers",
+    "domain": "linkedva.com",
+    "sourceNiche": "global-va",
+    "directoryId": 298,
+    "discoveryProvenance": "va_directory-id-298-no-ats"
+  },
+  {
+    "id": "exp:mcvotalent",
+    "companyName": "MCVO Talent Outsourcing",
+    "careerUrl": "https://www.mcvotalent.com",
+    "domain": "mcvotalent.com",
+    "sourceNiche": "global-va",
+    "directoryId": 299,
+    "discoveryProvenance": "va_directory-id-299-no-ats"
+  },
+  {
+    "id": "exp:officium",
+    "companyName": "Officium",
+    "careerUrl": "https://officium.ph",
+    "domain": "officium.ph",
+    "sourceNiche": "global-va",
+    "directoryId": 311,
+    "discoveryProvenance": "va_directory-id-311-no-ats"
+  },
+  {
+    "id": "exp:outsourceaccelerator",
+    "companyName": "Outsource Accelerator",
+    "careerUrl": "https://outsourceaccelerator.com",
+    "domain": "outsourceaccelerator.com",
+    "sourceNiche": "global-va",
+    "directoryId": 317,
+    "discoveryProvenance": "va_directory-id-317-no-ats"
+  },
+  {
+    "id": "exp:outsourceworkers",
+    "companyName": "Outsource Workers",
+    "careerUrl": "https://outsourceworkers.com.au",
+    "domain": "outsourceworkers.com.au",
+    "sourceNiche": "global-va",
+    "directoryId": 320,
+    "discoveryProvenance": "va_directory-id-320-no-ats"
+  },
+  {
+    "id": "exp:outsourcedph",
+    "companyName": "Outsourced.ph",
+    "careerUrl": "https://outsourced.ph",
+    "domain": "outsourced.ph",
+    "sourceNiche": "global-va",
+    "directoryId": 321,
+    "discoveryProvenance": "va_directory-id-321-no-ats"
+  },
+  {
+    "id": "exp:outsourcey",
+    "companyName": "Outsourcey",
+    "careerUrl": "https://outsourcey.com",
+    "domain": "outsourcey.com",
+    "sourceNiche": "global-va",
+    "directoryId": 322,
+    "discoveryProvenance": "va_directory-id-322-no-ats"
+  },
+  {
+    "id": "exp:outsourcingangel",
+    "companyName": "Outsourcing Angel",
+    "careerUrl": "https://outsourcingangel.com",
+    "domain": "outsourcingangel.com",
+    "sourceNiche": "global-va",
+    "directoryId": 323,
+    "discoveryProvenance": "va_directory-id-323-no-ats"
+  },
+  {
+    "id": "exp:penbrothers",
+    "companyName": "Pen Brothers",
+    "careerUrl": "https://penbrothers.com",
+    "domain": "penbrothers.com",
+    "sourceNiche": "global-va",
+    "directoryId": 326,
+    "discoveryProvenance": "va_directory-id-326-no-ats"
+  },
+  {
+    "id": "exp:pepperva",
+    "companyName": "Pepper Virtual Assistants",
+    "careerUrl": "https://peppervirtualassistant.com",
+    "domain": "peppervirtualassistant.com",
+    "sourceNiche": "global-va",
+    "directoryId": 327,
+    "discoveryProvenance": "va_directory-id-327-no-ats"
+  },
+  {
+    "id": "exp:platinumoutsourcing",
+    "companyName": "Platinum Outsourcing",
+    "careerUrl": "https://platinumoutsourcing.com.au",
+    "domain": "platinumoutsourcing.com.au",
+    "sourceNiche": "global-va",
+    "directoryId": 330,
+    "discoveryProvenance": "va_directory-id-330-no-ats"
+  },
+  {
+    "id": "exp:rocketstation",
+    "companyName": "Rocket Station",
+    "careerUrl": "https://rocketstation.com",
+    "domain": "rocketstation.com",
+    "sourceNiche": "global-va",
+    "directoryId": 343,
+    "discoveryProvenance": "va_directory-id-343-no-ats"
+  }
+]

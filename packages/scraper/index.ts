@@ -399,3 +399,32 @@ export { classifyShift } from "./shiftClassifier";
 export { renewProviderEvidence, MAX_RENEWAL_IDENTITIES, MAX_RENEWAL_PRIMARY_DOCUMENTS } from "./source-evidence-renewal";
 export type { EvidenceRenewalDatabase, RenewProviderEvidenceInput } from "./source-evidence-renewal";
 export type { ShiftCategory, ShiftInfo, ShiftClassifierInput } from "./shiftClassifier";
+
+// ─── Bounded Experimental Capabilities (Crawl4AI & Cloudflare Kitesurf) ───────
+export * from "./experimental-source-types";
+export {
+  executeCrawl4Ai,
+  detectBrowserRequirement,
+  extractJobsFromHtml,
+  CRAWL4AI_MAX_PAGES,
+  CRAWL4AI_MAX_DEPTH,
+  CRAWL4AI_TIMEOUT_MS,
+  CRAWL4AI_USER_AGENT,
+} from "./crawl4ai-capability";
+export type { Crawl4AiOptions } from "./crawl4ai-capability";
+export {
+  executeKitesurf,
+  qualifiesForKitesurfEscalation,
+  extractJobsFromHydratedHtml,
+  KITESURF_TIMEOUT_MS,
+  KITESURF_ENGINE,
+} from "./kitesurf-capability";
+export type { KitesurfOptions } from "./kitesurf-capability";
+export {
+  runExperimentalSourcePipeline,
+  evaluateRoleRelevance,
+  isOpportunityFresh,
+  summarizeBatchResults,
+  ROLE_FAMILY_PATTERNS,
+} from "./experimental-orchestrator";
+export type { ExperimentalPipelineOptions } from "./experimental-orchestrator";
