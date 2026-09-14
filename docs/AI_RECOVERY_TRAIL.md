@@ -1,6 +1,23 @@
 # AI Recovery Trail
 
-## 2026-09-13 — RESUMED: Autonomous Source Expansion & Capacity Milestone (current)
+## 2026-09-14 — COMPLETED: Parallel Debugging Bootloader & Funnel Audit (current)
+
+Completed empirical audit of the publication funnel answering: *Where are otherwise valid opportunities disappearing before publication?*
+- **Base Commit**: `2bb83dc` (`docs(debugging): trace opportunity funnel, derive loss ledger, and record debug state`)
+- **CI Status**: Sovereign CI Guardrail run `34833996843` passed (green).
+- **Core Empirical Findings**:
+  - Valid opportunities are **not** leaking or disappearing inside the software pipeline.
+  - Geo-gate and AI triage passed **71.55%** of net-new candidate URLs (83 of 116 in 7 days). All 33 rejections were non-remote on-site retail/trades (RemoteOK noise) or explicitly non-PH geographic locks.
+  - 100% of eligible items passed the publication gateway (`proposed == published = 40/40`), and 100% are displayed by Astro frontend routes without hidden filters.
+  - Supply starvation in 50% of active source portfolio: Remotive (0 active/7d), Jobicy Admin (0 active/7d), and Jobicy Support (1 active/7d) produce near-zero turnover; 98.8% of site volume is carried by WWR, RWFA, and RemoteOK.
+  - Clock gap: 11-hour ingestion gap observed due to primary cron stall + 8-minute run-lock collision with secondary Hunter failover.
+- **Artifacts & Documentation**:
+  - Daily Funnel Accounting: [PUBLICATION_FUNNEL.md](debugging/PUBLICATION_FUNNEL.md)
+  - Loss Ledger & Taxonomy: [PUBLICATION_LOSS_LEDGER.md](debugging/PUBLICATION_LOSS_LEDGER.md)
+  - Debug State & Hypotheses: [PUBLICATION_DEBUG_STATE.md](debugging/PUBLICATION_DEBUG_STATE.md)
+- **Protected State**: Shadow patience-mode observation (21 sources), Crawl4AI experiments, and Cloudflare Kitesurf code strictly preserved without modification.
+
+## 2026-09-13 — RESUMED: Autonomous Source Expansion & Capacity Milestone (historical)
 
 Explicit OWNER RESUME AUTHORIZATION granted. Autonomous engineering loop active:
 - **Base Commit**: Pushed to `main` with full CI passing on GitHub Actions.
