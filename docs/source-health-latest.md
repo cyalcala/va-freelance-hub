@@ -1,7 +1,7 @@
 # Source Health Latest
 
-Date: 2026-09-14
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34815129439
+Date: 2026-09-15
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34937354878
 Window: last 24 hours of source_fetch_events
 
 Derived from D1, not from a single workflow's artifact, so it
@@ -11,51 +11,51 @@ covers every scrape regardless of which clock triggered it.
 
 - Sources seen: 41
 - Sources with at least one failed attempt: 0
-- Total items seen: 12098
+- Total items seen: 5786
 
 ## Per-Source (last 24h)
 
 | Source | Type | Compliance | Attempts | OK | Skipped | Items | Last Attempt |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| ashby:amplify | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| ashby:ashby | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| ashby:camunda | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| ashby:supabase | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| ashby:tremendous | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| authentic-jobs | RSS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| breezy:20four7va | ATS | paused | 188 | 188 | 188 | 0 | 2026-09-13T23:20:25.680Z |
-| breezy:sourcefit | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| breezy:time-etc | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| breezy:vaaphilippines-recruitment | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| dribbble | RSS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| greenhouse:ghost | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| greenhouse:gitlab | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| greenhouse:grafanalabs | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| greenhouse:nearform | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| greenhouse:remotecom | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| jobicy-admin-support-apac | RSS | allowed | 94 | 94 | 79 | 78 | 2026-09-13T23:20:25.680Z |
-| jobicy-supporting-apac | RSS | allowed | 94 | 94 | 79 | 600 | 2026-09-13T23:20:25.680Z |
-| jobspresso | RSS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| lever:vaultoutsourcing | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| onlinejobs-ph | HTML | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| problogger | RSS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| real-work-from-anywhere | RSS | allowed | 94 | 94 | 77 | 850 | 2026-09-13T23:20:25.680Z |
-| remote-co | RSS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| remote-ok | JSON | allowed | 94 | 94 | 77 | 714 | 2026-09-13T23:20:25.680Z |
-| remotive | RSS | allowed | 94 | 94 | 0 | 1562 | 2026-09-13T23:20:25.680Z |
-| we-work-remotely | RSS | allowed | 94 | 94 | 0 | 8294 | 2026-09-13T23:20:25.680Z |
-| workable:coconutva | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:connectos | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:crewbloom | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:global-strategic | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:hello-rache | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:hunt-st | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:myoutdesk | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:outsource-access | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:pearltalent | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:pineapple-staffing | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:rocketams | ATS | paused | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:staff-domain-inc | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:superstaff | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
-| workable:virtualstaff365 | ATS | needs_review | 94 | 94 | 94 | 0 | 2026-09-13T23:20:25.680Z |
+| ashby:amplify | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| ashby:ashby | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| ashby:camunda | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| ashby:supabase | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| ashby:tremendous | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| authentic-jobs | RSS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| breezy:20four7va | ATS | paused | 90 | 90 | 90 | 0 | 2026-09-15T05:40:34.309Z |
+| breezy:sourcefit | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| breezy:time-etc | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| breezy:vaaphilippines-recruitment | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| dribbble | RSS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| greenhouse:ghost | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| greenhouse:gitlab | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| greenhouse:grafanalabs | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| greenhouse:nearform | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| greenhouse:remotecom | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| jobicy-admin-support-apac | RSS | allowed | 45 | 45 | 36 | 43 | 2026-09-15T05:40:34.309Z |
+| jobicy-supporting-apac | RSS | allowed | 45 | 45 | 38 | 280 | 2026-09-15T05:40:34.309Z |
+| jobspresso | RSS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| lever:vaultoutsourcing | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| onlinejobs-ph | HTML | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| problogger | RSS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| real-work-from-anywhere | RSS | allowed | 45 | 45 | 36 | 450 | 2026-09-15T05:40:34.309Z |
+| remote-co | RSS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| remote-ok | JSON | allowed | 45 | 45 | 36 | 378 | 2026-09-15T05:40:34.309Z |
+| remotive | RSS | allowed | 45 | 45 | 0 | 720 | 2026-09-15T05:40:34.309Z |
+| we-work-remotely | RSS | allowed | 45 | 45 | 0 | 3915 | 2026-09-15T05:40:34.309Z |
+| workable:coconutva | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:connectos | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:crewbloom | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:global-strategic | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:hello-rache | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:hunt-st | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:myoutdesk | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:outsource-access | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:pearltalent | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:pineapple-staffing | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:rocketams | ATS | paused | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:staff-domain-inc | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:superstaff | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
+| workable:virtualstaff365 | ATS | needs_review | 45 | 45 | 45 | 0 | 2026-09-15T05:40:34.309Z |
 
