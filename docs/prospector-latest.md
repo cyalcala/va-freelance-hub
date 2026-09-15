@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-09-15
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34930786909
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34965122300
 
 | Metric | Value |
 | --- | ---: |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/34930786
 
 ## Auto-added companies
 
-- Koast.ai
+- Algolia
 
 ## Durable candidate queue (SP-06, non-publishing)
 
