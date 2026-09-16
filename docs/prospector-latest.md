@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-09-16
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35091371950
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35125391965
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 2 |
-| Auto-added this run | 0 |
+| Candidates considered | 4 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 2 |
 | Rejected for quality | 0 |
@@ -23,7 +23,8 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35091371
 
 ## Auto-added companies
 
-- (none this run)
+- Sticker Mule
+- EMPIRE ASSETS
 
 ## Durable candidate queue (SP-06, non-publishing)
 
