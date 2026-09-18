@@ -1,12 +1,12 @@
 # Prospector Latest
 
-Date: 2026-09-17
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35276466369
+Date: 2026-09-18
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35308251461
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 2 |
-| Auto-added this run | 0 |
+| Candidates considered | 3 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 2 |
 | Rejected for quality | 0 |
@@ -23,10 +23,10 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35276466
 
 ## Auto-added companies
 
-- (none this run)
+- UCM Practice Growth Systems
 
 ## Durable candidate queue (SP-06, non-publishing)
 
 - Inserted: (none)
-- Refreshed: ashby:supabase, ashby:camunda, ashby:ashby, ashby:amplify, workable:myoutdesk, workable:outsource-access, workable:staff-domain-inc, workable:superstaff, breezy:vaaphilippines-recruitment, workable:virtualstaff365, workable:global-strategic, workable:connectos, lever:vaultoutsourcing, ashby:tremendous
+- Refreshed: ashby:supabase, ashby:camunda, ashby:ashby, ashby:tremendous, ashby:amplify, workable:myoutdesk, workable:outsource-access, workable:staff-domain-inc, workable:superstaff, breezy:vaaphilippines-recruitment, workable:virtualstaff365, workable:global-strategic, workable:connectos, lever:vaultoutsourcing
 - Mode: non-publishing-candidate-only
