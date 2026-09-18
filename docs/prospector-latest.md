@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-09-18
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35308251461
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35338968582
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 3 |
-| Auto-added this run | 1 |
+| Candidates considered | 2 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 2 |
 | Rejected for quality | 0 |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35308251
 
 ## Auto-added companies
 
-- UCM Practice Growth Systems
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
