@@ -94,4 +94,15 @@ describe("SP-23B current admission evidence", () => {
     const db = { prepare() { throw new Error("D1 unavailable"); } };
     expect((await loadCurrentAdmissionEvidence(db, fixture.source.sourceId, ADMISSION_TEST_NOW)).ok).toBe(false);
   });
+
+  test("allows early admission evidence packets where packet.source.canaryMaxNewItemsPerTick was null to match positive registry cap", async () => {
+    const fixture = await admissionFixture();
+    fixture.packet.source.canaryMaxNewItemsPerTick = null;
+    fixture.source.canaryMaxNewItemsPerTick = 2;
+    expect(validateAdmissionPacket(fixture.packet, fixture.source, fixture.provider, ADMISSION_TEST_NOW).ok).toBe(true);
+
+    // But if any other field changed (e.g. endpointUrl or companyToken), it must reject
+    fixture.source.endpointUrl = "https://boards-api.greenhouse.io/v1/boards/changed/jobs";
+    expect(validateAdmissionPacket(fixture.packet, fixture.source, fixture.provider, ADMISSION_TEST_NOW).ok).toBe(false);
+  });
 });

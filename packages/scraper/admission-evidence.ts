@@ -221,8 +221,11 @@ export function validateAdmissionPacket(
       || packet.capturedAt > now || packet.expiresAt <= now || packet.expiresAt <= packet.capturedAt) {
       return { ok: false, reason: "admission packet policy/version or current evidence lease is invalid" };
     }
+    const expectedSource = sourceProjection(source);
+    const sourceMatches = JSON.stringify(packet.source) === JSON.stringify(expectedSource)
+      || (packet.source.canaryMaxNewItemsPerTick === null && JSON.stringify({ ...packet.source, canaryMaxNewItemsPerTick: expectedSource.canaryMaxNewItemsPerTick }) === JSON.stringify(expectedSource));
     if (!/^[a-z0-9:._-]+$/.test(source.sourceId) || !/^[a-z0-9:._-]+$/.test(provider.id)
-      || JSON.stringify(packet.source) !== JSON.stringify(sourceProjection(source))
+      || !sourceMatches
       || JSON.stringify(packet.provider) !== JSON.stringify(providerProjection(provider))
       || provider.id !== source.providerId || !positiveInteger(source.governanceRevision) || !positiveInteger(provider.governanceRevision)) {
       return { ok: false, reason: "admission packet does not match current source/provider governance revisions and projections" };
