@@ -1,16 +1,59 @@
 # Handoff
 
-## 2026-09-13 — RESUMED: Time Etc Shadow Admission & Shadow Dispatch Execution (current)
+## 2026-09-19 — RESUMED: Canary Expansion & Graduation of 5 Philippine VA Agencies (current)
 
-Explicit OWNER RESUME AUTHORIZATION granted. Execution active and progressing.
-- **Production Status**: 21 active shadow sources in `source_registry` (7 Workable, 6 Breezy, 6 Greenhouse, 1 Recruitee, 1 Teamtailor). 14 durable candidates in `needs_review/candidate`.
-- **Recent Admissions**: `breezy:time-etc` admitted via workflow `34726239182` with `canary_max_new_items_per_tick: 1` and evidence ID 24. First probe logged `HEALTHY_WITH_RESULTS` (1 active role).
-- **Shadow Dispatch**: Workflow `34726310784` executed rotating observation window 1 (`totalRegistryRows = 9`, `dispatched = 1`, `recruitee:myjewellery` healthy with 88 items).
-- **Exact-Six Publishing Invariant**: 100% strictly enforced (`published: 0` for all non-exact-six feeds).
-- **Owner Strategic Directive & Ratified Decision**: Evaluated accelerated promotion vs. empirical observation in [ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md](plans/ACCELERATED_PH_AGENCY_PROMOTION_ANALYSIS.md). The founder ratified **Pathway 1 (Patience & Constitutional Gauntlet)**, committing to the full 7-day empirical observation span across all 21 shadow identities without manual bypasses. Top tier matures on 2026-09-14/15; Philippine agencies mature on 2026-09-18.
-- **Test Baseline**: 1,292 passed, 0 failed across 129 test files; strict typecheck and CI guardrails clean.
+Explicit OWNER RESUME AUTHORIZATION active. Execution progressing toward the Prime Directive:
+sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
-## 2026-09-08 — PAUSED after completed capacity deployment (historical)
+- **WHAT IS TRUE NOW?**
+  - **Canary Portfolio Live (5 sources)**: `breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly` are active in `operational_state = 'canary'` in production D1 (events 22–26) with `canary_max_new_items_per_tick = 2` and `governance_revision = 1`. Over 350 active remote Philippine roles observed in historical observation across these 5 agencies.
+  - **Shadow Portfolio Active (16 sources)**: Workable x7 (`coconutva`, `crewbloom`, `hello-rache`, `hunt-st`, `pearltalent`, `pineapple-staffing`, `rocketams`), Greenhouse x6 (`ghost`, `gitlab`, `grafanalabs`, `nearform`, `remotecom`, `wikimedia`), Recruitee x1 (`myjewellery`), Teamtailor x1 (`career.teamtailor.com`), Breezy x1 (`time-etc`).
+  - **Candidate Backlog**: 14 candidates queued in `needs_review/candidate` (Ashby x5 quarantined under `COMP-01C`, Breezy x1, Workable x7, Lever x1).
+  - **Migration 0043 Deployed**: Aligned trigger conflicts on canary transitions, safely backfilled `canary_max_new_items_per_tick = 2` across all shadow sources, and hardened governance revision bump triggers.
+  - **Attribution Coverage**: 100.0% exact source attribution in D1 (0 null source_id rows out of 5,348 total).
+  - **Verification Baseline**: 1,329 Bun tests pass (132 test files), TypeScript typecheck clean (0 errors), sovereign CI guardrails clean (0 violations). Commits `543f5d5`, `2806799`, and `ea81366` verified 100% green on GitHub Actions.
+
+- **WHAT WAS JUST COMPLETED THIS MORNING?**
+  1. **REL-CLOCK-FAILOVER-LOCK-RELEASE** (Run 77):
+     - Implemented atomic fenced run lock release (`releaseRunLock`) in `apps/web/src/pages/api/cron/scrape.ts` inside a guaranteed `finally` block.
+     - Completely eliminated the 8-minute run-lock collision between the primary Cloudflare Worker cron and secondary GitHub Actions Hunter watchdog.
+  2. **EX-CANARY-READINESS** (Run 78):
+     - Executed formal qualification audit under all 10 conditions of the Autonomy Cutover Predicate ([`docs/audits/EX_CANARY_READINESS_AUDIT.md`](audits/EX_CANARY_READINESS_AUDIT.md)).
+     - Eliminated Workable HTTP 429 rate limiting via provider-interleaved dispatch ordering, host-sensitive polite delay, and adaptive `Retry-After` backoff.
+     - Completed comprehensive candidate queue backlog audit ([`docs/audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md`](audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md)).
+  3. **EX-CANARY-PROMOTION** (Run 79):
+     - Authored and applied Migration 0043 (`packages/db/migrations/0043_canary_promotion_trigger_alignment.sql`).
+     - Hardened admission evidence packet projection in `packages/scraper/admission-evidence.ts` for backward-compatible null canary cap matching.
+     - Implemented authenticated promotion endpoint `apps/web/src/pages/api/cron/source-promote.ts` with test coverage (11 unit tests, 2 integration tests).
+     - Successfully graduated 5 Breezy Philippine VA agencies to `canary` operational state in live production D1 (events 22–26).
+  4. **EX-CANARY-INGESTION Architecture & Planning**:
+     - Identified policy resolver gating (`isEnabledForFetch`) and cap-safe batch proposal requirements in `publishGroupedInserts`.
+     - Authored complete implementation plan in [`implementation_plan.md`](file:///C:/Users/admin/.gemini/antigravity/brain/0c7aba24-c536-43d5-8e39-7bf1d88de981/implementation_plan.md).
+
+- **WHAT FAILED & WAS REPAIRED?**
+  1. **Migration 0040 vs 0039 Trigger Conflict**: `source_transition_events_validate_insert` rejected promotion because raw observation count was evaluated on `sp23-v2` transitions. Repaired in Migration 0043 by gating the check to `NEW.transition_plane_version = 'sp23-v1'`.
+  2. **Accidental Governance Revision Bumps**: In SQLite, `BEFORE UPDATE OF col` fires even if new value equals old value. Repaired in Migration 0043 by adding column value-change checks (`OLD.col IS NOT NEW.col`).
+  3. **Admission Evidence Hash Mismatch**: Early shadow admissions recorded `canaryMaxNewItemsPerTick: null`. Repaired in `packages/scraper/admission-evidence.ts` by permitting matching against backfilled positive registry caps while preserving cryptographic integrity across all other governance fields.
+
+- **WHAT MUST NOT BE REDONE?**
+  - Do not reopen historical Gauntlet units G1–G9 or SP-00 through SP-09.
+  - Do not mutate exact-six feeds without verified shadow observation and evidence-bound canary gating.
+  - Do not propose more than `canary_max_new_items_per_tick = 2` to `publishPublicExposure` (trips automatic rollback to shadow).
+  - Do not unpause Ashby sources without partner feed keys (`COMP-01C`).
+  - Do not fetch Band 4 forbidden hosts (SmartRecruiters, OnlineJobs.ph HTML scraping).
+
+- **WHAT EXACT COMMAND/TASK SHOULD THE NEXT AI START WITH?**
+  1. Pull latest: `git pull origin main`
+  2. Verify local suite: `bun test && bun run typecheck && bun run audit:guardrails`
+  3. Resume via bootloader prompt in [`docs/bootloaders/2026-09-19-CANARY-EXPANSION-BOOTLOADER.md`](bootloaders/2026-09-19-CANARY-EXPANSION-BOOTLOADER.md).
+  4. Execute unit **`EX-CANARY-INGESTION`** per [`implementation_plan.md`](file:///C:/Users/admin/.gemini/antigravity/brain/0c7aba24-c536-43d5-8e39-7bf1d88de981/implementation_plan.md).
+
+- **WHAT EVIDENCE PROVES THE CURRENT STATE?**
+  - Production Cloudflare D1 query confirms 5 canary sources active (IDs 22–26) with `canary_max_new_items_per_tick = 2`.
+  - GitHub Actions Sovereign CI Guardrail runs `35412951998`, `35413370337`, and `35413959555` all passed 100% green on `main`.
+  - 1,329 monorepo unit tests pass cleanly across 132 test files.
+
+## 2026-09-13 — RESUMED: Time Etc Shadow Admission & Shadow Dispatch Execution (historical)
 
 The owner paused execution, then authorized documentation backup and completion
 of ONLY the pending deployment. That deployment is complete. No source admission,

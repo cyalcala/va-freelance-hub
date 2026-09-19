@@ -12,27 +12,37 @@ Canonical continuation:
 
 | Item | Exact state |
 | --- | --- |
-| Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11 / 2026-09-12 / 2026-09-13) |
+| Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11 / 2026-09-12 / 2026-09-13 / 2026-09-19) |
 | Prime Directive | Floor: 100 / Stretch: 150 qualified net-new remote PH-accessible jobs/day |
-| Base Commit | Pushed to `main` (`e62d03c`, advancing to Run 75) |
-| Verification | 1,308 Bun tests pass (130 files), 7 Python tests pass, typecheck & guardrails clean |
-| D1 Registry Shadows | 21 total in shadow state (Workable x7, Breezy x6, Greenhouse x6, Recruitee x1, Teamtailor x1) |
-| Durable Candidate Queue | 14 distinct ATS candidates in `needs_review/candidate` (Ashby, Breezy, Workable, Lever) |
-| Shadow Observations | 1,565 total recorded across 14 distinct calendar days (2026-09-06 to 2026-09-19); 19/21 matured past Day 8; 0 public leakage (`published: 0`) |
+| Base Commit | Pushed to `main` (`ea81366`, advancing to Run 79) |
+| Verification | 1,329 Bun tests pass (132 files), typecheck & guardrails clean (Runs 35412951998, 35413370337, 35413959555 green) |
+| D1 Registry Canaries | 5 sources in `operational_state = 'canary'` (`breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly`) with cap 2/tick |
+| D1 Registry Shadows | 16 sources in `operational_state = 'shadow'` (Workable x7, Greenhouse x6, Recruitee x1, Teamtailor x1, Breezy x1) |
+| Durable Candidate Queue | 14 distinct ATS candidates in `needs_review/candidate` (Ashby x5, Breezy x1, Workable x7, Lever x1) |
+| Shadow Observations | 1,565+ total recorded across 14 distinct calendar days; zero unlogged public exposure |
 | Identity Attribution | 100.0% coverage in production D1 (0 null source_id rows out of 5,348) |
 | Current 7d Qualified Baseline | 86 jobs / 7 days = 12.29 jobs/day (WWR 51, RWFA 25, Remote OK 10, Jobicy 3, Remotive 0) |
 | Clocks | Primary Cloudflare Worker `freshness-cron` beating every 10 min; secondary Hunter in standby |
 
 ### Reconciled Production Reality (2026-09-19)
 Direct measurement and workflow inspection confirms:
-- **P1 Clock Failover Fenced Lock Release Implemented**:
+- **Canary Promotion of 5 Philippine VA Agencies (Run 79)**:
+  - Authored & applied Migration 0043 (`packages/db/migrations/0043_canary_promotion_trigger_alignment.sql`): fixed trigger conflict between migrations 0039/0042 and 0040 on canary promotion, backfilled `canary_max_new_items_per_tick = 2` across all shadow sources, and hardened `source_registry_governance_revision_bump` with column value-change checks.
+  - Hardened admission evidence packet projection in `packages/scraper/admission-evidence.ts` for backward-compatible null canary cap matching while preserving cryptographic authority.
+  - Implemented authenticated promotion endpoint `apps/web/src/pages/api/cron/source-promote.ts` (11 unit tests, 2 integration tests pass).
+  - Graduated 5 Breezy Philippine VA agencies to `canary` in production D1: `breezy:20four7va` (event 22), `breezy:sourcefit` (event 23), `breezy:remote-craft` (event 24), `breezy:value-virtual-assistants` (event 25), `breezy:yokly` (event 26).
+  - Live D1 query confirms all 5 in `operational_state = 'canary'`, `governance_revision = 1`, `canary_max_new_items_per_tick = 2`.
+- **Autonomy Cutover Predicate Formal Audit & Workable Pacing (Run 78)**:
+  - Direct measurement of production Cloudflare D1 confirmed 9 mature shadow sources satisfied all 10 conditions of the Autonomy Cutover Predicate ([`docs/audits/EX_CANARY_READINESS_AUDIT.md`](audits/EX_CANARY_READINESS_AUDIT.md)).
+  - Eliminated Workable HTTP 429 rate limiting via provider-interleaved dispatch ordering, host-sensitive polite delay, and adaptive `Retry-After` backoff.
+  - Audited 14 candidates in `source_registry` ([`docs/audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md`](audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md)).
+- **P1 Clock Failover Fenced Lock Release Implemented (Run 77)**:
   - Resolved Recommendation 1 of the Publication Funnel Audit (`docs/debugging/PUBLICATION_DEBUG_STATE.md`).
   - Added `releaseRunLock(db, observedAt)` with atomic fencing to `apps/web/src/pages/api/cron/scrape.ts` and executed inside guaranteed `finally` block.
   - Guarantees `__scrape_run_lock__` is immediately released on completion or unhandled error, eliminating 8-minute failover lockouts.
-- **Direct Remote D1 Shadow Maturity Confirmed (Run 77)**:
+- **Direct Remote D1 Shadow Maturity Confirmed**:
   - 1,565 total shadow observations recorded across 14 distinct calendar days (2026-09-06 to 2026-09-19).
-  - 19 of 21 shadow sources have achieved >= 8 distinct calendar days of healthy shadow observations spanning >= 7 calendar days.
-  - Perfect 100% healthy track records achieved for Breezy agencies (20Four7VA, Sourcefit, Yokly, Remote-Craft, Value VA), Teamtailor, Recruitee, and Greenhouse (Ghost, Nearform).
+  - 19 of 21 shadow sources achieved >= 8 distinct calendar days of healthy shadow observations spanning >= 7 calendar days.
   - Zero public board leakage verified (`published: 0` invariant strictly preserved across all shadow identities).
 
 ### Reconciled Production Reality (2026-09-13)
