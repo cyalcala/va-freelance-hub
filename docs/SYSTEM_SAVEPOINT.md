@@ -7,16 +7,52 @@ VA Freelance Hub into a durable Philippines-centered remote job discovery system
 sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
 Direct production D1 read & workflow verification confirms:
-1. **Registry & Shadow State**: 21 active shadows in `source_registry`:
-   - Workable (7): `workable:coconutva`, `workable:crewbloom`, `workable:hello-rache`, `workable:hunt-st`, `workable:pearltalent`, `workable:pineapple-staffing`, `workable:rocketams`.
-   - Breezy (6): `breezy:20four7va`, `breezy:remote-craft`, `breezy:sourcefit`, `breezy:time-etc`, `breezy:value-virtual-assistants`, `breezy:yokly`.
-   - Greenhouse (6): `greenhouse:ghost`, `greenhouse:gitlab`, `greenhouse:grafanalabs`, `greenhouse:nearform`, `greenhouse:remotecom`, `greenhouse:wikimedia`.
-   - Recruitee (1): `recruitee:myjewellery`.
-   - Teamtailor (1): `teamtailor:career.teamtailor.com`.
-   Over 540 active remote Philippine roles in shadow observation across Workable & Breezy agencies alone. Zero public leakage verified (`published: 0`).
-2. **Candidate Backlog**: 14 durable candidates in `needs_review/candidate` across Ashby, Breezy, Workable, and Lever.
-3. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,348 total in `opportunities`).
+1. **Registry, Canary & Shadow State**:
+   - **Canary Cohort 1 (5 sources)**: `breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly`. Promoted to `operational_state = 'canary'` with `canary_max_new_items_per_tick = 2`, `governance_revision = 1`, and transition events recorded in `source_transition_events` (IDs 22–26).
+   - **Shadow Cohort (16 sources)**:
+     - Workable (7): `workable:coconutva`, `workable:crewbloom`, `workable:hello-rache`, `workable:hunt-st`, `workable:pearltalent`, `workable:pineapple-staffing`, `workable:rocketams`.
+     - Greenhouse (6): `greenhouse:ghost`, `greenhouse:gitlab`, `greenhouse:grafanalabs`, `greenhouse:nearform`, `greenhouse:remotecom`, `greenhouse:wikimedia`.
+     - Recruitee (1): `recruitee:myjewellery`.
+     - Teamtailor (1): `teamtailor:career.teamtailor.com`.
+     - Breezy (1): `breezy:time-etc`.
+   Over 540 active remote Philippine roles in shadow observation across Workable & Breezy agencies alone.
+2. **Candidate Backlog**: 14 durable candidates in `needs_review/candidate` across Ashby (5 quarantined under COMP-01C), Breezy (1), Workable (7), and Lever (1).
+3. **Attribution Coverage**: 100.0% exact source attribution across all active opportunities.
 4. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
+
+### Run 79 — EX-CANARY-PROMOTION: Production Promotion of 5 Philippine VA Agencies & Trigger Alignment (2026-09-19)
+
+UNIT ID: EX-CANARY-PROMOTION
+PHASE: GOVERNANCE / CANARY-PROMOTION / MIGRATION-0043
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `packages/db/migrations/0043_canary_promotion_trigger_alignment.sql`, `packages/scraper/admission-evidence.ts`, `packages/scraper/admission-evidence.test.ts`, `apps/web/src/pages/api/cron/source-promote.ts`, `apps/web/tests/source-promote-route.test.ts`, `packages/scraper/transition-gateway.integration.test.ts`
+
+- **Migration 0043 Authoring and Production Application (`packages/db/migrations/0043_canary_promotion_trigger_alignment.sql`)**:
+  - Fixed trigger conflict between migrations 0039/0042 and 0040 on canary promotion: gated the raw observation count check in `source_transition_events_validate_insert` with `NEW.transition_plane_version = 'sp23-v1'`, allowing `sp23-v2` transitions to be guarded by `source_transition_events_current_admission_guard` which verifies the exact 7-day distinct calendar qualifying window.
+  - Safely backfilled `canary_max_new_items_per_tick = 2` across all shadow sources where it was `NULL`.
+  - Hardened `source_registry_governance_revision_bump` trigger with column value-change checks (`OLD.col IS NOT NEW.col`), preventing operational state transitions from erroneously bumping `governance_revision` from 1 to 2.
+  - Successfully applied in remote production D1 via Sovereign CI Guardrail run `35412951998` on commit `543f5d5`.
+- **Hardened Admission Evidence Packet Projection (`packages/scraper/admission-evidence.ts`)**:
+  - Resolved `validateAdmissionPacket` rejection where early admission packets recorded `packet.source.canaryMaxNewItemsPerTick: null`: allowed matching against positive backfilled registry caps while strictly maintaining byte-for-byte equality across all other governance fields (`sourceId`, `endpointUrl`, `companyToken`, `complianceState`, `policyExpiry`, `optOut`, `governanceRevision`).
+  - Unit tests added in `packages/scraper/admission-evidence.test.ts` (all 22 unit tests pass).
+- **Implemented Canary Promotion Endpoint (`apps/web/src/pages/api/cron/source-promote.ts`)**:
+  - Authenticated route supporting POST and GET (`?sourceId=...`).
+  - Enforces `isAuthorized(request, env.PROXY_SECRET || env.CRON_SECRET)`.
+  - Restricts execution to `SOURCE_PROMOTE_ALLOWLIST`.
+  - Executes typed transitions via `applyTypedTransition(wrapDb(env.DB), ...)`.
+  - Unit tests in `apps/web/tests/source-promote-route.test.ts` (11 pass); integration tests in `packages/scraper/transition-gateway.integration.test.ts` (2 pass).
+- **Production Graduation of 5 Breezy Philippine VA Agencies**:
+  - Executed `/api/cron/source-promote` with `PROXY_SECRET` against live production (`https://remotejobs-ph.pages.dev/api/cron/source-promote`):
+    1. `breezy:20four7va`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 22)
+    2. `breezy:sourcefit`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 23)
+    3. `breezy:remote-craft`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 24)
+    4. `breezy:value-virtual-assistants`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 25)
+    5. `breezy:yokly`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 26)
+  - Direct production D1 verification confirms all 5 sources in `operational_state = 'canary'`, `governance_revision = 1`, `canary_max_new_items_per_tick = 2`, `last_decision = 'sp23:requested_promotion'`.
+- **Verification**:
+  - 1,329 monorepo tests pass across 132 files (`bun test`); TypeScript typecheck clean (`bun run typecheck`); production CI guardrails clean (`bun run audit:guardrails`).
+  - Commits `543f5d5` and `2806799` verified 100% green on GitHub Actions (Runs `35412951998` and `35413370337`).
 
 ### Run 78 — EX-CANARY-READINESS: Autonomy Cutover Audit & Workable Probe Pacing Hardening (2026-09-19)
 

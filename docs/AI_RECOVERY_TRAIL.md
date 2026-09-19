@@ -1,6 +1,34 @@
 # AI Recovery Trail
 
-## 2026-09-19 — COMPLETED: Canary Readiness Audit & Workable Probe Pacing Hardening (current)
+## 2026-09-19 — COMPLETED: Canary Promotion of 5 Philippine VA Agencies & Trigger Alignment (current)
+
+Completed unit `EX-CANARY-PROMOTION`: aligned migration triggers, hardened admission evidence packet projection, deployed authenticated promotion endpoint, and graduated 5 Breezy Philippine VA agencies to live `canary` operational state:
+- **Base Commit**: `4f458b8` (`feat(governance): verify canary readiness predicate and harden workable probe pacing (EX-CANARY-READINESS)`)
+- **Behavior Commits**:
+  - `543f5d5` (`feat(governance): align canary promotion triggers and implement promotion gateway (EX-CANARY-PROMOTION)`) — GitHub Actions run `35412951998` (100% green).
+  - `2806799` (`fix(governance): allow early admission evidence with null canary cap to match backfilled registry cap (EX-CANARY-PROMOTION)`) — GitHub Actions run `35413370337` (100% green).
+- **Migration 0043 Applied to Production D1 (`packages/db/migrations/0043_canary_promotion_trigger_alignment.sql`)**:
+  - Gated raw observation count check in `source_transition_events_validate_insert` with `NEW.transition_plane_version = 'sp23-v1'`, allowing `sp23-v2` transitions to be guarded by `source_transition_events_current_admission_guard` without contradiction.
+  - Safely backfilled `canary_max_new_items_per_tick = 2` across all shadow sources where it was `NULL`.
+  - Hardened `source_registry_governance_revision_bump` trigger with column value-change checks (`OLD.col IS NOT NEW.col`), preventing operational state transitions from erroneously bumping `governance_revision` from 1 to 2.
+- **Hardened Admission Evidence Packet Projection (`packages/scraper/admission-evidence.ts`)**:
+  - Resolved `validateAdmissionPacket` rejection where early admission packets recorded `packet.source.canaryMaxNewItemsPerTick: null`: allowed matching against positive backfilled registry caps while strictly maintaining cryptographic integrity across all governance fields.
+  - Unit tests added in `packages/scraper/admission-evidence.test.ts` (22/22 pass).
+- **Promotion Endpoint Implemented & Deployed (`apps/web/src/pages/api/cron/source-promote.ts`)**:
+  - Authenticated route enforcing `isAuthorized(request, env.PROXY_SECRET || env.CRON_SECRET)`.
+  - Restricted to `SOURCE_PROMOTE_ALLOWLIST` and executing typed transitions via `applyTypedTransition`.
+  - Tests in `apps/web/tests/source-promote-route.test.ts` (11 pass) and `packages/scraper/transition-gateway.integration.test.ts` (2 pass).
+- **Live Production Graduation of 5 Breezy Philippine VA Agencies**:
+  - Executed `/api/cron/source-promote` against live production (`https://remotejobs-ph.pages.dev/api/cron/source-promote`):
+    1. `breezy:20four7va`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 22)
+    2. `breezy:sourcefit`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 23)
+    3. `breezy:remote-craft`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 24)
+    4. `breezy:value-virtual-assistants`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 25)
+    5. `breezy:yokly`: HTTP 200 `{ "outcome": "canary", "published": 0 }` (Event ID 26)
+  - Direct D1 verification confirms all 5 sources in `operational_state = 'canary'`, `governance_revision = 1`, `canary_max_new_items_per_tick = 2`, `last_decision = 'sp23:requested_promotion'`.
+- **Verification**: 1,329 tests pass across 132 files (`bun test`); TypeScript typecheck clean; production CI guardrails clean.
+
+## 2026-09-19 — COMPLETED: Canary Readiness Audit & Workable Probe Pacing Hardening (historical)
 
 Completed formal qualification audit of the mature shadow cohort under the Autonomy Cutover Predicate and deployed surgical rate-limiting hardening for Workable:
 - **Base Commit**: `b33b51d` (`fix(cron): release run lock on completion and crash to eliminate failover contention`)

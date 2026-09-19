@@ -1,17 +1,16 @@
 # Implementation Status
 
-## 2026-09-13 — RESUMED: Autonomous Source Expansion (current)
+## 2026-09-19 — EX-CANARY-PROMOTION: 5 Canary Graduations & Capacity Expansion (current)
 
-Explicit OWNER RESUME AUTHORIZATION granted. Active execution toward the Prime Directive:
-sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
+Explicit OWNER RESUME AUTHORIZATION active. Prime Directive: sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
-- **Production Shadow Capacity**: 21 active shadow sources in D1 `source_registry` (Workable x7, Breezy x6, Greenhouse x6, Recruitee x1, Teamtailor x1). Over 540 active remote Philippine roles observed in shadow across agencies; zero public leakage (`published: 0` invariant strictly preserved).
-- **Recent Shadow Admission**: `breezy:time-etc` admitted to shadow mode via workflow `34726239182` with `canary_max_new_items_per_tick: 1` and evidence ID 24.
-- **Candidate Factory Backlog**: 14 durable candidates in `needs_review/candidate` (Ashby x5, Breezy x1, Workable x7, Lever x1) harvested directly from `va_directory` via `COALESCE(hiring_page_url, website)`.
-- **Canary Envelope Alignment**: Candidate builders and `source-admit` route wired with `canaryMaxNewItemsPerTick: 1` matching Migration 0042 / SP-23 transition plane constraints.
-- **Verification Baseline**: 1,292 passed, 0 failed across 129 test files (`bun test`); strict typecheck and sovereign CI guardrails clean.
+- **Canary Portfolio (5 sources live)**: `breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly`. Promoted from `shadow` to `canary` in production D1 (events 22–26) under `canary_max_new_items_per_tick = 2`. Over 350 active remote Philippine roles in historical observation across these 5 agencies.
+- **Shadow Portfolio (16 sources active)**: Workable x7 (`coconutva`, `crewbloom`, `hello-rache`, `hunt-st`, `pearltalent`, `pineapple-staffing`, `rocketams`), Greenhouse x6 (`ghost`, `gitlab`, `grafanalabs`, `nearform`, `remotecom`, `wikimedia`), Recruitee x1 (`myjewellery`), Teamtailor x1 (`career.teamtailor.com`), Breezy x1 (`time-etc`).
+- **Candidate Backlog**: 14 durable candidates in `needs_review/candidate` (Ashby x5 quarantined `COMP-01C`, Breezy x1, Workable x7, Lever x1).
+- **Migration 0043 Live**: Reconciled trigger conflict between migrations 0039/0042 and 0040, backfilled `canary_max_new_items_per_tick = 2` across all shadow sources, and hardened `source_registry_governance_revision_bump` with column change checks.
+- **Verification Baseline**: 1,329 passed, 0 failed across 132 test files (`bun test`); strict typecheck and sovereign CI guardrails clean (Runs `35412951998` and `35413370337` 100% green).
 
-## 2026-09-08 — PAUSED after completed capacity deployment (historical)
+## 2026-09-13 — RESUMED: Autonomous Source Expansion (historical)
 
 ## 2026-09-08 — APEX audit and repair (current)
 
