@@ -46,13 +46,16 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
         loadRegistryRows: async () => {
           // Rotate bounded windows even if the first group has invalid evidence
           // or is cadence-held. A permanently failing source cannot starve later
-          // identities. This enumeration never substitutes for the fresh loader.
+          // identities. Interleave by provider (ROW_NUMBER partition) so identities
+          // sharing an origin host (e.g. Workable) are naturally spaced across windows
+          // rather than clustered in a single rate-limited burst.
           const rows = await db.all<DispatchRegistryRow>(sql`SELECT
             source_id AS sourceId, provider_id AS providerId, display_name AS displayName,
             endpoint_url AS endpointUrl, company_token AS companyToken, discovery_provenance AS discoveryProvenance,
             compliance_state AS complianceState, operational_state AS operationalState,
             opt_out AS optOut, review_deadline AS reviewDeadline, policy_expiry AS policyExpiry
-            FROM source_registry WHERE operational_state='shadow' ORDER BY source_id
+            FROM source_registry WHERE operational_state='shadow'
+            ORDER BY ROW_NUMBER() OVER (PARTITION BY provider_id ORDER BY source_id), provider_id
             LIMIT ${MAX_DISPATCHES_PER_RUN} OFFSET (${windowHour} % max(1,
               (SELECT (COUNT(*)+${MAX_DISPATCHES_PER_RUN - 1})/${MAX_DISPATCHES_PER_RUN}
                FROM source_registry WHERE operational_state='shadow'))) * ${MAX_DISPATCHES_PER_RUN}`);

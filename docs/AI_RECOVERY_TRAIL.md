@@ -1,6 +1,29 @@
 # AI Recovery Trail
 
-## 2026-09-19 — COMPLETED: Fenced Run-Lock Release & Shadow Maturity Verification (current)
+## 2026-09-19 — COMPLETED: Canary Readiness Audit & Workable Probe Pacing Hardening (current)
+
+Completed formal qualification audit of the mature shadow cohort under the Autonomy Cutover Predicate and deployed surgical rate-limiting hardening for Workable:
+- **Base Commit**: `b33b51d` (`fix(cron): release run lock on completion and crash to eliminate failover contention`)
+- **Autonomy Cutover Predicate Audit Completed (`docs/audits/EX_CANARY_READINESS_AUDIT.md`)**:
+  - Direct measurement of production Cloudflare D1 confirms 9 mature shadow sources have achieved 100% clean, defect-free track records over >= 9 distinct days and > 7 calendar days of span (`604,800,000 ms`):
+    - Philippine VA Agencies (Breezy): `20four7va` (67 obs, 9d, 7.39d span), `sourcefit` (63 obs, 9d, 7.39d span), `remote-craft` (61 obs, 9d, 7.33d span), `value-virtual-assistants` (61 obs, 9d, 7.33d span), `yokly` (62 obs, 9d, 7.33d span).
+    - Global ATS Feeds: `teamtailor:career.teamtailor.com` (124 obs, 13d, 12.43d span), `recruitee:myjewellery` (122 obs, 13d, 12.43d span), `greenhouse:ghost` (63 obs, 9d, 7.44d span), `greenhouse:nearform` (63 obs, 9d, 7.44d span).
+  - All 10 conditions of the Autonomy Cutover Predicate (`docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` Section 4) audited and verified satisfied.
+  - Read-only diagnostic CLI built and tested in `scripts/diagnostics/canary-readiness.ts` (5/5 unit tests pass).
+- **Workable Probe Pacing & Rate Limit Hardening**:
+  - Root cause resolved: `shadow-dispatch.ts` previously ordered by `source_id`, clustering all 7 Workable agencies into Window 1 and hitting `apply.workable.com` within 10 seconds, triggering HTTP 429 rate limits across 80%+ of runs.
+  - Implemented provider-interleaved enumeration in `apps/web/src/pages/api/cron/shadow-dispatch.ts` via SQLite window function: `ORDER BY ROW_NUMBER() OVER (PARTITION BY provider_id ORDER BY source_id), provider_id`.
+  - Implemented host-aware polite delay in `packages/scraper/shadow-dispatcher.ts`: applies extended 3,000 ms delay for consecutive probes targeting the same origin host.
+  - Implemented adaptive `Retry-After` header parsing and 3,000–5,000 ms backoff on HTTP 429 in `packages/scraper/candidate-shadow.ts`.
+- **Candidate Queue Backlog Audit Completed (`docs/audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md`)**:
+  - Audited all 14 candidates sitting in `source_registry` with `operational_state = 'candidate'`.
+  - Maintained Ashby quarantine (`COMP-01C`, 5 candidates) pending partner feed grant.
+  - Identified 9 candidates ready for staged shadow admission (Breezy x1, Lever x1, Workable x7).
+- **Exact-Six Board Boundary Invariant Strictly Preserved**:
+  - `is_active = 1` only for exact-six feeds; `published: 0` for all 21 shadow identities. Zero board leakage.
+- **Verification**: 1,316 tests pass across 131 files (`bun test`); TypeScript typecheck clean; production guardrails clean.
+
+## 2026-09-19 — COMPLETED: Fenced Run-Lock Release & Shadow Maturity Verification (historical)
 
 Completed P1 reliability fix eliminating run-lock contention and verified remote D1 shadow maturity across all 21 sources:
 - **Base Commit**: `2232746` (fast-forwarded from remote automated pulses)

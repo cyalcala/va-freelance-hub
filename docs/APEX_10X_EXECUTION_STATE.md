@@ -85,13 +85,15 @@ Direct measurement and workflow inspection confirms:
   - Exact-six publishing invariant strictly maintained on the public board (`published: 0` for all 19 shadow sources).
 
 ### Active Execution Queue
-1. **Unit EX-SHADOW-CADENCE (Accumulate Recurrent Shadow Observations)**:
-   - Monitor hourly shadow observation runs across the 19 shadow sources to build required observation history for promotion qualification.
-2. **Unit EX-ATS-EXPANSION (Lever Retargeting & Ashby Evaluation)**:
-   - Re-evaluate Lever ATS targeting with authentic Philippine-accessible hiring employers (Lever mechanism qualified under EX-06).
-   - Maintain Ashby candidate quarantine (`COMP-01C`) pending dedicated partner feed or explicit customer permission.
-3. **Unit PROSPECTOR-3 (Continuous ATS Candidate Factory)**:
+1. **Unit EX-CANARY-READINESS (Autonomy Cutover Predicate Audit & Pacing Hardening)**: `DONE_VERIFIED`
+   - All 10 conditions of the Autonomy Cutover Predicate verified satisfied in `docs/audits/EX_CANARY_READINESS_AUDIT.md`.
+   - 9 mature shadow sources (5 Breezy Philippine VA agencies, 4 global ATS feeds) verified 100% clean and ready for canary promotion.
+   - Provider-interleaved dispatch ordering, host-aware polite delay (3,000 ms), and adaptive `Retry-After` backoff deployed.
+2. **Unit CANDIDATE-BACKLOG-AUDIT**: `DONE_VERIFIED`
+   - Complete audit of 14 candidates in `docs/audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md`. Ashby x5 quarantined; 9 candidates ready for staged admission.
+3. **Unit EX-CANARY-PROMOTION (Canary Transition Execution)**:
+   - Prepare formal canary promotion gateway transition (`source-promote.ts`) for qualified cohort.
+4. **Unit PROSPECTOR-3 (Continuous ATS Candidate Factory)**:
    - Expand automated mining of VA directory careers pages into direct ATS candidate discovery to maintain a continuous, self-replenishing candidate reserve.
-4. **Unit EX-CANARY-READINESS (Prepare Canary Cutover Predicate)**:
-   - Verify qualification criteria for earliest mature shadow cohorts (Greenhouse, Recruitee, Teamtailor, Breezy, Workable) under the Autonomy Cutover Predicate.
+
 

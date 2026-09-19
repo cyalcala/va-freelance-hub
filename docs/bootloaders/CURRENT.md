@@ -25,7 +25,8 @@ Production D1 reality confirmed via direct query:
 - Measured strict qualified 7d baseline: 86 jobs / 7 days = 12.29 jobs/day.
 
 Active execution queue:
-1. P1 clock failover optimization implemented: fenced `releaseRunLock` in `apps/web/src/pages/api/cron/scrape.ts` guarantees `__scrape_run_lock__` is immediately released on exit/error, unblocking Hunter failover watchdog.
-2. Shadow observation maturity confirmed across 19 of 21 sources (Day 8+ achieved).
-3. Monitor rotating shadow dispatch windows (Window 0 covers Breezy & Greenhouse; Window 1 covers Workable & other ATS).
-4. Audit candidate queue backlog (14 candidates) under ADR-008 fast-track guidelines.
+1. EX-CANARY-READINESS complete: 9 mature shadow sources (5 Breezy Philippine VA agencies, 4 global ATS feeds) fully qualified under all 10 conditions of the Autonomy Cutover Predicate (`docs/audits/EX_CANARY_READINESS_AUDIT.md`).
+2. Workable probe pacing & rate limit hardening complete: provider-interleaved dispatch ordering, host-aware polite delay, and adaptive `Retry-After` backoff deployed to eliminate HTTP 429 bursts.
+3. Candidate queue backlog audit complete: 14 candidates audited (`docs/audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md`); Ashby x5 quarantined under `COMP-01C`; 9 candidates ready for staged admission.
+4. Prepare formal canary promotion gateway transition (`source-promote.ts`) for qualified cohort.
+

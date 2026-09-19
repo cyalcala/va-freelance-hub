@@ -402,6 +402,7 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
   };
 
   let authorityChecks = 0;
+  let lastHost: string | null = null;
   for (const enumerated of registryRows) {
     if (enumerated.operationalState !== "shadow") {
       summary.skippedIneligible += 1;
@@ -446,7 +447,11 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     }
     summary.eligible += 1;
 
-    // Polite inter-probe delay between external requests
+    const currentHost = hostOf(row.endpointUrl);
+    // Polite inter-probe delay between external requests:
+    // Standard delay is 1,200 ms. If consecutive probes target the same origin
+    // host (e.g. apply.workable.com), apply an extended 3,000 ms delay to prevent
+    // IP-based burst rate limiting.
     if (summary.dispatched > 0) {
       const sleepImpl = deps.sleep ?? ((ms: number) => {
         if (process.env.NODE_ENV === "test" || typeof (globalThis as any).it === "function") {
@@ -454,8 +459,10 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
         }
         return new Promise((resolve) => setTimeout(resolve, ms));
       });
-      await sleepImpl(1200);
+      const delayMs = (lastHost && currentHost && lastHost === currentHost) ? 3000 : 1200;
+      await sleepImpl(delayMs);
     }
+    lastHost = currentHost;
 
     const input = inputForContext(context);
     const binding = { input, admissionEvidenceId: evidence.id, shadowEntryHash: row.lastTransitionHash,

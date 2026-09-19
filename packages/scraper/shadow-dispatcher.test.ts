@@ -267,4 +267,27 @@ describe("current-evidence shadow dispatcher", () => {
     expect(result.skippedInvalidEvidence).toBe(12);
     expect(result.skippedRunCap).toBe(18);
   });
+  test("applies extended 3000ms delay for consecutive same-host probes and 1200ms for different hosts", async () => {
+    const delays: number[] = [];
+    const sleep = async (ms: number) => { delays.push(ms); };
+    const rowA = registryRow({ sourceId: "a", endpointUrl: "https://apply.workable.com/api/v1/widget/accounts/a" });
+    const rowB = registryRow({ sourceId: "b", endpointUrl: "https://apply.workable.com/api/v1/widget/accounts/b" });
+    const rowC = registryRow({ sourceId: "c", endpointUrl: "https://boards-api.greenhouse.io/v1/boards/c/jobs" });
+
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => [rowA, rowB, rowC],
+      loadAdmissionContext: async (sourceId) => {
+        if (sourceId === "a") return context(rowA);
+        if (sourceId === "b") return context(rowB);
+        return context(rowC);
+      },
+      sleep,
+    }));
+    expect(result.dispatched).toBe(3);
+    // Dispatches:
+    // Probe 1 (rowA) -> dispatched=0, no delay
+    // Probe 2 (rowB) -> dispatched=1, same host (apply.workable.com) -> 3000ms
+    // Probe 3 (rowC) -> dispatched=2, different host (boards-api.greenhouse.io) -> 1200ms
+    expect(delays).toEqual([3000, 1200]);
+  });
 });

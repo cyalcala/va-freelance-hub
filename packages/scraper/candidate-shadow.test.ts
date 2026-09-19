@@ -568,4 +568,49 @@ describe("candidate-shadow — provenance and budget invariants", () => {
     expect(res.diagnostic.shadowMode).toBe(true);
     expect(res.diagnostic.mutations).toBe(0);
   });
+
+  it("retries on transient 429 for ATS GET with Retry-After header", async () => {
+    const input = candidateInput();
+    let attempts = 0;
+    const fetcher = vi.fn(async (url: string | URL | Request) => {
+      const u = typeof url === "string" ? url : (url as URL).toString();
+      if (u.includes("robots.txt")) {
+        return new Response("User-agent: *\nAllow: /", { status: 200, headers: { "content-type": "text/plain" } });
+      }
+      attempts++;
+      if (attempts === 1) {
+        return new Response("Rate limited", {
+          status: 429,
+          headers: { "content-type": "text/plain", "retry-after": "1" },
+        });
+      }
+      return new Response(JSON.stringify({ jobs: [{ id: 1, title: "Virtual Assistant", updated_at: "2026-08-28T00:00:00Z", absolute_url: "https://example.com/jobs/1" }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    });
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(attempts).toBe(2);
+    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+  });
+
+  it("records RATE_LIMITED outcome when 429 persists after retry", async () => {
+    const input = candidateInput();
+    let attempts = 0;
+    const fetcher = vi.fn(async (url: string | URL | Request) => {
+      const u = typeof url === "string" ? url : (url as URL).toString();
+      if (u.includes("robots.txt")) {
+        return new Response("User-agent: *\nAllow: /", { status: 200, headers: { "content-type": "text/plain" } });
+      }
+      attempts++;
+      return new Response("Too many requests", {
+        status: 429,
+        headers: { "content-type": "text/plain" },
+      });
+    });
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(attempts).toBe(2);
+    expect(res.diagnostic.outcome).toBe("RATE_LIMITED");
+  });
 });
+

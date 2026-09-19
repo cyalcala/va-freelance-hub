@@ -18,6 +18,34 @@ Direct production D1 read & workflow verification confirms:
 3. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,348 total in `opportunities`).
 4. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
 
+### Run 78 — EX-CANARY-READINESS: Autonomy Cutover Audit & Workable Probe Pacing Hardening (2026-09-19)
+
+UNIT ID: EX-CANARY-READINESS
+PHASE: GOVERNANCE / CANARY-READINESS / RATE-LIMIT-HARDENING
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `docs/audits/EX_CANARY_READINESS_AUDIT.md`, `docs/audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md`, `scripts/diagnostics/canary-readiness.ts`, `scripts/diagnostics/canary-readiness.test.ts`, `packages/scraper/candidate-shadow.ts`, `packages/scraper/shadow-dispatcher.ts`, `apps/web/src/pages/api/cron/shadow-dispatch.ts`
+
+- **Autonomy Cutover Predicate Formal Audit Completed (`docs/audits/EX_CANARY_READINESS_AUDIT.md`)**:
+  - Direct measurement of production Cloudflare D1 confirms 9 mature shadow sources have achieved 100% clean, defect-free track records over >= 9 distinct days and > 7 calendar days of span (`604,800,000 ms`):
+    - Philippine VA Agencies (Breezy): `20four7va` (67 obs, 9d, 7.39d span), `sourcefit` (63 obs, 9d, 7.39d span), `remote-craft` (61 obs, 9d, 7.33d span), `value-virtual-assistants` (61 obs, 9d, 7.33d span), `yokly` (62 obs, 9d, 7.33d span).
+    - Global ATS Feeds: `teamtailor:career.teamtailor.com` (124 obs, 13d, 12.43d span), `recruitee:myjewellery` (122 obs, 13d, 12.43d span), `greenhouse:ghost` (63 obs, 9d, 7.44d span), `greenhouse:nearform` (63 obs, 9d, 7.44d span).
+  - All 10 conditions of the Autonomy Cutover Predicate ([`docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`](SOURCE_REPLENISHMENT_MASTERPLAN.md) Section 4) audited and verified satisfied.
+  - Read-only diagnostic CLI built and tested in `scripts/diagnostics/canary-readiness.ts` (5/5 unit tests pass).
+- **Workable Probe Pacing & Rate Limit Hardening**:
+  - Root cause resolved: `shadow-dispatch.ts` previously ordered by `source_id`, clustering all 7 Workable agencies into Window 1 and hitting `apply.workable.com` within 10 seconds, triggering HTTP 429 rate limits across 80%+ of runs.
+  - Implemented provider-interleaved enumeration in `apps/web/src/pages/api/cron/shadow-dispatch.ts` via SQLite window function: `ORDER BY ROW_NUMBER() OVER (PARTITION BY provider_id ORDER BY source_id), provider_id`.
+  - Implemented host-aware polite delay in `packages/scraper/shadow-dispatcher.ts`: applies extended 3,000 ms delay for consecutive probes targeting the same origin host.
+  - Implemented adaptive `Retry-After` header parsing and 3,000–5,000 ms backoff on HTTP 429 in `packages/scraper/candidate-shadow.ts`.
+- **Candidate Queue Backlog Audit Completed (`docs/audits/CANDIDATE_QUEUE_BACKLOG_AUDIT.md`)**:
+  - Audited all 14 candidates sitting in `source_registry` with `operational_state = 'candidate'`.
+  - Maintained Ashby quarantine (`COMP-01C`, 5 candidates) pending partner feed grant.
+  - Identified 9 candidates ready for staged shadow admission (Breezy x1, Lever x1, Workable x7).
+- **Exact-Six Board Boundary Invariant Strictly Preserved**:
+  - `is_active = 1` only for exact-six feeds; `published: 0` for all 21 shadow identities. Zero board leakage.
+- **Verification**:
+  - 1,316 tests pass across 131 files (`bun test`); TypeScript typecheck clean (`bun run typecheck`); production CI guardrails clean (`bun run audit:guardrails`).
+
 ### Run 77 — REL-CLOCK-FAILOVER-LOCK-RELEASE: Fenced Run-Lock Release & Shadow Maturity Verification (2026-09-19)
 
 UNIT ID: REL-CLOCK-FAILOVER-LOCK-RELEASE

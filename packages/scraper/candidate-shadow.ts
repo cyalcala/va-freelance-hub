@@ -428,7 +428,12 @@ export async function runCandidateShadowProbe(
 
     // Retry once with backoff if an unauthenticated ATS GET returns transient 429
     if (fetchStatus === 429 && (input.provider.mechanism === "ats_api" || input.provider.mechanism.includes("api")) && input.provider.authClass === "none") {
-      await sleepImpl(1500);
+      const retryAfterHeader = (res as any).headers?.get?.("retry-after");
+      const parsedSeconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : NaN;
+      const backoffMs = Number.isFinite(parsedSeconds) && parsedSeconds > 0
+        ? Math.min(parsedSeconds * 1000, 5000)
+        : 3000;
+      await sleepImpl(backoffMs);
       const retryController = new AbortController();
       const retryTid = setTimeout(() => retryController.abort(), SHADOW_FETCH_TIMEOUT_MS);
       try {
