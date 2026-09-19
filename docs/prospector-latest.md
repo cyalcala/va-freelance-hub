@@ -1,14 +1,14 @@
 # Prospector Latest
 
 Date: 2026-09-19
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35439020414
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35453239523
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 4 |
-| Auto-added this run | 2 |
+| Candidates considered | 3 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
-| Review-only (untrusted source) | 2 |
+| Review-only (untrusted source) | 3 |
 | Rejected for quality | 0 |
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
@@ -23,8 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35439020
 
 ## Auto-added companies
 
-- Hex Technologies
-- CircleCI
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
