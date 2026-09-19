@@ -15,13 +15,25 @@ Canonical continuation:
 | Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11 / 2026-09-12 / 2026-09-13) |
 | Prime Directive | Floor: 100 / Stretch: 150 qualified net-new remote PH-accessible jobs/day |
 | Base Commit | Pushed to `main` (`e62d03c`, advancing to Run 75) |
-| Verification | 1,292 Bun tests pass (129 files), 7 Python tests pass, typecheck & guardrails clean |
+| Verification | 1,308 Bun tests pass (130 files), 7 Python tests pass, typecheck & guardrails clean |
 | D1 Registry Shadows | 21 total in shadow state (Workable x7, Breezy x6, Greenhouse x6, Recruitee x1, Teamtailor x1) |
 | Durable Candidate Queue | 14 distinct ATS candidates in `needs_review/candidate` (Ashby, Breezy, Workable, Lever) |
-| Shadow Observations | 532+ total recorded across 7 distinct UTC days; 0 public leakage (`published: 0` invariant strictly verified) |
+| Shadow Observations | 1,565 total recorded across 14 distinct calendar days (2026-09-06 to 2026-09-19); 19/21 matured past Day 8; 0 public leakage (`published: 0`) |
 | Identity Attribution | 100.0% coverage in production D1 (0 null source_id rows out of 5,348) |
 | Current 7d Qualified Baseline | 86 jobs / 7 days = 12.29 jobs/day (WWR 51, RWFA 25, Remote OK 10, Jobicy 3, Remotive 0) |
 | Clocks | Primary Cloudflare Worker `freshness-cron` beating every 10 min; secondary Hunter in standby |
+
+### Reconciled Production Reality (2026-09-19)
+Direct measurement and workflow inspection confirms:
+- **P1 Clock Failover Fenced Lock Release Implemented**:
+  - Resolved Recommendation 1 of the Publication Funnel Audit (`docs/debugging/PUBLICATION_DEBUG_STATE.md`).
+  - Added `releaseRunLock(db, observedAt)` with atomic fencing to `apps/web/src/pages/api/cron/scrape.ts` and executed inside guaranteed `finally` block.
+  - Guarantees `__scrape_run_lock__` is immediately released on completion or unhandled error, eliminating 8-minute failover lockouts.
+- **Direct Remote D1 Shadow Maturity Confirmed (Run 77)**:
+  - 1,565 total shadow observations recorded across 14 distinct calendar days (2026-09-06 to 2026-09-19).
+  - 19 of 21 shadow sources have achieved >= 8 distinct calendar days of healthy shadow observations spanning >= 7 calendar days.
+  - Perfect 100% healthy track records achieved for Breezy agencies (20Four7VA, Sourcefit, Yokly, Remote-Craft, Value VA), Teamtailor, Recruitee, and Greenhouse (Ghost, Nearform).
+  - Zero public board leakage verified (`published: 0` invariant strictly preserved across all shadow identities).
 
 ### Reconciled Production Reality (2026-09-13)
 Direct measurement and workflow inspection confirms:

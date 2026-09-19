@@ -20,12 +20,12 @@ Production D1 reality confirmed via direct query:
   - Teamtailor (1): `career.teamtailor.com`.
 - 14 durable candidates queued in `needs_review/candidate` (Ashby x5, Breezy x1, Workable x7, Lever x1).
 - Over 540 active remote Philippine roles observed in shadow across agencies; zero public leakage (`published: 0` invariant strictly preserved).
-- 532+ shadow observations across 7 distinct UTC days; top cohort (Grafana, Teamtailor, My Jewellery) at 7 distinct days and 70+ observations; GitLab/Remote.com at 5 distinct days and 56–60 observations; 13 sources at 2 distinct days; Pineapple Staffing at 1 distinct day; Time Etc queued for window 0 tick. Day 8 threshold on 2026-09-15.
+- 1,565 shadow observations across 14 distinct calendar days (2026-09-06 to 2026-09-19); 19 of 21 sources matured past Day 8 threshold; top cohort (Grafana, Teamtailor, My Jewellery) at 13–14 distinct days and 119–124 observations; GitLab/Remote.com at 12 distinct days and 103–107 observations; Breezy agencies (20Four7VA, Sourcefit, Yokly, Remote-Craft, Value VA) and Greenhouse (Ghost, Nearform, Wikimedia) at 9 distinct days with 100% healthy track records; Workable agencies at 8 distinct days.
 - Exact source attribution at 100.0% coverage in D1 (0 null source_id rows out of 5,348).
 - Measured strict qualified 7d baseline: 86 jobs / 7 days = 12.29 jobs/day.
 
 Active execution queue:
-1. Crawl4AI OSS + Cloudflare Kitesurf bounded experiment completed & documented in [EXPERIMENT_CRAWL4AI_KITESURF.md](../experiments/EXPERIMENT_CRAWL4AI_KITESURF.md) (verdict: Crawl4AI KEEP_EXPERIMENTAL, Kitesurf NOT_NEEDED; deterministic ATS mining proven superior).
-2. Accumulate shadow observation history across all 21 sources toward Day 8 qualification.
-3. Monitor rotating shadow dispatch windows (Window 0 at next hour covers all Breezy & Greenhouse identities).
+1. P1 clock failover optimization implemented: fenced `releaseRunLock` in `apps/web/src/pages/api/cron/scrape.ts` guarantees `__scrape_run_lock__` is immediately released on exit/error, unblocking Hunter failover watchdog.
+2. Shadow observation maturity confirmed across 19 of 21 sources (Day 8+ achieved).
+3. Monitor rotating shadow dispatch windows (Window 0 covers Breezy & Greenhouse; Window 1 covers Workable & other ATS).
 4. Audit candidate queue backlog (14 candidates) under ADR-008 fast-track guidelines.

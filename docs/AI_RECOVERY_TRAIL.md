@@ -1,6 +1,18 @@
 # AI Recovery Trail
 
-## 2026-09-14 — COMPLETED: Parallel Debugging Bootloader & Funnel Audit (current)
+## 2026-09-19 — COMPLETED: Fenced Run-Lock Release & Shadow Maturity Verification (current)
+
+Completed P1 reliability fix eliminating run-lock contention and verified remote D1 shadow maturity across all 21 sources:
+- **Base Commit**: `2232746` (fast-forwarded from remote automated pulses)
+- **Resolved Defect**: Fenced run-lock release (`releaseRunLock`) implemented in `apps/web/src/pages/api/cron/scrape.ts` with guaranteed `finally` execution, resolving Recommendation 1 of the Publication Funnel Audit (`docs/debugging/PUBLICATION_DEBUG_STATE.md`). Hunter failover watchdog is no longer locked out for 8 minutes on worker stalls or unhandled errors.
+- **Production Truth (Direct D1 Query)**:
+  - 1,565 total shadow observations recorded across 14 distinct calendar days (2026-09-06 to 2026-09-19).
+  - 19 of 21 shadow identities have matured past the 8-day / 7-calendar-day threshold.
+  - Perfect 100% healthy track records for Breezy agencies (20Four7VA, Sourcefit, Yokly, Remote-Craft, Value VA), Teamtailor, Recruitee, and Greenhouse (Ghost, Nearform).
+  - Zero public board leakage verified (`published: 0` across all shadow identities).
+- **Verification**: 1,308 tests pass (130 files), TypeScript typecheck clean, production guardrails clean.
+
+## 2026-09-14 — COMPLETED: Parallel Debugging Bootloader & Funnel Audit (historical)
 
 Completed empirical audit of the publication funnel answering: *Where are otherwise valid opportunities disappearing before publication?*
 - **Base Commit**: `2bb83dc` (`docs(debugging): trace opportunity funnel, derive loss ledger, and record debug state`)

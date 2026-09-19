@@ -66,8 +66,10 @@ The publication rate of ~10–12 jobs per day is **not caused by a leak, bug, or
 - Out of these six, three sources (Remotive, Jobicy Admin, Jobicy Support) publish almost zero net-new Philippine-eligible remote jobs per week.
 - As a result, the entire site is drawing from only three active feeds (We Work Remotely, Real Work From Anywhere, Remote OK), which together generate approximately 15–20 net-new candidate URLs per day globally, of which ~12 are eligible for Philippine freelancers.
 
-### Non-Invasive Recommendations (For Future Implementation):
-1. **Clock Failover Optimization (Fenced Lock Release)**:
-   - When an unhandled error or execution timeout occurs in `scrape.ts`, ensure that `__scrape_run_lock__` is cleared or degraded so that the secondary Hunter failover is not locked out for 8 minutes.
-2. **Constitutional Source Replenishment**:
-   - When the Autonomy Cutover Predicate (defined in `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` and ADR-007) is met, graduate proven shadow ATS sources to canary admission. Even 5 active company ATS integrations (e.g. Greenhouse/Lever/Workable) would immediately double the net-new candidate stream from ~16/day to ~35/day without compromising compliance or quality.
+### Non-Invasive Recommendations (Action Status):
+1. **Clock Failover Optimization (Fenced Lock Release)**: **[RESOLVED — 2026-09-19]**
+   - Implemented `releaseRunLock(db, observedAt)` with atomic fencing in `scrape.ts` executed in a guaranteed `finally` block.
+   - Clears `__scrape_run_lock__` on completion or unhandled error so that secondary Hunter failover is not locked out for 8 minutes. Tested via `run-lock.test.ts` and `scrape-unhandled-error.test.ts`.
+2. **Constitutional Source Replenishment**: **[IN PROGRESS / MATURING]**
+   - Direct D1 measurement on 2026-09-19 confirms 1,565 shadow observations across 14 distinct calendar days; 19 of 21 shadow identities have surpassed the Day 8 / 7-day observation threshold.
+   - Ready for canary cutover audit under the Autonomy Cutover Predicate (`docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` and ADR-007).

@@ -20,6 +20,7 @@ function requestContext() {
  */
 function crashingDb() {
   const diagWrites: Record<string, unknown>[] = [];
+  const updateCalls: Record<string, unknown>[] = [];
   let lockClaimed = false;
   const db = {
     select() {
@@ -47,24 +48,27 @@ function crashingDb() {
     },
     update() {
       return {
-        set: () => ({
-          where: async () => {
-            if (!lockClaimed) {
-              lockClaimed = true;
-              return { meta: { changes: 1 } };
-            }
-            return { meta: { changes: 0 } };
-          },
-        }),
+        set: (values: Record<string, unknown>) => {
+          updateCalls.push(values);
+          return {
+            where: async () => {
+              if (!lockClaimed) {
+                lockClaimed = true;
+                return { meta: { changes: 1 } };
+              }
+              return { meta: { changes: 0 } };
+            },
+          };
+        },
       };
     },
   };
-  return { db, diagWrites };
+  return { db, diagWrites, updateCalls };
 }
 
 describe("scrape catch-all heartbeat (issue #123)", () => {
   test("a mid-run throw still returns 500 and stamps the ingest heartbeat", async () => {
-    const { db, diagWrites } = crashingDb();
+    const { db, diagWrites, updateCalls } = crashingDb();
     const previousFetch = globalThis.fetch;
     globalThis.fetch = mock(async () => {
       throw new Error("outbound requests are forbidden in this test");
@@ -82,6 +86,10 @@ describe("scrape catch-all heartbeat (issue #123)", () => {
         lastError: expect.stringContaining("unhandledError="),
       });
       expect(typeof diagWrites[0].lastAttemptAt).toBe("string");
+
+      // Verify fenced lock release executed in finally block to unblock failover Hunter
+      expect(updateCalls).toHaveLength(3);
+      expect(updateCalls[2].lastAttemptAt).toBe("1970-01-01T00:00:00.000Z");
     } finally {
       globalThis.fetch = previousFetch;
     }

@@ -997,6 +997,21 @@ async function acquireRunLock(db: AppDb, observedAt: string): Promise<RunLockRes
   }
 }
 
+/**
+ * Fenced run-lock release (P1 clock failover optimization).
+ * Atomically clears the lock only if lastAttemptAt still matches observedAt,
+ * preventing an expired lock from overwriting a newer run's claim.
+ */
+export async function releaseRunLock(db: AppDb, observedAt: string): Promise<void> {
+  try {
+    await db.update(sourceFetchState)
+      .set({ lastAttemptAt: "1970-01-01T00:00:00.000Z", updatedAt: new Date().toISOString() })
+      .where(and(eq(sourceFetchState.sourceId, RUN_LOCK_ID), eq(sourceFetchState.lastAttemptAt, observedAt)));
+  } catch (error) {
+    console.error("[api/cron/scrape] Failed to release run-lock:", error);
+  }
+}
+
 export interface UnclearSweepStats {
   retriaged: number;
   upgraded: number;
@@ -1913,6 +1928,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     });
   }
 
+  let lockAcquired = false;
   try {
     // 2b. Run-level lock (concurrency guard). With two triggers now firing the
     // scrape endpoint — the GitHub Hunter and a Cloudflare Worker cron — two
@@ -1939,6 +1955,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         status: 503, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       });
     }
+    lockAcquired = true;
 
     const publicationDb = publicationDbFromEnv(env);
 
@@ -2958,6 +2975,10 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     // never throws, so it cannot mask the 500 below.
     await recordIngestDiagnostics(db, observedAt, { unhandledError: errorMessage(error) });
     return new Response(JSON.stringify({ error: "Internal Server Error", runDurationMs: Date.now() - startedAt }), { status: 500, headers: { "Content-Type": "application/json" } });
+  } finally {
+    if (lockAcquired) {
+      await releaseRunLock(db, observedAt);
+    }
   }
   };
 }

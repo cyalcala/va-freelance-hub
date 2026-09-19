@@ -18,6 +18,27 @@ Direct production D1 read & workflow verification confirms:
 3. **Attribution Coverage**: 100.0% exact source attribution (0 null `source_id` rows out of 5,348 total in `opportunities`).
 4. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
 
+### Run 77 — REL-CLOCK-FAILOVER-LOCK-RELEASE: Fenced Run-Lock Release & Shadow Maturity Verification (2026-09-19)
+
+UNIT ID: REL-CLOCK-FAILOVER-LOCK-RELEASE
+PHASE: RELIABILITY / CLOCK-FAILOVER / DEFECT-ELIMINATION
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `apps/web/src/pages/api/cron/scrape.ts`, `apps/web/tests/run-lock.test.ts`, `apps/web/tests/scrape-unhandled-error.test.ts`
+
+- **Root-Cause Defect Resolved (Publication Funnel Audit Recommendation 1)**:
+  - In `apps/web/src/pages/api/cron/scrape.ts`, `acquireRunLock` previously stamped `lastAttemptAt: observedAt` on `__scrape_run_lock__` with an 8-minute TTL, but never implemented a release mechanism upon completion or unhandled failure.
+  - When the primary Cloudflare Worker cron stalled or threw an unhandled error, the secondary Hunter failover watchdog (`gha-hunter-pulse.yml`) was skipped with `run-lock-held` for up to 8 minutes, causing documented 11+ hour ingestion gaps.
+  - Implemented `releaseRunLock(db, observedAt)` with strict atomic fencing: `WHERE source_id = '__scrape_run_lock__' AND last_attempt_at = observedAt`. This safely clears the lock to `1970-01-01T00:00:00.000Z` upon exit while preventing an expired run from overwriting a newer run's claim.
+  - Bound `releaseRunLock` inside a guaranteed `finally` block in `createScrapeHandler()`, ensuring the lock is immediately freed on normal completion (200), early exit, and unhandled errors (500).
+- **Direct Remote D1 Shadow Maturity Verification**:
+  - Direct query of production D1 confirms 1,565 total shadow observations recorded across 14 distinct calendar days (2026-09-06 to 2026-09-19).
+  - 19 of 21 shadow identities have achieved >= 8 distinct calendar days of observation spanning >= 7 calendar days (`604,800,000 ms`).
+  - Perfect 100% healthy records achieved for Breezy agencies (`20four7va`, `sourcefit`, `yokly`, `remote-craft`, `value-virtual-assistants`), Teamtailor (`career.teamtailor.com`), Recruitee (`myjewellery`), and Greenhouse (`ghost`, `nearform`).
+  - Zero public board leakage verified (`published: 0` invariant strictly preserved across all shadow identities).
+- **Verification**:
+  - 1,308 tests pass across 130 files (`bun test`); TypeScript typecheck clean (`bun run typecheck`); production CI guardrails clean (`bun run audit:guardrails`).
+
 ### Run 76 — EXP-CRAWL4AI-KITESURF: Bounded Evaluation of Crawl4AI OSS & Cloudflare Kitesurf (2026-09-14)
 
 UNIT ID: EXP-CRAWL4AI-KITESURF
