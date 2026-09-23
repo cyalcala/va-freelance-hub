@@ -278,4 +278,92 @@ describe("source-promote route", () => {
     expect(json.sourceId).toBe("breezy:sourcefit");
     expect(json.published).toBe(0);
   });
+
+  test("source already in active returns 200 with already_active outcome", async () => {
+    const handler = createSourcePromoteHandler();
+    const res = await handler(
+      requestContext(
+        { sourceId: "breezy:20four7va" },
+        {
+          sourceRow: {
+            source_id: "breezy:20four7va",
+            compliance_state: "conditional",
+            operational_state: "active",
+            canary_max_new_items_per_tick: 2,
+          },
+        }
+      )
+    );
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.outcome).toBe("already_active");
+    expect(json.sourceId).toBe("breezy:20four7va");
+  });
+
+  test("successfully graduates canary to active when to=active is requested", async () => {
+    let capturedRequest: any = null;
+    const handler = createSourcePromoteHandler({
+      now: () => NOW,
+      applyTransition: async (_db, request) => {
+        capturedRequest = request;
+        return {
+          persisted: true,
+          decision: {
+            ok: true,
+            reason: "transition allowed",
+            cause: "requested_promotion",
+            from: { compliance: "conditional", operational: "canary" },
+            to: { compliance: "conditional", operational: "active" },
+            event: {} as any,
+          },
+        };
+      },
+      wrapDb: () => ({} as any),
+    });
+
+    const res = await handler(
+      requestContext(
+        { sourceId: "breezy:20four7va", to: "active" },
+        {
+          sourceRow: {
+            source_id: "breezy:20four7va",
+            compliance_state: "conditional",
+            operational_state: "canary",
+            canary_max_new_items_per_tick: 2,
+          },
+        }
+      )
+    );
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.outcome).toBe("active");
+    expect(json.sourceId).toBe("breezy:20four7va");
+    expect(capturedRequest).toEqual({
+      sourceId: "breezy:20four7va",
+      to: { compliance: "conditional", operational: "active" },
+      cause: "requested_promotion",
+      now: NOW,
+    });
+  });
+
+  test("rejects active graduation when source is in shadow", async () => {
+    const handler = createSourcePromoteHandler();
+    const res = await handler(
+      requestContext(
+        { sourceId: "breezy:20four7va", to: "active" },
+        {
+          sourceRow: {
+            source_id: "breezy:20four7va",
+            compliance_state: "conditional",
+            operational_state: "shadow",
+            canary_max_new_items_per_tick: 2,
+          },
+        }
+      )
+    );
+    expect(res.status).toBe(409);
+    const json = await res.json();
+    expect(json.outcome).toBe("rejected");
+    expect(json.reason).toContain("only canary sources can graduate to active");
+  });
 });

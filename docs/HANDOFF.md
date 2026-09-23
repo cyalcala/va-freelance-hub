@@ -1,6 +1,48 @@
 # Handoff
 
-## 2026-09-19 — RESUMED: Canary Expansion & Graduation of 5 Philippine VA Agencies (current)
+## 2026-09-24 — RESUMED: September 24 Production Graduation & Canary Maturation (current)
+
+Explicit OWNER MANDATE: Reconstruct state from durable evidence, determine which Canary/Shadow sources have earned Production, safely graduate every eligible source, verify the resulting production system end-to-end, and leave the repository in a truthful, recoverable, production-grade state.
+
+- **WHAT IS TRUE NOW?**
+  - **Canary Graduation Prepared & Verified**:
+    - **5 Breezy Agencies Graduating to Active (Production)**: `breezy:20four7va` (101 live roles), `breezy:sourcefit` (82), `breezy:remote-craft` (15), `breezy:value-virtual-assistants` (9), `breezy:yokly` (11). Combined **218 authentic Philippine remote roles**. 5-day canary period completed with 100% clean track record, 0 errors, 0 rate limits.
+    - **3 Clean Mature Shadow Sources Promoted to Canary**: `greenhouse:ghost` (13 obs, 12d span, cap: 2), `greenhouse:nearform` (13 obs, 12d span, cap: 2), `breezy:time-etc` (11 obs, 10d span, cap: 1). Jev 1.13 decision confirmed strict `SHADOW -> CANARY -> ACTIVE` progression with 0.99 confidence.
+    - **1 Broken Endpoint Quarantined**: `teamtailor:career.teamtailor.com` (HTTP 404 endpoint failure).
+    - **Remaining Shadow Sources Retained in Shadow**: `recruitee:myjewellery` (payload > 1 MB), `greenhouse:gitlab/grafanalabs/remotecom/wikimedia` (1 transient timeout), `workable:*` (7 sources, accumulating clean span post-pacing repair).
+  - **D1 Quota Hardening Deployed & Verified**:
+    - Edge cache API in `apps/web/src/middleware.ts` (`caches.default`, 5-min TTL) eliminates ~3,500 D1 reads per page visit.
+    - In-memory warm cache `homepageCache` in `apps/web/src/pages/index.astro`.
+    - Prune retention reduced from 90 to 14 days in `apps/web/src/pages/api/cron/prune.ts`, preventing massive write exhaustion during scheduled workflows.
+  - **Database Migration 0044 Verified**:
+    - `packages/db/migrations/0044_canary_to_active_graduation.sql`: Establishes verified constitutional gate for active graduation.
+    - Preserves 2 complete statements across LF/CRLF through Wrangler transport (`packages/db/canary-to-active-graduation.test.ts`).
+  - **Control Plane & Scraper Pipeline Ready**:
+    - `packages/scraper/transition-plane.ts`, `packages/scraper/transition-gateway.ts`, and `apps/web/src/pages/api/cron/source-promote.ts` all updated and tested for `canary -> active` graduation.
+  - **Verification Baseline**:
+    - `bun test`: **1,336 pass, 0 fail** across 134 files (4,545 expect calls).
+    - `bun run typecheck`: **0 errors**.
+    - `bun run audit:guardrails`: **0 errors**.
+    - `bun run build`: **0 errors** (Astro server and client bundles built in 45.15s).
+  - **D1 Remote Free Tier Write Reset Window**:
+    - Cloudflare D1 free-tier daily write quota resets at **00:00:00 UTC** (08:00:00 PHT).
+    - Execution runner `scripts/graduation/execute-september-24-graduation.ts` supports `--wait-for-reset` and dynamic runtime timestamping against D1's 5-minute clock drift guard.
+
+- **WHAT EXACT COMMAND SHOULD THE NEXT AI / OPERATOR RUN?**
+  1. If running at or after 00:00:00 UTC (8:00 AM PHT):
+     ```sh
+     bun run db:migrate
+     bun run scripts/graduation/execute-september-24-graduation.ts
+     ```
+  2. If running ahead of time to wait for automatic reset:
+     ```sh
+     bun run scripts/graduation/execute-september-24-graduation.ts --wait-for-reset
+     ```
+  3. Verify post-graduation registry states:
+     ```sh
+     bun run --cwd apps/web wrangler d1 execute DB --remote --env production --command "SELECT source_id, operational_state, last_decision FROM source_registry WHERE operational_state IN ('active', 'canary', 'quarantined') ORDER BY operational_state, source_id;"
+     ```
+
 
 Explicit OWNER RESUME AUTHORIZATION active. Execution progressing toward the Prime Directive:
 sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.

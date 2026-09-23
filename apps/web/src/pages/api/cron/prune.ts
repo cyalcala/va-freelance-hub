@@ -66,7 +66,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const archived = d1Changes(result);
     console.log(`[api/cron/prune] Archived ${archived} duplicate active rows (description_hash + company scoped). No rows deleted.`);
 
-    const EVENT_RETENTION_DAYS = 90;
+    // Cap retention to 14 days to keep D1 query scans lightweight and prevent
+    // 200k+ row log accumulation on high-frequency (10m) cron runs.
+    const EVENT_RETENTION_DAYS = 14;
     const eventCutoff = new Date(Date.now() - EVENT_RETENTION_DAYS * 24 * 60 * 60_000).toISOString();
     const eventPrune = await db.delete(sourceFetchEvents)
       .where(lt(sourceFetchEvents.timestamp, eventCutoff));

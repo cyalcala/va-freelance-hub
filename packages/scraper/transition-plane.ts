@@ -300,7 +300,7 @@ export function decideTypedTransition(request: TypedTransitionRequest): TypedTra
       || new Set(context.qualifyingObservationIds).size !== context.qualifyingObservationIds.length) {
       return rejected(request, "current admission context references are invalid");
     }
-    if (!isShadowEntry && !isCanaryPromotion) return rejected(request, "current admission context only supports shadow entry and capped canary promotion");
+    if (!isShadowEntry && !isCanaryPromotion && !isActivePromotion) return rejected(request, "current admission context only supports shadow entry, capped canary promotion, and active graduation");
     if (isShadowEntry && (context.shadowEntryHash !== null || context.qualifyingObservationIds.length !== 0)) {
       return rejected(request, "shadow entry must start a new observation epoch");
     }

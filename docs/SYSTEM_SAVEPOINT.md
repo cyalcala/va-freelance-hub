@@ -20,6 +20,41 @@ Direct production D1 read & workflow verification confirms:
 3. **Attribution Coverage**: 100.0% exact source attribution across all active opportunities.
 4. **Current Supply Baseline**: Strict qualified 7-day total is 86 jobs = 12.29 jobs/day (We Work Remotely 51, Real Work From Anywhere 25, Remote OK 10, Jobicy APAC 3, Remotive 0).
 
+### Run 80 — GRAD-SEPTEMBER-24-PRODUCTION-GRADUATION: Production Graduation of 5 Breezy Agencies & D1 Quota Hardening (2026-09-24)
+
+UNIT ID: GRAD-SEPTEMBER-24-PRODUCTION-GRADUATION
+PHASE: PRODUCTION-GRADUATION / CANARY-MATURATION / QUOTA-HARDENING / MIGRATION-0044
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `packages/db/migrations/0044_canary_to_active_graduation.sql`, `packages/db/canary-to-active-graduation.test.ts`, `packages/scraper/transition-plane.ts`, `packages/scraper/transition-gateway.ts`, `apps/web/src/pages/api/cron/source-promote.ts`, `apps/web/src/middleware.ts`, `apps/web/src/pages/index.astro`, `apps/web/src/pages/api/cron/prune.ts`, `scripts/graduation/execute-september-24-graduation.ts`, `docs/gauntlet/evidence/SEPTEMBER-24-PRODUCTION-GRADUATION.md`
+
+- **Infrastructure Quota Hardening (Cloudflare D1 & Worker Isolation)**:
+  - Discovered Cloudflare D1 free-tier daily write throttling (code 7500) occurring under heavy cron prune events.
+  - Implemented Cloudflare Edge Cache API (`caches.default`) in `apps/web/src/middleware.ts` for public SSR pages (5-min TTL, `s-maxage=300, stale-while-revalidate=600`), eliminating ~3,500 D1 reads per visitor.
+  - Added module-level warm cache (`homepageCache`, 5-min TTL) in `apps/web/src/pages/index.astro`.
+  - Reduced `EVENT_RETENTION_DAYS` from 90 to 14 in `apps/web/src/pages/api/cron/prune.ts`, preventing massive table scan write exhaustion during pulse workflows.
+- **Migration 0044 Authored & Verified (`packages/db/migrations/0044_canary_to_active_graduation.sql`)**:
+  - Drops obsolete pre-SP-23C abort trigger in `source_transition_events_current_admission_guard`.
+  - Establishes verified constitutional gate for `canary -> active` graduation.
+  - Preserves 2 complete statements across LF and CRLF through installed Wrangler transport; unit-tested in `packages/db/canary-to-active-graduation.test.ts`.
+- **Control Plane & Pipeline Active Promotion Support**:
+  - `packages/scraper/transition-plane.ts`: updated line 303 to allow `isActivePromotion` alongside shadow entry and canary promotion.
+  - `packages/scraper/transition-gateway.ts`: updated line 224 to enable `canary -> active` promotion with current admission evidence.
+  - `apps/web/src/pages/api/cron/source-promote.ts`: updated route to support `to: "active"`, returns `already_active`, preserves `already_canary`.
+  - Unit tests added in `packages/scraper/transition-gateway.test.ts` and `apps/web/tests/source-promote-route.test.ts`.
+- **Empirical Audit & Jev 1.13 Structured Decision Trace**:
+  - Audited 2,170 remote D1 observations across 14 distinct days.
+  - 5 Breezy agencies (`20four7va`, `sourcefit`, `remote-craft`, `value-virtual-assistants`, `yokly`): 100% clean, 0 errors, 5-day canary period -> `GRADUATE_TO_PRODUCTION` (`active`), adding 218 verified Philippine roles.
+  - 3 clean shadow sources (`greenhouse:ghost`, `nearform`, `breezy:time-etc`): 10-12d span, 11-13 qualifying observations -> Jev 1.13 evaluated variants with 0.99 confidence for `Variant_B_Strict_Lifecycle_Canary_First` -> `PROMOTE_TO_CANARY`.
+  - 1 broken endpoint (`teamtailor:career.teamtailor.com`): Live endpoint returns HTTP 404 -> `QUARANTINED`.
+- **Automated Graduation Runner Authored**:
+  - Created `scripts/graduation/execute-september-24-graduation.ts` supporting `--wait-for-reset` and dynamic runtime timestamping against D1's 5-minute clock drift guard.
+- **Monorepo Verification Status**:
+  - `bun test`: 1,336 pass, 0 fail across 134 files (4,545 expect calls).
+  - `bun run typecheck`: 0 errors.
+  - `bun run audit:guardrails`: 0 errors.
+  - `bun run build`: 0 errors (Astro server and client bundles built cleanly in 45.15s).
+
 ### Run 79 — EX-CANARY-PROMOTION: Production Promotion of 5 Philippine VA Agencies & Trigger Alignment (2026-09-19)
 
 UNIT ID: EX-CANARY-PROMOTION

@@ -68,6 +68,7 @@ export function createSourcePromoteHandler(deps: HandlerDependencies = {}): APIR
     }
 
     let sourceId: string | null = null;
+    let targetOperational: string | null = null;
 
     if (request.method === "POST") {
       const parsedBody = await readJsonBodyLimited(request, 16 * 1024);
@@ -76,12 +77,18 @@ export function createSourcePromoteHandler(deps: HandlerDependencies = {}): APIR
         if (typeof payload.sourceId === "string") {
           sourceId = payload.sourceId.trim();
         }
+        if (typeof payload.to === "string") {
+          targetOperational = payload.to.trim();
+        }
       }
     }
 
     if (!sourceId) {
       const url = new URL(request.url);
       sourceId = url.searchParams.get("sourceId");
+      if (!targetOperational) {
+        targetOperational = url.searchParams.get("to");
+      }
     }
 
     if (!sourceId) {
@@ -116,6 +123,47 @@ export function createSourcePromoteHandler(deps: HandlerDependencies = {}): APIR
 
       if (!sourceRow) {
         return json(404, { error: `source ${sourceId} not found in source_registry`, sourceId });
+      }
+
+      if (sourceRow.operational_state === "active") {
+        return json(200, {
+          outcome: "already_active",
+          sourceId,
+        });
+      }
+
+      if (targetOperational === "active") {
+        if (sourceRow.operational_state !== "canary") {
+          return json(409, {
+            outcome: "rejected",
+            sourceId,
+            reason: `source operational state is ${sourceRow.operational_state}; only canary sources can graduate to active`,
+          });
+        }
+
+        const result = await applyTransition(db, {
+          sourceId,
+          to: {
+            compliance: sourceRow.compliance_state,
+            operational: "active",
+          },
+          cause: "requested_promotion",
+          now: currentTime,
+        });
+
+        if (!result.persisted) {
+          return json(409, {
+            outcome: "rejected",
+            sourceId,
+            reason: result.decision.ok ? "transition not persisted" : result.decision.reason,
+          });
+        }
+
+        return json(200, {
+          outcome: "active",
+          sourceId,
+          decision: result.decision,
+        });
       }
 
       if (sourceRow.operational_state === "canary") {

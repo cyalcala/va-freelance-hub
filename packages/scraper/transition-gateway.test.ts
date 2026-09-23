@@ -252,6 +252,46 @@ describe("SP-23 transition gateway", () => {
     expect(result).toMatchObject({ persisted: false, decision: { ok: false } });
     expect(db.runs).toHaveLength(0);
   });
+
+  test("graduates a canary source to active with current admission evidence", async () => {
+    const fixture = await admissionFixture();
+    const canarySource = {
+      ...fixture.source,
+      operational_state: "canary" as const,
+      operationalState: "canary" as const,
+    };
+    const db = new FakeDatabase({
+      registry: [
+        shadowSnapshot({
+          source_id: fixture.source.sourceId,
+          compliance_state: fixture.source.complianceState,
+          operational_state: "canary",
+          policy_expiry: fixture.source.policyExpiry,
+          canary_max_new_items_per_tick: fixture.source.canaryMaxNewItemsPerTick,
+        }),
+        canarySource,
+      ],
+      optOut: [null, null],
+      provider: [fixture.provider],
+      evidence: [fixture.evidence],
+      insert: [null],
+    });
+
+    const result = await applyTypedTransition(db, {
+      sourceId: fixture.source.sourceId,
+      to: { compliance: fixture.source.complianceState, operational: "active" },
+      cause: "requested_promotion",
+      now: ADMISSION_TEST_NOW,
+    });
+
+    expect(result.persisted).toBe(true);
+    expect(result.decision).toMatchObject({
+      ok: true,
+      cause: "requested_promotion",
+      to: { operational: "active" },
+    });
+    expect(db.runs).toHaveLength(1);
+  });
 });
 
 describe("SP-23B qualifying observation window", () => {

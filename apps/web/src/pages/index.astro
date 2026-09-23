@@ -40,10 +40,25 @@ type OpportunityCardData = Pick<
   | "geoEvidence"
 >;
 
+// Module-level warm memory cache to prevent ~3,500 D1 row reads per visit
+let homepageCache: {
+  stats: { opportunities: number; companies: number };
+  latestOpportunities: OpportunityCardData[];
+  categoryTotals: Record<string, number>;
+  expiresAt: number;
+} | null = null;
+const HOMEPAGE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 let dataUnavailable = false;
 
 try {
-  const db = getDb(Astro.locals.runtime.env);
+  const now = Date.now();
+  if (homepageCache && homepageCache.expiresAt > now) {
+    stats = homepageCache.stats;
+    latestOpportunities = homepageCache.latestOpportunities;
+    categoryTotals = homepageCache.categoryTotals;
+  } else {
+    const db = getDb(Astro.locals.runtime.env);
 
   const [oppCount] = await db.select({ count: count() }).from(opportunities).where(eq(opportunities.isActive, true));
   const [dirCount] = await db
@@ -107,6 +122,14 @@ try {
     .where(eq(opportunities.isActive, true))
     .groupBy(opportunities.category);
   categoryTotals = Object.fromEntries(totalRows.map((r) => [r.category, r.n]));
+
+    homepageCache = {
+      stats,
+      latestOpportunities,
+      categoryTotals,
+      expiresAt: now + HOMEPAGE_CACHE_TTL_MS,
+    };
+  }
 } catch (e) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, e);

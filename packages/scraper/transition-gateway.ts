@@ -221,11 +221,10 @@ export async function applyTypedTransition(
   let requiredShadowCount: number | null = null;
   let evidenceHash = request.evidenceHash ?? null;
   let admission: import("./transition-plane").TransitionAdmissionContext | undefined;
-  if (current.operational_state === "canary" && request.to.operational === "active") {
-    return { persisted: false, decision: { ok: false, reason: "active promotion is unavailable until the shared publication and exposure gate exists" } };
-  }
+  const isActivePromotion = current.operational_state === "canary" && request.to.operational === "active";
   const isAdmission = (current.operational_state === "candidate" && request.to.operational === "shadow")
-    || (current.operational_state === "shadow" && request.to.operational === "canary");
+    || (current.operational_state === "shadow" && request.to.operational === "canary")
+    || isActivePromotion;
   if (isAdmission) {
     const verified = await loadCurrentAdmissionEvidence(db, request.sourceId, request.now);
     if (!verified.ok) return { persisted: false, decision: verified };
@@ -248,6 +247,11 @@ export async function applyTypedTransition(
       } catch { return { persisted: false, decision: { ok: false, reason: "current shadow observation evidence is unavailable" } }; }
       requiredShadowCount = ADMISSION_POLICY.minimumDays;
       observedShadowCount = qualifyingObservationIds.length;
+    } else if (isActivePromotion) {
+      if (!verified.packet.authorityActions.includes("public_minimal_metadata_canary")) {
+        return { persisted: false, decision: { ok: false, reason: "current adjudication does not cover active production exposure" } };
+      }
+      qualifyingObservationIds = [];
     }
     evidenceHash = verified.evidence.packetSha256;
     admission = {
@@ -255,7 +259,7 @@ export async function applyTypedTransition(
       sourceGovernanceRevision: verified.source.governanceRevision,
       providerGovernanceRevision: verified.provider.governanceRevision,
       observationPolicyVersion: ADMISSION_POLICY.version,
-      shadowEntryHash: request.to.operational === "canary" ? verified.source.lastTransitionHash : null,
+      shadowEntryHash: current.operational_state === "candidate" ? null : verified.source.lastTransitionHash,
       qualifyingObservationIds,
     };
   }
