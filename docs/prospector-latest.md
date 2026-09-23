@@ -1,7 +1,7 @@
 # Prospector Latest
 
-Date: 2026-09-22
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35786096590
+Date: 2026-09-23
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35819775447
 
 | Metric | Value |
 | --- | ---: |
@@ -14,7 +14,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35786096
 | Mass-add guard tripped | false |
 | Durable candidates discovered (distinct ATS) | 29 |
 | Durable candidates inserted | 0 |
-| Durable candidates refreshed | 14 |
+| Durable candidates refreshed | 0 |
 | Durable candidates skipped (duplicate) | 29 |
 | Durable candidates skipped (opt-out) | 0 |
 | Candidate backlog (needs_review/candidate) | 14 |
@@ -28,5 +28,5 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35786096
 ## Durable candidate queue (SP-06, non-publishing)
 
 - Inserted: (none)
-- Refreshed: ashby:supabase, ashby:camunda, ashby:ashby, ashby:tremendous, ashby:amplify, workable:myoutdesk, workable:outsource-access, workable:staff-domain-inc, workable:superstaff, breezy:vaaphilippines-recruitment, workable:virtualstaff365, workable:global-strategic, workable:connectos, lever:vaultoutsourcing
+- Refreshed: (none)
 - Mode: non-publishing-candidate-only
