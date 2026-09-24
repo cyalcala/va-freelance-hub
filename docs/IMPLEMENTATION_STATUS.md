@@ -79,6 +79,13 @@
     accumulate decision records incl. a Tier-1-passed window and an
     isolated-429 Jev-accepted window; the 503 `errorClass` still awaits a
     503 window; myjewellery budget review remains an owner decision.
+- **Closeout evidence (2026-09-25)**: owner closed out with documentation
+  backup only. Fresh verification: 1,393/0 on 3 consecutive clean runs
+  (one transient flake, did not reproduce); typecheck 0; guardrails 0.
+  First scheduled post-deploy EX-03 run `36067768527` (2026-09-24T22:30Z):
+  cadence-held window, `verdict=healthy`, CI success — recurrent scheduled
+  operation with the verdict path live. Observation window remains open;
+  no further implementation authorized by the closeout.
 - **Deferrals (backlog)**: active-source yield-collapse judgment; triage
   low-confidence second opinion; shadow-budget policy review for myjewellery
   (a versioned policy change, NOT an auto-raised limit); 503 root cause via

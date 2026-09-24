@@ -1,6 +1,28 @@
 # Handoff
 
-## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Shadow Run Verdict Adjudication Implemented & Live-Evaled (current)
+## 2026-09-25 — CLOSEOUT: Documentation Backup Only (current)
+
+The owner closed out with documentation backup only. No further
+implementation is authorized by this closeout; the JEV-SHADOW-VERDICT
+observation window remains open and existing production clocks continue.
+
+- **Fresh verification**: `bun test` 1,393 pass / 0 fail across 138 files on
+  3 consecutive clean runs (one transient single-test flake observed once,
+  did not reproduce — recorded as transient, not a regression); typecheck 0;
+  guardrails 0.
+- **Observation evidence (post-deploy `7ff7172`)**:
+  - Manual EX-03 `36053508847`: Tier 1 deterministic known-limit note for
+    myjewellery (no model); 5× Workable 429s → live Jev `ABSTAIN` @ 0.35
+    (`sv-54b9887998ca-mufz1cfm`) → conservative `failed` enforced; run red
+    by design; zero authority/publication change.
+  - First scheduled EX-03 `36067768527` (22:30Z): cadence-held window,
+    `verdict=healthy`, CI success — recurrent scheduled operation proven.
+- **When the owner resumes**: restate start SHA, collect further scheduled
+  EX-03 decision records, diagnose the 503 mode via `errorClass` when a 503
+  window appears, and review the myjewellery shadow budget as a versioned
+  policy change (owner decision).
+
+## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Shadow Run Verdict Adjudication Implemented & Live-Evaled (historical — closeout above)
 
 - **WHAT IS TRUE NOW?**
   - EX-03's red-CI root causes are measured and the verdict boundary now

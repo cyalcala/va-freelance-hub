@@ -1,6 +1,45 @@
 # System Savepoint
 
-## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Shadow Run Verdict Adjudication Deployed & First Production Observation (current)
+## 2026-09-25 — CLOSEOUT: Documentation Backup Only (current)
+
+The owner closed out the session with documentation backup only. No further
+implementation, source admission, promotion, or automation restart is
+authorized by this closeout. The JEV-SHADOW-VERDICT observation window remains
+open; existing production clocks (Cloudflare Worker every 10 min, hourly
+shadow dispatch at :23, Hunter/verifier/prune pulses) continue.
+
+- **Fresh verification (this closeout, 3 consecutive full runs)**:
+  `bun test` **1,393 pass / 0 fail** across 138 files (4,739 expect calls) on
+  3 clean runs; typecheck 0; guardrails 0. One transient single-test failure
+  was observed once between clean runs (3 fewer expect calls, early-exit
+  signature) and did not reproduce across 3 subsequent runs — recorded as a
+  transient flake, not a regression.
+- **Observation window evidence (post-deploy, `7ff7172` live)**:
+  1. Manual EX-03 dispatch run `36053508847` (2026-09-24T20:15Z): full
+     adjudication cycle — 12/12 dispatched; `recruitee:myjewellery` chronic
+     24-byte oversize → Tier 1 deterministic `known_limit_over_budget` (no
+     model call); 5× `workable:*` `RATE_LIMITED` in the same window → Tier 2;
+     **live Jev consulted once** (`typesafe/jev-1.13-20260917`,
+     `sv-54b9887998ca-mufz1cfm`) → `ABSTAIN` @ 0.35 < 0.5 threshold →
+     enforced verdict `failed` conservatively; run red by design. Zero
+     authority/publication change.
+  2. First **scheduled** EX-03 run `36067768527` (2026-09-24T22:30Z):
+     cadence-held window (12 rows, 0 eligible), `verdict=healthy`, CI
+     **success** — recurrent scheduled operation proven with the verdict
+     path live and the strict contract intact.
+- **What must not be redone**: do not reopen terminal units (Gauntlet
+  G1–G9, SP-00..SP-09, EX-CANARY-*); do not treat a Jev ACCEPT_NOTES as
+  source permission; do not auto-raise the 512 KiB shadow budget
+  (myjewellery budget review is a pending owner policy decision); do not
+  wire Jev into publication, promotion, or triage gates (deferred backlog).
+- **Next exact action (when the owner resumes)**: `git fetch origin;
+  git status -sb` — restate start SHA; collect further scheduled EX-03
+  decision records (expect Tier-1-passed myjewellery windows and
+  isolated-429 Jev-accepted windows); diagnose the 503 mode via `errorClass`
+  when the next 503 window appears; then review the myjewellery budget as a
+  versioned policy change.
+
+## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Shadow Run Verdict Adjudication Deployed & First Production Observation (historical — closeout above)
 
 UNIT ID: JEV-SHADOW-VERDICT
 PHASE: OBSERVABILITY / SHADOW-ADJUDICATION / RUN-VERDICT

@@ -1,6 +1,30 @@
 # AI Recovery Trail
 
-## 2026-09-24 — COMPLETED: JEV-SHADOW-VERDICT — deployed & first production observation (current)
+## 2026-09-25 — CLOSED OUT: documentation backup only (current)
+
+The owner closed out the JEV-SHADOW-VERDICT session with documentation backup
+only. No further implementation is authorized by this closeout; the
+observation window remains open and production clocks continue.
+
+- **Final state**: deployed as `7ff7172` (Sovereign CI `36053213665` success;
+  Worker deploy `36053213677` success); docs recorded as `f7a9fa1`. Jev mode:
+  shadow/advisory at the shadow run-verdict boundary only; kill switch
+  `JEV_ADJUDICATION_DISABLED=1`; missing key → conservative fail.
+- **Fresh closeout verification**: 1,393 tests / 0 fail across 138 files on 3
+  consecutive clean runs (one transient single-test flake observed once,
+  did not reproduce — recorded as transient); typecheck 0; guardrails 0.
+- **Observation window evidence**: manual EX-03 `36053508847` (full
+  adjudication cycle: Tier 1 deterministic note + live Jev `ABSTAIN` @ 0.35 →
+  conservative `failed`, zero authority change) and the first scheduled EX-03
+  run `36067768527` (cadence-held window, `verdict=healthy`, CI success).
+- **Resume procedure for a future AI**: read `AGENTS.md`, then
+  `docs/SYSTEM_SAVEPOINT.md` (top closeout entry), then
+  `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`; restate the start SHA; collect
+  further scheduled EX-03 decision records; diagnose the 503 mode via
+  `errorClass` when a 503 window appears; treat the myjewellery shadow budget
+  as an owner policy decision, never an auto-raise.
+
+## 2026-09-24 — COMPLETED: JEV-SHADOW-VERDICT — deployed & first production observation (historical — closeout above)
 
 Continued the prior session's in-flight JEV-SHADOW-VERDICT work (preserved as
 dirty tree on start SHA `0cd785b`), verified it, shipped it, and collected the
