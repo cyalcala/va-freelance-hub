@@ -1,6 +1,82 @@
 # Handoff
 
-## 2026-09-24 — RESUMED: September 24 Production Graduation & Canary Maturation (current)
+## 2026-09-24 — RUN 80 EX-CANARY-INGESTION: Graduation Executed, Canary Fetch Path Enabled, New-Source Publication Verified (current)
+
+Explicit OWNER RESUME AUTHORIZATION active. This section records what actually
+landed in production D1 and supersedes the "graduation prepared" claims below
+where they differ from measured state.
+
+- **WHAT IS TRUE NOW?** (direct production D1, 2026-09-24 ~12:15Z)
+  - **Graduation EXECUTED (events 27–31, 2026-09-24T01:59–02:00Z)**: all 5 Breezy
+    PH-VA agencies are `operational_state = 'active'`, `compliance_state =
+    'conditional'`, `canary_max_new_items_per_tick = 2`. First production fetch
+    02:00:20Z (count=102 for 20four7va) — one minute after the transition.
+  - **Active jobs from the new sources in D1**: 20four7va 126, sourcefit 110,
+    remote-craft 14, yokly 11, value-virtual-assistants 9 (~270 total), all
+    attribution-complete and geo-checked. **Visible on the live board** (page 1
+    renders 20Four7VA/Sourcefit/Yokly jobs; Remote Craft filtered view renders
+    14 PH-exclusive jobs; `/jobs/7167` renders attribution + canonical VALUE
+    Virtual Assistants apply linkback).
+  - **Registry truth**: 5 active / 15 shadow / 14 candidate / 1 quarantined
+    (`teamtailor:career.teamtailor.com`, `health_quarantine` 2026-09-24T02:02Z).
+  - **No canary rows in production D1**: the 5 graduated canary→active; the
+    "3 Clean Mature Shadow Sources Promoted to Canary" claim below (ghost,
+    nearform, time-etc) has NO transition events in D1 — those 3 remain
+    `shadow`. That promotion did not land; it is the natural next unit.
+  - **EX-CANARY-INGESTION (Run 80) TERMINAL — KEEP**: root cause of the
+    Sep 19–24 zero-publication window was that the scrape loop never fetched
+    canary rows (`isEnabledForFetch` required `active`; merge filter merged
+    `active` only). Implemented: canary enabled for fetch when publishable;
+    `mergeRegistryAtsSources` extracted + merges `active` and `canary`;
+    `canaryClampedProposal` clamps both grouped writers to the per-tick cap so
+    the gateway's automatic rollback-to-shadow never fires. Jev (jev-1.13):
+    implement_now 0.91, Branch A confidence 1.0, safety 0.94.
+  - **Verification Baseline**: 1,347 Bun tests pass (136 files, 11 new),
+    typecheck 0, guardrails 0, build clean. Code `c637146` 100% green
+    (Sovereign CI run `35990129865`); savepoint/docs `c1cc83b`/`c1cc83b+`.
+
+- **WHAT FAILED & WAS REPAIRED?**
+  - Local `main` was behind `origin/main` by 5 (automation advanced it;
+    `d1168b7` had already added the active-only registry merge + migration 0045
+    + one-shot graduation ingestion). Reconciled safely: saved the canary work
+    as a diff vs `origin/main`, hard-reset, re-applied, re-verified 1,347/0.
+  - A UTF-16 PowerShell patch redirect mangled em-dashes — discarded; edits
+    re-applied with the edit tool.
+
+- **WHAT MUST NOT BE REDONE?**
+  - Do not reopen Gauntlet G1–G9 or SP-00..SP-09. Do not mutate exact-six feeds
+    without verified evidence-bound gating.
+  - Do not propose more than `canary_max_new_items_per_tick` to
+    `publishPublicExposure` (automatic rollback to shadow) — the caller clamp
+    prevents this; keep it.
+  - Do not unquarantine Ashby sources without partner feed keys (`COMP-01C`).
+    Do not fetch Band 4 forbidden hosts (SmartRecruiters, OnlineJobs.ph HTML).
+  - Do not unquarantine `teamtailor:career.teamtailor.com` without a
+    re-verified healthy endpoint.
+
+- **REMAINING KNOWN ISSUE (next diagnostic, not this unit)**: EX-03 Shadow
+  Dispatch CI failing 7 of last 8 runs since 2026-09-23. Two modes: HTTP 503
+  `{"error":"Shadow dispatch evidence or observation storage unavailable"}`
+  (catch-all at `shadow-dispatch.ts:93`; underlying error only in Cloudflare
+  Pages function logs) and HTTP 200 + 1 `DEGRADED_ANOMALOUS` rejected by the
+  strict `assessShadowResponse` guard. Pre-existing; diagnose via Pages
+  function logs before changing anything.
+
+- **WHAT EXACT COMMAND/TASK SHOULD THE NEXT AI START WITH?**
+  1. `git fetch origin; git status -sb` — restate start SHA.
+  2. Verify: `bun test && bun run typecheck && bun run audit:guardrails`
+  3. Diagnose the EX-03 shadow-dispatch 503 via Cloudflare Pages function logs
+     during a dispatch window; then decide between evidence-read hardening and
+     `assessShadowResponse` outcome handling (Jev for the judgment call).
+
+- **WHAT EVIDENCE PROVES THE CURRENT STATE?**
+  - Production D1: 5 active / 15 shadow / 14 candidate / 1 quarantined;
+    `source_fetch_events` hourly for all 5 Breezy sources;
+    `source_publication_ledger` unlimited-mode publishes (39+8, 37, activations).
+  - Sovereign CI run `35990129865` (code `c637146`) 100% green; exact-six all
+    fetching hourly (12:11Z) — zero regression.
+
+## 2026-09-24 — RESUMED: September 24 Production Graduation & Canary Maturation (superseded by Run 80 above; its "3 sources promoted to canary" claim has no D1 transition events and the 5 Breezy agencies are now `active`, not `canary`)
 
 Explicit OWNER MANDATE: Reconstruct state from durable evidence, determine which Canary/Shadow sources have earned Production, safely graduate every eligible source, verify the resulting production system end-to-end, and leave the repository in a truthful, recoverable, production-grade state.
 

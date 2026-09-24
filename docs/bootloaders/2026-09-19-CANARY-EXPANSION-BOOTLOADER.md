@@ -68,7 +68,7 @@ Goal: Enable the 5 graduated canary sources to be fetched by the scheduled inges
 | **REL-CLOCK-FAILOVER-LOCK-RELEASE** | RELIABILITY | `b33b51d` / `35409823101` | KEEP | Fenced `releaseRunLock` inside guaranteed `finally` block in `scrape.ts`, eliminating 8-minute failover lockout between primary and secondary clocks. |
 | **EX-CANARY-READINESS** | GOVERNANCE | `4f458b8` / `35411373407` | KEEP | Completed formal Autonomy Cutover Predicate audit (`EX_CANARY_READINESS_AUDIT.md`); resolved Workable HTTP 429 bursts via provider-interleaved dispatch and polite delay; audited 14 candidates. |
 | **EX-CANARY-PROMOTION** | GOVERNANCE | `543f5d5`, `2806799`, `ea81366` / `35412951998`, `35413370337`, `35413959555` | KEEP | Migration 0043 live; hardened admission packet projection for null canary caps; deployed `/api/cron/source-promote`; graduated 5 Breezy Philippine VA agencies to `canary` in live production D1 (events 22–26). |
-| **EX-CANARY-INGESTION** | DATA-PLANE | *Planned & Approved* | READY | Ready for execution: enable canary fetch in `policy-resolver.ts` and cap-safe batch proposals in `publish-opportunities.ts`. |
+| **EX-CANARY-INGESTION** | DATA-PLANE | `c637146` / `35990129865` | KEEP | Completed 2026-09-24 (Run 80): canary fetch enabled in `policy-resolver.ts` (`isEnabledForFetch`), `mergeRegistryAtsSources` extracted + merges `active`/`canary` rows, cap-safe batch proposals via `canaryClampedProposal` in `publish-opportunities.ts`. The owner graduated all 5 sources canary→active on 2026-09-24T01:59Z (events 27–31), so they now publish unlimited; the clamp guards future canary promotions. ~270 active PH jobs verified on the live board. |
 
 ---
 

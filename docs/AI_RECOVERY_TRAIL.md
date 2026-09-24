@@ -1,6 +1,63 @@
 # AI Recovery Trail
 
-## 2026-09-19 — COMPLETED: Canary Promotion of 5 Philippine VA Agencies & Trigger Alignment (current)
+## 2026-09-24 — COMPLETED: EX-CANARY-INGESTION — Graduation Executed, Canary Fetch Path Enabled, Publication Clamp (current)
+
+Completed unit `EX-CANARY-INGESTION` (Run 80) and verified the end-to-end
+publication of the newly graduated sources on https://remotejobs-ph.pages.dev:
+
+- **Base Commit**: `b41b590` (docs: update enrichment digest; `d1168b7` had
+  already added the active-only registry merge, migration 0045, and the
+  one-shot graduation ingestion runner)
+- **Behavior Commit**: `c637146` (`feat(governance): enable canary fetch and
+  clamp canary publication to its per-tick cap (EX-CANARY-INGESTION)`) —
+  Sovereign CI Guardrail run `35990129865` (100% green).
+- **Root Cause of "new sources not appearing" (Sep 19–24)**: the 5 Breezy
+  PH-VA agencies were promoted shadow→canary on 2026-09-19, but the production
+  scrape loop never fetched canary rows — `isEnabledForFetch` (policy-resolver)
+  returned true only for `operational === "active"` and the registry merge
+  filter (scrape.ts) merged `active` rows only. The planned EX-CANARY-INGESTION
+  unit was never executed, so the canary period produced zero publications.
+  The owner's canary→active graduation (2026-09-24T01:59Z, transition events
+  27–31) bypassed the gap; jobs flowed within one minute (first fetch
+  02:00:20Z, count=102).
+- **Jev Decisions (typesafe/jev-1.13-20260917, key from Desktop jev777.txt)**:
+  - implement_now: noul 0.91 → implement and deploy now.
+  - architecture: Branch A (caller clamp in publish-opportunities.ts; gateway
+    fail-closed rollback unchanged) — choice confidence 1.0.
+  - safety: noul 0.94 → behavior-neutral for current production.
+- **Implemented (Branch A)**:
+  1. `isEnabledForFetch` (packages/scraper/policy-resolver.ts): canary rows
+     enabled for fetch when publishable (allowed/conditional, not opted out);
+     shadow/candidate remain unfetched.
+  2. `mergeRegistryAtsSources` (apps/web/src/pages/api/cron/scrape.ts): inline
+     registry merge extracted into an exported, unit-tested pure function;
+     merges both `active` and `canary` registry rows so a promoted canary not
+     cataloged in va_directory is still ingested.
+  3. `canaryClampedProposal` (apps/web/src/lib/publish-opportunities.ts):
+     clamps proposed batches to `canaryMaxNewItemsPerTick` via
+     `loadPublicationPolicy` in BOTH `publishGroupedInserts` and
+     `publishGroupedActivations` so the gateway's automatic
+     rollback-to-shadow never fires; unreadable policy/invalid cap proposes
+     zero (missed tick, dedup-retried) — never an unclamped proposal.
+- **Production Verification (2026-09-24 ~11:00–12:15Z)**: all 5 graduated
+  sources fetched hourly; ~270 active jobs in D1 (20four7va 126, sourcefit 110,
+  remote-craft 14, yokly 11, value-virtual-assistants 9); live board page 1
+  renders 20Four7VA/Sourcefit/Yokly jobs; Remote Craft filtered view renders 14
+  PH-exclusive jobs; `/jobs/7167` renders attribution, PH-exclusive badge,
+  category, and canonical VALUE Virtual Assistants apply linkback. Exact-six
+  all fetching hourly (12:11Z) — zero regression. Registry truth: 5 active /
+  15 shadow / 14 candidate / 1 quarantined (teamtailor `health_quarantine`
+  2026-09-24T02:02Z). No canary rows in D1 — the ghost/nearform/time-etc
+  canary promotion claimed elsewhere did not land (no transition events).
+- **Verification**: 1,347 tests pass across 136 files (11 new: canary merge x6,
+  insert clamp x3, activation clamp x1, fetch refusals x1); typecheck 0;
+  guardrails 0; build clean.
+- **Remaining Known Issue**: EX-03 Shadow Dispatch CI failing 7 of last 8 runs
+  since 2026-09-23 — two modes: HTTP 503 evidence/storage-unavailable catch-all
+  (`shadow-dispatch.ts:93`) and HTTP 200 + 1 `DEGRADED_ANOMALOUS` rejected by
+  `assessShadowResponse`. Needs Pages-function-log diagnosis before any change.
+
+## 2026-09-19 — COMPLETED: Canary Promotion of 5 Philippine VA Agencies & Trigger Alignment (historical — the 5 sources are now `active` per events 27–31)
 
 Completed unit `EX-CANARY-PROMOTION`: aligned migration triggers, hardened admission evidence packet projection, deployed authenticated promotion endpoint, and graduated 5 Breezy Philippine VA agencies to live `canary` operational state:
 - **Base Commit**: `4f458b8` (`feat(governance): verify canary readiness predicate and harden workable probe pacing (EX-CANARY-READINESS)`)

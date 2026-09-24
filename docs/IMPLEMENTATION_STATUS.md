@@ -1,6 +1,17 @@
 # Implementation Status
 
-## 2026-09-19 — EX-CANARY-PROMOTION: 5 Canary Graduations & Capacity Expansion (current)
+## 2026-09-24 — RUN 80 EX-CANARY-INGESTION: Graduation Executed & Canary Publication Path Live (current)
+
+Explicit OWNER RESUME AUTHORIZATION active. Prime Directive: sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
+
+- **Active Portfolio (5 graduated Breezy PH-VA agencies, publishing on the live board)**: `breezy:20four7va` (126 active jobs), `breezy:sourcefit` (110), `breezy:remote-craft` (14), `breezy:yokly` (11), `breezy:value-virtual-assistants` (9). ~270 active jobs from the new sources, fetched hourly, attribution-complete, geo-checked. Graduation executed 2026-09-24T01:59Z (transition events 27–31, canary→active, cap 2).
+- **Registry Truth (direct D1)**: 5 active / 15 shadow / 14 candidate / 1 quarantined (`teamtailor:career.teamtailor.com`, `health_quarantine` 2026-09-24T02:02Z). No canary rows currently.
+- **EX-CANARY-INGESTION TERMINAL — KEEP (Run 80)**: root cause of the Sep 19–24 zero-publication window was that the scrape loop never fetched canary rows. Implemented: `isEnabledForFetch` enables canary when publishable; `mergeRegistryAtsSources` extracted + merges `active` and `canary` rows; `canaryClampedProposal` clamps both grouped writers to the per-tick cap (gateway's automatic rollback-to-shadow never fires). Jev (jev-1.13): implement_now 0.91, Branch A confidence 1.0, safety 0.94.
+- **Production Verified**: live board page 1 renders 20Four7VA/Sourcefit/Yokly jobs; Remote Craft filtered view renders 14 PH-exclusive jobs; `/jobs/7167` renders attribution + canonical apply linkback. Exact-six all fetching hourly — zero regression.
+- **Verification Baseline**: 1,347 passed, 0 failed across 136 test files (11 new); typecheck 0; guardrails 0; build clean. Code `c637146` 100% green (Sovereign CI run `35990129865`).
+- **Remaining Known Issue**: EX-03 Shadow Dispatch CI failing 7 of last 8 runs since 2026-09-23 (HTTP 503 evidence/storage-unavailable catch-all at `shadow-dispatch.ts:93`; HTTP 200 + 1 `DEGRADED_ANOMALOUS` rejected by `assessShadowResponse`). Needs Pages-function-log diagnosis before any change.
+
+## 2026-09-19 — EX-CANARY-PROMOTION: 5 Canary Graduations & Capacity Expansion (historical — superseded by the 2026-09-24 graduation to active)
 
 Explicit OWNER RESUME AUTHORIZATION active. Prime Directive: sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 

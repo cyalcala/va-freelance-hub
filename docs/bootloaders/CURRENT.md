@@ -11,22 +11,19 @@ sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 5. [Source health latest](../source-health-latest.md)
 6. [Source economics latest](../source-economics-latest.md)
 
-Production Reality (2026-09-24):
-- **Canary -> Active Graduation (5 Sources)**:
-  - `breezy:20four7va` (101 live roles)
-  - `breezy:sourcefit` (82 live roles)
-  - `breezy:remote-craft` (15 live roles)
-  - `breezy:value-virtual-assistants` (9 live roles)
-  - `breezy:yokly` (11 live roles)
-  Combined 218 authentic Philippine remote roles graduating to active Production.
-- **Shadow -> Canary Promotion (3 Clean Mature Sources)**:
-  - `greenhouse:ghost` (13 obs, 12d span, cap: 2)
-  - `greenhouse:nearform` (13 obs, 12d span, cap: 2)
-  - `breezy:time-etc` (11 obs, 10d span, cap: 1)
-- **Quarantined**: `teamtailor:career.teamtailor.com` (HTTP 404 endpoint failure).
-- **Migration 0044 Verified**: `packages/db/migrations/0044_canary_to_active_graduation.sql` establishes the constitutional active graduation gate.
-- **D1 Quota Hardened**: Edge caching in `apps/web/src/middleware.ts` (`caches.default`), warm cache `homepageCache` in `apps/web/src/pages/index.astro`, and prune retention window reduced to 14 days in `apps/web/src/pages/api/cron/prune.ts`.
-- **D1 Free-Tier Write Reset Window**: Resets daily at 00:00:00 UTC (08:00:00 PHT). Runner `scripts/graduation/execute-september-24-graduation.ts` ready for execution.
-
+Production Reality (2026-09-24, verified in D1 after Run 80):
+- **Canary -> Active Graduation EXECUTED (5 Sources)** (transition events 27–31, 2026-09-24T01:59Z):
+  - `breezy:20four7va` (126 active jobs in D1)
+  - `breezy:sourcefit` (110 active jobs)
+  - `breezy:remote-craft` (14 active jobs)
+  - `breezy:value-virtual-assistants` (9 active jobs)
+  - `breezy:yokly` (11 active jobs)
+  All 5 now `operational_state = 'active'`, fetched hourly, publishing on the live board. ~270 active PH jobs verified end-to-end.
+- **EX-CANARY-INGESTION (Run 80) TERMINAL — KEEP**: canary fetch path enabled (`isEnabledForFetch`), registry merge covers `active`+`canary`, publication clamp (`canaryClampedProposal`) prevents cap-breach rollback. Code `c637146`, CI run `35990129865`.
+- **No canary rows currently in D1**: the previously claimed "Shadow -> Canary Promotion" of ghost/nearform/time-etc did NOT land (no transition events); those 3 remain `shadow`. That promotion is the natural next unit.
+- **Quarantined**: `teamtailor:career.teamtailor.com` (`health_quarantine`, 2026-09-24T02:02Z, HTTP 404 endpoint failure).
+- **Registry Truth**: 5 active / 15 shadow / 14 candidate / 1 quarantined.
+- **Migration 0044 Verified**: `packages/db/migrations/0044_canary_to_active_graduation.sql` establishes the constitutional active graduation gate. Migrations 0000–0045 applied.
+- **Remaining Known Issue**: EX-03 Shadow Dispatch CI failing 7 of last 8 runs since 2026-09-23 — diagnose via Cloudflare Pages function logs before changing anything.
 
 
