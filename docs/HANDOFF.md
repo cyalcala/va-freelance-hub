@@ -47,6 +47,25 @@
   guardrails 0, build clean. Live Jev eval exit 0 (both cases). Production
   improvement claims: NONE yet — pending post-deploy observation windows.
 
+- **DEPLOY + OBSERVATION EVIDENCE (2026-09-24 ~20:15Z, this session)**:
+  - Deployed as `7ff7172` (rebased onto `origin/main`; local pre-rebase SHA
+    was `f3ed459`). Sovereign CI Guardrail run `36053213665` success
+    (validate + Pages deploy); Worker deploy `36053213677` success.
+  - Live eval re-run pre-commit (authorized credential via env, never
+    printed): Tier 1 deterministic, Tier 2 `ACCEPT_NOTES` @ 0.77
+    (`sv-ed7d5d8c287c-mufys40p`), exit 0.
+  - **Production observation #1** (manual EX-03 `36053508847`, headSha
+    `7ff7172`): 12/12 dispatched; myjewellery chronic oversize → **Tier 1
+    deterministic** `known_limit_over_budget`; 5× `workable:*` 429 in the
+    same window → Tier 2; **live Jev consulted once**
+    (`typesafe/jev-1.13-20260917`, `sv-54b9887998ca-mufz1cfm`) → `ABSTAIN`
+    @ 0.35 < 0.5 → enforced `failed` conservatively; run red by design.
+    Zero authority/publication change. Decision record captured above as
+    observation-window evidence point #1.
+  - Remaining observation window: next scheduled EX-03 runs (expect
+    Tier-1-passed myjewellery windows and isolated-429 Jev-accepted windows);
+    503 `errorClass` still awaits a 503 window.
+
 ## 2026-09-24 — RUN 80 EX-CANARY-INGESTION: Graduation Executed, Canary Fetch Path Enabled, New-Source Publication Verified (historical)
 
 Explicit OWNER RESUME AUTHORIZATION active. This section records what actually

@@ -52,6 +52,33 @@
   guardrails 0; build clean. Production observation window: pending — next
   EX-03 runs after deploy must show verdict behavior; no production improvement
   is claimed until then.
+- **Deploy + first production observation (2026-09-24 ~20:15Z, this session)**:
+  - Committed and pushed as `7ff7172` (rebased from local `f3ed459` onto
+    `origin/main`); Sovereign CI Guardrail run `36053213665` **success**
+    (validate + Pages deploy); Deploy Freshness Cron Worker run
+    `36053213677` success. The route + bound `OPENROUTER_API_KEY` are live.
+  - Re-ran the live eval locally pre-commit: Tier 1 deterministic (no Jev),
+    Tier 2 live `ACCEPT_NOTES` @ 0.77 (`sv-ed7d5d8c287c-mufys40p`), exit 0.
+  - **Production observation point #1** (manual EX-03 dispatch run
+    `36053508847`, headSha `7ff7172`): 12/12 dispatched; 1
+    `recruitee:myjewellery` chronic oversize anomaly (24 B over) classified
+    **Tier 1 deterministic** `known_limit_over_budget` without any model; 5
+    `workable:*` `RATE_LIMITED` in the same window classified Tier 2; **live
+    Jev consulted once** (model `typesafe/jev-1.13-20260917`,
+    `sv-54b9887998ca-mufz1cfm`) → `ABSTAIN` @ 0.35 < 0.5 threshold → enforced
+    verdict `failed` (conservative); assessor threw
+    "Shadow dispatch verdict failed: Jev confidence 0.35 below threshold
+    0.5" → run red, exactly as designed for an unaccepted recommendation.
+    Zero authority/publication/registry change; observations stored truthfully.
+  - **Honest interpretation**: the integration operates end-to-end in
+    production with fail-closed enforcement; Jev's abstention on a 5/6
+    rate-limited window is the correct cautious signal (criteria label
+    repeated rate-limit pressure as FAIL). CI-red on such windows remains
+    the designed behavior until a versioned policy review changes it.
+  - Still pending: scheduled-window observations (next hourly EX-03 runs) to
+    accumulate decision records incl. a Tier-1-passed window and an
+    isolated-429 Jev-accepted window; the 503 `errorClass` still awaits a
+    503 window; myjewellery budget review remains an owner decision.
 - **Deferrals (backlog)**: active-source yield-collapse judgment; triage
   low-confidence second opinion; shadow-budget policy review for myjewellery
   (a versioned policy change, NOT an auto-raised limit); 503 root cause via

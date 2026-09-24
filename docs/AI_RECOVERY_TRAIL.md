@@ -1,6 +1,38 @@
 # AI Recovery Trail
 
-## 2026-09-24 — COMPLETED: EX-CANARY-INGESTION — Graduation Executed, Canary Fetch Path Enabled, Publication Clamp (current)
+## 2026-09-24 — COMPLETED: JEV-SHADOW-VERDICT — deployed & first production observation (current)
+
+Continued the prior session's in-flight JEV-SHADOW-VERDICT work (preserved as
+dirty tree on start SHA `0cd785b`), verified it, shipped it, and collected the
+first production decision record:
+
+- **Start SHA**: `0cd785b` (clean tree + prior session's dirty JEV work:
+  jev-client/shadow-verdict modules, route adjudication, assessor verdict
+  path, workflow echo, live eval — all uncommitted).
+- **Behavior commit**: `f3ed459` (local) → rebased onto `origin/main` as
+  **`7ff7172`**; pushed. Sovereign CI Guardrail run `36053213665` success
+  (validate + Pages deploy); Worker deploy `36053213677` success.
+- **Verification**: `bun test` 1,393 pass / 0 fail across 138 files (+46);
+  typecheck 0; `audit:guardrails` 0; build clean. Live Jev eval exit 0
+  (Tier 1 deterministic; Tier 2 `ACCEPT_NOTES` @ 0.77,
+  `sv-ed7d5d8c287c-mufys40p`) using the authorized credential injected via
+  environment only — never printed or stored.
+- **Production observation #1**: manual EX-03 dispatch run `36053508847`
+  (headSha `7ff7172`): 12/12 dispatched; myjewellery chronic 24-byte
+  oversize classified Tier 1 `known_limit_over_budget` deterministically
+  (no model call); 5× `workable:*` `RATE_LIMITED` in the same window went
+  to Tier 2; **live Jev consulted once** (`typesafe/jev-1.13-20260917`,
+  correlation `sv-54b9887998ca-mufz1cfm`) → `ABSTAIN` @ 0.35 < 0.5
+  threshold → enforced verdict `failed` conservatively; the assessor
+  failed the run exactly as designed. Zero authority/publication change.
+- **Jev maturity**: shadow/advisory at one runtime boundary (run verdict
+  only). OPENROUTER_API_KEY bound as a Pages secret (production). Kill
+  switch `JEV_ADJUDICATION_DISABLED=1`; missing key → conservative fail.
+- **Remaining known issue (unchanged)**: the EX-03 503 storage mode needs a
+  future 503 window to surface its `errorClass`; myjewellery shadow-budget
+  review remains an owner policy decision.
+
+## 2026-09-24 — COMPLETED: EX-CANARY-INGESTION — Graduation Executed, Canary Fetch Path Enabled, Publication Clamp (historical)
 
 Completed unit `EX-CANARY-INGESTION` (Run 80) and verified the end-to-end
 publication of the newly graduated sources on https://remotejobs-ph.pages.dev:

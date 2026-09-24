@@ -1,6 +1,47 @@
 # System Savepoint
 
-## 2026-09-24 — EX-CANARY-INGESTION: Canary Fetch Path Enabled & Publication Clamp (current)
+## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Shadow Run Verdict Adjudication Deployed & First Production Observation (current)
+
+UNIT ID: JEV-SHADOW-VERDICT
+PHASE: OBSERVABILITY / SHADOW-ADJUDICATION / RUN-VERDICT
+STATUS: DEPLOYED — SHADOW/ADVISORY OBSERVING (observation window open)
+G9: KEEP
+IDENTITY: `packages/scraper/shadow-verdict.ts`, `packages/scraper/shadow-verdict.test.ts`, `packages/scraper/jev-client.ts`, `packages/scraper/jev-client.test.ts`, `packages/scraper/shadow-dispatcher.ts`, `packages/scraper/index.ts`, `apps/web/src/pages/api/cron/shadow-dispatch.ts`, `apps/web/tests/shadow-dispatch-route.test.ts`, `workers/freshness-cron/src/shadow-response.ts`, `workers/freshness-cron/src/shadow-response.test.ts`, `.github/workflows/gha-shadow-dispatch.yml`, `scripts/evals/jev-shadow-verdict-eval.ts`
+
+- **What this unit is**: a runtime Jev (typesafe/jev-1.13 via OpenRouter
+  System One) integration at the shadow-dispatch RUN-VERDICT boundary only.
+  Tier 1 classifies provable chronic boundary anomalies deterministically
+  (no model); Tier 2 asks Jev once per anomalous run with an allowlist
+  (ACCEPT_NOTES/FAIL_CONSERVATIVE/ABSTAIN) and a 0.5 confidence floor.
+  Jev proposes; deterministic enforcement disposes. No source authority,
+  publication, registry, or observation content is changed by a verdict.
+- **Deploy evidence (this session)**: local dirty work from the prior session
+  was preserved, verified (1,393 tests/0 fail; typecheck 0; guardrails 0;
+  build clean), committed locally as `f3ed459`, rebased onto `origin/main`
+  as **`7ff7172`**, pushed. Sovereign CI Guardrail run `36053213665`
+  **success** (validate + Pages deploy); Worker deploy `36053213677` success.
+- **Live-provider eval (pre-commit, env-injected authorized credential,
+  never printed)**: Tier 1 deterministic; Tier 2 `ACCEPT_NOTES` @ 0.77
+  (`sv-ed7d5d8c287c-mufys40p`); exit 0.
+- **First production observation (manual EX-03 run `36053508847`, headSha
+  `7ff7172`)**: 12/12 dispatched; `recruitee:myjewellery` chronic 24-byte
+  oversize → Tier 1 `known_limit_over_budget` (no model); 5× `workable:*`
+  429 in the same window → Tier 2; live Jev consulted once
+  (`sv-54b9887998ca-mufz1cfm`) → `ABSTAIN` @ 0.35 < 0.5 → enforced
+  `failed` conservatively; run red by design; zero authority/publication
+  change. First decision record of the observation window.
+- **Constraints recorded**: Jev ACCEPT_NOTES is never source permission;
+  the 512 KiB shadow budget is NOT auto-raised (myjewellery budget review
+  is a versioned policy change, pending owner review); kill switch
+  `JEV_ADJUDICATION_DISABLED=1`; missing key → conservative `failed`;
+  no Jev in publication, promotion, or triage gates (deferred backlog).
+- **Next exact action**: let the scheduled hourly EX-03 runs accumulate
+  decision records (expect Tier-1-passed myjewellery windows and
+  isolated-429 Jev-accepted windows); diagnose the 503 mode via
+  `errorClass` when the next 503 window appears; do not change the
+  publication or source boundary from this unit.
+
+### 2026-09-24 — EX-CANARY-INGESTION: Canary Fetch Path Enabled & Publication Clamp (historical, superseded as current by RUN 81 above)
 
 UNIT ID: EX-CANARY-INGESTION
 PHASE: DATA-PLANE / CANARY-PUBLICATION / GRADUATION
