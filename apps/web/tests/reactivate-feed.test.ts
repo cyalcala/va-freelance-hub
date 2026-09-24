@@ -63,14 +63,24 @@ describe("reactivateFeedConfirmedJobs", () => {
   test("blocked publication leaves archived rows inactive", async () => {
     const { db, captured } = fakeDb([{ id: 11, sourceId: "greenhouse:test" }]);
     const publicationDb = new FakePublicationDatabase({
-      registry: [{
-        sourceId: "greenhouse:test",
-        compliance: "allowed",
-        operational: "shadow",
-        optOut: 0,
-        policyExpiry: null,
-        canaryMaxNewItemsPerTick: null,
-      }],
+      registry: [
+        {
+          sourceId: "greenhouse:test",
+          compliance: "allowed",
+          operational: "shadow",
+          optOut: 0,
+          policyExpiry: null,
+          canaryMaxNewItemsPerTick: null,
+        },
+        {
+          sourceId: "greenhouse:test",
+          compliance: "allowed",
+          operational: "shadow",
+          optOut: 0,
+          policyExpiry: null,
+          canaryMaxNewItemsPerTick: null,
+        },
+      ],
       optOut: [null],
     });
     const n = await reactivateFeedConfirmedJobs(db, ["https://example.com/a"], OBSERVED, publicationDb);

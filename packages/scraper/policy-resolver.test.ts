@@ -291,7 +291,7 @@ describe("registry overlay is authoritative when present", () => {
     expect(r.enabled).toBe(true);
   });
 
-  test("conditional+canary is eligible only through the capped publication gateway", () => {
+  test("conditional+canary is enabled for fetch and publishes only through the capped envelope", () => {
     const row = {
       sourceId: "test:id",
       providerId: "test",
@@ -303,15 +303,40 @@ describe("registry overlay is authoritative when present", () => {
     const r = resolvePolicy("test:id", row);
 
     expect(r.publishable).toBe(true);
-    // The legacy hot path only knows a boolean and therefore cannot enforce a
-    // per-tick cap. It must not turn an inserted canary row into unlimited
-    // publication before the dedicated gateway consumes this envelope.
-    expect(r.enabled).toBe(false);
+    // EX-CANARY-INGESTION: the scheduled loop fetches canary rows. The cap is
+    // enforced downstream by the publication gateway (caller clamp in
+    // publish-opportunities.ts + automatic rollback on breach), so enabling
+    // fetch cannot bypass the per-tick cap.
+    expect(r.enabled).toBe(true);
     expect(resolvePublicationEnvelope(r, row)).toEqual({
       mode: "capped",
       maxNewItemsPerTick: 3,
       reason: null,
     });
+  });
+
+  test("canary fetch is refused when opted out or on a compliance hold", () => {
+    const optedOut = resolvePolicy("test:id", {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "conditional",
+      operationalState: "canary",
+      optOut: true,
+      canaryMaxNewItemsPerTick: 2,
+    });
+    expect(optedOut.enabled).toBe(false);
+    expect(optedOut.publishable).toBe(false);
+
+    const held = resolvePolicy("test:id", {
+      sourceId: "test:id",
+      providerId: "test",
+      complianceState: "needs_review",
+      operationalState: "canary",
+      optOut: false,
+      canaryMaxNewItemsPerTick: 2,
+    });
+    expect(held.enabled).toBe(false);
+    expect(held.publishable).toBe(false);
   });
 
   test("a canary with a missing or invalid cap fails closed in the resolver", () => {

@@ -900,6 +900,34 @@ function skippedDuplicateAtsResult({ agency, primaryCompanyName }: DuplicateAtsA
   });
 }
 
+// Merge production ATS sources from the registry so graduated active and
+// canary sources are automatically ingested even if not yet cataloged in
+// va_directory. A canary publishes only through its enforced per-tick cap:
+// isEnabledForFetch gates the fetch and the publication writers clamp
+// proposed batches to canaryMaxNewItemsPerTick.
+export function mergeRegistryAtsSources<T extends { id: number; companyName: string; atsPlatform: string | null; atsToken: string | null; verifiedAt: string | null }>(
+  atsAgencies: T[],
+  registryPolicies: RegistryPolicies,
+): T[] {
+  const merged = [...atsAgencies];
+  for (const [sourceId, policyRow] of registryPolicies.entries()) {
+    if ((policyRow.operationalState === "active" || policyRow.operationalState === "canary") && sourceId.includes(":")) {
+      const [platform, token] = sourceId.split(":");
+      const knownPlatforms = new Set<string>(["lever", "greenhouse", "workable", "breezy", "ashby"]);
+      if (platform && token && knownPlatforms.has(platform) && !merged.some((a) => a.atsPlatform === platform && a.atsToken === token)) {
+        merged.push({
+          id: -1,
+          companyName: policyRow.displayName || token,
+          atsPlatform: platform,
+          atsToken: token,
+          verifiedAt: null,
+        } as T);
+      }
+    }
+  }
+  return merged;
+}
+
 async function fetchSourceWithStatus(
   sourceName: string,
   sourceType: SourceType,
@@ -2061,24 +2089,15 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       console.warn(`[api/cron/scrape] ATS agency limit (${ATS_AGENCIES_MAX}) reached; add pagination if the directory grows past this.`);
     }
 
-    // Merge active ATS sources from the registry so graduated production sources
-    // are automatically ingested even if not yet cataloged in va_directory.
-    for (const [sourceId, policyRow] of registryPolicies.entries()) {
-      if (policyRow.operationalState === "active" && sourceId.includes(":")) {
-        const [platform, token] = sourceId.split(":");
-        const knownPlatforms = new Set<string>(["lever", "greenhouse", "workable", "breezy", "ashby"]);
-        if (platform && token && knownPlatforms.has(platform) && !atsAgencies.some((a) => a.atsPlatform === platform && a.atsToken === token)) {
-          atsAgencies.push({
-            id: -1,
-            companyName: policyRow.displayName || token,
-            atsPlatform: platform as AtsPlatform,
-            atsToken: token,
-            verifiedAt: null,
-          });
-        }
-
-      }
+    // Merge production ATS sources from the registry so graduated active and
+    // canary sources are automatically ingested even if not yet cataloged in
+    // va_directory.
+    const mergedAtsAgencies = mergeRegistryAtsSources(atsAgencies, registryPolicies);
+    if (mergedAtsAgencies.length !== atsAgencies.length) {
+      console.log(`[api/cron/scrape] Registry merge: ${mergedAtsAgencies.length - atsAgencies.length} graduated production ATS source(s) added to the fetch list.`);
     }
+    atsAgencies.length = 0;
+    atsAgencies.push(...mergedAtsAgencies);
 
 
     // Reconcile Sentinel auto-pauses against the actual source universe: an

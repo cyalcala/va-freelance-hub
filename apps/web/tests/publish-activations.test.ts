@@ -4,6 +4,15 @@ import { FakePublicationDatabase } from "./publication-db-fake";
 
 const NOW = "2026-09-06T12:00:00.000Z";
 
+const CANARY_ROW = {
+  sourceId: "breezy:test",
+  compliance: "allowed",
+  operational: "canary",
+  optOut: 0,
+  policyExpiry: "2026-10-01T00:00:00.000Z",
+  canaryMaxNewItemsPerTick: 2,
+};
+
 describe("publishGroupedActivations", () => {
   test("reserves unlimited exact-six exposure grouped by source identity", async () => {
     const db = new FakePublicationDatabase();
@@ -29,14 +38,24 @@ describe("publishGroupedActivations", () => {
 
   test("does not persist when the gateway blocks the source", async () => {
     const db = new FakePublicationDatabase({
-      registry: [{
-        sourceId: "greenhouse:test",
-        compliance: "allowed",
-        operational: "shadow",
-        optOut: 0,
-        policyExpiry: null,
-        canaryMaxNewItemsPerTick: null,
-      }],
+      registry: [
+        {
+          sourceId: "greenhouse:test",
+          compliance: "allowed",
+          operational: "shadow",
+          optOut: 0,
+          policyExpiry: null,
+          canaryMaxNewItemsPerTick: null,
+        },
+        {
+          sourceId: "greenhouse:test",
+          compliance: "allowed",
+          operational: "shadow",
+          optOut: 0,
+          policyExpiry: null,
+          canaryMaxNewItemsPerTick: null,
+        },
+      ],
       optOut: [null],
     });
     let persisted = 0;
@@ -61,5 +80,26 @@ describe("publishGroupedActivations", () => {
     });
     expect(result).toEqual({ published: 0, failed: false });
     expect(db.runs).toHaveLength(0);
+  });
+
+  test("clamps canary activations to the per-tick cap so the gateway never rolls back", async () => {
+    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW] });
+    const persisted: number[][] = [];
+    const result = await publishGroupedActivations(
+      db,
+      [
+        { id: 5, sourceId: "breezy:test" },
+        { id: 4, sourceId: "breezy:test" },
+        { id: 3, sourceId: "breezy:test" },
+      ],
+      NOW,
+      "scrape-gate",
+      async (ids) => {
+        persisted.push(ids);
+        return { publishedCount: ids.length, ids };
+      },
+    );
+    expect(result).toEqual({ published: 2, failed: false });
+    expect(persisted).toEqual([[3, 4]]);
   });
 });

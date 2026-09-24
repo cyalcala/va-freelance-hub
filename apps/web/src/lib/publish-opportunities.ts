@@ -1,5 +1,6 @@
 import type { NewOpportunity } from "@va-hub/db";
 import {
+  loadPublicationPolicy,
   publishPublicExposure,
   publicationTickKey,
   wrapD1Binding,
@@ -12,6 +13,30 @@ export function publicationDbFromEnv(env: { DB?: { prepare: (sql: string) => any
 
 function canonicalPublicationSourceId(sourceId: string | null | undefined): string {
   return sourceId && /^[a-z0-9:._-]+$/.test(sourceId) ? sourceId : "unattributed";
+}
+
+/**
+ * EX-CANARY-INGESTION: clamp a proposed batch to a canary source's enforced
+ * per-tick cap so the publication gateway never fires its automatic
+ * rollback-to-shadow. The gateway remains the authoritative enforcement layer;
+ * this caller clamp only prevents a valid-cap canary from breaching. An
+ * unreadable policy or an invalid cap proposes zero — a missed tick that dedup
+ * naturally retries, never an unclamped canary proposal.
+ */
+async function canaryClampedProposal(
+  publicationDb: PublicationDatabase,
+  sourceId: string,
+  proposed: number,
+): Promise<number> {
+  try {
+    const policy = await loadPublicationPolicy(publicationDb, sourceId);
+    if (policy.operational !== "canary") return proposed;
+    const cap = policy.canaryMaxNewItemsPerTick;
+    if (typeof cap !== "number" || !Number.isSafeInteger(cap) || cap <= 0) return 0;
+    return Math.min(proposed, cap);
+  } catch {
+    return 0;
+  }
 }
 
 export async function publishGroupedInserts(
@@ -32,12 +57,13 @@ export async function publishGroupedInserts(
   let published = 0;
   for (const [sourceId, group] of grouped) {
     const urls = group.map((row) => row.sourceUrl).sort().join("\n");
+    const proposedCount = await canaryClampedProposal(publicationDb, sourceId, group.length);
     const result = await publishPublicExposure(publicationDb, {
       sourceId,
       now,
       tickKey,
-      retryKey: `${tickKey}:${sourceId}:insert:${urls.length}:${urls.slice(0, 200)}`,
-      proposedCount: group.length,
+      retryKey: `${tickKey}:${sourceId}:insert:${proposedCount}:${urls.slice(0, 200)}`,
+      proposedCount,
       persist: async (allowed) => {
         const written = await insertBatch(group.slice(0, allowed));
         return { publishedCount: written, ids: [] };
@@ -68,12 +94,13 @@ export async function publishGroupedActivations(
   let published = 0;
   for (const [sourceId, ids] of grouped) {
     const ordered = [...ids].sort((a, b) => a - b);
+    const proposedCount = await canaryClampedProposal(publicationDb, sourceId, ordered.length);
     const result = await publishPublicExposure(publicationDb, {
       sourceId,
       now,
       tickKey,
       retryKey: `${tickKey}:${sourceId}:activate:${ordered.join(",")}`,
-      proposedCount: ordered.length,
+      proposedCount,
       persist: async (allowed) => persistIds(ordered.slice(0, allowed)),
     });
     if (!result.ok) return { published, failed: true };

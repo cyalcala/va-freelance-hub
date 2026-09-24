@@ -345,10 +345,11 @@ export function isPublishable(compliance: RegistryComplianceState, operational: 
  * fallback object remains byte-identical while the registry overlay gains a
  * non-active-equivalent canary contract.
  *
- * `mode: capped` is not permission for the legacy boolean scrape loop to
- * write. That loop has no atomic per-tick reservation, so `isEnabledForFetch`
- * refuses canaries until the dedicated SP-23 gateway consumes this envelope
- * together with decideCanaryPublication().
+ * `mode: capped` is consumed by the SP-23C publication gateway
+ * (publishPublicExposure + decideCanaryPublication), which enforces the cap and
+ * auto-rolls-back breaches. The scheduled loop may fetch a canary
+ * (isEnabledForFetch), and its writers must clamp proposed batches to this cap
+ * so the gateway never fires the rollback.
  */
 export type PublicationEnvelope =
   | {
@@ -401,10 +402,12 @@ export function resolvePublicationEnvelope(
 }
 
 export function isEnabledForFetch(compliance: RegistryComplianceState, operational: RegistryOperationalState, optOut: boolean): boolean {
-  // Canary rows stay unfetched here even though SP-23C now owns public writes.
-  // Enabling canary fetch is a source-specific bootstrap step after admission
-  // and observation, not an automatic consequence of the publication ledger.
-  return operational === "active" && isPublishable(compliance, operational, optOut);
+  // EX-CANARY-INGESTION: canary rows are fetched by the scheduled loop. Fetching
+  // cannot bypass the publication cap: the publication gateway clamps proposed
+  // batches and auto-rolls-back breaches, so a canary publishes only through its
+  // enforced per-tick budget. Shadow/candidate remain unfetched.
+  if (operational !== "active" && operational !== "canary") return false;
+  return isPublishable(compliance, operational, optOut);
 }
 
 // ─── Fallback resolver (hard-coded, rollback adapter) ───────────────────────
