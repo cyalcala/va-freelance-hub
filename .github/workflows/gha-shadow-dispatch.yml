@@ -49,4 +49,7 @@ jobs:
           jq . dispatch.json
           jq -e '.totalRegistryRows >= 1' dispatch.json
           bun -e 'import { assessShadowResponse } from "./workers/freshness-cron/src/shadow-response.ts"; console.log(assessShadowResponse(await Bun.file("dispatch.json").text()));'
-          echo "Shadow dispatch rows=$(jq -r .totalRegistryRows dispatch.json) eligible=$(jq -r .eligible dispatch.json) dispatched=$(jq -r .dispatched dispatch.json)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Shadow dispatch rows=$(jq -r .totalRegistryRows dispatch.json) eligible=$(jq -r .eligible dispatch.json) dispatched=$(jq -r .dispatched dispatch.json) verdict=$(jq -r '.verdict.status // "unadjudicated"' dispatch.json)" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$(jq -r '.verdict.status // "none"' dispatch.json)" != "none" ]; then
+            jq -r '.verdict.classifications[]? | "verdict: \(.sourceId) \(.outcome) -> \(.classification)"' dispatch.json >> "$GITHUB_STEP_SUMMARY"
+          fi

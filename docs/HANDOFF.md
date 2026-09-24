@@ -1,6 +1,53 @@
 # Handoff
 
-## 2026-09-24 — RUN 80 EX-CANARY-INGESTION: Graduation Executed, Canary Fetch Path Enabled, New-Source Publication Verified (current)
+## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Shadow Run Verdict Adjudication Implemented & Live-Evaled (current)
+
+- **WHAT IS TRUE NOW?**
+  - EX-03's red-CI root causes are measured and the verdict boundary now
+    adjudicates them: myjewellery chronic 24-byte oversize → **Tier 1
+    deterministic** note (no model); pineapple 429 → **Tier 2 Jev-assisted**
+    (live `ACCEPT_NOTES` @ 0.80, correlation `sv-ed7d5d8c287c-mufqq2gj`);
+    4× 503 storage failures → `errorClass` now surfaces the class in the CI
+    response body (root cause still needs Pages function logs).
+  - Jev mode: **shadow/advisory at one runtime boundary** (run verdict only).
+    No authority or publication change. The dispatch loop remains AI-free.
+  - `OPENROUTER_API_KEY` is bound as a Pages secret (production) — takes
+    effect on the next deploy. Missing key ⇒ conservative `failed` verdict
+    (same as today's behavior), so no regression if the secret is absent.
+  - Registry truth unchanged: 5 active / 15 shadow / 14 candidate / 1
+    quarantined (verified read-only 2026-09-24).
+
+- **WHAT WAS IMPLEMENTED?**
+  - `packages/scraper/shadow-verdict.ts` (+46 tests incl. jev-client), pure
+    Tier 1/Tier 2 classification and enforcement; `packages/scraper/jev-client.ts`
+    Workers-portable System One client (single attempt, strict model check,
+    fixed diagnostics); `shadow-dispatcher.ts` additive `anomalies[]`;
+    `shadow-dispatch.ts` route adjudication + `errorClass` on 503;
+    `assessShadowResponse` verdict-aware (backward compatible);
+    `gha-shadow-dispatch.yml` echoes verdict to step summary;
+    `scripts/evals/jev-shadow-verdict-eval.ts` repeatable live eval.
+
+- **WHAT MUST NOT BE DONE?**
+  - Do NOT treat a Jev ACCEPT_NOTES as source permission; it only affects the
+    run-level CI signal. Do NOT auto-raise the 512 KiB shadow budget — a
+    myjewellery budget change is a versioned policy review, still pending.
+  - Do NOT wire Jev into publication, promotion, or triage gates (deferred
+    backlog). Do NOT reopen terminal units.
+
+- **EXACT NEXT ACTION**
+  1. `git fetch origin; git status -sb` — restate start SHA.
+  2. `bun test && bun run typecheck && bun run audit:guardrails`.
+  3. After deploy, watch the next EX-03 runs (`gh run list --workflow gha-shadow-dispatch.yml`):
+     expect `verdict=healthy_with_notes` on myjewellery windows (Tier 1) and
+     Jev-accepted notes on isolated 429 windows (Tier 2); collect verdict
+     decision records as the observation window evidence.
+  4. Diagnose the 503 mode using `errorClass` from the next 503 window.
+
+- **VERIFICATION BASELINE**: 1,393 tests pass (138 files; +46), typecheck 0,
+  guardrails 0, build clean. Live Jev eval exit 0 (both cases). Production
+  improvement claims: NONE yet — pending post-deploy observation windows.
+
+## 2026-09-24 — RUN 80 EX-CANARY-INGESTION: Graduation Executed, Canary Fetch Path Enabled, New-Source Publication Verified (historical)
 
 Explicit OWNER RESUME AUTHORIZATION active. This section records what actually
 landed in production D1 and supersedes the "graduation prepared" claims below

@@ -32,6 +32,7 @@ import { sha256Hex } from "./contentHash";
 import type { DoctorOutcome } from "./source-doctor";
 import type { CurrentAdmissionEvidenceResult } from "./admission-evidence";
 import { hostOf } from "./prospector";
+import type { DispatchAnomaly } from "./shadow-verdict";
 
 export const DISPATCHER_VERSION = "2.0.0";
 
@@ -332,6 +333,8 @@ export interface ShadowDispatchSummary {
   probeFailures: number;
   rejectedProbeResults: number;
   evidenceErrors: Array<{ sourceId: string; reason: string }>;
+  /** Non-healthy probe outcomes captured this run (additive; verdict input). */
+  anomalies: DispatchAnomaly[];
 }
 
 function inputForContext(context: AdmissionContext): CandidateShadowInput {
@@ -399,6 +402,7 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     probeFailures: 0,
     rejectedProbeResults: 0,
     evidenceErrors: [],
+    anomalies: [],
   };
 
   let authorityChecks = 0;
@@ -489,6 +493,17 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
 
     summary.dispatched += 1;
     summary.outcomes[result.diagnostic.outcome] = (summary.outcomes[result.diagnostic.outcome] ?? 0) + 1;
+    if (result.diagnostic.outcome !== "HEALTHY_WITH_RESULTS" && result.diagnostic.outcome !== "HEALTHY_EMPTY") {
+      summary.anomalies.push({
+        sourceId: result.sourceId,
+        providerId: result.providerId,
+        outcome: result.diagnostic.outcome,
+        stopReason: result.stopReason ?? null,
+        bytesReceived: result.diagnostic.bytesReceived,
+        itemCount: result.parse.itemCount,
+        plausibleItems: result.sampleFunnel.plausibleItems,
+      });
+    }
   }
 
   return summary;

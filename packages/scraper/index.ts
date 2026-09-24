@@ -395,6 +395,33 @@ export type {
   ShadowDispatchDeps,
   ShadowDispatchSummary,
 } from "./shadow-dispatcher";
+export {
+  ANOMALY_HISTORY_WINDOW_DAYS,
+  HARD_UNRESOLVABLE_OUTCOMES,
+  JEV_MIN_CONFIDENCE,
+  JEV_RECOMMENDATIONS,
+  KNOWN_LIMIT_MIN_HEALTHY_HISTORY,
+  KNOWN_LIMIT_OVER_BUDGET_MARGIN,
+  OVERSIZE_STOP_REASON_PATTERN,
+  SHADOW_VERDICT_VERSION,
+  buildJevAdjudicationPacket,
+  classifyAnomalies,
+  classifyAnomaly,
+  decideVerdict,
+} from "./shadow-verdict";
+export type {
+  AnomalyClassification,
+  AnomalyClassificationResult,
+  AnomalyHistory,
+  AnomalyHistoryRow,
+  DispatchAnomaly,
+  JevAnswer,
+  JevConsultation,
+  JevRecommendation,
+  VerdictResult,
+} from "./shadow-verdict";
+export { JEV_MODEL, JEV_SYSTEMONE_URL, judgeViaJev } from "./jev-client";
+export type { JevChoiceQuestion, JevJudgeRequest, JevJudgeResult, JevJudgeAnswer } from "./jev-client";
 export { classifyShift } from "./shiftClassifier";
 export { renewProviderEvidence, MAX_RENEWAL_IDENTITIES, MAX_RENEWAL_PRIMARY_DOCUMENTS } from "./source-evidence-renewal";
 export type { EvidenceRenewalDatabase, RenewProviderEvidenceInput } from "./source-evidence-renewal";

@@ -1,6 +1,63 @@
 # Implementation Status
 
-## 2026-09-24 — RUN 80 EX-CANARY-INGESTION: Graduation Executed & Canary Publication Path Live (current)
+## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Evidence-Bounded Shadow Run Verdict Adjudication (current)
+
+- **What this is**: a runtime Jev integration at the shadow-dispatch verdict
+  boundary — the EX-03 CI signal. It does NOT change source authority,
+  publication, registry state, or persisted observations. The dispatch data
+  plane stays deterministic and AI-free; adjudication runs in the route layer
+  after the loop.
+- **Verified failure baseline (fresh evidence, 2026-09-22..24)**: EX-03 CI red
+  8/9 runs. Three modes: (1) `recruitee:myjewellery` chronic `DEGRADED_ANOMALOUS`
+  — payload 524,312 B vs 512 KiB budget (**24 bytes over**, 0.005%) after 13
+  healthy parsed observations; (2) `workable:pineapple-staffing` `RATE_LIMITED`
+  (polite single retry already inside the probe); (3) 4× HTTP 503 catch-all
+  with **zero observations written in-window** (failure at/before first
+  persist; underlying cause only in Pages logs).
+- **Implemented**:
+  - `packages/scraper/shadow-verdict.ts`: pure classification + enforcement.
+    Tier 1 deterministic: chronic boundary oversize (≤5% over budget, ≥1 prior
+    identical oversize, ≥3 healthy parsed observations, zero hard-unresolvable
+    history) → note without any model call; empty history can never satisfy
+    chronicity vacuously. Tier 2 Jev-assisted: transients (rate limit,
+    first-time oversize) compared by Jev with an allowlist
+    (ACCEPT_NOTES/FAIL_CONSERVATIVE/ABSTAIN), min confidence 0.5 (provisional);
+    malformed output/abstention/unavailability → conservative `failed`.
+  - `packages/scraper/jev-client.ts`: Workers-portable System One client
+    (POST openrouter `/v1/systemone`, strict `typesafe/jev-1.13` model check,
+    single attempt, no failover, fixed diagnostics that never echo content).
+    Mirrors the verified local skill adapter.
+  - `shadow-dispatcher.ts`: additive `anomalies[]` per-run capture.
+  - `shadow-dispatch.ts` route: adjudication after the loop (bounded strictly-
+    prior 14-day history per anomalous source), verdict in the HTTP response;
+    503 catch-all hardened with `errorClass` (d1_observation_write_rejected /
+    d1_quota_or_limit / evidence_or_revision_guard / missing_d1_binding /
+    unclassified) so the next 503 diagnosis is observable from CI logs.
+  - `assessShadowResponse`: verdict-aware, backward compatible (no verdict →
+    unchanged strict behavior; failed verdict → fail; healthy_with_notes must
+    exactly cover every anomalous outcome and validate any decision record).
+  - Workflow: verdict + classifications echoed to the step summary.
+  - `scripts/evals/jev-shadow-verdict-eval.ts`: repeatable live-provider eval.
+- **Jev integration maturity**: `shadow/advisory` — Jev participated only in a
+  run-level monitoring verdict with deterministic postconditions; zero registry
+  or publication authority. Rollback: revert the workflow/assessor (strict
+  behavior returns); kill switch `JEV_ADJUDICATION_DISABLED=1`; missing key →
+  conservative fail.
+- **Live-provider evidence (2026-09-24T16:22Z)**: Tier 1 resolved
+  deterministically without Jev; Tier 2 (pineapple RATE_LIMITED) live Jev
+  `ACCEPT_NOTES` @ 0.80 via the repo client (`sv-ed7d5d8c287c-mufqq2gj`).
+  Credential bound as Cloudflare Pages secret `OPENROUTER_API_KEY`
+  (project `remotejobs-ph`, production); takes effect at next deploy.
+- **Verification**: 1,393 tests pass across 138 files (46 new); typecheck 0;
+  guardrails 0; build clean. Production observation window: pending — next
+  EX-03 runs after deploy must show verdict behavior; no production improvement
+  is claimed until then.
+- **Deferrals (backlog)**: active-source yield-collapse judgment; triage
+  low-confidence second opinion; shadow-budget policy review for myjewellery
+  (a versioned policy change, NOT an auto-raised limit); 503 root cause via
+  Pages function logs (errorClass now surfaces it in CI).
+
+## 2026-09-24 — RUN 80 EX-CANARY-INGESTION: Graduation Executed & Canary Publication Path Live (historical)
 
 Explicit OWNER RESUME AUTHORIZATION active. Prime Directive: sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
 
