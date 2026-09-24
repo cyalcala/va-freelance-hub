@@ -1,21 +1,21 @@
 # Prospector Latest
 
-Date: 2026-09-23
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35922940389
+Date: 2026-09-24
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35957646045
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 2 |
-| Auto-added this run | 0 |
+| Candidates considered | 4 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 2 |
 | Rejected for quality | 0 |
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
-| Durable candidates discovered (distinct ATS) | 29 |
+| Durable candidates discovered (distinct ATS) | 32 |
 | Durable candidates inserted | 0 |
-| Durable candidates refreshed | 0 |
-| Durable candidates skipped (duplicate) | 29 |
+| Durable candidates refreshed | 14 |
+| Durable candidates skipped (duplicate) | 32 |
 | Durable candidates skipped (opt-out) | 0 |
 | Candidate backlog (needs_review/candidate) | 14 |
 | Candidate overdue (past 14d deadline) | 0 |
@@ -23,10 +23,11 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/35922940
 
 ## Auto-added companies
 
-- (none this run)
+- Squarespace
+- iMerit
 
 ## Durable candidate queue (SP-06, non-publishing)
 
 - Inserted: (none)
-- Refreshed: (none)
+- Refreshed: ashby:supabase, ashby:camunda, ashby:ashby, ashby:tremendous, ashby:amplify, workable:myoutdesk, workable:outsource-access, workable:staff-domain-inc, workable:superstaff, breezy:vaaphilippines-recruitment, workable:virtualstaff365, workable:global-strategic, workable:connectos, lever:vaultoutsourcing
 - Mode: non-publishing-candidate-only
