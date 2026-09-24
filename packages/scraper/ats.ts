@@ -31,9 +31,9 @@ function ashbyLocationSummary(job: any): string | null {
 }
 
 function breezyLocationSummary(job: any): string | null {
-  const locations = Array.isArray(job?.locations) ? job.locations : [job?.location];
+  const locations = Array.isArray(job?.locations) && job.locations.length > 0 ? job.locations : (job?.location ? [job.location] : []);
   const names = locations
-    .map((location: any) => normalizeText(location?.name))
+    .map((location: any) => normalizeText(location?.name || location?.country?.name))
     .filter(Boolean);
 
   if (names.length === 0) return null;
@@ -44,6 +44,7 @@ function breezyLocationSummary(job: any): string | null {
   const remoteText = remoteSignals.length > 0 ? ` Remote: ${remoteSignals.some(Boolean) ? "yes" : "no"}.` : "";
   return `Location: ${Array.from(new Set(names)).join("; ")}.${remoteText}`;
 }
+
 
 export type AtsPlatform = "lever" | "greenhouse" | "workable" | "breezy" | "ashby";
 
@@ -267,10 +268,11 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
         payRange,
         // Geo masterplan L0: reuse the same location extraction the summary uses.
         locationRaw: (() => {
-          const locations = Array.isArray(job?.locations) ? job.locations : [job?.location];
-          const names = locations.map((l: any) => normalizeText(l?.name)).filter(Boolean);
+          const locations = Array.isArray(job?.locations) && job.locations.length > 0 ? job.locations : (job?.location ? [job.location] : []);
+          const names = locations.map((l: any) => normalizeText(l?.name || l?.country?.name)).filter(Boolean);
           return names.length ? Array.from(new Set(names)).join("; ") : null;
         })(),
+
         description: breezyLocationSummary(job),
         postedAt: safeNormalizeDate(job.published_date),
         isActive: true,

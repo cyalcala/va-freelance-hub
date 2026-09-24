@@ -2061,6 +2061,26 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       console.warn(`[api/cron/scrape] ATS agency limit (${ATS_AGENCIES_MAX}) reached; add pagination if the directory grows past this.`);
     }
 
+    // Merge active ATS sources from the registry so graduated production sources
+    // are automatically ingested even if not yet cataloged in va_directory.
+    for (const [sourceId, policyRow] of registryPolicies.entries()) {
+      if (policyRow.operationalState === "active" && sourceId.includes(":")) {
+        const [platform, token] = sourceId.split(":");
+        const knownPlatforms = new Set<string>(["lever", "greenhouse", "workable", "breezy", "ashby"]);
+        if (platform && token && knownPlatforms.has(platform) && !atsAgencies.some((a) => a.atsPlatform === platform && a.atsToken === token)) {
+          atsAgencies.push({
+            id: -1,
+            companyName: policyRow.displayName || token,
+            atsPlatform: platform as AtsPlatform,
+            atsToken: token,
+            verifiedAt: null,
+          });
+        }
+
+      }
+    }
+
+
     // Reconcile Sentinel auto-pauses against the actual source universe: an
     // entry whose sourceId matches neither a static source id nor any ATS
     // platform:token key pauses nothing — surface that instead of silently
@@ -2225,7 +2245,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         }
       }
 
-      if (result.ok && agency.atsPlatform === "workable") {
+      if (result.ok && agency.atsPlatform === "workable" && agency.id > 0) {
         try {
           await db.update(vaDirectory)
             .set({ verifiedAt: observedAt })

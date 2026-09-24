@@ -13,7 +13,7 @@
  */
 
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 
 const GRADUATING_ACTIVE_SOURCES = [
@@ -85,8 +85,14 @@ function canonicalFingerprint(value: string): string {
 }
 
 function executeD1Command(sql: string): string {
-  const cmd = `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --command "${sql.replace(/"/g, '\\"')}"`;
-  return runCmd(cmd);
+  const tmpFile = join(process.cwd(), `scripts/graduation/tmp_${Date.now()}_${Math.random().toString(36).slice(2)}.sql`);
+  writeFileSync(tmpFile, sql, "utf-8");
+  try {
+    const cmd = `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --file="${tmpFile}"`;
+    return runCmd(cmd);
+  } finally {
+    try { unlinkSync(tmpFile); } catch {}
+  }
 }
 
 async function main() {
