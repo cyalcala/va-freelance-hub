@@ -1,12 +1,52 @@
 # System Savepoint
 
-## 2026-09-12 — RESUMED by owner: Autonomous Source-Expansion Gauntlet (current)
+## 2026-09-24 — EX-CANARY-INGESTION: Canary Fetch Path Enabled & Publication Clamp (current)
 
-Explicit OWNER RESUME AUTHORIZATION granted on 2026-09-11 / 2026-09-12. Prime Directive: transform
-VA Freelance Hub into a durable Philippines-centered remote job discovery system
-sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
+UNIT ID: EX-CANARY-INGESTION
+PHASE: DATA-PLANE / CANARY-PUBLICATION / GRADUATION
+STATUS: TERMINAL — KEEP
+G9: KEEP
+IDENTITY: `packages/scraper/policy-resolver.ts`, `apps/web/src/pages/api/cron/scrape.ts`, `apps/web/src/lib/publish-opportunities.ts`, `apps/web/tests/publish-inserts.test.ts`, `apps/web/tests/scrape-registry-merge.test.ts`, `apps/web/tests/publish-activations.test.ts`, `apps/web/tests/pending-recovery.test.ts`, `apps/web/tests/reactivate-feed.test.ts`, `packages/scraper/policy-resolver.test.ts`
 
-Direct production D1 read & workflow verification confirms:
+- **Root cause of "new sources not appearing" (Sep 19–24)**: The 5 Breezy PH-VA
+  agencies were promoted shadow→canary on 2026-09-19, but the production scrape
+  loop never fetched canary rows: `isEnabledForFetch` returned true only for
+  `active`, and the registry merge filter only merged `active` rows. EX-
+  CANARY-INGESTION was never executed, so the canary period produced zero
+  publications. The owner's canary→active graduation (2026-09-24T01:59Z,
+  transition events 27–31) bypassed the gap and jobs began flowing within one
+  minute (first fetch 02:00:20Z, count=102).
+- **Jev decisions (typesafe/jev-1.13-20260917)**: implement_now noul 0.91 →
+  implement and deploy; architecture Branch A confidence 1.0 → caller clamp in
+  publish-opportunities.ts, gateway fail-closed rollback unchanged; safety
+  noul 0.94 → behavior-neutral for current production.
+- **Implemented (Branch A)**:
+  1. `isEnabledForFetch` (policy-resolver.ts): canary rows are now enabled for
+     fetch when publishable (allowed/conditional, not opted out). Shadow and
+     candidate remain unfetched.
+  2. `mergeRegistryAtsSources` (scrape.ts): extracted the inline registry merge
+     into an exported, unit-tested pure function; now merges both `active` and
+     `canary` registry rows so a promoted canary not cataloged in va_directory
+     is still ingested.
+  3. `canaryClampedProposal` (publish-opportunities.ts): clamps proposed
+     batches to `canaryMaxNewItemsPerTick` via `loadPublicationPolicy` in BOTH
+     `publishGroupedInserts` and `publishGroupedActivations` so the gateway's
+     automatic rollback-to-shadow never fires. An unreadable policy or invalid
+     cap proposes zero (missed tick, dedup-retried) — never an unclamped
+     proposal.
+- **Production reality verified (2026-09-24 ~11:00–12:11Z)**: all 5 graduated
+  Breezy sources fetched hourly in production; ~270 active jobs in D1
+  (20four7va 126, sourcefit 110, remote-craft 14, yokly 11, value-virtual-
+  assistants 9); live board page 1 renders 20Four7VA/Sourcefit/Yokly jobs;
+  Remote Craft filtered view renders 14 PH-exclusive jobs; job detail
+  /jobs/7167 renders attribution, PH-exclusive badge, category, and canonical
+  VALUE Virtual Assistants apply linkback. Exact-six all fetching hourly
+  (12:11Z) — zero regression.
+- **Verification**: 1,347 tests pass across 136 files (11 new); typecheck 0
+  errors; guardrails 0 violations; build clean. Commit `c637146` verified 100%
+  green on GitHub Actions (Sovereign CI Guardrail run `35990129865`).
+
+### Run 79 — EX-CANARY-PROMOTION: Production Promotion of 5 Philippine VA Agencies & Trigger Alignment (2026-09-19)
 1. **Registry, Canary & Shadow State**:
    - **Canary Cohort 1 (5 sources)**: `breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly`. Promoted to `operational_state = 'canary'` with `canary_max_new_items_per_tick = 2`, `governance_revision = 1`, and transition events recorded in `source_transition_events` (IDs 22–26).
    - **Shadow Cohort (16 sources)**:
