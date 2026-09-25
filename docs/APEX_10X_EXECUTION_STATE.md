@@ -14,11 +14,11 @@ Canonical continuation:
 | --- | --- |
 | Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11 / 2026-09-12 / 2026-09-13 / 2026-09-19 / 2026-09-25) |
 | Prime Directive | Floor: 100 / Stretch: 150 qualified net-new remote PH-accessible jobs/day |
-| Base Commit | Pushed to `main` (`323e50c`, Fix constitutional active source leak and title geo-gate deployed) |
-| Verification | 1,429 Bun tests pass (140 files), typecheck & guardrails clean, build Complete |
+| Base Commit | Pushed to `main` (`04d438e`, baseline recorded; local promotion executed) |
+| Verification | 1,432 Bun tests pass (143 files), typecheck & guardrails clean, build Complete |
 | D1 Registry Active (Graduated) | 5 sources in `operational_state = 'active'` (`breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly`) via Migration 0044 |
-| D1 Registry Canaries | 3 sources in `operational_state = 'canary'` (`greenhouse:ghost` [cap 2], `greenhouse:nearform` [cap 2], `breezy:time-etc` [cap 1]) |
-| D1 Registry Shadows | 12 sources in `operational_state = 'shadow'` (Workable x7, Greenhouse x4, Recruitee x1) |
+| D1 Registry Canaries | 5 sources in `operational_state = 'canary'` (`greenhouse:ghost` [cap 2], `greenhouse:nearform` [cap 2], `greenhouse:gitlab` [cap 2], `greenhouse:grafanalabs` [cap 2], `breezy:time-etc` [cap 1]) |
+| D1 Registry Shadows | 10 sources in `operational_state = 'shadow'` (Workable x7, Greenhouse x2, Recruitee x1) |
 | D1 Registry Quarantined | 1 source (`teamtailor:career.teamtailor.com`, HTTP 404) |
 | Durable Candidate Queue | 14 distinct ATS candidates in `needs_review/candidate` (Ashby x5, Breezy x1, Workable x7, Lever x1) |
 | Identity Attribution | 100.0% coverage in production D1 (5,703 of 5,703 rows carry source_id) |
@@ -27,7 +27,12 @@ Canonical continuation:
 
 ### Reconciled Production Reality (2026-09-25)
 Direct measurement and workflow inspection confirms:
-- **Constitutional Active Source Leak Rectified & Migration 0047 Live (Commit `323e50c`)**:
+- **Shadow -> Canary Promotion of GitLab & Grafana Labs Executed; Workable Empirical Audit**:
+  - `greenhouse:gitlab` (cap 2) and `greenhouse:grafanalabs` (cap 2) promoted to `canary` in remote production D1 via `scripts/graduation/promote-gitlab-grafana-canary.ts`.
+  - Both sources verified with 15 qualifying observation dates in 14d, 13.50d / 13.46d spans, 0 errors, unexpired 2027 leases, and `public_minimal_metadata_canary` authority.
+  - Jev 1.13 decision trace confirmed `Variant_A` (promote GitLab & Grafana Labs to canary, confidence 0.98, prob 0.99).
+  - Empirical audit of all 7 Workable PH agencies revealed pre-fix burst rate limiting (`bad_count = 62-64`, last seen 2026-09-24T20:15Z). Since polite delay deployment, 100% HEALTHY_WITH_RESULTS achieved. Workable strictly held in shadow to naturally accumulate its required 7-day error-free span per constitutional trigger without artificial bypass.
+  - Registry truth: 5 active / 5 canary / 10 shadow / 14 candidate / 1 quarantined = 35 total sources.
   - Sovereign CI run `36120849935` deployed Pages and executed Migration 0047 in production D1 at 2026-09-25 09:53:29.
   - Deactivated 223 legacy active jobs from unpromoted candidate/shadow sources (`ashby:*`, `greenhouse:gitlab/remotecom/grafanalabs`).
   - Hardened title-level geoGate regex against parenthetical and pipe country locks (`(Perm, UK, Remote)`, `| United States | Remote`).

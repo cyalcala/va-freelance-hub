@@ -1,6 +1,38 @@
 # System Savepoint
 
-## 2026-09-25 — FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE: Deployed & verified in production (current)
+## 2026-09-25 — EX-CANARY-PROMOTION-GITLAB-GRAFANA-AND-WORKABLE-AUDIT: Executed & verified in production (current)
+
+The owner instructed: "Proceed in this strategy777.txt. Expertly read, plan and implement all and act in this. All approved."
+Following the deployment of `FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE`, executed the next authorized unit to prepare staged Canary promotion for mature shadow sources:
+1. **Workable Philippine VA Agencies Empirical Audit:**
+   - Evaluated all 7 Workable PH agencies: Coconut VA, CrewBloom, Hello Rache, Hunt St, Pearl Talent, Pineapple Staffing, RocketAMS against Migration 0044 trigger invariants.
+   - Identified that prior to the rate-limiting fix deployed on September 24 (commit `c637146`), Workable experienced 62–64 `RATE_LIMITED` (HTTP 429) observations between September 11 and September 24 at 20:14Z due to unthrottled burst shadow dispatching.
+   - Since 2026-09-24T20:15Z, every single Workable observation across all 7 agencies has been 100% `HEALTHY_WITH_RESULTS` (0 errors) under the new 3,000ms polite delay and staggered 2-per-tick rotation.
+   - Verified that the constitutional trigger (`bad.outcome NOT IN ('HEALTHY_WITH_RESULTS','HEALTHY_EMPTY')`) strictly aborts promotion to canary until the error-free window spans the required duration. Preserved constitutional integrity by holding Workable in `shadow` to naturally accumulate its error-free observation streak without artificial trigger bypasses.
+2. **Greenhouse (GitLab & Grafana Labs) Canary Promotion:**
+   - Both `greenhouse:gitlab` and `greenhouse:grafanalabs` satisfied all constitutional prerequisites: 15 qualifying dates in 14d, 13.50d / 13.46d spans, **0 errors** (`bad_count = 0`), unexpired leases through March 2027, and `public_minimal_metadata_canary` authority.
+   - Evaluated decision via Jev 1.13 (`Variant_A`, confidence 0.98, prob 0.99).
+   - Executed typed transition via `scripts/graduation/promote-gitlab-grafana-canary.ts`.
+   - Verified atomic trigger execution into `source_transition_events` and live remote production D1 state.
+
+- **Mode/baton:** EXECUTE. Start SHA `04d438e2056f8c74ab8d649f6587a8191822a175` (clean, synchronized with `origin/main`).
+- **Sources Promoted to Canary:**
+  - `greenhouse:gitlab`: 15 qualifying dates in 14d window, 13.50d span, max 200 plausible items, 0 errors. Promoted to `operational_state = 'canary'` with `canary_max_new_items_per_tick = 2`.
+  - `greenhouse:grafanalabs`: 15 qualifying dates in 14d window, 13.46d span, max 149 plausible items, 0 errors. Promoted to `operational_state = 'canary'` with `canary_max_new_items_per_tick = 2`.
+- **Post-Promotion Registry Snapshot in Remote Production D1:**
+  - `operational_state = 'active'`: 5 (`breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly`)
+  - `operational_state = 'canary'`: 5 (`greenhouse:ghost` [cap 2], `greenhouse:nearform` [cap 2], `greenhouse:gitlab` [cap 2], `greenhouse:grafanalabs` [cap 2], `breezy:time-etc` [cap 1])
+  - `operational_state = 'shadow'`: 10 (Workable x7, Greenhouse x2 [remotecom, wikimedia], Recruitee x1 [myjewellery])
+  - `operational_state = 'candidate'`: 14 (`needs_review`)
+  - `operational_state = 'quarantined'`: 1 (`teamtailor:career.teamtailor.com`, HTTP 404)
+  - Total Registered: 35 sources.
+- **Verification Evidence:**
+  - Test suites: `test-workable-canary-promotion.test.ts` (28 expectations pass), `test-greenhouse-canary-promotion.test.ts` (8 expectations pass).
+  - Full test suite: 1,432 passed, 0 failed across 143 files (`bun test`).
+  - Typecheck clean (0 errors), build Complete in 47.91s (`bun run build`), guardrails clean.
+- **NEXT:** EX-CANARY-INGESTION-MONITORING: Monitor next scheduled hourly scrape tick (Worker cron) to verify canary fetch ingestion, robots checking, and publication clamp enforcement for GitLab and Grafana Labs.
+
+## 2026-09-25 — FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE: Deployed & verified in production (historical)
 
 The owner instructed: "Proceed in this strategy777.txt. Expertly read, plan and implement all and act in this. All approved."
 Following the constitutional promotion of mature shadow sources (`greenhouse:ghost`, `greenhouse:nearform`, `breezy:time-etc`) in commit `d1eebc5`, live verification of hourly ingestion ticks revealed:
