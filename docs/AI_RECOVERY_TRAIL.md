@@ -1,6 +1,22 @@
 # AI Recovery Trail
 
-## 2026-09-25 — FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE: Deployed & verified in production (current)
+## 2026-09-25 — FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION: Deployed & verified in production (current)
+
+Execution per the master operating prompt. The owner instructed: "Proceed in this. Expertly read, plan and implement all and act in this. All approved." invoking `# VA Freelance Hub — Unified Operating and Source Expansion Prompt` (fused from strategy777.txt and strategy888.txt).
+Executed the integration of the unified canonical operating prompt, implemented the complete pure Himalayas remote jobs adapter (`packages/scraper/himalayas.ts`, `packages/scraper/himalayas-canary.ts`, `packages/scraper/himalayas.test.ts`), extended `candidate-shadow.ts` for JSON candidate probing with `applicationLink`/`guid` fields, and verified full build, test, and typecheck suites. Pushed commit `608ef3c`, deployed to Cloudflare Pages via Sovereign CI Guardrail run `36145151976`.
+
+- **Final state**:
+  - Unified operating and expansion strategy saved in `docs/bootloaders/MASTER_OPERATING_PROMPT.md`.
+  - Pure Himalayas parser, normalizer, and converter authored with zero unauthenticated scraping or bypassing.
+  - Candidate shadow sample counter updated to recognize `applicationLink`/`guid`.
+  - Comprehensive unit test suites authored and passing: 1,441 test assertions pass across 146 test files.
+  - Typecheck, audit:guardrails, and build clean (0 errors).
+  - Pushed to `main` as `608ef3c`; Sovereign CI run `36145151976` succeeded across all jobs.
+  - Live production D1 truth: 856 active opportunities (746 `eligible_likely`, 110 `eligible_verified`, 0 `unclear` — 100% constitutionally eligible).
+  - Public board `https://remotejobs-ph.pages.dev/` returning HTTP 200.
+- **NEXT**: EX-WORKABLE-CANARY-READINESS-WATCH holds Workable in shadow; continue canary ingestion monitoring; stage admission evaluation for `himalayas:remote-jobs` into `source_registry` as shadow candidate under ADR-006/007.
+
+## 2026-09-25 — FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE: Deployed & verified in production (historical)
 
 Execution per the master operating prompt. Following the constitutional promotion of mature shadow sources (`d1eebc5`), audited remote D1 production and identified:
 1. 223 active opportunities belonging to candidate/shadow sources (`ashby:*`, `greenhouse:gitlab/remotecom/grafanalabs`) from legacy summer scraping.

@@ -1,6 +1,40 @@
 # System Savepoint
 
-## 2026-09-25 — EX-CANARY-EVAL-REMOTECOM-WIKIMEDIA: Evaluated, constitutionally deferred, zero production effect (current)
+## 2026-09-25 — FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION: Executed, deployed, verified in production (current)
+
+The owner instructed: "Proceed in this. Expertly read, plan and implement all and act in this. All approved." invoking `# VA Freelance Hub — Unified Operating and Source Expansion Prompt` (fused from strategy777.txt and strategy888.txt).
+Executed the integration of the unified canonical operating prompt and implemented the complete pure Himalayas remote jobs adapter (`packages/scraper/himalayas.ts`, `packages/scraper/himalayas-canary.ts`, `packages/scraper/himalayas.test.ts`), extended `candidate-shadow.ts` for JSON candidate probing with `applicationLink`/`guid` fields, and verified full build, test, and typecheck suites. Pushed commit `608ef3c`, deployed to Cloudflare Pages via Sovereign CI Guardrail run `36145151976`.
+
+- **Mode/baton:** EXECUTE. Start SHA `3387101cc190b7257b30e8ab3b0bb1da6f3c3db0`, deployed commit `608ef3c` (synchronized with `origin/main`).
+- **Unified Master Operating Prompt**: Successfully updated `docs/bootloaders/MASTER_OPERATING_PROMPT.md` with the canonical fused text from strategy777.txt and strategy888.txt, establishing unified operating principles, source expansion pathways, Jev 1.13 decision boundaries, and evidence-backed governance.
+- **Himalayas Remote Jobs Reservoir Adapter**:
+  - Implemented pure response parser (`parseHimalayasResponse`), epoch date parser (`parseHimalayasPubDate`), salary normalizer (`normalizeHimalayasPayRange`), location filter (`filterHimalayasPlausibleCandidates`), and opportunity converter (`himalayasJobToOpportunity`) in `packages/scraper/himalayas.ts`.
+  - Implemented provider profile constructor (`buildHimalayasProviderProfile`) and candidate row constructor (`buildHimalayasCandidateRow`) under ADR-006/007 minimal metadata rules in `packages/scraper/himalayas-canary.ts`.
+  - Re-exported all Himalayas types and functions from `packages/scraper/index.ts`.
+  - Added 6 comprehensive unit tests in `packages/scraper/himalayas.test.ts` (all pass).
+- **Candidate Shadow Prober Extension**:
+  - Extended `countJobSample` in `packages/scraper/candidate-shadow.ts` to recognize `applicationLink` and `guid` in candidate JSON feeds.
+  - Added unit test in `packages/scraper/candidate-shadow.test.ts` (40 expectations pass).
+- **Verification Evidence**:
+  - `bun test`: 1,441 passed across 146 test files (0 failures). Main suite + graduation suites + diagnostics passing.
+  - `bun run typecheck`: clean, 0 errors.
+  - `bun run audit:guardrails`: clean, exit 0.
+  - `bun run build`: complete (Astro server built in 50.15s, client bundled in 12.27s).
+- **Deployment Evidence**:
+  - Sovereign CI Guardrail workflow run `36145151976` on push of `608ef3c`:
+    - "Validate project-owned code" (42s): SUCCESS
+    - "Detect deployable changes" (7s): SUCCESS
+    - "Migrate and deploy production" (37s): SUCCESS (Cloudflare Pages deploy complete).
+- **Production D1 State (VERIFIED read-only, `changed_db=false`, `rows_written=0`)**:
+  - Total opportunities: 5,849; active opportunities: 856 (746 `eligible_likely`, 110 `eligible_verified`, 0 `unclear` — 100% constitutionally eligible).
+  - Public board: `https://remotejobs-ph.pages.dev/` returning HTTP 200.
+  - Source registry: 35 sources (5 active, 5 canary, 10 shadow, 14 candidate, 1 quarantined).
+- **Operational Findings & Shadow Dispatch Audit**:
+  - Monitored `EX-03 Shadow Dispatch` run `36144070501`: transient `UNREACHABLE` on `greenhouse:wikimedia` triggered an `unresolved` classification in `shadow-verdict.ts`, failing the run as designed. Endpoint reachability re-tested and confirmed healthy (HTTP 200).
+  - All 7 Workable agencies were rate-limited (HTTP 429) due to single-window burst dispatch; classified as `transient_rate_limit`. Reaffirmed holding Workable in shadow to accumulate the required clean 7-day window through ~Oct 1–2 before any canary re-evaluation.
+- **NEXT**: EX-WORKABLE-CANARY-READINESS-WATCH holds Workable in shadow; continue canary ingestion monitoring for 5 live canaries; stage admission evaluation for `himalayas:remote-jobs` into `source_registry` as shadow candidate under ADR-006/007.
+
+## 2026-09-25 — EX-CANARY-EVAL-REMOTECOM-WIKIMEDIA: Evaluated, constitutionally deferred, zero production effect (historical)
 
 The owner instructed: "Proceed in this. Expertly read, plan and implement all and act in this. All approved."
 Executed `EX-CANARY-PROMOTION-REMOTECOM-WIKIMEDIA` as the next authorized source-specific bounded unit (same lifecycle as `0be4243` GitLab/Grafana): evaluated `greenhouse:remotecom` and `greenhouse:wikimedia` for shadow→canary against live remote production D1. The constitutional guard fail-closed the promotion on real disqualifying evidence. No registry write occurred; both sources remain `shadow`.

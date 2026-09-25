@@ -1,18 +1,17 @@
 # Current resume pointer
 
-**Refreshed 2026-09-25 (EXECUTE: EX-CANARY-EVAL-REMOTECOM-WIKIMEDIA evaluated, constitutionally deferred, zero production effect).**
-The newest authoritative baton is the 2026-09-25 `EX-CANARY-EVAL-REMOTECOM-WIKIMEDIA` savepoint entry
+**Refreshed 2026-09-25 (EXECUTE: FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION executed, deployed, verified in production).**
+The newest authoritative baton is the 2026-09-25 `FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION` savepoint entry
 in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md):
-- `greenhouse:remotecom` (15 qualifying obs, 13.46d span, max 180) and `greenhouse:wikimedia` (14 obs, ~13.5d, max 17) looked promotion-ready on a 7d error check, but the D1 constitutional guard fail-closed on one transient `UNREACHABLE` each (Sept 12 / Sept 15) inside the full qualifying window. Both remain `shadow`; registry 5/5/10/14/1 unchanged; active eligible 855 (+1).
-- Jev 1.13 advised promote (0.71) but Codex dissented on the trigger evidence; disposition is DEFERRED with re-evaluation triggers ~Sept 27 (remotecom) / ~Sept 30 (wikimedia). Staged reusable promotion script + test (repo-pinned wrangler fix included).
+- Unified canonical master operating prompt fused from strategy777.txt and strategy888.txt and updated in [`./MASTER_OPERATING_PROMPT.md`](./MASTER_OPERATING_PROMPT.md).
+- Complete pure Himalayas remote jobs adapter implemented in `packages/scraper/himalayas.ts`, `packages/scraper/himalayas-canary.ts`, and `packages/scraper/himalayas.test.ts` (6/6 tests pass); `candidate-shadow.ts` updated to recognize `applicationLink`/`guid` fields (40/40 tests pass).
+- Full verification: 1,441 test assertions pass, typecheck clean, audit:guardrails clean, build clean. Deployed via CI run `36145151976` (commit `608ef3c`).
+- Production D1 truth: 856 active opportunities (746 `eligible_likely`, 110 `eligible_verified`, 0 `unclear`), HTTP 200 on public board. Registry 5/5/10/14/1 = 35 total.
 
-Prior baton (2026-09-25 `EX-CANARY-INGESTION-MONITORING`, still valid background):
-- Post-promotion scrape tick `2026-09-25T11:50:10.753Z` fetched all 5 canaries (`ok=1`, no errors): GitLab 201 items, Grafana Labs 146, Nearform 24, Ghost 6, Time Etc 1. Later ticks correctly cadence-skipped (60-min minimum).
-- Publication clamp holds with zero leakage: 50 post-promotion GitLab rows all inactive (`49 policy-rejected/ineligible`, `1 unclear`), 0 active (0 <= cap 2); Grafana Labs 0 new rows (dedup), 0 active; Ghost/Time Etc 1 eligible_likely active each (legacy July).
-- Robots evidence: `boards-api.greenhouse.io` 200 at `2026-09-25T00:20:23Z`; Breezy origins 200. Public board `/` and `/opportunities` return 854 open roles, matching D1 (854 eligible, 0 unclear).
-- Workable x7 remain correctly held in shadow: HEALTHY_WITH_RESULTS since `2026-09-24T20:15Z`, last seen `2026-09-25T10:20Z`; pre-fix RATE_LIMITED rows still inside the 7-day window, so the constitutional trigger has not yet cleared.
+Prior baton (2026-09-25 `EX-CANARY-EVAL-REMOTECOM-WIKIMEDIA`, still valid background):
+- `greenhouse:remotecom` (15 qualifying obs, 13.46d span, max 180) and `greenhouse:wikimedia` (14 obs, ~13.5d, max 17) deferred on single transient `UNREACHABLE`s inside qualifying window; remain `shadow`.
 
-NEXT: EX-WORKABLE-CANARY-READINESS-WATCH: hold Workable in shadow until the 7-day error-free window clears the pre-fix 429s (~Oct 1-2); re-evaluate remotecom ~Sept 27 and wikimedia ~Sept 30 with the staged script (single UNREACHABLEs age out Sept 26 / Sept 29); continue canary observation. Next supply gains come from existing shadow maturation, not new reservoirs.
+NEXT: EX-WORKABLE-CANARY-READINESS-WATCH: hold Workable in shadow until the 7-day error-free window clears the pre-fix 429s (~Oct 1-2); continue canary observation; stage admission evaluation for `himalayas:remote-jobs` into `source_registry` as shadow candidate under ADR-006/007.
 
 1. [System savepoint](../SYSTEM_SAVEPOINT.md) — newest current entry first
 2. [Master operating prompt](./MASTER_OPERATING_PROMPT.md)
@@ -24,7 +23,7 @@ NEXT: EX-WORKABLE-CANARY-READINESS-WATCH: hold Workable in shadow until the 7-da
 8. [Source economics latest](../source-economics-latest.md)
 
 Production Reality Baseline (2026-09-25):
-- **Active Supply Truth**: 854 active opportunities in production D1 (100% eligible: 745 `eligible_likely`, 109 `eligible_verified`, 0 `unclear`).
+- **Active Supply Truth**: 856 active opportunities in production D1 (100% eligible: 746 `eligible_likely`, 110 `eligible_verified`, 0 `unclear`).
 - **Flow Truth**: 28.86 qualified jobs/day (202 net-new in 7d, snapshot `2026-09-25T10-33-43-612Z.json`).
 - **Canary Sources (5 Sources)**:
   - `greenhouse:ghost` (cap: 2) -> `operational_state = 'canary'`

@@ -27,6 +27,14 @@ Canonical continuation:
 
 ### Reconciled Production Reality (2026-09-25)
 Direct measurement and workflow inspection confirms:
+- **Himalayas Remote Jobs Reservoir Adapter & Unified Operating Prompt (Commit `608ef3c`)**:
+  - Implemented pure Himalayas parser, epoch normalizer, location filtering, and opportunity converter (`packages/scraper/himalayas.ts`).
+  - Implemented provider profile and candidate row constructors (`packages/scraper/himalayas-canary.ts`) under ADR-006/007 minimal metadata rules.
+  - Enhanced candidate shadow sample counter for JSON feeds with `applicationLink`/`guid` fields (`packages/scraper/candidate-shadow.ts`).
+  - Added 6 comprehensive unit tests (all pass, 1,441 total workspace test assertions pass).
+  - Updated `docs/bootloaders/MASTER_OPERATING_PROMPT.md` with the canonical fused operating and expansion strategy.
+  - Deployed to Cloudflare Pages via Sovereign CI Guardrail run `36145151976`.
+  - Production D1 active supply truth: 856 active opportunities (746 `eligible_likely`, 110 `eligible_verified`, 0 `unclear` — 100% constitutionally eligible).
 - **Shadow -> Canary Promotion of GitLab & Grafana Labs Executed; Workable Empirical Audit**:
   - `greenhouse:gitlab` (cap 2) and `greenhouse:grafanalabs` (cap 2) promoted to `canary` in remote production D1 via `scripts/graduation/promote-gitlab-grafana-canary.ts`.
   - Both sources verified with 15 qualifying observation dates in 14d, 13.50d / 13.46d spans, 0 errors, unexpired 2027 leases, and `public_minimal_metadata_canary` authority.
