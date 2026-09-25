@@ -612,5 +612,43 @@ describe("candidate-shadow — provenance and budget invariants", () => {
     expect(attempts).toBe(2);
     expect(res.diagnostic.outcome).toBe("RATE_LIMITED");
   });
+
+  it("recognizes JSON feeds with applicationLink and guid fields (e.g. Himalayas)", async () => {
+    const input: CandidateShadowInput = {
+      sourceId: "himalayas:remote-jobs",
+      providerId: "himalayas",
+      displayName: "Himalayas",
+      endpointUrl: "https://himalayas.app/jobs/api/search?country=Philippines",
+      complianceState: "conditional",
+      operationalState: "candidate",
+      provider: {
+        id: "himalayas",
+        providerFamily: "himalayas",
+        mechanism: "public_api",
+        authClass: "none",
+        allowedHosts: "himalayas.app",
+        visibilityFilter: "public",
+      },
+    };
+    const payload = JSON.stringify({
+      jobs: [
+        {
+          title: "Executive Virtual Assistant",
+          companyName: "Core-VA",
+          applicationLink: "https://himalayas.app/jobs/core-va",
+          guid: "guid-core-va",
+        },
+      ],
+    });
+    const fetcher = mockFetchFor({
+      "https://himalayas.app/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      "https://himalayas.app/jobs/api/search?country=Philippines": { status: 200, body: payload, headers: { "content-type": "application/json" } },
+    });
+    global.fetch = fetcher;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(res.parse.itemCount).toBe(1);
+    expect(res.sampleFunnel.plausibleItems).toBe(1);
+  });
 });
 

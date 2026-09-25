@@ -201,8 +201,16 @@ function countJobSample(items: unknown[], xml = false): ParsedSample {
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("job collection contains a non-object item");
     const item = value as Record<string, any>;
     if (![item.title, item.text, item.name].some(hasText)) throw new Error("job collection item lacks a title");
-    const links = [item.absolute_url, item.hostedUrl, item.jobUrl, item.url, item.link];
-    if (xml) links.push(item.id, item.guid, item.careers_url, item.link?.["@_href"]);
+    const links = [
+      item.absolute_url,
+      item.hostedUrl,
+      item.jobUrl,
+      item.url,
+      item.link,
+      item.applicationLink,
+      item.guid,
+    ];
+    if (xml) links.push(item.id, item.careers_url, item.link?.["@_href"]);
     if (links.some(hasText)) plausible++;
   }
   return { count: sample.length, plausible, truncated: items.length > SHADOW_MAX_ITEMS };

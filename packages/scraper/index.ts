@@ -456,3 +456,36 @@ export {
   ROLE_FAMILY_PATTERNS,
 } from "./experimental-orchestrator";
 export type { ExperimentalPipelineOptions } from "./experimental-orchestrator";
+
+// ─── Himalayas Reservoir Adapter & Canary ─────────────────────────────────────
+export {
+  HIMALAYAS_API_BASE,
+  HIMALAYAS_SEARCH_API,
+  HIMALAYAS_PROVIDER_ID,
+  HIMALAYAS_SOURCE_ID,
+  parseHimalayasPubDate,
+  parseLocationRestrictions,
+  normalizeHimalayasPayRange,
+  parseHimalayasResponse,
+  filterHimalayasPlausibleCandidates,
+  himalayasJobToOpportunity,
+} from "./himalayas";
+export type {
+  RawHimalayasJob,
+  RawHimalayasResponse,
+  NormalizedHimalayasJob,
+} from "./himalayas";
+export {
+  HIMALAYAS_DEFAULT_ENDPOINT,
+  HIMALAYAS_EVIDENCE_URL,
+  HIMALAYAS_ALLOWED_HOSTS,
+  HIMALAYAS_EVIDENCE_LEASE_DAYS,
+  buildHimalayasProviderProfile,
+  buildHimalayasCandidateRow,
+} from "./himalayas-canary";
+export type {
+  HimalayasProviderProfileRow,
+  HimalayasCandidateRow,
+  HimalayasCandidateInput,
+} from "./himalayas-canary";
+
