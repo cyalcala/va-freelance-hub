@@ -56,8 +56,9 @@ replacement queue. The production baton and open c115d59 observation above
 remain unchanged; no production route, D1 write, promotion, migration, or
 schedule change was performed for this task.
 
-- **Unit/mode:** PROMPT-CONSOLIDATION / documentation; VERIFYING pending docs PR
-  CI. Branch `codex/master-operating-prompt`; start and fetched remote SHA
+- **Unit/mode:** PROMPT-CONSOLIDATION / documentation; TERMINAL — KEEP for the
+  reviewed prompt artifact, not production implementation or target attainment.
+  Branch `codex/master-operating-prompt`; start and fetched remote SHA
   `74d43789e06af04f7e3b2ab09b51d5a1051de9d8`; initially clean tree.
 - **Evidence:** inspected current recovery/authority documents, source reports,
   measurement/publication code, Jev code, and clock/workflow contracts. Live
@@ -77,11 +78,20 @@ schedule change was performed for this task.
   local Bun 1.4.2 (CI pin 1.3.14); no full-suite rerun claimed. One bounded local
   Jev 1.13 strategy consultation succeeded, selected measurement/recovery with
   parallel candidate preparation at 0.99; advisory only, no authority granted.
+- **GitHub backup/acceptance:** artifact commit
+  `48d8caca578d9d77c1f2fb2fbf7cdfd42e78baab` pushed to
+  [draft PR #150](https://github.com/cyalcala/va-freelance-hub/pull/150).
+  [Sovereign CI 36080910420](https://github.com/cyalcala/va-freelance-hub/actions/runs/36080910420)
+  passed on that exact SHA, including tests, Python analytics, build, typecheck,
+  guardrails, and Worker validation. PR production deployment was skipped.
+  Separate legacy Vercel status failed with "Account is blocked"; no Vercel
+  configuration/account changes attempted. PR remains draft and unmerged.
 - **Scope/rollback:** only the new prompt and this checkpoint; withdraw the docs
   branch to discard the artifact, with no production rollback needed.
-- **Next documentation action:** inspect exact-commit PR CI, record the result,
-  and hand over the prompt. Future production resumption still starts with the
-  current c115d59 observation action above and the owner's actual instruction.
+- **Next exact action:** use the delivered prompt to recover current state when
+  the owner invokes it. Future production resumption still starts with the
+  current c115d59 observation action above and the owner's actual instruction;
+  the documentation task does not automatically resume that work.
 
 ## 2026-09-25 — CLOSEOUT: Documentation Backup Only (historical — superseded by c115d59 record above)
 
