@@ -1,5 +1,69 @@
 # System Savepoint
 
+## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: interrupted work recovered, verified, committed (current)
+
+The owner requested execution per the master operating prompt. The working tree
+contained an interrupted prior session's uncommitted unit; it was verified
+intact (all edits preserved, no concurrent overwrites), completed, and pushed.
+No production deployment occurred; PR #150 remains OPEN/draft.
+
+- **Mode/baton:** EXECUTE. Start SHA `59a453fedbc74b396f8031df4a0f1fa161fe3c28`,
+  branch `codex/master-operating-prompt`; origin/main moved `42b982b..5b9fe45`
+  (scheduled digest commits, docs-only, disjoint files) during work; branch not
+  rebased. Working tree: 8 modified + 2 new files from the interrupted session,
+  verified intact before any edit.
+- **Implemented (commit `8f1160e`)** — shadow verdict 1.1.0, purely additive,
+  enforcement unchanged: finding #1 rate-limit frequency/recency from the
+  bounded 14-day history surfaced in the Jev packet (absent data never reads as
+  absent pressure); finding #3 live eval exits 1 when the provider returns a
+  failed result (a provider failure can never report evaluation success);
+  finding #4 consultation carries verdict-version, provider token usage, and a
+  null later-outcome slot; Worker assessor accepts optional provenance fields
+  with strict typing so older deployed route responses stay valid.
+- **Implemented (commit `1fa9232`)** — economics snapshots: versioned daily
+  snapshots over the existing SP-02 economics pipeline (no second collector,
+  clock, or D1 write); snapshot/check/prune CLI; refuses to write from a failed
+  reconciliation; malformed files retained as failed-collection evidence;
+  pruning never deletes the latest file.
+- **Wired (commit `84b63dd`)** — the existing APEX economics clock now persists
+  a daily versioned snapshot of the already-collected `combined.json` plus a
+  `latest.json` pointer to `docs/economics-snapshots`, appends the read-only
+  coverage/next-step queue to the job summary, includes snapshots in the
+  existing 90-day artifact upload, and prunes beyond 90-day retention in the
+  existing main backup step (`[skip ci]`). No new schedule; read-only
+  collection of already-verified aggregates plus evidence backup.
+- **Verification fixes made here:** two test-authoring bugs in
+  `economics-snapshot.test.ts` (`combined(failedRecon)` passed the fixture as
+  byName; corrected to `combined(HEALTHY_BY_NAME, failedRecon)`), and one
+  missing package export (`JevUsage` added to the `packages/scraper/index.ts`
+  type re-exports).
+- **Verification (fresh, full G3 contract on the final tree):** `bun run test`
+  1,416 pass / 0 fail across 138 files; typecheck 0; build Complete; guardrails
+  0. Wiring smoke: the snapshot/check/prune CLI chain exercised end-to-end on a
+  synthetic fixture (concentration SLO flag detected, ranked read-only queue
+  produced). Local Bun 1.4.2 vs repository/CI pin 1.3.14 — MISMATCH disclosed;
+  not identical-runtime release verification.
+- **Backup:** commits `8f1160e`, `1fa9232`, `84b63dd` pushed to
+  `origin/codex/master-operating-prompt` (verified remote receipt).
+  [Sovereign CI 36103262190](https://github.com/cyalcala/va-freelance-hub/actions/runs/36103262190)
+  succeeded on exact SHA `1fa9232` (validate job success; deploy jobs skipped —
+  PR branch/draft). Production deploy skipped.
+- **Anomaly:** the `84b63dd` push had not triggered Sovereign CI ~5 minutes
+  after push (prior pushes triggered within 1–3 minutes); the remote branch was
+  verified at `84b63dd`. Recorded as a delayed/missing trigger to recheck; the
+  docs-checkpoint commit's synchronize CI validates the branch tip including
+  all three commits.
+- **Findings:** #1, #3, #4 fixed in code — implemented, locally verified,
+  CI-validated on `1fa9232`; NOT deployed; no production Tier-2 exercise yet
+  (that requires deployment plus an actual `dispatched > 0` window with a
+  consultation and provider-validation status). #2 previously fixed and
+  deployed (`c115d59`).
+- **NEXT:** merge PR #150 to deploy the behavior changes and snapshot wiring
+  (prerequisite: founder release approval; recheck the delayed `84b63dd` CI and
+  confirm green on the branch tip before merging). Independent: the open Jev
+  verdict observation stays pending; do not force traffic to manufacture a
+  rare Tier-2 case.
+
 ## 2026-09-25 — PROMPT-AUTOMATION-REVISION: documentation and read-only audit
 
 The owner requested a stronger unified prompt: reasonably embedded automation,

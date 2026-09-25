@@ -1,14 +1,22 @@
 # Current resume pointer
 
-**Refreshed 2026-09-25 (read-only invocation recovery).** The newest
-authoritative baton is the 2026-09-25 INVOCATION/DOC-BACKUP savepoint entry in
-[`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md): the c115d59 denominator fix
-is live on Pages (Worker at `7ff7172`), the JEV-SHADOW-VERDICT observation
-window remains open, and no production implementation unit is currently active.
-The master operating prompt is
-[`./MASTER_OPERATING_PROMPT.md`](./MASTER_OPERATING_PROMPT.md), delivered as
-draft PR #150 (checked OPEN/draft/MERGEABLE 2026-09-25). Do not act on the
-historical graduation material below without first reading the savepoint.
+**Refreshed 2026-09-25 (EXECUTE: interrupted work recovered, verified, committed).**
+The newest authoritative baton is the 2026-09-25
+SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT savepoint entry in
+[`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md): shadow verdict 1.1.0
+(review findings #1, #3, #4; purely additive, enforcement unchanged) and the
+economics-snapshot module are committed to PR #150's branch (`8f1160e`,
+`1fa9232`, `84b63dd`) and CI-validated on `1fa9232`
+([Sovereign CI 36103262190](https://github.com/cyalcala/va-freelance-hub/actions/runs/36103262190);
+deploy jobs skipped — production deploy is pending on the founder's merge
+decision). The JEV-SHADOW-VERDICT observation window remains open. The master
+operating prompt is
+[`./MASTER_OPERATING_PROMPT.md`](./MASTER_OPERATING_PROMPT.md). Do not act on
+the historical graduation material below without first reading the savepoint.
+
+NEXT: merge PR #150 to deploy (recheck the delayed `84b63dd` CI and confirm
+green on the branch tip before merging); the open Jev verdict observation stays
+pending.
 
 The later PROMPT-AUTOMATION-REVISION entry records a documentation-only improvement
 and a preserved 02:31:49Z economics snapshot (117/7d, 16.71/day proxy). Its

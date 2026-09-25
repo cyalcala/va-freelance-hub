@@ -1,6 +1,36 @@
 # AI Recovery Trail
 
-## 2026-09-25 — DOC-BACKUP: c115d59 denominator fix recorded as deployed (current)
+## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: interrupted work recovered, verified, committed (current)
+
+Execution per the master operating prompt. The working tree contained an
+interrupted prior session's uncommitted unit; verified intact, completed,
+pushed. No production deployment; PR #150 remains OPEN/draft. Full detail is in
+`docs/SYSTEM_SAVEPOINT.md` (top entry).
+
+- **Final state**: commits `8f1160e` (shadow verdict 1.1.0 — findings #1, #3,
+  #4; purely additive, enforcement unchanged), `1fa9232` (economics-snapshot
+  module: versioned daily snapshots, coverage/freshness checks, ranked
+  read-only next-step queue over the existing SP-02 pipeline), and `84b63dd`
+  (wired daily snapshots + coverage checks into the existing APEX economics
+  clock with 90-day artifact retention and prune-and-commit backup) pushed to
+  `origin/codex/master-operating-prompt`.
+- **Verification**: fresh full G3 contract on the final tree — 1,416 tests /
+  0 fail across 138 files; typecheck 0; build Complete; guardrails 0. Wiring
+  smoke exercised the snapshot/check/prune CLI chain end-to-end. Local Bun
+  1.4.2 vs repository/CI pin 1.3.14 — MISMATCH disclosed, not
+  identical-runtime release verification.
+- **CI**: [Sovereign CI 36103262190](https://github.com/cyalcala/va-freelance-hub/actions/runs/36103262190)
+  success on exact SHA `1fa9232` (validate success; deploy jobs skipped — PR
+  branch/draft). The `84b63dd` push had not triggered CI ~5 minutes after push
+  (remote branch verified at that SHA) — delayed trigger recorded; the
+  docs-checkpoint commit's synchronize CI validates the branch tip.
+- **Findings**: #1, #3, #4 fixed in code (not deployed, no production Tier-2
+  exercise yet); #2 previously fixed and deployed (`c115d59`).
+- **NEXT**: merge PR #150 (founder release approval; recheck the delayed
+  `84b63dd` CI before merging). Independent: the open Jev verdict observation
+  stays pending.
+
+## 2026-09-25 — DOC-BACKUP: c115d59 denominator fix recorded as deployed (historical — superseded by the record above)
 
 Documentation backup only. No further implementation authorized; observation
 window remains open and production clocks continue.
