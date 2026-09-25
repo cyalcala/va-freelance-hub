@@ -1,14 +1,14 @@
 # Current resume pointer
 
-**Refreshed 2026-09-25 (EXECUTE: EX-CANARY-PROMOTION-GITLAB-GRAFANA-AND-WORKABLE-AUDIT executed & verified in production).**
-The newest authoritative baton is the 2026-09-25 `EX-CANARY-PROMOTION-GITLAB-GRAFANA-AND-WORKABLE-AUDIT` savepoint entry
+**Refreshed 2026-09-25 (EXECUTE: EX-CANARY-INGESTION-MONITORING verified in production, read-only).**
+The newest authoritative baton is the 2026-09-25 `EX-CANARY-INGESTION-MONITORING` savepoint entry
 in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md):
-- Audited all 7 Workable PH agencies against Migration 0044 trigger invariants; discovered pre-fix burst rate limiting (`bad_count = 62-64`, last seen 2026-09-24T20:15Z). Since polite delay deployment, 100% HEALTHY_WITH_RESULTS achieved. Workable strictly held in shadow to naturally accumulate its required 7-day error-free span per constitutional trigger without artificial bypass.
-- Promoted proven, defect-free Tier A sources `greenhouse:gitlab` (cap 2) and `greenhouse:grafanalabs` (cap 2) to Canary via atomic trigger execution into `source_transition_events`. Both verified with 15 qualifying dates in 14d, 13.5d clean spans, 0 errors, unexpired 2027 leases.
-- Evaluated options via Jev 1.13 (`Variant_A`, confidence 0.98, prob 0.99).
-- Verified remote D1 truth: 5 active / 5 canary / 10 shadow / 14 candidate / 1 quarantined = 35 total sources.
+- Post-promotion scrape tick `2026-09-25T11:50:10.753Z` fetched all 5 canaries (`ok=1`, no errors): GitLab 201 items, Grafana Labs 146, Nearform 24, Ghost 6, Time Etc 1. Later ticks correctly cadence-skipped (60-min minimum).
+- Publication clamp holds with zero leakage: 50 post-promotion GitLab rows all inactive (`49 policy-rejected/ineligible`, `1 unclear`), 0 active (0 <= cap 2); Grafana Labs 0 new rows (dedup), 0 active; Ghost/Time Etc 1 eligible_likely active each (legacy July).
+- Robots evidence: `boards-api.greenhouse.io` 200 at `2026-09-25T00:20:23Z`; Breezy origins 200. Public board `/` and `/opportunities` return 854 open roles, matching D1 (854 eligible, 0 unclear).
+- Workable x7 remain correctly held in shadow: HEALTHY_WITH_RESULTS since `2026-09-24T20:15Z`, last seen `2026-09-25T10:20Z`; pre-fix RATE_LIMITED rows still inside the 7-day window, so the constitutional trigger has not yet cleared.
 
-NEXT: EX-CANARY-INGESTION-MONITORING: Monitor next scheduled hourly scrape tick (Worker cron) to verify canary fetch ingestion, robots checking, and publication clamp enforcement for GitLab and Grafana Labs.
+NEXT: EX-WORKABLE-CANARY-READINESS-WATCH: hold Workable in shadow until the 7-day error-free window clears the pre-fix 429s (~Oct 1-2); continue canary observation. Next supply gains come from existing shadow maturation, not new reservoirs.
 
 1. [System savepoint](../SYSTEM_SAVEPOINT.md) — newest current entry first
 2. [Master operating prompt](./MASTER_OPERATING_PROMPT.md)
