@@ -21,8 +21,8 @@ interface CandidateRow {
   fingerprint_hash: string;
 }
 
-// Canonical source authority list conforming to accepted exact-six + active D1 registry + approved public APIs
-const AUTHORIZED_SOURCE_IDS = new Set([
+// Canonical exact-six + active registry sources (always authorized)
+const BASE_AUTHORIZED_SOURCE_IDS = new Set([
   "we-work-remotely",
   "remotive",
   "real-work-from-anywhere",
@@ -37,6 +37,48 @@ const AUTHORIZED_SOURCE_IDS = new Set([
   "breezy:value-virtual-assistants",
 ]);
 
+/**
+ * Builds the effective authorized source set at runtime by unioning the static
+ * base set with all tenants autonomously admitted via domain-ats-discovery.ts
+ * (review_status = 'auto_approved' in lake_ats_discovery).
+ *
+ * This means any tenant admitted by the AI admission engine is automatically
+ * eligible for D1 sync on the very next lake:sync run — no code change needed.
+ */
+async function buildAuthorizedSourceIds(
+  client: ReturnType<typeof getLakeClient>
+): Promise<Set<string>> {
+  const authorized = new Set(BASE_AUTHORIZED_SOURCE_IDS);
+
+  try {
+    // Query lake_ats_discovery for autonomously admitted tenants
+    const res = await client.execute(`
+      SELECT source_id FROM lake_ats_discovery
+      WHERE review_status = 'auto_approved';
+    `);
+
+    let dynamicCount = 0;
+    for (const row of res.rows) {
+      const sid = row.source_id as string;
+      if (sid && !authorized.has(sid)) {
+        authorized.add(sid);
+        dynamicCount++;
+      }
+    }
+
+    if (dynamicCount > 0) {
+      console.log(`  [AuthSet] Extended with ${dynamicCount} autonomously admitted ATS tenants.`);
+    }
+  } catch (err: any) {
+    // lake_ats_discovery may not exist yet (pre-first-discovery run) — non-fatal
+    if (!err.message?.includes("no such table")) {
+      console.warn(`  [AuthSet] Could not query lake_ats_discovery: ${err.message}`);
+    }
+  }
+
+  return authorized;
+}
+
 function escapeSql(str: string | null | undefined): string {
   if (str === null || str === undefined) return "NULL";
   return `'${str.replace(/'/g, "''")}'`;
@@ -45,6 +87,10 @@ function escapeSql(str: string | null | undefined): string {
 export async function syncQualifiedJobsToD1(limit = 50, dryRun = false) {
   console.log(`\n=== Starting Governed Sync from Turso Lake to Cloudflare D1 (Limit: ${limit}, DryRun: ${dryRun}) ===`);
   const client = getLakeClient();
+
+  // Build dynamic authorized source set (base + autonomously admitted ATS tenants)
+  const AUTHORIZED_SOURCE_IDS = await buildAuthorizedSourceIds(client);
+  console.log(`  [AuthSet] Total authorized sources: ${AUTHORIZED_SOURCE_IDS.size}`);
 
   // 1. Fetch qualified candidates from Turso
   const res = await client.execute({
