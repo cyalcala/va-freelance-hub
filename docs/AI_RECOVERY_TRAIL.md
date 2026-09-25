@@ -1,6 +1,27 @@
 # AI Recovery Trail
 
-## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Deployed & verified in production (current)
+## 2026-09-25 — EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC: Executed & verified in production (current)
+
+Execution per the master operating prompt. Executed constitutional Canary promotion of three mature, defect-free shadow sources (`greenhouse:ghost`, `greenhouse:nearform`, `breezy:time-etc`). All 3 sources satisfied the complete constitutional gate requirements: >= 8 distinct qualifying observation dates, >= 7d observation span, max plausible items > 0, 0 anomalies, valid admission leases through 2027, and active `public_minimal_metadata_canary` authority.
+
+- **Final state**:
+  - Jev 1.13 decision trace: `Variant_A` confirmed (promote to canary, confidence 0.73, prob 0.83).
+  - Executed typed transition via `scripts/graduation/promote-proven-shadow-canary.ts` using `decideTypedTransition`.
+  - All constitutional triggers (`0039`, `0040`, `0044`) validated and accepted transition events in `source_transition_events`.
+  - Atomic update to `source_registry` in remote production D1 verified:
+    - `greenhouse:ghost` -> `canary` (cap: 2)
+    - `greenhouse:nearform` -> `canary` (cap: 2)
+    - `breezy:time-etc` -> `canary` (cap: 1)
+  - Registry truth in remote D1: 5 active / 3 canary / 12 shadow / 14 candidate / 1 quarantined = 35 total sources.
+  - Evidence artifact authored in `docs/gauntlet/evidence/SEPTEMBER-25-CANARY-PROMOTION.md`.
+  - Authored test `scripts/graduation/test-canary-promotion.test.ts` (12 expectations pass against in-memory trigger plane).
+- **Verification Evidence**:
+  - Full test suite: 1,422 passed / 0 failed across 139 files.
+  - Typecheck clean (0 errors), guardrails clean, build Complete.
+  - Live site `200 OK`; all 5 active VA agencies and directory verified.
+- **NEXT**: Monitor next scheduled hourly scrape tick to verify canary fetch ingestion and clamp enforcement for Ghost, Nearform, and Time Etc.
+
+## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Deployed & verified in production (historical)
 
 Execution per the master operating prompt. Reconciled and merged git history (`codex/master-operating-prompt` into `main` at `9f2871a`). Conducted stratified audit of the largest 7d unclear loss cohorts (`breezy:sourcefit` and `breezy:20four7va`). Authored planning decision, resolved the Breezy onsite leak, restored gate eligibility in recovery drain, applied Migration 0046, deployed via CI, and verified live production behavior.
 

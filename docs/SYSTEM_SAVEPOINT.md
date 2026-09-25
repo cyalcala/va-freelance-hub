@@ -1,6 +1,34 @@
 # System Savepoint
 
-## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Deployed & verified in production (current)
+## 2026-09-25 — EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC: Executed & verified in production (current)
+
+The owner instructed: "Proceed in this strategy777.txt. Expertly read, plan and implement all and act in this. All approved."
+Following the successful Breezy onsite leak & gate eligibility recovery (`a831b41`), executed the planned constitutional Canary promotion of three mature, defect-free shadow sources (`greenhouse:ghost`, `greenhouse:nearform`, `breezy:time-etc`). All 3 satisfied all 8 distinct qualifying observation dates, 7+ day observation spans, 0 errors, valid leases through March 2027, and active `public_minimal_metadata_canary` authority. Evaluated and approved via Jev 1.13 decision layer (`Variant_A`, confidence 0.73), validated through `decideTypedTransition`, executed atomic event insertion into `source_transition_events`, and verified live remote D1 operational states.
+
+- **Mode/baton:** EXECUTE. Start SHA `3405151db8f60f8234827a4c9770524bc13c86fa` (clean, synchronized with `origin/main`).
+- **Sources Promoted to Canary:**
+  - `greenhouse:ghost`: 116 shadow observations, 15 qualifying dates in 14d window, 13.44d span, max 7 plausible items, 0 errors. Promoted to `operational_state = 'canary'` with `canary_max_new_items_per_tick = 2`.
+  - `greenhouse:nearform`: 115 shadow observations, 15 qualifying dates in 14d window, 13.44d span, max 32 plausible items, 0 errors. Promoted to `operational_state = 'canary'` with `canary_max_new_items_per_tick = 2`.
+  - `breezy:time-etc`: 112 shadow observations, 13 qualifying dates in 14d window, 12.00d span, max 1 plausible item, 0 errors. Promoted to `operational_state = 'canary'` with `canary_max_new_items_per_tick = 1`.
+- **Implementation & Invariant Verification:**
+  - Evaluated decision with Jev 1.13: `typesafe/jev-1.13-20260917` returned `Variant_A` (promote to canary, confidence 0.73, prob 0.83).
+  - Executed typed transition via `scripts/graduation/promote-proven-shadow-canary.ts` using `decideTypedTransition`.
+  - All constitutional triggers (`0039`, `0040`, `0044`) validated the events and atomically updated `source_registry`.
+  - Authored comprehensive test in `scripts/graduation/test-canary-promotion.test.ts` (12 expectations pass against in-memory SQLite trigger plane).
+- **Post-Promotion Registry Snapshot in Remote Production D1:**
+  - `operational_state = 'active'`: 5 (`breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly`)
+  - `operational_state = 'canary'`: 3 (`greenhouse:ghost` [cap 2], `greenhouse:nearform` [cap 2], `breezy:time-etc` [cap 1])
+  - `operational_state = 'shadow'`: 12 (`greenhouse:gitlab`, `grafanalabs`, `remotecom`, `wikimedia`, `recruitee:myjewellery`, `workable:*` x7)
+  - `operational_state = 'candidate'`: 14 (`needs_review`)
+  - `operational_state = 'quarantined'`: 1 (`teamtailor:career.teamtailor.com`, HTTP 404)
+  - Total Registered: 35 sources.
+- **Verification Evidence:**
+  - Full test suite: 1,422 passed, 0 failed across 139 files.
+  - Typecheck clean (0 errors), guardrails clean, build Complete.
+  - Live site `https://remotejobs-ph.pages.dev` returning 200 OK; all 5 active VA agencies verified visible on `/opportunities` and `/directory`.
+- **NEXT:** Monitor next scheduled hourly scrape tick to verify canary fetch ingestion and clamp enforcement for Ghost, Nearform, and Time Etc.
+
+## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Deployed & verified in production (historical)
 
 The owner instructed: "Proceed in this strategy777.txt. Expertly read, plan and implement all and act in this. Merge what needs to be merged."
 Merged PR #150 / `codex/master-operating-prompt` into `main` (`9f2871a`). Executed stratified audit of the largest 7-day unclear loss cohorts (Sourcefit 46, 20Four7VA 37), authored planning decision, resolved the Breezy onsite leak, restored gate eligibility in recovery drain, authored and applied Migration 0046, deployed to Cloudflare Pages, and verified live production behavior.
