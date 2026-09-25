@@ -188,8 +188,15 @@ explicitly unavailable exact call timestamps.
 | Recover repository and original prompt | Complete; full start/main SHAs above, clean tree, PR status checked. | Refresh production/report evidence without mutations. |
 | Refresh current evidence | Complete; eight route checks, D1 aggregate inventory and six-query reconciled snapshot, latest shadow response. | Audit existing automation/product/Jev boundaries. |
 | Independent focused audits and strategy choice | Complete; three bounded code audits and one Jev advisory call. | Revise the single master prompt around closed-loop automation and outcome contracts. |
-| Prompt revision and independent critique | Complete; supply and Jev/governance reviews found and corrected Tier-1/Tier-2 wording, rare-event dependency and delayed-report ambiguity; accepted controls can be inherited by reference. | Check final evidence manifest/diff and back up the coherent docs slice. |
-| GitHub backup and acceptance | Pending. | Push to existing PR #150; inspect exact-SHA CI; record acceptance and remaining limitations. |
+| Prompt revision and independent critique | Complete; supply and Jev/governance reviews found and corrected Tier-1/Tier-2 wording, rare-event dependency and delayed-report ambiguity; accepted controls can be inherited by reference. | Completed: 35 prompt file references, fence/diff checks, read-only reconciliation and 20 portable evidence hashes verified. |
+| GitHub backup and acceptance | Complete for artifact commit `43518cb7a765c18d0cdfc3f2a57dbf0a898af2a9`, pushed to draft PR #150; exact-SHA Sovereign CI `36087773838` succeeded. Production deploy skipped; separate legacy Vercel account-block status remains. | Hand over the revised prompt and proposed next unit; push this acceptance record and observe its checks without another recursive documentation-only acceptance commit. |
+
+**Disposition: TERMINAL — KEEP for the documentation artifact.** PR remains
+draft and unmerged. Next proposed engineering action, when authorized: reconcile
+the public eligibility/outcome measurement contract and scope an extension of
+the existing economics workflow for comparable daily snapshots, coverage and
+freshness detection, retained evidence and an actionable next-step queue. Keep
+the open Jev observation independent; do not wait indefinitely for a rare case.
 
 The task changes documentation/evidence only. Existing production remains at
 the accepted behavior revision. Proposed automation requires an authorized

@@ -8,7 +8,9 @@ documentation/backup/next actions at each meaningful checkpoint. This task
 revises the prompt and records evidence; it does not deploy those automations.
 The production c115d59 observation baton remains in the recovery record below.
 
-- **Unit/mode:** PROMPT-AUTOMATION-REVISION / AUDIT + documentation; VERIFYING.
+- **Unit/mode:** PROMPT-AUTOMATION-REVISION / AUDIT + documentation;
+  TERMINAL — KEEP for the prompt/evidence, not deployed automation or target
+  attainment.
   Start SHA `c3320a44c70b3f4bbfcfb9d4c75f446a4e63172f`, branch
   `codex/master-operating-prompt`; fetched `origin/main` unchanged at
   `74d43789e06af04f7e3b2ab09b51d5a1051de9d8`. Initially clean; concurrent
@@ -37,14 +39,25 @@ The production c115d59 observation baton remains in the recovery record below.
   automatically stopping after one. Proposed uses are not claimed deployed.
 - **Jev:** installed 1.13 advisory comparison selected stacked measured loops
   at 0.99 (937 input / 88 output tokens, reported cost 0.000039354); no fallback.
-  This is design advice, not production accuracy, permission or autonomy proof.
+  A separate post-review acceptance comparison returned ACCEPT_DOCUMENTATION
+  at 0.87 (803 input / 65 output, reported cost 0.000033726); no fallback.
+  These are advisory judgments, not production accuracy, permission or autonomy
+  proof. Selected outputs and Codex dispositions are preserved with the evidence.
+- **Verification/backup:** 35 explicit prompt file references resolved; balanced
+  fences and clean diff checks; all six D1 results met the no-write/reconciliation
+  contract; all 20 evidence artifact hashes matched staged Git content with
+  portable LF normalization. Independent reviews corrected the Tier-1/Tier-2
+  observation distinction and rare-event dependency. Artifact commit
+  `43518cb7a765c18d0cdfc3f2a57dbf0a898af2a9` pushed to draft
+  [PR #150](https://github.com/cyalcala/va-freelance-hub/pull/150);
+  [Sovereign CI 36087773838](https://github.com/cyalcala/va-freelance-hub/actions/runs/36087773838)
+  succeeded on that exact SHA. Production deploy skipped. Legacy Vercel status
+  remains a separate account-block failure; PR is unmerged.
 - **Scope/rollback:** documentation/evidence only, with concurrent recovery docs
   preserved. No production writes, source fetches/promotions, runtime edits,
   new schedules, or expanded model authority. Withdraw/revert the documentation
   revision if needed; preserve the historical recovery evidence.
-- **Next documentation action:** finish independent critique/reference/evidence
-  checks, commit/push to existing draft PR #150, inspect exact-SHA CI, and record
-  acceptance. Next proposed engineering action, when authorized: reconcile the
+- **Next exact action:** when engineering execution is authorized, reconcile the
   public-eligibility/outcome metric contract and scope a small existing-economics
   workflow extension for durable daily snapshots, freshness checks and actions;
   keep the open Jev observation pending independently.
