@@ -46,6 +46,43 @@ observation window remains open; existing production clocks continue.
   the 503 mode via `errorClass` when a 503 window appears; review the
   myjewellery budget as a versioned policy change.
 
+### 2026-09-25 — PROMPT-CONSOLIDATION: documentation artifact
+
+The owner requested one improved strategy, bootloader, maintainer, and improver
+prompt grounded in current repository progress. The consolidated artifact is
+[`bootloaders/MASTER_OPERATING_PROMPT.md`](bootloaders/MASTER_OPERATING_PROMPT.md).
+It is an operating method, not a source-policy amendment, execution resume, or
+replacement queue. The production baton and open c115d59 observation above
+remain unchanged; no production route, D1 write, promotion, migration, or
+schedule change was performed for this task.
+
+- **Unit/mode:** PROMPT-CONSOLIDATION / documentation; VERIFYING pending docs PR
+  CI. Branch `codex/master-operating-prompt`; start and fetched remote SHA
+  `74d43789e06af04f7e3b2ab09b51d5a1051de9d8`; initially clean tree.
+- **Evidence:** inspected current recovery/authority documents, source reports,
+  measurement/publication code, Jev code, and clock/workflow contracts. Live
+  read-only GitHub checks confirmed c115d59 Pages deployment run `36076134353`
+  and docs CI `36079245064`; no fresh D1 recount. Existing reports remain dated.
+- **Corrections:** denominator finding fixed; other reviewed Jev gaps open;
+  15.71/day is a first-stored PH proxy, not remote-only first publication;
+  inventory and reactivations do not prove daily flow; stale resume/queue and
+  cutover claims require reconciliation; Workable global preprocessing dormant.
+- **Strategy:** establish auditable publication metrics, investigate recoverable
+  losses, prepare candidate evidence in parallel, then expand through measured
+  marginal yield and current gates. Proposed target reporting criteria must be
+  reconciled in the canonical plan before outcome acceptance.
+- **Verification:** independent supply and governance reviews; 33 explicit
+  repository file references resolved; code fences balanced; `git diff --check`
+  clean. A narrow runtime review ran 61 tests / 0 failures / 239 assertions on
+  local Bun 1.4.2 (CI pin 1.3.14); no full-suite rerun claimed. One bounded local
+  Jev 1.13 strategy consultation succeeded, selected measurement/recovery with
+  parallel candidate preparation at 0.99; advisory only, no authority granted.
+- **Scope/rollback:** only the new prompt and this checkpoint; withdraw the docs
+  branch to discard the artifact, with no production rollback needed.
+- **Next documentation action:** inspect exact-commit PR CI, record the result,
+  and hand over the prompt. Future production resumption still starts with the
+  current c115d59 observation action above and the owner's actual instruction.
+
 ## 2026-09-25 — CLOSEOUT: Documentation Backup Only (historical — superseded by c115d59 record above)
 
 The owner closed out the session with documentation backup only. No further
