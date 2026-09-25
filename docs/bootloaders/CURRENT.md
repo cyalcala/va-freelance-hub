@@ -1,14 +1,18 @@
 # Current resume pointer
 
-**Refreshed 2026-09-25 (EXECUTE: EX-CANARY-INGESTION-MONITORING verified in production, read-only).**
-The newest authoritative baton is the 2026-09-25 `EX-CANARY-INGESTION-MONITORING` savepoint entry
+**Refreshed 2026-09-25 (EXECUTE: EX-CANARY-EVAL-REMOTECOM-WIKIMEDIA evaluated, constitutionally deferred, zero production effect).**
+The newest authoritative baton is the 2026-09-25 `EX-CANARY-EVAL-REMOTECOM-WIKIMEDIA` savepoint entry
 in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md):
+- `greenhouse:remotecom` (15 qualifying obs, 13.46d span, max 180) and `greenhouse:wikimedia` (14 obs, ~13.5d, max 17) looked promotion-ready on a 7d error check, but the D1 constitutional guard fail-closed on one transient `UNREACHABLE` each (Sept 12 / Sept 15) inside the full qualifying window. Both remain `shadow`; registry 5/5/10/14/1 unchanged; active eligible 855 (+1).
+- Jev 1.13 advised promote (0.71) but Codex dissented on the trigger evidence; disposition is DEFERRED with re-evaluation triggers ~Sept 27 (remotecom) / ~Sept 30 (wikimedia). Staged reusable promotion script + test (repo-pinned wrangler fix included).
+
+Prior baton (2026-09-25 `EX-CANARY-INGESTION-MONITORING`, still valid background):
 - Post-promotion scrape tick `2026-09-25T11:50:10.753Z` fetched all 5 canaries (`ok=1`, no errors): GitLab 201 items, Grafana Labs 146, Nearform 24, Ghost 6, Time Etc 1. Later ticks correctly cadence-skipped (60-min minimum).
 - Publication clamp holds with zero leakage: 50 post-promotion GitLab rows all inactive (`49 policy-rejected/ineligible`, `1 unclear`), 0 active (0 <= cap 2); Grafana Labs 0 new rows (dedup), 0 active; Ghost/Time Etc 1 eligible_likely active each (legacy July).
 - Robots evidence: `boards-api.greenhouse.io` 200 at `2026-09-25T00:20:23Z`; Breezy origins 200. Public board `/` and `/opportunities` return 854 open roles, matching D1 (854 eligible, 0 unclear).
 - Workable x7 remain correctly held in shadow: HEALTHY_WITH_RESULTS since `2026-09-24T20:15Z`, last seen `2026-09-25T10:20Z`; pre-fix RATE_LIMITED rows still inside the 7-day window, so the constitutional trigger has not yet cleared.
 
-NEXT: EX-WORKABLE-CANARY-READINESS-WATCH: hold Workable in shadow until the 7-day error-free window clears the pre-fix 429s (~Oct 1-2); continue canary observation. Next supply gains come from existing shadow maturation, not new reservoirs.
+NEXT: EX-WORKABLE-CANARY-READINESS-WATCH: hold Workable in shadow until the 7-day error-free window clears the pre-fix 429s (~Oct 1-2); re-evaluate remotecom ~Sept 27 and wikimedia ~Sept 30 with the staged script (single UNREACHABLEs age out Sept 26 / Sept 29); continue canary observation. Next supply gains come from existing shadow maturation, not new reservoirs.
 
 1. [System savepoint](../SYSTEM_SAVEPOINT.md) — newest current entry first
 2. [Master operating prompt](./MASTER_OPERATING_PROMPT.md)
