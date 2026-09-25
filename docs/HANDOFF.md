@@ -1,6 +1,21 @@
 # Handoff
 
-## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: recovered, verified, committed (current)
+## 2026-09-26 — TURSO-DATA-LAKE-AND-REFINERY: recovered, refined, synced, backed up (current)
+
+The owner instructed: "document and backup everything in github for all these" following the implementation of the Turso Opportunity Intelligence Lake and mature refinery pipeline. All code, schemas, tests, documentation, and backup ledgers are verified and committed. Full detail is in `docs/SYSTEM_SAVEPOINT.md` (top entry).
+
+- **Implementation**:
+  - `scripts/lake/`: `client.ts` (`@libsql/client` 0.18.0), `init-lake.ts`, `ingest-to-lake.ts` (12 live feeders), `replay-refinery.ts` (historical recovery), `sync-to-d1.ts` (governed D1 sync bridge with canonical 16-hex `toContentHash`), `lake.test.ts`.
+  - Empirical verification: 15 raw observations, 544 candidates, 78 duplicate sightings, 31 replay events, 78 opportunities synced into production D1 (active inventory 846 opportunities).
+  - Coverage matrix: `docs/FEDERATED_ACQUISITION_MATRIX.md` mapping 42 feeders.
+- **Fresh verification**:
+  - `bun test`: 1,440 pass / 0 fail across 142 files.
+  - `bun run typecheck`: clean (0 errors).
+  - `bun run audit:guardrails`: clean (0 violations).
+  - `bun run build`: complete (Astro server built in 52.12s, client bundled in 13.90s).
+- **When the owner resumes**: Stream unpaged Remotive JSON API and Himalayan category search into `lake_raw_observations`, and expand company domain -> ATS tenant discovery flywheel.
+
+## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: recovered, verified, committed (historical)
 
 The owner requested execution per the master operating prompt. The interrupted
 prior session's uncommitted unit was verified intact, completed, and pushed.

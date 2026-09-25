@@ -12,7 +12,8 @@
     "./policy-resolver": "./policy-resolver.ts"
   },
   "dependencies": {
-    "fast-xml-parser": "5.10.1",
-    "@va-hub/db": "workspace:*"
+    "@libsql/client": "0.18.0",
+    "@va-hub/db": "workspace:*",
+    "fast-xml-parser": "5.10.1"
   }
 }

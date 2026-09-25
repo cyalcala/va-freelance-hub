@@ -1,6 +1,13 @@
 # Implementation Status
 
-## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: implemented, locally verified, CI-validated (current)
+## 2026-09-26 — TURSO-DATA-LAKE-AND-REFINERY: implemented, verified, synced to D1 (current)
+
+- **What this is**: End-to-end implementation of the Turso Opportunity Intelligence Lake and mature refinement pipeline. Establishes the canonical architecture: *Harvest Wide -> Preserve Permitted Intelligence -> Refine Deep -> Replay Continuously -> Publish Pristine*.
+- **Lake Infrastructure**: Authored `scripts/lake/` containing `client.ts` (`@libsql/client` 0.18.0), `init-lake.ts` (`lake_raw_observations`, `lake_candidate_jobs`, `lake_sightings`, `lake_replay_events`), `ingest-to-lake.ts` (12 live feeders), `replay-refinery.ts` (deterministic `geoGate` + Jev 1.13 historical recovery), and `sync-to-d1.ts` (governed Cloudflare D1 synchronization bridge with canonical 16-hex `toContentHash`).
+- **Empirical Results**: 15 raw observations stored; 544 candidates ingested; 78 duplicate sightings tracked in `lake_sightings`; 31 historical replay audit events logged in `lake_replay_events` with 5 true positives rescued from ambiguous state; 356 qualified ready candidates refined; 78 opportunities synced into production D1 (active inventory increased from 838 to 846).
+- **Verification**: 1,440 pass / 0 fail across 142 test files (`bun test`); typecheck clean (`tsc`); guardrails clean; full Astro build complete.
+
+## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: implemented, locally verified, CI-validated (historical)
 
 - **What this is**: recovery of an interrupted prior session's uncommitted unit
   (verified intact), completed and pushed to PR #150's branch. Three commits:

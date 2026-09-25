@@ -1,6 +1,20 @@
 # AI Recovery Trail
 
-## 2026-09-25 — FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION: Deployed & verified in production (current)
+## 2026-09-26 — FEAT-MAXIMUM-RECALL-TURSO-DATA-LAKE-AND-REFINERY: Executed & verified in production (current)
+
+Execution per the master operating prompt. The owner instructed: "document and backup everything in github for all these" following the execution of `# VA FREELANCE HUB: MAXIMUM-RECALL TURSO DATA LAKE & OPPORTUNITY INTELLIGENCE REFINERY`.
+Operationalized the federated acquisition network, libSQL/Turso intelligence lake, deterministic geoGate refinery, multi-layered deduplication and sighting tracking (`lake_sightings`), immutable historical replay ledger (`lake_replay_events`), and governed Cloudflare D1 synchronization bridge.
+
+- **Final state**:
+  - Lake infrastructure authored in `scripts/lake/` (`client.ts`, `init-lake.ts`, `ingest-to-lake.ts`, `replay-refinery.ts`, `sync-to-d1.ts`, `lake.test.ts`).
+  - Federated intake operationalized across 12 live sources (Himalayas, We Work Remotely, Remotive, RemoteOK, Real Work From Anywhere, Jobicy APAC x2, Breezy agencies x5).
+  - 15 raw observations preserved with payload SHA-256 digests; 544 candidates ingested; 78 duplicate sightings tracked in `lake_sightings`.
+  - Historical replay re-evaluated 35 candidates with deterministic `geoGate`, recovering 5 true positives from `Lemon.io` to `QUALIFIED_READY` and logging 31 immutable audit records to `lake_replay_events`.
+  - Governed sync bridge pushed 78 qualified opportunities into Cloudflare D1 with canonical 16-hex content hashing; production active listings increased from 838 to 846 (100% PH-compliant).
+  - Authored `docs/FEDERATED_ACQUISITION_MATRIX.md` mapping 42 feeders across reservoirs, ATS families, and discovery engines.
+  - Full verification suite clean: 1,440 passed / 0 failed across 142 test files (`bun test`); typecheck 0; guardrails 0; Astro build complete.
+
+## 2026-09-25 — FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION: Deployed & verified in production (historical)
 
 Execution per the master operating prompt. The owner instructed: "Proceed in this. Expertly read, plan and implement all and act in this. All approved." invoking `# VA Freelance Hub — Unified Operating and Source Expansion Prompt` (fused from strategy777.txt and strategy888.txt).
 Executed the integration of the unified canonical operating prompt, implemented the complete pure Himalayas remote jobs adapter (`packages/scraper/himalayas.ts`, `packages/scraper/himalayas-canary.ts`, `packages/scraper/himalayas.test.ts`), extended `candidate-shadow.ts` for JSON candidate probing with `applicationLink`/`guid` fields, and verified full build, test, and typecheck suites. Pushed commit `608ef3c`, deployed to Cloudflare Pages via Sovereign CI Guardrail run `36145151976`.

@@ -1,6 +1,36 @@
 # System Savepoint
 
-## 2026-09-25 — FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION: Executed, deployed, verified in production (current)
+## 2026-09-26 — FEAT-MAXIMUM-RECALL-TURSO-DATA-LAKE-AND-REFINERY: Executed, refined, synced, and verified in production (current)
+
+The owner instructed: "document and backup everything in github for all these" following the execution of `# VA FREELANCE HUB: MAXIMUM-RECALL TURSO DATA LAKE & OPPORTUNITY INTELLIGENCE REFINERY`.
+Established the federated acquisition network, libSQL/Turso opportunity intelligence lake, multi-layered deduplication and sighting tracking, deterministic geoGate refinery, historical replay recovery engine, and governed Cloudflare D1 synchronization bridge.
+
+- **Mode/baton:** EXECUTE. Start SHA `2fcb2555d3cf845a62161b7f89e4a07dc178386f`.
+- **Turso Data Lake Infrastructure (`scripts/lake/`)**:
+  - `client.ts`: Connection singleton managing `@libsql/client` (0.18.0) pool with credential masking.
+  - `init-lake.ts`: Schema migrations initializing `lake_raw_observations`, `lake_candidate_jobs`, `lake_sightings`, and `lake_replay_events`.
+  - `ingest-to-lake.ts`: Federated multi-source ingestion pipeline harvesting 12 live feeders across reservoirs, public APIs, RSS, and Breezy ATS agency boards.
+  - `replay-refinery.ts`: Historical replay engine executing deterministic `geoGate` and Jev 1.13 evaluations across ambiguous/excluded candidates.
+  - `sync-to-d1.ts`: Governed, idempotent Cloudflare D1 synchronization bridge with canonical 16-hex content hashing (`toContentHash`), source authority validation, and dry-run safety.
+  - `lake.test.ts`: Unit test suite verifying canonical content hashing, PH geo-gating, country locks, and ungrounded location handling.
+- **Lake & Live Production Metrics**:
+  - Raw observations stored: 15 (with full SHA-256 payload digests).
+  - Candidates extracted: 544 across 106 unique employers.
+  - Duplicate sightings tracked: 78 in `lake_sightings` (cross-source provenance preserved).
+  - Historical replay audit events: 31 in `lake_replay_events` (`geoGate-v1.2-refinery`), rescuing 5 true positives from `Lemon.io` to `QUALIFIED_READY`.
+  - Qualified ready in lake: 281 opportunities remaining for future governed publication.
+  - Synced to live Cloudflare D1: 78 opportunities (active D1 inventory increased from 838 to 846 opportunities).
+  - Live D1 active listings verified: 100% PH-compliant remote roles (e.g. `MindFi` Mental Health Counselor, `Unifin` Third Party Collection Specialist).
+- **Federated Acquisition Coverage Matrix**:
+  - Authored `docs/FEDERATED_ACQUISITION_MATRIX.md` mapping 42 feeders across reservoirs, ATS families, and discovery engines.
+- **Verification Evidence**:
+  - `bun test`: 1,440 passed across 142 test files (0 failures).
+  - `bun run typecheck`: clean, 0 errors.
+  - `bun run audit:guardrails`: clean, exit 0.
+  - `bun run build`: complete (Astro server built in 52.12s, client bundled in 13.90s, static routes prerendered).
+- **NEXT**: Stream unpaged Remotive JSON API and Himalayan category search into `lake_raw_observations`, and expand company domain -> ATS tenant discovery flywheel.
+
+## 2026-09-25 — FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION: Executed, deployed, verified in production (historical)
 
 The owner instructed: "Proceed in this. Expertly read, plan and implement all and act in this. All approved." invoking `# VA Freelance Hub — Unified Operating and Source Expansion Prompt` (fused from strategy777.txt and strategy888.txt).
 Executed the integration of the unified canonical operating prompt and implemented the complete pure Himalayas remote jobs adapter (`packages/scraper/himalayas.ts`, `packages/scraper/himalayas-canary.ts`, `packages/scraper/himalayas.test.ts`), extended `candidate-shadow.ts` for JSON candidate probing with `applicationLink`/`guid` fields, and verified full build, test, and typecheck suites. Pushed commit `608ef3c`, deployed to Cloudflare Pages via Sovereign CI Guardrail run `36145151976`.
