@@ -111,7 +111,7 @@ async function main() {
   // Case 2 (production pineapple-staffing): transient rate limit — the real
   // live-provider Jev judgment the route would make.
   const tier2Classifications = classifyAnomalies(tier2Anomalies, tier2History);
-  const packet = buildJevAdjudicationPacket({ dispatched: 3, classifications: tier2Classifications });
+  const packet = buildJevAdjudicationPacket({ dispatched: 12, classifications: tier2Classifications });
   const enforced = await decideVerdict({
     anomalies: tier2Anomalies,
     classifications: tier2Classifications,

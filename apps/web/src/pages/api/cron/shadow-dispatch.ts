@@ -122,6 +122,7 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
         dependencies,
         dispatchStartedAt,
         now,
+        totalDispatched: summary.dispatched,
       });
 
       return new Response(JSON.stringify({ ...summary,
@@ -168,6 +169,7 @@ async function adjudicateRunVerdict(
     dependencies: ShadowDispatchHandlerDependencies;
     dispatchStartedAt: string;
     now: () => Date;
+    totalDispatched: number;
   },
 ): Promise<Record<string, unknown>> {
   if (anomalies.length === 0) {
@@ -199,7 +201,7 @@ async function adjudicateRunVerdict(
     jev: tier2 && apiKey && !disabled
       ? () => {
           const packet = buildJevAdjudicationPacket({
-            dispatched: anomalies.length,
+            dispatched: context.totalDispatched,
             classifications,
           });
           const judgeRequest: JevJudgeRequest = {

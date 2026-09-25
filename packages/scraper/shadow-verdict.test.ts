@@ -258,6 +258,17 @@ describe("buildJevAdjudicationPacket", () => {
     expect(Object.keys(packet.criteria)).toEqual(["ACCEPT_NOTES", "FAIL_CONSERVATIVE", "ABSTAIN"]);
     expect(JSON.stringify(packet).length).toBeLessThan(4000);
   });
+
+  test("packet reports the total dispatched count, not the anomaly count", () => {
+    const anomalies = [oversizeAnomaly({ sourceId: "workable:x", providerId: "workable", outcome: "RATE_LIMITED", stopReason: null, bytesReceived: 0 })];
+    const classifications = classifyAnomalies(anomalies, new Map());
+    // Simulate 10 dispatched probes with only 1 anomaly — Jev must see "10", not "1"
+    const packet = buildJevAdjudicationPacket({ dispatched: 10, classifications });
+    expect(packet.state).toContain("Dispatched probes this run: 10.");
+    expect(packet.state).toContain("Anomalous outcomes: 1.");
+    // Ensure the text does NOT say "Dispatched probes this run: 1."
+    expect(packet.state).not.toContain("Dispatched probes this run: 1.");
+  });
 });
 
 describe("constants", () => {
