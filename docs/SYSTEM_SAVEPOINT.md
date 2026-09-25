@@ -1,6 +1,28 @@
 # System Savepoint
 
-## 2026-09-25 — PR-150-MERGE: behavior and snapshot wiring deployed (current)
+## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Onsite leak closed, unclear gate recovery fixed, Migration 0046 authored (current)
+
+The owner instructed: "Proceed in this strategy777.txt. Expertly read, plan and implement all and act in this. Merge what needs to be merged."
+Merged PR #150 / `codex/master-operating-prompt` into `main` (`9f2871a`). Executed stratified audit of the largest 7-day unclear loss cohorts (Sourcefit 46, 20Four7VA 37), authored planning decision, resolved the Breezy onsite leak, restored gate eligibility in recovery drain, and authored Migration 0046.
+
+- **Mode/baton:** EXECUTE. Start SHA `9f2871ad263a2334cb0dd2cb295a09ce7d7162db` (clean, synchronized with `origin/main`).
+- **Stratified Audit & Flaws Identified:**
+  - Audited D1 production database read-only (`docs/audits/STRATIFIED_UNCLEAR_LOSS_AUDIT_2026-09-25.md`).
+  - Sourcefit cohort: 22 rows are onsite BPO positions (Eastwood/Cebu/Bridgetowne) with `Remote: no.` leaking onto the board because `fetchBreezy` hardcoded `locationType: "remote"` and `geoGate` evaluated PH location keywords before checking onsite/hybrid titles. 33 rows are genuine remote WFH jobs in PH.
+  - 20Four7VA cohort: 52 rows (100%) are genuine remote VA positions (`Remote: yes.`) with Worldwide geoScope.
+  - Gate Recovery Dropped Eligibility: `recoverGateEligiblePending` activated pending items but left `phEligibility: "unclear"`, causing them to 404 on opportunity detail pages and be excluded from the public supply index.
+- **Implemented:**
+  - `packages/scraper/ats.ts`: `fetchBreezy` inspects `locations[].is_remote` (if false -> sets `locationType: "onsite"` and appends `(onsite)` to `locationRaw`). Exported `fetchBreezy`.
+  - `packages/scraper/geoGate.ts`: Hoisted `ONSITE_TITLE_REGEX` to Step 0 (before PH keyword matching) ensuring onsite/hybrid titles are classified `ineligible` immediately.
+  - `apps/web/src/pages/api/cron/scrape.ts`: `recoverGateEligiblePending` sets `phEligibility` deterministically based on `geoScope` (`ph_only` -> `eligible_verified`, otherwise `eligible_likely`).
+  - `packages/db/migrations/0046_reconcile_breezy_onsite_and_unclear_eligibility.sql`: deactivates the 22 onsite Sourcefit jobs (`is_active = 0`, `inactive_reason = 'policy-rejected'`), upgrades verified remote Sourcefit jobs to `eligible_verified`, upgrades verified remote 20Four7VA jobs to `eligible_likely`, and reconciles clean gate-eligible auto-published rows.
+- **Ledger Reconciliations:**
+  - `docs/APEX_10X_EXECUTION_STATE.md`: updated baseline to 2026-09-25 verified counts (5 active, 0 canary, 15 shadow, 14 candidate, 1 quarantined; 120/7d = 17.14/day).
+  - `docs/APEX_10X_WORKSTREAM_LEDGER.md`: reconciled `EX-BREEZY` to `DONE_VERIFIED` and `EX-05 Teamtailor` to `QUARANTINED`.
+- **Verification:** Fresh full G3 contract passing — 1,423 tests / 0 fail across 140 files; typecheck clean (0 errors); guardrails clean; build Complete (21.05s server build).
+- **NEXT:** Commit unit, apply Migration 0046 via D1 remote, push to `origin/main`, verify CI deployment run and post-migration supply metrics.
+
+## 2026-09-25 — PR-150-MERGE: behavior and snapshot wiring deployed (historical)
 
 The owner explicitly authorized merging what needs merging. Both NEXT
 prerequisites from the SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT entry were

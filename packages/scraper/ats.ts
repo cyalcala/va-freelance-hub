@@ -232,7 +232,7 @@ async function fetchWorkable(token: string, companyName: string): Promise<NewOpp
     });
 }
 
-async function fetchBreezy(token: string, companyName: string): Promise<NewOpportunity[]> {
+export async function fetchBreezy(token: string, companyName: string): Promise<NewOpportunity[]> {
   // Breezy's /json path is a public job-distribution endpoint: it exists so
   // aggregators can read it, so there is nothing here that needs a disguise.
   const res = await fetch(`https://${token}.breezy.hr/json`, {
@@ -257,6 +257,17 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
       const title = normalizeText(job.name);
       const sourceUrl = job.url;
       const payRange = normalizeText(job.salary) || null;
+      const locations = Array.isArray(job?.locations) && job.locations.length > 0 ? job.locations : (job?.location ? [job.location] : []);
+      const names = locations.map((l: any) => normalizeText(l?.name || l?.country?.name)).filter(Boolean);
+      const remoteSignals = locations
+        .map((location: any) => location?.is_remote)
+        .filter((value: unknown) => typeof value === "boolean");
+      const isExplicitlyOnsite = remoteSignals.length > 0 && !remoteSignals.some(Boolean);
+      const locationRawBase = names.length ? Array.from(new Set(names)).join("; ") : null;
+      const locationRaw = isExplicitlyOnsite
+        ? [locationRawBase, "(onsite)"].filter(Boolean).join(" ")
+        : locationRawBase;
+
       return {
         title,
         company: companyName,
@@ -264,15 +275,9 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
         sourceUrl,
         sourcePlatform: companyName,
         tags: [companyName.toLowerCase()],
-        locationType: "remote",
+        locationType: (isExplicitlyOnsite ? "onsite" : "remote") as "onsite" | "remote",
         payRange,
-        // Geo masterplan L0: reuse the same location extraction the summary uses.
-        locationRaw: (() => {
-          const locations = Array.isArray(job?.locations) && job.locations.length > 0 ? job.locations : (job?.location ? [job.location] : []);
-          const names = locations.map((l: any) => normalizeText(l?.name || l?.country?.name)).filter(Boolean);
-          return names.length ? Array.from(new Set(names)).join("; ") : null;
-        })(),
-
+        locationRaw,
         description: breezyLocationSummary(job),
         postedAt: safeNormalizeDate(job.published_date),
         isActive: true,
@@ -280,3 +285,4 @@ async function fetchBreezy(token: string, companyName: string): Promise<NewOppor
       };
     });
 }
+

@@ -364,3 +364,45 @@ describe("worldwide metadata precedence", () => {
     expect(geoGate({ title: "Writer", locationRaw: "Worldwide", description: "Must overlap four hours with US business hours." }).phEligibility).toBe("eligible_likely");
   });
 });
+
+describe("PH onsite and hybrid rejection precision", () => {
+  it("rejects jobs in the Philippines that have an onsite marker in title", () => {
+    const v = geoGate({
+      title: "Tier 1 Technical Support Specialist (APAC Seasonal) | Onsite",
+      locationRaw: "Bridgetowne Quezon City, PH",
+      description: "Location: Bridgetowne Quezon City, PH. Remote: no.",
+    });
+    expect(v.phEligibility).toBe("ineligible");
+    expect(v.evidence).toContain("Not fully remote");
+  });
+
+  it("rejects jobs in the Philippines that have (onsite) in locationRaw", () => {
+    const v = geoGate({
+      title: "National Material Quantity Surveyor",
+      locationRaw: "Bridgetowne Quezon City, PH (onsite)",
+      description: "Location: Bridgetowne Quezon City, PH. Remote: no.",
+    });
+    expect(v.phEligibility).toBe("ineligible");
+    expect(v.evidence).toContain("Not fully remote");
+  });
+
+  it("rejects hybrid jobs in the Philippines", () => {
+    const v = geoGate({
+      title: "Customer Support Representative (Hybrid)",
+      locationRaw: "Manila, Philippines",
+    });
+    expect(v.phEligibility).toBe("ineligible");
+    expect(v.evidence).toContain("Not fully remote");
+  });
+
+  it("retains eligible_verified for genuine remote jobs in the Philippines", () => {
+    const v = geoGate({
+      title: "Systems Administrator",
+      locationRaw: "Eastwood Quezon City, PH",
+      description: "Location: Eastwood Quezon City, PH. Remote: yes.",
+    });
+    expect(v.phEligibility).toBe("eligible_verified");
+    expect(v.geoScope).toBe("ph_only");
+  });
+});
+

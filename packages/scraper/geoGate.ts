@@ -239,7 +239,16 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
   const tags = (input.tags || []).map((t) => String(t).toLowerCase().trim());
   const titleAndDesc = `${title} ${description}`;
 
-  // 1. PH positives win first — a job naming the Philippines is exactly what
+  // 0. Onsite / hybrid markers in title or structured location string.
+  // A job that is not remote cannot be an eligible remote opportunity,
+  // even if located in the Philippines. Note: description text is deliberately
+  // excluded ("we use a hybrid of async and sync" remains eligible).
+  if (ONSITE_TITLE_REGEX.test(title) || (locationRaw && ONSITE_TITLE_REGEX.test(locationRaw))) {
+    const marker = firstMatch(ONSITE_TITLE_REGEX, title) ?? firstMatch(ONSITE_TITLE_REGEX, locationRaw);
+    return verdict("country_locked", "ineligible", `Not fully remote: "${marker}" marker`);
+  }
+
+  // 1. PH positives win first — a remote job naming the Philippines is exactly what
   //    the board exists for, even when phrased as a residence requirement.
   const phInLocation = firstMatch(PH_POSITIVE_REGEX, locationRaw);
   const phInText = firstMatch(PH_POSITIVE_REGEX, titleAndDesc);
@@ -290,11 +299,7 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
     }
   }
 
-  // 5. Title-level pins: "(US)", "- London", onsite/hybrid markers.
-  if (ONSITE_TITLE_REGEX.test(title) || (locationRaw && ONSITE_TITLE_REGEX.test(locationRaw))) {
-    const marker = firstMatch(ONSITE_TITLE_REGEX, title) ?? firstMatch(ONSITE_TITLE_REGEX, locationRaw);
-    return verdict("country_locked", "ineligible", `Not fully remote: "${marker}" marker`);
-  }
+  // 5. Title-level pins: "(US)", "- London"
   const titleLock = firstMatch(TITLE_COUNTRY_LOCK_REGEX, title);
   if (titleLock) {
     return verdict("country_locked", "ineligible", `Title contains country restriction: "${titleLock.trim()}"`);

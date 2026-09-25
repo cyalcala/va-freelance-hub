@@ -1,27 +1,18 @@
 # Current resume pointer
 
-**Refreshed 2026-09-25 (EXECUTE: PR #150 merged and production deployment confirmed).**
-The newest authoritative baton is the 2026-09-25 PR-150-MERGE savepoint entry
-in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md): PR #150 was merged
-(merge commit `a40a09d`, 2026-09-25T07:51:43Z) after both release
-prerequisites were re-verified, and the deployment was confirmed by inspected
-run evidence — Sovereign CI run 36109825168 (Validate/Detect/Migrate-and-deploy
-production all success) and Worker deploy run 36109825135, both on `a40a09d`.
-Shadow verdict 1.1.0 provenance fields and the economics-snapshot wiring are
-now live but not yet exercised in production. The master operating prompt is
-[`./MASTER_OPERATING_PROMPT.md`](./MASTER_OPERATING_PROMPT.md). Do not act on
-the historical graduation material below without first reading the savepoint.
+**Refreshed 2026-09-25 (EXECUTE: FIX-BREEZY-ONSITE-AND-GATE-RECOVERY verified and ready to deploy).**
+The newest authoritative baton is the 2026-09-25 `FIX-BREEZY-ONSITE-AND-GATE-RECOVERY` savepoint entry
+in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md):
+- Merged PR #150 / `codex/master-operating-prompt` into `main` (`9f2871a`).
+- Executed stratified audit of the largest 7-day unclear loss cohorts (Sourcefit 46, 20Four7VA 37).
+- Authored planning decision (`PLANNING_DECISION_UNCLEAR_SUPPLY_RECOVERY_2026-09-25.md`).
+- Fixed Breezy parser onsite detection (`is_remote: false` -> `onsite`).
+- Hoisted `ONSITE_TITLE_REGEX` to Step 0 in `geoGate.ts`.
+- Restored `phEligibility` assignment in `recoverGateEligiblePending`.
+- Authored Migration 0046 (`0046_reconcile_breezy_onsite_and_unclear_eligibility.sql`).
+- All 1,423 tests pass, typecheck clean, guardrails clean, build clean.
 
-NEXT: investigate the largest recoverable losses (Sourcefit 46, 20Four7VA 37
-unclear / 7d) via a bounded evidence-only stratified audit; reconcile stale
-SP/expansion-ledger pointers. The open Jev verdict observation stays pending.
-
-The later PROMPT-AUTOMATION-REVISION entry records a documentation-only improvement
-and a preserved 02:31:49Z economics snapshot (117/7d, 16.71/day proxy). Its
-proposed automation and Jev expansion are not deployed behavior. The production
-observation remains open; a rare Tier-2 case need not block independent
-authorized planning/measurement work. See the
-[automation prompt audit](../audits/MASTER_PROMPT_AUTOMATION_REVIEW_2026-09-25.md).
+NEXT: Commit unit, apply Migration 0046 via D1 remote, push to `origin/main`, and inspect deployment CI.
 
 1. [System savepoint](../SYSTEM_SAVEPOINT.md) — newest current entry first
 2. [Master operating prompt](./MASTER_OPERATING_PROMPT.md)

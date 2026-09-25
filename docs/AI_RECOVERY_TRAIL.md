@@ -1,6 +1,21 @@
 # AI Recovery Trail
 
-## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: interrupted work recovered, verified, committed (current)
+## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Onsite leak closed, unclear gate recovery fixed, Migration 0046 authored (current)
+
+Execution per the master operating prompt. Reconciled and merged git history (`codex/master-operating-prompt` into `main` at `9f2871a`). Conducted stratified audit of the largest 7d unclear loss cohorts (`breezy:sourcefit` and `breezy:20four7va`). Authored planning decision and implemented full fixes across scraper, geoGate, cron, and DB migrations.
+
+- **Final state**: 
+  - Stratified audit completed (`docs/audits/STRATIFIED_UNCLEAR_LOSS_AUDIT_2026-09-25.md`).
+  - Planning decision authored (`docs/decisions/PLANNING_DECISION_UNCLEAR_SUPPLY_RECOVERY_2026-09-25.md`).
+  - Fixed `fetchBreezy` in `packages/scraper/ats.ts` to inspect `locations[].is_remote` (`is_remote: false` -> `onsite`).
+  - Hoisted `ONSITE_TITLE_REGEX` to Step 0 in `packages/scraper/geoGate.ts` to reject onsite/hybrid roles immediately.
+  - Fixed `recoverGateEligiblePending` in `apps/web/src/pages/api/cron/scrape.ts` to set `phEligibility` based on `geoScope`.
+  - Authored Migration 0046 in `packages/db/migrations/0046_reconcile_breezy_onsite_and_unclear_eligibility.sql` to deactivate 22 onsite Sourcefit jobs and upgrade verified remote rows.
+  - Reconciled workstream ledger and execution state baseline.
+- **Verification**: full G3 contract passed — 1,423 tests / 0 fail across 140 files; typecheck clean (0 errors); guardrails clean; build Complete.
+- **NEXT**: Commit, apply Migration 0046, push to `origin/main`, inspect deployment run.
+
+## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: interrupted work recovered, verified, committed (historical)
 
 Execution per the master operating prompt. The working tree contained an
 interrupted prior session's uncommitted unit; verified intact, completed,

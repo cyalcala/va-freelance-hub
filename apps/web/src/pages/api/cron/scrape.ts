@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, sourceFetchState, sourceFetchEvents, vaDirectory, type NewOpportunity, type SourceFetchState } from "@va-hub/db";
-import { isNotNull, isNull, or, and, inArray, eq, lt, asc, gte, desc } from "drizzle-orm";
+import { isNotNull, isNull, or, and, inArray, eq, lt, asc, gte, desc, sql } from "drizzle-orm";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
 import {
@@ -575,6 +575,7 @@ export async function recoverGateEligiblePending(
   const publishSet = {
     isActive: true,
     inactiveReason: null,
+    phEligibility: sql`CASE WHEN ${opportunities.geoScope} = 'ph_only' THEN 'eligible_verified' ELSE 'eligible_likely' END`,
     geoEvidence: "Geo-gate eligible; auto-published pending AI re-vet",
     updatedAt: observedAt,
     lastSeenInFeedAt: observedAt,

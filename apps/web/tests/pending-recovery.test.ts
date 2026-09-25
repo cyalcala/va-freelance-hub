@@ -57,6 +57,7 @@ describe("recoverGateEligiblePending", () => {
     expect(captured.whereCalled).toBe(true);
     expect(captured.set.isActive).toBe(true);
     expect(captured.set.inactiveReason).toBe(null);
+    expect(captured.set.phEligibility).toBeDefined();
     expect(captured.set.updatedAt).toBe(OBSERVED);
     expect(captured.set.lastSeenInFeedAt).toBe(OBSERVED);
   });
