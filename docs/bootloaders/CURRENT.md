@@ -1,22 +1,20 @@
 # Current resume pointer
 
-**Refreshed 2026-09-25 (EXECUTE: interrupted work recovered, verified, committed).**
-The newest authoritative baton is the 2026-09-25
-SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT savepoint entry in
-[`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md): shadow verdict 1.1.0
-(review findings #1, #3, #4; purely additive, enforcement unchanged) and the
-economics-snapshot module are committed to PR #150's branch (`8f1160e`,
-`1fa9232`, `84b63dd`) and CI-validated on `1fa9232`
-([Sovereign CI 36103262190](https://github.com/cyalcala/va-freelance-hub/actions/runs/36103262190);
-deploy jobs skipped — production deploy is pending on the founder's merge
-decision). The JEV-SHADOW-VERDICT observation window remains open. The master
-operating prompt is
+**Refreshed 2026-09-25 (EXECUTE: PR #150 merged and production deployment confirmed).**
+The newest authoritative baton is the 2026-09-25 PR-150-MERGE savepoint entry
+in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md): PR #150 was merged
+(merge commit `a40a09d`, 2026-09-25T07:51:43Z) after both release
+prerequisites were re-verified, and the deployment was confirmed by inspected
+run evidence — Sovereign CI run 36109825168 (Validate/Detect/Migrate-and-deploy
+production all success) and Worker deploy run 36109825135, both on `a40a09d`.
+Shadow verdict 1.1.0 provenance fields and the economics-snapshot wiring are
+now live but not yet exercised in production. The master operating prompt is
 [`./MASTER_OPERATING_PROMPT.md`](./MASTER_OPERATING_PROMPT.md). Do not act on
 the historical graduation material below without first reading the savepoint.
 
-NEXT: merge PR #150 to deploy (recheck the delayed `84b63dd` CI and confirm
-green on the branch tip before merging); the open Jev verdict observation stays
-pending.
+NEXT: investigate the largest recoverable losses (Sourcefit 46, 20Four7VA 37
+unclear / 7d) via a bounded evidence-only stratified audit; reconcile stale
+SP/expansion-ledger pointers. The open Jev verdict observation stays pending.
 
 The later PROMPT-AUTOMATION-REVISION entry records a documentation-only improvement
 and a preserved 02:31:49Z economics snapshot (117/7d, 16.71/day proxy). Its

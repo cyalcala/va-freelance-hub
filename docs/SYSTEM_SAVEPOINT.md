@@ -1,6 +1,49 @@
 # System Savepoint
 
-## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: interrupted work recovered, verified, committed (current)
+## 2026-09-25 — PR-150-MERGE: behavior and snapshot wiring deployed (current)
+
+The owner explicitly authorized merging what needs merging. Both NEXT
+prerequisites from the SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT entry were
+re-verified, then PR #150 was merged and the deployment confirmed by
+inspected run evidence — not assumed.
+
+- **Mode/baton:** EXECUTE (merge + release verification). Start SHA
+  `7090ba685b81209c6ce51c44c7b154641f121109` (branch tip, tree clean, synced
+  with its remote); fetched `origin/main` at `5b9fe45` (automation digest
+  commits, docs-only, disjoint files).
+- **Prerequisite verification:** Sovereign CI run 36107904184 succeeded on the
+  exact branch tip `7090ba6` — the earlier delayed-`84b63dd`-trigger anomaly is
+  resolved by this synchronize run; only the Vercel check failed (the known,
+  documented legacy account-block failure, not required). Founder release
+  approval was given explicitly in the invocation instruction.
+- **Merge:** PR #150 marked ready and merged as merge commit
+  `a40a09dcf32d7a2ac6cebbe6bed2b57d7c4823e9` at 2026-09-25T07:51:43Z,
+  preserving evidence SHAs `8f1160e`, `1fa9232`, `84b63dd`, `7090ba6` in main.
+- **Release verification (§10, inspected):** Sovereign CI run
+  36109825168 on `a40a09d`: Validate project-owned code, Detect deployable
+  changes, and Migrate and deploy production all succeeded — the Pages
+  deployment actually ran, not skipped. 🕐 Deploy Freshness Cron Worker run
+  36109825135 on the same `a40a09d` succeeded. Pages and Worker are both at
+  the merge SHA. No migrations were in the PR; no D1 schema change occurred.
+- **Now deployed:** shadow verdict 1.1.0 provenance fields (findings #1/#3/#4,
+  purely additive, enforcement unchanged) and the economics-snapshot wiring on
+  the existing APEX clock (daily versioned snapshot + `latest.json` pointer +
+  90-day retention/prune).
+- **Not yet exercised:** the snapshot path's first production run (next APEX
+  economics cron, configured `35 2 * * *`; recent scheduled runs executed
+  ~07:46–07:56Z due to GitHub schedule delay) and any post-deploy Tier-2/Jev
+  exercise (still requires a natural `dispatched > 0` window).
+- **Backup:** merge commit on `origin/main` (remote receipt verified through
+  the merge commit SHA and successful run records on it).
+- **Findings status:** #1/#3/#4 now implemented → locally verified →
+  CI-validated → deployed → NOT yet exercised in production. #2 previously
+  fixed and deployed (`c115d59`).
+- **NEXT:** investigate the largest recoverable losses from the 7d unclear
+  cohorts (Sourcefit 46, 20Four7VA 37) via a bounded evidence-only stratified
+  audit, and reconcile stale SP/expansion-ledger pointers through a bounded
+  planning decision. The Jev verdict observation stays pending independently.
+
+## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: interrupted work recovered, verified, committed
 
 The owner requested execution per the master operating prompt. The working tree
 contained an interrupted prior session's uncommitted unit; it was verified
