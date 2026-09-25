@@ -1,9 +1,9 @@
 # System Savepoint
 
-## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Onsite leak closed, unclear gate recovery fixed, Migration 0046 authored (current)
+## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Deployed & verified in production (current)
 
 The owner instructed: "Proceed in this strategy777.txt. Expertly read, plan and implement all and act in this. Merge what needs to be merged."
-Merged PR #150 / `codex/master-operating-prompt` into `main` (`9f2871a`). Executed stratified audit of the largest 7-day unclear loss cohorts (Sourcefit 46, 20Four7VA 37), authored planning decision, resolved the Breezy onsite leak, restored gate eligibility in recovery drain, and authored Migration 0046.
+Merged PR #150 / `codex/master-operating-prompt` into `main` (`9f2871a`). Executed stratified audit of the largest 7-day unclear loss cohorts (Sourcefit 46, 20Four7VA 37), authored planning decision, resolved the Breezy onsite leak, restored gate eligibility in recovery drain, authored and applied Migration 0046, deployed to Cloudflare Pages, and verified live production behavior.
 
 - **Mode/baton:** EXECUTE. Start SHA `9f2871ad263a2334cb0dd2cb295a09ce7d7162db` (clean, synchronized with `origin/main`).
 - **Stratified Audit & Flaws Identified:**
@@ -11,7 +11,7 @@ Merged PR #150 / `codex/master-operating-prompt` into `main` (`9f2871a`). Execut
   - Sourcefit cohort: 22 rows are onsite BPO positions (Eastwood/Cebu/Bridgetowne) with `Remote: no.` leaking onto the board because `fetchBreezy` hardcoded `locationType: "remote"` and `geoGate` evaluated PH location keywords before checking onsite/hybrid titles. 33 rows are genuine remote WFH jobs in PH.
   - 20Four7VA cohort: 52 rows (100%) are genuine remote VA positions (`Remote: yes.`) with Worldwide geoScope.
   - Gate Recovery Dropped Eligibility: `recoverGateEligiblePending` activated pending items but left `phEligibility: "unclear"`, causing them to 404 on opportunity detail pages and be excluded from the public supply index.
-- **Implemented:**
+- **Implemented (Commit `a831b41`):**
   - `packages/scraper/ats.ts`: `fetchBreezy` inspects `locations[].is_remote` (if false -> sets `locationType: "onsite"` and appends `(onsite)` to `locationRaw`). Exported `fetchBreezy`.
   - `packages/scraper/geoGate.ts`: Hoisted `ONSITE_TITLE_REGEX` to Step 0 (before PH keyword matching) ensuring onsite/hybrid titles are classified `ineligible` immediately.
   - `apps/web/src/pages/api/cron/scrape.ts`: `recoverGateEligiblePending` sets `phEligibility` deterministically based on `geoScope` (`ph_only` -> `eligible_verified`, otherwise `eligible_likely`).
@@ -19,8 +19,18 @@ Merged PR #150 / `codex/master-operating-prompt` into `main` (`9f2871a`). Execut
 - **Ledger Reconciliations:**
   - `docs/APEX_10X_EXECUTION_STATE.md`: updated baseline to 2026-09-25 verified counts (5 active, 0 canary, 15 shadow, 14 candidate, 1 quarantined; 120/7d = 17.14/day).
   - `docs/APEX_10X_WORKSTREAM_LEDGER.md`: reconciled `EX-BREEZY` to `DONE_VERIFIED` and `EX-05 Teamtailor` to `QUARANTINED`.
-- **Verification:** Fresh full G3 contract passing — 1,423 tests / 0 fail across 140 files; typecheck clean (0 errors); guardrails clean; build Complete (21.05s server build).
-- **NEXT:** Commit unit, apply Migration 0046 via D1 remote, push to `origin/main`, verify CI deployment run and post-migration supply metrics.
+- **Verification & Deployment Evidence:**
+  - Local verification: 1,423 tests / 0 fail across 140 files; typecheck clean (0 errors); guardrails clean; build Complete.
+  - Applied Migration 0046 to remote production D1 in 294ms.
+  - Pushed commit `a831b41` to `origin/main`.
+  - Sovereign CI run [36115891606](https://github.com/cyalcala/va-freelance-hub/actions/runs/36115891606): Validate (37s), Detect (6s), Migrate and deploy production (39s) all succeeded.
+- **Post-Deploy Live Production Evidence:**
+  - `breezy:sourcefit`: active unclear went from 47 -> 0; 22 onsite BPO jobs deactivated (`inactive_reason = 'policy-rejected'`, `ph_eligibility = 'ineligible'`); active remote rows upgraded to `eligible_verified` (56) and `eligible_likely` (26).
+  - `breezy:20four7va`: active unclear went from 53 -> 1; 52 verified remote rows upgraded to `eligible_likely` (total active now 126).
+  - Total active eligible jobs in D1 increased to 980 (837 `eligible_likely`, 143 `eligible_verified`). Total active unclear fell to 107.
+  - Live HTTP status: `https://remotejobs-ph.pages.dev` returns 200 OK.
+  - Detail page verification: Active jobs (`/jobs/7257`, `/jobs/7238`) return 200 OK. Deactivated onsite job (`/jobs/3667`) returns 404.
+- **NEXT:** Monitor next scheduled hourly scrape run to confirm zero onsite jobs ingested from Breezy. Next strategic expansion unit per masterplan: EX-03 Shadow Dispatch CI stabilization / promote proven shadow sources (Ghost, Nearform, Time Etc).
 
 ## 2026-09-25 — PR-150-MERGE: behavior and snapshot wiring deployed (historical)
 

@@ -1,6 +1,6 @@
 # Current resume pointer
 
-**Refreshed 2026-09-25 (EXECUTE: FIX-BREEZY-ONSITE-AND-GATE-RECOVERY verified and ready to deploy).**
+**Refreshed 2026-09-25 (EXECUTE: FIX-BREEZY-ONSITE-AND-GATE-RECOVERY deployed and verified in production).**
 The newest authoritative baton is the 2026-09-25 `FIX-BREEZY-ONSITE-AND-GATE-RECOVERY` savepoint entry
 in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md):
 - Merged PR #150 / `codex/master-operating-prompt` into `main` (`9f2871a`).
@@ -9,10 +9,11 @@ in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md):
 - Fixed Breezy parser onsite detection (`is_remote: false` -> `onsite`).
 - Hoisted `ONSITE_TITLE_REGEX` to Step 0 in `geoGate.ts`.
 - Restored `phEligibility` assignment in `recoverGateEligiblePending`.
-- Authored Migration 0046 (`0046_reconcile_breezy_onsite_and_unclear_eligibility.sql`).
-- All 1,423 tests pass, typecheck clean, guardrails clean, build clean.
+- Applied Migration 0046 (`0046_reconcile_breezy_onsite_and_unclear_eligibility.sql`) to production D1.
+- Committed unit as `a831b41`, pushed to `origin/main`, Sovereign CI `36115891606` succeeded (Validate, Detect, Migrate-and-deploy all green).
+- Live production verified: 980 total active eligible opportunities in D1; 22 onsite Sourcefit jobs deactivated (`policy-rejected`, 404 on board); 126 20Four7VA and 82 Sourcefit remote jobs active (`200 OK` on detail pages); site `200 OK`.
 
-NEXT: Commit unit, apply Migration 0046 via D1 remote, push to `origin/main`, and inspect deployment CI.
+NEXT: Monitor next scheduled hourly scrape tick; stabilize EX-03 Shadow Dispatch CI or advance candidate/shadow promotions.
 
 1. [System savepoint](../SYSTEM_SAVEPOINT.md) — newest current entry first
 2. [Master operating prompt](./MASTER_OPERATING_PROMPT.md)

@@ -1,8 +1,8 @@
 # AI Recovery Trail
 
-## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Onsite leak closed, unclear gate recovery fixed, Migration 0046 authored (current)
+## 2026-09-25 — FIX-BREEZY-ONSITE-AND-GATE-RECOVERY: Deployed & verified in production (current)
 
-Execution per the master operating prompt. Reconciled and merged git history (`codex/master-operating-prompt` into `main` at `9f2871a`). Conducted stratified audit of the largest 7d unclear loss cohorts (`breezy:sourcefit` and `breezy:20four7va`). Authored planning decision and implemented full fixes across scraper, geoGate, cron, and DB migrations.
+Execution per the master operating prompt. Reconciled and merged git history (`codex/master-operating-prompt` into `main` at `9f2871a`). Conducted stratified audit of the largest 7d unclear loss cohorts (`breezy:sourcefit` and `breezy:20four7va`). Authored planning decision, resolved the Breezy onsite leak, restored gate eligibility in recovery drain, applied Migration 0046, deployed via CI, and verified live production behavior.
 
 - **Final state**: 
   - Stratified audit completed (`docs/audits/STRATIFIED_UNCLEAR_LOSS_AUDIT_2026-09-25.md`).
@@ -10,10 +10,16 @@ Execution per the master operating prompt. Reconciled and merged git history (`c
   - Fixed `fetchBreezy` in `packages/scraper/ats.ts` to inspect `locations[].is_remote` (`is_remote: false` -> `onsite`).
   - Hoisted `ONSITE_TITLE_REGEX` to Step 0 in `packages/scraper/geoGate.ts` to reject onsite/hybrid roles immediately.
   - Fixed `recoverGateEligiblePending` in `apps/web/src/pages/api/cron/scrape.ts` to set `phEligibility` based on `geoScope`.
-  - Authored Migration 0046 in `packages/db/migrations/0046_reconcile_breezy_onsite_and_unclear_eligibility.sql` to deactivate 22 onsite Sourcefit jobs and upgrade verified remote rows.
+  - Authored & applied Migration 0046 (`packages/db/migrations/0046_reconcile_breezy_onsite_and_unclear_eligibility.sql`) to deactivate 22 onsite Sourcefit jobs and upgrade verified remote rows.
   - Reconciled workstream ledger and execution state baseline.
-- **Verification**: full G3 contract passed — 1,423 tests / 0 fail across 140 files; typecheck clean (0 errors); guardrails clean; build Complete.
-- **NEXT**: Commit, apply Migration 0046, push to `origin/main`, inspect deployment run.
+  - Unit committed as `a831b41` and pushed to `origin/main`.
+- **Verification & Deployment Evidence**:
+  - G3 contract: 1,423 tests / 0 fail across 140 files; typecheck clean (0 errors); guardrails clean; build Complete.
+  - Remote D1: applied Migration 0046 in 294ms.
+  - Sovereign CI run [36115891606](https://github.com/cyalcala/va-freelance-hub/actions/runs/36115891606) succeeded: Validate (37s), Detect (6s), Migrate and deploy production (39s).
+  - Post-deploy live D1: 22 onsite Sourcefit jobs deactivated (`policy-rejected`, `ineligible`), 56 verified remote Sourcefit jobs upgraded to `eligible_verified`, 126 verified remote 20Four7VA jobs upgraded to `eligible_likely`. Total active eligible jobs: 980. Total active unclear: 107.
+  - Live site `200 OK`; opportunity detail pages `/jobs/7257` and `/jobs/7238` `200 OK`; deactivated onsite job `/jobs/3667` `404`.
+- **NEXT**: Monitor next scheduled hourly scrape tick; stabilize EX-03 Shadow Dispatch CI or advance candidate/shadow promotions.
 
 ## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: interrupted work recovered, verified, committed (historical)
 
