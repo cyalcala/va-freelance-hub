@@ -1,14 +1,14 @@
 # Prospector Latest
 
 Date: 2026-09-25
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36096731593
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36131836024
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 2 |
-| Auto-added this run | 0 |
+| Candidates considered | 5 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
-| Review-only (untrusted source) | 2 |
+| Review-only (untrusted source) | 3 |
 | Rejected for quality | 0 |
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
@@ -23,7 +23,8 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36096731
 
 ## Auto-added companies
 
-- (none this run)
+- thehivecareers.co
+- Iterable
 
 ## Durable candidate queue (SP-06, non-publishing)
 
