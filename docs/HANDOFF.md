@@ -1,6 +1,30 @@
 # Handoff
 
-## 2026-09-25 — CLOSEOUT: Documentation Backup Only (current)
+## 2026-09-25 — DOC-BACKUP: Record c115d59 denominator fix deployed (current)
+
+Documentation backup only. No further implementation is authorized by this
+backup; the JEV-SHADOW-VERDICT observation window remains open and existing
+production clocks continue.
+
+- **Superseding fix**: code `c115d59` (2026-09-25T00:08Z) passes the actual
+  dispatched probe count to the Jev adjudication packet (finding #2 fixed).
+  Sovereign CI Guardrail run `36076134353` success incl. Pages deploy —
+  the fix is live. Worker unchanged at `7ff7172`.
+- **Findings**: #2 fixed + deployed; #1 (rate-limit history), #3 (eval
+  success on failed provider), #4 (decision provenance) remain open per
+  code-read. Not an implementation queue.
+- **EX-03**: last scheduled run `36067768527` (22:30Z, healthy, 12 rows / 0
+  eligible / 0 dispatched) — route executed, no probe/Jev evidence.
+  Skip-reason breakdown not collected. 23:23Z tick missing at backup time —
+  normal schedule delay; watch. No new 503 window.
+- **Supply**: source-economics report still 2026-09-24T07:47Z (110/7d =
+  15.71/day first-stored proxy); not refreshed here.
+- **When the owner resumes**: restate start SHA, collect post-fix EX-03
+  decision records (Tier-2 window with corrected denominator), diagnose 503
+  via `errorClass` when one appears, treat the myjewellery budget as an owner
+  policy decision.
+
+## 2026-09-25 — CLOSEOUT: Documentation Backup Only (historical — superseded by c115d59 record above)
 
 The owner closed out with documentation backup only. No further
 implementation is authorized by this closeout; the JEV-SHADOW-VERDICT

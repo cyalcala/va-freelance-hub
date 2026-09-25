@@ -1,6 +1,52 @@
 # System Savepoint
 
-## 2026-09-25 — CLOSEOUT: Documentation Backup Only (current)
+## 2026-09-25 — DOC-BACKUP: Record c115d59 denominator fix deployed (current)
+
+Documentation backup only. No implementation, source admission, promotion,
+or automation restart is authorized by this backup. The JEV-SHADOW-VERDICT
+observation window remains open; existing production clocks continue.
+
+- **Superseding fix (code `c115d59`, 2026-09-25T00:08Z)**:
+  `fix(observability): pass actual dispatched probe count to Jev
+  adjudication packet`. The route passed `anomalies.length` as the dispatched
+  count to `buildJevAdjudicationPacket`; a 10-dispatched / 1-anomaly window
+  read as 100% failure instead of 10%. Now `adjudicateRunVerdict` receives
+  `totalDispatched` from `summary.dispatched`
+  (`apps/web/src/pages/api/cron/shadow-dispatch.ts:125,204`) and passes it to
+  the packet builder. Eval uses `dispatched: 12`; regression test asserts the
+  packet reports the caller count, not the anomaly count. Commit-message
+  verification: 1,394 pass / 0 fail, typecheck 0, guardrails 0 (historical
+  claim from the commit message, not re-run here).
+- **Deploy evidence**: Sovereign CI Guardrail run `36076134353` **success**
+  (validate + D1 migrations + Pages deploy 00:09:51Z). No Worker deploy needed
+  (no `workers/` change; Worker remains at `7ff7172` via run `36053213677`).
+  The denominator fix is live on Pages.
+- **Review-findings reconciliation (code-read 2026-09-25)**: finding #2
+  (dispatched-probe denominator) fixed + deployed; finding #1 (rate-limit
+  frequency/recency omitted) open; finding #3 (eval exits 0 after failed
+  provider result) open; finding #4 (revision-bound evidence, usage, outcome
+  tracking) open. Review findings, not an auto-approved queue.
+- **EX-03 evidence**: last scheduled run `36067768527` (2026-09-24T22:30Z,
+  success, `verdict=healthy`, 12 rows / 0 eligible / 0 dispatched) proves the
+  scheduled route executed and supplies no probe/Jev evidence. Skip-reason
+  breakdown not collected, so "cadence-held" is not independently established.
+  The 23:23Z tick had no recorded run at backup time (~00:46Z) — consistent
+  with normal GitHub schedule delay; watch, not an incident. No new 503
+  window; `errorClass` hardening awaits one.
+- **Supply**: `docs/source-economics-latest.md` still dated 2026-09-24T07:47Z
+  (110 qualified new/7d = 15.71/day first-stored proxy, not verified net-new
+  public publication). Not refreshed in this docs-only backup; limitations
+  preserved.
+- **What must not be redone**: do not reopen terminal units; do not treat a
+  Jev ACCEPT_NOTES as source permission; do not auto-raise the 512 KiB shadow
+  budget; do not wire Jev into publication, promotion, or triage gates.
+- **Next exact action (when the owner resumes)**: `git fetch origin;
+  git status -sb` — restate start SHA; collect post-fix EX-03 decision records
+  (especially a Tier-2 window exercising the corrected denominator); diagnose
+  the 503 mode via `errorClass` when a 503 window appears; review the
+  myjewellery budget as a versioned policy change.
+
+## 2026-09-25 — CLOSEOUT: Documentation Backup Only (historical — superseded by c115d59 record above)
 
 The owner closed out the session with documentation backup only. No further
 implementation, source admission, promotion, or automation restart is

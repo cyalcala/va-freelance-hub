@@ -1,6 +1,23 @@
 # AI Recovery Trail
 
-## 2026-09-25 — CLOSED OUT: documentation backup only (current)
+## 2026-09-25 — DOC-BACKUP: c115d59 denominator fix recorded as deployed (current)
+
+Documentation backup only. No further implementation authorized; observation
+window remains open and production clocks continue.
+
+- **Final state**: code `c115d59` deployed via Sovereign CI `36076134353`
+  success (Pages deploy 00:09:51Z). Fix: actual dispatched probe count passed
+  to the Jev packet (finding #2). Worker unchanged at `7ff7172`.
+- **Findings**: #2 fixed + deployed; #1, #3, #4 open per code-read.
+- **Observation evidence**: last scheduled EX-03 `36067768527` (22:30Z,
+  healthy no-op) predates the fix; post-fix Tier-2 window pending. 23:23Z
+  tick missing at backup time — schedule delay watch. No new 503 window.
+- **Resume procedure**: read `AGENTS.md`, then `docs/SYSTEM_SAVEPOINT.md`
+  (top c115d59 entry), then the masterplan; restate start SHA; collect
+  post-fix EX-03 decision records; diagnose 503 via `errorClass` on next 503
+  window; myjewellery budget stays an owner policy decision.
+
+## 2026-09-25 — CLOSED OUT: documentation backup only (historical — superseded by c115d59 record above)
 
 The owner closed out the JEV-SHADOW-VERDICT session with documentation backup
 only. No further implementation is authorized by this closeout; the

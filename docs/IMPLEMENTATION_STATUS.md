@@ -1,6 +1,24 @@
 # Implementation Status
 
-## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Evidence-Bounded Shadow Run Verdict Adjudication (current)
+## 2026-09-25 — DOC-BACKUP: c115d59 denominator fix deployed (current)
+
+- **What this is**: docs-only backup recording the follow-up fix to RUN 81.
+  Code `c115d59` (2026-09-25T00:08Z) fixes review finding #2: the
+  shadow-dispatch route passed `anomalies.length` as the dispatched count to
+  `buildJevAdjudicationPacket`; now `totalDispatched` from
+  `summary.dispatched` is passed through. Eval denominator corrected to 12;
+  regression test added. Commit-message verification 1,394/0 (not re-run).
+- **Deploy**: Sovereign CI Guardrail run `36076134353` success (validate +
+  Pages deploy). Fix is live on Pages; Worker unchanged.
+- **Findings**: #2 fixed + deployed; #1, #3, #4 open per code-read.
+- **Observation**: post-fix Tier-2 window still pending; last EX-03
+  `36067768527` (22:30Z, healthy no-op) predates the fix. No production
+  improvement claimed until post-fix decision records accumulate.
+- **Deferrals (unchanged)**: myjewellery budget review (versioned policy
+  change); 503 root cause via `errorClass` on next 503 window; no Jev in
+  publication/promotion/triage gates.
+
+## 2026-09-24 — RUN 81 JEV-SHADOW-VERDICT: Evidence-Bounded Shadow Run Verdict Adjudication (historical — followed by c115d59 record above)
 
 - **What this is**: a runtime Jev integration at the shadow-dispatch verdict
   boundary — the EX-03 CI signal. It does NOT change source authority,
