@@ -418,6 +418,7 @@ export type {
   JevAnswer,
   JevConsultation,
   JevRecommendation,
+  JevUsage,
   VerdictResult,
 } from "./shadow-verdict";
 export { JEV_MODEL, JEV_SYSTEMONE_URL, judgeViaJev } from "./jev-client";

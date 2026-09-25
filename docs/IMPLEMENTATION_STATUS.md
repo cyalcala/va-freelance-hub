@@ -1,6 +1,35 @@
 # Implementation Status
 
-## 2026-09-25 — DOC-BACKUP: c115d59 denominator fix deployed (current)
+## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: implemented, locally verified, CI-validated (current)
+
+- **What this is**: recovery of an interrupted prior session's uncommitted unit
+  (verified intact), completed and pushed to PR #150's branch. Three commits:
+  `8f1160e` shadow verdict 1.1.0 (findings #1, #3, #4 — purely additive,
+  enforcement unchanged), `1fa9232` economics-snapshot module (versioned daily
+  snapshots, coverage/freshness checks, ranked read-only next-step queue over
+  the existing SP-02 pipeline; no second collector/clock/D1 write), `84b63dd`
+  wiring the daily snapshots + coverage checks into the existing APEX
+  economics clock (90-day artifact retention, prune-and-commit backup).
+- **Verification fixes made here**: two test-authoring bugs in
+  `economics-snapshot.test.ts` (fixture passed as byName instead of
+  reconciliation) and one missing package export (`JevUsage` in
+  `packages/scraper/index.ts`).
+- **Verification (fresh full G3 contract)**: 1,416 tests / 0 fail across 138
+  files; typecheck 0; build Complete; guardrails 0. Wiring smoke exercised the
+  snapshot/check/prune CLI chain end-to-end. Local Bun 1.4.2 vs repository/CI
+  pin 1.3.14 — MISMATCH disclosed; not identical-runtime release verification.
+- **Deploy**: Sovereign CI `36103262190` success on exact SHA `1fa9232`
+  (validate success; deploy jobs skipped — PR branch/draft). NOT deployed. The
+  `84b63dd` push had not triggered CI ~5 minutes after push (remote branch
+  verified) — delayed trigger recorded; the docs-checkpoint commit's
+  synchronize CI validates the branch tip.
+- **Findings**: #1, #3, #4 fixed in code (not deployed, no production Tier-2
+  exercise yet); #2 previously fixed and deployed (`c115d59`).
+- **Deferrals (unchanged)**: myjewellery budget review (versioned policy
+  change); 503 root cause via `errorClass` on next 503 window; no Jev in
+  publication/promotion/triage gates.
+
+## 2026-09-25 — DOC-BACKUP: c115d59 denominator fix deployed (historical — superseded by the record above)
 
 - **What this is**: docs-only backup recording the follow-up fix to RUN 81.
   Code `c115d59` (2026-09-25T00:08Z) fixes review finding #2: the

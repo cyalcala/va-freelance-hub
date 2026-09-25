@@ -1,0 +1,33 @@
+[
+  {
+    "results": [
+      {
+        "total": 5679,
+        "active": 1105,
+        "inactive": 4574,
+        "with_source_id": 5679,
+        "null_source_id": 0,
+        "active_with_source_id": 1105,
+        "active_null_source_id": 0
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 49.0503
+      },
+      "duration": 49.0503,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 61468672,
+      "rows_read": 5679,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

@@ -85,3 +85,21 @@ test("decision records are validated when present", () => {
   const badEnforced = { ...acceptedVerdict, decision: { model: "x", recommendation: "ACCEPT_NOTES", confidence: 1, enforced: "failed", ok: true } };
   expect(() => assessShadowResponse(JSON.stringify({ ...degraded, verdict: badEnforced }))).toThrow();
 });
+
+test("decision provenance fields are optional but well-typed when present (verdict 1.1.0)", () => {
+  const withProvenance = { ...acceptedVerdict, decision: { provider: "jev-1.13-openrouter", model: "typesafe/jev-1.13",
+    recommendation: "ACCEPT_NOTES", confidence: 0.93, enforced: "healthy_with_notes", ok: true,
+    verdictVersion: "1.1.0", usage: { prompt_tokens: 937, completion_tokens: 88, total_tokens: 1025 }, laterOutcome: null } };
+  expect(assessShadowResponse(JSON.stringify({ ...degraded, verdict: withProvenance }))).toContain("notes=1");
+  const withNullUsage = { ...acceptedVerdict, decision: { model: "x", recommendation: "ACCEPT_NOTES", confidence: 1, enforced: "healthy_with_notes", ok: true, usage: null, laterOutcome: null } };
+  expect(assessShadowResponse(JSON.stringify({ ...degraded, verdict: withNullUsage }))).toContain("notes=1");
+  // An older deployed route without provenance fields stays valid.
+  expect(assessShadowResponse(JSON.stringify({ ...degraded, verdict: { ...acceptedVerdict, decision: { model: "x", recommendation: "ACCEPT_NOTES", confidence: 1, enforced: "healthy_with_notes", ok: true } } }))).toContain("notes=1");
+  for (const bad of [
+    { ...acceptedVerdict, decision: { model: "x", recommendation: "ACCEPT_NOTES", confidence: 1, enforced: "healthy_with_notes", ok: true, verdictVersion: 1 } },
+    { ...acceptedVerdict, decision: { model: "x", recommendation: "ACCEPT_NOTES", confidence: 1, enforced: "healthy_with_notes", ok: true, usage: "x" } },
+    { ...acceptedVerdict, decision: { model: "x", recommendation: "ACCEPT_NOTES", confidence: 1, enforced: "healthy_with_notes", ok: true, laterOutcome: 5 } },
+  ]) {
+    expect(() => assessShadowResponse(JSON.stringify({ ...degraded, verdict: bad }))).toThrow();
+  }
+});

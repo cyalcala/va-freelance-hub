@@ -16,6 +16,7 @@ import {
   type DispatchAnomaly,
   type JevJudgeRequest,
   type JevRecommendation,
+  type JevUsage,
   ANOMALY_HISTORY_WINDOW_DAYS,
   SHADOW_VERDICT_VERSION,
   buildJevAdjudicationPacket,
@@ -40,6 +41,7 @@ type ShadowDispatchHandlerDependencies = {
     confidence: number;
     model: string;
     error?: string;
+    usage?: JevUsage;
   }>;
 };
 
@@ -198,6 +200,7 @@ async function adjudicateRunVerdict(
     classifications,
     disabled,
     available: Boolean(apiKey),
+    verdictVersion: SHADOW_VERDICT_VERSION,
     jev: tier2 && apiKey && !disabled
       ? () => {
           const packet = buildJevAdjudicationPacket({
@@ -223,6 +226,7 @@ async function adjudicateRunVerdict(
                   recommendation: answer.choice as JevRecommendation,
                   confidence: answer.confidence,
                   model: r.model ?? "",
+                  usage: r.usage,
                 };
               });
           return invocation;
@@ -251,6 +255,9 @@ async function adjudicateRunVerdict(
           ok: result.consultation.ok,
           correlationId: result.consultation.correlationId,
           recordedAt: result.consultation.recordedAt,
+          verdictVersion: result.consultation.verdictVersion ?? SHADOW_VERDICT_VERSION,
+          usage: result.consultation.usage ?? null,
+          laterOutcome: result.consultation.laterOutcome ?? null,
         }
       : undefined,
     consultationReason: result.consultation.consulted ? undefined : result.consultation.reason,

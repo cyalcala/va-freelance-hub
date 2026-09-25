@@ -40,10 +40,14 @@ jobs:
           bun scripts/diagnostics/source-economics.ts collect "$OUT/results" "$OUT/economics-meta.json" "$OUT/combined.json"
           bun scripts/diagnostics/source-economics.ts report "$OUT/combined.json" > docs/source-economics-latest.md
           cat docs/source-economics-latest.md >> "$GITHUB_STEP_SUMMARY"
+          bun scripts/diagnostics/economics-snapshot.ts snapshot "$OUT/combined.json" docs/economics-snapshots --run-id "$GITHUB_RUN_ID"
+          bun scripts/diagnostics/economics-snapshot.ts check docs/economics-snapshots >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
           name: source-economics-${{ github.run_id }}
-          path: ${{ runner.temp }}/economics
+          path: |
+            ${{ runner.temp }}/economics
+            docs/economics-snapshots
           retention-days: 90
       - name: Back up aggregate report
         if: github.ref == 'refs/heads/main'
@@ -51,7 +55,8 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add docs/source-economics-latest.md
+          bun scripts/diagnostics/economics-snapshot.ts prune docs/economics-snapshots
+          git add docs/source-economics-latest.md docs/economics-snapshots
           if git diff --staged --quiet; then exit 0; fi
           git commit -m 'docs: update measured source economics [skip ci]'
           for attempt in 1 2 3; do

@@ -36,7 +36,10 @@
 import type { DoctorOutcome } from "./source-doctor";
 import { sha256Hex } from "./contentHash";
 
-export const SHADOW_VERDICT_VERSION = "1.0.0";
+// 1.1.0: packet evidence now includes rate-limit frequency/recency (finding
+// #1) and the consultation record carries verdict-version, token-usage, and
+// later-outcome provenance (finding #4). Purely additive; enforcement unchanged.
+export const SHADOW_VERDICT_VERSION = "1.1.0";
 
 /** A non-healthy probe outcome captured by the dispatcher for this run. */
 export interface DispatchAnomaly {
@@ -85,6 +88,13 @@ export const HARD_UNRESOLVABLE_OUTCOMES: ReadonlySet<DoctorOutcome> = new Set<Do
   "UNREACHABLE",
 ]);
 
+/** Token usage reported by the provider for one judgment call (finding #4). */
+export interface JevUsage {
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+}
+
 /** Recommendations Jev is allowed to make. Anything else is malformed. */
 export type JevRecommendation = "ACCEPT_NOTES" | "FAIL_CONSERVATIVE" | "ABSTAIN";
 export const JEV_RECOMMENDATIONS: readonly JevRecommendation[] = ["ACCEPT_NOTES", "FAIL_CONSERVATIVE", "ABSTAIN"];
@@ -101,6 +111,15 @@ export type JevConsultation =
       error?: string;
       correlationId: string;
       recordedAt: string;
+      /** Revision of the verdict/packet logic at decision time (finding #4). */
+      verdictVersion?: string;
+      /** Provider-reported token usage when the call succeeded (finding #4). */
+      usage?: JevUsage;
+      /**
+       * Later observed outcome of this decision, linked by correlationId.
+       * Null at decision time; filled only by evidence tooling (finding #4).
+       */
+      laterOutcome?: string | null;
     };
 
 export interface AnomalyClassificationResult {
@@ -116,6 +135,10 @@ export interface AnomalyClassificationResult {
     healthyParsedLast14d: number;
     hardUnresolvableLast14d: number;
     chronicIdenticalOversize: boolean | null;
+    /** RATE_LIMITED observations in the bounded 14-day history (finding #1). */
+    rateLimitedLast14d: number;
+    /** Most recent RATE_LIMITED observation in history, or null (finding #1). */
+    lastRateLimitedAt: string | null;
   };
 }
 
@@ -131,6 +154,11 @@ export function classifyAnomaly(
   const hardUnresolvable = rows.filter(
     (r) => HARD_UNRESOLVABLE_OUTCOMES.has(r.outcome),
   ).length;
+  const rateLimitedRows = rows.filter((r) => r.outcome === "RATE_LIMITED");
+  const lastRateLimitedAt = rateLimitedRows.reduce<string>(
+    (max, r) => (r.observedAt > max ? r.observedAt : max),
+    "",
+  ) || null;
 
   const evidence = {
     stopReason: anomaly.stopReason,
@@ -140,6 +168,8 @@ export function classifyAnomaly(
     healthyParsedLast14d: healthyParsed,
     hardUnresolvableLast14d: hardUnresolvable,
     chronicIdenticalOversize: null as boolean | null,
+    rateLimitedLast14d: rateLimitedRows.length,
+    lastRateLimitedAt,
   };
 
   if (anomaly.outcome === "RATE_LIMITED") {
@@ -217,6 +247,7 @@ export interface JevAnswer {
   model: string;
   ok: boolean;
   error?: string;
+  usage?: JevUsage;
 }
 
 /**
@@ -234,6 +265,8 @@ export async function decideVerdict(input: {
   disabled?: boolean;
   available?: boolean;
   now?: () => Date;
+  /** Verdict/packet revision at decision time, recorded on the consultation. */
+  verdictVersion?: string;
 }): Promise<VerdictResult> {
   const { anomalies, classifications } = input;
   if (anomalies.length === 0) {
@@ -315,6 +348,9 @@ export async function decideVerdict(input: {
     error: answer.error,
     correlationId,
     recordedAt: now().toISOString(),
+    verdictVersion: input.verdictVersion,
+    usage: valid ? answer.usage : undefined,
+    laterOutcome: null,
   };
 
   if (!valid || belowConfidence || recommendation !== "ACCEPT_NOTES") {
@@ -356,8 +392,13 @@ export function buildJevAdjudicationPacket(input: {
     const oversize = ev.budgetBytes !== null
       ? ` oversize ${ev.bytesReceived}B vs budget ${ev.budgetBytes}B (over ${(100 * (ev.overBudgetMargin ?? 0)).toFixed(3)}%)`
       : "";
-    const history = ` history14d: healthyParsed=${ev.healthyParsedLast14d}, hardUnresolvable=${ev.hardUnresolvableLast14d}, chronicIdenticalOversize=${String(ev.chronicIdenticalOversize)}`;
-    return `- ${c.sourceId} (provider ${c.providerId}): outcome=${c.outcome}, stop="${ev.stopReason ?? "none"}"${oversize}.${history}`;
+    // Rate-limit frequency/recency (finding #1): Jev's FAIL_CONSERVATIVE
+    // criteria name "repeated rate-limit pressure", so the packet must show
+    // how often rate limiting occurred in the bounded history and how recent
+    // the last occurrence was — absent data must not read as absent pressure.
+    const rateLimit = ` rateLimited14d: ${ev.rateLimitedLast14d}, lastRateLimitedAt: ${ev.lastRateLimitedAt ?? "none recorded"}`;
+    const history = ` history14d: healthyParsed=${ev.healthyParsedLast14d}, hardUnresolvable=${ev.hardUnresolvableLast14d}, chronicIdenticalOversize=${String(ev.chronicIdenticalOversize)}.`;
+    return `- ${c.sourceId} (provider ${c.providerId}): outcome=${c.outcome}, stop="${ev.stopReason ?? "none"}"${oversize}.${rateLimit}${history}`;
   }).join("\n");
 
   return {

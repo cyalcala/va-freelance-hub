@@ -1,0 +1,16 @@
+{
+  "method": "Bounded public GET using Node fetch; no browser interaction or application clicks",
+  "origin": "https://remotejobs-ph.pages.dev",
+  "scope": "Availability and basic HTML markers only, not visual/accessibility/full semantic verification",
+  "route_batch_completed_at": "2026-09-25T02:29:46.467Z",
+  "routes": [
+    {"path":"/","status":200,"bytes":173801,"distinct_job_detail_links":39},
+    {"path":"/opportunities","status":200,"bytes":82317,"distinct_job_detail_links":17},
+    {"path":"/directory","status":200,"bytes":73299},
+    {"path":"/data-policy","status":200,"bytes":10610},
+    {"path":"/privacy","status":200,"bytes":10113},
+    {"path":"/sitemap.xml","status":200,"bytes":128866},
+    {"path":"/jobs/7236","status":200,"checked_at":"2026-09-25T02:30:59.219Z","job_posting_markup":true,"telecommute_markup":true},
+    {"path":"/jobs/7242","status":200,"checked_at":"2026-09-25T02:30:59.645Z","job_posting_markup":true,"telecommute_markup":true}
+  ]
+}

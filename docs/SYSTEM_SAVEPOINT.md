@@ -1,6 +1,190 @@
 # System Savepoint
 
-## 2026-09-25 — DOC-BACKUP: Record c115d59 denominator fix deployed (current)
+## 2026-09-25 — SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT: interrupted work recovered, verified, committed (current)
+
+The owner requested execution per the master operating prompt. The working tree
+contained an interrupted prior session's uncommitted unit; it was verified
+intact (all edits preserved, no concurrent overwrites), completed, and pushed.
+No production deployment occurred; PR #150 remains OPEN/draft.
+
+- **Mode/baton:** EXECUTE. Start SHA `59a453fedbc74b396f8031df4a0f1fa161fe3c28`,
+  branch `codex/master-operating-prompt`; origin/main moved `42b982b..5b9fe45`
+  (scheduled digest commits, docs-only, disjoint files) during work; branch not
+  rebased. Working tree: 8 modified + 2 new files from the interrupted session,
+  verified intact before any edit.
+- **Implemented (commit `8f1160e`)** — shadow verdict 1.1.0, purely additive,
+  enforcement unchanged: finding #1 rate-limit frequency/recency from the
+  bounded 14-day history surfaced in the Jev packet (absent data never reads as
+  absent pressure); finding #3 live eval exits 1 when the provider returns a
+  failed result (a provider failure can never report evaluation success);
+  finding #4 consultation carries verdict-version, provider token usage, and a
+  null later-outcome slot; Worker assessor accepts optional provenance fields
+  with strict typing so older deployed route responses stay valid.
+- **Implemented (commit `1fa9232`)** — economics snapshots: versioned daily
+  snapshots over the existing SP-02 economics pipeline (no second collector,
+  clock, or D1 write); snapshot/check/prune CLI; refuses to write from a failed
+  reconciliation; malformed files retained as failed-collection evidence;
+  pruning never deletes the latest file.
+- **Wired (commit `84b63dd`)** — the existing APEX economics clock now persists
+  a daily versioned snapshot of the already-collected `combined.json` plus a
+  `latest.json` pointer to `docs/economics-snapshots`, appends the read-only
+  coverage/next-step queue to the job summary, includes snapshots in the
+  existing 90-day artifact upload, and prunes beyond 90-day retention in the
+  existing main backup step (`[skip ci]`). No new schedule; read-only
+  collection of already-verified aggregates plus evidence backup.
+- **Verification fixes made here:** two test-authoring bugs in
+  `economics-snapshot.test.ts` (`combined(failedRecon)` passed the fixture as
+  byName; corrected to `combined(HEALTHY_BY_NAME, failedRecon)`), and one
+  missing package export (`JevUsage` added to the `packages/scraper/index.ts`
+  type re-exports).
+- **Verification (fresh, full G3 contract on the final tree):** `bun run test`
+  1,416 pass / 0 fail across 138 files; typecheck 0; build Complete; guardrails
+  0. Wiring smoke: the snapshot/check/prune CLI chain exercised end-to-end on a
+  synthetic fixture (concentration SLO flag detected, ranked read-only queue
+  produced). Local Bun 1.4.2 vs repository/CI pin 1.3.14 — MISMATCH disclosed;
+  not identical-runtime release verification.
+- **Backup:** commits `8f1160e`, `1fa9232`, `84b63dd` pushed to
+  `origin/codex/master-operating-prompt` (verified remote receipt).
+  [Sovereign CI 36103262190](https://github.com/cyalcala/va-freelance-hub/actions/runs/36103262190)
+  succeeded on exact SHA `1fa9232` (validate job success; deploy jobs skipped —
+  PR branch/draft). Production deploy skipped.
+- **Anomaly:** the `84b63dd` push had not triggered Sovereign CI ~5 minutes
+  after push (prior pushes triggered within 1–3 minutes); the remote branch was
+  verified at `84b63dd`. Recorded as a delayed/missing trigger to recheck; the
+  docs-checkpoint commit's synchronize CI validates the branch tip including
+  all three commits.
+- **Findings:** #1, #3, #4 fixed in code — implemented, locally verified,
+  CI-validated on `1fa9232`; NOT deployed; no production Tier-2 exercise yet
+  (that requires deployment plus an actual `dispatched > 0` window with a
+  consultation and provider-validation status). #2 previously fixed and
+  deployed (`c115d59`).
+- **NEXT:** merge PR #150 to deploy the behavior changes and snapshot wiring
+  (prerequisite: founder release approval; recheck the delayed `84b63dd` CI and
+  confirm green on the branch tip before merging). Independent: the open Jev
+  verdict observation stays pending; do not force traffic to manufacture a
+  rare Tier-2 case.
+
+## 2026-09-25 — PROMPT-AUTOMATION-REVISION: documentation and read-only audit
+
+The owner requested a stronger unified prompt: reasonably embedded automation,
+continuous measurement, evaluated Jev use, outcome-oriented continuation, and
+documentation/backup/next actions at each meaningful checkpoint. This task
+revises the prompt and records evidence; it does not deploy those automations.
+The production c115d59 observation baton remains in the recovery record below.
+
+- **Unit/mode:** PROMPT-AUTOMATION-REVISION / AUDIT + documentation;
+  TERMINAL — KEEP for the prompt/evidence, not deployed automation or target
+  attainment.
+  Start SHA `c3320a44c70b3f4bbfcfb9d4c75f446a4e63172f`, branch
+  `codex/master-operating-prompt`; fetched `origin/main` unchanged at
+  `74d43789e06af04f7e3b2ab09b51d5a1051de9d8`. Initially clean; concurrent
+  invocation updates to this savepoint, CURRENT.md and the prompt capsule were
+  subsequently observed and preserved, with separate timestamped measurements.
+- **Audit:** `docs/audits/MASTER_PROMPT_AUTOMATION_REVIEW_2026-09-25.md` records
+  whole-project findings, proposed automation layers, Jev review and step/next-
+  action ledger. Three independent bounded code audits informed the revision.
+- **Fresh evidence:** eight public route/detail GETs returned 200; this was not
+  a visual or full data-quality audit. D1 registry/inventory SELECT confirmed
+  5 active / 15 shadow / 14 candidate / 1 quarantined sources, 1,105 active
+  jobs and 866 positive PH verdicts. Six read-only economics queries at
+  `2026-09-25T02:31:49.978Z` reconciled: 117/7d = 16.71/day first-stored proxy,
+  not exact qualified remote publication. The earlier invocation's 118/7d
+  remains a separate observation; no regression or causal gain is inferred.
+  All D1 results checked `success=true`, `changed_db=false`, `rows_written=0`.
+- **Durable evidence:** queries, metadata, aggregate results/reconciliation,
+  rendered report and post-fix EX-03 response are in
+  `docs/gauntlet/evidence/PROMPT-AUTOMATION-2026-09-25/`. EX-03 run `36082783445`
+  is a healthy zero-dispatch rotating window, not a new Tier-2 exercise.
+- **Prompt changes:** recurring-solution contracts; versioned daily snapshot
+  history and monitor freshness; reuse existing collectors/clocks/controllers;
+  bounded repair and effect verification; independent product-path/restore
+  acceptance; Jev advisory/offline/shadow/canary evaluation ladder; every-step
+  checkpoint/verified backup/next trigger; continue authorized units without
+  automatically stopping after one. Proposed uses are not claimed deployed.
+- **Jev:** installed 1.13 advisory comparison selected stacked measured loops
+  at 0.99 (937 input / 88 output tokens, reported cost 0.000039354); no fallback.
+  A separate post-review acceptance comparison returned ACCEPT_DOCUMENTATION
+  at 0.87 (803 input / 65 output, reported cost 0.000033726); no fallback.
+  These are advisory judgments, not production accuracy, permission or autonomy
+  proof. Selected outputs and Codex dispositions are preserved with the evidence.
+- **Verification/backup:** 35 explicit prompt file references resolved; balanced
+  fences and clean diff checks; all six D1 results met the no-write/reconciliation
+  contract; all 20 evidence artifact hashes matched staged Git content with
+  portable LF normalization. Independent reviews corrected the Tier-1/Tier-2
+  observation distinction and rare-event dependency. Artifact commit
+  `43518cb7a765c18d0cdfc3f2a57dbf0a898af2a9` pushed to draft
+  [PR #150](https://github.com/cyalcala/va-freelance-hub/pull/150);
+  [Sovereign CI 36087773838](https://github.com/cyalcala/va-freelance-hub/actions/runs/36087773838)
+  succeeded on that exact SHA. Production deploy skipped. Legacy Vercel status
+  remains a separate account-block failure; PR is unmerged.
+- **Scope/rollback:** documentation/evidence only, with concurrent recovery docs
+  preserved. No production writes, source fetches/promotions, runtime edits,
+  new schedules, or expanded model authority. Withdraw/revert the documentation
+  revision if needed; preserve the historical recovery evidence.
+- **Next exact action:** when engineering execution is authorized, reconcile the
+  public-eligibility/outcome metric contract and scope a small existing-economics
+  workflow extension for durable daily snapshots, freshness checks and actions;
+  keep the open Jev observation pending independently.
+
+## 2026-09-25 — INVOCATION: master-prompt boot recovery, read-only (current)
+
+Documentation-only invocation recovery under
+`docs/bootloaders/MASTER_OPERATING_PROMPT.md`. No production implementation,
+source admission, promotion, or configuration change. Bounded read-only D1
+SELECTs were performed (every query verified `success=true`, `changed_db=false`,
+`rows_written=0`); no cron route was invoked by this recovery — scheduled-clock
+runs fired on their own and were inspected.
+
+- **Mode/baton:** RECOVER (read-only). Branch `codex/master-operating-prompt`,
+  start SHA `c3320a44c70b3f4bbfcfb9d4c75f446a4e63172f`, fetched `origin/main`
+  `74d43789e06af04f7e3b2ab09b51d5a1051de9d8` (unchanged). Tree clean; no
+  unrelated work touched. PR #150 remains OPEN/draft/MERGEABLE (checked live).
+  Newest authoritative baton: the DOC-BACKUP record below (c115d59 observation
+  window open).
+- **Post-fix clocks:** EX-03 run `36082783445` (2026-09-25T01:36:50Z, success,
+  checked out `74d4378`) was a cadence-fenced no-op: 3 rows enumerated
+  (rotation page 2 of 15 shadow identities / 12-per-run), all 3
+  `skippedIneligible`, 0 dispatched, healthy, empty `evidenceErrors`. The
+  Worker had dispatched the same page at 01:20Z; the 60-minute per-identity
+  cadence floor skipped the duplicate (`shadow-dispatcher.ts:448-450` — no
+  reason field, so cadence-held is INFERRED, consistent with fencing). Worker
+  :20Z ticks covered all 15 shadow identities exactly once (12 at 00:20Z + 3 at
+  01:20Z); 14 `HEALTHY_WITH_RESULTS` + 1 `recruitee:myjewellery`
+  `DEGRADED_ANOMALOUS` (chronic oversize, Tier-1 deterministic, no Jev call).
+  The corrected denominator still has no production Tier-2 exercise. Run
+  verdicts are response-only (`apps/web/src/pages/api/cron/shadow-dispatch.ts:128-133`).
+- **Registry recount (D1, 2026-09-25 ~02:05Z, verified no-write):** 5 active
+  (the five Breezy graduations) / 15 shadow / 14 candidate (`needs_review`) /
+  1 quarantined (`teamtailor:career.teamtailor.com`); no canaries — matches the
+  September 24 record.
+- **Fresh baseline (read-only source-economics, 2026-09-25T02:17:42.757Z,
+  reconciliation OK, all partition deltas zero):** qualified new 7d 118 =
+  16.86/day (first-stored proxy); 30d 458 = 15.27/day; qualified active 866 /
+  1,105; identity coverage 100% of 5,679; concentration top family
+  `we-work-remotely` 42.2% ⚠️ / top-3 87.5% ⚠️ (both SLO flags tripped);
+  largest unclear losses / 7d: Sourcefit 46, 20Four7VA 37, WWR 6, Yokly 5,
+  Remote OK 3. Generated locally in temp; the on-disk
+  `docs/source-economics-latest.md` was not replaced (the scheduled workflow
+  owns it).
+- **Clock observation:** APEX economics cron `35 2 * * *` (02:35Z daily,
+  unchanged since September 8); observed scheduled runs September 22–24
+  executed ~07:46–07:56Z (~5-hour GitHub schedule delay). Today's run had not
+  fired at recovery time (~02:20Z).
+- **What must not be redone:** the c115d59 denominator fix and accepted Breezy
+  graduations; terminal SP/Gauntlet units; no automatic 512 KiB budget raise;
+  no Jev wiring into publication/promotion/triage gates.
+- **Capsule:** §12 of `docs/bootloaders/MASTER_OPERATING_PROMPT.md` refreshed
+  with the above evidence; `docs/bootloaders/CURRENT.md` repointed at this
+  baton.
+- **Next exact action:** collect the next post-fix EX-03/Worker decision
+  records, especially a Tier-2 window with `dispatched > 0` exercising the
+  corrected denominator (record actual Tier-2 classification, consultation and
+  provider-validation status, and packet count; chronic Tier-1 myjewellery
+  oversize does not qualify); reconcile open review findings #1/#3/#4 and stale
+  SP/expansion-ledger checkpoints through a bounded planning decision; watch
+  the delayed economics cron.
+
+## 2026-09-25 — DOC-BACKUP: Record c115d59 denominator fix deployed (historical — superseded by the INVOCATION record above; baton for the c115d59 observation)
 
 Documentation backup only. No implementation, source admission, promotion,
 or automation restart is authorized by this backup. The JEV-SHADOW-VERDICT
@@ -45,6 +229,53 @@ observation window remains open; existing production clocks continue.
   (especially a Tier-2 window exercising the corrected denominator); diagnose
   the 503 mode via `errorClass` when a 503 window appears; review the
   myjewellery budget as a versioned policy change.
+
+### 2026-09-25 — PROMPT-CONSOLIDATION: documentation artifact
+
+The owner requested one improved strategy, bootloader, maintainer, and improver
+prompt grounded in current repository progress. The consolidated artifact is
+[`bootloaders/MASTER_OPERATING_PROMPT.md`](bootloaders/MASTER_OPERATING_PROMPT.md).
+It is an operating method, not a source-policy amendment, execution resume, or
+replacement queue. The production baton and open c115d59 observation above
+remain unchanged; no production route, D1 write, promotion, migration, or
+schedule change was performed for this task.
+
+- **Unit/mode:** PROMPT-CONSOLIDATION / documentation; TERMINAL — KEEP for the
+  reviewed prompt artifact, not production implementation or target attainment.
+  Branch `codex/master-operating-prompt`; start and fetched remote SHA
+  `74d43789e06af04f7e3b2ab09b51d5a1051de9d8`; initially clean tree.
+- **Evidence:** inspected current recovery/authority documents, source reports,
+  measurement/publication code, Jev code, and clock/workflow contracts. Live
+  read-only GitHub checks confirmed c115d59 Pages deployment run `36076134353`
+  and docs CI `36079245064`; no fresh D1 recount. Existing reports remain dated.
+- **Corrections:** denominator finding fixed; other reviewed Jev gaps open;
+  15.71/day is a first-stored PH proxy, not remote-only first publication;
+  inventory and reactivations do not prove daily flow; stale resume/queue and
+  cutover claims require reconciliation; Workable global preprocessing dormant.
+- **Strategy:** establish auditable publication metrics, investigate recoverable
+  losses, prepare candidate evidence in parallel, then expand through measured
+  marginal yield and current gates. Proposed target reporting criteria must be
+  reconciled in the canonical plan before outcome acceptance.
+- **Verification:** independent supply and governance reviews; 33 explicit
+  repository file references resolved; code fences balanced; `git diff --check`
+  clean. A narrow runtime review ran 61 tests / 0 failures / 239 assertions on
+  local Bun 1.4.2 (CI pin 1.3.14); no full-suite rerun claimed. One bounded local
+  Jev 1.13 strategy consultation succeeded, selected measurement/recovery with
+  parallel candidate preparation at 0.99; advisory only, no authority granted.
+- **GitHub backup/acceptance:** artifact commit
+  `48d8caca578d9d77c1f2fb2fbf7cdfd42e78baab` pushed to
+  [draft PR #150](https://github.com/cyalcala/va-freelance-hub/pull/150).
+  [Sovereign CI 36080910420](https://github.com/cyalcala/va-freelance-hub/actions/runs/36080910420)
+  passed on that exact SHA, including tests, Python analytics, build, typecheck,
+  guardrails, and Worker validation. PR production deployment was skipped.
+  Separate legacy Vercel status failed with "Account is blocked"; no Vercel
+  configuration/account changes attempted. PR remains draft and unmerged.
+- **Scope/rollback:** only the new prompt and this checkpoint; withdraw the docs
+  branch to discard the artifact, with no production rollback needed.
+- **Next exact action:** use the delivered prompt to recover current state when
+  the owner invokes it. Future production resumption still starts with the
+  current c115d59 observation action above and the owner's actual instruction;
+  the documentation task does not automatically resume that work.
 
 ## 2026-09-25 — CLOSEOUT: Documentation Backup Only (historical — superseded by c115d59 record above)
 

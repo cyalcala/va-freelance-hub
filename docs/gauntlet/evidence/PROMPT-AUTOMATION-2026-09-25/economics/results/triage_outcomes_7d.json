@@ -1,0 +1,104 @@
+[
+  {
+    "results": [
+      {
+        "source_id": "we-work-remotely",
+        "eligible": 47,
+        "unclear": 6,
+        "ineligible": 8,
+        "policy_rejected": 10,
+        "total_stored": 61
+      },
+      {
+        "source_id": "breezy:sourcefit",
+        "eligible": 1,
+        "unclear": 46,
+        "ineligible": 2,
+        "policy_rejected": 3,
+        "total_stored": 49
+      },
+      {
+        "source_id": "breezy:20four7va",
+        "eligible": 6,
+        "unclear": 37,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 43
+      },
+      {
+        "source_id": "real-work-from-anywhere",
+        "eligible": 24,
+        "unclear": 3,
+        "ineligible": 1,
+        "policy_rejected": 2,
+        "total_stored": 28
+      },
+      {
+        "source_id": "breezy:remote-craft",
+        "eligible": 14,
+        "unclear": 0,
+        "ineligible": 1,
+        "policy_rejected": 0,
+        "total_stored": 15
+      },
+      {
+        "source_id": "remote-ok",
+        "eligible": 5,
+        "unclear": 3,
+        "ineligible": 5,
+        "policy_rejected": 7,
+        "total_stored": 13
+      },
+      {
+        "source_id": "breezy:yokly",
+        "eligible": 6,
+        "unclear": 5,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 11
+      },
+      {
+        "source_id": "breezy:value-virtual-assistants",
+        "eligible": 9,
+        "unclear": 0,
+        "ineligible": 0,
+        "policy_rejected": 0,
+        "total_stored": 9
+      },
+      {
+        "source_id": "remotive",
+        "eligible": 2,
+        "unclear": 0,
+        "ineligible": 3,
+        "policy_rejected": 3,
+        "total_stored": 5
+      },
+      {
+        "source_id": "jobicy-supporting-apac",
+        "eligible": 3,
+        "unclear": 0,
+        "ineligible": 1,
+        "policy_rejected": 1,
+        "total_stored": 4
+      }
+    ],
+    "success": true,
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 16.3237
+      },
+      "duration": 16.3237,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 61468672,
+      "rows_read": 5927,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  }
+]

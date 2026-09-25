@@ -1,0 +1,42 @@
+{
+  "recorded_on": "2026-09-25",
+  "scope": "Local engineering advisory reviews of the master prompt, not runtime evaluation or source permission",
+  "evidence_summary": "docs/audits/MASTER_PROMPT_AUTOMATION_REVIEW_2026-09-25.md",
+  "exact_call_timestamps_retained": false,
+  "reviews": [
+    {
+      "decision_id": "prompt-automation-design-2026-09-25",
+      "boundary": "Choose measured automation stack and evaluated Jev expansion versus manual-only or immediate broad autonomy",
+      "ok": true,
+      "decision": "ADOPT_STACKED_CLOSED_LOOPS",
+      "confidence": 0.99,
+      "probabilities": {
+        "AUTOMATE_ALL_IMMEDIATELY": 0,
+        "KEEP_MANUAL_PROMPT": 0,
+        "INSUFFICIENT_EVIDENCE": 0,
+        "ADOPT_STACKED_CLOSED_LOOPS": 0.99,
+        "REVISE": 0.01
+      },
+      "usage": { "input_tokens": 937, "output_tokens": 88, "cost": 0.000039354 },
+      "model": "typesafe/jev-1.13-20260917",
+      "fallback": false,
+      "codex_disposition": "Accepted design: layers have separate authority, bounded operating cost and measurable outcomes. Implementation remains proposed."
+    },
+    {
+      "decision_id": "prompt-automation-acceptance-2026-09-25",
+      "boundary": "Documentation acceptance after independent reviews and correction of Tier-2 and observation-dependency wording",
+      "ok": true,
+      "decision": "ACCEPT_DOCUMENTATION",
+      "confidence": 0.87,
+      "probabilities": {
+        "ACCEPT_DOCUMENTATION": 0.91,
+        "REVISE_MATERIAL_GAP": 0.08,
+        "INSUFFICIENT_EVIDENCE": 0.01
+      },
+      "usage": { "input_tokens": 803, "output_tokens": 65, "cost": 0.000033726 },
+      "model": "typesafe/jev-1.13-20260917",
+      "fallback": false,
+      "codex_disposition": "Accepted documentation content with deterministic reference/data checks and independent critique; GitHub CI and backup remain separate evidence. No model-only acceptance of production behavior."
+    }
+  ]
+}

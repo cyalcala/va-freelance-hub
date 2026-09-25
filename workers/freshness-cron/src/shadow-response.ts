@@ -88,6 +88,20 @@ export function assessShadowResponse(body: string): string {
           || decision.ok !== true) {
           throw new Error("Invalid shadow dispatch verdict decision record");
         }
+        // Provenance fields (2026-09-25, verdict 1.1.0) are optional so an
+        // older deployed route response stays valid; when present they must be
+        // well-typed: usage is null or an object, laterOutcome null or a string.
+        if (decision.verdictVersion !== undefined && typeof decision.verdictVersion !== "string") {
+          throw new Error("Invalid shadow dispatch verdict decision record");
+        }
+        if (decision.usage !== undefined && decision.usage !== null
+          && (typeof decision.usage !== "object" || Array.isArray(decision.usage))) {
+          throw new Error("Invalid shadow dispatch verdict decision record");
+        }
+        if (decision.laterOutcome !== undefined && decision.laterOutcome !== null
+          && typeof decision.laterOutcome !== "string") {
+          throw new Error("Invalid shadow dispatch verdict decision record");
+        }
       }
     }
     const notesPart = verdict.status === "healthy_with_notes" ? `, notes=${verdict.notes.length}` : "";

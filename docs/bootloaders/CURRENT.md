@@ -1,17 +1,41 @@
 # Current resume pointer
 
-**RESUMED by owner.** Explicit owner authorization granted on 2026-09-24 for the
-**September 24 Production Graduation Window** toward the Prime Directive:
-sustaining 100–150 qualified net-new remote Filipino-accessible jobs/day.
+**Refreshed 2026-09-25 (EXECUTE: interrupted work recovered, verified, committed).**
+The newest authoritative baton is the 2026-09-25
+SHADOW-VERDICT-1.1.0 + ECON-SNAPSHOT savepoint entry in
+[`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md): shadow verdict 1.1.0
+(review findings #1, #3, #4; purely additive, enforcement unchanged) and the
+economics-snapshot module are committed to PR #150's branch (`8f1160e`,
+`1fa9232`, `84b63dd`) and CI-validated on `1fa9232`
+([Sovereign CI 36103262190](https://github.com/cyalcala/va-freelance-hub/actions/runs/36103262190);
+deploy jobs skipped — production deploy is pending on the founder's merge
+decision). The JEV-SHADOW-VERDICT observation window remains open. The master
+operating prompt is
+[`./MASTER_OPERATING_PROMPT.md`](./MASTER_OPERATING_PROMPT.md). Do not act on
+the historical graduation material below without first reading the savepoint.
 
-1. [September 24 Graduation Evidence](../gauntlet/evidence/SEPTEMBER-24-PRODUCTION-GRADUATION.md)
-2. [Execution state](../APEX_10X_EXECUTION_STATE.md)
-3. [Workstream ledger](../APEX_10X_WORKSTREAM_LEDGER.md)
-4. [System savepoint](../SYSTEM_SAVEPOINT.md)
-5. [Source health latest](../source-health-latest.md)
-6. [Source economics latest](../source-economics-latest.md)
+NEXT: merge PR #150 to deploy (recheck the delayed `84b63dd` CI and confirm
+green on the branch tip before merging); the open Jev verdict observation stays
+pending.
 
-Production Reality (2026-09-24, verified in D1 after Run 80):
+The later PROMPT-AUTOMATION-REVISION entry records a documentation-only improvement
+and a preserved 02:31:49Z economics snapshot (117/7d, 16.71/day proxy). Its
+proposed automation and Jev expansion are not deployed behavior. The production
+observation remains open; a rare Tier-2 case need not block independent
+authorized planning/measurement work. See the
+[automation prompt audit](../audits/MASTER_PROMPT_AUTOMATION_REVIEW_2026-09-25.md).
+
+1. [System savepoint](../SYSTEM_SAVEPOINT.md) — newest current entry first
+2. [Master operating prompt](./MASTER_OPERATING_PROMPT.md)
+3. [September 24 Graduation Evidence](../gauntlet/evidence/SEPTEMBER-24-PRODUCTION-GRADUATION.md)
+4. [Execution state](../APEX_10X_EXECUTION_STATE.md)
+5. [Workstream ledger](../APEX_10X_WORKSTREAM_LEDGER.md)
+6. [Source health latest](../source-health-latest.md)
+7. [Source economics latest](../source-economics-latest.md)
+
+Historical Production Reality (2026-09-24, verified in D1 after Run 80; the
+EX-03 failure item below was since diagnosed and the registry counts reverified
+on 2026-09-25):
 - **Canary -> Active Graduation EXECUTED (5 Sources)** (transition events 27–31, 2026-09-24T01:59Z):
   - `breezy:20four7va` (126 active jobs in D1)
   - `breezy:sourcefit` (110 active jobs)
