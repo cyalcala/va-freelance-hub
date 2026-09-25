@@ -141,8 +141,8 @@ try {
   description="A curated, always-current board of remote and virtual-assistant roles from companies that actually hire in the Philippines. Auto-updated all day. Free, forever."
 >
   {dataUnavailable && <ServiceUnavailable />}
-  <section class="max-w-3xl mx-auto text-center pt-14 md:pt-24 pb-16 md:pb-24">
-    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-ink/[0.08] bg-surface/70 text-ink/60 text-xs font-semibold mb-8 shadow-card">
+  <section class="max-w-3xl mx-auto text-center pt-8 sm:pt-14 md:pt-20 pb-12 sm:pb-16 md:pb-20">
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-ink/[0.08] bg-surface/80 text-ink/60 text-xs font-semibold mb-6 sm:mb-8 shadow-card">
       <span class="relative flex h-2 w-2">
         <span class="absolute inline-flex h-full w-full rounded-full bg-accent/60 animate-ping"></span>
         <span class="relative inline-flex h-2 w-2 rounded-full bg-accent"></span>
@@ -150,61 +150,61 @@ try {
       Updated automatically, all day
     </div>
 
-    <h1 class="text-[2.5rem] leading-[1.05] sm:text-6xl md:text-[4.25rem] font-extrabold tracking-tight text-ink text-balance">
+    <h1 class="text-[2.25rem] leading-[1.08] sm:text-5xl md:text-[4rem] font-extrabold tracking-tight text-ink text-balance">
       Remote work that hires
       <span class="text-accent"> Filipino talent.</span>
     </h1>
 
-    <div class="mt-5 flex justify-center">
+    <div class="mt-4 sm:mt-5 flex justify-center">
       <a href="https://www.linkedin.com/in/cyrusalcala/" target="_blank" rel="noopener noreferrer"
-         class="group inline-flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full border border-ink/[0.09] bg-surface/70 text-sm text-ink/60 hover:text-ink hover:border-ink/20 transition-colors shadow-card">
+         class="group inline-flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full border border-ink/[0.09] bg-surface/80 text-sm text-ink/60 hover:text-ink hover:border-ink/20 transition-all shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
         <span class="grid place-items-center w-6 h-6 rounded-full bg-ink text-parchment text-[10px] font-bold tracking-tight">CY</span>
         <span>Built &amp; curated by <span class="font-semibold text-ink group-hover:text-accent transition-colors">CY Alcala</span></span>
       </a>
     </div>
 
-    <p class="mt-6 text-lg md:text-xl text-ink/60 leading-relaxed max-w-xl mx-auto text-balance">
+    <p class="mt-5 sm:mt-6 text-base sm:text-lg md:text-xl text-ink/65 leading-relaxed max-w-xl mx-auto text-balance">
       A curated, always-current board of remote and VA roles from companies
       that actually hire in the Philippines. Refreshed automatically — free,
       forever.
     </p>
 
-    <div class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
+    <div class="mt-8 sm:mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
       <a href="/opportunities"
-         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3.5 rounded-full text-[15px] font-semibold shadow-soft hover:shadow-lift transition-all duration-200 ease-out-soft active:scale-[0.98]">
+         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3.5 rounded-full text-[15px] font-semibold shadow-soft hover:shadow-lift transition-all duration-200 ease-out-soft active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
         Browse all jobs
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>
       <a href="/directory"
-         class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 rounded-full text-[15px] font-semibold text-ink bg-surface border border-ink/[0.09] hover:border-ink/20 hover:bg-ink/[0.02] shadow-card transition-all duration-200 active:scale-[0.98]">
+         class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 rounded-full text-[15px] font-semibold text-ink bg-surface border border-ink/[0.09] hover:border-ink/20 hover:bg-ink/[0.02] shadow-card transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
         Explore agencies
       </a>
     </div>
 
-    <div class="mt-14 flex items-stretch justify-center divide-x divide-ink/[0.08]">
-      <div class="px-8">
+    <div class="mt-10 sm:mt-14 flex items-stretch justify-center divide-x divide-ink/[0.08]">
+      <div class="px-6 sm:px-8">
         <div class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink tabular-nums">{stats.opportunities.toLocaleString()}</div>
         <div class="mt-1.5 text-xs font-semibold uppercase tracking-overline text-ink/45">Open roles</div>
       </div>
-      <div class="px-8">
+      <div class="px-6 sm:px-8">
         <div class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink tabular-nums">{stats.companies.toLocaleString()}</div>
         <div class="mt-1.5 text-xs font-semibold uppercase tracking-overline text-ink/45">Vetted companies</div>
       </div>
     </div>
   </section>
 
-  <section>
-    <div class="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+  <section class="pb-12">
+    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-2">Freshest roles</p>
+        <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-1.5 sm:mb-2">Freshest roles</p>
         <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">Browse by category</h2>
-        <p class="mt-2 text-[15px] text-ink/55 max-w-xl">
+        <p class="mt-1.5 sm:mt-2 text-sm sm:text-[15px] text-ink/55 max-w-xl">
           The newest openings in each field. Open a category for the full list,
           search, and filters.
         </p>
       </div>
       <a href="/opportunities"
-         class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-ink/70 hover:text-accent transition-colors self-start sm:self-auto shrink-0">
+         class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-ink/70 hover:text-accent transition-colors self-start sm:self-auto shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg">
         View all jobs
         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </a>

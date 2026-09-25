@@ -33,15 +33,15 @@ function JobCategoryCard({ category, jobs, total }: { category: string, jobs: Op
   const dot = DOT_COLORS[category] ?? 'bg-ink/30';
 
   return (
-    <div className="mb-6 break-inside-avoid bg-surface rounded-2xl border border-ink/[0.07] shadow-card overflow-hidden flex flex-col transition-all duration-300 ease-out-soft hover:shadow-soft hover:-translate-y-0.5">
-      <a href={`/categories/${category}`} className="group flex items-center justify-between gap-3 px-5 py-4 border-b border-ink/[0.06]">
+    <div className="mb-5 sm:mb-6 break-inside-avoid bg-surface rounded-2xl border border-ink/[0.07] shadow-card overflow-hidden flex flex-col transition-all duration-300 ease-out-soft hover:shadow-soft hover:-translate-y-0.5">
+      <a href={`/categories/${category}`} className="group flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 sm:py-4 border-b border-ink/[0.06] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-t-2xl">
         <h3 className="flex items-center gap-2.5 font-bold text-[13px] tracking-overline uppercase text-ink/70 group-hover:text-accent transition-colors">
           <span className={`w-1.5 h-1.5 rounded-full ${dot}`}></span>
           {info.title}
         </h3>
         <span className="text-[11px] font-semibold text-ink/45 tabular-nums shrink-0">{totalCount.toLocaleString()}</span>
       </a>
-      <div className="p-2 flex flex-col">
+      <div className="p-1.5 sm:p-2 flex flex-col">
         {visibleJobs.map(opp => (
           <OpportunityCard key={opp.id} opportunity={opp} />
         ))}
@@ -49,9 +49,10 @@ function JobCategoryCard({ category, jobs, total }: { category: string, jobs: Op
         {hasMore && (
           <a
             href={`/categories/${category}`}
-            className="group mx-2 mt-1 mb-1 py-2.5 rounded-xl text-[13px] font-semibold text-ink/55 hover:text-accent hover:bg-accent-soft/60 transition-all text-center block"
+            className="group mx-1.5 sm:mx-2 mt-1 mb-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-xl text-xs sm:text-[13px] font-semibold text-ink/55 hover:text-accent hover:bg-accent-soft/60 transition-all text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            See all {totalCount.toLocaleString()} jobs <span className="inline-block transition-transform group-hover:translate-x-0.5">→</span>
+            <span>See all {totalCount.toLocaleString()} jobs</span>
+            <span className="inline-block transition-transform duration-200 group-hover:translate-x-0.5">→</span>
           </a>
         )}
       </div>

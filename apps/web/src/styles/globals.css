@@ -11,6 +11,7 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
     text-rendering: optimizeLegibility;
   }
@@ -35,7 +36,7 @@
   :focus-visible {
     outline: 2px solid #DC5A34;
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 }
 

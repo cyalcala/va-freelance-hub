@@ -36,6 +36,8 @@ const category = searchParams.get('category') || '';
 const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
 const geoScope = searchParams.get('geoScope') || '';
+const activeFilterCount = [category, type, platform, geoScope].filter(Boolean).length;
+const hasActiveFilters = Boolean(query || activeFilterCount > 0);
 const offset = (currentPage - 1) * PAGE_SIZE;
 
 let pageJobs: OpportunityCardData[] = [];
@@ -159,30 +161,35 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
   description="Search and filter every active remote and VA role open to Filipino talent. Updated automatically, all day."
 >
   {dataUnavailable && <ServiceUnavailable />}
-  <section class="w-full max-w-5xl mx-auto pt-10 md:pt-14">
-    <div class="mb-8">
+  <section class="w-full max-w-5xl mx-auto pt-6 sm:pt-10 md:pt-14">
+    <div class="mb-5 sm:mb-8">
       <a
         href="/"
-        class="inline-flex items-center gap-1.5 text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-6"
+        class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-3 sm:mb-6"
       >
         <span class="inline-block transition-transform group-hover:-translate-x-0.5">&larr;</span>
         Home
       </a>
 
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-2">The full board</p>
-          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
-            Every open remote role
-          </h1>
-          <p class="text-ink/55 text-[15px] max-w-xl mt-3 leading-relaxed">
+          <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-1.5 sm:mb-2">The full board</p>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-ink">
+              Every open remote role
+            </h1>
+            <span class="sm:hidden text-xs font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-2.5 py-1 rounded-full shrink-0 tabular-nums">
+              {totalJobs.toLocaleString()} jobs
+            </span>
+          </div>
+          <p class="text-ink/55 text-sm sm:text-[15px] max-w-xl mt-2 sm:mt-3 leading-relaxed">
             Search, filter, and page through every active opportunity open to
             Filipino remote workers. Every listing is geo-checked for
             Philippine eligibility &mdash; country-locked &ldquo;remote&rdquo;
             jobs are filtered out automatically.
           </p>
         </div>
-        <div class="text-sm font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-4 py-2 rounded-full self-start sm:self-auto shrink-0 tabular-nums">
+        <div class="hidden sm:inline-flex text-sm font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-4 py-2 rounded-full self-start sm:self-auto shrink-0 tabular-nums">
           {totalJobs.toLocaleString()} {totalJobs === 1 ? 'job' : 'jobs'}
         </div>
       </div>
@@ -192,73 +199,113 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
       id="search"
       method="get"
       action="/opportunities"
-      class="scroll-mt-20 sticky top-[4.5rem] z-40 mt-8 mb-8 bg-parchment/85 backdrop-blur-xl border border-ink/[0.08] rounded-2xl p-2.5 shadow-soft"
+      class="scroll-mt-20 sticky top-[4rem] sm:top-[4.5rem] z-40 mt-5 sm:mt-8 mb-6 sm:mb-8 bg-parchment/90 backdrop-blur-xl border border-ink/[0.08] rounded-2xl p-2 sm:p-2.5 shadow-soft transition-all"
     >
-      <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_repeat(4,minmax(0,0.8fr))_auto] gap-2">
-        <label class="sr-only" for="q">Search jobs</label>
+      <div class="flex flex-col lg:grid lg:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,0.85fr))_auto] gap-2">
+        <!-- Hidden peer checkbox for mobile filter disclosure state -->
         <input
-          id="q"
-          type="search"
-          name="q"
-          value={query}
-          placeholder="Search roles, companies, or platforms…"
-          class="w-full h-12 px-4 bg-surface border border-ink/[0.09] rounded-xl text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10 transition-all placeholder:text-ink/35"
+          type="checkbox"
+          id="filters-expanded"
+          class="peer sr-only"
+          checked={activeFilterCount > 0 ? true : undefined}
         />
 
-        <label class="sr-only" for="category">Category</label>
-        <select
-          id="category"
-          name="category"
-          class="w-full h-12 px-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
-        >
-          <option value="">All categories</option>
-          {Object.entries(JOB_CATEGORY_MAP).map(([key, info]) => (
-            <option value={key} selected={category === key}>{info.title}</option>
-          ))}
-        </select>
+        <!-- Top bar on mobile (search input + filter toggle + search button) / Inline on desktop -->
+        <div class="flex items-center gap-2 lg:contents">
+          <label class="sr-only" for="q">Search jobs</label>
+          <div class="relative flex-1 min-w-0">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/35 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input
+              id="q"
+              type="search"
+              name="q"
+              value={query}
+              placeholder="Search roles, companies, platforms…"
+              class="w-full h-11 pl-9 pr-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 transition-all placeholder:text-ink/35"
+            />
+          </div>
 
-        <label class="sr-only" for="type">Type</label>
-        <select
-          id="type"
-          name="type"
-          class="w-full h-12 px-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
-        >
-          <option value="">All types</option>
-          {TYPE_OPTIONS.map((option) => (
-            <option value={option} selected={type === option}>{option}</option>
-          ))}
-        </select>
+          <!-- Mobile filter toggle button (hidden on desktop) -->
+          <label
+            for="filters-expanded"
+            class={`lg:hidden inline-flex items-center justify-center gap-1.5 h-11 px-3 rounded-xl border text-xs font-semibold cursor-pointer select-none transition-all shrink-0 ${activeFilterCount > 0 ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-surface border-ink/[0.09] text-ink/70 hover:text-ink hover:bg-ink/[0.03]'}`}
+          >
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+            <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold bg-accent text-white tabular-nums">
+                {activeFilterCount}
+              </span>
+            )}
+          </label>
 
-        <label class="sr-only" for="platform">Platform</label>
-        <select
-          id="platform"
-          name="platform"
-          class="w-full h-12 px-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
-        >
-          <option value="">All platforms</option>
-          {platformOptions.map((option) => (
-            <option value={option} selected={platform === option}>{option}</option>
-          ))}
-        </select>
+          <!-- Search button (always accessible) -->
+          <button
+            type="submit"
+            class="h-11 bg-accent hover:bg-accent-hover text-white px-4 sm:px-5 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift shrink-0 active:scale-[0.98] lg:order-last"
+          >
+            Search
+          </button>
+        </div>
 
-        <label class="sr-only" for="geoScope">Eligibility</label>
-        <select
-          id="geoScope"
-          name="geoScope"
-          class="w-full h-12 px-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-4 focus:ring-accent/10"
-        >
-          <option value="">All geo scopes</option>
-          {GEO_SCOPE_OPTIONS.map((option) => (
-            <option value={option.value} selected={geoScope === option.value}>{option.label}</option>
-          ))}
-        </select>
+        <!-- 4 Secondary filters: hidden by default on mobile, 2x2 grid when peer checked, inline grid columns on desktop -->
+        <div class="hidden peer-checked:grid grid-cols-2 gap-2 pt-1 lg:pt-0 lg:contents">
+          <div class="relative">
+            <label class="sr-only" for="category">Category</label>
+            <select
+              id="category"
+              name="category"
+              class="w-full h-10 lg:h-11 px-2.5 lg:px-3 bg-surface border border-ink/[0.09] rounded-lg lg:rounded-xl text-xs lg:text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 truncate"
+            >
+              <option value="">All categories</option>
+              {Object.entries(JOB_CATEGORY_MAP).map(([key, info]) => (
+                <option value={key} selected={category === key}>{info.title}</option>
+              ))}
+            </select>
+          </div>
 
-        <button
-          type="submit"
-          class="h-12 bg-accent hover:bg-accent-hover text-white px-6 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98]"
-        >
-          Search
-        </button>
+          <div class="relative">
+            <label class="sr-only" for="type">Type</label>
+            <select
+              id="type"
+              name="type"
+              class="w-full h-10 lg:h-11 px-2.5 lg:px-3 bg-surface border border-ink/[0.09] rounded-lg lg:rounded-xl text-xs lg:text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 truncate"
+            >
+              <option value="">All types</option>
+              {TYPE_OPTIONS.map((option) => (
+                <option value={option} selected={type === option}>{option}</option>
+              ))}
+            </select>
+          </div>
+
+          <div class="relative">
+            <label class="sr-only" for="platform">Platform</label>
+            <select
+              id="platform"
+              name="platform"
+              class="w-full h-10 lg:h-11 px-2.5 lg:px-3 bg-surface border border-ink/[0.09] rounded-lg lg:rounded-xl text-xs lg:text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 truncate"
+            >
+              <option value="">All platforms</option>
+              {platformOptions.map((option) => (
+                <option value={option} selected={platform === option}>{option}</option>
+              ))}
+            </select>
+          </div>
+
+          <div class="relative">
+            <label class="sr-only" for="geoScope">Eligibility</label>
+            <select
+              id="geoScope"
+              name="geoScope"
+              class="w-full h-10 lg:h-11 px-2.5 lg:px-3 bg-surface border border-ink/[0.09] rounded-lg lg:rounded-xl text-xs lg:text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 truncate"
+            >
+              <option value="">All geo scopes</option>
+              {GEO_SCOPE_OPTIONS.map((option) => (
+                <option value={option.value} selected={geoScope === option.value}>{option.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
     </form>
 

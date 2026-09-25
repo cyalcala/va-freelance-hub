@@ -164,13 +164,13 @@ function buildClearSearchUrl() {
   description="A curated, vetted directory of VA agencies and remote-first companies that actively hire Filipino talent."
 >
   {dataUnavailable && <ServiceUnavailable />}
-  <div class="max-w-5xl mx-auto pt-12 md:pt-16">
-    <div class="mb-9 max-w-2xl">
-      <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-2">The directory</p>
-      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
+  <div class="max-w-5xl mx-auto pt-6 sm:pt-10 md:pt-14">
+    <div class="mb-6 sm:mb-9 max-w-2xl">
+      <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-1.5 sm:mb-2">The directory</p>
+      <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-ink">
         Companies that hire Filipinos
       </h1>
-      <p class="mt-3 text-[15px] sm:text-base text-ink/55 leading-relaxed">
+      <p class="mt-2 sm:mt-3 text-sm sm:text-base text-ink/55 leading-relaxed">
         Start with the kind of work or schedule you want. Every visible entry is
         known to hire in the Philippines; job platforms are separated from direct employers.
       </p>
@@ -182,21 +182,21 @@ function buildClearSearchUrl() {
       id="search"
       method="get"
       action="/directory"
-      class="scroll-mt-20 sticky top-[4.5rem] z-40 max-w-2xl mb-8 bg-parchment/85 backdrop-blur-xl rounded-full"
+      class="scroll-mt-20 sticky top-[4rem] sm:top-[4.5rem] z-40 max-w-2xl mb-6 sm:mb-8 bg-parchment/90 backdrop-blur-xl rounded-full"
     >
       {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
       <label class="sr-only" for="q">Search companies</label>
-      <div class="flex gap-2 rounded-full border border-ink/[0.1] bg-surface p-1.5 shadow-soft focus-within:border-accent/50 focus-within:ring-4 focus-within:ring-accent/10 transition-all">
-        <svg class="ml-3 shrink-0 self-center h-5 w-5 text-ink/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <div class="flex gap-2 rounded-full border border-ink/[0.1] bg-surface p-1.5 shadow-soft focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/15 transition-all">
+        <svg class="ml-3 shrink-0 self-center h-4 sm:h-5 w-4 sm:w-5 text-ink/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input
           id="q"
           name="q"
           type="search"
           value={query}
           placeholder={selectedInfo ? `Search ${selectedInfo.shortTitle.toLowerCase()}…` : 'Search companies…'}
-          class="min-w-0 flex-1 h-11 bg-transparent text-ink text-base font-medium outline-none placeholder:text-ink/35"
+          class="min-w-0 flex-1 h-10 sm:h-11 bg-transparent text-ink text-sm sm:text-base font-medium outline-none placeholder:text-ink/35"
         />
-        <button type="submit" class="shrink-0 rounded-full bg-accent px-4 sm:px-5 text-sm font-semibold text-white hover:bg-accent-hover transition-colors">Search</button>
+        <button type="submit" class="shrink-0 rounded-full bg-accent px-4 sm:px-5 text-sm font-semibold text-white hover:bg-accent-hover transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Search</button>
       </div>
     </form>
 
@@ -246,9 +246,25 @@ function buildClearSearchUrl() {
     )}
 
     <nav class="mt-8 flex items-center justify-between gap-4" aria-label="Directory pagination">
-      {currentPage > 1 ? <a href={buildPageUrl(currentPage - 1)} class="inline-flex items-center px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">← Previous</a> : <span />}
-      <p class="text-sm font-semibold text-ink/45 tabular-nums">Page {currentPage} of {totalPages}</p>
-      {currentPage < totalPages ? <a href={buildPageUrl(currentPage + 1)} class="inline-flex items-center px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Next →</a> : <span />}
+      {currentPage > 1 ? (
+        <a href={buildPageUrl(currentPage - 1)} class="inline-flex items-center min-h-[44px] px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-all shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          ← Previous
+        </a>
+      ) : (
+        <span class="inline-flex items-center min-h-[44px] px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
+          ← Previous
+        </span>
+      )}
+      <p class="text-xs sm:text-sm font-semibold text-ink/45 tabular-nums">Page {currentPage} of {totalPages}</p>
+      {currentPage < totalPages ? (
+        <a href={buildPageUrl(currentPage + 1)} class="inline-flex items-center min-h-[44px] px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-all shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+          Next →
+        </a>
+      ) : (
+        <span class="inline-flex items-center min-h-[44px] px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
+          Next →
+        </span>
+      )}
     </nav>
   </div>
 </Layout>

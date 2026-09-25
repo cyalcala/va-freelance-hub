@@ -89,28 +89,33 @@ const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
   description={`Browse and search all active ${info.title.toLowerCase()} remote jobs and virtual assistant opportunities open to Filipino talents. Updated automatically.`}
 >
   {dataUnavailable && <ServiceUnavailable />}
-  <section class="w-full max-w-4xl mx-auto pt-10 md:pt-14">
-    <div class="mb-8">
+  <section class="w-full max-w-4xl mx-auto pt-6 sm:pt-10 md:pt-14 pb-12">
+    <div class="mb-6 sm:mb-8">
       <a
         href="/"
-        class="inline-flex items-center gap-1.5 text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-6"
+        class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-3 sm:mb-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
       >
         <span class="inline-block transition-transform group-hover:-translate-x-0.5">&larr;</span>
         All categories
       </a>
 
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-2">Category</p>
-          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink">
-            {info.title}
-          </h1>
-          <p class="text-ink/55 text-[15px] max-w-xl mt-3 leading-relaxed">
+          <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-1.5 sm:mb-2">Category</p>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-ink">
+              {info.title}
+            </h1>
+            <span class="sm:hidden text-xs font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-2.5 py-1 rounded-full shrink-0 tabular-nums">
+              {totalJobs.toLocaleString()} jobs
+            </span>
+          </div>
+          <p class="text-ink/55 text-sm sm:text-[15px] max-w-xl mt-2 sm:mt-3 leading-relaxed">
             The latest active {info.title.toLowerCase()} roles open to Filipino
             remote workers.
           </p>
         </div>
-        <span class="text-sm font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-4 py-2 rounded-full self-start sm:self-auto shrink-0 tabular-nums">
+        <span class="hidden sm:inline-flex text-sm font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-4 py-2 rounded-full self-start sm:self-auto shrink-0 tabular-nums">
           {totalJobs.toLocaleString()} {totalJobs === 1 ? 'job' : 'jobs'}
         </span>
       </div>
@@ -120,8 +125,8 @@ const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
       <p class="tabular-nums">
         Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
       </p>
-      <a href={`/opportunities?category=${category}#search`} class="text-accent hover:text-accent-hover transition-colors">
-        Search this category
+      <a href={`/opportunities?category=${category}#search`} class="text-accent hover:text-accent-hover transition-colors font-medium">
+        Search this category →
       </a>
     </div>
 
@@ -143,29 +148,29 @@ const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
       {hasPrevious ? (
         <a
           href={buildPageUrl(currentPage - 1)}
-          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-colors"
+          class="inline-flex items-center min-h-[44px] gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-all shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           &larr; Previous
         </a>
       ) : (
-        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
+        <span class="inline-flex items-center min-h-[44px] gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
           &larr; Previous
         </span>
       )}
 
-      <span class="text-[13px] font-semibold text-ink/45 tabular-nums">
+      <span class="text-xs sm:text-[13px] font-semibold text-ink/45 tabular-nums">
         Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
       </span>
 
       {hasNext ? (
         <a
           href={buildPageUrl(currentPage + 1)}
-          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-colors"
+          class="inline-flex items-center min-h-[44px] gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-all shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           Next &rarr;
         </a>
       ) : (
-        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
+        <span class="inline-flex items-center min-h-[44px] gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
           Next &rarr;
         </span>
       )}

@@ -97,9 +97,9 @@ export function OpportunityCard({ opportunity: opp }: Props) {
       href={href}
       target={target}
       rel={rel}
-      className="group flex items-center gap-3.5 p-3 rounded-xl transition-colors duration-200 hover:bg-ink/[0.035] active:bg-ink/[0.06]"
+      className="group flex items-start sm:items-center gap-3 sm:gap-3.5 p-3 sm:p-3.5 rounded-xl transition-all duration-200 ease-out-soft hover:bg-ink/[0.035] active:bg-ink/[0.06] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
     >
-      <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
+      <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden mt-0.5 sm:mt-0">
         {hostname ? (
           <img
             src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
@@ -117,13 +117,13 @@ export function OpportunityCard({ opportunity: opp }: Props) {
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-ink text-[15px] group-hover:text-accent transition-colors leading-snug line-clamp-1">
+          <span className="font-semibold text-ink text-[15px] sm:text-base group-hover:text-accent transition-colors leading-snug line-clamp-2 sm:line-clamp-1">
             {opp.title}
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 mt-1 text-[13px] text-ink/50 min-w-0">
-          {opp.company && <span className="truncate">{opp.company}</span>}
+        <div className="flex items-center gap-1.5 mt-1 text-[13px] text-ink/50 min-w-0 flex-wrap">
+          {opp.company && <span className="font-medium text-ink/70 truncate">{opp.company}</span>}
           {opp.company && postedDate && <span className="text-ink/25">·</span>}
           {postedDate && <span className="shrink-0 text-ink/40">{postedDate}</span>}
         </div>
@@ -152,9 +152,9 @@ export function OpportunityCard({ opportunity: opp }: Props) {
       </div>
 
       {hasDetailPage ? (
-        <ChevronRight className="w-4 h-4 text-ink/25 group-hover:text-accent transition-colors shrink-0 self-start mt-1" />
+        <ChevronRight className="w-4 h-4 text-ink/25 group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0 self-center" />
       ) : (
-        <ExternalLink className="w-4 h-4 text-ink/25 group-hover:text-accent transition-colors shrink-0 self-start mt-1" />
+        <ExternalLink className="w-4 h-4 text-ink/25 group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0 self-center" />
       )}
     </a>
   );

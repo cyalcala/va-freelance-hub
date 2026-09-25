@@ -196,10 +196,10 @@ jsonLd.directApply = false;
 <Layout title={pageTitle} description={pageDescription}>
   <script type="application/ld+json" set:html={serializeJsonLd(jsonLd)} slot="head" />
 
-  <section class="w-full max-w-3xl mx-auto pt-10 md:pt-14 pb-16">
+  <section class="w-full max-w-3xl mx-auto pt-6 sm:pt-10 md:pt-14 pb-16">
     <a
       href="/opportunities"
-      class="inline-flex items-center gap-1.5 text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-8"
+      class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-6 sm:mb-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
     >
       <span class="inline-block transition-transform group-hover:-translate-x-0.5">&larr;</span>
       All jobs
@@ -207,14 +207,14 @@ jsonLd.directApply = false;
 
     <article>
       <!-- Header -->
-      <div class="flex items-start gap-4 mb-6">
-        <div class="w-12 h-12 rounded-xl bg-surface flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
+      <div class="flex items-start gap-3.5 sm:gap-4 mb-5 sm:mb-6">
+        <div class="w-11 sm:w-12 h-11 sm:h-12 rounded-xl bg-surface flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden mt-0.5 sm:mt-0">
           {hostname ? (
             <img
               src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
               alt=""
               aria-hidden="true"
-              class="w-6 h-6 object-contain"
+              class="w-5 sm:w-6 h-5 sm:h-6 object-contain"
             />
           ) : (
             <svg class="w-5 h-5 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
@@ -222,11 +222,11 @@ jsonLd.directApply = false;
         </div>
 
         <div class="flex-1 min-w-0">
-          <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink leading-snug">
+          <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-ink leading-snug">
             {job.title}
           </h1>
           {job.company && (
-            <p class="text-ink/55 text-[15px] mt-1 font-medium">{job.company}</p>
+            <p class="text-ink/65 text-sm sm:text-[15px] mt-1 font-medium">{job.company}</p>
           )}
         </div>
       </div>
@@ -356,7 +356,7 @@ jsonLd.directApply = false;
             href={applyHref}
             target="_blank"
             rel={applyRel}
-            class="inline-flex items-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98]"
+            class="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3.5 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98] w-full sm:w-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             Apply on {platformLabel}
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
