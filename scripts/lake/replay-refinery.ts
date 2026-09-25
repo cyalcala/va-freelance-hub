@@ -14,17 +14,62 @@ interface ReplayCandidate {
   ph_eligibility: string;
 }
 
-export async function runHistoricalReplay(ruleVersion = "geoGate-v1.2-refinery") {
+export interface ReplayResolution {
+  newStatus: string;
+  newEligibility: string;
+  rejectionReason: string | null;
+  evidence: string;
+  geoScope: string;
+  changed: boolean;
+}
+
+/** Pure per-candidate replay resolution (deterministic geoGate). Exported for tests. */
+export function resolveReplay(cand: Pick<ReplayCandidate, "title" | "description" | "location_raw" | "status" | "ph_eligibility">): ReplayResolution {
+  const verdict = geoGate({
+    title: cand.title,
+    description: cand.description || "",
+    locationRaw: cand.location_raw || "",
+    tags: [],
+  });
+
+  let newStatus = cand.status;
+  let newEligibility = cand.ph_eligibility;
+  let rejectionReason: string | null = null;
+
+  if (verdict.phEligibility === "eligible_verified" || verdict.phEligibility === "eligible_likely") {
+    newStatus = "QUALIFIED_READY";
+    newEligibility = verdict.phEligibility;
+  } else if (verdict.phEligibility === "ineligible") {
+    newStatus = "EXCLUDED";
+    newEligibility = verdict.phEligibility;
+    rejectionReason = verdict.evidence;
+  }
+
+  return {
+    newStatus,
+    newEligibility,
+    rejectionReason,
+    evidence: verdict.evidence,
+    geoScope: verdict.geoScope,
+    changed: newStatus !== cand.status || newEligibility !== cand.ph_eligibility,
+  };
+}
+
+export async function runHistoricalReplay(ruleVersion = "geoGate-v1.2-refinery", limit = 2000) {
   console.log(`\n=== Running Historical Replay in Turso Lake (Rule Version: ${ruleVersion}) ===`);
   const client = getLakeClient();
 
-  // Find all ambiguous or excluded candidates for evaluation
-  const res = await client.execute(`
+  // Batched fetch (LIMIT) so a large lake never loads every ambiguous row at once.
+  const res = await client.execute({
+    sql: `
     SELECT id, source_id, source_platform, source_url, title, company, location_raw, description, status, ph_eligibility
     FROM lake_candidate_jobs
     WHERE status IN ('AMBIGUOUS', 'EXCLUDED')
-    ORDER BY id ASC;
-  `);
+    ORDER BY id ASC
+    LIMIT ?;
+  `,
+    args: [limit],
+  });
 
   const candidates = res.rows as unknown as ReplayCandidate[];
   console.log(`Evaluating ${candidates.length} candidates in Turso Lake...`);
@@ -34,33 +79,16 @@ export async function runHistoricalReplay(ruleVersion = "geoGate-v1.2-refinery")
   let unchanged = 0;
 
   for (const cand of candidates) {
-    const verdict = geoGate({
-      title: cand.title,
-      description: cand.description || "",
-      locationRaw: cand.location_raw || "",
-      tags: [],
-    });
+    const r = resolveReplay(cand);
+    const { newStatus, newEligibility, rejectionReason } = r;
 
-    let newStatus = cand.status;
-    let newEligibility = cand.ph_eligibility;
-    let rejectionReason: string | null = null;
-
-    if (verdict.phEligibility === "eligible_verified" || verdict.phEligibility === "eligible_likely") {
-      newStatus = "QUALIFIED_READY";
-      newEligibility = verdict.phEligibility;
-    } else if (verdict.phEligibility === "ineligible") {
-      newStatus = "EXCLUDED";
-      newEligibility = verdict.phEligibility;
-      rejectionReason = verdict.evidence;
-    }
-
-    if (newStatus !== cand.status || newEligibility !== cand.ph_eligibility) {
+    if (r.changed) {
       if (newStatus === "QUALIFIED_READY") {
         recoveredToQualified++;
-        console.log(`  [RECOVERED] #${cand.id} "${cand.title}" @ "${cand.company}" -> QUALIFIED_READY (${verdict.evidence})`);
+        console.log(`  [RECOVERED] #${cand.id} "${cand.title}" @ "${cand.company}" -> QUALIFIED_READY (${r.evidence})`);
       } else if (newStatus === "EXCLUDED") {
         classifiedExcluded++;
-        console.log(`  [EXCLUDED]  #${cand.id} "${cand.title}" @ "${cand.company}" -> EXCLUDED (${verdict.evidence})`);
+        console.log(`  [EXCLUDED]  #${cand.id} "${cand.title}" @ "${cand.company}" -> EXCLUDED (${r.evidence})`);
       }
 
       // Record immutable replay event
@@ -78,7 +106,7 @@ export async function runHistoricalReplay(ruleVersion = "geoGate-v1.2-refinery")
           newStatus,
           newEligibility,
           ruleVersion,
-          verdict.evidence,
+          r.evidence,
         ],
       });
 
@@ -96,8 +124,8 @@ export async function runHistoricalReplay(ruleVersion = "geoGate-v1.2-refinery")
         args: [
           newStatus,
           newEligibility,
-          verdict.geoScope,
-          verdict.evidence,
+          r.geoScope,
+          r.evidence,
           rejectionReason,
           cand.id,
         ],

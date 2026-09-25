@@ -2,6 +2,7 @@ import { getLakeClient } from "./client";
 import { toContentHash } from "../../packages/scraper/contentHash";
 import { execSync } from "child_process";
 import * as fs from "fs";
+import * as os from "os";
 import * as path from "path";
 
 interface CandidateRow {
@@ -45,7 +46,7 @@ const BASE_AUTHORIZED_SOURCE_IDS = new Set([
  * This means any tenant admitted by the AI admission engine is automatically
  * eligible for D1 sync on the very next lake:sync run — no code change needed.
  */
-async function buildAuthorizedSourceIds(
+export async function buildAuthorizedSourceIds(
   client: ReturnType<typeof getLakeClient>
 ): Promise<Set<string>> {
   const authorized = new Set(BASE_AUTHORIZED_SOURCE_IDS);
@@ -79,9 +80,67 @@ async function buildAuthorizedSourceIds(
   return authorized;
 }
 
-function escapeSql(str: string | null | undefined): string {
+/**
+ * SQLite string-literal escaping for the generated D1 batch file.
+ * Single quotes are doubled (SQLite convention); NUL bytes are stripped
+ * because SQLite text cannot contain them.
+ */
+export function escapeSql(str: string | null | undefined): string {
   if (str === null || str === undefined) return "NULL";
-  return `'${str.replace(/'/g, "''")}'`;
+  return `'${str.replace(/\0/g, "").replace(/'/g, "''")}'`;
+}
+
+/** Minimum-field guard: rows without a title and canonical URL are never synced. */
+export function isSyncableCandidate(job: Pick<CandidateRow, "title" | "source_url">): boolean {
+  return Boolean(job.title?.trim()) && Boolean(job.source_url?.trim());
+}
+
+/** Builds one idempotent upsert statement for a qualified lake candidate. */
+export function buildSyncSql(job: CandidateRow): string {
+  const titleVal = escapeSql(job.title);
+  const companyVal = escapeSql(job.company || "Unknown");
+  const sourceUrlVal = escapeSql(job.source_url);
+  const sourcePlatformVal = escapeSql(job.source_platform);
+  const sourceIdVal = escapeSql(job.source_id);
+  const categoryVal = escapeSql(job.category || "other");
+  const locationRawVal = escapeSql(job.location_raw || "Remote");
+  const descriptionVal = escapeSql(job.description?.slice(0, 1000) || "");
+  const applicationUrlVal = escapeSql(job.application_url || job.source_url);
+  const postedAtVal = escapeSql(job.posted_at || new Date().toISOString());
+  const canonicalHash = toContentHash(job.title, job.source_url);
+  const contentHashVal = escapeSql(canonicalHash);
+  const geoScopeVal = escapeSql(job.geo_scope || "worldwide");
+  const phEligibilityVal = escapeSql(job.ph_eligibility || "eligible_verified");
+
+  return `
+      INSERT INTO opportunities (
+        title, company, type, source_url, source_platform, source_id,
+        category, location_type, location_raw, description,
+        application_url, posted_at, is_active, content_hash,
+        geo_scope, ph_eligibility, scraped_at, last_seen_in_feed_at
+      ) VALUES (
+        ${titleVal}, ${companyVal}, 'freelance', ${sourceUrlVal}, ${sourcePlatformVal}, ${sourceIdVal},
+        ${categoryVal}, 'remote', ${locationRawVal}, ${descriptionVal},
+        ${applicationUrlVal}, ${postedAtVal}, 1, ${contentHashVal},
+        ${geoScopeVal}, ${phEligibilityVal}, datetime('now'), datetime('now')
+      )
+      ON CONFLICT(source_url) DO UPDATE SET
+        last_seen_in_feed_at = datetime('now'),
+        is_active = 1,
+        ph_eligibility = excluded.ph_eligibility,
+        geo_scope = excluded.geo_scope;
+    `.trim();
+}
+
+/** Repo-pinned wrangler invocation (matches the savepoint's MODULE_NOT_FOUND lesson). */
+function wranglerD1Command(tempSqlFile: string): string {
+  const repoRoot = path.resolve(import.meta.dir, "..", "..");
+  const pinned = path.join(repoRoot, "node_modules", "wrangler", "bin", "wrangler.js");
+  const config = path.join(repoRoot, "apps", "web", "wrangler.jsonc");
+  if (fs.existsSync(pinned)) {
+    return `bun "${pinned}" d1 execute DB --remote --env production --config "${config}" --file="${tempSqlFile}"`;
+  }
+  return `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config "${config}" --file="${tempSqlFile}"`;
 }
 
 export async function syncQualifiedJobsToD1(limit = 50, dryRun = false) {
@@ -123,41 +182,11 @@ export async function syncQualifiedJobsToD1(limit = 50, dryRun = false) {
   const syncedIds: number[] = [];
 
   for (const job of candidates) {
-    const titleVal = escapeSql(job.title);
-    const companyVal = escapeSql(job.company || "Unknown");
-    const sourceUrlVal = escapeSql(job.source_url);
-    const sourcePlatformVal = escapeSql(job.source_platform);
-    const sourceIdVal = escapeSql(job.source_id);
-    const categoryVal = escapeSql(job.category || "other");
-    const locationRawVal = escapeSql(job.location_raw || "Remote");
-    const descriptionVal = escapeSql(job.description?.slice(0, 1000) || "");
-    const applicationUrlVal = escapeSql(job.application_url || job.source_url);
-    const postedAtVal = escapeSql(job.posted_at || new Date().toISOString());
-    const canonicalHash = toContentHash(job.title, job.source_url);
-    const contentHashVal = escapeSql(canonicalHash);
-    const geoScopeVal = escapeSql(job.geo_scope || "worldwide");
-    const phEligibilityVal = escapeSql(job.ph_eligibility || "eligible_verified");
-
-    const sql = `
-      INSERT INTO opportunities (
-        title, company, type, source_url, source_platform, source_id,
-        category, location_type, location_raw, description,
-        application_url, posted_at, is_active, content_hash,
-        geo_scope, ph_eligibility, scraped_at, last_seen_in_feed_at
-      ) VALUES (
-        ${titleVal}, ${companyVal}, 'freelance', ${sourceUrlVal}, ${sourcePlatformVal}, ${sourceIdVal},
-        ${categoryVal}, 'remote', ${locationRawVal}, ${descriptionVal},
-        ${applicationUrlVal}, ${postedAtVal}, 1, ${contentHashVal},
-        ${geoScopeVal}, ${phEligibilityVal}, datetime('now'), datetime('now')
-      )
-      ON CONFLICT(source_url) DO UPDATE SET
-        last_seen_in_feed_at = datetime('now'),
-        is_active = 1,
-        ph_eligibility = excluded.ph_eligibility,
-        geo_scope = excluded.geo_scope;
-    `.trim();
-
-    sqlStatements.push(sql);
+    if (!isSyncableCandidate(job)) {
+      console.warn(`  [Sync] Skipping unsyncable row id=${job.id} (missing title or source_url).`);
+      continue;
+    }
+    sqlStatements.push(buildSyncSql(job));
     syncedIds.push(job.id);
   }
 
@@ -167,13 +196,14 @@ export async function syncQualifiedJobsToD1(limit = 50, dryRun = false) {
     return { syncedCount: sqlStatements.length, sample: sqlStatements[0] };
   }
 
-  // 3. Write SQL batch to temp file and execute via Wrangler D1
-  const tempSqlFile = path.resolve(__dirname, "../../tmp-sync-d1.sql");
-  fs.writeFileSync(tempSqlFile, sqlStatements.join("\n\n"), "utf-8");
+  // 3. Write SQL batch to an OS temp file (never inside the repo) and execute via Wrangler D1
+  const tempSqlFile = path.join(os.tmpdir(), `va-hub-lake-sync-${Date.now()}.sql`);
+  const batchSql = ["BEGIN;", ...sqlStatements, "COMMIT;"].join("\n\n");
+  fs.writeFileSync(tempSqlFile, batchSql, "utf-8");
 
   try {
     console.log(`Executing batch sync of ${sqlStatements.length} opportunities into Cloudflare D1...`);
-    const cmd = `bunx wrangler d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --file="${tempSqlFile}"`;
+    const cmd = wranglerD1Command(tempSqlFile);
     const output = execSync(cmd, { encoding: "utf-8" });
     console.log("Wrangler D1 execution output:", output);
 

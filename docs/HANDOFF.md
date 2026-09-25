@@ -1,6 +1,26 @@
 # Handoff
 
-## 2026-09-26 — TURSO-DATA-LAKE-AND-REFINERY: recovered, refined, synced, backed up (current)
+## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (current)
+
+The owner instructed: "check current repo state and what can be improved in data lake, improve them all, document and backup in github". Audited `scripts/lake/`, fixed all load-bearing issues with zero ingestion-behavior or eligibility change and zero D1 writes. Full detail is in `docs/SYSTEM_SAVEPOINT.md` (top entry); runbook is in `docs/DATA_LAKE_OPERATIONS.md`.
+
+- **Implementation**:
+  - `lake-shared.ts` (new): fingerprint, raw-observation, sighting, and RSS helpers shared by all harvest scripts.
+  - `domain-ats-discovery.ts`: portable Jev admission via `judgeViaJev` (hardcoded Windows shell-out removed); portable discovery DDL.
+  - `sync-to-d1.ts`: OS-tmpdir transactional batches, repo-pinned wrangler, hardened escaping, unsyncable-row guard.
+  - `init-lake.ts`: `ensureLakeSchema()` covering all 6 tables + hot-path indexes.
+  - `replay-refinery.ts`: bounded `LIMIT` + pure `resolveReplay()`.
+  - `lake-state-check.ts` (tracked) + `lake:state` script with `--json`.
+  - `lake.test.ts`: 15 tests (was 4).
+- **Fresh verification**:
+  - `bun test scripts/lake`: 15 pass / 0 fail.
+  - `bun test`: 1,451 pass / 0 fail across 142 files.
+  - `bun run typecheck`: clean (0 errors).
+  - `bun run audit:guardrails`: clean (0 violations).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
+- **When the owner resumes**: Commit + push this unit and watch Sovereign CI; then live harvest runs (`lake:ingest`, `lake:remotive:priority`, `lake:himalayas-sweep`, `lake:ats-discovery`) and a governed `lake:sync --dry-run` review.
+
+## 2026-09-26 — TURSO-DATA-LAKE-AND-REFINERY: recovered, refined, synced, backed up (historical)
 
 The owner instructed: "document and backup everything in github for all these" following the implementation of the Turso Opportunity Intelligence Lake and mature refinery pipeline. All code, schemas, tests, documentation, and backup ledgers are verified and committed. Full detail is in `docs/SYSTEM_SAVEPOINT.md` (top entry).
 

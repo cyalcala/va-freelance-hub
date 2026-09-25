@@ -1,6 +1,20 @@
 # AI Recovery Trail
 
-## 2026-09-26 — FEAT-MAXIMUM-RECALL-TURSO-DATA-LAKE-AND-REFINERY: Executed & verified in production (current)
+## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (current)
+
+Execution per the recovery-driven loop. The owner instructed: "check current repo state and what can be improved in data lake, improve them all, document and backup in github".
+
+- **Final state**:
+  - Audited `scripts/lake/` from start SHA `bc8bba304690331342185cfde6762d4eeb9fd679` (clean, synced with `origin/main`).
+  - Centralized duplicated ingestion logic into `lake-shared.ts`; collapsed 5 RSS blocks into `ingestRssSource`.
+  - Replaced the Windows-only Jev shell-out with the repo-portable `judgeViaJev` client; portable discovery DDL.
+  - Hardened `sync-to-d1.ts` (OS tmpdir, pinned wrangler, transactional batch, hardened escaping, syncability guard).
+  - Completed schema bootstrap (`lake_ats_discovery`, `lake_runs`, hot-path indexes) behind `ensureLakeSchema()`.
+  - Bounded replay with `LIMIT` + pure `resolveReplay()`; tracked lake state observer wired as `lake:state`.
+  - Expanded `lake.test.ts` from 4 to 15 tests; authored `docs/DATA_LAKE_OPERATIONS.md`.
+  - Verification: `bun test` 1,451/0 across 142 files; typecheck 0; guardrails 0. Bun version mismatch disclosed (local 1.4.2 vs pin 1.3.14).
+
+## 2026-09-26 — FEAT-MAXIMUM-RECALL-TURSO-DATA-LAKE-AND-REFINERY: Executed & verified in production (historical)
 
 Execution per the master operating prompt. The owner instructed: "document and backup everything in github for all these" following the execution of `# VA FREELANCE HUB: MAXIMUM-RECALL TURSO DATA LAKE & OPPORTUNITY INTELLIGENCE REFINERY`.
 Operationalized the federated acquisition network, libSQL/Turso intelligence lake, deterministic geoGate refinery, multi-layered deduplication and sighting tracking (`lake_sightings`), immutable historical replay ledger (`lake_replay_events`), and governed Cloudflare D1 synchronization bridge.

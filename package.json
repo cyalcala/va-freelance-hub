@@ -22,7 +22,8 @@
     "lake:himalayas-sweep": "bun run scripts/lake/himalayas-sweep.ts",
     "lake:ats-discovery": "bun run scripts/lake/domain-ats-discovery.ts",
     "lake:replay": "bun run scripts/lake/replay-refinery.ts",
-    "lake:sync": "bun run scripts/lake/sync-to-d1.ts"
+    "lake:sync": "bun run scripts/lake/sync-to-d1.ts",
+    "lake:state": "bun run scripts/lake/lake-state-check.ts"
   },
   "devDependencies": {
     "@types/bun": "1.3.14",

@@ -29,19 +29,24 @@
 
 import { getLakeClient } from "./client";
 import { processAndRefineCandidate } from "./ingest-to-lake";
+import { markRawProcessed, storeRawObservation } from "./lake-shared";
 import { geoGate } from "../../packages/scraper/geoGate";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
-import { createHash } from "crypto";
-import { execSync } from "child_process";
+import { judgeViaJev } from "../../packages/scraper/jev-client";
 
-// ── Admission thresholds ──────────────────────────────────────────────────────
+// ── Admission thresholds (exported for unit tests) ───────────────────────────
 // Minimum number of live jobs a tenant must have to be considered
-const MIN_JOBS_TO_EVALUATE = 3;
+export const MIN_JOBS_TO_EVALUATE = 3;
 // Minimum fraction of jobs that must pass geoGate as QUALIFIED_READY for auto-approval
-const AUTO_APPROVE_PH_RATE = 0.20; // 20%
+export const AUTO_APPROVE_PH_RATE = 0.20; // 20%
 // Below this rate, auto-reject (tenant has negligible PH signal)
-const AUTO_REJECT_PH_RATE = 0.05; // <5% → rejected
+export const AUTO_REJECT_PH_RATE = 0.05; // <5% → rejected
 // Between REJECT and APPROVE thresholds → shadow monitoring
+
+/** Canonical lake source id for a discovered tenant: `<family-lower>:<slug>`. */
+export function buildDiscoverySourceId(atsFamily: string, tenantSlug: string): string {
+  return `${atsFamily.toLowerCase()}:${tenantSlug}`;
+}
 
 // ── ATS probe templates ───────────────────────────────────────────────────────
 const ATS_PROBE_TEMPLATES: Array<{
@@ -152,39 +157,12 @@ interface AdmissionDecision {
   jevRaw?: string;
 }
 
-// ── Jev integration ───────────────────────────────────────────────────────────
-function callJev(tenantSlug: string, family: string, metrics: TenantMetrics): AdmissionDecision {
-  const variantsStr = JSON.stringify({
-    ADMIT: `Approve ${family}/${tenantSlug} as autonomous lake source. PH rate ${(metrics.phRate * 100).toFixed(1)}% QUALIFIED_READY (${metrics.qualifiedReady}/${metrics.totalJobs}), ${metrics.excluded} excluded, ${metrics.ambiguous} ambiguous.`,
-    SHADOW: `Monitor ${family}/${tenantSlug} with shadow status — ingest but do not sync to D1 yet.`,
-    REJECT: `Reject ${family}/${tenantSlug} — insufficient PH eligibility signal for VA-focused board.`,
-  });
-
-  const contextStr = `ATS tenant admission for VA Freelance Hub lake. PH eligibility rate: ${(metrics.phRate * 100).toFixed(1)}%. Min auto-approve threshold: ${AUTO_APPROVE_PH_RATE * 100}%. Min shadow threshold: ${AUTO_REJECT_PH_RATE * 100}%.`;
-
-  const stateStr = `tenant=${family}/${tenantSlug} total=${metrics.totalJobs} qualified=${metrics.qualifiedReady} excluded=${metrics.excluded} ambiguous=${metrics.ambiguous} ph_rate=${metrics.phRate.toFixed(3)} categories=${metrics.topCategories.join(",")}`;
-
-  try {
-    const raw = execSync(
-      `node "C:\\Users\\admin\\.gemini\\config\\plugins\\jev\\bin\\judge.cjs" --task choose --goal "Admit ATS tenant as autonomous VA lake source" --variants ${JSON.stringify(variantsStr)} --context ${JSON.stringify(contextStr)} --state ${JSON.stringify(stateStr)}`,
-      { encoding: "utf-8", timeout: 8_000 }
-    );
-    const output = raw.trim();
-    const jevVerdict = output.includes("ADMIT") ? "ADMIT" : output.includes("SHADOW") ? "SHADOW" : output.includes("REJECT") ? "REJECT" : null;
-
-    if (jevVerdict) {
-      return {
-        verdict: jevVerdict as "ADMIT" | "SHADOW" | "REJECT",
-        confidence: 0.8,
-        reason: `Jev 1.13 decision: ${jevVerdict} | ph_rate=${(metrics.phRate * 100).toFixed(1)}%`,
-        jevRaw: output.slice(0, 500),
-      };
-    }
-  } catch {
-    // Jev offline — fall through to deterministic threshold
-  }
-
-  // Deterministic fallback (Jev non-blocking)
+// ── Admission decision ────────────────────────────────────────────────────────
+/**
+ * Pure deterministic threshold decision (no network). Exported for unit tests.
+ * Used as the Jev-offline fallback so admission never blocks on model availability.
+ */
+export function decideAdmissionDeterministic(metrics: TenantMetrics): AdmissionDecision {
   if (metrics.phRate >= AUTO_APPROVE_PH_RATE && metrics.totalJobs >= MIN_JOBS_TO_EVALUATE) {
     return {
       verdict: "ADMIT",
@@ -197,17 +175,60 @@ function callJev(tenantSlug: string, family: string, metrics: TenantMetrics): Ad
       confidence: 0.85,
       reason: `Deterministic threshold: ph_rate=${(metrics.phRate * 100).toFixed(1)}% < ${AUTO_REJECT_PH_RATE * 100}% or insufficient jobs (${metrics.totalJobs})`,
     };
-  } else {
-    return {
-      verdict: "SHADOW",
-      confidence: 0.65,
-      reason: `Borderline ph_rate=${(metrics.phRate * 100).toFixed(1)}% — shadow monitoring`,
-    };
   }
+  return {
+    verdict: "SHADOW",
+    confidence: 0.65,
+    reason: `Borderline ph_rate=${(metrics.phRate * 100).toFixed(1)}% — shadow monitoring`,
+  };
 }
 
-// ── Table setup ───────────────────────────────────────────────────────────────
-async function ensureDiscoveryTable(client: ReturnType<typeof getLakeClient>) {
+/**
+ * Jev-assisted admission via the repository-portable Jev 1.13 client
+ * (OpenRouter System One; advisory only). Falls back to the deterministic
+ * threshold when the key is missing, the provider fails, or the answer is
+ * invalid — admission never blocks on model availability.
+ */
+async function decideAdmission(
+  tenantSlug: string,
+  family: string,
+  metrics: TenantMetrics
+): Promise<AdmissionDecision> {
+  const stateStr = `tenant=${family}/${tenantSlug} total=${metrics.totalJobs} qualified=${metrics.qualifiedReady} excluded=${metrics.excluded} ambiguous=${metrics.ambiguous} ph_rate=${metrics.phRate.toFixed(3)} categories=${metrics.topCategories.join(",")}`;
+
+  const result = await judgeViaJev(process.env.OPENROUTER_API_KEY, {
+    task: "Admit ATS tenant as autonomous VA lake source",
+    state: stateStr,
+    context: `ATS tenant admission for VA Freelance Hub lake. PH eligibility rate: ${(metrics.phRate * 100).toFixed(1)}%. Min auto-approve threshold: ${AUTO_APPROVE_PH_RATE * 100}%. Min shadow threshold: ${AUTO_REJECT_PH_RATE * 100}%. Advisory only — deterministic thresholds enforce.`,
+    questions: {
+      admission: {
+        instructions: `Choose ADMIT (approve as autonomous lake source), SHADOW (monitor only, do not sync to D1), or REJECT (insufficient PH signal) for ${family}/${tenantSlug} with PH rate ${(metrics.phRate * 100).toFixed(1)}% QUALIFIED_READY (${metrics.qualifiedReady}/${metrics.totalJobs}).`,
+        criteria: {
+          ADMIT: `Approve ${family}/${tenantSlug} as autonomous lake source.`,
+          SHADOW: `Monitor ${family}/${tenantSlug} with shadow status — ingest but do not sync to D1 yet.`,
+          REJECT: `Reject ${family}/${tenantSlug} — insufficient PH eligibility signal for VA-focused board.`,
+        },
+      },
+    },
+    timeoutMs: 8_000,
+  });
+
+  const answer = result.ok ? result.answers?.admission : undefined;
+  if (answer && (answer.choice === "ADMIT" || answer.choice === "SHADOW" || answer.choice === "REJECT")) {
+    return {
+      verdict: answer.choice,
+      confidence: answer.confidence,
+      reason: `Jev 1.13 decision: ${answer.choice} | ph_rate=${(metrics.phRate * 100).toFixed(1)}%`,
+      jevRaw: `${result.model ?? "jev-1.13"}:${answer.choice}@${answer.confidence}`.slice(0, 500),
+    };
+  }
+
+  // Jev offline/unavailable/invalid — deterministic threshold (Jev non-blocking)
+  return decideAdmissionDeterministic(metrics);
+}
+
+// ── Table setup (portable: source_id is a plain column computed in code) ─────
+export async function ensureDiscoveryTable(client: ReturnType<typeof getLakeClient>) {
   await client.execute(`
     CREATE TABLE IF NOT EXISTS lake_ats_discovery (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -222,11 +243,15 @@ async function ensureDiscoveryTable(client: ReturnType<typeof getLakeClient>) {
       review_status TEXT NOT NULL DEFAULT 'shadow_monitor',
       admission_reason TEXT,
       jev_raw TEXT,
-      source_id TEXT GENERATED ALWAYS AS (ats_family || ':' || tenant_slug) STORED,
+      source_id TEXT NOT NULL DEFAULT '',
       discovered_at TEXT NOT NULL DEFAULT (datetime('now')),
       last_evaluated_at TEXT,
       UNIQUE(ats_family, tenant_slug)
     );
+  `);
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_ats_review
+    ON lake_ats_discovery(review_status);
   `);
 }
 
@@ -335,7 +360,7 @@ export async function runDomainAtsDiscovery(options: {
       }
 
       stats.tenantsFound++;
-      const sourceId = `${template.family.toLowerCase()}:${slug}`;
+      const sourceId = buildDiscoverySourceId(template.family, slug);
       console.log(`\n✓ Found: ${template.family}/${slug} (${rawJobs.length} jobs) | company: ${company}`);
 
       // Step 2: geoGate every job to compute PH signal metrics
@@ -381,8 +406,8 @@ export async function runDomainAtsDiscovery(options: {
 
       console.log(`  geoGate: ${qualifiedReady}✓ ${excluded}✗ ${ambiguous}? | ph_rate=${(phRate * 100).toFixed(1)}%`);
 
-      // Step 3: Jev autonomous admission decision
-      const decision = callJev(slug, template.family, metrics);
+      // Step 3: Jev autonomous admission decision (advisory; deterministic fallback)
+      const decision = await decideAdmission(slug, template.family, metrics);
       console.log(`  Jev decision: ${decision.verdict} (confidence=${decision.confidence}) | ${decision.reason}`);
 
       if (dryRun) {
@@ -401,8 +426,8 @@ export async function runDomainAtsDiscovery(options: {
         sql: `
           INSERT INTO lake_ats_discovery
             (domain, company_hint, ats_family, tenant_slug, probe_url, job_count,
-             qualified_ready, ph_rate, review_status, admission_reason, jev_raw, last_evaluated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+             qualified_ready, ph_rate, review_status, admission_reason, jev_raw, source_id, last_evaluated_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
           ON CONFLICT(ats_family, tenant_slug) DO UPDATE SET
             job_count = ?,
             qualified_ready = ?,
@@ -410,15 +435,16 @@ export async function runDomainAtsDiscovery(options: {
             review_status = ?,
             admission_reason = ?,
             jev_raw = ?,
+            source_id = ?,
             last_evaluated_at = datetime('now');
         `,
         args: [
           domain, company, template.family, slug, probeUrl,
           rawJobs.length, qualifiedReady, phRate,
-          reviewStatus, decision.reason, decision.jevRaw ?? null,
+          reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
           // ON CONFLICT updates:
           rawJobs.length, qualifiedReady, phRate,
-          reviewStatus, decision.reason, decision.jevRaw ?? null,
+          reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
         ],
       });
 
@@ -427,24 +453,15 @@ export async function runDomainAtsDiscovery(options: {
         stats.admitted++;
         console.log(`  → ADMITTED. Ingesting ${rawJobs.length} jobs into lake_candidate_jobs...`);
 
-        // Store raw observation
+        // Store raw observation (sample payload; hash covers the sample)
         const rawPayload = JSON.stringify(rawJobs.slice(0, 20)); // store sample
-        const obsInsert = await client.execute({
-          sql: `
-            INSERT INTO lake_raw_observations
-              (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-            VALUES (?, ?, ?, 200, ?, ?)
-            RETURNING id;
-          `,
-          args: [
-            sourceId,
-            `${template.family}/${slug}`,
-            probeUrl,
-            rawPayload,
-            createHash("sha256").update(rawPayload).digest("hex"),
-          ],
+        const rawObsId = await storeRawObservation(client, {
+          sourceId,
+          sourcePlatform: `${template.family}/${slug}`,
+          fetchUrl: probeUrl,
+          httpStatus: 200,
+          rawPayload,
         });
-        const rawObsId = obsInsert.rows[0]?.id as number;
 
         const ingestStats = {
           totalExtracted: 0, duplicates: 0, excluded: 0, qualifiedReady: 0, ambiguous: 0,
@@ -471,10 +488,7 @@ export async function runDomainAtsDiscovery(options: {
           );
         }
 
-        await client.execute({
-          sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-          args: [rawObsId],
-        });
+        await markRawProcessed(client, rawObsId);
 
         stats.jobsIngested += ingestStats.qualifiedReady;
         console.log(`  → Ingested: ${ingestStats.qualifiedReady} QUALIFIED_READY, ${ingestStats.excluded} excluded, ${ingestStats.duplicates} duplicates`);

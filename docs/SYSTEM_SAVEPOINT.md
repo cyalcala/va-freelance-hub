@@ -1,6 +1,28 @@
 # System Savepoint
 
-## 2026-09-26 — FEAT-MAXIMUM-RECALL-TURSO-DATA-LAKE-AND-REFINERY: Executed, refined, synced, and verified in production (current)
+## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (current)
+
+The owner instructed: "check current repo state and what can be improved in data lake, improve them all, document and backup in github".
+
+- **Mode/baton:** EXECUTE. Start SHA `bc8bba304690331342185cfde6762d4eeb9fd679` (clean except one untracked helper draft `scripts/lake/lake-state-check.ts`, synchronized with `origin/main`).
+- **Repo state at entry:** branch `main`, up to date with `origin/main`; lake at 3 commits (`a71a498` operationalize, `a5348ea` remotive/himalayas/discovery scripts, `bc8bba3` ATS admission engine + dynamic sync auth set).
+- **Audit findings fixed (no behavior/eligibility change, no D1 writes):**
+  - Ingestion duplication: 5 near-identical RSS blocks + 6 inline raw-observation INSERT/UPDATE pairs → shared `lake-shared.ts` (`ingestRssSource`, `storeRawObservation`, `markRawProcessed`, `recordSighting`, `computeFingerprint`, `isStorableCandidate`).
+  - Non-portable admission: `domain-ats-discovery.ts` shelled out to a hardcoded Windows analyst-plugin path → repo-portable `judgeViaJev` with deterministic threshold fallback; portable `lake_ats_discovery` DDL (plain `source_id`, no GENERATED expression).
+  - Sync fragility: `__dirname` temp file inside repo + floating `bunx wrangler` + raw string interpolation → OS-tmpdir batch file, repo-pinned wrangler, `BEGIN;…COMMIT;`, NUL-safe `escapeSql`, `isSyncableCandidate` skip guard.
+  - Incomplete bootstrap: `init-lake.ts` omitted `lake_ats_discovery`/`lake_runs` and hot-path indexes → `ensureLakeSchema()` now covers all 6 tables + 4 indexes.
+  - Unbounded replay: full-table ambiguous SELECT → `LIMIT` (default 2,000) + pure `resolveReplay()`.
+  - Untracked observer: `lake-state-check.ts` draft → tracked module with `--json` and 3 extra metric families, wired as `lake:state`.
+- **Verification Evidence:**
+  - `bun test scripts/lake`: 15 pass / 0 fail.
+  - `bun test`: 1,451 passed across 142 test files (0 failures).
+  - `bun run typecheck`: clean, 0 errors.
+  - `bun run audit:guardrails`: clean, exit 0.
+  - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
+- **Docs:** new `docs/DATA_LAKE_OPERATIONS.md`; status/savepoint/handoff/trail updated.
+- **NEXT**: Commit + push this unit; watch Sovereign CI Guardrail on the pushed SHA; next lake gains are live harvest runs (`lake:ingest`, `lake:remotive:priority`, `lake:himalayas-sweep`, `lake:ats-discovery`) against Turso, then governed `lake:sync --dry-run` review.
+
+## 2026-09-26 — FEAT-MAXIMUM-RECALL-TURSO-DATA-LAKE-AND-REFINERY: Executed, refined, synced, and verified in production (historical)
 
 The owner instructed: "document and backup everything in github for all these" following the execution of `# VA FREELANCE HUB: MAXIMUM-RECALL TURSO DATA LAKE & OPPORTUNITY INTELLIGENCE REFINERY`.
 Established the federated acquisition network, libSQL/Turso opportunity intelligence lake, multi-layered deduplication and sighting tracking, deterministic geoGate refinery, historical replay recovery engine, and governed Cloudflare D1 synchronization bridge.

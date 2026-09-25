@@ -15,9 +15,9 @@
 
 import { getLakeClient } from "./client";
 import { processAndRefineCandidate } from "./ingest-to-lake";
+import { markRawProcessed, storeRawObservation } from "./lake-shared";
 import { parseHimalayasResponse, type RawHimalayasResponse } from "../../packages/scraper/himalayas";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
-import { createHash } from "crypto";
 
 const HIMALAYAS_API = "https://himalayas.app/jobs/api";
 const PAGE_SIZE = 100;
@@ -125,22 +125,13 @@ export async function runHimalayasSweep(options: { dryRun?: boolean } = {}) {
 
       if (!dryRun) {
         // Store raw observation for this page
-        const obsInsert = await client.execute({
-          sql: `
-            INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-            VALUES (?, ?, ?, ?, ?, ?)
-            RETURNING id;
-          `,
-          args: [
-            "himalayas:remote-jobs",
-            "Himalayas",
-            `${HIMALAYAS_API}?limit=${PAGE_SIZE}&offset=${offset}&categories=${cat.slug}`,
-            status,
-            rawText.slice(0, 1_000_000),
-            createHash("sha256").update(rawText).digest("hex"),
-          ],
+        const rawObsId = await storeRawObservation(client, {
+          sourceId: "himalayas:remote-jobs",
+          sourcePlatform: "Himalayas",
+          fetchUrl: `${HIMALAYAS_API}?limit=${PAGE_SIZE}&offset=${offset}&categories=${cat.slug}`,
+          httpStatus: status,
+          rawPayload: rawText,
         });
-        const rawObsId = obsInsert.rows[0]?.id as number;
         stats.totalRawCount++;
 
         for (const item of normalized) {
@@ -169,10 +160,7 @@ export async function runHimalayasSweep(options: { dryRun?: boolean } = {}) {
           );
         }
 
-        await client.execute({
-          sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-          args: [rawObsId],
-        });
+        await markRawProcessed(client, rawObsId);
       } else {
         stats.totalRawCount++;
         stats.totalExtracted += normalized.length;

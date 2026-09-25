@@ -1,12 +1,12 @@
 import { getLakeClient } from "./client";
 
-async function initLake() {
-  console.log("Connecting to Turso Data Lake...");
-  const client = getLakeClient();
+type LakeClient = ReturnType<typeof getLakeClient>;
 
-  // 1. Connectivity test
-  const ping = await client.execute("SELECT 1 AS ping;");
-  console.log("Turso connection successful! Ping result:", ping.rows[0]);
+/**
+ * Idempotent lake schema bootstrap. Exported so discovery/sync CLIs and tests
+ * can ensure tables exist without shelling out to this file's main runner.
+ */
+export async function ensureLakeSchema(client: LakeClient): Promise<void> {
 
   // 2. Create raw observations table
   console.log("Creating lake_raw_observations table...");
@@ -132,7 +132,88 @@ async function initLake() {
     ON lake_replay_events(candidate_id);
   `);
 
-  // 6. Ensure optional columns exist on lake_candidate_jobs
+  // 6. ATS discovery table (autonomous admission engine).
+  // NOTE: source_id is a plain column computed in code (family:slug), not a
+  // GENERATED column — maximum libSQL/SQLite portability.
+  console.log("Creating lake_ats_discovery table...");
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS lake_ats_discovery (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      domain TEXT NOT NULL,
+      company_hint TEXT,
+      ats_family TEXT NOT NULL,
+      tenant_slug TEXT NOT NULL,
+      probe_url TEXT NOT NULL,
+      job_count INTEGER NOT NULL DEFAULT 0,
+      qualified_ready INTEGER NOT NULL DEFAULT 0,
+      ph_rate REAL NOT NULL DEFAULT 0,
+      review_status TEXT NOT NULL DEFAULT 'shadow_monitor',
+      admission_reason TEXT,
+      jev_raw TEXT,
+      source_id TEXT NOT NULL DEFAULT '',
+      discovered_at TEXT NOT NULL DEFAULT (datetime('now')),
+      last_evaluated_at TEXT,
+      UNIQUE(ats_family, tenant_slug)
+    );
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_ats_review
+    ON lake_ats_discovery(review_status);
+  `);
+
+  // Backfill source_id for rows written before the column existed.
+  try {
+    await client.execute(`
+      UPDATE lake_ats_discovery
+      SET source_id = lower(ats_family) || ':' || tenant_slug
+      WHERE source_id = '' OR source_id IS NULL;
+    `);
+  } catch {
+    // Table freshly created or already consistent.
+  }
+
+  // 7. Operational run ledger (observability: one row per CLI run).
+  console.log("Creating lake_runs table...");
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS lake_runs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      script TEXT NOT NULL,
+      started_at TEXT NOT NULL DEFAULT (datetime('now')),
+      finished_at TEXT,
+      status TEXT NOT NULL DEFAULT 'started',
+      stats_json TEXT,
+      error TEXT
+    );
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_runs_script
+    ON lake_runs(script, started_at);
+  `);
+
+  // 8. Hot-path indexes for the sync + state-check queries.
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_candidate_sync
+    ON lake_candidate_jobs(status, ph_eligibility);
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_candidate_synced_at
+    ON lake_candidate_jobs(synced_to_d1_at);
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_candidate_source_status
+    ON lake_candidate_jobs(source_id, status);
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_raw_source_hash
+    ON lake_raw_observations(source_id, content_hash);
+  `);
+
+  // 9. Ensure optional columns exist on lake_candidate_jobs
   try {
     await client.execute(`ALTER TABLE lake_candidate_jobs ADD COLUMN sighting_count INTEGER NOT NULL DEFAULT 1;`);
   } catch {
@@ -144,7 +225,7 @@ async function initLake() {
     // Column already exists
   }
 
-  // 7. Verify tables
+  // 10. Verify tables
   const tables = await client.execute(`
     SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'lake_%';
   `);
@@ -157,7 +238,20 @@ async function initLake() {
   console.log("\nTurso Lake setup is complete and ready for ingestion!");
 }
 
-initLake().catch((err) => {
-  console.error("Failed to initialize Turso Lake:", err);
-  process.exit(1);
-});
+async function initLake() {
+  console.log("Connecting to Turso Data Lake...");
+  const client = getLakeClient();
+
+  // 1. Connectivity test
+  const ping = await client.execute("SELECT 1 AS ping;");
+  console.log("Turso connection successful! Ping result:", ping.rows[0]);
+
+  await ensureLakeSchema(client);
+}
+
+if (import.meta.main) {
+  initLake().catch((err) => {
+    console.error("Failed to initialize Turso Lake:", err);
+    process.exit(1);
+  });
+}

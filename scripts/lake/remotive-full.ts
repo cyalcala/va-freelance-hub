@@ -15,8 +15,8 @@
 
 import { getLakeClient } from "./client";
 import { processAndRefineCandidate } from "./ingest-to-lake";
+import { markRawProcessed, storeRawObservation } from "./lake-shared";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
-import { createHash } from "crypto";
 
 const REMOTIVE_CATEGORIES_URL = "https://remotive.com/api/remote-jobs/categories";
 const REMOTIVE_JOBS_URL = "https://remotive.com/api/remote-jobs";
@@ -199,22 +199,13 @@ async function ingestRemotiveUrl(
     }
 
     // Store raw observation
-    const obsInsert = await client.execute({
-      sql: `
-        INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-        VALUES (?, ?, ?, ?, ?, ?)
-        RETURNING id;
-      `,
-      args: [
-        sourceId,
-        "Remotive",
-        url,
-        res.status,
-        rawText.slice(0, 1_000_000),
-        createHash("sha256").update(rawText).digest("hex"),
-      ],
+    const rawObsId = await storeRawObservation(client, {
+      sourceId,
+      sourcePlatform: "Remotive",
+      fetchUrl: url,
+      httpStatus: res.status,
+      rawPayload: rawText,
     });
-    const rawObsId = obsInsert.rows[0]?.id as number;
     stats.totalRawCount++;
 
     // Process each job through geoGate refinery
@@ -243,10 +234,7 @@ async function ingestRemotiveUrl(
       );
     }
 
-    await client.execute({
-      sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-      args: [rawObsId],
-    });
+    await markRawProcessed(client, rawObsId);
   } catch (err: any) {
     console.error(`  Error ingesting ${url}: ${err.message}`);
   }

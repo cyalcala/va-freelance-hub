@@ -1,6 +1,23 @@
 # Implementation Status
 
-## 2026-09-26 — LAKE-EXPANSION: remotive-full, himalayas-sweep, domain-ats-discovery (current)
+## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (current)
+
+- **What this is**: Hardening pass over the Turso opportunity lake (`scripts/lake/`). Eliminates copy-pasted ingestion logic, fixes a Windows-only Jev invocation that broke portability, hardens the D1 sync bridge, completes schema bootstrap, and wires a tracked lake state observer. No ingestion behavior, eligibility rule, or production D1 content changes.
+- **New/changed modules**:
+  - `lake-shared.ts` (new): `computeFingerprint`, `storeRawObservation` (with `contentHash` override), `markRawProcessed`, `recordSighting`, `isStorableCandidate`, `ingestRssSource` RSS helper.
+  - `ingest-to-lake.ts`: 5 RSS blocks (WWR, Remotive, RWFA, Jobicy x2) collapsed into `ingestRssSource`; JSON blocks (Himalayas, RemoteOK, Breezy) use shared raw-observation helpers; junk drafts rejected before write.
+  - `client.ts`: `isLakeConfigured()`, `closeLakeClient()`, credential-masking error path.
+  - `init-lake.ts`: exports `ensureLakeSchema()`; now also creates portable `lake_ats_discovery` (plain `source_id` column, no GENERATED expression), `lake_runs` ledger, and 4 missing hot-path indexes (`status+ph_eligibility`, `synced_to_d1_at`, `source_id+status`, `source_id+content_hash`).
+  - `domain-ats-discovery.ts`: replaced hardcoded Windows `judge.cjs` shell-out with repo-portable `judgeViaJev` (OpenRouter System One, advisory-only, deterministic threshold fallback); exported `decideAdmissionDeterministic`, `buildDiscoverySourceId`, `ensureDiscoveryTable`, and admission threshold constants.
+  - `sync-to-d1.ts`: exported `escapeSql` (NUL-safe), `isSyncableCandidate`, `buildSyncSql`; temp batch file moved to OS tmpdir; repo-pinned wrangler invocation; single `BEGIN;…COMMIT;` batch; unsyncable rows skipped with warning.
+  - `replay-refinery.ts`: exported pure `resolveReplay()`; `runHistoricalReplay` takes a `limit` (default 2,000) instead of unbounded SELECT.
+  - `lake-state-check.ts` (now tracked): `checkLakeState()` / `renderLakeState()` with `--json`, raw/replay/discovery metrics; wired as `lake:state`.
+  - `lake.test.ts`: 15 tests (was 4) covering fingerprint, payload, SQL builder, admission boundaries, and replay resolution.
+  - `docs/DATA_LAKE_OPERATIONS.md` (new): canonical lake runbook and contract reference.
+- **Package.json**: added `lake:state` script.
+- **Verification**: `bun test scripts/lake` 15/0; full `bun test` 1,451 pass / 0 fail across 142 files; `typecheck` 0 errors; `audit:guardrails` clean. Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
+
+## 2026-09-26 — LAKE-EXPANSION: remotive-full, himalayas-sweep, domain-ats-discovery (historical)
 
 - **What this is**: Three new operational lake scripts extending the federated acquisition mesh: full Remotive JSON API ingestion with category pagination, paginated Himalayas category sweep across 18 VA-relevant categories, and a company domain → ATS tenant discovery flywheel.
 - **New scripts**: `scripts/lake/remotive-full.ts` (Remotive `/api/remote-jobs` with per-category retry backoff + `--priority-only` flag), `scripts/lake/himalayas-sweep.ts` (18 VA category slugs, up to 1,000 items each, polite inter-page/inter-category delays), `scripts/lake/domain-ats-discovery.ts` (Breezy/Greenhouse/Workable/Lever tenant probing from lake employer domains → `lake_ats_discovery` table, never auto-promoting to D1).

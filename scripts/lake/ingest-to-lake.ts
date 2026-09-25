@@ -1,10 +1,16 @@
 import { getLakeClient } from "./client";
+import {
+  computeFingerprint,
+  isStorableCandidate,
+  markRawProcessed,
+  recordSighting,
+  storeRawObservation,
+} from "./lake-shared";
 import { parseHimalayasResponse, type RawHimalayasResponse } from "../../packages/scraper/himalayas";
 import { fetchRSSFeed } from "../../packages/scraper/rss";
 import { geoGate } from "../../packages/scraper/geoGate";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
 import type { Source } from "../../packages/scraper/sources";
-import { createHash } from "crypto";
 
 export interface CandidateDraft {
   sourceId: string;
@@ -20,20 +26,7 @@ export interface CandidateDraft {
   tags?: string[];
 }
 
-function computeFingerprint(company: string, title: string, applyUrl: string): string {
-  const normCompany = (company || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const normTitle = (title || "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  let domain = "";
-  try {
-    domain = new URL(applyUrl).hostname.replace(/^www\./, "");
-  } catch {
-    domain = (applyUrl || "").slice(0, 30);
-  }
-  return createHash("sha256")
-    .update(`${normCompany}:${normTitle}:${domain}`)
-    .digest("hex")
-    .slice(0, 32);
-}
+export { computeFingerprint };
 
 export async function processAndRefineCandidate(
   client: ReturnType<typeof getLakeClient>,
@@ -48,6 +41,10 @@ export async function processAndRefineCandidate(
   }
 ) {
   stats.totalExtracted++;
+  if (!isStorableCandidate(draft)) {
+    stats.excluded++;
+    return;
+  }
   const fingerprint = computeFingerprint(draft.company, draft.title, draft.applicationUrl || draft.sourceUrl);
 
   // Check for existing candidate by fingerprint or source URL
@@ -62,22 +59,13 @@ export async function processAndRefineCandidate(
     const currentCount = Number(existing.rows[0]?.sighting_count || 1);
 
     // Record multi-source sighting in lake_sightings
-    await client.execute({
-      sql: `
-        INSERT INTO lake_sightings (candidate_id, raw_observation_id, source_id, source_platform, source_url)
-        VALUES (?, ?, ?, ?, ?);
-      `,
-      args: [existingId, rawObsId, draft.sourceId, draft.sourcePlatform, draft.sourceUrl],
-    });
-
-    // Update candidate sighting count & last observed timestamp
-    await client.execute({
-      sql: `
-        UPDATE lake_candidate_jobs 
-        SET sighting_count = ?, last_observed_at = datetime('now')
-        WHERE id = ?;
-      `,
-      args: [currentCount + 1, existingId],
+    await recordSighting(client, {
+      candidateId: existingId,
+      rawObservationId: rawObsId,
+      sourceId: draft.sourceId,
+      sourcePlatform: draft.sourcePlatform,
+      sourceUrl: draft.sourceUrl,
+      currentCount,
     });
 
     return;
@@ -142,6 +130,54 @@ export async function processAndRefineCandidate(
   });
 }
 
+export interface LakeStats {
+  totalRawCount: number;
+  totalExtracted: number;
+  duplicates: number;
+  excluded: number;
+  qualifiedReady: number;
+  ambiguous: number;
+}
+
+/**
+ * Shared RSS ingestion: fetch -> store raw observation -> refine each item ->
+ * mark processed. Error-isolated per source so one feed failure never aborts
+ * the pipeline. Exported for reuse by lake sweep scripts.
+ */
+export async function ingestRssSource(
+  client: ReturnType<typeof getLakeClient>,
+  source: Source,
+  stats: LakeStats,
+  toDraft: (item: any, source: Source) => CandidateDraft | null,
+  label = source.name
+): Promise<void> {
+  try {
+    const res = await fetchRSSFeed(source);
+    console.log(`Parsed ${res.items.length} opportunities from ${label}.`);
+
+    const sample = JSON.stringify(res.items.slice(0, 10));
+    const rawObsId = await storeRawObservation(client, {
+      sourceId: source.id,
+      sourcePlatform: source.platform,
+      fetchUrl: source.url,
+      httpStatus: 200,
+      rawPayload: sample,
+      contentHash: res.bodyHash || undefined,
+    });
+    stats.totalRawCount++;
+
+    for (const item of res.items) {
+      const draft = toDraft(item, source);
+      if (!draft) continue;
+      await processAndRefineCandidate(client, rawObsId, draft, stats);
+    }
+
+    await markRawProcessed(client, rawObsId);
+  } catch (err: any) {
+    console.error(`${label} ingestion error:`, err.message);
+  }
+}
+
 export async function runIngestionPipeline() {
   console.log("=== Starting Federated Opportunity Lake Ingestion & Refinery Run ===");
   const client = getLakeClient();
@@ -167,22 +203,13 @@ export async function runIngestionPipeline() {
     const rawText = await res.text();
 
     if (status === 200 && rawText) {
-      const obsInsert = await client.execute({
-        sql: `
-          INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-          VALUES (?, ?, ?, ?, ?, ?)
-          RETURNING id;
-        `,
-        args: [
-          "himalayas:remote-jobs",
-          "Himalayas",
-          url,
-          status,
-          rawText.slice(0, 1_000_000),
-          createHash("sha256").update(rawText).digest("hex"),
-        ],
+      const rawObsId = await storeRawObservation(client, {
+        sourceId: "himalayas:remote-jobs",
+        sourcePlatform: "Himalayas",
+        fetchUrl: url,
+        httpStatus: status,
+        rawPayload: rawText,
       });
-      const rawObsId = obsInsert.rows[0]?.id as number;
       stats.totalRawCount++;
 
       const json = JSON.parse(rawText) as RawHimalayasResponse;
@@ -210,10 +237,7 @@ export async function runIngestionPipeline() {
         );
       }
 
-      await client.execute({
-        sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-        args: [rawObsId],
-      });
+      await markRawProcessed(client, rawObsId);
     }
   } catch (err: any) {
     console.error("Himalayas ingestion error:", err.message);
@@ -235,56 +259,19 @@ export async function runIngestionPipeline() {
     maxItems: 100,
   };
 
-  try {
-    const wwrRes = await fetchRSSFeed(wwrSource);
-    console.log(`Parsed ${wwrRes.items.length} opportunities from We Work Remotely.`);
-
-    const rawObsInsert = await client.execute({
-      sql: `
-        INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-        VALUES (?, ?, ?, ?, ?, ?)
-        RETURNING id;
-      `,
-      args: [
-        wwrSource.id,
-        wwrSource.platform,
-        wwrSource.url,
-        200,
-        JSON.stringify(wwrRes.items.slice(0, 10)),
-        wwrRes.bodyHash || "",
-      ],
-    });
-    const rawObsId = rawObsInsert.rows[0]?.id as number;
-    stats.totalRawCount++;
-
-    for (const item of wwrRes.items) {
-      await processAndRefineCandidate(
-        client,
-        rawObsId,
-        {
-          sourceId: wwrSource.id,
-          sourcePlatform: wwrSource.platform,
-          sourceUrl: item.sourceUrl,
-          title: item.title,
-          company: item.company || "Unknown",
-          category: item.category || "other",
-          locationRaw: item.locationRaw || "Remote",
-          description: item.description || "",
-          applicationUrl: item.sourceUrl,
-          postedAt: item.postedAt || null,
-          tags: ["remote"],
-        },
-        stats
-      );
-    }
-
-    await client.execute({
-      sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-      args: [rawObsId],
-    });
-  } catch (err: any) {
-    console.error("WeWorkRemotely ingestion error:", err.message);
-  }
+  await ingestRssSource(client, wwrSource, stats, (item, source) => ({
+    sourceId: source.id,
+    sourcePlatform: source.platform,
+    sourceUrl: item.sourceUrl,
+    title: item.title,
+    company: item.company || "Unknown",
+    category: item.category || "other",
+    locationRaw: item.locationRaw || "Remote",
+    description: item.description || "",
+    applicationUrl: item.sourceUrl,
+    postedAt: item.postedAt || null,
+    tags: ["remote"],
+  }));
 
   // 3. Remotive RSS Feed
   console.log("\n[Source 3/7] Ingesting Remotive RSS Feed...");
@@ -302,56 +289,19 @@ export async function runIngestionPipeline() {
     maxItems: 100,
   };
 
-  try {
-    const remotiveRes = await fetchRSSFeed(remotiveSource);
-    console.log(`Parsed ${remotiveRes.items.length} opportunities from Remotive.`);
-
-    const rawObsInsert = await client.execute({
-      sql: `
-        INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-        VALUES (?, ?, ?, ?, ?, ?)
-        RETURNING id;
-      `,
-      args: [
-        remotiveSource.id,
-        remotiveSource.platform,
-        remotiveSource.url,
-        200,
-        JSON.stringify(remotiveRes.items.slice(0, 10)),
-        remotiveRes.bodyHash || "",
-      ],
-    });
-    const rawObsId = rawObsInsert.rows[0]?.id as number;
-    stats.totalRawCount++;
-
-    for (const item of remotiveRes.items) {
-      await processAndRefineCandidate(
-        client,
-        rawObsId,
-        {
-          sourceId: remotiveSource.id,
-          sourcePlatform: remotiveSource.platform,
-          sourceUrl: item.sourceUrl,
-          title: item.title,
-          company: item.company || "Unknown",
-          category: item.category || "other",
-          locationRaw: item.locationRaw || "Remote",
-          description: item.description || "",
-          applicationUrl: item.sourceUrl,
-          postedAt: item.postedAt || null,
-          tags: ["remote"],
-        },
-        stats
-      );
-    }
-
-    await client.execute({
-      sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-      args: [rawObsId],
-    });
-  } catch (err: any) {
-    console.error("Remotive ingestion error:", err.message);
-  }
+  await ingestRssSource(client, remotiveSource, stats, (item, source) => ({
+    sourceId: source.id,
+    sourcePlatform: source.platform,
+    sourceUrl: item.sourceUrl,
+    title: item.title,
+    company: item.company || "Unknown",
+    category: item.category || "other",
+    locationRaw: item.locationRaw || "Remote",
+    description: item.description || "",
+    applicationUrl: item.sourceUrl,
+    postedAt: item.postedAt || null,
+    tags: ["remote"],
+  }));
 
   // 4. Remote OK Public API
   console.log("\n[Source 4/7] Ingesting Remote OK Public API...");
@@ -365,22 +315,13 @@ export async function runIngestionPipeline() {
     const rawText = await res.text();
 
     if (status === 200 && rawText) {
-      const obsInsert = await client.execute({
-        sql: `
-          INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-          VALUES (?, ?, ?, ?, ?, ?)
-          RETURNING id;
-        `,
-        args: [
-          "remote-ok",
-          "RemoteOK",
-          remoteOkUrl,
-          status,
-          rawText.slice(0, 1_000_000),
-          createHash("sha256").update(rawText).digest("hex"),
-        ],
+      const rawObsId = await storeRawObservation(client, {
+        sourceId: "remote-ok",
+        sourcePlatform: "RemoteOK",
+        fetchUrl: remoteOkUrl,
+        httpStatus: status,
+        rawPayload: rawText,
       });
-      const rawObsId = obsInsert.rows[0]?.id as number;
       stats.totalRawCount++;
 
       const data = JSON.parse(rawText) as any[];
@@ -411,10 +352,7 @@ export async function runIngestionPipeline() {
         );
       }
 
-      await client.execute({
-        sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-        args: [rawObsId],
-      });
+      await markRawProcessed(client, rawObsId);
     }
   } catch (err: any) {
     console.error("Remote OK ingestion error:", err.message);
@@ -436,56 +374,19 @@ export async function runIngestionPipeline() {
     maxItems: 50,
   };
 
-  try {
-    const rwfaRes = await fetchRSSFeed(rwfaSource);
-    console.log(`Parsed ${rwfaRes.items.length} opportunities from Real Work From Anywhere.`);
-
-    const rawObsInsert = await client.execute({
-      sql: `
-        INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-        VALUES (?, ?, ?, ?, ?, ?)
-        RETURNING id;
-      `,
-      args: [
-        rwfaSource.id,
-        rwfaSource.platform,
-        rwfaSource.url,
-        200,
-        JSON.stringify(rwfaRes.items.slice(0, 10)),
-        rwfaRes.bodyHash || "",
-      ],
-    });
-    const rawObsId = rawObsInsert.rows[0]?.id as number;
-    stats.totalRawCount++;
-
-    for (const item of rwfaRes.items) {
-      await processAndRefineCandidate(
-        client,
-        rawObsId,
-        {
-          sourceId: rwfaSource.id,
-          sourcePlatform: rwfaSource.platform,
-          sourceUrl: item.sourceUrl,
-          title: item.title,
-          company: item.company || "Unknown",
-          category: item.category || "other",
-          locationRaw: item.locationRaw || "Remote",
-          description: item.description || "",
-          applicationUrl: item.sourceUrl,
-          postedAt: item.postedAt || null,
-          tags: ["remote"],
-        },
-        stats
-      );
-    }
-
-    await client.execute({
-      sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-      args: [rawObsId],
-    });
-  } catch (err: any) {
-    console.error("RealWorkFromAnywhere ingestion error:", err.message);
-  }
+  await ingestRssSource(client, rwfaSource, stats, (item, source) => ({
+    sourceId: source.id,
+    sourcePlatform: source.platform,
+    sourceUrl: item.sourceUrl,
+    title: item.title,
+    company: item.company || "Unknown",
+    category: item.category || "other",
+    locationRaw: item.locationRaw || "Remote",
+    description: item.description || "",
+    applicationUrl: item.sourceUrl,
+    postedAt: item.postedAt || null,
+    tags: ["remote"],
+  }));
 
   // 6. Jobicy APAC Support Feeds
   console.log("\n[Source 6/7] Ingesting Jobicy APAC Feeds...");
@@ -519,56 +420,25 @@ export async function runIngestionPipeline() {
   ];
 
   for (const feed of jobicyFeeds) {
-    try {
-      const feedRes = await fetchRSSFeed(feed);
-      console.log(`Parsed ${feedRes.items.length} opportunities from ${feed.name}.`);
-
-      const rawObsInsert = await client.execute({
-        sql: `
-          INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-          VALUES (?, ?, ?, ?, ?, ?)
-          RETURNING id;
-        `,
-        args: [
-          feed.id,
-          feed.platform,
-          feed.url,
-          200,
-          JSON.stringify(feedRes.items.slice(0, 10)),
-          feedRes.bodyHash || "",
-        ],
-      });
-      const rawObsId = rawObsInsert.rows[0]?.id as number;
-      stats.totalRawCount++;
-
-      for (const item of feedRes.items) {
-        await processAndRefineCandidate(
-          client,
-          rawObsId,
-          {
-            sourceId: feed.id,
-            sourcePlatform: feed.platform,
-            sourceUrl: item.sourceUrl,
-            title: item.title,
-            company: item.company || "Unknown",
-            category: feed.tags[0] || "other",
-            locationRaw: item.locationRaw || "APAC",
-            description: item.description || "",
-            applicationUrl: item.sourceUrl,
-            postedAt: item.postedAt || null,
-            tags: feed.tags,
-          },
-          stats
-        );
-      }
-
-      await client.execute({
-        sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-        args: [rawObsId],
-      });
-    } catch (err: any) {
-      console.error(`Jobicy feed error (${feed.id}):`, err.message);
-    }
+    await ingestRssSource(
+      client,
+      feed,
+      stats,
+      (item, source) => ({
+        sourceId: source.id,
+        sourcePlatform: source.platform,
+        sourceUrl: item.sourceUrl,
+        title: item.title,
+        company: item.company || "Unknown",
+        category: source.tags?.[0] || "other",
+        locationRaw: item.locationRaw || "APAC",
+        description: item.description || "",
+        applicationUrl: item.sourceUrl,
+        postedAt: item.postedAt || null,
+        tags: source.tags,
+      }),
+      `Jobicy feed ${feed.id}`
+    );
   }
 
   // 7. Active Breezy VA Agencies
@@ -595,22 +465,13 @@ export async function runIngestionPipeline() {
       }
 
       const rawText = await res.text();
-      const obsInsert = await client.execute({
-        sql: `
-          INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
-          VALUES (?, ?, ?, ?, ?, ?)
-          RETURNING id;
-        `,
-        args: [
-          agency.id,
-          agency.name,
-          agencyUrl,
-          res.status,
-          rawText.slice(0, 1_000_000),
-          createHash("sha256").update(rawText).digest("hex"),
-        ],
+      const rawObsId = await storeRawObservation(client, {
+        sourceId: agency.id,
+        sourcePlatform: agency.name,
+        fetchUrl: agencyUrl,
+        httpStatus: res.status,
+        rawPayload: rawText,
       });
-      const rawObsId = obsInsert.rows[0]?.id as number;
       stats.totalRawCount++;
 
       const jobs = JSON.parse(rawText) as any[];
@@ -642,10 +503,7 @@ export async function runIngestionPipeline() {
         );
       }
 
-      await client.execute({
-        sql: `UPDATE lake_raw_observations SET processed = 1 WHERE id = ?;`,
-        args: [rawObsId],
-      });
+      await markRawProcessed(client, rawObsId);
     } catch (err: any) {
       console.error(`Agency ${agency.name} error:`, err.message);
     }
