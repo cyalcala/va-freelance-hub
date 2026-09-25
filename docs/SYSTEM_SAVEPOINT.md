@@ -19,6 +19,19 @@ Evaluated options via Jev 1.13 (`Variant_A`, confidence 1.0, prob 1.0) and execu
   - Full test suite: 1,429 passed, 0 failed across 140 files (`bun run test`).
   - Typecheck clean (0 errors), build succeeded in 20.35s (`bun run build`), freshness-cron dry-run clean.
   - Test suites: `packages/scraper/geoGate.test.ts` (48 pass), `packages/db/migration-0047.test.ts` (2 pass), `apps/web/tests/reactivate-feed.test.ts` (5 pass).
+- **Deployment & Remote D1 Invariant Evidence:**
+  - Pushed commit `323e50cc46ffa6f73c0c461258ec3dc6633d6554` to `origin/main`.
+  - Sovereign CI run [36120849935](https://github.com/cyalcala/va-freelance-hub/actions/runs/36120849935): Detect deployable changes (6s), Validate project-owned code (38s), and Migrate and deploy production (40s) all succeeded.
+  - Remote production D1 applied Migration 0047 (`0047_deactivate_shadow_candidate_jobs_and_unclear_titles.sql`, migration id `1343`) at `2026-09-25 09:53:29`.
+  - Live D1 verification confirms:
+    - Active eligible opportunities: 854 (745 `eligible_likely`, 109 `eligible_verified`).
+    - Active unclear: 0 (100% of public board opportunities are constitutionally eligible).
+    - Active candidate/shadow source jobs: 0 (Ashby, GitLab, Remote.com legacy leaks completely eradicated).
+    - Canary publication clamp verified in production for Nearform (`tick_key: "scrape-reactivate:2026-09-25T09:30:10.838Z"`, mode: `capped`, published: 1).
+    - Evaluated next unit with Jev 1.13 (`Variant_A_Measure_And_Savepoint`, confidence 0.95, prob 0.97).
+    - Executed tested read-only economics query pipeline; generated versioned snapshot `2026-09-25T10-33-43-612Z.json`: 202 qualified net-new / 7d = **28.86 jobs/day** (up from 17.14/day); 530 qualified / 30d = 17.67/day. All unclear loss investigation items resolved cleanly.
+- **NEXT:** EX-CANARY-PROMOTION-WORKABLE-PH-AGENCIES: Prepare staged Canary promotion for mature, defect-free Workable Philippine VA agencies (Coconut VA, CrewBloom, Hello Rache, Hunt St, Pearl Talent, Pineapple Staffing, RocketAMS; 11–13 qualifying observation dates, 12–14d spans, 0 errors, unexpired 2027 leases).
+
 
 ## 2026-09-25 — EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC: Executed & verified in production (historical)
 
