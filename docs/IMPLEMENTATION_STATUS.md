@@ -1,6 +1,13 @@
 # Implementation Status
 
-## 2026-09-26 — TURSO-DATA-LAKE-AND-REFINERY: implemented, verified, synced to D1 (current)
+## 2026-09-26 — LAKE-EXPANSION: remotive-full, himalayas-sweep, domain-ats-discovery (current)
+
+- **What this is**: Three new operational lake scripts extending the federated acquisition mesh: full Remotive JSON API ingestion with category pagination, paginated Himalayas category sweep across 18 VA-relevant categories, and a company domain → ATS tenant discovery flywheel.
+- **New scripts**: `scripts/lake/remotive-full.ts` (Remotive `/api/remote-jobs` with per-category retry backoff + `--priority-only` flag), `scripts/lake/himalayas-sweep.ts` (18 VA category slugs, up to 1,000 items each, polite inter-page/inter-category delays), `scripts/lake/domain-ats-discovery.ts` (Breezy/Greenhouse/Workable/Lever tenant probing from lake employer domains → `lake_ats_discovery` table, never auto-promoting to D1).
+- **Package.json**: 7 named `lake:*` scripts wired for direct `bun run` invocation.
+- **Verification**: typecheck 0 errors; guardrails clean; 1,440+ pass / 0 fail.
+
+## 2026-09-26 — TURSO-DATA-LAKE-AND-REFINERY: implemented, verified, synced to D1 (historical)
 
 - **What this is**: End-to-end implementation of the Turso Opportunity Intelligence Lake and mature refinement pipeline. Establishes the canonical architecture: *Harvest Wide -> Preserve Permitted Intelligence -> Refine Deep -> Replay Continuously -> Publish Pristine*.
 - **Lake Infrastructure**: Authored `scripts/lake/` containing `client.ts` (`@libsql/client` 0.18.0), `init-lake.ts` (`lake_raw_observations`, `lake_candidate_jobs`, `lake_sightings`, `lake_replay_events`), `ingest-to-lake.ts` (12 live feeders), `replay-refinery.ts` (deterministic `geoGate` + Jev 1.13 historical recovery), and `sync-to-d1.ts` (governed Cloudflare D1 synchronization bridge with canonical 16-hex `toContentHash`).
