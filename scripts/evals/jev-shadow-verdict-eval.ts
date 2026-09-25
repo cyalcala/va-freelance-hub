@@ -11,8 +11,10 @@
  *
  * Credentials: reads OPENROUTER_API_KEY from the process environment only.
  * Never hardcode, log, or print the key. Exit 0 = a typed Jev answer was
- * produced (whatever the recommendation); exit 1 = Jev was unavailable or
- * unconfigured, which is a conservative verdict failure at runtime.
+ * produced (whatever the recommendation); exit 1 = NO typed answer was
+ * produced — Jev was unavailable, unconfigured, or the provider returned a
+ * failed result — which is a conservative verdict failure at runtime and must
+ * never be reported as a successful evaluation (finding #3).
  *
  * Usage: bun scripts/evals/jev-shadow-verdict-eval.ts
  */
@@ -21,6 +23,7 @@ import {
   buildJevAdjudicationPacket,
   classifyAnomalies,
   decideVerdict,
+  SHADOW_VERDICT_VERSION,
   type AnomalyHistory,
   type DispatchAnomaly,
 } from "../../packages/scraper/shadow-verdict";
@@ -112,10 +115,12 @@ async function main() {
   // live-provider Jev judgment the route would make.
   const tier2Classifications = classifyAnomalies(tier2Anomalies, tier2History);
   const packet = buildJevAdjudicationPacket({ dispatched: 12, classifications: tier2Classifications });
+  let rawResult: Awaited<ReturnType<typeof judgeViaJevClient>> | null = null;
   const enforced = await decideVerdict({
     anomalies: tier2Anomalies,
     classifications: tier2Classifications,
     available: Boolean(apiKey),
+    verdictVersion: SHADOW_VERDICT_VERSION,
     jev: apiKey
       ? () => judgeViaJevClient(apiKey, {
           task: packet.task,
@@ -124,11 +129,12 @@ async function main() {
           questions: { verdict: { instructions: packet.task, criteria: packet.criteria } },
           timeoutMs: 15_000,
         }).then((r) => {
+          rawResult = r;
           const answer = r.answers?.verdict;
           if (!r.ok || !answer) {
             return { ok: false, recommendation: "ABSTAIN" as const, confidence: 0, model: r.model ?? "", error: r.error };
           }
-          return { ok: true, recommendation: answer.choice as never, confidence: answer.confidence, model: r.model ?? "" };
+          return { ok: true, recommendation: answer.choice as never, confidence: answer.confidence, model: r.model ?? "", usage: r.usage };
         })
       : null,
   });
@@ -140,6 +146,14 @@ async function main() {
     consultation: enforced.consultation,
     notes: enforced.acceptedNotes }, null, 2));
 
+  // Finding #3: a failed provider result (HTTP error, timeout, malformed
+  // response) produces no typed answer. The consultation is still recorded
+  // (consulted=true, ok=false), so the exit code must distinguish it from a
+  // successful evaluation — otherwise a provider failure reports success.
+  if (rawResult && !rawResult.ok) {
+    console.error(`Jev provider returned a failed result (status ${rawResult.status ?? "unknown"}): ${rawResult.error ?? "no diagnostics"}. No typed answer was produced; this evaluation FAILED.`);
+    process.exit(1);
+  }
   if (!enforced.consultation.consulted) {
     console.error("Jev was not consulted (unavailable or not needed); live-provider evidence was not produced.");
     process.exit(1);

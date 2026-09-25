@@ -194,7 +194,7 @@ describe("shadow route verdict adjudication", () => {
       judge: async () => { judgeCalled += 1; return jevAccepts; } });
     const response = await handler(requestContext({}));
     const body = await response.json();
-    expect(body.verdict).toMatchObject({ status: "healthy", version: "1.0.0" });
+    expect(body.verdict).toMatchObject({ status: "healthy", version: "1.1.0" });
     expect(body.verdict.notes).toEqual([]);
     expect(judgeCalled).toBe(0);
     expect(writes).toHaveLength(1);
@@ -267,6 +267,21 @@ describe("shadow route verdict adjudication", () => {
     const body = await response.json();
     expect(body.verdict.status).toBe("failed");
     expect(body.verdict.decision).toMatchObject({ recommendation: "FAIL_CONSERVATIVE", enforced: "failed" });
+  });
+
+  test("a recorded decision carries revision, usage, and later-outcome provenance (finding #4)", async () => {
+    const { db } = database();
+    const handler = createShadowDispatchHandler({ getDb: () => db as any, now: () => new Date(NOW),
+      loadAdmissionEvidence: async () => admission(), runProbe: async input => oversizeProbe(input),
+      loadAnomalyHistory: async () => new Map(),
+      judge: async () => ({ ...jevAccepts, usage: { prompt_tokens: 937, completion_tokens: 88, total_tokens: 1025 } }) });
+    const response = await handler(requestContext({}, true, { OPENROUTER_API_KEY: "env-key" }));
+    const body = await response.json();
+    expect(body.verdict.decision).toMatchObject({
+      verdictVersion: "1.1.0",
+      usage: { prompt_tokens: 937, completion_tokens: 88, total_tokens: 1025 },
+      laterOutcome: null,
+    });
   });
 
   test("an unresolvable anomaly fails without consulting Jev", async () => {

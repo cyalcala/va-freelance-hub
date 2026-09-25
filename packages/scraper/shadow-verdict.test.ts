@@ -7,6 +7,7 @@ import {
   classifyAnomalies,
   classifyAnomaly,
   decideVerdict,
+  SHADOW_VERDICT_VERSION,
   type AnomalyHistory,
   type DispatchAnomaly,
   type JevAnswer,
@@ -112,6 +113,80 @@ describe("classifyAnomaly — other outcome classes", () => {
   test("rate limited is a transient Tier-2 candidate", () => {
     const result = classifyAnomaly(oversizeAnomaly({ sourceId: "workable:pineapple-staffing", providerId: "workable", outcome: "RATE_LIMITED", stopReason: null, bytesReceived: 0 }), healthyHistory(20));
     expect(result.classification).toBe("transient_rate_limit");
+    expect(result.evidence.rateLimitedLast14d).toBe(0);
+    expect(result.evidence.lastRateLimitedAt).toBeNull();
+  });
+
+  test("rate-limit frequency and recency are surfaced from history (finding #1)", () => {
+    const history: AnomalyHistory = {
+      sourceId: SOURCE,
+      rows: [
+        ...healthyHistory(5).rows,
+        { observedAt: "2026-09-20T12:00:00.000Z", outcome: "RATE_LIMITED", plausibleItems: 0, stopReason: null },
+        { observedAt: "2026-09-22T12:00:00.000Z", outcome: "RATE_LIMITED", plausibleItems: 0, stopReason: null },
+        { observedAt: "2026-09-21T12:00:00.000Z", outcome: "RATE_LIMITED", plausibleItems: 0, stopReason: null },
+      ],
+    };
+    const result = classifyAnomaly(oversizeAnomaly({ sourceId: "workable:x", providerId: "workable", outcome: "RATE_LIMITED", stopReason: null, bytesReceived: 0 }), history);
+    expect(result.classification).toBe("transient_rate_limit");
+    expect(result.evidence.rateLimitedLast14d).toBe(3);
+    expect(result.evidence.lastRateLimitedAt).toBe("2026-09-22T12:00:00.000Z");
+  });
+
+  test("packet includes rate-limit frequency/recency so absent data never reads as absent pressure (finding #1)", () => {
+    const history: AnomalyHistory = {
+      sourceId: SOURCE,
+      rows: [
+        ...healthyHistory(13).rows,
+        { observedAt: "2026-09-22T20:00:00.000Z", outcome: "DEGRADED_ANOMALOUS", plausibleItems: 0, stopReason: OVERSIZE_STOP },
+      ],
+    };
+    const anomalies = [oversizeAnomaly()];
+    const classifications = classifyAnomalies(anomalies, new Map([[SOURCE, history]]));
+    const packet = buildJevAdjudicationPacket({ dispatched: 12, classifications });
+    expect(packet.state).toContain("rateLimited14d: 0, lastRateLimitedAt: none recorded");
+
+    const rlAnomalies = [oversizeAnomaly({ sourceId: "workable:x", providerId: "workable", outcome: "RATE_LIMITED", stopReason: null, bytesReceived: 0 })];
+    const rlHistory: AnomalyHistory = {
+      sourceId: "workable:x",
+      rows: [
+        ...healthyHistory(10).rows,
+        { observedAt: "2026-09-23T20:00:00.000Z", outcome: "RATE_LIMITED", plausibleItems: 0, stopReason: null },
+      ],
+    };
+    const rlPacket = buildJevAdjudicationPacket({ dispatched: 12, classifications: classifyAnomalies(rlAnomalies, new Map([["workable:x", rlHistory]])) });
+    expect(rlPacket.state).toContain("rateLimited14d: 1, lastRateLimitedAt: 2026-09-23T20:00:00.000Z");
+  });
+
+  test("consultation records verdict version, usage, and a null later-outcome slot (finding #4)", async () => {
+    const anomalies = [oversizeAnomaly({ sourceId: "workable:x", providerId: "workable", outcome: "RATE_LIMITED", stopReason: null, bytesReceived: 0 })];
+    const classifications = classifyAnomalies(anomalies, new Map());
+    const result = await decideVerdict({
+      anomalies, classifications, available: true, verdictVersion: SHADOW_VERDICT_VERSION,
+      jev: () => Promise.resolve({ ok: true, recommendation: "ACCEPT_NOTES", confidence: 0.9, model: "typesafe/jev-1.13", usage: { prompt_tokens: 937, completion_tokens: 88, total_tokens: 1025 } }),
+    });
+    expect(result.status).toBe("healthy_with_notes");
+    expect(result.consultation.consulted).toBe(true);
+    if (result.consultation.consulted) {
+      expect(result.consultation.verdictVersion).toBe(SHADOW_VERDICT_VERSION);
+      expect(result.consultation.usage).toEqual({ prompt_tokens: 937, completion_tokens: 88, total_tokens: 1025 });
+      expect(result.consultation.laterOutcome).toBeNull();
+    }
+  });
+
+  test("usage provenance is omitted when the answer is invalid (finding #4)", async () => {
+    const anomalies = [oversizeAnomaly({ sourceId: "workable:x", providerId: "workable", outcome: "RATE_LIMITED", stopReason: null, bytesReceived: 0 })];
+    const classifications = classifyAnomalies(anomalies, new Map());
+    const result = await decideVerdict({
+      anomalies, classifications, available: true, verdictVersion: SHADOW_VERDICT_VERSION,
+      jev: () => Promise.resolve({ ok: false, recommendation: "ACCEPT_NOTES", confidence: 0.9, model: "m", error: "down", usage: { total_tokens: 5 } }),
+    });
+    expect(result.status).toBe("failed");
+    expect(result.consultation.consulted).toBe(true);
+    if (result.consultation.consulted) {
+      expect(result.consultation.usage).toBeUndefined();
+      expect(result.consultation.laterOutcome).toBeNull();
+    }
   });
 
   test("schema breakage, policy blocks, and unreachability are unresolved", () => {
