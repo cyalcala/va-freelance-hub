@@ -630,6 +630,7 @@ export async function reactivateFeedConfirmedJobs(
     inArray(opportunities.sourceUrl, batch),
     eq(opportunities.isActive, false),
     inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
+    inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]),
   );
   try {
     if (!publicationDb) {

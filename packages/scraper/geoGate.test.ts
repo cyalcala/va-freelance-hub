@@ -406,3 +406,54 @@ describe("PH onsite and hybrid rejection precision", () => {
   });
 });
 
+describe("Title country/regional locks and Philippine provincial locations", () => {
+  it("rejects parenthetical country locks (Nearform patterns)", () => {
+    const cases = [
+      "Senior DevOps Engineer (Perm, UK, Remote)",
+      "Technical Director (Perm, Canada, Remote)",
+      "Technical Director (Perm, USA, Remote)",
+      "Technical Director (Perm, Ireland, Remote)",
+      "Tech Lead - React (Contract, Brazil, Remote)",
+      "Senior Golang Software Engineer (Perm, Romania)",
+      "Senior Product Designer (Perm or Contract, UK/Ireland Remote)",
+    ];
+    for (const title of cases) {
+      const v = geoGate({ title });
+      expect(v.phEligibility).toBe("ineligible");
+      expect(v.geoScope).toBe("country_locked");
+    }
+  });
+
+  it("rejects pipe-delimited and dash-delimited country/state/regional locks", () => {
+    expect(geoGate({ title: "Demand Generation Program Manager | United States | Remote" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Demand Generation Program Manager | Canada | Remote" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Senior Commercial Account Executive, Growth | CA | Remote" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Business Development Representative - Saudi Arabia" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Director of Operations — Full-Time | Remote (North America)" }).phEligibility).toBe("ineligible");
+    expect(geoGate({ title: "Startup Customer Success Manager - Americas" }).phEligibility).toBe("ineligible");
+  });
+
+  it("verifies Philippine provincial locations with country code PH (Yokly patterns)", () => {
+    const locations = [
+      "bohol, PH",
+      "Luzon, PH",
+      "leyte, PH",
+      "batangas, PH",
+      "general santos, PH",
+    ];
+    for (const locationRaw of locations) {
+      const v = geoGate({ title: "Virtual Assistant", locationRaw });
+      expect(v.phEligibility).toBe("eligible_verified");
+      expect(v.geoScope).toBe("ph_only");
+    }
+  });
+
+  it("preserves technical titles with tech stacks or common words", () => {
+    expect(geoGate({ title: "Senior Backend Developer (Node.js / Nest.js)" }).phEligibility).toBe("unclear");
+    expect(geoGate({ title: "Senior DevOps Engineer (Azure)" }).phEligibility).toBe("unclear");
+    expect(geoGate({ title: "Technical Writer - User Experience" }).phEligibility).toBe("unclear");
+    expect(geoGate({ title: "Designer (Usability)" }).phEligibility).toBe("unclear");
+    expect(geoGate({ title: "Virtual Assistant (VA Lead)" }).phEligibility).toBe("unclear");
+  });
+});
+

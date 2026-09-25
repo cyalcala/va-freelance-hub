@@ -5,13 +5,16 @@ import { FakePublicationDatabase } from "./publication-db-fake";
 const OBSERVED = "2026-09-06T12:00:00.000Z";
 
 function fakeDb(rows: Array<{ id: number; sourceId: string | null }>, changes = rows.length, fail = false) {
-  const captured: { sets: any[]; selected: boolean } = { sets: [], selected: false };
+  const captured: { sets: any[]; selected: boolean; whereClauses: any[] } = { sets: [], selected: false, whereClauses: [] };
   const db: any = {
     select() {
       captured.selected = true;
       const builder: any = {
         from: () => builder,
-        where: () => Promise.resolve(rows),
+        where: (c: any) => {
+          captured.whereClauses.push(c);
+          return Promise.resolve(rows);
+        },
       };
       return builder;
     },
@@ -20,9 +23,12 @@ function fakeDb(rows: Array<{ id: number; sourceId: string | null }>, changes = 
         set: (vals: any) => {
           captured.sets.push(vals);
           return {
-            where: () => fail
-              ? Promise.reject(new Error("D1 write rejected"))
-              : Promise.resolve({ meta: { changes } }),
+            where: (c: any) => {
+              captured.whereClauses.push(c);
+              return fail
+                ? Promise.reject(new Error("D1 write rejected"))
+                : Promise.resolve({ meta: { changes } });
+            },
           };
         },
       };
@@ -93,4 +99,16 @@ describe("reactivateFeedConfirmedJobs", () => {
     const n = await reactivateFeedConfirmedJobs(db, ["https://example.com/a"], OBSERVED);
     expect(n).toBe(0);
   });
+
+  test("enforces phEligibility in reactivation predicate", async () => {
+    const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
+    const { db, captured } = fakeDb([{ id: 1, sourceId: "we-work-remotely" }], 1);
+    await reactivateFeedConfirmedJobs(db, ["https://example.com/a"], OBSERVED);
+    expect(captured.whereClauses.length).toBeGreaterThan(0);
+    const query = new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[0]);
+    expect(query.sql).toContain('"ph_eligibility" in (?, ?)');
+    expect(query.params).toContain("eligible_verified");
+    expect(query.params).toContain("eligible_likely");
+  });
 });
+

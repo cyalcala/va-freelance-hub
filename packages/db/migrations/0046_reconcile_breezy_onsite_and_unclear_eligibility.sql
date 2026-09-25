@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS opportunities (
   source_platform TEXT NOT NULL,
   tags TEXT DEFAULT '[]',
   location_type TEXT DEFAULT 'remote',
+  location_raw TEXT,
   pay_range TEXT,
   description TEXT,
   posted_at TEXT,

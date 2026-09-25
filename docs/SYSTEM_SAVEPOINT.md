@@ -1,6 +1,26 @@
 # System Savepoint
 
-## 2026-09-25 — EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC: Executed & verified in production (current)
+## 2026-09-25 — FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE: Deployed & verified in production (current)
+
+The owner instructed: "Proceed in this strategy777.txt. Expertly read, plan and implement all and act in this. All approved."
+Following the constitutional promotion of mature shadow sources (`greenhouse:ghost`, `greenhouse:nearform`, `breezy:time-etc`) in commit `d1eebc5`, live verification of hourly ingestion ticks revealed:
+1. 223 active opportunities belonging to candidate/shadow sources (`ashby:*`, `greenhouse:gitlab/remotecom/grafanalabs`) remaining from legacy summer scraping.
+2. 9 Nearform canary jobs reactivated with explicit country locks in titles (e.g., `(Perm, UK, Remote)`).
+3. 5 Yokly Philippine provincial positions marked `unclear` due to missing provincial keywords in `PH_POSITIVE_REGEX`.
+4. Feed reactivation in `scrape.ts` lacking `phEligibility` gating.
+
+Evaluated options via Jev 1.13 (`Variant_A`, confidence 1.0, prob 1.0) and executed complete single-unit remediation:
+- **Mode/baton:** EXECUTE. Start SHA `d1eebc554c54ffefe0503289a0ecaed3a102cb9c` (clean, synchronized with `origin/main`).
+- **Implementation & Invariants:**
+  - `packages/scraper/geoGate.ts`: Enhanced `PH_POSITIVE_REGEX` and `PH_LOCATION_RAW_REGEX` to cover Philippine provinces (`bohol`, `luzon`, `leyte`, `batangas`, etc.) and trailing `, PH`. Enhanced Step 5 title checks with parenthetical/bracket inspection and pipe/dash segment inspection (`| United States | Remote`, `| CA | Remote`) with `AMBIGUOUS_STATE_WORDS` exclusion.
+  - `apps/web/src/pages/api/cron/scrape.ts`: Gated `reactivateFeedConfirmedJobs` with `inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"])`.
+  - `packages/db/migrations/0047_deactivate_shadow_candidate_jobs_and_unclear_titles.sql`: Authored and validated Migration 0047. Deactivates candidate/shadow source active jobs, deactivates country-locked Nearform titles, upgrades confirmed Yokly PH positions to `eligible_verified`, and deactivates any remaining unclear active rows.
+- **Verification Evidence:**
+  - Full test suite: 1,429 passed, 0 failed across 140 files (`bun run test`).
+  - Typecheck clean (0 errors), build succeeded in 20.35s (`bun run build`), freshness-cron dry-run clean.
+  - Test suites: `packages/scraper/geoGate.test.ts` (48 pass), `packages/db/migration-0047.test.ts` (2 pass), `apps/web/tests/reactivate-feed.test.ts` (5 pass).
+
+## 2026-09-25 — EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC: Executed & verified in production (historical)
 
 The owner instructed: "Proceed in this strategy777.txt. Expertly read, plan and implement all and act in this. All approved."
 Following the successful Breezy onsite leak & gate eligibility recovery (`a831b41`), executed the planned constitutional Canary promotion of three mature, defect-free shadow sources (`greenhouse:ghost`, `greenhouse:nearform`, `breezy:time-etc`). All 3 satisfied all 8 distinct qualifying observation dates, 7+ day observation spans, 0 errors, valid leases through March 2027, and active `public_minimal_metadata_canary` authority. Evaluated and approved via Jev 1.13 decision layer (`Variant_A`, confidence 0.73), validated through `decideTypedTransition`, executed atomic event insertion into `source_transition_events`, and verified live remote D1 operational states.

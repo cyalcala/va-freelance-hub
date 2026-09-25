@@ -1,21 +1,21 @@
 # Current resume pointer
 
-**Refreshed 2026-09-25 (EXECUTE: EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC executed and verified in production).**
-The newest authoritative baton is the 2026-09-25 `EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC` savepoint entry
+**Refreshed 2026-09-25 (EXECUTE: FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE executed and verified).**
+The newest authoritative baton is the 2026-09-25 `FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE` savepoint entry
 in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md):
-- Evaluated and promoted three mature defect-free shadow sources (`greenhouse:ghost` [cap 2], `greenhouse:nearform` [cap 2], `breezy:time-etc` [cap 1]) to Canary.
-- All three verified in remote production D1 with operational_state = 'canary', valid leases through 2027, 0 errors, and spans of 12.00–13.44 days.
-- Jev 1.13 decision trace confirmed `Variant_A` (promote to canary, confidence 0.73).
-- Applied typed transition via `scripts/graduation/promote-proven-shadow-canary.ts` using `decideTypedTransition`.
-- Registry counts in remote D1: 5 active / 3 canary / 12 shadow / 14 candidate / 1 quarantined = 35 total sources.
-- Full verification: 1,422 tests pass, typecheck clean, guardrails clean, build Complete. Site returns 200 OK.
+- Rectified 223 active opportunities from non-promoted candidate/shadow sources (`ashby:*`, `greenhouse:gitlab/remotecom/grafanalabs`) remaining from legacy summer scraping.
+- Resolved title-level geoGate blind spots on multipart parentheticals (`(Perm, UK, Remote)`, `(Perm, Canada, Remote)`, etc.) and pipe segments (`| United States | Remote`, `| CA | Remote`).
+- Upgraded genuine Philippine Yokly provincial positions (`bohol, PH`, `Luzon, PH`, etc.) to `eligible_verified`.
+- Gated `reactivateFeedConfirmedJobs` with `inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"])`.
+- Authored and verified Migration 0047 to ensure 100% of public board jobs are constitutionally eligible.
+- Full verification: 1,429 tests pass, typecheck clean, guardrails clean, build Complete.
 
-NEXT: Monitor next scheduled hourly scrape tick to verify canary fetch ingestion and clamp enforcement for Ghost, Nearform, and Time Etc.
+NEXT: Commit, push to origin/main, verify deployment run, and observe live migration 0047 execution in remote production D1.
 
 1. [System savepoint](../SYSTEM_SAVEPOINT.md) — newest current entry first
 2. [Master operating prompt](./MASTER_OPERATING_PROMPT.md)
-3. [September 25 Canary Promotion Evidence](../gauntlet/evidence/SEPTEMBER-25-CANARY-PROMOTION.md)
-4. [September 24 Graduation Evidence](../gauntlet/evidence/SEPTEMBER-24-PRODUCTION-GRADUATION.md)
+3. [Constitutional Source Leak & Geo Repair Evidence](../gauntlet/evidence/SEPTEMBER-25-CONSTITUTIONAL-SOURCE-AND-GEO-REPAIR.md)
+4. [September 25 Canary Promotion Evidence](../gauntlet/evidence/SEPTEMBER-25-CANARY-PROMOTION.md)
 5. [Execution state](../APEX_10X_EXECUTION_STATE.md)
 6. [Workstream ledger](../APEX_10X_WORKSTREAM_LEDGER.md)
 7. [Source health latest](../source-health-latest.md)

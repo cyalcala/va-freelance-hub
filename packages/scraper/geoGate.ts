@@ -47,13 +47,21 @@ export interface GeoVerdict {
 // ─── Positive signals ────────────────────────────────────────────────────────
 
 const PH_POSITIVE_REGEX =
-  /\b(philippines|philippine|filipino|filipina|manila|cebu|davao|quezon city|makati|taguig|pasig|iloilo|bacolod|baguio|cagayan de oro|angeles city|mandaluyong|alabang|bonifacio global city|bgc|ph[- ]based|remote[- ]ph|ph[- ]remote|philippines[- ]remote)\b/i;
+  /\b(philippines|philippine|filipino|filipina|manila|cebu|davao|quezon city|makati|taguig|pasig|iloilo|bacolod|baguio|cagayan de oro|angeles city|mandaluyong|alabang|bonifacio global city|bgc|bohol|luzon|visayas|mindanao|leyte|batangas|laguna|cavite|pampanga|bulacan|rizal|palawan|tarlac|zambales|pangasinan|la union|ilocos|bicol|general santos|zamboanga|dumaguete|tacloban|naga|olongapo|puerto princesa|ph[- ]based|remote[- ]ph|ph[- ]remote|philippines[- ]remote)\b/i;
+
+const PH_LOCATION_RAW_REGEX =
+  /(?:,\s*|\/\s*|^)\s*ph\s*$/i;
 
 const APAC_POSITIVE_REGEX =
   /\b(apac|asia[- ]pacific|south[- ]?east asia|southeast asia|asia)\b/i;
 
 const WORLDWIDE_REGEX =
   /\b(anywhere in the world|worldwide|work from anywhere|anywhere|global(?:ly)?[- ]remote|remote[- ]global|100% remote|fully remote|open to all locations|location[- ]independent|probably worldwide|remote\s*[-–—\/]\s*(?:anywhere|worldwide|global)|remote\s*\((?:anywhere|worldwide|global)\))\b/i;
+
+const AMBIGUOUS_STATE_WORDS = new Set([
+  "va", "pa", "in", "or", "ok", "me", "hi", "id", "it", "is", "no", "so", "to", "us",
+  "am", "at", "be", "by", "do", "go", "he", "if", "my", "on", "up", "we", "ai", "as"
+]);
 
 // ─── Negative signals ────────────────────────────────────────────────────────
 
@@ -250,7 +258,7 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
 
   // 1. PH positives win first — a remote job naming the Philippines is exactly what
   //    the board exists for, even when phrased as a residence requirement.
-  const phInLocation = firstMatch(PH_POSITIVE_REGEX, locationRaw);
+  const phInLocation = firstMatch(PH_POSITIVE_REGEX, locationRaw) ?? (locationRaw ? firstMatch(PH_LOCATION_RAW_REGEX, locationRaw) : null);
   const phInText = firstMatch(PH_POSITIVE_REGEX, titleAndDesc);
   if (phInLocation || phInText) {
     const where = phInLocation ? `location "${locationRaw}"` : `text mention "${phInText}"`;
@@ -299,7 +307,58 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
     }
   }
 
-  // 5. Title-level pins: "(US)", "- London"
+  // 5. Title-level pins: "(US)", "(Perm, UK, Remote)", "| Canada | Remote", "- London"
+  // 5a. Title parenthetical / bracket inspection:
+  const titleParens = title.match(/[\(\[](.*?)[\)\]]/g) || [];
+  for (const paren of titleParens) {
+    const inner = paren.slice(1, -1);
+    const regionMatch = firstMatch(REGION_EXCL_PH_REGEX, inner);
+    if (regionMatch) {
+      return verdict("region_excl_ph", "ineligible", `Title parenthetical contains excluded region: "${regionMatch}"`);
+    }
+    const countryMatch = firstMatch(COUNTRY_REGEX, inner);
+    if (countryMatch) {
+      return verdict("country_locked", "ineligible", `Title parenthetical contains country restriction: "${countryMatch}"`);
+    }
+    const stateMatch = firstMatch(US_STATE_REGEX, inner);
+    if (stateMatch) {
+      return verdict("country_locked", "ineligible", `Title parenthetical contains US state: "${stateMatch}"`);
+    }
+    const cityMatch = firstMatch(CITY_REGEX, inner);
+    if (cityMatch) {
+      return verdict("country_locked", "ineligible", `Title parenthetical contains city: "${cityMatch}"`);
+    }
+  }
+
+  // 5b. Title pipe and dash segments:
+  const titleSegments = title.split(/\s*[|–—]\s*|\s+-\s+/);
+  if (titleSegments.length > 1) {
+    for (let i = 1; i < titleSegments.length; i++) {
+      const seg = titleSegments[i].trim();
+      const regionMatch = firstMatch(REGION_EXCL_PH_REGEX, seg);
+      if (regionMatch) {
+        return verdict("region_excl_ph", "ineligible", `Title segment contains excluded region: "${regionMatch}"`);
+      }
+      const countryMatch = firstMatch(COUNTRY_REGEX, seg);
+      if (countryMatch) {
+        return verdict("country_locked", "ineligible", `Title segment contains country restriction: "${countryMatch}"`);
+      }
+      const stateMatch = firstMatch(US_STATE_REGEX, seg);
+      if (stateMatch) {
+        return verdict("country_locked", "ineligible", `Title segment contains US state: "${stateMatch}"`);
+      }
+      const cityMatch = firstMatch(CITY_REGEX, seg);
+      if (cityMatch) {
+        return verdict("country_locked", "ineligible", `Title segment contains city: "${cityMatch}"`);
+      }
+      const codeMatch = firstMatch(US_STATE_CODE_LOCATION_REGEX, seg);
+      if (codeMatch && !AMBIGUOUS_STATE_WORDS.has(codeMatch.toLowerCase())) {
+        return verdict("country_locked", "ineligible", `Title segment contains US state code: "${codeMatch}"`);
+      }
+    }
+  }
+
+  // 5c. Regex title locks and location names
   const titleLock = firstMatch(TITLE_COUNTRY_LOCK_REGEX, title);
   if (titleLock) {
     return verdict("country_locked", "ineligible", `Title contains country restriction: "${titleLock.trim()}"`);

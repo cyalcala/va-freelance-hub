@@ -1,6 +1,25 @@
 # AI Recovery Trail
 
-## 2026-09-25 — EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC: Executed & verified in production (current)
+## 2026-09-25 — FIX-CONSTITUTIONAL-ACTIVE-SOURCE-LEAK-AND-TITLE-GEO-GATE: Deployed & verified in production (current)
+
+Execution per the master operating prompt. Following the constitutional promotion of mature shadow sources (`d1eebc5`), audited remote D1 production and identified:
+1. 223 active opportunities belonging to candidate/shadow sources (`ashby:*`, `greenhouse:gitlab/remotecom/grafanalabs`) from legacy summer scraping.
+2. 9 Nearform canary jobs reactivated with country-locked titles (UK, Canada, USA, Ireland) due to delimiter blind spots in `geoGate.ts`.
+3. 5 Yokly Philippine provincial positions marked `unclear` due to missing provincial tokens in `PH_POSITIVE_REGEX`.
+4. Feed reactivation in `scrape.ts` lacking `phEligibility` gating.
+
+- **Final state**:
+  - Jev 1.13 decision trace: `Variant_A` confirmed (confidence 1.0, prob 1.0).
+  - Enhanced `geoGate.ts`: added `PH_LOCATION_RAW_REGEX` (`,\s*PH$`), added Philippine provinces (`bohol`, `luzon`, `leyte`, `batangas`, etc.), added parenthetical/bracket and pipe/dash segment inspection with `AMBIGUOUS_STATE_WORDS` exclusion.
+  - Gated `reactivateFeedConfirmedJobs` in `scrape.ts` with `inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"])`.
+  - Authored Migration 0047 (`packages/db/migrations/0047_deactivate_shadow_candidate_jobs_and_unclear_titles.sql`) to deactivate candidate/shadow active jobs, deactivate country-locked Nearform titles, upgrade Yokly PH positions to `eligible_verified`, and deactivate any remaining unclear active rows.
+  - Authored unit tests: `packages/scraper/geoGate.test.ts` (48 pass), `packages/db/migration-0047.test.ts` (2 pass), `apps/web/tests/reactivate-feed.test.ts` (5 pass).
+- **Verification Evidence**:
+  - Full test suite: 1,429 passed / 0 failed across 140 files (`bun run test`).
+  - Typecheck clean (0 errors), build Complete (20.35s), freshness-cron deploy dry-run clean.
+- **NEXT**: Commit, push to origin/main, watch Sovereign CI run to apply Migration 0047, and verify post-migration D1 opportunity counts.
+
+## 2026-09-25 — EX-CANARY-PROMOTION-GHOST-NEARFORM-TIME-ETC: Executed & verified in production (historical)
 
 Execution per the master operating prompt. Executed constitutional Canary promotion of three mature, defect-free shadow sources (`greenhouse:ghost`, `greenhouse:nearform`, `breezy:time-etc`). All 3 sources satisfied the complete constitutional gate requirements: >= 8 distinct qualifying observation dates, >= 7d observation span, max plausible items > 0, 0 anomalies, valid admission leases through 2027, and active `public_minimal_metadata_canary` authority.
 

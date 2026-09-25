@@ -14,8 +14,8 @@ Canonical continuation:
 | --- | --- |
 | Mission Authorization | OWNER RESUME AUTHORIZED (2026-09-11 / 2026-09-12 / 2026-09-13 / 2026-09-19 / 2026-09-25) |
 | Prime Directive | Floor: 100 / Stretch: 150 qualified net-new remote PH-accessible jobs/day |
-| Base Commit | Pushed to `main` (`9f2871a`, PR #150 merged and deployment confirmed) |
-| Verification | 1,416 Bun tests pass (138 files), typecheck & guardrails clean, build Complete (Run 36109825168 green) |
+| Base Commit | Pushed to `main` (`d1eebc5`, Canary promotion of Ghost, Nearform, Time Etc deployed) |
+| Verification | 1,429 Bun tests pass (140 files), typecheck & guardrails clean, build Complete |
 | D1 Registry Active (Graduated) | 5 sources in `operational_state = 'active'` (`breezy:20four7va`, `breezy:sourcefit`, `breezy:remote-craft`, `breezy:value-virtual-assistants`, `breezy:yokly`) via Migration 0044 |
 | D1 Registry Canaries | 3 sources in `operational_state = 'canary'` (`greenhouse:ghost` [cap 2], `greenhouse:nearform` [cap 2], `breezy:time-etc` [cap 1]) |
 | D1 Registry Shadows | 12 sources in `operational_state = 'shadow'` (Workable x7, Greenhouse x4, Recruitee x1) |
