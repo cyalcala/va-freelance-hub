@@ -20,7 +20,8 @@ The owner instructed: "check current repo state and what can be improved in data
   - `bun run audit:guardrails`: clean, exit 0.
   - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
 - **Docs:** new `docs/DATA_LAKE_OPERATIONS.md`; status/savepoint/handoff/trail updated.
-- **NEXT**: Commit + push this unit; watch Sovereign CI Guardrail on the pushed SHA; next lake gains are live harvest runs (`lake:ingest`, `lake:remotive:priority`, `lake:himalayas-sweep`, `lake:ats-discovery`) against Turso, then governed `lake:sync --dry-run` review.
+- **Backup:** commit `c906b31` on `origin/main`; Sovereign CI Guardrail run `36178585182` — Validate project-owned code, Detect deployable changes, Migrate and deploy production all `success`.
+- **NEXT**: Next lake gains are live harvest runs (`lake:ingest`, `lake:remotive:priority`, `lake:himalayas-sweep`, `lake:ats-discovery`) against Turso, then governed `lake:sync --dry-run` review.
 
 ## 2026-09-26 — FEAT-MAXIMUM-RECALL-TURSO-DATA-LAKE-AND-REFINERY: Executed, refined, synced, and verified in production (historical)
 

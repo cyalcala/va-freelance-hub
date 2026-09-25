@@ -18,7 +18,8 @@ The owner instructed: "check current repo state and what can be improved in data
   - `bun run typecheck`: clean (0 errors).
   - `bun run audit:guardrails`: clean (0 violations).
   - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
-- **When the owner resumes**: Commit + push this unit and watch Sovereign CI; then live harvest runs (`lake:ingest`, `lake:remotive:priority`, `lake:himalayas-sweep`, `lake:ats-discovery`) and a governed `lake:sync --dry-run` review.
+- **When the owner resumes**: Live harvest runs (`lake:ingest`, `lake:remotive:priority`, `lake:himalayas-sweep`, `lake:ats-discovery`) and a governed `lake:sync --dry-run` review.
+- **Backup:** commit `c906b31` on `origin/main`; Sovereign CI Guardrail run `36178585182` all `success` (validate + detect + migrate/deploy).
 
 ## 2026-09-26 — TURSO-DATA-LAKE-AND-REFINERY: recovered, refined, synced, backed up (historical)
 
