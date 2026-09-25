@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "unit": "PROMPT-AUTOMATION-REVISION",
+  "source_code_sha": "c3320a44c70b3f4bbfcfb9d4c75f446a4e63172f",
+  "production_main_sha": "74d43789e06af04f7e3b2ab09b51d5a1051de9d8",
+  "economics_as_of": "2026-09-25T02:31:49.978Z",
+  "scope": "Documentation audit; no production writes or new automation deployment",
+  "files": [
+    {
+      "path": "economics/combined.json",
+      "sha256": "44a97162e0eb761f51c4b73309029f02adee30ddc4fac2f7dade379d227efc3e",
+      "canonical_bytes": 18686
+    },
+    {
+      "path": "economics/economics-meta.json",
+      "sha256": "b897a34bb3cad5b5d83528e66c3eb4c09d88b5cd8b6ccc667fc31281f9746908",
+      "canonical_bytes": 304
+    },
+    {
+      "path": "economics/economics.sql",
+      "sha256": "1540489fc65b85d915f3fbf4baeecc09b5884736d66c4128cef8fdeff650e0df",
+      "canonical_bytes": 3615
+    },
+    {
+      "path": "economics/queries/fetch_outcomes_7d.sql",
+      "sha256": "6f7d0513ff86ffa9f0dfe5bb7fc5776572267c35216e13fb8cba07e2dd2de3c5",
+      "canonical_bytes": 755
+    },
+    {
+      "path": "economics/queries/identity_coverage.sql",
+      "sha256": "21ae3dda37b60ad2e1e791dd7cb63382cda440f1e8c9ec9c523bbbd4eb1eecc6",
+      "canonical_bytes": 515
+    },
+    {
+      "path": "economics/queries/qualified_supply.sql",
+      "sha256": "06eb1444cb1ce975dcecb3c6a2ab5eb6d2541e1e3e50b066f23b2985acfac84c",
+      "canonical_bytes": 368
+    },
+    {
+      "path": "economics/queries/source_supply.sql",
+      "sha256": "4e1a0ab8498eb27c19561cc75789e78f7fd37c4df43be6bd47d2a2ef9002b43d",
+      "canonical_bytes": 632
+    },
+    {
+      "path": "economics/queries/supply_totals.sql",
+      "sha256": "1d854d9546c17ca900f20105cc75074fd15a9ee5012a01e9d794b9a520cb5e00",
+      "canonical_bytes": 328
+    },
+    {
+      "path": "economics/queries/triage_outcomes_7d.sql",
+      "sha256": "d43a3d0b4ec954256c68c507b9860e85f1d4160adfb0e88438106f5ab23c1e59",
+      "canonical_bytes": 581
+    },
+    {
+      "path": "economics/report.md",
+      "sha256": "6d0b0ef415bb854f843e7375ff26fbea54306851a91d81d723fabf5d8a90a533",
+      "canonical_bytes": 9630
+    },
+    {
+      "path": "economics/results/fetch_outcomes_7d.json",
+      "sha256": "55094cca53f457e7403a6c7e0323410adf388bc301405f0206a93307a07e45f3",
+      "canonical_bytes": 9307
+    },
+    {
+      "path": "economics/results/identity_coverage.json",
+      "sha256": "e468d12c11e12237f3823553cdb3b3ca152843f415971e85ff6dab7ab03e7086",
+      "canonical_bytes": 695
+    },
+    {
+      "path": "economics/results/qualified_supply.json",
+      "sha256": "6b129e6b9e569d81c3d2c95442d5fb13783a8789702601eb747da1a11203b34a",
+      "canonical_bytes": 583
+    },
+    {
+      "path": "economics/results/source_supply.json",
+      "sha256": "862108f21012b4e157af8f9882201ac69695129435bccb10b3829ba24b8ee70f",
+      "canonical_bytes": 6930
+    },
+    {
+      "path": "economics/results/supply_totals.json",
+      "sha256": "652b800237216a481a787a18a98284bcb68704b96ea25755c086e4759e1efd68",
+      "canonical_bytes": 591
+    },
+    {
+      "path": "economics/results/triage_outcomes_7d.json",
+      "sha256": "16c6784136b7a3fd738079efa8af4ad075fb262d22cad192ae5c4c83a669dee8",
+      "canonical_bytes": 2335
+    },
+    {
+      "path": "jev-reviews.json",
+      "sha256": "7723b7440f088f6a6ee020a18363019fdf853b498e14018d12d35cce39e2edf0",
+      "canonical_bytes": 1925
+    },
+    {
+      "path": "public-smoke.json",
+      "sha256": "a41721774caece0ac254d55f1dae5ec5b2bd02af2e57a35350f875db659dd0ed",
+      "canonical_bytes": 980
+    },
+    {
+      "path": "registry-inventory.json",
+      "sha256": "b1ef6b8ee123e7933fd4c8c3c70afeb1a056c848d823c7f87d4cb6fb9712e778",
+      "canonical_bytes": 1212
+    },
+    {
+      "path": "shadow-response-36082783445.json",
+      "sha256": "207140aac79324ed53372192a13b5e79edae2782304d0ac08c26985a65d64ee8",
+      "canonical_bytes": 442
+    }
+  ],
+  "hash_basis": "UTF-8 artifact text with CRLF and CR normalized to LF; portable across Git line-ending conversion"
+}

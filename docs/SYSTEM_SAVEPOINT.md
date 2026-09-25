@@ -1,6 +1,113 @@
 # System Savepoint
 
-## 2026-09-25 — DOC-BACKUP: Record c115d59 denominator fix deployed (current)
+## 2026-09-25 — PROMPT-AUTOMATION-REVISION: documentation and read-only audit
+
+The owner requested a stronger unified prompt: reasonably embedded automation,
+continuous measurement, evaluated Jev use, outcome-oriented continuation, and
+documentation/backup/next actions at each meaningful checkpoint. This task
+revises the prompt and records evidence; it does not deploy those automations.
+The production c115d59 observation baton remains in the recovery record below.
+
+- **Unit/mode:** PROMPT-AUTOMATION-REVISION / AUDIT + documentation; VERIFYING.
+  Start SHA `c3320a44c70b3f4bbfcfb9d4c75f446a4e63172f`, branch
+  `codex/master-operating-prompt`; fetched `origin/main` unchanged at
+  `74d43789e06af04f7e3b2ab09b51d5a1051de9d8`. Initially clean; concurrent
+  invocation updates to this savepoint, CURRENT.md and the prompt capsule were
+  subsequently observed and preserved, with separate timestamped measurements.
+- **Audit:** `docs/audits/MASTER_PROMPT_AUTOMATION_REVIEW_2026-09-25.md` records
+  whole-project findings, proposed automation layers, Jev review and step/next-
+  action ledger. Three independent bounded code audits informed the revision.
+- **Fresh evidence:** eight public route/detail GETs returned 200; this was not
+  a visual or full data-quality audit. D1 registry/inventory SELECT confirmed
+  5 active / 15 shadow / 14 candidate / 1 quarantined sources, 1,105 active
+  jobs and 866 positive PH verdicts. Six read-only economics queries at
+  `2026-09-25T02:31:49.978Z` reconciled: 117/7d = 16.71/day first-stored proxy,
+  not exact qualified remote publication. The earlier invocation's 118/7d
+  remains a separate observation; no regression or causal gain is inferred.
+  All D1 results checked `success=true`, `changed_db=false`, `rows_written=0`.
+- **Durable evidence:** queries, metadata, aggregate results/reconciliation,
+  rendered report and post-fix EX-03 response are in
+  `docs/gauntlet/evidence/PROMPT-AUTOMATION-2026-09-25/`. EX-03 run `36082783445`
+  is a healthy zero-dispatch rotating window, not a new Tier-2 exercise.
+- **Prompt changes:** recurring-solution contracts; versioned daily snapshot
+  history and monitor freshness; reuse existing collectors/clocks/controllers;
+  bounded repair and effect verification; independent product-path/restore
+  acceptance; Jev advisory/offline/shadow/canary evaluation ladder; every-step
+  checkpoint/verified backup/next trigger; continue authorized units without
+  automatically stopping after one. Proposed uses are not claimed deployed.
+- **Jev:** installed 1.13 advisory comparison selected stacked measured loops
+  at 0.99 (937 input / 88 output tokens, reported cost 0.000039354); no fallback.
+  This is design advice, not production accuracy, permission or autonomy proof.
+- **Scope/rollback:** documentation/evidence only, with concurrent recovery docs
+  preserved. No production writes, source fetches/promotions, runtime edits,
+  new schedules, or expanded model authority. Withdraw/revert the documentation
+  revision if needed; preserve the historical recovery evidence.
+- **Next documentation action:** finish independent critique/reference/evidence
+  checks, commit/push to existing draft PR #150, inspect exact-SHA CI, and record
+  acceptance. Next proposed engineering action, when authorized: reconcile the
+  public-eligibility/outcome metric contract and scope a small existing-economics
+  workflow extension for durable daily snapshots, freshness checks and actions;
+  keep the open Jev observation pending independently.
+
+## 2026-09-25 — INVOCATION: master-prompt boot recovery, read-only (current)
+
+Documentation-only invocation recovery under
+`docs/bootloaders/MASTER_OPERATING_PROMPT.md`. No production implementation,
+source admission, promotion, or configuration change. Bounded read-only D1
+SELECTs were performed (every query verified `success=true`, `changed_db=false`,
+`rows_written=0`); no cron route was invoked by this recovery — scheduled-clock
+runs fired on their own and were inspected.
+
+- **Mode/baton:** RECOVER (read-only). Branch `codex/master-operating-prompt`,
+  start SHA `c3320a44c70b3f4bbfcfb9d4c75f446a4e63172f`, fetched `origin/main`
+  `74d43789e06af04f7e3b2ab09b51d5a1051de9d8` (unchanged). Tree clean; no
+  unrelated work touched. PR #150 remains OPEN/draft/MERGEABLE (checked live).
+  Newest authoritative baton: the DOC-BACKUP record below (c115d59 observation
+  window open).
+- **Post-fix clocks:** EX-03 run `36082783445` (2026-09-25T01:36:50Z, success,
+  checked out `74d4378`) was a cadence-fenced no-op: 3 rows enumerated
+  (rotation page 2 of 15 shadow identities / 12-per-run), all 3
+  `skippedIneligible`, 0 dispatched, healthy, empty `evidenceErrors`. The
+  Worker had dispatched the same page at 01:20Z; the 60-minute per-identity
+  cadence floor skipped the duplicate (`shadow-dispatcher.ts:448-450` — no
+  reason field, so cadence-held is INFERRED, consistent with fencing). Worker
+  :20Z ticks covered all 15 shadow identities exactly once (12 at 00:20Z + 3 at
+  01:20Z); 14 `HEALTHY_WITH_RESULTS` + 1 `recruitee:myjewellery`
+  `DEGRADED_ANOMALOUS` (chronic oversize, Tier-1 deterministic, no Jev call).
+  The corrected denominator still has no production Tier-2 exercise. Run
+  verdicts are response-only (`apps/web/src/pages/api/cron/shadow-dispatch.ts:128-133`).
+- **Registry recount (D1, 2026-09-25 ~02:05Z, verified no-write):** 5 active
+  (the five Breezy graduations) / 15 shadow / 14 candidate (`needs_review`) /
+  1 quarantined (`teamtailor:career.teamtailor.com`); no canaries — matches the
+  September 24 record.
+- **Fresh baseline (read-only source-economics, 2026-09-25T02:17:42.757Z,
+  reconciliation OK, all partition deltas zero):** qualified new 7d 118 =
+  16.86/day (first-stored proxy); 30d 458 = 15.27/day; qualified active 866 /
+  1,105; identity coverage 100% of 5,679; concentration top family
+  `we-work-remotely` 42.2% ⚠️ / top-3 87.5% ⚠️ (both SLO flags tripped);
+  largest unclear losses / 7d: Sourcefit 46, 20Four7VA 37, WWR 6, Yokly 5,
+  Remote OK 3. Generated locally in temp; the on-disk
+  `docs/source-economics-latest.md` was not replaced (the scheduled workflow
+  owns it).
+- **Clock observation:** APEX economics cron `35 2 * * *` (02:35Z daily,
+  unchanged since September 8); observed scheduled runs September 22–24
+  executed ~07:46–07:56Z (~5-hour GitHub schedule delay). Today's run had not
+  fired at recovery time (~02:20Z).
+- **What must not be redone:** the c115d59 denominator fix and accepted Breezy
+  graduations; terminal SP/Gauntlet units; no automatic 512 KiB budget raise;
+  no Jev wiring into publication/promotion/triage gates.
+- **Capsule:** §12 of `docs/bootloaders/MASTER_OPERATING_PROMPT.md` refreshed
+  with the above evidence; `docs/bootloaders/CURRENT.md` repointed at this
+  baton.
+- **Next exact action:** collect the next post-fix EX-03/Worker decision
+  records, especially a Tier-2 window with `dispatched > 0` exercising the
+  corrected denominator (record actual Tier-2 classification, consultation and
+  provider-validation status, and packet count; chronic Tier-1 myjewellery
+  oversize does not qualify); reconcile open review findings #1/#3/#4 and stale
+  SP/expansion-ledger checkpoints through a bounded planning decision; watch
+  the delayed economics cron.
+
+## 2026-09-25 — DOC-BACKUP: Record c115d59 denominator fix deployed (historical — superseded by the INVOCATION record above; baton for the c115d59 observation)
 
 Documentation backup only. No implementation, source admission, promotion,
 or automation restart is authorized by this backup. The JEV-SHADOW-VERDICT

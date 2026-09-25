@@ -1,0 +1,17 @@
+{
+  "observed_on": "2026-09-25",
+  "approximate_query_window_utc": "02:30-02:31",
+  "transport": "Wrangler 4.120.0 d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --json --command",
+  "query": "SELECT 'registry:' || operational_state AS metric, COUNT(*) AS value FROM source_registry GROUP BY operational_state UNION ALL SELECT 'opportunities:active', COUNT(*) FROM opportunities WHERE is_active = 1 UNION ALL SELECT 'opportunities:active_ph_qualified', COUNT(*) FROM opportunities WHERE is_active = 1 AND ph_eligibility IN ('eligible_verified', 'eligible_likely');",
+  "results": [
+    {"metric":"registry:active","value":5},
+    {"metric":"registry:candidate","value":14},
+    {"metric":"registry:quarantined","value":1},
+    {"metric":"registry:shadow","value":15},
+    {"metric":"opportunities:active","value":1105},
+    {"metric":"opportunities:active_ph_qualified","value":866}
+  ],
+  "success": true,
+  "meta": {"changed_db":false,"rows_written":0,"rows_read":2010,"changes":0,"sql_duration_ms":2.1806,"total_attempts":1},
+  "limitation": "Inventory and current PH verdicts, not qualified remote net-new public jobs/day. Metadata is a selected subset of the returned response."
+}
