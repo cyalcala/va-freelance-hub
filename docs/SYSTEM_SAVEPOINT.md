@@ -1,6 +1,21 @@
 # System Savepoint
 
-## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (current)
+## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: post-fix 429 bursts are window-level, remotecom held, badge-live verified (current)
+
+Owner instruction "Proceed in this ... All approved" under the v3.1 prompt. Executed the queued NEXT as a read-only unit (zero D1 writes, zero code changes): badge-live observation + remotecom gate re-check + Workable pacing diagnosis. Start SHA `43dc8884004ffbcdfd70a29fb95d72a03b5cff7e` (clean, == origin/main).
+
+- **Badge-live (OBSERVED):** card code has no NEW badge (VERIFIED CODE); CI `43dc888` success 02:23Z with Pages deploy; live `GET /` 200 and `GET /opportunities?fresh=today` 200 showing 14 Manila-today rows with Last-24h/Today chips and no card badges — fresh views intact.
+- **Remotecom (MEASURED, held):** sole bad outcome remains the `2026-09-12T18:20:56Z` UNREACHABLE singleton, still inside the 14d window at ~02:30Z — NOT promotable until ~18:20Z today. Re-run the bad-outcomes-back-to-MIN-qualifying query FIRST.
+- **Workable (MEASURED):** post-fix all-agency 429 bursts at 09-25T13Z (7) + 18Z (7) despite 3000ms same-host delay + single retry; 7 probes in ~54s all-429 means window-level origin limiting, not burst spacing. Healthy 4-tick streak 20:20Z→01:40Z with stable yields (pearltalent ~200, hunt-st ~148). 7-day window keeps sliding; recommended follow-up is a bounded skip-remaining-same-host-on-429 unit (1 error + 6 skips per event instead of 7 errors), with tests + replay — NOT implemented here.
+- **Stock (fresh read-only, changed_db=false everywhere):** registry 5/5/10/14/1 = 35; active eligible 901 (681 likely + 220 verified), 0 unclear.
+- **§10:** ceiling ~15–30/d unchanged; gap ~87/d; largest expansion still the shadow pipeline.
+- **Autonomy:** L1 ADVISE both domains, unchanged; Jev not invoked.
+- **Verification:** no code touched — D1 writes 0, lake writes 0; live HTTP 200s; CI success on base SHA already recorded. Bun mismatch standing disclosure (local 1.4.2 vs pin 1.3.14).
+- **Evidence:** `docs/gauntlet/evidence/WORKABLE-PACING-DIAGNOSTIC-2026-09-26.md`.
+- **Backup:** pending push of this checkpoint (evidence doc + baton).
+- **NEXT**: Re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z with the staged script (bad-outcomes query FIRST); open the bounded skip-on-429 dispatch unit. Do NOT promote early or live-sync the lake on an unapproved cohort.
+
+## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (historical)
 
 Owner-directed micro-unit ("remove the new badge please; only remove that, nothing else"). Removed the `New` badge JSX + `isFreshArrival`/`NEW_BADGE_WINDOW_MS` from `opportunity-card.tsx` only; `?fresh=24h|today` chips, Manila dates, and all other behavior unchanged. Start SHA `ec55ebd` (clean, == origin/main).
 

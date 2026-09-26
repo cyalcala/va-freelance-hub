@@ -1,6 +1,18 @@
 # AI Recovery Trail
 
-## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (current)
+## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: window-level 429s, remotecom held, badge-live verified (current)
+
+Read-only unit per the v3.1 loop (measure before optimizing). Start SHA `43dc888` clean.
+
+- **Final state**:
+  - Badge-live verified (code + CI + live 200s, 14 Manila-today rows).
+  - Remotecom held (singleton in window until ~18:20Z).
+  - Workable bursts diagnosed as window-level origin limiting; skip-on-429 follow-up proposed, not implemented.
+  - Evidence doc + baton refresh only; zero production effect; autonomy L1 unchanged.
+  - Note: REMOVE-NEW-BADGE behavior `6e388c2` / CI `36211413069` lives in the
+    savepoint + handoff; this trail missed that entry upstream (drift noted, not rewritten).
+
+## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (historical)
 
 Strategy-first execution: ingestion already ticks ~15 min 24/7, so the unit stayed display-side only. Start SHA `b2c8bd3` clean; behavior `092ef18`; CI `36210741745` all-success with Pages deploy.
 

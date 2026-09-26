@@ -1,6 +1,14 @@
 # Handoff
 
-## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (current)
+## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: window-level 429s, remotecom held, badge-live verified (current)
+
+Read-only unit per the queued NEXT (zero writes, zero code changes). Evidence: `docs/gauntlet/evidence/WORKABLE-PACING-DIAGNOSTIC-2026-09-26.md`; baton: top savepoint entry.
+
+- **Findings**: badge-free board + fresh views live (14 Manila-today rows, chips active, no card badges); remotecom singleton still in 14d window (due ~18:20Z); Workable post-fix bursts 09-25T13Z/18Z are window-level origin limits (7 probes/54s all-429 despite 3s delay + retry) — 7-day window keeps sliding; 4-tick healthy streak since 20:20Z with stable yields.
+- **When the owner resumes**: remotecom re-eval after 18:20Z (bad-outcomes query FIRST); bounded skip-on-429 dispatch unit. No early promotion, no live lake sync.
+- **Backup:** pending push of this checkpoint.
+
+## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (historical)
 
 Owner-directed micro-unit: badge JSX + helper removed from the card; chips, Manila dates, filters unchanged. Verified 1,462/0, typecheck/guardrails/build clean. Backup: `6e388c2`, CI `36211413069` all-success incl. Pages deploy. Next: verify live; remotecom after 18:20Z; Workable diagnostic.
 

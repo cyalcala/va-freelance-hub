@@ -1,9 +1,9 @@
 # Current resume pointer
 
-**Refreshed 2026-09-26 (REMOVE-NEW-BADGE deployed; fresh views + Manila dates intact).**
-Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Behavior commit `6e388c2`, CI run `36211413069` all-success with Pages deploy.
+**Refreshed 2026-09-26 (~02:35Z, WORKABLE-PACING-DIAGNOSTIC read-only; badge-live verified, remotecom held, window-level 429s diagnosed).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Evidence `docs/gauntlet/evidence/WORKABLE-PACING-DIAGNOSTIC-2026-09-26.md`. Zero D1/code writes.
 
-NEXT: verify badge-free board live; then remotecom re-eval after 18:20Z; Workable-pacing diagnostic.
+NEXT: re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (bad-outcomes query FIRST); open the bounded skip-on-429 dispatch unit. No early promotion, no live lake sync.
 
 ---
 *Prior pointer (2026-09-25) preserved below.*
