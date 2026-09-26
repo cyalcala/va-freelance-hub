@@ -1,5 +1,17 @@
 # Current resume pointer
 
+**Refreshed 2026-09-26 (~13:15Z, MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0; Master Operating Constitution v3.0 codified, P0 metric semantics resolved).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
+- Master Operating Constitution v3.0 codified in [`../MASTER_OPERATING_CONSTITUTION.md`](../MASTER_OPERATING_CONSTITUTION.md) per owner approval ("Proceed in this. Act in all of this. All approved.").
+- P0 Metric Semantic Correctness implemented in [`../METRICS.md`](../METRICS.md): replaced overlapping subtractive formula with mutually exclusive cohort partition (`FRESH_DISCOVERY`, `BACKLOG_IMPORT`, `REACTIVATION`, `REPLAY_RECOVERY`, `OTHER_NON_FRESH`); decoupled classifier output from ground-truth adjudication quality error rates (Query 3A vs 3B); codified Part IX metric validity specifications.
+- Part V Current State Report codified in [`../architecture/CURRENT_STATE.md`](../architecture/CURRENT_STATE.md) (25 labeled telemetry dimensions; binding constraint identified as 66.57 jobs/day flow gap).
+- Full verification: 100% parameter parity (`audit:parameters`), repo guardrails clean (`audit:guardrails`), orchestrator modification guard clean (`audit:orchestrator`).
+
+NEXT: Review P1 High-risk paper-system remediation and P2 Queue instrumentation / Canary graduation candidates (`greenhouse:canonical` preview sync and `greenhouse:remotecom` shadow window review).
+
+---
+*Prior pointer preserved below.*
+
 **Refreshed 2026-09-26 (~03:00Z, SHADOW-DISPATCH-SKIP-ON-429 + prompt v3.1; skip-on-429 implemented, master prompt upgraded to v3.1).**
 Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Evidence `docs/gauntlet/evidence/SHADOW-DISPATCH-SKIP-ON-429-2026-09-26.md`.
 - `shadow-dispatcher.ts`: `DISPATCHER_VERSION = "2.1.0"`, `rateLimitedHosts` run-scoped tracking, subsequent same-host probes skipped to prevent multi-429 burst penalties in same window; verified 39/0 narrow, 1,464/0 full.

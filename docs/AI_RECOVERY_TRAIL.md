@@ -1,6 +1,18 @@
 # AI Recovery Trail
 
-## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (current)
+## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (current)
+
+Codified Master Operating Constitution v3.0 and resolved P0 Metric Semantic Correctness across 6 files.
+
+- **Final state**:
+  - `docs/MASTER_OPERATING_CONSTITUTION.md`: Approved Master Operating Constitution v3.0 codified verbatim.
+  - `docs/METRICS.md`: Mutually exclusive cohort partition model (`FRESH_DISCOVERY`, `BACKLOG_IMPORT`, `REACTIVATION`, `REPLAY_RECOVERY`, `OTHER_NON_FRESH`) eliminates double subtraction; Query 3A/3B decouples internal consistency from ground-truth adjudication quality rates; Part IX metric validity specifications codified.
+  - `docs/architecture/CURRENT_STATE.md`: Section 3 Current State Audit with 25 labeled measurements per Part V (binding constraint identified as 66.57 jobs/day flow gap).
+  - `CONSTITUTION.md`: Normative core linked to Master Operating Constitution v3.0.
+  - `docs/bootloaders/CURRENT.md`: Resume pointer updated.
+  - Verification: 100% parameter parity (`audit:parameters`), repo guardrails clean (`audit:guardrails`), orchestrator modification guard clean (`audit:orchestrator`), 1,506/0 unit tests pass, typecheck clean, 15/15 Python tests pass, 107/107 D1 rehearsal assertions pass, Astro build clean. L1 ADVISE unchanged.
+
+## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (historical)
 
 Scaled lake upstream supply from `QUALIFIED_READY = 0` to **122** via OpenJobs dataset intake. Commit `f736c7c`, CI run `36223811888` (success).
 

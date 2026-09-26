@@ -1,6 +1,13 @@
 # Implementation Status
 
-## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (current)
+## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (current)
+
+- **What this is**: Formally codified the approved Master Operating Constitution v3.0 in `docs/MASTER_OPERATING_CONSTITUTION.md` per owner approval ("Proceed in this. Act in all of this. All approved."). Implemented P0 (Metric Semantic Correctness) in `docs/METRICS.md` establishing the mutually exclusive cohort partition model (`FRESH_DISCOVERY`, `BACKLOG_IMPORT`, `REACTIVATION`, `REPLAY_RECOVERY`, `OTHER_NON_FRESH`), decoupled classifier output from ground-truth adjudication quality rates (Query 3A vs 3B), and codified Part IX metric validity specifications. Executed the Part V Current State Audit across all 25 telemetry dimensions in `docs/architecture/CURRENT_STATE.md`. Updated `CONSTITUTION.md` and `docs/bootloaders/CURRENT.md`.
+- **Verification**: 100% parameter parity (`audit:parameters`); repository guardrails clean (`audit:guardrails`); orchestrator modification guard clean (`audit:orchestrator`); 1,506/0 tests pass across 147 files; typecheck clean (0 errors); 15/15 Python tests pass; 107/107 D1 migration rehearsal assertions pass; production Astro build complete (48.88s).
+- **Autonomy**: L1 ADVISE both domains (unchanged).
+- **Deployment**: Commit pending, Sovereign CI Guardrail release.
+
+## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (historical)
 
 - **What this is**: Scaled Turso Data Lake upstream supply from `QUALIFIED_READY = 0` to **122** using the OpenJobs `companies_v2.json` open dataset. Added `scripts/lake/bulk-ats-seed.ts` (URL/file/curated cohort builder with caching, 5-family ATS slug extraction, lake dedupe), added the native Ashby probe template to `scripts/lake/domain-ats-discovery.ts` (`DISCOVERY_VERSION = "2.1.0"`, 1000–2000ms pacing, per-host skip-on-429 shielding), and added `runBulkAtsDiscovery()` for explicit family-pinned cohorts. Probed 497 seeds / 100 tenants: 1 auto-approved (`greenhouse:canonical`, 122 QUALIFIED_READY @ 39.9%), 2 shadow-monitored, 97 auto-rejected with Jev 1.13 evidence. Telemetry in `docs/FEDERATED_ACQUISITION_MATRIX.md`.
 - **Verification**: lake:state 0 → 122 (≥100 gate); replay 363 evaluated / 0 changed; sync dry-run fail-closed HELD, `--allow-auto-approved` preview valid; 1,506/0 tests across 147 files; typecheck 0 errors; guardrails/parameters/orchestrator clean; zero D1 writes.

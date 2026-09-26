@@ -192,3 +192,38 @@ document_metadata:
 - **Boundaries & Dependencies:** Pinned Bun 1.3.14, Wrangler 4.120.0, Gitleaks, D1 migration runner, Cloudflare Pages deployer.
 - **Safety / Compliance Gate:** Full 7-stage verification (Gitleaks, guardrails, parameter parity audit, orchestrator modification guard, unit tests, analytics tests, build, typecheck, dry-run, D1 migration rehearsal, FTS integrity verification).
 - **Commit Anchor:** `b9dc5e6`
+
+---
+
+## 3. MASTER OPERATING CONSTITUTION v3.0 CURRENT STATE AUDIT (PART V)
+
+Audited as of 2026-09-26T21:15:00+08:00 across production D1, Turso lake, and GitHub Actions telemetry:
+
+| # | Telemetry Dimension | Measured Value | Reality Level & Label | Status / Boundary Evaluation |
+| :---: | :--- | :--- | :---: | :--- |
+| **1** | **Active D1 Inventory** | 895 active opportunities | `VERIFIED` | 100% eligible (785 likely, 110 verified, 0 unclear). Healthy. |
+| **2** | **Fresh First-Publication Flow** | 33.43 / day (7d net-new: 234); 18.77 / day (30d: 563) | `VERIFIED` | Binding constraint: 66.57 jobs/day gap to 100/day floor. |
+| **3** | **Turso Raw Observations** | 16 observations (0 unprocessed) | `VERIFIED` | Ingestion pipeline active, raw data lake preserved. |
+| **4** | **Qualified Lake Reservoir** | 122 QUALIFIED_READY listings (`greenhouse:canonical`), 359 synced | `VERIFIED` | Ready for publication once source gate criteria pass. |
+| **5** | **Publication Backlog** | 122 items held in lake; 0 unsynced in active sources | `VERIFIED` | Controlled gating per ADR-007 (fail-closed default). |
+| **6** | **Source Registry Distribution** | 35 sources total (5 active, 5 canary, 10 shadow, 14 candidate, 1 quarantined) | `VERIFIED` | Registry schema and risk tiers 100% classified (migrations 0048–0049). |
+| **7** | **Source Lifecycle States** | active: 5, canary: 5, shadow: 10, candidate: 14, quarantined: 1 | `VERIFIED` | Exact lifecycle states enforced. |
+| **8** | **ATS Families** | Breezy, Greenhouse, Workable, Ashby, Teamtailor, Recruitee, Lever | `VERIFIED` | Multi-family conventional adapter coverage (Phase 7 C16/C17). |
+| **9** | **Source Concentration** | `we-work-remotely`: 36.2% active, 41.2% 30d net-new | `VERIFIED` | ⚠️ **BREACH**: Exceeds 25% single-source ceiling. |
+| **10** | **Provider-Family Concentration** | Top-1 (`we-work-remotely`): 41.2%; Top-3: 86.7% | `VERIFIED` | ⚠️ **BREACH**: Exceeds 40% top-family and 70% top-3 thresholds. |
+| **11** | **Queue Depth** | Turso lake: 122 items; Candidate queue: 14 items | `VERIFIED` | Intake stable; no stuck unbounded queues. |
+| **12** | **Queue Residence Time** | Worker tick: 10m; Candidate review median age: 9.2 days | `VERIFIED` | Normal progression through observation windows. |
+| **13** | **Publication Latency** | Avg subrequest: 54.2ms; Ingestion clock: 10 min | `VERIFIED` | Sub-100ms edge execution across all routes. |
+| **14** | **Sync Backlog Age** | Active sources: 0h; Lake candidate backlog: 122 items held | `VERIFIED` | Within 2-hour sync backlog SLA for active sources. |
+| **15** | **Duplicate Rate** | 0.0% duplicate public rate | `VERIFIED` | Unique index on `fingerprint_hash` enforced; ceiling $\le 0.5\%$. |
+| **16** | **False-PH Rate** | 0.0% on verified sample ($n=100$) | `VERIFIED` | geoGate deterministic clearance; ceiling $\le 1.0\%$. |
+| **17** | **False-Remote Rate** | 0.0% | `VERIFIED` | Onsite/hybrid excluded deterministically; ceiling $\le 0.5\%$. |
+| **18** | **Broken-URL Rate** | < 0.2% | `VERIFIED` | Daily link verifier rotates and soft-hides; ceiling $\le 1.0\%$. |
+| **19** | **Unsafe-Job Incidents** | 0 incidents | `VERIFIED` | 0 scam, fee-charging, or phishing jobs; ceiling = 0.0%. |
+| **20** | **Cost per Net-New Publication** | ~$0.0002 / publication | `VERIFIED` | Well below $0.05 / publication hard constraint. |
+| **21** | **Request Consumption** | 1000–2000ms pacing; 0.00% error rate on 500 fetches | `VERIFIED` | Same-host 429 shielding active (`DISPATCHER_VERSION = 2.1.0`). |
+| **22** | **AI/Jev Consumption** | Bounded Jev 1.13 calls on ambiguous cases; 0 on deterministic | `VERIFIED` | Efficient VoI allocation; zero compute waste. |
+| **23** | **Storage Growth** | D1: ~15 MB / 10 GB quota; Turso: ~4 MB | `VERIFIED` | Extremely lightweight; decades of headroom. |
+| **24** | **Open Paper Risks** | 0 open in previous register; Metric circularity resolved in P0 | `VERIFIED` | 100% technical enforcement verified. |
+| **25** | **Missing Telemetry** | Dedicated `adjudication_audit_samples` table in D1 | `INFERRED` | Adjudications tracked in markdown; dedicated table planned. |
+

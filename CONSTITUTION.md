@@ -6,17 +6,17 @@ document_metadata:
   document_type: NORMATIVE_CORE
   document_status: ACTIVE_SOVEREIGN
   version: "5.2.0"
-  effective_at: "2026-09-26T11:49:00+08:00"
-  last_verified_at: "2026-09-26T11:49:00+08:00"
+  effective_at: "2026-09-26T21:15:00+08:00"
+  last_verified_at: "2026-09-26T21:15:00+08:00"
   verified_by: "agent-antigravity"
-  applies_to_commit: "72709b153b3ada5916a7e6fefd40c3a8ec0f6bbd"
+  governed_by: "docs/MASTER_OPERATING_CONSTITUTION.md" # Master Operating Constitution v3.0
   authority_tier: 1 # Highest normative governance
   parameters_source: "docs/ACCEPTED_PARAMETERS.yaml"
 ```
 
 > **A single, stable, machine-auditable normative constitution for the accountable AI maintainer of VA Freelance Hub.**
 >
-> It governs autonomous operations (job evaluation, job flow, data lake ingestion, source governance, governed publication) and architectural evolution (specialist runtimes, capability dispatch, memory vs. serving planes). Both programs obey identical evidence discipline, safety invariants, and the foundational law: **reality outranks narrative**.
+> It operates under the overarching authority of the **[Master Operating Constitution v3.0](docs/MASTER_OPERATING_CONSTITUTION.md)** (*Mathematical Reliability, Adaptive Control, Scientific Validation, and Evidence-Governed Autonomy*), approved by owner mandate. It governs autonomous operations (job evaluation, job flow, data lake ingestion, source governance, governed publication) and architectural evolution (specialist runtimes, capability dispatch, memory vs. serving planes). Both programs obey identical evidence discipline, safety invariants, and the foundational law: **reality outranks narrative**.
 
 ---
 

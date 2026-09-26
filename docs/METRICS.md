@@ -1,51 +1,66 @@
 # VA FREELANCE HUB — METRICS & TELEMETRY CONTRACTS
-## Mathematical Cohort Separation, Production SQL Queries, and SLA Formulas
+## Mathematical Cohort Separation, Production SQL Queries, and Ground-Truth SLA Specifications
 
 ```yaml
 document_metadata:
   document_type: METRICS_SPECIFICATION
   document_status: ACTIVE_OPERATIONAL
-  version: "5.2.0"
-  effective_at: "2026-09-26T11:49:00+08:00"
-  last_verified_at: "2026-09-26T11:49:00+08:00"
+  version: "6.0.0"
+  effective_at: "2026-09-26T21:15:00+08:00"
+  last_verified_at: "2026-09-26T21:15:00+08:00"
   verified_by: "agent-antigravity"
-  applies_to_commit: "72709b153b3ada5916a7e6fefd40c3a8ec0f6bbd"
-  authority_tier: 2
+  governed_by: "docs/MASTER_OPERATING_CONSTITUTION.md"
+  authority_tier: 2 # Operational implementation of Master Operating Constitution v3.0
+  parameters_source: "docs/ACCEPTED_PARAMETERS.yaml"
 ```
 
 > **The canonical contract for measuring all system performance, quality rates, supply funnels, and SLA compliance.**
 >
-> All metrics MUST be measured using the explicit mathematical definitions and SQL queries codified below. Informal approximations, proxy gaming, or blending historical cohorts into fresh daily flow is **constitutionally prohibited**.
+> All metrics MUST be measured using the explicit mathematical definitions, mutually exclusive cohort partitions, and SQL queries codified below. Informal approximations, proxy gaming, circular ground-truth validations, or blending historical cohorts into fresh daily flow is **constitutionally prohibited** under Master Operating Constitution v3.0 (Parts VIII, IX, and X).
 
 ---
 
-## 1. MATHEMATICAL COHORT SEPARATION (C8)
+## 1. MATHEMATICAL COHORT SEPARATION (MOC v3.0 Part VIII)
 
-### 1.1 The Daily Flow Formula
-To prevent historical imports or replay recoveries from masquerading as fresh market supply, the recurring daily flow is defined strictly as:
+### 1.1 The Mutually Exclusive Cohort Model
+To prevent historical imports, replay recoveries, or reactivations from masquerading as fresh market supply, and to eliminate the risk of accidental double subtraction from overlapping subtractive categories ($A - B - C - D$), every publication event belongs to **exactly one mutually exclusive creation cohort**:
 
-$$\text{Daily Flow} = \text{First Published Today} - \text{Backlog Imports} - \text{Reactivations} - \text{Replay Recoveries}$$
+$$\text{Cohort}(x) \in \{\text{FRESH\_DISCOVERY}, \text{BACKLOG\_IMPORT}, \text{REACTIVATION}, \text{REPLAY\_RECOVERY}, \text{OTHER\_NON\_FRESH}\}$$
 
 Where:
-- **First Published Today:** Opportunities whose initial publication receipt in `source_publication_ledger` occurred within the measured Asia/Manila calendar day.
-- **Backlog Imports:** Listings whose `source_posted_at` is older than 7 days prior to initial observation, or which entered through historical directory seed migrations.
-- **Reactivations:** Listings previously inactive/expired that were re-marked active.
-- **Replay Recoveries:** Previously rejected or unclear listings re-evaluated to eligible via historical rule re-execution.
+1. **$\text{REACTIVATION}$ (Highest Priority):** Listings previously inactive or expired ($o.\text{is\_active} = 0$) that were re-marked active, or published opportunities whose original creation date $o.\text{created\_at}$ precedes the beginning of the measured publication day window.
+2. **$\text{REPLAY\_RECOVERY}$:** Previously rejected or ambiguous (`unclear_held`) listings re-evaluated to qualified through historical rule/heuristic re-execution or offline model replay. Replay recoveries are **qualification events**, NOT creation events.
+3. **$\text{BACKLOG\_IMPORT}$:** Listings discovered or published for the first time whose originating posting date $o.\text{source\_posted\_at}$ is older than 7 calendar days prior to observation ($\text{julianday}(o.\text{created\_at}) - \text{julianday}(o.\text{source\_posted\_at}) > 7.0$), or listings introduced through historical directory bulk backfills.
+4. **$\text{FRESH\_DISCOVERY}$:** Genuine, net-new opportunities discovered within 7 days of posting ($o.\text{source\_posted\_at} \text{ within 7 days}$ or NULL with fresh harvest verification) and published for the first time during the measured Asia/Manila calendar day.
+5. **$\text{OTHER\_NON\_FRESH}$:** Any record failing the fresh discovery criteria not classified in cohorts 1–4.
 
-### 1.2 Funnel Cohorts
-Telemetry MUST track and report these nine cohorts independently:
-$$\text{harvested} \mid \text{raw\_stored} \mid \text{normalized} \mid \text{qualified} \mid \text{first\_published} \mid \text{backlog\_unlocked} \mid \text{reactivated} \mid \text{withdrawn} \mid \text{active\_stock}$$
+### 1.2 The True Daily Flow Formula
+The true recurring daily flow accessible to freelancers in the Philippines is the cardinality of the $\text{FRESH\_DISCOVERY}$ partition:
 
-- `first observed today` $\neq$ `posted today`.
-- `backlog unlocked` $\neq$ `fresh daily flow`.
-- `unclear listing re-evaluated to eligible` = **qualification event**, NOT a creation event.
+$$\text{Daily Flow}(D) = \sum_{x \in \mathcal{P}(D)} \mathbf{1}_{\{\text{Cohort}(x) = \text{FRESH\_DISCOVERY}\}}$$
+
+Where $\mathcal{P}(D)$ is the set of all qualified, unique, authorized opportunities whose publication receipt in `source_publication_ledger` occurred during complete Asia/Manila calendar day $D$.
+
+By construction:
+$$\text{Total Published}(D) = |\mathcal{P}(D)| = \text{Daily Flow}(D) + \sum_{x \in \mathcal{P}(D)} \mathbf{1}_{\{\text{Cohort}(x) \neq \text{FRESH\_DISCOVERY}\}}$$
+
+This guarantees:
+- Zero double counting;
+- Zero double subtraction;
+- Strict preservation of the 100/day floor boundary.
+
+### 1.3 Lifecycle Stage Funnel
+Telemetry tracks and reports nine sequential pipeline stages:
+$$\text{harvested} \longrightarrow \text{raw\_stored} \longrightarrow \text{normalized} \longrightarrow \text{qualified} \longrightarrow \text{authorized} \longrightarrow \text{first\_published} \longrightarrow \text{active\_stock}$$
+with branch cohorts:
+$$\text{backlog\_unlocked} \quad \text{reactivated} \quad \text{withdrawn/expired}$$
 
 ---
 
 ## 2. PRODUCTION SQL QUERIES
 
 ### Query 1: `qualified_first_publications_manila_day`
-Measures the genuine, recurring net-new qualified flow accessible to workers in the Philippines for each Asia/Manila calendar day:
+Measures the genuine, recurring net-new qualified flow accessible to workers in the Philippines for each Asia/Manila calendar day using the mutually exclusive cohort model:
 
 ```sql
 -- Qualified Net-New First Publications per Manila Calendar Day
@@ -64,7 +79,7 @@ WITH manila_publications AS (
   WHERE spl.mode IN ('unlimited', 'capped')
     AND spl.published_count > 0
 ),
-qualified_details AS (
+cohort_partitioned AS (
   SELECT 
     mp.ledger_id,
     mp.source_id,
@@ -79,16 +94,15 @@ qualified_details AS (
     o.is_active,
     sr.operational_state,
     sr.compliance_state,
-    -- Cohort classifications
-    CASE 
-      WHEN o.source_posted_at IS NOT NULL 
-       AND julianday(o.created_at) - julianday(o.source_posted_at) > 7.0 
-      THEN 1 ELSE 0 
-    END AS is_backlog_import,
+    -- Mutually exclusive partition (evaluated in strict hierarchical order)
     CASE 
       WHEN o.created_at < strftime('%Y-%m-%dT00:00:00Z', datetime(mp.manila_date || ' 00:00:00', '-8 hours'))
-      THEN 1 ELSE 0
-    END AS is_reactivation_or_replay
+      THEN 'REACTIVATION_OR_REPLAY'
+      WHEN o.source_posted_at IS NOT NULL 
+       AND (julianday(o.created_at) - julianday(o.source_posted_at)) > 7.0 
+      THEN 'BACKLOG_IMPORT'
+      ELSE 'FRESH_DISCOVERY'
+    END AS creation_cohort
   FROM manila_publications mp
   JOIN opportunities o 
     ON o.id = CAST(mp.opportunity_id AS INTEGER)
@@ -101,18 +115,17 @@ qualified_details AS (
 SELECT 
   manila_date,
   COUNT(DISTINCT opportunity_id) AS total_published_today,
-  SUM(is_backlog_import) AS backlog_imports_cohort,
-  SUM(is_reactivation_or_replay) AS reactivations_replay_cohort,
-  -- True recurring daily flow:
-  COUNT(DISTINCT opportunity_id) - SUM(is_backlog_import) - SUM(is_reactivation_or_replay) AS qualified_net_new_recurring_flow
-FROM qualified_details
+  COUNT(DISTINCT CASE WHEN creation_cohort = 'FRESH_DISCOVERY' THEN opportunity_id END) AS fresh_discovery_daily_flow,
+  COUNT(DISTINCT CASE WHEN creation_cohort = 'BACKLOG_IMPORT' THEN opportunity_id END) AS backlog_imports_cohort,
+  COUNT(DISTINCT CASE WHEN creation_cohort = 'REACTIVATION_OR_REPLAY' THEN opportunity_id END) AS reactivations_replay_cohort
+FROM cohort_partitioned
 GROUP BY manila_date
 ORDER BY manila_date DESC;
 ```
 
 ---
 
-### Query 2: Daily Funnel Analysis (Lake to Serving Mart)
+### Query 2: Daily Funnel Analysis (Intake to Serving Mart)
 Tracks progression from raw intake through deterministic and Jev gates to publication:
 
 ```sql
@@ -134,16 +147,15 @@ LIMIT 14;
 
 ---
 
-### Query 3: Quality Rate Metrics & Ceilings
-Measures quality compliance against accepted SLAs:
+### Query 3A: Internal Mechanical Quality Consistency
+Measures mechanical integrity within active D1 opportunities:
 
 ```sql
--- Quality Metrics & Error Rates
+-- Internal Mechanical Integrity & Triage Divergence
 WITH active_opportunities AS (
   SELECT 
     COUNT(*) AS total_active,
-    SUM(CASE WHEN ph_eligibility = 'ineligible' THEN 1 ELSE 0 END) AS false_ph_positives,
-    SUM(CASE WHEN location_type <> 'remote' THEN 1 ELSE 0 END) AS false_remote_classifications,
+    SUM(CASE WHEN location_type <> 'remote' THEN 1 ELSE 0 END) AS non_remote_active,
     SUM(CASE WHEN application_url IS NULL OR application_url = '' OR application_url GLOB '*javascript:*' THEN 1 ELSE 0 END) AS broken_urls
   FROM opportunities
   WHERE is_active = 1
@@ -156,8 +168,7 @@ duplicates AS (
 )
 SELECT 
   total_active,
-  ROUND(CAST(false_ph_positives AS REAL) / total_active * 100.0, 3) AS false_ph_rate_pct,       -- Ceiling: <= 1.0%
-  ROUND(CAST(false_remote_classifications AS REAL) / total_active * 100.0, 3) AS false_remote_rate_pct, -- Ceiling: <= 0.5%
+  ROUND(CAST(non_remote_active AS REAL) / total_active * 100.0, 3) AS mechanical_non_remote_pct, -- Must be 0.0%
   ROUND(CAST(broken_urls AS REAL) / total_active * 100.0, 3) AS broken_url_rate_pct,             -- Ceiling: <= 1.0%
   ROUND(CAST(d.duplicate_count AS REAL) / total_active * 100.0, 3) AS duplicate_rate_pct        -- Ceiling: <= 0.5%
 FROM active_opportunities, duplicates d;
@@ -165,8 +176,27 @@ FROM active_opportunities, duplicates d;
 
 ---
 
-### Query 4: Provider & Source Concentration
-Assesses portfolio resilience against single-source failure:
+### Query 3B: Ground-Truth Adjudication Quality Rates (MOC v3.0 Part X)
+Measures true classification error rates against independent human/employer adjudication samples, avoiding circular model-on-model validation:
+
+```sql
+-- Independent Ground-Truth Adjudication Quality Rates
+-- Evaluated against audited samples in audit ledgers or diagnostic cohorts
+-- Requires independent adjudication evidence table: adjudication_audit_samples
+SELECT 
+  COUNT(*) AS audited_sample_size,
+  SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict = 'ineligible' THEN 1 ELSE 0 END) AS false_ph_count,
+  ROUND(CAST(SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict = 'ineligible' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100.0, 3) AS false_ph_rate_pct, -- Ceiling: <= 1.0%
+  SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict = 'non_remote' THEN 1 ELSE 0 END) AS false_remote_count,
+  ROUND(CAST(SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict = 'non_remote' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100.0, 3) AS false_remote_rate_pct -- Ceiling: <= 0.5%
+FROM adjudication_audit_samples
+WHERE sample_window_days <= 30;
+```
+
+---
+
+### Query 4: Provider & Source Concentration (MOC v3.0 Parts XI & XVIII)
+Assesses portfolio resilience and verifies compliance with concentration ceilings:
 
 ```sql
 -- Source and Provider Family Concentration
@@ -187,17 +217,17 @@ SELECT
   ROUND(CAST(sc.job_count AS REAL) / t.overall_total * 100.0, 2) AS share_pct,
   CASE 
     WHEN CAST(sc.job_count AS REAL) / t.overall_total > 0.25 
-    THEN 'BREACH — EXCEEDS 25%' 
+    THEN 'BREACH — EXCEEDS 25% SOURCE CEILING' 
     ELSE 'OK' 
-  END AS concentration_status
+  END AS source_concentration_status
 FROM source_counts sc, total t
 ORDER BY sc.job_count DESC;
 ```
 
 ---
 
-### Query 5: Operational Reliability & System Lag
-Checks for ingestion latency and stuck batches:
+### Query 5: Operational Reliability & Ingestion Lag
+Checks for ingestion latency and stalled synchronization:
 
 ```sql
 -- System Sync Backlog and Ingestion Lag
@@ -225,4 +255,100 @@ WHERE is_active = 1;
 - **Dead-Band Rule:**
   - If $\frac{1}{28}\sum_{i=1}^{28}\text{Daily Flow}(D_i) \ge 100$ but $\exists D_k$ such that $\text{Daily Flow}(D_k) < 100$: Report as `AVERAGE ACHIEVED, FLOOR NOT ACHIEVED`.
   - If more than 2 days in the window have missing telemetry: Report as `INSUFFICIENT EVIDENCE`.
-  - Missing data is `UNKNOWN`, never zero, never success.
+  - Missing data is `UNKNOWN`, never zero, never assumed success.
+
+---
+
+## 4. METRIC VALIDITY SPECIFICATIONS (MOC v3.0 Part IX)
+
+Under Master Operating Constitution v3.0 Part IX, no metric may exist only as a name. Below are the canonical semantic specifications for the core operational metrics:
+
+### 4.1 Metric: `FreshUniqueQualifiedPHJobs_DailyFlow`
+- **Semantic Definition:** Count of distinct, net-new opportunities discovered within 7 days of posting, qualified as 100% remote and accessible from the Philippines, authorized under valid source lease, and published to the public product for the first time during a single Asia/Manila calendar day.
+- **Unit:** Distinct opportunities / Manila calendar day
+- **Numerator:** $\sum_{x \in \mathcal{P}(D)} \mathbf{1}_{\{\text{Cohort}(x) = \text{FRESH\_DISCOVERY}\}}$
+- **Denominator:** N/A (integer count)
+- **Cohort:** `FRESH_DISCOVERY` (strictly excludes backlog imports, reactivations, and replay recoveries)
+- **Time Window:** 00:00:00 to 23:59:59 Asia/Manila (`UTC+8`)
+- **Timezone:** Asia/Manila (`UTC+8`)
+- **Source of Truth:** `source_publication_ledger` joined with `opportunities` and `source_registry` in Cloudflare D1
+- **Ground-Truth Method:** Deterministic gate audit + independent random sampling
+- **Query / Reproducible Method:** Query 1 (`qualified_first_publications_manila_day`)
+- **Missing Data Behavior:** Labeled `UNKNOWN`; halts 28-day floor counter; cannot be defaulted to 0 or estimated without explicit missingness flags.
+- **Known Biases:** Survivorship bias if opportunities are pruned before daily aggregation; weekend posting cadence dips.
+- **Minimum Sample Requirements:** 28 consecutive days for floor certification; 7 consecutive days for directional trend.
+
+### 4.2 Metric: `FalsePHRate`
+- **Semantic Definition:** Proportion of published opportunities predicted as Philippine-eligible by the system that are empirically determined to be ineligible for workers physically residing in the Philippines.
+- **Unit:** Percentage (%)
+- **Numerator:** Audited published opportunities where $\text{System} = \text{Eligible} \land \text{GroundTruth} = \text{Ineligible}$
+- **Denominator:** Total audited sample of published opportunities
+- **Cohort:** Published active opportunities within a 30-day window
+- **Time Window:** Rolling 30 calendar days
+- **Timezone:** UTC
+- **Source of Truth:** Independent human or verified employer ground-truth adjudication audit ledger
+- **Ground-Truth Method:** Direct employer posting review, ATS country whitelist check, or verified manual application test
+- **Query / Reproducible Method:** Query 3B (`Ground-Truth Adjudication Quality Rates`)
+- **Missing Data Behavior:** If sample $n < 50$, reported as `INSUFFICIENT_SAMPLE (n/50)`
+- **Known Biases:** Ambiguous country clauses ("Global" without PH explicit confirmation); geographic restrictions revealed only during application form submission.
+- **Minimum Sample Requirements:** $n \ge 100$ randomly selected published opportunities per monthly audit cycle; Wilson 95% confidence interval reported.
+
+### 4.3 Metric: `FalseRemoteRate`
+- **Semantic Definition:** Proportion of published opportunities classified as 100% remote that actually require onsite presence, hybrid attendance, or local jurisdiction residency.
+- **Unit:** Percentage (%)
+- **Numerator:** Audited opportunities where $\text{System} = \text{Remote} \land \text{GroundTruth} = \text{Hybrid/Onsite}$
+- **Denominator:** Total audited sample of published opportunities
+- **Cohort:** Published active opportunities
+- **Time Window:** Rolling 30 calendar days
+- **Timezone:** UTC
+- **Source of Truth:** Independent ground-truth adjudication sample
+- **Ground-Truth Method:** Full job description inspection and employer application portal review
+- **Query / Reproducible Method:** Query 3B
+- **Missing Data Behavior:** Labeled `UNKNOWN` if audit sample is missing
+- **Known Biases:** "Remote within US" listings labeled as generic "Remote" by upstream aggregators.
+- **Minimum Sample Requirements:** $n \ge 100$ audited listings; hard ceiling $\le 0.5\%$.
+
+### 4.4 Metric: `BrokenApplyUrlRate`
+- **Semantic Definition:** Proportion of published opportunities whose application URL fails to resolve, returns HTTP 4xx/5xx, routes to an unrelated generic homepage, or contains malicious schemes (`javascript:`).
+- **Unit:** Percentage (%)
+- **Numerator:** Active opportunities with non-resolving or corrupted application URLs
+- **Denominator:** Total active opportunities in D1
+- **Cohort:** All opportunities where `is_active = 1`
+- **Time Window:** Daily link verification pulse (last 24 hours)
+- **Timezone:** UTC
+- **Source of Truth:** `opportunities.application_url` validated via GHA link-verifier HTTP probe
+- **Ground-Truth Method:** Automated HEAD/GET HTTP status check with redirect following
+- **Query / Reproducible Method:** Query 3A (`Internal Mechanical Quality Consistency`)
+- **Missing Data Behavior:** Assumed failing if URL is NULL or empty
+- **Known Biases:** Temporary target server downtime or Cloudflare bot challenge on employer ATS.
+- **Minimum Sample Requirements:** Census of 100% active inventory; hard ceiling $\le 1.0\%$.
+
+### 4.5 Metric: `DuplicatePublicRate`
+- **Semantic Definition:** Proportion of active public opportunities that represent the same canonical opening already published on the product surface.
+- **Unit:** Percentage (%)
+- **Numerator:** Active opportunities sharing an identical `fingerprint_hash` or canonical ATS requisition tuple
+- **Denominator:** Total active opportunities in D1
+- **Cohort:** All opportunities where `is_active = 1`
+- **Time Window:** Instantaneous snapshot
+- **Timezone:** UTC
+- **Source of Truth:** D1 `opportunities` table
+- **Ground-Truth Method:** Deterministic SHA-256 fingerprint deduplication check
+- **Query / Reproducible Method:** Query 3A (`duplicates` CTE)
+- **Missing Data Behavior:** 0 if `fingerprint_hash` unique index holds
+- **Known Biases:** Cross-posting across multiple aggregators with slight title variations.
+- **Minimum Sample Requirements:** Census of 100% active inventory; hard ceiling $\le 0.5\%$.
+
+### 4.6 Metric: `TopProviderFamilyShare`
+- **Semantic Definition:** Proportion of active opportunities originating from the single largest provider family (e.g. `we-work-remotely`, `breezy`, `greenhouse`).
+- **Unit:** Percentage (%)
+- **Numerator:** Count of active opportunities from the top provider family
+- **Denominator:** Total active opportunities with known provider family
+- **Cohort:** Active stock (`is_active = 1`) and 30-day net-new inflow
+- **Time Window:** Rolling 30 calendar days
+- **Timezone:** UTC
+- **Source of Truth:** `source_registry` joined with `opportunities`
+- **Ground-Truth Method:** Deterministic aggregation by `provider_id` / family mapping
+- **Query / Reproducible Method:** Query 4 (`source_counts` folded into provider families)
+- **Missing Data Behavior:** Unknown providers counted in denominator; hard ceiling $\le 40\%$.
+- **Known Biases:** Multi-tenant ATS providers (e.g. Breezy, Greenhouse) aggregate diverse independent employers.
+- **Minimum Sample Requirements:** Total active stock; breach trigger $> 40\%$.
