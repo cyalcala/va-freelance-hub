@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-09-26
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36219554663
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36238887148
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 7 |
-| Auto-added this run | 0 |
+| Candidates considered | 9 |
+| Auto-added this run | 2 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 7 |
 | Rejected for quality | 0 |
@@ -23,7 +23,8 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36219554
 
 ## Auto-added companies
 
-- (none this run)
+- Ping Identity
+- Dremio
 
 ## Durable candidate queue (SP-06, non-publishing)
 
