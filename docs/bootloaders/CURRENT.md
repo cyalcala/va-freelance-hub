@@ -1,7 +1,7 @@
 # Current resume pointer
 
-**Refreshed 2026-09-26 (UNIFIED SINGLE PROMPT active; prompt-only + docs, no behavior change).**
-Newest baton: [`2026-09-26-UNIFIED-SINGLE-PROMPT.md`](./2026-09-26-UNIFIED-SINGLE-PROMPT.md) — one copy-paste block fusing strategy-fused §§1–12 + lake maintainer + datalake777 audits under masterplan/ADR-006/007. Start SHA `1608d59` (main == origin/main, clean).
+**Refreshed 2026-09-26 (UNIFIED PORTABLE PROMPT active; single prompt, zero file refs, any-computer ready; prompt-only + docs, no behavior change).**
+Newest baton: [`2026-09-26-UNIFIED-PORTABLE-PROMPT.md`](./2026-09-26-UNIFIED-PORTABLE-PROMPT.md) — one copy-paste block, no machine paths. Start SHA `53dcfb7` (main == origin/main, clean).
 
 NEXT: NEXT-2026-09-26a (AUDIT, read-only) — verify P0 Turso→D1 bypass live via `lake:sync -- --dry-run` vs gateway ledger/cap path; then P1 starvation fix. Workable stays shadow (~Oct 1–2); `himalayas:remote-jobs` shadow admission staged under ADR-006/007.
 
