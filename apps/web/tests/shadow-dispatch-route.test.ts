@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { sourceRegistry, sourceShadowObservations } from "@va-hub/db";
 import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 import { createShadowDispatchHandler, classifyStorageError } from "../src/pages/api/cron/shadow-dispatch";
-import { SHADOW_VERSION, type CandidateShadowInput, type CandidateShadowResult } from "../../../packages/scraper/candidate-shadow";
+import { SHADOW_MAX_BYTES, SHADOW_VERSION, type CandidateShadowInput, type CandidateShadowResult } from "../../../packages/scraper/candidate-shadow";
 import type { CurrentAdmissionEvidenceResult } from "../../../packages/scraper/admission-evidence";
 import type { AnomalyHistory } from "@va-hub/scraper";
 
@@ -35,15 +35,16 @@ function probe(input: CandidateShadowInput): CandidateShadowResult {
   };
 }
 
-const OVERSIZE_STOP = "oversized payload 524312 bytes > budget 524288 — no alternate endpoint attempted";
+const OVERSIZE_BYTES = SHADOW_MAX_BYTES + 24;
+const OVERSIZE_STOP = `oversized payload ${OVERSIZE_BYTES} bytes > budget ${SHADOW_MAX_BYTES} — no alternate endpoint attempted`;
 
 function oversizeProbe(input: CandidateShadowInput): CandidateShadowResult {
   return {
     ...probe(input),
-    fetch: { attempted: true, status: 200, bytesReceived: 524312 },
+    fetch: { attempted: true, status: 200, bytesReceived: OVERSIZE_BYTES },
     parse: { attempted: false, schemaHealth: "not_attempted", itemCount: 0 },
-    sampleFunnel: { bytesReceived: 524312, parsedItems: 0, plausibleItems: 0, truncated: true, budgetExceeded: true },
-    diagnostic: { outcome: "DEGRADED_ANOMALOUS", requestCount: 2, bytesReceived: 524312, durationMs: 2, probes: [], mutations: 0, shadowMode: true },
+    sampleFunnel: { bytesReceived: OVERSIZE_BYTES, parsedItems: 0, plausibleItems: 0, truncated: true, budgetExceeded: true },
+    diagnostic: { outcome: "DEGRADED_ANOMALOUS", requestCount: 2, bytesReceived: OVERSIZE_BYTES, durationMs: 2, probes: [], mutations: 0, shadowMode: true },
     stopReason: OVERSIZE_STOP,
   };
 }
@@ -290,7 +291,7 @@ describe("shadow route verdict adjudication", () => {
     const brokenProbe = (input: CandidateShadowInput): CandidateShadowResult => ({
       ...oversizeProbe(input),
       parse: { attempted: true, schemaHealth: "broken", itemCount: 0, error: "unexpected token" },
-      diagnostic: { outcome: "SCHEMA_BROKEN", requestCount: 2, bytesReceived: 524312, durationMs: 2, probes: [], mutations: 0, shadowMode: true },
+      diagnostic: { outcome: "SCHEMA_BROKEN", requestCount: 2, bytesReceived: OVERSIZE_BYTES, durationMs: 2, probes: [], mutations: 0, shadowMode: true },
       stopReason: undefined,
     });
     const handler = createShadowDispatchHandler({ getDb: () => db as any, now: () => new Date(NOW),
