@@ -212,6 +212,14 @@ function assertSchema(db: Database): SchemaAssertion[] {
       });
     }
 
+    // 4c. source_registry risk_tier backfill check (no rows with unclassified risk_tier after 0049)
+    const nullTierRows = db.query("SELECT COUNT(*) as c FROM source_registry WHERE risk_tier IS NULL").get() as { c: number };
+    assertions.push({
+      name: "source_registry rows have classified risk_tier",
+      passed: nullTierRows.c === 0,
+      details: nullTierRows.c === 0 ? undefined : `${nullTierRows.c} rows have NULL risk_tier`,
+    });
+
   } catch (error) {
     assertions.push({
       name: "Column inspection",

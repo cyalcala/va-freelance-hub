@@ -1,6 +1,26 @@
 # System Savepoint
 
-## 2026-09-26 — C16-ORCHESTRATOR-GUARD: Central orchestrator modification guard and 100% paper risk remediation (current)
+## 2026-09-26 — D1-MIGRATION-0049-COMPLETE-RISK-TIERS: Backfill remaining source_registry risk tiers for workable, recruitee, and teamtailor (current)
+
+Applied additive migration `packages/db/migrations/0049_backfill_remaining_source_registry_risk_tiers.sql` to backfill ADR-008 risk tiers (`tier_a`, `shadow_window_days = 3`) for the remaining unauthenticated structured ATS/syndication sources (`workable`, `recruitee`, `teamtailor`). With this migration, 100% of rows in `source_registry` have an explicit classified `risk_tier` and `shadow_window_days`. Start SHA `475c8374d6c41b8c8d8b688d0fe5013b56cfc4ef` (clean, verified deployment run `36218637953`).
+
+- **Technical Enforcements Implemented:**
+  - `D1-MIGRATION-0049-RISK-TIERS`: Implemented additive migration `packages/db/migrations/0049_backfill_remaining_source_registry_risk_tiers.sql` updating `source_registry` where `provider_id IN ('workable', 'recruitee', 'teamtailor')` to `risk_tier = 'tier_a'` and `shadow_window_days = 3`.
+  - `scripts/ci/rehearse-d1-migrations.ts`: Added schema assertion `4c` (`source_registry rows have classified risk_tier`) asserting `COUNT(*) FROM source_registry WHERE risk_tier IS NULL` equals 0. All 107 schema assertions and 49 migrations pass on fresh and legacy databases (`DB-01 REHEARSAL PASSED`).
+- **Verification Evidence:**
+  - `bun run scripts/ci/rehearse-d1-migrations.ts`: DB-01 REHEARSAL PASSED (107/107 assertions, 49 migrations verified on fresh and legacy databases).
+  - `bun test scripts/ci/`: 37 pass / 0 fail across 4 test files.
+  - `bun test packages/db/`: 54 pass / 0 fail across 11 test files.
+  - `bun run audit:guardrails`: clean exit 0.
+  - `bun run audit:parameters`: clean exit 0 (100% parity).
+  - `bun run audit:orchestrator`: clean exit 0.
+  - `bun run typecheck`: clean, 0 errors.
+  - Local Bun 1.4.2 vs repo pin 1.3.14 standing disclosure.
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged).
+- **Reality Level:** IMPLEMENTED & VERIFIED LOCALLY.
+- **NEXT**: Commit, push to `origin/main`, watch Sovereign CI Guardrail deploy migration 0049; re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (bad-outcomes query first).
+
+## 2026-09-26 — C16-ORCHESTRATOR-GUARD: Central orchestrator modification guard and 100% paper risk remediation (historical)
 
 Completed the final scheduled paper risk remediation (`CI-SCRAPE-MODIFICATION-GUARD`) from `CONSTITUTION.md §8.1`, `OPERATIONS.md §8`, and `docs/ENFORCEMENT.md §7`. All 5 paper risks are now 100% resolved with concrete automated technical enforcements. Start SHA `e861c808c244ca969418c933ea17b4d2f3dba51d` (clean, verified deployment run `36218145938`).
 
