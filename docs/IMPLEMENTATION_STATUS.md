@@ -1,6 +1,11 @@
 # Implementation Status
 
-## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (current)
+## 2026-09-26 — CANONICAL-SHADOW-CLOCK (current)
+
+- **What this is**: Raised `shadow_max_bytes` from 524288 to 1048576 so `greenhouse:canonical` can be probed. A local probe of the live board returned `HEALTHY_WITH_RESULTS` at 568371 bytes. Added `lake:enroll`, which admits auto-approved sources and requests canary without a person. The promotion gateway still enforces the 8-day shadow window.
+- **Deployment**: Production admit is pending this commit's deploy.
+
+## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (historical)
 
 - **What this is**: Removed the manual `--allow-auto-approved` gate. Auto-approved lake tenants publish when the Wilson lower bound clears 20%, or when Jev returns a confident verdict in the ambiguous band. Hard rejects stay rejected. The Canonical cohort (122/306, lower bound 34.5%) was published to production D1.
 - **Measured result**: 1,026 active opportunities. Canonical 122 (11.9%). We Work Remotely 333 (32.5%), down from 36.8% immediately before the insert.

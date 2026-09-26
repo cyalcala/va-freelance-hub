@@ -61,7 +61,7 @@ reliability:
   max_redispatch_interval_minutes: 1440
   max_dispatches_per_run: 12
   shadow_fetch_timeout_ms: 8000
-  shadow_max_bytes: 524288 # 512 KiB
+  shadow_max_bytes: 1048576 # 1 MiB. Canonical's public board is 524312 bytes.
   shadow_max_requests: 2
 
 economics:

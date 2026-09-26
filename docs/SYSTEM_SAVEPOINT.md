@@ -1,6 +1,18 @@
 # System Savepoint
 
-## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122: Mathematical publish gate, no human approval (current)
+## 2026-09-26 — CANONICAL-SHADOW-CLOCK: 1 MiB probe budget and automatic enrollment (current)
+
+The 122 Canonical jobs are on the board, but `greenhouse:canonical` was not in `source_registry`. The production admit probe stopped at `DEGRADED_ANOMALOUS`: payload 524312 bytes versus the 524288-byte budget. A later local probe measured 568371 bytes and returned `HEALTHY_WITH_RESULTS` after the budget moved to 1 MiB (1,048,576). Sampled items 200, schema ok.
+
+- **UNIT REFERENCE:** CANONICAL-SHADOW-CLOCK
+- **MODE:** AUTOMATION
+- **PROBLEM:** A published source was not on the shadow clock, so new Canonical jobs could not be observed or fetched.
+- **PARAMETER:** `shadow_max_bytes` 524288 → 1048576. Owner-approved because the measured public board cannot enter shadow at 512 KiB. Code, `ACCEPTED_PARAMETERS.yaml`, and `PARAMETERS.md` match. The cap is still finite.
+- **AUTOMATION:** `scripts/lake/enroll-published-sources.ts` asks production to admit each auto-approved source and then promote it to canary. Promotion stays blocked until 8 distinct healthy shadow days spanning 7 days. A 409 is waiting, not a human task. `gha-lake-publish.yml` runs this after publish.
+- **NOT DONE YET:** Production still has the old budget until this commit deploys. Canonical is not in the registry until the post-deploy admit call succeeds.
+- **NEXT SINGLE ACTION:** After deploy, run `bun run lake:enroll` and confirm `greenhouse:canonical` is `shadow`.
+
+## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122: Mathematical publish gate, no human approval (historical)
 
 Owner instruction: the 122 `greenhouse:canonical` qualified rows must not wait for a manual approval, and sourcing through publishing must run on rules plus AI judgment where the evidence is ambiguous. Start SHA `bdfba67d59fc51301d849d4d06142f077f51706c`.
 

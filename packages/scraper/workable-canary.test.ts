@@ -122,7 +122,7 @@ describe("workable-canary — promotion decision (this unit's actual live probe 
     });
     const packet = packetFixture({}, oversizedShadow);
     expect(packet.status).toBe("candidate");
-    expect(packet.missingEvidence.some((m) => m.includes("512 KiB budget"))).toBe(true);
+    expect(packet.missingEvidence.some((m) => m.includes("byte budget"))).toBe(true);
   });
 
   it("refuses on the real live outcome: UNREACHABLE (standard prober times out on this feed's real size)", () => {

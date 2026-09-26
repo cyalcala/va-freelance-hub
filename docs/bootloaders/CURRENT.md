@@ -1,5 +1,17 @@
 # Current resume pointer
 
+**Refreshed 2026-09-26 (~15:30Z, CANONICAL-SHADOW-CLOCK).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
+- Canonical's public board is about 568 KB. The 512 KiB shadow budget rejected it. The accepted ceiling is now 1 MiB.
+- A local probe returned `HEALTHY_WITH_RESULTS` (200 sampled items).
+- `lake:enroll` admits auto-approved sources and requests canary. The gateway still requires 8 healthy shadow days over 7 days.
+- Production admit has not succeeded yet. It needs this budget on the deployed worker.
+
+NEXT: After deploy, run `bun run lake:enroll` and confirm `greenhouse:canonical` is `shadow`.
+
+---
+*Prior pointer preserved below.*
+
 **Refreshed 2026-09-26 (~15:15Z, AUTO-PUBLISH-CANONICAL-122).**
 Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
 - The 122 `greenhouse:canonical` qualified jobs are on production D1. No human approval flag. Wilson lower bound was 34.5% against a 20% floor.

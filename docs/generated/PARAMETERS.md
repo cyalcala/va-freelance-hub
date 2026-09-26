@@ -34,7 +34,7 @@ bun run audit:parameters
 | Policy Resolver | `packages/scraper/policy-resolver.ts` | `RISK_TIER_POLICIES`, `RegistryComplianceState`, `RegistryOperationalState` |
 | Geo Gate | `packages/scraper/geoGate.ts` | `GeoScope`, `PhEligibility`, regex tokens |
 | Shadow Dispatcher | `packages/scraper/shadow-dispatcher.ts` | `DISPATCHER_VERSION`, `DEFAULT_MIN_REDISPATCH_MINUTES` (1440), `MAX_DISPATCHES_PER_RUN` (12) |
-| Candidate Shadow | `packages/scraper/candidate-shadow.ts` | `SHADOW_MAX_BYTES` (512 KiB), `SHADOW_MAX_REQUESTS` (2), `SHADOW_FETCH_TIMEOUT_MS` (8000) |
+| Candidate Shadow | `packages/scraper/candidate-shadow.ts` | `SHADOW_MAX_BYTES` (1 MiB), `SHADOW_MAX_REQUESTS` (2), `SHADOW_FETCH_TIMEOUT_MS` (8000) |
 | Publication Gateway | `packages/scraper/publication-gateway.ts` | `publishPublicExposure`, `canary_max_new_items_per_tick` clamp |
 | Jev Client | `packages/scraper/jev-client.ts` | `JEV_MODEL` (`typesafe/jev-1.13`), `JEV_SYSTEMONE_URL` |
 
@@ -91,7 +91,7 @@ bun run audit:parameters
 | Max Shadow Redispatch Interval | 1,440 minutes (24 hours) | `shadow-dispatcher.ts: DEFAULT_MIN_REDISPATCH_MINUTES` |
 | Max Dispatches Per Run | 12 candidates | `shadow-dispatcher.ts: MAX_DISPATCHES_PER_RUN` |
 | Shadow Fetch Timeout | 8,000 ms | `candidate-shadow.ts: SHADOW_FETCH_TIMEOUT_MS` |
-| Shadow Payload Size Ceiling | 524,288 bytes (512 KiB) | `candidate-shadow.ts: SHADOW_MAX_BYTES` |
+| Shadow Payload Size Ceiling | 1,048,576 bytes (1 MiB) | `candidate-shadow.ts: SHADOW_MAX_BYTES` |
 | Shadow Max External Requests | 2 requests (robots + candidate) | `candidate-shadow.ts: SHADOW_MAX_REQUESTS` |
 
 ---

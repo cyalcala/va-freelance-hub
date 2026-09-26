@@ -1,6 +1,10 @@
 # AI Recovery Trail
 
-## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (current)
+## 2026-09-26 — CANONICAL-SHADOW-CLOCK (current)
+
+Production admit of `greenhouse:canonical` returned `DEGRADED_ANOMALOUS` because the board was 524312 bytes and the budget was 524288. The ceiling is now 1,048,576 bytes. A local probe then measured 568371 bytes and was healthy. Enrollment runs after deploy and on the hourly publish workflow. Canary still waits for 8 healthy shadow days.
+
+## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (historical)
 
 Published the held Canonical cohort without a human approval flag.
 

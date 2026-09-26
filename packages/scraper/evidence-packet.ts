@@ -15,7 +15,7 @@
 
 import { hashString } from "./contentHash";
 import { hostOf, exactOrSubdomain } from "./prospector";
-import type { CandidateShadowResult } from "./candidate-shadow";
+import { SHADOW_MAX_BYTES, type CandidateShadowResult } from "./candidate-shadow";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -243,7 +243,7 @@ function missingEvidenceFor(input: EvidencePacketInput, computed: Pick<EvidenceP
     const s = input.shadow;
     // External content is never executed; we only check metadata
     if (s.diagnostic.requestCount > 2) missing.push(`shadow requestCount ${s.diagnostic.requestCount} exceeds budget 2`);
-    if (s.sampleFunnel.budgetExceeded || s.diagnostic.bytesReceived > 512 * 1024) missing.push(`shadow payload ${s.diagnostic.bytesReceived} bytes exceeds 512 KiB budget`);
+    if (s.sampleFunnel.budgetExceeded || s.diagnostic.bytesReceived > SHADOW_MAX_BYTES) missing.push(`shadow payload ${s.diagnostic.bytesReceived} bytes exceeds ${SHADOW_MAX_BYTES} byte budget`);
     if (!s.fetch.attempted) missing.push("shadow fetch not attempted — wouldBlock or stop guard fired (see stopReason)");
     // Robots
     if (s.robots.checked && s.robots.wouldBlock) missing.push(`robots wouldBlock verdict=${s.robots.verdict} — ${s.robots.evidence ?? ""}`);

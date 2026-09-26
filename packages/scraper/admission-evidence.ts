@@ -2,7 +2,7 @@
 import { buildEvidencePacket } from "./evidence-packet";
 import { decidePromotionToShadow } from "./source-promotion";
 import { sha256Hex } from "./contentHash";
-import { SHADOW_VERSION, type CandidateShadowResult } from "./candidate-shadow";
+import { SHADOW_MAX_BYTES, SHADOW_VERSION, type CandidateShadowResult } from "./candidate-shadow";
 import type { ComplianceState, OperationalState } from "./source-lifecycle";
 
 export const ADMISSION_EVIDENCE_VERSION = "sp23-evidence-v1";
@@ -196,7 +196,7 @@ export function validateAdmissionProbe(
     if (!nonnegativeInteger(count) || count > 200 || !nonnegativeInteger(probe.sampleFunnel.plausibleItems)
       || probe.sampleFunnel.plausibleItems > count || probe.sampleFunnel.parsedItems !== count
       || !positiveInteger(probe.diagnostic.requestCount) || probe.diagnostic.requestCount > 2
-      || !nonnegativeInteger(probe.diagnostic.bytesReceived) || probe.diagnostic.bytesReceived > 512 * 1024
+      || !nonnegativeInteger(probe.diagnostic.bytesReceived) || probe.diagnostic.bytesReceived > SHADOW_MAX_BYTES
       || probe.fetch.bytesReceived !== probe.diagnostic.bytesReceived
       || probe.sampleFunnel.bytesReceived !== probe.diagnostic.bytesReceived
       || probe.sampleFunnel.budgetExceeded !== false || !nonnegativeInteger(probe.diagnostic.durationMs)

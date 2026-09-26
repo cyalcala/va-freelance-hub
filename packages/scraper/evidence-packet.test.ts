@@ -169,7 +169,7 @@ describe("evidence-packet — incomplete remains candidate and lists missing (SP
     });
     const pkt = buildEvidencePacket(inputFixture({ shadow: sh }));
     // The builder sees bytesReceived > budget via shadowEconomics, so marks missing
-    expect(pkt.missingEvidence.some((m) => m.includes("exceeds 512 KiB") || m.includes("oversized"))).toBe(true);
+    expect(pkt.missingEvidence.some((m) => m.includes("byte budget") || m.includes("oversized"))).toBe(true);
   });
 
   it("missing cadence envelope → candidate", () => {

@@ -69,3 +69,16 @@ jobs:
             exit 0
           fi
           bun run lake:sync
+
+      - name: Enroll published sources on the shadow clock
+        env:
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TURSO_DATABASE_URL:-}" ] || [ -z "${PROXY_SECRET:-}" ]; then
+            echo "Enroll skipped: lake or proxy credentials are not configured."
+            exit 0
+          fi
+          bun run scripts/lake/enroll-published-sources.ts

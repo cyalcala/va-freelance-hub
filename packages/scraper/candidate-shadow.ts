@@ -21,7 +21,8 @@ import { exactOrSubdomain, hostOf } from "./prospector";
 // ─── Budgets (shadow mode — deliberately tighter than static doctor) ─────────
 
 export const SHADOW_FETCH_TIMEOUT_MS = 8_000;
-export const SHADOW_MAX_BYTES = 512 * 1024; // 512 KiB — oversize → DEGRADED_ANOMALOUS stop
+// 1 MiB. greenhouse:canonical measured 524312 bytes on 2026-09-26, 24 bytes over 512 KiB.
+export const SHADOW_MAX_BYTES = 1024 * 1024;
 export const SHADOW_MAX_REQUESTS = 2; // robots.txt + candidate fetch
 export const SHADOW_MAX_ITEMS = 200;
 export const SHADOW_VERSION = "1.1.0";

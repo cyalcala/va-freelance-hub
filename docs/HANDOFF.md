@@ -1,6 +1,14 @@
 # Handoff
 
-## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (current)
+## 2026-09-26 — CANONICAL-SHADOW-CLOCK (current)
+
+Canonical is on the board and was missing from the shadow clock because its board JSON is larger than 512 KiB. The probe budget is now 1 MiB. A local probe of the live board was healthy at 568371 bytes.
+
+- **Enroll:** `bun run lake:enroll` after this commit is deployed. Hourly `gha-lake-publish.yml` does the same.
+- **Canary:** still requires 8 distinct healthy shadow days across 7 days. The enroll step records a 409 as waiting.
+- **When the owner resumes:** Confirm `source_registry` has `greenhouse:canonical` in `shadow`.
+
+## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (historical)
 
 The 122 qualified Canonical jobs are published. A person does not approve that cohort.
 

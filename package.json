@@ -27,6 +27,7 @@
     "lake:bulk-seed": "bun run scripts/lake/bulk-ats-seed.ts",
     "lake:replay": "bun run scripts/lake/replay-refinery.ts",
     "lake:sync": "bun run scripts/lake/sync-to-d1.ts",
+    "lake:enroll": "bun run scripts/lake/enroll-published-sources.ts",
     "lake:state": "bun run scripts/lake/lake-state-check.ts"
   },
   "devDependencies": {

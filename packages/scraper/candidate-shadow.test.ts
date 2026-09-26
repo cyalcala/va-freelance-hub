@@ -230,7 +230,7 @@ describe("candidate-shadow — zero writes and strict budget (SP-07 criterion 2)
   it("enforces actual UTF-8 bytes and cancels the oversized response stream", async () => {
     vi.useRealTimers();
     const input = candidateInput();
-    const body = JSON.stringify({ jobs: [{ title: "職".repeat(180_000), url: "https://example.com/1" }] });
+    const body = JSON.stringify({ jobs: [{ title: "職".repeat(400_000), url: "https://example.com/1" }] });
     expect(body.length).toBeLessThan(SHADOW_MAX_BYTES);
     const encoded = new TextEncoder().encode(body);
     let cancelled = false;
