@@ -5,7 +5,7 @@
 - **What this is**: Turned two paper measurements into executable checks. Unknown source dates are `OTHER_NON_FRESH`. An empty ground-truth sample is `UNKNOWN` and cannot pass the false-PH or false-remote ceiling. Migration 0050 creates `adjudication_audit_samples`. Queue depth, stability, and Little's law live in `scripts/ci/queue-metrics.ts` and abstain when their assumptions are missing. CI runs `audit:constitution`.
 - **Verification**: 1,533/0 tests across 149 files; `audit:constitution`, `audit:parameters`, `audit:guardrails`, `audit:orchestrator`, and typecheck clean; D1 rehearsal 119/119 across 50 migrations.
 - **Autonomy**: L1 ADVISE both domains, unchanged. No publication behavior change. No canonical sync. No remotecom promotion.
-- **Deployment**: Commit and production migration apply follow this documentation.
+- **Deployment**: Commit `3ad64f64fb054284d270f9831da83a58bc7f2c9a` on `origin/main`. Sovereign CI Guardrail run `36250027269` succeeded (validate, D1 migrate, Pages deploy).
 
 ## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (historical)
 

@@ -9,6 +9,7 @@ The steward bootloader was executed against the constitution's next priorities, 
 - **Held back:** `greenhouse:canonical` was not synced to D1. `greenhouse:remotecom` was not promoted. At `2026-09-26T14:47:58Z` the shadow window still ran until `2026-09-26T18:20:56Z`.
 - **When the owner resumes:** Adjudicate at least 50 published jobs into `adjudication_audit_samples` before widening publication. After `2026-09-26T18:20:56Z`, a separate bad-outcomes query is still required before any remotecom decision.
 - **Autonomy:** L1 ADVISE, unchanged.
+- **Backup:** `3ad64f64fb054284d270f9831da83a58bc7f2c9a` on `origin/main`. Sovereign CI Guardrail run [`36250027269`](https://github.com/cyalcala/va-freelance-hub/actions/runs/36250027269) succeeded, including production D1 migration 0050 and Pages deploy.
 
 ## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (historical)
 

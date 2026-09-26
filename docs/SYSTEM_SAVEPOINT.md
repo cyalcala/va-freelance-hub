@@ -20,7 +20,7 @@ Owner instruction on the Universal Steward Bootloader: "act on all of this, all 
   - **EXPLICIT EXCLUSIONS:** No live lake sync. No canary promotion. No automatic concentration brake. No replay-flag column on `opportunities`.
   - **SMALLEST REVERSIBLE SLICE:** Additive classifier, queue functions, empty adjudication table, and a CI audit. Rollback is revert.
   - **NARROW TEST:** 27/0 new tests; `audit:constitution` clean; rehearsal 119/119 on fresh and legacy databases, 50 migrations.
-  - **FULL VERIFICATION:** `bun run test` 1,533 pass / 0 fail across 149 files. `audit:guardrails`, `audit:parameters` (100% parity), `audit:orchestrator`, and `typecheck` clean. Astro build not re-run locally; Sovereign CI builds on push.
+  - **FULL VERIFICATION:** `bun run test` 1,533 pass / 0 fail across 149 files. `audit:guardrails`, `audit:parameters` (100% parity), `audit:orchestrator`, and `typecheck` clean. Sovereign CI Guardrail run `36250027269` succeeded, including build, production D1 migration apply, and Pages deploy. Commit `3ad64f64fb054284d270f9831da83a58bc7f2c9a`.
   - **DECISION:** DONE for this slice. Residuals stay paper risks in `docs/ENFORCEMENT.md` §8.
 
 - **Session Closeout Contract:**
@@ -42,7 +42,7 @@ Owner instruction on the Universal Steward Bootloader: "act on all of this, all 
   - **NEXT SINGLE ACTION:** Adjudicate at least 50 published opportunities into `adjudication_audit_samples` and run `measureGroundTruth` before any D1 sync of `greenhouse:canonical` or any `greenhouse:remotecom` promotion.
 
 - **Autonomy:** L1 ADVISE both domains (unchanged).
-- **Reality Level:** IMPLEMENTED and verified locally. Production migration is pending the push.
+- **Reality Level:** DEPLOYED. Empty `adjudication_audit_samples` is on production D1. Served jobs were not rewritten.
 - **Mathematical assumptions:** Cohort age uses elapsed milliseconds in TypeScript and `julianday` in SQL; tests stay away from the seven-day boundary. Little's law is withheld unless CV is known and `<= 1`. Stability requires service rate strictly greater than arrival rate.
 
 ## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (historical)
