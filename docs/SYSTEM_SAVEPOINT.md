@@ -1,6 +1,37 @@
 # System Savepoint
 
-## 2026-09-26 — PAPER-RISK-REMEDIATION-SUITE: CI parameter audit, D1 risk tiers migration 0048, gitleaks secret scanning, and autonomy label gate (current)
+## 2026-09-26 — C16-ORCHESTRATOR-GUARD: Central orchestrator modification guard and 100% paper risk remediation (current)
+
+Completed the final scheduled paper risk remediation (`CI-SCRAPE-MODIFICATION-GUARD`) from `CONSTITUTION.md §8.1`, `OPERATIONS.md §8`, and `docs/ENFORCEMENT.md §7`. All 5 paper risks are now 100% resolved with concrete automated technical enforcements. Start SHA `e861c808c244ca969418c933ea17b4d2f3dba51d` (clean, verified deployment run `36218145938`).
+
+- **Technical Enforcements Implemented:**
+  - `CI-SCRAPE-MODIFICATION-GUARD`: Implemented `scripts/ci/check-orchestrator-modifications.ts` enforcing Operating Constitution v5.2 §8.1 (C16) and `OPERATIONS.md §8.2`. Inspects Git changesets against `origin/main` / base ref / HEAD:
+    - Automatically blocks source expansions in `apps/web/src/pages/api/cron/scrape.ts` that lack an approved exception document in `docs/exceptions/<source_id>.md`.
+    - Automatically validates required exception schema (`source_id`, `exception_reason`, `missing_capability`, `blast_radius`, `tests_added`, `fallback_path`, `owner_or_ADR_reference`).
+    - Issues audit warnings for orchestrator maintenance/refactoring changes to guarantee review rigor.
+  - `docs/exceptions/README.md`: Created standard exception documentation template and operational guidelines.
+  - `package.json`: Added `"audit:orchestrator": "bun scripts/ci/check-orchestrator-modifications.ts"`.
+  - `.github/workflows/ci-guardrail.yml`: Added dedicated `Guard orchestrator modifications` step to Sovereign CI Guardrail.
+  - `scripts/ci/check-production-guardrails.ts`: Integrated `auditOrchestratorModifications` into repository guardrail audit (`auditProductionRepository`).
+  - `docs/ENFORCEMENT.md`: Updated Section 6 matrix anchor and marked Item 5 `[RESOLVED]`. All 5 paper risks in the register are now fully remediated.
+- **Verification Evidence:**
+  - `bun test scripts/ci/check-orchestrator-modifications.test.ts`: 12 pass / 0 fail.
+  - `bun test scripts/ci`: 40 pass / 0 fail across 4 test files (+12 new tests).
+  - `bun run audit:orchestrator`: clean exit 0.
+  - `bun run audit:guardrails`: clean exit 0.
+  - `bun run audit:parameters`: clean exit 0 (100% parity).
+  - `bun run scripts/ci/rehearse-d1-migrations.ts`: DB-01 REHEARSAL PASSED (106/106 assertions, 48 migrations).
+  - `bun run test`: 1,485 pass / 0 fail across 145 test files (+12 new tests).
+  - `bun run typecheck`: clean, 0 errors.
+  - `bun run build`: Complete (server 42s, client 13s, exit 0).
+  - `py -m unittest discover -s scripts/analytics -p "test_*.py"`: 15 pass / 0 fail in 2.0s.
+  - Freshness Cron Worker: `tsc --noEmit` clean, `wrangler deploy --dry-run` exit 0.
+  - Local Bun 1.4.2 vs repo pin 1.3.14 standing disclosure.
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged).
+- **Reality Level:** IMPLEMENTED & VERIFIED LOCALLY.
+- **NEXT**: Commit, push to `origin/main`, watch Sovereign CI Guardrail; re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (bad-outcomes query first).
+
+## 2026-09-26 — PAPER-RISK-REMEDIATION-SUITE: CI parameter audit, D1 risk tiers migration 0048, gitleaks secret scanning, and autonomy label gate (historical)
 
 Executed the scheduled paper risk remediations from CONSTITUTION.md, OPERATIONS.md, and ENFORCEMENT.md §7. Start SHA `ac3e75b7b901a052ff3780371a3e6f98725ae453` (clean, == origin/main).
 

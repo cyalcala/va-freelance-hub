@@ -86,7 +86,7 @@ document_metadata:
 | Policy / Constitutional Rule | Enforcement Mechanism | Concrete Code / DB Anchor | Status | Remediation Plan if Paper Risk |
 |---|---|---|---|---|
 | **Conventional Source Addition (C16)** | New sources avoid editing `scrape.ts`; capability adapters | `packages/scraper/sources.ts`, `packages/scraper/policy-resolver.ts` | **ENFORCED — TESTED** | Tested in `policy-resolver.test.ts` |
-| **Central Orchestrator Modification CI Gate** | CI check blocking PR edits to `scrape.ts` for ordinary source PRs | *Not yet written as dedicated CI step* | **UNENFORCED — PAPER RISK** | **Queue: CI-SCRAPE-MODIFICATION-GUARD** |
+| **Central Orchestrator Modification CI Gate** | CI check blocking PR edits to `scrape.ts` for ordinary source PRs | `scripts/ci/check-orchestrator-modifications.ts` | **ENFORCED — TESTED** | Tested in `check-orchestrator-modifications.test.ts` |
 | **Capability-Based Dispatch (C17)** | Routing by capability and payload shape | `packages/scraper/shadow-dispatcher.ts: runCandidateShadowProbe` | **ENFORCED — TESTED** | Tested in `candidate-shadow.test.ts` |
 | **Decision Lineage & Supersession (C18)** | `supersedes_decision_id` and immutable event tables | `packages/db/migrations/0039_canary_transition_plane.sql: source_transition_events` | **ENFORCED — RUNTIME** | Append-only SQLite table |
 | **Rust Zero D1 Write Authority** | Rust compiled to WASM with no D1 binding imports | WASM export interface (`packages/wasm-projector`) | **ENFORCED — RUNTIME** | WASM imports restricted to memory |
@@ -96,10 +96,11 @@ document_metadata:
 
 ## 7. PAPER RISK REGISTER & REMEDIATION QUEUE
 
-All items tagged **`UNENFORCED — PAPER RISK`** are scheduled for implementation:
+All items tagged **`UNENFORCED — PAPER RISK`** have been systematically remediated:
 
 1. **`CI-AUDIT-PARAMETERS-SCRIPT`**: [RESOLVED] Implemented `scripts/ci/audit-parameters.ts`, added `bun run audit:parameters` to `package.json`, unit tested (`audit-parameters.test.ts`), and integrated into `ci-guardrail.yml`.
 2. **`CI-GITLEAKS-INTEGRATION`**: [RESOLVED] Added `gitleaks-action@v2` step to `.github/workflows/ci-guardrail.yml`.
 3. **`D1-MIGRATION-0048-RISK-TIERS`**: [RESOLVED] Migration `0048_source_registry_risk_tiers.sql` applied, schema updated with index `source_registry_risk_tier_idx`, and verified via `rehearse-d1-migrations.ts` (106/106 assertions pass).
 4. **`CI-AUTONOMY-LABEL-GATE`**: [RESOLVED] Added `inspectAutonomySavepointGate` to `check-production-guardrails.ts` and unit tested (`check-production-guardrails.test.ts`).
-5. **`CI-SCRAPE-MODIFICATION-GUARD`**: Add CI check warning when `apps/web/src/pages/api/cron/scrape.ts` is modified in a source expansion unit.
+5. **`CI-SCRAPE-MODIFICATION-GUARD`**: [RESOLVED] Implemented `scripts/ci/check-orchestrator-modifications.ts`, created `docs/exceptions/README.md` template, added `bun run audit:orchestrator` to `package.json`, unit tested (`check-orchestrator-modifications.test.ts`), and integrated into `ci-guardrail.yml` and `check-production-guardrails.ts`.
+

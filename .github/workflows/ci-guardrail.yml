@@ -47,6 +47,9 @@ jobs:
       - name: Audit accepted parameters parity
         run: bun run audit:parameters
 
+      - name: Guard orchestrator modifications
+        run: bun run audit:orchestrator
+
       - name: Run unit tests
         run: bun run test
 

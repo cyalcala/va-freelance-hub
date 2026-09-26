@@ -1,6 +1,7 @@
 import { readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
+import { auditOrchestratorModifications } from "./check-orchestrator-modifications";
 
 export const BUN_VERSION = "1.3.14";
 export const WRANGLER_VERSION = "4.120.0";
@@ -341,7 +342,18 @@ export async function auditProductionRepository(rootDirectory = join(import.meta
   if (!existsSync(join(rootDirectory, "docs/decisions/DEP-01-dependency-exceptions.md"))) {
     errors.push("docs/decisions/DEP-01-dependency-exceptions.md: dependency exception tracker must exist");
   }
-  return mergeResults(workflowResult, packageResult, savepointResult, legacyResult, dbResult, webResult, robotsPolicyResult, { errors, warnings });
+  const orchestratorResult = await auditOrchestratorModifications(rootDirectory);
+  return mergeResults(
+    workflowResult,
+    packageResult,
+    savepointResult,
+    legacyResult,
+    dbResult,
+    webResult,
+    robotsPolicyResult,
+    orchestratorResult,
+    { errors, warnings },
+  );
 }
 
 if (import.meta.main) {
