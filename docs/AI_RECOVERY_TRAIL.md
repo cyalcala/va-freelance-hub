@@ -1,6 +1,62 @@
 # AI Recovery Trail
 
-## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: window-level 429s, remotecom held, badge-live verified (current)
+## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (current)
+
+Aligned Phases 1–3 as COMPLETED in `docs/ARCHITECTURE_PHASES.md` with empirical evidence (ADR-007/008/Constitution v5.2, migrations 0036–0049 passing 107/107 rehearsal assertions, 15/15 Python tests passing in CI). Formally marked Phase 4 as PENDING_OWNER_AUTHORIZATION.
+
+- **Final state**:
+  - `docs/ARCHITECTURE_PHASES.md`: Phases 0, 1, 2, 3 marked `[COMPLETED]` with empirical evidence; Phase 4 marked `PENDING_OWNER_AUTHORIZATION`.
+  - Rehearsal passing 107/107; 15/15 Python tests passing; 1,485 monorepo tests passing.
+  - Zero code mutations, zero DB mutations; L1 ADVISE unchanged.
+
+## 2026-09-26 — ARCH-PHASE-0-COMPLETE: Architectural reconnaissance, 17 production paths, and empirical telemetry baseline (historical)
+
+Completed Phase 0 reconnaissance and telemetry baseline under `docs/ARCHITECTURE_PHASES.md`. Commit `97678ac`, CI run `36219423854` (success).
+
+- **Final state**:
+  - `docs/architecture/CURRENT_STATE.md`: 17/17 core production paths mapped with commit SHAs and boundaries.
+  - `docs/architecture/BASELINE.md`: Empirical benchmarks established (500 live fetch events, 54.2ms avg duration, 0.00% error rate, 2,647 shadow observations, D1 query profiles).
+  - Marked Phase 0 COMPLETED in `docs/ARCHITECTURE_PHASES.md`.
+
+## 2026-09-26 — D1-MIGRATION-0049-COMPLETE-RISK-TIERS: Backfill remaining source_registry risk tiers for workable, recruitee, and teamtailor (historical)
+
+Applied additive migration `0049_backfill_remaining_source_registry_risk_tiers.sql`. Commit `b9dc5e6`, CI run `36218999406` (success).
+
+- **Final state**:
+  - 100% of 35 registered sources classified under ADR-008 risk tiers in Cloudflare D1 production.
+  - Rehearsal assertion 4c added; 107/107 assertions passed on fresh and legacy databases.
+
+## 2026-09-26 — C16-ORCHESTRATOR-GUARD: Central orchestrator modification guard and 100% paper risk remediation (historical)
+
+Implemented `scripts/ci/check-orchestrator-modifications.ts`. Commit `475c837`, CI run `36218637953` (success).
+
+- **Final state**:
+  - Enforced C16 and `OPERATIONS.md §8.2` requiring approved exceptions in `docs/exceptions/` for orchestrator source expansions.
+  - All 5 scheduled paper risks in `docs/ENFORCEMENT.md §7` tagged `[RESOLVED]`. Zero paper risks remaining.
+
+## 2026-09-26 — PAPER-RISK-REMEDIATION-SUITE: CI parameter audit, D1 risk tiers migration 0048, gitleaks, and autonomy gate (historical)
+
+Remediated paper risks 1–4. Commit `e861c80`, CI run `36218145938` (success).
+
+- **Final state**:
+  - Implemented `scripts/ci/audit-parameters.ts` (100% YAML-to-code parity).
+  - Applied migration 0048 (`risk_tier` and `shadow_window_days` columns in `source_registry`).
+  - Added `gitleaks` secret scanning to `.github/workflows/ci-guardrail.yml`.
+  - Added autonomy level gate to `scripts/ci/check-production-guardrails.ts`.
+
+## 2026-09-26 — CONSTITUTION-V5-2-SUITE: Operating Constitution v5.2 modular suite activated (historical)
+
+Activated Operating Constitution v5.2 modular suite. Commit `db20a2f`, CI run `36217285054` (success).
+
+- **Final state**:
+  - 8 modular governance files active in repository (`CONSTITUTION.md`, `OPERATIONS.md`, etc.).
+  - Codified C1–C20, sovereign L1 autonomy, and mathematical cohort formula.
+
+## 2026-09-26 — SHADOW-DISPATCH-SKIP-ON-429: same-host skip on 429 implemented, prompt upgraded to v3.1 (historical)
+
+Implemented run-scoped skip on 429 in `shadow-dispatcher.ts` and upgraded prompt to v3.1. Commit `3f14489`, CI run `36213410443` (success).
+
+## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: window-level 429s, remotecom held, badge-live verified (historical)
 
 Read-only unit per the v3.1 loop (measure before optimizing). Start SHA `43dc888` clean.
 

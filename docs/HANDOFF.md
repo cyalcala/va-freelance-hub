@@ -1,6 +1,40 @@
 # Handoff
 
-## 2026-09-26 — SHADOW-DISPATCH-SKIP-ON-429: same-host skip on 429 implemented, prompt upgraded to v3.1 (current)
+## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (current)
+
+Aligned Phases 1–3 in `docs/ARCHITECTURE_PHASES.md` to `[COMPLETED]` with concrete empirical evidence and recorded Phase 4 as `PENDING_OWNER_AUTHORIZATION`.
+
+- **Completed Phases**:
+  - **Phase 0**: Reconnaissance, 17 production paths mapped in `docs/architecture/CURRENT_STATE.md`, empirical baseline in `docs/architecture/BASELINE.md`.
+  - **Phase 1**: Architecture Constitution & Interface Contracts (`ADR-007`, `ADR-008`, `CONSTITUTION.md` v5.2, zero circular dependencies).
+  - **Phase 2**: Additive D1 Evidence & Decision History Schema (migrations `0036`–`0049` deployed, 107/107 rehearsal assertions passing, `changed_db=false` on serving mart).
+  - **Phase 3**: Python Analytics over Preserved Historical Cohorts (15/15 unit tests pass, read-only permission envelope verified in CI).
+  - **Phase 4**: Rust / WASM Candidate Kernel held in `PENDING_OWNER_AUTHORIZATION` (requires Rust toolchain installation [`rustup`, `wasm-pack`]; owner authorization required).
+- **Verification**: 1,485 monorepo tests pass; 107/107 rehearsal assertions pass; 15/15 Python tests pass; audit:parameters, audit:guardrails, audit:orchestrator all pass clean.
+- **When the owner resumes**: Re-evaluate `greenhouse:remotecom` shadow→canary after **`2026-09-26T18:20:56Z`** (singleton in window until then; bad-outcomes query FIRST). Decide on Phase 4 Rust/WASM candidate kernel authorization.
+- **Autonomy**: L1 ADVISE both domains (unchanged).
+
+## 2026-09-26 — ARCH-PHASE-0-COMPLETE: Architectural reconnaissance, 17 production paths, and empirical telemetry baseline (historical)
+
+Completed Phase 0 under `docs/ARCHITECTURE_PHASES.md`. Mapped 17/17 core production paths in `docs/architecture/CURRENT_STATE.md` and established empirical benchmarks across 500 live fetch events in `docs/architecture/BASELINE.md`. Commit `97678ac`, CI run `36219423854` (success).
+
+## 2026-09-26 — D1-MIGRATION-0049-COMPLETE-RISK-TIERS: Backfill remaining source_registry risk tiers for workable, recruitee, and teamtailor (historical)
+
+Applied additive migration `0049_backfill_remaining_source_registry_risk_tiers.sql`. 100% of 35 registered sources classified under ADR-008 risk tiers in Cloudflare D1 production. Commit `b9dc5e6`, CI run `36218999406` (success).
+
+## 2026-09-26 — C16-ORCHESTRATOR-GUARD: Central orchestrator modification guard and 100% paper risk remediation (historical)
+
+Implemented `scripts/ci/check-orchestrator-modifications.ts` enforcing C16 and `OPERATIONS.md §8.2`. All 5 paper risks in `docs/ENFORCEMENT.md §7` tagged `[RESOLVED]`. Zero paper risks remaining. Commit `475c837`, CI run `36218637953` (success).
+
+## 2026-09-26 — PAPER-RISK-REMEDIATION-SUITE: CI parameter audit, D1 risk tiers migration 0048, gitleaks, and autonomy gate (historical)
+
+Remediated paper risks 1–4. Implemented `scripts/ci/audit-parameters.ts`, migration 0048, gitleaks secret scanning, and autonomy label gate. Commit `e861c80`, CI run `36218145938` (success).
+
+## 2026-09-26 — CONSTITUTION-V5-2-SUITE: Operating Constitution v5.2 modular suite activated (historical)
+
+Activated Operating Constitution v5.2 modular suite across 8 files (`CONSTITUTION.md`, `OPERATIONS.md`, etc.). Commit `db20a2f`, CI run `36217285054` (success).
+
+## 2026-09-26 — SHADOW-DISPATCH-SKIP-ON-429: same-host skip on 429 implemented, prompt upgraded to v3.1 (historical)
 
 Implementation unit per owner instruction "Proceed in this ... All approved" with prompt v3.1. Implemented Workable pacing skip in `packages/scraper/shadow-dispatcher.ts` and upgraded `docs/bootloaders/MASTER_OPERATING_PROMPT.md` to Autonomous Operating Prompt v3.1. Evidence: `docs/gauntlet/evidence/SHADOW-DISPATCH-SKIP-ON-429-2026-09-26.md`; baton: top savepoint entry.
 

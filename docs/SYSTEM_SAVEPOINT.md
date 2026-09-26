@@ -1,6 +1,28 @@
 # System Savepoint
 
-## 2026-09-26 — ARCH-PHASE-0-COMPLETE: Architectural reconnaissance, 17 production paths, and empirical telemetry baseline (current)
+## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (current)
+
+Formally updated `docs/ARCHITECTURE_PHASES.md` marking Phases 1 (Architecture Constitution & Interface Contracts), 2 (Additive D1 Evidence & Decision History Schema), and 3 (Python Analytics over Preserved Historical Cohorts) as `[COMPLETED]` with empirical evidence links, and marked Phase 4 (Rust / WASM Candidate Kernel) as `PENDING_OWNER_AUTHORIZATION`. Start SHA `69b3103c3eb0ba4af730dc04cf1848a62e28b696` (clean, synchronized with `origin/main` after Prospector Pulse run `36219554663`).
+
+- **Phase Status Realignment**:
+  - **Phase 0** [COMPLETED]: Reconnaissance, 17 production paths mapped in `docs/architecture/CURRENT_STATE.md`, empirical baseline in `docs/architecture/BASELINE.md`.
+  - **Phase 1** [COMPLETED]: Architecture Constitution & Interface Contracts (`ADR-007`, `ADR-008`, `CONSTITUTION.md` v5.2, zero circular dependencies, approved under Operating Constitution v5.2 Suite).
+  - **Phase 2** [COMPLETED]: Additive D1 Evidence & Decision History Schema (migrations `0036`–`0049` deployed to production D1, 107/107 rehearsal assertions passing, `changed_db=false` on serving mart).
+  - **Phase 3** [COMPLETED]: Python Analytics over Preserved Historical Cohorts (15/15 unit tests pass in `scripts/analytics/`, read-only permission envelope verified in CI).
+  - **Phase 4** [PENDING_OWNER_AUTHORIZATION]: Rust / WASM Candidate Kernel (requires Rust toolchain installation [`rustup`, `wasm-pack`]; owner authorization required).
+- **Verification Evidence:**
+  - `bun run audit:parameters`: clean exit 0 (100% parity).
+  - `bun run audit:guardrails`: clean exit 0.
+  - `bun run audit:orchestrator`: clean exit 0.
+  - `bun run scripts/ci/rehearse-d1-migrations.ts`: DB-01 REHEARSAL PASSED (107/107 assertions, 49 migrations).
+  - `py -m unittest discover -s scripts/analytics -p "test_*.py"`: 15 pass / 0 fail in 2.0s.
+  - `bun run test`: 1,485 pass / 0 fail across 145 files.
+  - Zero code mutations, zero database mutations (documentation and status alignment).
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged).
+- **Reality Level:** IMPLEMENTED & VERIFIED LOCALLY.
+- **NEXT**: Commit, push to `origin/main`, watch Sovereign CI Guardrail; re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20:56Z (singleton in window until then; bad-outcomes query first).
+
+## 2026-09-26 — ARCH-PHASE-0-COMPLETE: Architectural reconnaissance, 17 production paths, and empirical telemetry baseline (historical)
 
 Completed Phase 0 (Reconnaissance, Runtime Bounds & Empirical Baseline) under `docs/ARCHITECTURE_PHASES.md`. Mapped 100% of the 17 core production paths across the edge serving mart, edge ingestion clock, central orchestrator, shadow engine, maintenance pulses, data lake refinery, and release gates in `docs/architecture/CURRENT_STATE.md`. Established production performance benchmarks in `docs/architecture/BASELINE.md` across 500 consecutive live fetch events (54.2ms avg duration, 0.00% error rate, 56,426 lifetime events), 2,647 shadow observations, build metrics (42.9s build, 297ms prerender), and D1 query profiles. Start SHA `b9dc5e6c1341c2c0199be06fa713919e1b21235b` (clean, verified deployment run `36218999406`).
 

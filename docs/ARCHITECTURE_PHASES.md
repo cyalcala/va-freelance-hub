@@ -46,30 +46,33 @@ Before introducing any native, compiled, or external candidate, it MUST be evalu
 
 ---
 
-### Phase 1 — Architecture Constitution & Interface Contracts
+### Phase 1 — Architecture Constitution & Interface Contracts [COMPLETED]
 - **Deliverable:** Formal ADRs defining cross-plane boundaries (`ADR-007`, `ADR-008`, `CONSTITUTION.md`).
 - **Numeric Exit Criteria:** 100% of component boundaries (TypeScript, Rust, Python, Jev, Turso, D1) signed off; zero circular dependencies in package graph.
 - **Evidence Artifact:** Accepted ADR files in `docs/decisions/`.
+- **Status:** **COMPLETED** (`ADR-007`, `ADR-008`, and `CONSTITUTION.md` v5.2 active; zero circular package dependencies; signed off under Operating Constitution v5.2 Suite).
 - **Rollback Step:** Revert ADR commits to status `PROPOSED`.
 - **Abandonment Trigger:** Unresolvable governance contradiction between planes.
 - **Owner Authorization Required:** **YES**.
 
 ---
 
-### Phase 2 — Additive D1 Evidence & Decision History Schema
+### Phase 2 — Additive D1 Evidence & Decision History Schema [COMPLETED]
 - **Deliverable:** Additive D1 migrations creating typed decision history and lease tracking without mutating live serving tables (`0036`–`0041`).
 - **Numeric Exit Criteria:** 100% migration rehearsal success (`bun run scripts/ci/rehearse-d1-migrations.ts`); zero columns dropped or modified on existing tables; `changed_db=false` for live data.
 - **Evidence Artifact:** Migration SQL files and rehearsal test logs.
+- **Status:** **COMPLETED** (Additive migrations 0036–0049 deployed to production D1; 107/107 schema assertions pass on fresh and legacy databases; zero columns dropped or altered; `changed_db=false` on serving mart).
 - **Rollback Step:** Down migrations dropping additive tables; live serving untouched.
 - **Abandonment Trigger:** Migration causes table locks $> 100\text{ ms}$ on live D1 serving mart.
 - **Owner Authorization Required:** **YES**.
 
 ---
 
-### Phase 3 — Python Analytics over Preserved Historical Cohorts
+### Phase 3 — Python Analytics over Preserved Historical Cohorts [COMPLETED]
 - **Deliverable:** Read-only Python evaluation harness in `scripts/analytics/` analyzing yield and detecting anomalies over preserved Turso lake cohorts.
 - **Numeric Exit Criteria:** 100% pass rate on `python3 -m unittest discover -s scripts/analytics`; strictly zero D1 or Worker write permissions granted to Python scripts.
 - **Evidence Artifact:** Test run output in CI (`ci-guardrail.yml`).
+- **Status:** **COMPLETED** (15/15 unit tests pass in `scripts/analytics/`; read-only permission envelope verified; executed in CI guardrail).
 - **Rollback Step:** Remove scripts from `scripts/analytics/`.
 - **Abandonment Trigger:** Python analysis yields no actionable supply recommendations within 30 days.
 - **Owner Authorization Required:** **NO** (Read-only analytical plane).
@@ -81,6 +84,7 @@ Before introducing any native, compiled, or external candidate, it MUST be evalu
 - **Numeric Exit Criteria:** Input bounded $\le 2\text{ MB}$; WASM bundle size $< 1\text{ MB}$; zero network or filesystem syscalls; 100% offline fixture tests passing.
 - **Evidence Artifact:** `packages/wasm-projector/pkg/projector.wasm` and test suite.
 - **Rollback Step:** Delete candidate crate directory.
+- **Status:** **PENDING_OWNER_AUTHORIZATION** (Requires Rust toolchain installation [`rustup`, `wasm-pack`] and explicit owner authorization).
 - **Abandonment Trigger:** WASM binary exceeds 1 MiB or cold start exceeds 15ms.
 - **Owner Authorization Required:** **YES**.
 

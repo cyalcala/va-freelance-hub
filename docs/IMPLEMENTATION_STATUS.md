@@ -1,6 +1,68 @@
 # Implementation Status
 
-## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (current)
+## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (current)
+
+- **What this is**: Formally aligned Phases 1 (Architecture Constitution & Interface Contracts), 2 (Additive D1 Evidence & Decision History Schema), and 3 (Python Analytics over Preserved Historical Cohorts) as COMPLETED in `docs/ARCHITECTURE_PHASES.md` based on verified production evidence (ADR-007/008/CONSTITUTION v5.2 active, migrations 0036–0049 deployed with 107/107 rehearsal assertions passing, 15/15 Python tests passing in CI). Formally marked Phase 4 as PENDING_OWNER_AUTHORIZATION.
+- **Verification**: 107/107 rehearsal assertions pass; 15/15 Python tests pass; 1,485 monorepo tests pass; parameter parity, guardrails, and orchestrator checks pass.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+
+## 2026-09-26 — ARCH-PHASE-0-COMPLETE: Architectural reconnaissance, 17 production paths, and empirical telemetry baseline (historical)
+
+- **What this is**: Completed Phase 0 reconnaissance and empirical baseline under `docs/ARCHITECTURE_PHASES.md`. Authored `docs/architecture/CURRENT_STATE.md` mapping all 17 core production paths and `docs/architecture/BASELINE.md` establishing empirical benchmarks (500 live fetch events, 54.2ms avg duration, 0.00% error rate, 2,647 shadow observations, D1 query profiles).
+- **Verification**: audit:parameters 100% parity; audit:guardrails clean; audit:orchestrator clean; zero code/DB mutations.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+- **Deployment**: commit `97678ac`, Sovereign CI Guardrail run `36219423854` (success).
+
+## 2026-09-26 — D1-MIGRATION-0049-COMPLETE-RISK-TIERS: Backfill remaining source_registry risk tiers for workable, recruitee, and teamtailor (historical)
+
+- **What this is**: Applied additive migration `0049_backfill_remaining_source_registry_risk_tiers.sql` backfilling Tier A (`shadow_window_days = 3`) for workable, recruitee, and teamtailor. 100% of 35 registered sources classified under ADR-008 risk tiers. Added rehearsal assertion 4c.
+- **Verification**: DB-01 rehearsal 107/107 assertions passed; 37/0 scripts/ci tests; 54/0 packages/db tests; typecheck clean.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+- **Deployment**: commit `b9dc5e6`, Sovereign CI Guardrail run `36218999406` (success).
+
+## 2026-09-26 — C16-ORCHESTRATOR-GUARD: Central orchestrator modification guard and 100% paper risk remediation (historical)
+
+- **What this is**: Implemented `scripts/ci/check-orchestrator-modifications.ts` enforcing Operating Constitution v5.2 §8.1 (C16) and `OPERATIONS.md §8.2`. Requires approved exception in `docs/exceptions/` for any orchestrator source expansions. Tagged final paper risk in `docs/ENFORCEMENT.md §7` as RESOLVED. 0 paper risks remaining.
+- **Verification**: 12/12 orchestrator guard tests; audit:orchestrator clean; 1,485/0 monorepo tests; build Complete.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+- **Deployment**: commit `475c837`, Sovereign CI Guardrail run `36218637953` (success).
+
+## 2026-09-26 — PAPER-RISK-REMEDIATION-SUITE: CI parameter audit, D1 risk tiers migration 0048, gitleaks, and autonomy gate (historical)
+
+- **What this is**: Remediated 4 scheduled paper risks: implemented `scripts/ci/audit-parameters.ts` (YAML-to-code parity), applied D1 migration 0048 (`risk_tier` & `shadow_window_days` columns), added `gitleaks` secret scanning to CI, and added autonomy level label gate in `check-production-guardrails.ts`.
+- **Verification**: 25/0 scripts/ci tests; 54/0 packages/db tests; rehearsal 106/106; 1,473/0 full tests; typecheck clean.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+- **Deployment**: commit `e861c80`, Sovereign CI Guardrail run `36218145938` (success).
+
+## 2026-09-26 — CONSTITUTION-V5-2-SUITE: Operating Constitution v5.2 modular suite activated (historical)
+
+- **What this is**: Owner authorized activation of Operating Constitution v5.2 modular suite across 8 files (`CONSTITUTION.md`, `OPERATIONS.md`, `ACCEPTED_PARAMETERS.yaml`, `PARAMETERS.md`, `METRICS.md`, `ARCHITECTURE_PHASES.md`, `ENFORCEMENT.md`, `REVISION_NOTES.md`). Codified C1–C20, sovereign L1 autonomy, and mathematical cohort formula.
+- **Verification**: 1,464/0 tests; typecheck clean; guardrails clean; build Complete; live HTTP 200.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+- **Deployment**: commit `db20a2f`, Sovereign CI Guardrail run `36217285054` (success).
+
+## 2026-09-26 — SHADOW-DISPATCH-SKIP-ON-429: same-host skip on 429 implemented, prompt upgraded to v3.1 (historical)
+
+- **What this is**: Run-scoped rate-limited host tracking in `packages/scraper/shadow-dispatcher.ts` (`DISPATCHER_VERSION = "2.1.0"`). Candidates sharing origin host with an active 429 probe are skipped without external calls or D1 writes. Upgraded `docs/bootloaders/MASTER_OPERATING_PROMPT.md` to v3.1.
+- **Verification**: 39/0 shadow-dispatcher tests; 21/0 route tests; 1,464/0 full suite; typecheck/guardrails clean.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+- **Deployment**: commit `3f14489`, Sovereign CI Guardrail run `36213410443` (success).
+
+## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: window-level 429s, remotecom held, badge-live verified (historical)
+
+- **What this is**: Read-only diagnostic. Badge-free board verified live; remotecom singleton verified in 14d window (due ~18:20Z); Workable 429 bursts diagnosed as window-level origin limiting.
+- **Verification**: zero writes everywhere; live HTTP 200s.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+- **Deployment**: commit `16db4fb`, Sovereign CI Guardrail run `36211984686` (success).
+
+## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (historical)
+
+- **What this is**: Owner-directed micro-unit removing NEW badge JSX and helper from `opportunity-card.tsx`. Fresh filters and Manila dates untouched.
+- **Verification**: 1,462/0 tests; typecheck/guardrails/build clean.
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+- **Deployment**: commit `6e388c2`, Sovereign CI Guardrail run `36211413069` (success).
+
+## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (historical)
 
 - **What this is**: Surgical board-recency slice. `fresh` allowlist param (24h rolling / Manila today) with discovery ordering on drizzle + FTS paths; Manila card dates; NEW badge (optional `scrapedAt` keeps homepage compiling). Default board byte-identical.
 - **Verification**: narrow 14/0; full 1,462 pass / 0 fail across 143 files (+8); typecheck 0; guardrails 0; build Complete. Bun mismatch disclosed.
