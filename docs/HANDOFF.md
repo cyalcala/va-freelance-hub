@@ -1,6 +1,15 @@
 # Handoff
 
-## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (current)
+## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (current)
+
+The 122 qualified Canonical jobs are published. A person does not approve that cohort.
+
+- **Rule:** `scripts/lake/auto-publish-policy.ts`. Wilson lower bound ≥ 20% publishes. Jev decides only the ambiguous band, at confidence ≥ 0.70. PH rate under 5% is a hard reject. Families already over 40% get no more jobs.
+- **Production:** 122 D1 statements, `changed_db=true`. Active inventory 1,026. `greenhouse:canonical` 122. `we-work-remotely` share 32.5%.
+- **Clock:** `.github/workflows/gha-lake-publish.yml` hourly sync, daily 04:17 UTC discovery of 25 domains, then sync. `--hold-auto-approved` stops auto-publish.
+- **When the owner resumes:** Check the first scheduled run of that workflow. Do not re-approve Canonical by hand.
+
+## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (historical)
 
 The steward bootloader was executed against the constitution's next priorities, not against a live source promotion.
 

@@ -12,12 +12,14 @@ import {
   escapeSql,
   isSyncableCandidate,
   parseSyncArgs,
+  buildBatchSql,
 } from "./sync-to-d1";
 import {
   AUTO_APPROVE_PH_RATE,
   AUTO_REJECT_PH_RATE,
   buildDiscoverySourceId,
   decideAdmissionDeterministic,
+  mergeAdmissionDecision,
 } from "./domain-ats-discovery";
 import { resolveReplay } from "./replay-refinery";
 
@@ -182,11 +184,18 @@ describe("sync-to-d1 SQL builder", () => {
     expect(() => buildSyncSql({ ...base, ph_eligibility: "ineligible" })).toThrow();
   });
 
-  it("parseSyncArgs defaults safely and never yields NaN", () => {
-    expect(parseSyncArgs(["--dry-run"])).toEqual({ limit: 50, dryRun: true, allowAutoApproved: false });
-    expect(parseSyncArgs([])).toEqual({ limit: 50, dryRun: false, allowAutoApproved: false });
-    expect(parseSyncArgs(["5", "--dry-run"])).toEqual({ limit: 5, dryRun: true, allowAutoApproved: false });
-    expect(parseSyncArgs(["10", "--allow-auto-approved"])).toEqual({ limit: 10, dryRun: false, allowAutoApproved: true });
+  it("buildBatchSql does not wrap remote D1 statements in BEGIN/COMMIT", () => {
+    const sql = buildBatchSql(["INSERT INTO opportunities (title) VALUES ('a');"]);
+    expect(sql).not.toContain("BEGIN");
+    expect(sql).not.toContain("COMMIT");
+  });
+
+  it("parseSyncArgs defaults to automatic publish and keeps a kill switch", () => {
+    expect(parseSyncArgs(["--dry-run"])).toEqual({ limit: 200, dryRun: true, holdAutoApproved: false });
+    expect(parseSyncArgs([])).toEqual({ limit: 200, dryRun: false, holdAutoApproved: false });
+    expect(parseSyncArgs(["5", "--dry-run"])).toEqual({ limit: 5, dryRun: true, holdAutoApproved: false });
+    expect(parseSyncArgs(["10", "--allow-auto-approved"])).toEqual({ limit: 10, dryRun: false, holdAutoApproved: false });
+    expect(parseSyncArgs(["--hold-auto-approved"])).toEqual({ limit: 200, dryRun: false, holdAutoApproved: true });
     const parsed = parseSyncArgs(["not-a-number", "--dry-run"]);
     expect(Number.isFinite(parsed.limit)).toBe(true);
   });
@@ -196,6 +205,36 @@ describe("ATS discovery admission thresholds", () => {
   it("builds portable lowercase source ids", () => {
     expect(buildDiscoverySourceId("Greenhouse", "acme")).toBe("greenhouse:acme");
     expect(buildDiscoverySourceId("Breezy", "My-Co")).toBe("breezy:My-Co");
+  });
+
+  it("does not let Jev hold a cohort whose Wilson bound already cleared", () => {
+    const decision = mergeAdmissionDecision(
+      {
+        totalJobs: 306,
+        qualifiedReady: 122,
+        excluded: 184,
+        ambiguous: 0,
+        phRate: 122 / 306,
+        topCategories: ["engineering"],
+      },
+      { choice: "SHADOW", confidence: 0.91 },
+    );
+    expect(decision.verdict).toBe("ADMIT");
+  });
+
+  it("lets a confident Jev verdict publish an ambiguous cohort", () => {
+    const decision = mergeAdmissionDecision(
+      {
+        totalJobs: 40,
+        qualifiedReady: 4,
+        excluded: 36,
+        ambiguous: 0,
+        phRate: 0.1,
+        topCategories: ["support"],
+      },
+      { choice: "ADMIT", confidence: 0.8 },
+    );
+    expect(decision.verdict).toBe("ADMIT");
   });
 
   it("admits strong PH signal, shadows borderline, rejects weak signal", () => {

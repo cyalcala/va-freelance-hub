@@ -1,6 +1,22 @@
 # System Savepoint
 
-## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT: Executable cohort partition, unknown ground truth, and queue instrumentation (current)
+## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122: Mathematical publish gate, no human approval (current)
+
+Owner instruction: the 122 `greenhouse:canonical` qualified rows must not wait for a manual approval, and sourcing through publishing must run on rules plus AI judgment where the evidence is ambiguous. Start SHA `bdfba67d59fc51301d849d4d06142f077f51706c`.
+
+- **UNIT REFERENCE:** AUTO-PUBLISH-CANONICAL-122
+- **MODE:** AUTOMATION
+- **AUTHORIZATION:** OWNER_APPROVED. Hard rejects stay deterministic. L1 label unchanged.
+- **PROBLEM:** `lake:sync` excluded `auto_approved` tenants unless a person passed `--allow-auto-approved`. That held 122 geo-gated Canonical jobs.
+- **DECISION RULE:** Wilson 95% lower bound on the qualified rate. Canonical was 122/306, lower bound 34.5%, floor 20%. Jev cannot veto a cleared cohort. Jev may ADMIT, SHADOW, or REJECT only in the ambiguous band, and only at confidence ≥ 0.70. A PH rate under 5% is rejected even if Jev says admit. A family already over the 40% ceiling cannot receive more jobs. `--hold-auto-approved` is the kill switch.
+- **ACTION:** Published 122 rows to production D1. Wrangler executed 122 queries, `changed_db=true`, bookmark `000043b7-0000003e-000050f2-8dcb3d41ff39860175ed0fb294659966`. Lake rows marked `SYNCED_TO_D1`. Remote D1 rejected `BEGIN/COMMIT`, so the batch is now idempotent statements without a SQL transaction.
+- **MEASURED AFTER:** 1,026 active opportunities. `greenhouse:canonical` 122 (11.9%). Greenhouse family 123 (12.0%). `we-work-remotely` 333 (32.5%), down from 333/904 = 36.8% before this insert. The 25% single-source ceiling is still breached by We Work Remotely. This insert lowered that share.
+- **NOT FRESH FLOW:** The sampled Canonical posting date was 2026-08-05. These rows add active supply. They do not count as today's `FRESH_DISCOVERY`.
+- **AUTOMATION:** `.github/workflows/gha-lake-publish.yml` publishes hourly and probes up to 25 domains daily at 04:17 UTC. GitHub `TURSO_DATABASE_URL` and `TURSO_AUTH_TOKEN` were refreshed from the working local lake. Cloudflare secrets were already present.
+- **VERIFICATION:** Lake and policy tests passed (27/0 in the focused run). `audit:guardrails` passed before the batch-SQL fix; the fix is covered by `buildBatchSql` test.
+- **NEXT SINGLE ACTION:** Watch the first scheduled `gha-lake-publish` run and confirm it exits 0. Then let the daily 25-domain probe add the next cohort through the same gate.
+
+## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT: Executable cohort partition, unknown ground truth, and queue instrumentation (historical)
 
 Owner instruction on the Universal Steward Bootloader: "act on all of this, all approved and all proceed." The constitution's execution order put P1 (high-risk paper systems) and P2 (queue instrumentation) next. P0 had specified the cohort model in prose while Query 1 still labeled unknown dates `FRESH_DISCOVERY`, and Query 3B named a table that did not exist. Start SHA `744a53f4cc2b49fbc407899c9ca9e896c2f3596f` (clean, synchronized with `origin/main`).
 

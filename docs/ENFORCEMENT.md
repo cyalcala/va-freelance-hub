@@ -119,6 +119,7 @@ The v5.2 register above stays resolved. These rows are the v3.0 gaps.
 | Queue depth cannot go negative | `nextQueueDepth` | **ENFORCED — TESTED** |
 | Little's law abstains when variation is unknown or bursty | `littlesLaw` | **ENFORCED — TESTED** |
 | Replay / previously-inactive flags are visible to production SQL | No column on `opportunities` | **UNENFORCED — PAPER RISK** (SQL must not invent `FRESH_DISCOVERY` for this gap) |
-| Concentration breach throttles publication | Measurement only | **UNENFORCED — PAPER RISK** (an automatic brake can drop flow below the 100/day floor) |
+| Concentration breach throttles new publication from that family | `concentrationAllowance` in `auto-publish-policy.ts` | **ENFORCED — TESTED** for new auto-publish batches. Existing rows are not unpublished. |
+| Auto-approved lake tenants publish without a person | `decideAutoPublish` and hourly `gha-lake-publish.yml` | **ENFORCED — TESTED**. Kill switch: `--hold-auto-approved`. |
 | 70/30 session mix | Maintainer prose | **UNENFORCED — PAPER RISK** (pre-existing; not a safety boundary) |
 

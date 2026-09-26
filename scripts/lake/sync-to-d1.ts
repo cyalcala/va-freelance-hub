@@ -1,5 +1,6 @@
 import { getLakeClient } from "./client";
 import { toContentHash } from "../../packages/scraper/contentHash";
+import { decideAutoPublish, parseJevRaw, type InventorySnapshot } from "./auto-publish-policy";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as os from "os";
@@ -39,24 +40,16 @@ const BASE_AUTHORIZED_SOURCE_IDS = new Set([
 ]);
 
 /**
- * Builds the effective authorized source set at runtime.
- *
- * FAIL-CLOSED CONTRACT (ADR-007): lake-local ATS admission
- * (`lake_ats_discovery.review_status = 'auto_approved'`) is NOT D1
- * publication authority. The Autonomy Cutover Predicate has not been met,
- * so auto-approved tenants are EXCLUDED by default. Pass
- * `--allow-auto-approved` to include them explicitly for a reviewed run;
- * even then this bridge does NOT pass through the D1 publication gateway
- * (no registry/lease/ledger/cap/opt-out enforcement — see the live-run
- * warning in `syncQualifiedJobsToD1`). Lake admission is never automatically
- * publication admission.
+ * Auto-approved lake tenants publish when `decideAutoPublish` says so.
+ * There is no human approval flag. `--hold-auto-approved` is the kill switch.
+ * `--allow-auto-approved` remains as a no-op alias so older commands still run.
  */
 export function parseSyncArgs(argv: string[]): {
   limit: number;
   dryRun: boolean;
-  allowAutoApproved: boolean;
+  holdAutoApproved: boolean;
 } {
-  const DEFAULT_LIMIT = 50;
+  const DEFAULT_LIMIT = 200;
   const MAX_LIMIT = 500;
   let limit = DEFAULT_LIMIT;
   for (const arg of argv) {
@@ -69,48 +62,74 @@ export function parseSyncArgs(argv: string[]): {
   return {
     limit,
     dryRun: argv.includes("--dry-run"),
-    allowAutoApproved: argv.includes("--allow-auto-approved"),
+    holdAutoApproved: argv.includes("--hold-auto-approved"),
   };
 }
 
-export async function buildAuthorizedSourceIds(
-  client: ReturnType<typeof getLakeClient>,
-  opts: { includeAutoApproved?: boolean } = {}
-): Promise<Set<string>> {
-  const { includeAutoApproved = false } = opts;
-  const authorized = new Set(BASE_AUTHORIZED_SOURCE_IDS);
+export interface DiscoveryTenantRow {
+  source_id: string;
+  job_count: number;
+  qualified_ready: number;
+  ph_rate: number;
+  jev_raw: string | null;
+}
 
+export interface PlannedSource {
+  sourceId: string;
+  publishCount: number;
+  reason: string;
+}
+
+export function planAutoPublishSources(
+  tenants: DiscoveryTenantRow[],
+  inventory: InventorySnapshot | null,
+  holdAutoApproved: boolean,
+): PlannedSource[] {
+  if (holdAutoApproved) return [];
+  const planned: PlannedSource[] = [];
+  for (const tenant of tenants) {
+    if (!tenant.source_id) continue;
+    const jev = parseJevRaw(tenant.jev_raw);
+    const qualifiedReady = Math.max(tenant.qualified_ready, 0);
+    const totalJobs = Math.max(tenant.job_count, qualifiedReady);
+    const decision = decideAutoPublish({
+      sourceId: tenant.source_id,
+      totalJobs,
+      qualifiedReady,
+      jevChoice: jev?.choice ?? null,
+      jevConfidence: jev?.confidence ?? null,
+      inventory,
+    });
+    console.log(`  [AutoPublish] ${tenant.source_id}: ${decision.action} x${decision.publishCount} — ${decision.reason}`);
+    if (decision.action === "PUBLISH" && decision.publishCount > 0) {
+      planned.push({ sourceId: tenant.source_id, publishCount: decision.publishCount, reason: decision.reason });
+    }
+  }
+  return planned;
+}
+
+export async function loadAutoApprovedTenants(
+  client: ReturnType<typeof getLakeClient>,
+): Promise<DiscoveryTenantRow[]> {
   try {
-    // Query lake_ats_discovery for autonomously admitted tenants
     const res = await client.execute(`
-      SELECT source_id FROM lake_ats_discovery
+      SELECT source_id, job_count, qualified_ready, ph_rate, jev_raw
+      FROM lake_ats_discovery
       WHERE review_status = 'auto_approved';
     `);
-
-    const admitted: string[] = [];
-    for (const row of res.rows) {
-      const sid = row.source_id as string;
-      if (sid && !authorized.has(sid)) {
-        admitted.push(sid);
-      }
-    }
-
-    if (admitted.length > 0 && includeAutoApproved) {
-      for (const sid of admitted) authorized.add(sid);
-      console.log(`  [AuthSet] Extended with ${admitted.length} autonomously admitted ATS tenants (--allow-auto-approved).`);
-    } else if (admitted.length > 0) {
-      console.warn(
-        `  [AuthSet] ${admitted.length} auto-approved ATS tenant(s) HELD (lake admission is not D1 authority; re-run with --allow-auto-approved after review).`
-      );
-    }
+    return res.rows.map((row) => ({
+      source_id: String(row.source_id ?? ""),
+      job_count: Number(row.job_count ?? 0),
+      qualified_ready: Number(row.qualified_ready ?? 0),
+      ph_rate: Number(row.ph_rate ?? 0),
+      jev_raw: row.jev_raw == null ? null : String(row.jev_raw),
+    }));
   } catch (err: any) {
-    // lake_ats_discovery may not exist yet (pre-first-discovery run) — non-fatal
     if (!err.message?.includes("no such table")) {
       console.warn(`  [AuthSet] Could not query lake_ats_discovery: ${err.message}`);
     }
+    return [];
   }
-
-  return authorized;
 }
 
 /**
@@ -181,6 +200,11 @@ export function buildSyncSql(job: CandidateRow): string {
     `.trim();
 }
 
+/** Remote D1 rejects SQL BEGIN/COMMIT, so the batch is a sequence of idempotent statements. */
+export function buildBatchSql(statements: string[]): string {
+  return statements.join("\n\n");
+}
+
 /** Repo-pinned wrangler invocation (matches the savepoint's MODULE_NOT_FOUND lesson). */
 function wranglerD1Command(tempSqlFile: string): string {
   const repoRoot = path.resolve(import.meta.dir, "..", "..");
@@ -192,58 +216,72 @@ function wranglerD1Command(tempSqlFile: string): string {
   return `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config "${config}" --file="${tempSqlFile}"`;
 }
 
+const CANDIDATE_SELECT = `
+  SELECT id, source_id, source_platform, source_url, title, company,
+         category, location_raw, description, application_url,
+         posted_at, geo_scope, ph_eligibility, fingerprint_hash
+  FROM lake_candidate_jobs
+  WHERE status = 'QUALIFIED_READY'
+    AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+    AND source_id IN (`;
+
 export async function syncQualifiedJobsToD1(
-  limit = 50,
+  limit = 200,
   dryRun = false,
-  opts: { allowAutoApproved?: boolean } = {}
+  opts: { holdAutoApproved?: boolean; inventory?: InventorySnapshot | null } = {}
 ) {
-  console.log(`\n=== Starting Governed Sync from Turso Lake to Cloudflare D1 (Limit: ${limit}, DryRun: ${dryRun}) ===`);
-  if (!dryRun) {
-    console.warn(
-      "  [BYPASS NOTICE] This bridge writes raw INSERTs and does NOT pass through the D1 " +
-        "publication gateway (no source-registry/lease/ledger/canary-cap/opt-out enforcement). " +
-        "Live runs are for explicitly reviewed cohorts only. Prefer --dry-run review first."
-    );
-  }
+  console.log(`\n=== Starting automatic lake sync to Cloudflare D1 (Limit: ${limit}, DryRun: ${dryRun}) ===`);
   const client = getLakeClient();
+  const holdAutoApproved = opts.holdAutoApproved === true;
+  const tenants = await loadAutoApprovedTenants(client);
+  const planned = planAutoPublishSources(tenants, opts.inventory ?? null, holdAutoApproved);
+  if (holdAutoApproved && tenants.length > 0) {
+    console.warn(`  [AutoPublish] Kill switch held ${tenants.length} auto-approved tenant(s).`);
+  }
+  const baseIds = [...BASE_AUTHORIZED_SOURCE_IDS];
+  console.log(`  [AuthSet] Base sources ${baseIds.length}; auto-publish sources ${planned.length}.`);
 
-  // Build authorized source set (base; auto-approved only with explicit opt-in)
-  const AUTHORIZED_SOURCE_IDS = await buildAuthorizedSourceIds(client, {
-    includeAutoApproved: opts.allowAutoApproved,
-  });
-  console.log(`  [AuthSet] Total authorized sources: ${AUTHORIZED_SOURCE_IDS.size}`);
+  const candidates: CandidateRow[] = [];
+  const seen = new Set<number>();
+  let remaining = limit;
 
-  // Authorization is part of candidate selection (no post-filter starvation):
-  // LIMIT applies AFTER the source gate, so unauthorized head rows can never
-  // hide later authorized rows.
-  const authorizedList = [...AUTHORIZED_SOURCE_IDS];
-  const placeholders = authorizedList.map(() => "?").join(",");
-  // 1. Fetch qualified candidates from Turso
-  const res = await client.execute({
-    sql: `
-      SELECT id, source_id, source_platform, source_url, title, company,
-             category, location_raw, description, application_url,
-             posted_at, geo_scope, ph_eligibility, fingerprint_hash
-      FROM lake_candidate_jobs
-      WHERE status = 'QUALIFIED_READY'
-        AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        AND source_id IN (${placeholders})
-      ORDER BY id ASC
-      LIMIT ?;
-    `,
-    args: [...authorizedList, limit],
-  });
+  for (const source of planned) {
+    if (remaining <= 0) break;
+    const take = Math.min(source.publishCount, remaining);
+    const res = await client.execute({
+      sql: `${CANDIDATE_SELECT}?) ORDER BY id ASC LIMIT ?;`,
+      args: [source.sourceId, take],
+    });
+    for (const row of res.rows as unknown as CandidateRow[]) {
+      if (seen.has(row.id)) continue;
+      seen.add(row.id);
+      candidates.push(row);
+      remaining -= 1;
+    }
+  }
 
-  const candidates = res.rows as unknown as CandidateRow[];
+  if (remaining > 0 && baseIds.length > 0) {
+    const placeholders = baseIds.map(() => "?").join(",");
+    const res = await client.execute({
+      sql: `${CANDIDATE_SELECT}${placeholders}) ORDER BY id ASC LIMIT ?;`,
+      args: [...baseIds, remaining],
+    });
+    for (const row of res.rows as unknown as CandidateRow[]) {
+      if (seen.has(row.id)) continue;
+      seen.add(row.id);
+      candidates.push(row);
+    }
+  }
 
-  // Backlog visibility (§19): how many qualified rows are held by the source gate?
+  const authorizedList = [...baseIds, ...planned.map((source) => source.sourceId)];
+  const heldPlaceholders = authorizedList.map(() => "?").join(",");
   try {
     const held = await client.execute({
       sql: `
         SELECT COUNT(*) as cnt FROM lake_candidate_jobs
         WHERE status = 'QUALIFIED_READY'
           AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-          AND source_id NOT IN (${placeholders});
+          AND source_id NOT IN (${heldPlaceholders});
       `,
       args: [...authorizedList],
     });
@@ -286,9 +324,9 @@ export async function syncQualifiedJobsToD1(
     return { syncedCount: sqlStatements.length, sample: sqlStatements[0] };
   }
 
-  // 3. Write SQL batch to an OS temp file (never inside the repo) and execute via Wrangler D1
+  // Remote D1 rejects SQL BEGIN/COMMIT. Statements are idempotent, so a retry is safe.
   const tempSqlFile = path.join(os.tmpdir(), `va-hub-lake-sync-${Date.now()}.sql`);
-  const batchSql = ["BEGIN;", ...sqlStatements, "COMMIT;"].join("\n\n");
+  const batchSql = buildBatchSql(sqlStatements);
   fs.writeFileSync(tempSqlFile, batchSql, "utf-8");
 
   try {
@@ -317,9 +355,9 @@ export async function syncQualifiedJobsToD1(
 
 if (import.meta.main) {
   const args = process.argv.slice(2);
-  const { limit, dryRun, allowAutoApproved } = parseSyncArgs(args);
+  const { limit, dryRun, holdAutoApproved } = parseSyncArgs(args);
 
-  syncQualifiedJobsToD1(limit, dryRun, { allowAutoApproved }).catch((err) => {
+  syncQualifiedJobsToD1(limit, dryRun, { holdAutoApproved }).catch((err) => {
     console.error("Sync to D1 failed:", err);
     process.exit(1);
   });

@@ -1,5 +1,17 @@
 # Current resume pointer
 
+**Refreshed 2026-09-26 (~15:15Z, AUTO-PUBLISH-CANONICAL-122).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
+- The 122 `greenhouse:canonical` qualified jobs are on production D1. No human approval flag. Wilson lower bound was 34.5% against a 20% floor.
+- Live board after the insert: 1,026 active. Canonical is 11.9%. We Work Remotely fell from 36.8% to 32.5% and is still above the 25% source ceiling.
+- Hourly publish and a daily 25-domain probe are in `gha-lake-publish.yml`. Kill switch: `lake:sync --hold-auto-approved`.
+- These rows are active supply. August posting dates mean they are not today's fresh-discovery flow.
+
+NEXT: Watch the first scheduled `gha-lake-publish` run.
+
+---
+*Prior pointer preserved below.*
+
 **Refreshed 2026-09-26 (~14:50Z, P1-P2-METRIC-AND-QUEUE-ENFORCEMENT).**
 Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
 - P1: unknown posting dates are `OTHER_NON_FRESH`. An empty `adjudication_audit_samples` set is `UNKNOWN`, not a 0% error rate. Migration `0050` adds that table. `bun run audit:constitution` enforces the contract.

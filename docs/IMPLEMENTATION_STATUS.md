@@ -1,6 +1,13 @@
 # Implementation Status
 
-## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (current)
+## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (current)
+
+- **What this is**: Removed the manual `--allow-auto-approved` gate. Auto-approved lake tenants publish when the Wilson lower bound clears 20%, or when Jev returns a confident verdict in the ambiguous band. Hard rejects stay rejected. The Canonical cohort (122/306, lower bound 34.5%) was published to production D1.
+- **Measured result**: 1,026 active opportunities. Canonical 122 (11.9%). We Work Remotely 333 (32.5%), down from 36.8% immediately before the insert.
+- **Automation**: `gha-lake-publish.yml` runs the sync hourly and a 25-domain discovery daily.
+- **Autonomy**: L1 label unchanged. The publish decision is a deterministic bound plus a confidence-gated Jev choice. It is not an unearned L2 claim.
+
+## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (historical)
 
 - **What this is**: Turned two paper measurements into executable checks. Unknown source dates are `OTHER_NON_FRESH`. An empty ground-truth sample is `UNKNOWN` and cannot pass the false-PH or false-remote ceiling. Migration 0050 creates `adjudication_audit_samples`. Queue depth, stability, and Little's law live in `scripts/ci/queue-metrics.ts` and abstain when their assumptions are missing. CI runs `audit:constitution`.
 - **Verification**: 1,533/0 tests across 149 files; `audit:constitution`, `audit:parameters`, `audit:guardrails`, `audit:orchestrator`, and typecheck clean; D1 rehearsal 119/119 across 50 migrations.

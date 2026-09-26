@@ -1,6 +1,15 @@
 # AI Recovery Trail
 
-## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (current)
+## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (current)
+
+Published the held Canonical cohort without a human approval flag.
+
+- Wilson 95% lower bound on 122/306 qualified jobs was 34.5%, above the 20% floor.
+- Jev cannot veto that cleared result. Jev still decides the ambiguous band when confidence is at least 0.70. A rate under 5% is rejected anyway.
+- Production D1 accepted 122 idempotent upserts. Active board is 1,026. Canonical share 11.9%. We Work Remotely share fell from 36.8% to 32.5%.
+- Hourly publish workflow: `gha-lake-publish.yml`.
+
+## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (historical)
 
 Executed the steward bootloader against constitution priorities P1 and P2.
 

@@ -16,9 +16,9 @@
  *      - SHADOW → review_status = 'shadow_monitor'; store discovery only, no ingestion
  *      - REJECT → review_status = 'auto_rejected'; record evidence; skip ingestion
  *
- * Auto-approved tenants are HELD from D1 sync by default (lake admission is
- * not publication authority per ADR-007) and only included when sync-to-d1.ts
- * runs with explicit `--allow-auto-approved` — no code change needed.
+ * Auto-approved tenants are published by lake:sync with no human flag.
+ * The Wilson lower bound must clear the admit floor, or Jev must return a
+ * confident verdict in the ambiguous band. `--hold-auto-approved` stops it.
  *
  * Compliance:
  * - Only probes public, unauthenticated JSON endpoints.
@@ -34,6 +34,7 @@ import { markRawProcessed, storeRawObservation } from "./lake-shared";
 import { geoGate } from "../../packages/scraper/geoGate";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
 import { judgeViaJev } from "../../packages/scraper/jev-client";
+import { JEV_MIN_CONFIDENCE, wilsonLowerBound, PUBLISH_PH_RATE_FLOOR } from "./auto-publish-policy";
 
 // ── Admission thresholds (exported for unit tests) ───────────────────────────
 // Minimum number of live jobs a tenant must have to be considered
@@ -217,6 +218,44 @@ interface AdmissionDecision {
  * Pure deterministic threshold decision (no network). Exported for unit tests.
  * Used as the Jev-offline fallback so admission never blocks on model availability.
  */
+/**
+ * Jev chooses only when the Wilson bound has not cleared the admit floor.
+ * A cleared bound admits. A hard reject stays rejected. Neither waits for a person.
+ */
+export function mergeAdmissionDecision(
+  metrics: TenantMetrics,
+  jev: { choice: "ADMIT" | "SHADOW" | "REJECT"; confidence: number } | null,
+): AdmissionDecision {
+  const deterministic = decideAdmissionDeterministic(metrics);
+  if (deterministic.verdict === "REJECT") return deterministic;
+  const wilson = wilsonLowerBound(metrics.qualifiedReady, metrics.totalJobs);
+  if (wilson !== null && wilson >= PUBLISH_PH_RATE_FLOOR && deterministic.verdict === "ADMIT") {
+    return {
+      verdict: "ADMIT",
+      confidence: Math.max(deterministic.confidence, jev?.confidence ?? 0),
+      reason: `Wilson lower bound ${(wilson * 100).toFixed(1)}% clears ${PUBLISH_PH_RATE_FLOOR * 100}%. Jev cannot hold this cohort for a person.`,
+      jevRaw: jev ? `jev:${jev.choice}@${jev.confidence}` : undefined,
+    };
+  }
+  if (jev && jev.confidence >= JEV_MIN_CONFIDENCE) {
+    return {
+      verdict: jev.choice,
+      confidence: jev.confidence,
+      reason: `Jev ${jev.choice} at ${jev.confidence} executes the ambiguous band with no human gate.`,
+      jevRaw: `jev:${jev.choice}@${jev.confidence}`,
+    };
+  }
+  if (jev) {
+    return {
+      verdict: "SHADOW",
+      confidence: jev.confidence,
+      reason: `Jev confidence ${jev.confidence} is below ${JEV_MIN_CONFIDENCE} in the ambiguous band. Shadow, no human queue.`,
+      jevRaw: `jev:${jev.choice}@${jev.confidence}`,
+    };
+  }
+  return deterministic;
+}
+
 export function decideAdmissionDeterministic(metrics: TenantMetrics): AdmissionDecision {
   if (metrics.phRate >= AUTO_APPROVE_PH_RATE && metrics.totalJobs >= MIN_JOBS_TO_EVALUATE) {
     return {
@@ -257,10 +296,10 @@ async function decideAdmission(
     context: `ATS tenant admission for VA Freelance Hub lake. PH eligibility rate: ${(metrics.phRate * 100).toFixed(1)}%. Min auto-approve threshold: ${AUTO_APPROVE_PH_RATE * 100}%. Min shadow threshold: ${AUTO_REJECT_PH_RATE * 100}%. Advisory only — deterministic thresholds enforce.`,
     questions: {
       admission: {
-        instructions: `Choose ADMIT (approve as autonomous lake source), SHADOW (monitor only, do not sync to D1), or REJECT (insufficient PH signal) for ${family}/${tenantSlug} with PH rate ${(metrics.phRate * 100).toFixed(1)}% QUALIFIED_READY (${metrics.qualifiedReady}/${metrics.totalJobs}).`,
+        instructions: `Choose ADMIT (publish the qualified jobs on the next automatic sync, no human approval), SHADOW (do not publish yet), or REJECT for ${family}/${tenantSlug} with PH rate ${(metrics.phRate * 100).toFixed(1)}% QUALIFIED_READY (${metrics.qualifiedReady}/${metrics.totalJobs}). A Wilson lower bound already above the admit floor will publish even if you say SHADOW.`,
         criteria: {
-          ADMIT: `Approve ${family}/${tenantSlug} as autonomous lake source.`,
-          SHADOW: `Monitor ${family}/${tenantSlug} with shadow status — ingest but do not sync to D1 yet.`,
+          ADMIT: `Publish qualified ${family}/${tenantSlug} jobs automatically.`,
+          SHADOW: `Keep ${family}/${tenantSlug} unpublished until the evidence is clearer.`,
           REJECT: `Reject ${family}/${tenantSlug} — insufficient PH eligibility signal for VA-focused board.`,
         },
       },
@@ -269,17 +308,14 @@ async function decideAdmission(
   });
 
   const answer = result.ok ? result.answers?.admission : undefined;
-  if (answer && (answer.choice === "ADMIT" || answer.choice === "SHADOW" || answer.choice === "REJECT")) {
-    return {
-      verdict: answer.choice,
-      confidence: answer.confidence,
-      reason: `Jev 1.13 decision: ${answer.choice} | ph_rate=${(metrics.phRate * 100).toFixed(1)}%`,
-      jevRaw: `${result.model ?? "jev-1.13"}:${answer.choice}@${answer.confidence}`.slice(0, 500),
-    };
+  const jev = answer && (answer.choice === "ADMIT" || answer.choice === "SHADOW" || answer.choice === "REJECT")
+    ? { choice: answer.choice, confidence: answer.confidence }
+    : null;
+  const decision = mergeAdmissionDecision(metrics, jev);
+  if (jev && result.model) {
+    decision.jevRaw = `${result.model}:${jev.choice}@${jev.confidence}`.slice(0, 500);
   }
-
-  // Jev offline/unavailable/invalid — deterministic threshold (Jev non-blocking)
-  return decideAdmissionDeterministic(metrics);
+  return decision;
 }
 
 // ── Table setup (portable: source_id is a plain column computed in code) ─────
@@ -543,8 +579,8 @@ function printDiscoverySummary(stats: DiscoveryStats): void {
   console.log(`Jobs Ingested (QUALIFIED):     ${stats.jobsIngested}`);
   console.log(`Skipped (rate-limited host):   ${stats.skippedRateLimitedHost}`);
   console.log("-------------------------------------------------------");
-  console.log("Auto-approved tenants are HELD from D1 sync by default;");
-  console.log("include them only via lake:sync --allow-auto-approved after review.");
+  console.log("Auto-approved tenants publish on the next lake:sync when the Wilson bound clears.");
+  console.log("No separate human approval. --hold-auto-approved is the kill switch.");
   console.log("=======================================================\n");
 }
 
