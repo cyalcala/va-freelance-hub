@@ -263,9 +263,38 @@ export async function auditWorkflowDirectory(workflowDirectory = join(import.met
   return result;
 }
 
+export function inspectAutonomySavepointGate(
+  savepointText: string,
+  graduationsExist: boolean,
+  graduationFiles: string[] = []
+): GuardrailResult {
+  const errors: string[] = [];
+  const entries = savepointText.split(/\n##\s+/);
+  const currentEntry = entries[1] || "";
+  const match = currentEntry.match(/\b(?:Autonomy|autonomy|JOB_EVAL|JOB_FLOW)\b[^\n]*?\b(L[2-5])\b/);
+  if (match) {
+    const level = match[1];
+    if (!graduationsExist || graduationFiles.length === 0) {
+      errors.push(
+        `SYSTEM_SAVEPOINT.md: autonomy promotion claim ${level} requires an approved graduation package in docs/graduations/`
+      );
+    }
+  }
+  return { errors, warnings: [] };
+}
+
 export async function auditProductionRepository(rootDirectory = join(import.meta.dir, "../..")): Promise<GuardrailResult> {
   const workflowResult = await auditWorkflowDirectory(join(rootDirectory, ".github/workflows"));
   const packageResult = inspectRootPackageJson(await Bun.file(join(rootDirectory, "package.json")).text());
+  const savepointPath = join(rootDirectory, "docs/SYSTEM_SAVEPOINT.md");
+  const graduationsDir = join(rootDirectory, "docs/graduations");
+  const graduationsExist = existsSync(graduationsDir);
+  const gradFiles = graduationsExist
+    ? (await readdir(graduationsDir)).filter((f) => f.endsWith(".md"))
+    : [];
+  const savepointResult = existsSync(savepointPath)
+    ? inspectAutonomySavepointGate(await Bun.file(savepointPath).text(), graduationsExist, gradFiles)
+    : { errors: [], warnings: [] };
   const legacyResult = inspectLegacyPackageJson(
     await Bun.file(join(rootDirectory, "apps/web-nextjs-backup/package.json")).text(),
   );
@@ -312,7 +341,7 @@ export async function auditProductionRepository(rootDirectory = join(import.meta
   if (!existsSync(join(rootDirectory, "docs/decisions/DEP-01-dependency-exceptions.md"))) {
     errors.push("docs/decisions/DEP-01-dependency-exceptions.md: dependency exception tracker must exist");
   }
-  return mergeResults(workflowResult, packageResult, legacyResult, dbResult, webResult, robotsPolicyResult, { errors, warnings });
+  return mergeResults(workflowResult, packageResult, savepointResult, legacyResult, dbResult, webResult, robotsPolicyResult, { errors, warnings });
 }
 
 if (import.meta.main) {

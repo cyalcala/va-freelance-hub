@@ -14,6 +14,7 @@
     "test": "bun test packages/scraper packages/db apps/web/tests scripts/ci scripts/gha scripts/diagnostics scripts/lake workers/freshness-cron/src",
     "typecheck": "bunx tsc --noEmit -p apps/web/tsconfig.json",
     "audit:guardrails": "bun scripts/ci/check-production-guardrails.ts",
+    "audit:parameters": "bun scripts/ci/audit-parameters.ts",
     "verify": "bun run test && bun run typecheck && bun run build",
     "db:migrate": "bun run --cwd apps/web db:migrate",
     "lake:ingest": "bun run scripts/lake/ingest-to-lake.ts",

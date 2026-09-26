@@ -303,6 +303,10 @@ export const sourceRegistry = sqliteTable("source_registry", {
   // SP-23: nullable while dormant; a positive JavaScript-safe integer is
   // enforced by the canary-state migration trigger before public exposure.
   canaryMaxNewItemsPerTick: integer("canary_max_new_items_per_tick"),
+  riskTier: text("risk_tier", {
+    enum: ["tier_a", "tier_b", "tier_c"],
+  }),
+  shadowWindowDays: integer("shadow_window_days"),
   owner: text("owner"),
   lastDecision: text("last_decision"),
   lastDecisionAt: text("last_decision_at"),
@@ -321,6 +325,7 @@ export const sourceRegistry = sqliteTable("source_registry", {
   providerIdx: index("source_registry_provider_idx").on(table.providerId),
   complianceIdx: index("source_registry_compliance_idx").on(table.complianceState),
   operationalIdx: index("source_registry_operational_idx").on(table.operationalState),
+  riskTierIdx: index("source_registry_risk_tier_idx").on(table.riskTier),
 }));
 
 // ─── Opt-out / do-not-reingest registry (SP-05) ───────────────────────────────

@@ -1,6 +1,30 @@
 # System Savepoint
 
-## 2026-09-26 — CONSTITUTION-V5-2-SUITE: Operating Constitution v5.2 modular suite activated (current)
+## 2026-09-26 — PAPER-RISK-REMEDIATION-SUITE: CI parameter audit, D1 risk tiers migration 0048, gitleaks secret scanning, and autonomy label gate (current)
+
+Executed the scheduled paper risk remediations from CONSTITUTION.md, OPERATIONS.md, and ENFORCEMENT.md §7. Start SHA `ac3e75b7b901a052ff3780371a3e6f98725ae453` (clean, == origin/main).
+
+- **Technical Enforcements Implemented:**
+  - `CI-AUDIT-PARAMETERS-SCRIPT`: Implemented `scripts/ci/audit-parameters.ts` asserting 100% parity between `docs/ACCEPTED_PARAMETERS.yaml`, live TypeScript constants (`policy-resolver.ts`, `shadow-dispatcher.ts`, `candidate-shadow.ts`, `jev-client.ts`), and `docs/generated/PARAMETERS.md`. Added `bun run audit:parameters` script to `package.json` and 6 unit tests (`scripts/ci/audit-parameters.test.ts`).
+  - `D1-MIGRATION-0048-RISK-TIERS`: Implemented additive migration `packages/db/migrations/0048_source_registry_risk_tiers.sql` adding `risk_tier` and `shadow_window_days` columns to `source_registry` with index `source_registry_risk_tier_idx` and ADR-008 backfill. Updated `packages/db/schema.ts`. Fixed comment block execution in `rehearse-d1-migrations.ts` (now 106/106 assertions pass, 48/48 migrations verified on fresh and legacy databases).
+  - `CI-GITLEAKS-INTEGRATION`: Added `gitleaks/gitleaks-action@v2` secret scanning to `.github/workflows/ci-guardrail.yml`.
+  - `CI-AUTONOMY-LABEL-GATE`: Added `inspectAutonomySavepointGate` to `scripts/ci/check-production-guardrails.ts` asserting savepoints cannot claim autonomy levels > L1 without a formal graduation package in `docs/graduations/`. Added unit tests in `check-production-guardrails.test.ts` (16/16 pass).
+  - `docs/ENFORCEMENT.md`: Updated technical enforcement matrix and marked items 1, 2, 3, 4 resolved.
+- **Verification Evidence:**
+  - `bun test scripts/ci`: 25 pass / 0 fail across 3 test files.
+  - `bun test packages/db`: 54 pass / 0 fail across 11 test files.
+  - `bun run audit:parameters`: clean exit, 100% parity confirmed.
+  - `bun run audit:guardrails`: clean exit, all guardrails pass.
+  - `bun run scripts/ci/rehearse-d1-migrations.ts`: DB-01 REHEARSAL PASSED (106/106 assertions, 48 migrations).
+  - `bun run test`: 1,473 pass / 0 fail across 144 test files (+9 new assertions).
+  - `bun run typecheck`: clean, 0 errors (`bunx tsc --noEmit -p apps/web/tsconfig.json`).
+  - `bun run build`: Complete (server 32s, client 11s, exit 0).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 standing disclosure.
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged).
+- **Reality Level:** IMPLEMENTED & VERIFIED LOCALLY.
+- **NEXT**: Re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (bad-outcomes query first); implement `CI-SCRAPE-MODIFICATION-GUARD`.
+
+## 2026-09-26 — CONSTITUTION-V5-2-SUITE: Operating Constitution v5.2 modular suite activated (historical)
 
 Owner instruction "Proceed in this. Act in this. All approved." for the VA FREELANCE HUB — OPERATING CONSTITUTION v5.2 SUITE. Activated the modular, machine-auditable governance suite implementing the Embedded Correction Set (C1–C15) and Surgical Correction Addendum (C16–C20) across 8 core governance files. Start SHA `72709b153b3ada5916a7e6fefd40c3a8ec0f6bbd` (clean, == origin/main).
 

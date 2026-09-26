@@ -51,7 +51,7 @@ document_metadata:
 |---|---|---|---|---|
 | **L1 Advisory Autonomy Baseline** | Jev client called for advisory scoring; deterministic code decides | `packages/scraper/jev-client.ts`, `packages/scraper/shadow-verdict.ts` | **ENFORCED — TESTED** | Tested in `shadow-verdict.test.ts` |
 | **Deterministic Envelope Separation** | Hardcoded regex gates execute before AI layer is reached | `packages/scraper/geoGate.ts`, `packages/scraper/triage.ts` | **ENFORCED — TESTED** | Tested in `geoGate.test.ts` |
-| **Unearned Autonomy Promotion Gate** | CI check blocking manual L2+ labels in savepoint without graduation artifact | *None currently implemented in CI* | **UNENFORCED — PAPER RISK** | **Queue: CI-AUTONOMY-LABEL-GATE** to inspect `SYSTEM_SAVEPOINT.md` in `ci-guardrail.yml` |
+| **Unearned Autonomy Promotion Gate** | CI check blocking manual L2+ labels in savepoint without graduation artifact | `scripts/ci/check-production-guardrails.ts: inspectAutonomySavepointGate` | **ENFORCED — TESTED** | Tested in `check-production-guardrails.test.ts` |
 | **Scale-Aware Audit Retention** | Lake replay log records all decisions and reversals | `packages/db/migrations/0039_canary_transition_plane.sql: source_transition_events` | **ENFORCED — RUNTIME** | Tested in `verify-source-transition.test.ts` |
 
 ---
@@ -62,8 +62,8 @@ document_metadata:
 |---|---|---|---|---|
 | **ADR-008 Risk Tier Logic in Code** | Typed `RISK_TIER_POLICIES` (Tier A: 3d, Tier B: 7d, Tier C: 14d) | `packages/scraper/policy-resolver.ts: lines 94-119` | **ENFORCED — TESTED** | Tested in `policy-resolver.test.ts` |
 | **Canary Tick Cap Storage Column** | `canary_max_new_items_per_tick` column on `source_registry` | `packages/db/migrations/0039_canary_transition_plane.sql: line 16` | **ENFORCED — RUNTIME** | SQLite schema CHECK trigger |
-| **D1 Schema Columns for `risk_tier`** | `ALTER TABLE source_registry ADD COLUMN risk_tier TEXT` | *Not yet migrated into D1 schema* | **UNENFORCED — PAPER RISK** | **Queue: D1-MIGRATION-0048-RISK-TIERS** |
-| **D1 Schema Column for `shadow_window_days`** | `ALTER TABLE source_registry ADD COLUMN shadow_window_days INT` | *Not yet migrated into D1 schema* | **UNENFORCED — PAPER RISK** | **Queue: D1-MIGRATION-0048-RISK-TIERS** |
+| **D1 Schema Columns for `risk_tier`** | `ALTER TABLE source_registry ADD COLUMN risk_tier TEXT` | `packages/db/migrations/0048_source_registry_risk_tiers.sql` | **ENFORCED — RUNTIME** | Verified in `rehearse-d1-migrations.ts` |
+| **D1 Schema Column for `shadow_window_days`** | `ALTER TABLE source_registry ADD COLUMN shadow_window_days INT` | `packages/db/migrations/0048_source_registry_risk_tiers.sql` | **ENFORCED — RUNTIME** | Verified in `rehearse-d1-migrations.ts` |
 | **Initial Registry State Dormant** | SQLite trigger forcing new rows to `candidate`, `paused`, or `retired` | `packages/db/migrations/0039_canary_transition_plane.sql: lines 25-31` | **ENFORCED — RUNTIME** | D1 schema trigger aborts on initial active |
 
 ---
@@ -74,10 +74,10 @@ document_metadata:
 |---|---|---|---|---|
 | **Multi-Agent Concurrency Leases** | Atomic lease block in `SYSTEM_SAVEPOINT.md` | Preflight inspection in `OPERATIONS.md §2` | **ENFORCED — RUNTIME** | Preflight check by maintainer agent |
 | **Overlapping File Claims Halt** | `STOP — DIRTY OVERLAP` on uncommitted or foreign work | Git preflight in `OPERATIONS.md §3` | **ENFORCED — RUNTIME** | Checked via `git status -sb` |
-| **Automated Parameter Parity Check** | `bun run audit:parameters` asserting parity between YAML and code | *Script not yet created in scripts/ci/* | **UNENFORCED — PAPER RISK** | **Queue: CI-AUDIT-PARAMETERS-SCRIPT** |
-| **Automated Secret Scanning** | Pre-commit and CI `gitleaks` scanning for tokens | *Not configured in .github/workflows* | **UNENFORCED — PAPER RISK** | **Queue: CI-GITLEAKS-INTEGRATION** |
+| **Automated Parameter Parity Check** | `bun run audit:parameters` asserting parity between YAML and code | `scripts/ci/audit-parameters.ts` | **ENFORCED — TESTED** | Tested in `audit-parameters.test.ts` & CI |
+| **Automated Secret Scanning** | Pre-commit and CI `gitleaks` scanning for tokens | `.github/workflows/ci-guardrail.yml: gitleaks-action` | **ENFORCED — CI** | Configured in CI workflow |
 | **Operational Time Budget (70/30 Rule)** | Session ledger audit query asserting $\ge 70\%$ operational | Checkpoint audit block in `SYSTEM_SAVEPOINT.md` | **ENFORCED — RUNTIME** | Maintainer session ledger check |
-| **30-Day DB Restore Drill** | Rehearsal script applying all 47 migrations to local SQLite | `scripts/ci/rehearse-d1-migrations.ts` | **ENFORCED — TESTED** | Executed in CI and locally |
+| **30-Day DB Restore Drill** | Rehearsal script applying all 48 migrations to local SQLite | `scripts/ci/rehearse-d1-migrations.ts` | **ENFORCED — TESTED** | Executed in CI and locally (106 assertions pass) |
 
 ---
 
@@ -98,8 +98,8 @@ document_metadata:
 
 All items tagged **`UNENFORCED — PAPER RISK`** are scheduled for implementation:
 
-1. **`CI-AUDIT-PARAMETERS-SCRIPT`**: Implement `scripts/ci/audit-parameters.ts` and add `bun run audit:parameters` to `package.json` and `ci-guardrail.yml`.
-2. **`CI-GITLEAKS-INTEGRATION`**: Add `gitleaks-action` step to `.github/workflows/ci-guardrail.yml`.
-3. **`D1-MIGRATION-0048-RISK-TIERS`**: Add `risk_tier`, `shadow_window_days`, and `evidence_lease_expires_at` columns to `source_registry`.
-4. **`CI-AUTONOMY-LABEL-GATE`**: Add regex check in `check-production-guardrails.ts` asserting savepoint cannot claim `JOB_EVAL > L1` or `JOB_FLOW > L1` without a matching file in `docs/graduations/`.
+1. **`CI-AUDIT-PARAMETERS-SCRIPT`**: [RESOLVED] Implemented `scripts/ci/audit-parameters.ts`, added `bun run audit:parameters` to `package.json`, unit tested (`audit-parameters.test.ts`), and integrated into `ci-guardrail.yml`.
+2. **`CI-GITLEAKS-INTEGRATION`**: [RESOLVED] Added `gitleaks-action@v2` step to `.github/workflows/ci-guardrail.yml`.
+3. **`D1-MIGRATION-0048-RISK-TIERS`**: [RESOLVED] Migration `0048_source_registry_risk_tiers.sql` applied, schema updated with index `source_registry_risk_tier_idx`, and verified via `rehearse-d1-migrations.ts` (106/106 assertions pass).
+4. **`CI-AUTONOMY-LABEL-GATE`**: [RESOLVED] Added `inspectAutonomySavepointGate` to `check-production-guardrails.ts` and unit tested (`check-production-guardrails.test.ts`).
 5. **`CI-SCRAPE-MODIFICATION-GUARD`**: Add CI check warning when `apps/web/src/pages/api/cron/scrape.ts` is modified in a source expansion unit.

@@ -5,6 +5,7 @@ import {
   inspectRobotsEnforcementPolicy,
   inspectRootPackageJson,
   inspectWorkflowText,
+  inspectAutonomySavepointGate,
 } from "./check-production-guardrails";
 
 test("rejects mutable runtime, install, and CLI inputs", () => {
@@ -227,3 +228,38 @@ test("pins robots enforcement to the reviewed six-source rollout", () => {
     "apps/web/src/pages/api/cron/scrape.ts: source-scoped robots enforce set is required",
   );
 });
+
+test("inspectAutonomySavepointGate allows L1 autonomy baseline", () => {
+  const savepoint = `
+# System Savepoint
+
+## 2026-09-26 — CURRENT-UNIT
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged).
+`;
+  const result = inspectAutonomySavepointGate(savepoint, false, []);
+  expect(result.errors).toEqual([]);
+});
+
+test("inspectAutonomySavepointGate blocks unearned L2+ autonomy promotion without graduation package", () => {
+  const savepoint = `
+# System Savepoint
+
+## 2026-09-26 — UNAPPROVED-PROMOTION
+- **Autonomy:** L2 DECIDE_LOW_STAKES for Job Evaluation.
+`;
+  const result = inspectAutonomySavepointGate(savepoint, false, []);
+  expect(result.errors.length).toBeGreaterThan(0);
+  expect(result.errors[0]).toContain("requires an approved graduation package in docs/graduations/");
+});
+
+test("inspectAutonomySavepointGate accepts L2+ when graduation package exists", () => {
+  const savepoint = `
+# System Savepoint
+
+## 2026-09-26 — APPROVED-PROMOTION
+- **Autonomy:** L2 DECIDE_LOW_STAKES for Job Evaluation.
+`;
+  const result = inspectAutonomySavepointGate(savepoint, true, ["PACKAGE.md"]);
+  expect(result.errors).toEqual([]);
+});
+

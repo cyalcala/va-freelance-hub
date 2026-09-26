@@ -52,10 +52,14 @@ function executeMigration(db: Database, sql: string): MigrationResult[] {
     for (const stmt of statements) {
       const trimmed = stmt.trim();
       if (!trimmed) continue;
-      // Skip comment-only blocks (starting with /* or --)
-      if (trimmed.startsWith("/*") || trimmed.startsWith("--")) {
-        continue;
-      }
+      // Strip comments to see if there is executable SQL
+      const stripped = trimmed
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .split("\n")
+        .filter((line) => !line.trim().startsWith("--"))
+        .join("\n")
+        .trim();
+      if (!stripped) continue;
 
       try {
         db.exec(trimmed);
@@ -192,6 +196,22 @@ function assertSchema(db: Database): SchemaAssertion[] {
       details: `Actual default: ${nicheDefault}`,
     });
 
+    // 4b. source_registry columns (including ADR-008 risk_tier and shadow_window_days)
+    const regCols = db.query("PRAGMA table_info(source_registry)").all() as Array<{ name: string; notnull: number; dflt_value: any }>;
+    const regColNames = new Set(regCols.map((c) => c.name));
+    const requiredRegCols = [
+      "source_id", "provider_id", "display_name", "endpoint_url",
+      "compliance_state", "operational_state", "canary_max_new_items_per_tick",
+      "risk_tier", "shadow_window_days",
+    ];
+    for (const col of requiredRegCols) {
+      assertions.push({
+        name: `source_registry.${col} exists`,
+        passed: regColNames.has(col),
+        details: regColNames.has(col) ? undefined : `Missing column: ${col}`,
+      });
+    }
+
   } catch (error) {
     assertions.push({
       name: "Column inspection",
@@ -215,6 +235,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
     "opportunities_source_url_unique", "content_digests_video_id_unique",
     "provider_profiles_family_idx", "source_registry_provider_idx",
     "source_registry_compliance_idx", "source_registry_operational_idx",
+    "source_registry_risk_tier_idx",
     "source_publication_ledger_tick_idx",
   ];
   for (const idx of requiredIndexes) {
