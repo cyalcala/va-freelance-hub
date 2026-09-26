@@ -9,8 +9,8 @@ The 122 Canonical jobs are on the board, but `greenhouse:canonical` was not in `
 - **PROBLEM:** A published source was not on the shadow clock, so new Canonical jobs could not be observed or fetched.
 - **PARAMETER:** `shadow_max_bytes` 524288 → 1048576. Owner-approved because the measured public board cannot enter shadow at 512 KiB. Code, `ACCEPTED_PARAMETERS.yaml`, and `PARAMETERS.md` match. The cap is still finite.
 - **AUTOMATION:** `scripts/lake/enroll-published-sources.ts` asks production to admit each auto-approved source and then promote it to canary. Promotion stays blocked until 8 distinct healthy shadow days spanning 7 days. A 409 is waiting, not a human task. `gha-lake-publish.yml` runs this after publish.
-- **NOT DONE YET:** Production still has the old budget until this commit deploys. Canonical is not in the registry until the post-deploy admit call succeeds.
-- **NEXT SINGLE ACTION:** After deploy, run `bun run lake:enroll` and confirm `greenhouse:canonical` is `shadow`.
+- **ENROLLED:** After deploy `01ac5a5` / CI `36251984243`, `bun run lake:enroll` returned admit 200 `shadow` / `HEALTHY_WITH_RESULTS`, and promote 409 because the 8-day shadow window has not elapsed.
+- **NEXT SINGLE ACTION:** Let the hourly shadow clock collect 8 healthy Canonical days. The same enroll step will promote it to canary when the gateway allows. Do not force canary before that.
 
 ## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122: Mathematical publish gate, no human approval (historical)
 

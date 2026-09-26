@@ -3,7 +3,7 @@
 ## 2026-09-26 — CANONICAL-SHADOW-CLOCK (current)
 
 - **What this is**: Raised `shadow_max_bytes` from 524288 to 1048576 so `greenhouse:canonical` can be probed. A local probe of the live board returned `HEALTHY_WITH_RESULTS` at 568371 bytes. Added `lake:enroll`, which admits auto-approved sources and requests canary without a person. The promotion gateway still enforces the 8-day shadow window.
-- **Deployment**: Production admit is pending this commit's deploy.
+- **Deployment**: CI `36251984243` deployed the 1 MiB budget. Production admit then returned `shadow` for `greenhouse:canonical`. Canary is waiting on the 8-day window.
 
 ## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (historical)
 

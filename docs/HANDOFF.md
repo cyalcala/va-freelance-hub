@@ -6,7 +6,7 @@ Canonical is on the board and was missing from the shadow clock because its boar
 
 - **Enroll:** `bun run lake:enroll` after this commit is deployed. Hourly `gha-lake-publish.yml` does the same.
 - **Canary:** still requires 8 distinct healthy shadow days across 7 days. The enroll step records a 409 as waiting.
-- **When the owner resumes:** Confirm `source_registry` has `greenhouse:canonical` in `shadow`.
+- **Confirmed:** admit returned `shadow` / `HEALTHY_WITH_RESULTS`. Canary is waiting on 8 healthy shadow days.
 
 ## 2026-09-26 — AUTO-PUBLISH-CANONICAL-122 (historical)
 
