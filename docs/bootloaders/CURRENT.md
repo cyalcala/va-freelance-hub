@@ -1,5 +1,17 @@
 # Current resume pointer
 
+**Refreshed 2026-09-26 (~14:50Z, P1-P2-METRIC-AND-QUEUE-ENFORCEMENT).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
+- P1: unknown posting dates are `OTHER_NON_FRESH`. An empty `adjudication_audit_samples` set is `UNKNOWN`, not a 0% error rate. Migration `0050` adds that table. `bun run audit:constitution` enforces the contract.
+- P2: `scripts/ci/queue-metrics.ts` implements depth evolution, residence percentiles, stability (`service > arrival`), and Little's law only when interarrival CV is known and `<= 1`.
+- Not done: no `greenhouse:canonical` D1 sync. `greenhouse:remotecom` was still inside its shadow window at `2026-09-26T14:47:58Z` (gate `2026-09-26T18:20:56Z`). Flow gap was not re-measured.
+- Residuals named in [`../ENFORCEMENT.md`](../ENFORCEMENT.md) §8: no replay column, no concentration publication brake, 70/30 still prose.
+
+NEXT: Adjudicate at least 50 published opportunities into `adjudication_audit_samples` and run `measureGroundTruth` before any canonical sync or remotecom promotion.
+
+---
+*Prior pointer preserved below.*
+
 **Refreshed 2026-09-26 (~13:15Z, MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0; Master Operating Constitution v3.0 codified, P0 metric semantics resolved).**
 Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
 - Master Operating Constitution v3.0 codified in [`../MASTER_OPERATING_CONSTITUTION.md`](../MASTER_OPERATING_CONSTITUTION.md) per owner approval ("Proceed in this. Act in all of this. All approved.").

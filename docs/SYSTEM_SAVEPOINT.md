@@ -1,6 +1,51 @@
 # System Savepoint
 
-## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (current)
+## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT: Executable cohort partition, unknown ground truth, and queue instrumentation (current)
+
+Owner instruction on the Universal Steward Bootloader: "act on all of this, all approved and all proceed." The constitution's execution order put P1 (high-risk paper systems) and P2 (queue instrumentation) next. P0 had specified the cohort model in prose while Query 1 still labeled unknown dates `FRESH_DISCOVERY`, and Query 3B named a table that did not exist. Start SHA `744a53f4cc2b49fbc407899c9ca9e896c2f3596f` (clean, synchronized with `origin/main`).
+
+- **Unified Unit Contract:**
+  - **UNIT REFERENCE:** P1-P2-METRIC-AND-QUEUE-ENFORCEMENT
+  - **MODE:** HARDENING
+  - **CATEGORY:** PAPER-SYSTEM REMEDIATION AND QUEUE INSTRUMENTATION
+  - **AUTHORIZATION:** OWNER_APPROVED (steward bootloader: all approved, proceed)
+  - **START SHA:** `744a53f4cc2b49fbc407899c9ca9e896c2f3596f`
+  - **PROBLEM:** Two high-risk measurements could certify success without evidence. Unknown posting dates fell through to fresh supply. An empty adjudication set could be read as a 0% false-PH rate. Queue formulas were names only.
+  - **CURRENT BOTTLENECK:** Recurring qualified flow remains about 33.43 net-new jobs/day against the 100/day floor (prior 7-day count, not re-measured as `FRESH_DISCOVERY` this session). That gap was not attacked by publishing the 122 held `greenhouse:canonical` rows.
+  - **HYPOTHESIS:** Making the cohort rule, the empty-sample rule, and the queue assumptions executable stops those false certifications without changing publication behavior.
+  - **BASELINE:** Query 1 `ELSE 'FRESH_DISCOVERY'`; no `adjudication_audit_samples` table; queue depth and Little's law not implemented. Prior active inventory 895 was not re-queried.
+  - **PRIMARY METRIC:** `audit:constitution` passes, and an empty ground-truth sample returns `UNKNOWN` rather than a passing ceiling.
+  - **GUARDRAIL METRICS:** No publication-path change. No D1 write in this session. `greenhouse:canonical` stays held. `greenhouse:remotecom` stays shadow because `2026-09-26T18:20:56Z` had not arrived at measurement time `2026-09-26T14:47:58Z`.
+  - **OWNED FILES:** `scripts/ci/constitution-metrics.ts`, `scripts/ci/queue-metrics.ts`, `scripts/ci/audit-constitution.ts`, their tests, migration `0050`, `packages/db/schema.ts`, `docs/METRICS.md`, `docs/ENFORCEMENT.md`, rehearsal assertions, CI step.
+  - **EXPLICIT EXCLUSIONS:** No live lake sync. No canary promotion. No automatic concentration brake. No replay-flag column on `opportunities`.
+  - **SMALLEST REVERSIBLE SLICE:** Additive classifier, queue functions, empty adjudication table, and a CI audit. Rollback is revert.
+  - **NARROW TEST:** 27/0 new tests; `audit:constitution` clean; rehearsal 119/119 on fresh and legacy databases, 50 migrations.
+  - **FULL VERIFICATION:** `bun run test` 1,533 pass / 0 fail across 149 files. `audit:guardrails`, `audit:parameters` (100% parity), `audit:orchestrator`, and `typecheck` clean. Astro build not re-run locally; Sovereign CI builds on push.
+  - **DECISION:** DONE for this slice. Residuals stay paper risks in `docs/ENFORCEMENT.md` §8.
+
+- **Session Closeout Contract:**
+  - **CURRENT BOTTLENECK:** Fresh qualified flow is still short of 100/day. The quality rate that would justify adding supply is now `UNKNOWN` (n = 0), which is the honest state.
+  - **REALITY CHANGES:** Unknown dates classify as `OTHER_NON_FRESH`. Empty adjudication cannot pass a quality ceiling. Migration 0050 creates `adjudication_audit_samples`. Queue depth clamps at zero. Little's law abstains when interarrival variation is unknown or above the provisional CV bound of 1. Equal arrival and service is `UNSTABLE`.
+  - **HYPOTHESIS:** SURVIVED for the false-certification claim. Not a test of the flow gap.
+  - **ACTION:** Implemented the executable rules and the CI gate `audit:constitution`.
+  - **STATE:** IMPLEMENTED. The empty table reaches production D1 only when CI applies migrations. It changes no served jobs.
+  - **PRIMARY METRIC:** PASSED.
+  - **GUARDRAILS:** PASS.
+  - **COUNTERFACTUAL:** Without the classifier change, a null `source_posted_at` remained eligible to count as fresh daily flow.
+  - **FALSIFICATION:** SURVIVED the local tests. A production SQL run of Query 1 was not executed.
+  - **ROLLBACK:** READY (revert the commit). The new table is empty and unused by the publication gateway.
+  - **KILL SWITCH:** NOT APPLICABLE.
+  - **NEW EVIDENCE:** The prior Query 1 `ELSE` branch contradicted the five-cohort prose. Family share above 40% is detectable by `concentrationReport` and does not throttle ingestion.
+  - **NEGATIVE EVIDENCE:** Live queue depths were not measured. Promoting `greenhouse:canonical` or `greenhouse:remotecom` was rejected for this session.
+  - **NEW PAPER RISKS:** Replay/previously-inactive flags still have no column. Concentration measurement does not throttle publication. The 70/30 session rule remains prose. `LITTLE_LAW_CV_MAX = 1` is provisional, not an accepted parameter.
+  - **PARAMETER CHANGES:** None.
+  - **NEXT SINGLE ACTION:** Adjudicate at least 50 published opportunities into `adjudication_audit_samples` and run `measureGroundTruth` before any D1 sync of `greenhouse:canonical` or any `greenhouse:remotecom` promotion.
+
+- **Autonomy:** L1 ADVISE both domains (unchanged).
+- **Reality Level:** IMPLEMENTED and verified locally. Production migration is pending the push.
+- **Mathematical assumptions:** Cohort age uses elapsed milliseconds in TypeScript and `julianday` in SQL; tests stay away from the seven-day boundary. Little's law is withheld unless CV is known and `<= 1`. Stability requires service rate strictly greater than arrival rate.
+
+## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (historical)
 
 Owner instruction "Proceed in this. Act in all of this. All approved." for the VA FREELANCE HUB — MASTER OPERATING CONSTITUTION v3.0 (Mathematical Reliability, Adaptive Control, Scientific Validation, and Evidence-Governed Autonomy). Formally codified the approved constitution in `docs/MASTER_OPERATING_CONSTITUTION.md`, resolved P0 (Metric Semantic Correctness) under Part VIII, Part IX, and Part X in `docs/METRICS.md` with mutually exclusive cohort partitioning and decoupled ground-truth adjudication specifications, executed the Part V Current State Audit across all 25 telemetry dimensions in `docs/architecture/CURRENT_STATE.md`, and updated normative pointers across `CONSTITUTION.md` and `docs/bootloaders/CURRENT.md`. Start SHA `71d7dd3d82151c558d99fdd6141e6365d1a63650` (clean, synchronized with `origin/main`).
 

@@ -104,3 +104,21 @@ All items tagged **`UNENFORCED — PAPER RISK`** have been systematically remedi
 4. **`CI-AUTONOMY-LABEL-GATE`**: [RESOLVED] Added `inspectAutonomySavepointGate` to `check-production-guardrails.ts` and unit tested (`check-production-guardrails.test.ts`).
 5. **`CI-SCRAPE-MODIFICATION-GUARD`**: [RESOLVED] Implemented `scripts/ci/check-orchestrator-modifications.ts`, created `docs/exceptions/README.md` template, added `bun run audit:orchestrator` to `package.json`, unit tested (`check-orchestrator-modifications.test.ts`), and integrated into `ci-guardrail.yml` and `check-production-guardrails.ts`.
 
+---
+
+## 8. MOC v3.0 PAPER RISKS (P1 / P2)
+
+The v5.2 register above stays resolved. These rows are the v3.0 gaps.
+
+| Policy | Enforcement | Status |
+|---|---|---|
+| Unknown source dates are not fresh supply | `classifyCreationCohort` and Query 1 `ELSE 'OTHER_NON_FRESH'` | **ENFORCED — TESTED** (`constitution-metrics.test.ts`, `audit:constitution`) |
+| Empty ground-truth sample is not a 0% error rate | `measureGroundTruth` plus Query 3B `measurement_status` | **ENFORCED — TESTED** |
+| Adjudication rows are a real table, separate from classifier output | Migration `0050_adjudication_audit_samples.sql` | **ENFORCED — SCHEMA** (applied on the next production migration) |
+| Accepted concentration and quality ceilings match the executable constants | `auditPaperSystems` against `docs/ACCEPTED_PARAMETERS.yaml` | **ENFORCED — TESTED** |
+| Queue depth cannot go negative | `nextQueueDepth` | **ENFORCED — TESTED** |
+| Little's law abstains when variation is unknown or bursty | `littlesLaw` | **ENFORCED — TESTED** |
+| Replay / previously-inactive flags are visible to production SQL | No column on `opportunities` | **UNENFORCED — PAPER RISK** (SQL must not invent `FRESH_DISCOVERY` for this gap) |
+| Concentration breach throttles publication | Measurement only | **UNENFORCED — PAPER RISK** (an automatic brake can drop flow below the 100/day floor) |
+| 70/30 session mix | Maintainer prose | **UNENFORCED — PAPER RISK** (pre-existing; not a safety boundary) |
+

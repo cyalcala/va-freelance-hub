@@ -50,6 +50,9 @@ jobs:
       - name: Guard orchestrator modifications
         run: bun run audit:orchestrator
 
+      - name: Audit constitution metric and queue enforcement
+        run: bun run audit:constitution
+
       - name: Run unit tests
         run: bun run test
 

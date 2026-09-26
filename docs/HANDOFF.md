@@ -1,6 +1,16 @@
 # Handoff
 
-## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (current)
+## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (current)
+
+The steward bootloader was executed against the constitution's next priorities, not against a live source promotion.
+
+- **What changed:** `scripts/ci/constitution-metrics.ts` classifies the five cohorts and refuses to treat an empty adjudication sample as a passing quality rate. Query 1 in `docs/METRICS.md` no longer uses `ELSE 'FRESH_DISCOVERY'`. Migration `0050_adjudication_audit_samples.sql` adds the ground-truth table. `scripts/ci/queue-metrics.ts` instruments depth, residence, stability, and Little's law. `bun run audit:constitution` is on the Sovereign CI Guardrail.
+- **Verification:** 1,533/0 tests across 149 files. Parameter parity, guardrails, orchestrator audit, and typecheck clean. Migration rehearsal 119/119, 50 migrations. Build not re-run locally.
+- **Held back:** `greenhouse:canonical` was not synced to D1. `greenhouse:remotecom` was not promoted. At `2026-09-26T14:47:58Z` the shadow window still ran until `2026-09-26T18:20:56Z`.
+- **When the owner resumes:** Adjudicate at least 50 published jobs into `adjudication_audit_samples` before widening publication. After `2026-09-26T18:20:56Z`, a separate bad-outcomes query is still required before any remotecom decision.
+- **Autonomy:** L1 ADVISE, unchanged.
+
+## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (historical)
 
 Scaled upstream supply into the Turso Data Lake from `QUALIFIED_READY = 0` to **122** via the OpenJobs `companies_v2.json` dataset (12,144 companies, 7,007 with ATS links). Full telemetry in `docs/FEDERATED_ACQUISITION_MATRIX.md`; baton in `docs/SYSTEM_SAVEPOINT.md` (top entry).
 

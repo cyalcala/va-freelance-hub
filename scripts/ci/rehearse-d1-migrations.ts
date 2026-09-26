@@ -138,7 +138,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
   const tables = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'd1_%'").all() as Array<{ name: string }>;
   const tableNames = new Set(tables.map((t) => t.name));
 
-  const requiredTables = ["opportunities", "va_directory", "content_digests", "source_fetch_state", "source_fetch_events", "robots_cache", "opportunities_fts", "provider_profiles", "source_registry", "source_publication_ledger"];
+  const requiredTables = ["opportunities", "va_directory", "content_digests", "source_fetch_state", "source_fetch_events", "robots_cache", "opportunities_fts", "provider_profiles", "source_registry", "source_publication_ledger", "adjudication_audit_samples"];
   for (const table of requiredTables) {
     assertions.push({
       name: `Table ${table} exists`,
@@ -220,6 +220,38 @@ function assertSchema(db: Database): SchemaAssertion[] {
       details: nullTierRows.c === 0 ? undefined : `${nullTierRows.c} rows have NULL risk_tier`,
     });
 
+    const auditCols = db.query("PRAGMA table_info(adjudication_audit_samples)").all() as Array<{ name: string }>;
+    const auditColNames = new Set(auditCols.map((column) => column.name));
+    for (const col of [
+      "sampled_at", "opportunity_id", "source_id", "system_prediction",
+      "ground_truth_verdict", "adjudicator", "evidence_note", "sample_window_days",
+    ]) {
+      assertions.push({
+        name: `adjudication_audit_samples.${col} exists`,
+        passed: auditColNames.has(col),
+        details: auditColNames.has(col) ? undefined : `Missing column: ${col}`,
+      });
+    }
+    const emptyAudit = db.query("SELECT COUNT(*) as c FROM adjudication_audit_samples").get() as { c: number };
+    assertions.push({
+      name: "adjudication_audit_samples starts empty",
+      passed: emptyAudit.c === 0,
+      details: emptyAudit.c === 0 ? undefined : `${emptyAudit.c} unexpected seed rows`,
+    });
+    try {
+      db.exec("INSERT INTO adjudication_audit_samples (sampled_at, system_prediction, ground_truth_verdict, adjudicator) VALUES ('2026-09-26T00:00:00Z', 'eligible', 'ineligible', '')");
+      assertions.push({
+        name: "adjudication_audit_samples rejects an empty adjudicator",
+        passed: false,
+        details: "empty adjudicator insert succeeded",
+      });
+    } catch {
+      assertions.push({
+        name: "adjudication_audit_samples rejects an empty adjudicator",
+        passed: true,
+      });
+    }
+
   } catch (error) {
     assertions.push({
       name: "Column inspection",
@@ -245,6 +277,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
     "source_registry_compliance_idx", "source_registry_operational_idx",
     "source_registry_risk_tier_idx",
     "source_publication_ledger_tick_idx",
+    "adjudication_audit_samples_window_idx",
   ];
   for (const idx of requiredIndexes) {
     assertions.push({

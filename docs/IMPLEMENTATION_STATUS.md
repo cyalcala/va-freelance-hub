@@ -1,6 +1,13 @@
 # Implementation Status
 
-## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (current)
+## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (current)
+
+- **What this is**: Turned two paper measurements into executable checks. Unknown source dates are `OTHER_NON_FRESH`. An empty ground-truth sample is `UNKNOWN` and cannot pass the false-PH or false-remote ceiling. Migration 0050 creates `adjudication_audit_samples`. Queue depth, stability, and Little's law live in `scripts/ci/queue-metrics.ts` and abstain when their assumptions are missing. CI runs `audit:constitution`.
+- **Verification**: 1,533/0 tests across 149 files; `audit:constitution`, `audit:parameters`, `audit:guardrails`, `audit:orchestrator`, and typecheck clean; D1 rehearsal 119/119 across 50 migrations.
+- **Autonomy**: L1 ADVISE both domains, unchanged. No publication behavior change. No canonical sync. No remotecom promotion.
+- **Deployment**: Commit and production migration apply follow this documentation.
+
+## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (historical)
 
 - **What this is**: Formally codified the approved Master Operating Constitution v3.0 in `docs/MASTER_OPERATING_CONSTITUTION.md` per owner approval ("Proceed in this. Act in all of this. All approved."). Implemented P0 (Metric Semantic Correctness) in `docs/METRICS.md` establishing the mutually exclusive cohort partition model (`FRESH_DISCOVERY`, `BACKLOG_IMPORT`, `REACTIVATION`, `REPLAY_RECOVERY`, `OTHER_NON_FRESH`), decoupled classifier output from ground-truth adjudication quality rates (Query 3A vs 3B), and codified Part IX metric validity specifications. Executed the Part V Current State Audit across all 25 telemetry dimensions in `docs/architecture/CURRENT_STATE.md`. Updated `CONSTITUTION.md` and `docs/bootloaders/CURRENT.md`.
 - **Verification**: 100% parameter parity (`audit:parameters`); repository guardrails clean (`audit:guardrails`); orchestrator modification guard clean (`audit:orchestrator`); 1,506/0 tests pass across 147 files; typecheck clean (0 errors); 15/15 Python tests pass; 107/107 D1 migration rehearsal assertions pass; production Astro build complete (48.88s).

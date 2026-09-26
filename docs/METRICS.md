@@ -64,7 +64,10 @@ Measures the genuine, recurring net-new qualified flow accessible to workers in 
 
 ```sql
 -- Qualified Net-New First Publications per Manila Calendar Day
--- Joining source_publication_ledger, opportunities, and source_registry.
+-- Executable classifier: scripts/ci/constitution-metrics.ts
+-- SQL can see created_at and source_posted_at only. previouslyInactive and
+-- replayRecovery are caller-supplied flags and are not columns. Unknown dates
+-- are OTHER_NON_FRESH. They are not FRESH_DISCOVERY.
 -- Manila time conversion: datetime(timestamp, '+8 hours')
 
 WITH manila_publications AS (
@@ -94,14 +97,18 @@ cohort_partitioned AS (
     o.is_active,
     sr.operational_state,
     sr.compliance_state,
-    -- Mutually exclusive partition (evaluated in strict hierarchical order)
-    CASE 
+    -- Inferable partition only. Replay and prior-inactive flags are not columns.
+    CASE
       WHEN o.created_at < strftime('%Y-%m-%dT00:00:00Z', datetime(mp.manila_date || ' 00:00:00', '-8 hours'))
-      THEN 'REACTIVATION_OR_REPLAY'
-      WHEN o.source_posted_at IS NOT NULL 
-       AND (julianday(o.created_at) - julianday(o.source_posted_at)) > 7.0 
+      THEN 'REACTIVATION'
+      WHEN o.source_posted_at IS NOT NULL
+       AND (julianday(o.created_at) - julianday(o.source_posted_at)) > 7.0
       THEN 'BACKLOG_IMPORT'
-      ELSE 'FRESH_DISCOVERY'
+      WHEN o.source_posted_at IS NOT NULL
+       AND (julianday(o.created_at) - julianday(o.source_posted_at)) >= 0
+       AND (julianday(o.created_at) - julianday(o.source_posted_at)) <= 7.0
+      THEN 'FRESH_DISCOVERY'
+      ELSE 'OTHER_NON_FRESH'
     END AS creation_cohort
   FROM manila_publications mp
   JOIN opportunities o 
@@ -117,7 +124,8 @@ SELECT
   COUNT(DISTINCT opportunity_id) AS total_published_today,
   COUNT(DISTINCT CASE WHEN creation_cohort = 'FRESH_DISCOVERY' THEN opportunity_id END) AS fresh_discovery_daily_flow,
   COUNT(DISTINCT CASE WHEN creation_cohort = 'BACKLOG_IMPORT' THEN opportunity_id END) AS backlog_imports_cohort,
-  COUNT(DISTINCT CASE WHEN creation_cohort = 'REACTIVATION_OR_REPLAY' THEN opportunity_id END) AS reactivations_replay_cohort
+  COUNT(DISTINCT CASE WHEN creation_cohort = 'REACTIVATION' THEN opportunity_id END) AS reactivations_cohort,
+  COUNT(DISTINCT CASE WHEN creation_cohort = 'OTHER_NON_FRESH' THEN opportunity_id END) AS other_non_fresh_cohort
 FROM cohort_partitioned
 GROUP BY manila_date
 ORDER BY manila_date DESC;
@@ -181,14 +189,25 @@ Measures true classification error rates against independent human/employer adju
 
 ```sql
 -- Independent Ground-Truth Adjudication Quality Rates
--- Evaluated against audited samples in audit ledgers or diagnostic cohorts
--- Requires independent adjudication evidence table: adjudication_audit_samples
-SELECT 
+-- Empty sample => measurement_status UNKNOWN. Do not read NULL rates as 0%.
+-- Executable rule: scripts/ci/constitution-metrics.ts measureGroundTruth
+SELECT
   COUNT(*) AS audited_sample_size,
+  CASE
+    WHEN COUNT(*) = 0 THEN 'UNKNOWN'
+    WHEN COUNT(*) < 50 THEN 'INSUFFICIENT_SAMPLE'
+    ELSE 'MEASURED'
+  END AS measurement_status,
   SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict = 'ineligible' THEN 1 ELSE 0 END) AS false_ph_count,
-  ROUND(CAST(SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict = 'ineligible' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100.0, 3) AS false_ph_rate_pct, -- Ceiling: <= 1.0%
+  CASE
+    WHEN COUNT(*) = 0 THEN NULL
+    ELSE ROUND(CAST(SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict = 'ineligible' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100.0, 3)
+  END AS false_ph_rate_pct, -- Ceiling: <= 1.0% only when measurement_status = MEASURED
   SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict = 'non_remote' THEN 1 ELSE 0 END) AS false_remote_count,
-  ROUND(CAST(SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict = 'non_remote' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100.0, 3) AS false_remote_rate_pct -- Ceiling: <= 0.5%
+  CASE
+    WHEN COUNT(*) = 0 THEN NULL
+    ELSE ROUND(CAST(SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict = 'non_remote' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100.0, 3)
+  END AS false_remote_rate_pct -- Ceiling: <= 0.5% only when measurement_status = MEASURED
 FROM adjudication_audit_samples
 WHERE sample_window_days <= 30;
 ```
@@ -352,3 +371,15 @@ Under Master Operating Constitution v3.0 Part IX, no metric may exist only as a 
 - **Missing Data Behavior:** Unknown providers counted in denominator; hard ceiling $\le 40\%$.
 - **Known Biases:** Multi-tenant ATS providers (e.g. Breezy, Greenhouse) aggregate diverse independent employers.
 - **Minimum Sample Requirements:** Total active stock; breach trigger $> 40\%$.
+
+---
+
+## 5. QUEUE INSTRUMENTATION (MOC v3.0 Parts XXVI–XXVII)
+
+Executable definitions live in `scripts/ci/queue-metrics.ts`. They are measurements, not a second scheduler.
+
+- **Depth evolution:** `Q_next = max(0, Q_current + arrivals - completions)`.
+- **Residence:** p50, p95, p99, and oldest age. An empty or invalid sample is `UNKNOWN`.
+- **Stability:** stable only when service rate is strictly greater than arrival rate. Equal rates are `UNSTABLE`. Both rates zero is `UNKNOWN`.
+- **Little's law:** `L = lambda * W` only when the interarrival coefficient of variation is known and `<= 1`. That bound is provisional (`LITTLE_LAW_CV_MAX`). It is not an accepted governance parameter. Unknown or bursty variation abstains.
+- **Live rows:** these functions do not yet read D1 or Turso. A later session must pass measured arrivals, completions, and residence times into them. A formula without those inputs is not a queue measurement.

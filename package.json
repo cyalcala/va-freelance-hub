@@ -16,6 +16,7 @@
     "audit:guardrails": "bun scripts/ci/check-production-guardrails.ts",
     "audit:parameters": "bun scripts/ci/audit-parameters.ts",
     "audit:orchestrator": "bun scripts/ci/check-orchestrator-modifications.ts",
+    "audit:constitution": "bun scripts/ci/audit-constitution.ts",
     "verify": "bun run test && bun run typecheck && bun run build",
     "db:migrate": "bun run --cwd apps/web db:migrate",
     "lake:ingest": "bun run scripts/lake/ingest-to-lake.ts",

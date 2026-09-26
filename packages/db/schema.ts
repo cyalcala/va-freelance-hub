@@ -490,6 +490,27 @@ export const sourceShadowObservations = sqliteTable("source_shadow_observations"
   admissionWindowIdx: index("source_shadow_observations_admission_window_idx").on(table.admissionEvidenceId, table.shadowEntryHash, table.observedAt, table.id),
 }));
 
+// Independent ground-truth samples (migration 0050). Empty means UNKNOWN.
+// The publication path does not write this table.
+export const adjudicationAuditSamples = sqliteTable("adjudication_audit_samples", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sampledAt: text("sampled_at").notNull(),
+  opportunityId: integer("opportunity_id"),
+  sourceId: text("source_id"),
+  systemPrediction: text("system_prediction", {
+    enum: ["eligible", "ineligible", "remote", "non_remote", "unclear"],
+  }).notNull(),
+  groundTruthVerdict: text("ground_truth_verdict", {
+    enum: ["eligible", "ineligible", "remote", "non_remote", "unclear"],
+  }).notNull(),
+  adjudicator: text("adjudicator").notNull(),
+  evidenceNote: text("evidence_note"),
+  sampleWindowDays: integer("sample_window_days").notNull().default(30),
+  createdAt: text("created_at").notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),
+}, (table) => ({
+  windowIdx: index("adjudication_audit_samples_window_idx").on(table.sampleWindowDays, table.sampledAt),
+}));
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type ProviderProfile = typeof providerProfiles.$inferSelect;
@@ -521,3 +542,5 @@ export type SourceFetchEvent = typeof sourceFetchEvents.$inferSelect;
 export type NewSourceFetchEvent = typeof sourceFetchEvents.$inferInsert;
 export type RobotsCacheRow = typeof robotsCache.$inferSelect;
 export type NewRobotsCacheRow = typeof robotsCache.$inferInsert;
+export type AdjudicationAuditSample = typeof adjudicationAuditSamples.$inferSelect;
+export type NewAdjudicationAuditSample = typeof adjudicationAuditSamples.$inferInsert;

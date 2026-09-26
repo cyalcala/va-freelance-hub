@@ -1,6 +1,19 @@
 # AI Recovery Trail
 
-## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (current)
+## 2026-09-26 — P1-P2-METRIC-AND-QUEUE-ENFORCEMENT (current)
+
+Executed the steward bootloader against constitution priorities P1 and P2.
+
+- **Final state**:
+  - Unknown posting dates classify as `OTHER_NON_FRESH` in `scripts/ci/constitution-metrics.ts` and in Query 1.
+  - `measureGroundTruth([])` returns `UNKNOWN`. Quality ceilings pass only for a `MEASURED` sample of at least 50.
+  - Migration `0050_adjudication_audit_samples.sql` adds the independent adjudication table. It starts empty.
+  - `scripts/ci/queue-metrics.ts` implements `Q_next = max(0, Q + arrivals - completions)`, residence percentiles, stability only when service exceeds arrival, and Little's law only when interarrival CV is known and `<= 1`.
+  - `docs/ENFORCEMENT.md` §8 names the remaining paper risks: no replay column, no concentration brake, 70/30 still prose.
+- **Verification**: 1,533/0 tests, constitution/parameter/guardrail/orchestrator audits clean, typecheck clean, rehearsal 119/119.
+- **Not claimed**: fresh-flow recount, live queue depths, canonical D1 sync, remotecom promotion.
+
+## 2026-09-26 — MOC-V3-ACTIVATION-AND-METRIC-SEMANTICS-P0: Master Operating Constitution v3.0 Codification, Part V Current State Audit, and P0 Metric Semantics (historical)
 
 Codified Master Operating Constitution v3.0 and resolved P0 Metric Semantic Correctness across 6 files.
 

@@ -224,6 +224,6 @@ Audited as of 2026-09-26T21:15:00+08:00 across production D1, Turso lake, and Gi
 | **21** | **Request Consumption** | 1000–2000ms pacing; 0.00% error rate on 500 fetches | `VERIFIED` | Same-host 429 shielding active (`DISPATCHER_VERSION = 2.1.0`). |
 | **22** | **AI/Jev Consumption** | Bounded Jev 1.13 calls on ambiguous cases; 0 on deterministic | `VERIFIED` | Efficient VoI allocation; zero compute waste. |
 | **23** | **Storage Growth** | D1: ~15 MB / 10 GB quota; Turso: ~4 MB | `VERIFIED` | Extremely lightweight; decades of headroom. |
-| **24** | **Open Paper Risks** | 0 open in previous register; Metric circularity resolved in P0 | `VERIFIED` | 100% technical enforcement verified. |
-| **25** | **Missing Telemetry** | Dedicated `adjudication_audit_samples` table in D1 | `INFERRED` | Adjudications tracked in markdown; dedicated table planned. |
+| **24** | **Open Paper Risks** | v5.2 register remains resolved. Three v3.0 residuals: replay flag has no column, concentration is measured but does not throttle publication, 70/30 session mix is prose | `VERIFIED` | P1 closed the false-fresh and false-zero quality claims. Residuals are named in `docs/ENFORCEMENT.md` §8. |
+| **25** | **Missing Telemetry** | `adjudication_audit_samples` defined in migration 0050. Sample size is 0 until rows are adjudicated | `IMPLEMENTED` | Empty sample is `UNKNOWN`, not 0% false-PH. Not yet a production measurement. Queue formulas are executable and are not yet fed live depths. |
 
