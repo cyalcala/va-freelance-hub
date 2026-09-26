@@ -1,6 +1,30 @@
 # Handoff
 
-## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (current)
+## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (current)
+
+Completed Architectural Evolution Phase 7 (Capability Registry & Conventional Source Adapters) implementing Operating Constitution v5.2 §8.1 (C16 Convention-Driven Source Integration) and §8.2 (C17 Capability-Based Dispatch). Authored `packages/scraper/capability-registry.ts` and 13 contract tests in `packages/scraper/capability-registry.test.ts`.
+
+- **Artifacts Delivered:**
+  - `packages/scraper/capability-registry.ts`: Declarative in-memory Capability Registry with built-in handlers for `ats_json`, `rss_xml`, `structured_xml`, `public_json_api`, and `static_html`. Emits C17 routing metadata (`sourceId`, `declaredCapability`, `payloadKind`, `selectedProcessor`, `warnings`, `dispatchedAt`, `durationMs`).
+  - `packages/scraper/capability-registry.test.ts`: 13 contract tests verifying all 4 numeric exit criteria and sub-1ms dispatch performance.
+  - `packages/scraper/index.ts`: Re-exported capability registry types and singleton.
+  - `docs/ARCHITECTURE_PHASES.md`: Marked Phase 7 as `[COMPLETED]`.
+- **Verification Evidence:**
+  - `bun test packages/scraper/capability-registry.test.ts`: 13 pass / 0 fail (70 expectations).
+  - `bun run test`: 1,498 pass / 0 fail across 146 test files (+13 new tests).
+  - `bun run typecheck`: clean, 0 errors.
+  - `bun run audit:parameters`: clean exit 0 (100% parity).
+  - `bun run audit:guardrails`: clean exit 0.
+  - `bun run audit:orchestrator`: clean exit 0.
+  - `bun run scripts/ci/rehearse-d1-migrations.ts`: DB-01 REHEARSAL PASSED (107/107 assertions, 49 migrations).
+  - `py -m unittest discover -s scripts/analytics -p "test_*.py"`: 15 pass / 0 fail in 1.7s.
+  - `bun run build`: Complete (server 48.27s, client 14.93s, exit 0).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 standing disclosure.
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged).
+- **When the owner resumes**: Re-evaluate `greenhouse:remotecom` shadow→canary after **`2026-09-26T18:20:56Z`** (singleton in window until then; bad-outcomes query FIRST). Decide on Phase 4 Rust/WASM candidate kernel authorization.
+- **NEXT**: Commit, push to `origin/main`, watch Sovereign CI Guardrail; proceed to Architectural Evolution Phase 8 (Typed TypeScript Configuration DSL).
+
+## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (historical)
 
 Aligned Phases 1–3 in `docs/ARCHITECTURE_PHASES.md` to `[COMPLETED]` with concrete empirical evidence and recorded Phase 4 as `PENDING_OWNER_AUTHORIZATION`.
 

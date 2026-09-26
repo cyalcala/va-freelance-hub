@@ -489,3 +489,23 @@ export type {
   HimalayasCandidateInput,
 } from "./himalayas-canary";
 
+// ─── Capability Registry & Conventional Adapters (Phase 7 — C16 & C17) ───────
+export {
+  STANDARD_CAPABILITIES,
+  CapabilityRegistry,
+  defaultCapabilityRegistry,
+  DuplicateCapabilityError,
+  UnsupportedCapabilityError,
+  IncompatibleSourceCapabilityError,
+} from "./capability-registry";
+export type {
+  StandardCapability,
+  PayloadKind,
+  RoutingMetadata,
+  ConventionalSourceConfig,
+  CapabilityDispatchContext,
+  CapabilityDispatchResult,
+  CapabilityDefinition,
+} from "./capability-registry";
+
+

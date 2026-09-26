@@ -1,6 +1,12 @@
 # Implementation Status
 
-## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (current)
+## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (current)
+
+- **What this is**: Implemented Architectural Evolution Phase 7 under `docs/ARCHITECTURE_PHASES.md` fulfilling Operating Constitution v5.2 §8.1 (C16 Convention-Driven Source Integration) and §8.2 (C17 Capability-Based Dispatch). Authored `packages/scraper/capability-registry.ts` and 13 contract tests in `packages/scraper/capability-registry.test.ts`. 100% of the 4 numeric exit criteria satisfied: 5 standard capabilities defined (`ats_json`, `rss_xml`, `structured_xml`, `public_json_api`, `static_html`); duplicate names rejected; C17 routing metadata recorded; conventional source addition without modifying `scrape.ts` proven. Latency overhead $< 1\text{ ms}$ (abandonment trigger: $> 50\text{ ms}$).
+- **Verification**: 13/13 contract tests pass; 1,498 monorepo tests pass; typecheck clean; build clean (server 48.27s).
+- **Autonomy**: L1 ADVISE both domains, unchanged.
+
+## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (historical)
 
 - **What this is**: Formally aligned Phases 1 (Architecture Constitution & Interface Contracts), 2 (Additive D1 Evidence & Decision History Schema), and 3 (Python Analytics over Preserved Historical Cohorts) as COMPLETED in `docs/ARCHITECTURE_PHASES.md` based on verified production evidence (ADR-007/008/CONSTITUTION v5.2 active, migrations 0036–0049 deployed with 107/107 rehearsal assertions passing, 15/15 Python tests passing in CI). Formally marked Phase 4 as PENDING_OWNER_AUTHORIZATION.
 - **Verification**: 107/107 rehearsal assertions pass; 15/15 Python tests pass; 1,485 monorepo tests pass; parameter parity, guardrails, and orchestrator checks pass.

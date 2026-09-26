@@ -1,6 +1,30 @@
 # System Savepoint
 
-## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (current)
+## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (current)
+
+Completed Architectural Evolution Phase 7 (Capability Registry & Conventional Source Adapters) implementing Operating Constitution v5.2 §8.1 (C16 Convention-Driven Source Integration) and §8.2 (C17 Capability-Based Dispatch). Authored `packages/scraper/capability-registry.ts` and 13 contract tests in `packages/scraper/capability-registry.test.ts`. All 4 numeric exit criteria satisfied: 5 standard capabilities defined (`ats_json`, `rss_xml`, `structured_xml`, `public_json_api`, `static_html`); duplicate capability names strictly rejected; registry-driven dispatch records C17 routing metadata; conventional sources integrate without central orchestrator (`scrape.ts`) modification. Latency overhead $< 1\text{ ms}$ (abandonment trigger: $> 50\text{ ms}$). Start SHA `dcf702c89280d963c6314f33190895c25603ca9b` (clean, verified deployment run `36220016689`).
+
+- **Artifacts Delivered:**
+  - `packages/scraper/capability-registry.ts`: Declarative in-memory Capability Registry with built-in handlers for `ats_json`, `rss_xml`, `structured_xml`, `public_json_api`, and `static_html`. Emits C17 routing metadata (`sourceId`, `declaredCapability`, `payloadKind`, `selectedProcessor`, `warnings`, `dispatchedAt`, `durationMs`).
+  - `packages/scraper/capability-registry.test.ts`: 13 contract tests verifying all 4 numeric exit criteria and sub-1ms dispatch performance.
+  - `packages/scraper/index.ts`: Re-exported capability registry types and singleton.
+  - `docs/ARCHITECTURE_PHASES.md`: Marked Phase 7 as `[COMPLETED]`.
+- **Verification Evidence:**
+  - `bun test packages/scraper/capability-registry.test.ts`: 13 pass / 0 fail (70 expectations).
+  - `bun run test`: 1,498 pass / 0 fail across 146 test files (+13 new tests).
+  - `bun run typecheck`: clean, 0 errors.
+  - `bun run audit:parameters`: clean exit 0 (100% parity).
+  - `bun run audit:guardrails`: clean exit 0.
+  - `bun run audit:orchestrator`: clean exit 0.
+  - `bun run scripts/ci/rehearse-d1-migrations.ts`: DB-01 REHEARSAL PASSED (107/107 assertions, 49 migrations).
+  - `py -m unittest discover -s scripts/analytics -p "test_*.py"`: 15 pass / 0 fail in 1.7s.
+  - `bun run build`: Complete (server 48.27s, client 14.93s, exit 0).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 standing disclosure.
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged).
+- **Reality Level:** IMPLEMENTED & VERIFIED LOCALLY.
+- **NEXT**: Commit, push to `origin/main`, watch Sovereign CI Guardrail; re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20:56Z (singleton in window until then; bad-outcomes query first).
+
+## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (historical)
 
 Formally updated `docs/ARCHITECTURE_PHASES.md` marking Phases 1 (Architecture Constitution & Interface Contracts), 2 (Additive D1 Evidence & Decision History Schema), and 3 (Python Analytics over Preserved Historical Cohorts) as `[COMPLETED]` with empirical evidence links, and marked Phase 4 (Rust / WASM Candidate Kernel) as `PENDING_OWNER_AUTHORIZATION`. Start SHA `69b3103c3eb0ba4af730dc04cf1848a62e28b696` (clean, synchronized with `origin/main` after Prospector Pulse run `36219554663`).
 

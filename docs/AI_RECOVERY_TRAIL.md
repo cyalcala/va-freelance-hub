@@ -1,6 +1,17 @@
 # AI Recovery Trail
 
-## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (current)
+## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (current)
+
+Implemented Architectural Evolution Phase 7 (C16 & C17) in `packages/scraper/capability-registry.ts` with 13 contract tests in `packages/scraper/capability-registry.test.ts`.
+
+- **Final state**:
+  - `packages/scraper/capability-registry.ts`: Declarative in-memory Capability Registry with built-in handlers for `ats_json`, `rss_xml`, `structured_xml`, `public_json_api`, and `static_html`.
+  - Emits C17 routing metadata (`sourceId`, `declaredCapability`, `payloadKind`, `selectedProcessor`, `warnings`, `dispatchedAt`, `durationMs`).
+  - Proves conventional source integration without modifying `apps/web/src/pages/api/cron/scrape.ts` (enforces C16).
+  - 13/13 contract tests pass with sub-1ms dispatch latency. Full suite: 1,498 pass / 0 fail.
+  - Marked Phase 7 COMPLETED in `docs/ARCHITECTURE_PHASES.md`.
+
+## 2026-09-26 — ARCH-PHASES-1-3-ALIGNMENT: Formal completion alignment for Phases 1–3 and Phase 4 governance hold (historical)
 
 Aligned Phases 1–3 as COMPLETED in `docs/ARCHITECTURE_PHASES.md` with empirical evidence (ADR-007/008/Constitution v5.2, migrations 0036–0049 passing 107/107 rehearsal assertions, 15/15 Python tests passing in CI). Formally marked Phase 4 as PENDING_OWNER_AUTHORIZATION.
 

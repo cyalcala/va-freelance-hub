@@ -110,7 +110,7 @@ Before introducing any native, compiled, or external candidate, it MUST be evalu
 
 ---
 
-### Phase 7 — Capability Registry & Conventional Source Adapters (C16 & C17)
+### Phase 7 — Capability Registry & Conventional Source Adapters (C16 & C17) [COMPLETED]
 - **Deliverable:** Declarative Capability Registry decoupling source definitions from central orchestration.
 - **Numeric Exit Criteria:**
   1. Common capabilities defined (`ats_json`, `rss_xml`, `structured_xml`, `public_json_api`, `static_html`);
@@ -118,6 +118,7 @@ Before introducing any native, compiled, or external candidate, it MUST be evalu
   3. New conventional sources route via registry-driven capability dispatch;
   4. Central orchestrator (`apps/web/src/pages/api/cron/scrape.ts`) modification **no longer required** for adding at least one representative ordinary source class.
 - **Evidence Artifact:** Capability contract tests in `packages/scraper/capability-registry.test.ts`.
+- **Status:** **COMPLETED** (5/5 capabilities defined; duplicate names rejected; C17 routing metadata recorded; conventional source integration without scrape.ts modification proven; 13/13 tests pass with < 1ms latency).
 - **Rollback Step:** Revert registry routing to static adapters in `sources.ts`.
 - **Abandonment Trigger:** Conventional routing adds latency $> 50\text{ ms}$ per tick or fails contract tests.
 - **Owner Authorization Required:** **YES**.
