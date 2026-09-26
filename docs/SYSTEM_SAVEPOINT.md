@@ -1,6 +1,36 @@
 # System Savepoint
 
-## 2026-09-26 — SHADOW-DISPATCH-SKIP-ON-429: same-host skip on 429 implemented, prompt upgraded to v3.1 (current)
+## 2026-09-26 — CONSTITUTION-V5-2-SUITE: Operating Constitution v5.2 modular suite activated (current)
+
+Owner instruction "Proceed in this. Act in this. All approved." for the VA FREELANCE HUB — OPERATING CONSTITUTION v5.2 SUITE. Activated the modular, machine-auditable governance suite implementing the Embedded Correction Set (C1–C15) and Surgical Correction Addendum (C16–C20) across 8 core governance files. Start SHA `72709b153b3ada5916a7e6fefd40c3a8ec0f6bbd` (clean, == origin/main).
+
+- **Governance Suite Activated:**
+  - `CONSTITUTION.md`: Normative core (< 15 pages) codifying stewardship, L1 autonomy sovereignty, definition of done (D1–D9), architectural discipline, and C16–C20 disciplines.
+  - `OPERATIONS.md`: Daily maintainer runbook, 7-step loop, concurrency leases, preflight live code verification, publication gateway, conventional source workflow, and SEV-1–SEV-4 playbooks.
+  - `docs/ACCEPTED_PARAMETERS.yaml`: Machine-readable single source of truth for all system thresholds, budgets, and SLAs.
+  - `docs/generated/PARAMETERS.md`: Human-readable mirror of canonical parameters with live code fallback anchors.
+  - `docs/METRICS.md`: Mathematical cohort separation formula ($\text{Daily Flow} = \text{First Published Today} - \text{Backlog Imports} - \text{Reactivations} - \text{Replay Recoveries}$) and production SQL queries.
+  - `docs/ARCHITECTURE_PHASES.md`: Explicit numeric exit criteria and abandonment triggers for Phases 0–11 and Cloudflare V8/WASM bounds.
+  - `docs/ENFORCEMENT.md`: Technical enforcement matrix mapping every policy to concrete SQL triggers, CI guardrails, or runtime hooks; flags 5 paper risks in remediation queue.
+  - `docs/REVISION_NOTES.md`: Comprehensive modernization log detailing resolution of all 20 corrections and migration roadmap.
+- **Verification Evidence:**
+  - Subsystem tests: 961 pass / 0 fail across 67 test files (`bun test packages/scraper packages/db scripts/lake`).
+  - Full repository test suite: 1,464 pass / 0 fail across 143 test files (`bun run test`).
+  - Strict typecheck: clean, 0 errors (`bun run typecheck`).
+  - Production guardrails: clean, exit 0 (`bun run audit:guardrails`).
+  - Production build: Complete (`bun run build` in 51.75s).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 standing disclosure.
+  - Live public HTTP: HTTP 200 on `https://remotejobs-ph.pages.dev/` and `https://remotejobs-ph.pages.dev/opportunities?fresh=today`.
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged; deterministic code and human approvals retain 100% mutation authority).
+- **Reality Level:** DEPLOYED (Commit `db20a2f` pushed to `origin/main`; Sovereign CI Guardrail run `36217285054` succeeded across all jobs).
+- **Backup:** commit `db20a2f` on `origin/main`; Sovereign CI Guardrail run `36217285054` all `success`.
+- **NEXT**: Execute scheduled paper risk remediations:
+  1. Unit 1 (`CI-AUDIT-PARAMETERS-SCRIPT`): Implement `scripts/ci/audit-parameters.ts` to enforce YAML-to-code parity in CI.
+  2. Unit 2 (`D1-MIGRATION-0048-RISK-TIERS`): Apply additive migration adding `risk_tier` and `shadow_window_days` to `source_registry`.
+  3. Unit 3 (`CI-GITLEAKS-INTEGRATION`): Add automated secret scanning to `ci-guardrail.yml`.
+  4. Operational: Re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z.
+
+## 2026-09-26 — SHADOW-DISPATCH-SKIP-ON-429: same-host skip on 429 implemented, prompt upgraded to v3.1 (historical)
 
 Owner instruction "Proceed in this. Expertly read, plan and act in this. All approved." with `C:\Users\admin\Downloads\lucky1.md` (Autonomous Operating Prompt v3.1). Implemented the queued Workable pacing fix in `packages/scraper/shadow-dispatcher.ts` and upgraded the master operating prompt to v3.1. Start SHA `44069704cde603ccb7a502eabc0d48e4859cda12` (clean, == origin/main).
 
