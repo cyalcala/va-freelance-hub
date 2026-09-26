@@ -1,7 +1,7 @@
 # Current resume pointer
 
-**Refreshed 2026-09-26 (FUSED MAINTAINER BOOTLOADER active; prompt-only + docs, no behavior change).**
-Newest baton: [`2026-09-26-FUSED-MAINTAINER-BOOTLOADER.md`](./2026-09-26-FUSED-MAINTAINER-BOOTLOADER.md) — fuses strategy-fused §§1–12 + lake maintainer + datalake777 audits under masterplan/ADR-006/007; paste its §1 prompt + §8 state block to resume. Start SHA `3850d04` (main == origin/main, clean).
+**Refreshed 2026-09-26 (UNIFIED SINGLE PROMPT active; prompt-only + docs, no behavior change).**
+Newest baton: [`2026-09-26-UNIFIED-SINGLE-PROMPT.md`](./2026-09-26-UNIFIED-SINGLE-PROMPT.md) — one copy-paste block fusing strategy-fused §§1–12 + lake maintainer + datalake777 audits under masterplan/ADR-006/007. Start SHA `1608d59` (main == origin/main, clean).
 
 NEXT: NEXT-2026-09-26a (AUDIT, read-only) — verify P0 Turso→D1 bypass live via `lake:sync -- --dry-run` vs gateway ledger/cap path; then P1 starvation fix. Workable stays shadow (~Oct 1–2); `himalayas:remote-jobs` shadow admission staged under ADR-006/007.
 
