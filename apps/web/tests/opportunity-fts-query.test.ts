@@ -26,7 +26,7 @@ describe("buildOpportunityFtsQueries fresh filter", () => {
     expect(q.pageSql).toContain("date(o.scraped_at, '+8 hours') = date('now', '+8 hours')");
   });
 
-  test("card projection carries scrapedAt for the NEW badge", () => {
+  test("card projection carries scrapedAt", () => {
     const q = buildOpportunityFtsQueries(BASE);
     expect(q.pageSql).toContain('o.scraped_at AS "scrapedAt"');
   });

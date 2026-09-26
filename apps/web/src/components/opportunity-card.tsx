@@ -16,7 +16,7 @@ export type OpportunityCardData = Pick<
   | "geoEvidence"
 > & {
   /** First-seen instant. Optional so slim projections (e.g. homepage) keep
-   * compiling; the NEW badge simply renders where the data flows. */
+   * compiling; carried for recency filtering, not displayed. */
   scrapedAt?: string | null;
 };
 
@@ -59,7 +59,6 @@ const GEO_BADGES: Record<string, { label: string; className: string }> = {
 };
 
 const MANILA_TZ = "Asia/Manila";
-const NEW_BADGE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const manilaDayMonth = new Intl.DateTimeFormat("en-PH", {
   timeZone: MANILA_TZ,
@@ -79,24 +78,12 @@ function formatDate(isoString: string | null | undefined): string | null {
   }
 }
 
-/** True when first discovered within the last 24h (render time). */
-export function isFreshArrival(
-  scrapedAt: string | null | undefined,
-  nowMs: number = Date.now(),
-): boolean {
-  if (!scrapedAt) return false;
-  const t = new Date(scrapedAt).getTime();
-  if (!Number.isFinite(t)) return false;
-  return nowMs - t >= 0 && nowMs - t <= NEW_BADGE_WINDOW_MS;
-}
-
 export function OpportunityCard({ opportunity: opp }: Props) {
   const platformColor =
     PLATFORM_COLORS[opp.sourcePlatform] ?? "text-ink/60 bg-ink/5";
   const platformLabel = PLATFORM_LABELS[opp.sourcePlatform] ?? opp.sourcePlatform;
   const typeLabel = TYPE_LABELS[opp.type] ?? opp.type;
   const postedDate = formatDate(opp.postedAt);
-  const showNewBadge = isFreshArrival(opp.scrapedAt);
   const hasDetailPage =
     opp.phEligibility === "eligible_verified" ||
     opp.phEligibility === "eligible_likely";
@@ -154,11 +141,6 @@ export function OpportunityCard({ opportunity: opp }: Props) {
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
-          {showNewBadge && (
-            <span className="text-[10px] px-2 py-0.5 rounded-md bg-accent text-white font-bold uppercase tracking-wide">
-              New
-            </span>
-          )}
           <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${platformColor}`}>
             {platformLabel}
           </span>
