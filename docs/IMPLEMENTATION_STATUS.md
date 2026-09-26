@@ -1,6 +1,12 @@
 # Implementation Status
 
-## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (current)
+## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (current)
+
+- **What this is**: Surgical board-recency slice. `fresh` allowlist param (24h rolling / Manila today) with discovery ordering on drizzle + FTS paths; Manila card dates; NEW badge (optional `scrapedAt` keeps homepage compiling). Default board byte-identical.
+- **Verification**: narrow 14/0; full 1,462 pass / 0 fail across 143 files (+8); typecheck 0; guardrails 0; build Complete. Bun mismatch disclosed.
+- **Autonomy:** L1 ADVISE both domains, unchanged.
+
+## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (historical)
 
 - **What this is**: Read-only funnel audit (no code change; two gate stops blocked mutation). Sustained rate ~12.6/d vs 100 floor (gap ~87/d); honest ceiling ~15–30/d; 09-24 spike labeled backlog. Remotive yield loss falsified as market. Remotecom promotion stopped at evidence gate (due ~18:20Z). Workable healthy-claim corrected (post-fix 429s).
 - **Evidence**: `docs/gauntlet/evidence/FUNNEL-MEASUREMENT-2026-09-26.md`.

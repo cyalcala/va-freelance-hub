@@ -1,6 +1,13 @@
 # AI Recovery Trail
 
-## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (current)
+## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (current)
+
+Strategy-first execution: ingestion already ticks ~15 min 24/7, so the unit stayed display-side only. Start SHA `b2c8bd3` clean; behavior `092ef18`; CI `36210741745` all-success with Pages deploy.
+
+- **Final state**: fresh filter on both board paths, Manila dates + NEW badge on cards, homepage untouched and compiling, default board unchanged.
+- **Verification**: 14/0 narrow; 1,462/0 full across 143 files; typecheck 0; guardrails 0; build Complete. Bun mismatch disclosed.
+
+## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (historical)
 
 Audit per the v3 loop (measure before optimizing). Start SHA `d36069b` clean.
 

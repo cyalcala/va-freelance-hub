@@ -1,6 +1,30 @@
 # System Savepoint
 
-## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day supply audit, Remotive falsified as market, remotecom held at gate (current)
+## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today board slice, Manila dates, NEW badge (current)
+
+The owner asked for the most recent jobs every hour with Manila-time recency, directing "strategize first then act", surgically. Strategy found ingestion already ticks ~every 15 min 24/7 (hourly freshness exists in D1; polling faster cannot beat stable feeds) — the gap was purely surfacing: source-posted-date sort, UTC-only card dates, no recency filter.
+
+- **Mode/baton:** EXECUTE, unit `FRESH-ARRIVALS`. Start SHA `b2c8bd3e79889a4b839a0c85202d45b845db09aa` (clean, synchronized with `origin/main`).
+- **Implemented (default board byte-identical):**
+  - `apps/web/src/lib/public-query.ts`: `FreshFilter` allowlist (`24h` | `today`), `parseFreshFilter` (unknown → null, never 400), bound-free `freshFtsCondition`; `parseJobBoardRequest` carries `fresh`.
+  - `apps/web/src/lib/opportunity-fts-query.ts`: `fresh` option → predicate in count+page SQL (rank order preserved); card projection now carries `scrapedAt`.
+  - `apps/web/src/pages/opportunities.astro`: `scraped_at` filter + `scrapedAt DESC` order when fresh (drizzle + FTS paths); "Last 24h" / "Today (Manila)" chips with active state, pagination- and filter-preserving URLs, clear-filters covers fresh.
+  - `apps/web/src/components/opportunity-card.tsx`: dates via `Intl` Asia/Manila; `New` badge for first-seen ≤ 24h (`scrapedAt` optional so the homepage's slim projection keeps compiling).
+  - Tests: `public-query.test.ts` extended, new `opportunity-fts-query.test.ts`, `opportunities-fts-route.test.ts` fixture gains `scraped_at`.
+- **Explicit non-goals:** homepage layout/order, ingestion cadence, new schedules, sort toggles.
+- **Verification Evidence:**
+  - Narrow: 14/0 across the 3 touched suites.
+  - `bun run test`: 1,462 pass / 0 fail across 143 files (+8 new).
+  - `bun run typecheck`: clean, 0 errors.
+  - `bun run audit:guardrails`: clean, exit 0.
+  - `bun run build`: Complete (server 78s, client 14s).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
+- **Backup:** commit `092ef18` on `origin/main`; Sovereign CI Guardrail run `36210741745` — Validate, Detect, Migrate and deploy production all `success` (Pages deploy live).
+- **Public effect:** `/opportunities?fresh=today` shows Manila-day arrivals newest-first; `?fresh=24h` rolling; NEW badges on ≤24h cards; all card dates Manila. Default board unchanged. Post-deploy HTTP verification pending as the observation step.
+- **Autonomy:** L1 ADVISE both domains, unchanged; Jev not invoked.
+- **NEXT**: Verify post-deploy fresh views live (`?fresh=today` non-empty, chips active, badge present); then the queued remotecom re-eval after 18:20Z and Workable-pacing diagnostic.
+
+## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day supply audit, Remotive falsified as market, remotecom held at gate (historical)
 
 The owner instructed: "Proceed". Executed the prior NEXT: Manila-day qualified-publication funnel, all read-only (every D1 query `changed_db=false`, `rows_written=0`; one polite live fetch of the allowed Remotive feed via a temp script, deleted after).
 

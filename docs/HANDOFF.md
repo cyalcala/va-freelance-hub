@@ -1,6 +1,14 @@
 # Handoff
 
-## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (current)
+## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (current)
+
+Surgical board-recency slice per owner direction. Ingestion already hourly-fresh; this makes arrivals visible: filter chips, discovery-ordered fresh views, Manila card dates, NEW badges. Default board unchanged. Full detail in `docs/SYSTEM_SAVEPOINT.md` (top entry).
+
+- **Verification**: narrow 14/0; full 1,462/0 across 143 files; typecheck 0; guardrails 0; build Complete. Bun mismatch disclosed.
+- **When the owner resumes**: verify `?fresh=today` live; then remotecom re-eval after 18:20Z; Workable-pacing diagnostic.
+- **Backup:** commit `092ef18` on `origin/main`; CI run `36210741745` all `success` incl. Pages deploy.
+
+## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (historical)
 
 Read-only supply audit per the prior NEXT. Full numbers in `docs/gauntlet/evidence/FUNNEL-MEASUREMENT-2026-09-26.md`; top savepoint entry holds the baton.
 

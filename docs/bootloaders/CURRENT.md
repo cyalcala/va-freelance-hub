@@ -1,9 +1,9 @@
 # Current resume pointer
 
-**Refreshed 2026-09-26 (FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained vs 100 floor, remotecom held at gate).**
-Newest baton: `docs/gauntlet/evidence/FUNNEL-MEASUREMENT-2026-09-26.md` + top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Start SHA `d36069b` (main == origin/main, clean at entry).
+**Refreshed 2026-09-26 (FRESH-ARRIVALS deployed: ?fresh=24h|today, Manila dates, NEW badge).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Start SHA `b2c8bd3` (main == origin/main, clean at entry); behavior commit `092ef18`, CI run `36210741745` all-success with Pages deploy.
 
-NEXT: re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (singleton ages out; bad-outcomes query FIRST); bounded Workable-pacing diagnostic for post-fix 09-25 429 bursts. Wikimedia ~09-29. No lake live-sync (0 READY).
+NEXT: verify post-deploy fresh views live; then remotecom re-eval after 18:20Z; Workable-pacing diagnostic. No lake live-sync (0 READY).
 
 ---
 *Prior pointer (2026-09-25) preserved below.*
