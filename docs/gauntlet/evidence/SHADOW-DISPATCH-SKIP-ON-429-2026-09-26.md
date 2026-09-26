@@ -73,7 +73,8 @@ As established in `WORKABLE-PACING-DIAGNOSTIC-2026-09-26.md`:
 
 ## 5. Reality State & Autonomy Assessment
 
-- **Reality Level:** `IMPLEMENTED` & `LOCALLY VERIFIED` (code + comprehensive unit tests).
-- **Deployment State:** Pending CI deploy on push of this commit.
+- **Reality Level:** `DEPLOYED` (code verified in CI run `36213410443` on push of `3f14489`, Cloudflare Pages deploy succeeded).
+- **Deployment State:** Verified deployed in production on Cloudflare Pages.
 - **Autonomy Level:** L1 ADVISE in both domains (Job Evaluation and Job Flow, unchanged; no autonomous promotion claimed).
+- **Backup:** Commit `3f14489` on `origin/main`; Sovereign CI Guardrail run `36213410443` (Validate 40s, Detect 6s, Migrate/Deploy 37s).
 - **Next Falsification Test:** On the next live shadow dispatch run encountering a 429 on Workable, verify that `skippedRateLimitedHost` > 0 and only 1 `RATE_LIMITED` row is recorded in `source_shadow_observations`.

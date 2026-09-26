@@ -15,8 +15,9 @@ Owner instruction "Proceed in this. Expertly read, plan and act in this. All app
   - Production build: Complete (`bun run build`).
   - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH standing disclosure.
 - **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged; no autonomous promotion claimed).
-- **Reality Level:** IMPLEMENTED & LOCALLY VERIFIED; deployment pending CI push.
+- **Reality Level:** DEPLOYED (Cloudflare Pages deploy complete via CI run 36213410443).
 - **Evidence:** `docs/gauntlet/evidence/SHADOW-DISPATCH-SKIP-ON-429-2026-09-26.md`.
+- **Backup:** commit `3f14489` on `origin/main`; Sovereign CI Guardrail run `36213410443` all `success` (Pages deploy live).
 - **NEXT**: Re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z with the staged script (bad-outcomes query FIRST); observe live shadow dispatch for `skippedRateLimitedHost` telemetry. No early promotion, no unapproved lake live sync.
 
 ## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: post-fix 429 bursts are window-level, remotecom held, badge-live verified (historical)
