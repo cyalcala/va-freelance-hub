@@ -13,6 +13,7 @@ node_modules/
 graphify-out/
 .tmp*
 pr-body.txt
+tmp/
 
 # Environment and local Cloudflare secrets. Keep examples tracked.
 .env*

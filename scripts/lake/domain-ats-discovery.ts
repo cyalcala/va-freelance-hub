@@ -49,8 +49,33 @@ export function buildDiscoverySourceId(atsFamily: string, tenantSlug: string): s
   return `${atsFamily.toLowerCase()}:${tenantSlug}`;
 }
 
+// ── Runner version & pacing (mirrors shadow-dispatcher skip-on-429) ──────────
+/** Bumped when discovery fetch/pacing behavior changes in a way operators care about. */
+export const DISCOVERY_VERSION = "2.1.0";
+/** Mandatory inter-probe delay (ms) — polite pacing against public ATS JSON hosts. */
+export const INTER_PROBE_DELAY_MS_DEFAULT = 1500;
+export const INTER_PROBE_DELAY_MS_MIN = 1000;
+export const INTER_PROBE_DELAY_MS_MAX = 2000;
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+export function clampProbeDelay(ms: number): number {
+  if (!Number.isFinite(ms)) return INTER_PROBE_DELAY_MS_DEFAULT;
+  return Math.min(INTER_PROBE_DELAY_MS_MAX, Math.max(INTER_PROBE_DELAY_MS_MIN, Math.floor(ms)));
+}
+
+export function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return url.slice(0, 80).toLowerCase();
+  }
+}
+
 // ── ATS probe templates ───────────────────────────────────────────────────────
-const ATS_PROBE_TEMPLATES: Array<{
+export interface AtsProbeTemplate {
   family: string;
   buildUrl: (tenant: string) => string;
   extractJobs: (data: unknown) => Array<{
@@ -62,7 +87,9 @@ const ATS_PROBE_TEMPLATES: Array<{
     tags: string[];
     postedAt: string | null;
   }>;
-}> = [
+}
+
+export const ATS_PROBE_TEMPLATES: Array<AtsProbeTemplate> = [
   {
     family: "Breezy",
     buildUrl: (t) => `https://${t}.breezy.hr/json`,
@@ -139,7 +166,34 @@ const ATS_PROBE_TEMPLATES: Array<{
         }));
     },
   },
+  {
+    family: "Ashby",
+    buildUrl: (t) => `https://api.ashbyhq.com/posting-api/job-board/${t}`,
+    extractJobs: (data: any) => {
+      const jobs = data?.jobs ?? [];
+      if (!Array.isArray(jobs)) return [];
+      return jobs
+        .filter((j: any) => j && j.isListed !== false && j.title && j.jobUrl)
+        .map((j: any) => {
+          const loc = typeof j.location === "string" ? j.location : j.location?.name || "";
+          return {
+            title: j.title || "",
+            company: j.companyName || j.organizationName || "",
+            url: j.jobUrl || "",
+            locationRaw: [loc, j.isRemote === false ? "(onsite)" : ""].filter(Boolean).join(" ") || "Remote",
+            description: [loc, j.isRemote === true ? "Remote: yes." : j.isRemote === false ? "Remote: no." : ""]
+              .filter(Boolean).join(" "),
+            tags: Array.isArray(j.departments) ? j.departments.map((d: any) => d.name || d).filter(Boolean) : [],
+            postedAt: j.publishedAt ? new Date(j.publishedAt).toISOString() : null,
+          };
+        });
+    },
+  },
 ];
+
+export function probeTemplateForFamily(family: string): AtsProbeTemplate | undefined {
+  return ATS_PROBE_TEMPLATES.find((t) => t.family.toLowerCase() === family.toLowerCase());
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface TenantMetrics {
@@ -308,203 +362,176 @@ async function extractDomains(
     .map(([domain, meta]) => ({ domain, ...meta }));
 }
 
-// ── Core admission engine ─────────────────────────────────────────────────────
-export async function runDomainAtsDiscovery(options: {
-  domainLimit?: number;
-  dryRun?: boolean;
-} = {}) {
-  const { domainLimit = 100, dryRun = false } = options;
+// ── Shared paced probe + admission ────────────────────────────────────────────
+export interface DiscoveryStats {
+  domainsScanned: number;
+  tenantsFound: number;
+  admitted: number;
+  shadowed: number;
+  rejected: number;
+  jobsIngested: number;
+  skippedRateLimitedHost: number;
+}
 
-  console.log("=== Autonomous ATS Tenant Discovery & Admission Engine ===");
-  console.log(`DomainLimit: ${domainLimit} | DryRun: ${dryRun}`);
-  console.log(`Thresholds: ADMIT >= ${AUTO_APPROVE_PH_RATE * 100}% PH | REJECT < ${AUTO_REJECT_PH_RATE * 100}% PH\n`);
+export function emptyDiscoveryStats(): DiscoveryStats {
+  return { domainsScanned: 0, tenantsFound: 0, admitted: 0, shadowed: 0, rejected: 0, jobsIngested: 0, skippedRateLimitedHost: 0 };
+}
 
-  const client = getLakeClient();
+export interface BulkSeed {
+  companyName: string;
+  atsFamily: string;
+  tenantSlug: string;
+  website?: string;
+}
 
-  if (!dryRun) {
-    await ensureDiscoveryTable(client);
-  }
-
-  const stats = {
-    domainsScanned: 0,
-    tenantsFound: 0,
-    admitted: 0,
-    shadowed: 0,
-    rejected: 0,
-    jobsIngested: 0,
-  };
-
-  const domains = await extractDomains(client, domainLimit);
-  console.log(`Extracted ${domains.length} employer domains to probe.\n`);
-
-  for (const { domain, company, slug } of domains) {
-    stats.domainsScanned++;
-
-    for (const template of ATS_PROBE_TEMPLATES) {
-      const probeUrl = template.buildUrl(slug);
-      let rawJobs: ReturnType<typeof template.extractJobs> = [];
-
-      // Step 1: Probe endpoint
-      try {
-        const res = await fetch(probeUrl, {
-          headers: collectionHeaders({ Accept: "application/json" }),
-          signal: AbortSignal.timeout(12_000),
-        });
-        if (!res.ok) { await new Promise((r) => setTimeout(r, 200)); continue; }
-        const data = await res.json();
-        rawJobs = template.extractJobs(data);
-      } catch { await new Promise((r) => setTimeout(r, 200)); continue; }
-
-      if (rawJobs.length < MIN_JOBS_TO_EVALUATE) {
-        await new Promise((r) => setTimeout(r, 200));
-        continue;
-      }
-
-      stats.tenantsFound++;
-      const sourceId = buildDiscoverySourceId(template.family, slug);
-      console.log(`\n✓ Found: ${template.family}/${slug} (${rawJobs.length} jobs) | company: ${company}`);
-
-      // Step 2: geoGate every job to compute PH signal metrics
-      let qualifiedReady = 0, excluded = 0, ambiguous = 0;
-      const categoryCount: Record<string, number> = {};
-
-      for (const job of rawJobs) {
-        const verdict = geoGate({
-          title: job.title,
-          description: job.description,
-          locationRaw: job.locationRaw,
-          tags: job.tags,
-        });
-
-        if (verdict.phEligibility === "eligible_verified" || verdict.phEligibility === "eligible_likely") {
-          qualifiedReady++;
-        } else if (verdict.phEligibility === "ineligible") {
-          excluded++;
-        } else {
-          ambiguous++;
-        }
-
-        // Tally categories from tags
-        for (const tag of job.tags) {
-          categoryCount[tag] = (categoryCount[tag] || 0) + 1;
-        }
-      }
-
-      const phRate = rawJobs.length > 0 ? qualifiedReady / rawJobs.length : 0;
-      const topCategories = Object.entries(categoryCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([k]) => k);
-
-      const metrics: TenantMetrics = {
-        totalJobs: rawJobs.length,
-        qualifiedReady,
-        excluded,
-        ambiguous,
-        phRate,
-        topCategories,
-      };
-
-      console.log(`  geoGate: ${qualifiedReady}✓ ${excluded}✗ ${ambiguous}? | ph_rate=${(phRate * 100).toFixed(1)}%`);
-
-      // Step 3: Jev autonomous admission decision (advisory; deterministic fallback)
-      const decision = await decideAdmission(slug, template.family, metrics);
-      console.log(`  Jev decision: ${decision.verdict} (confidence=${decision.confidence}) | ${decision.reason}`);
-
-      if (dryRun) {
-        console.log(`  [DryRun] Would set review_status='${toReviewStatus(decision.verdict)}' for ${sourceId}`);
-        if (decision.verdict === "ADMIT") stats.admitted++;
-        else if (decision.verdict === "SHADOW") stats.shadowed++;
-        else stats.rejected++;
-        await new Promise((r) => setTimeout(r, 300));
-        continue;
-      }
-
-      const reviewStatus = toReviewStatus(decision.verdict);
-
-      // Step 4: Persist discovery with AI decision
-      await client.execute({
-        sql: `
-          INSERT INTO lake_ats_discovery
-            (domain, company_hint, ats_family, tenant_slug, probe_url, job_count,
-             qualified_ready, ph_rate, review_status, admission_reason, jev_raw, source_id, last_evaluated_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
-          ON CONFLICT(ats_family, tenant_slug) DO UPDATE SET
-            job_count = ?,
-            qualified_ready = ?,
-            ph_rate = ?,
-            review_status = ?,
-            admission_reason = ?,
-            jev_raw = ?,
-            source_id = ?,
-            last_evaluated_at = datetime('now');
-        `,
-        args: [
-          domain, company, template.family, slug, probeUrl,
-          rawJobs.length, qualifiedReady, phRate,
-          reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
-          // ON CONFLICT updates:
-          rawJobs.length, qualifiedReady, phRate,
-          reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
-        ],
-      });
-
-      // Step 5: If ADMITTED — ingest all jobs into lake_candidate_jobs right now
-      if (decision.verdict === "ADMIT") {
-        stats.admitted++;
-        console.log(`  → ADMITTED. Ingesting ${rawJobs.length} jobs into lake_candidate_jobs...`);
-
-        // Store raw observation (sample payload; hash covers the sample)
-        const rawPayload = JSON.stringify(rawJobs.slice(0, 20)); // store sample
-        const rawObsId = await storeRawObservation(client, {
-          sourceId,
-          sourcePlatform: `${template.family}/${slug}`,
-          fetchUrl: probeUrl,
-          httpStatus: 200,
-          rawPayload,
-        });
-
-        const ingestStats = {
-          totalExtracted: 0, duplicates: 0, excluded: 0, qualifiedReady: 0, ambiguous: 0,
-        };
-
-        for (const job of rawJobs) {
-          await processAndRefineCandidate(
-            client,
-            rawObsId,
-            {
-              sourceId,
-              sourcePlatform: `${template.family}/${slug}`,
-              sourceUrl: job.url,
-              title: job.title,
-              company: job.company || company,
-              category: job.tags[0] || "other",
-              locationRaw: job.locationRaw || "Remote",
-              description: job.description,
-              applicationUrl: job.url,
-              postedAt: job.postedAt,
-              tags: job.tags,
-            },
-            ingestStats
-          );
-        }
-
-        await markRawProcessed(client, rawObsId);
-
-        stats.jobsIngested += ingestStats.qualifiedReady;
-        console.log(`  → Ingested: ${ingestStats.qualifiedReady} QUALIFIED_READY, ${ingestStats.excluded} excluded, ${ingestStats.duplicates} duplicates`);
-      } else if (decision.verdict === "SHADOW") {
-        stats.shadowed++;
-        console.log(`  → SHADOW: stored in lake_ats_discovery, not yet synced to D1.`);
-      } else {
-        stats.rejected++;
-        console.log(`  → REJECTED: ${decision.reason}`);
-      }
-
-      await new Promise((r) => setTimeout(r, 400));
+/** Probe one tenant URL with skip-on-429 host shielding. Returns null when skipped/failed. */
+async function probeTenantJobs(
+  template: AtsProbeTemplate,
+  tenantSlug: string,
+  rateLimitedHosts: Set<string>,
+): Promise<{ jobs: ReturnType<AtsProbeTemplate["extractJobs"]>; probeUrl: string; rateLimited: boolean } | null> {
+  const probeUrl = template.buildUrl(tenantSlug);
+  const host = hostOf(probeUrl);
+  if (rateLimitedHosts.has(host)) return null;
+  try {
+    const res = await fetch(probeUrl, {
+      headers: collectionHeaders({ Accept: "application/json" }),
+      signal: AbortSignal.timeout(12_000),
+    });
+    if (res.status === 429) {
+      rateLimitedHosts.add(host);
+      return { jobs: [], probeUrl, rateLimited: true };
     }
+    if (!res.ok) return null;
+    const data = await res.json();
+    return { jobs: template.extractJobs(data), probeUrl, rateLimited: false };
+  } catch {
+    return null;
+  }
+}
+
+function computeTenantMetrics(rawJobs: Array<{ title: string; description: string; locationRaw: string; tags: string[] }>): TenantMetrics {
+  let qualifiedReady = 0, excluded = 0, ambiguous = 0;
+  const categoryCount: Record<string, number> = {};
+  for (const job of rawJobs) {
+    const verdict = geoGate({ title: job.title, description: job.description, locationRaw: job.locationRaw, tags: job.tags });
+    if (verdict.phEligibility === "eligible_verified" || verdict.phEligibility === "eligible_likely") qualifiedReady++;
+    else if (verdict.phEligibility === "ineligible") excluded++;
+    else ambiguous++;
+    for (const tag of job.tags) categoryCount[tag] = (categoryCount[tag] || 0) + 1;
+  }
+  const phRate = rawJobs.length > 0 ? qualifiedReady / rawJobs.length : 0;
+  const topCategories = Object.entries(categoryCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k]) => k);
+  return { totalJobs: rawJobs.length, qualifiedReady, excluded, ambiguous, phRate, topCategories };
+}
+
+/** Evaluate + optionally ingest a single (family, slug) tenant. Shared by domain + bulk paths. */
+async function evaluateTenant(
+  client: ReturnType<typeof getLakeClient>,
+  seed: { domain: string; company: string; slug: string; family?: string },
+  template: AtsProbeTemplate,
+  opts: { dryRun: boolean; rateLimitedHosts: Set<string>; probeDelayMs: number },
+  stats: DiscoveryStats,
+): Promise<void> {
+  const probe = await probeTenantJobs(template, seed.slug, opts.rateLimitedHosts);
+  await sleep(opts.probeDelayMs);
+  if (!probe) return;
+  if (probe.rateLimited) {
+    stats.skippedRateLimitedHost++;
+    console.log(`  ⏭ ${template.family}/${seed.slug}: host 429 — shielding remaining probes to ${hostOf(probe.probeUrl)} this run.`);
+    return;
+  }
+  const rawJobs = probe.jobs;
+  if (rawJobs.length < MIN_JOBS_TO_EVALUATE) return;
+
+  stats.tenantsFound++;
+  const sourceId = buildDiscoverySourceId(template.family, seed.slug);
+  console.log(`\n✓ Found: ${template.family}/${seed.slug} (${rawJobs.length} jobs) | company: ${seed.company}`);
+
+  const metrics = computeTenantMetrics(rawJobs);
+  console.log(`  geoGate: ${metrics.qualifiedReady}✓ ${metrics.excluded}✗ ${metrics.ambiguous}? | ph_rate=${(metrics.phRate * 100).toFixed(1)}%`);
+
+  const decision = await decideAdmission(seed.slug, template.family, metrics);
+  console.log(`  Jev decision: ${decision.verdict} (confidence=${decision.confidence}) | ${decision.reason}`);
+
+  if (opts.dryRun) {
+    console.log(`  [DryRun] Would set review_status='${toReviewStatus(decision.verdict)}' for ${sourceId}`);
+    if (decision.verdict === "ADMIT") stats.admitted++;
+    else if (decision.verdict === "SHADOW") stats.shadowed++;
+    else stats.rejected++;
+    return;
   }
 
+  const reviewStatus = toReviewStatus(decision.verdict);
+  await client.execute({
+    sql: `
+      INSERT INTO lake_ats_discovery
+        (domain, company_hint, ats_family, tenant_slug, probe_url, job_count,
+         qualified_ready, ph_rate, review_status, admission_reason, jev_raw, source_id, last_evaluated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(ats_family, tenant_slug) DO UPDATE SET
+        job_count = ?,
+        qualified_ready = ?,
+        ph_rate = ?,
+        review_status = ?,
+        admission_reason = ?,
+        jev_raw = ?,
+        source_id = ?,
+        last_evaluated_at = datetime('now');
+    `,
+    args: [
+      seed.domain, seed.company, template.family, seed.slug, probe.probeUrl,
+      rawJobs.length, metrics.qualifiedReady, metrics.phRate,
+      reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
+      rawJobs.length, metrics.qualifiedReady, metrics.phRate,
+      reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
+    ],
+  });
+
+  if (decision.verdict === "ADMIT") {
+    stats.admitted++;
+    console.log(`  → ADMITTED. Ingesting ${rawJobs.length} jobs into lake_candidate_jobs...`);
+    const rawPayload = JSON.stringify(rawJobs.slice(0, 20));
+    const rawObsId = await storeRawObservation(client, {
+      sourceId,
+      sourcePlatform: `${template.family}/${seed.slug}`,
+      fetchUrl: probe.probeUrl,
+      httpStatus: 200,
+      rawPayload,
+    });
+    const ingestStats = { totalExtracted: 0, duplicates: 0, excluded: 0, qualifiedReady: 0, ambiguous: 0 };
+    for (const job of rawJobs) {
+      await processAndRefineCandidate(
+        client, rawObsId,
+        {
+          sourceId,
+          sourcePlatform: `${template.family}/${seed.slug}`,
+          sourceUrl: job.url,
+          title: job.title,
+          company: job.company || seed.company,
+          category: job.tags[0] || "other",
+          locationRaw: job.locationRaw || "Remote",
+          description: job.description,
+          applicationUrl: job.url,
+          postedAt: job.postedAt,
+          tags: job.tags,
+        },
+        ingestStats
+      );
+    }
+    await markRawProcessed(client, rawObsId);
+    stats.jobsIngested += ingestStats.qualifiedReady;
+    console.log(`  → Ingested: ${ingestStats.qualifiedReady} QUALIFIED_READY, ${ingestStats.excluded} excluded, ${ingestStats.duplicates} duplicates`);
+  } else if (decision.verdict === "SHADOW") {
+    stats.shadowed++;
+    console.log(`  → SHADOW: stored in lake_ats_discovery, not yet synced to D1.`);
+  } else {
+    stats.rejected++;
+    console.log(`  → REJECTED: ${decision.reason}`);
+  }
+}
+
+function printDiscoverySummary(stats: DiscoveryStats): void {
   console.log("\n=======================================================");
   console.log("   AUTONOMOUS ATS DISCOVERY & ADMISSION SUMMARY        ");
   console.log("=======================================================");
@@ -514,11 +541,85 @@ export async function runDomainAtsDiscovery(options: {
   console.log(`Shadow Monitored:              ${stats.shadowed}`);
   console.log(`Auto-Rejected:                 ${stats.rejected}`);
   console.log(`Jobs Ingested (QUALIFIED):     ${stats.jobsIngested}`);
+  console.log(`Skipped (rate-limited host):   ${stats.skippedRateLimitedHost}`);
   console.log("-------------------------------------------------------");
   console.log("Auto-approved tenants are HELD from D1 sync by default;");
   console.log("include them only via lake:sync --allow-auto-approved after review.");
   console.log("=======================================================\n");
+}
 
+// ── Core admission engine ─────────────────────────────────────────────────────
+export async function runDomainAtsDiscovery(options: {
+  domainLimit?: number;
+  dryRun?: boolean;
+  probeDelayMs?: number;
+} = {}) {
+  const { domainLimit = 100, dryRun = false, probeDelayMs = INTER_PROBE_DELAY_MS_DEFAULT } = options;
+  const delay = clampProbeDelay(probeDelayMs);
+
+  console.log("=== Autonomous ATS Tenant Discovery & Admission Engine ===");
+  console.log(`Runner: v${DISCOVERY_VERSION} | DomainLimit: ${domainLimit} | DryRun: ${dryRun} | ProbeDelay: ${delay}ms`);
+  console.log(`Thresholds: ADMIT >= ${AUTO_APPROVE_PH_RATE * 100}% PH | REJECT < ${AUTO_REJECT_PH_RATE * 100}% PH\n`);
+
+  const client = getLakeClient();
+  if (!dryRun) await ensureDiscoveryTable(client);
+
+  const stats = emptyDiscoveryStats();
+  const rateLimitedHosts = new Set<string>();
+  const domains = await extractDomains(client, domainLimit);
+  console.log(`Extracted ${domains.length} employer domains to probe.\n`);
+
+  for (const { domain, company, slug } of domains) {
+    stats.domainsScanned++;
+    for (const template of ATS_PROBE_TEMPLATES) {
+      if (rateLimitedHosts.has(hostOf(template.buildUrl(slug)))) {
+        stats.skippedRateLimitedHost++;
+        continue;
+      }
+      await evaluateTenant(client, { domain, company, slug }, template, { dryRun, rateLimitedHosts, probeDelayMs: delay }, stats);
+    }
+  }
+
+  printDiscoverySummary(stats);
+  return stats;
+}
+
+/** Bulk path: probe an explicit seed list (family-pinned; no 4x fan-out). Used by bulk-ats-seed.ts. */
+export async function runBulkAtsDiscovery(
+  seeds: BulkSeed[],
+  options: { dryRun?: boolean; probeDelayMs?: number; limit?: number } = {},
+): Promise<DiscoveryStats> {
+  const { dryRun = false, probeDelayMs = INTER_PROBE_DELAY_MS_DEFAULT, limit = seeds.length } = options;
+  const delay = clampProbeDelay(probeDelayMs);
+  const cohort = seeds.slice(0, Math.max(0, limit));
+
+  console.log("=== Bulk ATS Seed Discovery (explicit cohort) ===");
+  console.log(`Runner: v${DISCOVERY_VERSION} | Seeds: ${cohort.length} | DryRun: ${dryRun} | ProbeDelay: ${delay}ms\n`);
+
+  const client = getLakeClient();
+  if (!dryRun) await ensureDiscoveryTable(client);
+
+  const stats = emptyDiscoveryStats();
+  const rateLimitedHosts = new Set<string>();
+
+  for (const seed of cohort) {
+    const template = probeTemplateForFamily(seed.atsFamily);
+    if (!template) {
+      console.warn(`  ⚠ Unknown ATS family "${seed.atsFamily}" for ${seed.companyName} — skipping.`);
+      continue;
+    }
+    stats.domainsScanned++;
+    const domain = seed.website ?? `${seed.tenantSlug}.${template.family.toLowerCase()}`;
+    await evaluateTenant(
+      client,
+      { domain, company: seed.companyName, slug: seed.tenantSlug },
+      template,
+      { dryRun, rateLimitedHosts, probeDelayMs: delay },
+      stats,
+    );
+  }
+
+  printDiscoverySummary(stats);
   return stats;
 }
 
@@ -535,8 +636,20 @@ if (import.meta.main) {
   const dryRun = args.includes("--dry-run");
   const limitArg = args.find((a) => a.startsWith("--limit="));
   const domainLimit = limitArg ? parseInt(limitArg.split("=")[1], 10) : 100;
+  const delayArg = args.find((a) => a.startsWith("--delay-ms="));
+  const probeDelayMs = delayArg ? parseInt(delayArg.split("=")[1], 10) : INTER_PROBE_DELAY_MS_DEFAULT;
+  const seedsArg = args.find((a) => a.startsWith("--seeds="));
 
-  runDomainAtsDiscovery({ domainLimit, dryRun }).catch((err) => {
+  (async () => {
+    if (seedsArg) {
+      const seedsPath = seedsArg.split("=").slice(1).join("=");
+      const raw = await Bun.file(seedsPath).text();
+      const seeds = JSON.parse(raw) as BulkSeed[];
+      await runBulkAtsDiscovery(seeds, { dryRun, probeDelayMs, limit: domainLimit });
+    } else {
+      await runDomainAtsDiscovery({ domainLimit, dryRun, probeDelayMs });
+    }
+  })().catch((err) => {
     console.error("ATS discovery failed:", err);
     process.exit(1);
   });

@@ -1,8 +1,8 @@
 # Federated Acquisition Coverage Matrix
 
 **Canonical Reference:** `docs/FEDERATED_ACQUISITION_MATRIX.md`  
-**Last Updated:** 2026-09-26T01:30:00+08:00 (Asia/Manila)  
-**Status:** Live Production Baseline  
+**Last Updated:** 2026-09-26T14:00:00+08:00 (Asia/Manila)  
+**Status:** Live Production Baseline + ATS Dataset Intake Expansion  
 
 ---
 
@@ -10,16 +10,16 @@
 
 | Metric | Current Value | Notes |
 | :--- | :--- | :--- |
-| **Known Feeder Universe** | 42 identified | Reservoirs (7), Direct Agencies (6), ATS Families (15), Open Datasets (3) |
-| **Technically Ingestible** | 22 sources | Native TypeScript adapters & public endpoints verified |
-| **Actively Observed in Turso Lake** | 12 sources | Himalayas, WWR, Remotive, RemoteOK, RWFA, Jobicy (2), Breezy (5) |
-| **Lake Raw Observations** | 15 observations | Preserved in `lake_raw_observations` with SHA-256 payload hash |
-| **Lake Candidates Ingested** | 544 candidates | Extracted into `lake_candidate_jobs` |
-| **Duplicate Sightings Captured** | 78 sightings | Tracked in `lake_sightings` (cross-source provenance preserved) |
-| **Historical Replay Events** | 31 audit events | Logged in `lake_replay_events` via `geoGate-v1.2-refinery` |
-| **Qualified Ready in Lake** | 356 candidates | Strictly verified by deterministic `geoGate` (PH/APAC/Worldwide) |
-| **Synced to Cloudflare D1** | 78 opportunities | Idempotently published through governed sync bridge |
-| **Production D1 Active Inventory**| 846 opportunities | Pristine serving mart powering public Astro website |
+| **Known Feeder Universe** | 12,000+ companies mapped | OpenJobs `companies_v2.json` (12,144 companies, 7,007 with ATS links) + curated cohort |
+| **Technically Ingestible** | 5 ATS families | Breezy, Greenhouse, Workable, Lever, Ashby public JSON endpoints (native adapters) |
+| **Actively Observed in Turso Lake** | 12 sources + 100 ATS tenants | Himalayas, WWR, Remotive, RemoteOK, RWFA, Jobicy (2), Breezy (5) + bulk ATS discovery |
+| **ATS Tenants Evaluated** | 100 tenants | 1 auto-approved, 2 shadow-monitored, 97 auto-rejected (all with Jev 1.13 evidence) |
+| **Lake Raw Observations** | 16 observations | Preserved in `lake_raw_observations` with SHA-256 payload hash |
+| **Duplicate Sightings Captured** | 78+ sightings | Tracked in `lake_sightings` (cross-source provenance preserved) |
+| **Historical Replay Events** | 31 audit events | Logged in `lake_replay_events` via `geoGate-v1.2-refinery` (latest replay: 363 evaluated, 0 changed — honest no-op) |
+| **Qualified Ready in Lake** | 122 candidates | `greenhouse:canonical` — 122/306 worldwide-remote roles verified by deterministic `geoGate` (held from D1 per ADR-007) |
+| **Synced to Cloudflare D1** | 359 opportunities | Idempotently published through governed sync bridge (buffer fully drawn down before expansion) |
+| **Production D1 Active Inventory**| 856+ opportunities | Pristine serving mart powering public Astro website |
 
 ---
 
@@ -43,6 +43,10 @@
 | `greenhouse:gitlab` | Greenhouse | Boards API | Public documented job board API | Conditional | Canary | — | — | — | 60 min | Ready for Lake intake |
 | `workable:rocketams` | Workable | Widget API | Public widget endpoint | Conditional | Shadow | — | — | — | Daily | Evaluate memory bounds in Lake |
 | `ashby:supabase` | Ashby | Posting API | Public posting API | Needs Review | Candidate | — | — | — | 120 min | Complete compliance review |
+| `greenhouse:canonical` | Greenhouse | Boards API | Public documented job board API | Conditional | Auto-approved | 306 | 122 | 2.0% | Daily | HELD from D1 sync per ADR-007; review then `--allow-auto-approved` |
+| `lever:xsolla` | Lever | Postings API | Public unauthenticated JSON | Conditional | Shadow | 179 | 20 | — | Daily | Borderline 11.2% PH rate; monitor, do not sync |
+| `lever:spyke-games` | Lever | Postings API | Public unauthenticated JSON | Conditional | Shadow | 11 | 1 | — | Daily | Borderline 9.1% PH rate; monitor, do not sync |
+| OpenJobs `companies_v2.json` | Open Dataset | Bulk seed map | Public GitHub repo (12,144 companies) | Allowed | Active reservoir | 400 seeds normalized | 100 tenants probed | — | Weekly | Rotate cohort slices; cache in `tmp/lake-seed-cache/` |
 | `Freehire` | Reservoir | Open Dataset/API | Public repository locator | Research | Backlog | — | — | — | N/A | Benchmark schema & terms |
 | `ats-scrapers` | Tooling / Scraping | Library | Open source MIT code | Research | Reusable | — | — | — | N/A | Extract domain -> ATS mapping logic |
 | `ats-jobs` | Tooling / Scraping | Library | Open source MIT code | Research | Reusable | — | — | — | N/A | Port tenant detection heuristics |

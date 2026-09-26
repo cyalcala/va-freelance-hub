@@ -1,6 +1,26 @@
 # System Savepoint
 
-## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (current)
+## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (current)
+
+Scaled upstream supply into the Turso Data Lake from `QUALIFIED_READY = 0` to **122** via the OpenJobs `companies_v2.json` dataset (12,144 companies). Added `scripts/lake/bulk-ats-seed.ts` (URL/file/curated cohort builder with `tmp/` caching, ATS slug extraction for 5 families, `lake_ats_discovery` dedupe), added the native Ashby probe template to `domain-ats-discovery.ts` (`DISCOVERY_VERSION = "2.1.0"`, 1000–2000ms paced probes, per-host skip-on-429 shielding mirroring `DISPATCHER_VERSION = "2.1.0"`), and added `runBulkAtsDiscovery()` for explicit family-pinned cohorts (`--seeds=` CLI, `lake:bulk-seed` script). Probed 497 seeds across two cohorts: 100 tenants evaluated, 1 auto-approved (`greenhouse:canonical`, 306 jobs, 122 QUALIFIED_READY @ 39.9% PH rate), 2 shadow-monitored (`lever:xsolla` 11.2%, `lever:spyke-games` 9.1%), 97 auto-rejected with Jev 1.13 evidence. Start SHA `1a0bbd7d669e06f97be001bd5cae4ab6ba882cb8`. Zero D1 writes (`changed_db=false`; 122 rows HELD by the source gate per ADR-007 fail-closed default; dry-run preview valid with `--allow-auto-approved`).
+
+- **Artifacts Delivered:**
+  - `scripts/lake/bulk-ats-seed.ts`: Bulk seed loader (OpenJobs/remoteintech/portals.yml normalizers, curated starter cohort, lake dedupe, `--run-discovery` passthrough).
+  - `scripts/lake/bulk-ats-seed.test.ts`: 8 unit tests (URL extraction, OpenJobs/portals parsing, dedupe, pacing clamps, 5-family resolution).
+  - `scripts/lake/domain-ats-discovery.ts`: Ashby template, pacing/shielding, `runBulkAtsDiscovery()`, `--seeds=`/`--delay-ms=` CLI.
+  - `package.json`: `lake:bulk-seed` script. `.gitignore`: `tmp/` scratch exclusion.
+  - `docs/FEDERATED_ACQUISITION_MATRIX.md`: Intake expansion telemetry + 4 new feed rows.
+- **Verification Evidence:**
+  - `bun run lake:state`: QUALIFIED_READY 0 → 122 (≥100 gate), SYNCED_TO_D1 359, auto-approved tenants 1.
+  - `bun run lake:replay`: 363 evaluated, 0 changed (honest no-op, heuristics already current).
+  - `bun run lake:sync -- --dry-run`: 0 authorized rows (fail-closed HELD as designed); `--allow-auto-approved` preview: 50 valid statements, NULL dates preserved, PH-eligible only.
+  - `bun run audit:guardrails`: clean exit 0. `bun run audit:parameters`: 100% parity.
+  - `bun run typecheck`: clean, 0 errors. `bun run test`: 1,506 pass / 0 fail across 147 files (+8 new tests).
+- **Autonomy:** L1 ADVISE both domains (unchanged). Lake admission is not D1 publication authority (ADR-007).
+- **Reality Level:** IMPLEMENTED & VERIFIED LOCALLY.
+- **NEXT**: Commit, push to `origin/main`, watch Sovereign CI Guardrail; review `greenhouse:canonical` for `--allow-auto-approved` sync; rotate next OpenJobs cohort slice weekly.
+
+## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (historical)
 
 Completed Architectural Evolution Phase 7 (Capability Registry & Conventional Source Adapters) implementing Operating Constitution v5.2 §8.1 (C16 Convention-Driven Source Integration) and §8.2 (C17 Capability-Based Dispatch). Authored `packages/scraper/capability-registry.ts` and 13 contract tests in `packages/scraper/capability-registry.test.ts`. All 4 numeric exit criteria satisfied: 5 standard capabilities defined (`ats_json`, `rss_xml`, `structured_xml`, `public_json_api`, `static_html`); duplicate capability names strictly rejected; registry-driven dispatch records C17 routing metadata; conventional sources integrate without central orchestrator (`scrape.ts`) modification. Latency overhead $< 1\text{ ms}$ (abandonment trigger: $> 50\text{ ms}$). Start SHA `dcf702c89280d963c6314f33190895c25603ca9b` (clean, verified deployment run `36220016689`).
 

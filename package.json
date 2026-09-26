@@ -23,6 +23,7 @@
     "lake:remotive:priority": "bun run scripts/lake/remotive-full.ts --priority-only",
     "lake:himalayas-sweep": "bun run scripts/lake/himalayas-sweep.ts",
     "lake:ats-discovery": "bun run scripts/lake/domain-ats-discovery.ts",
+    "lake:bulk-seed": "bun run scripts/lake/bulk-ats-seed.ts",
     "lake:replay": "bun run scripts/lake/replay-refinery.ts",
     "lake:sync": "bun run scripts/lake/sync-to-d1.ts",
     "lake:state": "bun run scripts/lake/lake-state-check.ts"
