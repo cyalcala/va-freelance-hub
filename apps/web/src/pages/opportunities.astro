@@ -31,12 +31,12 @@ if (!parsedRequest.ok) {
   return new Response(parsedRequest.message, { status: parsedRequest.status });
 }
 
-const { query, page: currentPage } = parsedRequest;
+const { query, page: currentPage, fresh } = parsedRequest;
 const category = searchParams.get('category') || '';
 const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
 const geoScope = searchParams.get('geoScope') || '';
-const activeFilterCount = [category, type, platform, geoScope].filter(Boolean).length;
+const activeFilterCount = [category, type, platform, geoScope, fresh].filter(Boolean).length;
 const hasActiveFilters = Boolean(query || activeFilterCount > 0);
 const offset = (currentPage - 1) * PAGE_SIZE;
 
@@ -53,7 +53,20 @@ function buildPageUrl(page: number) {
   if (type) params.set('type', type);
   if (platform) params.set('platform', platform);
   if (geoScope) params.set('geoScope', geoScope);
+  if (fresh) params.set('fresh', fresh);
   if (page > 1) params.set('page', String(page));
+  const qs = params.toString();
+  return qs ? `/opportunities?${qs}` : '/opportunities';
+}
+
+function buildFreshUrl(value: string | null) {
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (category) params.set('category', category);
+  if (type) params.set('type', type);
+  if (platform) params.set('platform', platform);
+  if (geoScope) params.set('geoScope', geoScope);
+  if (value) params.set('fresh', value);
   const qs = params.toString();
   return qs ? `/opportunities?${qs}` : '/opportunities';
 }
@@ -78,6 +91,14 @@ try {
     filters.push(eq(opportunities.geoScope, geoScope as any));
   }
 
+  // Fresh-arrivals slice: first-seen (`scraped_at`) recency. `today` is the
+  // current Asia/Manila calendar day. Absent by default — no behavior change.
+  if (fresh === '24h') {
+    filters.push(sql`unixepoch(${opportunities.scrapedAt}) >= unixepoch('now') - 86400`);
+  } else if (fresh === 'today') {
+    filters.push(sql`date(${opportunities.scrapedAt}, '+8 hours') = date('now', '+8 hours')`);
+  }
+
   if (query) {
     const ftsMatch = query
       .split(/\s+/)
@@ -91,6 +112,7 @@ try {
       type: type && TYPE_OPTIONS.includes(type) ? type : undefined,
       platform: platform || undefined,
       geoScope: geoScope && GEO_SCOPE_OPTIONS.some((opt) => opt.value === geoScope) ? geoScope : undefined,
+      fresh: fresh ?? undefined,
       limit: PAGE_SIZE,
       offset,
     });
@@ -121,11 +143,16 @@ try {
 
     pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
     if (!pageOutOfRange) {
+      // Fresh view orders by discovery (first-seen); default board keeps the
+      // source-posted-date order.
+      const freshOrder = fresh
+        ? desc(opportunities.scrapedAt)
+        : desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`);
       pageJobs = await db
         .select()
         .from(opportunities)
         .where(whereClause)
-        .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
+        .orderBy(freshOrder)
         .limit(PAGE_SIZE)
         .offset(offset);
     }
@@ -313,11 +340,28 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
       <p class="tabular-nums">
         Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
       </p>
-      {(query || category || type || platform || geoScope) && (
-        <a href="/opportunities" class="text-accent hover:text-accent-hover transition-colors">
-          Clear filters
+      <div class="flex items-center gap-2">
+        <span class="text-ink/35 font-medium">New arrivals:</span>
+        <a
+          href={buildFreshUrl('24h')}
+          aria-current={fresh === '24h' ? 'page' : undefined}
+          class={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${fresh === '24h' ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-surface border-ink/[0.09] text-ink/60 hover:text-accent hover:border-accent/30'}`}
+        >
+          Last 24h
         </a>
-      )}
+        <a
+          href={buildFreshUrl('today')}
+          aria-current={fresh === 'today' ? 'page' : undefined}
+          class={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${fresh === 'today' ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-surface border-ink/[0.09] text-ink/60 hover:text-accent hover:border-accent/30'}`}
+        >
+          Today (Manila)
+        </a>
+        {(query || category || type || platform || geoScope || fresh) && (
+          <a href="/opportunities" class="text-accent hover:text-accent-hover transition-colors">
+            Clear filters
+          </a>
+        )}
+      </div>
     </div>
 
     {pageJobs.length === 0 ? (

@@ -22,6 +22,7 @@ test("FTS search preserves filters, ranking, card fields, and safe links", () =>
         source_url TEXT NOT NULL,
         source_platform TEXT NOT NULL,
         posted_at TEXT,
+        scraped_at TEXT,
         experience_level TEXT,
         geo_scope TEXT,
         ph_eligibility TEXT,
@@ -34,17 +35,17 @@ test("FTS search preserves filters, ranking, card fields, and safe links", () =>
       );
       INSERT INTO opportunities VALUES
         (1, 'Assistant', 'Alpha', 'remote assistant role', 'admin', 'VA',
-         'https://jobs.example/alpha', 'Remotive', '2026-08-12T00:00:00Z',
+         'https://jobs.example/alpha', 'Remotive', '2026-08-12T00:00:00Z', '2026-08-12T01:00:00Z',
          'junior', 'worldwide', 'eligible_verified', 'Worldwide applicants', 1),
         (2, 'Executive Assistant', 'Beta', 'assistant assistant assistant', 'admin', 'VA',
-         'https://jobs.example/beta', 'Remotive', '2026-08-11T00:00:00Z',
+         'https://jobs.example/beta', 'Remotive', '2026-08-11T00:00:00Z', NULL,
          'senior', 'apac_incl_ph', 'unclear', 'APAC listing', 1),
         (3, 'Assistant', 'Filtered Category', 'assistant', 'engineering', 'VA',
-         'https://jobs.example/category', 'Remotive', NULL, NULL, NULL, 'unclear', NULL, 1),
+         'https://jobs.example/category', 'Remotive', NULL, NULL, NULL, NULL, 'unclear', NULL, 1),
         (4, 'Assistant', 'Inactive', 'assistant', 'admin', 'VA',
-         'https://jobs.example/inactive', 'Remotive', NULL, NULL, NULL, 'unclear', NULL, 0),
+         'https://jobs.example/inactive', 'Remotive', NULL, NULL, NULL, NULL, 'unclear', NULL, 0),
         (5, 'Assistant', 'Filtered Platform', 'assistant', 'admin', 'VA',
-         'https://jobs.example/platform', 'RemoteOK', NULL, NULL, NULL, 'unclear', NULL, 1);
+         'https://jobs.example/platform', 'RemoteOK', NULL, NULL, NULL, NULL, 'unclear', NULL, 1);
       INSERT INTO opportunities_fts(rowid, title, company, description)
         SELECT id, title, company, description FROM opportunities;
     `);
@@ -74,6 +75,7 @@ test("FTS search preserves filters, ranking, card fields, and safe links", () =>
       sourceUrl: "https://jobs.example/beta",
       sourcePlatform: "Remotive",
       postedAt: "2026-08-11T00:00:00Z",
+      scrapedAt: null,
       experienceLevel: "senior",
       geoScope: "apac_incl_ph",
       phEligibility: "unclear",

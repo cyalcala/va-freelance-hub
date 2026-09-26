@@ -1,9 +1,12 @@
+import { freshFtsCondition, type FreshFilter } from "./public-query";
+
 export interface OpportunityFtsQueryOptions {
   ftsMatch: string;
   category?: string;
   type?: string;
   platform?: string;
   geoScope?: string;
+  fresh?: FreshFilter | null;
   limit: number;
   offset: number;
 }
@@ -23,6 +26,7 @@ const CARD_PROJECTION = `
   o.source_url AS "sourceUrl",
   o.source_platform AS "sourcePlatform",
   o.posted_at AS "postedAt",
+  o.scraped_at AS "scrapedAt",
   o.experience_level AS "experienceLevel",
   o.geo_scope AS "geoScope",
   o.ph_eligibility AS "phEligibility",
@@ -53,6 +57,9 @@ export function buildOpportunityFtsQueries(
   if (options.geoScope) {
     conditions.push("o.geo_scope = ?");
     filterParams.push(options.geoScope);
+  }
+  if (options.fresh) {
+    conditions.push(freshFtsCondition(options.fresh));
   }
 
   const fromAndWhere = `FROM opportunities o

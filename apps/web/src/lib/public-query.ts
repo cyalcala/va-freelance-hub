@@ -7,8 +7,33 @@ type InvalidRequest = { ok: false; status: 400; message: string };
 
 export type PublicPageRequest = ValidPage | InvalidRequest;
 export type JobBoardRequest =
-  | (ValidPage & { query: string })
+  | (ValidPage & { query: string; fresh: FreshFilter | null })
   | InvalidRequest;
+
+/**
+ * Recency filter for the public board. `24h` is a rolling 24-hour window on
+ * first-seen (`scraped_at`); `today` is the current Asia/Manila calendar day.
+ * Anything else is rejected to null (never a 400 — an unknown filter simply
+ * shows the default board).
+ */
+export type FreshFilter = "24h" | "today";
+
+export function parseFreshFilter(raw: string | null): FreshFilter | null {
+  if (raw === "24h" || raw === "today") return raw;
+  return null;
+}
+
+/**
+ * Raw FTS-path predicate for a parsed fresh filter. The value is allowlisted
+ * by `parseFreshFilter`, so interpolation is injection-safe; request values
+ * never reach this string.
+ */
+export function freshFtsCondition(fresh: FreshFilter): string {
+  if (fresh === "24h") {
+    return "unixepoch(o.scraped_at) >= unixepoch('now') - 86400";
+  }
+  return "date(o.scraped_at, '+8 hours') = date('now', '+8 hours')";
+}
 
 /**
  * Restrict public list parameters before they reach D1. Strict decimal parsing
@@ -50,7 +75,8 @@ export function parseJobBoardRequest(params: URLSearchParams): JobBoardRequest {
   }
 
   const page = parsePageRequest(params.get("page"));
-  return page.ok ? { ...page, query } : page;
+  const fresh = parseFreshFilter(params.get("fresh"));
+  return page.ok ? { ...page, query, fresh } : page;
 }
 
 /** Escape user text for a parameterized SQLite LIKE expression with ESCAPE '\\'. */
