@@ -1,6 +1,17 @@
 # AI Recovery Trail
 
-## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (current)
+## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (current)
+
+Audit per the v3 loop (measure before optimizing). Start SHA `d36069b` clean.
+
+- **Final state**:
+  - 15-day Manila series measured; ex-spike mean 12.6/d; gap ~87/d; ceiling ~15–30/d.
+  - Remotive 0/13k diagnosed live as stable-feed market reality; dedup verified healthy.
+  - Remotecom promotion correctly stopped (singleton in window until ~18:20Z).
+  - Workable "100% healthy" claim falsified and corrected; pacing diagnostic queued.
+  - Evidence doc + baton refresh only; zero production effect; autonomy L1 unchanged.
+
+## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (historical)
 
 Execution per the v3 autonomous operating prompt (§54 FIRST→SECOND). Start SHA `b80017d` (clean, synced); behavior commit `f16529c`; CI run `36209240958` all-success.
 

@@ -1,9 +1,9 @@
 # Current resume pointer
 
-**Refreshed 2026-09-26 (UNIFIED PORTABLE PROMPT active; single prompt, zero file refs, any-computer ready; prompt-only + docs, no behavior change).**
-Newest baton: [`2026-09-26-UNIFIED-PORTABLE-PROMPT.md`](./2026-09-26-UNIFIED-PORTABLE-PROMPT.md) — one copy-paste block, no machine paths. Start SHA `53dcfb7` (main == origin/main, clean).
+**Refreshed 2026-09-26 (FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained vs 100 floor, remotecom held at gate).**
+Newest baton: `docs/gauntlet/evidence/FUNNEL-MEASUREMENT-2026-09-26.md` + top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Start SHA `d36069b` (main == origin/main, clean at entry).
 
-NEXT: NEXT-2026-09-26a (AUDIT, read-only) — verify P0 Turso→D1 bypass live via `lake:sync -- --dry-run` vs gateway ledger/cap path; then P1 starvation fix. Workable stays shadow (~Oct 1–2); `himalayas:remote-jobs` shadow admission staged under ADR-006/007.
+NEXT: re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (singleton ages out; bad-outcomes query FIRST); bounded Workable-pacing diagnostic for post-fix 09-25 429 bursts. Wikimedia ~09-29. No lake live-sync (0 READY).
 
 ---
 *Prior pointer (2026-09-25) preserved below.*

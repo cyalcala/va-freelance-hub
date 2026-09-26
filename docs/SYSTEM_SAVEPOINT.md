@@ -1,6 +1,22 @@
 # System Savepoint
 
-## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (current)
+## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day supply audit, Remotive falsified as market, remotecom held at gate (current)
+
+The owner instructed: "Proceed". Executed the prior NEXT: Manila-day qualified-publication funnel, all read-only (every D1 query `changed_db=false`, `rows_written=0`; one polite live fetch of the allowed Remotive feed via a temp script, deleted after).
+
+- **Mode/baton:** EXECUTE, unit `FUNNEL-MEASUREMENT` (audit; no code change justified — see gate stops). Start SHA `d36069bec69e3c7ce827e21c5c6ce0fe2c4864a8` (clean, synchronized with `origin/main`).
+- **Manila-day qualified-new (first-stored proxy, active-only; survivorship bias disclosed):** 09-11:12, 09-12:13, 09-13:6, 09-14:4, 09-15:25, 09-16:15, 09-17:18, 09-18:14, 09-19:15, 09-20:5, 09-21:7, 09-22:13, 09-23:2, 09-24:152*, 09-25:27, 09-26:14 partial. *09-24 = graduation bulk (121/152 Breezy import), not flow. Ex-spike mean **12.6/day**, min 2, max 27, 0 days ≥ 100, 0 missing days. Rolling 7d 233 incl. bulk → recurring ≈ 16/day. **Gap to floor ≈ 87/day.**
+- **Stock/board:** 901 active eligible (681 likely + 220 verified), 0 active unclear; board HTTP 200. Concentration 7d: WWR 51, Sourcefit 48, 20Four7VA 45, top-3 62%.
+- **Remotive 0/13,104 falsified as market, not pipeline:** live 18-item fetch → 10/18 geoGate-eligible; D1 `MAX(last_seen_in_feed_at)` = yesterday → dedup re-sighting works, feed stable ~19/tick, eligible items already captured. No fix action.
+- **Gate stops (evidence, not optimism):** remotecom holds 15 qualifying dates but the 2026-09-12T18:20:56Z singleton is still inside the rolling 14d window at 01:55Z — NOT promotable until ~18:20Z today. Workable x7 shows fresh all-agency 429 bursts 09-25T13Z+18Z (post-fix), contradicting the prior "100% healthy since 09-24T20:15Z" claim — window sliding, needs pacing diagnosis, not promotion. Wikimedia due ~09-29. Canary governance healthy (GitLab/Grafana/Nearform 0 active rows, zero leakage). Lake 0 QUALIFIED_READY — nothing to sync.
+- **§10 honest ceiling: ~15–30/day recurring from current sources; largest permissible expansion is the shadow maturation pipeline.**
+- **Autonomy:** L1 ADVISE both domains, unchanged; Jev not invoked; no level change.
+- **Evidence:** `docs/gauntlet/evidence/FUNNEL-MEASUREMENT-2026-09-26.md` (queries, tallies, §10 block).
+- **Verification Evidence:** no code touched — `git status` clean except new evidence doc + baton; D1 writes 0; lake writes 0. Bun version mismatch standing disclosure (local 1.4.2 vs pin 1.3.14).
+- **Backup:** pending push of this checkpoint (evidence doc + baton).
+- **NEXT**: Re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z with the staged script (run the bad-outcomes-back-to-MIN-qualifying query FIRST); open a bounded Workable-pacing diagnostic for the 09-25 post-fix 429 bursts. Do NOT live-sync the lake (0 READY) and do NOT promote remotecom before the window clears.
+
+## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (historical)
 
 The owner instructed: "Proceed in this. Expertly read, plan and act in all of this. All approved." invoking the v3 autonomous operating prompt (`smart777.txt`: graded autonomy ladder, deterministic envelope, sovereignty contract).
 

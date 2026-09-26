@@ -1,6 +1,13 @@
 # Implementation Status
 
-## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (current)
+## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (current)
+
+- **What this is**: Read-only funnel audit (no code change; two gate stops blocked mutation). Sustained rate ~12.6/d vs 100 floor (gap ~87/d); honest ceiling ~15–30/d; 09-24 spike labeled backlog. Remotive yield loss falsified as market. Remotecom promotion stopped at evidence gate (due ~18:20Z). Workable healthy-claim corrected (post-fix 429s).
+- **Evidence**: `docs/gauntlet/evidence/FUNNEL-MEASUREMENT-2026-09-26.md`.
+- **Autonomy:** L1 ADVISE both domains, unchanged.
+- **Verification**: zero writes everywhere (D1 `changed_db=false` all queries; no lake writes; board HTTP 200).
+
+## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (historical)
 
 - **What this is**: Fail-closed reconciliation of the Turso→D1 publication bridge (§54 FIRST→SECOND of the v3 prompt). Proved the bypass (raw INSERTs, no registry/lease/ledger/cap/opt-out gate; fabricated date/eligibility defaults; starvation-prone selection; NaN CLI crash; silent auto-approved authority), then hardened the bridge without redesigning the gateway and without any D1 write.
 - **Changed modules**:

@@ -1,6 +1,15 @@
 # Handoff
 
-## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (current)
+## 2026-09-26 — FUNNEL-MEASUREMENT: Manila-day audit, ~13/d sustained, remotecom held (current)
+
+Read-only supply audit per the prior NEXT. Full numbers in `docs/gauntlet/evidence/FUNNEL-MEASUREMENT-2026-09-26.md`; top savepoint entry holds the baton.
+
+- **Findings**: ~12.6/d ex-spike Manila mean (≈87/d gap); 901 active eligible, 0 unclear, board 200; Remotive 0-yield is market stability (diagnosed live, dedup healthy), not pipeline loss; remotecom NOT promotable until ~18:20Z today; Workable post-fix 429 bursts contradict prior healthy-claim (window sliding); canaries leak-free; lake 0 READY.
+- **Correction to prior baton**: "100% HEALTHY_WITH_RESULTS since 2026-09-24T20:15Z" for Workable is FALSIFIED by 09-24T20Z (2) + 09-25T13Z/18Z (14) all-agency 429s. Treat Workable readiness as blocked pending pacing diagnosis.
+- **When the owner resumes**: remotecom re-eval after 18:20Z; Workable-pacing diagnostic. No live lake sync.
+- **Backup:** pending push of this checkpoint.
+
+## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (historical)
 
 The owner invoked the v3 autonomous operating prompt with full approval. Executed §54 FIRST (proved the Turso→D1 publication bypass with code + live read-only evidence) and the fail-closed half of SECOND (bridge reconciliation without gateway redesign). Full detail is in `docs/SYSTEM_SAVEPOINT.md` (top entry).
 
