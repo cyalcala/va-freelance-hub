@@ -6,7 +6,7 @@ Read-only unit per the queued NEXT (zero writes, zero code changes). Evidence: `
 
 - **Findings**: badge-free board + fresh views live (14 Manila-today rows, chips active, no card badges); remotecom singleton still in 14d window (due ~18:20Z); Workable post-fix bursts 09-25T13Z/18Z are window-level origin limits (7 probes/54s all-429 despite 3s delay + retry) — 7-day window keeps sliding; 4-tick healthy streak since 20:20Z with stable yields.
 - **When the owner resumes**: remotecom re-eval after 18:20Z (bad-outcomes query FIRST); bounded skip-on-429 dispatch unit. No early promotion, no live lake sync.
-- **Backup:** pending push of this checkpoint.
+- **Backup:** commit `16db4fb` on `origin/main`; Sovereign CI Guardrail run `36211984686` success.
 
 ## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (historical)
 

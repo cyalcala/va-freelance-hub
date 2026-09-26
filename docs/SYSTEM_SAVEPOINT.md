@@ -12,7 +12,7 @@ Owner instruction "Proceed in this ... All approved" under the v3.1 prompt. Exec
 - **Autonomy:** L1 ADVISE both domains, unchanged; Jev not invoked.
 - **Verification:** no code touched — D1 writes 0, lake writes 0; live HTTP 200s; CI success on base SHA already recorded. Bun mismatch standing disclosure (local 1.4.2 vs pin 1.3.14).
 - **Evidence:** `docs/gauntlet/evidence/WORKABLE-PACING-DIAGNOSTIC-2026-09-26.md`.
-- **Backup:** pending push of this checkpoint (evidence doc + baton).
+- **Backup:** commit `16db4fb` on `origin/main`; Sovereign CI Guardrail run `36211984686` success.
 - **NEXT**: Re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z with the staged script (bad-outcomes query FIRST); open the bounded skip-on-429 dispatch unit. Do NOT promote early or live-sync the lake on an unapproved cohort.
 
 ## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (historical)
