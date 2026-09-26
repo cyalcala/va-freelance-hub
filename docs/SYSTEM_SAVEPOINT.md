@@ -1,6 +1,25 @@
 # System Savepoint
 
-## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: post-fix 429 bursts are window-level, remotecom held, badge-live verified (current)
+## 2026-09-26 — SHADOW-DISPATCH-SKIP-ON-429: same-host skip on 429 implemented, prompt upgraded to v3.1 (current)
+
+Owner instruction "Proceed in this. Expertly read, plan and act in this. All approved." with `C:\Users\admin\Downloads\lucky1.md` (Autonomous Operating Prompt v3.1). Implemented the queued Workable pacing fix in `packages/scraper/shadow-dispatcher.ts` and upgraded the master operating prompt to v3.1. Start SHA `44069704cde603ccb7a502eabc0d48e4859cda12` (clean, == origin/main).
+
+- **Implementation (`shadow-dispatcher.ts`):** `DISPATCHER_VERSION = "2.1.0"`; `rateLimitedHosts = new Set<string>()` tracked per dispatch run; when any probe returns `RATE_LIMITED`, its origin host is registered; subsequent candidates targeting that host in the same run are skipped (`skippedRateLimitedHost += 1`, `skippedHostLimits.push(...)`) without making external requests or writing D1 observation rows. Scoped strictly per-run; resets fresh on each hourly tick. Different-host candidates (e.g. Greenhouse) dispatch normally.
+- **Master Operating Prompt v3.1:** upgraded `docs/bootloaders/MASTER_OPERATING_PROMPT.md` with the full text of `lucky1.md` (Reality Recognition Protocol §0.4A, Reality State Ladder, Falsification-First §0.4A.4, Anti-Paper-System §0.4A.5, Reality Drift §0.4A.6, and Appendix E Engineering Canon).
+- **Verification Evidence:**
+  - Narrow tests: 39 pass / 0 fail in `packages/scraper/shadow-dispatcher.test.ts` (+2 new unit tests).
+  - Route tests: 21 pass / 0 fail in `apps/web/tests/shadow-dispatch-route.test.ts`.
+  - Full test suite: 1,464 pass / 0 fail across 143 test files (`bun run test`).
+  - Typecheck: clean, 0 errors (`bun run typecheck`).
+  - Guardrails: clean, exit 0 (`bun run audit:guardrails`).
+  - Production build: Complete (`bun run build`).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH standing disclosure.
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged; no autonomous promotion claimed).
+- **Reality Level:** IMPLEMENTED & LOCALLY VERIFIED; deployment pending CI push.
+- **Evidence:** `docs/gauntlet/evidence/SHADOW-DISPATCH-SKIP-ON-429-2026-09-26.md`.
+- **NEXT**: Re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z with the staged script (bad-outcomes query FIRST); observe live shadow dispatch for `skippedRateLimitedHost` telemetry. No early promotion, no unapproved lake live sync.
+
+## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: post-fix 429 bursts are window-level, remotecom held, badge-live verified (historical)
 
 Owner instruction "Proceed in this ... All approved" under the v3.1 prompt. Executed the queued NEXT as a read-only unit (zero D1 writes, zero code changes): badge-live observation + remotecom gate re-check + Workable pacing diagnosis. Start SHA `43dc8884004ffbcdfd70a29fb95d72a03b5cff7e` (clean, == origin/main).
 

@@ -1,9 +1,11 @@
 # Current resume pointer
 
-**Refreshed 2026-09-26 (~02:35Z, WORKABLE-PACING-DIAGNOSTIC read-only; badge-live verified, remotecom held, window-level 429s diagnosed).**
-Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Evidence `docs/gauntlet/evidence/WORKABLE-PACING-DIAGNOSTIC-2026-09-26.md`. Zero D1/code writes.
+**Refreshed 2026-09-26 (~03:00Z, SHADOW-DISPATCH-SKIP-ON-429 + prompt v3.1; skip-on-429 implemented, master prompt upgraded to v3.1).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Evidence `docs/gauntlet/evidence/SHADOW-DISPATCH-SKIP-ON-429-2026-09-26.md`.
+- `shadow-dispatcher.ts`: `DISPATCHER_VERSION = "2.1.0"`, `rateLimitedHosts` run-scoped tracking, subsequent same-host probes skipped to prevent multi-429 burst penalties in same window; verified 39/0 narrow, 1,464/0 full.
+- Master operating prompt: upgraded to Autonomous Operating Prompt v3.1 (`docs/bootloaders/MASTER_OPERATING_PROMPT.md`).
 
-NEXT: re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (bad-outcomes query FIRST); open the bounded skip-on-429 dispatch unit. No early promotion, no live lake sync.
+NEXT: re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (bad-outcomes query FIRST); observe live shadow dispatch for `skippedRateLimitedHost` metric. No early promotion, no unapproved lake live sync.
 
 ---
 *Prior pointer (2026-09-25) preserved below.*

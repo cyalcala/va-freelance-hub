@@ -1,6 +1,18 @@
 # Handoff
 
-## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: window-level 429s, remotecom held, badge-live verified (current)
+## 2026-09-26 — SHADOW-DISPATCH-SKIP-ON-429: same-host skip on 429 implemented, prompt upgraded to v3.1 (current)
+
+Implementation unit per owner instruction "Proceed in this ... All approved" with prompt v3.1. Implemented Workable pacing skip in `packages/scraper/shadow-dispatcher.ts` and upgraded `docs/bootloaders/MASTER_OPERATING_PROMPT.md` to Autonomous Operating Prompt v3.1. Evidence: `docs/gauntlet/evidence/SHADOW-DISPATCH-SKIP-ON-429-2026-09-26.md`; baton: top savepoint entry.
+
+- **Changes**:
+  - `packages/scraper/shadow-dispatcher.ts`: `DISPATCHER_VERSION = "2.1.0"`, `ShadowDispatchSummary` extended with `skippedRateLimitedHost` and `skippedHostLimits`. Run-scoped `rateLimitedHosts` tracks hosts that return `RATE_LIMITED`; subsequent same-host candidates in that run are skipped without external fetches or D1 observation rows.
+  - `packages/scraper/shadow-dispatcher.test.ts`: 2 new unit tests (39 pass / 0 fail).
+  - `docs/bootloaders/MASTER_OPERATING_PROMPT.md`: upgraded to v3.1 (Reality-Grounded / Evidence-Literate Edition).
+- **Verification**: narrow 39/0; route 21/0; full 1,464/0 across 143 test files; typecheck clean (0 errors); audit:guardrails clean (0 violations); build Complete. Bun mismatch standing disclosure.
+- **When the owner resumes**: remotecom re-eval after 18:20Z (bad-outcomes query FIRST); observe live shadow dispatch for `skippedRateLimitedHost` telemetry. No early promotion, no unapproved lake live sync.
+- **Backup:** pending push of this commit to `origin/main`.
+
+## 2026-09-26 — WORKABLE-PACING-DIAGNOSTIC: window-level 429s, remotecom held, badge-live verified (historical)
 
 Read-only unit per the queued NEXT (zero writes, zero code changes). Evidence: `docs/gauntlet/evidence/WORKABLE-PACING-DIAGNOSTIC-2026-09-26.md`; baton: top savepoint entry.
 

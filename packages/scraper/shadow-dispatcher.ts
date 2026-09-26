@@ -34,7 +34,7 @@ import type { CurrentAdmissionEvidenceResult } from "./admission-evidence";
 import { hostOf } from "./prospector";
 import type { DispatchAnomaly } from "./shadow-verdict";
 
-export const DISPATCHER_VERSION = "2.0.0";
+export const DISPATCHER_VERSION = "2.1.0";
 
 // Registry rows have no per-source cadence unless their provider specifies
 // one (provider_profiles.cadence_min_minutes). A shadow probe's purpose is
@@ -328,6 +328,10 @@ export interface ShadowDispatchSummary {
   skippedInvalidProvider: number;
   skippedInvalidEvidence: number;
   skippedRunCap: number;
+  /** Same-host candidates skipped after an earlier probe to that origin returned RATE_LIMITED. */
+  skippedRateLimitedHost: number;
+  /** Detailed record of sources and hosts skipped due to origin rate limits. */
+  skippedHostLimits: Array<{ sourceId: string; host: string }>;
   invalidProviderErrors: Array<{ sourceId: string; errors: string[] }>;
   outcomes: Record<string, number>;
   probeFailures: number;
@@ -397,6 +401,8 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     skippedInvalidProvider: 0,
     skippedInvalidEvidence: 0,
     skippedRunCap: 0,
+    skippedRateLimitedHost: 0,
+    skippedHostLimits: [],
     invalidProviderErrors: [],
     outcomes: {},
     probeFailures: 0,
@@ -405,6 +411,7 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     anomalies: [],
   };
 
+  const rateLimitedHosts = new Set<string>();
   let authorityChecks = 0;
   let lastHost: string | null = null;
   for (const enumerated of registryRows) {
@@ -414,6 +421,18 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     }
     if (summary.dispatched >= maxDispatches || authorityChecks >= MAX_DISPATCHES_PER_RUN) {
       summary.skippedRunCap += 1;
+      continue;
+    }
+
+    // Fast-path: if this candidate's endpoint host has already received a
+    // RATE_LIMITED outcome earlier in this same dispatch run, skip it before
+    // reading authority or polling the origin. This bounds window-level origin
+    // 429 bursts (e.g. apply.workable.com) to 1 error + N skips rather than N
+    // errors, avoiding multiple 429 penalties in the same observation window.
+    const enumeratedHost = hostOf(enumerated.endpointUrl);
+    if (enumeratedHost && rateLimitedHosts.has(enumeratedHost)) {
+      summary.skippedRateLimitedHost += 1;
+      summary.skippedHostLimits.push({ sourceId: enumerated.sourceId, host: enumeratedHost });
       continue;
     }
 
@@ -434,6 +453,13 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
       continue;
     }
 
+    const currentHost = hostOf(row.endpointUrl);
+    if (currentHost && rateLimitedHosts.has(currentHost)) {
+      summary.skippedRateLimitedHost += 1;
+      summary.skippedHostLimits.push({ sourceId: row.sourceId, host: currentHost });
+      continue;
+    }
+
     const validation = validateProviderProfileForDispatch(provider);
     if (!validation.ok) {
       summary.skippedInvalidProvider += 1;
@@ -451,7 +477,6 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     }
     summary.eligible += 1;
 
-    const currentHost = hostOf(row.endpointUrl);
     // Polite inter-probe delay between external requests:
     // Standard delay is 1,200 ms. If consecutive probes target the same origin
     // host (e.g. apply.workable.com), apply an extended 3,000 ms delay to prevent
@@ -493,6 +518,9 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
 
     summary.dispatched += 1;
     summary.outcomes[result.diagnostic.outcome] = (summary.outcomes[result.diagnostic.outcome] ?? 0) + 1;
+    if (result.diagnostic.outcome === "RATE_LIMITED" && currentHost) {
+      rateLimitedHosts.add(currentHost);
+    }
     if (result.diagnostic.outcome !== "HEALTHY_WITH_RESULTS" && result.diagnostic.outcome !== "HEALTHY_EMPTY") {
       summary.anomalies.push({
         sourceId: result.sourceId,

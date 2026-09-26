@@ -290,4 +290,85 @@ describe("current-evidence shadow dispatcher", () => {
     // Probe 3 (rowC) -> dispatched=2, different host (boards-api.greenhouse.io) -> 1200ms
     expect(delays).toEqual([3000, 1200]);
   });
+  test("skips subsequent same-host candidates when a probe returns RATE_LIMITED while allowing different hosts", async () => {
+    const persisted: string[] = [];
+    const probed: string[] = [];
+    const rowW1 = registryRow({ sourceId: "workable:agency1", endpointUrl: "https://apply.workable.com/api/v1/widget/accounts/agency1" });
+    const rowW2 = registryRow({ sourceId: "workable:agency2", endpointUrl: "https://apply.workable.com/api/v1/widget/accounts/agency2" });
+    const rowGH = registryRow({ sourceId: "greenhouse:remotecom", endpointUrl: "https://boards-api.greenhouse.io/v1/boards/remotecom/jobs" });
+    const rowW3 = registryRow({ sourceId: "workable:agency3", endpointUrl: "https://apply.workable.com/api/v1/widget/accounts/agency3" });
+
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => [rowW1, rowW2, rowGH, rowW3],
+      loadAdmissionContext: async (sourceId) => {
+        if (sourceId === "workable:agency1") return context(rowW1);
+        if (sourceId === "workable:agency2") return context(rowW2);
+        if (sourceId === "greenhouse:remotecom") return context(rowGH);
+        return context(rowW3);
+      },
+      runProbe: async (input) => {
+        probed.push(input.sourceId);
+        if (input.sourceId === "workable:agency1") {
+          return {
+            ...fakeResult(input),
+            diagnostic: { ...fakeResult(input).diagnostic, outcome: "RATE_LIMITED" },
+          };
+        }
+        return fakeResult(input);
+      },
+      persistObservation: async (record) => {
+        persisted.push(record.sourceId);
+      },
+    }));
+
+    // Only workable:agency1 and greenhouse:remotecom were probed; agency2 and agency3 were skipped
+    expect(probed).toEqual(["workable:agency1", "greenhouse:remotecom"]);
+    expect(persisted).toEqual(["workable:agency1", "greenhouse:remotecom"]);
+    expect(result.dispatched).toBe(2);
+    expect(result.skippedRateLimitedHost).toBe(2);
+    expect(result.skippedHostLimits).toEqual([
+      { sourceId: "workable:agency2", host: "apply.workable.com" },
+      { sourceId: "workable:agency3", host: "apply.workable.com" },
+    ]);
+    expect(result.outcomes).toEqual({
+      RATE_LIMITED: 1,
+      HEALTHY_WITH_RESULTS: 1,
+    });
+    // Only agency1 is recorded in anomalies; agency2 and agency3 streaks are not poisoned
+    expect(result.anomalies.map(a => a.sourceId)).toEqual(["workable:agency1"]);
+  });
+  test("resets rate-limited hosts across separate dispatch runs", async () => {
+    const probed: string[] = [];
+    const rowW1 = registryRow({ sourceId: "workable:agency1", endpointUrl: "https://apply.workable.com/api/v1/widget/accounts/agency1" });
+    const rowW2 = registryRow({ sourceId: "workable:agency2", endpointUrl: "https://apply.workable.com/api/v1/widget/accounts/agency2" });
+
+    // Run 1: agency1 gets RATE_LIMITED -> agency2 is skipped
+    const run1 = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => [rowW1, rowW2],
+      loadAdmissionContext: async (sourceId) => context(sourceId === "workable:agency1" ? rowW1 : rowW2),
+      runProbe: async (input) => {
+        probed.push(input.sourceId);
+        return {
+          ...fakeResult(input),
+          diagnostic: { ...fakeResult(input).diagnostic, outcome: "RATE_LIMITED" },
+        };
+      },
+    }));
+    expect(run1.dispatched).toBe(1);
+    expect(run1.skippedRateLimitedHost).toBe(1);
+
+    // Run 2: Next tick starts fresh, agency1 is probed again (not pre-skipped)
+    probed.length = 0;
+    const run2 = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => [rowW1, rowW2],
+      loadAdmissionContext: async (sourceId) => context(sourceId === "workable:agency1" ? rowW1 : rowW2),
+      runProbe: async (input) => {
+        probed.push(input.sourceId);
+        return fakeResult(input); // Healthy this tick
+      },
+    }));
+    expect(run2.dispatched).toBe(2);
+    expect(run2.skippedRateLimitedHost).toBe(0);
+    expect(probed).toEqual(["workable:agency1", "workable:agency2"]);
+  });
 });
