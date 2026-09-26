@@ -1,5 +1,16 @@
 # Current resume pointer
 
+**Refreshed 2026-09-26 (~15:45Z, POST-DEPLOY-SHADOW-WATCH-01).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
+- 1 MiB budget deployed and healthy: CI `36252115762` green, live `/` + `?fresh=today` 200, 1544/0 tests, all audits clean. One stale YAML comment fixed (no values changed).
+- 13:12Z EX-03 red ran on the old 512 KiB budget (myjewellery oversize + Workable 429 → Jev FAIL 0.72); that oversize mode retires under 1 MiB.
+- Not yet observed: post-deploy EX-03 tick (next 16:23Z), Canonical shadow-day accumulation, remotecom gate `2026-09-26T18:20:56Z`.
+
+NEXT: Watch the 16:23Z EX-03 verdict, then let the hourly clock and `:47` publish collect 8 healthy Canonical days. Remotecom only after 18:20:56Z, bad-outcomes query first.
+
+---
+*Prior pointer preserved below.*
+
 **Refreshed 2026-09-26 (~15:30Z, CANONICAL-SHADOW-CLOCK).**
 Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md).
 - Canonical's public board is about 568 KB. The 512 KiB shadow budget rejected it. The accepted ceiling is now 1 MiB.

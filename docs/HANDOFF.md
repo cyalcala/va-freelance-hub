@@ -1,6 +1,15 @@
 # Handoff
 
-## 2026-09-26 — CANONICAL-SHADOW-CLOCK (current)
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (current)
+
+1 MiB budget deployed and healthy. One stale comment fixed. No promotion, no sync, no D1 write.
+
+- **Health:** CI `36252115762` green on HEAD. Live `/` and `/opportunities?fresh=today` both 200. Tests 1544/0, typecheck clean, parameters 100% parity.
+- **EX-03 13:12Z red was pre-budget:** myjewellery 524313 > 524288 plus a Workable 429 → Jev FAIL_CONSERVATIVE 0.72 → failed by design. That oversize mode retires under 1 MiB; 429s can still fail runs by design (6 same-host skips working).
+- **Not yet seen:** no EX-03 tick since the 15:29Z deploy (next 16:23Z). Canonical day-1 shadow accumulation unverified here. Remotecom gate `2026-09-26T18:20:56Z` still pending.
+- **When the owner resumes:** check the 16:23Z EX-03 verdict (myjewellery should pass), then leave the hourly clock and `:47` publish to collect 8 healthy Canonical days. Remotecom only after 18:20:56Z, bad-outcomes query first.
+
+## 2026-09-26 — CANONICAL-SHADOW-CLOCK (historical)
 
 Canonical is on the board and was missing from the shadow clock because its board JSON is larger than 512 KiB. The probe budget is now 1 MiB. A local probe of the live board was healthy at 568371 bytes.
 

@@ -1,6 +1,12 @@
 # Implementation Status
 
-## 2026-09-26 — CANONICAL-SHADOW-CLOCK (current)
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (current)
+
+- **What this is**: Post-deploy observation of the 1 MiB shadow budget plus a one-line doc coherence fix (`ACCEPTED_PARAMETERS.yaml` comment: Canonical board 524312 → measured 568371). No behavior change.
+- **Verification**: CI `36252115762` green; live board and fresh view 200; 1544/0 tests across 151 files; typecheck, guardrails, parameters (100% parity), constitution audits clean.
+- **Finding**: The 13:12Z EX-03 failure ran on the old 512 KiB budget (myjewellery oversize + Workable 429 → Jev FAIL_CONSERVATIVE 0.72). That oversize mode retires under 1 MiB. No post-deploy EX-03 tick observed yet (next 16:23Z).
+
+## 2026-09-26 — CANONICAL-SHADOW-CLOCK (historical)
 
 - **What this is**: Raised `shadow_max_bytes` from 524288 to 1048576 so `greenhouse:canonical` can be probed. A local probe of the live board returned `HEALTHY_WITH_RESULTS` at 568371 bytes. Added `lake:enroll`, which admits auto-approved sources and requests canary without a person. The promotion gateway still enforces the 8-day shadow window.
 - **Deployment**: CI `36251984243` deployed the 1 MiB budget. Production admit then returned `shadow` for `greenhouse:canonical`. Canary is waiting on the 8-day window.

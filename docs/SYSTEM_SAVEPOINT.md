@@ -1,6 +1,20 @@
 # System Savepoint
 
-## 2026-09-26 — CANONICAL-SHADOW-CLOCK: 1 MiB probe budget and automatic enrollment (current)
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01: 1 MiB deploy healthy, EX-03 pre-budget failure dissected, doc coherence fix (current)
+
+Steward sweep on start SHA `017efe9b8fb16cffcac6d6ea16f2499ccd5ba2a9` (clean, == origin/main). No D1 write, no promotion, no sync, L1 ADVISE unchanged. Owner-approved (bootloader: all approved, proceed).
+
+- **UNIT REFERENCE:** POST-DEPLOY-SHADOW-WATCH-01
+- **MODE:** MAINTENANCE + DOCUMENTATION
+- **PROBLEM:** Post-deploy state of the 1 MiB shadow budget was unrecorded, and one parameter comment contradicted the measured board size.
+- **POST-DEPLOY HEALTH (VERIFIED):** Sovereign CI Guardrail run `36252115762` success on HEAD. Live `GET /` 200 (~1.17s) and `GET /opportunities?fresh=today` 200 (~0.74s). `audit:parameters` 100% parity, `audit:guardrails` clean, `audit:constitution` passed (4 known residual warnings). Full `bun run test` 1544 pass / 0 fail across 151 files. `typecheck` 0 errors.
+- **EX-03 13:12Z FAILURE (DISSECTED, pre-budget):** Run `36244383121` on old SHA `71d7dd3` with the 512 KiB budget: 10 registry rows, 4 dispatched, 6 Workable same-host skips (skip-on-429 working as designed). 1 `DEGRADED_ANOMALOUS` (`recruitee:myjewellery` 524313 > 524288) + 1 `RATE_LIMITED` (`workable:coconutva`) → live Jev `FAIL_CONSERVATIVE` @ 0.72 → verdict `failed` by design. Under the deployed 1 MiB budget the myjewellery oversize mode retires (524313 < 1048576); the Workable 429 mode remains and still fails runs conservatively by design.
+- **NOT YET OBSERVED:** No EX-03 tick has run since the 15:29Z deploy (schedule `:23`; next 16:23Z). Canonical shadow-day accumulation is unverified from this box (no lake/proxy credentials locally). Last verified admit stands: `shadow` / `HEALTHY_WITH_RESULTS`, promote 409 awaiting 8 healthy shadow days.
+- **HELD:** `greenhouse:remotecom` gate `2026-09-26T18:20:56Z` had not arrived (~15:3xZ). No promotion attempted. Bad-outcomes query still required first.
+- **FIX:** `docs/ACCEPTED_PARAMETERS.yaml` comment said Canonical board is 524312 bytes; local probe measured 568371. Comment corrected. Values unchanged; parity still 100%.
+- **NEXT SINGLE ACTION:** Watch the 16:23Z EX-03 run and confirm myjewellery passes under 1 MiB; then let the hourly shadow clock and `:47` lake-publish collect Canonical's 8 healthy days. Re-evaluate remotecom only after 18:20:56Z with the bad-outcomes query first.
+
+## 2026-09-26 — CANONICAL-SHADOW-CLOCK: 1 MiB probe budget and automatic enrollment (historical)
 
 The 122 Canonical jobs are on the board, but `greenhouse:canonical` was not in `source_registry`. The production admit probe stopped at `DEGRADED_ANOMALOUS`: payload 524312 bytes versus the 524288-byte budget. A later local probe measured 568371 bytes and returned `HEALTHY_WITH_RESULTS` after the budget moved to 1 MiB (1,048,576). Sampled items 200, schema ok.
 

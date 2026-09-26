@@ -1,6 +1,10 @@
 # AI Recovery Trail
 
-## 2026-09-26 — CANONICAL-SHADOW-CLOCK (current)
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (current)
+
+1 MiB deploy verified healthy from a credential-less box: CI green, live 200s, 1544/0 tests, all audits clean. The 13:12Z EX-03 red is dissected as a pre-budget failure (myjewellery 24-byte-class oversize at 512 KiB + Workable 429, Jev FAIL_CONSERVATIVE 0.72) whose oversize mode retires under 1 MiB. Fixed one stale parameter comment. No D1 write, no promotion, L1 unchanged. Next EX-03 tick 16:23Z unobserved; remotecom gate 18:20:56Z pending.
+
+## 2026-09-26 — CANONICAL-SHADOW-CLOCK (historical)
 
 Production admit of `greenhouse:canonical` returned `DEGRADED_ANOMALOUS` because the board was 524312 bytes and the budget was 524288. The ceiling is now 1,048,576 bytes. A local probe then measured 568371 bytes and was healthy. After CI `36251984243`, enrollment returned admit `shadow` / `HEALTHY_WITH_RESULTS` and promote `409` (8 healthy shadow days still required).
 
