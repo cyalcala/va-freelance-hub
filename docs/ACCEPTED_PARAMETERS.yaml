@@ -1,0 +1,139 @@
+version: 2
+effective_at: "2026-09-26T11:49:00+08:00"
+owner_approval: "72709b1"
+canonical: true
+generated_docs:
+  - "docs/generated/PARAMETERS.md"
+code_anchors:
+  policy_resolver: "packages/scraper/policy-resolver.ts"
+  geo_gate: "packages/scraper/geoGate.ts"
+  shadow_dispatcher: "packages/scraper/shadow-dispatcher.ts"
+  candidate_shadow: "packages/scraper/candidate-shadow.ts"
+  publication_gateway: "packages/scraper/publication-gateway.ts"
+  jev_client: "packages/scraper/jev-client.ts"
+
+autonomy:
+  # Actual reality today is L1 across all classes. Targets indicate promotion path.
+  job_evaluation:
+    current_level_by_class:
+      remote_classification: L1
+      ph_eligibility: L1
+      role_taxonomy: L1
+      safety: L1
+      freshness: L1
+      duplicate_detection: L1
+      publication_eligibility: L1
+    promotion_requires:
+      sustained_days: 30
+      fp_rate_max: 0.010
+      fn_rate_max: 0.050
+      audit_coverage: 1.000
+    demotion_requires:
+      fp_rate_max: 0.020
+      fn_rate_max: 0.080
+      window_days: 7
+  job_flow:
+    current_level_by_class:
+      polling_cadence: L1
+      budget_allocation: L1
+      queue_prioritization: L1
+      retention: L1
+      source_demotion: L1
+    promotion_requires:
+      sustained_days: 30
+      incidents_max: 0
+    demotion_requires:
+      incidents_max: 1
+      window_days: 14
+
+quality:
+  false_ph_eligibility_rate_max: 0.010
+  false_remote_classification_rate_max: 0.005
+  broken_apply_url_rate_max: 0.010
+  duplicate_public_rate_max: 0.005
+  unsafe_job_rate_max: 0.000
+  corrections_sla_hours: 24
+
+reliability:
+  sync_backlog_age_max_hours: 2
+  restore_verification_window_days: 30
+  max_consecutive_failed_ticks: 3
+  max_redispatch_interval_minutes: 1440
+  max_dispatches_per_run: 12
+  shadow_fetch_timeout_ms: 8000
+  shadow_max_bytes: 524288 # 512 KiB
+  shadow_max_requests: 2
+
+economics:
+  cost_per_net_new_publication_max_cents: 5.0
+  storage_growth_projection_max_mb_quarter: 500
+
+diversity:
+  top_source_share_max: 0.25
+  top_provider_family_share_max: 0.40
+
+freshness:
+  max_days_since_post: 30
+  unknown_date_policy: "retain-unknown-do-not-publish"
+
+dedup:
+  exact_merge_confidence: 0.95
+  likely_merge_confidence: 0.80
+  possible_merge_action: "retain-both-flag-ambiguous"
+
+thresholds:
+  taxonomy_min_confidence: 0.75
+  jev_min_confidence_pass: 0.70
+
+risk_tiers_adr008:
+  tier_a_direct_ats:
+    shadow_window_days: 3
+    canary_cap_per_tick: 10
+    fast_track_eligible: true
+  tier_b_variable_api:
+    shadow_window_days: 7
+    canary_cap_per_tick: 5
+    fast_track_eligible: false
+  tier_c_dom_html:
+    shadow_window_days: 14
+    canary_cap_per_tick: 2
+    fast_track_eligible: false
+
+retention:
+  raw_payload_ttl_days: 14
+  normalized_ttl_days: 90
+  decision_history_ttl_days: "durable"
+  autonomy_audit_ttl_days: "durable"
+  replay_transition_ttl_days: "durable"
+  audit_sampling_rate_by_class:
+    remote_classification: 0.10
+    ph_eligibility: 1.00
+    safety: 1.00
+    publication_eligibility: 1.00
+
+budgets:
+  requests_per_source_per_day_max: 200
+  ai_calls_per_day_max: 500
+  storage_writes_per_day_max: 50000
+  rate_limit_backoff_min_ms: 3000
+
+concurrency:
+  lease_duration_max_minutes: 120
+  rolling_session_window: 14
+
+escalation_slas:
+  sev1_critical_hours: 1
+  sev2_authority_hours: 4
+  sev3_supply_hours: 24
+  sev4_architecture_hours: 72
+
+architecture:
+  operations_min_share_of_sessions: 0.70
+  phase_abandonment_consecutive_days: 14
+  wasm_max_uncompressed_bytes: 1048576 # 1 MiB Cloudflare Worker isolate bound
+  worker_memory_limit_mb: 128
+
+open_questions:
+  automated_opt_out_cron_interval_hours: "<UNSET>" # Proposed: 6 hours; needs owner sign-off
+  database_backup_retention_days: "<UNSET>" # Cloudflare D1 automated backup retention
+  monthly_hard_cost_cap_usd: "<UNSET>" # Overall infra ceiling (Workers, Pages, Turso, OpenRouter)
