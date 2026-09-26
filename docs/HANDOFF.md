@@ -1,6 +1,25 @@
 # Handoff
 
-## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (current)
+## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (current)
+
+The owner invoked the v3 autonomous operating prompt with full approval. Executed §54 FIRST (proved the Turso→D1 publication bypass with code + live read-only evidence) and the fail-closed half of SECOND (bridge reconciliation without gateway redesign). Full detail is in `docs/SYSTEM_SAVEPOINT.md` (top entry).
+
+- **Implementation**:
+  - `sync-to-d1.ts`: `parseSyncArgs()` (NaN-proof), opt-in `buildAuthorizedSourceIds`, SQL-side auth gate + held-backlog count, honest `buildSyncSql` (NULL dates, eligibility refusal, `'unknown'` scope), live-run bypass notice.
+  - `domain-ats-discovery.ts`: HELD-by-default admission semantics in comments + summary.
+  - `lake.test.ts`: 18 tests (was 15).
+  - `docs/DATA_LAKE_OPERATIONS.md`: fail-closed sync contract + runbook.
+- **Fresh verification**:
+  - `bun test scripts/lake`: 18 pass / 0 fail.
+  - `bun test`: 1,454 pass / 0 fail across 142 files.
+  - `bun run typecheck`: clean (0 errors).
+  - `bun run audit:guardrails`: clean (0 violations).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
+- **Autonomy:** L1 ADVISE both domains (no change; targets A:L3/B:L2 not claimed).
+- **When the owner resumes**: Measure the Manila-day funnel gap to 100/day; then the gateway-equivalent sync slice. Do NOT live-sync until then without human cohort approval.
+- **Backup:** commit `f16529c` on `origin/main`; Sovereign CI Guardrail run `36209240958` all `success` (validate + detect + migrate/deploy).
+
+## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (historical)
 
 The owner instructed: "check current repo state and what can be improved in data lake, improve them all, document and backup in github". Audited `scripts/lake/`, fixed all load-bearing issues with zero ingestion-behavior or eligibility change and zero D1 writes. Full detail is in `docs/SYSTEM_SAVEPOINT.md` (top entry); runbook is in `docs/DATA_LAKE_OPERATIONS.md`.
 

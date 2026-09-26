@@ -1,6 +1,17 @@
 # Implementation Status
 
-## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (current)
+## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (current)
+
+- **What this is**: Fail-closed reconciliation of the Turso→D1 publication bridge (§54 FIRST→SECOND of the v3 prompt). Proved the bypass (raw INSERTs, no registry/lease/ledger/cap/opt-out gate; fabricated date/eligibility defaults; starvation-prone selection; NaN CLI crash; silent auto-approved authority), then hardened the bridge without redesigning the gateway and without any D1 write.
+- **Changed modules**:
+  - `sync-to-d1.ts`: `parseSyncArgs`, opt-in `buildAuthorizedSourceIds`, SQL-side `source_id IN` gate + held-backlog observability, honest `buildSyncSql`, bypass notice, per-row skip guards.
+  - `domain-ats-discovery.ts`: HELD-by-default admission semantics.
+  - `lake.test.ts`: 18 tests (was 15).
+  - `docs/DATA_LAKE_OPERATIONS.md`: fail-closed sync contract + runbook.
+- **Autonomy:** L1 ADVISE both domains, unchanged (A:L3/B:L2 targets not claimed; §6.7 predicate unmet).
+- **Verification**: `bun test scripts/lake` 18/0; full `bun test` 1,454 pass / 0 fail across 142 files; `typecheck` 0 errors; `audit:guardrails` clean. Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
+
+## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (historical)
 
 - **What this is**: Hardening pass over the Turso opportunity lake (`scripts/lake/`). Eliminates copy-pasted ingestion logic, fixes a Windows-only Jev invocation that broke portability, hardens the D1 sync bridge, completes schema bootstrap, and wires a tracked lake state observer. No ingestion behavior, eligibility rule, or production D1 content changes.
 - **New/changed modules**:

@@ -1,6 +1,25 @@
 # System Savepoint
 
-## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (current)
+## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (current)
+
+The owner instructed: "Proceed in this. Expertly read, plan and act in all of this. All approved." invoking the v3 autonomous operating prompt (`smart777.txt`: graded autonomy ladder, deterministic envelope, sovereignty contract).
+
+- **Mode/baton:** EXECUTE, unit `LAKE-SYNC-BRIDGE-FAIL-CLOSED` (§54 FIRST→SECOND: prove/falsify then reconcile the Turso→D1 publication boundary). Start SHA `b80017dfd09482ed7756e37610292b3ed1448591` (clean, synchronized with `origin/main`).
+- **Bypass proven (VERIFIED CODE + VERIFIED LIVE read-only, all D1 queries `changed_db=false`, `rows_written=0`):** per Appendix A.4 the lake bridge writes to D1 via raw `INSERT INTO opportunities` with no source-registry/lease check, no lifecycle check, no `publishPublicExposure` gateway/ledger/canary-cap, no opt-out check, and no autonomy audit — BYPASS confirmed. Live registry is 5 active / 5 canary / 10 shadow / 14 candidate / 1 quarantined = 35; governed active+canary are the 5 Breezy agencies + `breezy:time-etc`/`greenhouse:ghost`/`gitlab`/`grafanalabs`/`nearform`, yet the bridge authorized 7 further identities (exact-six feeds + `himalayas:remote-jobs`) plus any future lake-local `auto_approved` tenant with zero D1 gate. Companion defects: `posted_at || now()` fabricated posting dates (mature path uses `normalizeUtcIso`→NULL), `ph_eligibility || 'eligible_verified'` and `geo_scope || 'worldwide'` fabricated eligibility/scope, `SELECT LIMIT` + in-code auth filter starved authorized rows (§19 pattern), documented `lake:sync -- --dry-run` crashed with RangeError NaN, and dynamic `auto_approved` union created D1 authority from lake admission against ADR-007 (cutover predicate not met).
+- **Reconciliation (fail-closed, no eligibility/behavior change for valid rows, zero D1 writes in unit):** `sync-to-d1.ts` — `parseSyncArgs()` (numeric-first-arg, limit default 50 clamp 500, `--dry-run`, `--allow-auto-approved`); `buildAuthorizedSourceIds(client, {includeAutoApproved:false})` holds auto-approved tenants with a warning unless explicitly opted in; authorization moved INTO the SELECT (`source_id IN (...)` before `LIMIT`) + `[Queue]` held-backlog count; `buildSyncSql` keeps unknown `posted_at` NULL, throws on non-eligible `ph_eligibility`, degrades unknown `geo_scope` to `'unknown'`, per-row try/skip; explicit `[BYPASS NOTICE]` on live runs; `domain-ats-discovery.ts` comments/summary updated to HELD semantics; `docs/DATA_LAKE_OPERATIONS.md` sync contract + runbook updated.
+- **Autonomy assessment (v3 §6):** actual today is **L1 ADVISE in both domains** — `judgeViaJev` is advisory-only with deterministic-threshold fallback everywhere (admission + shadow-verdict Tier 2), Tier 1 fully deterministic, zero sovereign AI decisions in production. Targets (A:L3, B:L2) NOT claimed; promotion predicate (§6.7, 30-day evidence + audit trail + kill-switch tests) not met. No level change this unit.
+- **Baseline (fresh, read-only):** lake `QUALIFIED_READY 0 / not-yet-synced 0 / SYNCED_TO_D1 359 / raw 15 (0 unprocessed) / replay 31 / auto-approved 0`; dry-run sync empty; public/D1 supply window NOT re-measured this unit (UNKNOWN — next unit measures the Manila-day funnel before any live sync).
+- **Verification Evidence:**
+  - `bun test scripts/lake`: 18 pass / 0 fail (+3 new: NULL-date honesty, eligibility/scope refusal, arg parsing).
+  - `bun run test`: 1,454 pass / 0 fail across 142 files.
+  - `bun run typecheck`: clean, 0 errors.
+  - `bun run audit:guardrails`: clean, exit 0.
+  - Documented `bun run lake:sync -- --dry-run` now exits 0 (was RangeError).
+  - Local Bun 1.4.2 vs repo pin 1.3.14 — MISMATCH disclosed.
+- **Backup:** commit `f16529c7906ad3482184d8407fb80856383606a3` on `origin/main`; Sovereign CI Guardrail run `36209240958` — Validate, Detect, Migrate and deploy production all `success`.
+- **NEXT**: Measure the Manila-day qualified-publication funnel (fetched→qualified→authorized→net-new→public) to quantify the gap to 100/day and locate the largest recoverable loss; full gateway-equivalent sync (registry/lease/ledger/cap/opt-out enforcement inside the bridge) remains the follow-up reconciliation slice — do NOT run live `lake:sync` on a reviewed cohort until that slice lands or the cohort is human-approved.
+
+## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (historical)
 
 The owner instructed: "check current repo state and what can be improved in data lake, improve them all, document and backup in github".
 

@@ -1,6 +1,16 @@
 # AI Recovery Trail
 
-## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (current)
+## 2026-09-26 — LAKE-SYNC-BRIDGE-FAIL-CLOSED: auth-gated selection, honest timestamps, held auto-approvals (current)
+
+Execution per the v3 autonomous operating prompt (§54 FIRST→SECOND). Start SHA `b80017d` (clean, synced); behavior commit `f16529c`; CI run `36209240958` all-success.
+
+- **Final state**:
+  - Publication bypass PROVEN (code + live read-only D1: 5/5/10/14/1 registry vs 12-identity bridge auth set + silent auto-approved union).
+  - Bridge reconciled fail-closed: NaN-proof args, SQL-side auth gate + held-backlog count, honest timestamps/eligibility/scope, held auto-approvals, live-run bypass notice. Zero D1 writes in unit.
+  - Autonomy assessed at L1 ADVISE both domains; no promotion claimed.
+  - Verification: lake 18/0; full 1,454/0 across 142 files; typecheck 0; guardrails 0. Bun mismatch disclosed.
+
+## 2026-09-26 — LAKE-HARDENING: shared helpers, portable admission, sync safety, state observability (historical)
 
 Execution per the recovery-driven loop. The owner instructed: "check current repo state and what can be improved in data lake, improve them all, document and backup in github".
 
