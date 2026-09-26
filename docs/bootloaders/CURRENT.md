@@ -1,5 +1,13 @@
 # Current resume pointer
 
+**Refreshed 2026-09-26 (AUDIT: full-repo audit + LAKE-MAINTAINER bootloader created; no behavior change).**
+Newest baton: [`2026-09-26-LAKE-MAINTAINER-BOOTLOADER.md`](./2026-09-26-LAKE-MAINTAINER-BOOTLOADER.md) — paste its §2 prompt + §7 state block to resume. Start SHA `511dd52` (main == origin/main, clean). Prior LAKE-HARDENING savepoint (`c906b31`, CI `36178585182`) remains the last behavior change.
+
+NEXT: NEXT-2026-09-26a (AUDIT, read-only) — verify P0 Turso→D1 bypass live via `lake:sync -- --dry-run` vs gateway ledger/cap path; then P1 starvation fix. Workable stays shadow (~Oct 1–2); `himalayas:remote-jobs` shadow admission staged under ADR-006/007.
+
+---
+*Prior pointer (2026-09-25) preserved below.*
+
 **Refreshed 2026-09-25 (EXECUTE: FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION executed, deployed, verified in production).**
 The newest authoritative baton is the 2026-09-25 `FEAT-HIMALAYAS-ADAPTER-AND-OPERATING-PROMPT-FUSION` savepoint entry
 in [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md):
