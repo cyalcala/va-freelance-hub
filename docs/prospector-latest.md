@@ -1,21 +1,21 @@
 # Prospector Latest
 
 Date: 2026-09-26
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36238887148
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36255403527
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 9 |
-| Auto-added this run | 2 |
+| Candidates considered | 7 |
+| Auto-added this run | 0 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 7 |
 | Rejected for quality | 0 |
 | ATS proposals filed | 0 |
 | Mass-add guard tripped | false |
-| Durable candidates discovered (distinct ATS) | 32 |
+| Durable candidates discovered (distinct ATS) | 33 |
 | Durable candidates inserted | 0 |
 | Durable candidates refreshed | 14 |
-| Durable candidates skipped (duplicate) | 32 |
+| Durable candidates skipped (duplicate) | 33 |
 | Durable candidates skipped (opt-out) | 0 |
 | Candidate backlog (needs_review/candidate) | 14 |
 | Candidate overdue (past 14d deadline) | 4 |
@@ -23,8 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36238887
 
 ## Auto-added companies
 
-- Ping Identity
-- Dremio
+- (none this run)
 
 ## Durable candidate queue (SP-06, non-publishing)
 
