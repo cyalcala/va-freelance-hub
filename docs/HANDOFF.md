@@ -1,6 +1,10 @@
 # Handoff
 
-## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (current)
+## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (current)
+
+Owner-directed micro-unit: badge JSX + helper removed from the card; chips, Manila dates, filters unchanged. Verified 1,462/0, typecheck/guardrails/build clean. Backup: `6e388c2`, CI `36211413069` all-success incl. Pages deploy. Next: verify live; remotecom after 18:20Z; Workable diagnostic.
+
+## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today, Manila dates, NEW badge (historical)
 
 Surgical board-recency slice per owner direction. Ingestion already hourly-fresh; this makes arrivals visible: filter chips, discovery-ordered fresh views, Manila card dates, NEW badges. Default board unchanged. Full detail in `docs/SYSTEM_SAVEPOINT.md` (top entry).
 

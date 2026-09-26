@@ -1,9 +1,9 @@
 # Current resume pointer
 
-**Refreshed 2026-09-26 (FRESH-ARRIVALS deployed: ?fresh=24h|today, Manila dates, NEW badge).**
-Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Start SHA `b2c8bd3` (main == origin/main, clean at entry); behavior commit `092ef18`, CI run `36210741745` all-success with Pages deploy.
+**Refreshed 2026-09-26 (REMOVE-NEW-BADGE deployed; fresh views + Manila dates intact).**
+Newest baton: top entry of [`../SYSTEM_SAVEPOINT.md`](../SYSTEM_SAVEPOINT.md). Behavior commit `6e388c2`, CI run `36211413069` all-success with Pages deploy.
 
-NEXT: verify post-deploy fresh views live; then remotecom re-eval after 18:20Z; Workable-pacing diagnostic. No lake live-sync (0 READY).
+NEXT: verify badge-free board live; then remotecom re-eval after 18:20Z; Workable-pacing diagnostic.
 
 ---
 *Prior pointer (2026-09-25) preserved below.*

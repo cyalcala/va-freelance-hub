@@ -1,6 +1,14 @@
 # System Savepoint
 
-## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today board slice, Manila dates, NEW badge (current)
+## 2026-09-26 — REMOVE-NEW-BADGE: badge UI deleted, fresh views intact (current)
+
+Owner-directed micro-unit ("remove the new badge please; only remove that, nothing else"). Removed the `New` badge JSX + `isFreshArrival`/`NEW_BADGE_WINDOW_MS` from `opportunity-card.tsx` only; `?fresh=24h|today` chips, Manila dates, and all other behavior unchanged. Start SHA `ec55ebd` (clean, == origin/main).
+
+- **Verification:** narrow 13/0; full 1,462/0 across 143 files; typecheck 0; guardrails 0; build Complete.
+- **Backup:** commit `6e388c2` on `origin/main`; CI run `36211413069` all-success incl. Pages deploy.
+- **NEXT**: Verify badge-free board live; then remotecom re-eval after 18:20Z; Workable-pacing diagnostic.
+
+## 2026-09-26 — FRESH-ARRIVALS: ?fresh=24h|today board slice, Manila dates, NEW badge (historical)
 
 The owner asked for the most recent jobs every hour with Manila-time recency, directing "strategize first then act", surgically. Strategy found ingestion already ticks ~every 15 min 24/7 (hourly freshness exists in D1; polling faster cannot beat stable feeds) — the gap was purely surfacing: source-posted-date sort, UTC-only card dates, no recency filter.
 
