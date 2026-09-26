@@ -1,6 +1,24 @@
 # System Savepoint
 
-## 2026-09-26 — D1-MIGRATION-0049-COMPLETE-RISK-TIERS: Backfill remaining source_registry risk tiers for workable, recruitee, and teamtailor (current)
+## 2026-09-26 — ARCH-PHASE-0-COMPLETE: Architectural reconnaissance, 17 production paths, and empirical telemetry baseline (current)
+
+Completed Phase 0 (Reconnaissance, Runtime Bounds & Empirical Baseline) under `docs/ARCHITECTURE_PHASES.md`. Mapped 100% of the 17 core production paths across the edge serving mart, edge ingestion clock, central orchestrator, shadow engine, maintenance pulses, data lake refinery, and release gates in `docs/architecture/CURRENT_STATE.md`. Established production performance benchmarks in `docs/architecture/BASELINE.md` across 500 consecutive live fetch events (54.2ms avg duration, 0.00% error rate, 56,426 lifetime events), 2,647 shadow observations, build metrics (42.9s build, 297ms prerender), and D1 query profiles. Start SHA `b9dc5e6c1341c2c0199be06fa713919e1b21235b` (clean, verified deployment run `36218999406`).
+
+- **Artifacts Delivered:**
+  - `docs/architecture/CURRENT_STATE.md`: Comprehensive map of the 17 core production paths with commit SHAs, triggers, boundaries, and safety gates.
+  - `docs/architecture/BASELINE.md`: Empirical telemetry baseline covering Workers RAM/subrequests, ingestion latency, shadow outcomes, build times, asset sizes, and D1 query performance.
+  - `docs/ARCHITECTURE_PHASES.md`: Marked Phase 0 as COMPLETED.
+- **Verification Evidence:**
+  - `bun run audit:parameters`: clean exit 0 (100% parity).
+  - `bun run audit:guardrails`: clean exit 0.
+  - `bun run audit:orchestrator`: clean exit 0.
+  - Live D1 telemetry queries executed against production cluster (Singapore `SIN` primary).
+  - Zero code mutations, zero database mutations (pure read-only diagnostic phase).
+- **Autonomy:** L1 ADVISE both domains (Job Evaluation and Job Flow, unchanged).
+- **Reality Level:** IMPLEMENTED & VERIFIED LOCALLY.
+- **NEXT**: Commit, push to `origin/main`, watch Sovereign CI Guardrail; re-evaluate `greenhouse:remotecom` shadow→canary after 2026-09-26T18:20Z (bad-outcomes query first).
+
+## 2026-09-26 — D1-MIGRATION-0049-COMPLETE-RISK-TIERS: Backfill remaining source_registry risk tiers for workable, recruitee, and teamtailor (historical)
 
 Applied additive migration `packages/db/migrations/0049_backfill_remaining_source_registry_risk_tiers.sql` to backfill ADR-008 risk tiers (`tier_a`, `shadow_window_days = 3`) for the remaining unauthenticated structured ATS/syndication sources (`workable`, `recruitee`, `teamtailor`). With this migration, 100% of rows in `source_registry` have an explicit classified `risk_tier` and `shadow_window_days`. Start SHA `475c8374d6c41b8c8d8b688d0fe5013b56cfc4ef` (clean, verified deployment run `36218637953`).
 

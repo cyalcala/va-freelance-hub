@@ -35,10 +35,11 @@ Before introducing any native, compiled, or external candidate, it MUST be evalu
 
 ## 2. GATED PHASE SPECIFICATIONS (PHASES 0–11)
 
-### Phase 0 — Reconnaissance, Runtime Bounds & Empirical Baseline
+### Phase 0 — Reconnaissance, Runtime Bounds & Empirical Baseline [COMPLETED]
 - **Deliverable:** `docs/architecture/CURRENT_STATE.md` mapping the 17 core production paths, and `docs/architecture/BASELINE.md` recording CPU time per tick, memory consumption, ingestion latency, parser failure rates, and build times.
 - **Numeric Exit Criteria:** 100% of the 17 production paths documented with commit SHAs; baseline CPU time and memory mapped across at least 100 historical runs; 0 production mutations.
-- **Evidence Artifact:** `docs/architecture/BASELINE.md` (SHA-anchored).
+- **Evidence Artifact:** `docs/architecture/BASELINE.md` and `docs/architecture/CURRENT_STATE.md` (SHA-anchored to `b9dc5e6`).
+- **Status:** **COMPLETED** (17/17 paths mapped, 500-run sample from 56,426 fetch events, 2,647 shadow observations, zero production mutations).
 - **Rollback Step:** Delete documentation files; zero code risk.
 - **Abandonment Trigger:** Stalled for $> 14\text{ days}$ without baseline telemetry.
 - **Owner Authorization Required:** **NO** (Read-only diagnostic).
