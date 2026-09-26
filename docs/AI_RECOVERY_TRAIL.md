@@ -1,6 +1,17 @@
 # AI Recovery Trail
 
-## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (current)
+## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (current)
+
+Scaled lake upstream supply from `QUALIFIED_READY = 0` to **122** via OpenJobs dataset intake. Commit `f736c7c`, CI run `36223811888` (success).
+
+- **Final state**:
+  - `scripts/lake/bulk-ats-seed.ts`: cohort builder (OpenJobs/remoteintech/portals.yml normalizers, curated starter cohort, lake dedupe, `--run-discovery` passthrough); `lake:bulk-seed` script registered.
+  - `scripts/lake/domain-ats-discovery.ts`: Ashby template (5 families), paced probes + skip-on-429 shielding, `runBulkAtsDiscovery()` + `--seeds=` CLI.
+  - `lake_ats_discovery`: 100 tenants evaluated — 1 auto-approved (`greenhouse:canonical`, 122 QUALIFIED_READY), 2 shadow (`lever:xsolla`, `lever:spyke-games`), 97 rejected with evidence. 122 rows HELD from D1 per ADR-007.
+  - `docs/FEDERATED_ACQUISITION_MATRIX.md`: intake telemetry + 4 new feed rows. `tmp/` gitignored.
+  - 1,506/0 tests (+8 new), typecheck clean, guardrails/parameters clean, zero D1 writes, L1 ADVISE unchanged.
+
+## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (historical)
 
 Implemented Architectural Evolution Phase 7 (C16 & C17) in `packages/scraper/capability-registry.ts` with 13 contract tests in `packages/scraper/capability-registry.test.ts`.
 

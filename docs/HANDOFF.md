@@ -1,6 +1,26 @@
 # Handoff
 
-## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (current)
+## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (current)
+
+Scaled upstream supply into the Turso Data Lake from `QUALIFIED_READY = 0` to **122** via the OpenJobs `companies_v2.json` dataset (12,144 companies, 7,007 with ATS links). Full telemetry in `docs/FEDERATED_ACQUISITION_MATRIX.md`; baton in `docs/SYSTEM_SAVEPOINT.md` (top entry).
+
+- **Artifacts Delivered:**
+  - `scripts/lake/bulk-ats-seed.ts` (`lake:bulk-seed`): cohort builder from `--url=`/`--file=`/`--curated` with `tmp/lake-seed-cache/` caching, ATS slug extraction (Greenhouse/Lever/Workable/Ashby/Breezy), `lake_ats_discovery` dedupe, `--run-discovery` passthrough.
+  - `scripts/lake/bulk-ats-seed.test.ts`: 8 unit tests (URL extraction, OpenJobs/portals parsing, dedupe, pacing clamps, 5-family resolution).
+  - `scripts/lake/domain-ats-discovery.ts`: native Ashby probe template, `DISCOVERY_VERSION = "2.1.0"`, 1000–2000ms paced probes, per-host skip-on-429 shielding, `runBulkAtsDiscovery()` + `--seeds=`/`--delay-ms=` CLI.
+  - `package.json`: `lake:bulk-seed` script. `.gitignore`: `tmp/` scratch exclusion.
+- **Verification Evidence:**
+  - `bun run lake:state`: QUALIFIED_READY 0 → 122 (≥100 gate), SYNCED_TO_D1 359, auto-approved tenants 1.
+  - Discovery: 497 seeds / 100 tenants evaluated — 1 ADMIT (`greenhouse:canonical`, 306 jobs, 122 qualified @ 39.9%), 2 SHADOW (`lever:xsolla` 11.2%, `lever:spyke-games` 9.1%), 97 REJECT with Jev 1.13 evidence.
+  - `bun run lake:replay`: 363 evaluated, 0 changed (honest no-op). `bun run lake:sync -- --dry-run`: fail-closed HELD as designed; `--allow-auto-approved` preview valid (50 statements, NULL dates, PH-only).
+  - `bun run test`: 1,506 pass / 0 fail across 147 files. `bun run typecheck`: 0 errors. Guardrails/parameters/orchestrator: clean.
+  - Zero D1 writes (`changed_db=false`).
+- **Autonomy:** L1 ADVISE both domains (unchanged). Lake admission is not D1 publication authority (ADR-007).
+- **When the owner resumes**: Review `greenhouse:canonical` for `--allow-auto-approved` sync; rotate next OpenJobs cohort slice weekly; remoteintech `src/companies/` is the next reservoir; re-probe `lever:xsolla`/`lever:spyke-games` shadows. Re-evaluate `greenhouse:remotecom` shadow→canary after **`2026-09-26T18:20:56Z`** (bad-outcomes query FIRST).
+- **NEXT**: Commit, push to `origin/main`, watch Sovereign CI Guardrail.
+- **Backup:** commit `f736c7c` on `origin/main`; Sovereign CI Guardrail run `36223811888` all `success` (validate + migrate/deploy + Pages).
+
+## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (historical)
 
 Completed Architectural Evolution Phase 7 (Capability Registry & Conventional Source Adapters) implementing Operating Constitution v5.2 §8.1 (C16 Convention-Driven Source Integration) and §8.2 (C17 Capability-Based Dispatch). Authored `packages/scraper/capability-registry.ts` and 13 contract tests in `packages/scraper/capability-registry.test.ts`.
 

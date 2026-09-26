@@ -1,6 +1,13 @@
 # Implementation Status
 
-## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (current)
+## 2026-09-26 — LAKE-ATS-INTAKE-EXPANSION: Bulk ATS seed ingestor + Ashby adapter + 122 QUALIFIED_READY (current)
+
+- **What this is**: Scaled Turso Data Lake upstream supply from `QUALIFIED_READY = 0` to **122** using the OpenJobs `companies_v2.json` open dataset. Added `scripts/lake/bulk-ats-seed.ts` (URL/file/curated cohort builder with caching, 5-family ATS slug extraction, lake dedupe), added the native Ashby probe template to `scripts/lake/domain-ats-discovery.ts` (`DISCOVERY_VERSION = "2.1.0"`, 1000–2000ms pacing, per-host skip-on-429 shielding), and added `runBulkAtsDiscovery()` for explicit family-pinned cohorts. Probed 497 seeds / 100 tenants: 1 auto-approved (`greenhouse:canonical`, 122 QUALIFIED_READY @ 39.9%), 2 shadow-monitored, 97 auto-rejected with Jev 1.13 evidence. Telemetry in `docs/FEDERATED_ACQUISITION_MATRIX.md`.
+- **Verification**: lake:state 0 → 122 (≥100 gate); replay 363 evaluated / 0 changed; sync dry-run fail-closed HELD, `--allow-auto-approved` preview valid; 1,506/0 tests across 147 files; typecheck 0 errors; guardrails/parameters/orchestrator clean; zero D1 writes.
+- **Autonomy**: L1 ADVISE both domains, unchanged (ADR-007: lake admission is not D1 publication authority).
+- **Deployment**: commit `f736c7c`, Sovereign CI Guardrail run `36223811888` (success).
+
+## 2026-09-26 — ARCH-PHASE-7-CAPABILITY-REGISTRY: Declarative Capability Registry & Conventional Adapters (historical)
 
 - **What this is**: Implemented Architectural Evolution Phase 7 under `docs/ARCHITECTURE_PHASES.md` fulfilling Operating Constitution v5.2 §8.1 (C16 Convention-Driven Source Integration) and §8.2 (C17 Capability-Based Dispatch). Authored `packages/scraper/capability-registry.ts` and 13 contract tests in `packages/scraper/capability-registry.test.ts`. 100% of the 4 numeric exit criteria satisfied: 5 standard capabilities defined (`ats_json`, `rss_xml`, `structured_xml`, `public_json_api`, `static_html`); duplicate names rejected; C17 routing metadata recorded; conventional source addition without modifying `scrape.ts` proven. Latency overhead $< 1\text{ ms}$ (abandonment trigger: $> 50\text{ ms}$).
 - **Verification**: 13/13 contract tests pass; 1,498 monorepo tests pass; typecheck clean; build clean (server 48.27s).
