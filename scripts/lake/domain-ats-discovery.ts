@@ -16,8 +16,9 @@
  *      - SHADOW → review_status = 'shadow_monitor'; store discovery only, no ingestion
  *      - REJECT → review_status = 'auto_rejected'; record evidence; skip ingestion
  *
- * Auto-approved tenants are dynamically included in sync-to-d1.ts at runtime —
- * no manual AUTHORIZED_SOURCE_IDS edit needed.
+ * Auto-approved tenants are HELD from D1 sync by default (lake admission is
+ * not publication authority per ADR-007) and only included when sync-to-d1.ts
+ * runs with explicit `--allow-auto-approved` — no code change needed.
  *
  * Compliance:
  * - Only probes public, unauthenticated JSON endpoints.
@@ -514,8 +515,8 @@ export async function runDomainAtsDiscovery(options: {
   console.log(`Auto-Rejected:                 ${stats.rejected}`);
   console.log(`Jobs Ingested (QUALIFIED):     ${stats.jobsIngested}`);
   console.log("-------------------------------------------------------");
-  console.log("Auto-approved tenants are dynamically included in the");
-  console.log("next lake:sync run via lake_ats_discovery.review_status.");
+  console.log("Auto-approved tenants are HELD from D1 sync by default;");
+  console.log("include them only via lake:sync --allow-auto-approved after review.");
   console.log("=======================================================\n");
 
   return stats;

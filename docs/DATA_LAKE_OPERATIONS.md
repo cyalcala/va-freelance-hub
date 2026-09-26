@@ -41,8 +41,9 @@ Harvest Wide -> Preserve Permitted Intelligence -> Refine Deep
 
 - **Dedup:** `computeFingerprint(company, title, apply-domain)` — 32-hex, case/punctuation-insensitive. Duplicates append to `lake_sightings` and bump `sighting_count`; they never create a second candidate row (`source_url` is UNIQUE).
 - **Junk guard:** `isStorableCandidate` / `isSyncableCandidate` drop rows missing title or URL before any write.
-- **Sync authorization:** static base set (exact-six + Himalayas + 5 Breezy agencies) UNION `lake_ats_discovery.review_status = 'auto_approved'` — admitted tenants sync with no code change.
-- **Sync safety:** `--dry-run` previews SQL; live runs write one `BEGIN;…COMMIT;` batch file to the OS temp dir (never the repo) via the repo-pinned wrangler, then mark rows `SYNCED_TO_D1` only after success.
+- **Sync authorization:** static base set (exact-six + Himalayas + 5 Breezy agencies) gates the SELECT itself (`source_id IN (...)` before `LIMIT`, so unauthorized head rows can never starve authorized rows). Lake-local `auto_approved` ATS tenants are HELD by default — lake admission is not D1 authority until the ADR-007 Autonomy Cutover Predicate is met; `--allow-auto-approved` includes them explicitly for a reviewed run. Held-row backlog is logged each run (`[Queue]`).
+- **Sync safety:** `--dry-run` previews SQL (robust arg parsing: `bun run lake:sync -- --dry-run` defaults to limit 50, never NaN); live runs write one `BEGIN;…COMMIT;` batch file to the OS temp dir (never the repo) via the repo-pinned wrangler, then mark rows `SYNCED_TO_D1` only after success. Live runs log an explicit bypass notice: this bridge does NOT pass through the D1 publication gateway (no registry/lease/ledger/canary-cap/opt-out enforcement) — live runs are for explicitly reviewed cohorts only.
+- **Sync honesty:** unknown `posted_at` stays SQL NULL (never `now()` — a sync event is not a posting event; ordering falls back via `coalesce(posted_at, scraped_at)`); `buildSyncSql` throws on non-eligible `ph_eligibility` instead of defaulting to `eligible_verified`; unknown `geo_scope` stays `'unknown'`, never `'worldwide'`.
 - **Admission:** Jev 1.13 via the repo-portable `judgeViaJev` client (OpenRouter System One, advisory only). Thresholds: ADMIT ≥ 20% PH + ≥ 3 jobs; REJECT < 5% PH or < 3 jobs; else SHADOW. Jev-offline always falls back to deterministic thresholds — admission never blocks on model availability.
 - **Replay:** pure `resolveReplay()` per row; only changed rows get a `lake_replay_events` entry + update.
 
@@ -56,7 +57,7 @@ bun run lake:remotive:priority              # VA-priority Remotive categories
 bun run lake:himalayas-sweep -- --dry-run   # preview sweep (live without flag)
 bun run lake:ats-discovery -- --dry-run --limit=20
 bun run lake:replay                         # historical recovery
-bun run lake:sync -- --dry-run              # preview D1 batch (live: bun run lake:sync 50)
+bun run lake:sync -- --dry-run              # preview D1 batch (live: bun run scripts/lake/sync-to-d1.ts 50 [--allow-auto-approved])
 ```
 
 ## 5. 2026-09-26 Hardening Notes

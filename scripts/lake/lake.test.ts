@@ -11,6 +11,7 @@ import {
   buildSyncSql,
   escapeSql,
   isSyncableCandidate,
+  parseSyncArgs,
 } from "./sync-to-d1";
 import {
   AUTO_APPROVE_PH_RATE,
@@ -132,6 +133,62 @@ describe("sync-to-d1 SQL builder", () => {
     expect(sql).toContain("ON CONFLICT(source_url) DO UPDATE");
     expect(sql).toContain(toContentHash("Virtual Assistant", "https://example.com/jobs/1"));
     expect(sql).toContain("eligible_verified");
+  });
+
+  it("buildSyncSql keeps unknown posted_at NULL instead of fabricating now()", () => {
+    const sql = buildSyncSql({
+      id: 2,
+      source_id: "remotive",
+      source_platform: "Remotive",
+      source_url: "https://example.com/jobs/2",
+      title: "Virtual Assistant",
+      company: "Acme",
+      category: "admin",
+      location_raw: "Remote",
+      description: "Remote VA role",
+      application_url: "https://example.com/jobs/2",
+      posted_at: null,
+      geo_scope: "apac_incl_ph",
+      ph_eligibility: "eligible_likely",
+      fingerprint_hash: "def",
+    });
+    // Unknown posting date stays NULL (sync time is recorded separately
+    // in scraped_at/last_seen_in_feed_at); never fabricated as now().
+    expect(sql).toContain(", NULL,");
+  });
+
+  it("buildSyncSql refuses to fabricate eligibility or worldwide scope", () => {
+    const base = {
+      id: 3,
+      source_id: "remotive",
+      source_platform: "Remotive",
+      source_url: "https://example.com/jobs/3",
+      title: "Virtual Assistant",
+      company: "Acme",
+      category: "admin",
+      location_raw: "Remote",
+      description: "Remote VA role",
+      application_url: "https://example.com/jobs/3",
+      posted_at: "2026-09-26T00:00:00.000Z",
+      geo_scope: "",
+      ph_eligibility: "eligible_likely",
+      fingerprint_hash: "ghi",
+    };
+    // Empty geo_scope degrades honestly to 'unknown', never 'worldwide'.
+    expect(buildSyncSql(base)).toContain("'unknown'");
+    expect(buildSyncSql(base)).not.toContain("'worldwide'");
+    // Non-eligible rows throw instead of defaulting to eligible_verified.
+    expect(() => buildSyncSql({ ...base, ph_eligibility: "unclear" })).toThrow();
+    expect(() => buildSyncSql({ ...base, ph_eligibility: "ineligible" })).toThrow();
+  });
+
+  it("parseSyncArgs defaults safely and never yields NaN", () => {
+    expect(parseSyncArgs(["--dry-run"])).toEqual({ limit: 50, dryRun: true, allowAutoApproved: false });
+    expect(parseSyncArgs([])).toEqual({ limit: 50, dryRun: false, allowAutoApproved: false });
+    expect(parseSyncArgs(["5", "--dry-run"])).toEqual({ limit: 5, dryRun: true, allowAutoApproved: false });
+    expect(parseSyncArgs(["10", "--allow-auto-approved"])).toEqual({ limit: 10, dryRun: false, allowAutoApproved: true });
+    const parsed = parseSyncArgs(["not-a-number", "--dry-run"]);
+    expect(Number.isFinite(parsed.limit)).toBe(true);
   });
 });
 
