@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { sourceRegistry, sourceShadowObservations } from "@va-hub/db";
+import { sourceRegistry, sourceShadowObservations, sourceShadowHostBackoff } from "@va-hub/db";
 import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 import { createShadowDispatchHandler, classifyStorageError } from "../src/pages/api/cron/shadow-dispatch";
 import { SHADOW_MAX_BYTES, SHADOW_VERSION, type CandidateShadowInput, type CandidateShadowResult } from "../../../packages/scraper/candidate-shadow";
@@ -55,14 +55,19 @@ function requestContext(binding: unknown, authorized = true, extraEnv: Record<st
   }), locals: { runtime: { env: { DB: binding, CRON_SECRET: "test-secret", ...extraEnv } } } } as any;
 }
 
-function database(options: { empty?: boolean; writeSuccess?: boolean; writeError?: boolean; historyError?: boolean; historyRows?: Array<Record<string, unknown>> } = {}) {
+function database(options: { empty?: boolean; writeSuccess?: boolean; writeError?: boolean; historyError?: boolean; historyRows?: Array<Record<string, unknown>>; hostBackoff?: Record<string, unknown>; hostWriteError?: boolean } = {}) {
   const reads: string[] = [];
   const writes: Array<Record<string, unknown>> = [];
   const conditions: Array<{ sql: string; params: unknown[] }> = [];
+  const hostWrites: Array<Record<string, unknown>> = [];
   const db = {
     async all() { reads.push("registry"); return options.empty ? [] : [{ ...source }]; },
     select() {
       return { from(table: unknown) {
+        if (table === sourceShadowHostBackoff) {
+          reads.push("hostBackoff");
+          return { async where() { return options.hostBackoff ? [options.hostBackoff] : []; } };
+        }
         if (table === sourceRegistry) { reads.push("registry"); return Promise.resolve(options.empty ? [] : [{ ...source }]); }
         if (table !== sourceShadowObservations) throw new Error("unexpected table read");
         reads.push("observations");
@@ -74,6 +79,12 @@ function database(options: { empty?: boolean; writeSuccess?: boolean; writeError
       } };
     },
     insert(table: unknown) {
+      if (table === sourceShadowHostBackoff) return { values(record: Record<string, unknown>) {
+        return { async onConflictDoUpdate() {
+          if (options.hostWriteError) throw new Error("D1 rejected shadow host backoff persistence");
+          hostWrites.push(record); return { success: true };
+        } };
+      } };
       expect(table).toBe(sourceShadowObservations);
       return { async values(record: Record<string, unknown>) {
         if (options.writeError) throw new Error("source evidence revision changed");
@@ -82,7 +93,7 @@ function database(options: { empty?: boolean; writeSuccess?: boolean; writeError
       } };
     },
   };
-  return { db, reads, writes, conditions };
+  return { db, reads, writes, conditions, hostWrites };
 }
 
 const chronicHistory = (sourceId = "test:source"): Map<string, AnomalyHistory> => new Map([[sourceId, {
@@ -96,6 +107,37 @@ const chronicHistory = (sourceId = "test:source"): Map<string, AnomalyHistory> =
 const jevAccepts = { ok: true as const, recommendation: "ACCEPT_NOTES" as const, confidence: 0.93, model: "typesafe/jev-1.13" };
 
 describe("shadow route current-evidence boundary", () => {
+  test("durable host hold skips authority, probes, and observations without sliding expiry", async () => {
+    const nextEligibleAt = "2026-09-06T12:00:00.000Z";
+    const { db, writes, hostWrites, reads } = database({ hostBackoff: { host: "jobs.example.com", sourceId: "test:other", limitedAt: NOW, nextEligibleAt, reason: "default_cadence" } });
+    const handler = createShadowDispatchHandler({ getDb: () => db as any, now: () => new Date(NOW),
+      loadAdmissionEvidence: async () => { throw new Error("held host must not read authority"); },
+      runProbe: async () => { throw new Error("held host must not fetch"); } });
+    const response = await handler(requestContext({}));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ dispatched: 0, skippedRateLimitedHost: 1,
+      skippedHostLimits: [{ sourceId: source.sourceId, host: "jobs.example.com", nextEligibleAt }] });
+    expect(reads).toEqual(["registry", "hostBackoff"]);
+    expect(writes).toHaveLength(0); expect(hostWrites).toHaveLength(0);
+  });
+  test("real 429 is stored and extends the host hold; hold storage failure returns 503", async () => {
+    for (const hostWriteError of [false, true]) {
+      const { db, writes, hostWrites } = database({ hostWriteError });
+      const handler = createShadowDispatchHandler({ getDb: () => db as any, now: () => new Date(NOW),
+        loadAdmissionEvidence: async () => admission(), loadAnomalyHistory: async () => new Map(),
+        runProbe: async input => ({ ...probe(input), fetch: { attempted: true, status: 429, bytesReceived: 10 },
+          diagnostic: { ...probe(input).diagnostic, outcome: "RATE_LIMITED" },
+          rateLimit: { receivedAt: NOW, retryAfter: "Sun, 07 Sep 2026 12:00:00 GMT" } }),
+      });
+      const response = await handler(requestContext({}));
+      expect(response.status).toBe(hostWriteError ? 503 : 200);
+      expect(writes).toHaveLength(hostWriteError ? 0 : 1);
+      if (!hostWriteError) {
+        expect(hostWrites[0]).toMatchObject({ host: "jobs.example.com", nextEligibleAt: "2026-09-07T12:00:00.000Z", reason: "retry_after" });
+        expect(writes[0].outcome).toBe("RATE_LIMITED");
+      }
+    }
+  });
   test("unauthorized requests do no database work", async () => {
     let reads = 0;
     const handler = createShadowDispatchHandler({ getDb: () => { reads++; throw new Error("must not read"); },
@@ -127,7 +169,7 @@ describe("shadow route current-evidence boundary", () => {
         loadAdmissionEvidence: async () => ({ ok: false, reason }), runProbe: async input => { probes++; return probe(input); } });
       const response = await handler(requestContext({}));
       expect(await response.json()).toMatchObject({ dispatched: 0, skippedInvalidEvidence: 1 });
-      expect(probes).toBe(0); expect(reads).toEqual(["registry"]); expect(writes).toEqual([]);
+      expect(probes).toBe(0); expect(reads).toEqual(["registry", "hostBackoff"]); expect(writes).toEqual([]);
     });
   }
   test("passes native binding to authority loader and scopes cadence to evidence plus entry", async () => {
@@ -317,6 +359,15 @@ describe("shadow route verdict adjudication", () => {
 });
 
 describe("classifyStorageError", () => {
+  test("finds nested native bind failures without misclassifying generic D1 code 7500", () => {
+    const nested = new Error("Failed query: SELECT ... LIMIT ?", { cause: new Error("D1_ERROR: too many SQL variables at offset 500: SQLITE_ERROR [code: 7500]") });
+    expect(classifyStorageError(nested)).toBe("d1_bind_limit");
+    expect(classifyStorageError(new Error("D1_ERROR [code: 7500]"))).toBe("unclassified_storage_or_pipeline_error");
+    expect(classifyStorageError(new Error("Failed query: SELECT ... LIMIT ?"))).toBe("unclassified_storage_or_pipeline_error");
+    expect(classifyStorageError(new Error("Failed query", { cause: new Error("D1 daily read quota exceeded [code: 7500]") }))).toBe("d1_quota_or_limit");
+    const cycle: { message: string; cause?: unknown } = { message: "wrapped" }; cycle.cause = cycle;
+    expect(classifyStorageError(cycle)).toBe("unclassified_storage_or_pipeline_error");
+  });
   test("maps known failure signatures to bounded classes", () => {
     expect(classifyStorageError(new Error("D1 rejected shadow observation persistence"))).toBe("d1_observation_write_rejected");
     expect(classifyStorageError(new Error("daily write quota exceeded (7500)"))).toBe("d1_quota_or_limit");

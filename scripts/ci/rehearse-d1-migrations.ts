@@ -138,7 +138,7 @@ function assertSchema(db: Database): SchemaAssertion[] {
   const tables = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'd1_%'").all() as Array<{ name: string }>;
   const tableNames = new Set(tables.map((t) => t.name));
 
-  const requiredTables = ["opportunities", "va_directory", "content_digests", "source_fetch_state", "source_fetch_events", "robots_cache", "opportunities_fts", "provider_profiles", "source_registry", "source_publication_ledger", "adjudication_audit_samples"];
+  const requiredTables = ["opportunities", "va_directory", "content_digests", "source_fetch_state", "source_fetch_events", "robots_cache", "opportunities_fts", "provider_profiles", "source_registry", "source_publication_ledger", "adjudication_audit_samples", "source_shadow_host_backoff"];
   for (const table of requiredTables) {
     assertions.push({
       name: `Table ${table} exists`,

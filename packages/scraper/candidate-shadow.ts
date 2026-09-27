@@ -141,6 +141,8 @@ export interface CandidateShadowResult {
     shadowMode: true;
   };
   stopReason?: string;
+  /** Actual 429 response metadata; used only to delay a later shadow run. */
+  rateLimit?: { receivedAt: string; retryAfter: string | null };
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -300,10 +302,16 @@ export async function runCandidateShadowProbe(
   } = {},
 ): Promise<CandidateShadowResult> {
   const start = Date.now();
-  const timestamp = new Date().toISOString();
+  const timestamp = (deps.now?.() ?? new Date()).toISOString();
   const rawFetch = deps.fetchImpl ?? (globalThis.fetch as typeof fetch);
-  const fetchImpl = ((url: Parameters<typeof fetch>[0], init?: RequestInit) =>
-    rawFetch(url, { ...init, redirect: "manual" })) as typeof fetch;
+  let rateLimit: CandidateShadowResult["rateLimit"];
+  const fetchImpl = (async (url: Parameters<typeof fetch>[0], init?: RequestInit) => {
+    const response = await rawFetch(url, { ...init, redirect: "manual" });
+    if (response.status === 429) {
+      rateLimit = { receivedAt: (deps.now?.() ?? new Date()).toISOString(), retryAfter: response.headers?.get?.("retry-after") ?? null };
+    }
+    return response;
+  }) as typeof fetch;
   const robotsStore = deps.robotsStore ?? createMemoryRobotsStore();
   const probes: CandidateShadowProbe[] = [];
   let requestCount = 0;
@@ -416,16 +424,10 @@ export async function runCandidateShadowProbe(
       ? "application/json"
       : "application/rss+xml, application/xml, application/json, text/xml",
   };
-  const sleepImpl = (ms: number) => {
-    if (process.env.NODE_ENV === "test" || typeof (globalThis as any).it === "function") {
-      return Promise.resolve();
-    }
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  };
   const controller = new AbortController();
   const tid = setTimeout(() => controller.abort(), SHADOW_FETCH_TIMEOUT_MS);
   try {
-    let res = await (fetchImpl as any)(input.endpointUrl, {
+    const res = await (fetchImpl as any)(input.endpointUrl, {
       headers: fetchHeaders,
       signal: controller.signal,
       redirect: "manual",
@@ -435,33 +437,8 @@ export async function runCandidateShadowProbe(
     contentType = (res as any).headers?.get?.("content-type") ?? null;
     requestCount += 1;
 
-    // Retry once with backoff if an unauthenticated ATS GET returns transient 429
-    if (fetchStatus === 429 && (input.provider.mechanism === "ats_api" || input.provider.mechanism.includes("api")) && input.provider.authClass === "none") {
-      const retryAfterHeader = (res as any).headers?.get?.("retry-after");
-      const parsedSeconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : NaN;
-      const backoffMs = Number.isFinite(parsedSeconds) && parsedSeconds > 0
-        ? Math.min(parsedSeconds * 1000, 5000)
-        : 3000;
-      await sleepImpl(backoffMs);
-      const retryController = new AbortController();
-      const retryTid = setTimeout(() => retryController.abort(), SHADOW_FETCH_TIMEOUT_MS);
-      try {
-        const retryRes = await (fetchImpl as any)(input.endpointUrl, {
-          headers: fetchHeaders,
-          signal: retryController.signal,
-          redirect: "manual",
-        });
-        if ((retryRes as any).ok || (retryRes as any).status !== 429) {
-          res = retryRes;
-          fetchStatus = (res as any).status;
-          contentType = (res as any).headers?.get?.("content-type") ?? null;
-        }
-      } catch {
-        // preserve original 429 response
-      } finally {
-        clearTimeout(retryTid);
-      }
-    }
+    // Never retry inline: robots + candidate already use the accepted two-request
+    // budget. The dispatcher persists the 429 and honors Retry-After across runs.
 
     if ((res as any).ok) {
       const read = await readUtf8BodyWithBudget(res, SHADOW_MAX_BYTES);
@@ -566,6 +543,7 @@ export async function runCandidateShadowProbe(
         shadowMode: true,
       },
       stopReason,
+      ...(rateLimit ? { rateLimit } : {}),
     };
   }
 }

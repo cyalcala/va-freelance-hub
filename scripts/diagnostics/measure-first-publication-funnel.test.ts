@@ -35,12 +35,11 @@ describe("measure-first-publication-funnel", () => {
       publiclyVerified: 0,
     });
 
-    expect(zeroRatios.r1_qualification).toBe(0);
-    expect(zeroRatios.r2_authorization).toBe(0);
-    expect(zeroRatios.r3_fresh_publication).toBe(0);
-    expect(zeroRatios.r4_public_consistency).toBe(1); // No published jobs means 100% consistency by default
-    expect(zeroRatios.compositeYield).toBe(0);
-    expect(Number.isNaN(zeroRatios.compositeYield)).toBe(false);
+    expect(zeroRatios.r1_qualification).toBeNull();
+    expect(zeroRatios.r2_authorization).toBeNull();
+    expect(zeroRatios.r3_fresh_publication).toBeNull();
+    expect(zeroRatios.r4_public_consistency).toBeNull();
+    expect(zeroRatios.compositeYield).toBeNull();
   });
 
   test("computeStageRatios calculates exact ratios and composite yield", () => {
@@ -90,21 +89,16 @@ describe("measure-first-publication-funnel", () => {
     expect(report.sources.length).toBe(2);
     // WWR: 10 fresh/day expected
     expect(report.sources[0].expectedDailyFreshOutput).toBe(10);
-    // Sourcefit: rawArrival = 4/day, compositeYield = 1.0 * 1.0 * 0.5 * 1.0 = 0.5 => expected = 2/day
+    // Sourcefit: 14/7 = 2/day
     expect(report.sources[1].expectedDailyFreshOutput).toBe(2);
 
     expect(report.systemTotals.totalDailyFreshExpected).toBe(12);
     expect(report.systemTotals.gapTo100Floor).toBe(88);
     expect(report.systemTotals.gapTo150Stretch).toBe(138);
 
-    // Fleet requirement calculation:
-    // Needed from fleet = 100 - 2 (from agency_ats) or based on agencyYield (2/1 = 2)
-    // with aggregator giving 10/day, needed = 90.
-    // 90 / 2 = 45 endpoints (P50)
-    expect(report.systemTotals.requiredActiveFleetP50).toBeGreaterThan(0);
-    expect(report.systemTotals.requiredActiveFleetP90).toBeGreaterThanOrEqual(
-      report.systemTotals.requiredActiveFleetP50
-    );
+    // Fleet requirement is honestly UNKNOWN until arrival distributions and out-of-sample uncertainty are measured
+    expect(report.systemTotals.requiredActiveFleet).toBeNull();
+    expect(report.systemTotals.capacityStatus).toBe("UNKNOWN");
   });
 
   test("formatFunnelReportMarkdown renders full audit markdown structure", () => {
@@ -125,10 +119,9 @@ describe("measure-first-publication-funnel", () => {
     const report = calculateFunnelReport(observations, 7);
     const md = formatFunnelReportMarkdown(report);
 
-    expect(md).toContain("# Empirical First-Publication Funnel Audit (MATH-06A)");
-    expect(md).toContain("Funnel Loss Ratios by Source Cohort");
-    expect(md).toContain("Mathematical Capacity Estimation & Required Fleet Size");
-    expect(md).toContain("Detailed Per-Source Conversion Ledger");
-    expect(md).toContain("`remotive`");
+    expect(md).toContain("# Publication Funnel Evidence and Storage Diagnostic");
+    expect(md).toContain("Recent-posting storage proxy");
+    expect(md).toContain("remotive");
+    expect(md).toContain("aggregator");
   });
 });

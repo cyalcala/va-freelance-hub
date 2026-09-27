@@ -456,6 +456,15 @@ export const sourcePublicationLedger = sqliteTable("source_publication_ledger", 
 // "recurrent shadow" is provable from D1 rather than asserted from a single
 // manual run. Additive only; never written by the exact-six freshness loop.
 
+// MATH-04 scheduling state: a skip is not a shadow observation (migration 0051).
+export const sourceShadowHostBackoff = sqliteTable("source_shadow_host_backoff", {
+  host: text("host").primaryKey().notNull(),
+  sourceId: text("source_id").notNull(),
+  limitedAt: text("limited_at").notNull(),
+  nextEligibleAt: text("next_eligible_at").notNull(),
+  reason: text("reason", { enum: ["default_cadence", "retry_after"] }).notNull(),
+});
+
 export const sourceShadowObservations = sqliteTable("source_shadow_observations", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   sourceId: text("source_id").notNull(),

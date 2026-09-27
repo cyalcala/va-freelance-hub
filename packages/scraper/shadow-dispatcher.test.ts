@@ -7,6 +7,7 @@ import {
 } from "./shadow-dispatcher";
 import { SHADOW_VERSION, type CandidateShadowInput, type CandidateShadowResult } from "./candidate-shadow";
 import type { AdmissionProviderSnapshot, AdmissionSourceSnapshot, CurrentAdmissionEvidenceResult, AdmissionEvidencePacket } from "./admission-evidence";
+import type { ShadowHostBackoff } from "./shadow-host-backoff";
 
 const NOW = "2026-09-05T12:00:00.000Z";
 const now = new Date(NOW);
@@ -78,6 +79,77 @@ function deps(overrides: Partial<ShadowDispatchDeps> = {}): ShadowDispatchDeps {
 function binding(overrides: Partial<ShadowObservationContext> = {}): ShadowObservationContext {
   return { input: inputFor(), admissionEvidenceId: 1, shadowEntryHash: "ABC123", dispatchKey: "dispatch-1", startedAt: NOW, completedAt: NOW, ...overrides };
 }
+
+describe("durable host cooldown", () => {
+  test("holds siblings across runs without writing observations or moving the expiry", async () => {
+    let stored: ShadowHostBackoff | null = null;
+    let writes = 0;
+    let current = new Date(NOW);
+    const records: ShadowObservationRecord[] = [];
+    const options = deps({ now: () => current,
+      loadHostBackoff: async () => stored,
+      persistHostBackoff: async value => { stored = value; writes++; },
+      persistObservation: async value => { records.push(value); },
+      runProbe: async input => ({ ...fakeResult(input, current.toISOString()),
+        fetch: { attempted: true, status: 429, bytesReceived: 0 },
+        diagnostic: { ...fakeResult(input).diagnostic, bytesReceived: 0, outcome: "RATE_LIMITED" },
+        sampleFunnel: { ...fakeResult(input).sampleFunnel, bytesReceived: 0 },
+        rateLimit: { receivedAt: current.toISOString(), retryAfter: "172800" } }),
+    });
+    const first = await dispatchShadowObservations(options);
+    expect(first.dispatched).toBe(1);
+    expect(first.hostBackoffs[0]).toMatchObject({ nextEligibleAt: "2026-09-07T12:00:00.000Z", reason: "retry_after" });
+    current = new Date("2026-09-06T12:00:00.000Z");
+    const second = await dispatchShadowObservations(options);
+    expect(second.dispatched).toBe(0);
+    expect(second.skippedHostLimits).toEqual([{ sourceId: registryRow().sourceId, host: "boards-api.greenhouse.io", nextEligibleAt: "2026-09-07T12:00:00.000Z" }]);
+    expect(records).toHaveLength(1);
+    expect(writes).toBe(1);
+    // Expiration alone restores normal authority/cadence checks; no manual reset.
+    current = new Date("2026-09-07T12:00:00.000Z");
+    options.runProbe = async input => fakeResult(input, current.toISOString());
+    expect((await dispatchShadowObservations(options)).dispatched).toBe(1);
+    expect(writes).toBe(1);
+  });
+  test.each([null, "0", "bad header"])("reuses daily default for Retry-After %s", async retryAfter => {
+    let stored: ShadowHostBackoff | null = null;
+    await dispatchShadowObservations(deps({
+      loadHostBackoff: async () => null, persistHostBackoff: async value => { stored = value; },
+      runProbe: async input => ({ ...fakeResult(input),
+        diagnostic: { ...fakeResult(input).diagnostic, outcome: "RATE_LIMITED" },
+        rateLimit: { receivedAt: NOW, retryAfter } }),
+    }));
+    expect(stored).toMatchObject({ nextEligibleAt: "2026-09-06T12:00:00.000Z", reason: "default_cadence" });
+  });
+  test("checks the current host after admission evidence changes the enumeration endpoint", async () => {
+    const heldHost = "current.example.com";
+    let probes = 0;
+    let reads = 0;
+    const result = await dispatchShadowObservations(deps({
+      loadAdmissionContext: async () => context(registryRow({ endpointUrl: `https://${heldHost}/jobs` }), provider({ allowedHosts: heldHost })),
+      loadHostBackoff: async host => { reads++; return host === heldHost ? { host, sourceId: "prior:source", limitedAt: NOW, nextEligibleAt: EXPIRY, reason: "retry_after" } : null; },
+      persistHostBackoff: async () => {},
+      runProbe: async input => { probes++; return fakeResult(input); },
+    }));
+    expect(probes).toBe(0);
+    expect(reads).toBe(2);
+    expect(result.skippedHostLimits[0].host).toBe(heldHost);
+  });
+  test("storage errors fail closed before another host probe and do not fabricate observations", async () => {
+    let probes = 0;
+    let observations = 0;
+    const options = deps({ loadHostBackoff: async () => null,
+      persistHostBackoff: async () => { throw new Error("hold store unavailable"); },
+      persistObservation: async () => { observations++; },
+      runProbe: async input => { probes++; return { ...fakeResult(input), diagnostic: { ...fakeResult(input).diagnostic, outcome: "RATE_LIMITED" } }; },
+    });
+    await expect(dispatchShadowObservations(options)).rejects.toThrow("hold store unavailable");
+    expect(probes).toBe(1); expect(observations).toBe(0);
+    options.loadHostBackoff = async () => { throw new Error("hold read unavailable"); };
+    await expect(dispatchShadowObservations(options)).rejects.toThrow("hold read unavailable");
+    expect(probes).toBe(1);
+  });
+});
 
 describe("selectEligibleForDispatch", () => {
   test("enumerates supplied registry identities", () => {

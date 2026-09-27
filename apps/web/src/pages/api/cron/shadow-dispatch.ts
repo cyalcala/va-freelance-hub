@@ -3,6 +3,7 @@ import { getDb, sourceShadowObservations } from "@va-hub/db";
 import { and, eq, inArray, lt, sql } from "drizzle-orm";
 import { isAuthorized } from "@/lib/auth";
 import { createRobotsStore } from "@/lib/robots-store";
+import { createShadowHostBackoffStore } from "@/lib/shadow-host-backoff-store";
 import {
   dispatchShadowObservations,
   defaultRunProbe,
@@ -75,7 +76,10 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
       const robotsStore = dependencies.createRobotsStore
         ? dependencies.createRobotsStore(db)
         : createMemoryRobotsStore();
+      const hostBackoffStore = createShadowHostBackoffStore(db);
       const summary = await dispatchShadowObservations({
+        loadHostBackoff: hostBackoffStore.get,
+        persistHostBackoff: hostBackoffStore.put,
         loadRegistryRows: async () => {
           // Rotate bounded windows even if the first group has invalid evidence
           // or is cadence-held. A permanently failing source cannot starve later
@@ -154,10 +158,28 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
  * classes make the next diagnosis observable from CI logs alone.
  */
 export function classifyStorageError(error: unknown): string {
-  const message = error instanceof Error ? error.message : String(error);
-  const lower = message.toLowerCase();
+  // Drizzle wraps native D1 errors as causes. Inspect that chain, returning only
+  // fixed classes; query text, parameters, and native messages stay private.
+  const messages: string[] = [];
+  const seen = new Set<unknown>();
+  let cause: unknown = error;
+  while (cause != null && !seen.has(cause)) {
+    seen.add(cause);
+    if (typeof cause === "object") {
+      const entry = cause as { message?: unknown; cause?: unknown };
+      if (typeof entry.message === "string") messages.push(entry.message.toLowerCase());
+      cause = entry.cause;
+    } else {
+      messages.push(String(cause).toLowerCase());
+      break;
+    }
+  }
+  const lower = messages.join("\n");
+  if (lower.includes("too many sql variables") || lower.includes("too many bind") || lower.includes("too many parameters")) return "d1_bind_limit";
   if (lower.includes("d1 rejected shadow observation persistence")) return "d1_observation_write_rejected";
-  if (lower.includes("quota") || lower.includes("7500") || lower.includes("limit") || lower.includes("exceeded")) return "d1_quota_or_limit";
+  if (lower.includes("d1 rejected shadow host backoff persistence")) return "d1_host_backoff_write_rejected";
+  // D1 code 7500 is a generic execution error, not proof of quota exhaustion.
+  if (lower.includes("quota") || lower.includes("limit exceeded") || lower.includes("limit reached") || lower.includes("exceeded")) return "d1_quota_or_limit";
   if (lower.includes("revision") || lower.includes("evidence")) return "evidence_or_revision_guard";
   if (lower.includes("d1 binding")) return "missing_d1_binding";
   return "unclassified_storage_or_pipeline_error";

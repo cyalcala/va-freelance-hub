@@ -483,7 +483,7 @@ describe("candidate-shadow — stop dispositions, no alternate path (SP-07 crite
     expect(resBad.diagnostic.outcome).toBe("POLICY_BLOCKED");
   });
 
-  it("rate limited (429) → RATE_LIMITED after single retry on unauthenticated ATS GET", async () => {
+  it("rate limited (429) stops within the two-request budget", async () => {
     const input = candidateInput();
     const fetcher = mockFetchFor({
       "https://boards-api.greenhouse.io/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
@@ -492,12 +492,13 @@ describe("candidate-shadow — stop dispositions, no alternate path (SP-07 crite
     global.fetch = fetcher;
     const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
     expect(res.diagnostic.outcome).toBe("RATE_LIMITED");
-    expect(fetcher.mock.calls.length).toBe(3); // robots + initial job fetch + single retry
+    expect(fetcher.mock.calls.length).toBe(2); // robots + job fetch; no inline retry
+    expect(res.diagnostic.requestCount).toBe(2);
     // Must not attempt alternate URL
     expect(res.fetch.attempted).toBe(true);
   });
 
-  it("recovers from transient 429 on unauthenticated ATS GET retry", async () => {
+  it("leaves transient 429 recovery to a later run", async () => {
     const input = candidateInput();
     let jobsCalls = 0;
     const fetcher = vi.fn(async (url: any) => {
@@ -519,10 +520,10 @@ describe("candidate-shadow — stop dispositions, no alternate path (SP-07 crite
     });
     global.fetch = fetcher as any;
     const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
-    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
-    expect(jobsCalls).toBe(2); // 1st was 429, 2nd was 200
-    expect(res.parse.itemCount).toBe(1);
-    expect(res.fetch.status).toBe(200);
+    expect(res.diagnostic.outcome).toBe("RATE_LIMITED");
+    expect(jobsCalls).toBe(1);
+    expect(res.parse.itemCount).toBe(0);
+    expect(res.fetch.status).toBe(429);
   });
 
   it("external content never executed — body treated as evidence only", async () => {
@@ -569,7 +570,7 @@ describe("candidate-shadow — provenance and budget invariants", () => {
     expect(res.diagnostic.mutations).toBe(0);
   });
 
-  it("retries on transient 429 for ATS GET with Retry-After header", async () => {
+  it("retains Retry-After without an immediate retry", async () => {
     const input = candidateInput();
     let attempts = 0;
     const fetcher = vi.fn(async (url: string | URL | Request) => {
@@ -590,11 +591,13 @@ describe("candidate-shadow — provenance and budget invariants", () => {
       });
     });
     const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
-    expect(attempts).toBe(2);
-    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(attempts).toBe(1);
+    expect(res.diagnostic.outcome).toBe("RATE_LIMITED");
+    expect(res.rateLimit).toMatchObject({ retryAfter: "1" });
+    expect(res.diagnostic.requestCount).toBe(2);
   });
 
-  it("records RATE_LIMITED outcome when 429 persists after retry", async () => {
+  it("records RATE_LIMITED outcome after the first 429", async () => {
     const input = candidateInput();
     let attempts = 0;
     const fetcher = vi.fn(async (url: string | URL | Request) => {
@@ -609,7 +612,7 @@ describe("candidate-shadow — provenance and budget invariants", () => {
       });
     });
     const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
-    expect(attempts).toBe(2);
+    expect(attempts).toBe(1);
     expect(res.diagnostic.outcome).toBe("RATE_LIMITED");
   });
 

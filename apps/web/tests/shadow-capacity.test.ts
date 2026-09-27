@@ -53,7 +53,7 @@ async function setup(count: number) {
   databases.push(sqlite);
   sqlite.exec("PRAGMA foreign_keys = ON");
   for (const file of ["0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql", "0038_shadow_observations.sql",
-    "0039_canary_transition_plane.sql", "0040_current_evidence_admission.sql", "0041_publication_ledger.sql", "0042_d1_like_glob_limit.sql"]) {
+    "0039_canary_transition_plane.sql", "0040_current_evidence_admission.sql", "0041_publication_ledger.sql", "0042_d1_like_glob_limit.sql", "0051_shadow_host_backoff.sql"]) {
     sqlite.exec(readFileSync(join(import.meta.dir, "../../../packages/db/migrations", file), "utf8"));
   }
   const binding = new CountingD1(sqlite);
@@ -89,8 +89,7 @@ async function setup(count: number) {
           return Response.json({ jobs: [{ title: "Worldwide support specialist", absolute_url: "https://example.com/apply" }] });
         }) as typeof fetch,
       });
-      // The probe's timestamp currently uses Date directly; align it with the
-      // virtual route/SQL clock while preserving its real parsing and requests.
+      // Keep the real parsing/requests aligned with the virtual SQL clock.
       return { ...result, timestamp: clock.iso };
     },
   });
@@ -108,14 +107,15 @@ async function setup(count: number) {
   return { sqlite, binding, ids, clock, externalRequests, probedSources, run };
 }
 
-test("12 due shadows consume exactly 37 real SQL statements and 24 mocked external requests", async () => {
+test("12 due shadows consume 38 real SQL statements including one host read and 24 external requests", async () => {
   const state = await setup(12);
   expect(MAX_DISPATCHES_PER_RUN).toBe(12);
   expect(SHADOW_MAX_REQUESTS).toBe(2);
   const summary = await state.run();
   expect(summary).toMatchObject({ totalRegistryRows: 12, dispatched: 12, rejectedProbeResults: 0,
     probeFailures: 0, outcomes: { HEALTHY_WITH_RESULTS: 12 }, registryWindow: { limit: 12 } });
-  expect(state.binding.statements).toHaveLength(37);
+  expect(state.binding.statements).toHaveLength(38);
+  expect(state.binding.statements.filter(entry => entry.sql.includes('from "source_shadow_host_backoff"'))).toHaveLength(1);
   expect(state.externalRequests).toHaveLength(24);
   expect(state.probedSources).toHaveLength(12);
   expect(state.sqlite.query("SELECT COUNT(*) AS n FROM source_shadow_observations").get()).toEqual({ n: 12 });
@@ -133,22 +133,22 @@ test("invalid first window remains bounded and cannot starve the next hourly win
   const first = await state.run();
   expect(first).toMatchObject({ totalRegistryRows: 12, dispatched: 0, skippedInvalidEvidence: 12 });
   expect(first.evidenceErrors).toHaveLength(12);
-  expect(state.binding.statements).toHaveLength(13);
+  expect(state.binding.statements).toHaveLength(14);
   expect(state.externalRequests).toHaveLength(0);
   state.clock.windowIso = new Date(Date.parse(state.clock.iso) + 3_600_000).toISOString();
   const second = await state.run();
   expect(second).toMatchObject({ totalRegistryRows: 12, dispatched: 12, rejectedProbeResults: 0 });
-  expect(state.binding.statements).toHaveLength(37);
+  expect(state.binding.statements).toHaveLength(38);
   expect(state.externalRequests).toHaveLength(24);
   expect([...state.probedSources].sort()).toEqual(state.ids.filter(id => !invalidIds.includes(id)));
 });
 
-test("12 cadence-held shadows perform 25 statements and no external requests", async () => {
+test("12 cadence-held shadows perform 26 statements including one host read and no external requests", async () => {
   const state = await setup(12);
   expect((await state.run()).dispatched).toBe(12);
   const held = await state.run();
   expect(held).toMatchObject({ totalRegistryRows: 12, dispatched: 0, skippedIneligible: 12 });
-  expect(state.binding.statements).toHaveLength(25);
+  expect(state.binding.statements).toHaveLength(26);
   expect(state.externalRequests).toHaveLength(0);
   expect(state.sqlite.query("SELECT COUNT(*) AS n FROM source_shadow_observations").get()).toEqual({ n: 12 });
 });
@@ -174,7 +174,7 @@ test("the one-statement authority loader selects current evidence and cadence ig
   if (!current.ok) throw new Error(current.reason);
   expect(current.evidence.id).toBeGreaterThan(prior.evidence.id);
   expect((await state.run()).dispatched).toBe(1);
-  expect(state.binding.statements).toHaveLength(4);
+  expect(state.binding.statements).toHaveLength(5);
   expect(state.externalRequests).toHaveLength(2);
   expect(state.sqlite.query("SELECT COUNT(DISTINCT admission_evidence_id) AS epochs FROM source_shadow_observations").get()).toEqual({ epochs: 2 });
 });

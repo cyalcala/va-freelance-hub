@@ -21,11 +21,13 @@ describe("measure-manila-daily-publications", () => {
       },
     ];
 
-    const report = calculateManilaDailyMetrics(rows, 7);
-    expect(report.days.length).toBe(1);
-    expect(report.days[0].manilaDate).toBe("2026-09-25");
-    expect(report.days[0].freshFlow48h).toBe(1);
-    expect(report.days[0].stockAbsorption).toBe(0);
+    const report = calculateManilaDailyMetrics(rows, 7, "2026-09-27T00:00:00Z");
+    expect(report.days.length).toBe(7);
+    const day = report.days.find((d) => d.manilaDate === "2026-09-25");
+    expect(day).toBeDefined();
+    expect(day!.eligibleStoredCount).toBe(1);
+    expect(day!.recentPostedStorage).toBe(1);
+    expect(day!.olderPostedStorage).toBe(0);
   });
 
   test("rigorously separates fresh arrivals (<= 48h) from backlog (> 48h)", () => {
@@ -35,7 +37,7 @@ describe("measure-manila-daily-publications", () => {
         source_id: "breezy:sourcefit",
         source_platform: "Sourcefit",
         posted_at: "2026-09-24T08:00:00Z",
-        scraped_at: "2026-09-24T10:00:00Z", // 2 hours difference => FRESH
+        scraped_at: "2026-09-24T10:00:00Z", // 2 hours difference => RECENT
         is_active: 1,
         ph_eligibility: "eligible_verified",
       },
@@ -43,19 +45,19 @@ describe("measure-manila-daily-publications", () => {
         id: 11,
         source_id: "greenhouse:canonical",
         source_platform: "Canonical",
-        posted_at: "2026-08-01T00:00:00Z", // 54 days difference => STOCK ABSORPTION
+        posted_at: "2026-08-01T00:00:00Z", // 54 days difference => OLDER
         scraped_at: "2026-09-24T10:00:00Z",
         is_active: 1,
         ph_eligibility: "eligible_likely",
       },
     ];
 
-    const report = calculateManilaDailyMetrics(rows, 7);
-    expect(report.days[0].totalPublished).toBe(2);
-    expect(report.days[0].freshFlow48h).toBe(1);
-    expect(report.days[0].stockAbsorption).toBe(1);
-    expect(report.days[0].floorGap).toBe(MANILA_DAILY_FLOOR - 1);
-    expect(report.days[0].stretchGap).toBe(MANILA_DAILY_STRETCH - 1);
+    const report = calculateManilaDailyMetrics(rows, 7, "2026-09-27T00:00:00Z");
+    const day = report.days.find((d) => d.manilaDate === "2026-09-24");
+    expect(day).toBeDefined();
+    expect(day!.eligibleStoredCount).toBe(2);
+    expect(day!.recentPostedStorage).toBe(1);
+    expect(day!.olderPostedStorage).toBe(1);
   });
 
   test("ignores inactive or ineligible items", () => {
@@ -80,8 +82,8 @@ describe("measure-manila-daily-publications", () => {
       },
     ];
 
-    const report = calculateManilaDailyMetrics(rows, 7);
-    expect(report.days.length).toBe(0);
+    const report = calculateManilaDailyMetrics(rows, 7, "2026-09-27T00:00:00Z");
+    expect(report.days.every((d) => d.eligibleStoredCount === 0)).toBe(true);
   });
 
   test("formats markdown report properly", () => {
@@ -96,9 +98,9 @@ describe("measure-manila-daily-publications", () => {
         ph_eligibility: "eligible_verified",
       },
     ];
-    const report = calculateManilaDailyMetrics(rows, 7);
+    const report = calculateManilaDailyMetrics(rows, 7, "2026-09-27T00:00:00Z");
     const md = formatPublicationReportMarkdown(report);
-    expect(md).toContain("# Empirical Manila-Day Publication Metrics");
+    expect(md).toContain("# Manila-Day Current Eligible Storage Diagnostic");
     expect(md).toContain("breezy");
     expect(md).toContain("2026-09-25");
   });

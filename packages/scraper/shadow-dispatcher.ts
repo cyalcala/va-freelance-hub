@@ -13,7 +13,7 @@
 // Non-publishing invariant (matches SP-07's own): this module never sets
 // `is_active`, never inserts into `opportunities`, and never writes to
 // `source_registry`, `provider_profiles`, or `source_decisions`. Its only
-// write path is the new `source_shadow_observations` table (migration 0038).
+// writes are observations (0038) and host scheduling backoff (0051).
 //
 // All I/O is dependency-injected (see `ShadowDispatchDeps`) so the dispatch
 // decision itself is fully unit-testable without a live D1 binding or network
@@ -33,8 +33,9 @@ import type { DoctorOutcome } from "./source-doctor";
 import type { CurrentAdmissionEvidenceResult } from "./admission-evidence";
 import { hostOf } from "./prospector";
 import type { DispatchAnomaly } from "./shadow-verdict";
+import { retryAfterInstant, type ShadowHostBackoff } from "./shadow-host-backoff";
 
-export const DISPATCHER_VERSION = "2.1.0";
+export const DISPATCHER_VERSION = "2.2.0";
 
 // Registry rows have no per-source cadence unless their provider specifies
 // one (provider_profiles.cadence_min_minutes). A shadow probe's purpose is
@@ -47,8 +48,8 @@ export const DEFAULT_MIN_REDISPATCH_MINUTES = 24 * 60;
 // The registry is empty in production as of this unit (2026-09-02); this cap
 // exists so a future large registry can never turn one dispatch run into an
 // unbounded fan-out of third-party requests.
-// Free D1 budget: one enumeration plus at most12*(evidence+cadence+write)=37
-// statements. Probe budget is at most24 external requests. Count attempted
+// Host state adds bounded primary-key reads and at most one write per actual
+// rate-limited host. Probe budget is at most24 external requests. Count attempted
 // authority reads too, so invalid/cadence-held rows cannot bypass the bound.
 export const MAX_DISPATCHES_PER_RUN = 12;
 
@@ -250,6 +251,10 @@ function validateObservationResult(result: CandidateShadowResult, context: Shado
   if (!canonicalInstant(result.timestamp) || !canonicalInstant(context.startedAt) || !canonicalInstant(context.completedAt)
     || Date.parse(result.timestamp) < Date.parse(context.startedAt)
     || Date.parse(result.timestamp) > Date.parse(context.completedAt)) reject();
+  if (result.rateLimit && (!canonicalInstant(result.rateLimit.receivedAt)
+    || Date.parse(result.rateLimit.receivedAt) < Date.parse(context.startedAt)
+    || Date.parse(result.rateLimit.receivedAt) > Date.parse(context.completedAt)
+    || (result.rateLimit.retryAfter !== null && typeof result.rateLimit.retryAfter !== "string"))) reject();
   if (!result.diagnostic || !OUTCOMES.has(result.diagnostic.outcome)
     || result.diagnostic.mutations !== 0 || result.diagnostic.shadowMode !== true
     || !Array.isArray(result.diagnostic.probes)
@@ -314,6 +319,9 @@ export interface ShadowDispatchDeps {
   loadLastObservedAt: (context: AdmissionContext) => Promise<string | null>;
   runProbe: (input: CandidateShadowInput) => Promise<CandidateShadowResult>;
   persistObservation: (record: ShadowObservationRecord) => Promise<void>;
+  // Production supplies both. Optional only for isolated callers without storage.
+  loadHostBackoff?: (host: string) => Promise<ShadowHostBackoff | null>;
+  persistHostBackoff?: (backoff: ShadowHostBackoff) => Promise<void>;
   now?: () => Date;
   maxDispatchesPerRun?: number;
   createDispatchKey?: () => string;
@@ -328,10 +336,12 @@ export interface ShadowDispatchSummary {
   skippedInvalidProvider: number;
   skippedInvalidEvidence: number;
   skippedRunCap: number;
-  /** Same-host candidates skipped after an earlier probe to that origin returned RATE_LIMITED. */
+  /** Same-host candidates skipped by a durable hold or this run's RATE_LIMITED outcome. */
   skippedRateLimitedHost: number;
   /** Detailed record of sources and hosts skipped due to origin rate limits. */
-  skippedHostLimits: Array<{ sourceId: string; host: string }>;
+  skippedHostLimits: Array<{ sourceId: string; host: string; nextEligibleAt?: string }>;
+  /** Genuine rate-limit responses extending durable scheduling state this run. */
+  hostBackoffs: ShadowHostBackoff[];
   invalidProviderErrors: Array<{ sourceId: string; errors: string[] }>;
   outcomes: Record<string, number>;
   probeFailures: number;
@@ -380,7 +390,7 @@ function failedProbeResult(input: CandidateShadowInput, startedAt: string, compl
 /**
  * Enumerate registry-eligible sources, validate each provider profile, run
  * SP-07's bounded shadow probe, and persist every observation. Never writes
- * outside `source_shadow_observations` (via `persistObservation`); never
+ * outside shadow observations and host scheduling state; never
  * calls AI; never publishes. `deps.runProbe` defaults to
  * `runCandidateShadowProbe` when omitted, so a caller supplying only the D1
  * readers/writer still gets the real probe behavior.
@@ -390,6 +400,9 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
   const maxDispatches = deps.maxDispatchesPerRun ?? MAX_DISPATCHES_PER_RUN;
   if (!Number.isSafeInteger(maxDispatches) || maxDispatches < 0 || maxDispatches > MAX_DISPATCHES_PER_RUN) {
     throw new Error("invalid shadow dispatch run cap");
+  }
+  if (Boolean(deps.loadHostBackoff) !== Boolean(deps.persistHostBackoff)) {
+    throw new Error("shadow host backoff requires both a reader and writer");
   }
   const registryRows = await deps.loadRegistryRows();
 
@@ -403,6 +416,7 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     skippedRunCap: 0,
     skippedRateLimitedHost: 0,
     skippedHostLimits: [],
+    hostBackoffs: [],
     invalidProviderErrors: [],
     outcomes: {},
     probeFailures: 0,
@@ -412,6 +426,23 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
   };
 
   const rateLimitedHosts = new Set<string>();
+  const hostBackoffs = new Map<string, ShadowHostBackoff | null>();
+  const hostIsHeld = async (sourceId: string, host: string | null): Promise<boolean> => {
+    if (!host) return false;
+    if (!hostBackoffs.has(host) && deps.loadHostBackoff) {
+      const backoff = await deps.loadHostBackoff(host);
+      if (backoff && (backoff.host !== host || !canonicalInstant(backoff.nextEligibleAt)
+        || !canonicalInstant(backoff.limitedAt) || backoff.nextEligibleAt < backoff.limitedAt)) {
+        throw new Error("invalid shadow host backoff state");
+      }
+      hostBackoffs.set(host, backoff);
+    }
+    const backoff = hostBackoffs.get(host);
+    if (!rateLimitedHosts.has(host) && (!backoff || Date.parse(backoff.nextEligibleAt) <= now().getTime())) return false;
+    summary.skippedRateLimitedHost += 1;
+    summary.skippedHostLimits.push({ sourceId, host, ...(backoff ? { nextEligibleAt: backoff.nextEligibleAt } : {}) });
+    return true;
+  };
   let authorityChecks = 0;
   let lastHost: string | null = null;
   for (const enumerated of registryRows) {
@@ -425,16 +456,12 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     }
 
     // Fast-path: if this candidate's endpoint host has already received a
-    // RATE_LIMITED outcome earlier in this same dispatch run, skip it before
+    // RATE_LIMITED outcome in a persisted hold or this dispatch run, skip it before
     // reading authority or polling the origin. This bounds window-level origin
     // 429 bursts (e.g. apply.workable.com) to 1 error + N skips rather than N
     // errors, avoiding multiple 429 penalties in the same observation window.
     const enumeratedHost = hostOf(enumerated.endpointUrl);
-    if (enumeratedHost && rateLimitedHosts.has(enumeratedHost)) {
-      summary.skippedRateLimitedHost += 1;
-      summary.skippedHostLimits.push({ sourceId: enumerated.sourceId, host: enumeratedHost });
-      continue;
-    }
+    if (await hostIsHeld(enumerated.sourceId, enumeratedHost)) continue;
 
     // This loader rechecks current source/profile revisions, exact endpoint,
     // immutable authority evidence, leases and durable opt-outs immediately
@@ -454,11 +481,7 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     }
 
     const currentHost = hostOf(row.endpointUrl);
-    if (currentHost && rateLimitedHosts.has(currentHost)) {
-      summary.skippedRateLimitedHost += 1;
-      summary.skippedHostLimits.push({ sourceId: row.sourceId, host: currentHost });
-      continue;
-    }
+    if (currentHost !== enumeratedHost && await hostIsHeld(row.sourceId, currentHost)) continue;
 
     const validation = validateProviderProfileForDispatch(provider);
     if (!validation.ok) {
@@ -512,15 +535,31 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
       result = failedProbeResult(input, startedAt, binding.completedAt);
       record = await buildObservationRecord(result, binding);
     }
+    if (result.diagnostic.outcome === "RATE_LIMITED" && currentHost) {
+      const limitedAt = result.rateLimit?.receivedAt ?? binding.completedAt;
+      // Reuse the accepted daily default. A source's stricter minimum and a
+      // later server Retry-After can only extend this hold, never shorten it.
+      const cadenceMinutes = Math.max(DEFAULT_MIN_REDISPATCH_MINUTES, provider.cadenceMinMinutes ?? 0);
+      const defaultAt = new Date(Date.parse(limitedAt) + cadenceMinutes * 60_000).toISOString();
+      const retryAfter = retryAfterInstant(result.rateLimit?.retryAfter, limitedAt);
+      const backoff: ShadowHostBackoff = { host: currentHost, sourceId: row.sourceId, limitedAt,
+        nextEligibleAt: retryAfter && retryAfter > defaultAt ? retryAfter : defaultAt,
+        reason: retryAfter && retryAfter > defaultAt ? "retry_after" : "default_cadence" };
+      // Persist before observation: if its revision guard rejects, a real 429
+      // must still shield the host. A failed hold write stops further probes.
+      if (deps.persistHostBackoff) {
+        await deps.persistHostBackoff(backoff);
+        hostBackoffs.set(currentHost, backoff);
+        summary.hostBackoffs.push(backoff);
+      }
+      rateLimitedHosts.add(currentHost);
+    }
     // 0040 rechecks the revision/evidence/entry binding and opt-out at insertion.
     // A stale-context write rejects; it never gets counted as stored evidence.
     await deps.persistObservation(record);
 
     summary.dispatched += 1;
     summary.outcomes[result.diagnostic.outcome] = (summary.outcomes[result.diagnostic.outcome] ?? 0) + 1;
-    if (result.diagnostic.outcome === "RATE_LIMITED" && currentHost) {
-      rateLimitedHosts.add(currentHost);
-    }
     if (result.diagnostic.outcome !== "HEALTHY_WITH_RESULTS" && result.diagnostic.outcome !== "HEALTHY_EMPTY") {
       summary.anomalies.push({
         sourceId: result.sourceId,
