@@ -1,4 +1,23 @@
-# Implementation Plan: Source Perpetuity Program
+### v5.2 addition: optional human research through the lake
+
+The owner authorizes planning for human-supplied companies, sources, links,
+pasted sheets and research as an optional input alongside autonomous discovery.
+Every submission goes through Turso batch capture, classification, deduplication,
+permitted link checks, enrichment, potential evaluation, prospecting and the same
+source admission, job qualification and controlled publication gates. Humans
+supply leads; automation performs the follow-through. Routine operation must
+continue without human submissions. Submission is not collection/publication
+approval. No runtime capability is certified by this planning addition.
+
+The [human research intake plan](HUMAN_RESEARCH_INTAKE_PLAN.md) defines HRI-01 through HRI-05,
+input limits, automated processing, receipts, dependencies and acceptance.
+These slices belong to the existing Source Perpetuity execution queue. Local
+intake work may begin independently; public dispatch depends on publication
+control closure. Track origin and marginal contribution without double-counting
+fresh jobs toward the shared 100 to 150/day publication target. Maintain dated
+past/current/next evidence. Trigger.dev is not currently used or required.
+
+ Implementation Plan: Source Perpetuity Program
 
 **Status:** Approved for dependency-ordered execution; no implementation unit
 is implicitly approved to skip its own evidence gates.
@@ -13,6 +32,26 @@ is implicitly approved to skip its own evidence gates.
 and `docs/decisions/ADR-006-controlled-source-replenishment.md`
 
 **Resume prompt:** `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
+
+## 2026-09-27 mathematical improvement overlay (v5.2)
+
+The [mathematical strategy](../MATHEMATICAL_IMPROVEMENT_STRATEGY.md) and
+[working register](MATHEMATICAL_IMPROVEMENT_PLAN.md) make all 13 mathematical
+challenges active resolution obligations. This remains the source-domain
+execution queue; the register supplies dependencies and acceptance evidence.
+Historical terminal SP units remain closed unless new evidence justifies reopening.
+
+The next bounded source-related unit is **MATH-06A / PUBLICATION-AUTHORITY-CLOSURE**:
+refresh F1/F4 evidence, trace every public writer and its authority/receipt path,
+produce failing fixture cases and a repair contract covering exceptions, leases,
+opt-outs and atomic failure behavior. Owner: next maintainer. Trigger: the next
+authorized mathematical maintenance task. Acceptance: a reviewable scoped contract,
+fixtures and rollback proposal. This planning unit does not authorize production
+writes or assert that the publication challenge is resolved. Continue authorized
+repair work without requesting redundant permission; apply existing release gates.
+
+Trigger.dev is not currently used. Scheduling uses the Cloudflare freshness Worker
+and GitHub Actions; this overlay introduces no new scheduler or runtime behavior.
 
 ## 2026-08-31 constitutional transition note
 

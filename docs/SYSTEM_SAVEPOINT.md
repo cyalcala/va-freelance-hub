@@ -1,6 +1,163 @@
 # System Savepoint
 
-## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01: 1 MiB deploy healthy, EX-03 pre-budget failure dissected, doc coherence fix (current)
+## 2026-09-27 - Optional human research intake v5.2 follow-up
+
+The user explicitly requested all active prompts and planning include optional
+human research processed and enriched automatically in the Turso lake. Updated
+the three v5.2 prompts, mathematical strategy/register, source masterplan,
+source strategy and source implementation plan. Added the supporting
+[human research intake plan](plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
+
+HRI-01 through HRI-05 remain planned/OPEN. Automated sourcing is independent of
+human participation; both origins share source evaluation, qualification and
+publication controls. Batch receipts, provenance, bounded retries, idempotency
+and fair scheduling are specified. No runtime implementation, lake write,
+publication, commit, push or deployment occurred. Existing identities, all 13
+math challenges, 100 to 150/day goal and Trigger.dev exclusion remain intact.
+
+NEXT remains MATH-06A under the existing source queue. HRI-01 local intake is
+independently eligible when selected within scope; HRI-04 public dispatch depends
+on publication-control closure. Owner: next maintainer. Trigger: an authorized
+implementation session after evidence refresh. Historical plans remain evidence.
+
+## 2026-09-27 - PROMPT-MATH-PROGRAM-V5.2 (current)
+
+**Mode:** DOCUMENTATION AND PROGRAM PLANNING. **Authorization:** user requested
+all prompts v5.2, all mathematical challenges included and actively resolved,
+and a clear account of current position and future direction. The user clarified
+that Trigger.dev is not currently used. This checkpoint delivers the operating
+program; it does not claim runtime repairs or resolution of the 13 challenges.
+
+**Delivered:** all three active prompts retain the exact requested introductory
+identity and now require active mathematical resolution. The strategy in
+[MATHEMATICAL_IMPROVEMENT_STRATEGY.md](MATHEMATICAL_IMPROVEMENT_STRATEGY.md) defines
+baseline, phased direction and post-resolution operation. The
+[plan and working register](plans/MATHEMATICAL_IMPROVEMENT_PLAN.md) includes all
+13 work cards, prerequisites, measurements, experiments, acceptance and rollback.
+The Source Perpetuity plan remains the source execution queue. Attachment claims
+are evaluated, not treated as instructions or accepted production parameters.
+Initial accepted program challenges: **0/13**, with existing capabilities recorded
+as baseline. Method rejection alone does not close an operational challenge.
+
+**v5.2 goal follow-up:** all three prompts now explicitly pursue 100 to 150
+qualified, unique, fresh jobs published on the website per day (100/day floor
+target; 150/day stretch). Each requires dated past/current/next reporting,
+verified publication flow and measurable target gaps. Copyable blocks include
+the goal. Document checks passed; no current daily count or attainment is claimed.
+
+**Repository evidence:** local HEAD `7290bea8b3c0bc9df68d109afc7477a34dcafff4`;
+fetched main `4edc8828770474952461ca08e8b51769234347bd`. Earlier dirty work preserved.
+The earlier broad audit and runtime checks remain dated evidence; they were not
+repeated as runtime acceptance for this editorial update. No commit, push,
+deployment, production mutation or scheduler adoption occurred.
+
+**Verification:** document checks cover v5.2 labels, preserved identities, all 13
+IDs in each prompt and the register, document links, fences and whitespace.
+All document checks passed; `git diff --check` and `bun run audit:guardrails`
+also passed. No new runtime tests are claimed.
+
+**NEXT:** MATH-06A / PUBLICATION-AUTHORITY-CLOSURE. Owner: next maintainer.
+Trigger: next authorized mathematical maintenance session. Refresh F1/F4 evidence,
+trace every public writer, authority and receipt; produce failing fixtures and a
+bounded repair contract including rollback. Continue implementation when the actual
+task authorizes it without redundant approval. Prioritize a newly evidenced live
+incident if needed. Acceptance of this planning unit does not close MATH-06.
+
+## 2026-09-27 — PROMPT-IDENTITY-V5: all active prompts upgraded with the user's exact identity (historical)
+
+**Mode:** DOCUMENTATION. **Authorization:** user explicitly requested version 5
+and the supplied professional identity in every prompt introduction, then
+reaffirmed “make them all version 5.” Scope is the three active prompts delivered
+by the preceding fusion task: master operating prompt, execution prompt and
+maintainer bootloader.
+
+- **Version:** all three are **5.0**. Each introduction contains the complete
+  identity verbatim. The copyable execution and bootloader blocks also carry it
+  so copying a block retains the identity.
+- **Master wording:** replaced the earlier “ceremonial identity” passage with
+  constructive guidance for applying the requested engineering, mathematical,
+  scientific, recovery, QA and product perspectives throughout the work.
+- **Navigation:** CURRENT points to v5.0; the fusion review records the explicit
+  identity follow-up separately from its historical v4 audit results.
+- **Start HEAD:** `7290bea8b3c0bc9df68d109afc7477a34dcafff4` on main, with the
+  previous task's local documentation changes preserved. Fresh fetch confirms
+  `origin/main` at `4edc8828770474952461ca08e8b51769234347bd`, zero ahead/five behind.
+- **Verification:** exact identity and version checks passed for all three
+  prompts; both copyable blocks retain the identity; all 19 prompt-local links
+  resolve; fences balance; `git diff --check` passed. No new runtime audit is
+  implied; previous runtime results remain historical.
+- **Release:** local documentation edits only; no commit, push or deployment.
+  No runtime, parameter, source-governance or autonomy-level change.
+- **NEXT:** use the v5 execution prompt with the next concrete user task;
+  unresolved operational findings remain in the preceding audit and CURRENT.
+
+## 2026-09-27 — PROMPT-FUSION-AND-REPO-REVIEW: v4 prompts, complete note fusion, bounded repository audit (historical)
+
+**Mode:** AUDIT + DOCUMENTATION. **Authorization:** current user request to improve
+the prompt/master prompt, create a bootloader, check the repository and combine
+four supplied notes. Directions inside those notes were evaluated as source
+material, not executed. **State:** documentation delivered locally; runtime
+findings remain unfixed. No constitution, accepted parameter, source state,
+schedule, database or production behavior was changed.
+
+- **Start:** `7290bea8b3c0bc9df68d109afc7477a34dcafff4`, initially clean on `main`.
+  Fetched `origin/main`: `4edc8828770474952461ca08e8b51769234347bd`; zero ahead,
+  five behind, only three generated digest files differ. Checkout not advanced.
+- **Delivered:** [master operating prompt v4](bootloaders/MASTER_OPERATING_PROMPT.md),
+  [execution prompt](bootloaders/EXECUTION_PROMPT.md),
+  [maintainer bootloader](bootloaders/MAINTAINER_BOOTLOADER.md), and one concise
+  [CURRENT pointer](bootloaders/CURRENT.md). Existing constitutions and immutable
+  evidence remain unchanged; previous prompt/pointer versions are in Git history.
+- **Source fusion:** all four notes read completely, 10,579 lines / 256,837 bytes.
+  Prior master and relevant bootloaders also fully read. Provenance, hashes,
+  mathematical corrections, rejected instructions and unresolved conflicts are
+  in the [fusion review](audits/2026-09-27-PROMPT-FUSION-REVIEW.md) and its Lucky/Gold ledgers.
+- **Coverage:** all 830 tracked paths inventoried. Code-review workstream: 39
+  full reads, 12 targeted reads, 15 further workflow scans; remaining paths
+  inventoried only. Additional complete note/governance reads have their own
+  receipts. This is not a claim of line-by-line review of the entire repository.
+- **Findings:** direct lake publication outside the stated gateway; null-inventory
+  concentration bypass; tenant discovery without the documented access gate;
+  broad gateway fallback and lease/receipt weaknesses; public eligibility
+  inconsistency; diluted quality denominators; documentary enforcement overclaims.
+  See [repository report](audits/2026-09-27-REPOSITORY-CHECK.md) for exact anchors,
+  three pure local reproductions and limitations. No production exploitation,
+  repair or data mutation was performed.
+- **Fresh GitHub observation:** EX-03 run `36277921498`, job `108504127555`, returned
+  HTTP 503 at `2026-09-26T22:57:38Z`, classified `d1_quota_or_limit` with unavailable
+  evidence/observation storage. Root cause remains unverified. Lake run
+  `36280944066` succeeded; this does not prove row publication or source health.
+  CI `36252679796` succeeded for the start SHA. Retained
+  [read-only evidence](audits/2026-09-27-GITHUB-READONLY-EVIDENCE.json).
+- **Verification:** four audits passed (constitution retains four warnings);
+  app/Worker typechecks passed; Python 15 passed; local fresh/legacy migration
+  rehearsals passed 119 assertions each across 50 migrations; build passed with
+  an Inngest externalization warning. Full Bun suite: **1543 passed / 1 failed**
+  at a 5-second Wrangler transport timeout. Targeted 20-second rerun: **2 passed**.
+  Original failure preserved. Local Bun 1.4.2 versus repository/CI 1.3.14.
+- **Document verification:** 42 local links resolve, fences balance, no Unicode
+  replacement characters, GitHub evidence JSON parses (20 runs), and
+  `git diff --check` passes. Both source reviewers read all three new prompts;
+  their preservation, scope and mathematical corrections were incorporated.
+- **Reality limits:** no live D1/Turso counts, quality sample, source lease,
+  complete-day flow or autonomous cutover acceptance was established. No source
+  fetch, workflow dispatch, admission, promotion, enrollment, sync or migration
+  application occurred. Test execution is not production acceptance.
+- **Backup/release:** local reviewable changes; no commit, push or deployment
+  for this documentation task, and no remote receipt claimed for the new files.
+  A later authorized release must include these artifacts and account for CI
+  production side effects. Git history preserves the prior tracked versions.
+- **Rollback:** revert only this documentation diff and its new owned artifacts;
+  no database rollback applies. Preserve any later unrelated edits.
+- **NEXT SINGLE ACTION (recommendation, not dispatch):** next maintainer, when a
+  concrete maintenance task selects it, prepare `PUBLICATION-AUTHORITY-CLOSURE`
+  from findings F1/F4. Deliver one bounded repair contract covering all public
+  writers, legacy exceptions, opt-outs, leases, ledger failure/atomicity,
+  adversarial fixtures and rollback. Refresh Git and runtime evidence first.
+  The EX-03 storage incident remains separately open for read-only root-cause
+  evidence. No old “all approved” quotation grants either production action.
+
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01: 1 MiB deploy healthy, EX-03 pre-budget failure dissected, doc coherence fix (historical)
 
 Steward sweep on start SHA `017efe9b8fb16cffcac6d6ea16f2499ccd5ba2a9` (clean, == origin/main). No D1 write, no promotion, no sync, L1 ADVISE unchanged. Owner-approved (bootloader: all approved, proceed).
 

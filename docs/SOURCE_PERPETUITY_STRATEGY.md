@@ -1,4 +1,23 @@
-# Source Perpetuity Strategy
+### v5.2 addition: optional human research through the lake
+
+The owner authorizes planning for human-supplied companies, sources, links,
+pasted sheets and research as an optional input alongside autonomous discovery.
+Every submission goes through Turso batch capture, classification, deduplication,
+permitted link checks, enrichment, potential evaluation, prospecting and the same
+source admission, job qualification and controlled publication gates. Humans
+supply leads; automation performs the follow-through. Routine operation must
+continue without human submissions. Submission is not collection/publication
+approval. No runtime capability is certified by this planning addition.
+
+The [human research intake plan](plans/HUMAN_RESEARCH_INTAKE_PLAN.md) defines HRI-01 through HRI-05,
+input limits, automated processing, receipts, dependencies and acceptance.
+These slices belong to the existing Source Perpetuity execution queue. Local
+intake work may begin independently; public dispatch depends on publication
+control closure. Track origin and marginal contribution without double-counting
+fresh jobs toward the shared 100 to 150/day publication target. Maintain dated
+past/current/next evidence. Trigger.dev is not currently used or required.
+
+ Source Perpetuity Strategy
 
 **Status:** Accepted 2026 bootstrap/transition strategy; subordinate to the
 Source Replenishment Masterplan

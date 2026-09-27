@@ -1,0 +1,220 @@
+{
+  "review_date": "2026-09-27",
+  "local_start_sha": "7290bea8b3c0bc9df68d109afc7477a34dcafff4",
+  "remote_main_sha": "4edc8828770474952461ca08e8b51769234347bd",
+  "source": "GitHub plugin read-only branch, actions runs, job and log reads",
+  "coverage": "Most recent 20 runs returned in one response; not complete workflow history",
+  "latest_shadow_failure": {
+    "run_id": 36277921498,
+    "job_id": 108504127555,
+    "time": "2026-09-26T22:57:38Z",
+    "http_status": 503,
+    "response": {
+      "error": "Shadow dispatch evidence or observation storage unavailable",
+      "errorClass": "d1_quota_or_limit"
+    },
+    "limitation": "Observed application classification. Does not identify the exact exhausted resource or prove quota exhaustion independently."
+  },
+  "runs": [
+    {
+      "id": 36280944066,
+      "name": "Automatic Lake Publish",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "4edc8828770474952461ca08e8b51769234347bd",
+      "created_at": "2026-09-26T23:55:50Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36280944066"
+    },
+    {
+      "id": 36277921498,
+      "name": "EX-03 Shadow Dispatch",
+      "status": "completed",
+      "conclusion": "failure",
+      "event": "schedule",
+      "head_sha": "4edc8828770474952461ca08e8b51769234347bd",
+      "created_at": "2026-09-26T22:57:27Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36277921498"
+    },
+    {
+      "id": 36277653193,
+      "name": "Ingestion Heartbeat Watchdog",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "4edc8828770474952461ca08e8b51769234347bd",
+      "created_at": "2026-09-26T22:52:07Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36277653193"
+    },
+    {
+      "id": 36275125179,
+      "name": "🏹 Sovereign Hunter Pulse",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "4edc8828770474952461ca08e8b51769234347bd",
+      "created_at": "2026-09-26T22:05:28Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36275125179"
+    },
+    {
+      "id": 36273522185,
+      "name": "Automatic Lake Publish",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "4edc8828770474952461ca08e8b51769234347bd",
+      "created_at": "2026-09-26T21:36:32Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36273522185"
+    },
+    {
+      "id": 36273429206,
+      "name": "🏢 Sovereign Directory Pulse (Company Link Health)",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "851ac3dee3fab4575d81f0d3cde89efd09e2bd9d",
+      "created_at": "2026-09-26T21:34:57Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36273429206"
+    },
+    {
+      "id": 36272119328,
+      "name": "🧭 Sovereign Prospector Pulse (Company Auto-Discovery)",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "3d76d04414d42f2d74437f419618d1785391e06a",
+      "created_at": "2026-09-26T21:12:15Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36272119328"
+    },
+    {
+      "id": 36267744412,
+      "name": "EX-03 Shadow Dispatch",
+      "status": "completed",
+      "conclusion": "failure",
+      "event": "schedule",
+      "head_sha": "3d76d04414d42f2d74437f419618d1785391e06a",
+      "created_at": "2026-09-26T19:55:55Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36267744412"
+    },
+    {
+      "id": 36267542875,
+      "name": "Ingestion Heartbeat Watchdog",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "3d76d04414d42f2d74437f419618d1785391e06a",
+      "created_at": "2026-09-26T19:52:21Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36267542875"
+    },
+    {
+      "id": 36265947400,
+      "name": "🏹 Sovereign Hunter Pulse",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "3d76d04414d42f2d74437f419618d1785391e06a",
+      "created_at": "2026-09-26T19:24:32Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36265947400"
+    },
+    {
+      "id": 36263567527,
+      "name": "Automatic Lake Publish",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "3d76d04414d42f2d74437f419618d1785391e06a",
+      "created_at": "2026-09-26T18:43:45Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36263567527"
+    },
+    {
+      "id": 36263400702,
+      "name": "🧩 Sovereign Enrichment Pulse (Directory Quality)",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "f124afeb2336df0e3b8f0d00e1c267f24359eee5",
+      "created_at": "2026-09-26T18:40:56Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36263400702"
+    },
+    {
+      "id": 36258410340,
+      "name": "EX-03 Shadow Dispatch",
+      "status": "completed",
+      "conclusion": "failure",
+      "event": "schedule",
+      "head_sha": "f124afeb2336df0e3b8f0d00e1c267f24359eee5",
+      "created_at": "2026-09-26T17:15:58Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36258410340"
+    },
+    {
+      "id": 36258133967,
+      "name": "Ingestion Heartbeat Watchdog",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "f124afeb2336df0e3b8f0d00e1c267f24359eee5",
+      "created_at": "2026-09-26T17:11:28Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36258133967"
+    },
+    {
+      "id": 36256605652,
+      "name": "🏢 Sovereign Directory Pulse (Company Link Health)",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "8a6422af634f408e9e07b17b89f83438985bf6d8",
+      "created_at": "2026-09-26T16:45:34Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36256605652"
+    },
+    {
+      "id": 36256298684,
+      "name": "🏹 Sovereign Hunter Pulse",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "8a6422af634f408e9e07b17b89f83438985bf6d8",
+      "created_at": "2026-09-26T16:40:32Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36256298684"
+    },
+    {
+      "id": 36255403527,
+      "name": "🧭 Sovereign Prospector Pulse (Company Auto-Discovery)",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "7290bea8b3c0bc9df68d109afc7477a34dcafff4",
+      "created_at": "2026-09-26T16:25:31Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36255403527"
+    },
+    {
+      "id": 36253494328,
+      "name": "Sovereign Verifier Pulse",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "schedule",
+      "head_sha": "7290bea8b3c0bc9df68d109afc7477a34dcafff4",
+      "created_at": "2026-09-26T15:53:13Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36253494328"
+    },
+    {
+      "id": 36252679796,
+      "name": "Sovereign CI Guardrail",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "7290bea8b3c0bc9df68d109afc7477a34dcafff4",
+      "created_at": "2026-09-26T15:39:10Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36252679796"
+    },
+    {
+      "id": 36252115762,
+      "name": "Sovereign CI Guardrail",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "017efe9b8fb16cffcac6d6ea16f2499ccd5ba2a9",
+      "created_at": "2026-09-26T15:29:31Z",
+      "url": "https://github.com/cyalcala/va-freelance-hub/actions/runs/36252115762"
+    }
+  ]
+}
