@@ -10,7 +10,13 @@ export type PublicLoadResult<T> =
 export function markPublicDataUnavailable(response: PublicResponse, error: unknown): void {
   response.status = 503;
   response.headers.set("Cache-Control", "no-store");
-  console.error("public route data load failed", error instanceof Error ? error.name : "unknown");
+  // Live-outage triage (2026-09-27): the name-only redaction made the homepage
+  // 503 undiagnosable from function logs. D1/drizzle error messages carry no
+  // credentials; keep the public body generic and bound the logged detail.
+  const detail = error instanceof Error
+    ? `${error.name}: ${String(error.message).slice(0, 300)}`
+    : String(error).slice(0, 300);
+  console.error("public route data load failed", detail);
 }
 
 /**
