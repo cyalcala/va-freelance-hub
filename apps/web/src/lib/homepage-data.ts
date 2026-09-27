@@ -35,16 +35,18 @@ const cardProjection = {
   geoEvidence: opportunities.geoEvidence,
 };
 
-/** Each branch uses category_active_effective_posted_idx and stops at six. */
+/** Partitions by category and stops at six; restricted to the 9 UI categories to avoid compound SELECT limits and stay under 100 binds. */
 export function homepagePreviewQuery() {
-  return sql.join(Object.keys(JOB_CATEGORY_MAP).map((category) => sql`
+  const allowedCategories = Object.keys(JOB_CATEGORY_MAP);
+  return sql`
     SELECT id FROM (
-      SELECT id FROM opportunities
-      WHERE ${and(eq(opportunities.category, category), publicOpportunityFilters())}
-      ORDER BY coalesce(posted_at, scraped_at) DESC
-      LIMIT 6
-    )
-  `), sql` UNION ALL `);
+      SELECT id, ROW_NUMBER() OVER (
+        PARTITION BY category ORDER BY coalesce(posted_at, scraped_at) DESC
+      ) AS rn
+      FROM opportunities
+      WHERE ${and(inArray(opportunities.category, allowedCategories), publicOpportunityFilters())}
+    ) WHERE rn <= 6
+  `;
 }
 
 // Five minutes matches the public HTML cache; never return stale data on error.

@@ -73,9 +73,10 @@ test("homepage previews stay under D1's 100-bind ceiling when stored categories 
       expect(cards.filter((row) => row.category === category).map((row) => row.posted_at).sort())
         .toEqual(['2026-09-03','2026-09-04','2026-09-05','2026-09-06','2026-09-07','2026-09-08']);
     }
+    // Cloudflare D1 caps compound SELECTs at 5 terms; verify query avoids UNION ALL entirely.
+    expect(query.sql.toLowerCase()).not.toContain('union');
     const plan = db.query(`EXPLAIN QUERY PLAN ${query.sql}`).all(...query.params as any[]) as { detail: string }[];
-    expect(plan.filter((row) => row.detail.includes('USING INDEX category_active_effective_posted_idx')))
-      .toHaveLength(Object.keys(JOB_CATEGORY_MAP).length);
+    expect(plan.some((row) => row.detail.includes('USING INDEX category_active_effective_posted_idx'))).toBe(true);
     expect(plan.some((row) => row.detail.includes('USE TEMP B-TREE'))).toBe(false);
   } finally { db.close(); }
 });
