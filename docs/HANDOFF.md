@@ -18,10 +18,13 @@ Bayesian Evidence-Governed Bottleneck Resolution Strategy authored, Ashby Canary
   - Added `"ashby:multiplymii"` to `SOURCE_ADMIT_ALLOWLIST` in `apps/web/src/pages/api/cron/source-admit.ts` and `SOURCE_PROMOTE_ALLOWLIST` in `apps/web/src/pages/api/cron/source-promote.ts`.
   - Expanded unit test suites in `apps/web/tests/source-admit-route.test.ts` (15/15 pass) and `apps/web/tests/source-promote-route.test.ts` (14/14 pass).
 - **Verification**: 1,614/1,614 tests pass across 167 files; strict typecheck clean; parameter parity 100%; production build clean in 31.81s.
+- **Deployment & Lake Verification**:
+  - Pushed commit `8862ba2` to `origin/main`. Sovereign CI Guardrail run `36313961406` succeeded across all jobs including Cloudflare Pages deploy.
+  - Live homepage `https://remotejobs-ph.pages.dev/` verified returning HTTP 200 OK.
+  - Executed `bun run lake:enroll`: `ashby:multiplymii` admitted to `shadow` (`status: 200`, `outcome: "shadow"`, `probeOutcome: "HEALTHY_WITH_RESULTS"`).
 - **When the owner resumes**:
-  1. Push the commit to `origin/main` and verify Sovereign CI Guardrail and Cloudflare Pages deployment.
-  2. Execute `bun run lake:enroll` to enroll `ashby:multiplymii` into shadow.
-  3. Monitor clean streak accumulation across the 6 Workable agency tenants under the MATH-04 host cooldown toward canary graduation.
+  1. Monitor hourly shadow-dispatch ticks for clean observation accumulation across Workable and Ashby sources under persistent host cooldown.
+  2. Upon completing the qualifying streak, trigger canary promotion to activate bounded publication ($C \le 2-5$ items/tick).
 
 ## 2026-09-27 — PRODUCTION-OUTAGE-RESOLVED-MATH04-GLM-RECONCILIATION (historical)
 

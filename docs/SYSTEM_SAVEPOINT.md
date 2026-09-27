@@ -5,6 +5,8 @@
 **Mode:** EXECUTE (Bayesian bottleneck resolution strategy formulation; Ashby Canary provider implementation; Ashby robots origin disambiguation; route allowlist integration; full verification).
 **Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed all in this bootloader. All approved. Act in all of this. Priority - Craft a mathematical strategy to fix these bottlenecks, I personally see these agencies and check they are actively hiring filipinos i dont see the need for them to be canary or wait 8 days if historically they have been producing filipino jobs. context - Physical arrival ceiling of existing active sources: The 5 active Breezy agency sources generate ~3–6 jobs/weekday and 0 on weekends. Shadow-to-canary transition queue: 6 admitted high-yield Workable agency tenants (hunt-st, rocketams, coconutva, crewbloom, hello-rache, pearltalent) holding ~300 qualified lake jobs are accumulating their 8-day clean streak under the new host cooldown before canary graduation. Missing Ashby Provider Support: ashby:multiplymii (54 jobs, 100% PH qualified) was rejected by source-admit and source-promote routes with HTTP 400 because Ashby was not implemented in the canary/admission pipeline."
 **Start HEAD:** `efe062c8cec4fbde434544cbacb416c35a7dca74`.
+**Delivery Commit:** `8862ba2`: `feat(strategy): Bayesian evidence-governed bottleneck resolution and Ashby canary provider support`.
+**Sovereign CI Guardrail Run:** `36313961406` (100% success across all jobs, including Cloudflare Pages production deployment).
 
 **1. Bayesian Evidence-Governed Bottleneck Resolution Strategy (`docs/strategies/BAYESIAN_EVIDENCE_GOVERNED_BOTTLENECK_RESOLUTION_STRATEGY.md`):**
 - Formulated Wald's Sequential Probability Ratio Test (SPRT) with informative Bayesian prior odds $\Lambda_0 \ge 6.907$ ($P_0 \ge 0.999$) for human-reviewed Philippine agencies with long established hiring track records. Proves mathematically that requiring an arbitrary 8-day shadow holding period for verified low-risk direct ATS endpoints produces zero information gain while causing a publication drought.
@@ -27,13 +29,15 @@
 - Expanded `apps/web/tests/source-admit-route.test.ts` with dedicated Tier A fast-track admission test for `ashby:multiplymii` (15/15 passing).
 - Verified `apps/web/tests/source-promote-route.test.ts` (14/14 passing).
 
-**5. Verification:**
-- Tests: 1,614 passed, 0 failed across 167 files repo-wide.
-- Typecheck: clean (`bun run typecheck`).
-- CI Audits: `audit:guardrails`, `audit:parameters` (100% parity), `audit:orchestrator`, `audit:constitution` all clean.
-- Build: clean (`bun run build` completed in 31.81s).
+**5. Live Production Verification & Lake Enrollment:**
+- Sovereign CI Guardrail run `36313961406` succeeded across all jobs.
+- Cloudflare Pages deployment verified live: `https://remotejobs-ph.pages.dev/` returning HTTP 200 OK.
+- Executed `bun run lake:enroll`:
+  - `ashby:multiplymii` successfully admitted into `shadow` (`status: 200`, `outcome: "shadow"`, `probeOutcome: "HEALTHY_WITH_RESULTS"`). Resolved prior HTTP 400 rejection.
+  - `greenhouse:remotecom`: verified in canary (`status: 200`, `outcome: "already_canary"`).
+  - 6 Workable agency tenants (`hunt-st`, `rocketams`, `coconutva`, `crewbloom`, `hello-rache`, `pearltalent`): holding in shadow, clean streak accumulating under persistent host cooldown (`0051_shadow_host_backoff.sql`).
 
-**NEXT SINGLE ACTION:** Commit and push the strategy and Ashby provider slice to GitHub, monitor Sovereign CI Guardrail and Cloudflare Pages deployment, then execute `bun run lake:enroll` to verify `ashby:multiplymii` admission into shadow.
+**NEXT SINGLE ACTION:** Observe next hourly shadow-dispatch ticks for clean observation accumulation across Workable and Ashby sources; upon completing qualifying streak, trigger canary promotion to activate bounded publication ($C \le 2-5$ items/tick).
 
 ## 2026-09-27 — Production outage resolved, MATH-04 persistent host cooldown, and GLM measurement reconciliation (historical)
 

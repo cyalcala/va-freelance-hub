@@ -2,15 +2,17 @@
 
 ## Active bounded unit
 
-**Bayesian Evidence-Governed Bottleneck Resolution Strategy & Ashby Canary Support (2026-09-27):**
+**Bayesian Evidence-Governed Bottleneck Resolution Strategy & Ashby Canary Support (delivered & deployed 2026-09-27):**
 
-1. **Mathematical Strategy Authored (`docs/strategies/BAYESIAN_EVIDENCE_GOVERNED_BOTTLENECK_RESOLUTION_STRATEGY.md`):** Formulated Wald's SPRT with informative Bayesian prior odds $\Lambda_0 \ge 6.907$ ($P_0 \ge 0.999$) for human-verified Philippine VA agencies. Clarified that Shadow is a silent non-publishing hold while Canary is a safe, rate-controlled public exposure state ($C \le 5$ items/tick). Promoting shadow sources to Canary immediately fulfills the founder's directive without flooding downstream systems. Formulated 3-level capacity model and Little's Law fleet sizing ($K^* \in [106, 202]$).
-2. **Ashby Canary Provider Support (`packages/scraper/ashby-canary.ts`):** Complete provider profile and candidate row generators with `ASHBY_PROVIDER_ID = "ashby"`, official static documentation evidence URL, and 180-day lease. Exported in scraper index.
-3. **Robots Origin Disambiguation for Ashby (`packages/scraper/robotsGate.ts`):** Fixed false `POLICY_BLOCKED` on `api.ashbyhq.com` (401 on root) by mapping to `https://jobs.ashbyhq.com` (200 OK allowing job board paths).
-4. **Route Allowlisting & Ingestion Integration:** Added `"ashby:multiplymii"` to `SOURCE_ADMIT_ALLOWLIST` and `SOURCE_PROMOTE_ALLOWLIST`. Configured `targetConfig` in `source-admit.ts` to build `ashby` provider profiles and candidate rows with 2 canary items/tick.
-5. **Verification:** 1,614 tests pass, typecheck clean, guardrails clean, parameters 100% parity, constitution audit clean, production build clean.
+1. **Commit & CI Run:** `8862ba2` pushed to `origin/main`, Sovereign CI Guardrail run `36313961406` succeeded across all jobs including Cloudflare Pages deploy. Live site `https://remotejobs-ph.pages.dev/` verified HTTP 200 OK.
+2. **Mathematical Strategy Authored (`docs/strategies/BAYESIAN_EVIDENCE_GOVERNED_BOTTLENECK_RESOLUTION_STRATEGY.md`):** Formulated Wald's SPRT with informative Bayesian prior odds $\Lambda_0 \ge 6.907$ ($P_0 \ge 0.999$) for human-verified Philippine VA agencies. Clarified that Shadow is a silent non-publishing hold while Canary is a safe, rate-controlled public exposure state ($C \le 5$ items/tick). Promoting shadow sources to Canary immediately fulfills the founder's directive without flooding downstream systems. Formulated 3-level capacity model and Little's Law fleet sizing ($K^* \in [106, 202]$).
+3. **Ashby Canary Provider Support (`packages/scraper/ashby-canary.ts`):** Complete provider profile and candidate row generators with `ASHBY_PROVIDER_ID = "ashby"`, official static documentation evidence URL, and 180-day lease. Exported in scraper index.
+4. **Robots Origin Disambiguation for Ashby (`packages/scraper/robotsGate.ts`):** Fixed false `POLICY_BLOCKED` on `api.ashbyhq.com` (401 on root) by mapping to `https://jobs.ashbyhq.com` (200 OK allowing job board paths).
+5. **Route Allowlisting & Ingestion Integration:** Added `"ashby:multiplymii"` to `SOURCE_ADMIT_ALLOWLIST` and `SOURCE_PROMOTE_ALLOWLIST`. Configured `targetConfig` in `source-admit.ts` to build `ashby` provider profiles and candidate rows with 2 canary items/tick.
+6. **Live Lake Enrollment (`bun run lake:enroll`):** Executed against production; `ashby:multiplymii` admitted with `status: 200`, `outcome: "shadow"`, `probeOutcome: "HEALTHY_WITH_RESULTS"`. Resolved prior HTTP 400 rejection.
+7. **Verification:** 1,614 tests pass, typecheck clean, guardrails clean, parameters 100% parity, constitution audit clean, production build clean.
 
-**Follow-on unit:** Commit and push to GitHub, monitor Sovereign CI Guardrail and Cloudflare Pages deployment, then execute `bun run lake:enroll` to verify `ashby:multiplymii` admission into shadow.
+**Follow-on unit:** Observe next hourly shadow-dispatch ticks for clean observation accumulation across Workable and Ashby sources; upon completing qualifying streak, trigger canary promotion to activate bounded publication ($C \le 2-5$ items/tick).
 
 ## Prior unit (delivered & deployed)
 
