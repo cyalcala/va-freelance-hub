@@ -132,21 +132,26 @@ export const ATS_PROBE_TEMPLATES: Array<AtsProbeTemplate> = [
   },
   {
     family: "Workable",
-    buildUrl: (t) => `https://apply.workable.com/api/v3/accounts/${t}/jobs`,
+    buildUrl: (t) => `https://apply.workable.com/api/v1/widget/accounts/${t}`,
     extractJobs: (data: any) => {
-      const jobs = data?.results ?? data?.jobs ?? [];
+      const jobs = data?.jobs ?? data?.results ?? [];
       if (!Array.isArray(jobs)) return [];
+      const companyName = data?.name || "";
       return jobs
         .filter((j: any) => j?.title && (j?.url || j?.shortcode))
-        .map((j: any) => ({
-          title: j.title || "",
-          company: j.company_name || "",
-          url: j.url || `https://apply.workable.com/${data?.slug || ""}/${j.shortcode}`,
-          locationRaw: j.location_str || j.location?.city || "Remote",
-          description: j.description || j.summary || "",
-          tags: Array.isArray(j.tags) ? j.tags : [],
-          postedAt: j.published_on ? new Date(j.published_on).toISOString() : null,
-        }));
+        .map((j: any) => {
+          const locParts = [j.city, j.state, j.country].filter(Boolean);
+          const locationRaw = locParts.join(", ") || (j.telecommuting ? "Remote" : "");
+          return {
+            title: j.title || "",
+            company: companyName,
+            url: j.url || `https://apply.workable.com/j/${j.shortcode}`,
+            locationRaw: j.telecommuting === false ? `${locationRaw} (onsite)`.trim() : locationRaw,
+            description: [locationRaw, j.telecommuting ? "Remote: yes." : ""].filter(Boolean).join(" "),
+            tags: [j.department, j.industry].filter(Boolean),
+            postedAt: j.published_on || j.created_at ? new Date(j.published_on || j.created_at).toISOString() : null,
+          };
+        });
     },
   },
   {

@@ -209,11 +209,12 @@ export function buildPublicationReceiptSql(
   const tickKey = escapeSql(`lake-sync:${now}`);
   const retryKey = escapeSql(`lake-sync:${now}:${sourceId}:${count}`);
   const sourceIdEsc = escapeSql(sourceId);
+  const nowEsc = escapeSql(now);
   return `
       INSERT INTO source_publication_ledger (
         source_id, tick_key, retry_key, mode, proposed_count, published_count, published_ids_json, decided_at
       ) VALUES (
-        ${sourceIdEsc}, ${tickKey}, ${retryKey}, 'unlimited', ${count}, ${count}, '[]', datetime('now')
+        ${sourceIdEsc}, ${tickKey}, ${retryKey}, 'unlimited', ${count}, ${count}, '[]', ${nowEsc}
       );
     `.trim();
 }

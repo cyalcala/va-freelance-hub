@@ -198,6 +198,7 @@ describe("sync-to-d1 SQL builder", () => {
     expect(sql).toContain("'lake-sync:2026-09-27T10:00:00.000Z'");
     expect(sql).toContain("'lake-sync:2026-09-27T10:00:00.000Z:breezy:20four7va:5'");
     expect(sql).toContain("5, 5");
+    expect(sql).toContain("'2026-09-27T10:00:00.000Z'");
   });
 
   it("parseSyncArgs defaults to automatic publish and keeps a kill switch", () => {

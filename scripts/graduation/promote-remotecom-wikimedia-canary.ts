@@ -138,9 +138,25 @@ async function main() {
     }
 
     const maxItems = Math.max(...qualifyingRows.map((r: any) => r.plausible_items));
-    console.log(`  Max plausible items: ${maxItems}`);
     if (maxItems <= 0) {
       throw new Error(`No plausible items observed for ${item.sourceId}.`);
+    }
+    const badRows = queryD1(`
+      SELECT count(*) as bad_count
+      FROM source_shadow_observations bad
+      WHERE bad.source_id = '${item.sourceId}'
+        AND bad.outcome NOT IN ('HEALTHY_WITH_RESULTS', 'HEALTHY_EMPTY')
+        AND julianday(bad.observed_at) >= (
+          SELECT MIN(julianday(q.observed_at))
+          FROM source_admission_qualifying_observations q
+          WHERE q.source_id = '${item.sourceId}'
+        );
+    `);
+    const badCount = Number(badRows[0]?.bad_count ?? 0);
+    console.log(`  Bad observations in qualifying window: ${badCount}`);
+    if (badCount > 0) {
+      console.log(`  ⚠️ Source ${item.sourceId} has ${badCount} non-healthy observations in qualifying window. Constitutionally holding in shadow.`);
+      continue;
     }
 
     const qualifyingIds = qualifyingRows.map((r: any) => r.id);
