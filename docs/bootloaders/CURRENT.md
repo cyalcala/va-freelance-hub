@@ -2,15 +2,23 @@
 
 ## Active bounded unit
 
-**MATH-12 EX-03 diagnosability enrichment (delivered & deployed 2026-09-27; observation pending):**
+**MATH-12 EX-03 observation tooling delivered 2026-09-27; 20:23Z scheduled run never triggered (current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
-1. **Commit & deploy:** `251c776` (`fix(shadow): specific 503 classes and params-free error fingerprint`) pushed; CI run `36346259529` success; Pages `afc072e0` live 19:59:23Z. Full suite 1,613/1,613 pass; typecheck + guardrails clean. Live `/opportunities` 200 post-deploy (1,246 jobs, fresh Sep-27 canary roles flowing).
-2. **Incident state:** EX-03 now 9 consecutive 503s; the 19:32Z run predates the `cea14c2` Pages deploy, so neither the params-strip fix nor the new classes have been observed in production. Last shadow observation write 2026-09-26T15:21Z; 3 shadow sources (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`) still blocked from 8-clean-day canary graduation. Publication flow healthy — incident isolated to shadow observation.
-3. **What changed:** 503 body now carries `errorClass` (3 new specific D1 classes ahead of the generic quota catch-all) + `errorFingerprint` (stable, params-free correlation key; no query text/params leave the Pages log).
+1. **Delivered (this session, 3 bootloader passes):** `scripts/diagnostics/extract-shadow-dispatch-evidence.ts` + test — pure parser mapping one EX-03 dispatch body to 5 bounded outcomes with next actions and Pages-tail hints. Verified: 8/8 new tests, 132/132 diagnostics, 28/28 shadow-route tests, `tsc --noEmit` clean. Validated against the real 19:32Z production body (`legacy_generic_without_fingerprint`).
+2. **Incident state:** `251c776` enrichment still UNOBSERVED — no EX-03 run since the 19:59Z Pages deploy. Last shadow observation write 2026-09-26T15:21Z; 3 shadow sources (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`) still blocked from 8-clean-day canary graduation. Publication flow healthy (`/`, `/opportunities`, `/directory` all 200 at 20:18Z).
+3. **New finding:** EX-03 `23 * * * *` schedule produced no runs at 19:23Z or 20:23Z (confirmed absent at 20:35Z) while sibling schedules (Lake Publish 20:25Z, Hunter 19:34Z) fire normally. Manual dispatch of the mutating route is forbidden; observation awaits the scheduler.
 
-**Follow-on unit:** Seven bootloader observation passes completed 20:11–20:12Z (all pre-20:23Z, identical state — no new EX-03 run yet). Observe the scheduled EX-03 run at 20:23Z (first on `251c776`). 200 closes the incident; a 503 with specific class + fingerprint proceeds to Pages-log correlation. Measured fleet requirement remains P50 202 / P90 270 toward the 100/day floor.
+**Follow-on unit:** Watch the scheduled EX-03 run at 21:23Z and classify its `dispatch.json` with the extractor. 200 closes the incident; a 503 with specific class + fingerprint proceeds to Pages-log correlation. If 21:23Z is also absent, open the bounded MATH-12 unit for an EX-03 missing-run watchdog alert. Measured fleet requirement remains P50 202 / P90 270 toward the 100/day floor.
+
+## Prior unit (delivered & deployed)
+
+**MATH-12 EX-03 diagnosability enrichment (`251c776`, live 19:59:23Z; still unobserved):**
+
+1. **Commit & deploy:** `251c776` (`fix(shadow): specific 503 classes and params-free error fingerprint`) pushed; CI run `36346259529` success; Pages `afc072e0` live 19:59:23Z. Full suite 1,613/1,613 pass; typecheck + guardrails clean. Live `/opportunities` 200 post-deploy (1,246 jobs, fresh Sep-27 canary roles flowing).
+2. **What changed:** 503 body now carries `errorClass` (3 new specific D1 classes ahead of the generic quota catch-all) + `errorFingerprint` (stable, params-free correlation key; no query text/params leave the Pages log).
+3. **Observation status:** superseded by the current entry — no EX-03 run has executed on this code yet (schedule silent at 19:23Z and 20:23Z).
 
 ## Prior unit (delivered & deployed)
 

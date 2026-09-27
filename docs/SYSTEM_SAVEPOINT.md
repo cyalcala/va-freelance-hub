@@ -1,6 +1,28 @@
 # System Savepoint
 
-## 2026-09-27 — Bootloader x7 observation passes: EX-03 20:23Z still pending (current)
+## 2026-09-27 — Bootloader x3 passes: MATH-12 extractor delivered; 20:23Z EX-03 run never triggered (current)
+
+**Mode:** EXECUTE (bounded MATH-12 diagnostic helper) + RECOVERY observation (read-only + local test; no D1/lake/publication/route writes from this box).
+**Authorization:** Maintainer Bootloader v5.2 — "All proceed. All approved. Act in all this. Run this bootloader three times."
+**Start HEAD:** local `main` `87ebcd7` (== origin/main, clean, fetched 20:17Z). `.ai/manifest.yaml` absent (recorded, not manufactured). Runtime drift: local Bun 1.4.2 vs repo/CI pin 1.3.14 (standing).
+
+**1. Three passes:**
+- Pass 1 (20:17–20:21Z) recovery + unit: live `/` 200 (207,272 B), `/opportunities` 200, `/directory` 200 (OBSERVED_RUNTIME 20:18Z, publication flow healthy). Last EX-03 `36344735473` (19:32Z, old `cea14c2` code) still `d1_quota_or_limit` with NO `errorFingerprint`. VERIFIED_LOCAL `shadow-dispatch-route.test.ts` 28/28 at `87ebcd7`. Delivered `scripts/diagnostics/extract-shadow-dispatch-evidence.ts` + test (8 tests), held unpushed pre-20:23Z to protect observation integrity.
+- Pass 2 (20:21–20:27Z) verification + observation: `tsc --noEmit` clean; `bun test scripts/diagnostics/` 132 pass / 0 fail (12 files). 20:26–20:27Z polls: no 20:23Z EX-03 run. Cross-workflow check (`gh run list` 25): Automatic Lake Publish schedule 20:25:42Z success, Hunter Pulse 19:34Z success — GitHub scheduling healthy, EX-03 schedule specifically silent (19:23Z also absent from history).
+- Pass 3 (20:27–20:35Z) confirmation + release: final 20:35:25Z poll (~12 min past schedule) confirms absence. Extractor validated against the real 19:32Z production body → `legacy_generic_without_fingerprint` (correct: pre-enrichment code). Released in this commit; savepoint + CURRENT updated.
+
+**2. Unit delivered (owned files only; no route/workflow/schema/lake changes):**
+- `scripts/diagnostics/extract-shadow-dispatch-evidence.ts`: pure parser mapping one EX-03 dispatch body + HTTP status to exactly one of 5 bounded outcomes (`success_observed` | `specific_class_with_fingerprint` | `generic_class_with_fingerprint` | `legacy_generic_without_fingerprint` | `unparseable`), with errorClass/fingerprint validation (8-hex), counts, next action, and a Pages-tail correlation hint. Mirrors the exact `classifyStorageError` class list in `shadow-dispatch.ts:210-224`.
+- `scripts/diagnostics/extract-shadow-dispatch-evidence.test.ts`: 8 tests incl. the real 19:32Z legacy shape, malformed-fingerprint rejection, and non-JSON handling. No I/O, no secrets.
+
+**3. Findings (new):**
+- (a) `251c776` enrichment still UNOBSERVED in production — no EX-03 run of any kind has executed since the 19:59Z Pages deploy (`afc072e0`). Incident state unchanged: last shadow observation write 2026-09-26T15:21Z; 3 shadow sources blocked from 8-clean-day canary graduation.
+- (b) EX-03 schedule silence: `23 * * * *` produced no runs at 19:23Z or 20:23Z while sibling schedules fire normally. Manual `workflow_dispatch` of the mutating shadow route to "check health" is bootloader-forbidden, so observation awaits the scheduler. If the silence persists, shadow sources starve of observations through no fault of the route — an observation-cadence risk for MATH-12/MATH-04 acceptance.
+- Baseline supply unchanged (HISTORICAL, measured 7-day window ending 2026-09-27T04:45Z): 18.9 fresh/day; gap −81.1 floor / −131.1 stretch; fleet P50 202 / P90 270. Current-day flow UNKNOWN from this box.
+
+**NEXT SINGLE ACTION:** Watch the next scheduled EX-03 run at 21:23Z; classify its `dispatch.json` with `extractShadowDispatchEvidence` (200 → close incident; specific class + fingerprint → Pages-log correlation; legacy without fingerprint → still old code; generic with fingerprint → reopen MATH-12). If 21:23Z is also absent, open the next bounded MATH-12 unit: an EX-03 missing-run watchdog alert (akin Ingestion Heartbeat Watchdog). Owner/controller: next maintainer; trigger: 21:23Z run or its absence.
+
+## 2026-09-27 — Bootloader x7 observation passes: EX-03 20:23Z still pending (historical)
 
 **Mode:** RECOVERY (7 sequential bootloader passes, read-only + local test; no D1/lake/publication/route writes from this box).
 **Authorization:** Maintainer Bootloader v5.2 — "All proceed. All approved. Act in all this. Run this bootloader seven times."

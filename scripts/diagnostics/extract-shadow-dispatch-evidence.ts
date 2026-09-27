@@ -1,0 +1,172 @@
+/**
+ * EX-03 shadow-dispatch observation evidence extractor (MATH-12).
+ *
+ * Pure, local-only helper: given the HTTP status and raw response body text
+ * from one EX-03 `POST /api/cron/shadow-dispatch` invocation (as printed by
+ * the `gha-shadow-dispatch.yml` workflow into `dispatch.json`), produce a
+ * bounded evidence record with exactly one outcome and the next diagnostic
+ * action. No I/O, no network, no production writes.
+ *
+ * Outcome vocabulary (mirrors docs/SYSTEM_SAVEPOINT.md NEXT SINGLE ACTION):
+ * - "success_observed": HTTP 200 with registry rows; closes the incident.
+ * - "specific_class_with_fingerprint": HTTP 503 with a specific D1 class and
+ *   an 8-hex errorFingerprint; proceed to Pages-log correlation filtered by
+ *   the fingerprint within the run window.
+ * - "generic_class_with_fingerprint": HTTP 503 still d1_quota_or_limit (or
+ *   unclassified) but WITH a fingerprint on new code; reopens MATH-12
+ *   diagnosis (falsification path).
+ * - "legacy_generic_without_fingerprint": HTTP 503 d1_quota_or_limit with NO
+ *   fingerprint; the run executed pre-251c776 code (deploy lag), not evidence
+ *   about the fix. Re-observe the next run; do not reopen diagnosis.
+ * - "unparseable": body is not a recognized dispatch payload; record the
+ *   raw limitation, do not infer health.
+ */
+
+export const SHADOW_SPECIFIC_ERROR_CLASSES = [
+  "d1_bind_limit",
+  "d1_observation_write_rejected",
+  "d1_host_backoff_write_rejected",
+  "d1_constraint_violation",
+  "d1_schema_mismatch",
+  "d1_busy_or_locked",
+] as const;
+
+export const SHADOW_GENERIC_ERROR_CLASSES = [
+  "d1_quota_or_limit",
+  "evidence_or_revision_guard",
+  "missing_d1_binding",
+  "unclassified_storage_or_pipeline_error",
+] as const;
+
+export type ShadowDispatchOutcome =
+  | "success_observed"
+  | "specific_class_with_fingerprint"
+  | "generic_class_with_fingerprint"
+  | "legacy_generic_without_fingerprint"
+  | "unparseable";
+
+export interface ShadowDispatchEvidence {
+  outcome: ShadowDispatchOutcome;
+  httpStatus: number | null;
+  errorClass: string | null;
+  errorFingerprint: string | null;
+  hasFingerprint: boolean;
+  totalRegistryRows: number | null;
+  dispatched: number | null;
+  eligible: number | null;
+  /** Bounded next action; a human-readable operational instruction. */
+  nextAction: string;
+  /**
+   * Suggested Pages-log correlation filter when a fingerprint exists,
+   * otherwise null. Names the fingerprint and the run instant only.
+   */
+  pagesTailFilterHint: string | null;
+}
+
+const FINGERPRINT_RE = /^[0-9a-f]{8}$/;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function asNonNegativeInt(value: unknown): number | null {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : null;
+}
+
+/** Parse one EX-03 dispatch observation into a bounded evidence record. Never throws on malformed input. */
+export function extractShadowDispatchEvidence(
+  httpStatus: number | null,
+  bodyText: string,
+  runInstantIso: string = new Date().toISOString(),
+): ShadowDispatchEvidence {
+  const base = {
+    httpStatus,
+    errorClass: null,
+    errorFingerprint: null,
+    hasFingerprint: false,
+    totalRegistryRows: null,
+    dispatched: null,
+    eligible: null,
+    pagesTailFilterHint: null,
+  };
+  let body: unknown = null;
+  try {
+    body = JSON.parse(bodyText);
+  } catch {
+    return {
+      ...base,
+      outcome: "unparseable",
+      nextAction:
+        "Body is not JSON; record the raw run log excerpt and re-observe the next scheduled EX-03 run. Do not infer health or code version.",
+    };
+  }
+  if (!isRecord(body)) {
+    return {
+      ...base,
+      outcome: "unparseable",
+      nextAction:
+        "Body is valid JSON but not a dispatch object; record the raw shape and re-observe. Do not infer health.",
+    };
+  }
+
+  if (httpStatus === 200 && typeof body["totalRegistryRows"] !== "undefined") {
+    return {
+      ...base,
+      outcome: "success_observed",
+      totalRegistryRows: asNonNegativeInt(body["totalRegistryRows"]),
+      dispatched: asNonNegativeInt(body["dispatched"]),
+      eligible: asNonNegativeInt(body["eligible"]),
+      nextAction:
+        "Incident closed for this run: EX-03 exited 0 on enriched code. Resume clean-day accumulation for the 3 shadow sources toward 8-day canary graduation.",
+    };
+  }
+
+  const errorClass = typeof body["errorClass"] === "string" ? body["errorClass"] : null;
+  const rawFingerprint = typeof body["errorFingerprint"] === "string" ? body["errorFingerprint"] : null;
+  const fingerprint = rawFingerprint !== null && FINGERPRINT_RE.test(rawFingerprint) ? rawFingerprint : null;
+  const hasFingerprint = fingerprint !== null;
+
+  if (errorClass === null && !hasFingerprint) {
+    return {
+      ...base,
+      outcome: "unparseable",
+      nextAction:
+        "No errorClass and no errorFingerprint present; record the raw body keys and re-observe. Do not infer health or code version.",
+    };
+  }
+
+  const record = {
+    ...base,
+    errorClass,
+    errorFingerprint: fingerprint,
+    hasFingerprint,
+  };
+
+  if (!hasFingerprint) {
+    return {
+      ...record,
+      outcome: "legacy_generic_without_fingerprint",
+      nextAction: `Run executed pre-enrichment code (no errorFingerprint; class ${errorClass ?? "unknown"}). The 251c776 fix is still UNOBSERVED. Re-observe the next scheduled EX-03 run; do not reopen MATH-12 diagnosis.`,
+    };
+  }
+
+  const hint =
+    `wrangler pages deployment tail remotejobs-ph --format json --search shadow-dispatch ` +
+    `(window around ${runInstantIso}, correlate errorFingerprint=${fingerprint})`;
+
+  if (errorClass !== null && (SHADOW_SPECIFIC_ERROR_CLASSES as readonly string[]).includes(errorClass)) {
+    return {
+      ...record,
+      outcome: "specific_class_with_fingerprint",
+      pagesTailFilterHint: hint,
+      nextAction: `Specific class ${errorClass} with fingerprint ${fingerprint}. Correlate in the Pages log within the run window, then remediate by class. Rollback: revert 251c776; shadow stays fail-safe.`,
+    };
+  }
+
+  return {
+    ...record,
+    outcome: "generic_class_with_fingerprint",
+    pagesTailFilterHint: hint,
+    nextAction: `FALSIFICATION: still ${errorClass ?? "unknown"} WITH a fingerprint on enriched code. Reopen MATH-12 diagnosis via Pages-log correlation; do not assume quota exhaustion.`,
+  };
+}
