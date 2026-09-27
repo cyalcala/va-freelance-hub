@@ -44,6 +44,7 @@ describe("source-admit route", () => {
       "workable:hunt-st",
       "workable:hello-rache",
       "workable:pineapple-staffing",
+      "ashby:multiplymii",
     ]);
   });
 
@@ -484,6 +485,45 @@ describe("source-admit route", () => {
     expect(fetchCount).toBe(0);
     expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "workable:rocketams", published: 0 });
   });
+
+  test("admits ashby:multiplymii to shadow under Tier A fast-track with MultiplyMii displayName", async () => {
+    const handler = createSourceAdmitHandler({
+      now: () => NOW,
+      fetchEvidence: async () => "ashby public api evidence document",
+      hash: async () => "a".repeat(64),
+      wrapDb: () => ({ prepare() { throw new Error("unused"); } }) as any,
+      runProbe: async (input) => ({
+        version: SHADOW_VERSION,
+        timestamp: NOW,
+        sourceId: input.sourceId,
+        providerId: input.providerId,
+        displayName: input.displayName,
+        endpoint: { url: input.endpointUrl, isHttps: true, host: "api.ashbyhq.com", allowedHosts: input.provider.allowedHosts ?? null, hostValid: true },
+        auth: { class: "none", supported: true },
+        visibility: { filter: "published", isPublic: true, ambiguous: false },
+        provenance: { discoveryProvenance: input.discoveryProvenance ?? null, evidenceUrl: input.provider.evidenceUrl ?? null, providerFamily: "ashby", mechanism: "ats_api" },
+        cadence: { minMinutes: 60, maxMinutes: 1440, rateGuidance: input.provider.rateGuidance ?? null },
+        robots: { checked: true, verdict: "allowed", wouldBlock: false, evidence: "allow", fromCache: false },
+        fetch: { attempted: true, status: 200, latencyMs: 1, bytesReceived: 10, contentType: "application/json" },
+        parse: { attempted: true, schemaHealth: "ok", itemCount: 54 },
+        sampleFunnel: { bytesReceived: 10, parsedItems: 54, plausibleItems: 54, truncated: false, budgetExceeded: false },
+        diagnostic: { outcome: "HEALTHY_WITH_RESULTS", probes: [], requestCount: 2, bytesReceived: 10, durationMs: 2, mutations: 0, shadowMode: true },
+      }),
+      admit: async (_db, input) => {
+        expect(input.source.sourceId).toBe("ashby:multiplymii");
+        expect(input.source.operationalState).toBe("candidate");
+        expect(input.source.displayName).toBe("MultiplyMii");
+        expect(input.source.canaryMaxNewItemsPerTick).toBe(2);
+        expect(input.provider.allowedHosts).toBe("api.ashbyhq.com");
+        expect(input.adjudicationRef).toBe("ex-ph-agency-ashby-multiplymii-tier-a-fast-track");
+        return { ok: true, sourceId: input.source.sourceId };
+      },
+    });
+    const response = await handler(requestContext({ sourceId: "ashby:multiplymii" }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ outcome: "shadow", sourceId: "ashby:multiplymii", published: 0 });
+  });
 });
+
 
 

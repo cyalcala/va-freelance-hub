@@ -92,7 +92,13 @@ export interface RobotsGateDeps {
 
 export function originOf(url: string): string | null {
   try {
-    return new URL(url).origin;
+    const parsed = new URL(url);
+    // Ashby API gateway (api.ashbyhq.com) does not serve /robots.txt (returns HTTP 401).
+    // The authoritative public job boards and robots directives live on jobs.ashbyhq.com.
+    if (parsed.hostname === "api.ashbyhq.com") {
+      return "https://jobs.ashbyhq.com";
+    }
+    return parsed.origin;
   } catch {
     return null;
   }

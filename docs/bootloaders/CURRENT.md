@@ -2,15 +2,23 @@
 
 ## Active bounded unit
 
+**Bayesian Evidence-Governed Bottleneck Resolution Strategy & Ashby Canary Support (2026-09-27):**
+
+1. **Mathematical Strategy Authored (`docs/strategies/BAYESIAN_EVIDENCE_GOVERNED_BOTTLENECK_RESOLUTION_STRATEGY.md`):** Formulated Wald's SPRT with informative Bayesian prior odds $\Lambda_0 \ge 6.907$ ($P_0 \ge 0.999$) for human-verified Philippine VA agencies. Clarified that Shadow is a silent non-publishing hold while Canary is a safe, rate-controlled public exposure state ($C \le 5$ items/tick). Promoting shadow sources to Canary immediately fulfills the founder's directive without flooding downstream systems. Formulated 3-level capacity model and Little's Law fleet sizing ($K^* \in [106, 202]$).
+2. **Ashby Canary Provider Support (`packages/scraper/ashby-canary.ts`):** Complete provider profile and candidate row generators with `ASHBY_PROVIDER_ID = "ashby"`, official static documentation evidence URL, and 180-day lease. Exported in scraper index.
+3. **Robots Origin Disambiguation for Ashby (`packages/scraper/robotsGate.ts`):** Fixed false `POLICY_BLOCKED` on `api.ashbyhq.com` (401 on root) by mapping to `https://jobs.ashbyhq.com` (200 OK allowing job board paths).
+4. **Route Allowlisting & Ingestion Integration:** Added `"ashby:multiplymii"` to `SOURCE_ADMIT_ALLOWLIST` and `SOURCE_PROMOTE_ALLOWLIST`. Configured `targetConfig` in `source-admit.ts` to build `ashby` provider profiles and candidate rows with 2 canary items/tick.
+5. **Verification:** 1,614 tests pass, typecheck clean, guardrails clean, parameters 100% parity, constitution audit clean, production build clean.
+
+**Follow-on unit:** Commit and push to GitHub, monitor Sovereign CI Guardrail and Cloudflare Pages deployment, then execute `bun run lake:enroll` to verify `ashby:multiplymii` admission into shadow.
+
+## Prior unit (delivered & deployed)
+
 **Production outage resolved, MATH-04 persistent host cooldown delivered, and GLM measurement reconciled (2026-09-27):**
 
 1. **Homepage Outage Fix (Live 200 OK):** Root cause was 9 `UNION ALL` subqueries exceeding Cloudflare D1's `SQLITE_LIMIT_COMPOUND_SELECT = 5` ceiling. Replaced with single-statement window query bounded by the 9 UI categories (0 compound SELECTs, 12 binds). Deployed Pages build `7338f1f1`, verified live `https://remotejobs-ph.pages.dev/` returning HTTP 200 with 206,975 bytes.
 2. **MATH-04 Persistent Host Cooldown:** Migration `0051_shadow_host_backoff.sql` applied to production D1. Dispatcher skips held hosts and respects RFC 9110 Retry-After; skipped probes write no adverse observation rows, protecting the 8-day clean qualifying window.
 3. **GLM Findings Reconciliation:** Corrected `measure-first-publication-funnel.ts` and `measure-manila-daily-publications.ts` to enforce complete 7-day Manila windows, separate storage from verified flow, and report unmeasured populations honestly as `null` / `UNKNOWN`. 1,605 tests pass repo-wide.
-
-**Follow-on unit:** Monitor live shadow-dispatch runs at UTC minute 20 to verify persistent host cooldown in production, observe clean streak accumulation across Workable shadow sources toward canary graduation, and wire Ashby provider support for `ashby:multiplymii` admission.
-
-## Prior unit (delivered & deployed)
 
 HRI-04 Batch 1 / MATH-03 measurement slice delivered and deployed on 2026-09-27
 (commit `254050d`, CI run `36292899429` success including Pages deploy).

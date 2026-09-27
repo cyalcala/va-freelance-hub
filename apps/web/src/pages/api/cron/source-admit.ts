@@ -27,6 +27,10 @@ import {
   buildWorkableAtsProviderProfile,
   WORKABLE_EVIDENCE_LEASE_DAYS,
   WORKABLE_PROVIDER_ID,
+  buildAshbyCandidateRow,
+  buildAshbyProviderProfile,
+  ASHBY_EVIDENCE_LEASE_DAYS,
+  ASHBY_PROVIDER_ID,
   type AdmissionDatabase,
   type AdmissionProviderSnapshot,
   type TransitionGatewayDatabase,
@@ -57,6 +61,7 @@ export const SOURCE_ADMIT_ALLOWLIST = [
   "workable:hunt-st",
   "workable:hello-rache",
   "workable:pineapple-staffing",
+  "ashby:multiplymii",
 ] as const;
 
 type HandlerDependencies = {
@@ -169,6 +174,27 @@ function admitTarget(sourceId: string, clock: string) {
       providerId: WORKABLE_PROVIDER_ID,
       leaseDays: WORKABLE_EVIDENCE_LEASE_DAYS,
       adjudicationRef: `ex-ph-agency-workable-${token}-tier-a-fast-track`,
+    };
+  }
+  if (sourceId.startsWith("ashby:")) {
+    const token = sourceId.replace("ashby:", "");
+    const names: Record<string, string> = {
+      "multiplymii": "MultiplyMii",
+      "atticus": "Atticus",
+    };
+    const companyName = names[token] ?? token;
+    const profile = buildAshbyProviderProfile();
+    const candidate = buildAshbyCandidateRow({
+      token,
+      companyName,
+      nowIso: clock,
+    });
+    return {
+      profile,
+      candidate,
+      providerId: ASHBY_PROVIDER_ID,
+      leaseDays: ASHBY_EVIDENCE_LEASE_DAYS,
+      adjudicationRef: `ex-ph-agency-ashby-${token}-tier-a-fast-track`,
     };
   }
   const profile = buildTeamtailorProviderProfile("career.teamtailor.com");

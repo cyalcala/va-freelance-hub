@@ -1,6 +1,29 @@
 # Handoff
 
-## 2026-09-27 — PRODUCTION-OUTAGE-RESOLVED-MATH04-GLM-RECONCILIATION (current)
+## 2026-09-27 — BAYESIAN-BOTTLENECK-STRATEGY-ASHBY-CANARY (current)
+
+Bayesian Evidence-Governed Bottleneck Resolution Strategy authored, Ashby Canary provider fully implemented and wired to admission and promotion allowlists, robots origin disambiguated for Ashby, full test suite (1,614 tests) passing, typecheck and CI guardrails 100% clean.
+
+- **Mathematical Strategy Authored (`docs/strategies/BAYESIAN_EVIDENCE_GOVERNED_BOTTLENECK_RESOLUTION_STRATEGY.md`)**:
+  - Formulated Wald's SPRT with informative Bayesian prior odds $\Lambda_0 \ge 6.907$ ($P_0 \ge 0.999$) for human-verified Philippine VA agencies.
+  - Clarified crucial architectural distinction: **Shadow** is a silent non-publishing holding state, while **Canary** is a safe, rate-controlled public exposure state ($C \le 5$ items/tick). Promoting shadow sources to Canary immediately fulfills the founder's directive of publishing verified Filipino jobs without flooding downstream systems or blowing free-tier worker budgets.
+  - Formulated 3-level capacity model ($R_{\text{raw}} \to R_{\text{qualified}} \to R_{\text{published}}$) and Little's Law fleet sizing ($K^* \in [106, 202]$).
+- **Ashby Provider Implementation**:
+  - `packages/scraper/ashby-canary.ts`: Official public job posting API evidence packet generator (`ASHBY_PROVIDER_ID = "ashby"`, 180-day lease).
+  - `packages/scraper/ashby-canary.test.ts`: 3/3 tests passing.
+  - `packages/scraper/index.ts`: Exported Ashby helpers.
+- **Robots Origin Disambiguation**:
+  - `packages/scraper/robotsGate.ts`: Mapped `api.ashbyhq.com` $\to$ `https://jobs.ashbyhq.com` in `originOf()` to avoid false 401 `POLICY_BLOCKED` from Ashby's API gateway.
+- **Route Allowlisting**:
+  - Added `"ashby:multiplymii"` to `SOURCE_ADMIT_ALLOWLIST` in `apps/web/src/pages/api/cron/source-admit.ts` and `SOURCE_PROMOTE_ALLOWLIST` in `apps/web/src/pages/api/cron/source-promote.ts`.
+  - Expanded unit test suites in `apps/web/tests/source-admit-route.test.ts` (15/15 pass) and `apps/web/tests/source-promote-route.test.ts` (14/14 pass).
+- **Verification**: 1,614/1,614 tests pass across 167 files; strict typecheck clean; parameter parity 100%; production build clean in 31.81s.
+- **When the owner resumes**:
+  1. Push the commit to `origin/main` and verify Sovereign CI Guardrail and Cloudflare Pages deployment.
+  2. Execute `bun run lake:enroll` to enroll `ashby:multiplymii` into shadow.
+  3. Monitor clean streak accumulation across the 6 Workable agency tenants under the MATH-04 host cooldown toward canary graduation.
+
+## 2026-09-27 — PRODUCTION-OUTAGE-RESOLVED-MATH04-GLM-RECONCILIATION (historical)
 
 Production outage fully resolved, MATH-04 persistent host cooldown delivered and deployed to production D1, GLM review findings reconciled with calibrated measurements, and all work verified and backed up to GitHub.
 

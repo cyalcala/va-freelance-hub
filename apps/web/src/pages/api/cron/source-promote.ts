@@ -36,6 +36,7 @@ export const SOURCE_PROMOTE_ALLOWLIST = [
   "workable:hunt-st",
   "workable:hello-rache",
   "workable:pineapple-staffing",
+  "ashby:multiplymii",
 ] as const;
 
 export type SourcePromoteAllowlistId = (typeof SOURCE_PROMOTE_ALLOWLIST)[number];

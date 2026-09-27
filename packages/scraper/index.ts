@@ -254,6 +254,19 @@ export type {
   BreezyBoardInput,
   BreezyCandidateRow,
 } from "./breezy-canary";
+export {
+  buildAshbyProviderProfile,
+  buildAshbyCandidateRow,
+  ASHBY_PROVIDER_ID,
+  ASHBY_EVIDENCE_URL,
+  ASHBY_EVIDENCE_LEASE_DAYS,
+  ASHBY_ALLOWED_HOSTS,
+} from "./ashby-canary";
+export type {
+  AshbyProviderProfileRow,
+  AshbyBoardInput,
+  AshbyCandidateRow,
+} from "./ashby-canary";
 export { decidePromotionToShadow as decideSourcePromotionToShadow } from "./source-promotion";
 export type { SourcePromotionDecision } from "./source-promotion";
 export {
