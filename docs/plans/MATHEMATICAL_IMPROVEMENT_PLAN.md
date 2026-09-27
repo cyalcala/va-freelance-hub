@@ -50,7 +50,7 @@ Do not substitute this count for whole-project progress.
 | MATH-01 | Dynamic source allocation | OPEN — reward/decision data not validated | MATH-00, 03, 04, 06, 08, 12; 02 capacity envelope |
 | MATH-02 | Queueing and backpressure | OPEN — pure helpers; live telemetry unverified | MATH-00, 06, 12 |
 | MATH-03 | Marginal source portfolio coverage | OPEN — overlap/cost baseline required | MATH-00, 05, 06, 09; 08 limits characterized |
-| MATH-04 | Arrival modeling and adaptive polling | OPEN — arrival model not validated | MATH-00, 02, 06, 12 |
+| MATH-04 | Arrival modeling and adaptive polling | OPEN — live 429 evidence collected 2026-09-27; host-backoff unit next | MATH-00, 02, 06, 12 |
 | MATH-05 | Qualification and calibration | OPEN — denominator defect identified | MATH-00; controlled evaluation before publication |
 | MATH-06 | Publication states and guarded transitions | OPEN — concrete control defects identified | MATH-00 contract/evidence mapping; incident containment can precede complete telemetry |
 | MATH-07 | Reservoir value and freshness decay | OPEN — empirical survival/cost data missing | MATH-00, 02, 05, 06, 09 |
@@ -157,6 +157,18 @@ system-wide dataset before any repair can begin.
 - **Rollback/reopen:** permitted fixed schedule on drift or missing telemetry;
   reopen after sustained arrival-pattern change. Allocation and polling share
   one budget envelope rather than competing independent controllers.
+- **Evidence (2026-09-27, read-only D1):** the shadow clock's shared-host polling
+  is the live failure mode. 6 admitted Workable shadow sources each hold 63-66
+  RATE_LIMITED observations (Sept 11-19 storm era: up to 76/77 probes/day
+  fleet-wide rate-limited; Sept 20+: 0-14/day, never zero). The transition
+  gateway's zero-tolerance 8-day window (`ADMISSION_POLICY.minimumDays=8`,
+  span >=7d, lookback 14d, latest <=48h) means residual 429s perpetually reset
+  qualification, stranding ~300 qualified lake jobs (hunt-st alone 146 at
+  lambda ~= 20.9 raw/day). Shadow dispatcher has no per-host backoff; the bulk
+  discovery path's `rateLimitedHosts` shielding is the in-repo precedent.
+  Next bounded unit: per-host skip-shielding + next-eligible extension in
+  `shadow-dispatch` (skipped probes write no observation row), acceptance =
+  8 clean days reached and canary promotion for the 6 sources.
 
 ### MATH-05 — Qualification, selective prediction and calibration
 

@@ -1,6 +1,87 @@
 # System Savepoint
 
-## 2026-09-27 — HRI-04 Batch 1 measurement slice delivered & deployed (current)
+## 2026-09-27 — HRI-04 Batch 1 LIVE EXECUTION: cohort admission, measured funnel & shadow-window rate-limit diagnosis (current)
+
+**Mode:** EXECUTE (HRI-04 Batch 1 live execution under MATH-03; MATH-04 empirical
+diagnosis; zero code changes — governed-script runs and read-only D1/lake queries only).
+**Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed in all
+this. All approve. Act in all this." This is the credentialed session the prior
+savepoint's NEXT SINGLE ACTION was waiting for (Turso lake creds in local `.env`;
+wrangler OAuth authenticated as cyrusalcala.agency@gmail.com against account
+`76cf15ef361089aa0411e75ff77d343a`, D1 `08072f16-d3d1-436a-9104-b057a162db7c`).
+**Start HEAD:** `c969552b34b839695f288ad53d96f3d0f655cfc7` (== `origin/main`, clean).
+No `.ai/manifest.yaml` present (recorded, not manufactured).
+
+**1. Focused VA cohort live run (`bun run lake:focused-va-cohort`, lake writes only):**
+- 12 seeds probed at 1500ms pacing; 11 tenants found (Connext Greenhouse had < min jobs).
+- **8 ADMITTED** (Jev advisory + Wilson bounds; deterministic thresholds enforce):
+  hunt-st (149 jobs, ph 98.0%), rocketams (9, 77.8%), coconutva (38, 97.4%),
+  crewbloom (107, 30.8%), hello-rache (3, 33.3%), pearltalent (274, 36.1%),
+  remotecom (165, 22.4%), multiplymii (54, 100.0%).
+- **3 REJECTED** (deterministic): pineapple-staffing (0% PH), athena (0% PH), atticus (16 ambiguous).
+- **0 new candidate rows** — all 799 admitted jobs registered as duplicates: these
+  tenants were already ingested during the HRI-03 bulk era. Idempotent re-admission
+  confirmed (re-runs do not multiply jobs). Post-run lake: 9 `auto_approved` (incl.
+  prior `greenhouse:canonical`), 140 shadow, 100 auto_rejected.
+
+**2. Measured first-publication funnel (`bun run measure:funnel`, read-only D1):**
+- **Baseline: 18.9 fresh jobs/day** over the 7-day window ending 2026-09-27T04:45Z
+  (prior estimate was 17.4/day; both far below the 100/day floor).
+- **Gap to floor: -81.1 fresh jobs/day; to stretch: -131.1.**
+- Measured per-cohort composite yield eta: aggregators 74.8% (13.57/day), agency_ats
+  8.5% (5.14/day — the loss is r3 freshness: 98.8% qualify, only 8.6% arrive fresh),
+  tech_ats 0.3% (0.14/day).
+- **Measured fleet requirement: P50 = 202, P90 = 270 active endpoints** to reach
+  100/day at measured yields — supersedes the earlier K*>=106 estimate (which assumed
+  higher yields). Current D1-active fleet: ~25 source_ids.
+
+**3. Shadow admission per ADR-007 (`bun run lake:enroll` via production routes):**
+- All 8 non-Ashby auto-approved sources ALREADY EXIST in the production
+  `source_registry` — the identity-reuse trigger correctly refused re-admission
+  (409 "evidenced source identity cannot be replaced or reused"). Endpoints probed
+  HEALTHY_WITH_RESULTS.
+- `greenhouse:remotecom`: already **canary** (canaryMaxNewItemsPerTick=2).
+- `workable:coconutva/crewbloom/hello-rache/hunt-st/pearltalent/rocketams` +
+  `greenhouse:canonical`: in **shadow**, canary promotion blocked — "a disqualifying
+  observation follows the start of the current qualifying window".
+- `ashby:multiplymii`: **skipped 400 allowlist** on both admit and promote — the
+  source-admit/source-promote routes have NO Ashby provider support (code gap; named
+  follow-up, not part of this unit).
+
+**4. MATH-04 root-cause diagnosis of the blocked shadow windows (read-only D1):**
+- `source_shadow_observations` for the 6 Workable tenants: 63-66 RATE_LIMITED
+  observations each interleaved with 67-70 HEALTHY_WITH_RESULTS.
+- Fleet-wide Workable-host timeline: Sept 11-19 was a rate-limit storm (Sept 18:
+  76/77 probes rate-limited); from Sept 20 it collapsed to 0-14/day fleet-wide
+  (~0-3/week per source) but never reached zero.
+- The transition gateway (packages/scraper/transition-gateway.ts:161) requires ZERO
+  non-healthy observations in the current window (ADMISSION_POLICY: 8 distinct days,
+  >=7-day span, 14-day lookback, latest <=48h). Residual 429s keep resetting
+  qualification, so 6 admitted high-PH sources (holding ~300 qualified lake jobs,
+  hunt-st alone 146 with lambda ~= 20.9 raw/day) cannot graduate to canary.
+- The shadow dispatcher (apps/web/src/pages/api/cron/shadow-dispatch.ts) rotates
+  hourly bounded windows with provider interleaving but has NO host-aware backoff:
+  one 429 does not shield remaining same-host probes in the run (unlike the bulk
+  discovery path's `rateLimitedHosts` shielding) and does not extend the host's
+  next-eligible time.
+
+**Verification:** No code, D1, or publication writes from this box; all production
+effects went through governed routes (admit/promote) or were read-only. No secrets
+printed. Temp inspection script deleted; worktree clean at start and close.
+
+**NEXT SINGLE ACTION:** MATH-04 bounded unit — implement host-aware 429 backoff in
+the shadow dispatcher (per-host skip-shielding within a run + per-host next-eligible
+extension; a skipped probe writes NO observation row, so the zero-tolerance window is
+never poisoned by self-inflicted retries). Acceptance: the 6 Workable shadow sources
+accumulate 8 clean distinct days within the 14-day lookback and reach canary
+promotion; measured RATE_LIMITED fleet rate falls to 0 over the observation window.
+Rollback: revert the dispatch change; shadow sources remain in shadow (fail-safe).
+Owner/controller: next credentialed maintainer session; trigger: this savepoint.
+Follow-on after canary: add Ashby provider support (admit/promote routes) so
+`ashby:multiplymii` (54/54 PH-eligible) can enter shadow, then lake:sync graduates
+canary output. Supply math unchanged: measured fleet requirement 202 (P50) / 270 (P90).
+
+## 2026-09-27 — HRI-04 Batch 1 measurement slice delivered & deployed
 
 **Mode:** EXECUTE (HRI-04 / MATH-03 portfolio scaling, local-only slice).
 **Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed in all this. Act in all this. All approved."

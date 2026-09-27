@@ -2,6 +2,31 @@
 
 ## Active bounded unit
 
+HRI-04 Batch 1 **live execution completed 2026-09-27** in the credentialed session
+(this box: Turso lake `.env` + wrangler OAuth). Zero code changes.
+
+1. **Cohort admission (`lake:focused-va-cohort`):** 8 of 11 tenants auto-admitted
+   (Wilson bounds), 3 rejected. All 799 jobs were duplicate re-admissions of the
+   HRI-03-era ingest (idempotency verified). Lake now holds 9 `auto_approved`.
+2. **Measured funnel (`measure:funnel`, read-only D1):** baseline **18.9 fresh
+   jobs/day** (gap **-81.1** to floor); measured fleet requirement **P50 202 / P90 270
+   active endpoints** — replaces the K*>=106 estimate.
+3. **Shadow admission (`lake:enroll` via production routes):** all 8 non-Ashby
+   sources already in `source_registry` (identity-reuse trigger); `greenhouse:remotecom`
+   already canary; 6 Workable tenants + canonical stuck in shadow — every qualifying
+   window poisoned by residual `RATE_LIMITED` observations (Sept 11-19 storm era:
+   up to 76/77 probes in a day; Sept 20+ still 0-14/day fleet-wide against a
+   zero-tolerance 8-day window). `ashby:multiplymii` skipped: admit/promote routes lack
+   Ashby provider support (code gap, named follow-up).
+
+**Follow-on unit:** MATH-04 host-aware 429 backoff in the shadow dispatcher
+(per-host skip-shielding + next-eligible extension; skipped probes write no
+observation row). Acceptance: 6 Workable shadow sources reach 8 clean days and
+canary promotion; fleet RATE_LIMITED rate falls to 0. Then Ashby provider support
+so `ashby:multiplymii` can enter shadow, then canary output flows via `lake:sync`.
+
+## Prior unit (delivered & deployed)
+
 HRI-04 Batch 1 / MATH-03 measurement slice delivered and deployed on 2026-09-27
 (commit `254050d`, CI run `36292899429` success including Pages deploy).
 
@@ -61,7 +86,8 @@ This pointer is navigation and dated evidence, not policy or a dispatch command.
 
 All three v5.2 prompts explicitly pursue **100 to 150 qualified, unique, fresh
 jobs published on the website per day** (100/day floor target; 150/day stretch).
-Measured 7-day baseline: **17.4 fresh jobs/day** (-82.6 floor gap).
+Newest measured 7-day baseline: **18.9 fresh jobs/day** (-81.1 floor gap; prior
+measurement 17.4/day, -82.6).
 
 ## Mathematical program v5.2
 
@@ -78,10 +104,12 @@ portfolio -> adaptive control -> measured operation with drift and recovery chec
 - [EX-03 run 36277921498](https://github.com/cyalcala/va-freelance-hub/actions/runs/36277921498)
   returned HTTP 503 / `d1_quota_or_limit` at 2026-09-26T22:57:38Z.
 - Current active D1 stock: 1,002 opportunities (WWR 322, RWFA 158, 20Four7VA 131, Canonical 122, Sourcefit 109, Remote OK 55, Jobicy 55, others 50).
-- Current Turso Lake discovery: 238 ATS endpoints (140 shadow_monitor, 97 auto_rejected, 1 auto_approved).
+- Current Turso Lake discovery (post 2026-09-27 cohort run): 249 ATS endpoints (140 shadow_monitor, 100 auto_rejected, 9 auto_approved).
+- MATH-04 live finding (2026-09-27): 6 admitted Workable shadow sources cannot
+  graduate — residual RATE_LIMITED observations reset the zero-tolerance 8-day
+  qualifying window; shadow dispatcher lacks host-aware 429 backoff.
 
-**Follow-on unit:** HRI-04 Batch 1 live execution (MATH-03).
-Run `bun run lake:focused-va-cohort` with lake credentials (authorized session),
-then `bun run measure:funnel` against production D1 for 7 complete Manila days to
-replace fleet estimates with measured eta per cohort. Bridges the -82.6 jobs/day
-gap toward the 100/day floor.
+**Follow-on unit:** MATH-04 host-aware 429 backoff in the shadow dispatcher
+(per this pointer's active unit above). After canary graduation, lake:sync flows
+canary output to D1; measured fleet requirement remains P50 202 / P90 270 active
+endpoints toward the 100/day floor.
