@@ -42,6 +42,24 @@ jobs:
       PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
       INGEST_API_URL: "https://remotejobs-ph.pages.dev/api/ingest"
       SCRAPE_API_URL: "https://remotejobs-ph.pages.dev/api/cron/scrape"
+      # One read-only D1 snapshot for the shared scrape heartbeat, run lock,
+      # and most recent fetch event. Keep last_attempt_at for the failover CLI.
+      HUNTER_DIAG_SQL: >-
+        SELECT
+          strftime('%Y-%m-%dT%H:%M:%fZ', 'now') AS observation_utc,
+          (SELECT last_attempt_at FROM source_fetch_state WHERE source_id = '__ingest_diag__') AS last_attempt_at,
+          (SELECT last_attempt_at FROM source_fetch_state WHERE source_id = '__scrape_run_lock__') AS lock_last_attempt_at,
+          (SELECT updated_at FROM source_fetch_state WHERE source_id = '__scrape_run_lock__') AS lock_updated_at,
+          (SELECT timestamp FROM source_fetch_events ORDER BY timestamp DESC LIMIT 1) AS latest_source_fetch_event_at;
+      # If the optional event read fails, retain the old heartbeat decision.
+      HUNTER_HEARTBEAT_SQL: >-
+        SELECT
+          strftime('%Y-%m-%dT%H:%M:%fZ', 'now') AS observation_utc,
+          (SELECT last_attempt_at FROM source_fetch_state WHERE source_id = '__ingest_diag__') AS last_attempt_at,
+          (SELECT last_attempt_at FROM source_fetch_state WHERE source_id = '__scrape_run_lock__') AS lock_last_attempt_at,
+          (SELECT updated_at FROM source_fetch_state WHERE source_id = '__scrape_run_lock__') AS lock_updated_at,
+          NULL AS latest_source_fetch_event_at,
+          'heartbeat-only-fallback' AS diagnostic_status;
 
     steps:
       - name: Checkout Repository
@@ -72,13 +90,19 @@ jobs:
         working-directory: apps/web
         run: |
           set -euo pipefail
-          npx wrangler@4.120.0 d1 execute DB --remote --env production \
-            --config wrangler.jsonc --json --command "
-              SELECT last_attempt_at FROM source_fetch_state
-              WHERE source_id = '__ingest_diag__'
-              LIMIT 1;
-            " > ../../failover-diag.json \
-            || { echo "warning: heartbeat query failed; failover decision will fail safe to standby"; echo '[{"results":[]}]' > ../../failover-diag.json; }
+          if ! timeout 90s npx wrangler@4.120.0 d1 execute DB --remote --env production \
+            --config wrangler.jsonc --json --command "$HUNTER_DIAG_SQL" \
+            > ../../failover-diag.json 2>/dev/null; then
+            echo "warning: enriched clock query failed; retrying heartbeat-only snapshot"
+            timeout 90s npx wrangler@4.120.0 d1 execute DB --remote --env production \
+              --config wrangler.jsonc --json --command "$HUNTER_HEARTBEAT_SQL" \
+              > ../../failover-diag.json 2>/dev/null \
+              || {
+                echo "warning: heartbeat query failed; failover decision will fail safe to unknown"
+                printf '[{"results":[],"observation_utc":"%s","query_status":"failed"}]\n' \
+                  "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" > ../../failover-diag.json
+              }
+          fi
 
       - name: Determine Failover Necessity (schedule only)
         id: failover
@@ -139,6 +163,7 @@ jobs:
             else "needs-rerun"
             end
           ' harvest.log)
+          echo "terminal_state=$TERMINAL_STATE" >> "$GITHUB_OUTPUT"
 
           # Compute next-safe-at for lock-held or backlog states
           NEXT_SAFE_AT=""
@@ -189,6 +214,25 @@ jobs:
           if [ -n "$MESSAGE" ]; then
             echo "Message: $MESSAGE"
           fi
+
+      - name: Query Clock After Lock-Held Takeover (schedule only)
+        if: ${{ github.event_name == 'schedule' && steps.failover.outputs.action == 'takeover' && steps.hunt.outputs.terminal_state == 'lock-held' }}
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          # A single best-effort read distinguishes pre/post state. Never
+          # invoke the scrape endpoint again to resolve a held lock.
+          timeout 90s npx wrangler@4.120.0 d1 execute DB --remote --env production \
+            --config wrangler.jsonc --json --command "$HUNTER_HEARTBEAT_SQL" \
+            > ../../failover-diag-post-lock.json 2>/dev/null \
+            || {
+              echo "warning: post-lock clock diagnostic query failed"
+              printf '[{"results":[],"observation_utc":"%s","query_status":"failed"}]\n' \
+                "$(date -u +"%Y-%m-%dT%H:%M:%SZ")" > ../../failover-diag-post-lock.json
+            }
 
       - name: Evaluate Hunter Health
         if: always()
@@ -384,6 +428,8 @@ jobs:
           path: |
             harvest.log
             source-health-summary.md
+            failover-diag.json
+            failover-diag-post-lock.json
           retention-days: 14
 
   daily-rollup:

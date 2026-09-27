@@ -1,5 +1,86 @@
 # System Savepoint
 
+## 2026-09-27 - V5.2 documentation and GitHub backup checkpoint (current)
+
+User explicitly requested documenting and backing up all repository work to
+GitHub. The v5.2 prompts preserve the exact identity, 100/day floor and 150/day
+stretch, all 13 mathematical challenges and optional human research intake.
+The detailed HRI plan and active source/mathematical plans include automated lake
+capture, enrichment, prospecting, evaluation, shared controls and acceptance.
+See [backup manifest](audits/2026-09-27-V5.2-BACKUP.md).
+
+Reconciled newer origin/main ingestion diagnostics without overwriting them.
+The active operational next action remains the diagnostic evidence collection
+below; MATH-06A and HRI units remain follow-on planning, subject to refreshed
+incident priority. This backup adds documentation only relative to origin/main.
+No mathematical resolution or human-intake implementation is certified.
+
+## 2026-09-27 — INGEST-CLOCK-EVIDENCE: bounded stalled-heartbeat diagnosis (in progress)
+
+**Mode:** EXECUTE, diagnostic control only. **Authorization:** the current user's
+direct “Proceed in this. Act in all of this. All approved” request applies the
+maintainer bootloader to this repository. It authorizes this recovery unit; the
+bootloader and older notes do not themselves grant source promotion or database
+repair authority. **Start/review base:** local `main`
+`7290bea8b3c0bc9df68d109afc7477a34dcafff4`; fetched `origin/main`
+`4edc8828770474952461ca08e8b51769234347bd` (five generated-report commits
+ahead, source unchanged). Work is isolated on `codex/ingest-clock-diagnostics`
+from the fetched SHA. The prior uncommitted v5 prompts and review artifacts were
+copied into that worktree; the original dirty checkout remains untouched.
+
+- **Read-only baseline:** [Hunter 36275125179](https://github.com/cyalcala/va-freelance-hub/actions/runs/36275125179)
+  at 2026-09-26 22:05 UTC measured 35.1 minutes since the shared scrape route's
+  last durable `__ingest_diag__` attempt. [Hunter 36282983455](https://github.com/cyalcala/va-freelance-hub/actions/runs/36282983455)
+  at 2026-09-27 00:36 UTC measured 186.2 minutes; both resolve to approximately
+  2026-09-26 21:30:35 UTC. Both authenticated takeover calls returned HTTP 200
+  `run-lock-held`, inserted zero jobs, and made no new durable heartbeat. The
+  reply's `backlogRemaining: 1` is a fixed incomplete-work sentinel, not a
+  measured queue count. The latest inspected [EX-03 run 36277921498](https://github.com/cyalcala/va-freelance-hub/actions/runs/36277921498)
+  returned HTTP 503 / `d1_quota_or_limit`; the precise D1 failure is unknown.
+- **Interpretation/hypothesis:** no durable scrape diagnostic write is observed
+  across the 151-minute comparison window. The record does not establish that
+  the Worker stopped firing or that one lock persisted. Competing explanations
+  include repeated short claims, a future or malformed lock timestamp, exits
+  before the diagnostic write, and failed D1 writes. The eight-minute lock TTL
+  and suppressed diagnostic-write errors make current Hunter output insufficient
+  to choose an ingestion repair.
+- **Selected bounded unit:** capture a timestamped read-only D1 snapshot of the
+  `__ingest_diag__` and `__scrape_run_lock__` rows and latest fetch-event time in
+  Hunter's existing scheduled query; take one second snapshot only after a
+  `run-lock-held` takeover. Retain the existing failover decision and source
+  calls. Keep diagnostic-only workflow/test/docs release changes from running
+  production migrations, FTS writes, or Pages deployment in CI. Owned behavior
+  files: Hunter workflow, CI release-scope workflow, and focused tests; this
+  savepoint and CURRENT record the unit. Lake gateway F1/F4 remains separate.
+- **Acceptance/falsification:** a focused fixture keeps the same takeover
+  decision with augmented read-only row fields; workflow review proves the
+  conditional second query and both bounded artifacts; static and CI checks
+  pass. An exact-revision scheduled run must then reveal the two timestamped
+  snapshots or a visible query failure. A fresh fetch event with stale heartbeat
+  narrows failure after fetch-event recording; a fresh lock with stale events
+  points earlier, but neither alone proves a unique root cause. A D1 query
+  failure keeps the incident `UNKNOWN`; do not infer a healthy clock.
+- **Limits/rollback:** one enriched scalar SELECT, at most one state-table-only
+  fallback if that read fails, and one state-table-only post-lock SELECT only
+  after a lock-held takeover; two reserved source IDs and one indexed latest
+  fetch-event timestamp in the enriched read;
+  no extra scrape POST, source fetch, D1 mutation, credential readout, or new
+  paid service. Local Cloudflare/Turso credentials are absent. Revert only the
+  diagnostic and CI-scope commits if the workflow regresses; there is no data
+  rollback. Bun locally is 1.4.2 versus the repository/CI pin 1.3.14.
+- **Release/observation:** pending tests, commit, CI and scheduled-run evidence.
+  Latest observed Pages release is `01ac5a5dc03fe72b99d1dcfc95a8a9fb4de5e60e`
+  (run 36251984243); latest observed Worker deploy is
+  `a40a09dcf32d7a2ac6cebbe6bed2b57d7c4823e9` (run 36109825135).
+  Platform deployment revision and current D1 rows have not been independently
+  verified. A public homepage HEAD returned 200 at 00:52 UTC, proving only
+  HTTP liveness.
+- **NEXT SINGLE ACTION:** maintainer/controller reads the first scheduled
+  Hunter run at the released diagnostic revision and its before/after evidence;
+  pair it with Worker/Pages logs if available, then choose one falsifiable
+  ingestion repair. Trigger: that exact-revision run or its visible failure.
+
+
 ## 2026-09-27 - Optional human research intake v5.2 follow-up
 
 The user explicitly requested all active prompts and planning include optional
@@ -20,7 +101,7 @@ independently eligible when selected within scope; HRI-04 public dispatch depend
 on publication-control closure. Owner: next maintainer. Trigger: an authorized
 implementation session after evidence refresh. Historical plans remain evidence.
 
-## 2026-09-27 - PROMPT-MATH-PROGRAM-V5.2 (current)
+## 2026-09-27 - PROMPT-MATH-PROGRAM-V5.2 (historical)
 
 **Mode:** DOCUMENTATION AND PROGRAM PLANNING. **Authorization:** user requested
 all prompts v5.2, all mathematical challenges included and actively resolved,

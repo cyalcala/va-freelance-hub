@@ -1,5 +1,24 @@
 # Current resume pointer
 
+## Active bounded unit
+
+The current user authorized applying the v5.2 maintainer bootloader. The newest
+[savepoint](../SYSTEM_SAVEPOINT.md) records an isolated diagnostic unit from
+`origin/main` `4edc8828770474952461ca08e8b51769234347bd`, preserving the prior
+uncommitted prompt work in the original checkout. Two Hunter runs 151 minutes
+apart saw the same stale shared scrape heartbeat and each received `run-lock-held`.
+The cause is unverified. The unit adds timestamped read-only D1 evidence to the
+existing Hunter workflow, preserves failover behavior, and prevents this
+workflow-only release from invoking CI's production D1/Pages job. Test, release
+and first scheduled-run results are pending. The lake publication bypass and
+gateway F1/F4 findings remain open. **Next:** the maintainer reads the first
+exact-revision scheduled Hunter artifact, then selects one ingestion repair
+based on those rows and available Worker/Pages logs.
+
+## v5.2 documentation and backup
+
+See [backup manifest](../audits/2026-09-27-V5.2-BACKUP.md).
+
 ## Optional human research intake - v5.2 follow-up
 
 All three active prompts and the active mathematical/source plans now include
@@ -8,7 +27,7 @@ optional human research processed automatically through the Turso lake. See the
 capture, parsing, enrichment/prospecting, shared qualification/publication, and
 receipts/observation. These units are planned, not implemented or accepted.
 Autonomous sourcing must continue without human submissions. MATH-06A remains
-the next control unit; HRI-01 local intake can proceed when selected within scope,
+a follow-on control unit; HRI-01 local intake can proceed when selected within scope,
 but public dispatch requires publication-control closure and source gates.
 
 Refreshed 2026-09-27 for **PROMPT-MATH-PROGRAM-V5.2**.
@@ -75,7 +94,7 @@ GitHub Actions. This is a documentation milestone, not runtime resolution.
   Current D1/Turso counts, leases, quality samples and fresh daily flow were not
   measured by this task. No source promotion or complete shadow window is certified.
 
-**Next unit: MATH-06A / PUBLICATION-AUTHORITY-CLOSURE.** Owner: next maintainer.
+**Follow-on unit after active incident evidence: MATH-06A / PUBLICATION-AUTHORITY-CLOSURE.** Owner: next maintainer.
 Trigger: next authorized mathematical maintenance session, after refreshing Git
 and operational evidence. Trace every public writer and authority/receipt path;
 produce failing fixture cases and a bounded repair contract with rollback.
