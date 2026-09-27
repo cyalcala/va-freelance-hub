@@ -2,15 +2,15 @@
 
 ## Active bounded unit
 
-**EX-03 Shadow Dispatch 503 incident (discovered 2026-09-27, recovery mode):**
+**MATH-12 EX-03 diagnosability enrichment (delivered & deployed 2026-09-27; observation pending):**
 
-One live incident found during read-only recovery (see [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry):
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
-1. **EX-03 Shadow Dispatch 503s (8 consecutive, ~29.5h):** failures 2026-09-26T13:12Z → 2026-09-27T18:29Z, all HTTP 503 `d1_quota_or_limit`. Last shadow observation write 2026-09-26T15:21Z. The 3 remaining shadow sources (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`) cannot accumulate the 8 clean days for canary graduation. Root cause UNCONFIRMED (time-dependent D1 read-quota exhaustion vs Pages-resource limit; D1 reads verified working via wrangler at 18:57Z; write volume tiny). Diagnostic blocked: the underlying error is only in the Pages log, capturable via `wrangler pages deployment tail` during a live invocation; invoking the mutating route is bootloader-forbidden. The EX-03 scheduler is running normally (hourly).
+1. **Commit & deploy:** `251c776` (`fix(shadow): specific 503 classes and params-free error fingerprint`) pushed; CI run `36346259529` success; Pages `afc072e0` live 19:59:23Z. Full suite 1,613/1,613 pass; typecheck + guardrails clean. Live `/opportunities` 200 post-deploy (1,246 jobs, fresh Sep-27 canary roles flowing).
+2. **Incident state:** EX-03 now 9 consecutive 503s; the 19:32Z run predates the `cea14c2` Pages deploy, so neither the params-strip fix nor the new classes have been observed in production. Last shadow observation write 2026-09-26T15:21Z; 3 shadow sources (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`) still blocked from 8-clean-day canary graduation. Publication flow healthy — incident isolated to shadow observation.
+3. **What changed:** 503 body now carries `errorClass` (3 new specific D1 classes ahead of the generic quota catch-all) + `errorFingerprint` (stable, params-free correlation key; no query text/params leave the Pages log).
 
-**Scrape clock:** Worker-based; last D1 writes 2026-09-27T11:10:33Z (workable:rocketams/hunt-st, ashby:multiplymii), 08:20:29Z (we-work-remotely, breezy:20four7va). No writes after 11:10Z consistent with Manila overnight lull.
-
-**Follow-on unit:** Capture the actual shadow-dispatch error via tail + a sanctioned EX-03 dispatch, then remediate by error class (D1 quota vs Pages resource limit).
+**Follow-on unit:** Observe the scheduled EX-03 run at 20:23Z (first on `251c776`). 200 closes the incident; a 503 with specific class + fingerprint proceeds to Pages-log correlation. Measured fleet requirement remains P50 202 / P90 270 toward the 100/day floor.
 
 ## Prior unit (delivered & deployed)
 

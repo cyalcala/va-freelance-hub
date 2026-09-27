@@ -1,6 +1,27 @@
 # System Savepoint
 
-## 2026-09-27 — Recovery: homepage unit verified live; EX-03 shadow-dispatch 503 incident (current)
+## 2026-09-27 — MATH-12 EX-03 diagnosability enrichment delivered & deployed (current)
+
+**Mode:** EXECUTE (bounded MATH-12 unit: specific 503 classes + params-free error fingerprint for the EX-03 shadow-dispatch incident).
+**Authorization:** Maintainer Bootloader v5.2 — "Proceed in all this. Act in all this. All approved."
+**Start HEAD:** local `main` `cea14c2` (== origin/main, clean). `.ai/manifest.yaml` absent (recorded, not manufactured). Runtime drift: local Bun 1.4.2 vs repo/CI pin 1.3.14 (standing).
+**Delivery commit:** `251c776` pushed (`cea14c2..251c776`); Sovereign CI Guardrail run `36346259529` success (validate + deploy); Pages deployment `afc072e0` complete 2026-09-27T19:59:23Z.
+
+**1. Refreshed read-only evidence (19:47–20:00Z, no production writes from this box):**
+- EX-03 is now 9 consecutive 503s; the 19:32Z run (`36344735473`) executed BEFORE the `cea14c2` Pages deploy finished (19:33:10Z), so the params-strip fix was never observed in production — its effect is still UNKNOWN.
+- Last shadow observation write still `2026-09-26T15:21:06Z` (~28.5h); `source_registry` still holds exactly 3 shadow rows (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`); all `changed_db=false` SELECTs via `wrangler d1 execute DB --env production --remote`.
+- Scrape clock: last active writes `2026-09-27T11:10:33Z` (`ashby:multiplymii` 54 active, `workable:hunt-st` 146 active); 8 canary agencies confirmed in registry; live `/opportunities` 200 post-deploy with 1,246 jobs and fresh Sep-27 canary roles — publication flow healthy, incident isolated to shadow observation.
+- Baseline supply unchanged: 18.9 fresh jobs/day (7-day), gap −81.1 to floor / −131.1 to stretch; measured fleet requirement P50 202 / P90 270.
+
+**2. Delivered change (owned files only; no schema, lake, promotion, or workflow edits):**
+- `apps/web/src/pages/api/cron/shadow-dispatch.ts`: `classifyStorageError` gains `d1_constraint_violation`, `d1_schema_mismatch`, `d1_busy_or_locked` ahead of the generic quota catch-all; shared `collectStrippedMessages` helper; new exported `fingerprintStorageError` (djb2, 8 hex) over params-stripped messages; 503 body now returns `errorFingerprint` as a stable Pages-log correlation key without exposing query text or params.
+- `apps/web/tests/shadow-dispatch-route.test.ts`: 4 new tests (specific classes; fingerprint stability/distinctness; params-invariance). Error-body addition is backward-compatible (EX-03 workflow only gates on HTTP 200; `assessShadowResponse` untouched).
+
+**Verification:** targeted 38 pass; full `bun run test` 1,613 pass / 0 fail (162 files); `tsc --noEmit` clean; `audit:guardrails` clean. First-failure record: none (no reruns). Live post-deploy `/opportunities` 200, 1,246 jobs.
+
+**NEXT SINGLE ACTION:** Observe the scheduled EX-03 run at 20:23Z (first run on `251c776`). Success (HTTP 200) closes the incident and resumes clean-day accumulation for the 3 shadow sources; a 503 with a specific class + `errorFingerprint` advances diagnosis to Pages-log correlation (`wrangler pages deployment tail` filtered by fingerprint window). Falsification: 503 still `d1_quota_or_limit`/unclassified with no correlatable log entry reopens MATH-12 diagnosis. Rollback: revert `251c776`; shadow stays fail-safe (no publication). Owner/controller: next maintainer; trigger: EX-03 run `23 * * * *` at 20:23Z.
+
+## 2026-09-27 — Recovery: homepage unit verified live; EX-03 shadow-dispatch 503 incident (historical)
 
 **Mode:** RECOVERY (read-only evidence refresh and incident diagnosis; no code, D1, lake, publication, or route writes from this box).
 **Authorization:** Maintainer Bootloader v5.2 — "Proceed in this bootloader. Act in all this. All approved."
