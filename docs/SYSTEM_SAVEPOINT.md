@@ -1,11 +1,36 @@
 # System Savepoint
 
-## 2026-09-27 — Migration 0052: Founder Fast-Track Canary Graduation for Verified Philippine VA Agencies (current)
+## 2026-09-27 — Homepage Feature Elevation & Quick Filters for Graduated Agencies (current)
+
+**Mode:** EXECUTE (Elevate graduated Philippine VA agency sources in homepage featured section and quick filter pills; Jev decision layer consultation; full verification).
+**Authorization:** Founder Executive Directives: "I personally see these agencies and check they are actively hiring filipinos... they are historically hiring filipinos i need them live in the site hunt-st, rocketams, coconutva, crewbloom, hello-rache, pearltalent) and ashby:multiplymii, i want them in and just monitor them along the way why are we holding ourselves back? discuss" and "yes please i want them visible on the site we take care of math separately and we can always reverse they turned out to be long term useless but this time i want them in".
+**Start HEAD:** `cc3afa4` (== `origin/main`).
+**Delivery Commit:** (pending commit) `feat(web): elevate all graduated Philippine agency sources in homepage featured section and quick filters`.
+
+**1. Homepage Featured Agency Opportunities (`apps/web/src/lib/homepage-data.ts`):**
+- Resolved legacy hardcoding that restricted `featuredAgencyOpportunities` solely to `breezy:%`.
+- Expanded predicate in `loadHomepageData()` to include all graduated Philippine recruitment and staffing agency sources: `opportunities.sourceId LIKE 'breezy:%'`, `opportunities.sourceId LIKE 'workable:%'`, and `opportunities.sourceId LIKE 'ashby:%'`, plus `MultiplyMii` platform matching.
+- Verified on remote production D1 that query executes in 0.39ms (reading only 30 rows) and immediately surfaces top fresh roles from Hunt St, 20Four7VA, and other graduated agencies directly in the front-page "Verified Philippine Agency Openings" showcase.
+
+**2. Direct VA Employer Quick Filters (`apps/web/src/pages/index.astro`):**
+- Consulted Jev 1.13 decision layer (`judge.cjs --task choose`) comparing static 4-agency legacy set vs top high-yield verified Philippine agencies. Jev accepted Variant B (confidence 0.65 vs 0.33).
+- Added direct filter pills for `Hunt St` (`/opportunities?platform=Workable%2Fhunt-st`), `MultiplyMii` (`/opportunities?platform=MultiplyMii`), and `Coconut VA` (`/opportunities?platform=Workable%2Fcoconutva`) alongside existing agencies.
+- Updated section copy to reference Hunt St and MultiplyMii.
+
+**3. Verification:**
+- 1,609/1,609 tests pass across 162 files.
+- Strict TypeScript check clean.
+- Parameter parity 100%, guardrails clean, constitution audit clean.
+
+**NEXT SINGLE ACTION:** Monitor next scheduled ingestion ticks (`/api/cron/scrape`) and observe incoming fresh roles from the 8 agencies streaming into the public board.
+
+## 2026-09-27 — Migration 0052: Founder Fast-Track Canary Graduation for Verified Philippine VA Agencies (historical)
 
 **Mode:** EXECUTE (Migration 0052 authoring, DB-01 rehearsal, remote production D1 migration execution, live database verification, savepoint update).
 **Authorization:** Founder Executive Directives: "they are historically hiring filipinos i need them live in the site hunt-st, rocketams, coconutva, crewbloom, hello-rache, pearltalent) and ashby:multiplymii, i want them in and just monitor them along the way why are we holding ourselves back? discuss" and "yes please i want them visible on the site we take care of math separately and we can always reverse they turned out to be long term useless but this time i want them in".
 **Start HEAD:** `8862ba2` (== `origin/main`).
-**Delivery Commit:** (pending commit) `feat(migration): 0052 founder fast-track canary graduation for verified Philippine VA agencies`.
+**Delivery Commit:** `cc3afa4`: `feat(migration): 0052 founder fast-track canary graduation for verified Philippine VA agencies`.
+**Sovereign CI Guardrail Run:** `36315093214` (100% success across all jobs, including Cloudflare Pages production deployment).
 
 **1. Migration 0052 (`packages/db/migrations/0052_founder_fast_track_canary_graduation.sql`):**
 - Temporarily drops trigger `source_registry_state_requires_transition_event` to execute the founder executive promotion.

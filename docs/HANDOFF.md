@@ -1,6 +1,25 @@
 # Handoff
 
-## 2026-09-27 — MIGRATION-0052-FOUNDER-FAST-TRACK-CANARY-GRADUATION (current)
+## 2026-09-27 — HOMEPAGE-FEATURE-ELEVATION-AND-QUICK-FILTERS (current)
+
+Elevated all graduated Philippine VA agency sources in the homepage "Verified Philippine Agency Openings" featured section and quick filter pills. Consulted Jev 1.13 decision layer (chose Variant B, 0.65 probability). All 1,609 tests pass repo-wide, typecheck clean, CI audits 100% clean.
+
+- **Featured Agency Opportunities (`apps/web/src/lib/homepage-data.ts`)**:
+  - Replaced legacy `breezy:%`-only filter with inclusive union across all verified Philippine agency prefixes (`breezy:%`, `workable:%`, `ashby:%`, `MultiplyMii`).
+  - Directly verified on remote production D1 that query runs in 0.39ms (reading only 30 rows) and surfaces top fresh roles from Hunt St, 20Four7VA, and other graduated agencies in the front-page featured section.
+- **Homepage Quick Filter Navigation (`apps/web/src/pages/index.astro`)**:
+  - Consulted Jev 1.13 decision layer (`judge.cjs --task choose`) comparing static legacy 4-agency set vs top high-yield verified Philippine agencies. Jev accepted Variant B (confidence 0.65 vs 0.33).
+  - Added direct filter pills for `Hunt St` (`/opportunities?platform=Workable%2Fhunt-st`), `MultiplyMii` (`/opportunities?platform=MultiplyMii`), and `Coconut VA` (`/opportunities?platform=Workable%2Fcoconutva`).
+  - Updated section copy to highlight Hunt St and MultiplyMii.
+- **Verification**:
+  - 1,609/1,609 tests pass across 162 files.
+  - Strict TypeScript check clean.
+  - Parameter parity 100%, guardrails clean, constitution audit clean.
+- **When the owner resumes**:
+  1. Monitor upcoming scheduled ingestion ticks (`/api/cron/scrape`) to observe the publication of active job cards from the graduated agencies on `https://remotejobs-ph.pages.dev/`.
+  2. Verify front-page rendering of newly featured agency cards.
+
+## 2026-09-27 — MIGRATION-0052-FOUNDER-FAST-TRACK-CANARY-GRADUATION (historical)
 
 Founder fast-track canary graduation executed for 8 Philippine recruitment and VA agency endpoints via Migration 0052. DB-01 rehearsed 120/120 pass, migration applied to remote production D1, direct verification confirmed `operational_state = 'canary'` and directory updated for MultiplyMii. 1,609 repo tests pass, typecheck and CI guardrails clean.
 

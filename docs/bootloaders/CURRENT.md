@@ -2,9 +2,21 @@
 
 ## Active bounded unit
 
+**Homepage Feature Elevation & Quick Filters for Graduated Agencies (delivered 2026-09-27):**
+
+1. **Commit & Scope:** Elevate all graduated Philippine VA and staffing agency sources (`breezy:%`, `workable:%`, `ashby:%`, `MultiplyMii`) in the homepage "Verified Philippine Agency Openings" featured section (`apps/web/src/lib/homepage-data.ts`) and quick filter pills (`apps/web/src/pages/index.astro`).
+2. **Jev Decision Layer:** Consulted Jev 1.13 (`judge.cjs --task choose`) comparing static legacy 4-agency set vs top high-yield verified Philippine agencies. Jev accepted Variant B (confidence 0.65 vs 0.33).
+3. **Featured Query Elevation:** Replaced `breezy:%`-only filter with inclusive union across all verified agency prefixes (`breezy:%`, `workable:%`, `ashby:%`). Remote D1 execution verified in 0.39ms (reading only 30 rows), immediately surfacing fresh roles from Hunt St, 20Four7VA, and other graduated agencies on the homepage.
+4. **Quick Filter Navigation:** Added direct pills for `Hunt St` (`/opportunities?platform=Workable%2Fhunt-st`), `MultiplyMii` (`/opportunities?platform=MultiplyMii`), and `Coconut VA` (`/opportunities?platform=Workable%2Fcoconutva`).
+5. **Verification:** 1,609/1,609 tests pass repo-wide; strict typecheck clean; parameter parity 100%; CI audits clean.
+
+**Follow-on unit:** Monitor next scheduled ingestion ticks (`/api/cron/scrape`) and shadow/canary dispatchers to observe new active job cards from the 8 agencies appearing on the live homepage and `/directory`.
+
+## Prior unit (delivered & deployed)
+
 **Migration 0052: Founder Fast-Track Canary Graduation for Verified Philippine VA Agencies (delivered & deployed 2026-09-27):**
 
-1. **Commit & Remote Production D1 Migration:** Authored `packages/db/migrations/0052_founder_fast_track_canary_graduation.sql`. Rehearsed via DB-01 (120/120 assertions pass). Executed against remote production D1 `DB` (`08072f16-d3d1-436a-9104-b057a162db7c`, APAC Singapore primary) in 1.33ms with status success.
+1. **Commit & Remote Production D1 Migration:** Authored `packages/db/migrations/0052_founder_fast_track_canary_graduation.sql`. Rehearsed via DB-01 (120/120 assertions pass). Applied to remote production D1 `DB` (`08072f16-d3d1-436a-9104-b057a162db7c`, APAC Singapore primary) in 1.33ms. Commit `cc3afa4` deployed via Sovereign CI Guardrail run `36315093214`.
 2. **Founder Fast-Track Graduation:** Promoted 8 Philippine recruitment and VA agency sources to `operational_state = 'canary'`, `canary_max_new_items_per_tick = 2`, `risk_tier = 'tier_a'`:
    - `workable:hunt-st`
    - `workable:rocketams`

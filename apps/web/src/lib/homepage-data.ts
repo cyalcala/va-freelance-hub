@@ -67,7 +67,9 @@ export function loadHomepageData(env: Parameters<typeof getDb>[0]): Promise<Home
     const featuredAgencyOpportunities = await db.select(cardProjection).from(opportunities)
       .where(and(publicOpportunityFilters(), sql`(
         ${opportunities.sourceId} LIKE 'breezy:%' OR
-        ${opportunities.sourcePlatform} IN ('20Four7VA', 'Sourcefit', 'Yokly', 'VALUE Virtual Assistants', 'Remote Craft')
+        ${opportunities.sourceId} LIKE 'workable:%' OR
+        ${opportunities.sourceId} LIKE 'ashby:%' OR
+        ${opportunities.sourcePlatform} IN ('20Four7VA', 'Sourcefit', 'Yokly', 'VALUE Virtual Assistants', 'Remote Craft', 'MultiplyMii')
       )`))
       .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`)).limit(6);
 
