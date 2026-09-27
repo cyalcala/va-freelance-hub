@@ -8,6 +8,7 @@ import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parseJobBoardRequest } from '@/lib/public-query';
 import { buildOpportunityFtsQueries } from '@/lib/opportunity-fts-query';
+import { publicOpportunityFilters } from '@/lib/public-opportunities';
 
 export const prerender = false;
 
@@ -73,7 +74,7 @@ function buildFreshUrl(value: string | null) {
 
 try {
   const db = getDb(Astro.locals.runtime.env);
-  const filters: SQL[] = [eq(opportunities.isActive, true)];
+  const filters: SQL[] = [publicOpportunityFilters()];
 
   if (category && JOB_CATEGORY_MAP[category]) {
     filters.push(eq(opportunities.category, category));
@@ -161,7 +162,7 @@ try {
   const platforms = await db
     .select({ name: opportunities.sourcePlatform })
     .from(opportunities)
-    .where(eq(opportunities.isActive, true))
+    .where(publicOpportunityFilters())
     .groupBy(opportunities.sourcePlatform)
     .orderBy(asc(opportunities.sourcePlatform));
 

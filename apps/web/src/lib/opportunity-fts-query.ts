@@ -1,4 +1,5 @@
 import { freshFtsCondition, type FreshFilter } from "./public-query";
+import { PUBLIC_PH_ELIGIBILITY_SQL } from "./public-opportunities";
 
 export interface OpportunityFtsQueryOptions {
   ftsMatch: string;
@@ -39,7 +40,10 @@ const CARD_PROJECTION = `
 export function buildOpportunityFtsQueries(
   options: OpportunityFtsQueryOptions,
 ): OpportunityFtsQueries {
-  const conditions = ["opportunities_fts MATCH ?", "o.is_active = 1"];
+  const conditions = [
+    "opportunities_fts MATCH ?", "o.is_active = 1",
+    `o.ph_eligibility IN (${PUBLIC_PH_ELIGIBILITY_SQL})`,
+  ];
   const filterParams = [options.ftsMatch];
 
   if (options.category) {

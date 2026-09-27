@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import { publicOpportunityFilters } from "@/lib/public-opportunities";
 
 export const prerender = false;
 
@@ -27,15 +28,7 @@ export const GET: APIRoute = async ({ locals }) => {
         updatedAt: sql<string>`coalesce(${opportunities.updatedAt}, ${opportunities.postedAt}, ${opportunities.scrapedAt})`,
       })
       .from(opportunities)
-      .where(
-        and(
-          eq(opportunities.isActive, true),
-          inArray(opportunities.phEligibility, [
-            "eligible_verified",
-            "eligible_likely",
-          ])
-        )
-      );
+      .where(publicOpportunityFilters());
 
     for (const row of rows) {
       const lastmod = row.updatedAt

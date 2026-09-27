@@ -39,13 +39,15 @@ test("FTS search preserves filters, ranking, card fields, and safe links", () =>
          'junior', 'worldwide', 'eligible_verified', 'Worldwide applicants', 1),
         (2, 'Executive Assistant', 'Beta', 'assistant assistant assistant', 'admin', 'VA',
          'https://jobs.example/beta', 'Remotive', '2026-08-11T00:00:00Z', NULL,
-         'senior', 'apac_incl_ph', 'unclear', 'APAC listing', 1),
+         'senior', 'apac_incl_ph', 'eligible_likely', 'APAC listing', 1),
         (3, 'Assistant', 'Filtered Category', 'assistant', 'engineering', 'VA',
-         'https://jobs.example/category', 'Remotive', NULL, NULL, NULL, NULL, 'unclear', NULL, 1),
+         'https://jobs.example/category', 'Remotive', NULL, NULL, NULL, NULL, 'eligible_likely', NULL, 1),
         (4, 'Assistant', 'Inactive', 'assistant', 'admin', 'VA',
-         'https://jobs.example/inactive', 'Remotive', NULL, NULL, NULL, NULL, 'unclear', NULL, 0),
+         'https://jobs.example/inactive', 'Remotive', NULL, NULL, NULL, NULL, 'eligible_likely', NULL, 0),
         (5, 'Assistant', 'Filtered Platform', 'assistant', 'admin', 'VA',
-         'https://jobs.example/platform', 'RemoteOK', NULL, NULL, NULL, NULL, 'unclear', NULL, 1);
+         'https://jobs.example/platform', 'RemoteOK', NULL, NULL, NULL, NULL, 'eligible_likely', NULL, 1),
+        (6, 'Assistant', 'Eligibility unresolved', 'assistant', 'admin', 'VA',
+         'https://jobs.example/unclear', 'Remotive', NULL, NULL, NULL, 'apac_incl_ph', 'unclear', NULL, 1);
       INSERT INTO opportunities_fts(rowid, title, company, description)
         SELECT id, title, company, description FROM opportunities;
     `);
@@ -78,7 +80,7 @@ test("FTS search preserves filters, ranking, card fields, and safe links", () =>
       scrapedAt: null,
       experienceLevel: "senior",
       geoScope: "apac_incl_ph",
-      phEligibility: "unclear",
+      phEligibility: "eligible_likely",
       geoEvidence: "APAC listing",
     });
 
@@ -86,9 +88,7 @@ test("FTS search preserves filters, ranking, card fields, and safe links", () =>
       .map((row) => renderToStaticMarkup(createElement(OpportunityCard, { opportunity: row })))
       .join("");
     expect(html).toContain('href="/jobs/1"');
-    expect(html).toContain(
-      'href="/api/click/2?url=https%3A%2F%2Fjobs.example%2Fbeta"',
-    );
+    expect(html).toContain('href="/jobs/2"');
     expect(html).not.toContain("url=undefined");
     expect(html).toContain("Executive Assistant");
     expect(html).toContain("Beta");

@@ -7,16 +7,25 @@ export type PublicLoadResult<T> =
   | { ok: true; value: T }
   | { ok: false; value: null };
 
+/** Classify nested driver failures without logging SQL, bindings or upstream text. */
+export function publicDataErrorClass(error: unknown): string | null {
+  let current: unknown = error;
+  for (let depth = 0; depth < 5 && current instanceof Error; depth++) {
+    const message = current.message.toLowerCase();
+    if (message.includes("too many sql variables")) return "d1_bind_limit";
+    if (message.includes("quota") || message.includes("daily limit")) return "d1_quota";
+    if (message.includes("no such table") || message.includes("no such column")) return "d1_schema";
+    if (message.includes("database is locked") || message.includes("overloaded")) return "d1_busy";
+    current = current.cause;
+  }
+  return null;
+}
+
 export function markPublicDataUnavailable(response: PublicResponse, error: unknown): void {
   response.status = 503;
   response.headers.set("Cache-Control", "no-store");
-  // Live-outage triage (2026-09-27): the name-only redaction made the homepage
-  // 503 undiagnosable from function logs. D1/drizzle error messages carry no
-  // credentials; keep the public body generic and bound the logged detail.
-  const detail = error instanceof Error
-    ? `${error.name}: ${String(error.message).slice(0, 300)}`
-    : String(error).slice(0, 300);
-  console.error("public route data load failed", detail);
+  const classification = publicDataErrorClass(error);
+  console.error("public route data load failed", classification ? `Error [${classification}]` : "Error");
 }
 
 /**

@@ -7,6 +7,7 @@ import { JOB_CATEGORY_MAP } from '@/lib/categories';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parsePageRequest } from '@/lib/public-query';
+import { publicOpportunityFilters } from '@/lib/public-opportunities';
 
 export const prerender = false;
 
@@ -46,7 +47,7 @@ function buildPageUrl(page: number) {
 try {
   const db = getDb(Astro.locals.runtime.env);
   const whereClause = and(
-    eq(opportunities.isActive, true),
+    publicOpportunityFilters(),
     eq(opportunities.category, category)
   );
 

@@ -1,13 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getDb, opportunities, vaDirectory } from '@va-hub/db';
-import { eq, desc, count, sql, inArray } from 'drizzle-orm';
 import { OpportunitySearch } from '@/components/OpportunitySearch';
 import { OpportunityCard } from '@/components/opportunity-card';
-import type { Opportunity } from '@/lib/db';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
-import { directoryVisibilityFilters } from '@/lib/directory-visibility';
+import { loadHomepageData, type HomepageData } from '@/lib/homepage-data';
 
 export const prerender = false;
 
@@ -16,161 +13,18 @@ Astro.response.headers.set(
   'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
 );
 
-// How many freshest jobs to preview per category on the homepage.
-const PER_CATEGORY_PREVIEW = 6;
-
-let stats = { opportunities: 0, companies: 0 };
-let latestOpportunities: OpportunityCardData[] = [];
-let featuredAgencyOpportunities: OpportunityCardData[] = [];
-let categoryTotals: Record<string, number> = {};
-
-// Minimal card projection shared with OpportunityCard (keeps hydration payload small).
-type OpportunityCardData = Pick<
-  Opportunity,
-  | "id"
-  | "title"
-  | "company"
-  | "type"
-  | "sourceUrl"
-  | "sourcePlatform"
-  | "tags"
-  | "category"
-  | "experienceLevel"
-  | "postedAt"
-  | "geoScope"
-  | "phEligibility"
-  | "geoEvidence"
->;
-
-// Module-level warm memory cache to prevent ~3,500 D1 row reads per visit
-let homepageCache: {
-  stats: { opportunities: number; companies: number };
-  latestOpportunities: OpportunityCardData[];
-  featuredAgencyOpportunities: OpportunityCardData[];
-  categoryTotals: Record<string, number>;
-  expiresAt: number;
-} | null = null;
-const HOMEPAGE_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-
+let stats: HomepageData['stats'] = { opportunities: 0, companies: 0 };
+let latestOpportunities: HomepageData['latestOpportunities'] = [];
+let featuredAgencyOpportunities: HomepageData['featuredAgencyOpportunities'] = [];
+let categoryTotals: HomepageData['categoryTotals'] = {};
 let dataUnavailable = false;
 
 try {
-  const now = Date.now();
-  if (homepageCache && homepageCache.expiresAt > now) {
-    stats = homepageCache.stats;
-    latestOpportunities = homepageCache.latestOpportunities;
-    featuredAgencyOpportunities = homepageCache.featuredAgencyOpportunities;
-    categoryTotals = homepageCache.categoryTotals;
-  } else {
-    const db = getDb(Astro.locals.runtime.env);
-
-  const [oppCount] = await db.select({ count: count() }).from(opportunities).where(eq(opportunities.isActive, true));
-  const [dirCount] = await db
-    .select({ count: count() })
-    .from(vaDirectory)
-    .where(directoryVisibilityFilters());
-
-  stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
-
-  // Featured direct Philippine VA agency opportunities (graduated active Breezy sources:
-  // 20Four7VA, Sourcefit, Yokly, VALUE Virtual Assistants, Remote Craft)
-  const agencyIdRows = await db.all<{ id: number }>(sql`
-    SELECT id FROM opportunities
-    WHERE is_active = 1
-      AND (source_id LIKE 'breezy:%' OR source_platform IN ('20Four7VA', 'Sourcefit', 'Yokly', 'VALUE Virtual Assistants', 'Remote Craft'))
-    ORDER BY coalesce(posted_at, scraped_at) DESC
-    LIMIT 6
-  `);
-  const agencyIds = agencyIdRows.map((r) => Number(r.id)).filter((n) => Number.isFinite(n));
-
-  featuredAgencyOpportunities = agencyIds.length
-    ? await db
-        .select({
-          id: opportunities.id,
-          title: opportunities.title,
-          company: opportunities.company,
-          type: opportunities.type,
-          sourceUrl: opportunities.sourceUrl,
-          sourcePlatform: opportunities.sourcePlatform,
-          tags: opportunities.tags,
-          category: opportunities.category,
-          experienceLevel: opportunities.experienceLevel,
-          postedAt: opportunities.postedAt,
-          geoScope: opportunities.geoScope,
-          phEligibility: opportunities.phEligibility,
-          geoEvidence: opportunities.geoEvidence,
-        })
-        .from(opportunities)
-        .where(inArray(opportunities.id, agencyIds))
-        .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
-    : [];
-
-  // Homepage preview is "Fresh opportunities BY CATEGORY". Previously this
-  // fetched a single flat "latest 60 overall" pool, so whenever ingestion
-  // skewed toward a few categories (e.g. a batch of tech ATS sources), whole
-  // categories with hundreds of active jobs — customer-service, design —
-  // dropped off the homepage entirely because none appeared in the latest 60.
-  // Fix the root cause: fetch the freshest N *per category* so every category
-  // that has jobs always gets a card. A window function keeps this to one
-  // round-trip; then a typed fetch preserves the slim projection + JSON tag
-  // parsing + ordering.
-  const idRows = await db.all<{ id: number }>(sql`
-    SELECT id FROM (
-      SELECT id, ROW_NUMBER() OVER (
-        PARTITION BY category ORDER BY coalesce(posted_at, scraped_at) DESC
-      ) AS rn
-      FROM opportunities WHERE is_active = 1
-    ) WHERE rn <= ${PER_CATEGORY_PREVIEW}
-  `);
-  const ids = idRows.map((r) => Number(r.id)).filter((n) => Number.isFinite(n));
-
-  // Only select the fields used by OpportunityCard/OpportunitySearch to keep
-  // the hydration payload small (excludes description, hashes, timestamps,
-  // clickCount, payRange, etc.).
-  latestOpportunities = ids.length
-? await db
-          .select({
-            id: opportunities.id,
-            title: opportunities.title,
-            company: opportunities.company,
-            type: opportunities.type,
-            sourceUrl: opportunities.sourceUrl,
-            sourcePlatform: opportunities.sourcePlatform,
-            tags: opportunities.tags,
-            category: opportunities.category,
-            experienceLevel: opportunities.experienceLevel,
-            postedAt: opportunities.postedAt,
-            // Geo badges (masterplan L5) need scope + evidence tooltip.
-            geoScope: opportunities.geoScope,
-            phEligibility: opportunities.phEligibility,
-            geoEvidence: opportunities.geoEvidence,
-          })
-        .from(opportunities)
-        .where(inArray(opportunities.id, ids))
-        .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
-    : [];
-
-  // True per-category active totals so each card's "See all N jobs" reflects
-  // the real category size (matching its /categories/[slug] page), not the
-  // preview subset.
-  const totalRows = await db
-    .select({ category: opportunities.category, n: count() })
-    .from(opportunities)
-    .where(eq(opportunities.isActive, true))
-    .groupBy(opportunities.category);
-  categoryTotals = Object.fromEntries(totalRows.map((r) => [r.category, r.n]));
-
-    homepageCache = {
-      stats,
-      latestOpportunities,
-      featuredAgencyOpportunities,
-      categoryTotals,
-      expiresAt: now + HOMEPAGE_CACHE_TTL_MS,
-    };
-  }
-} catch (e) {
+  ({ stats, latestOpportunities, featuredAgencyOpportunities, categoryTotals } =
+    await loadHomepageData(Astro.locals.runtime.env));
+} catch (error) {
   dataUnavailable = true;
-  markPublicDataUnavailable(Astro.response, e);
+  markPublicDataUnavailable(Astro.response, error);
 }
 ---
 
@@ -222,10 +76,10 @@ try {
     <!-- Direct VA Agency Quick Filter Pills -->
     <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
       <span class="text-ink/45 font-medium">Direct VA Employers:</span>
-      <a href="/opportunities?platform=20Four7VA" class="px-2.5 py-1 rounded-full bg-surface border border-teal-500/30 text-teal-800 font-semibold hover:bg-teal-50/50 transition-colors shadow-sm">20Four7VA (131)</a>
-      <a href="/opportunities?platform=Sourcefit" class="px-2.5 py-1 rounded-full bg-surface border border-emerald-500/30 text-emerald-800 font-semibold hover:bg-emerald-50/50 transition-colors shadow-sm">Sourcefit (109)</a>
-      <a href="/opportunities?platform=Yokly" class="px-2.5 py-1 rounded-full bg-surface border border-purple-500/30 text-purple-800 font-semibold hover:bg-purple-50/50 transition-colors shadow-sm">Yokly (11)</a>
-      <a href="/opportunities?platform=VALUE+Virtual+Assistants" class="px-2.5 py-1 rounded-full bg-surface border border-blue-500/30 text-blue-800 font-semibold hover:bg-blue-50/50 transition-colors shadow-sm">VALUE VA (9)</a>
+      <a href="/opportunities?platform=20Four7VA" class="px-2.5 py-1 rounded-full bg-surface border border-teal-500/30 text-teal-800 font-semibold hover:bg-teal-50/50 transition-colors shadow-sm">20Four7VA</a>
+      <a href="/opportunities?platform=Sourcefit" class="px-2.5 py-1 rounded-full bg-surface border border-emerald-500/30 text-emerald-800 font-semibold hover:bg-emerald-50/50 transition-colors shadow-sm">Sourcefit</a>
+      <a href="/opportunities?platform=Yokly" class="px-2.5 py-1 rounded-full bg-surface border border-purple-500/30 text-purple-800 font-semibold hover:bg-purple-50/50 transition-colors shadow-sm">Yokly</a>
+      <a href="/opportunities?platform=VALUE+Virtual+Assistants" class="px-2.5 py-1 rounded-full bg-surface border border-blue-500/30 text-blue-800 font-semibold hover:bg-blue-50/50 transition-colors shadow-sm">VALUE VA</a>
       <a href="/directory" class="px-2.5 py-1 rounded-full bg-ink/[0.04] text-ink/65 font-medium hover:text-ink transition-colors">View all agencies &rarr;</a>
     </div>
 
