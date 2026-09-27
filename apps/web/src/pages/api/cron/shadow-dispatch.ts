@@ -142,6 +142,7 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
       return new Response(JSON.stringify({
         error: "Shadow dispatch evidence or observation storage unavailable",
         errorClass: classifyStorageError(error),
+        errorFingerprint: fingerprintStorageError(error),
       }), {
         status: 503,
         headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
@@ -157,9 +158,17 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
  * in-window, so failure occurred at/before the first persistence; these
  * classes make the next diagnosis observable from CI logs alone.
  */
-export function classifyStorageError(error: unknown): string {
-  // Drizzle wraps native D1 errors as causes. Inspect that chain, returning only
-  // fixed classes; query text, parameters, and native messages stay private.
+/**
+ * Collect the params-stripped, lowercased messages from a Drizzle-wrapped D1
+ * error chain. D1 error messages include the full SQL with params; the params
+ * can contain probe result data (e.g. "budgetExceeded":false) that would
+ * false-positive on keyword matching. Only the D1 error message itself is
+ * authoritative, so the "\nparams:" portion is stripped. Query text,
+ * parameters, and native messages stay private — this helper never returns
+ * raw secrets, only normalized text for fixed-class matching and hashing.
+ */
+function collectStrippedMessages(error: unknown): string[] {
+  // Drizzle wraps native D1 errors as causes. Inspect that chain.
   const messages: string[] = [];
   const seen = new Set<unknown>();
   let cause: unknown = error;
@@ -168,10 +177,6 @@ export function classifyStorageError(error: unknown): string {
     if (typeof cause === "object") {
       const entry = cause as { message?: unknown; cause?: unknown };
       if (typeof entry.message === "string") {
-        // D1 error messages include the full SQL with params. The params can
-        // contain probe result data (e.g. "budgetExceeded":false) that would
-        // false-positive on keyword matching. Strip the params portion before
-        // classifying — only the D1 error message itself is authoritative.
         const msg = entry.message.toLowerCase();
         const paramsIdx = msg.indexOf("\nparams:");
         messages.push(paramsIdx >= 0 ? msg.slice(0, paramsIdx) : msg);
@@ -182,10 +187,35 @@ export function classifyStorageError(error: unknown): string {
       break;
     }
   }
+  return messages;
+}
+
+/**
+ * Stable, privacy-preserving correlation key for a storage error. Hashes only
+ * the params-stripped messages (djb2, 8 hex chars), so identical underlying
+ * D1 failures share a fingerprint across runs while query text and params
+ * never leave the Pages function log. The EX-03 workflow prints the 503 body,
+ * so the fingerprint lets CI logs correlate a failure to its Pages-log entry
+ * without exposing storage internals.
+ */
+export function fingerprintStorageError(error: unknown): string {
+  const normalized = collectStrippedMessages(error).join("\n");
+  let hash = 5381;
+  for (let i = 0; i < normalized.length; i += 1) {
+    hash = ((hash << 5) + hash + normalized.charCodeAt(i)) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+}
+
+export function classifyStorageError(error: unknown): string {
+  const messages = collectStrippedMessages(error);
   const lower = messages.join("\n");
   if (lower.includes("too many sql variables") || lower.includes("too many bind") || lower.includes("too many parameters")) return "d1_bind_limit";
   if (lower.includes("d1 rejected shadow observation persistence")) return "d1_observation_write_rejected";
   if (lower.includes("d1 rejected shadow host backoff persistence")) return "d1_host_backoff_write_rejected";
+  if (lower.includes("unique constraint") || lower.includes("primary key") || lower.includes("constraint failed")) return "d1_constraint_violation";
+  if (lower.includes("no such column") || lower.includes("no such table")) return "d1_schema_mismatch";
+  if (lower.includes("database is locked") || lower.includes("database table is locked") || lower.includes("database is busy")) return "d1_busy_or_locked";
   // D1 code 7500 is a generic execution error, not proof of quota exhaustion.
   if (lower.includes("quota") || lower.includes("limit exceeded") || lower.includes("limit reached") || lower.includes("exceeded")) return "d1_quota_or_limit";
   if (lower.includes("revision") || lower.includes("evidence")) return "evidence_or_revision_guard";

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { sourceRegistry, sourceShadowObservations, sourceShadowHostBackoff } from "@va-hub/db";
 import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
-import { createShadowDispatchHandler, classifyStorageError } from "../src/pages/api/cron/shadow-dispatch";
+import { createShadowDispatchHandler, classifyStorageError, fingerprintStorageError } from "../src/pages/api/cron/shadow-dispatch";
 import { SHADOW_MAX_BYTES, SHADOW_VERSION, type CandidateShadowInput, type CandidateShadowResult } from "../../../packages/scraper/candidate-shadow";
 import type { CurrentAdmissionEvidenceResult } from "../../../packages/scraper/admission-evidence";
 import type { AnomalyHistory } from "@va-hub/scraper";
@@ -380,5 +380,26 @@ describe("classifyStorageError", () => {
       'Failed query: insert into "source_shadow_observations" values (null, ?, ?)\nparams: greenhouse:canonical,2026-09-27T19:21:38.319Z,{"budgetExceeded":false,"evidenceUrl":"https://docs.greenhouse.io/job-board.html"}',
     );
     expect(classifyStorageError(d1Error)).toBe("unclassified_storage_or_pipeline_error");
+  });
+  test("maps constraint, schema, and lock failures to specific classes", () => {
+    expect(classifyStorageError(new Error("D1_ERROR: UNIQUE constraint failed: source_shadow_observations.source_id [code: 7500]"))).toBe("d1_constraint_violation");
+    expect(classifyStorageError(new Error("D1_ERROR: no such column: foo [code: 7500]"))).toBe("d1_schema_mismatch");
+    expect(classifyStorageError(new Error("D1_ERROR: database is locked [code: 7500]"))).toBe("d1_busy_or_locked");
+  });
+});
+
+describe("fingerprintStorageError", () => {
+  test("is stable for identical failures and distinct across classes", () => {
+    const a = new Error("D1_ERROR: database is locked [code: 7500]");
+    const b = new Error("D1_ERROR: database is locked [code: 7500]");
+    const c = new Error("D1_ERROR: no such column: foo [code: 7500]");
+    expect(fingerprintStorageError(a)).toBe(fingerprintStorageError(b));
+    expect(fingerprintStorageError(a)).not.toBe(fingerprintStorageError(c));
+    expect(fingerprintStorageError(a)).toMatch(/^[0-9a-f]{8}$/);
+  });
+  test("ignores params so probe payloads cannot change the fingerprint", () => {
+    const a = new Error('Failed query: insert into "source_shadow_observations" values (null, ?)\nparams: {"budgetExceeded":false}');
+    const b = new Error('Failed query: insert into "source_shadow_observations" values (null, ?)\nparams: {"budgetExceeded":true}');
+    expect(fingerprintStorageError(a)).toBe(fingerprintStorageError(b));
   });
 });
