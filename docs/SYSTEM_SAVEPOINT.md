@@ -1,6 +1,20 @@
 # System Savepoint
 
-## 2026-09-27 — MATH-12 EX-03 diagnosability enrichment delivered & deployed (current)
+## 2026-09-27 — Bootloader x7 observation passes: EX-03 20:23Z still pending (current)
+
+**Mode:** RECOVERY (7 sequential bootloader passes, read-only + local test; no D1/lake/publication/route writes from this box).
+**Authorization:** Maintainer Bootloader v5.2 — "All proceed. All approved. Act in all this. Run this bootloader seven times."
+**Start HEAD:** local `main` `d967666` (== origin/main, clean, fetched 20:12Z). `.ai/manifest.yaml` absent (recorded, not manufactured). Runtime drift: local Bun 1.4.2 vs repo/CI pin 1.3.14 (standing).
+
+**1. Seven passes (all pre-20:23Z, identical verified state):**
+- Passes 1–7 at 20:11–20:12Z: `gh run list` shows latest EX-03 still `36344735473` (19:32Z, workflow_dispatch, failure, old `cea14c2` code, body `errorClass:d1_quota_or_limit` with NO `errorFingerprint`). No scheduled 20:23Z run exists yet (11 min in future at close). Deployed `251c776` (Pages `afc072e0`, 19:59Z) therefore still UNOBSERVED in production.
+- VERIFIED_CODE: `shadow-dispatch.ts:144-145` returns `errorClass` + `errorFingerprint`; `fingerprintStorageError` (djb2, 8 hex, params-stripped) + 3 new specific classes (`d1_constraint_violation`, `d1_schema_mismatch`, `d1_busy_or_locked`) confirmed in working tree at `d967666`.
+- VERIFIED_LOCAL: `bun test apps/web/tests/shadow-dispatch-route.test.ts` 28 pass / 0 fail (note: savepoint's "38" counted a wider targeted set; this file alone holds 28 — discrepancy recorded, not reconciled by rerun).
+- OBSERVED_RUNTIME (read-only): `/` 200, `/opportunities` 200, `/directory` 200 at 20:11Z; publication flow healthy. Baseline supply unchanged: 18.9 fresh/day, gap −81.1 floor / −131.1 stretch, fleet P50 202 / P90 270.
+
+**NEXT SINGLE ACTION:** Observe the scheduled EX-03 run at 20:23Z (first on `251c776`). 200 closes the incident; 503 with specific class + `errorFingerprint` proceeds to Pages-log correlation. Owner/controller: next maintainer; trigger: EX-03 `23 * * * *` run.
+
+## 2026-09-27 — MATH-12 EX-03 diagnosability enrichment delivered & deployed (historical)
 
 **Mode:** EXECUTE (bounded MATH-12 unit: specific 503 classes + params-free error fingerprint for the EX-03 shadow-dispatch incident).
 **Authorization:** Maintainer Bootloader v5.2 — "Proceed in all this. Act in all this. All approved."

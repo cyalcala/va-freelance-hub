@@ -10,7 +10,7 @@ See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 2. **Incident state:** EX-03 now 9 consecutive 503s; the 19:32Z run predates the `cea14c2` Pages deploy, so neither the params-strip fix nor the new classes have been observed in production. Last shadow observation write 2026-09-26T15:21Z; 3 shadow sources (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`) still blocked from 8-clean-day canary graduation. Publication flow healthy — incident isolated to shadow observation.
 3. **What changed:** 503 body now carries `errorClass` (3 new specific D1 classes ahead of the generic quota catch-all) + `errorFingerprint` (stable, params-free correlation key; no query text/params leave the Pages log).
 
-**Follow-on unit:** Observe the scheduled EX-03 run at 20:23Z (first on `251c776`). 200 closes the incident; a 503 with specific class + fingerprint proceeds to Pages-log correlation. Measured fleet requirement remains P50 202 / P90 270 toward the 100/day floor.
+**Follow-on unit:** Seven bootloader observation passes completed 20:11–20:12Z (all pre-20:23Z, identical state — no new EX-03 run yet). Observe the scheduled EX-03 run at 20:23Z (first on `251c776`). 200 closes the incident; a 503 with specific class + fingerprint proceeds to Pages-log correlation. Measured fleet requirement remains P50 202 / P90 270 toward the 100/day floor.
 
 ## Prior unit (delivered & deployed)
 
