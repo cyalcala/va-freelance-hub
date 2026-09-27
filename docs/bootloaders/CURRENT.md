@@ -2,28 +2,13 @@
 
 ## Active bounded unit
 
-HRI-04 Batch 1 **live execution completed 2026-09-27** in the credentialed session
-(this box: Turso lake `.env` + wrangler OAuth). Zero code changes.
+**Production outage resolved, MATH-04 persistent host cooldown delivered, and GLM measurement reconciled (2026-09-27):**
 
-1. **Cohort admission (`lake:focused-va-cohort`):** 8 of 11 tenants auto-admitted
-   (Wilson bounds), 3 rejected. All 799 jobs were duplicate re-admissions of the
-   HRI-03-era ingest (idempotency verified). Lake now holds 9 `auto_approved`.
-2. **Measured funnel (`measure:funnel`, read-only D1):** baseline **18.9 fresh
-   jobs/day** (gap **-81.1** to floor); measured fleet requirement **P50 202 / P90 270
-   active endpoints** — replaces the K*>=106 estimate.
-3. **Shadow admission (`lake:enroll` via production routes):** all 8 non-Ashby
-   sources already in `source_registry` (identity-reuse trigger); `greenhouse:remotecom`
-   already canary; 6 Workable tenants + canonical stuck in shadow — every qualifying
-   window poisoned by residual `RATE_LIMITED` observations (Sept 11-19 storm era:
-   up to 76/77 probes in a day; Sept 20+ still 0-14/day fleet-wide against a
-   zero-tolerance 8-day window). `ashby:multiplymii` skipped: admit/promote routes lack
-   Ashby provider support (code gap, named follow-up).
+1. **Homepage Outage Fix (Live 200 OK):** Root cause was 9 `UNION ALL` subqueries exceeding Cloudflare D1's `SQLITE_LIMIT_COMPOUND_SELECT = 5` ceiling. Replaced with single-statement window query bounded by the 9 UI categories (0 compound SELECTs, 12 binds). Deployed Pages build `7338f1f1`, verified live `https://remotejobs-ph.pages.dev/` returning HTTP 200 with 206,975 bytes.
+2. **MATH-04 Persistent Host Cooldown:** Migration `0051_shadow_host_backoff.sql` applied to production D1. Dispatcher skips held hosts and respects RFC 9110 Retry-After; skipped probes write no adverse observation rows, protecting the 8-day clean qualifying window.
+3. **GLM Findings Reconciliation:** Corrected `measure-first-publication-funnel.ts` and `measure-manila-daily-publications.ts` to enforce complete 7-day Manila windows, separate storage from verified flow, and report unmeasured populations honestly as `null` / `UNKNOWN`. 1,605 tests pass repo-wide.
 
-**Follow-on unit:** MATH-04 host-aware 429 backoff in the shadow dispatcher
-(per-host skip-shielding + next-eligible extension; skipped probes write no
-observation row). Acceptance: 6 Workable shadow sources reach 8 clean days and
-canary promotion; fleet RATE_LIMITED rate falls to 0. Then Ashby provider support
-so `ashby:multiplymii` can enter shadow, then canary output flows via `lake:sync`.
+**Follow-on unit:** Monitor live shadow-dispatch runs at UTC minute 20 to verify persistent host cooldown in production, observe clean streak accumulation across Workable shadow sources toward canary graduation, and wire Ashby provider support for `ashby:multiplymii` admission.
 
 ## Prior unit (delivered & deployed)
 

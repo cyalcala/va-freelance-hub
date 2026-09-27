@@ -1,6 +1,45 @@
 # System Savepoint
 
-## 2026-09-27 — HRI-04 Batch 1 LIVE EXECUTION: cohort admission, measured funnel & shadow-window rate-limit diagnosis (current)
+## 2026-09-27 — Production outage resolved, MATH-04 persistent host cooldown, and GLM measurement reconciliation (current)
+
+**Mode:** EXECUTE (Live homepage 503 incident repair; MATH-04 persistent host cooldown; GLM measurement reconciliation; production deployment and live verification).
+**Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed in the bootloader. Act on all this. All approved. Priority to fix - the website seems dead, https://remotejobs-ph.pages.dev, showing live data unaveilable error, please resolve this. note - study and ruminate what to do on glmfindings as well and resolve pending problems, context1 - continue what codex started".
+**Start HEAD:** `016a9bffc0f3801e874e833fb7e9984a070ca1b2`.
+**Delivery Commits:**
+- `ceacdec`: `fix(web): use bounded window function avoiding compound SELECT limit on homepage previews`
+- `2d9b942`: `feat(math-04): persistent host cooldown for shadow dispatch and calibrated funnel measurement`
+
+**1. Live Homepage Outage Resolution (`https://remotejobs-ph.pages.dev`):**
+- **Incident Root Cause:** `apps/web/src/lib/homepage-data.ts` attempted to run 9 `UNION ALL` subqueries for category previews. Cloudflare D1 strictly enforces `SQLITE_LIMIT_COMPOUND_SELECT = 5` in production. Any compound SELECT with 6+ terms fails with Cloudflare error code 7500: `too many terms in compound SELECT: SQLITE_ERROR`, triggering `dataUnavailable = true` and HTTP 503.
+- **Repair:** Replaced compound SELECT with a single-statement window query partitioned by category and restricted to `inArray(opportunities.category, allowedCategories)`, with 0 compound select terms and only 12 query parameters. Bounded previews return at most 54 IDs, allowing the second query to fetch card projections with 57 parameters (safely below D1's 100-variable ceiling). Uses `category_active_effective_posted_idx`.
+- **Live Verification:** Cloudflare Pages deployment `7338f1f1` verified live.
+  - `/`: HTTP 200, `hasUnavailable: false`, 206,975 bytes (active job listings rendered across all categories).
+  - `/opportunities`: HTTP 200, 90,700 bytes.
+  - `/directory`: HTTP 200, 82,949 bytes.
+  - `/categories/tech`: HTTP 200, 84,442 bytes.
+  - `/categories/customer-service`: HTTP 200, 84,065 bytes.
+  - `/sitemap.xml`: HTTP 200, 186,731 bytes.
+
+**2. MATH-04 Persistent Host Cooldown (`packages/db/migrations/0051_shadow_host_backoff.sql`):**
+- Migration 0051 adds `shadow_host_backoff` table storing persistent per-host cooldown timestamps across hourly shadow-dispatch invocations.
+- Applied to remote production D1 via `wrangler d1 migrations apply DB --remote` (executed 2 commands in 1.25ms).
+- Shadow dispatcher checks `shadow_host_backoff` before probing candidates sharing a host, respecting RFC 9110 Retry-After headers or falling back to the 24-hour default. Shielded/skipped probes write no adverse observation rows, preventing self-inflicted 429 rate-limit storms from resetting qualifying windows.
+
+**3. GLM Findings Reconciliation & Funnel Calibration:**
+- Refactored `measure-first-publication-funnel.ts` and `measure-manila-daily-publications.ts` to strictly measure complete 7-day Manila windows.
+- Separated current storage snapshots from verified first-publication flow; unmeasured populations, conversion ratios without samples (0/0), and unmeasured fleet sizes are reported honestly as `null` / `UNKNOWN`.
+- 100% test coverage updated and passing for both diagnostic suites.
+
+**4. Verification:**
+- Tests: 1,605 passed, 0 failed across 161 test files.
+- TypeScript: strict typecheck clean.
+- CI Audits: guardrails, parameters parity (100%), orchestrator, and constitution all clean.
+- Build: client and server build clean.
+- DB-01 Rehearsal: 120 schema assertions passed on fresh and legacy rehearsals.
+
+**NEXT SINGLE ACTION:** Monitor live shadow-dispatch runs at UTC minute 20 to verify persistent host cooldown in production, observe clean streak accumulation across Workable shadow sources toward canary graduation, and wire Ashby provider support for `ashby:multiplymii` admission.
+
+## 2026-09-27 — HRI-04 Batch 1 LIVE EXECUTION: cohort admission, measured funnel & shadow-window rate-limit diagnosis
 
 **Mode:** EXECUTE (HRI-04 Batch 1 live execution under MATH-03; MATH-04 empirical
 diagnosis; zero code changes — governed-script runs and read-only D1/lake queries only).
