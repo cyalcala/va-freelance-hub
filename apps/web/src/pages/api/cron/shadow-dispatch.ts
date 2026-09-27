@@ -167,7 +167,15 @@ export function classifyStorageError(error: unknown): string {
     seen.add(cause);
     if (typeof cause === "object") {
       const entry = cause as { message?: unknown; cause?: unknown };
-      if (typeof entry.message === "string") messages.push(entry.message.toLowerCase());
+      if (typeof entry.message === "string") {
+        // D1 error messages include the full SQL with params. The params can
+        // contain probe result data (e.g. "budgetExceeded":false) that would
+        // false-positive on keyword matching. Strip the params portion before
+        // classifying — only the D1 error message itself is authoritative.
+        const msg = entry.message.toLowerCase();
+        const paramsIdx = msg.indexOf("\nparams:");
+        messages.push(paramsIdx >= 0 ? msg.slice(0, paramsIdx) : msg);
+      }
       cause = entry.cause;
     } else {
       messages.push(String(cause).toLowerCase());

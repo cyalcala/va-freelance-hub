@@ -1,6 +1,31 @@
 # System Savepoint
 
-## 2026-09-27 — Homepage Feature Elevation & Quick Filters for Graduated Agencies (current)
+## 2026-09-27 — Recovery: homepage unit verified live; EX-03 shadow-dispatch 503 incident (current)
+
+**Mode:** RECOVERY (read-only evidence refresh and incident diagnosis; no code, D1, lake, publication, or route writes from this box).
+**Authorization:** Maintainer Bootloader v5.2 — "Proceed in this bootloader. Act in all this. All approved."
+**Start HEAD:** local `main` `a1ba3ad` (== origin/main at session start). origin/main advanced 3 automation digest commits to `575d24e` during the session (source unchanged). `.ai/manifest.yaml` absent (recorded, not manufactured).
+**Clock correction:** prior session ran with system clock ~7.5h ahead (labeled entries "2026-09-28T02:28Z"); actual UTC at recovery was 2026-09-27T18:57Z. The "GitHub Actions scheduling silence" incident was a clock artifact — scheduled runs at 18:25Z/18:29Z were ~30min old, not 8h. Incident B is withdrawn.
+
+**1. Current unit verified (homepage elevation, commit `a1ba3ad`):**
+- Pushed (ancestor of origin/main); Sovereign CI Guardrail run `36318244199` success incl. Pages deploy.
+- Live 2026-09-27 ~18:57Z: `/` 200 (207,272 B), no `dataUnavailable`, elevated agency section present (Hunt St, MultiplyMii, Coconut VA, 20Four7VA in HTML); `/opportunities` 200; `/directory` 200. The prior savepoint's "pending commit" is stale.
+
+**2. Live incident A — EX-03 Shadow Dispatch 503s (8 consecutive, ~29.5h):**
+- Failures 2026-09-26T13:12Z → 2026-09-27T18:29Z (8 consecutive); last success 2026-09-26T07:50Z. All HTTP 503 `d1_quota_or_limit` ("Shadow dispatch evidence or observation storage unavailable").
+- Last shadow observation write 2026-09-26T15:21:06Z (~27.5h ago). The 3 remaining shadow sources (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`) cannot accumulate the 8 clean days for canary graduation.
+- Root cause UNCONFIRMED. `classifyStorageError` maps any "quota"/"exceeded"/"limit reached"/"limit exceeded" message to `d1_quota_or_limit`; the underlying D1 message stays in the Pages log.
+- Ruled out (read-only): D1 reads work via wrangler remote (exact `loadRegistryRows` + host-backoff + observations queries succeed at 18:57Z); D1 write volume tiny; `judgeViaJev` never throws; probe errors caught per-source; `loadCurrentAdmissionEvidence` never throws. Remaining abort paths: uncaught D1 reads (`loadRegistryRows`, `loadHostBackoff`, `loadLastObservedAt`, `defaultLoadAnomalyHistory`) or a Pages-runtime resource error containing "exceeded".
+- Leading hypothesis: time-dependent D1 read-quota exhaustion during peak Manila hours (successes 01:39/07:50Z; failures 08:20–22:57Z; wrangler reads succeed 18:57Z). Contradiction: the scrape wrote at 11:10Z 09-27 (needs reads) between EX-03 failures 08:20Z/14:05Z — so the limit is intermittent, not a continuous daily window. Pages-function CPU/resource limit is the alternative.
+- Diagnostic blocked: the actual error is only in the Pages log, capturable via `wrangler pages deployment tail` during a live invocation. Invoking the mutating route is bootloader-forbidden; the EX-03 scheduler is running normally (hourly), so the next natural invocation is imminent.
+
+**3. Scrape clock:** last D1 writes 2026-09-27T11:10:33Z (workable:rocketams/hunt-st, ashby:multiplymii), 08:20:29Z (we-work-remotely, breezy:20four7va). Worker-based (not GitHub), so likely still running; no writes after 11:10Z consistent with Manila overnight lull. Not re-verifiable as writing-now without invoking the Worker.
+
+**Verification:** read-only D1 SELECTs via `wrangler d1 execute --remote` (changed_db=false, rows_written=0); live HTTP; gh run inspection. No code/D1/lake/publication/route writes; no secrets printed.
+
+**NEXT SINGLE ACTION:** Capture the actual shadow-dispatch storage error and remediate. Run `npx wrangler pages deployment tail remotejobs-ph --format json --search shadow-dispatch`, then trigger the sanctioned EX-03 `workflow_dispatch` so the tail records the underlying D1 error behind `d1_quota_or_limit`. Remediate by class: D1 quota → reduce read volume (FTS shape, scrape cadence) or raise the D1 plan; Pages resource limit → reduce per-invocation work. Acceptance: 3 shadow sources reach 8 clean days and canary promotion; EX-03 exits 0. Falsification: a captured error that is neither quota nor resource-limit reopens diagnosis. Rollback: revert route change; shadow sources stay in shadow (fail-safe). Owner/controller: next credentialed maintainer; trigger: this savepoint + a tail session.
+
+## 2026-09-27 — Homepage Feature Elevation & Quick Filters for Graduated Agencies (historical)
 
 **Mode:** EXECUTE (Elevate graduated Philippine VA agency sources in homepage featured section and quick filter pills; Jev decision layer consultation; full verification).
 **Authorization:** Founder Executive Directives: "I personally see these agencies and check they are actively hiring filipinos... they are historically hiring filipinos i need them live in the site hunt-st, rocketams, coconutva, crewbloom, hello-rache, pearltalent) and ashby:multiplymii, i want them in and just monitor them along the way why are we holding ourselves back? discuss" and "yes please i want them visible on the site we take care of math separately and we can always reverse they turned out to be long term useless but this time i want them in".

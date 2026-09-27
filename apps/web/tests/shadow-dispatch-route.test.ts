@@ -375,4 +375,10 @@ describe("classifyStorageError", () => {
     expect(classifyStorageError(new Error("Cloudflare D1 binding is required"))).toBe("missing_d1_binding");
     expect(classifyStorageError(new Error("something else"))).toBe("unclassified_storage_or_pipeline_error");
   });
+  test("does not false-positive on probe result data in D1 error params", () => {
+    const d1Error = new Error(
+      'Failed query: insert into "source_shadow_observations" values (null, ?, ?)\nparams: greenhouse:canonical,2026-09-27T19:21:38.319Z,{"budgetExceeded":false,"evidenceUrl":"https://docs.greenhouse.io/job-board.html"}',
+    );
+    expect(classifyStorageError(d1Error)).toBe("unclassified_storage_or_pipeline_error");
+  });
 });

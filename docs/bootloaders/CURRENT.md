@@ -2,13 +2,25 @@
 
 ## Active bounded unit
 
-**Homepage Feature Elevation & Quick Filters for Graduated Agencies (delivered 2026-09-27):**
+**EX-03 Shadow Dispatch 503 incident (discovered 2026-09-27, recovery mode):**
 
-1. **Commit & Scope:** Elevate all graduated Philippine VA and staffing agency sources (`breezy:%`, `workable:%`, `ashby:%`, `MultiplyMii`) in the homepage "Verified Philippine Agency Openings" featured section (`apps/web/src/lib/homepage-data.ts`) and quick filter pills (`apps/web/src/pages/index.astro`).
+One live incident found during read-only recovery (see [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry):
+
+1. **EX-03 Shadow Dispatch 503s (8 consecutive, ~29.5h):** failures 2026-09-26T13:12Z → 2026-09-27T18:29Z, all HTTP 503 `d1_quota_or_limit`. Last shadow observation write 2026-09-26T15:21Z. The 3 remaining shadow sources (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`) cannot accumulate the 8 clean days for canary graduation. Root cause UNCONFIRMED (time-dependent D1 read-quota exhaustion vs Pages-resource limit; D1 reads verified working via wrangler at 18:57Z; write volume tiny). Diagnostic blocked: the underlying error is only in the Pages log, capturable via `wrangler pages deployment tail` during a live invocation; invoking the mutating route is bootloader-forbidden. The EX-03 scheduler is running normally (hourly).
+
+**Scrape clock:** Worker-based; last D1 writes 2026-09-27T11:10:33Z (workable:rocketams/hunt-st, ashby:multiplymii), 08:20:29Z (we-work-remotely, breezy:20four7va). No writes after 11:10Z consistent with Manila overnight lull.
+
+**Follow-on unit:** Capture the actual shadow-dispatch error via tail + a sanctioned EX-03 dispatch, then remediate by error class (D1 quota vs Pages resource limit).
+
+## Prior unit (delivered & deployed)
+
+**Homepage Feature Elevation & Quick Filters for Graduated Agencies (delivered & verified 2026-09-28):**
+
+1. **Commit & Scope:** Elevate all graduated Philippine VA and staffing agency sources (`breezy:%`, `workable:%`, `ashby:%`, `MultiplyMii`) in the homepage "Verified Philippine Agency Openings" featured section (`apps/web/src/lib/homepage-data.ts`) and quick filter pills (`apps/web/src/index.astro`).
 2. **Jev Decision Layer:** Consulted Jev 1.13 (`judge.cjs --task choose`) comparing static legacy 4-agency set vs top high-yield verified Philippine agencies. Jev accepted Variant B (confidence 0.65 vs 0.33).
 3. **Featured Query Elevation:** Replaced `breezy:%`-only filter with inclusive union across all verified agency prefixes (`breezy:%`, `workable:%`, `ashby:%`). Remote D1 execution verified in 0.39ms (reading only 30 rows), immediately surfacing fresh roles from Hunt St, 20Four7VA, and other graduated agencies on the homepage.
 4. **Quick Filter Navigation:** Added direct pills for `Hunt St` (`/opportunities?platform=Workable%2Fhunt-st`), `MultiplyMii` (`/opportunities?platform=MultiplyMii`), and `Coconut VA` (`/opportunities?platform=Workable%2Fcoconutva`).
-5. **Verification:** 1,609/1,609 tests pass repo-wide; strict typecheck clean; parameter parity 100%; CI audits clean.
+5. **Verification:** 1,609/1,609 tests pass repo-wide; strict typecheck clean; parameter parity 100%; CI audits clean. Commit `a1ba3ad` pushed; Sovereign CI Guardrail run `36318244199` success incl. Pages deploy. Live-verified 2026-09-28: `/` 200 (agency section present), `/opportunities` 200, `/directory` 200.
 
 **Follow-on unit:** Monitor next scheduled ingestion ticks (`/api/cron/scrape`) and shadow/canary dispatchers to observe new active job cards from the 8 agencies appearing on the live homepage and `/directory`.
 
@@ -60,17 +72,17 @@ HRI-04 Batch 1 / MATH-03 measurement slice delivered and deployed on 2026-09-27
 
 1. **First-publication loss funnel (`scripts/diagnostics/measure-first-publication-funnel.ts`):**
    - Empirical r1 (qualification) -> r2 (authorization) -> r3 (fresh publication) -> r4
-     (public consistency) per source, composite yield eta, capacity estimator
-     J_hat = sum(lambda * eta), fleet sizing P50/P90. 5-test suite green.
+      (public consistency) per source, composite yield eta, capacity estimator
+      J_hat = sum(lambda * eta), fleet sizing P50/P90. 5-test suite green.
    - Live D1 observation query is implemented but NOT executed from this box
-     (no Cloudflare credentials locally); fleet numbers remain estimates until run.
+      (no Cloudflare credentials locally); fleet numbers remain estimates until run.
 2. **Focused VA cohort runner (`scripts/lake/ingest-focused-va-cohort.ts`):**
    - 12 high-intent ATS seeds (Australian/Dayshift + Global VA) wired to
-     `runBulkAtsDiscovery` with 1500ms polite pacing. NOT executed (would live-fetch
-     and lake-write); awaiting authorized run with lake credentials.
+      `runBulkAtsDiscovery` with 1500ms polite pacing. NOT executed (would live-fetch
+      and lake-write); awaiting authorized run with lake credentials.
 3. **Hardening in the same slice:**
    - Workable widget API adapter fix (v1 widget endpoint + extractor); live response
-     shape unverified — fail-closed (null on mismatch), needs probe evidence.
+      shape unverified — fail-closed (null on mismatch), needs probe evidence.
    - Deterministic publication-receipt timestamp (`decided_at` = batch time).
    - Bad-outcomes shadow gate before canary promotion in remotecom promotion script.
 4. **Verification:** 171 pass lake+diagnostics locally; guardrails clean; parameters
@@ -81,7 +93,7 @@ Manila-Day Publication Measurement completed and verified on 2026-09-27.
 
 1. **Empirical Baseline Measured (`scripts/diagnostics/measure-manila-daily-publications.ts`):**
    - 7-day complete Manila-day audit (2026-09-21 to 2026-09-27): **17.4 fresh jobs/day** average.
-   - Floor shortfall: -82.6 fresh jobs/day; Stretch shortfall: -132.6 fresh jobs/day.
+   - Floor shortfall: -82.6 fresh jobs/day; Stretch shortfall: -132.6.
    - Separation of fresh flow ($\le 48$h) from one-time graduation stock absorption (95 Breezy, 122 Canonical).
    - Upstream arrival rates for 5 Breezy agencies physically capped at ~3–6 jobs/weekday and 0 on weekends.
 2. **Canonical Mathematical Strategy V2 (`docs/strategies/GRADUATED_SOURCES_VISIBILITY_MATHEMATICAL_STRATEGY.md`):**
@@ -129,15 +141,10 @@ portfolio -> adaptive control -> measured operation with drift and recovery chec
 
 - F1/F2/F4 repaired under MATH-06A. Ledger writes, serving inventory snapshots, and exact-six gateway fallbacks are tested and active.
 - Public-route eligibility (F5) and quality-sample denominators (F6) remain active review targets.
-- [EX-03 run 36277921498](https://github.com/cyalcala/va-freelance-hub/actions/runs/36277921498)
-  returned HTTP 503 / `d1_quota_or_limit` at 2026-09-26T22:57:38Z.
-- Current active D1 stock: 1,002 opportunities (WWR 322, RWFA 158, 20Four7VA 131, Canonical 122, Sourcefit 109, Remote OK 55, Jobicy 55, others 50).
+- **EX-03 Shadow Dispatch 503s (8 consecutive, ~29.5h):** `d1_quota_or_limit`; root cause unconfirmed (D1 read-quota vs Pages resource limit); last shadow observation write 2026-09-26T15:21Z; 3 shadow sources blocked from canary graduation.
+- Current active D1 stock: ~1,002 opportunities (WWR 322, RWFA 158, 20Four7VA 131, Canonical 122, Sourcefit 109, Remote OK 55, Jobicy 55, others 50).
 - Current Turso Lake discovery (post 2026-09-27 cohort run): 249 ATS endpoints (140 shadow_monitor, 100 auto_rejected, 9 auto_approved).
-- MATH-04 live finding (2026-09-27): 6 admitted Workable shadow sources cannot
-  graduate — residual RATE_LIMITED observations reset the zero-tolerance 8-day
-  qualifying window; shadow dispatcher lacks host-aware 429 backoff.
+- [EX-03 run 36277921498](https://github.com/cyalcala/va-freelance-hub/actions/runs/36277921498)
+   returned HTTP 503 / `d1_quota_or_limit` at 2026-09-26T22:57:38Z (historical; superseded by the 8-failure streak above).
 
-**Follow-on unit:** MATH-04 host-aware 429 backoff in the shadow dispatcher
-(per this pointer's active unit above). After canary graduation, lake:sync flows
-canary output to D1; measured fleet requirement remains P50 202 / P90 270 active
-endpoints toward the 100/day floor.
+**Follow-on unit:** Capture the actual shadow-dispatch error via tail + sanctioned EX-03 dispatch, then remediate by error class. Measured fleet requirement remains P50 202 / P90 270 active endpoints toward the 100/day floor.
