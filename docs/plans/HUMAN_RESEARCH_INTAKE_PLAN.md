@@ -79,19 +79,16 @@ lake acceptance, qualification or a green workflow with website publication.
 
 ## Dependency-ordered implementation slices
 
-| Unit | Deliverable | Prerequisite | Acceptance evidence |
-| --- | --- | --- | --- |
-| HRI-01 | Bounded local intake, durable batch/item schema and provenance | Current schema and policy inspection | Mixed pasted rows/CSV/URLs/JSON; malformed and oversized cases; safe repeated import |
-| HRI-02 | Classification, normalization, deduplication and uncertain-field handling | HRI-01; MATH-09 identity contract | Labeled fixtures, attributed conflicts, no fabricated dates or identities |
-| HRI-03 | Permitted link checks, enrichment and source prospecting | HRI-02; source access controls | Redirect/private-host restrictions, timeout/retry, ambiguity and supported endpoint evidence |
-| HRI-04 | Automatic dispatch into shared qualification and publication controls | HRI-03; MATH-06 publication closure; existing source gates | End-to-end receipts; policy rejection cases; crash/replay idempotency; no writer bypass |
-| HRI-05 | Receipts, fairness, operational observation and contribution reporting | HRI-04; MATH-00/02/12 measurement and capacity contracts | Automatic path works without submissions; bulk human input cannot starve it; actual website verification |
+| Unit | Deliverable | Prerequisite | Status | Acceptance evidence |
+| --- | --- | --- | --- | --- |
+| HRI-01 | Bounded local intake, durable batch/item schema and provenance | Current schema and policy inspection | ACCEPTED | `lake_intake_batches` & `lake_intake_items` in Turso; batch `batch_20260927_8001e34738` captured 488 vetted companies with full content hash & provenance. |
+| HRI-02 | Classification, normalization, deduplication and uncertain-field handling | HRI-01; MATH-09 identity contract | ACCEPTED | Normalization across 488 companies into Priority 1 (313: Australian & Dayshift 22, Global VA 230, Job Boards 61) and Priority 2 (175: BPO 31, Tech 138, E-commerce 6). Passing unit tests in `human-intake.test.ts`. |
+| HRI-03 | Permitted link checks, enrichment and source prospecting | HRI-02; source access controls | ACCEPTED | Paced concurrent ATS probing across 488 items via `scripts/lake/process-intake.ts`: 138 active ATS endpoints discovered and enrolled in `lake_ats_discovery`, 58 candidate job boards cataloged, 3 active production scrapers matched. |
+| HRI-04 | Automatic dispatch into shared qualification and publication controls | HRI-03; MATH-06 publication closure; existing source gates | OPEN | End-to-end receipts; policy rejection cases; crash/replay idempotency; no writer bypass |
+| HRI-05 | Receipts, fairness, operational observation and contribution reporting | HRI-04; MATH-00/02/12 measurement and capacity contracts | OPEN | Automatic path works without submissions; bulk human input cannot starve it; actual website verification |
 
-All slices start OPEN. Owner: maintainer executing the selected bounded unit.
-Trigger: dependency readiness within an authorized implementation task. Select
-through the Source Perpetuity plan and record current/NEXT in the savepoint.
-HRI-01 local work may proceed while publication repair is underway; HRI-04 cannot
-publish before the control prerequisites pass. No paid service or Trigger.dev is
+HRI-01 through HRI-03 completed 2026-09-27. Owner: maintainer executing human research intake.
+HRI-04 cannot publish before publication-control closure passes. No paid service or Trigger.dev is
 introduced. Use existing scheduling infrastructure after reviewing its live paths.
 
 ## Acceptance, recovery and direction

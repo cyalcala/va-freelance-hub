@@ -225,7 +225,81 @@ export async function ensureLakeSchema(client: LakeClient): Promise<void> {
     // Column already exists
   }
 
-  // 10. Verify tables
+  // 10. Human research intake tables (HRI-01 & HRI-02).
+  console.log("Creating lake_intake_batches and lake_intake_items tables...");
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS lake_intake_batches (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      batch_id TEXT NOT NULL UNIQUE,
+      submitter_origin TEXT NOT NULL,
+      input_format TEXT NOT NULL,
+      raw_payload TEXT,
+      content_hash TEXT NOT NULL,
+      item_count INTEGER NOT NULL DEFAULT 0,
+      accepted_count INTEGER NOT NULL DEFAULT 0,
+      duplicate_count INTEGER NOT NULL DEFAULT 0,
+      rejected_count INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'captured',
+      metadata_json TEXT,
+      submitted_at TEXT NOT NULL DEFAULT (datetime('now')),
+      processed_at TEXT
+    );
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS lake_intake_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      batch_id TEXT NOT NULL REFERENCES lake_intake_batches(batch_id),
+      item_index INTEGER NOT NULL,
+      entity_type TEXT NOT NULL DEFAULT 'company_lead',
+      company_name TEXT NOT NULL,
+      website TEXT,
+      domain TEXT,
+      niche TEXT,
+      focus_group TEXT,
+      priority INTEGER DEFAULT 1,
+      is_dayshift INTEGER DEFAULT 0,
+      is_verified INTEGER DEFAULT 0,
+      is_remote INTEGER DEFAULT 1,
+      is_marketplace INTEGER DEFAULT 0,
+      raw_json TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'captured',
+      prospecting_status TEXT DEFAULT 'pending',
+      prospecting_evidence TEXT,
+      discovered_sources_json TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(batch_id, item_index)
+    );
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_intake_batch
+    ON lake_intake_items(batch_id);
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_intake_domain
+    ON lake_intake_items(domain);
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_intake_status
+    ON lake_intake_items(status);
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_intake_focus
+    ON lake_intake_items(focus_group);
+  `);
+
+  await client.execute(`
+    CREATE INDEX IF NOT EXISTS idx_lake_intake_prospecting
+    ON lake_intake_items(prospecting_status);
+  `);
+
+  // 11. Verify tables
   const tables = await client.execute(`
     SELECT name FROM sqlite_master WHERE type='table' AND name LIKE 'lake_%';
   `);

@@ -336,6 +336,16 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
       </div>
     </form>
 
+    <!-- Direct Agency Quick Filters -->
+    <div class="mb-4 flex flex-wrap items-center gap-1.5 text-xs">
+      <span class="text-ink/40 font-medium mr-1">Direct VA Agencies:</span>
+      <a href="/opportunities?platform=20Four7VA" class={`px-2.5 py-1 rounded-full border transition-all ${platform === '20Four7VA' ? 'bg-teal-600 text-white border-teal-600 font-bold' : 'bg-surface border-ink/[0.08] text-teal-800 hover:border-teal-500/40 font-semibold'}`}>20Four7VA</a>
+      <a href="/opportunities?platform=Sourcefit" class={`px-2.5 py-1 rounded-full border transition-all ${platform === 'Sourcefit' ? 'bg-emerald-600 text-white border-emerald-600 font-bold' : 'bg-surface border-ink/[0.08] text-emerald-800 hover:border-emerald-500/40 font-semibold'}`}>Sourcefit</a>
+      <a href="/opportunities?platform=Yokly" class={`px-2.5 py-1 rounded-full border transition-all ${platform === 'Yokly' ? 'bg-purple-600 text-white border-purple-600 font-bold' : 'bg-surface border-ink/[0.08] text-purple-800 hover:border-purple-500/40 font-semibold'}`}>Yokly</a>
+      <a href="/opportunities?platform=VALUE+Virtual+Assistants" class={`px-2.5 py-1 rounded-full border transition-all ${platform === 'VALUE Virtual Assistants' ? 'bg-blue-600 text-white border-blue-600 font-bold' : 'bg-surface border-ink/[0.08] text-blue-800 hover:border-blue-500/40 font-semibold'}`}>VALUE VA</a>
+      <a href="/opportunities?type=VA" class={`px-2.5 py-1 rounded-full border transition-all ${type === 'VA' && !platform ? 'bg-accent text-white border-accent font-bold' : 'bg-surface border-ink/[0.08] text-ink/65 hover:border-accent/40 font-medium'}`}>All VA Roles</a>
+    </div>
+
     <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[13px] font-semibold text-ink/45">
       <p class="tabular-nums">
         Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}

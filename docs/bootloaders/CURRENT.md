@@ -2,33 +2,28 @@
 
 ## Active bounded unit
 
-The current user authorized applying the v5.2 maintainer bootloader. The newest
-[savepoint](../SYSTEM_SAVEPOINT.md) records an isolated diagnostic unit from
-`origin/main` `4edc8828770474952461ca08e8b51769234347bd`, preserving the prior
-uncommitted prompt work in the original checkout. Two Hunter runs 151 minutes
-apart saw the same stale shared scrape heartbeat and each received `run-lock-held`.
-The cause is unverified. The unit adds timestamped read-only D1 evidence to the
-existing Hunter workflow, preserves failover behavior, and prevents this
-workflow-only release from invoking CI's production D1/Pages job. Test, release
-and first scheduled-run results are pending. The lake publication bypass and
-gateway F1/F4 findings remain open. **Next:** the maintainer reads the first
-exact-revision scheduled Hunter artifact, then selects one ingestion repair
-based on those rows and available Worker/Pages logs.
+HRI-01, HRI-02, and HRI-03 completed and accepted on 2026-09-27. All 488 vetted companies
+from `https://remotejobs-ph.pages.dev/directory` were scraped, validated, and ingested into
+the Turso Data Lake (`lake_intake_batches` and `lake_intake_items`) with full content hashing
+and provenance (batch `batch_20260927_8001e34738`). All 488 were processed with prioritized
+focus on Australian & Dayshift VA (22), Global VA (230), and Job Boards (61), discovering
+138 new active ATS endpoints enrolled into `lake_ats_discovery`, cataloging 58 candidate job
+boards, and matching 3 active production scrapers.
 
-## v5.2 documentation and backup
+Graduated Sources Visibility Resolution & Strategy delivered:
+- Mathematical root-cause strategy authored (`docs/strategies/GRADUATED_SOURCES_VISIBILITY_MATHEMATICAL_STRATEGY.md`).
+- 138 agency roles recategorized in production D1 out of 'other' into active categories (admin now 127, customer-service 78, finance 77, marketing 132).
+- Direct VA agency spotlight section and hero quick-filter pills added to homepage (`index.astro`).
+- Agency filter chips added to `/opportunities` and distinct styling in `OpportunityCard`.
+- Full test suite passing (1,313 pass / 0 fail) and clean build verified.
 
-See [backup manifest](../audits/2026-09-27-V5.2-BACKUP.md).
+## Optional human research intake — HRI-01/02/03 ACCEPTED
 
-## Optional human research intake - v5.2 follow-up
-
-All three active prompts and the active mathematical/source plans now include
-optional human research processed automatically through the Turso lake. See the
-[intake plan](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md) for HRI-01 through HRI-05:
-capture, parsing, enrichment/prospecting, shared qualification/publication, and
-receipts/observation. These units are planned, not implemented or accepted.
-Autonomous sourcing must continue without human submissions. MATH-06A remains
-a follow-on control unit; HRI-01 local intake can proceed when selected within scope,
-but public dispatch requires publication-control closure and source gates.
+See the [intake plan](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md). Units HRI-01 (durable intake
+schema & provenance), HRI-02 (classification, normalization & deduplication), and HRI-03
+(link checks, enrichment & source prospecting) are implemented and accepted. HRI-04 (shared
+qualification & publication controls) and HRI-05 (contribution reporting) remain follow-on
+milestones. MATH-06A publication authority closure remains a prerequisite before public dispatch.
 
 Refreshed 2026-09-27 for **PROMPT-MATH-PROGRAM-V5.2**.
 This pointer is navigation and dated evidence, not policy or a dispatch command.

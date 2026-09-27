@@ -33,12 +33,20 @@ const PLATFORM_COLORS: Record<string, string> = {
   ProBlogger: "text-orange-700 bg-orange-500/[0.08]",
   RemoteCo: "text-violet-700 bg-violet-500/[0.08]",
   OnlineJobsPH: "text-yellow-700 bg-yellow-500/[0.08]",
+  "20Four7VA": "text-teal-800 bg-teal-500/[0.12] border border-teal-500/25",
+  Sourcefit: "text-emerald-800 bg-emerald-500/[0.12] border border-emerald-500/25",
+  Yokly: "text-purple-800 bg-purple-500/[0.12] border border-purple-500/25",
+  "VALUE Virtual Assistants": "text-blue-800 bg-blue-500/[0.12] border border-blue-500/25",
+  "Remote Craft": "text-amber-800 bg-amber-500/[0.12] border border-amber-500/25",
+  "Time Etc": "text-sky-800 bg-sky-500/[0.12] border border-sky-500/25",
+  "Greenhouse/canonical": "text-orange-800 bg-orange-500/[0.12] border border-orange-500/25",
 };
 
 const PLATFORM_LABELS: Record<string, string> = {
   WeWorkRemotely: "We Work Remotely",
   RealWorkFromAnywhere: "Real Work From Anywhere",
   RemoteOK: "Remote OK",
+  "Greenhouse/canonical": "Canonical",
 };
 
 const TYPE_LABELS: Record<string, string> = {

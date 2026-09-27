@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities, vaDirectory } from '@va-hub/db';
 import { eq, desc, count, sql, inArray } from 'drizzle-orm';
 import { OpportunitySearch } from '@/components/OpportunitySearch';
+import { OpportunityCard } from '@/components/opportunity-card';
 import type { Opportunity } from '@/lib/db';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
@@ -20,6 +21,7 @@ const PER_CATEGORY_PREVIEW = 6;
 
 let stats = { opportunities: 0, companies: 0 };
 let latestOpportunities: OpportunityCardData[] = [];
+let featuredAgencyOpportunities: OpportunityCardData[] = [];
 let categoryTotals: Record<string, number> = {};
 
 // Minimal card projection shared with OpportunityCard (keeps hydration payload small).
@@ -44,6 +46,7 @@ type OpportunityCardData = Pick<
 let homepageCache: {
   stats: { opportunities: number; companies: number };
   latestOpportunities: OpportunityCardData[];
+  featuredAgencyOpportunities: OpportunityCardData[];
   categoryTotals: Record<string, number>;
   expiresAt: number;
 } | null = null;
@@ -56,6 +59,7 @@ try {
   if (homepageCache && homepageCache.expiresAt > now) {
     stats = homepageCache.stats;
     latestOpportunities = homepageCache.latestOpportunities;
+    featuredAgencyOpportunities = homepageCache.featuredAgencyOpportunities;
     categoryTotals = homepageCache.categoryTotals;
   } else {
     const db = getDb(Astro.locals.runtime.env);
@@ -67,6 +71,39 @@ try {
     .where(directoryVisibilityFilters());
 
   stats = { opportunities: oppCount?.count ?? 0, companies: dirCount?.count ?? 0 };
+
+  // Featured direct Philippine VA agency opportunities (graduated active Breezy sources:
+  // 20Four7VA, Sourcefit, Yokly, VALUE Virtual Assistants, Remote Craft)
+  const agencyIdRows = await db.all<{ id: number }>(sql`
+    SELECT id FROM opportunities
+    WHERE is_active = 1
+      AND (source_id LIKE 'breezy:%' OR source_platform IN ('20Four7VA', 'Sourcefit', 'Yokly', 'VALUE Virtual Assistants', 'Remote Craft'))
+    ORDER BY coalesce(posted_at, scraped_at) DESC
+    LIMIT 6
+  `);
+  const agencyIds = agencyIdRows.map((r) => Number(r.id)).filter((n) => Number.isFinite(n));
+
+  featuredAgencyOpportunities = agencyIds.length
+    ? await db
+        .select({
+          id: opportunities.id,
+          title: opportunities.title,
+          company: opportunities.company,
+          type: opportunities.type,
+          sourceUrl: opportunities.sourceUrl,
+          sourcePlatform: opportunities.sourcePlatform,
+          tags: opportunities.tags,
+          category: opportunities.category,
+          experienceLevel: opportunities.experienceLevel,
+          postedAt: opportunities.postedAt,
+          geoScope: opportunities.geoScope,
+          phEligibility: opportunities.phEligibility,
+          geoEvidence: opportunities.geoEvidence,
+        })
+        .from(opportunities)
+        .where(inArray(opportunities.id, agencyIds))
+        .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
+    : [];
 
   // Homepage preview is "Fresh opportunities BY CATEGORY". Previously this
   // fetched a single flat "latest 60 overall" pool, so whenever ingestion
@@ -126,6 +163,7 @@ try {
     homepageCache = {
       stats,
       latestOpportunities,
+      featuredAgencyOpportunities,
       categoryTotals,
       expiresAt: now + HOMEPAGE_CACHE_TTL_MS,
     };
@@ -181,7 +219,17 @@ try {
       </a>
     </div>
 
-    <div class="mt-10 sm:mt-14 flex items-stretch justify-center divide-x divide-ink/[0.08]">
+    <!-- Direct VA Agency Quick Filter Pills -->
+    <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
+      <span class="text-ink/45 font-medium">Direct VA Employers:</span>
+      <a href="/opportunities?platform=20Four7VA" class="px-2.5 py-1 rounded-full bg-surface border border-teal-500/30 text-teal-800 font-semibold hover:bg-teal-50/50 transition-colors shadow-sm">20Four7VA (131)</a>
+      <a href="/opportunities?platform=Sourcefit" class="px-2.5 py-1 rounded-full bg-surface border border-emerald-500/30 text-emerald-800 font-semibold hover:bg-emerald-50/50 transition-colors shadow-sm">Sourcefit (109)</a>
+      <a href="/opportunities?platform=Yokly" class="px-2.5 py-1 rounded-full bg-surface border border-purple-500/30 text-purple-800 font-semibold hover:bg-purple-50/50 transition-colors shadow-sm">Yokly (11)</a>
+      <a href="/opportunities?platform=VALUE+Virtual+Assistants" class="px-2.5 py-1 rounded-full bg-surface border border-blue-500/30 text-blue-800 font-semibold hover:bg-blue-50/50 transition-colors shadow-sm">VALUE VA (9)</a>
+      <a href="/directory" class="px-2.5 py-1 rounded-full bg-ink/[0.04] text-ink/65 font-medium hover:text-ink transition-colors">View all agencies &rarr;</a>
+    </div>
+
+    <div class="mt-8 sm:mt-12 flex items-stretch justify-center divide-x divide-ink/[0.08]">
       <div class="px-6 sm:px-8">
         <div class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink tabular-nums">{stats.opportunities.toLocaleString()}</div>
         <div class="mt-1.5 text-xs font-semibold uppercase tracking-overline text-ink/45">Open roles</div>
@@ -192,6 +240,34 @@ try {
       </div>
     </div>
   </section>
+
+  {featuredAgencyOpportunities.length > 0 && (
+    <section class="mb-14 sm:mb-20">
+      <div class="mb-5 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-800 text-xs font-semibold uppercase tracking-wider mb-2">
+            <span>🇵🇭</span> Direct VA Agency Roles
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">Verified Philippine Agency Openings</h2>
+          <p class="mt-1.5 sm:mt-2 text-sm sm:text-[15px] text-ink/65 max-w-xl">
+            Active roles from vetted Philippine virtual assistant agencies (20Four7VA, Sourcefit, Yokly, etc.). Fast-tracked hiring directly for Filipino talent.
+          </p>
+        </div>
+        <a href="/opportunities?type=VA"
+           class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-hover transition-colors self-start sm:self-auto shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg">
+          Browse all agency roles
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+        {featuredAgencyOpportunities.map((opp) => (
+          <div class="bg-surface rounded-2xl border border-ink/[0.08] shadow-card hover:shadow-soft hover:-translate-y-0.5 transition-all duration-200 p-1">
+            <OpportunityCard opportunity={opp} />
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
 
   <section class="pb-12">
     <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
