@@ -95,7 +95,10 @@ jobs:
             exit 0
           fi
 
-          if git diff --name-only "$BEFORE" "$CURRENT" | grep -qvE '(^docs/|.*\.md$)'; then
+          # Workflow and test-only changes do not alter the Pages bundle or D1
+          # schema. Keep diagnostic releases from invoking production migrations
+          # and the FTS integrity write merely to publish a GitHub workflow.
+          if git diff --name-only "$BEFORE" "$CURRENT" | grep -qvE '(^docs/|.*\.md$|^\.github/workflows/|(^|/)[^/]+\.(test|spec)\.[cm]?[jt]sx?$)'; then
             echo "deployable=true" >> "$GITHUB_OUTPUT"
           else
             echo "deployable=false" >> "$GITHUB_OUTPUT"
