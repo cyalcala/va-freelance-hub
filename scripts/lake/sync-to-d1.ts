@@ -200,6 +200,46 @@ export function buildSyncSql(job: CandidateRow): string {
     `.trim();
 }
 
+/** Builds an idempotent publication receipt statement for the ledger (F1 repair). */
+export function buildPublicationReceiptSql(
+  sourceId: string,
+  count: number,
+  now: string = new Date().toISOString()
+): string {
+  const tickKey = escapeSql(`lake-sync:${now}`);
+  const retryKey = escapeSql(`lake-sync:${now}:${sourceId}:${count}`);
+  const sourceIdEsc = escapeSql(sourceId);
+  return `
+      INSERT INTO source_publication_ledger (
+        source_id, tick_key, retry_key, mode, proposed_count, published_count, published_ids_json, decided_at
+      ) VALUES (
+        ${sourceIdEsc}, ${tickKey}, ${retryKey}, 'unlimited', ${count}, ${count}, '[]', datetime('now')
+      );
+    `.trim();
+}
+
+/** Fetches current production serving inventory snapshot from Cloudflare D1 (F2 repair). */
+export function fetchD1InventorySnapshot(cwd = process.cwd()): InventorySnapshot | null {
+  try {
+    const sql = "SELECT source_id as sourceId, count(*) as count FROM opportunities WHERE is_active = 1 GROUP BY source_id;";
+    const cmd = `bun run --cwd apps/web wrangler d1 execute DB --remote --env production --command "${sql}"`;
+    const output = execSync(cmd, { cwd, encoding: "utf-8", maxBuffer: 50 * 1024 * 1024 });
+    const startIdx = output.indexOf("[");
+    if (startIdx === -1) return null;
+    const parsed = JSON.parse(output.slice(startIdx));
+    const rows = (parsed[0]?.results ?? []) as Array<{ sourceId: string | null; count: number }>;
+    const bySource = rows.map((r) => ({
+      sourceId: r.sourceId || "unattributed",
+      count: Number(r.count || 0),
+    }));
+    const activeTotal = bySource.reduce((sum, r) => sum + r.count, 0);
+    return { activeTotal, bySource };
+  } catch (err: any) {
+    console.warn("  [Inventory] Could not fetch D1 inventory snapshot:", err.message);
+    return null;
+  }
+}
+
 /** Remote D1 rejects SQL BEGIN/COMMIT, so the batch is a sequence of idempotent statements. */
 export function buildBatchSql(statements: string[]): string {
   return statements.join("\n\n");
@@ -233,8 +273,12 @@ export async function syncQualifiedJobsToD1(
   console.log(`\n=== Starting automatic lake sync to Cloudflare D1 (Limit: ${limit}, DryRun: ${dryRun}) ===`);
   const client = getLakeClient();
   const holdAutoApproved = opts.holdAutoApproved === true;
+  const inventory = opts.inventory !== undefined ? opts.inventory : (dryRun ? null : fetchD1InventorySnapshot());
+  if (inventory) {
+    console.log(`  [Inventory] Loaded serving snapshot: ${inventory.activeTotal} active opportunities across ${inventory.bySource.length} sources.`);
+  }
   const tenants = await loadAutoApprovedTenants(client);
-  const planned = planAutoPublishSources(tenants, opts.inventory ?? null, holdAutoApproved);
+  const planned = planAutoPublishSources(tenants, inventory, holdAutoApproved);
   if (holdAutoApproved && tenants.length > 0) {
     console.warn(`  [AutoPublish] Kill switch held ${tenants.length} auto-approved tenant(s).`);
   }
@@ -303,6 +347,7 @@ export async function syncQualifiedJobsToD1(
   // 2. Generate idempotent D1 SQL statements with canonical content hash
   const sqlStatements: string[] = [];
   const syncedIds: number[] = [];
+  const countsBySource = new Map<string, number>();
 
   for (const job of candidates) {
     if (!isSyncableCandidate(job)) {
@@ -311,11 +356,18 @@ export async function syncQualifiedJobsToD1(
     }
     try {
       sqlStatements.push(buildSyncSql(job));
+      countsBySource.set(job.source_id, (countsBySource.get(job.source_id) || 0) + 1);
     } catch (err: any) {
       console.warn(`  [Sync] Skipping row id=${job.id}: ${err.message}`);
       continue;
     }
     syncedIds.push(job.id);
+  }
+
+  // Record publication receipts for all synced sources (F1 repair)
+  const receiptNow = new Date().toISOString();
+  for (const [sourceId, count] of countsBySource.entries()) {
+    sqlStatements.push(buildPublicationReceiptSql(sourceId, count, receiptNow));
   }
 
   if (dryRun) {

@@ -51,6 +51,55 @@ describe("SP-23C publication gateway", () => {
     expect(db.runs.some((run) => run.query.includes("INSERT INTO source_publication_ledger") && run.values.includes("unlimited"))).toBe(true);
   });
 
+  test("blocks an unregistered non-exact-six source from publishing (F4 repair)", async () => {
+    const db = new FakeDatabase({ registry: [null], retry: [null], optOut: [null] });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "unknown:rogue-feed", now: NOW, tickKey: TICK, retryKey: "rogue1", proposedCount: 5,
+      persist: async () => { persisted += 1; return { publishedCount: 5, ids: [1] }; },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, reason: "source is not publication-eligible" });
+    expect(persisted).toBe(0);
+    expect(db.runs.some((run) => run.query.includes("INSERT INTO source_publication_ledger") && run.values.includes("blocked"))).toBe(true);
+  });
+
+  test("blocks an opted-out source even if in exact-six (F4 repair)", async () => {
+    const db = new FakeDatabase({
+      registry: [null],
+      optOut: [{ source_id: "we-work-remotely" }],
+      retry: [null],
+    });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "optout1", proposedCount: 4,
+      persist: async () => { persisted += 1; return { publishedCount: 4, ids: [1] }; },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, reason: "source is not publication-eligible" });
+    expect(persisted).toBe(0);
+  });
+
+  test("blocks an active source whose policy has expired (F4 repair)", async () => {
+    const db = new FakeDatabase({
+      registry: [{
+        sourceId: "breezy:expired-agency",
+        compliance: "conditional",
+        operational: "active",
+        optOut: 0,
+        policyExpiry: "2026-09-01T00:00:00.000Z", // Expired relative to NOW (2026-09-06)
+        canaryMaxNewItemsPerTick: null,
+      }],
+      optOut: [null],
+      retry: [null],
+    });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "breezy:expired-agency", now: NOW, tickKey: TICK, retryKey: "exp1", proposedCount: 3,
+      persist: async () => { persisted += 1; return { publishedCount: 3, ids: [1] }; },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, reason: "source policy has expired" });
+    expect(persisted).toBe(0);
+  });
+
   test("records an empty tick without calling persist", async () => {
     const db = new FakeDatabase({ registry: [null], retry: [null] });
     let persisted = 0;

@@ -1,6 +1,39 @@
 # System Savepoint
 
-## 2026-09-27 - Graduated Sources Visibility Resolution & HRI-01/02/03 Delivery (current)
+## 2026-09-27 — Empirical Manila Daily Flow Measurement, MATH-06A Publication Authority Closure & Canonical Strategy V2 (current)
+
+**Mode:** EXECUTE, Empirical Measurement, Governance Repair (MATH-06A / F1, F2, F4), Strategy Alignment.  
+**Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed and all continue with the bootloader as always. Also ruminate and factor these thoughts and see how we are going and make an action about this, convo from chatgpt session... craft a mathematical strategy about addressing the newly graduated companies from canary why i am not feeling and seeing it on published sites everyday I graduated them last september 24, craft a strategy then address this and resolve this."
+
+**1. Empirical Manila-Day Publication Measurement (D1 Truth, Zero Theater):**
+- Authored `scripts/diagnostics/measure-manila-daily-publications.ts` and test suite `scripts/diagnostics/measure-manila-daily-publications.test.ts` (4 pass / 0 fail).
+- Measured actual first publications in Cloudflare D1 across complete Manila days (UTC+8) from 2026-09-21 to 2026-09-27.
+- Separated **Fresh Flow** ($\le 48\text{ hours}$ between upstream posting and storage) from **Stock Absorption** (historical backlog imported on source graduation):
+  - 2026-09-21 (Mon): 7 fresh jobs, 0 stock (WWR 5, Remote OK 2)
+  - 2026-09-22 (Tue): 11 fresh jobs, 0 stock (WWR 7, RWFA 4)
+  - 2026-09-23 (Wed): 2 fresh jobs, 0 stock (Remote OK 1, WWR 1)
+  - 2026-09-24 (Thu): 57 fresh jobs, 95 stock (Breezy 26 fresh + 95 older stock, WWR 17, RWFA 13, Remote OK 1)
+  - 2026-09-25 (Fri): 27 fresh jobs, 0 stock (WWR 10, RWFA 9, Breezy 6, Remote OK 1, Jobicy 1)
+  - 2026-09-26 (Sat): 17 fresh jobs, 134 stock (122 Canonical Greenhouse backlog from Aug 2026, WWR 9, RWFA 3, Jobicy 2, Himalayas 2, Remote OK 1)
+  - 2026-09-27 (Sun so far): 1 fresh job, 0 stock (WWR 1)
+- **Baseline KPI Summary:**
+  - 7-day average fresh flow: **$17.4 \text{ fresh jobs/day}$**.
+  - Days meeting 100/day floor: **0 / 7** (gap of $-82.6 \text{ jobs/day}$).
+  - Days meeting 150/day stretch: **0 / 7** (gap of $-132.6 \text{ jobs/day}$).
+- **The Physical Explanation:** The 5 graduated Breezy agencies generate $\approx 3–6 \text{ jobs/weekday}$ and $0 \text{ on weekends}$. One agency (Remote Craft) has posted 0 jobs since July 2023. Deduplication (`source_url` unique constraint) correctly prevents re-inserting identical listings. The user did not "feel" them daily because **no new jobs were physically created upstream by those 5 companies**.
+
+**2. Canonical Strategy V2 (`docs/strategies/GRADUATED_SOURCES_VISIBILITY_MATHEMATICAL_STRATEGY.md`):**
+- Reconciled all terminology with canonical Maintainer Bootloader v5.2 definitions (MATH-01 through MATH-13), eliminating stale labels and pseudo-formal theater.
+- Formally framed the physical system around the Three-Level Capacity Funnel ($R_{\text{raw}} \to R_{\text{qualified}} \to R_{\text{published}}$).
+- Proved mathematically that reaching the 100/day floor requires portfolio expansion (MATH-03) to $K^* \ge 106$ active company endpoints using the 138 discovered ATS endpoints in Turso Data Lake.
+
+**3. MATH-06A Publication Authority & Governance Closure (Repairs F1, F2, F4):**
+- **F4 Repair (`packages/scraper/publication-gateway.ts`):** Restricted unregistered publication fallback to canonical legacy sources (`LEGACY_EXACT_SIX_SOURCE_IDS` + legacy pre-SP-01 `unattributed`). Any other unregistered source is blocked (`compliance: "needs_review"`, `operational: "candidate"`, `mode: "blocked"`). Checked `source_opt_outs` before fallback. Enforced `policyExpiry` on active sources. Added unit tests in `packages/scraper/publication-gateway.test.ts` (8 pass / 0 fail).
+- **F1 Repair (`scripts/lake/sync-to-d1.ts`):** Added `buildPublicationReceiptSql` to generate idempotent publication receipts into `source_publication_ledger` for every synced candidate batch. Added unit test in `scripts/lake/lake.test.ts`.
+- **F2 Repair (`scripts/lake/sync-to-d1.ts`):** Added `fetchD1InventorySnapshot()` to query real serving inventory directly from Cloudflare D1 before planning auto-publish sources, ensuring concentration headroom (`shareRoom`) evaluates against live serving stock.
+- **Verification:** 1,576 pass / 0 fail repo-wide (160 test files); `bun run typecheck` clean; `apps/web` Astro build clean.
+
+## 2026-09-27 - Graduated Sources Visibility Resolution & HRI-01/02/03 Delivery
 
 **Mode:** EXECUTE, Mathematical Strategy, D1 Recategorization, UI Visibility Spotlight & HRI Intake.
 **Authorization:** User directive: "Proceed in all this. All proceed. Act in all this. For human intake plan - I want to place all the 488 vetted companies in remotejobs-ph.pages.dev in turso data lake and process all of them accordingly with a focus on australian and dayshift, global va companies and job boards, still place them all so we have additional sources. Also craft a mathematical strategy about addressing the newly graduated companies from canary why i am not feeling and seeing it on published sites everyday I graduated them last september 24, craft a strategy then address this and resolve this."

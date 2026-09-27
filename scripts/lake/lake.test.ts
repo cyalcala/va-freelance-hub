@@ -9,6 +9,7 @@ import {
 } from "./lake-shared";
 import {
   buildSyncSql,
+  buildPublicationReceiptSql,
   escapeSql,
   isSyncableCandidate,
   parseSyncArgs,
@@ -188,6 +189,15 @@ describe("sync-to-d1 SQL builder", () => {
     const sql = buildBatchSql(["INSERT INTO opportunities (title) VALUES ('a');"]);
     expect(sql).not.toContain("BEGIN");
     expect(sql).not.toContain("COMMIT");
+  });
+
+  it("buildPublicationReceiptSql generates idempotent ledger insert with valid keys (F1 repair)", () => {
+    const sql = buildPublicationReceiptSql("breezy:20four7va", 5, "2026-09-27T10:00:00.000Z");
+    expect(sql).toContain("INSERT INTO source_publication_ledger");
+    expect(sql).toContain("'breezy:20four7va'");
+    expect(sql).toContain("'lake-sync:2026-09-27T10:00:00.000Z'");
+    expect(sql).toContain("'lake-sync:2026-09-27T10:00:00.000Z:breezy:20four7va:5'");
+    expect(sql).toContain("5, 5");
   });
 
   it("parseSyncArgs defaults to automatic publish and keeps a kill switch", () => {

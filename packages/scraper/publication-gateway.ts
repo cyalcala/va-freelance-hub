@@ -86,23 +86,53 @@ export function publicationTickKey(channel: string, now: string): string {
   return `${channel}:${now}`;
 }
 
+export const LEGACY_EXACT_SIX_SOURCE_IDS = new Set<string>([
+  "we-work-remotely",
+  "remotive",
+  "real-work-from-anywhere",
+  "remote-ok",
+  "jobicy-admin-support-apac",
+  "jobicy-supporting-apac",
+  "unattributed",
+]);
+
 export async function loadPublicationPolicy(
   db: PublicationDatabase,
   sourceId: string,
 ): Promise<PublicationPolicySnapshot> {
+  const optOutRow = await db.prepare(LOAD_OPT_OUT_SQL).bind(sourceId).first<{ source_id: string }>();
+  const isOptedOut = Boolean(optOutRow);
+
   const row = await db.prepare(LOAD_POLICY_SQL).bind(sourceId).first<PublicationPolicySnapshot>();
   if (!row) {
+    // MATH-06A / F4 repair: only canonical exact-six sources receive the unregistered active fallback.
+    // All other unregistered sources are rejected from public exposure.
+    if (LEGACY_EXACT_SIX_SOURCE_IDS.has(sourceId)) {
+      return {
+        sourceId,
+        compliance: isOptedOut ? "blocked" : "allowed",
+        operational: isOptedOut ? "retired" : "active",
+        optOut: isOptedOut,
+        policyExpiry: null,
+        canaryMaxNewItemsPerTick: null,
+      };
+    }
     return {
       sourceId,
-      compliance: "allowed",
-      operational: "active",
-      optOut: false,
+      compliance: isOptedOut ? "blocked" : "needs_review",
+      operational: isOptedOut ? "retired" : "candidate",
+      optOut: isOptedOut,
       policyExpiry: null,
       canaryMaxNewItemsPerTick: null,
     };
   }
-  const optOut = await db.prepare(LOAD_OPT_OUT_SQL).bind(sourceId).first<{ source_id: string }>();
-  return { ...row, optOut: Boolean(row.optOut) || Boolean(optOut) };
+  const effectiveOptOut = Boolean(row.optOut) || isOptedOut;
+  return {
+    ...row,
+    optOut: effectiveOptOut,
+    compliance: effectiveOptOut ? "blocked" : row.compliance,
+    operational: effectiveOptOut ? "retired" : row.operational,
+  };
 }
 
 function replayedResult(row: { mode: string; publishedCount: number; publishedIdsJson: string }): PublishPublicExposureResult {
@@ -171,9 +201,24 @@ export async function publishPublicExposure(
     return { ok: true, mode: "capped", publishedCount: persisted.publishedCount, ids: persisted.ids, replayed: false };
   }
 
-  if (policy.optOut || (policy.compliance !== "allowed" && policy.compliance !== "conditional") || policy.operational !== "active") {
+  const nowMs = new Date(request.now).getTime();
+  const isExpired = policy.policyExpiry ? nowMs > new Date(policy.policyExpiry).getTime() : false;
+
+  if (
+    policy.optOut ||
+    isExpired ||
+    (policy.compliance !== "allowed" && policy.compliance !== "conditional") ||
+    policy.operational !== "active"
+  ) {
     await insertLedger(db, request, "blocked", 0, []);
-    return { ok: true, mode: "blocked", publishedCount: 0, ids: [], replayed: false, reason: "source is not publication-eligible" };
+    return {
+      ok: true,
+      mode: "blocked",
+      publishedCount: 0,
+      ids: [],
+      replayed: false,
+      reason: isExpired ? "source policy has expired" : "source is not publication-eligible",
+    };
   }
 
   const persisted = request.proposedCount === 0 ? { publishedCount: 0, ids: [] as number[] } : await request.persist(request.proposedCount);
