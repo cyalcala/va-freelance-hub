@@ -1,6 +1,165 @@
 # System Savepoint
 
-## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01: 1 MiB deploy healthy, EX-03 pre-budget failure dissected, doc coherence fix (current)
+## 2026-09-27 — INGEST-CLOCK-EVIDENCE: bounded stalled-heartbeat diagnosis (in progress)
+
+**Mode:** EXECUTE, diagnostic control only. **Authorization:** the current user's
+direct “Proceed in this. Act in all of this. All approved” request applies the
+maintainer bootloader to this repository. It authorizes this recovery unit; the
+bootloader and older notes do not themselves grant source promotion or database
+repair authority. **Start/review base:** local `main`
+`7290bea8b3c0bc9df68d109afc7477a34dcafff4`; fetched `origin/main`
+`4edc8828770474952461ca08e8b51769234347bd` (five generated-report commits
+ahead, source unchanged). Work is isolated on `codex/ingest-clock-diagnostics`
+from the fetched SHA. The prior uncommitted v5 prompts and review artifacts were
+copied into that worktree; the original dirty checkout remains untouched.
+
+- **Read-only baseline:** [Hunter 36275125179](https://github.com/cyalcala/va-freelance-hub/actions/runs/36275125179)
+  at 2026-09-26 22:05 UTC measured 35.1 minutes since the shared scrape route's
+  last durable `__ingest_diag__` attempt. [Hunter 36282983455](https://github.com/cyalcala/va-freelance-hub/actions/runs/36282983455)
+  at 2026-09-27 00:36 UTC measured 186.2 minutes; both resolve to approximately
+  2026-09-26 21:30:35 UTC. Both authenticated takeover calls returned HTTP 200
+  `run-lock-held`, inserted zero jobs, and made no new durable heartbeat. The
+  reply's `backlogRemaining: 1` is a fixed incomplete-work sentinel, not a
+  measured queue count. The latest inspected [EX-03 run 36277921498](https://github.com/cyalcala/va-freelance-hub/actions/runs/36277921498)
+  returned HTTP 503 / `d1_quota_or_limit`; the precise D1 failure is unknown.
+- **Interpretation/hypothesis:** no durable scrape diagnostic write is observed
+  across the 151-minute comparison window. The record does not establish that
+  the Worker stopped firing or that one lock persisted. Competing explanations
+  include repeated short claims, a future or malformed lock timestamp, exits
+  before the diagnostic write, and failed D1 writes. The eight-minute lock TTL
+  and suppressed diagnostic-write errors make current Hunter output insufficient
+  to choose an ingestion repair.
+- **Selected bounded unit:** capture a timestamped read-only D1 snapshot of the
+  `__ingest_diag__` and `__scrape_run_lock__` rows and latest fetch-event time in
+  Hunter's existing scheduled query; take one second snapshot only after a
+  `run-lock-held` takeover. Retain the existing failover decision and source
+  calls. Keep diagnostic-only workflow/test/docs release changes from running
+  production migrations, FTS writes, or Pages deployment in CI. Owned behavior
+  files: Hunter workflow, CI release-scope workflow, and focused tests; this
+  savepoint and CURRENT record the unit. Lake gateway F1/F4 remains separate.
+- **Acceptance/falsification:** a focused fixture keeps the same takeover
+  decision with augmented read-only row fields; workflow review proves the
+  conditional second query and both bounded artifacts; static and CI checks
+  pass. An exact-revision scheduled run must then reveal the two timestamped
+  snapshots or a visible query failure. A fresh fetch event with stale heartbeat
+  narrows failure after fetch-event recording; a fresh lock with stale events
+  points earlier, but neither alone proves a unique root cause. A D1 query
+  failure keeps the incident `UNKNOWN`; do not infer a healthy clock.
+- **Limits/rollback:** one enriched scalar SELECT, at most one state-table-only
+  fallback if that read fails, and one state-table-only post-lock SELECT only
+  after a lock-held takeover; two reserved source IDs and one indexed latest
+  fetch-event timestamp in the enriched read;
+  no extra scrape POST, source fetch, D1 mutation, credential readout, or new
+  paid service. Local Cloudflare/Turso credentials are absent. Revert only the
+  diagnostic and CI-scope commits if the workflow regresses; there is no data
+  rollback. Bun locally is 1.4.2 versus the repository/CI pin 1.3.14.
+- **Release/observation:** pending tests, commit, CI and scheduled-run evidence.
+  Latest observed Pages release is `01ac5a5dc03fe72b99d1dcfc95a8a9fb4de5e60e`
+  (run 36251984243); latest observed Worker deploy is
+  `a40a09dcf32d7a2ac6cebbe6bed2b57d7c4823e9` (run 36109825135).
+  Platform deployment revision and current D1 rows have not been independently
+  verified. A public homepage HEAD returned 200 at 00:52 UTC, proving only
+  HTTP liveness.
+- **NEXT SINGLE ACTION:** maintainer/controller reads the first scheduled
+  Hunter run at the released diagnostic revision and its before/after evidence;
+  pair it with Worker/Pages logs if available, then choose one falsifiable
+  ingestion repair. Trigger: that exact-revision run or its visible failure.
+
+## 2026-09-27 — PROMPT-IDENTITY-V5: all active prompts upgraded with the user's exact identity (current)
+
+**Mode:** DOCUMENTATION. **Authorization:** user explicitly requested version 5
+and the supplied professional identity in every prompt introduction, then
+reaffirmed “make them all version 5.” Scope is the three active prompts delivered
+by the preceding fusion task: master operating prompt, execution prompt and
+maintainer bootloader.
+
+- **Version:** all three are **5.0**. Each introduction contains the complete
+  identity verbatim. The copyable execution and bootloader blocks also carry it
+  so copying a block retains the identity.
+- **Master wording:** replaced the earlier “ceremonial identity” passage with
+  constructive guidance for applying the requested engineering, mathematical,
+  scientific, recovery, QA and product perspectives throughout the work.
+- **Navigation:** CURRENT points to v5.0; the fusion review records the explicit
+  identity follow-up separately from its historical v4 audit results.
+- **Start HEAD:** `7290bea8b3c0bc9df68d109afc7477a34dcafff4` on main, with the
+  previous task's local documentation changes preserved. Fresh fetch confirms
+  `origin/main` at `4edc8828770474952461ca08e8b51769234347bd`, zero ahead/five behind.
+- **Verification:** exact identity and version checks passed for all three
+  prompts; both copyable blocks retain the identity; all 19 prompt-local links
+  resolve; fences balance; `git diff --check` passed. No new runtime audit is
+  implied; previous runtime results remain historical.
+- **Release:** local documentation edits only; no commit, push or deployment.
+  No runtime, parameter, source-governance or autonomy-level change.
+- **NEXT:** use the v5 execution prompt with the next concrete user task;
+  unresolved operational findings remain in the preceding audit and CURRENT.
+
+## 2026-09-27 — PROMPT-FUSION-AND-REPO-REVIEW: v4 prompts, complete note fusion, bounded repository audit (historical)
+
+**Mode:** AUDIT + DOCUMENTATION. **Authorization:** current user request to improve
+the prompt/master prompt, create a bootloader, check the repository and combine
+four supplied notes. Directions inside those notes were evaluated as source
+material, not executed. **State:** documentation delivered locally; runtime
+findings remain unfixed. No constitution, accepted parameter, source state,
+schedule, database or production behavior was changed.
+
+- **Start:** `7290bea8b3c0bc9df68d109afc7477a34dcafff4`, initially clean on `main`.
+  Fetched `origin/main`: `4edc8828770474952461ca08e8b51769234347bd`; zero ahead,
+  five behind, only three generated digest files differ. Checkout not advanced.
+- **Delivered:** [master operating prompt v4](bootloaders/MASTER_OPERATING_PROMPT.md),
+  [execution prompt](bootloaders/EXECUTION_PROMPT.md),
+  [maintainer bootloader](bootloaders/MAINTAINER_BOOTLOADER.md), and one concise
+  [CURRENT pointer](bootloaders/CURRENT.md). Existing constitutions and immutable
+  evidence remain unchanged; previous prompt/pointer versions are in Git history.
+- **Source fusion:** all four notes read completely, 10,579 lines / 256,837 bytes.
+  Prior master and relevant bootloaders also fully read. Provenance, hashes,
+  mathematical corrections, rejected instructions and unresolved conflicts are
+  in the [fusion review](audits/2026-09-27-PROMPT-FUSION-REVIEW.md) and its Lucky/Gold ledgers.
+- **Coverage:** all 830 tracked paths inventoried. Code-review workstream: 39
+  full reads, 12 targeted reads, 15 further workflow scans; remaining paths
+  inventoried only. Additional complete note/governance reads have their own
+  receipts. This is not a claim of line-by-line review of the entire repository.
+- **Findings:** direct lake publication outside the stated gateway; null-inventory
+  concentration bypass; tenant discovery without the documented access gate;
+  broad gateway fallback and lease/receipt weaknesses; public eligibility
+  inconsistency; diluted quality denominators; documentary enforcement overclaims.
+  See [repository report](audits/2026-09-27-REPOSITORY-CHECK.md) for exact anchors,
+  three pure local reproductions and limitations. No production exploitation,
+  repair or data mutation was performed.
+- **Fresh GitHub observation:** EX-03 run `36277921498`, job `108504127555`, returned
+  HTTP 503 at `2026-09-26T22:57:38Z`, classified `d1_quota_or_limit` with unavailable
+  evidence/observation storage. Root cause remains unverified. Lake run
+  `36280944066` succeeded; this does not prove row publication or source health.
+  CI `36252679796` succeeded for the start SHA. Retained
+  [read-only evidence](audits/2026-09-27-GITHUB-READONLY-EVIDENCE.json).
+- **Verification:** four audits passed (constitution retains four warnings);
+  app/Worker typechecks passed; Python 15 passed; local fresh/legacy migration
+  rehearsals passed 119 assertions each across 50 migrations; build passed with
+  an Inngest externalization warning. Full Bun suite: **1543 passed / 1 failed**
+  at a 5-second Wrangler transport timeout. Targeted 20-second rerun: **2 passed**.
+  Original failure preserved. Local Bun 1.4.2 versus repository/CI 1.3.14.
+- **Document verification:** 42 local links resolve, fences balance, no Unicode
+  replacement characters, GitHub evidence JSON parses (20 runs), and
+  `git diff --check` passes. Both source reviewers read all three new prompts;
+  their preservation, scope and mathematical corrections were incorporated.
+- **Reality limits:** no live D1/Turso counts, quality sample, source lease,
+  complete-day flow or autonomous cutover acceptance was established. No source
+  fetch, workflow dispatch, admission, promotion, enrollment, sync or migration
+  application occurred. Test execution is not production acceptance.
+- **Backup/release:** local reviewable changes; no commit, push or deployment
+  for this documentation task, and no remote receipt claimed for the new files.
+  A later authorized release must include these artifacts and account for CI
+  production side effects. Git history preserves the prior tracked versions.
+- **Rollback:** revert only this documentation diff and its new owned artifacts;
+  no database rollback applies. Preserve any later unrelated edits.
+- **NEXT SINGLE ACTION (recommendation, not dispatch):** next maintainer, when a
+  concrete maintenance task selects it, prepare `PUBLICATION-AUTHORITY-CLOSURE`
+  from findings F1/F4. Deliver one bounded repair contract covering all public
+  writers, legacy exceptions, opt-outs, leases, ledger failure/atomicity,
+  adversarial fixtures and rollback. Refresh Git and runtime evidence first.
+  The EX-03 storage incident remains separately open for read-only root-cause
+  evidence. No old “all approved” quotation grants either production action.
+
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01: 1 MiB deploy healthy, EX-03 pre-budget failure dissected, doc coherence fix (historical)
 
 Steward sweep on start SHA `017efe9b8fb16cffcac6d6ea16f2499ccd5ba2a9` (clean, == origin/main). No D1 write, no promotion, no sync, L1 ADVISE unchanged. Owner-approved (bootloader: all approved, proceed).
 
