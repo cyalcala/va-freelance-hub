@@ -2,6 +2,27 @@
 
 ## Active bounded unit
 
+HRI-04 Batch 1 / MATH-03 measurement slice delivered and deployed on 2026-09-27
+(commit `254050d`, CI run `36292899429` success including Pages deploy).
+
+1. **First-publication loss funnel (`scripts/diagnostics/measure-first-publication-funnel.ts`):**
+   - Empirical r1 (qualification) -> r2 (authorization) -> r3 (fresh publication) -> r4
+     (public consistency) per source, composite yield eta, capacity estimator
+     J_hat = sum(lambda * eta), fleet sizing P50/P90. 5-test suite green.
+   - Live D1 observation query is implemented but NOT executed from this box
+     (no Cloudflare credentials locally); fleet numbers remain estimates until run.
+2. **Focused VA cohort runner (`scripts/lake/ingest-focused-va-cohort.ts`):**
+   - 12 high-intent ATS seeds (Australian/Dayshift + Global VA) wired to
+     `runBulkAtsDiscovery` with 1500ms polite pacing. NOT executed (would live-fetch
+     and lake-write); awaiting authorized run with lake credentials.
+3. **Hardening in the same slice:**
+   - Workable widget API adapter fix (v1 widget endpoint + extractor); live response
+     shape unverified — fail-closed (null on mismatch), needs probe evidence.
+   - Deterministic publication-receipt timestamp (`decided_at` = batch time).
+   - Bad-outcomes shadow gate before canary promotion in remotecom promotion script.
+4. **Verification:** 171 pass lake+diagnostics locally; guardrails clean; parameters
+   100% parity; constitution pass (4 known residuals); typecheck clean; full CI green.
+
 MATH-06A (Publication Authority & Governance Closure — Findings F1, F2, F4) and Empirical
 Manila-Day Publication Measurement completed and verified on 2026-09-27.
 
@@ -59,5 +80,8 @@ portfolio -> adaptive control -> measured operation with drift and recovery chec
 - Current active D1 stock: 1,002 opportunities (WWR 322, RWFA 158, 20Four7VA 131, Canonical 122, Sourcefit 109, Remote OK 55, Jobicy 55, others 50).
 - Current Turso Lake discovery: 238 ATS endpoints (140 shadow_monitor, 97 auto_rejected, 1 auto_approved).
 
-**Follow-on unit:** HRI-04 / SOURCING-PORTFOLIO-SCALING (MATH-03).
-Enroll Batch 1 high-intent candidates from `lake_ats_discovery` (63 Philippine & Australian dedicated agency endpoints) into shadow observation and canary graduation to bridge the -82.6 jobs/day gap toward the 100/day floor.
+**Follow-on unit:** HRI-04 Batch 1 live execution (MATH-03).
+Run `bun run lake:focused-va-cohort` with lake credentials (authorized session),
+then `bun run measure:funnel` against production D1 for 7 complete Manila days to
+replace fleet estimates with measured eta per cohort. Bridges the -82.6 jobs/day
+gap toward the 100/day floor.

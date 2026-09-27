@@ -1,6 +1,39 @@
 # System Savepoint
 
-## 2026-09-27 — Empirical Manila Daily Flow Measurement, MATH-06A Publication Authority Closure & Canonical Strategy V2 (current)
+## 2026-09-27 — HRI-04 Batch 1 measurement slice delivered & deployed (current)
+
+**Mode:** EXECUTE (HRI-04 / MATH-03 portfolio scaling, local-only slice).
+**Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed in all this. Act in all this. All approved."
+**Start HEAD:** `d994ce4e8cbd4429d3a39d284c3b3a973fafaa33` (== `origin/main`, clean except
+4 modified + 4 untracked in-progress files, all preserved into this unit).
+**Commit:** `254050d` pushed to `origin/main`; **CI run `36292899429` success**
+(validate + D1 migrations + Pages deploy all green).
+
+**Delivered (9 files, +672/-13):**
+- `scripts/diagnostics/measure-first-publication-funnel.ts` (+ new test, 5 pass):
+  empirical r1->r2->r3->r4 funnel, composite yield eta, J_hat capacity estimator,
+  P50/P90 fleet sizing, markdown audit renderer. Live D1 query implemented but NOT
+  executed (no Cloudflare creds locally) — fleet numbers are estimates, not measurements.
+- `scripts/lake/ingest-focused-va-cohort.ts`: 12 high-intent ATS seeds
+  (Hunt St, RocketAMS, Coconut VA, CrewBloom, Hello Rache, Pearl Talent, Pineapple
+  Staffing, Athena, Atticus, Remote.com, MultiplyMii, Connext) via
+  `runBulkAtsDiscovery` @1500ms pacing. NOT executed (would live-fetch + lake-write).
+- `scripts/lake/inspect-lake-ats.ts`: intake/ATS status inspector (read-only SQL).
+- Hardening: Workable v1-widget adapter fix (live shape UNVERIFIED, fail-closed);
+  deterministic receipt `decided_at`; bad-outcomes shadow gate before canary promotion.
+- `package.json`: `lake:focused-va-cohort` + `measure:funnel` scripts.
+
+**Verification:** 171 pass / 0 fail (lake+diagnostics); guardrails clean; parameters
+100% parity; constitution pass (4 known residual warnings, unchanged); typecheck clean;
+full CI green. No D1 writes, no sync, no promotion, no lake mutation from this box.
+Runtime drift: local Bun 1.4.2 vs repo/CI pin 1.3.14 (standing).
+
+**NEXT SINGLE ACTION:** Authorized session with lake + Cloudflare creds runs
+`bun run lake:focused-va-cohort` then `bun run measure:funnel` over 7 complete Manila
+days; owner/controller: next maintainer; trigger: credentialed session. Then shadow
+admission for discovered tenants per ADR-007.
+
+## 2026-09-27 — Empirical Manila Daily Flow Measurement, MATH-06A Publication Authority Closure & Canonical Strategy V2
 
 **Mode:** EXECUTE, Empirical Measurement, Governance Repair (MATH-06A / F1, F2, F4), Strategy Alignment.  
 **Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed and all continue with the bootloader as always. Also ruminate and factor these thoughts and see how we are going and make an action about this, convo from chatgpt session... craft a mathematical strategy about addressing the newly graduated companies from canary why i am not feeling and seeing it on published sites everyday I graduated them last september 24, craft a strategy then address this and resolve this."
