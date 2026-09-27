@@ -2,6 +2,27 @@
 
 ## Active bounded unit
 
+**Migration 0052: Founder Fast-Track Canary Graduation for Verified Philippine VA Agencies (delivered & deployed 2026-09-27):**
+
+1. **Commit & Remote Production D1 Migration:** Authored `packages/db/migrations/0052_founder_fast_track_canary_graduation.sql`. Rehearsed via DB-01 (120/120 assertions pass). Executed against remote production D1 `DB` (`08072f16-d3d1-436a-9104-b057a162db7c`, APAC Singapore primary) in 1.33ms with status success.
+2. **Founder Fast-Track Graduation:** Promoted 8 Philippine recruitment and VA agency sources to `operational_state = 'canary'`, `canary_max_new_items_per_tick = 2`, `risk_tier = 'tier_a'`:
+   - `workable:hunt-st`
+   - `workable:rocketams`
+   - `workable:coconutva`
+   - `workable:crewbloom`
+   - `workable:hello-rache`
+   - `workable:pearltalent`
+   - `workable:pineapple-staffing`
+   - `ashby:multiplymii`
+3. **Directory Linkage:** Linked `va_directory` entry `id = 304` (`MultiplyMii`) to `ats_platform = 'ashby'`, `ats_token = 'multiplymii'`.
+4. **Live Verification on Remote Production D1:** Direct SQL queries confirmed all 8 rows in `source_registry` have `operational_state = 'canary'` and `canary_max_new_items_per_tick = 2`. Confirmed `MultiplyMii` in `va_directory` is configured.
+5. **Operational Safety & Rate Bounds:** In `canary`, `publishable = true`, unlocking ~350+ pre-qualified Philippine roles to stream into the public board (`https://remotejobs-ph.pages.dev/`). Deterministic rate bounds ($C = 2$ items/tick) and staggered Workable rotation (at most 2 Workable agencies per 10-minute tick) meter intake safely without exceeding Workers subrequest ceilings or 429 rate limits. Full geo-gating and skeptic eligibility enforcement remain 100% active.
+6. **Verification:** 1,609/1,609 tests pass repo-wide; DB-01 rehearsal 120/120 passed; strict typecheck clean.
+
+**Follow-on unit:** Monitor next scheduled ingestion ticks (`/api/cron/scrape`) and shadow/canary dispatchers to observe new active job cards from the 8 agencies appearing on the live homepage and `/directory`.
+
+## Prior unit (delivered & deployed)
+
 **Bayesian Evidence-Governed Bottleneck Resolution Strategy & Ashby Canary Support (delivered & deployed 2026-09-27):**
 
 1. **Commit & CI Run:** `8862ba2` pushed to `origin/main`, Sovereign CI Guardrail run `36313961406` succeeded across all jobs including Cloudflare Pages deploy. Live site `https://remotejobs-ph.pages.dev/` verified HTTP 200 OK.

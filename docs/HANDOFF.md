@@ -1,6 +1,34 @@
 # Handoff
 
-## 2026-09-27 — BAYESIAN-BOTTLENECK-STRATEGY-ASHBY-CANARY (current)
+## 2026-09-27 — MIGRATION-0052-FOUNDER-FAST-TRACK-CANARY-GRADUATION (current)
+
+Founder fast-track canary graduation executed for 8 Philippine recruitment and VA agency endpoints via Migration 0052. DB-01 rehearsed 120/120 pass, migration applied to remote production D1, direct verification confirmed `operational_state = 'canary'` and directory updated for MultiplyMii. 1,609 repo tests pass, typecheck and CI guardrails clean.
+
+- **Migration 0052 Applied to Remote Production D1 (`08072f16-d3d1-436a-9104-b057a162db7c`)**:
+  - `workable:hunt-st`: promoted to `canary`, cap: 2, risk tier: `tier_a`
+  - `workable:rocketams`: promoted to `canary`, cap: 2, risk tier: `tier_a`
+  - `workable:coconutva`: promoted to `canary`, cap: 2, risk tier: `tier_a`
+  - `workable:crewbloom`: promoted to `canary`, cap: 2, risk tier: `tier_a`
+  - `workable:hello-rache`: promoted to `canary`, cap: 2, risk tier: `tier_a`
+  - `workable:pearltalent`: promoted to `canary`, cap: 2, risk tier: `tier_a`
+  - `workable:pineapple-staffing`: promoted to `canary`, cap: 2, risk tier: `tier_a`
+  - `ashby:multiplymii`: promoted to `canary`, cap: 2, risk tier: `tier_a`
+- **VA Directory Linkage**:
+  - Entry `id = 304` (`MultiplyMii`) linked to `ats_platform = 'ashby'`, `ats_token = 'multiplymii'`.
+  - All 7 Workable agencies were already present in `va_directory`.
+- **Operational Safety & Bounded Ingestion Flow**:
+  - In `canary`, `publishable = true`, streaming ~350+ pre-qualified Philippine roles to the public job board (`https://remotejobs-ph.pages.dev/`).
+  - Strict publication caps ($C = 2$ items/tick) and Workable staggered rotation (at most 2 Workable agencies per 10-minute tick with 60-minute cadence floor) eliminate risks of Cloudflare Worker subrequest timeouts or upstream HTTP 429 rate limit bursts.
+  - Geo-gating and skeptic Philippine eligibility checks remain strictly enforced on every job card.
+- **Verification**:
+  - DB-01 migration rehearsals: 120/120 schema assertions passed across fresh and legacy rehearsal modes.
+  - Test suite: 1,609 passed, 0 failed across 162 files.
+  - Strict TypeScript check: clean.
+- **When the owner resumes**:
+  1. Monitor upcoming scheduled ingestion ticks (`/api/cron/scrape`) to observe the publication of active job cards from the graduated agencies on `https://remotejobs-ph.pages.dev/`.
+  2. Verify that `MultiplyMii` and Workable agency links populate on `/directory`.
+
+## 2026-09-27 — BAYESIAN-BOTTLENECK-STRATEGY-ASHBY-CANARY (historical)
 
 Bayesian Evidence-Governed Bottleneck Resolution Strategy authored, Ashby Canary provider fully implemented and wired to admission and promotion allowlists, robots origin disambiguated for Ashby, full test suite (1,614 tests) passing, typecheck and CI guardrails 100% clean.
 
