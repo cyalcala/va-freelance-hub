@@ -1,6 +1,16 @@
 # Implementation Status
 
-## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (current)
+## 2026-09-27 — PRODUCTION-OUTAGE-RESOLVED-MATH04-GLM-RECONCILIATION (current)
+
+- **What this is**: Resolved production live homepage outage (HTTP 503 "Live data is temporarily unavailable" on `https://remotejobs-ph.pages.dev`), delivered MATH-04 persistent host backoff for shadow dispatch, and reconciled GLM review findings on the first-publication loss funnel and daily Manila publication diagnostics.
+- **Root Cause & Outage Fix**: Cloudflare D1 strictly enforces `SQLITE_LIMIT_COMPOUND_SELECT = 5` in production. Local Bun SQLite uses the standard SQLite default (500), masking this in local tests. `apps/web/src/lib/homepage-data.ts` attempted to run 9 `UNION ALL` subqueries for category previews, failing with SQLite code 7500 `too many terms in compound SELECT: SQLITE_ERROR` and triggering the 503 error barrier. Replaced with a single-statement window query partitioned by category and bounded to the 9 UI categories (0 compound SELECTs, exactly 12 query binds). Bounded previews return at most 54 IDs, allowing the second query to fetch card projections with 57 parameters (safely below D1's 100-variable ceiling).
+- **Live Verification**: Deployed Cloudflare Pages build `7338f1f1` (commit `2b13a87`). Live endpoints verified returning HTTP 200: `/` (206,975 bytes, `hasUnavailable: false`), `/opportunities` (90,700 bytes), `/directory` (82,949 bytes), `/categories/tech` (84,442 bytes), `/categories/customer-service` (84,065 bytes), `/sitemap.xml` (186,731 bytes).
+- **MATH-04 Persistent Host Backoff**: Delivered migration `packages/db/migrations/0051_shadow_host_backoff.sql` and applied to production D1 via `wrangler d1 migrations apply DB --remote`. Added `packages/scraper/shadow-host-backoff.ts` and `apps/web/src/lib/shadow-host-backoff-store.ts` supporting RFC 9110 `Retry-After` parsing and a 24-hour default cooldown. Shadow dispatcher persists host holds across hourly ticks; skipped probes record no adverse observation rows, preventing self-inflicted 429 storms from resetting the 8-day qualifying window.
+- **GLM Review Findings Reconciled**: Updated `scripts/diagnostics/measure-first-publication-funnel.ts` and `scripts/diagnostics/measure-manila-daily-publications.ts` to strictly measure complete 7-day Asia/Manila windows, separate current D1 storage snapshots from verified first-publication flow, and report unmeasured populations honestly as `null` / `UNKNOWN`.
+- **Verification**: 1,605/1,605 tests pass across 161 test files; strict typecheck clean; parameter parity (100%), guardrails, orchestrator, and constitution audits clean; DB-01 rehearsal 120/120 assertions pass. Sovereign CI Guardrail run `36311670715` succeeded across all jobs.
+- **Commits**: `2b13a87`, `9295e8c`, `2eb7e69` on `origin/main`.
+
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (historical)
 
 - **What this is**: Post-deploy observation of the 1 MiB shadow budget plus a one-line doc coherence fix (`ACCEPTED_PARAMETERS.yaml` comment: Canonical board 524312 → measured 568371). No behavior change.
 - **Verification**: CI `36252115762` green; live board and fresh view 200; 1544/0 tests across 151 files; typecheck, guardrails, parameters (100% parity), constitution audits clean.

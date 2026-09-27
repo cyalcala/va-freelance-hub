@@ -50,7 +50,7 @@ Do not substitute this count for whole-project progress.
 | MATH-01 | Dynamic source allocation | OPEN — reward/decision data not validated | MATH-00, 03, 04, 06, 08, 12; 02 capacity envelope |
 | MATH-02 | Queueing and backpressure | OPEN — pure helpers; live telemetry unverified | MATH-00, 06, 12 |
 | MATH-03 | Marginal source portfolio coverage | OPEN — overlap/cost baseline required | MATH-00, 05, 06, 09; 08 limits characterized |
-| MATH-04 | Arrival modeling and adaptive polling | OPEN — live 429 evidence collected 2026-09-27; host-backoff unit next | MATH-00, 02, 06, 12 |
+| MATH-04 | Arrival modeling and adaptive polling | DELIVERED (cooldown) — persistent host backoff migration 0051 deployed; live streak accumulation active | MATH-00, 02, 06, 12 |
 | MATH-05 | Qualification and calibration | OPEN — denominator defect identified | MATH-00; controlled evaluation before publication |
 | MATH-06 | Publication states and guarded transitions | OPEN — concrete control defects identified | MATH-00 contract/evidence mapping; incident containment can precede complete telemetry |
 | MATH-07 | Reservoir value and freshness decay | OPEN — empirical survival/cost data missing | MATH-00, 02, 05, 06, 09 |
@@ -166,9 +166,14 @@ system-wide dataset before any repair can begin.
   qualification, stranding ~300 qualified lake jobs (hunt-st alone 146 at
   lambda ~= 20.9 raw/day). Shadow dispatcher has no per-host backoff; the bulk
   discovery path's `rateLimitedHosts` shielding is the in-repo precedent.
-  Next bounded unit: per-host skip-shielding + next-eligible extension in
-  `shadow-dispatch` (skipped probes write no observation row), acceptance =
-  8 clean days reached and canary promotion for the 6 sources.
+- **Delivery (2026-09-27, commit `9295e8c`):** Implemented persistent host cooldown
+  across hourly shadow ticks. Added migration `0051_shadow_host_backoff.sql` and
+  applied to remote production D1 (`wrangler d1 migrations apply DB --remote`).
+  Added `packages/scraper/shadow-host-backoff.ts` and `apps/web/src/lib/shadow-host-backoff-store.ts`
+  implementing RFC 9110 Retry-After parsing and 24h default cooldown. Integrated into
+  `apps/web/src/pages/api/cron/shadow-dispatch.ts`; skipped probes write no adverse
+  observation rows, preventing self-inflicted 429 storms from resetting qualifying windows.
+  Verified by 1,605 monorepo tests and CI run `36311670715`.
 
 ### MATH-05 — Qualification, selective prediction and calibration
 

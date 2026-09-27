@@ -1,6 +1,20 @@
 # Handoff
 
-## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (current)
+## 2026-09-27 — PRODUCTION-OUTAGE-RESOLVED-MATH04-GLM-RECONCILIATION (current)
+
+Production outage fully resolved, MATH-04 persistent host cooldown delivered and deployed to production D1, GLM review findings reconciled with calibrated measurements, and all work verified and backed up to GitHub.
+
+- **Live Site Status**: Healthy. `https://remotejobs-ph.pages.dev/` returns HTTP 200 with 206,975 bytes of live active job cards (`hasUnavailable: false`). All secondary pages (`/opportunities`, `/directory`, `/categories/tech`, `/categories/customer-service`, `/sitemap.xml`) verified live HTTP 200.
+- **D1 Compound SELECT Ceiling Constraint**: Cloudflare D1 strictly enforces `SQLITE_LIMIT_COMPOUND_SELECT = 5`. Local Bun SQLite does not enforce this. Never use compound `UNION ALL` across $> 5$ dynamic/category lists on D1; use partitioned window queries with bounded `LIMIT` instead.
+- **MATH-04 Persistent Cooldown**: Migration `0051_shadow_host_backoff.sql` applied to production D1. Shadow dispatcher persists and checks host cooldowns across hourly invocations, preventing self-inflicted 429 bursts from resetting the 8-day qualifying window.
+- **GLM Reconciliation**: Daily Manila publication diagnostics strictly measure complete 7-day windows and separate current inventory from fresh flow. Unmeasured populations are reported honestly as `null` / `UNKNOWN`.
+- **Verification**: 1,605/1,605 tests pass across 161 files; strict typecheck clean; parameter parity 100%; CI run `36311670715` succeeded.
+- **When the owner resumes**:
+  1. Monitor live shadow-dispatch runs at UTC minute 20 to verify persistent host cooldown in production.
+  2. Observe clean streak accumulation across Workable shadow sources toward canary graduation.
+  3. Wire Ashby provider support for `ashby:multiplymii` in `source-admit` and `source-promote`.
+
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (historical)
 
 1 MiB budget deployed and healthy. One stale comment fixed. No promotion, no sync, no D1 write.
 

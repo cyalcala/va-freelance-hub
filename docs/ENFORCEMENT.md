@@ -27,7 +27,7 @@ document_metadata:
 | **No Applicant Intermediary / Resumes** | Architecture restriction; zero form endpoints in web app | `apps/web/src/pages/` (routes are read-only search & detail) | **ENFORCED — RUNTIME** | Static route analysis |
 | **Band 4 Prohibited Target Block** | Registry validation & hard-coded pause in policy resolver | `packages/scraper/policy-resolver.ts: fallbackPolicy` | **ENFORCED — TESTED** | Tested in `policy-resolver.test.ts` |
 | **Robots.txt Exclusion Compliance** | Live robots parser & cache check before any fetch | `packages/scraper/robotsGate.ts`, `packages/scraper/robots.ts` | **ENFORCED — TESTED** | Tested in `robotsGate.test.ts` |
-| **Same-Host 429 Backoff & Skip** | Host registration in memory set; skips remaining probes in tick | `packages/scraper/shadow-dispatcher.ts: rateLimitedHosts` | **ENFORCED — TESTED** | Tested in `shadow-dispatcher.test.ts` |
+| **Same-Host 429 Backoff & Skip** | Host registration in memory set & persistent D1 backoff table (`shadow_host_backoff`); skips remaining probes in tick and holds cooldown across ticks | `packages/scraper/shadow-dispatcher.ts`, `packages/scraper/shadow-host-backoff.ts`, `packages/db/migrations/0051_shadow_host_backoff.sql` | **ENFORCED — TESTED** | Tested in `shadow-dispatcher.test.ts`, `shadow-host-backoff.test.ts` |
 
 ---
 

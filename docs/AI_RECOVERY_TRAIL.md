@@ -1,6 +1,25 @@
 # AI Recovery Trail
 
-## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (current)
+## 2026-09-27 — PRODUCTION-OUTAGE-RESOLVED-MATH04-GLM-RECONCILIATION (current)
+
+Resolved live production website outage, delivered MATH-04 persistent host cooldown, reconciled GLM review findings, and backed up to GitHub.
+
+- **Production Outage Fix (`https://remotejobs-ph.pages.dev`)**:
+  - Live homepage was returning HTTP 503 "Live data is temporarily unavailable".
+  - Diagnosed root cause: Cloudflare D1 strictly enforces `SQLITE_LIMIT_COMPOUND_SELECT = 5`. `apps/web/src/lib/homepage-data.ts` attempted to run 9 `UNION ALL` subqueries for category previews, failing with SQLite code 7500 `too many terms in compound SELECT: SQLITE_ERROR`.
+  - Replaced with a single-statement window query partitioned by category and restricted to `inArray(category, allowedCategories)` using `category_active_effective_posted_idx` (0 compound SELECTs, 12 query binds). Previews return at most 54 IDs, allowing the second query to fetch card projections with 57 parameters (safely below D1's 100-variable ceiling).
+  - Deployed Pages build `7338f1f1` (commit `2b13a87`). Verified live HTTP 200 on `/` (206,975 bytes, `hasUnavailable: false`), `/opportunities`, `/directory`, `/categories/tech`, `/categories/customer-service`, and `/sitemap.xml`.
+- **MATH-04 Persistent Host Backoff**:
+  - Migration `packages/db/migrations/0051_shadow_host_backoff.sql` created and applied to remote production D1 via `wrangler d1 migrations apply DB --remote`.
+  - Added `packages/scraper/shadow-host-backoff.ts` and `apps/web/src/lib/shadow-host-backoff-store.ts` implementing RFC 9110 Retry-After parsing and a 24-hour default cooldown.
+  - Shadow dispatcher checks `shadow_host_backoff` before probing candidates sharing a host, respecting Retry-After headers or falling back to the 24-hour default. Shielded/skipped probes write no adverse observation rows, preventing self-inflicted 429 rate-limit storms from resetting qualifying windows.
+- **GLM Review Reconciliation**:
+  - Refactored `measure-first-publication-funnel.ts` and `measure-manila-daily-publications.ts` to strictly measure complete 7-day Manila windows.
+  - Separated current storage snapshots from verified first-publication flow; unmeasured populations, conversion ratios without samples (0/0), and unmeasured fleet sizes are reported honestly as `null` / `UNKNOWN`.
+  - 100% test coverage updated and passing for both diagnostic suites.
+- **Verification**: 1,605 passed, 0 failed across 161 test files; strict typecheck clean; CI Audits (guardrails, parameters parity 100%, orchestrator, constitution) all clean; DB-01 rehearsal 120/120 assertions pass. Deployed and verified in Sovereign CI Guardrail run `36311670715`. Commits `2b13a87`, `9295e8c`, `2eb7e69` on `origin/main`.
+
+## 2026-09-26 — POST-DEPLOY-SHADOW-WATCH-01 (historical)
 
 1 MiB deploy verified healthy from a credential-less box: CI green, live 200s, 1544/0 tests, all audits clean. The 13:12Z EX-03 red is dissected as a pre-budget failure (myjewellery 24-byte-class oversize at 512 KiB + Workable 429, Jev FAIL_CONSERVATIVE 0.72) whose oversize mode retires under 1 MiB. Fixed one stale parameter comment. No D1 write, no promotion, L1 unchanged. Next EX-03 tick 16:23Z unobserved; remotecom gate 18:20:56Z pending.
 

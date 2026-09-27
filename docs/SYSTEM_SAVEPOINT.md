@@ -6,8 +6,10 @@
 **Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed in the bootloader. Act on all this. All approved. Priority to fix - the website seems dead, https://remotejobs-ph.pages.dev, showing live data unaveilable error, please resolve this. note - study and ruminate what to do on glmfindings as well and resolve pending problems, context1 - continue what codex started".
 **Start HEAD:** `016a9bffc0f3801e874e833fb7e9984a070ca1b2`.
 **Delivery Commits:**
-- `ceacdec`: `fix(web): use bounded window function avoiding compound SELECT limit on homepage previews`
-- `2d9b942`: `feat(math-04): persistent host cooldown for shadow dispatch and calibrated funnel measurement`
+- `2b13a87`: `fix(web): use bounded window function avoiding compound SELECT limit on homepage previews`
+- `9295e8c`: `feat(math-04): persistent host cooldown for shadow dispatch and calibrated funnel measurement`
+- `2eb7e69`: `docs: record production outage repair, MATH-04 delivery, and GLM reconciliation checkpoint`
+- Sovereign CI Guardrail run `36311670715` (success across all jobs).
 
 **1. Live Homepage Outage Resolution (`https://remotejobs-ph.pages.dev`):**
 - **Incident Root Cause:** `apps/web/src/lib/homepage-data.ts` attempted to run 9 `UNION ALL` subqueries for category previews. Cloudflare D1 strictly enforces `SQLITE_LIMIT_COMPOUND_SELECT = 5` in production. Any compound SELECT with 6+ terms fails with Cloudflare error code 7500: `too many terms in compound SELECT: SQLITE_ERROR`, triggering `dataUnavailable = true` and HTTP 503.
