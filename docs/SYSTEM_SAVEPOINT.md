@@ -21,7 +21,9 @@
 
 **Verification (VERIFIED_LOCAL at `4066ec4` + unit):** `bun test packages/scraper/publication-gateway.test.ts` 10/10; publication quartet 17/17; shadow/extractor quartet 91/91; full `bun test` 1628 pass / 0 fail (168 files); `bun run typecheck` clean; `bun scripts/ci/check-production-guardrails.ts` clean (no output). Live-site 200s above. No D1 writes (all `changed_db:false, rows_written:0`); no secrets printed.
 
-**NEXT SINGLE ACTION:** Push this P0 unit through the authorized release path and watch Sovereign CI Guardrail + Pages deploy; then observe the scheduled EX-03 run at 20:23Z (≈20 min) and classify its `dispatch.json` with `extractShadowDispatchEvidence`. If 20:23Z still `evidence_or_revision_guard/461c6be7`, open the bounded MATH-12 unit: live `wrangler pages deployment tail` correlation during the 21:23Z window (read-only tail; never POST the mutating route to check health). Owner/controller: next maintainer; trigger: CI receipt + 20:23Z EX-03 run.
+**Release receipt (20:08Z):** commit `161c65e` pushed (`4066ec4..161c65e`); Sovereign CI Guardrail run `36476758858` success on exact HEAD (validate + migrate/deploy incl. Pages deploy); live post-push `/` 200 (209,342 B) + `/opportunities` 200 verified. No new EX-03 run at receipt time.
+
+**NEXT SINGLE ACTION:** Observe the scheduled EX-03 run at 20:23Z (≈15 min) and classify its `dispatch.json` with `extractShadowDispatchEvidence`. If 20:23Z still `evidence_or_revision_guard/461c6be7`, open the bounded MATH-12 unit: live `wrangler pages deployment tail` correlation during the 21:23Z window (read-only tail; never POST the mutating route to check health). Owner/controller: next maintainer; trigger: CI receipt + 20:23Z EX-03 run.
 
 ## 2026-09-27 — Bootloader x3 passes: MATH-12 extractor delivered; 20:23Z EX-03 run never triggered (historical)
 
