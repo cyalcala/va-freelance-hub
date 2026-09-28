@@ -1,6 +1,29 @@
 # System Savepoint
 
-## 2026-09-27 — Bootloader x3 passes: MATH-12 extractor delivered; 20:23Z EX-03 run never triggered (current)
+## 2026-09-28 — P0 ledger clamp delivered; EX-03 enrichment OBSERVED as evidence_or_revision_guard (current)
+
+**Mode:** EXECUTE (bounded P0 publication-integrity unit) + RECOVERY observation (read-only D1 SELECTs + local tests; no D1/lake/publication/route writes from this box).
+**Authorization:** Autonomous Marathon Supervisor + Maintainer Bootloader v5.2 — "Follow this, do not stop. auto maintenance".
+**Start HEAD:** local `main` `4066ec4` (== origin/main after ff-only merge of 9 digest commits, clean). `.ai/manifest.yaml` absent (recorded, not manufactured). Runtime drift: local Bun 1.4.2 vs repo/CI pin 1.3.14 (standing). Wrangler OAuth as cyrusalcala.agency@gmail.com, D1 `08072f16` APAC.
+
+**1. Recovery observations (20:03Z, VERIFIED):**
+- Live (OBSERVED_RUNTIME 20:03Z via curl.exe): `/` 200 (209,342 B), `/opportunities` 200, `/directory` 200 — publication flow healthy.
+- EX-03 schedule RESUMED (prior "20:23Z silence" hypothesis WITHDRAWN): runs `36354880889` (22:19Z Sep27), `36363891964` (00:53Z), `36389508428` (07:02Z), `36444900041` (15:36Z Sep28) all HTTP 503 `evidence_or_revision_guard` with stable `errorFingerprint` `461c6be7`. `251c776` enrichment is now OBSERVED (not unobserved). Extractor outcome for all four: `generic_class_with_fingerprint` → falsification path: reopen MATH-12 diagnosis via Pages-log correlation; quota exhaustion REJECTED as root cause.
+- Partial writes succeed despite run-level 503: `greenhouse:canonical` rows id2569 (21:20Z Sep27) + id2570 (18:20Z Sep28, UNREACHABLE, evidence 25). 3 shadows remain (`greenhouse:canonical`, `greenhouse:wikimedia`, `recruitee:myjewellery`); evidence ids 25/11/5 all unexpired (Mar 2027); registry revisions all 1. Guard message behind `461c6be7` still requires Pages-log correlation at the next run (20:23Z window).
+- Hunter `36441469988` (15:09Z Sep28) FAILURE: `inserted:0, accepted:1, attempted:1, insertFailedBatches:1` with `D1_ERROR: CHECK constraint failed: typeof(published_count) = 'integer' AND published_count >= 0 AND published_count <= proposed_count`. AI triage degraded in same run (Gemini 429, Groq 404, Cloudflare llama/mistral deprecated/unparseable) — measurement only, not the insert root cause.
+- Baseline supply unchanged (HISTORICAL, 7-day ending 2026-09-27T04:45Z): 18.9 fresh/day; gap −81.1 floor / −131.1 stretch; fleet P50 202 / P90 270. Current-day flow UNKNOWN from this box.
+
+**2. Unit delivered (P0-LEDGER-CLAMP, owned files only; no schema/lake/workflow/source changes):**
+- `packages/scraper/publication-gateway.ts`: new exported `clampLedgerPublishedCount(proposed, raw)` clamping to `[0, proposed]`; both `capped` and `unlimited` success paths clamp `persisted.publishedCount` and slice `ids` before `insertLedger` and before returning, so `meta.changes` inflation (e.g. `opportunities_fts` trigger-amplified writes) can never violate the `published_count <= proposed_count` CHECK nor inflate `actualChanges`/supply counts. `insertLedger` itself re-clamps defensively.
+- `packages/scraper/index.ts`: export `clampLedgerPublishedCount`.
+- `packages/scraper/publication-gateway.test.ts`: +2 tests — inflated persist (proposed 1, raw 2) yields ledger `(1,1)` with `publishedCount:1` and `ids:[101]`; clamp bounds incl. NaN/negative/zero-proposed.
+- Hypothesis: D1 `meta.changes` includes trigger writes (FTS), so 1 opportunity row reports ≥2 changes → ledger `(1,2)` violates CHECK and fails the Hunter tick. Clamping restores the definitional invariant (published ≤ proposed). Falsification: if production D1 never inflates, the clamp is a no-op safety net; the Hunter CHECK failure then needs a new root cause (concurrent tick-sum path already ruled out: blocked/rolled_back write 0).
+
+**Verification (VERIFIED_LOCAL at `4066ec4` + unit):** `bun test packages/scraper/publication-gateway.test.ts` 10/10; publication quartet 17/17; shadow/extractor quartet 91/91; full `bun test` 1628 pass / 0 fail (168 files); `bun run typecheck` clean; `bun scripts/ci/check-production-guardrails.ts` clean (no output). Live-site 200s above. No D1 writes (all `changed_db:false, rows_written:0`); no secrets printed.
+
+**NEXT SINGLE ACTION:** Push this P0 unit through the authorized release path and watch Sovereign CI Guardrail + Pages deploy; then observe the scheduled EX-03 run at 20:23Z (≈20 min) and classify its `dispatch.json` with `extractShadowDispatchEvidence`. If 20:23Z still `evidence_or_revision_guard/461c6be7`, open the bounded MATH-12 unit: live `wrangler pages deployment tail` correlation during the 21:23Z window (read-only tail; never POST the mutating route to check health). Owner/controller: next maintainer; trigger: CI receipt + 20:23Z EX-03 run.
+
+## 2026-09-27 — Bootloader x3 passes: MATH-12 extractor delivered; 20:23Z EX-03 run never triggered (historical)
 
 **Mode:** EXECUTE (bounded MATH-12 diagnostic helper) + RECOVERY observation (read-only + local test; no D1/lake/publication/route writes from this box).
 **Authorization:** Maintainer Bootloader v5.2 — "All proceed. All approved. Act in all this. Run this bootloader three times."

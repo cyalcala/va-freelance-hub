@@ -197,8 +197,10 @@ export async function publishPublicExposure(
       return { ok: true, mode: "blocked", publishedCount: 0, ids: [], replayed: false, reason: "canary tick cap is already exhausted" };
     }
     const persisted = request.proposedCount === 0 ? { publishedCount: 0, ids: [] as number[] } : await request.persist(request.proposedCount);
-    await insertLedger(db, request, "capped", persisted.publishedCount, persisted.ids);
-    return { ok: true, mode: "capped", publishedCount: persisted.publishedCount, ids: persisted.ids, replayed: false };
+    const safePublished = clampLedgerPublishedCount(request.proposedCount, persisted.publishedCount);
+    const safeIds = Array.isArray(persisted.ids) ? persisted.ids.slice(0, safePublished) : [];
+    await insertLedger(db, request, "capped", safePublished, safeIds);
+    return { ok: true, mode: "capped", publishedCount: safePublished, ids: safeIds, replayed: false };
   }
 
   const nowMs = new Date(request.now).getTime();
@@ -222,8 +224,10 @@ export async function publishPublicExposure(
   }
 
   const persisted = request.proposedCount === 0 ? { publishedCount: 0, ids: [] as number[] } : await request.persist(request.proposedCount);
-  await insertLedger(db, request, "unlimited", persisted.publishedCount, persisted.ids);
-  return { ok: true, mode: "unlimited", publishedCount: persisted.publishedCount, ids: persisted.ids, replayed: false };
+  const safePublished = clampLedgerPublishedCount(request.proposedCount, persisted.publishedCount);
+  const safeIds = Array.isArray(persisted.ids) ? persisted.ids.slice(0, safePublished) : [];
+  await insertLedger(db, request, "unlimited", safePublished, safeIds);
+  return { ok: true, mode: "unlimited", publishedCount: safePublished, ids: safeIds, replayed: false };
 }
 
 async function insertLedger(
@@ -233,15 +237,33 @@ async function insertLedger(
   publishedCount: number,
   ids: number[],
 ): Promise<void> {
+  const safePublished = clampLedgerPublishedCount(request.proposedCount, publishedCount);
+  const safeIds = Array.isArray(ids) ? ids.slice(0, safePublished) : [];
   const write = await db.prepare(INSERT_LEDGER_SQL).bind(
     request.sourceId,
     request.tickKey,
     request.retryKey,
     mode,
     request.proposedCount,
-    publishedCount,
-    JSON.stringify(ids),
+    safePublished,
+    JSON.stringify(safeIds),
     request.now,
   ).run();
   if (!write.success) throw new Error("publication ledger write was unsuccessful");
+}
+
+/**
+ * P0-LEDGER-CLAMP (Hunter 36441469988): D1 `meta.changes` can exceed the
+ * requested row count when triggers (e.g. opportunities_fts) amplify writes.
+ * The ledger CHECK requires published_count <= proposed_count by definition
+ * (one cannot publish more than proposed), so clamp defensively before the
+ * INSERT instead of failing the whole scrape tick. Callers already slice to
+ * `allowed`; this is the authoritative enforcement layer.
+ */
+export function clampLedgerPublishedCount(proposedCount: number, rawPublished: unknown): number {
+  const proposed = Number.isSafeInteger(proposedCount) && proposedCount >= 0 ? proposedCount : 0;
+  const raw = typeof rawPublished === "number" && Number.isFinite(rawPublished) ? Math.floor(rawPublished) : 0;
+  if (raw <= 0) return 0;
+  if (raw > proposed) return proposed;
+  return raw;
 }

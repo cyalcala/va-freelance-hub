@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   publishPublicExposure,
   publicationTickKey,
+  clampLedgerPublishedCount,
   type PublicationDatabase,
   type PublicationStatement,
 } from "./publication-gateway";
@@ -157,5 +158,31 @@ describe("SP-23C publication gateway", () => {
     });
     expect(result).toMatchObject({ ok: true, mode: "rolled_back", publishedCount: 0 });
     expect(persisted).toBe(0);
+  });
+
+  test("clamps an inflated D1 change count to proposed so the ledger CHECK never fails (Hunter 36441469988)", async () => {
+    const db = new FakeDatabase({ registry: [null], retry: [null] });
+    const result = await publishPublicExposure(db, {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "inflated1", proposedCount: 1,
+      persist: async (allowed) => {
+        expect(allowed).toBe(1);
+        return { publishedCount: 2, ids: [101, 102] };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect((result as { ids: number[] }).ids).toEqual([101]);
+    const ledger = db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"));
+    expect(ledger).toBeDefined();
+    expect(ledger?.values[4]).toBe(1);
+    expect(ledger?.values[5]).toBe(1);
+  });
+
+  test("clampLedgerPublishedCount bounds raw counts to [0, proposed]", () => {
+    expect(clampLedgerPublishedCount(1, 2)).toBe(1);
+    expect(clampLedgerPublishedCount(1, 1)).toBe(1);
+    expect(clampLedgerPublishedCount(1, 0)).toBe(0);
+    expect(clampLedgerPublishedCount(0, 1)).toBe(0);
+    expect(clampLedgerPublishedCount(3, -5)).toBe(0);
+    expect(clampLedgerPublishedCount(3, Number.NaN)).toBe(0);
   });
 });

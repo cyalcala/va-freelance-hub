@@ -2,15 +2,15 @@
 
 ## Active bounded unit
 
-**MATH-12 EX-03 observation tooling delivered 2026-09-27; 20:23Z scheduled run never triggered (current):**
+**P0 ledger clamp delivered 2026-09-28; EX-03 enrichment OBSERVED as evidence_or_revision_guard (current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
-1. **Delivered (this session, 3 bootloader passes):** `scripts/diagnostics/extract-shadow-dispatch-evidence.ts` + test — pure parser mapping one EX-03 dispatch body to 5 bounded outcomes with next actions and Pages-tail hints. Verified: 8/8 new tests, 132/132 diagnostics, 28/28 shadow-route tests, `tsc --noEmit` clean. Validated against the real 19:32Z production body (`legacy_generic_without_fingerprint`).
-2. **Incident state:** `251c776` enrichment still UNOBSERVED — no EX-03 run since the 19:59Z Pages deploy. Last shadow observation write 2026-09-26T15:21Z; 3 shadow sources (`greenhouse:canonical`, `recruitee:myjewellery`, `greenhouse:wikimedia`) still blocked from 8-clean-day canary graduation. Publication flow healthy (`/`, `/opportunities`, `/directory` all 200 at 20:18Z).
-3. **New finding:** EX-03 `23 * * * *` schedule produced no runs at 19:23Z or 20:23Z (confirmed absent at 20:35Z) while sibling schedules (Lake Publish 20:25Z, Hunter 19:34Z) fire normally. Manual dispatch of the mutating route is forbidden; observation awaits the scheduler.
+1. **Delivered (this session):** `clampLedgerPublishedCount` in `packages/scraper/publication-gateway.ts` + export + 2 tests — inflated D1 change counts (FTS trigger amplification) are clamped to `[0, proposed]` before the ledger INSERT and in the returned counts, so the `published_count <= proposed_count` CHECK (Hunter `36441469988` failure) can never fail a tick nor inflate supply. Verified: gateway 10/10, publication quartet 17/17, shadow/extractor 91/91, full 1628/1628, typecheck + guardrails clean. Live `/`, `/opportunities`, `/directory` all 200 at 20:03Z.
+2. **Incident state:** EX-03 `251c776` OBSERVED — 4 runs (22:19Z Sep27 → 15:36Z Sep28) all 503 `evidence_or_revision_guard/461c6be7` (stable fingerprint; quota hypothesis rejected). Extractor: `generic_class_with_fingerprint` → reopen MATH-12 via Pages-log correlation. Partial writes succeed (`greenhouse:canonical` UNREACHABLE 18:20Z Sep28); 3 shadows still blocked from 8-clean-day graduation. Baseline supply unchanged: 18.9 fresh/day (gap −81.1 floor).
+3. **New finding:** EX-03 schedule silence WITHDRAWN — scheduler fires (delays only); sibling workflows healthy. Hunter AI triage degraded (Gemini 429, Groq 404, CF models deprecated) — measurement signal, not insert root cause.
 
-**Follow-on unit:** Watch the scheduled EX-03 run at 21:23Z and classify its `dispatch.json` with the extractor. 200 closes the incident; a 503 with specific class + fingerprint proceeds to Pages-log correlation. If 21:23Z is also absent, open the bounded MATH-12 unit for an EX-03 missing-run watchdog alert. Measured fleet requirement remains P50 202 / P90 270 toward the 100/day floor.
+**Follow-on unit:** Push this P0 unit (authorized release path), watch CI + Pages deploy, then classify the 20:23Z EX-03 `dispatch.json` with the extractor. Still `evidence_or_revision_guard/461c6be7` → open bounded MATH-12 Pages-tail correlation for the 21:23Z window (read-only tail; never POST the mutating route). Measured fleet requirement P50 202 / P90 270 toward the 100/day floor.
 
 ## Prior unit (delivered & deployed)
 
