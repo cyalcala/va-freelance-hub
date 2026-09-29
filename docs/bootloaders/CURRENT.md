@@ -7,7 +7,7 @@
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 1. **Release receipt (observed):** `324bf6b` on `origin/main`; Sovereign CI Guardrail `36574459021` + Deploy Freshness Cron Worker `36574458965` success on exact HEAD (13:21Z). Live `/` 200 post-deploy (13:44Z).
-2. **Verification (current):** targeted 88/88 pass at `324bf6b` (route + dispatcher + extractor). Wider suite claims are historical from the delivering session.
+2. **Verification (current):** targeted 88/88 pass at `324bf6b`; full suite 1,635/1,635 pass + `tsc --noEmit` clean + guardrails clean re-run in this session. Checkpoint commit `93d7ef3` pushed (`324bf6b..93d7ef3`); Sovereign CI Guardrail `36578022091` success on exact HEAD.
 3. **Measurement:** last EX-03 `36544265836` (08:40Z, old code) classifies `generic_class_with_fingerprint` under the new extractor — the falsification path `324bf6b` was built to resolve.
 4. **Finding:** EX-03 schedule silent 5+h (09:23–13:23Z absent); siblings healthy. Fix UNOBSERVED until the scheduler fires.
 
