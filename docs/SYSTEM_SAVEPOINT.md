@@ -1,6 +1,33 @@
 # System Savepoint
 
-## 2026-09-29 — EX-03 classification repair, stage telemetry, and diagnostic preservation delivered (current)
+## 2026-09-29 — EX-03 fix deployed and verified at HEAD; schedule silent since 08:40Z, fix UNOBSERVED (current)
+
+**Mode:** RECOVERY + VERIFICATION (read-only; no D1/lake/publication/route writes from this box).
+**Authorization:** Autonomous Marathon Supervisor + Maintainer Bootloader v5.2 — "auto maintenance" (this session).
+**Start HEAD:** local `main` `324bf6b` == `origin/main` (clean, fetched). Runtime drift: local Bun 1.4.2 vs repo/CI pin 1.3.14 (standing).
+
+**1. Release receipt for the prior unit (OBSERVED):**
+- Commit `324bf6b` (`fix(shadow): EX-03 classification repair, stage telemetry, and diagnostic preservation`) already on `origin/main`; no push needed.
+- Sovereign CI Guardrail run `36574459021` success on exact HEAD `324bf6b` (validate + migrate/deploy incl. Pages deploy); Deploy Freshness Cron Worker run `36574458965` success on same HEAD (both `2026-09-29T13:21:12Z`).
+- Live post-deploy (OBSERVED_RUNTIME 13:44Z from this box): `/` 200 (211,389 B, publication flow healthy); `GET /api/cron/shadow-dispatch` 404 as expected for the POST-only route (no mutating POST issued from this box).
+
+**2. Verification at HEAD (VERIFIED_LOCAL `324bf6b`):**
+- Targeted: 88 pass / 0 fail across `shadow-dispatch-route.test.ts`, `shadow-dispatcher.test.ts`, `extract-shadow-dispatch-evidence.test.ts` (303 expect calls) — incl. the Drizzle-wrapper false-positive guards (`evidence_hash`/`admission_evidence_id` column names) and fingerprint stability tests.
+- Prior unit's wider claims (full 1,635 suite, 77/77 shadow, 11/11 extractor, guardrails 16/16, DB-01 121/121, typecheck clean) are HISTORICAL from the delivering session, not re-run here; targeted re-run above is the current evidence.
+
+**3. Production classification of the last EX-03 run (bounded measurement, new extractor):**
+- Last EX-03 run `36544265836` (`2026-09-29T08:40:56Z`, schedule, old SHA `54cdfc0`, pre-`324bf6b` workflow without the extractor step): body `{"errorClass":"evidence_or_revision_guard","errorFingerprint":"461c6be7"}` HTTP 503 (from run log; no artifact — upload step did not exist yet).
+- New-extractor classification: `generic_class_with_fingerprint` (has fingerprint, no `failureStage`/`sourceId` — expected: that run predates the stage-telemetry fields). Per the extractor vocabulary this is the falsification path that motivated `324bf6b` (Drizzle-wrapper false positive + 512 KiB trigger budget, fixed by wrapper-strip + migration 0053 1 MiB budget).
+- The `324bf6b` enrichment (`failureStage`, `sourceId`, `skippedStaleContext`, wrapper-strip, 1 MiB budget) is therefore DEPLOYED but UNOBSERVED: no EX-03 run has executed on it yet.
+
+**4. New finding — EX-03 schedule silence (OBSERVED, read-only `gh run list`):**
+- No EX-03 runs after 08:40Z: the 09:23, 10:23, 11:23, 12:23, and 13:23Z slots are all absent at 13:44Z (5+h gap). Earlier gaps on the same schedule: 02:03Z → 08:40Z (6.5h), 22:07Z Sep28 → 02:03Z (4h). Sibling schedules fire normally (Directory 13:19Z, Prospector 12:56Z, Lake Publish 10:39Z success), so GitHub scheduling is healthy and the silence is EX-03-specific starvation, not a global outage.
+- Effect: the 3 shadow sources (`greenhouse:canonical`, `greenhouse:wikimedia`, `recruitee:myjewellery`) starve of observations through no fault of the route; the just-deployed fix cannot be validated until the scheduler fires.
+- Baseline supply unchanged (HISTORICAL, 7-day ending 2026-09-27T04:45Z): 18.9 fresh/day; gap −81.1 floor / −131.1 stretch; fleet P50 202 / P90 270. Current-day flow UNKNOWN from this box (no D1 creds exercised here).
+
+**NEXT SINGLE ACTION:** Observe the next scheduled EX-03 run (hourly `23 * * * *`; next 14:23Z) and classify its `dispatch.json` with the in-workflow extractor (now pre-`test` with artifact upload). 200 closes the incident and resumes clean-day accumulation; specific class + fingerprint → Pages-log correlation by fingerprint window; generic + fingerprint → reopen MATH-12 with the stage/source fields; legacy without fingerprint → still old code. If the 14:23Z slot is also absent, open the bounded MATH-12 follow-on already prescribed on 2026-09-27: an EX-03 missing-run watchdog alert (read-only Actions-API schedule monitor a la Ingestion Heartbeat Watchdog; never POST the mutating route to check health). Owner/controller: next maintainer; trigger: 14:23Z run or its absence.
+
+## 2026-09-29 — EX-03 classification repair, stage telemetry, and diagnostic preservation delivered (historical)
 
 **Mode:** EXECUTE (bounded EX-03 shadow dispatch reliability, telemetry, and isolation unit) + VERIFICATION (local tests, guardrails, DB-01 rehearsal, full typecheck).
 **Authorization:** Autonomous Marathon Supervisor + Maintainer Bootloader v5.2 — "Proceed with this, read the bootloader first, then use this skill https://github.com/addyosmani/agent-skills to attack the problem".

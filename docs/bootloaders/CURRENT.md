@@ -2,7 +2,16 @@
 
 ## Active bounded unit
 
-**EX-03 classification repair, stage telemetry, and diagnostic preservation delivered 2026-09-29 (current):**
+**EX-03 fix deployed and verified at HEAD; schedule silent since 08:40Z, fix UNOBSERVED (2026-09-29, current):**
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+1. **Release receipt (observed):** `324bf6b` on `origin/main`; Sovereign CI Guardrail `36574459021` + Deploy Freshness Cron Worker `36574458965` success on exact HEAD (13:21Z). Live `/` 200 post-deploy (13:44Z).
+2. **Verification (current):** targeted 88/88 pass at `324bf6b` (route + dispatcher + extractor). Wider suite claims are historical from the delivering session.
+3. **Measurement:** last EX-03 `36544265836` (08:40Z, old code) classifies `generic_class_with_fingerprint` under the new extractor — the falsification path `324bf6b` was built to resolve.
+4. **Finding:** EX-03 schedule silent 5+h (09:23–13:23Z absent); siblings healthy. Fix UNOBSERVED until the scheduler fires.
+
+**Follow-on unit:** Observe the 14:23Z EX-03 run and classify `dispatch.json`; if absent, open the bounded MATH-12 EX-03 missing-run watchdog unit (read-only, never POST the route).
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
