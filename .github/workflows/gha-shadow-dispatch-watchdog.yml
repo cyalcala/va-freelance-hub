@@ -68,7 +68,7 @@ jobs:
           set -euo pipefail
           NOW=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
           bun scripts/gha/evaluate-schedule-silence.ts ex03-runs.json \
-            --now "$NOW" --stale-after-hours 3 > ex03-evaluation.json
+            --now "$NOW" --stale-after-hours 6 > ex03-evaluation.json
           jq . ex03-evaluation.json
           echo "alert=$(jq -r .alert ex03-evaluation.json)" >> "$GITHUB_OUTPUT"
           echo "status=$(jq -r .status ex03-evaluation.json)" >> "$GITHUB_OUTPUT"

@@ -33,7 +33,13 @@ export interface ScheduleSilenceDecision {
   staleAfterHours: number;
 }
 
-export const DEFAULT_STALE_AFTER_HOURS = 3;
+// Threshold 6h is measured, not guessed: over 7 days (2026-09-22 → 09-29)
+// GitHub delivered only 25% of EX-03's hourly slots (42/168) with a 4.04h
+// median inter-run gap and an 8.57h maximum — a 3h threshold would hold the
+// alert state more than half the time (no signal discrimination), while 6h
+// alerts on ~8/41 gaps (~20%) and still catches the 2026-09-29 7.2h+ event.
+// No 7-day gap ever exceeded 9h. Re-measure before changing again.
+export const DEFAULT_STALE_AFTER_HOURS = 6;
 
 export function evaluateScheduleSilence(
   runs: ScheduleRunRecord[],
