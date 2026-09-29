@@ -15,6 +15,11 @@ export type JobBoardRequest =
  * first-seen (`scraped_at`); `today` is the current Asia/Manila calendar day.
  * Anything else is rejected to null (never a 400 — an unknown filter simply
  * shows the default board).
+ *
+ * UI-versus-operating-metric semantics (F5): this view's counts measure
+ * first-seen arrival recency, NOT the independently adjudicated,
+ * receipt-backed FRESH_DISCOVERY performance metric. Do not use this
+ * view's count to certify the 100/day objective.
  */
 export type FreshFilter = "24h" | "today";
 
