@@ -1,6 +1,32 @@
 # System Savepoint
 
-## 2026-09-29 — F6 quality-denominator repair delivered; EX-03 fix loop closed (current)
+## 2026-09-29 — F5 parity lock delivered; all 2026-09-27 audit findings resolved (current)
+
+**Mode:** AUTONOMOUS MARATHON (Supervisor + Bootloader v5.2, "auto maintenance" session).
+**Start HEAD:** `0c869f3`. End HEAD: `27ff67f` pushed; Sovereign CI Guardrail `36604725531` success on exact HEAD (17:24:42Z).
+
+**1. Delivered unit — F5 route-equivalence parity lock + UI-vs-metric semantics (commit `27ff67f`):**
+- Finding status: F5's core parity was verified ALREADY IMPLEMENTED (grep proof: `jobs/[id].astro`, `sitemap.xml.ts`, `opportunities.astro`, `categories/[category].astro`, `homepage-data.ts`, `opportunity-fts-query.ts` all reference the shared predicate) — the 2026-09-27 audit description was stale on the code. The remaining gap was that no test LOCKED the parity (how F5 arose: a refactor silently diverged a route).
+- `apps/web/tests/public-eligibility-parity.test.ts`: SQL-level assertions (`publicOpportunityFilters()` compiles to is_active + both eligibilities; FTS count/page SQL embeds `o.is_active = 1` + `o.ph_eligibility IN ('eligible_verified', 'eligible_likely')`) + a source-scan lock over all six route surfaces (any future refactor dropping the shared predicate from a route fails the test).
+- `apps/web/src/lib/public-query.ts`: explicit UI-versus-operating-metric semantics note — the board's counts measure first-seen arrival recency, not the receipt-backed FRESH_DISCOVERY metric; do not certify the 100/day objective from them.
+
+**2. Verification (VERIFIED_LOCAL `27ff67f`):** targeted 3/3; full suite 1,658/1,658 (171 files); typecheck clean. Commit pushed; CI Guardrail `36604725531` success on exact HEAD.
+
+**3. AUDIT FINDINGS LEDGER (all resolved):** F1/F2/F4 repaired under MATH-06A (2026-09-27); F6 repaired `929d46c` (per-dimension denominators, Wilson, ceiling-demonstrated separation); F5 verified implemented + locked `27ff67f`. No active findings remain from the 2026-09-27 audit list.
+
+**4. Session state (marathon units this session, in order):**
+1. MATH-12 EX-03 schedule-silence watchdog delivered (`12ebee8`) — read-only, OPS-05 lifecycle keyed `shadow-dispatch-schedule`.
+2. Watchdog threshold measured 3h→6h (`3a6f50c`) — 7-day baseline: GitHub delivered 25% of EX-03 hourly slots (median gap 4.04h, max 8.57h, never >9h).
+3. F6 quality-denominator repair (`929d46c`).
+4. F5 parity lock + semantics (`27ff67f`).
+5. Checkpoints: `7e39cbe`, `0c869f3`, `853bb06` (+ this commit).
+- EX-03 fix loop CLOSED: run `36594258147` (15:58:25Z) HTTP 200, verdict healthy, 3/3 shadow sources dispatched, artifact `success_observed`; clean-day accumulation RESUMED toward 8-day canary graduation. The 7.3h multi-workflow scheduler starvation ended ~15:58Z.
+- Watchdog first scheduled run still pending (15:37Z/16:37Z slots dropped; next 17:37Z; will evaluate healthy → no incident).
+- Credential boundary (VERIFIED): no Cloudflare credentials in this environment; fleet measurement (P2; fleet P50 202 / P90 270 endpoints toward the 100/day floor) remains blocked from this box. Baseline supply unchanged (HISTORICAL): 18.9 fresh/day; gap −81.1 floor / −131.1 stretch.
+
+**NEXT SINGLE ACTION:** Observe the 17:37Z watchdog run (expect healthy/HOLD → no incident). Then the primary dependency-ready unit for the next maintainer WITH Cloudflare credentials: run the live D1 fleet measurement (`scripts/diagnostics/measure-first-publication-funnel.ts` observation query; P2) to quantify the supply bottleneck feeding the 100/day path. Without credentials, independent useful work is exhausted pending evidence (clean-day accumulation, canary streaks, watchdog runs); continue observation/documentation only. Owner/controller: next maintainer; trigger: 17:37Z watchdog run or credential availability.
+
+## 2026-09-29 — F6 quality-denominator repair delivered; EX-03 fix loop closed (historical; superseded by the entry above)
 
 **Mode:** AUTONOMOUS MARATHON (Supervisor + Bootloader v5.2, "auto maintenance" session).
 **Start HEAD:** `3a6f50c`. End HEAD: `929d46c` pushed; Sovereign CI Guardrail `36601416687` success on exact HEAD (16:56:53Z).

@@ -2,7 +2,24 @@
 
 ## Active bounded unit
 
-**F6 quality-denominator repair delivered; EX-03 fix loop closed; scheduler recovered (2026-09-29, current):**
+**F5 parity lock delivered; F5/F6 both closed; all 2026-09-27 audit findings resolved (2026-09-29, current):**
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+CURRENT STATE: F5 (public-route eligibility parity) verified IMPLEMENTED and now LOCKED by tests at `27ff67f` — every public surface (list/search/detail/sitemap/categories/homepage) composes the same `publicOpportunityFilters` / `PUBLIC_PH_ELIGIBILITY_SQL` contract, and a source-scan parity test prevents silent divergence. UI-vs-metric semantics note added to `public-query.ts`.
+CURRENT BOTTLENECK: supply gap (18.9/day vs 100/day floor; fleet P50 202 / P90 270) — credential-blocked from this box.
+ACTIVE UNIT: none dependency-ready (observation windows only).
+LAST COMPLETED UNIT: F5 route-equivalence parity lock + UI-vs-metric semantics (`27ff67f`).
+RESULT: CI Guardrail `36604725531` success on exact HEAD; full suite 1,658/1,658 (171 files); typecheck clean; guardrails clean.
+UNRESOLVED: watchdog first scheduled run pending (15:37Z/16:37Z slots dropped; next 17:37Z, expect healthy → no incident); 8-day canary graduation streak for the 3 shadow sources accumulating; fleet numbers remain estimates (no D1 creds).
+NEXT ACTION: Observe the 17:37Z watchdog run; then the next maintainer (with Cloudflare credentials) should run the fleet measurement (`scripts/diagnostics/measure-first-publication-funnel.ts` live D1 observation) — P2, the measurement feeding the 100/day path.
+WHY NEXT: supply is the primary bottleneck; the fleet measurement is the dependency-ready decision input once credentials are available.
+ACCEPTANCE: fleet P50/P90 measured on complete Manila days with uncertainty; supply work prioritized from the measured bottleneck.
+FALLBACK: if credentials remain unavailable, continue clean-day accumulation observation and documentation; reopen when credentials or new evidence arrive.
+
+**Prior unit (delivered & deployed):**
+
+**F6 quality-denominator repair delivered; EX-03 fix loop closed; scheduler recovered (2026-09-29, historical):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
