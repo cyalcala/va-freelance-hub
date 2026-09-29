@@ -2,7 +2,24 @@
 
 ## Active bounded unit
 
-**MATH-12 EX-03 schedule-silence watchdog delivered; GitHub scheduler starvation now multi-workflow (2026-09-29, current):**
+**EX-03 fix OBSERVED (HTTP 200, healthy); scheduler recovered; watchdog threshold measured to 6h (2026-09-29, current):**
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+CURRENT STATE: EX-03 fix loop CLOSED — run `36594258147` (15:58:25Z, `7e39cbe`) HTTP 200, verdict healthy, 3/3 shadow sources dispatched, artifact classified `success_observed`; clean-day accumulation RESUMED toward 8-day canary graduation.
+CURRENT BOTTLENECK: supply gap (18.9/day vs 100/day floor; fleet P50 202 / P90 270) — fleet measurement blocked here (no Cloudflare creds).
+ACTIVE UNIT: F5 (public-route eligibility) / F6 (quality-sample denominators) review targets — read-only.
+LAST COMPLETED UNIT: MATH-12 EX-03 schedule-silence watchdog (`12ebee8` + measured 6h threshold `3a6f50c`).
+RESULT: CI Guardrail `36596201629` success on `3a6f50c`; 14 watchdog tests; full suite 1,649/1,649; 7-day scheduler-starvation rate measured (EX-03 25% delivery, median gap 4.04h, max 8.57h).
+UNRESOLVED: watchdog first scheduled run pending (15:37Z slot dropped; next 16:37Z, expect healthy); 8-day canary graduation streak for the 3 shadow sources accumulating.
+NEXT ACTION: Observe the 16:37Z watchdog run; execute the F5/F6 read-only review targets.
+WHY NEXT: EX-03 verification loop is closed; F5/F6 are the remaining active findings in the CURRENT findings list and are credential-free.
+ACCEPTANCE: F5/F6 review produces a bounded decision (repair, monitor, or close) with evidence per the findings contract.
+FALLBACK: if F5/F6 need D1 evidence unavailable here, record WAITING_FOR_EVIDENCE and continue with independent supply research or documentation.
+
+**Prior unit (delivered & deployed):**
+
+**MATH-12 EX-03 schedule-silence watchdog delivered; GitHub scheduler starvation now multi-workflow (2026-09-29, historical):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 

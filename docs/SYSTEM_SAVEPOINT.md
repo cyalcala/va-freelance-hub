@@ -1,6 +1,28 @@
 # System Savepoint
 
-## 2026-09-29 — MATH-12 EX-03 schedule-silence watchdog delivered; GitHub scheduler starvation now multi-workflow (current)
+## 2026-09-29 — EX-03 fix OBSERVED (HTTP 200, healthy); scheduler recovered; watchdog threshold measured to 6h (current)
+
+**Mode:** AUTONOMOUS MARATHON (Supervisor + Bootloader v5.2, "auto maintenance" session). Verification and observation only after the threshold push; no D1/lake/publication/route writes from this box.
+**Start HEAD:** `6bc7cdf` (clean, fetched). End HEAD: `3a6f50c` pushed; Sovereign CI Guardrail `36596201629` success on exact HEAD (16:13:59Z).
+
+**1. Prior-unit closure — MATH-12 EX-03 schedule-silence watchdog (delivered `12ebee8`, adjusted `3a6f50c`):**
+- Watchdog workflow (hourly `:37`, read-only `gh run list` evidence, never POSTs the route, OPS-05 lifecycle keyed `shadow-dispatch-schedule`) + pure evaluator CLI + 14 tests. CI Guardrail runs `36587025359` (12ebee8) and `36588785085` (7e39cbe) success on exact HEADs.
+- Threshold adjustment (commit `3a6f50c`): 3h → 6h default, MEASURED not guessed — 7-day baseline (2026-09-22→09-29) shows GitHub delivered only 25% of EX-03's hourly slots (42/168, median inter-run gap 4.04h, max 8.57h; IngestWatchdog 21.4%, LakePublish 10.7%, HunterPulse 6.0%); 3h would hold alert >50% of the time (no discrimination); 6h alerts on ~8/41 gaps (~20%) and catches the 7.2h+ event; no 7-day gap ever exceeded 9h. Full suite 1,649/1,649 (170 files), typecheck clean, guardrails clean.
+
+**2. MAJOR MILESTONE — EX-03 fix OBSERVED and ACCEPTED (the 324bf6b falsification path is resolved):**
+- EX-03 run `36594258147` fired `2026-09-29T15:58:25Z` on headSha `7e39cbe` (includes the `324bf6b` fix and enriched workflow): **HTTP 200, verdict.status healthy, rows=3 eligible=3 dispatched=3 skippedStaleContext=0**, artifact `dispatch.json` archived and classified with the diagnostics extractor: `outcome: success_observed`, no errorClass/fingerprint/failureStage (fields present and null because no failure occurred).
+- The prior failure classification (`generic_class_with_fingerprint` / `evidence_or_revision_guard` false positive) is resolved in production: the run exited 0 on enriched code.
+- Effect: clean-day accumulation for the 3 shadow sources (`greenhouse:canonical`, `greenhouse:wikimedia`, `recruitee:myjewellery`) RESUMES toward 8-day canary graduation (trigger: completing qualifying streak).
+
+**3. Scheduler recovery + watchdog observation status:**
+- The 7.3h multi-workflow starvation (08:40Z → 15:58Z) ENDED: EX-03 15:58Z success, Lake Publish 16:08:34Z success. The starved hourly schedules are recovering.
+- The watchdog's own first scheduled run (15:37Z slot) was DROPPED by the same starvation; its next slot is 16:37Z. Its first evaluation will see the 15:58Z EX-03 run (silence ~39min) → healthy → NO incident. Correct behavior: no false incident for a recovered schedule; the `shadow-dispatch-schedule` incident opens only if silence exceeds the measured 6h threshold again.
+- Live site on HEAD: `/` 200 (211,389 B), `/opportunities` 200 (fresh flow: 24 jobs dated Sep-29 vs 6 Sep-28), `/directory` 200, `/data-policy` 200. All workflows `state=active` (GitHub API), incl. the new watchdog.
+- Credential boundary (VERIFIED): no Cloudflare credentials in this environment; fleet measurement (P2, P50 202 / P90 270 endpoints toward 100/day floor) remains blocked from this box. Baseline supply unchanged (HISTORICAL): 18.9 fresh/day; gap −81.1 floor / −131.1 stretch.
+
+**NEXT SINGLE ACTION:** Observe the 16:37Z watchdog run (expect healthy/HOLD) and continue EX-03 clean-day accumulation (hourly runs). Next dependency-ready independent unit: F5 (public-route eligibility) / F6 (quality-sample denominators) review targets from the CURRENT findings list — read-only. Owner/controller: next maintainer; trigger: 16:37Z watchdog run or EX-03 16:23Z slot.
+
+## 2026-09-29 — MATH-12 EX-03 schedule-silence watchdog delivered; GitHub scheduler starvation now multi-workflow (historical; superseded by the entry above)
 
 **Mode:** RECOVERY + IMPLEMENTATION + VERIFICATION (read-only watchdog; no D1/lake/publication/route writes from this box).
 **Authorization:** Autonomous Marathon Supervisor + Maintainer Bootloader v5.2 — "auto maintenance" (this session).
