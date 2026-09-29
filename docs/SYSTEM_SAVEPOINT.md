@@ -1,6 +1,35 @@
 # System Savepoint
 
-## 2026-09-29 — EX-03 fix OBSERVED (HTTP 200, healthy); scheduler recovered; watchdog threshold measured to 6h (current)
+## 2026-09-29 — F6 quality-denominator repair delivered; EX-03 fix loop closed (current)
+
+**Mode:** AUTONOMOUS MARATHON (Supervisor + Bootloader v5.2, "auto maintenance" session).
+**Start HEAD:** `3a6f50c`. End HEAD: `929d46c` pushed; Sovereign CI Guardrail `36601416687` success on exact HEAD (16:56:53Z).
+
+**1. Delivered unit — F6 QUALITY-DENOMINATOR-AND-SAMPLING repair (commit `929d46c`):**
+- Baseline (verified code + local repro from the 2026-09-27 audit): `measureGroundTruth` divided both false counts by the TOTAL sample size; a synthetic set with 1 failed eligibility judgment + 199 correct remoteness judgments returned false-PH 0.5% and PASS, though the eligibility-only subset had 1 error in 1 observation.
+- Estimand named per the ACCEPTED_PARAMETERS names (`quality.false_ph_eligibility_rate_max` / `quality.false_remote_classification_rate_max` — the accepted parameters already encoded the per-dimension estimand; the implementation diluted it).
+- Repair: per-dimension denominators (scored eligibility rows for false-PH; scored remote rows for false-remote; ground-truth-unclear rows excluded from both but visible in `unclearGroundTruthCount`); Wilson 95% intervals (`wilsonInterval`, null on empty dimension); `ceilingDemonstrated` boolean (both dimensions' Wilson uppers ≤ accepted ceilings — MEASURED and CEILING DEMONSTRATED are separate claims; a clean 50-row sample does NOT demonstrate either ceiling, Wilson upper ~7.1% at 0/50); `qualityCeilingStatus` gate: a known violation FAILs outright (never masked by an unmeasured dimension), an unmeasured dimension is UNKNOWN (never a silent pass).
+- Accepted threshold VALUES unchanged: FALSE_PH_RATE_MAX 0.01, FALSE_REMOTE_RATE_MAX 0.005, MIN_GROUND_TRUTH_SAMPLE 50 (rule stays on total sample size).
+- `docs/METRICS.md` Query 3B updated openly to per-dimension denominators + the MEASURED/CEILING-DEMONSTRATED note.
+- Tests: F6 repro, empty-dimension UNKNOWN, Wilson honesty, ceiling-demonstrated separation (381+765 clean rows), ground-truth-unclear exclusion.
+
+**2. Verification (VERIFIED_LOCAL `929d46c`):**
+- Targeted 23/23 pass (`constitution-metrics.test.ts`); full suite 1,655/1,655 (170 files); `tsc --noEmit` clean; guardrails exit 0; constitution audit PASS exit 0 (4 standing warnings: caller-supplied replay flags, concentration measurement-only, provisional CV, no live queue readers).
+- F6 repro now returns false-PH 100% → FAIL (was 0.5% → PASS).
+- Commit `929d46c` pushed (`0c869f3..929d46c`); Sovereign CI Guardrail `36601416687` success on exact HEAD.
+
+**3. Session state (marathon units this session, in order):**
+1. MATH-12 EX-03 schedule-silence watchdog delivered (`12ebee8`) — read-only, OPS-05 lifecycle.
+2. Watchdog threshold measured 3h→6h (`3a6f50c`) — 7-day baseline: GitHub delivered 25% of EX-03 hourly slots (median gap 4.04h, max 8.57h).
+3. F6 quality-denominator repair (`929d46c`).
+4. Checkpoints: `7e39cbe`, `0c869f3` (+ this commit).
+- EX-03 fix loop CLOSED: run `36594258147` (15:58:25Z, `7e39cbe`) HTTP 200, verdict healthy, 3/3 shadow sources dispatched, artifact `success_observed`; clean-day accumulation RESUMED toward 8-day canary graduation. Scheduler starvation (7.3h, multi-workflow) ended ~15:58Z.
+- Watchdog first scheduled run still pending (15:37Z and 16:37Z slots dropped); next 17:37Z; will evaluate healthy (recent EX-03 run) → no incident.
+- Credential boundary (VERIFIED): no Cloudflare credentials in this environment; fleet measurement remains blocked from this box.
+
+**NEXT SINGLE ACTION:** Investigate F5 public-surface predicate parity (`opportunities.astro:76`, `opportunity-fts-query.ts:42`, homepage/category queries, `jobs/[id].astro:35`, `sitemap.xml.ts:32`) — one shared public-eligibility predicate + route-equivalence fixtures for list/search/detail/sitemap/JSON-LD, and explicit UI-versus-operating-metric semantics. If larger than the session permits, checkpoint the investigation and continue next session. Owner/controller: next maintainer; trigger: next session or the 17:37Z watchdog run.
+
+## 2026-09-29 — EX-03 fix OBSERVED (HTTP 200, healthy); scheduler recovered; watchdog threshold measured to 6h (historical; superseded by the entry above)
 
 **Mode:** AUTONOMOUS MARATHON (Supervisor + Bootloader v5.2, "auto maintenance" session). Verification and observation only after the threshold push; no D1/lake/publication/route writes from this box.
 **Start HEAD:** `6bc7cdf` (clean, fetched). End HEAD: `3a6f50c` pushed; Sovereign CI Guardrail `36596201629` success on exact HEAD (16:13:59Z).

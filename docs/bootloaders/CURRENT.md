@@ -2,7 +2,24 @@
 
 ## Active bounded unit
 
-**EX-03 fix OBSERVED (HTTP 200, healthy); scheduler recovered; watchdog threshold measured to 6h (2026-09-29, current):**
+**F6 quality-denominator repair delivered; EX-03 fix loop closed; scheduler recovered (2026-09-29, current):**
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+CURRENT STATE: F6 (quality-sampling dilution) REPAIRED at `929d46c` — `measureGroundTruth` now uses per-dimension denominators (matching the accepted parameter names `false_ph_eligibility_rate_max` / `false_remote_classification_rate_max`), Wilson 95% intervals, `ceilingDemonstrated` separation, and a gate where a known violation FAILs outright while an unmeasured dimension is UNKNOWN, never a silent pass. METRICS.md Query 3B contract updated openly; threshold VALUES unchanged.
+CURRENT BOTTLENECK: supply gap (18.9/day vs 100/day floor; fleet P50 202 / P90 270) — fleet measurement blocked here (no Cloudflare creds).
+ACTIVE UNIT: F5 public-surface predicate parity (the last remaining active finding) — read-only investigation, then bounded repair.
+LAST COMPLETED UNIT: F6 QUALITY-DENOMINATOR-AND-SAMPLING repair (`929d46c`).
+RESULT: CI Guardrail `36601416687` success on exact HEAD; full suite 1,655/1,655; typecheck clean; guardrails clean; constitution audit PASS (4 standing warnings). F6 repro: 1 failed eligibility + 199 correct remoteness now returns false-PH 100% → FAIL (was 0.5% → PASS).
+UNRESOLVED: watchdog first scheduled run pending (15:37Z and 16:37Z slots dropped); 8-day canary graduation streak for the 3 shadow sources accumulating (EX-03 15:58Z success resumes it); fleet numbers remain estimates.
+NEXT ACTION: Investigate F5 surfaces (`opportunities.astro`, `opportunity-fts-query.ts`, homepage/category queries, `jobs/[id].astro`, `sitemap.xml.ts`) and implement one shared public-eligibility predicate with route-equivalence fixtures.
+WHY NEXT: F5 is the last active finding; a listing can advertise a role whose detail is unavailable if an ineligible row arrives through drift — publication-control parity.
+ACCEPTANCE: route-equivalence fixtures for list/search/detail/sitemap; full suite green; build clean; no query-regression on live surfaces.
+FALLBACK: if F5 proves larger than the session permits, checkpoint with the investigation recorded and continue in the next session.
+
+**Prior unit (delivered & deployed):**
+
+**EX-03 fix OBSERVED (HTTP 200, healthy); scheduler recovered; watchdog threshold measured to 6h (2026-09-29, historical):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
