@@ -2,15 +2,32 @@
 
 ## Active bounded unit
 
-**P0 ledger clamp delivered 2026-09-28; EX-03 enrichment OBSERVED as evidence_or_revision_guard (current):**
+**EX-03 classification repair, stage telemetry, and diagnostic preservation delivered 2026-09-29 (current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
-1. **Delivered (this session):** `clampLedgerPublishedCount` in `packages/scraper/publication-gateway.ts` + export + 2 tests — inflated D1 change counts (FTS trigger amplification) are clamped to `[0, proposed]` before the ledger INSERT and in the returned counts, so the `published_count <= proposed_count` CHECK (Hunter `36441469988` failure) can never fail a tick nor inflate supply. Verified: gateway 10/10, publication quartet 17/17, shadow/extractor 91/91, full 1628/1628, typecheck + guardrails clean. Live `/`, `/opportunities`, `/directory` all 200 at 20:03Z.
-2. **Incident state:** EX-03 `251c776` OBSERVED — 4 runs (22:19Z Sep27 → 15:36Z Sep28) all 503 `evidence_or_revision_guard/461c6be7` (stable fingerprint; quota hypothesis rejected). Extractor: `generic_class_with_fingerprint` → reopen MATH-12 via Pages-log correlation. Partial writes succeed (`greenhouse:canonical` UNREACHABLE 18:20Z Sep28); 3 shadows still blocked from 8-clean-day graduation. Baseline supply unchanged: 18.9 fresh/day (gap −81.1 floor).
-3. **New finding:** EX-03 schedule silence WITHDRAWN — scheduler fires (delays only); sibling workflows healthy. Hunter AI triage degraded (Gemini 429, Groq 404, CF models deprecated) — measurement signal, not insert root cause.
+1. **Delivered (this session):**
+   - Stripped Drizzle ORM `"failed query:"` statements in `classifyStorageError` (`apps/web/src/pages/api/cron/shadow-dispatch.ts`), eliminating false-positive `evidence_or_revision_guard` classification caused by SQL column names.
+   - Added granular execution lifecycle tracking (`currentStage` across 10 stages and `currentSourceId`).
+   - Extended HTTP 503 response body with structured fields: `errorClass`, `failureStage`, `sourceId`, and stable 8-hex `errorFingerprint`.
+   - Added source-local concurrency isolation in `packages/scraper/shadow-dispatcher.ts`: wrapped `persistObservation` in `dispatchShadowObservations` with `isStaleAdmissionContextError(err)` so transient admission context changes/expirations safely skip that individual source (`skippedStaleContext++`) without aborting the batch run.
+   - Updated `scripts/diagnostics/extract-shadow-dispatch-evidence.ts` with CLI execution support, step summary formatting, and `failureStage`, `sourceId`, `skippedStaleContext` extraction.
+   - Reversed failure ordering in `.github/workflows/gha-shadow-dispatch.yml` and added unconditional artifact archival with `actions/upload-artifact@v4` on `dispatch.json`.
+   - Added migration `packages/db/migrations/0053_align_shadow_bytes_budget.sql`: aligns trigger byte budget to 1 MiB (1048576 bytes) to resolve probe contract violations on ~558 KiB payloads.
+   - Pinned wrangler toolchain to 4.143.0 across workflows, packages, and tests.
+2. **Verification:**
+   - Full test suite: 1,635 passed / 0 failed (168 files).
+   - Shadow route & dispatcher tests: 77/77 passed.
+   - Diagnostics extraction tests: 11/11 passed.
+   - Guardrails check: clean (16/16 tests passed).
+   - DB-01 migration rehearsal: 121/121 schema assertions passed.
+   - TypeScript typecheck: clean.
 
-**Follow-on unit:** Push this P0 unit (authorized release path), watch CI + Pages deploy, then classify the 20:23Z EX-03 `dispatch.json` with the extractor. Still `evidence_or_revision_guard/461c6be7` → open bounded MATH-12 Pages-tail correlation for the 21:23Z window (read-only tail; never POST the mutating route). Measured fleet requirement P50 202 / P90 270 toward the 100/day floor.
+**Follow-on unit:** Push to `origin/main` (Sovereign CI Guardrail run), verify deployment, and observe the next scheduled hourly EX-03 run (`23 * * * *`).
+
+## Prior unit (delivered & deployed)
+
+**P0 ledger clamp delivered 2026-09-28; EX-03 enrichment OBSERVED as evidence_or_revision_guard (historical):**
 
 ## Prior unit (delivered & deployed)
 

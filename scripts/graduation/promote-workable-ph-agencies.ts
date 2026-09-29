@@ -46,7 +46,7 @@ function runCmd(cmd: string, cwd = process.cwd()): string {
 
 function queryD1(sql: string): any[] {
   const singleLineSql = sql.replace(/\s+/g, " ").trim().replace(/"/g, '\\"');
-  const cmd = `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --command "${singleLineSql}" --json`;
+  const cmd = `bunx wrangler@4.143.0 d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --command "${singleLineSql}" --json`;
   const output = runCmd(cmd);
   const startIdx = output.indexOf("[");
   if (startIdx === -1) {
@@ -60,7 +60,7 @@ function executeD1SqlFile(sql: string): string {
   const tmpFile = join(process.cwd(), `scripts/graduation/tmp_promote_workable_${Date.now()}_${Math.random().toString(36).slice(2)}.sql`);
   writeFileSync(tmpFile, sql, "utf-8");
   try {
-    const cmd = `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --file="${tmpFile}" --json`;
+    const cmd = `bunx wrangler@4.143.0 d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --file="${tmpFile}" --json`;
     return runCmd(cmd);
   } finally {
     try { unlinkSync(tmpFile); } catch {}

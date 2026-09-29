@@ -349,6 +349,9 @@ export interface ShadowDispatchSummary {
   evidenceErrors: Array<{ sourceId: string; reason: string }>;
   /** Non-healthy probe outcomes captured this run (additive; verdict input). */
   anomalies: DispatchAnomaly[];
+  /** Sources skipped because their admission context changed or expired concurrently before persistence */
+  skippedStaleContext: number;
+  staleContextErrors: Array<{ sourceId: string; reason: string }>;
 }
 
 function inputForContext(context: AdmissionContext): CandidateShadowInput {
@@ -388,6 +391,48 @@ function failedProbeResult(input: CandidateShadowInput, startedAt: string, compl
 }
 
 /**
+ * Test whether an error indicates that D1 trigger rejected an observation
+ * because the admission context changed or expired concurrently.
+ */
+export function isStaleAdmissionContextError(error: unknown): boolean {
+  if (error == null) return false;
+  let current: unknown = error;
+  const seen = new Set<unknown>();
+  while (current != null && !seen.has(current)) {
+    seen.add(current);
+    if (typeof current === "object") {
+      const entry = current as { message?: unknown; cause?: unknown };
+      if (typeof entry.message === "string") {
+        const msg = entry.message.toLowerCase();
+        if (!msg.trim().startsWith("failed query:")) {
+          if (
+            msg.includes("observation admission context changed or expired") ||
+            msg.includes("observation requires a unique dispatch and current admission context") ||
+            msg.includes("admission context changed or expired") ||
+            msg.includes("stale admission context")
+          ) {
+            return true;
+          }
+        }
+      }
+      current = entry.cause;
+    } else {
+      const str = String(current).toLowerCase();
+      if (!str.trim().startsWith("failed query:") && (
+        str.includes("observation admission context changed or expired") ||
+        str.includes("observation requires a unique dispatch and current admission context") ||
+        str.includes("admission context changed or expired") ||
+        str.includes("stale admission context")
+      )) {
+        return true;
+      }
+      break;
+    }
+  }
+  return false;
+}
+
+/**
  * Enumerate registry-eligible sources, validate each provider profile, run
  * SP-07's bounded shadow probe, and persist every observation. Never writes
  * outside shadow observations and host scheduling state; never
@@ -423,6 +468,8 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     rejectedProbeResults: 0,
     evidenceErrors: [],
     anomalies: [],
+    skippedStaleContext: 0,
+    staleContextErrors: [],
   };
 
   const rateLimitedHosts = new Set<string>();
@@ -556,20 +603,33 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     }
     // 0040 rechecks the revision/evidence/entry binding and opt-out at insertion.
     // A stale-context write rejects; it never gets counted as stored evidence.
-    await deps.persistObservation(record);
-
-    summary.dispatched += 1;
-    summary.outcomes[result.diagnostic.outcome] = (summary.outcomes[result.diagnostic.outcome] ?? 0) + 1;
-    if (result.diagnostic.outcome !== "HEALTHY_WITH_RESULTS" && result.diagnostic.outcome !== "HEALTHY_EMPTY") {
-      summary.anomalies.push({
-        sourceId: result.sourceId,
-        providerId: result.providerId,
-        outcome: result.diagnostic.outcome,
-        stopReason: result.stopReason ?? null,
-        bytesReceived: result.diagnostic.bytesReceived,
-        itemCount: result.parse.itemCount,
-        plausibleItems: result.sampleFunnel.plausibleItems,
-      });
+    // If D1 specifically rejects due to stale admission context, isolate this source
+    // failure to prevent head-of-line blocking for other shadow sources.
+    try {
+      await deps.persistObservation(record);
+      summary.dispatched += 1;
+      summary.outcomes[result.diagnostic.outcome] = (summary.outcomes[result.diagnostic.outcome] ?? 0) + 1;
+      if (result.diagnostic.outcome !== "HEALTHY_WITH_RESULTS" && result.diagnostic.outcome !== "HEALTHY_EMPTY") {
+        summary.anomalies.push({
+          sourceId: result.sourceId,
+          providerId: result.providerId,
+          outcome: result.diagnostic.outcome,
+          stopReason: result.stopReason ?? null,
+          bytesReceived: result.diagnostic.bytesReceived,
+          itemCount: result.parse.itemCount,
+          plausibleItems: result.sampleFunnel.plausibleItems,
+        });
+      }
+    } catch (err: unknown) {
+      if (isStaleAdmissionContextError(err)) {
+        summary.skippedStaleContext += 1;
+        summary.staleContextErrors.push({
+          sourceId: row.sourceId,
+          reason: (err as Error)?.message ?? "observation admission context changed or expired",
+        });
+      } else {
+        throw err;
+      }
     }
   }
 

@@ -28,6 +28,49 @@ describe("extract-shadow-dispatch-evidence", () => {
     expect(evidence.pagesTailFilterHint).toContain("2026-09-27T20:23:00Z");
   });
 
+  test("routes d1_probe_contract_violation to specific_class_with_fingerprint", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_probe_contract_violation",
+      errorFingerprint: "1a2b3c4d",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body, "2026-09-29T08:40:00Z");
+    expect(evidence.outcome).toBe("specific_class_with_fingerprint");
+    expect(evidence.errorClass).toBe("d1_probe_contract_violation");
+    expect(evidence.errorFingerprint).toBe("1a2b3c4d");
+  });
+
+  test("extracts failureStage and sourceId when present in 503 response", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_constraint_violation",
+      failureStage: "persist_observation",
+      sourceId: "greenhouse:canonical",
+      errorFingerprint: "461c6be7",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body, "2026-09-29T10:00:00Z");
+    expect(evidence.outcome).toBe("specific_class_with_fingerprint");
+    expect(evidence.errorClass).toBe("d1_constraint_violation");
+    expect(evidence.failureStage).toBe("persist_observation");
+    expect(evidence.sourceId).toBe("greenhouse:canonical");
+    expect(evidence.errorFingerprint).toBe("461c6be7");
+    expect(evidence.nextAction).toContain("stage persist_observation");
+    expect(evidence.nextAction).toContain("greenhouse:canonical");
+  });
+
+  test("extracts skippedStaleContext on HTTP 200 payload", () => {
+    const body = JSON.stringify({
+      totalRegistryRows: 3,
+      eligible: 3,
+      dispatched: 1,
+      skippedStaleContext: 1,
+    });
+    const evidence = extractShadowDispatchEvidence(200, body);
+    expect(evidence.outcome).toBe("success_observed");
+    expect(evidence.skippedStaleContext).toBe(1);
+    expect(evidence.dispatched).toBe(1);
+  });
+
   test("treats a generic class WITH fingerprint as falsification (reopen diagnosis)", () => {
     const body = JSON.stringify({
       error: "Shadow dispatch evidence or observation storage unavailable",

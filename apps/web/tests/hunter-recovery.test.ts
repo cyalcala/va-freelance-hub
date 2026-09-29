@@ -322,7 +322,7 @@ describe("Hunter workflow terminal-state contract", () => {
     expect((workflow.match(/-X POST "\$SCRAPE_API_URL"/g) ?? [])).toHaveLength(1);
     const postStep = workflow.split("- name: Query Clock After Lock-Held Takeover (schedule only)")[1]
       .split("- name: Evaluate Hunter Health")[0];
-    expect((postStep.match(/timeout 90s npx wrangler@4\.120\.0 d1 execute DB --remote --env production/g) ?? [])).toHaveLength(1);
+    expect((postStep.match(/timeout 90s npx wrangler@4\.143\.0 d1 execute DB --remote --env production/g) ?? [])).toHaveLength(1);
     expect(postStep).toContain('"$HUNTER_HEARTBEAT_SQL"');
     expect(postStep).not.toContain("-X POST");
     expect(workflow).toMatch(/^\s+failover-diag\.json\r?$/m);

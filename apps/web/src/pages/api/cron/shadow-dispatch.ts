@@ -63,6 +63,9 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
     }
 
+    let currentStage = "initialize";
+    let currentSourceId: string | null = null;
+
     try {
       if (!env.DB) throw new Error("Cloudflare D1 binding is required");
       const db = dependencies.getDb(env);
@@ -78,9 +81,18 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
         : createMemoryRobotsStore();
       const hostBackoffStore = createShadowHostBackoffStore(db);
       const summary = await dispatchShadowObservations({
-        loadHostBackoff: hostBackoffStore.get,
-        persistHostBackoff: hostBackoffStore.put,
+        loadHostBackoff: async (host) => {
+          currentStage = "load_host_backoff";
+          return hostBackoffStore.get(host);
+        },
+        persistHostBackoff: async (backoff) => {
+          currentStage = "persist_host_backoff";
+          currentSourceId = backoff.sourceId;
+          return hostBackoffStore.put(backoff);
+        },
         loadRegistryRows: async () => {
+          currentStage = "enumerate_registry";
+          currentSourceId = null;
           // Rotate bounded windows even if the first group has invalid evidence
           // or is cadence-held. A permanently failing source cannot starve later
           // identities. Interleave by provider (ROW_NUMBER partition) so identities
@@ -100,9 +112,14 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
         },
         // Reuse the promotion gateway's read-only authority loader on the
         // native D1 binding. Enumeration rows never authorize the fetch.
-        loadAdmissionContext: (sourceId, nowIso) =>
-          dependencies.loadAdmissionEvidence(env.DB, sourceId, nowIso),
+        loadAdmissionContext: (sourceId, nowIso) => {
+          currentStage = "load_admission_context";
+          currentSourceId = sourceId;
+          return dependencies.loadAdmissionEvidence(env.DB, sourceId, nowIso);
+        },
         loadLastObservedAt: async ({ source, evidence }) => {
+          currentStage = "load_observation_history";
+          currentSourceId = source.sourceId;
           const rows = await db.select({
             lastObservedAt: sql<string | null>`MAX(${sourceShadowObservations.observedAt})`,
           }).from(sourceShadowObservations).where(and(
@@ -112,9 +129,15 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
           ));
           return rows[0]?.lastObservedAt ?? null;
         },
-        runProbe: (input) => (dependencies.runProbe as any)(input, { robotsStore }),
+        runProbe: (input) => {
+          currentStage = "run_probe";
+          currentSourceId = input.sourceId;
+          return (dependencies.runProbe as any)(input, { robotsStore });
+        },
         now: dependencies.now,
         persistObservation: async (record) => {
+          currentStage = "persist_observation";
+          currentSourceId = record.sourceId;
           // Migration 0040 checks the live revisions, evidence, shadow entry
           // and opt-out in this same INSERT, rejecting intervening changes.
           const write = await db.insert(sourceShadowObservations).values(record);
@@ -129,6 +152,10 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
         dispatchStartedAt,
         now,
         totalDispatched: summary.dispatched,
+        onStage: (stage) => {
+          currentStage = stage;
+          currentSourceId = null;
+        },
       });
 
       return new Response(JSON.stringify({ ...summary,
@@ -139,9 +166,13 @@ export function createShadowDispatchHandler(dependencies: ShadowDispatchHandlerD
       });
     } catch (error) {
       console.error("[api/cron/shadow-dispatch] evidence or observation storage unavailable", error);
+      const failureStage = (error as any)?.failureStage ?? currentStage;
+      const sourceId = (error as any)?.sourceId ?? currentSourceId;
       return new Response(JSON.stringify({
         error: "Shadow dispatch evidence or observation storage unavailable",
         errorClass: classifyStorageError(error),
+        failureStage,
+        sourceId,
         errorFingerprint: fingerprintStorageError(error),
       }), {
         status: 503,
@@ -207,19 +238,57 @@ export function fingerprintStorageError(error: unknown): string {
   return hash.toString(16).padStart(8, "0");
 }
 
+function classifySingleMessage(msg: string): string | null {
+  if (msg.includes("too many sql variables") || msg.includes("too many bind") || msg.includes("too many parameters")) return "d1_bind_limit";
+  if (msg.includes("d1 rejected shadow observation persistence")) return "d1_observation_write_rejected";
+  if (msg.includes("d1 rejected shadow host backoff persistence")) return "d1_host_backoff_write_rejected";
+  if (msg.includes("probe contract") || msg.includes("successful safety checks")) return "d1_probe_contract_violation";
+  if (msg.includes("unique constraint") || msg.includes("primary key") || msg.includes("constraint failed")) return "d1_constraint_violation";
+  if (msg.includes("no such column") || msg.includes("no such table")) return "d1_schema_mismatch";
+  if (msg.includes("database is locked") || msg.includes("database table is locked") || msg.includes("database is busy")) return "d1_busy_or_locked";
+  // D1 code 7500 is a generic execution error, not proof of quota exhaustion.
+  if (msg.includes("quota") || msg.includes("limit exceeded") || msg.includes("limit reached") || (msg.includes("exceeded") && !msg.includes("budgetexceeded"))) return "d1_quota_or_limit";
+  if (
+    msg.includes("admission context") ||
+    msg.includes("governance revision") ||
+    msg.includes("evidence revision") ||
+    msg.includes("evidence lease") ||
+    msg.includes("admission evidence") ||
+    msg.includes("current evidence") ||
+    msg.includes("source evidence") ||
+    /(^|[^a-z0-9_])revision([^a-z0-9_]|$)/.test(msg) ||
+    /(^|[^a-z0-9_])evidence([^a-z0-9_]|$)/.test(msg)
+  ) return "evidence_or_revision_guard";
+  if (msg.includes("d1 binding")) return "missing_d1_binding";
+  return null;
+}
+
 export function classifyStorageError(error: unknown): string {
   const messages = collectStrippedMessages(error);
-  const lower = messages.join("\n");
-  if (lower.includes("too many sql variables") || lower.includes("too many bind") || lower.includes("too many parameters")) return "d1_bind_limit";
-  if (lower.includes("d1 rejected shadow observation persistence")) return "d1_observation_write_rejected";
-  if (lower.includes("d1 rejected shadow host backoff persistence")) return "d1_host_backoff_write_rejected";
-  if (lower.includes("unique constraint") || lower.includes("primary key") || lower.includes("constraint failed")) return "d1_constraint_violation";
-  if (lower.includes("no such column") || lower.includes("no such table")) return "d1_schema_mismatch";
-  if (lower.includes("database is locked") || lower.includes("database table is locked") || lower.includes("database is busy")) return "d1_busy_or_locked";
-  // D1 code 7500 is a generic execution error, not proof of quota exhaustion.
-  if (lower.includes("quota") || lower.includes("limit exceeded") || lower.includes("limit reached") || lower.includes("exceeded")) return "d1_quota_or_limit";
-  if (lower.includes("revision") || lower.includes("evidence")) return "evidence_or_revision_guard";
-  if (lower.includes("d1 binding")) return "missing_d1_binding";
+  if (messages.length === 0) return "unclassified_storage_or_pipeline_error";
+
+  // Separate query wrapper messages from native cause messages.
+  // In Drizzle, errors wrap native D1 errors with "failed query: <SQL>".
+  // The SQL statement itself can contain table/column names such as
+  // "admission_evidence_id", "evidence_hash", "source_admission_evidence", etc.,
+  // which must never be classified as evidence_or_revision_guard.
+  const nonQueryMessages = messages.filter((m) => !m.trim().startsWith("failed query:"));
+
+  // Check the deepest native cause first (most authoritative)
+  for (let i = nonQueryMessages.length - 1; i >= 0; i--) {
+    const cls = classifySingleMessage(nonQueryMessages[i]);
+    if (cls) return cls;
+  }
+
+  // If no non-query message matched, check query messages only for non-revision/non-evidence classes
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (msg.includes("too many sql variables") || msg.includes("too many bind") || msg.includes("too many parameters")) return "d1_bind_limit";
+    if (msg.includes("database is locked") || msg.includes("database table is locked") || msg.includes("database is busy")) return "d1_busy_or_locked";
+    if (msg.includes("quota") || msg.includes("limit exceeded") || msg.includes("limit reached")) return "d1_quota_or_limit";
+    if (msg.includes("d1 binding")) return "missing_d1_binding";
+  }
+
   return "unclassified_storage_or_pipeline_error";
 }
 
@@ -232,6 +301,7 @@ async function adjudicateRunVerdict(
     dispatchStartedAt: string;
     now: () => Date;
     totalDispatched: number;
+    onStage?: (stage: string) => void;
   },
 ): Promise<Record<string, unknown>> {
   if (anomalies.length === 0) {
@@ -241,6 +311,7 @@ async function adjudicateRunVerdict(
   // Bounded, strictly-prior history for the anomalous sources only. The
   // current run's rows are excluded (observed_at < dispatchStartedAt) so
   // chronicity is never proven by the anomaly adjudicating itself.
+  context.onStage?.("load_anomaly_history");
   const historyBySourceId = context.dependencies.loadAnomalyHistory
     ? await context.dependencies.loadAnomalyHistory(
         anomalies.map((a) => a.sourceId),
@@ -263,6 +334,7 @@ async function adjudicateRunVerdict(
     verdictVersion: SHADOW_VERDICT_VERSION,
     jev: tier2 && apiKey && !disabled
       ? () => {
+          context.onStage?.("jev_adjudication");
           const packet = buildJevAdjudicationPacket({
             dispatched: context.totalDispatched,
             classifications,

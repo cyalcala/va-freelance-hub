@@ -305,6 +305,13 @@ function assertSchema(db: Database): SchemaAssertion[] {
     });
   }
 
+  const shadowTrigger = db.query("SELECT sql FROM sqlite_master WHERE type='trigger' AND name='source_shadow_observations_admission_insert'").get() as { sql: string } | null;
+  assertions.push({
+    name: "Trigger source_shadow_observations_admission_insert enforces 1 MiB byte budget (1048576)",
+    passed: shadowTrigger !== null && shadowTrigger.sql.includes("1048576"),
+    details: shadowTrigger ? (shadowTrigger.sql.includes("1048576") ? undefined : "Trigger still limits at old byte budget") : "Trigger missing",
+  });
+
   // 7. FTS5 integrity check (insert + query)
   try {
     db.exec("INSERT INTO opportunities (title, company, source_url, source_platform, tags, category, content_hash, scraped_at, is_active) VALUES ('Test Job', 'Test Co', 'https://test.com/1', 'TestPlatform', '[]', 'tech', 'hash1', datetime('now'), 1)");

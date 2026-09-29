@@ -198,6 +198,15 @@ describe("shadow route current-evidence boundary", () => {
       expect(body.error).toBe("Shadow dispatch evidence or observation storage unavailable");
       expect(typeof body.errorClass).toBe("string");
       expect(body.errorClass.length).toBeGreaterThan(0);
+      expect(typeof body.failureStage).toBe("string");
+      if ("writeError" in failure || "writeSuccess" in failure) {
+        expect(body.failureStage).toBe("persist_observation");
+        expect(body.sourceId).toBe(source.sourceId);
+      }
+      if ("historyError" in failure) {
+        expect(body.failureStage).toBe("load_observation_history");
+        expect(body.sourceId).toBe(source.sourceId);
+      }
     });
   }
 
@@ -372,7 +381,9 @@ describe("classifyStorageError", () => {
     expect(classifyStorageError(new Error("D1 rejected shadow observation persistence"))).toBe("d1_observation_write_rejected");
     expect(classifyStorageError(new Error("daily write quota exceeded (7500)"))).toBe("d1_quota_or_limit");
     expect(classifyStorageError(new Error("source evidence revision changed"))).toBe("evidence_or_revision_guard");
+    expect(classifyStorageError(new Error("observation requires a unique dispatch and current admission context"))).toBe("evidence_or_revision_guard");
     expect(classifyStorageError(new Error("Cloudflare D1 binding is required"))).toBe("missing_d1_binding");
+    expect(classifyStorageError(new Error("healthy observation requires the current probe contract and successful safety checks"))).toBe("d1_probe_contract_violation");
     expect(classifyStorageError(new Error("something else"))).toBe("unclassified_storage_or_pipeline_error");
   });
   test("does not false-positive on probe result data in D1 error params", () => {
@@ -380,6 +391,31 @@ describe("classifyStorageError", () => {
       'Failed query: insert into "source_shadow_observations" values (null, ?, ?)\nparams: greenhouse:canonical,2026-09-27T19:21:38.319Z,{"budgetExceeded":false,"evidenceUrl":"https://docs.greenhouse.io/job-board.html"}',
     );
     expect(classifyStorageError(d1Error)).toBe("unclassified_storage_or_pipeline_error");
+  });
+  test("does not misclassify column names evidence_hash or admission_evidence_id as evidence_or_revision_guard", () => {
+    const d1Error = new Error(
+      'Failed query: insert into "source_shadow_observations" ("admission_evidence_id", "evidence_hash") values (?, ?)',
+    );
+    expect(classifyStorageError(d1Error)).toBe("unclassified_storage_or_pipeline_error");
+  });
+  test("makes native cause authoritative when Drizzle SQL contains admission_evidence_id", () => {
+    const wrapper = 'Failed query: insert into "source_shadow_observations" ("source_id", "admission_evidence_id", "evidence_hash") values (?, ?, ?)';
+    
+    // Case 1: database is busy -> d1_busy_or_locked
+    const busyError = new Error(wrapper, { cause: new Error("D1_ERROR: database is busy [code: 7500]") });
+    expect(classifyStorageError(busyError)).toBe("d1_busy_or_locked");
+
+    // Case 2: constraint failed -> d1_constraint_violation
+    const constraintError = new Error(wrapper, { cause: new Error("D1_ERROR: UNIQUE constraint failed: source_shadow_observations.dispatch_key [code: 7500]") });
+    expect(classifyStorageError(constraintError)).toBe("d1_constraint_violation");
+
+    // Case 3: genuine admission context rejection -> evidence_or_revision_guard
+    const evidenceError = new Error(wrapper, { cause: new Error("D1_ERROR: observation admission context changed or expired") });
+    expect(classifyStorageError(evidenceError)).toBe("evidence_or_revision_guard");
+
+    // Case 4: probe contract violation -> d1_probe_contract_violation
+    const probeError = new Error(wrapper, { cause: new Error("D1_ERROR: healthy observation requires the current probe contract and successful safety checks [code: 7500]") });
+    expect(classifyStorageError(probeError)).toBe("d1_probe_contract_violation");
   });
   test("maps constraint, schema, and lock failures to specific classes", () => {
     expect(classifyStorageError(new Error("D1_ERROR: UNIQUE constraint failed: source_shadow_observations.source_id [code: 7500]"))).toBe("d1_constraint_violation");

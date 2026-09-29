@@ -254,7 +254,7 @@ function wranglerD1Command(tempSqlFile: string): string {
   if (fs.existsSync(pinned)) {
     return `bun "${pinned}" d1 execute DB --remote --env production --config "${config}" --file="${tempSqlFile}"`;
   }
-  return `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config "${config}" --file="${tempSqlFile}"`;
+  return `bunx wrangler@4.143.0 d1 execute DB --remote --env production --config "${config}" --file="${tempSqlFile}"`;
 }
 
 const CANDIDATE_SELECT = `

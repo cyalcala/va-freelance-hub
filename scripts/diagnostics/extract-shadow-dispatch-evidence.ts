@@ -29,6 +29,7 @@ export const SHADOW_SPECIFIC_ERROR_CLASSES = [
   "d1_constraint_violation",
   "d1_schema_mismatch",
   "d1_busy_or_locked",
+  "d1_probe_contract_violation",
 ] as const;
 
 export const SHADOW_GENERIC_ERROR_CLASSES = [
@@ -49,11 +50,14 @@ export interface ShadowDispatchEvidence {
   outcome: ShadowDispatchOutcome;
   httpStatus: number | null;
   errorClass: string | null;
+  failureStage: string | null;
+  sourceId: string | null;
   errorFingerprint: string | null;
   hasFingerprint: boolean;
   totalRegistryRows: number | null;
   dispatched: number | null;
   eligible: number | null;
+  skippedStaleContext: number | null;
   /** Bounded next action; a human-readable operational instruction. */
   nextAction: string;
   /**
@@ -82,11 +86,14 @@ export function extractShadowDispatchEvidence(
   const base = {
     httpStatus,
     errorClass: null,
+    failureStage: null,
+    sourceId: null,
     errorFingerprint: null,
     hasFingerprint: false,
     totalRegistryRows: null,
     dispatched: null,
     eligible: null,
+    skippedStaleContext: null,
     pagesTailFilterHint: null,
   };
   let body: unknown = null;
@@ -109,6 +116,10 @@ export function extractShadowDispatchEvidence(
     };
   }
 
+  const failureStage = typeof body["failureStage"] === "string" ? body["failureStage"] : null;
+  const sourceId = typeof body["sourceId"] === "string" ? body["sourceId"] : null;
+  const skippedStaleContext = asNonNegativeInt(body["skippedStaleContext"]);
+
   if (httpStatus === 200 && typeof body["totalRegistryRows"] !== "undefined") {
     return {
       ...base,
@@ -116,6 +127,7 @@ export function extractShadowDispatchEvidence(
       totalRegistryRows: asNonNegativeInt(body["totalRegistryRows"]),
       dispatched: asNonNegativeInt(body["dispatched"]),
       eligible: asNonNegativeInt(body["eligible"]),
+      skippedStaleContext,
       nextAction:
         "Incident closed for this run: EX-03 exited 0 on enriched code. Resume clean-day accumulation for the 3 shadow sources toward 8-day canary graduation.",
     };
@@ -138,8 +150,11 @@ export function extractShadowDispatchEvidence(
   const record = {
     ...base,
     errorClass,
+    failureStage,
+    sourceId,
     errorFingerprint: fingerprint,
     hasFingerprint,
+    skippedStaleContext,
   };
 
   if (!hasFingerprint) {
@@ -159,7 +174,7 @@ export function extractShadowDispatchEvidence(
       ...record,
       outcome: "specific_class_with_fingerprint",
       pagesTailFilterHint: hint,
-      nextAction: `Specific class ${errorClass} with fingerprint ${fingerprint}. Correlate in the Pages log within the run window, then remediate by class. Rollback: revert 251c776; shadow stays fail-safe.`,
+      nextAction: `Specific class ${errorClass} at stage ${failureStage ?? "unknown"}${sourceId ? ` for source ${sourceId}` : ""} with fingerprint ${fingerprint}. Correlate in the Pages log within the run window, then remediate by class. Rollback: revert 251c776; shadow stays fail-safe.`,
     };
   }
 
@@ -167,6 +182,46 @@ export function extractShadowDispatchEvidence(
     ...record,
     outcome: "generic_class_with_fingerprint",
     pagesTailFilterHint: hint,
-    nextAction: `FALSIFICATION: still ${errorClass ?? "unknown"} WITH a fingerprint on enriched code. Reopen MATH-12 diagnosis via Pages-log correlation; do not assume quota exhaustion.`,
+    nextAction: `FALSIFICATION: still ${errorClass ?? "unknown"} at stage ${failureStage ?? "unknown"}${sourceId ? ` for source ${sourceId}` : ""} WITH a fingerprint on enriched code. Reopen MATH-12 diagnosis via Pages-log correlation; do not assume quota exhaustion.`,
   };
+}
+
+if (import.meta.main) {
+  const filePath = process.argv[2];
+  const httpArg = process.argv[3];
+  if (!filePath) {
+    console.error("Usage: bun extract-shadow-dispatch-evidence.ts <path-to-dispatch.json> [http-status]");
+    process.exit(1);
+  }
+  const status = httpArg ? parseInt(httpArg, 10) : null;
+  let text = "";
+  try {
+    const fs = await import("fs");
+    text = fs.readFileSync(filePath, "utf-8");
+  } catch (err) {
+    console.error(`Failed to read file ${filePath}:`, err);
+    process.exit(1);
+  }
+  const evidence = extractShadowDispatchEvidence(status, text);
+  console.log(JSON.stringify(evidence, null, 2));
+
+  const summaryFile = process.env.GITHUB_STEP_SUMMARY;
+  if (summaryFile) {
+    const fs = await import("fs");
+    let md = `\n### EX-03 Shadow Dispatch Diagnostics\n\n`;
+    md += `- **Outcome:** \`${evidence.outcome}\`\n`;
+    md += `- **HTTP Status:** \`${evidence.httpStatus ?? "unknown"}\`\n`;
+    if (evidence.errorClass) md += `- **Error Class:** \`${evidence.errorClass}\`\n`;
+    if (evidence.failureStage) md += `- **Failure Stage:** \`${evidence.failureStage}\`\n`;
+    if (evidence.sourceId) md += `- **Source ID:** \`${evidence.sourceId}\`\n`;
+    if (evidence.errorFingerprint) md += `- **Error Fingerprint:** \`${evidence.errorFingerprint}\`\n`;
+    if (evidence.totalRegistryRows !== null) md += `- **Total Registry Rows:** \`${evidence.totalRegistryRows}\`\n`;
+    if (evidence.dispatched !== null) md += `- **Dispatched:** \`${evidence.dispatched}\`\n`;
+    if (evidence.eligible !== null) md += `- **Eligible:** \`${evidence.eligible}\`\n`;
+    if (evidence.skippedStaleContext !== null) md += `- **Skipped Stale Context:** \`${evidence.skippedStaleContext}\`\n`;
+    md += `- **Next Action:** ${evidence.nextAction}\n`;
+    if (evidence.pagesTailFilterHint) md += `- **Pages Tail Hint:** \`${evidence.pagesTailFilterHint}\`\n`;
+    md += `\n`;
+    fs.appendFileSync(summaryFile, md, "utf-8");
+  }
 }

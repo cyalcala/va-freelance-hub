@@ -47,7 +47,7 @@ function runD1Sql(sql: string): void {
   writeFileSync(tmpFile, sql, "utf-8");
   try {
     const output = execSync(
-      `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --file="${tmpFile}"`,
+      `bunx wrangler@4.143.0 d1 execute DB --remote --env production --config apps/web/wrangler.jsonc --file="${tmpFile}"`,
       { encoding: "utf-8", maxBuffer: 50 * 1024 * 1024 }
     );
     console.log(output);

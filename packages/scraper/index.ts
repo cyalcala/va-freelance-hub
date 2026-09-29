@@ -395,6 +395,7 @@ export {
   buildObservationRecord,
   dispatchShadowObservations,
   defaultRunProbe,
+  isStaleAdmissionContextError,
   DISPATCHER_VERSION,
   DEFAULT_MIN_REDISPATCH_MINUTES,
   MAX_DISPATCHES_PER_RUN,

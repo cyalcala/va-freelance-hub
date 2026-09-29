@@ -4,9 +4,9 @@ import { join } from "node:path";
 import { auditOrchestratorModifications } from "./check-orchestrator-modifications";
 
 export const BUN_VERSION = "1.3.14";
-export const WRANGLER_VERSION = "4.120.0";
+export const WRANGLER_VERSION = "4.143.0";
 const ROOT_D1_MIGRATION_SCRIPT = "bun run --cwd apps/web db:migrate";
-const WEB_D1_MIGRATION_SCRIPT = "bunx wrangler@4.120.0 d1 migrations apply DB --remote --env production --config wrangler.jsonc";
+const WEB_D1_MIGRATION_SCRIPT = "bunx wrangler@4.143.0 d1 migrations apply DB --remote --env production --config wrangler.jsonc";
 
 const DIGEST_RETRY_WORKFLOWS = new Set([
   "gha-directory-pulse.yml",

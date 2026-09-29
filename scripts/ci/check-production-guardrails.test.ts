@@ -21,12 +21,12 @@ test("rejects mutable runtime, install, and CLI inputs", () => {
   expect(result.errors).toEqual([
     "ci.yml: Bun runtime must be pinned to 1.3.14",
     "ci.yml: dependency install must use bun install --frozen-lockfile",
-    "ci.yml: Wrangler commands must be pinned to 4.120.0",
+    "ci.yml: Wrangler commands must be pinned to 4.143.0",
   ]);
 });
 
 test("rejects an accidental legacy deploy reference", () => {
-  const result = inspectWorkflowText("deploy.yml", "run: bunx wrangler@4.120.0 pages deploy web-nextjs-backup/out");
+  const result = inspectWorkflowText("deploy.yml", "run: bunx wrangler@4.143.0 pages deploy web-nextjs-backup/out");
   expect(result.errors).toEqual([
     "deploy.yml: active workflows must not reference the historical runtime web-nextjs-backup",
   ]);
@@ -38,7 +38,7 @@ test("accepts the frozen production toolchain", () => {
     [
       "bun-version: 1.3.14",
       "run: bun install --frozen-lockfile",
-      "run: npx wrangler@4.120.0 deploy",
+      "run: npx wrangler@4.143.0 deploy",
     ].join("\n"),
   );
 
@@ -48,7 +48,7 @@ test("accepts the frozen production toolchain", () => {
 test("rejects an unversioned bunx Wrangler command", () => {
   const result = inspectWorkflowText("deploy.yml", "run: bunx wrangler pages deploy dist");
   expect(result.errors).toEqual([
-    "deploy.yml: Wrangler commands must be pinned to 4.120.0",
+    "deploy.yml: Wrangler commands must be pinned to 4.143.0",
   ]);
 });
 
@@ -69,7 +69,7 @@ test("keeps validation on docs-only changes and configures Pages explicitly", ()
       "bun-version: 1.3.14",
       "run: bun run --cwd workers/freshness-cron typecheck",
       "run: bun run --cwd workers/freshness-cron deploy:dry-run",
-      "run: bunx wrangler@4.120.0 pages deploy dist --project-name remotejobs-ph --branch main --config wrangler.jsonc",
+      "run: bunx wrangler@4.143.0 pages deploy dist --project-name remotejobs-ph --branch main --config wrangler.jsonc",
     ].join("\n"),
   );
   expect(result.errors).toEqual([]);
@@ -131,7 +131,7 @@ test("rejects workflow patterns that hide operational failure", () => {
 
   const medic = inspectWorkflowText(
     "gha-medic-pulse.yml",
-    "npx wrangler@4.120.0 d1 execute remoteph-jobs-db --remote --json --command 'SELECT 1'",
+    "npx wrangler@4.143.0 d1 execute remoteph-jobs-db --remote --json --command 'SELECT 1'",
   );
   expect(medic.errors).toEqual([
     "gha-medic-pulse.yml: D1 commands must use the checked-in DB binding and production config",
@@ -168,7 +168,7 @@ test("requires clock deployment checks and an evidence-producing watchdog", () =
   expect(inspectWorkflowText("ci-guardrail.yml", "pages deploy dist --project-name remotejobs-ph --branch main --config wrangler.jsonc").errors)
     .toContain("ci-guardrail.yml: freshness Worker must be typechecked and dry-run in project CI");
 
-  expect(inspectWorkflowText("gha-deploy-cron-worker.yml", "bunx wrangler@4.120.0 deploy").errors).toEqual([
+  expect(inspectWorkflowText("gha-deploy-cron-worker.yml", "bunx wrangler@4.143.0 deploy").errors).toEqual([
     "gha-deploy-cron-worker.yml: deployment must verify PROXY_SECRET before shipping",
     "gha-deploy-cron-worker.yml: deployment must typecheck and dry-run the Worker",
   ]);

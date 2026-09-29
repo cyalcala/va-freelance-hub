@@ -53,7 +53,7 @@ jobs:
         working-directory: apps/web
         run: |
           set -euo pipefail
-          npx wrangler@4.120.0 d1 execute DB --remote --env production \
+          npx wrangler@4.143.0 d1 execute DB --remote --env production \
             --config wrangler.jsonc --json --command "
               SELECT last_error,
                      last_attempt_at,

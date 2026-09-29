@@ -1,6 +1,33 @@
 # System Savepoint
 
-## 2026-09-28 — P0 ledger clamp delivered; EX-03 enrichment OBSERVED as evidence_or_revision_guard (current)
+## 2026-09-29 — EX-03 classification repair, stage telemetry, and diagnostic preservation delivered (current)
+
+**Mode:** EXECUTE (bounded EX-03 shadow dispatch reliability, telemetry, and isolation unit) + VERIFICATION (local tests, guardrails, DB-01 rehearsal, full typecheck).
+**Authorization:** Autonomous Marathon Supervisor + Maintainer Bootloader v5.2 — "Proceed with this, read the bootloader first, then use this skill https://github.com/addyosmani/agent-skills to attack the problem".
+**Start HEAD:** local `main` `29a40df` (clean). Runtime: local Bun 1.4.2 vs repo/CI pin 1.3.14.
+
+**1. Root Cause & Problem Resolution:**
+- Discovered why EX-03 runs repeatedly returned HTTP 503 with diagnosis `evidence_or_revision_guard` (fingerprint `461c6be7`): Drizzle ORM wraps all D1 execution failures in `Failed query: insert into "source_shadow_observations" ("source_id", ..., "admission_evidence_id", "evidence_hash") values (...)`. The presence of column names `admission_evidence_id` and `evidence_hash` in the query wrapper falsely triggered the `evidence_or_revision_guard` classifier even when the real underlying D1 error was a probe contract violation (`bytes_received > 524288` from migration 0042 on ~558 KiB payloads for My Jewellery/Canonical) or transient SQLite lock.
+- Refactored `classifyStorageError` in `apps/web/src/pages/api/cron/shadow-dispatch.ts`: filters out `"failed query:"` wrapper statements to ensure the deepest non-query native cause is authoritative. Query wrappers are barred from triggering `evidence_or_revision_guard`.
+- Added failure stage and source tracking across all execution phases: `initialize`, `enumerate_registry`, `load_host_backoff`, `persist_host_backoff`, `load_admission_context`, `load_observation_history`, `run_probe`, `persist_observation`, `load_anomaly_history`, `jev_adjudication`.
+- HTTP 503 response body now outputs structured, safe diagnostics: `errorClass`, `failureStage`, `sourceId`, and stable 8-hex `errorFingerprint` without leaking queries, parameters, or private payloads.
+- Added source-local concurrency isolation in `packages/scraper/shadow-dispatcher.ts`: wrapped `persistObservation` in `dispatchShadowObservations` with `isStaleAdmissionContextError(err)` so transient admission context changes/expirations safely skip that individual source (`skippedStaleContext++`) without aborting the batch run. Systemic D1 storage errors (`d1_busy_or_locked`, trigger aborts, contract violations) still throw and fail the dispatch.
+- Updated `scripts/diagnostics/extract-shadow-dispatch-evidence.ts`: added `failureStage`, `sourceId`, and `skippedStaleContext` to `ShadowDispatchEvidence`; implemented CLI runner that formats JSON to stdout and appends markdown diagnostics to `$GITHUB_STEP_SUMMARY`.
+- Updated `.github/workflows/gha-shadow-dispatch.yml`: reversed failure ordering to run `bun scripts/diagnostics/extract-shadow-dispatch-evidence.ts dispatch.json "$HTTP"` before `test "$HTTP" = "200"`; added unconditional artifact archival with `actions/upload-artifact@v4` on `dispatch.json`.
+- Added migration `packages/db/migrations/0053_align_shadow_bytes_budget.sql`: aligns SQLite trigger `source_shadow_observations_admission_insert` byte budget from 524288 (512 KiB) to 1048576 (1 MiB), resolving probe contract violations for ~558 KiB payloads and restoring 100% parity with runtime and parameters.
+- Realigned `wrangler` toolchain pin to `4.143.0` across package.json, workflows, and guardrail tests.
+
+**2. Verification (VERIFIED_LOCAL):**
+- Full test suite: 1,635 passed / 0 failed (168 test files, 5,810 expect calls).
+- Shadow route & dispatcher tests: 77/77 passed (`apps/web/tests/shadow-dispatch-route.test.ts` 30/30, `packages/scraper/shadow-dispatcher.test.ts` 47/47).
+- Diagnostic extraction tests: 11/11 passed (`scripts/diagnostics/extract-shadow-dispatch-evidence.test.ts`).
+- Production guardrails: clean (16/16 tests passed).
+- DB-01 migration rehearsal: 121/121 schema assertions passed (both fresh and legacy DB).
+- TypeScript typecheck: clean (`bun run typecheck` exited 0).
+
+**NEXT SINGLE ACTION:** Push to `origin/main` to trigger Sovereign CI Guardrail and deploy Cloudflare Pages + D1 migration 0053. Observe the next hourly EX-03 run (schedule `23 * * * *`) to verify that `extractShadowDispatchEvidence` accurately reports observation results and that shadow observations cleanly record into D1.
+
+## 2026-09-28 — P0 ledger clamp delivered; EX-03 enrichment OBSERVED as evidence_or_revision_guard (historical)
 
 **Mode:** EXECUTE (bounded P0 publication-integrity unit) + RECOVERY observation (read-only D1 SELECTs + local tests; no D1/lake/publication/route writes from this box).
 **Authorization:** Autonomous Marathon Supervisor + Maintainer Bootloader v5.2 — "Follow this, do not stop. auto maintenance".

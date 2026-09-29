@@ -310,6 +310,42 @@ describe("current-evidence shadow dispatcher", () => {
   test("a stale-context storage rejection never reports successful dispatch", async () => {
     await expect(dispatchShadowObservations(deps({ persistObservation: async () => { throw new Error("0040 current evidence guard rejected insert"); } }))).rejects.toThrow("current evidence guard");
   });
+  test("source-local concurrency: stale admission context skips source without head-of-line blocking other sources", async () => {
+    const writtenRecords: ShadowObservationRecord[] = [];
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => [registryRow({ sourceId: "source-a" }), registryRow({ sourceId: "source-b" })],
+      loadAdmissionContext: async sourceId => context(registryRow({ sourceId })),
+      persistObservation: async record => {
+        if (record.sourceId === "source-a") {
+          // Source A changed concurrently before persistence; trigger raises abort
+          throw new Error("D1_ERROR: observation admission context changed or expired");
+        }
+        writtenRecords.push(record);
+      },
+    }));
+
+    // Source A was skipped safely due to stale context
+    expect(result.skippedStaleContext).toBe(1);
+    expect(result.staleContextErrors).toHaveLength(1);
+    expect(result.staleContextErrors[0].sourceId).toBe("source-a");
+    expect(result.staleContextErrors[0].reason).toContain("admission context changed or expired");
+
+    // Source B was still probed and its observation was written
+    expect(result.dispatched).toBe(1);
+    expect(writtenRecords).toHaveLength(1);
+    expect(writtenRecords[0].sourceId).toBe("source-b");
+  });
+  test("systemic storage failures still fail closed and abort dispatch", async () => {
+    // Database locked is systemic -> aborts
+    await expect(dispatchShadowObservations(deps({
+      persistObservation: async () => { throw new Error("D1_ERROR: database is locked [code: 7500]"); }
+    }))).rejects.toThrow("database is locked");
+
+    // Probe contract violation is systemic -> aborts
+    await expect(dispatchShadowObservations(deps({
+      persistObservation: async () => { throw new Error("D1_ERROR: healthy observation requires the current probe contract and successful safety checks"); }
+    }))).rejects.toThrow("probe contract");
+  });
   test("each actual probe receives its own timestamp and unique dispatch key", async () => {
     let clock = new Date(NOW);
     const records: ShadowObservationRecord[] = [];

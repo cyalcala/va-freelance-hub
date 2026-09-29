@@ -189,7 +189,7 @@ document_metadata:
 - **Entry Point:** `.github/workflows/ci-guardrail.yml`
 - **Cadence / Trigger:** Push or Pull Request against `main`
 - **Runtime Environment:** GitHub Actions runner
-- **Boundaries & Dependencies:** Pinned Bun 1.3.14, Wrangler 4.120.0, Gitleaks, D1 migration runner, Cloudflare Pages deployer.
+- **Boundaries & Dependencies:** Pinned Bun 1.3.14, Wrangler 4.143.0, Gitleaks, D1 migration runner, Cloudflare Pages deployer.
 - **Safety / Compliance Gate:** Full 7-stage verification (Gitleaks, guardrails, parameter parity audit, orchestrator modification guard, unit tests, analytics tests, build, typecheck, dry-run, D1 migration rehearsal, FTS integrity verification).
 - **Commit Anchor:** `b9dc5e6`
 

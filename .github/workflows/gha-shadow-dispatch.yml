@@ -45,6 +45,7 @@ jobs:
           cat dispatch.json
           echo
           echo "HTTP $HTTP"
+          bun scripts/diagnostics/extract-shadow-dispatch-evidence.ts dispatch.json "$HTTP"
           test "$HTTP" = "200"
           jq . dispatch.json
           jq -e '.totalRegistryRows >= 1' dispatch.json
@@ -53,3 +54,12 @@ jobs:
           if [ "$(jq -r '.verdict.status // "none"' dispatch.json)" != "none" ]; then
             jq -r '.verdict.classifications[]? | "verdict: \(.sourceId) \(.outcome) -> \(.classification)"' dispatch.json >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Upload shadow dispatch evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: shadow-dispatch-payload-${{ github.run_id }}
+          path: dispatch.json
+          if-no-files-found: ignore
+

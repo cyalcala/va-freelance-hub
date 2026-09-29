@@ -45,7 +45,7 @@ function runCmd(cmd: string, cwd = join(process.cwd(), "apps/web")): string {
 }
 
 function queryD1(sql: string): any[] {
-  const cmd = `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --command "${sql.replace(/"/g, '\\"')}"`;
+  const cmd = `bunx wrangler@4.143.0 d1 execute DB --remote --env production --config wrangler.jsonc --command "${sql.replace(/"/g, '\\"')}"`;
   const output = runCmd(cmd);
   const startIdx = output.indexOf("[");
   if (startIdx === -1) {
@@ -60,7 +60,7 @@ function queryD1(sql: string): any[] {
 
 function checkD1WriteAvailability(): { open: boolean; output: string } {
   try {
-    const cmd = `bunx wrangler@4.120.0 d1 migrations apply DB --remote --env production --config wrangler.jsonc`;
+    const cmd = `bunx wrangler@4.143.0 d1 migrations apply DB --remote --env production --config wrangler.jsonc`;
     const output = runCmd(cmd);
     if (output.includes("code: 7500") || output.includes("daily row write limit")) {
       return { open: false, output };
@@ -88,7 +88,7 @@ function executeD1Command(sql: string): string {
   const tmpFile = join(process.cwd(), `scripts/graduation/tmp_${Date.now()}_${Math.random().toString(36).slice(2)}.sql`);
   writeFileSync(tmpFile, sql, "utf-8");
   try {
-    const cmd = `bunx wrangler@4.120.0 d1 execute DB --remote --env production --config wrangler.jsonc --file="${tmpFile}"`;
+    const cmd = `bunx wrangler@4.143.0 d1 execute DB --remote --env production --config wrangler.jsonc --file="${tmpFile}"`;
     return runCmd(cmd);
   } finally {
     try { unlinkSync(tmpFile); } catch {}
