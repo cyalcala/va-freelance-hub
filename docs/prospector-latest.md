@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-09-29
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36571496690
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36638699253
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 10 |
-| Auto-added this run | 2 |
+| Candidates considered | 9 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 7 |
 | Rejected for quality | 1 |
@@ -23,8 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36571496
 
 ## Auto-added companies
 
-- Twikey
-- Postscript
+- EPAM Systems
 
 ## Durable candidate queue (SP-06, non-publishing)
 
