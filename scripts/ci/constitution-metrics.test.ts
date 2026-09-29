@@ -9,6 +9,7 @@ import {
   measureGroundTruth,
   providerFamily,
   qualityCeilingStatus,
+  wilsonInterval,
   TOP_PROVIDER_FAMILY_SHARE_MAX,
   TOP_SOURCE_SHARE_MAX,
   type CohortInput,
@@ -130,7 +131,44 @@ test("a small sample stays insufficient and does not certify the ceiling", () =>
   expect(qualityCeilingStatus(measurement)).toBe("UNKNOWN");
   if (measurement.status === "INSUFFICIENT_SAMPLE") {
     expect(measurement.falsePhRate).toBe(1);
+    expect(measurement.falsePhDenominator).toBe(1);
+    expect(measurement.ceilingDemonstrated).toBe(false);
   }
+});
+
+test("F6 repro: a mixed-dimension sample cannot dilute the false-PH rate", () => {
+  const samples = [
+    { systemPrediction: "eligible" as const, groundTruthVerdict: "ineligible" as const },
+    ...Array.from({ length: 199 }, () => ({
+      systemPrediction: "remote" as const,
+      groundTruthVerdict: "remote" as const,
+    })),
+  ];
+  const measurement = measureGroundTruth(samples);
+  expect(measurement.status).toBe("MEASURED");
+  if (measurement.status === "MEASURED") {
+    expect(measurement.falsePhCount).toBe(1);
+    expect(measurement.falsePhDenominator).toBe(1);
+    expect(measurement.falsePhRate).toBe(1);
+    expect(measurement.falseRemoteRate).toBe(0);
+    expect(measurement.falseRemoteDenominator).toBe(199);
+  }
+  expect(qualityCeilingStatus(measurement)).toBe("FAIL");
+});
+
+test("an empty remote dimension is unknown, never a silent pass", () => {
+  const samples = Array.from({ length: 50 }, () => ({
+    systemPrediction: "eligible" as const,
+    groundTruthVerdict: "eligible" as const,
+  }));
+  const measurement = measureGroundTruth(samples);
+  expect(measurement.status).toBe("MEASURED");
+  if (measurement.status === "MEASURED") {
+    expect(measurement.falsePhRate).toBe(0);
+    expect(measurement.falseRemoteRate).toBeNull();
+    expect(measurement.ceilingDemonstrated).toBe(false);
+  }
+  expect(qualityCeilingStatus(measurement)).toBe("UNKNOWN");
 });
 
 test("a measured sample fails when the false-PH rate exceeds the ceiling", () => {
@@ -143,12 +181,85 @@ test("a measured sample fails when the false-PH rate exceeds the ceiling", () =>
   expect(qualityCeilingStatus(measurement)).toBe("FAIL");
 });
 
-test("a measured clean sample can pass", () => {
+test("a measured clean eligibility-only sample no longer passes the remote ceiling", () => {
   const samples = Array.from({ length: 50 }, () => ({
     systemPrediction: "eligible" as const,
     groundTruthVerdict: "eligible" as const,
   }));
-  expect(qualityCeilingStatus(measureGroundTruth(samples))).toBe("PASS");
+  expect(qualityCeilingStatus(measureGroundTruth(samples))).toBe("UNKNOWN");
+});
+
+test("a measured clean sample in both dimensions can pass", () => {
+  const samples = [
+    ...Array.from({ length: 30 }, () => ({
+      systemPrediction: "eligible" as const,
+      groundTruthVerdict: "eligible" as const,
+    })),
+    ...Array.from({ length: 30 }, () => ({
+      systemPrediction: "remote" as const,
+      groundTruthVerdict: "remote" as const,
+    })),
+  ];
+  const measurement = measureGroundTruth(samples);
+  expect(measurement.status).toBe("MEASURED");
+  expect(qualityCeilingStatus(measurement)).toBe("PASS");
+  if (measurement.status === "MEASURED") {
+    expect(measurement.ceilingDemonstrated).toBe(false);
+  }
+});
+
+test("ground-truth-unclear rows are excluded from both denominators but visible", () => {
+  const samples = [
+    ...Array.from({ length: 30 }, () => ({
+      systemPrediction: "eligible" as const,
+      groundTruthVerdict: "eligible" as const,
+    })),
+    ...Array.from({ length: 30 }, () => ({
+      systemPrediction: "remote" as const,
+      groundTruthVerdict: "remote" as const,
+    })),
+    ...Array.from({ length: 40 }, () => ({
+      systemPrediction: "eligible" as const,
+      groundTruthVerdict: "unclear" as const,
+    })),
+  ];
+  const measurement = measureGroundTruth(samples);
+  expect(measurement.status).toBe("MEASURED");
+  if (measurement.status === "MEASURED") {
+    expect(measurement.falsePhDenominator).toBe(30);
+    expect(measurement.falseRemoteDenominator).toBe(30);
+    expect(measurement.unclearGroundTruthCount).toBe(40);
+  }
+});
+
+test("Wilson 95% intervals are honest about small-sample uncertainty", () => {
+  const [lo, hi] = wilsonInterval(0, 50)!;
+  expect(lo).toBe(0);
+  expect(hi).toBeCloseTo(0.0714, 3);
+  expect(wilsonInterval(1, 1)![0]).toBeGreaterThan(0.2);
+  expect(wilsonInterval(1, 1)![1]).toBe(1);
+  expect(wilsonInterval(0, 0)).toBeNull();
+});
+
+test("MEASURED and CEILING DEMONSTRATED are separate claims", () => {
+  const samples = [
+    ...Array.from({ length: 381 }, () => ({
+      systemPrediction: "eligible" as const,
+      groundTruthVerdict: "eligible" as const,
+    })),
+    ...Array.from({ length: 765 }, () => ({
+      systemPrediction: "remote" as const,
+      groundTruthVerdict: "remote" as const,
+    })),
+  ];
+  const measurement = measureGroundTruth(samples);
+  expect(measurement.status).toBe("MEASURED");
+  if (measurement.status === "MEASURED") {
+    expect(measurement.falsePhRate).toBe(0);
+    expect(measurement.falseRemoteRate).toBe(0);
+    expect(measurement.ceilingDemonstrated).toBe(true);
+  }
+  expect(qualityCeilingStatus(measurement)).toBe("PASS");
 });
 
 test("the repository paper-system audit passes", () => {

@@ -190,6 +190,11 @@ Measures true classification error rates against independent human/employer adju
 ```sql
 -- Independent Ground-Truth Adjudication Quality Rates
 -- Empty sample => measurement_status UNKNOWN. Do not read NULL rates as 0%.
+-- Numerator and denominator stay in the same population/dimension (F6 repair):
+-- the false-PH rate divides only by scored rows the system predicted eligible;
+-- the false-remote rate divides only by scored rows the system predicted remote.
+-- An empty DIMENSION is NULL, never a silent pass. Ground-truth-unclear rows
+-- cannot be scored and are excluded from both denominators.
 -- Executable rule: scripts/ci/constitution-metrics.ts measureGroundTruth
 SELECT
   COUNT(*) AS audited_sample_size,
@@ -199,18 +204,30 @@ SELECT
     ELSE 'MEASURED'
   END AS measurement_status,
   SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict = 'ineligible' THEN 1 ELSE 0 END) AS false_ph_count,
+  SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict IN ('eligible', 'ineligible') THEN 1 ELSE 0 END) AS false_ph_denominator,
   CASE
-    WHEN COUNT(*) = 0 THEN NULL
-    ELSE ROUND(CAST(SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict = 'ineligible' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100.0, 3)
-  END AS false_ph_rate_pct, -- Ceiling: <= 1.0% only when measurement_status = MEASURED
+    WHEN SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict IN ('eligible', 'ineligible') THEN 1 ELSE 0 END) = 0 THEN NULL
+    ELSE ROUND(CAST(SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict = 'ineligible' THEN 1 ELSE 0 END) AS REAL)
+      / SUM(CASE WHEN system_prediction = 'eligible' AND ground_truth_verdict IN ('eligible', 'ineligible') THEN 1 ELSE 0 END) * 100.0, 3)
+  END AS false_ph_rate_pct, -- Ceiling: <= 1.0% only when measurement_status = MEASURED and this dimension denominator > 0
   SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict = 'non_remote' THEN 1 ELSE 0 END) AS false_remote_count,
+  SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict IN ('remote', 'non_remote') THEN 1 ELSE 0 END) AS false_remote_denominator,
   CASE
-    WHEN COUNT(*) = 0 THEN NULL
-    ELSE ROUND(CAST(SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict = 'non_remote' THEN 1 ELSE 0 END) AS REAL) / COUNT(*) * 100.0, 3)
-  END AS false_remote_rate_pct -- Ceiling: <= 0.5% only when measurement_status = MEASURED
+    WHEN SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict IN ('remote', 'non_remote') THEN 1 ELSE 0 END) = 0 THEN NULL
+    ELSE ROUND(CAST(SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict = 'non_remote' THEN 1 ELSE 0 END) AS REAL)
+      / SUM(CASE WHEN system_prediction = 'remote' AND ground_truth_verdict IN ('remote', 'non_remote') THEN 1 ELSE 0 END) * 100.0, 3)
+  END AS false_remote_rate_pct -- Ceiling: <= 0.5% only when measurement_status = MEASURED and this dimension denominator > 0
 FROM adjudication_audit_samples
 WHERE sample_window_days <= 30;
 ```
+
+MEASURED is a point estimate on >= 50 samples; it is not statistical proof of
+the accepted population ceiling. The ceiling is demonstrated only when both
+dimensions' 95% Wilson score interval upper bounds sit at or below the
+accepted ceilings (`quality.false_ph_eligibility_rate_max` <= 1.0%,
+`quality.false_remote_classification_rate_max` <= 0.5%) — a clean 50-row
+sample does not demonstrate either ceiling (Wilson upper ~7.1% at 0/50).
+Separate MEASURED from CEILING DEMONSTRATED when reporting or graduating.
 
 ---
 

@@ -63,19 +63,50 @@ export type QualityMeasurement =
       status: "INSUFFICIENT_SAMPLE";
       sampleSize: number;
       required: number;
+      estimand: string;
       falsePhCount: number;
+      falsePhDenominator: number;
+      falsePhRate: number | null;
+      falsePhWilson: [number, number] | null;
       falseRemoteCount: number;
-      falsePhRate: number;
-      falseRemoteRate: number;
+      falseRemoteDenominator: number;
+      falseRemoteRate: number | null;
+      falseRemoteWilson: [number, number] | null;
+      unclearGroundTruthCount: number;
+      ceilingDemonstrated: boolean;
     }
   | {
       status: "MEASURED";
       sampleSize: number;
+      estimand: string;
       falsePhCount: number;
+      falsePhDenominator: number;
+      falsePhRate: number | null;
+      falsePhWilson: [number, number] | null;
       falseRemoteCount: number;
-      falsePhRate: number;
-      falseRemoteRate: number;
+      falseRemoteDenominator: number;
+      falseRemoteRate: number | null;
+      falseRemoteWilson: [number, number] | null;
+      unclearGroundTruthCount: number;
+      ceilingDemonstrated: boolean;
     };
+
+/**
+ * Wilson score interval at 95% confidence. Returns null when there are no
+ * scored observations, so an empty dimension is never read as a 0% rate.
+ */
+export function wilsonInterval(
+  successes: number,
+  total: number,
+  z = 1.96,
+): [number, number] | null {
+  if (!(total > 0)) return null;
+  const p = successes / total;
+  const denominator = 1 + (z * z) / total;
+  const centre = p + (z * z) / (2 * total);
+  const margin = z * Math.sqrt((p * (1 - p)) / total + (z * z) / (4 * total * total));
+  return [Math.max(0, (centre - margin) / denominator), Math.min(1, (centre + margin) / denominator)];
+}
 
 export interface PaperAuditResult {
   errors: string[];
@@ -151,33 +182,72 @@ export function measureGroundTruth(samples: AdjudicationSample[]): QualityMeasur
       reason: "no independent adjudication samples; do not report 0%",
     };
   }
+
+  // Estimand, named per the accepted parameters
+  // (quality.false_ph_eligibility_rate_max / quality.false_remote_classification_rate_max):
+  // the false-PH rate is the error rate among SCORED rows the system predicted
+  // eligible; the false-remote rate is the error rate among SCORED rows the
+  // system predicted remote. Numerator and denominator stay in the same
+  // population/dimension — dividing by the total sample size diluted the
+  // rates when one dimension dominated the sample (F6). Ground-truth-unclear
+  // rows cannot be scored and are excluded from both denominators; the
+  // attrition stays visible in unclearGroundTruthCount.
   const falsePhCount = samples.filter(
     (sample) => sample.systemPrediction === "eligible" && sample.groundTruthVerdict === "ineligible",
+  ).length;
+  const falsePhDenominator = samples.filter(
+    (sample) =>
+      sample.systemPrediction === "eligible" &&
+      (sample.groundTruthVerdict === "eligible" || sample.groundTruthVerdict === "ineligible"),
   ).length;
   const falseRemoteCount = samples.filter(
     (sample) => sample.systemPrediction === "remote" && sample.groundTruthVerdict === "non_remote",
   ).length;
-  const falsePhRate = falsePhCount / sampleSize;
-  const falseRemoteRate = falseRemoteCount / sampleSize;
-  if (sampleSize < MIN_GROUND_TRUTH_SAMPLE) {
-    return {
-      status: "INSUFFICIENT_SAMPLE",
-      sampleSize,
-      required: MIN_GROUND_TRUTH_SAMPLE,
-      falsePhCount,
-      falseRemoteCount,
-      falsePhRate,
-      falseRemoteRate,
-    };
-  }
-  return {
-    status: "MEASURED",
+  const falseRemoteDenominator = samples.filter(
+    (sample) =>
+      sample.systemPrediction === "remote" &&
+      (sample.groundTruthVerdict === "remote" || sample.groundTruthVerdict === "non_remote"),
+  ).length;
+  const unclearGroundTruthCount = samples.filter(
+    (sample) => sample.groundTruthVerdict === "unclear",
+  ).length;
+
+  const falsePhRate = falsePhDenominator > 0 ? falsePhCount / falsePhDenominator : null;
+  const falseRemoteRate = falseRemoteDenominator > 0 ? falseRemoteCount / falseRemoteDenominator : null;
+  const falsePhWilson = wilsonInterval(falsePhCount, falsePhDenominator);
+  const falseRemoteWilson = wilsonInterval(falseRemoteCount, falseRemoteDenominator);
+
+  // MEASURED is a point estimate on >= MIN_GROUND_TRUTH_SAMPLE samples; it is
+  // an implemented classification rule, not statistical proof of the accepted
+  // population ceiling. The ceiling is demonstrated only when both
+  // dimensions' 95% Wilson upper bounds sit at or below the accepted
+  // ceilings — MEASURED and CEILING DEMONSTRATED are separate claims.
+  const ceilingDemonstrated =
+    falsePhWilson !== null &&
+    falseRemoteWilson !== null &&
+    falsePhWilson[1] <= FALSE_PH_RATE_MAX &&
+    falseRemoteWilson[1] <= FALSE_REMOTE_RATE_MAX;
+
+  const base = {
     sampleSize,
+    estimand:
+      "false_ph_eligibility_rate: errors among scored system-eligible rows; false_remote_classification_rate: errors among scored system-remote rows",
     falsePhCount,
-    falseRemoteCount,
+    falsePhDenominator,
     falsePhRate,
+    falsePhWilson,
+    falseRemoteCount,
+    falseRemoteDenominator,
     falseRemoteRate,
+    falseRemoteWilson,
+    unclearGroundTruthCount,
+    ceilingDemonstrated,
   };
+
+  if (sampleSize < MIN_GROUND_TRUTH_SAMPLE) {
+    return { status: "INSUFFICIENT_SAMPLE", required: MIN_GROUND_TRUTH_SAMPLE, ...base };
+  }
+  return { status: "MEASURED", ...base };
 }
 
 export function qualityCeilingStatus(
@@ -186,7 +256,13 @@ export function qualityCeilingStatus(
   falseRemoteCeiling = FALSE_REMOTE_RATE_MAX,
 ): "PASS" | "FAIL" | "UNKNOWN" {
   if (measurement.status !== "MEASURED") return "UNKNOWN";
-  if (measurement.falsePhRate > falsePhCeiling || measurement.falseRemoteRate > falseRemoteCeiling) return "FAIL";
+  // A dimension with no scored rows is unknown, never a silent pass — the
+  // same principle as an empty sample. But a KNOWN violation is never
+  // masked: any scored dimension above its ceiling fails outright; UNKNOWN
+  // only when a dimension is unmeasurable and no violation is demonstrable.
+  if (measurement.falsePhRate !== null && measurement.falsePhRate > falsePhCeiling) return "FAIL";
+  if (measurement.falseRemoteRate !== null && measurement.falseRemoteRate > falseRemoteCeiling) return "FAIL";
+  if (measurement.falsePhRate === null || measurement.falseRemoteRate === null) return "UNKNOWN";
   return "PASS";
 }
 
