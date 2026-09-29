@@ -2,7 +2,24 @@
 
 ## Active bounded unit
 
-**EX-03 fix deployed and verified at HEAD; schedule silent since 08:40Z, fix UNOBSERVED (2026-09-29, current):**
+**MATH-12 EX-03 schedule-silence watchdog delivered; GitHub scheduler starvation now multi-workflow (2026-09-29, current):**
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+CURRENT STATE: EX-03 fix (`324bf6b`) deployed but UNOBSERVED — its verification clock (hourly EX-03 schedule) went silent 6.2h+; watchdog monitoring gap closed at HEAD `12ebee8`.
+CURRENT BOTTLENECK: EX-03 schedule silence blocks the fix's falsification path; supply gap (18.9/day vs 100/day floor) unchanged.
+ACTIVE UNIT: observation window (15:37Z first watchdog run; 15:23Z/16:23Z EX-03 slots).
+LAST COMPLETED UNIT: MATH-12 EX-03 schedule-silence watchdog (read-only, OPS-05 lifecycle).
+RESULT: commit `12ebee8` pushed; Sovereign CI Guardrail `36587025359` success on exact HEAD; targeted 11/11, full suite 1,646/1,646, typecheck clean, guardrails clean; live CLI evaluation confirmed `status: alert` ("no scheduled EX-03 run in 6.23h").
+UNRESOLVED: no EX-03 run on the fix code yet; scheduler starvation broadened at 15:05Z to Hunter Pulse and Lake Publish (GitHub no-SLA behavior, not EX-03-specific); primary-clock freshness for today UNKNOWN from this box.
+NEXT ACTION: Observe the 15:37Z first scheduled watchdog run (expect failing evaluation → `shadow-dispatch-schedule` incident) and the 15:23Z/16:23Z EX-03 slots; if an EX-03 run fires on code ≥ `324bf6b`, classify its `dispatch.json` with the in-workflow extractor + artifact.
+WHY NEXT: an EX-03 run on the fix code resolves the `generic_class_with_fingerprint` falsification path and resumes clean-day accumulation; the watchdog makes any continued silence durable instead of invisible.
+ACCEPTANCE: watchdog run opens/holds the incident with evidence; EX-03 200 closes it and accumulates clean days; silence >3h remains tracked until resolved.
+FALLBACK: if the watchdog run fails, triage its run log before retrying; if the scheduler stays silent, independent supply/measurement work continues.
+
+**Prior unit (delivered & deployed):**
+
+**EX-03 fix deployed and verified at HEAD; schedule silent since 08:40Z, fix UNOBSERVED (2026-09-29, historical):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
@@ -11,7 +28,7 @@ See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 3. **Measurement:** last EX-03 `36544265836` (08:40Z, old code) classifies `generic_class_with_fingerprint` under the new extractor — the falsification path `324bf6b` was built to resolve.
 4. **Finding:** EX-03 schedule silent 5+h (09:23–13:23Z absent); siblings healthy. Fix UNOBSERVED until the scheduler fires.
 
-**Follow-on unit:** Observe the 14:23Z EX-03 run and classify `dispatch.json`; if absent, open the bounded MATH-12 EX-03 missing-run watchdog unit (read-only, never POST the route).
+**Follow-on unit:** Observe the 14:23Z EX-03 run and classify `dispatch.json`; if absent, open the bounded MATH-12 EX-03 missing-run watchdog unit (read-only, never POST the route). [COMPLETED 2026-09-29: 14:23Z absent; watchdog delivered in commit `12ebee8` — see the active unit above.]
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 

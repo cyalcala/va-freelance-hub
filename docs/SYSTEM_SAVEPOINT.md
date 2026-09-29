@@ -1,6 +1,30 @@
 # System Savepoint
 
-## 2026-09-29 — EX-03 fix deployed and verified at HEAD; schedule silent since 08:40Z, fix UNOBSERVED (current)
+## 2026-09-29 — MATH-12 EX-03 schedule-silence watchdog delivered; GitHub scheduler starvation now multi-workflow (current)
+
+**Mode:** RECOVERY + IMPLEMENTATION + VERIFICATION (read-only watchdog; no D1/lake/publication/route writes from this box).
+**Authorization:** Autonomous Marathon Supervisor + Maintainer Bootloader v5.2 — "auto maintenance" (this session).
+**Start HEAD:** local `main` `6bc7cdf` == `origin/main` (clean, fetched). End HEAD: `12ebee8` pushed.
+
+**1. Delivered unit — MATH-12 EX-03 schedule-silence watchdog (commit `12ebee8`):**
+- Baseline: EX-03 hourly `23 * * * *` schedule silent 6.2h+ (last scheduled run `08:40:56Z`; 09:23–14:23Z absent as of 14:54Z); no monitoring existed for EX-03 schedule silence (Ingestion Heartbeat Watchdog covers only the `__ingest_diag__` ingestion clock), so the deployed `324bf6b` fix sat UNOBSERVED behind a silent verification clock.
+- `scripts/gha/evaluate-schedule-silence.ts`: pure decision function + thin CLI. Filters `event == "schedule"` only (manual dispatches never reset the silence clock); failed runs still prove the scheduler fired; missing/unparseable evidence degrades to `unknown` (no alert) — fail-safe contract validated live against a UTF-16-encoded input file. Threshold `--stale-after-hours` default 3h (GitHub no-SLA grace).
+- `.github/workflows/gha-shadow-dispatch-watchdog.yml`: hourly at `:37`, strictly read-only evidence (`gh run list`, never POSTs the shadow-dispatch route, no PROXY_SECRET), OPS-05 lifecycle keyed `shadow-dispatch-schedule`, HEALTHY_THRESHOLD 2, healthy-streak auto-close, dedup guard + unkeyed-issue adoption, `simulate_outage` drill mirroring the Ingestion Heartbeat Watchdog.
+- Tests: 11 new (evaluator 9 + workflow YAML assertions 2, following `shadow-dispatch-workflow.test.ts`).
+
+**2. Verification (VERIFIED_LOCAL `12ebee8`):**
+- Targeted 11/11 pass; full suite 1,646/1,646 (170 files); `tsc --noEmit` clean; guardrails exit 0.
+- Live CLI evaluation against real evidence: `status: alert`, "no scheduled EX-03 run in 6.23h (threshold 3h)" at 14:54:31Z.
+- Commit `12ebee8` pushed (`6bc7cdf..12ebee8`); Sovereign CI Guardrail `36587025359` success on exact HEAD (15:01:38Z).
+
+**3. New finding — scheduler starvation broadened (OBSERVED 15:05Z, read-only `gh run list`):**
+- At 15:05Z the silence is no longer EX-03-specific: Hunter Pulse (last 13:46:47Z vs 15-min cadence) and Lake Publish (last 10:39:55Z vs hourly) are also starved simultaneously, while their 12h/6h siblings (Verifier 04:30Z, Directory 13:19Z) are within window. This supersedes the 13:44Z "siblings healthy → EX-03-specific starvation" observation and matches GitHub's documented no-delivery-SLA behavior under load.
+- Primary ingestion clock unaffected by this: it is the Cloudflare freshness Worker (10-minute cadence, deployed via `gha-deploy-cron-worker.yml`), not the GitHub Hunter Pulse; its health is monitored by the D1 heartbeat watchdog. Primary-clock freshness for today remains UNKNOWN from this box (no D1 credentials exercised).
+- Baseline supply unchanged (HISTORICAL, 7-day ending 2026-09-27T04:45Z): 18.9 fresh/day; gap −81.1 floor / −131.1 stretch; fleet P50 202 / P90 270.
+
+**NEXT SINGLE ACTION:** Observe the 15:37Z first scheduled watchdog run (expect a failing evaluation → `shadow-dispatch-schedule` incident opened) and the 15:23Z/16:23Z EX-03 slots. If an EX-03 run fires on code ≥ `324bf6b`, classify its `dispatch.json` with the in-workflow extractor + artifact (200 closes the incident and resumes clean-day accumulation; a specific class+fingerprint → Pages-log correlation; generic+fingerprint → reopen MATH-12 with stage/source fields). If the watchdog itself fails, triage its run log before retrying. Owner/controller: next maintainer; trigger: 15:37Z watchdog run or 15:23Z EX-03 slot.
+
+## 2026-09-29 — EX-03 fix deployed and verified at HEAD; schedule silent since 08:40Z, fix UNOBSERVED (historical; superseded by the entry above)
 
 **Mode:** RECOVERY + VERIFICATION (read-only; no D1/lake/publication/route writes from this box).
 **Authorization:** Autonomous Marathon Supervisor + Maintainer Bootloader v5.2 — "auto maintenance" (this session).
