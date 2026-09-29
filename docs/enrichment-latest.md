@@ -1,18 +1,16 @@
 # Directory Enrichment — Latest
 
-Date: 2026-09-28
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36485455039
+Date: 2026-09-29
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36553310144
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 3 |
+| Companies processed | 0 |
 | Websites set | 0 |
-| Hiring pages set | 1 |
-| Auto-verified | 2 |
+| Hiring pages set | 0 |
+| Auto-verified | 0 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #578 Canonical: auto-verified (31 verified, 125 PH-eligible jobs)
-- #673 ZoomInfo Technologies LLC: auto-verified (1 verified, 4 PH-eligible jobs)
-- #304 MultiplyMii: hiring_page=https://jobs.ashbyhq.com/multiplymii
+- (none this run)
