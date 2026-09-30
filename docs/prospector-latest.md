@@ -1,12 +1,12 @@
 # Prospector Latest
 
 Date: 2026-09-30
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36715989745
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36784743215
 
 | Metric | Value |
 | --- | ---: |
-| Candidates considered | 10 |
-| Auto-added this run | 2 |
+| Candidates considered | 9 |
+| Auto-added this run | 1 |
 | Backlog remaining (drains next runs) | 0 |
 | Review-only (untrusted source) | 7 |
 | Rejected for quality | 1 |
@@ -23,8 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36715989
 
 ## Auto-added companies
 
-- Lithic
-- Ava Labs
+- Orchard
 
 ## Durable candidate queue (SP-06, non-publishing)
 
