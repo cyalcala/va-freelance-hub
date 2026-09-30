@@ -2,26 +2,26 @@
 
 ## Active bounded unit
 
-**F5 parity lock delivered; F5/F6 both closed; all 2026-09-27 audit findings resolved (2026-09-29, current):**
+**Live D1 Fleet Funnel Measurement (35.9/day), Skills Installed, Watchdog Verified, 14 Candidates Audited (2026-10-01, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
-CURRENT STATE: F5 (public-route eligibility parity) verified IMPLEMENTED and now LOCKED by tests at `27ff67f` — every public surface (list/search/detail/sitemap/categories/homepage) composes the same `publicOpportunityFilters` / `PUBLIC_PH_ELIGIBILITY_SQL` contract, and a source-scan parity test prevents silent divergence. UI-vs-metric semantics note added to `public-query.ts`.
-CURRENT BOTTLENECK: supply gap (18.9/day vs 100/day floor; fleet P50 202 / P90 270) — credential-blocked from this box.
-ACTIVE UNIT: none dependency-ready (observation windows only).
-LAST COMPLETED UNIT: F5 route-equivalence parity lock + UI-vs-metric semantics (`27ff67f`).
-RESULT: CI Guardrail `36604725531` success on exact HEAD; full suite 1,658/1,658 (171 files); typecheck clean; guardrails clean.
-UNRESOLVED: watchdog first scheduled run pending (15:37Z/16:37Z slots dropped; next 17:37Z, expect healthy → no incident); 8-day canary graduation streak for the 3 shadow sources accumulating; fleet numbers remain estimates (no D1 creds).
-NEXT ACTION: Observe the 17:37Z watchdog run; then the next maintainer (with Cloudflare credentials) should run the fleet measurement (`scripts/diagnostics/measure-first-publication-funnel.ts` live D1 observation) — P2, the measurement feeding the 100/day path.
-WHY NEXT: supply is the primary bottleneck; the fleet measurement is the dependency-ready decision input once credentials are available.
-ACCEPTANCE: fleet P50/P90 measured on complete Manila days with uncertainty; supply work prioritized from the measured bottleneck.
-FALLBACK: if credentials remain unavailable, continue clean-day accumulation observation and documentation; reopen when credentials or new evidence arrive.
+CURRENT STATE: P2 fleet funnel measurement completed live on remote production D1 — measured 35.9 qualified fresh jobs/day across 7 complete Manila days (2026-09-23 to 2026-09-30), reducing the floor gap to -64.1/day and stretch gap to -114.1/day. Full 25 agent-skills installed from addyosmani/agent-skills into .agents/skills. EX-03 Schedule Watchdog verified (4/4 scheduled runs success). 3 shadow sources (greenhouse:canonical, greenhouse:wikimedia, recruitee:myjewellery) verified 100% healthy, accumulating clean days toward 8-day canary graduation. 14 candidate sources audited via zero-write candidate shadow probes: 4 Ashby candidates (amplify, camunda, supabase, tremendous) return HEALTHY_WITH_RESULTS (146 total open positions).
+CURRENT BOTTLENECK: supply gap (35.9/day vs 100/day floor; floor gap -64.1/day, stretch gap -114.1/day).
+ACTIVE UNIT: Observation windows (clean-day accumulation for shadow sources) + Candidate review preparation.
+LAST COMPLETED UNIT: P2 live D1 fleet funnel measurement + agent skills installation + candidate evidence packet audit.
+RESULT: Full test suite 1,653/1,653 pass across 166 files; typecheck clean; guardrails clean; constitution audit PASS; parameter parity 100%; live surfaces (/, /opportunities, /directory, /data-policy) 200 OK.
+UNRESOLVED: Clean-day accumulation toward 8-day canary graduation: greenhouse:wikimedia (streak 5/8 days, needs 3 more clean days Oct 1-3), greenhouse:canonical (streak 4/8 days, needs 4 more clean days Oct 1-4).
+NEXT ACTION: Monitor ongoing clean-day accumulation for greenhouse:wikimedia and greenhouse:canonical; review the 4 high-yield Ashby candidates (amplify, camunda, supabase, tremendous) for admission allowlist inclusion under ADR-007 / Source Perpetuity to expand qualified fresh supply toward the 100/day floor.
+WHY NEXT: Supply is the primary bottleneck; graduating shadow sources and admitting verified healthy ATS candidates directly closes the 64.1 jobs/day gap to the 100/day floor.
+ACCEPTANCE: Shadow sources complete 8 clean calendar days with zero defects and graduate to canary under ADMISSION_POLICY; candidate admissions provide measurable qualified fresh yield.
+FALLBACK: If clean-day streak is broken by an upstream defect, reset qualifying window per ADMISSION_POLICY and continue independent candidate evaluation.
 
 **Prior unit (delivered & deployed):**
 
-**F6 quality-denominator repair delivered; EX-03 fix loop closed; scheduler recovered (2026-09-29, historical):**
+**F5 parity lock delivered; F5/F6 both closed; all 2026-09-27 audit findings resolved (2026-09-29, historical):**
 
-See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
 
 CURRENT STATE: F6 (quality-sampling dilution) REPAIRED at `929d46c` — `measureGroundTruth` now uses per-dimension denominators (matching the accepted parameter names `false_ph_eligibility_rate_max` / `false_remote_classification_rate_max`), Wilson 95% intervals, `ceilingDemonstrated` separation, and a gate where a known violation FAILs outright while an unmeasured dimension is UNKNOWN, never a silent pass. METRICS.md Query 3B contract updated openly; threshold VALUES unchanged.
 CURRENT BOTTLENECK: supply gap (18.9/day vs 100/day floor; fleet P50 202 / P90 270) — fleet measurement blocked here (no Cloudflare creds).

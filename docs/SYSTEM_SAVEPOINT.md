@@ -1,6 +1,48 @@
 # System Savepoint
 
-## 2026-09-29 — F5 parity lock delivered; all 2026-09-27 audit findings resolved (current)
+## 2026-10-01 — Live D1 Fleet Funnel Measurement (35.9/day), Skills Installed, Watchdog Verified, 14 Candidates Audited (current)
+
+**Mode:** AUTONOMOUS MARATHON (Supervisor + Bootloader v5.2, "auto maintenance" session).
+**Start HEAD:** `e898253` (clean, pulled 10 upstream maintenance commits `1c49a42..e898253`).
+
+**1. Delivered unit — Agent Skills Installation & Live D1 Fleet Funnel Measurement (P2):**
+- **Skills installation:** Installed complete suite of 25 production-grade engineering workflows from `https://github.com/addyosmani/agent-skills` into `.agents/skills` (gitignored, discovered by Antigravity).
+- **Credential boundary unblocked:** Verified active Cloudflare authentication (`wrangler whoami` succeeds for account `Cyrusalcala.agency@gmail.com` with `d1`, `workers`, `pages` permissions) and Turso Data Lake connection (`bun run lake:state` returns clean state: 780 synced, 40 raw observations, 31 replay events, 9 auto-approved tenants).
+- **P2 Fleet Funnel & Manila-Day Measurement Executed:**
+  - Ran `scripts/diagnostics/measure-first-publication-funnel.ts` and `scripts/diagnostics/measure-manila-daily-publications.ts` live against remote production D1 across 7 complete Asia/Manila days (`2026-09-23T16:00:00Z` to `2026-09-30T16:00:00Z`).
+  - Measured recent-posting eligible storage: **35.9 qualified fresh jobs/day**!
+  - Empirical growth: nearly 2x increase over historical 18.9 fresh/day baseline, driven by the founder fast-track canary graduation of Philippine VA agencies (`workable:hunt-st` 4.3/day, `breezy:20four7va` 4.6/day, `breezy:sourcefit` 3.9/day, `ashby:multiplymii` 1.6/day).
+  - Shortfall to 100/day floor: **-64.1 jobs/day** (down from -81.1). Shortfall to 150/day stretch: **-114.1 jobs/day** (down from -131.1).
+  - 25 sources currently contributing stored rows; identity coverage remains 100.0% (6,451 / 6,451).
+- **Watchdog & Shadow Dispatch Observational Closure:**
+  - EX-03 Schedule Watchdog: 4 consecutive scheduled runs observed on GitHub Actions (`36624521473`, `36647739125`, `36675472468`, `36718064306`), all 100% `success`. The prior unresolved observation window is fully closed.
+  - EX-03 Shadow Dispatch: 5 consecutive scheduled runs on the new code (`36594258147`, `36629494762`, `36650883252`, `36680309580`, `36724880271`), all 100% `success` with zero defects.
+  - Shadow sources clean-day accumulation:
+    - `greenhouse:wikimedia`: 144 healthy observations across 17 distinct days, 5 consecutive clean calendar days since Sept 25. Needs 3 more clean days (Oct 1-3) to reach 8 clean days under `ADMISSION_POLICY`.
+    - `greenhouse:canonical`: 14 healthy observations across 4 distinct days since Sept 27. Needs 4 more clean days (Oct 1-4) to reach 8 clean days.
+    - `recruitee:myjewellery`: 166 healthy observations across 23 distinct days.
+- **Candidate Registry & Evidence Packets Audit:**
+  - Regenerated `docs/evidence-packets-latest.md` with live production D1 data.
+  - Executed zero-write `runCandidateShadowProbe` across all 14 candidate sources in `source_registry`.
+  - Discovered 4 high-yield Ashby candidates returning `HEALTHY_WITH_RESULTS` with 146 total open positions:
+    - `ashby:amplify` (32 jobs, HTTP 200, robots allowed)
+    - `ashby:camunda` (39 jobs, HTTP 200, robots allowed)
+    - `ashby:supabase` (49 jobs, HTTP 200, robots allowed)
+    - `ashby:tremendous` (26 jobs, HTTP 200, robots allowed)
+  - Identified `ashby:ashby` payload slightly over budget (1.08 MiB vs 1.00 MiB) -> `DEGRADED_ANOMALOUS`.
+  - Identified 7 Workable agency candidates returning `HEALTHY_EMPTY` on widget API endpoint (HTTP 200, 0 widget items).
+
+**2. Verification (VERIFIED_LOCAL):**
+- Full test suite: 1,653 pass / 0 fail (166 files).
+- TypeScript: `bunx tsc --noEmit -p apps/web/tsconfig.json` clean.
+- Guardrails: `bun scripts/ci/check-production-guardrails.ts` clean.
+- Constitution audit: `bun scripts/ci/audit-constitution.ts` clean (4 standard standing warnings).
+- Parameter parity: 100% parity verified.
+- Live public endpoints: `/`, `/opportunities`, `/directory`, `/data-policy` all returning HTTP 200.
+
+**NEXT SINGLE ACTION:** Monitor ongoing clean-day accumulation for `greenhouse:wikimedia` (streak 5/8) and `greenhouse:canonical` (streak 4/8); upon completion of 8 clean calendar days with zero defects, evaluate canary promotion under `ADMISSION_POLICY`. For the 4 high-yield Ashby candidates (`amplify`, `camunda`, `supabase`, `tremendous`), review for admission allowlist inclusion under ADR-007 / Source Perpetuity to expand supply toward the 100/day floor. Owner/controller: maintainer; trigger: daily scheduler tick or graduation streak threshold.
+
+## 2026-09-29 — F5 parity lock delivered; all 2026-09-27 audit findings resolved (historical; superseded by the entry above)
 
 **Mode:** AUTONOMOUS MARATHON (Supervisor + Bootloader v5.2, "auto maintenance" session).
 **Start HEAD:** `0c869f3`. End HEAD: `27ff67f` pushed; Sovereign CI Guardrail `36604725531` success on exact HEAD (17:24:42Z).
