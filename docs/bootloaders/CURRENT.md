@@ -2,45 +2,50 @@
 
 ## Active bounded unit
 
-**Gauntlet Phase 4-5 Measured: PH Cohort Disposition + Workday CXS Probe Negative — Adapter NOT Justified (2026-10-01, current):**
+**Entity Resolution Casing Normalization + Gauntlet Phase 3 Slice 2: 90 Boards Probed, Loadsmart Admitted + Gate-Held, Marginal Yield 0.0444/probe (2026-10-02, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Gauntlet Phase 0-3 delivered: LastRound 9,741 discovery claims in Turso (provenance-preserved, SHADOW), 90-board stratified validation (90% alive, raw PH 1.8%), reconciliation flywheel mechanized (`reconcile-discovered-corpus.ts`), outliers admitted (16 jobs → D1 840, live-verified).
-- Phase 4 measured: PH cohort mostly already represented via its 15 admitted ATS tenants; 9/9 wired PH agency cohort seeds dead/empty (negative result, measured with direct endpoint checks); blocked candidates never bypassed (captcha/anti-bot compliance).
-- Phase 5 measured: Workday CXS trio (Concentrix 1,621 / TaskUs 423 / Accenture 2,000 jobs) has **0/60 PH-REMOTE yield** on the bounded probe — PH roles onsite (Pasig, Pampanga). Adapter NOT justified; falsification condition recorded.
-- Publication gate verified end-to-end: sync correctly HELD Sofar Sounds (2/10, Wilson ~3.7% < 20% floor) while snappr/the-studio published.
-- Tests: 63/63 lake, 328/328 web, typecheck clean, guardrails clean. D1 840 synced, 0 pending, 15 auto-approved tenants.
+- Deduplicated 77 split-casing duplicate pairs in `lake_ats_discovery` caused by case-sensitive SQLite text collation. Added `COLLATE NOCASE` to schema and forced lowercase `ats_family` across all discovery operations.
+- Added failure-containment transitions in `domain-ats-discovery.ts` so dead boards (HTTP non-200) and insufficient-job boards (< 3 jobs) transition to `auto_rejected` with clear diagnostic reasons rather than lingering in `discovered`.
+- Gauntlet Phase 3 Slice 2 executed: 90 boards probed (30 Ashby, 30 Greenhouse, 30 Lever), 61 tenants found, 1 admitted (`lever:loadsmart`: 17 jobs, 4 QUALIFIED_READY, 23.5% PH rate), 1 shadowed, 88 auto-rejected.
+- Ingested 4 net-new QUALIFIED_READY candidates into Turso Lake (total 6 held in lake reservoir).
+- Marginal yield doubled to 0.0444 qualified/probe (vs 0.0222 in slice 1).
+- Publication gate verified: `lever:loadsmart` safely held by Wilson floor (~9.6% < 20% floor), zero leakage to D1 (D1 synced remains 840).
+- Unvalidated corpus reduced to 9,593 claims.
+- Tests: 63/63 lake, 1,683/1,683 repo tests, typecheck clean, guardrails clean, constitution audit PASS.
 
 CURRENT BOTTLENECK:
-PH-qualified fresh supply (35.9/day vs 100/day floor, verified binding). Broad-corpus mining measured LOW (0.0222 qualified/probe) — productive paths are PH-dedicated agencies and mechanized outlier mining.
+Discovery flywheel currently ignores 840+ already-synced opportunities (`SYNCED_TO_D1`) and aggregator company names; needs upgrade to extract direct ATS tokens and employer candidate slugs from qualified Lake inventory.
 
 ACTIVE UNIT:
-Gauntlet Phase 5+ — bounded reconciliation slices + outlier evaluation as evidence surfaces.
+Gauntlet Phase 6 — Discovery Flywheel Upgrade (`domain-ats-discovery.ts` query expansion + ATS token extraction + candidate slug derivation).
 
 LAST COMPLETED UNIT:
-Gauntlet Phase 4-5 (PH cohort disposition, Workday remote-yield probe — both negative results with measured evidence).
+Entity Resolution Casing Normalization + Gauntlet Phase 3 Slice 2 (90 boards probed, `lever:loadsmart` admitted, marginal yield 0.0444).
 
 RESULT:
-Core hypothesis confirmed for targeted outlier admission; REJECTED for bulk ingestion and Workday adapters. Negative results recorded with falsification conditions.
+Corpus integrity restored; duplicate pairs eliminated; loadsmart admitted + gate-held; yield trajectory positive (0.0222 -> 0.0444).
 
 UNRESOLVED:
-9,685 corpus claims unvalidated (repeatable slices available); Sofar Sounds 2 jobs correctly gate-held pending stronger evidence.
+9,593 corpus claims unvalidated; 6 jobs in Lake reservoir safely held pending larger sample size or verified receipts.
 
 NEXT ACTION:
-Run another bounded reconciliation slice (`bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=30`) or evaluate high-PH outliers as stratified probes surface them; deeper Workday pagination probe only if new evidence justifies reopening.
+Upgrade `extractDomains()` in `scripts/lake/domain-ats-discovery.ts` to include `SYNCED_TO_D1` and extract direct ATS tokens from `application_url` and candidate slugs from `company`. Add unit tests and run domain discovery.
 
 WHY NEXT:
-The corpus's value is outlier mining (now mechanized); each slice surfaces high-PH tenants for the sanctioned admission pipeline toward the 100/day floor.
+Converting high-intent qualified jobs already verified in the Lake into first-party ATS board subscriptions directly feeds the autonomous discovery engine without blind guessing.
 
 ACCEPTANCE:
-Slices produce verified yield metrics; admissions pass compliance gates; receipts durable.
+Domain discovery extracts ATS candidates from synced Lake inventory; unit tests pass; tests/typecheck/guardrails clean.
 
 FALLBACK:
-If slices repeatedly yield ~0 qualified (anti-loop), stop corpus mining and re-measure the whole system; the negative result is recorded per Constitution Part L (preserve negative results).
+If employer domain discovery yields no valid ATS endpoints, continue with bounded corpus reconciliation slices.
 
 **Prior unit (delivered & deployed):**
+
+**Gauntlet Phase 4-5 Measured: PH Cohort Disposition + Workday CXS Probe Negative — Adapter NOT Justified (2026-10-01, historical):**
 
 **Gauntlet Phase 3 Reconciliation Delivered: 90-Board Stratified Validation, Marginal Yield 0.0222/probe, Sofar Sounds Admitted + Gate-Held (2026-10-01, historical):**
 

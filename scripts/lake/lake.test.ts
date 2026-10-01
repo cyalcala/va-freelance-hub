@@ -216,6 +216,8 @@ describe("ATS discovery admission thresholds", () => {
   it("builds portable lowercase source ids", () => {
     expect(buildDiscoverySourceId("Greenhouse", "acme")).toBe("greenhouse:acme");
     expect(buildDiscoverySourceId("Breezy", "My-Co")).toBe("breezy:My-Co");
+    expect(buildDiscoverySourceId("Lever", "snappr")).toBe("lever:snappr");
+    expect(buildDiscoverySourceId("Ashby", "the-studio")).toBe("ashby:the-studio");
   });
 
   it("does not let Jev hold a cohort whose Wilson bound already cleared", () => {

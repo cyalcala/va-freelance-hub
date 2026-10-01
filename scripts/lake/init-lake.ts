@@ -141,7 +141,7 @@ export async function ensureLakeSchema(client: LakeClient): Promise<void> {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       domain TEXT NOT NULL,
       company_hint TEXT,
-      ats_family TEXT NOT NULL,
+      ats_family TEXT NOT NULL COLLATE NOCASE,
       tenant_slug TEXT NOT NULL,
       probe_url TEXT NOT NULL,
       job_count INTEGER NOT NULL DEFAULT 0,

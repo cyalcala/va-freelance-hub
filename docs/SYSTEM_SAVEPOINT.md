@@ -1,6 +1,34 @@
 # System Savepoint
 
-## 2026-10-01 — Gauntlet Phase 4-5 Measured: PH Cohort Disposition (9/9 Cohort Seeds Negative) + Workday CXS Probe (0/60 PH-REMOTE, Adapter NOT Justified) (current)
+## 2026-10-02 — Entity Resolution Casing Normalization + Gauntlet Phase 3 Reconciliation Slice 2 (90 Boards, Loadsmart Admitted + Gate-Held, Marginal Yield 0.0444/probe) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Marathon Supervisor).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 6 Lake QUALIFIED_READY rows held by dual-gate publication floor).
+
+**1. Delivered unit — Entity Resolution & Identity Repair (MATH-09) + Reconciliation Slice 2:**
+- **Entity Resolution Casing Normalization (`lake_ats_discovery`):**
+  - Diagnosed casing divergence where `ats_family` was written with mixed casing (`Lever`, `Greenhouse`, `Ashby` vs `lever`, `greenhouse`, `ashby`). Due to SQLite's default case-sensitive text collation, `ON CONFLICT(ats_family, tenant_slug)` failed to deduplicate, resulting in 77 split-casing duplicate pairs and preventing evaluated boards from transitioning out of `review_status = 'discovered'`.
+  - Executed live deduplication and casing merge on `lake_ats_discovery`, successfully resolving all 77 pairs (survivor prioritized by status: `auto_approved` > `auto_rejected` > `shadow_monitor` > `discovered`, verified 0 duplicate pairs remain).
+  - Updated `lake_ats_discovery` schema definitions in `scripts/lake/init-lake.ts` and `scripts/lake/domain-ats-discovery.ts` to include `COLLATE NOCASE` on `ats_family`.
+  - Enforced `template.family.toLowerCase()` for all `ats_family` writes and source IDs.
+  - Added failure-containment transitions in `domain-ats-discovery.ts`: dead boards (HTTP 404/non-200) and insufficient-job boards (< 3 jobs) in bulk seed reconciliation now update `lake_ats_discovery` to `auto_rejected` with explicit failure reasons, allowing claims to cleanly transition out of `review_status = 'discovered'`.
+- **Gauntlet Phase 3 Reconciliation Slice 2 Executed:**
+  - Ran `scripts/lake/reconcile-discovered-corpus.ts --per-family=30` (90 boards: 30 Ashby, 30 Greenhouse, 30 Lever) against the unvalidated corpus.
+  - *Results:* Scanned 90, Tenants found 61, Admitted 1 (`lever:loadsmart`: 17 jobs, 4 QUALIFIED_READY, 23.5% PH rate), Shadowed 1, Auto-Rejected 88. Ingested 4 net-new QUALIFIED_READY candidates into Turso Lake.
+  - *Marginal Yield:* 0.0444 qualified jobs/probe (doubled the previous slice's 0.0222/probe).
+  - *Unvalidated Corpus:* Reduced from 9,683 claims down to 9,593 claims.
+  - *Dual-Gate Publication Invariant Verified:* `bun run lake:sync -- --dry-run` proved `lever:loadsmart` is safely HELD in the lake reservoir because its Wilson lower bound is ~9.6% (< 20% floor) and no Jev receipt is attached, confirming zero premature leakage to D1. D1 synced remains 840.
+
+**2. Verification:**
+- Full test suite: 1,683 passed / 0 failed across 175 files (`bun test`).
+- Lake test suite: 63 passed / 0 failed across 8 files (`bun test scripts/lake`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+
+**NEXT SINGLE ACTION:** Gauntlet Phase 6 — Discovery Flywheel Upgrade: In `scripts/lake/domain-ats-discovery.ts`, update `extractDomains()` to query `status IN ('QUALIFIED_READY', 'SYNCED_TO_D1')` and extract candidate slugs from `company` name as well as direct ATS tokens via `extractAtsToken(application_url)`. Run domain discovery to convert aggregator postings into permanent first-party ATS board registrations. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-01 — Gauntlet Phase 4-5 Measured: PH Cohort Disposition (9/9 Cohort Seeds Negative) + Workday CXS Probe (0/60 PH-REMOTE, Adapter NOT Justified) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation of the "maintenance7" session; commits `99035ec`, `7fca0f0`, `a2ad6e2` pushed).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 2 Sofar Sounds rows correctly gate-held).

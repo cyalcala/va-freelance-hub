@@ -330,7 +330,7 @@ export async function ensureDiscoveryTable(client: ReturnType<typeof getLakeClie
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       domain TEXT NOT NULL,
       company_hint TEXT,
-      ats_family TEXT NOT NULL,
+      ats_family TEXT NOT NULL COLLATE NOCASE,
       tenant_slug TEXT NOT NULL,
       probe_url TEXT NOT NULL,
       job_count INTEGER NOT NULL DEFAULT 0,
@@ -431,7 +431,7 @@ async function probeTenantJobs(
   template: AtsProbeTemplate,
   tenantSlug: string,
   rateLimitedHosts: Set<string>,
-): Promise<{ jobs: ReturnType<AtsProbeTemplate["extractJobs"]>; probeUrl: string; rateLimited: boolean } | null> {
+): Promise<{ jobs: ReturnType<AtsProbeTemplate["extractJobs"]>; probeUrl: string; rateLimited: boolean; status: number } | null> {
   const probeUrl = template.buildUrl(tenantSlug);
   const host = hostOf(probeUrl);
   if (rateLimitedHosts.has(host)) return null;
@@ -442,13 +442,13 @@ async function probeTenantJobs(
     });
     if (res.status === 429) {
       rateLimitedHosts.add(host);
-      return { jobs: [], probeUrl, rateLimited: true };
+      return { jobs: [], probeUrl, rateLimited: true, status: 429 };
     }
-    if (!res.ok) return null;
+    if (!res.ok) return { jobs: [], probeUrl, rateLimited: false, status: res.status };
     const data = await res.json();
-    return { jobs: template.extractJobs(data), probeUrl, rateLimited: false };
+    return { jobs: template.extractJobs(data), probeUrl, rateLimited: false, status: res.status };
   } catch {
-    return null;
+    return { jobs: [], probeUrl, rateLimited: false, status: 0 };
   }
 }
 
@@ -483,11 +483,50 @@ async function evaluateTenant(
     console.log(`  ⏭ ${template.family}/${seed.slug}: host 429 — shielding remaining probes to ${hostOf(probe.probeUrl)} this run.`);
     return;
   }
-  const rawJobs = probe.jobs;
-  if (rawJobs.length < MIN_JOBS_TO_EVALUATE) return;
 
+  const familyLower = template.family.toLowerCase();
+  const sourceId = buildDiscoverySourceId(familyLower, seed.slug);
+
+  // Failure containment / dead board handling:
+  // If the probe returned non-200 or fewer than MIN_JOBS_TO_EVALUATE:
+  if (probe.status !== 200 || probe.jobs.length < MIN_JOBS_TO_EVALUATE) {
+    // Only persist auto_rejected for explicit family seeds (bulk / reconciliation mode),
+    // not blind ungrounded domain guesses in domain mode.
+    if (seed.family) {
+      const reason = probe.status !== 200
+        ? `Dead or unresponsive board (HTTP ${probe.status})`
+        : `Deterministic threshold: insufficient jobs (${probe.jobs.length} < ${MIN_JOBS_TO_EVALUATE})`;
+      stats.rejected++;
+      console.log(`  ✗ ${template.family}/${seed.slug}: ${reason}`);
+      if (!opts.dryRun) {
+        await client.execute({
+          sql: `
+            INSERT INTO lake_ats_discovery
+              (domain, company_hint, ats_family, tenant_slug, probe_url, job_count,
+               qualified_ready, ph_rate, review_status, admission_reason, source_id, last_evaluated_at)
+            VALUES (?, ?, ?, ?, ?, ?, 0, 0, 'auto_rejected', ?, ?, datetime('now'))
+            ON CONFLICT(ats_family, tenant_slug) DO UPDATE SET
+              job_count = ?,
+              qualified_ready = 0,
+              ph_rate = 0,
+              review_status = 'auto_rejected',
+              admission_reason = ?,
+              source_id = ?,
+              last_evaluated_at = datetime('now');
+          `,
+          args: [
+            seed.domain, seed.company, familyLower, seed.slug, probe.probeUrl,
+            probe.jobs.length, reason, sourceId,
+            probe.jobs.length, reason, sourceId,
+          ],
+        });
+      }
+    }
+    return;
+  }
+
+  const rawJobs = probe.jobs;
   stats.tenantsFound++;
-  const sourceId = buildDiscoverySourceId(template.family, seed.slug);
   console.log(`\n✓ Found: ${template.family}/${seed.slug} (${rawJobs.length} jobs) | company: ${seed.company}`);
 
   const metrics = computeTenantMetrics(rawJobs);
@@ -522,7 +561,7 @@ async function evaluateTenant(
         last_evaluated_at = datetime('now');
     `,
     args: [
-      seed.domain, seed.company, template.family, seed.slug, probe.probeUrl,
+      seed.domain, seed.company, familyLower, seed.slug, probe.probeUrl,
       rawJobs.length, metrics.qualifiedReady, metrics.phRate,
       reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
       rawJobs.length, metrics.qualifiedReady, metrics.phRate,
@@ -667,7 +706,7 @@ export async function runBulkAtsDiscovery(
     try {
       await evaluateTenant(
         client,
-        { domain, company: seed.companyName, slug: seed.tenantSlug },
+        { domain, company: seed.companyName, slug: seed.tenantSlug, family: seed.atsFamily },
         template,
         { dryRun, rateLimitedHosts, probeDelayMs: delay },
         stats,
