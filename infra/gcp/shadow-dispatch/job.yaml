@@ -17,7 +17,7 @@ spec:
           - image: asia-southeast1-docker.pkg.dev/PROJECT_ID/va-hub-runner/shadow-dispatch:latest
             resources:
               limits:
-                cpu: 500m
+                cpu: "1"
                 memory: 512Mi
             env:
             - name: SHADOW_DISPATCH_API_URL

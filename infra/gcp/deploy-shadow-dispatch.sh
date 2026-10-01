@@ -120,7 +120,7 @@ echo "6. Deploying Cloud Run Job..."
 gcloud run jobs deploy "$JOB_NAME" \
   --image="$IMAGE_TAG" \
   --region="$REGION" \
-  --cpu="0.5" \
+  --cpu="1" \
   --memory="512Mi" \
   --max-retries=1 \
   --task-timeout=300s \
