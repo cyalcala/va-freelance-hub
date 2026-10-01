@@ -5,12 +5,16 @@
 document_metadata:
   document_type: ARCHITECTURAL_ANALYSIS
   document_status: ACTIVE_OPERATIONAL
-  version: "1.0.0"
-  effective_at: "2026-09-26T12:57:00+08:00"
-  applies_to_commit: "b9dc5e6c1341c2c0199be06fa713919e1b21235b"
+  version: "1.1.0"
+  effective_at: "2026-10-01T19:15:00+08:00"
+  applies_to_commit: "3ef2969717c0386a1e21f18bc11aec6c01841d76"
   authority_tier: 2
-  phase: "Phase 0 (Reconnaissance, Runtime Bounds & Empirical Baseline)"
+  phase: "Phase 0 (Reconnaissance, Runtime Bounds & Empirical Baseline) & Unit GCP-01"
+  gcp_migration_audit: "docs/architecture/CURRENT_STATE_GCP_MIGRATION_AUDIT_2026-10-01.md"
+  unit_gcp_01_contract: "docs/plans/UNIT_GCP_01_SHADOW_DISPATCH_MIGRATION.md"
 ```
+
+> **Note (2026-10-01):** See `docs/architecture/CURRENT_STATE_GCP_MIGRATION_AUDIT_2026-10-01.md` for the complete empirical audit of all 21 GitHub Actions workflows, the measurement of GitHub's sub-6-hour scheduler delivery degradation (<25%), and the Unit GCP-01 Cloud Run Job shadow implementation.
 
 > **The authoritative topological map of VA Freelance Hub.**
 >

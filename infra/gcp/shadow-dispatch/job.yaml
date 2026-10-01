@@ -1,0 +1,34 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: shadow-dispatch-job
+  labels:
+    cloud.googleapis.com/location: asia-southeast1
+    app.kubernetes.io/name: va-freelance-hub
+    app.kubernetes.io/component: shadow-dispatch
+    governance.va-hub/unit: GCP-01
+spec:
+  template:
+    spec:
+      taskCount: 1
+      template:
+        spec:
+          containers:
+          - image: asia-southeast1-docker.pkg.dev/PROJECT_ID/va-hub-runner/shadow-dispatch:latest
+            resources:
+              limits:
+                cpu: 500m
+                memory: 512Mi
+            env:
+            - name: SHADOW_DISPATCH_API_URL
+              value: "https://remotejobs-ph.pages.dev/api/cron/shadow-dispatch"
+            - name: TIMEOUT_MS
+              value: "60000"
+            - name: PROXY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: va-hub-proxy-secret
+                  key: latest
+          timeoutSeconds: 300
+          maxRetries: 1
+          serviceAccountName: va-hub-scheduler-invoker@PROJECT_ID.iam.gserviceaccount.com

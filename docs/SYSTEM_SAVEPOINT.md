@@ -1,6 +1,40 @@
 # System Savepoint
 
-## 2026-10-01 — Live D1 Fleet Funnel Measurement (35.9/day), Skills Installed, Watchdog Verified, 14 Candidates Audited (current)
+## 2026-10-01 — Unit GCP-01 Delivered: Constitution-Governed Actions → Google Cloud Runtime Migration (current)
+
+**Mode:** CONSTITUTIONAL MIGRATION & RUNTIME HARDENING (Unit GCP-01).
+**Start HEAD:** `3ef2969` (clean, in sync with `origin/main`).
+
+**1. Delivered unit — Unit GCP-01 (EX-03 Candidate Shadow Dispatch Migration to Google Cloud):**
+- **Phase 1 Complete Workflow Inventory:** Audited and classified all 21 `.github/workflows/**` definitions (8 PRODUCTION_RUNTIME, 6 OBSERVABILITY, 2 DEVELOPMENT_CI, 5 RECOVERY/tooling). Mapped all triggers, entrypoints, secrets, database interactions, failure modes, and downstream dependencies. Full audit published in `docs/architecture/CURRENT_STATE_GCP_MIGRATION_AUDIT_2026-10-01.md`.
+- **Phase 2 Empirical Bottleneck Proven (CONFIRMED_BINDING_CONSTRAINT):**
+  - Live GitHub Actions API telemetry measured across 12 scheduled workflows (44–50 runs each, 1.5–49.0 day observation spans).
+  - High-frequency / hourly workflows are severely degraded: 15-min Hunter Pulse delivered only 5.6 runs/day (5.9% delivery rate, median gap 4.27h, max gap 8.22h); hourly Shadow Dispatch delivered only 5.1 runs/day (21.1% delivery rate, median gap 4.91h, max gap 8.57h); hourly Lake Publish delivered only 6.0 runs/day (25.0% delivery rate, median gap 4.06h, max gap 6.98h).
+  - In sharp contrast, >=6-hour workflows achieve 93.5%–104.2% delivery.
+  - Consequence: Hourly candidate shadow observation is starved of 78.9% of its slots, stalling the 8-day clean streak required for ADR-007 canary promotion and starving fresh opportunity flow toward the 100/day floor.
+- **Phase 3 Hidden Dependencies Audited:** Classified all system dependencies. Verified that public web serving (`apps/web`) has zero runtime dependency on GitHub APIs or commit digests.
+- **Phase 6 Free-Tier Economics:** Calculated monthly compute cost at $0.00 / month (Cloud Run: 10,800 vCPU-seconds / 360,000 free allowance; Cloud Scheduler: 1 job / 3 free allowance; Artifact Registry: ~150 MB / 500 MB free; Cloud Logging: < 50 MB / 50 GB free).
+- **Unit GCP-01 Implementation Delivered:**
+  - `infra/gcp/shadow-dispatch/Dockerfile`: Ultra-lean container based on pinned `oven/bun:1.3.14-slim`, executing as unprivileged user `bun`.
+  - `infra/gcp/shadow-dispatch/job.yaml`: Cloud Run Job declarative specification (0.5 vCPU, 512Mi, 300s timeout).
+  - `infra/gcp/deploy-shadow-dispatch.sh`: Fully reproducible, idempotent deployment script enabling required GCP APIs, configuring Artifact Registry, Secret Manager, Cloud Build, Cloud Run Job, and Cloud Scheduler (`53 * * * *` offset).
+  - `scripts/gcp/run-shadow-dispatch.ts`: Production-ready TypeScript runner invoking `/api/cron/shadow-dispatch`, parsing diagnostics via `extractShadowDispatchEvidence`, and emitting structured GCP Logging JSON.
+  - `scripts/gcp/run-shadow-dispatch.test.ts`: 5 unit tests verifying mock HTTP 200, 503, non-JSON handling, and log formatting.
+  - `scripts/gcp/verify-shadow-dispatch.ts`: CLI readiness and dry-run tool with synthetic simulation (`--dry-run` exit 0).
+  - `docs/plans/UNIT_GCP_01_SHADOW_DISPATCH_MIGRATION.md`: Complete Unified Unit Contract v3.0.
+
+**2. Verification (VERIFIED_LOCAL):**
+- Targeted GCP tests: 5 pass / 0 fail (`scripts/gcp/run-shadow-dispatch.test.ts`).
+- Full test suite: 1,658 pass / 0 fail.
+- Production guardrails: `bun run audit:guardrails` clean.
+- Parameter parity: `bun run audit:parameters` clean (100% parity).
+- Constitution audit: `bun run audit:constitution` clean (4 standard standing warnings).
+- TypeScript: `bun run typecheck` clean.
+- Dry-run verification: `bun scripts/gcp/verify-shadow-dispatch.ts --dry-run` passed.
+
+**NEXT SINGLE ACTION:** Provision Google Cloud project credentials (`GCP_PROJECT_ID` and authenticated service account) in the deployment environment; execute `infra/gcp/deploy-shadow-dispatch.sh` to launch the Cloud Scheduler + Cloud Run Job shadow clock in parallel with GitHub Actions; begin the 7-day shadow observation comparison window under Unit GCP-01 contract.
+
+## 2026-10-01 — Live D1 Fleet Funnel Measurement (35.9/day), Skills Installed, Watchdog Verified, 14 Candidates Audited (historical; superseded by the entry above)
 
 **Mode:** AUTONOMOUS MARATHON (Supervisor + Bootloader v5.2, "auto maintenance" session).
 **Start HEAD:** `e898253` (clean, pulled 10 upstream maintenance commits `1c49a42..e898253`).
