@@ -14,6 +14,7 @@ COPY apps/web/wrangler.jsonc ./apps/web/wrangler.jsonc
 COPY scripts/lake ./scripts/lake
 COPY scripts/diagnostics ./scripts/diagnostics
 COPY scripts/gcp ./scripts/gcp
+COPY scripts/ci ./scripts/ci
 
 # 3. Ensure unprivileged bun user owns the application tree
 RUN chown -R bun:bun /app

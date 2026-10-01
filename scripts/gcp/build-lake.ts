@@ -14,7 +14,7 @@ async function main() {
 
   console.log("=== 1. CREATING REPOSITORY SLICE ARCHIVE ===");
   // Create tarball containing files needed for the Docker build without local node_modules
-  const tarCmd = `tar --exclude="node_modules" --exclude="*.test.ts" -czf "${localTarPath}" infra/gcp packages apps/web/wrangler.jsonc scripts/lake scripts/diagnostics scripts/gcp package.json`;
+  const tarCmd = `tar --exclude="node_modules" --exclude="*.test.ts" -czf "${localTarPath}" infra/gcp packages apps/web/wrangler.jsonc scripts/lake scripts/diagnostics scripts/gcp scripts/ci package.json`;
   console.log(`Running: ${tarCmd}`);
   execSync(tarCmd, { stdio: "inherit" });
 

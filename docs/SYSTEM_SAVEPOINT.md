@@ -1,6 +1,51 @@
 # System Savepoint
 
-## 2026-10-01 — Unit GCP-01 Delivered: Constitution-Governed Actions → Google Cloud Runtime Migration (current)
+## 2026-10-01 — Unit GCP-02 Graduated: Reservoir Lake Publication Migrated to Google Cloud (PRIMARY RUNTIME) (current)
+
+**Mode:** CONSTITUTIONAL MIGRATION & RUNTIME HARDENING (Unit GCP-02).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (Unit GCP-01 & Unit GCP-02 100% LIVE IN GOOGLE CLOUD).
+
+**1. Delivered unit — Unit GCP-02 (Reservoir Lake Publication Runtime Migration to Google Cloud):**
+- **Docker Build Failure Root Cause Diagnosed & Fixed:**
+  - Resolved `Workspace not found "apps/web"` failure during container image compilation by decoupling from monorepo workspace resolution.
+  - Created standalone `infra/gcp/lake-publish/package.json` with pinned production dependencies (`@libsql/client: 0.18.0`, `wrangler: 4.143.0`).
+  - Updated `infra/gcp/lake-publish/Dockerfile` to copy standalone dependencies and `scripts/ci`, running with unprivileged `USER bun`. Added `.gcloudignore`.
+- **Google Cloud Build Compilation:**
+  - Build `76557cdb-c4c5-499c-89b6-7d9414660b23` succeeded and pushed container image to Artifact Registry:
+    `asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish:latest`
+    (Digest: `sha256:8efec6a36d0a4bf353bdc45c196fb04dbbc8aa45905981a656d61dfbefb3cbd4`).
+- **Google Secret Manager Provisioning:**
+  - Automated secure credential migration into Google Cloud Secret Manager (`antigravity-494415`):
+    - `va-hub-proxy-secret`
+    - `va-hub-turso-database-url`
+    - `va-hub-turso-auth-token`
+    - `va-hub-cloudflare-api-token`
+    - `va-hub-cloudflare-account-id`
+  - Granted `roles/secretmanager.secretAccessor` to execution identity `va-hub-scheduler-invoker@antigravity-494415.iam.gserviceaccount.com`.
+- **Cloud Run Job & Cloud Scheduler Provisioning:**
+  - Cloud Run Job `lake-publish-job` deployed in `asia-southeast1` (1 vCPU, 512MiB, unprivileged `bun` user, 300s timeout). Ready condition: `CONDITION_SUCCEEDED`.
+  - Cloud Scheduler `lake-publish-hourly` configured and `ENABLED` at `47 * * * *` UTC, authenticated via IAM OIDC.
+- **Empirical Live Production Execution Verified:**
+  - Live execution `lake-publish-job-qtp59` completed with `CONDITION_SUCCEEDED` in 18.49s (11.76s runtime) and exited code 0.
+  - Evaluated Wilson score lower bounds and Jev admissions for auto-approved sources (`greenhouse:canonical`, `greenhouse:remotecom`, `workable:hunt-st`, `workable:rocketams`, `workable:coconutva`, `workable:crewbloom`, `workable:hello-rache`, `workable:pearltalent`, `ashby:multiplymii`).
+  - Enrolled 8/9 auto-approved sources and recorded structured GCP JSON audit receipts (`{"event":"lake_publish_completed","component":"lake-publish","syncedCount":0,"enrolledSources":8,"unit":"GCP-02"}`).
+- **Dual-Primary Batch Architecture Operational:**
+  - Both degraded hourly batch workloads (`shadow-dispatch-job` @ `:53` and `lake-publish-job` @ `:47`) are now operating as **PRIMARY RUNTIMES** on Google Cloud Platform.
+  - GHA workflows (`gha-shadow-dispatch.yml` and `gha-lake-publish.yml`) demoted to secondary standby / manual fallbacks.
+  - Zero financial compute cost ($0.00 / month within GCP Always Free Tier).
+
+**2. Verification:**
+- Targeted GCP tests: 9 pass / 0 fail (`bun test scripts/gcp`).
+- Full test suite: 1,667 pass / 0 fail across 173 test files.
+- TypeScript: `bun run typecheck` clean (0 errors).
+- Production guardrails: `bun scripts/ci/check-production-guardrails.ts` clean (0 errors).
+- Parameter parity: `bun scripts/ci/audit-parameters.ts` clean (100% parity).
+- Constitution audit: `bun scripts/ci/audit-constitution.ts` clean (all checks pass).
+- Live execution evidence: `lake-publish-job-qtp59` exited 0.
+
+**NEXT SINGLE ACTION:** Monitor the first automated hourly ticks of `lake-publish-hourly` (:47 UTC) and `shadow-dispatch-hourly` (:53 UTC) on Google Cloud, while continuing scheduled backlog triage and candidate intake.
+
+## 2026-10-01 — Unit GCP-01 Delivered: Constitution-Governed Actions → Google Cloud Runtime Migration (historical; superseded by the entry above)
 
 **Mode:** CONSTITUTIONAL MIGRATION & RUNTIME HARDENING (Unit GCP-01).
 **Start HEAD:** `3ef2969` (clean, in sync with `origin/main`).
