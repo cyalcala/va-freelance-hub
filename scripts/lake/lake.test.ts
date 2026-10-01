@@ -20,6 +20,7 @@ import {
   AUTO_REJECT_PH_RATE,
   buildDiscoverySourceId,
   decideAdmissionDeterministic,
+  extractDiscoveryCandidatesFromRows,
   mergeAdmissionDecision,
 } from "./domain-ats-discovery";
 import { resolveReplay } from "./replay-refinery";
@@ -295,6 +296,127 @@ describe("ATS discovery admission thresholds", () => {
         topCategories: [],
       }).verdict
     ).toBe("REJECT");
+  });
+});
+
+describe("Discovery Flywheel Candidate Extraction", () => {
+  it("extracts direct ATS application links with pinned family and slug", () => {
+    const rows = [
+      {
+        company: "Loadsmart",
+        application_url: "https://jobs.lever.co/loadsmart/8040d7c3-cae0-47b7-bd66-df720ae02517",
+      },
+      {
+        company: "20Four7VA",
+        application_url: "https://20four7va.breezy.hr/p/40e266a5190b-b-cpt-11415",
+      },
+      {
+        company: "Supabase",
+        application_url: "https://jobs.ashbyhq.com/supabase/abc-123",
+      },
+      {
+        company: "Hunt St",
+        application_url: "https://apply.workable.com/hunt-st/j/ABC/",
+      },
+    ];
+
+    const candidates = extractDiscoveryCandidatesFromRows(rows, 10);
+    expect(candidates).toHaveLength(4);
+
+    expect(candidates.find((c) => c.company === "Loadsmart")).toMatchObject({
+      company: "Loadsmart",
+      slug: "loadsmart",
+      family: "lever",
+    });
+
+    expect(candidates.find((c) => c.company === "20Four7VA")).toMatchObject({
+      company: "20Four7VA",
+      slug: "20four7va",
+      family: "breezy",
+    });
+
+    expect(candidates.find((c) => c.company === "Supabase")).toMatchObject({
+      company: "Supabase",
+      slug: "supabase",
+      family: "ashby",
+    });
+
+    expect(candidates.find((c) => c.company === "Hunt St")).toMatchObject({
+      company: "Hunt St",
+      slug: "hunt-st",
+      family: "workable",
+    });
+  });
+
+  it("resolves known high-signal employer tokens with pinned family even on aggregator URLs", () => {
+    const rows = [
+      {
+        company: "GitLab",
+        application_url: "https://weworkremotely.com/remote-jobs/gitlab-staff-engineer",
+      },
+      {
+        company: "Camunda",
+        application_url: "https://www.realworkfromanywhere.com/jobs/camunda-engineer-123",
+      },
+    ];
+
+    const candidates = extractDiscoveryCandidatesFromRows(rows, 10);
+    expect(candidates).toHaveLength(2);
+
+    expect(candidates[0]).toMatchObject({
+      company: "GitLab",
+      slug: "gitlab",
+      family: "greenhouse",
+    });
+
+    expect(candidates[1]).toMatchObject({
+      company: "Camunda",
+      slug: "camunda",
+      family: "ashby",
+    });
+  });
+
+  it("derives candidate slugs from aggregator job postings for unknown employers", () => {
+    const rows = [
+      {
+        company: "Salesloft",
+        application_url: "https://weworkremotely.com/remote-jobs/salesloft-account-executive",
+      },
+      {
+        company: "ClickUp",
+        application_url: "https://jobicy.com/jobs/151244-technical-account-manager",
+      },
+    ];
+
+    const candidates = extractDiscoveryCandidatesFromRows(rows, 10);
+    expect(candidates.some((c) => c.slug === "salesloft" && c.family === undefined)).toBe(true);
+    expect(candidates.some((c) => c.slug === "clickup" && c.family === undefined)).toBe(true);
+  });
+
+  it("deduplicates across multiple postings and suppresses unpinned slugs when family is resolved", () => {
+    const rows = [
+      {
+        company: "Loadsmart",
+        application_url: "https://jobs.lever.co/loadsmart/job-1",
+      },
+      {
+        company: "Loadsmart",
+        application_url: "https://jobs.lever.co/loadsmart/job-2",
+      },
+      {
+        company: "Loadsmart",
+        application_url: "https://weworkremotely.com/remote-jobs/loadsmart-remote-dispatch",
+      },
+    ];
+
+    const candidates = extractDiscoveryCandidatesFromRows(rows, 10);
+    // Should produce exactly 1 candidate: the pinned lever:loadsmart
+    expect(candidates).toHaveLength(1);
+    expect(candidates[0]).toMatchObject({
+      company: "Loadsmart",
+      slug: "loadsmart",
+      family: "lever",
+    });
   });
 });
 

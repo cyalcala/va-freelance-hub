@@ -35,6 +35,8 @@ import { geoGate } from "../../packages/scraper/geoGate";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
 import { judgeViaJev } from "../../packages/scraper/jev-client";
 import { JEV_MIN_CONFIDENCE, wilsonLowerBound, PUBLISH_PH_RATE_FLOOR } from "./auto-publish-policy";
+import { extractAtsToken } from "../../packages/scraper/prospector";
+import { deriveCandidateSlugs, KNOWN_ATS_TOKENS } from "./process-intake";
 
 // ── Admission thresholds (exported for unit tests) ───────────────────────────
 // Minimum number of live jobs a tenant must have to be considered
@@ -352,17 +354,118 @@ export async function ensureDiscoveryTable(client: ReturnType<typeof getLakeClie
   `);
 }
 
-// ── Domain extraction ─────────────────────────────────────────────────────────
-async function extractDomains(
+// ── Domain & Candidate extraction ─────────────────────────────────────────────
+export interface DiscoveryCandidate {
+  domain: string;
+  company: string;
+  slug: string;
+  family?: string;
+}
+
+export const AGGREGATOR_DOMAINS = new Set([
+  "remotive.com", "weworkremotely.com", "remoteok.com", "realworkfromanywhere.com",
+  "himalayas.app", "jobicy.com", "linkedin.com", "indeed.com", "glassdoor.com",
+]);
+
+/**
+ * Pure extraction helper: maps raw (application_url, company) pairs into
+ * deduped ATS candidates, prioritizing verified ATS tokens, known employer tokens,
+ * and derived employer slugs from aggregator postings.
+ */
+export function extractDiscoveryCandidatesFromRows(
+  rows: Array<{ application_url: string; company: string }>,
+  limit: number
+): DiscoveryCandidate[] {
+  const candidates: DiscoveryCandidate[] = [];
+  const seenFamilies = new Set<string>(); // "family:slug"
+  const seenSlugs = new Set<string>(); // "slug"
+
+  for (const row of rows) {
+    if (!row.application_url || !row.company) continue;
+    const url = row.application_url.trim();
+    const company = row.company.trim();
+    const normCompany = company.toLowerCase().trim();
+
+    // 1. Known verified high-signal ATS tokens (e.g. GitLab, Camunda, Supabase, Hunt St)
+    if (KNOWN_ATS_TOKENS[normCompany]) {
+      const known = KNOWN_ATS_TOKENS[normCompany];
+      const family = known.family.toLowerCase();
+      const slug = known.token.toLowerCase();
+      const key = `${family}:${slug}`;
+      if (!seenFamilies.has(key)) {
+        seenFamilies.add(key);
+        seenSlugs.add(slug);
+        candidates.push({
+          domain: `${slug}.${family}`,
+          company,
+          slug,
+          family,
+        });
+      }
+      continue;
+    }
+
+    // 2. Direct ATS application links (e.g. jobs.lever.co/loadsmart or 20four7va.breezy.hr)
+    const atsRef = extractAtsToken(url);
+    if (atsRef) {
+      const family = atsRef.platform.toLowerCase();
+      const slug = atsRef.token.toLowerCase();
+      const key = `${family}:${slug}`;
+      if (!seenFamilies.has(key)) {
+        seenFamilies.add(key);
+        seenSlugs.add(slug);
+        candidates.push({
+          domain: hostOf(url),
+          company,
+          slug,
+          family,
+        });
+      }
+      continue;
+    }
+
+    // 3. Parse host
+    let host = "";
+    try {
+      host = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+    } catch {
+      continue;
+    }
+
+    // 4. Candidate slugs from company name and domain
+    const domainArg = AGGREGATOR_DOMAINS.has(host) ? null : host;
+    const derivedSlugs = deriveCandidateSlugs(company, domainArg);
+
+    for (const slug of derivedSlugs) {
+      const normSlug = slug.toLowerCase();
+      if (normSlug.length < 2) continue;
+      // If this slug is already covered by a known/direct family, don't guess blindly
+      if (seenSlugs.has(normSlug)) continue;
+      const key = `*:${normSlug}`;
+      if (!seenFamilies.has(key)) {
+        seenFamilies.add(key);
+        candidates.push({
+          domain: domainArg || normSlug,
+          company,
+          slug: normSlug,
+        });
+      }
+    }
+  }
+
+  return candidates.slice(0, limit);
+}
+
+export async function extractDiscoveryCandidates(
   client: ReturnType<typeof getLakeClient>,
   limit: number
-): Promise<Array<{ domain: string; company: string; slug: string }>> {
+): Promise<DiscoveryCandidate[]> {
   const res = await client.execute({
     sql: `
       SELECT application_url, company, MAX(sighting_count) as sc
       FROM lake_candidate_jobs
       WHERE application_url IS NOT NULL AND application_url != ''
-        AND status = 'QUALIFIED_READY'
+        AND status IN ('QUALIFIED_READY', 'SYNCED_TO_D1')
       GROUP BY company
       ORDER BY MAX(sighting_count) DESC
       LIMIT ?;
@@ -370,39 +473,13 @@ async function extractDomains(
     args: [limit * 4],
   });
 
-  const SKIP_DOMAINS = new Set([
-    "remotive.com", "weworkremotely.com", "remoteok.com", "realworkfromanywhere.com",
-    "himalayas.app", "jobicy.com", "breezy.hr", "greenhouse.io",
-    "boards-api.greenhouse.io", "workable.com", "lever.co",
-    "linkedin.com", "indeed.com", "glassdoor.com",
-  ]);
-
-  const seen = new Map<string, { company: string; slug: string }>();
-
-  for (const row of res.rows) {
-    try {
-      const url = row.application_url as string;
-      const company = row.company as string;
-      const domain = new URL(url).hostname.replace(/^www\./, "");
-      if (SKIP_DOMAINS.has(domain)) continue;
-
-      const slug = domain
-        .split(".")
-        .filter((p) => !["com", "io", "co", "net", "org", "app", "ai", "hr"].includes(p))
-        .join("-")
-        .toLowerCase()
-        .replace(/[^a-z0-9-]/g, "")
-        .slice(0, 40);
-
-      if (slug.length < 3) continue;
-      if (!seen.has(domain)) seen.set(domain, { company, slug });
-    } catch { /* skip unparseable URLs */ }
-  }
-
-  return Array.from(seen.entries())
-    .slice(0, limit)
-    .map(([domain, meta]) => ({ domain, ...meta }));
+  return extractDiscoveryCandidatesFromRows(
+    res.rows as Array<{ application_url: string; company: string }>,
+    limit
+  );
 }
+
+export const extractDomains = extractDiscoveryCandidates;
 
 // ── Shared paced probe + admission ────────────────────────────────────────────
 export interface DiscoveryStats {
@@ -655,20 +732,30 @@ export async function runDomainAtsDiscovery(options: {
 
   const stats = emptyDiscoveryStats();
   const rateLimitedHosts = new Set<string>();
-  const domains = await extractDomains(client, domainLimit);
-  console.log(`Extracted ${domains.length} employer domains to probe.\n`);
+  const candidates = await extractDiscoveryCandidates(client, domainLimit);
+  console.log(`Extracted ${candidates.length} candidate ATS targets to probe.\n`);
 
-  for (const { domain, company, slug } of domains) {
+  for (const candidate of candidates) {
     stats.domainsScanned++;
-    for (const template of ATS_PROBE_TEMPLATES) {
-      if (rateLimitedHosts.has(hostOf(template.buildUrl(slug)))) {
+    const templates = candidate.family
+      ? [probeTemplateForFamily(candidate.family)].filter((t): t is AtsProbeTemplate => t != null)
+      : ATS_PROBE_TEMPLATES;
+
+    for (const template of templates) {
+      if (rateLimitedHosts.has(hostOf(template.buildUrl(candidate.slug)))) {
         stats.skippedRateLimitedHost++;
         continue;
       }
       try {
-        await evaluateTenant(client, { domain, company, slug }, template, { dryRun, rateLimitedHosts, probeDelayMs: delay }, stats);
+        await evaluateTenant(
+          client,
+          { domain: candidate.domain, company: candidate.company, slug: candidate.slug, family: candidate.family },
+          template,
+          { dryRun, rateLimitedHosts, probeDelayMs: delay },
+          stats
+        );
       } catch (err: any) {
-        console.error(`  ❌ Error evaluating ${template.family}/${slug}:`, err?.message || String(err));
+        console.error(`  ❌ Error evaluating ${template.family}/${candidate.slug}:`, err?.message || String(err));
       }
     }
   }

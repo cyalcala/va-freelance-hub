@@ -1,6 +1,30 @@
 # System Savepoint
 
-## 2026-10-02 — Entity Resolution Casing Normalization + Gauntlet Phase 3 Reconciliation Slice 2 (90 Boards, Loadsmart Admitted + Gate-Held, Marginal Yield 0.0444/probe) (current)
+## 2026-10-02 — Gauntlet Phase 6: Discovery Flywheel Upgrade Delivered (Candidate Extraction from Synced Inventory, ATS Token Resolution, 5/10 Dry-Run Yield) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Marathon Supervisor).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 6 Lake QUALIFIED_READY rows held by dual-gate publication floor).
+
+**1. Delivered unit — Gauntlet Phase 6: Discovery Flywheel Upgrade (`scripts/lake/domain-ats-discovery.ts`):**
+- **Query Inventory Expansion:** Upgraded `extractDiscoveryCandidates` from querying only `status = 'QUALIFIED_READY'` (which saw only 2 companies) to `status IN ('QUALIFIED_READY', 'SYNCED_TO_D1')` (opening access to all 840+ opportunities across 120 verified employers in the Lake).
+- **Multi-Strategy Candidate Extraction (`extractDiscoveryCandidatesFromRows`):**
+  - Direct ATS URL Detection: Uses `extractAtsToken` to detect direct first-party ATS URLs (`jobs.lever.co/*`, `*.breezy.hr`, `boards.greenhouse.io/*`, `jobs.ashbyhq.com/*`, `apply.workable.com/*`), pinning both the platform family and tenant slug.
+  - Known Employer Token Resolution: Leverages `KNOWN_ATS_TOKENS` (GitLab, Camunda, MultiplyMii, Hunt St, Supabase) for immediate high-signal hits even when posted through third-party feeds.
+  - Aggregator Normalization: Filters known aggregator domains (`AGGREGATOR_DOMAINS`) and derives candidate employer slugs from `company` name via `deriveCandidateSlugs`.
+  - Smart Deduplication: Multiple postings for the same employer consolidate into a single candidate, suppressing unpinned wildcard guesses if an exact ATS family is already resolved.
+- **Family-Pinned Probing:** Upgraded `runDomainAtsDiscovery` loop to probe only the pinned template when `candidate.family` is known, eliminating 4x blind fanout and conserving host rate limits.
+- **Dry-Run Validation:** Probed a 10-candidate slice live from Lake data. Result: 6 found, 5 auto-admitted (`workable:crewbloom` 26.7%, `workable:hunt-st` 98.5%, `ashby:multiplymii` 100%, `workable:rocketams` 77.8%, `workable:hello-rache` 33.3%). 0 errors.
+
+**2. Verification:**
+- Full test suite: 1,687 passed / 0 failed across 175 files (`bun test`, 25s).
+- Lake test suite: 67 passed / 0 failed across 8 files (`bun test scripts/lake`, +4 new tests).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+
+**NEXT SINGLE ACTION:** Run Gauntlet Phase 3 Corpus Reconciliation Slice 3 (`scripts/lake/reconcile-discovered-corpus.ts --per-family=50`, 150 boards) on the remaining 9,593 unvalidated claims to continue surfacing high-PH first-party outliers. If an admitted source clears the 20% Wilson lower bound, execute `bun run lake:sync` to publish to D1. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-02 — Entity Resolution Casing Normalization + Gauntlet Phase 3 Reconciliation Slice 2 (90 Boards, Loadsmart Admitted + Gate-Held, Marginal Yield 0.0444/probe) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Marathon Supervisor).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 6 Lake QUALIFIED_READY rows held by dual-gate publication floor).
