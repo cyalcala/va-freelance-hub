@@ -5,23 +5,18 @@ FROM oven/bun:1.3.14-slim AS runner
 WORKDIR /app
 
 # Ensure unprivileged execution
-USER root
-
-# Install dependencies (wrangler, @libsql/client)
-COPY package.json bun.lockb* ./
-RUN bun install --production
+USER bun
 
 # Copy application files needed for D1 and Turso synchronization
-COPY apps/web/wrangler.jsonc ./apps/web/wrangler.jsonc
-COPY packages ./packages
-COPY scripts/lake ./scripts/lake
-COPY scripts/diagnostics ./scripts/diagnostics
-COPY scripts/gcp ./scripts/gcp
+COPY --chown=bun:bun package.json ./
+COPY --chown=bun:bun packages ./packages
+COPY --chown=bun:bun apps/web/wrangler.jsonc ./apps/web/wrangler.jsonc
+COPY --chown=bun:bun scripts/lake ./scripts/lake
+COPY --chown=bun:bun scripts/diagnostics ./scripts/diagnostics
+COPY --chown=bun:bun scripts/gcp ./scripts/gcp
 
-# Ensure bun user ownership
-RUN chown -R bun:bun /app
-
-USER bun
+# Install pinned runtime dependencies directly without workspace coupling
+RUN bun add @libsql/client@0.18.0 wrangler@4.143.0 --no-save
 
 ENV NODE_ENV=production
 
