@@ -5,8 +5,10 @@ async function main() {
   const projectId = "antigravity-494415";
   const region = "asia-southeast1";
 
+  const jobName = process.argv[2] || "lake-publish-job";
+
   const res = await fetch(
-    `https://run.googleapis.com/v2/projects/${projectId}/locations/${region}/jobs/shadow-dispatch-job`,
+    `https://run.googleapis.com/v2/projects/${projectId}/locations/${region}/jobs/${jobName}`,
     { headers: { Authorization: `Bearer ${token}` } }
   );
 
