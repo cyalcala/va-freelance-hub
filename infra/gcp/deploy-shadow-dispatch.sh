@@ -59,9 +59,9 @@ IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${IMAGE_NAM
 # 3. Build and Push Container Image via Cloud Build
 echo "3. Building container image via Cloud Build..."
 gcloud builds submit \
-  --tag="$IMAGE_TAG" \
+  --config=infra/gcp/shadow-dispatch/cloudbuild.yaml \
+  --substitutions=_IMAGE_TAG="$IMAGE_TAG" \
   --project="$PROJECT_ID" \
-  --file=infra/gcp/shadow-dispatch/Dockerfile \
   .
 
 # 4. Create Service Account with Least Privilege
