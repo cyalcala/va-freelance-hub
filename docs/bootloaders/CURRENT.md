@@ -2,47 +2,46 @@
 
 ## Active bounded unit
 
-**Gauntlet Phase 3/4: High-PH Outliers Admitted — 16 Jobs Synced to D1, Total 840, 15 Tenants (2026-10-01, current):**
+**Gauntlet Phase 3 Reconciliation Delivered: 90-Board Stratified Validation, Marginal Yield 0.0222/probe, Sofar Sounds Admitted + Gate-Held (2026-10-01, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- LastRound corpus (9,741 discovery claims, `review_status='discovered'`, provenance preserved) + bounded validation evidence (n=60: 54/60 alive, raw PH 1.8%).
-- High-PH outliers `lever/snappr` (76.5% PH, Wilson 52.7%) and `ashby/the-studio` (60.0% PH, Wilson 23.1%) ADMITTED through the sanctioned Jev+Wilson pipeline.
-- Governed publication: 16 net-new QUALIFIED_READY candidates synced to production D1 via `lake:sync`. D1 824 → **840**, 0 pending. 15 auto-approved tenants (was 13).
-- GCP primary batch runtimes healthy.
-- Tests: 59/59 lake, typecheck clean, guardrails clean.
+- Reconciliation mechanism live: `scripts/lake/reconcile-discovered-corpus.ts` (+4 tests) — deterministic stratified slices of the `discovered` corpus through the sanctioned Jev+Wilson engine.
+- Live reconciliation (90 boards, 30/family): 1 admitted (`lever:sofarsounds`), 2 shadowed, 53 rejected, marginal qualified yield 0.0222/probe. Corpus: 9,685 claims still unvalidated, 56 evaluated.
+- Publication governance verified end-to-end: sync gate correctly HELD Sofar Sounds (2/10, Wilson ~3.7% < 20% floor) while snappr (52.7%) / the-studio (23.1%) published. D1 840 synced, 0 pending, 15 auto-approved tenants.
+- Live site 200; Snappr outlier jobs visible on `/opportunities`; web suite 328/328; lake tests 63/63; typecheck + guardrails clean.
 
 CURRENT BOTTLENECK:
-Supply gap to 100-150 qualified fresh jobs/day (verified binding). Corpus value is discovery intelligence + outliers; bulk ingestion is uneconomical (~1.8% raw PH).
+Supply gap to 100-150 qualified fresh jobs/day (verified binding). Broad-corpus marginal yield measured LOW (0.0222/probe) — PH-dedicated agencies are the higher-yield path.
 
 ACTIVE UNIT:
-Gauntlet Phase 3 — cross-registry reconciliation + corpus stratification.
+Gauntlet Phase 4 — PH high-prior cohort (PH-dedicated agency reserve).
 
 LAST COMPLETED UNIT:
-Gauntlet Phase 3/4 outlier evaluation (snappr + the-studio admitted, 16 jobs published).
+Gauntlet Phase 3 reconciliation mechanism + 90-board live validation + marginal-yield measurement.
 
 RESULT:
-16 verified Philippine-eligible opportunities published to live D1 through governed receipts; 15 auto-approved tenants.
+Reconciliation flywheel mechanized and evidenced; 1 outlier admitted; publication gate sample-size-aware authority verified.
 
 UNRESOLVED:
-9,681 `discovered` rows unvalidated (job_count/ph_rate NULL); no cross-registry reconciliation yet.
+9,685 corpus claims unvalidated (repeatable slices available); Sofar Sounds 2 jobs correctly gate-held pending stronger evidence.
 
 NEXT ACTION:
-Gauntlet Phase 3: build cross-registry reconciliation (canonicalize employer/domain/ATS/board across the 9,741 LastRound claims and the existing registry), live-validate a bounded stratified slice, persist validation evidence to `discovered` rows (`job_count`, `ph_rate`, `review_status` transition), and stratify the corpus (HOT/WARM/EXPLORATION/DORMANT per project conventions).
+Gauntlet Phase 4: run `scripts/lake/ingest-ph-agency-cohort.ts` for the PH-dedicated agency reserve (Cyberbacker, Emapta, Wing Assistant, Remote Staff, VirtualStaff.ph, etc.), evaluate through geoGate+Jev, admit qualifying agencies through the sanctioned pipeline, and sync via `lake:sync`.
 
 WHY NEXT:
-The discovery universe exists but is inert without validation and reconciliation; validated stratification is what turns 9,741 claims into allocatable polling capacity (MATH-01/03).
+PH-dedicated agencies demonstrate 90-100% qualification yield (vs 0.0222/probe broad-corpus marginal) — the highest-marginal-value path to the 100/day floor.
 
 ACCEPTANCE:
-Reconciliation preserves all discovery claims separately (no silent overwrite); validation evidence persisted with timestamps; stratification recorded with evidence.
+Cohort evaluations produce verified yield metrics through compliance gates; admissions recorded; sync receipts durable.
 
 FALLBACK:
-If reconciliation exceeds the session, checkpoint the canonicalization design and continue next session; outliers' rows already carry evaluation evidence.
+If a source violates compliance or yields zero qualified opportunities, quarantine with a dated failure note and continue with the next cohort slice.
 
 **Prior unit (delivered & deployed):**
 
-**Gauntlet Phase 0-2: LastRound 9,935 Source Universe imported as discovery claims (SHADOW only) + bounded validation (2026-10-01, historical):**
+**Gauntlet Phase 3/4: High-PH Outliers Admitted — 16 Jobs Synced to D1, Total 840, 15 Tenants (2026-10-01, historical):**
 
 **Prior unit (delivered & deployed):**
 

@@ -1,6 +1,24 @@
 # System Savepoint
 
-## 2026-10-01 — Gauntlet Phase 3/4: High-PH Outliers Admitted via Sanctioned Pipeline (16 Jobs Synced to D1, Total 840, 15 Tenants) (current)
+## 2026-10-01 — Gauntlet Phase 3 Reconciliation Delivered: 90-Board Stratified Validation, Marginal Yield Measured (0.0222/probe), Sofar Sounds Admitted + Gate-Held (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation of the "maintenance7" session; commits `99035ec`, `7fca0f0` pushed).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 2 Sofar Sounds rows correctly held by the publication gate).
+
+**1. Delivered unit — Gauntlet Phase 3 cross-registry reconciliation mechanism:**
+- **`scripts/lake/reconcile-discovered-corpus.ts` (new) + tests (4):** the repeatable flywheel mechanism for the discovered corpus — loads `review_status='discovered'` rows (never re-evaluates probed rows), takes a deterministic stratified slice (evenly-spaced N/family), and delegates probing/evaluation/persistence to the sanctioned `runBulkAtsDiscovery` engine (geoGate + Jev + Wilson + ON CONFLICT UPDATE). No new write semantics; lake_runs ledger records reconciliation evidence.
+- **Live reconciliation executed (90 boards, 30/family):** scanned=90, tenants found=56, **1 admitted (`lever:sofarsounds`, 10 jobs, 20.0% PH, 2 QUALIFIED_READY ingested)**, 2 shadowed, 53 auto-rejected (deterministic thresholds, negligible PH signal). **Marginal qualified yield: 0.0222/probe** (2 qualified per 90 probes).
+- **Governance observation (VERIFIED, working as designed):** `lake:sync` correctly **held** Sofar Sounds' 2 jobs ("held by the source gate") — the sync's publication layer computes the Wilson lower bound per source (2/10 → ~3.7% < 20% floor → HOLD "qualified sample is too small to publish") while the admission layer admitted on the raw-rate threshold (20% ≥ 20%). This is the dual-gate defense-in-depth working: admission to the lake does not grant publication authority (MATH-06 / Constitution Part XV). Contrast: snappr (13/17, Wilson 52.7%) and the-studio (3/5, Wilson 23.1%) cleared and published. The 2 held rows remain pending in the lake and may publish when evidence grows.
+- **Post-publication observation (VERIFIED_RUNTIME):** live site `/` 200, Snappr outlier jobs VISIBLE on `/opportunities`; full web test suite 328/328 pass (62 files).
+- Corpus state after reconciliation: 9,741 claims → 9,685 still unvalidated (`discovered`), 56 evaluated with evidence.
+
+**2. Verification:**
+- Lake tests: 63 pass / 0 fail (8 files, +4 new). TypeScript: clean. Guardrails: clean.
+- Live D1: 840 synced, 0 pending (sofarsounds correctly held).
+
+**NEXT SINGLE ACTION:** Gauntlet Phase 4 — PH high-prior cohort: run `scripts/lake/ingest-ph-agency-cohort.ts` for the PH-dedicated agency reserve (Cyberbacker, Emapta, Wing Assistant, Remote Staff, VirtualStaff.ph, etc.), evaluate through geoGate+Jev, and admit qualifying agencies through the sanctioned pipeline. Marginal PH-dedicated agencies bridge more supply than broad-corpus mining (broad corpus marginal yield now measured at 0.0222/probe). Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-01 — Gauntlet Phase 3/4: High-PH Outliers Admitted via Sanctioned Pipeline (16 Jobs Synced to D1, Total 840, 15 Tenants) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation of the "maintenance7" session; commit `99035ec` pushed).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending, 15 auto-approved tenants).
