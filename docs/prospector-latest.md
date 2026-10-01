@@ -1,7 +1,7 @@
 # Prospector Latest
 
-Date: 2026-09-30
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36784743215
+Date: 2026-10-01
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36822387058
 
 | Metric | Value |
 | --- | ---: |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36784743
 
 ## Auto-added companies
 
-- Orchard
+- Halcyon
 
 ## Durable candidate queue (SP-06, non-publishing)
 
