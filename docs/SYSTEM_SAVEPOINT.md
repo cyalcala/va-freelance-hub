@@ -23,16 +23,23 @@
   - `scripts/gcp/verify-shadow-dispatch.ts`: CLI readiness and dry-run tool with synthetic simulation (`--dry-run` exit 0).
   - `docs/plans/UNIT_GCP_01_SHADOW_DISPATCH_MIGRATION.md`: Complete Unified Unit Contract v3.0.
 
-**2. Verification (VERIFIED_LOCAL):**
+**2. Verification (VERIFIED_PRODUCTION):**
 - Targeted GCP tests: 5 pass / 0 fail (`scripts/gcp/run-shadow-dispatch.test.ts`).
-- Full test suite: 1,658 pass / 0 fail.
+- Full test suite: 1,663 pass / 0 fail across 172 test files.
 - Production guardrails: `bun run audit:guardrails` clean.
 - Parameter parity: `bun run audit:parameters` clean (100% parity).
 - Constitution audit: `bun run audit:constitution` clean (4 standard standing warnings).
 - TypeScript: `bun run typecheck` clean.
 - Dry-run verification: `bun scripts/gcp/verify-shadow-dispatch.ts --dry-run` passed.
+- **Live Google Cloud Infrastructure Provisioned & Active**:
+  - GCP Project: `antigravity-494415` (`296059249147`), Region: `asia-southeast1`.
+  - Artifact Registry: `asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch:latest`.
+  - Cloud Run Job: `shadow-dispatch-job` (1 vCPU, 512MiB, unprivileged `bun` user, timeout 300s).
+  - Cloud Scheduler: `shadow-dispatch-hourly` (`53 * * * *` UTC) invoking via IAM Service Account `va-hub-scheduler-invoker`.
+  - Secret Manager: `va-hub-proxy-secret` (version 1) injected securely at runtime.
+  - Initial Live Execution: `shadow-dispatch-job-d2zmx` succeeded with status `1 / 1 complete` in 9.55s.
 
-**NEXT SINGLE ACTION:** Provision Google Cloud project credentials (`GCP_PROJECT_ID` and authenticated service account) in the deployment environment; execute `infra/gcp/deploy-shadow-dispatch.sh` to launch the Cloud Scheduler + Cloud Run Job shadow clock in parallel with GitHub Actions; begin the 7-day shadow observation comparison window under Unit GCP-01 contract.
+**NEXT SINGLE ACTION:** 7-Day Shadow Observation Window is active (2026-10-01 to 2026-10-08). Observe hourly parallel execution between GCP (`:53` UTC) and GitHub Actions (`:23` UTC); verify GCP achieves >=95% delivery rate and compare candidate source clean-day streak accumulation.
 
 ## 2026-10-01 — Live D1 Fleet Funnel Measurement (35.9/day), Skills Installed, Watchdog Verified, 14 Candidates Audited (historical; superseded by the entry above)
 
