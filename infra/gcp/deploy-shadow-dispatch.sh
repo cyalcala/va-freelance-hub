@@ -73,11 +73,19 @@ if ! gcloud iam service-accounts describe "$SA_EMAIL" --project="$PROJECT_ID" >/
     --project="$PROJECT_ID"
 fi
 
-# Grant Cloud Run Invoker permission to the service account
-gcloud projects add-iam-policy-binding "$PROJECT_ID" \
-  --member="serviceAccount:${SA_EMAIL}" \
-  --role="roles/run.invoker" \
-  --condition=None >/dev/null
+# Grant Cloud Run Invoker permission to the service account (with retry for eventual consistency)
+echo "Binding roles/run.invoker to service account..."
+for i in {1..6}; do
+  if gcloud projects add-iam-policy-binding "$PROJECT_ID" \
+    --member="serviceAccount:${SA_EMAIL}" \
+    --role="roles/run.invoker" \
+    --condition=None >/dev/null 2>&1; then
+    echo "  -> Successfully bound roles/run.invoker"
+    break
+  fi
+  echo "  -> Waiting for IAM service account propagation (attempt $i/6)..."
+  sleep 4
+done
 
 # 5. Ensure Secret Manager PROXY_SECRET exists
 echo "5. Checking Secret Manager for va-hub-proxy-secret..."
@@ -93,11 +101,19 @@ if ! gcloud secrets describe "va-hub-proxy-secret" --project="$PROJECT_ID" >/dev
   fi
 fi
 
-# Grant Secret Accessor permission to the service account
-gcloud secrets add-iam-policy-binding "va-hub-proxy-secret" \
-  --member="serviceAccount:${SA_EMAIL}" \
-  --role="roles/secretmanager.secretAccessor" \
-  --project="$PROJECT_ID" >/dev/null 2>&1 || true
+# Grant Secret Accessor permission to the service account (with retry for eventual consistency)
+echo "Binding roles/secretmanager.secretAccessor..."
+for i in {1..6}; do
+  if gcloud secrets add-iam-policy-binding "va-hub-proxy-secret" \
+    --member="serviceAccount:${SA_EMAIL}" \
+    --role="roles/secretmanager.secretAccessor" \
+    --project="$PROJECT_ID" >/dev/null 2>&1; then
+    echo "  -> Successfully bound roles/secretmanager.secretAccessor"
+    break
+  fi
+  echo "  -> Waiting for Secret IAM propagation (attempt $i/6)..."
+  sleep 4
+done
 
 # 6. Deploy or Update Cloud Run Job
 echo "6. Deploying Cloud Run Job..."
