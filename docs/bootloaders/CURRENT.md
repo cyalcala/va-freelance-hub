@@ -2,48 +2,47 @@
 
 ## Active bounded unit
 
-**Gauntlet Phase 0-2: LastRound 9,935 Source Universe imported as discovery claims (SHADOW only) + bounded validation (2026-10-01, current):**
+**Gauntlet Phase 3/4: High-PH Outliers Admitted — 16 Jobs Synced to D1, Total 840, 15 Tenants (2026-10-01, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Supply binding constraint VERIFIED: 35.9 qualified fresh jobs/day vs 100/day floor (gap -64.1; 7 complete Manila days, production D1).
-- LastRound AI ATS Directory (9,935 boards, CC BY 4.0, `fyrosofttech/lastroundai-hiring-data`) imported into Turso: **9,741 discovery claims** (`review_status='discovered'`, provenance in new `discovery_origin` column), 194 already-known tenants preserved, 98 batches, 0 failed chunks.
-- SHADOW-only contract held: 0 probes during import, 0 D1 writes, 0 ingestion, 0 promotion. D1 unchanged (824 synced, 0 pending).
-- Bounded stratified validation probe (read-only, n=60): 54/60 alive (90.0%), 979 open jobs observed, raw PH-qualified estimate 1.8% (deterministic geoGate; wide interval at n=60). High-PH outliers: `lever/snappr` 76.5% (13/17), `ashby/the-studio` 60.0% (3/5).
-- GCP primary batch runtimes healthy; 13 auto-approved tenants.
-- Tests: 59/59 lake (+10 new), typecheck clean, guardrails clean.
+- LastRound corpus (9,741 discovery claims, `review_status='discovered'`, provenance preserved) + bounded validation evidence (n=60: 54/60 alive, raw PH 1.8%).
+- High-PH outliers `lever/snappr` (76.5% PH, Wilson 52.7%) and `ashby/the-studio` (60.0% PH, Wilson 23.1%) ADMITTED through the sanctioned Jev+Wilson pipeline.
+- Governed publication: 16 net-new QUALIFIED_READY candidates synced to production D1 via `lake:sync`. D1 824 → **840**, 0 pending. 15 auto-approved tenants (was 13).
+- GCP primary batch runtimes healthy.
+- Tests: 59/59 lake, typecheck clean, guardrails clean.
 
 CURRENT BOTTLENECK:
-Supply gap to 100-150 qualified fresh jobs/day (verified binding). Broad-universe raw PH yield is low (~1.8%) — the corpus's value is discovery intelligence + high-PH outliers, not bulk ingestion.
+Supply gap to 100-150 qualified fresh jobs/day (verified binding). Corpus value is discovery intelligence + outliers; bulk ingestion is uneconomical (~1.8% raw PH).
 
 ACTIVE UNIT:
-Gauntlet Phase 3 — cross-registry reconciliation + outlier evaluation.
+Gauntlet Phase 3 — cross-registry reconciliation + corpus stratification.
 
 LAST COMPLETED UNIT:
-Gauntlet Phase 0-2 (binding constraint verified, source universe audit, LastRound discovery-only ingest, bounded validation).
+Gauntlet Phase 3/4 outlier evaluation (snappr + the-studio admitted, 16 jobs published).
 
 RESULT:
-9,741 validated-provenance discovery claims in Turso, SHADOW only; 0 D1 writes; full test/typecheck/guardrails green; artifacts: `docs/architecture/CURRENT_STATE_SOURCE_UNIVERSE_GAUNTLET_2026-10-01.md`, `docs/FEDERATED_ACQUISITION_MATRIX.md`.
+16 verified Philippine-eligible opportunities published to live D1 through governed receipts; 15 auto-approved tenants.
 
 UNRESOLVED:
-Corpus is unvalidated beyond the n=60 probe (job_count/ph_rate NULL on 9,681 rows); high-PH outliers not yet evaluated through the admission pipeline.
+9,681 `discovered` rows unvalidated (job_count/ph_rate NULL); no cross-registry reconciliation yet.
 
 NEXT ACTION:
-Gauntlet Phase 3: evaluate `lever/snappr` + `ashby/the-studio` through the existing Jev+Wilson admission pipeline; build cross-registry reconciliation (canonicalize employer/domain/ATS/board across LastRound claims and the existing registry), live-validate a bounded stratified slice, persist validation evidence to `discovered` rows (`job_count`, `ph_rate`, `review_status` transition), and stratify the corpus (HOT/WARM/EXPLORATION/DORMANT per project conventions).
+Gauntlet Phase 3: build cross-registry reconciliation (canonicalize employer/domain/ATS/board across the 9,741 LastRound claims and the existing registry), live-validate a bounded stratified slice, persist validation evidence to `discovered` rows (`job_count`, `ph_rate`, `review_status` transition), and stratify the corpus (HOT/WARM/EXPLORATION/DORMANT per project conventions).
 
 WHY NEXT:
-The discovery universe now exists but is inert without validation and reconciliation; outliers with strong PH signal are the highest-marginal-yield path toward the 100/day floor.
+The discovery universe exists but is inert without validation and reconciliation; validated stratification is what turns 9,741 claims into allocatable polling capacity (MATH-01/03).
 
 ACCEPTANCE:
-Outlier evaluations produce verified yield metrics through compliance gates; reconciliation preserves all discovery claims separately (no silent overwrite); corpus stratification recorded with evidence.
+Reconciliation preserves all discovery claims separately (no silent overwrite); validation evidence persisted with timestamps; stratification recorded with evidence.
 
 FALLBACK:
-If a source violates compliance or yields zero qualified opportunities, quarantine with a dated failure note and continue with the next stratification slice.
+If reconciliation exceeds the session, checkpoint the canonicalization design and continue next session; outliers' rows already carry evaluation evidence.
 
 **Prior unit (delivered & deployed):**
 
-**Unit GCP-02 + Supply Expansion: Ingestion Resilience Hardened, Polling Fixed, 44 New VA Jobs Published to D1 (2026-10-01, historical):**
+**Gauntlet Phase 0-2: LastRound 9,935 Source Universe imported as discovery claims (SHADOW only) + bounded validation (2026-10-01, historical):**
 
 **Prior unit (delivered & deployed):**
 

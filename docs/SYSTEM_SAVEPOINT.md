@@ -1,6 +1,25 @@
 # System Savepoint
 
-## 2026-10-01 — Gauntlet Phase 0-2: Deep Source Universe Expansion — LastRound 9,935 imported as discovery claims (SHADOW only) + bounded validation (current)
+## 2026-10-01 — Gauntlet Phase 3/4: High-PH Outliers Admitted via Sanctioned Pipeline (16 Jobs Synced to D1, Total 840, 15 Tenants) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation of the "maintenance7" session; commit `99035ec` pushed).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending, 15 auto-approved tenants).
+
+**1. Delivered unit — Gauntlet Phase 3/4 outlier evaluation through the existing admission pipeline:**
+- Evaluated the two high-PH outliers from the Phase 2 stratified validation probe (`lever/snappr` 76.5%, `ashby/the-studio` 60.0%) through the sanctioned `runBulkAtsDiscovery` Jev+Wilson admission engine (2 bounded probes, 1500 ms pacing):
+  - `lever/snappr`: 17 jobs, 13✓ 3✗ 1? (76.5% PH) → Wilson lower bound 52.7% clears floor → ADMITTED; 13 QUALIFIED_READY ingested, 0 duplicates.
+  - `ashby/the-studio`: 5 jobs, 3✓ 1✗ 1? (60.0% PH) → Wilson lower bound 23.1% clears floor → ADMITTED; 3 QUALIFIED_READY ingested, 0 duplicates.
+  - Total: 16 net-new QUALIFIED_READY candidates, 15 auto-approved tenants (was 13).
+- Governed publication: `bun run lake:sync` synced all 16 into production D1 (rows written 264, 0 pending; F1 publication receipts + F2 inventory snapshot active).
+- D1 synced inventory: 824 → **840**. This is the LastRound corpus's first marginal qualified contribution to the 100/day flow — measured, not bulk volume.
+
+**2. Verification:**
+- `bun run lake:state`: 840 synced to D1, 0 pending, 15 auto-approved tenants.
+- Admission engine summary: 2/2 admitted, 0 rejected, 16 ingested, 0 rate-limited.
+
+**NEXT SINGLE ACTION:** Gauntlet Phase 3 — build cross-registry reconciliation (canonicalize employer/domain/ATS/board across the 9,741 LastRound discovery claims and the existing registry), live-validate a bounded stratified slice, persist validation evidence to `discovered` rows (`job_count`, `ph_rate`, `review_status` transition), and stratify the corpus (HOT/WARM/EXPLORATION/DORMANT per project conventions). Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-01 — Gauntlet Phase 0-2: Deep Source Universe Expansion — LastRound 9,935 imported as discovery claims (SHADOW only) + bounded validation (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (Supervisor + Bootloader v5.2 + Deep Source Universe Expansion Gauntlet, "maintenance7" session).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (unchanged; D1 untouched by this unit — 824 synced, 0 pending).
