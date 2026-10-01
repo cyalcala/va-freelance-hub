@@ -43,11 +43,19 @@ IMAGE_TAG="${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY_NAME}/${IMAGE_NAM
 
 # 2. Build and Push Container Image via Cloud Build
 echo "1. Building lake-publish container image via Cloud Build..."
-gcloud builds submit \
+if ! gcloud builds submit \
   --config=infra/gcp/lake-publish/cloudbuild.yaml \
   --substitutions=_IMAGE_TAG="$IMAGE_TAG" \
   --project="$PROJECT_ID" \
-  .
+  .; then
+  echo ""
+  echo "=================================================================="
+  echo "   CLOUD BUILD LOGS (Error Details)"
+  echo "=================================================================="
+  LATEST_BUILD="$(gcloud builds list --limit=1 --format='value(id)' --project="$PROJECT_ID")"
+  gcloud builds log "$LATEST_BUILD" --project="$PROJECT_ID" || true
+  exit 1
+fi
 
 # 3. Ensure Service Account exists
 SA_EMAIL="${SERVICE_ACCOUNT_NAME}@${PROJECT_ID}.iam.gserviceaccount.com"

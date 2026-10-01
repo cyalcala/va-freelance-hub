@@ -2,6 +2,7 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
+      - '--progress=plain'
       - '-t'
       - '$_IMAGE_TAG'
       - '-f'
