@@ -14,7 +14,7 @@ name: EX-03 Shadow Dispatch (Standby / GHA Fallback)
 
 on:
   schedule:
-    - cron: '23 */6 * * *' # 4x/day secondary safety fallback (GCP is primary at :53 hourly)
+    - cron: '23 * * * *' # Secondary standby clock (GCP is primary at :53 hourly)
   workflow_dispatch:
 
 permissions:

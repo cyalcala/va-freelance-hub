@@ -1,13 +1,20 @@
-name: Automatic Lake Publish
+name: Automatic Lake Publish (Standby / GHA Fallback)
 
+# ==============================================================================
+# ROLE: Secondary Standby & Manual Fallback Runner
+# PRIMARY RUNTIME: Google Cloud Platform (Cloud Scheduler + Cloud Run Job)
+#   - Cloud Run Job:       lake-publish-job (asia-southeast1)
+#   - Cloud Scheduler:     lake-publish-hourly (47 * * * * UTC)
+#   - Authority:           docs/decisions/ADR-009-constitution-governed-cloud-runtime-migration.md
+#   - Reason:              GHA sub-6-hour scheduler delivery dropped 75.0% of slots.
+# ==============================================================================
 # Publishes qualified lake rows that already cleared the mathematical gate.
 # No human approval step. Missing credentials skip the job instead of failing closed
 # into a red cron; the kill switch is `lake:sync --hold-auto-approved`.
 
 on:
   schedule:
-    - cron: '47 * * * *'
-    - cron: '17 4 * * *'
+    - cron: '17 4,16 * * *' # 2x/day secondary safety fallback (GCP is primary at :47 hourly)
   workflow_dispatch:
     inputs:
       discover:

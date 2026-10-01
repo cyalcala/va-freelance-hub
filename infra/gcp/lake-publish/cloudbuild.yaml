@@ -1,0 +1,13 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '$_IMAGE_TAG'
+      - '-f'
+      - 'infra/gcp/lake-publish/Dockerfile'
+      - '.'
+images:
+  - '$_IMAGE_TAG'
+substitutions:
+  _IMAGE_TAG: ''

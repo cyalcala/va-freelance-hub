@@ -53,34 +53,55 @@ else
   echo "==> Billing is active for $CURRENT_PROJECT."
 fi
 
-# 3. Execute Deployment
+# 3. Execute Unit GCP-01 Deployment (Shadow Dispatch)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 chmod +x "$SCRIPT_DIR/deploy-shadow-dispatch.sh"
+echo ""
+echo ">>> [Unit GCP-01] Deploying Shadow Dispatch..."
 "$SCRIPT_DIR/deploy-shadow-dispatch.sh"
 
-# 4. Immediate Live Verification
+# 4. Execute Unit GCP-02 Deployment (Reservoir Lake Publication)
+if [ -f "$SCRIPT_DIR/../../.env" ]; then
+  export TURSO_DATABASE_URL="${TURSO_DATABASE_URL:-$(grep -E '^TURSO_DATABASE_URL=' "$SCRIPT_DIR/../../.env" | cut -d '=' -f2- | tr -d '\"' | tr -d "'" || echo "")}"
+  export TURSO_AUTH_TOKEN="${TURSO_AUTH_TOKEN:-$(grep -E '^TURSO_AUTH_TOKEN=' "$SCRIPT_DIR/../../.env" | cut -d '=' -f2- | tr -d '\"' | tr -d "'" || echo "")}"
+fi
+
+chmod +x "$SCRIPT_DIR/deploy-lake-publish.sh"
+echo ""
+echo ">>> [Unit GCP-02] Deploying Reservoir Lake Publication..."
+"$SCRIPT_DIR/deploy-lake-publish.sh"
+
+# 5. Immediate Live Verification
 echo ""
 echo "=================================================================="
-echo "   Running Immediate Live Execution Test"
+echo "   Running Live Verification Tests"
 echo "=================================================================="
+echo "--> Testing shadow-dispatch-job..."
 gcloud run jobs execute shadow-dispatch-job \
   --region="$GCP_REGION" \
   --project="$CURRENT_PROJECT" \
   --wait
 
 echo ""
+echo "--> Testing lake-publish-job..."
+gcloud run jobs execute lake-publish-job \
+  --region="$GCP_REGION" \
+  --project="$CURRENT_PROJECT" \
+  --wait
+
+echo ""
 echo "=================================================================="
-echo "   Execution Logs"
+echo "   Execution Logs (Latest)"
 echo "=================================================================="
-gcloud logging read "resource.type=cloud_run_job AND resource.labels.job_name=shadow-dispatch-job" \
-  --limit=15 \
+gcloud logging read "resource.type=cloud_run_job" \
+  --limit=20 \
   --format="value(textPayload)" \
   --project="$CURRENT_PROJECT" || true
 
 echo ""
 echo "=================================================================="
-echo "   SUCCESS: Unit GCP-01 is Deployed and Live!"
-echo "   - Cloud Run Job:       shadow-dispatch-job"
-echo "   - Cloud Scheduler:     shadow-dispatch-hourly (53 * * * *)"
-echo "   - 7-Day Shadow Window: Active"
+echo "   SUCCESS: Google Cloud is Primary Runtime!"
+echo "   - Unit GCP-01: shadow-dispatch-job (hourly @ :53 UTC)"
+echo "   - Unit GCP-02: lake-publish-job (hourly @ :47 UTC)"
+echo "   - GitHub Actions: Demoted to Standby & Fallback"
 echo "=================================================================="

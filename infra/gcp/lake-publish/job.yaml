@@ -1,0 +1,52 @@
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: lake-publish-job
+  labels:
+    cloud.googleapis.com/location: asia-southeast1
+    app.kubernetes.io/name: va-freelance-hub
+    app.kubernetes.io/component: lake-publish
+    governance.va-hub/unit: GCP-02
+spec:
+  template:
+    spec:
+      taskCount: 1
+      template:
+        spec:
+          containers:
+          - image: asia-southeast1-docker.pkg.dev/PROJECT_ID/va-hub-runner/lake-publish:latest
+            resources:
+              limits:
+                cpu: "1"
+                memory: 512Mi
+            env:
+            - name: NODE_ENV
+              value: "production"
+            - name: PROXY_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: va-hub-proxy-secret
+                  key: latest
+            - name: TURSO_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: va-hub-turso-database-url
+                  key: latest
+            - name: TURSO_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: va-hub-turso-auth-token
+                  key: latest
+            - name: CLOUDFLARE_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: va-hub-cloudflare-api-token
+                  key: latest
+            - name: CLOUDFLARE_ACCOUNT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: va-hub-cloudflare-account-id
+                  key: latest
+          timeoutSeconds: 300
+          maxRetries: 1
+          serviceAccountName: va-hub-scheduler-invoker@PROJECT_ID.iam.gserviceaccount.com

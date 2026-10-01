@@ -38,8 +38,17 @@
   - Cloud Scheduler: `shadow-dispatch-hourly` (`53 * * * *` UTC) invoking via IAM Service Account `va-hub-scheduler-invoker`.
   - Secret Manager: `va-hub-proxy-secret` (version 1) injected securely at runtime.
   - Initial Live Execution: `shadow-dispatch-job-d2zmx` succeeded with status `1 / 1 complete` in 9.55s.
+- **Unit GCP-01 Promoted to PRIMARY RUNTIME**: `shadow-dispatch-job` + Cloud Scheduler `shadow-dispatch-hourly` (`53 * * * *` UTC) is the authoritative primary runner. GHA `gha-shadow-dispatch.yml` demoted to secondary standby and manual fallback.
+- **Unit GCP-02 Delivered: Reservoir Lake Publication Migration (`gha-lake-publish.yml`)**:
+  - `infra/gcp/lake-publish/Dockerfile`: Pinned `oven/bun:1.3.14-slim`, baked dependencies (`wrangler`, `@libsql/client`), runs as unprivileged `bun` user.
+  - `infra/gcp/lake-publish/job.yaml`: Declarative Cloud Run Job spec with injected Secret Manager secrets (`TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `PROXY_SECRET`).
+  - `infra/gcp/deploy-lake-publish.sh`: Automated Cloud Build and deployment for `lake-publish-job` and Cloud Scheduler `lake-publish-hourly` (`47 * * * *` UTC).
+  - `scripts/gcp/run-lake-publish.ts`: Typed runner invoking `syncQualifiedJobsToD1` and `enrollPublishedSources`, emitting structured GCP logs.
+  - `scripts/gcp/run-lake-publish.test.ts`: 4 unit tests (credential validation, fail-safe skipping, error capture, structured log formatting).
+  - `docs/plans/UNIT_GCP_02_LAKE_PUBLISH_MIGRATION.md`: Unified Unit Contract v3.0.
+  - `.github/workflows/gha-lake-publish.yml`: Updated to secondary standby / manual fallback behind GCP primary clock.
 
-**NEXT SINGLE ACTION:** 7-Day Shadow Observation Window is active (2026-10-01 to 2026-10-08). Observe hourly parallel execution between GCP (`:53` UTC) and GitHub Actions (`:23` UTC); verify GCP achieves >=95% delivery rate and compare candidate source clean-day streak accumulation.
+**NEXT SINGLE ACTION:** Run `./infra/gcp/setup-and-deploy.sh` in Google Cloud Shell to deploy Unit GCP-02 (`lake-publish-job` + `lake-publish-hourly`) onto GCP project `antigravity-494415`, completing the dual-primary batch migration for sub-6-hour workloads.
 
 ## 2026-10-01 — Live D1 Fleet Funnel Measurement (35.9/day), Skills Installed, Watchdog Verified, 14 Candidates Audited (historical; superseded by the entry above)
 
