@@ -332,3 +332,27 @@ describe("replay-refinery pure resolution", () => {
     expect(same.newStatus).toBe("AMBIGUOUS");
   });
 });
+
+describe("lake client transient error detection", () => {
+  it("identifies network socket resets, timeouts, and gateway errors as transient", async () => {
+    const { isTransientLakeError } = await import("./client");
+
+    expect(isTransientLakeError({ code: "ECONNRESET" })).toBe(true);
+    expect(isTransientLakeError({ code: "ETIMEDOUT" })).toBe(true);
+    expect(isTransientLakeError({ code: "UND_ERR_SOCKET" })).toBe(true);
+    expect(isTransientLakeError(new Error("fetch failed"))).toBe(true);
+    expect(isTransientLakeError(new Error("socket hang up"))).toBe(true);
+    expect(isTransientLakeError(new Error("502 Bad Gateway"))).toBe(true);
+    expect(isTransientLakeError(new Error("504 Gateway Timeout"))).toBe(true);
+  });
+
+  it("does not classify permanent SQL syntax or integrity errors as transient", async () => {
+    const { isTransientLakeError } = await import("./client");
+
+    expect(isTransientLakeError(null)).toBe(false);
+    expect(isTransientLakeError(new Error("no such table: fake_table"))).toBe(false);
+    expect(isTransientLakeError(new Error("UNIQUE constraint failed: lake_candidate_jobs.source_url"))).toBe(false);
+    expect(isTransientLakeError(new Error("syntax error at or near SELECT"))).toBe(false);
+  });
+});
+

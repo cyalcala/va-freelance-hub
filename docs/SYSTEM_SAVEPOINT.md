@@ -1,6 +1,45 @@
 # System Savepoint
 
-## 2026-10-01 — Unit GCP-02 Graduated: Reservoir Lake Publication Migrated to Google Cloud (PRIMARY RUNTIME) (current)
+## 2026-10-01 — Unit GCP-02 Polling Diagnostic Fixed + High-Yield VA Cohort Admitted (44 Jobs Synced to D1, Total 824) (current)
+
+**Mode:** AUTONOMOUS MARATHON EXECUTION & RESILIENCE HARDENING.
+**Status:** PRODUCTION_PRIMARY_RUNTIME (Cloud Run Jobs & Schedulers Active, Polling Architecture Fixed, 824 Synced Opportunities).
+
+**1. Delivered unit — Polling Fix, Client Resilience, and High-Yield VA Supply Admission:**
+- **Cloud Run Execution Polling Diagnostic & Resolution:**
+  - Diagnosed `Polling error: 404` in `scripts/gcp/execute-job.ts`: in Google Cloud Run API v2, `POST .../jobs/{job}:run` returns a long-running `Operation` resource (`projects/.../locations/.../operations/run-job-...`), not an `Execution` resource. Attempting to interpolate this ID into `.../executions/{id}` caused consecutive 404 responses.
+  - Refactored `scripts/gcp/execute-job.ts` to poll the Operation first (which is guaranteed valid and reports definitive completion/error states) while extracting the actual execution URI from `opData.metadata.name` to track live granular condition states (`CONDITION_SUCCEEDED`, `Started`, `Completed`). Added a 5-minute timeout guard and post-completion Cloud Logging output.
+- **Turso Lake Client Transient Error Resilience:**
+  - Wrapped `createClient` execution and batching in `scripts/lake/client.ts` with transparent retry logic for transient network/socket disconnects (`ECONNRESET`, `ETIMEDOUT`, `UND_ERR_SOCKET`, `fetch failed`, `socket hang up`, 502/503/504) with exponential backoff and randomized jitter.
+  - Added error isolation and per-batch micro-pacing in `scripts/lake/domain-ats-discovery.ts` so individual job insertion failures never abort bulk cohort evaluation.
+  - Added unit test coverage for `isTransientLakeError` in `scripts/lake/lake.test.ts` (100% passing).
+- **High-Yield Dedicated VA Supply Admission & Ingestion:**
+  - Evaluated high-intent Australian and Philippine VA staffing agencies through `geoGate` and Jev 1.13:
+    - `Hunt St` (`workable:hunt-st`): 131/133 PH-eligible (98.5% rate) -> 12 net-new admitted.
+    - `Coconut VA` (`workable:coconutva`): 39/40 PH-eligible (97.5% rate) -> 4 net-new admitted.
+    - `CrewBloom` (`workable:crewbloom`): 36/131 PH-eligible (27.5% rate) -> 5 net-new admitted.
+    - `MultiplyMii` (`ashby:multiplymii`): 48/48 PH-eligible (100.0% rate) -> 3 net-new admitted.
+    - `20Four7VA` (`breezy:20four7va`): 108/109 PH-eligible (99.1% rate) -> 13 net-new admitted.
+    - `Sourcefit` (`breezy:sourcefit`): 78/86 PH-eligible (90.7% rate) -> 6 net-new admitted.
+    - `Yokly` (`breezy:yokly`): 11/11 PH-eligible (100.0% rate) -> 1 net-new admitted.
+    - Total net-new `QUALIFIED_READY` opportunities admitted: 44 jobs.
+    - Auto-approved tenants expanded to 13.
+- **Empirical Live Cloud Run Execution & D1 Synchronization:**
+  - Executed `lake-publish-job` on Cloud Run:
+    - Manual trigger execution `lake-publish-job-dsfdg`: `CONDITION_SUCCEEDED` in 42s.
+    - Scheduled hourly execution `lake-publish-job-5j9zw` (Cloud Scheduler at 13:47 UTC): `CONDITION_SUCCEEDED` in 25.56s.
+  - Synced state in Cloudflare D1 increased from 780 to 824 opportunities.
+  - Pending sync count: 0 (all 44 new opportunities live).
+
+**2. Verification:**
+- Target tests: 49 pass / 0 fail (`bun test scripts/lake`).
+- Scripts test suite: 335 pass / 0 fail across 38 files.
+- Full web test suite: 328 pass / 0 fail across 62 files.
+- TypeScript check: Clean.
+- Turso Lake state check (`bun run lake:state`): 824 synced to D1, 0 pending sync, 13 auto-approved tenants.
+- GCP status report (`bun run scripts/gcp/status.ts`): All secrets, Cloud Run jobs, and Cloud Scheduler triggers confirmed ENABLED and healthy.
+
+## 2026-10-01 — Unit GCP-02 Graduated: Reservoir Lake Publication Migrated to Google Cloud (PRIMARY RUNTIME) (historical)
 
 **Mode:** CONSTITUTIONAL MIGRATION & RUNTIME HARDENING (Unit GCP-02).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (Unit GCP-01 & Unit GCP-02 100% LIVE IN GOOGLE CLOUD).

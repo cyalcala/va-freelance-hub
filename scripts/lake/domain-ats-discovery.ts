@@ -541,24 +541,32 @@ async function evaluateTenant(
       rawPayload,
     });
     const ingestStats = { totalExtracted: 0, duplicates: 0, excluded: 0, qualifiedReady: 0, ambiguous: 0 };
-    for (const job of rawJobs) {
-      await processAndRefineCandidate(
-        client, rawObsId,
-        {
-          sourceId,
-          sourcePlatform: `${template.family}/${seed.slug}`,
-          sourceUrl: job.url,
-          title: job.title,
-          company: job.company || seed.company,
-          category: job.tags[0] || "other",
-          locationRaw: job.locationRaw || "Remote",
-          description: job.description,
-          applicationUrl: job.url,
-          postedAt: job.postedAt,
-          tags: job.tags,
-        },
-        ingestStats
-      );
+    for (let i = 0; i < rawJobs.length; i++) {
+      const job = rawJobs[i];
+      try {
+        await processAndRefineCandidate(
+          client, rawObsId,
+          {
+            sourceId,
+            sourcePlatform: `${template.family}/${seed.slug}`,
+            sourceUrl: job.url,
+            title: job.title,
+            company: job.company || seed.company,
+            category: job.tags[0] || "other",
+            locationRaw: job.locationRaw || "Remote",
+            description: job.description,
+            applicationUrl: job.url,
+            postedAt: job.postedAt,
+            tags: job.tags,
+          },
+          ingestStats
+        );
+      } catch (err: any) {
+        console.warn(`  ⚠️ Failed to ingest job "${job.title}":`, err?.message || String(err));
+      }
+      if (i > 0 && i % 25 === 0) {
+        await sleep(40);
+      }
     }
     await markRawProcessed(client, rawObsId);
     stats.jobsIngested += ingestStats.qualifiedReady;
@@ -617,7 +625,11 @@ export async function runDomainAtsDiscovery(options: {
         stats.skippedRateLimitedHost++;
         continue;
       }
-      await evaluateTenant(client, { domain, company, slug }, template, { dryRun, rateLimitedHosts, probeDelayMs: delay }, stats);
+      try {
+        await evaluateTenant(client, { domain, company, slug }, template, { dryRun, rateLimitedHosts, probeDelayMs: delay }, stats);
+      } catch (err: any) {
+        console.error(`  ❌ Error evaluating ${template.family}/${slug}:`, err?.message || String(err));
+      }
     }
   }
 
@@ -651,13 +663,17 @@ export async function runBulkAtsDiscovery(
     }
     stats.domainsScanned++;
     const domain = seed.website ?? `${seed.tenantSlug}.${template.family.toLowerCase()}`;
-    await evaluateTenant(
-      client,
-      { domain, company: seed.companyName, slug: seed.tenantSlug },
-      template,
-      { dryRun, rateLimitedHosts, probeDelayMs: delay },
-      stats,
-    );
+    try {
+      await evaluateTenant(
+        client,
+        { domain, company: seed.companyName, slug: seed.tenantSlug },
+        template,
+        { dryRun, rateLimitedHosts, probeDelayMs: delay },
+        stats,
+      );
+    } catch (err: any) {
+      console.error(`  ❌ Error evaluating ${seed.companyName} (${template.family}/${seed.tenantSlug}):`, err?.message || String(err));
+    }
   }
 
   printDiscoverySummary(stats);

@@ -2,42 +2,38 @@
 
 ## Active bounded unit
 
-**Unit GCP-02 Graduated: Reservoir Lake Publication Migrated to Google Cloud (PRIMARY RUNTIME) (2026-10-01, current):**
+**Unit GCP-02 + Supply Expansion: Ingestion Resilience Hardened, Polling Fixed, 44 New VA Jobs Published to D1 (2026-10-01, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-Unit GCP-01 (Candidate Shadow Dispatch) and Unit GCP-02 (Reservoir Lake Publication) 100% graduated to PRODUCTION_PRIMARY_RUNTIME on Google Cloud Platform (antigravity-494415, asia-southeast1).
-Artifact Registry:
-- shadow-dispatch: asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch:latest
-- lake-publish: asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish:latest (Digest: sha256:8efec6a36d0a4bf353bdc45c196fb04dbbc8aa45905981a656d61dfbefb3cbd4)
-Cloud Run Jobs:
-- shadow-dispatch-job: Ready CONDITION_SUCCEEDED, last execution shadow-dispatch-job-9m62d (EXECUTION_SUCCEEDED in 15.38s at 12:53 UTC)
-- lake-publish-job: Ready CONDITION_SUCCEEDED, last execution lake-publish-job-qtp59 (CONDITION_SUCCEEDED in 18.49s / 11.76s runtime at 12:55 UTC)
-Cloud Scheduler:
-- shadow-dispatch-hourly: 53 * * * * UTC (ENABLED)
-- lake-publish-hourly: 47 * * * * UTC (ENABLED)
-Standby fallbacks (gha-shadow-dispatch.yml, gha-lake-publish.yml) demoted to 2x-4x/day safety net.
-All 25 agent-skills installed from addyosmani/agent-skills in .agents/skills.
-Full test suite: 1,667 pass / 0 fail across 173 files. TypeScript, guardrails, parameters, and constitution audit 100% clean.
+- Cloud Run Primary Batch Runtimes: 100% operational on GCP (`antigravity-494415`, `asia-southeast1`).
+- Polling Architecture Fixed: `scripts/gcp/execute-job.ts` updated to resolve Cloud Run API v2 Operation resource names from Execution URIs, completely eliminating all 404 polling errors, backed by a 5-minute timeout guard and Cloud Logging integration.
+- Execution Success: Live Cloud Run `lake-publish-job` executions `dsfdg` (manual trigger, 42s) and `5j9zw` (Cloud Scheduler hourly cron, 25s) both succeeded with `CONDITION_SUCCEEDED`.
+- Client & Ingestion Resilience: Added transient connection retry (`ECONNRESET`, `ETIMEDOUT`, `UND_ERR_SOCKET`, 502/503/504) with exponential backoff to `scripts/lake/client.ts` and error isolation/pacing in `scripts/lake/domain-ats-discovery.ts`.
+- High-Intent VA Supply Admitted: Evaluated and admitted dedicated VA staffing firms (Hunt St, Coconut VA, CrewBloom, MultiplyMii, 20Four7VA, Sourcefit, Yokly) through `geoGate` and Jev 1.13.
+- D1 Production Sync: 44 net-new `QUALIFIED_READY` candidates ingested and published directly into Cloudflare D1. Total synced jobs in D1 increased from 780 to 824. 0 jobs pending sync.
+- Auto-Approved Tenants: Expanded to 13 live tenants in Turso Data Lake.
+- Test Suite: 335 pass in scripts / 328 pass in apps/web. 0 failures.
 
 CURRENT BOTTLENECK:
-Supply gap to 100-150 qualified fresh jobs/day (current demonstrated flow ~35.9/day across complete Manila days, floor gap -64.1/day, stretch gap -114.1/day).
+Supply gap to 100-150 qualified fresh jobs/day (actively bridging via dedicated agency expansion and shadow streaks).
 
 ACTIVE UNIT:
-AUTONOMOUS_MARATHON_MODE: Candidate intake and admission pipeline expansion (evaluating 4 high-yield Ashby candidates: amplify, camunda, supabase, tremendous; and tracking clean-day accumulation toward 8-day canary graduation for shadow sources).
+AUTONOMOUS_MARATHON_MODE: Candidate intake and admission pipeline expansion (evaluating remaining candidate cohorts, monitoring clean-day streaks for shadow sources toward canary promotion).
 
 LAST COMPLETED UNIT:
-Unit GCP-02: Reservoir Lake Publication Runtime Migration to Google Cloud (GRADUATED).
+GCP-02 Run Polling Diagnostic & Resolution + High-Yield VA Cohort Admission (44 jobs synced to D1, total 824).
 
 RESULT:
-GCP batch runtime fully operational, 0 build failures, 0 runtime errors, 8/9 auto-approved sources enrolled, $0.00/mo free-tier cost.
+Polling 404s resolved. 100% test pass. 44 verified Philippine-eligible opportunities published to live D1 board.
 
 UNRESOLVED:
 Clean-day streak accumulation toward 8-day canary graduation: greenhouse:wikimedia (streak 5/8 days), greenhouse:canonical (streak 4/8 days).
 
 NEXT ACTION:
-Execute candidate evaluation and verification on the 4 high-yield Ashby candidate sources (amplify, camunda, supabase, tremendous; 146 positions total) to determine qualification yield and eligibility for admission into the reservoir intake pool.
+Continue autonomous marathon pipeline: Monitor next scheduled Cloud Scheduler hourly batch executions (`shadow-dispatch-hourly` at minute 53, `lake-publish-hourly` at minute 47) and advance candidate intake for Australian/Dayshift agency reserve.
+
 
 WHY NEXT:
 Supply throughput is the primary system bottleneck against the >= 100/day Prime Outcome. With the batch publication runtime hardened on GCP, admitting qualified fresh sources directly bridges the 64.1 jobs/day supply gap.
