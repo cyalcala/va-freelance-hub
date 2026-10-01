@@ -18,9 +18,12 @@ SCHEDULER_NAME="shadow-dispatch-hourly"
 CRON_SCHEDULE="53 * * * *" # Offset by 30 min during shadow evaluation against GHA :23
 SERVICE_ACCOUNT_NAME="va-hub-scheduler-invoker"
 
-if [ -z "$PROJECT_ID" ]; then
+if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "(unset)" ]; then
   echo "Error: GCP_PROJECT_ID is not set and no active gcloud project found."
-  echo "Usage: GCP_PROJECT_ID=my-project-id ./infra/gcp/deploy-shadow-dispatch.sh"
+  echo "Find your project ID with:    gcloud projects list"
+  echo "Or create a new one with:     gcloud projects create <my-project-id> --set-as-default"
+  echo "Then set it in gcloud with:   gcloud config set project <my-project-id>"
+  echo "Or pass it directly:          GCP_PROJECT_ID=<my-project-id> ./infra/gcp/deploy-shadow-dispatch.sh"
   exit 1
 fi
 
