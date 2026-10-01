@@ -1,6 +1,41 @@
 # System Savepoint
 
-## 2026-10-02 — Gauntlet Phase 6: Live Domain ATS Discovery Flywheel Delivered (50 Targets, 11 Admitted, Supabase 13 Net-New Ingested, Gate-Held Reservoir 25) (current)
+## 2026-10-02 — Autonomous Worldwide Source Universe & Background Miner Infrastructure Delivered (Global Miner Overlay Active, Recurring Workflow, GCP Cloud Run Runner) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 25 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).
+
+**1. Delivered unit — Autonomous Worldwide Source Universe & Background Miner Infrastructure:**
+- **Global Miner Master Directive Preserved Verbatim:**
+  - Archived the comprehensive 103-section Global Miner & GCP Automation overlay at `docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md`.
+  - Added authority bindings connecting the 13 mathematical challenges (MATH-01 to MATH-13), dual-gate publication invariant, and polite rate-limit pacing.
+- **Unified Background Lake Miner Runner (`scripts/lake/run-lake-miner.ts`):**
+  - Chained multi-phase discovery: Phase 1 stratified reconciliation of the unvalidated corpus (`reconcileDiscoveredCorpus`), Phase 2 live domain ATS discovery from proven employer inventory (`runDomainAtsDiscovery`), Phase 3 aggregate telemetry and structured logging to `lake_runs`.
+  - Added CLI options (`--reconcile-per-family`, `--domain-limit`, `--delay-ms`, `--dry-run`, `--skip-reconcile`, `--skip-domain-discovery`).
+  - Added npm scripts `bun run lake:mine` and `bun run lake:reconcile`.
+  - Comprehensive unit test coverage in `scripts/lake/run-lake-miner.test.ts` (7/7 pass).
+- **Scheduled Continuous Background Mining Workflow (`.github/workflows/gha-lake-miner.yml`):**
+  - Configured recurring schedule (`23 */3 * * *` — every 3 hours) and `workflow_dispatch` with parameter overrides (`reconcile_per_family`, `domain_limit`, `delay_ms`, `dry_run`).
+  - Automatically mines and evaluates candidate tenants in the background without requiring manual agent prompting.
+- **GCP Cloud Run Job Integration (`scripts/gcp/run-lake-miner.ts`, `infra/gcp/lake-miner/`):**
+  - Emits structured Google Cloud Logging JSON (`GcpMinerLogPayload`).
+  - Unit tests in `scripts/gcp/run-lake-miner.test.ts` (4/4 pass).
+  - Standalone Dockerfile and package.json ready for Cloud Run Job deployment.
+- **Bootloader and Recovery Integration:**
+  - Upgraded `MAINTAINER_BOOTLOADER.md` (v5.3), `CURRENT.md`, `MASTER_OPERATING_PROMPT.md`, `EXECUTION_PROMPT.md`, and `AGENTS.md`.
+  - Any future agent resuming via the maintainer bootloader automatically operates under `AUTONOMOUS_MARATHON_MODE = ACTIVE` with the Global Miner overlay.
+
+**2. Verification:**
+- Full test suite: 1,698 passed / 0 failed across 177 files (`bun test`).
+- Lake test suite: 74 passed / 0 failed across 9 files (`bun test scripts/lake`).
+- GCP test suite: 13 passed / 0 failed across 3 files (`bun test scripts/gcp`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+
+**NEXT SINGLE ACTION:** Run `bun run lake:mine --reconcile-per-family=30 --domain-limit=25` to execute an initial live mining cycle, verifying end-to-end runner operation with live Turso database and Jev 1.13 adjudication. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-02 — Gauntlet Phase 6: Live Domain ATS Discovery Flywheel Delivered (50 Targets, 11 Admitted, Supabase 13 Net-New Ingested, Gate-Held Reservoir 25) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 25 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).

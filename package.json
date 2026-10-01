@@ -30,7 +30,9 @@
     "lake:replay": "bun run scripts/lake/replay-refinery.ts",
     "lake:sync": "bun run scripts/lake/sync-to-d1.ts",
     "lake:enroll": "bun run scripts/lake/enroll-published-sources.ts",
-    "lake:state": "bun run scripts/lake/lake-state-check.ts"
+    "lake:state": "bun run scripts/lake/lake-state-check.ts",
+    "lake:reconcile": "bun run scripts/lake/reconcile-discovered-corpus.ts",
+    "lake:mine": "bun run scripts/lake/run-lake-miner.ts"
   },
   "devDependencies": {
     "@types/bun": "1.3.14",

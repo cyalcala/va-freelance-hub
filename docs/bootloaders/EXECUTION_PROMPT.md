@@ -51,8 +51,10 @@ permission to deploy, publish jobs, promote sources, or amend governance.]
 Recover before acting:
 1. Read AGENTS.md and .ai/manifest.yaml if present. Record a missing manifest;
    do not invent one. Follow AGENTS recovery order. Read the newest entry in
-   docs/SYSTEM_SAVEPOINT.md, docs/bootloaders/CURRENT.md, and the current
-   docs/bootloaders/MASTER_OPERATING_PROMPT.md. Consult the linked constitutions,
+   docs/SYSTEM_SAVEPOINT.md, docs/bootloaders/CURRENT.md, the current
+   docs/bootloaders/MASTER_OPERATING_PROMPT.md, and
+   docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md (Global Miner Overlay).
+   Set AUTONOMOUS_MARATHON_MODE = ACTIVE. Consult the linked constitutions,
    source masterplan/ADRs, accepted parameters, runbook, plan, and relevant
    evidence for this task. A read order is not a policy-precedence order.
 2. Inspect Git status, branch, full HEAD, remote and deployed revisions. Fetch

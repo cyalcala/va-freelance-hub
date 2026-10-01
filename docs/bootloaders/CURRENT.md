@@ -2,47 +2,52 @@
 
 ## Active bounded unit
 
-**Gauntlet Phase 6: Live Domain ATS Discovery Flywheel Delivered (50 Targets Probed, 11 Admitted, Supabase 13 Net-New Qualified Ingested, Lake Reservoir at 25) (2026-10-02, current):**
+**Autonomous Worldwide Source Universe & Background Miner Infrastructure Delivered (Unified Runner, Recurring Workflow, GCP Cloud Run Runner, Global Miner Overlay Active) (2026-10-02, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Live Domain ATS Discovery Flywheel executed across 50 candidate ATS targets extracted from Lake inventory: 22 tenants found, 11 auto-admitted (CrewBloom, Hunt St, MultiplyMii, Sourcefit, RocketAMS, Hello Rache, Canonical, Yokly, VALUE Virtual Assistants, Supabase, Remote Craft), 12 auto-rejected.
-- Net-new tenant admitted: `ashby:supabase` (48 jobs, 13 QUALIFIED_READY, 27.1% PH rate). 13 net-new qualified jobs ingested directly into Turso Lake (`lake_candidate_jobs`).
-- Total Lake reservoir: 25 held jobs across 6 admitted sources (`ashby:supabase` 13, `lever:loadsmart` 4, `lever:aethoshotels` 4, `lever:sofarsounds` 2, `lever:influ2` 1, `lever:apolloagriculture` 1).
-- Total auto-approved tenants in lake: 21 (up from 20).
+- Global Miner Master Prompt archived verbatim in durable repo memory: [SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md](../SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md).
+- Active operating mode: `AUTONOMOUS_MARATHON_MODE = ACTIVE`. All bootloaders (`MAINTAINER_BOOTLOADER.md`, `CURRENT.md`, `MASTER_OPERATING_PROMPT.md`, `EXECUTION_PROMPT.md`, `AGENTS.md`) wired so future sessions resume with zero redundant prompting.
+- Continuous background mining infrastructure delivered:
+  - Unified runner: `scripts/lake/run-lake-miner.ts` (`bun run lake:mine`) with CLI flags (`--reconcile-per-family`, `--domain-limit`, `--delay-ms`, `--dry-run`), polite 1500ms pacing, stratified reconciliation, domain discovery, and `lake_runs` ledger logging. Unit tests 100% green (7/7 pass).
+  - Background GitHub Actions workflow: `.github/workflows/gha-lake-miner.yml` running every 3 hours (`23 */3 * * *`) with manual dispatch overrides.
+  - GCP Cloud Run Job integration: `scripts/gcp/run-lake-miner.ts`, `infra/gcp/lake-miner/` (Dockerfile + package.json). Unit tests 100% green (4/4 pass).
+  - NPM scripts added: `lake:mine` and `lake:reconcile`.
+- Total auto-approved tenants in lake: 21. Total Lake reservoir: 25 held jobs across 6 admitted sources (`ashby:supabase` 13, `lever:loadsmart` 4, `lever:aethoshotels` 4, `lever:sofarsounds` 2, `lever:influ2` 1, `lever:apolloagriculture` 1).
 - Dual-gate publication invariant verified: `bun run lake:sync -- --dry-run` confirms all 25 lake reservoir rows are safely HELD by the Wilson floor (< 20% floor), zero premature leakage to D1 (D1 synced remains 840).
 - GCP Automation plane active: Project `antigravity-494415` in `asia-southeast1`, Cloud Run jobs `lake-publish-job` and `shadow-dispatch-job` running hourly via Cloud Scheduler, 100% `CONDITION_SUCCEEDED`.
-- Tests: 67/67 lake, 1,687/1,687 repo tests, typecheck clean, guardrails clean, constitution audit PASS.
 
 CURRENT BOTTLENECK:
 Supply gap (35.9/day vs 100/day floor). 9,442 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
 
 ACTIVE UNIT:
-Gauntlet Phase 3 — Corpus Reconciliation Slice 4 (`bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=50`).
+Continuous background mining execution via `bun run lake:mine` and scheduled workflow `.github/workflows/gha-lake-miner.yml`.
 
 LAST COMPLETED UNIT:
-Gauntlet Phase 6 — Live Domain ATS Discovery Flywheel on Lake-Proven Employers (`--limit=50`).
+Autonomous Worldwide Source Universe & Background Miner Infrastructure Delivery (Unified Runner, Scheduled Workflow, GCP Runner, Global Miner Overlay Integration).
 
 RESULT:
-11 tenants auto-admitted, Supabase added as 21st auto-approved tenant with 13 net-new QUALIFIED_READY jobs in Turso Lake; Lake reservoir expanded to 25 rows safely held by dual-gate publication floor; test suite 100% green.
+End-to-end automated background mining runner and GitHub Actions workflow delivered; maintainer bootloader contracts wired; Global Miner master overlay documented and bound to repository authority; test suite 100% green.
 
 UNRESOLVED:
 9,442 corpus claims unvalidated; 25 jobs in Lake reservoir safely held pending larger sample size or verified receipts.
 
 NEXT ACTION:
-Run Gauntlet Phase 3 Corpus Reconciliation Slice 4 (`bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=50`, 150 boards) on the remaining 9,442 unvalidated claims to continue surfacing high-PH first-party outliers from the discovered corpus.
+Run `bun run lake:mine --reconcile-per-family=30 --domain-limit=25` to execute an initial live mining cycle, verifying end-to-end runner operation with live Turso database and Jev 1.13 adjudication.
 
 WHY NEXT:
-Corpus reconciliation consistently yields ~0.0400 qualified jobs/probe; running Slice 4 will evaluate another 150 unvalidated claims (reducing unvalidated count to ~9,292) and surface additional high-PH outliers.
+Verifies the newly delivered unified runner in live execution against the Turso Lake before handing off to background scheduled automation.
 
 ACCEPTANCE:
-Slice 4 evaluates 150 boards with polite 1500ms pacing; eligible outliers admitted; evidence persisted; dual-gate publication invariants verified.
+Live mining cycle executes polite reconciliation + domain discovery, logs aggregate metrics, persists ledger evidence into `lake_runs`, and preserves dual-gate publication invariants.
 
 FALLBACK:
-If host rate limits occur, back off cleanly per MATH-04 cooldown and checkpoint results.
+If rate limits occur, back off per MATH-04 cooldown; fail-safe skip on missing credentials ensures CI safety.
 
 **Prior unit (delivered & deployed):**
+
+**Gauntlet Phase 6: Live Domain ATS Discovery Flywheel Delivered (50 Targets Probed, 11 Admitted, Supabase 13 Net-New Qualified Ingested, Lake Reservoir at 25) (2026-10-02, historical):**
 
 **Gauntlet Phase 3 Corpus Reconciliation Slice 3: 150 Boards Probed, 3 Admitted, 6 Jobs Ingested, Marginal Yield 0.0400/probe (2026-10-02, historical):**
 

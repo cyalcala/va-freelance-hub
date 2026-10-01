@@ -1,8 +1,10 @@
 # VA Freelance Hub — maintainer bootloader
 
-Version 5.2 · 2026-09-27 · Copy the block below into a fresh agent session.
+Version 5.3 · 2026-10-02 · Copy the block below into a fresh agent session.
 
-Human intake companion: [Human Research Intake Plan v5.2](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
+Companions:
+- Global Miner / GCP Overlay: [Global Miner Master Prompt](../SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md)
+- Human intake: [Human Research Intake Plan v5.2](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md)
 
 **Identity:**
 
@@ -43,7 +45,11 @@ recovery; reopen work when drift or new evidence shows a gap.
 
 Read AGENTS.md -> .ai/manifest.yaml if present, then follow AGENTS' recovery
 order starting with the newest docs/SYSTEM_SAVEPOINT.md entry. Read
-docs/bootloaders/CURRENT.md and docs/bootloaders/MASTER_OPERATING_PROMPT.md.
+docs/bootloaders/CURRENT.md, docs/bootloaders/MASTER_OPERATING_PROMPT.md, and
+docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md (Global Miner Overlay).
+Set AUTONOMOUS_MARATHON_MODE = ACTIVE. Operate continuously through
+autonomous discovery, reconciliation, mining, dual-gate publishing, and
+monitoring cycles without requiring redundant manual re-prompts.
 Use docs/bootloaders/EXECUTION_PROMPT.md as the compact execution contract.
 Read relevant accepted policy, plan, parameters and actual call paths before
 changing behavior. Record missing files; do not manufacture their contents.

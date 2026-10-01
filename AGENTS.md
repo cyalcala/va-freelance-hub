@@ -67,22 +67,23 @@ After reading this file, use this recovery read order. It is not policy
 precedence; source-domain precedence is defined in the masterplan:
 
 1. `docs/SYSTEM_SAVEPOINT.md`
-2. `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
-3. `docs/SOURCE_PERPETUITY_STRATEGY.md`
-4. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
-5. `docs/decisions/ADR-007-autonomous-constitutional-source-governance.md`
-6. `docs/decisions/ADR-006-controlled-source-replenishment.md`
-7. `docs/MASTER_EXECUTION_PLAN.md`
-8. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 execution rules and
+2. `docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md` (Active Global Miner / GCP Mining Overlay)
+3. `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
+4. `docs/SOURCE_PERPETUITY_STRATEGY.md`
+5. `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`
+6. `docs/decisions/ADR-007-autonomous-constitutional-source-governance.md`
+7. `docs/decisions/ADR-006-controlled-source-replenishment.md`
+8. `docs/MASTER_EXECUTION_PLAN.md`
+9. `docs/gauntlet/IMPLEMENTATION_UNITS.md` for shared G1-G9 execution rules and
    terminal history
-9. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
+10. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
    `docs/AI_RECOVERY_TRAIL.md`
-10. current evidence and generated `docs/*-latest.md` operational reports
+11. current evidence and generated `docs/*-latest.md` operational reports
 
 The complete user-supplied Gauntlet source is archived verbatim at
-`docs/gauntlet/OPERATING_MANDATE.md`. It is immutable source evidence, not the
-compact default execution context; consult it for mandate audits or
-contradictions.
+`docs/gauntlet/OPERATING_MANDATE.md`. The Global Miner master directive is
+archived verbatim at `docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md`. Consult
+them for operating overlays, mandate audits, or architectural context.
 
 Current 2026-08-31 planning baseline:
 
@@ -133,6 +134,7 @@ project's scope:
 
 Canonical recovery docs:
 
+- `docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md`
 - `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
 - `docs/SOURCE_PERPETUITY_STRATEGY.md`
 - `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`

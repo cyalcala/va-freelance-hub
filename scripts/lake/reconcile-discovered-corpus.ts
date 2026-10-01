@@ -70,7 +70,23 @@ export async function loadDiscoveredSeeds(client: LakeClient, family?: string): 
   return (res.rows as any[]).map(rowToBulkSeed);
 }
 
-export async function reconcileDiscoveredCorpus(options: ReconciliationOptions): Promise<void> {
+export interface ReconciliationSummary {
+  script: string;
+  startedAt: string;
+  finishedAt: string;
+  corpusSize: number;
+  sliceSize: number;
+  byFamilySlice: Record<string, number>;
+  domainsScanned: number;
+  admitted: number;
+  shadowed: number;
+  rejected: number;
+  jobsIngested: number;
+  marginalQualifiedYieldPerProbe: number;
+  dryRun: boolean;
+}
+
+export async function reconcileDiscoveredCorpus(options: ReconciliationOptions): Promise<ReconciliationSummary> {
   const startedAt = new Date().toISOString();
   console.log("=== Discovered-Corpus Reconciliation (Gauntlet Phase 3) ===");
   console.log(`Per-family slice: ${options.perFamily} | DryRun: ${options.dryRun} | Delay: ${options.probeDelayMs}ms\n`);
@@ -83,7 +99,21 @@ export async function reconcileDiscoveredCorpus(options: ReconciliationOptions):
 
   if (all.length === 0) {
     console.log("Nothing to reconcile — corpus exhausted or fully validated.");
-    return;
+    return {
+      script: "reconcile-discovered-corpus",
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      corpusSize: 0,
+      sliceSize: 0,
+      byFamilySlice: {},
+      domainsScanned: 0,
+      admitted: 0,
+      shadowed: 0,
+      rejected: 0,
+      jobsIngested: 0,
+      marginalQualifiedYieldPerProbe: 0,
+      dryRun: options.dryRun,
+    };
   }
 
   const slice = stratifySample(all, options.perFamily);
@@ -99,7 +129,7 @@ export async function reconcileDiscoveredCorpus(options: ReconciliationOptions):
 
   const evaluated = stats.admitted + stats.shadowed + stats.rejected;
   const marginalYield = stats.domainsScanned > 0 ? stats.jobsIngested / stats.domainsScanned : 0;
-  const summary = {
+  const summary: ReconciliationSummary = {
     script: "reconcile-discovered-corpus",
     startedAt,
     finishedAt: new Date().toISOString(),
@@ -126,6 +156,8 @@ export async function reconcileDiscoveredCorpus(options: ReconciliationOptions):
       console.warn(`Run ledger write skipped: ${err?.message ?? err}`);
     }
   }
+
+  return summary;
 }
 
 if (import.meta.main) {

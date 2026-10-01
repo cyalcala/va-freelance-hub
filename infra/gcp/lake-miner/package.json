@@ -1,0 +1,8 @@
+{
+  "name": "lake-miner",
+  "private": true,
+  "description": "Standalone container dependencies for Cloud Run Job lake-miner",
+  "dependencies": {
+    "@libsql/client": "0.18.0"
+  }
+}
