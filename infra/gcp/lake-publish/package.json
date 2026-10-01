@@ -1,0 +1,9 @@
+{
+  "name": "lake-publish",
+  "private": true,
+  "description": "Standalone container dependencies for Cloud Run Job lake-publish",
+  "dependencies": {
+    "@libsql/client": "0.18.0",
+    "wrangler": "4.143.0"
+  }
+}
