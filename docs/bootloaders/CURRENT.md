@@ -2,47 +2,48 @@
 
 ## Active bounded unit
 
-**Unit GCP-02 + Supply Expansion: Ingestion Resilience Hardened, Polling Fixed, 44 New VA Jobs Published to D1 (2026-10-01, current):**
+**Gauntlet Phase 0-2: LastRound 9,935 Source Universe imported as discovery claims (SHADOW only) + bounded validation (2026-10-01, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Cloud Run Primary Batch Runtimes: 100% operational on GCP (`antigravity-494415`, `asia-southeast1`).
-- Polling Architecture Fixed: `scripts/gcp/execute-job.ts` updated to resolve Cloud Run API v2 Operation resource names from Execution URIs, completely eliminating all 404 polling errors, backed by a 5-minute timeout guard and Cloud Logging integration.
-- Execution Success: Live Cloud Run `lake-publish-job` executions `dsfdg` (manual trigger, 42s) and `5j9zw` (Cloud Scheduler hourly cron, 25s) both succeeded with `CONDITION_SUCCEEDED`.
-- Client & Ingestion Resilience: Added transient connection retry (`ECONNRESET`, `ETIMEDOUT`, `UND_ERR_SOCKET`, 502/503/504) with exponential backoff to `scripts/lake/client.ts` and error isolation/pacing in `scripts/lake/domain-ats-discovery.ts`.
-- High-Intent VA Supply Admitted: Evaluated and admitted dedicated VA staffing firms (Hunt St, Coconut VA, CrewBloom, MultiplyMii, 20Four7VA, Sourcefit, Yokly) through `geoGate` and Jev 1.13.
-- D1 Production Sync: 44 net-new `QUALIFIED_READY` candidates ingested and published directly into Cloudflare D1. Total synced jobs in D1 increased from 780 to 824. 0 jobs pending sync.
-- Auto-Approved Tenants: Expanded to 13 live tenants in Turso Data Lake.
-- Test Suite: 335 pass in scripts / 328 pass in apps/web. 0 failures.
+- Supply binding constraint VERIFIED: 35.9 qualified fresh jobs/day vs 100/day floor (gap -64.1; 7 complete Manila days, production D1).
+- LastRound AI ATS Directory (9,935 boards, CC BY 4.0, `fyrosofttech/lastroundai-hiring-data`) imported into Turso: **9,741 discovery claims** (`review_status='discovered'`, provenance in new `discovery_origin` column), 194 already-known tenants preserved, 98 batches, 0 failed chunks.
+- SHADOW-only contract held: 0 probes during import, 0 D1 writes, 0 ingestion, 0 promotion. D1 unchanged (824 synced, 0 pending).
+- Bounded stratified validation probe (read-only, n=60): 54/60 alive (90.0%), 979 open jobs observed, raw PH-qualified estimate 1.8% (deterministic geoGate; wide interval at n=60). High-PH outliers: `lever/snappr` 76.5% (13/17), `ashby/the-studio` 60.0% (3/5).
+- GCP primary batch runtimes healthy; 13 auto-approved tenants.
+- Tests: 59/59 lake (+10 new), typecheck clean, guardrails clean.
 
 CURRENT BOTTLENECK:
-Supply gap to 100-150 qualified fresh jobs/day (actively bridging via dedicated agency expansion and shadow streaks).
+Supply gap to 100-150 qualified fresh jobs/day (verified binding). Broad-universe raw PH yield is low (~1.8%) — the corpus's value is discovery intelligence + high-PH outliers, not bulk ingestion.
 
 ACTIVE UNIT:
-AUTONOMOUS_MARATHON_MODE: Candidate intake and admission pipeline expansion (evaluating remaining candidate cohorts, monitoring clean-day streaks for shadow sources toward canary promotion).
+Gauntlet Phase 3 — cross-registry reconciliation + outlier evaluation.
 
 LAST COMPLETED UNIT:
-GCP-02 Run Polling Diagnostic & Resolution + High-Yield VA Cohort Admission (44 jobs synced to D1, total 824).
+Gauntlet Phase 0-2 (binding constraint verified, source universe audit, LastRound discovery-only ingest, bounded validation).
 
 RESULT:
-Polling 404s resolved. 100% test pass. 44 verified Philippine-eligible opportunities published to live D1 board.
+9,741 validated-provenance discovery claims in Turso, SHADOW only; 0 D1 writes; full test/typecheck/guardrails green; artifacts: `docs/architecture/CURRENT_STATE_SOURCE_UNIVERSE_GAUNTLET_2026-10-01.md`, `docs/FEDERATED_ACQUISITION_MATRIX.md`.
 
 UNRESOLVED:
-Clean-day streak accumulation toward 8-day canary graduation: greenhouse:wikimedia (streak 5/8 days), greenhouse:canonical (streak 4/8 days).
+Corpus is unvalidated beyond the n=60 probe (job_count/ph_rate NULL on 9,681 rows); high-PH outliers not yet evaluated through the admission pipeline.
 
 NEXT ACTION:
-Continue autonomous marathon pipeline: Monitor next scheduled Cloud Scheduler hourly batch executions (`shadow-dispatch-hourly` at minute 53, `lake-publish-hourly` at minute 47) and advance candidate intake for Australian/Dayshift agency reserve.
-
+Gauntlet Phase 3: evaluate `lever/snappr` + `ashby/the-studio` through the existing Jev+Wilson admission pipeline; build cross-registry reconciliation (canonicalize employer/domain/ATS/board across LastRound claims and the existing registry), live-validate a bounded stratified slice, persist validation evidence to `discovered` rows (`job_count`, `ph_rate`, `review_status` transition), and stratify the corpus (HOT/WARM/EXPLORATION/DORMANT per project conventions).
 
 WHY NEXT:
-Supply throughput is the primary system bottleneck against the >= 100/day Prime Outcome. With the batch publication runtime hardened on GCP, admitting qualified fresh sources directly bridges the 64.1 jobs/day supply gap.
+The discovery universe now exists but is inert without validation and reconciliation; outliers with strong PH signal are the highest-marginal-yield path toward the 100/day floor.
 
 ACCEPTANCE:
-Candidate evaluation outputs verified yield metrics, compliance gates (terms, robots.txt, attribution, rate limits), and deterministically classified PH-eligible opportunities without schema errors or duplicate insertions.
+Outlier evaluations produce verified yield metrics through compliance gates; reconciliation preserves all discovery claims separately (no silent overwrite); corpus stratification recorded with evidence.
 
 FALLBACK:
-If any candidate source violates compliance or yields zero qualified opportunities, quarantine the candidate with a dated failure note and evaluate the next cohort in the candidate reserve.
+If a source violates compliance or yields zero qualified opportunities, quarantine with a dated failure note and continue with the next stratification slice.
+
+**Prior unit (delivered & deployed):**
+
+**Unit GCP-02 + Supply Expansion: Ingestion Resilience Hardened, Polling Fixed, 44 New VA Jobs Published to D1 (2026-10-01, historical):**
 
 **Prior unit (delivered & deployed):**
 

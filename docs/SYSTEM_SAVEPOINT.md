@@ -1,6 +1,34 @@
 # System Savepoint
 
-## 2026-10-01 — Unit GCP-02 Polling Diagnostic Fixed + High-Yield VA Cohort Admitted (44 Jobs Synced to D1, Total 824) (current)
+## 2026-10-01 — Gauntlet Phase 0-2: Deep Source Universe Expansion — LastRound 9,935 imported as discovery claims (SHADOW only) + bounded validation (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (Supervisor + Bootloader v5.2 + Deep Source Universe Expansion Gauntlet, "maintenance7" session).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (unchanged; D1 untouched by this unit — 824 synced, 0 pending).
+
+**1. Delivered unit — Gauntlet Phase 0 (binding constraint verified) + Phase 1 (audit) + Phase 2 (LastRound discovery-only ingest):**
+- **Phase 0 — CORE HYPOTHESIS verified:** Supply IS the binding constraint. Measured 35.9 qualified fresh jobs/day vs 100/day floor (gap -64.1, VERIFIED against production D1, 7 complete Manila days 2026-09-23→09-30). Admission pipeline healthy (Jev+Wilson, 0 failed ticks); publication runtime hardened (GCP, 0 pending). The mine opened per the Gauntlet, as discovery + shadow only.
+- **Provenance research (VERIFIED, live webfetch):** LastRound AI ATS Directory = 9,935 boards (Greenhouse 4,966 / Ashby 2,856 / Lever 2,113); raw CSV `https://raw.githubusercontent.com/fyrosofttech/lastroundai-hiring-data/main/ats-directory/lastroundai-ats-company-directory-2026-08.csv` (432 KB, fetched + verified: 9,936 lines, fields `ats_vendor,company_name,board_slug,last_crawled`); CC BY 4.0 with attribution to LastRound AI. freehire (`strelov1/freehire`, MIT) public; catalogue lives in its production Postgres (discovery-ideas source, not bulk files).
+- **`scripts/lake/bulk-ats-seed.ts` augmented:** `LAROUND_RAW_URL`/`LAROUND_PROVENANCE` constants, RFC4180 `parseCsvLine`, `seedsFromLastRoundCsv` (vendor→family mapping, slugified board_slug), `loadRemoteTextCached` (CSV cache), `.csv` detection for `--file=`/`--url=`.
+- **`scripts/lake/import-source-registry.ts` (new):** discovery-only import runner. SHADOW-only contract: zero probes during import, zero D1 writes, zero ingestion, zero promotion, never overwrites existing rows (`ON CONFLICT DO NOTHING`). New additive `discovery_origin` provenance column (ALTER TABLE idempotent + fresh-DB CREATE TABLE in `init-lake.ts` and `ensureDiscoveryTable`) so probe updates never silently overwrite the discovery claim. New `review_status='discovered'` state (distinct from probed `shadow_monitor`); no scheduled job reads it — nothing auto-polls the corpus. Failure containment: 100-row batches (800 binds < 999 SQLite ceiling), 50 ms pacing, per-chunk error isolation, idempotent re-run. Run ledger written to `lake_runs` (first consumer).
+- **`scripts/lake/import-source-registry.test.ts` (new):** 10 tests. `--validate-sample=N` mode: read-only stratified liveness/PH probe (deterministic geoGate, no Jev, no writes).
+
+**2. Verification:**
+- Targeted: 10/10 pass (`import-source-registry.test.ts`).
+- Lake tests: 59 pass / 0 fail (7 files, was 49).
+- TypeScript: clean (exit 0). Production guardrails: clean (exit 0).
+- Dry-run import: 9,935 normalized → 194 already known → 9,741 fresh (ashby 2,818 / greenhouse 4,843 / lever 2,080).
+- Real import: **9,741 discovery claims in 98 batches, 0 failed chunks**, provenance recorded.
+- D1 unchanged post-import (824 synced, 0 pending) — SHADOW-only contract verified.
+- **Bounded stratified validation probe (read-only, n=60, 20/family):** 54/60 alive (90.0%), 3 dead (404), 3 timeouts (per-board transient), 979 open jobs observed, raw PH-qualified estimate 18/979 = **1.8%** (deterministic geoGate; Wilson wide at n=60). High-PH outliers: `lever/snappr` 76.5% (13/17), `ashby/the-studio` 60.0% (3/5).
+- Full artifacts: `docs/architecture/CURRENT_STATE_SOURCE_UNIVERSE_GAUNTLET_2026-10-01.md` (Phase 0/1 audit + Phase 2 experiment + rollback/kill-switch); `docs/FEDERATED_ACQUISITION_MATRIX.md` updated (LastRound row + provenance).
+
+**3. Interpretation (honest):** Broad-universe raw PH yield is LOW (~1.8%) — bulk ingestion of all 9,741 boards would NOT materially increase qualified flow. The corpus's value is discovery intelligence (9,741 candidate tenants for the flywheel) and high-PH outliers for deep evaluation. ~90% of the snapshot is alive; live-validation is mandatory but not prohibitive.
+
+**ROLLBACK:** `DELETE FROM lake_ats_discovery WHERE review_status = 'discovered' AND admission_reason LIKE 'lastround%';` + revert commit. **KILL SWITCH:** no probe runs against the corpus (import never polls).
+
+**NEXT SINGLE ACTION:** Gauntlet Phase 3 — evaluate high-PH outliers (`lever/snappr`, `ashby/the-studio`) through the existing admission pipeline; build cross-registry reconciliation (canonicalize employer/domain/ATS/board, live-validate a bounded slice, persist validation evidence to `discovered` rows, stratify the corpus HOT/WARM/EXPLORATION/DORMANT). Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-01 — Unit GCP-02 Polling Diagnostic Fixed + High-Yield VA Cohort Admitted (44 Jobs Synced to D1, Total 824) (historical)
 
 **Mode:** AUTONOMOUS MARATHON EXECUTION & RESILIENCE HARDENING.
 **Status:** PRODUCTION_PRIMARY_RUNTIME (Cloud Run Jobs & Schedulers Active, Polling Architecture Fixed, 824 Synced Opportunities).

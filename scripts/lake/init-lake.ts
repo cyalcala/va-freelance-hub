@@ -151,6 +151,7 @@ export async function ensureLakeSchema(client: LakeClient): Promise<void> {
       admission_reason TEXT,
       jev_raw TEXT,
       source_id TEXT NOT NULL DEFAULT '',
+      discovery_origin TEXT,
       discovered_at TEXT NOT NULL DEFAULT (datetime('now')),
       last_evaluated_at TEXT,
       UNIQUE(ats_family, tenant_slug)

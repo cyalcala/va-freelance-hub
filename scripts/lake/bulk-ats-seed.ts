@@ -7,6 +7,8 @@
  * Supported inputs (one required unless --curated is passed):
  *   --file=path/to/companies_v2.json   Local OpenJobs-style JSON
  *   --url=https://.../companies_v2.json Remote JSON with local cache in tmp/
+ *   --file=*.csv / --url=*.csv          LastRound ATS-directory CSV
+ *                                       (ats_vendor,company_name,board_slug,last_crawled)
  *   --seeds-out=tmp/ats-seeds.json      Where to write the normalized cohort
  *   --curated                           Built-in remote-friendly starter cohort
  *
@@ -50,8 +52,18 @@ export const SEED_CACHE_DIR = join(import.meta.dir, "..", "..", "tmp", "lake-see
 export const DEFAULT_SEEDS_OUT = join(import.meta.dir, "..", "..", "tmp", "ats-seeds.json");
 export const OPENJOBS_RAW_URL =
   "https://raw.githubusercontent.com/outscal/OpenJobs/main/data/companies_v2.json";
+export const LAROUND_RAW_URL =
+  "https://raw.githubusercontent.com/fyrosofttech/lastroundai-hiring-data/main/ats-directory/lastroundai-ats-company-directory-2026-08.csv";
+export const LAROUND_PROVENANCE =
+  "lastround-ats-directory-2026-08 (LastRound AI open dataset, CC BY 4.0, github.com/fyrosofttech/lastroundai-hiring-data)";
 
 const SUPPORTED_FAMILIES = new Set(["greenhouse", "lever", "workable", "ashby", "breezy"]);
+
+const LAROUND_VENDOR_FAMILIES: Record<string, string> = {
+  greenhouse: "greenhouse",
+  lever: "lever",
+  ashby: "ashby",
+};
 
 function slugifyToken(raw: string): string {
   return raw.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 60);
@@ -151,6 +163,56 @@ export function seedsFromPortalsYml(text: string): BulkSeed[] {
   return out;
 }
 
+/** Parse one RFC4180-style CSV line: quoted fields, "" escapes, commas inside quotes. */
+export function parseCsvLine(line: string): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        cur += ch;
+      }
+    } else if (ch === '"') {
+      inQuotes = true;
+    } else if (ch === ",") {
+      out.push(cur);
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+/** Normalize LastRound ATS-directory CSV (ats_vendor,company_name,board_slug[,last_crawled]) into family-pinned seeds. */
+export function seedsFromLastRoundCsv(text: string): BulkSeed[] {
+  const out: BulkSeed[] = [];
+  const lines = text.split(/\r?\n/);
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+    const cols = parseCsvLine(line);
+    if (cols.length < 3) continue;
+    const vendor = (cols[0] ?? "").trim().toLowerCase();
+    const companyName = (cols[1] ?? "").trim();
+    const boardSlug = slugifyToken((cols[2] ?? "").trim());
+    const family = LAROUND_VENDOR_FAMILIES[vendor];
+    if (!family || !companyName || boardSlug.length < 2) continue;
+    out.push({ companyName, atsFamily: family, tenantSlug: boardSlug });
+  }
+  return out;
+}
+
 /** Curated remote-friendly starter cohort (public ATS boards, verified families). */
 export function curatedSeeds(): BulkSeed[] {
   const rows: Array<[string, string, string]> = [
@@ -188,21 +250,25 @@ export function dedupeSeeds(seeds: BulkSeed[]): BulkSeed[] {
   return out;
 }
 
-async function loadRemoteJsonCached(url: string): Promise<unknown> {
+async function loadRemoteTextCached(url: string, ext: "json" | "csv"): Promise<string> {
   await mkdir(SEED_CACHE_DIR, { recursive: true });
   const key = createHash("sha256").update(url).digest("hex").slice(0, 16);
-  const cachePath = join(SEED_CACHE_DIR, `${key}.json`);
+  const cachePath = join(SEED_CACHE_DIR, `${key}.${ext}`);
   const cached = Bun.file(cachePath);
   if (await cached.exists()) {
     console.log(`Using cached dataset: ${cachePath}`);
-    return await cached.json();
+    return await cached.text();
   }
   console.log(`Fetching dataset: ${url}`);
-  const res = await fetch(url, { headers: collectionHeaders({ Accept: "application/json" }), signal: AbortSignal.timeout(60_000) });
+  const res = await fetch(url, { headers: collectionHeaders({ Accept: ext === "csv" ? "text/csv" : "application/json" }), signal: AbortSignal.timeout(60_000) });
   if (!res.ok) throw new Error(`Dataset fetch failed: HTTP ${res.status} for ${url}`);
   const text = await res.text();
   await Bun.write(cachePath, text);
-  return JSON.parse(text);
+  return text;
+}
+
+async function loadRemoteJsonCached(url: string): Promise<unknown> {
+  return JSON.parse(await loadRemoteTextCached(url, "json"));
 }
 
 async function filterKnownTenants(client: ReturnType<typeof getLakeClient>, seeds: BulkSeed[]): Promise<BulkSeed[]> {
@@ -243,7 +309,9 @@ export async function buildSeedCohort(options: SeedOptions): Promise<BulkSeed[]>
   }
   if (options.file) {
     const text = await Bun.file(options.file).text();
-    if (options.file.endsWith(".yml") || options.file.endsWith(".yaml")) {
+    if (options.file.endsWith(".csv")) {
+      seeds.push(...seedsFromLastRoundCsv(text));
+    } else if (options.file.endsWith(".yml") || options.file.endsWith(".yaml")) {
       seeds.push(...seedsFromPortalsYml(text));
     } else {
       const parsed = JSON.parse(text);
@@ -252,9 +320,14 @@ export async function buildSeedCohort(options: SeedOptions): Promise<BulkSeed[]>
     }
   }
   if (options.url) {
-    const parsed = await loadRemoteJsonCached(options.url);
-    const records = Array.isArray(parsed) ? parsed : Array.isArray((parsed as any)?.companies) ? (parsed as any).companies : [parsed];
-    for (const rec of records) seeds.push(...seedsFromOpenJobsRecord(rec));
+    if (options.url.endsWith(".csv")) {
+      const text = await loadRemoteTextCached(options.url, "csv");
+      seeds.push(...seedsFromLastRoundCsv(text));
+    } else {
+      const parsed = await loadRemoteJsonCached(options.url);
+      const records = Array.isArray(parsed) ? parsed : Array.isArray((parsed as any)?.companies) ? (parsed as any).companies : [parsed];
+      for (const rec of records) seeds.push(...seedsFromOpenJobsRecord(rec));
+    }
   }
 
   seeds = dedupeSeeds(seeds);

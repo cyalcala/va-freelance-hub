@@ -1,8 +1,8 @@
 # Federated Acquisition Coverage Matrix
 
 **Canonical Reference:** `docs/FEDERATED_ACQUISITION_MATRIX.md`  
-**Last Updated:** 2026-09-26T14:00:00+08:00 (Asia/Manila)  
-**Status:** Live Production Baseline + ATS Dataset Intake Expansion  
+**Last Updated:** 2026-10-01T23:30:00+08:00 (Asia/Manila)  
+**Status:** Live Production Baseline + ATS Dataset Intake Expansion + LastRound Discovery Universe (Gauntlet Phase 2)  
 
 ---
 
@@ -47,7 +47,8 @@
 | `lever:xsolla` | Lever | Postings API | Public unauthenticated JSON | Conditional | Shadow | 179 | 20 | — | Daily | Borderline 11.2% PH rate; monitor, do not sync |
 | `lever:spyke-games` | Lever | Postings API | Public unauthenticated JSON | Conditional | Shadow | 11 | 1 | — | Daily | Borderline 9.1% PH rate; monitor, do not sync |
 | OpenJobs `companies_v2.json` | Open Dataset | Bulk seed map | Public GitHub repo (12,144 companies) | Allowed | Active reservoir | 400 seeds normalized | 100 tenants probed | — | Weekly | Rotate cohort slices; cache in `tmp/lake-seed-cache/` |
-| `Freehire` | Reservoir | Open Dataset/API | Public repository locator | Research | Backlog | — | — | — | N/A | Benchmark schema & terms |
+| `LastRound ATS Directory` | Open Dataset (LastRound AI) | Bulk CSV seed map | Public GitHub CSV (CC BY 4.0, `fyrosofttech/lastroundai-hiring-data`, attribution required) | Allowed | Discovered | 9,741 discovery claims (9,935 corpus, 194 deduped) | 1.8% raw PH rate (n=60 stratified probe) | — | N/A | Bounded validation done (54/60 alive); stratify + evaluate high-PH outliers |
+| `Freehire` | Reservoir | Open Dataset/API | Public repository (`strelov1/freehire`, MIT; catalogue lives in its production Postgres, not bulk files) | Research | Backlog | — | — | — | N/A | Benchmark schema & terms; mine company→ATS discovery ideas |
 | `ats-scrapers` | Tooling / Scraping | Library | Open source MIT code | Research | Reusable | — | — | — | N/A | Extract domain -> ATS mapping logic |
 | `ats-jobs` | Tooling / Scraping | Library | Open source MIT code | Research | Reusable | — | — | — | N/A | Port tenant detection heuristics |
 | `CareerScout` | Tooling / Discovery | Architecture | Open source MIT code | Research | Reference | — | — | — | N/A | Adopt crawler pool concepts |
