@@ -1,27 +1,29 @@
 # System Savepoint
 
-## 2026-10-02 — Gauntlet Phase 3 Reconciliation Slice 3 (150 Boards, 3 Admitted, 6 Ingested, Marginal Yield 0.0400/probe, Gate-Held Reservoir 12) (current)
+## 2026-10-02 — Gauntlet Phase 6: Live Domain ATS Discovery Flywheel Delivered (50 Targets, 11 Admitted, Supabase 13 Net-New Ingested, Gate-Held Reservoir 25) (current)
 
-**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Marathon Supervisor).
-**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 12 Lake QUALIFIED_READY rows held by dual-gate publication floor).
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 25 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).
 
-**1. Delivered unit — Gauntlet Phase 3 Corpus Reconciliation Slice 3:**
-- **Reconciliation Execution (150 Boards, Stratified 50/family):** Ran `scripts/lake/reconcile-discovered-corpus.ts --per-family=50` against the unvalidated corpus (`review_status = 'discovered'`).
+**1. Delivered unit — Gauntlet Phase 6 Live Domain ATS Discovery Flywheel:**
+- **Execution across Lake Inventory:** Ran `scripts/lake/domain-ats-discovery.ts --limit=50` against candidate ATS targets extracted from the Lake's proven employer inventory (`status IN ('QUALIFIED_READY', 'SYNCED_TO_D1')`).
 - **Measured Outcomes:**
-  - Scanned: 150 boards (50 Ashby, 50 Greenhouse, 50 Lever)
-  - Tenants found (>= 3 jobs): 95
-  - Auto-Admitted: 3 (`lever:influ2` 33.3% PH, `lever:apolloagriculture` 33.3% PH, `lever:aethoshotels` 23.5% PH)
-  - Shadow Monitored: 3
-  - Auto-Rejected: 144 (HTTP 404/dead boards, insufficient jobs < 3, negligible PH rate < 5%)
-  - Rate-limited hosts: 0 (polite 1500ms pacing cleanly avoided any 429s)
-  - Net-new QUALIFIED_READY jobs ingested: 6 (1 influ2, 1 apolloagriculture, 4 aethoshotels)
-  - Marginal Yield: 0.0400 qualified jobs/probe (6 / 150), confirming steady yield in the 0.040-0.044/probe range.
-- **Corpus State:**
-  - Unvalidated claims reduced: 9,593 -> 9,443 (-150 claims evaluated with durable evidence).
-  - Auto-approved tenants: 17 -> 20.
-- **Governance Invariant Verified (Dual-Gate Defense-in-Depth):**
-  - `bun run lake:sync -- --dry-run` proved that all 12 QUALIFIED_READY candidates in the Lake reservoir (`loadsmart` 4, `aethoshotels` 4, `sofarsounds` 2, `influ2` 1, `apolloagriculture` 1) are strictly HELD from D1 publication because their Wilson lower bounds are below the 20% floor.
+  - Candidate targets probed: 50
+  - Tenants found (>= 3 jobs): 22
+  - AUTO-ADMITTED: 11 (`workable:crewbloom`, `workable:hunt-st`, `ashby:multiplymii`, `breezy:sourcefit`, `workable:rocketams`, `workable:hello-rache`, `greenhouse:canonical`, `breezy:yokly`, `breezy:value-virtual-assistants`, `ashby:supabase`, `breezy:remote-craft`)
+  - Auto-Rejected: 12 (`ashby:pearl`, `greenhouse:remotecom`, `breezy:unio-digital`, `greenhouse:sezzle`, `greenhouse:zscaler`, `greenhouse:xometryeurope`, `greenhouse:wrike`, `greenhouse:veeamsoftware`, `greenhouse:typeform`, `lever:toptal`, `greenhouse:tines`, `greenhouse:squarespace`)
+  - Net-new qualified jobs ingested: 13 (`ashby:supabase`: 48 jobs probed, 13 QUALIFIED_READY, 11 excluded, 27.1% PH rate).
+  - Duplicate containment verified: Previously admitted tenants (CrewBloom 135 dups, Hunt St 133 dups, Canonical 306 dups, Sourcefit 86 dups, MultiplyMii 48 dups) cleanly deduplicated via `fingerprint_hash` and `source_url` with multi-source sightings recorded in `lake_sightings`.
+  - Rate-limited hosts: 0 (polite 1500ms pacing cleanly avoided any 429s).
+- **Lake State:**
+  - Auto-approved tenants: 20 -> 21 (Supabase admitted).
+  - Lake reservoir (`QUALIFIED_READY` not yet synced): 12 -> 25 (+13 net-new qualified remote opportunities).
+- **Dual-Gate Publication Invariant Verified (Dual-Gate Defense-in-Depth):**
+  - `bun run lake:sync -- --dry-run` proved that all 25 QUALIFIED_READY candidates in the Lake reservoir (`ashby:supabase` 13, `lever:loadsmart` 4, `lever:aethoshotels` 4, `lever:sofarsounds` 2, `lever:influ2` 1, `lever:apolloagriculture` 1) are strictly HELD from D1 publication because their Wilson lower bounds are below the 20% floor.
   - Zero premature leakage to production D1 (D1 synced remains 840).
+- **GCP Production Heartbeat:**
+  - Project `antigravity-494415` in `asia-southeast1`.
+  - `lake-publish-job` and `shadow-dispatch-job` verified running hourly via Cloud Scheduler (`47 * * * *` and `53 * * * *`), 100% `CONDITION_SUCCEEDED`.
 
 **2. Verification:**
 - Full test suite: 1,687 passed / 0 failed across 175 files (`bun test`).
@@ -30,9 +32,9 @@
 - Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
 - Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
 
-**NEXT SINGLE ACTION:** Run Domain ATS Discovery Flywheel on the 120 Lake-proven employers (`bun run scripts/lake/domain-ats-discovery.ts --limit=50`) to convert aggregator postings into permanent first-party ATS board registrations and evaluate them live. Owner/controller: maintainer; trigger: next marathon unit.
+**NEXT SINGLE ACTION:** Run Gauntlet Phase 3 Corpus Reconciliation Slice 4 (`bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=50`, 150 boards) on the remaining 9,442 unvalidated claims to continue surfacing high-PH first-party outliers from the discovered corpus. Owner/controller: maintainer; trigger: next marathon unit.
 
-## 2026-10-02 — Gauntlet Phase 6: Discovery Flywheel Upgrade Delivered (Candidate Extraction from Synced Inventory, ATS Token Resolution, 5/10 Dry-Run Yield) (historical)
+## 2026-10-02 — Gauntlet Phase 3 Reconciliation Slice 3 (150 Boards, 3 Admitted, 6 Ingested, Marginal Yield 0.0400/probe, Gate-Held Reservoir 12) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Marathon Supervisor).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 6 Lake QUALIFIED_READY rows held by dual-gate publication floor).

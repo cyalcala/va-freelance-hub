@@ -2,47 +2,49 @@
 
 ## Active bounded unit
 
-**Gauntlet Phase 3 Corpus Reconciliation Slice 3: 150 Boards Probed, 3 Admitted, 6 Jobs Ingested, Marginal Yield 0.0400/probe (2026-10-02, current):**
+**Gauntlet Phase 6: Live Domain ATS Discovery Flywheel Delivered (50 Targets Probed, 11 Admitted, Supabase 13 Net-New Qualified Ingested, Lake Reservoir at 25) (2026-10-02, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Stratified reconciliation slice 3 executed: 150 boards probed (50 Ashby, 50 Greenhouse, 50 Lever), 95 tenants found, 3 auto-admitted (`lever:influ2` 33.3% PH, `lever:apolloagriculture` 33.3% PH, `lever:aethoshotels` 23.5% PH), 3 shadowed, 144 auto-rejected.
-- Net-new QUALIFIED_READY jobs ingested: 6 (1 influ2, 1 apolloagriculture, 4 aethoshotels). Total lake reservoir: 12 held jobs across 5 admitted tenants.
-- Total auto-approved tenants in lake: 20 (up from 17).
-- Unvalidated corpus reduced: 9,593 -> 9,443 (-150 claims evaluated with durable evidence).
-- Marginal yield steady at 0.0400 qualified/probe (consistent with prior slices: 0.0222 -> 0.0444 -> 0.0400).
-- Dual-gate publication invariant verified: `bun run lake:sync -- --dry-run` confirms all 12 lake reservoir rows are safely HELD by the Wilson floor (< 20% floor), zero premature leakage to D1 (D1 synced remains 840).
+- Live Domain ATS Discovery Flywheel executed across 50 candidate ATS targets extracted from Lake inventory: 22 tenants found, 11 auto-admitted (CrewBloom, Hunt St, MultiplyMii, Sourcefit, RocketAMS, Hello Rache, Canonical, Yokly, VALUE Virtual Assistants, Supabase, Remote Craft), 12 auto-rejected.
+- Net-new tenant admitted: `ashby:supabase` (48 jobs, 13 QUALIFIED_READY, 27.1% PH rate). 13 net-new qualified jobs ingested directly into Turso Lake (`lake_candidate_jobs`).
+- Total Lake reservoir: 25 held jobs across 6 admitted sources (`ashby:supabase` 13, `lever:loadsmart` 4, `lever:aethoshotels` 4, `lever:sofarsounds` 2, `lever:influ2` 1, `lever:apolloagriculture` 1).
+- Total auto-approved tenants in lake: 21 (up from 20).
+- Dual-gate publication invariant verified: `bun run lake:sync -- --dry-run` confirms all 25 lake reservoir rows are safely HELD by the Wilson floor (< 20% floor), zero premature leakage to D1 (D1 synced remains 840).
+- GCP Automation plane active: Project `antigravity-494415` in `asia-southeast1`, Cloud Run jobs `lake-publish-job` and `shadow-dispatch-job` running hourly via Cloud Scheduler, 100% `CONDITION_SUCCEEDED`.
 - Tests: 67/67 lake, 1,687/1,687 repo tests, typecheck clean, guardrails clean, constitution audit PASS.
 
 CURRENT BOTTLENECK:
-Supply gap (35.9/day vs 100/day floor). 9,443 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
+Supply gap (35.9/day vs 100/day floor). 9,442 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
 
 ACTIVE UNIT:
-Gauntlet Phase 6 — Live Domain ATS Discovery Flywheel on Lake-Proven Employers (`--limit=50`).
+Gauntlet Phase 3 — Corpus Reconciliation Slice 4 (`bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=50`).
 
 LAST COMPLETED UNIT:
-Gauntlet Phase 3 — Bounded Corpus Reconciliation Slice 3 (150 boards probed, 3 admitted, 6 jobs ingested, marginal yield 0.0400).
+Gauntlet Phase 6 — Live Domain ATS Discovery Flywheel on Lake-Proven Employers (`--limit=50`).
 
 RESULT:
-Corpus unvalidated count down to 9,443; 3 net-new employers admitted; dual-gate holding reservoir firmly; test suite 100% green.
+11 tenants auto-admitted, Supabase added as 21st auto-approved tenant with 13 net-new QUALIFIED_READY jobs in Turso Lake; Lake reservoir expanded to 25 rows safely held by dual-gate publication floor; test suite 100% green.
 
 UNRESOLVED:
-9,443 corpus claims unvalidated; 12 jobs in Lake reservoir safely held pending larger sample size or verified receipts.
+9,442 corpus claims unvalidated; 25 jobs in Lake reservoir safely held pending larger sample size or verified receipts.
 
 NEXT ACTION:
-Run Domain ATS Discovery Flywheel on the 120 Lake-proven employers (`bun run scripts/lake/domain-ats-discovery.ts --limit=50`) to convert aggregator postings into permanent first-party ATS board registrations and evaluate them live.
+Run Gauntlet Phase 3 Corpus Reconciliation Slice 4 (`bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=50`, 150 boards) on the remaining 9,442 unvalidated claims to continue surfacing high-PH first-party outliers from the discovered corpus.
 
 WHY NEXT:
-The flywheel dry-run proved a 50% admission yield (5/10 admitted); executing it live will convert dozens of high-intent remote employers into direct, permanent ATS feeds for the Lake.
+Corpus reconciliation consistently yields ~0.0400 qualified jobs/probe; running Slice 4 will evaluate another 150 unvalidated claims (reducing unvalidated count to ~9,292) and surface additional high-PH outliers.
 
 ACCEPTANCE:
-Live execution runs with clean pacing; discovered first-party ATS boards admitted/shadowed/rejected; candidate jobs ingested; publication gates respected.
+Slice 4 evaluates 150 boards with polite 1500ms pacing; eligible outliers admitted; evidence persisted; dual-gate publication invariants verified.
 
 FALLBACK:
-If employer domain discovery encounters rate limits or errors, pause and continue with another bounded corpus reconciliation slice.
+If host rate limits occur, back off cleanly per MATH-04 cooldown and checkpoint results.
 
 **Prior unit (delivered & deployed):**
+
+**Gauntlet Phase 3 Corpus Reconciliation Slice 3: 150 Boards Probed, 3 Admitted, 6 Jobs Ingested, Marginal Yield 0.0400/probe (2026-10-02, historical):**
 
 **Gauntlet Phase 6: Discovery Flywheel Upgrade Delivered (Synced Inventory Ingestion, Direct ATS Resolution, Family-Pinned Probing) (2026-10-02, historical):**
 
