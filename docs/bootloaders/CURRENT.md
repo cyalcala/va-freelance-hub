@@ -2,45 +2,49 @@
 
 ## Active bounded unit
 
-**Gauntlet Phase 6: Discovery Flywheel Upgrade Delivered (Synced Inventory Ingestion, Direct ATS Resolution, Family-Pinned Probing) (2026-10-02, current):**
+**Gauntlet Phase 3 Corpus Reconciliation Slice 3: 150 Boards Probed, 3 Admitted, 6 Jobs Ingested, Marginal Yield 0.0400/probe (2026-10-02, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Upgraded `extractDiscoveryCandidates` in `domain-ats-discovery.ts` to query `status IN ('QUALIFIED_READY', 'SYNCED_TO_D1')`, expanding the candidate extraction pool from 2 companies to 120 verified employers across 840+ opportunities.
-- Built pure multi-strategy extractor `extractDiscoveryCandidatesFromRows`: extracts direct ATS URLs (`jobs.lever.co/*`, `*.breezy.hr`, `boards.greenhouse.io/*`, `jobs.ashbyhq.com/*`, `apply.workable.com/*`) via `extractAtsToken`, consults verified `KNOWN_ATS_TOKENS` (GitLab, Camunda, MultiplyMii, Hunt St, Supabase), and normalizes aggregator job postings (WeWorkRemotely, Remotive, RealWorkFromAnywhere, Jobicy) to derive candidate employer slugs via `deriveCandidateSlugs`.
-- Family-pinned probing: when ATS family is resolved, `runDomainAtsDiscovery` probes only that family's template, eliminating 4x blind fanout and conserving host rate limits.
-- Tested live via dry-run (`--limit=10`): 6 found, 5 auto-admitted (`workable:crewbloom` 26.7%, `workable:hunt-st` 98.5%, `ashby:multiplymii` 100%, `workable:rocketams` 77.8%, `workable:hello-rache` 33.3%). 0 errors.
-- Unit tests: 4 new unit tests added in `scripts/lake/lake.test.ts` (67/67 lake pass). Full repo suite: 1,687/1,687 pass (175 files). Typecheck and guardrails clean.
+- Stratified reconciliation slice 3 executed: 150 boards probed (50 Ashby, 50 Greenhouse, 50 Lever), 95 tenants found, 3 auto-admitted (`lever:influ2` 33.3% PH, `lever:apolloagriculture` 33.3% PH, `lever:aethoshotels` 23.5% PH), 3 shadowed, 144 auto-rejected.
+- Net-new QUALIFIED_READY jobs ingested: 6 (1 influ2, 1 apolloagriculture, 4 aethoshotels). Total lake reservoir: 12 held jobs across 5 admitted tenants.
+- Total auto-approved tenants in lake: 20 (up from 17).
+- Unvalidated corpus reduced: 9,593 -> 9,443 (-150 claims evaluated with durable evidence).
+- Marginal yield steady at 0.0400 qualified/probe (consistent with prior slices: 0.0222 -> 0.0444 -> 0.0400).
+- Dual-gate publication invariant verified: `bun run lake:sync -- --dry-run` confirms all 12 lake reservoir rows are safely HELD by the Wilson floor (< 20% floor), zero premature leakage to D1 (D1 synced remains 840).
+- Tests: 67/67 lake, 1,687/1,687 repo tests, typecheck clean, guardrails clean, constitution audit PASS.
 
 CURRENT BOTTLENECK:
-Supply gap (35.9/day vs 100/day floor). 9,593 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
+Supply gap (35.9/day vs 100/day floor). 9,443 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
 
 ACTIVE UNIT:
-Gauntlet Phase 3 — Bounded Corpus Reconciliation Slice 3 (`--per-family=50`, 150 boards).
+Gauntlet Phase 6 — Live Domain ATS Discovery Flywheel on Lake-Proven Employers (`--limit=50`).
 
 LAST COMPLETED UNIT:
-Gauntlet Phase 6 — Discovery Flywheel Upgrade (`domain-ats-discovery.ts` query expansion + ATS token resolution + unit tests).
+Gauntlet Phase 3 — Bounded Corpus Reconciliation Slice 3 (150 boards probed, 3 admitted, 6 jobs ingested, marginal yield 0.0400).
 
 RESULT:
-Flywheel mechanized: Lake-proven employers now systematically convert into first-party ATS board subscriptions. Dry-run yield 50% (5/10 admitted).
+Corpus unvalidated count down to 9,443; 3 net-new employers admitted; dual-gate holding reservoir firmly; test suite 100% green.
 
 UNRESOLVED:
-9,593 corpus claims unvalidated; 6 jobs in Lake reservoir safely held pending larger sample size or verified receipts.
+9,443 corpus claims unvalidated; 12 jobs in Lake reservoir safely held pending larger sample size or verified receipts.
 
 NEXT ACTION:
-Run Gauntlet Phase 3 Corpus Reconciliation Slice 3 (`scripts/lake/reconcile-discovered-corpus.ts --per-family=50`, 150 boards) on the remaining 9,593 unvalidated claims to continue surfacing high-PH first-party outliers. If an admitted source clears the 20% Wilson lower bound, execute `bun run lake:sync` to publish to D1.
+Run Domain ATS Discovery Flywheel on the 120 Lake-proven employers (`bun run scripts/lake/domain-ats-discovery.ts --limit=50`) to convert aggregator postings into permanent first-party ATS board registrations and evaluate them live.
 
 WHY NEXT:
-Outlier mining on the unvalidated corpus is our proven engine for discovering high-yield remote employers for the Philippines; each slice reduces unvalidated claims and feeds the admission pipeline toward the 100/day floor.
+The flywheel dry-run proved a 50% admission yield (5/10 admitted); executing it live will convert dozens of high-intent remote employers into direct, permanent ATS feeds for the Lake.
 
 ACCEPTANCE:
-Slice completes cleanly; candidate metrics recorded; publication gate held/passed per Wilson threshold; tests clean.
+Live execution runs with clean pacing; discovered first-party ATS boards admitted/shadowed/rejected; candidate jobs ingested; publication gates respected.
 
 FALLBACK:
-If slice yields no qualified candidates (anti-loop), switch to live execution of the newly-upgraded domain discovery flywheel on the remaining 110 Lake employer domains.
+If employer domain discovery encounters rate limits or errors, pause and continue with another bounded corpus reconciliation slice.
 
 **Prior unit (delivered & deployed):**
+
+**Gauntlet Phase 6: Discovery Flywheel Upgrade Delivered (Synced Inventory Ingestion, Direct ATS Resolution, Family-Pinned Probing) (2026-10-02, historical):**
 
 **Entity Resolution Casing Normalization + Gauntlet Phase 3 Slice 2: 90 Boards Probed, Loadsmart Admitted + Gate-Held, Marginal Yield 0.0444/probe (2026-10-02, historical):**
 

@@ -1,6 +1,38 @@
 # System Savepoint
 
-## 2026-10-02 — Gauntlet Phase 6: Discovery Flywheel Upgrade Delivered (Candidate Extraction from Synced Inventory, ATS Token Resolution, 5/10 Dry-Run Yield) (current)
+## 2026-10-02 — Gauntlet Phase 3 Reconciliation Slice 3 (150 Boards, 3 Admitted, 6 Ingested, Marginal Yield 0.0400/probe, Gate-Held Reservoir 12) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Marathon Supervisor).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 12 Lake QUALIFIED_READY rows held by dual-gate publication floor).
+
+**1. Delivered unit — Gauntlet Phase 3 Corpus Reconciliation Slice 3:**
+- **Reconciliation Execution (150 Boards, Stratified 50/family):** Ran `scripts/lake/reconcile-discovered-corpus.ts --per-family=50` against the unvalidated corpus (`review_status = 'discovered'`).
+- **Measured Outcomes:**
+  - Scanned: 150 boards (50 Ashby, 50 Greenhouse, 50 Lever)
+  - Tenants found (>= 3 jobs): 95
+  - Auto-Admitted: 3 (`lever:influ2` 33.3% PH, `lever:apolloagriculture` 33.3% PH, `lever:aethoshotels` 23.5% PH)
+  - Shadow Monitored: 3
+  - Auto-Rejected: 144 (HTTP 404/dead boards, insufficient jobs < 3, negligible PH rate < 5%)
+  - Rate-limited hosts: 0 (polite 1500ms pacing cleanly avoided any 429s)
+  - Net-new QUALIFIED_READY jobs ingested: 6 (1 influ2, 1 apolloagriculture, 4 aethoshotels)
+  - Marginal Yield: 0.0400 qualified jobs/probe (6 / 150), confirming steady yield in the 0.040-0.044/probe range.
+- **Corpus State:**
+  - Unvalidated claims reduced: 9,593 -> 9,443 (-150 claims evaluated with durable evidence).
+  - Auto-approved tenants: 17 -> 20.
+- **Governance Invariant Verified (Dual-Gate Defense-in-Depth):**
+  - `bun run lake:sync -- --dry-run` proved that all 12 QUALIFIED_READY candidates in the Lake reservoir (`loadsmart` 4, `aethoshotels` 4, `sofarsounds` 2, `influ2` 1, `apolloagriculture` 1) are strictly HELD from D1 publication because their Wilson lower bounds are below the 20% floor.
+  - Zero premature leakage to production D1 (D1 synced remains 840).
+
+**2. Verification:**
+- Full test suite: 1,687 passed / 0 failed across 175 files (`bun test`).
+- Lake test suite: 67 passed / 0 failed across 8 files (`bun test scripts/lake`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+
+**NEXT SINGLE ACTION:** Run Domain ATS Discovery Flywheel on the 120 Lake-proven employers (`bun run scripts/lake/domain-ats-discovery.ts --limit=50`) to convert aggregator postings into permanent first-party ATS board registrations and evaluate them live. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-02 — Gauntlet Phase 6: Discovery Flywheel Upgrade Delivered (Candidate Extraction from Synced Inventory, ATS Token Resolution, 5/10 Dry-Run Yield) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.2 & Marathon Supervisor).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 6 Lake QUALIFIED_READY rows held by dual-gate publication floor).
