@@ -1,12 +1,20 @@
-name: EX-03 Shadow Dispatch
+name: EX-03 Shadow Dispatch (Standby / GHA Fallback)
 
+# ==============================================================================
+# ROLE: Secondary Standby & Manual Fallback Runner
+# PRIMARY RUNTIME: Google Cloud Platform (Cloud Scheduler + Cloud Run Job)
+#   - Cloud Run Job:       shadow-dispatch-job (asia-southeast1)
+#   - Cloud Scheduler:     shadow-dispatch-hourly (53 * * * * UTC)
+#   - Authority:           docs/decisions/ADR-009-constitution-governed-cloud-runtime-migration.md
+#   - Reason:              GHA sub-6-hour scheduler delivery dropped 78.9% of slots.
+# ==============================================================================
 # Hourly observation of live shadow rows. Does not scrape jobs onto the
 # public board and does not admit or promote sources. Dispatcher cadence
 # still floors each identity (Grafana Labs: 60 minutes).
 
 on:
   schedule:
-    - cron: '23 * * * *'
+    - cron: '23 */6 * * *' # 4x/day secondary safety fallback (GCP is primary at :53 hourly)
   workflow_dispatch:
 
 permissions:
