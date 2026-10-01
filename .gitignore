@@ -33,6 +33,7 @@ tmp/
 *.pfx
 credentials*.json
 gcp-key*.json
+sa-key*.json
 
 # Build outputs
 .next/
