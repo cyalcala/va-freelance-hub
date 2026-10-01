@@ -31,6 +31,8 @@ tmp/
 *.key
 *.p12
 *.pfx
+credentials*.json
+gcp-key*.json
 
 # Build outputs
 .next/
