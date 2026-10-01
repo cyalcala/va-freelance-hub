@@ -2,7 +2,55 @@
 
 ## Active bounded unit
 
-**Live D1 Fleet Funnel Measurement (35.9/day), Skills Installed, Watchdog Verified, 14 Candidates Audited (2026-10-01, current):**
+**Unit GCP-02 Graduated: Reservoir Lake Publication Migrated to Google Cloud (PRIMARY RUNTIME) (2026-10-01, current):**
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+CURRENT STATE:
+Unit GCP-01 (Candidate Shadow Dispatch) and Unit GCP-02 (Reservoir Lake Publication) 100% graduated to PRODUCTION_PRIMARY_RUNTIME on Google Cloud Platform (antigravity-494415, asia-southeast1).
+Artifact Registry:
+- shadow-dispatch: asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch:latest
+- lake-publish: asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish:latest (Digest: sha256:8efec6a36d0a4bf353bdc45c196fb04dbbc8aa45905981a656d61dfbefb3cbd4)
+Cloud Run Jobs:
+- shadow-dispatch-job: Ready CONDITION_SUCCEEDED, last execution shadow-dispatch-job-9m62d (EXECUTION_SUCCEEDED in 15.38s at 12:53 UTC)
+- lake-publish-job: Ready CONDITION_SUCCEEDED, last execution lake-publish-job-qtp59 (CONDITION_SUCCEEDED in 18.49s / 11.76s runtime at 12:55 UTC)
+Cloud Scheduler:
+- shadow-dispatch-hourly: 53 * * * * UTC (ENABLED)
+- lake-publish-hourly: 47 * * * * UTC (ENABLED)
+Standby fallbacks (gha-shadow-dispatch.yml, gha-lake-publish.yml) demoted to 2x-4x/day safety net.
+All 25 agent-skills installed from addyosmani/agent-skills in .agents/skills.
+Full test suite: 1,667 pass / 0 fail across 173 files. TypeScript, guardrails, parameters, and constitution audit 100% clean.
+
+CURRENT BOTTLENECK:
+Supply gap to 100-150 qualified fresh jobs/day (current demonstrated flow ~35.9/day across complete Manila days, floor gap -64.1/day, stretch gap -114.1/day).
+
+ACTIVE UNIT:
+AUTONOMOUS_MARATHON_MODE: Candidate intake and admission pipeline expansion (evaluating 4 high-yield Ashby candidates: amplify, camunda, supabase, tremendous; and tracking clean-day accumulation toward 8-day canary graduation for shadow sources).
+
+LAST COMPLETED UNIT:
+Unit GCP-02: Reservoir Lake Publication Runtime Migration to Google Cloud (GRADUATED).
+
+RESULT:
+GCP batch runtime fully operational, 0 build failures, 0 runtime errors, 8/9 auto-approved sources enrolled, $0.00/mo free-tier cost.
+
+UNRESOLVED:
+Clean-day streak accumulation toward 8-day canary graduation: greenhouse:wikimedia (streak 5/8 days), greenhouse:canonical (streak 4/8 days).
+
+NEXT ACTION:
+Execute candidate evaluation and verification on the 4 high-yield Ashby candidate sources (amplify, camunda, supabase, tremendous; 146 positions total) to determine qualification yield and eligibility for admission into the reservoir intake pool.
+
+WHY NEXT:
+Supply throughput is the primary system bottleneck against the >= 100/day Prime Outcome. With the batch publication runtime hardened on GCP, admitting qualified fresh sources directly bridges the 64.1 jobs/day supply gap.
+
+ACCEPTANCE:
+Candidate evaluation outputs verified yield metrics, compliance gates (terms, robots.txt, attribution, rate limits), and deterministically classified PH-eligible opportunities without schema errors or duplicate insertions.
+
+FALLBACK:
+If any candidate source violates compliance or yields zero qualified opportunities, quarantine the candidate with a dated failure note and evaluate the next cohort in the candidate reserve.
+
+**Prior unit (delivered & deployed):**
+
+**Live D1 Fleet Funnel Measurement (35.9/day), Skills Installed, Watchdog Verified, 14 Candidates Audited (2026-10-01, historical):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
