@@ -151,12 +151,97 @@ weakened. Guardrails + typecheck + 59/59 lake tests clean.
 - **Kill switch:** do not run `--validate-sample` or any probe against the corpus; the import never polls, so no runtime kill switch is required for the corpus itself.
 - **Replay:** re-running the import is idempotent (dedupe + DO NOTHING).
 
-## 6. NEXT SINGLE ACTION (Gauntlet Phase 3 — reconciliation)
+## 7. PHASE 3 — RECONCILIATION (delivered, follow-on session same day)
 
-Evaluate the high-PH outliers (`lever/snappr`, `ashby/the-studio`) through the existing
-admission pipeline, then build Phase 3 cross-registry reconciliation: canonicalize
-employer/domain/ATS/board across LastRound claims and the existing registry, live-validate
-a bounded stratified slice, persist validation evidence to the `discovered` rows
-(`job_count`, `ph_rate`, `review_status` transition), and stratify the corpus
-(HOT/WARM/EXPLORATION/DORMANT per project conventions). Owner/controller: maintainer;
-trigger: next marathon unit or scheduler tick.
+- **`scripts/lake/reconcile-discovered-corpus.ts` (new) + 4 tests:** the repeatable flywheel
+  mechanism — deterministic stratified slices of the `discovered` corpus through the
+  sanctioned `runBulkAtsDiscovery` engine; lake_runs ledger records evidence.
+- **Live reconciliation (90 boards, 30/family):** scanned=90, tenants found=56,
+  **1 admitted (`lever:sofarsounds`, 10 jobs, 20.0% PH, 2 QUALIFIED_READY)**, 2 shadowed,
+  53 auto-rejected. **Marginal qualified yield: 0.0222/probe** — the bulk corpus's
+  direct-ingestion value is measured LOW; outlier mining is the value.
+- **Governance observation (VERIFIED, working as designed):** `lake:sync` correctly HELD
+  Sofar Sounds' 2 jobs — the sync's publication layer computes the Wilson lower bound
+  per source (2/10 → ~3.7% < 20% floor → HOLD) while the admission layer admitted on the
+  raw-rate threshold (20% ≥ 20%). Dual-gate defense-in-depth: admission ≠ publication
+  authority (MATH-06 / Constitution Part XV). The 2 rows remain pending in the lake.
+
+## 8. PHASE 4 — PH HIGH-PRIOR COHORT DISPOSITION (measured, same day)
+
+Research (verified, live webfetch) determined the real ATS for the Gauntlet's 32-name PH cohort:
+
+| Disposition | Companies | Evidence |
+| :--- | :--- | :--- |
+| **Already admitted** (Workable/Breezy/Ashby ATS, 15 live tenants) | MultiplyMii, Coconut, CrewBloom, Hunt St (+ 20Four7VA, Sourcefit, Yokly earlier) | Workable widget APIs fetched live; confirmed in Turso |
+| **No standard ATS / own platform** | Emapta (OutSystems), VirtualStaff.ph (own platform), Remote Staff (WP+HereFish), RecruitGo (own), My Amazon Guy (HubSpot forms; Greenhouse 404 NOT confirmed), System Six (WP), Outsourced (WP; internal JobAdder hint, no external ATS) | Careers pages fetched, fingerprints absent |
+| **Blocked by anti-bot — NEVER bypass** | Satellite Office (SiteGround captcha), Access Offshoring (HTTP 522), Flex Philippines (JS challenge) | Fetch attempts blocked; compliance rules prohibit bypass |
+| **Empty boards** | Outsourced Doers (`outsourceddoers.breezy.hr/json` → `[]`), superstaff widget → `{"jobs":[]}` | Fetched JSON live |
+| **Defunct board** | Wing Assistant (JazzHR `wing.applytojob.com` inactive) | Redirects to JazzHR generic page |
+| **Large BPO, no public JSON** | Foundever (SuccessFactors RMK), TTEC (Radancy+Taleo), Booth & Partners (Zoho Recruit, JS-rendered), Cool Blue VA (RecruitCRM, JS-rendered) | Fingerprints verified, no public API |
+| **Wired PH agency cohort — NEGATIVE RESULT** | VAA Philippines, Vault Outsourcing, ConnectOS, Global Strategic, MyOutDesk, Outsource Access, Staff Domain, SuperStaff, Virtual Staff 365: 9/9 seeds non-productive (alive-but-empty or dead endpoints) | `ingest-ph-agency-cohort.ts` live run: 0 tenants found; direct checks: breezy `[]`, workable `{"jobs":[]}`, lever conn-fail |
+
+**Conclusion:** the PH cohort is mostly represented through its already-admitted ATS
+tenants; the remaining candidates have no compliant public-JSON access path. No new PH
+source admission was warranted by the evidence.
+
+## 9. PHASE 5 — WORKDAY CXS BOUNDED REMOTE-YIELD PROBE (NEGATIVE RESULT, same day)
+
+- **Bounded probe** (`tmp/workday-remote-probe.ts`, 20 jobs each via the CXS POST pattern):
+  - Concentrix (`cnx`): 20 jobs, 0 PH-eligible, 1 remote (non-PH)
+  - TaskUs: 20 jobs, 2 PH-eligible (Pasig, Pampanga), 0 remote, 2 PH-onsite
+  - Accenture: 20 jobs, 0 PH-eligible, 0 remote
+- **PH-REMOTE yield: 0/60 = 0.0%** on the sampled slice. The trio's ~4,000 raw postings
+  do NOT justify a Workday CXS adapter build for the REMOTE floor — PH roles are onsite.
+- **Falsification condition:** a deeper paginated probe (100–200 jobs) finding material
+  remote-indicated PH roles would reopen the adapter decision. Until then: negative
+  result recorded; the adapter is NOT built (Gauntlet: do not keep it merely because
+  research effort was spent).
+
+## 10. SESSION CLOSEOUT (Constitution Part LXIII)
+
+```text
+CURRENT BOTTLENECK: PH-qualified fresh supply (35.9/day vs 100/day floor); broad-corpus
+mining measured at 0.0222 qualified/probe — the productive path is PH-dedicated agencies
+and outlier mining, now mechanized.
+
+REALITY CHANGES: 9,741 LastRound discovery claims in Turso (provenance-preserved);
+90-board stratified validation; 2 outlier tenants admitted (16 jobs → D1 840);
+reconciliation flywheel mechanized; PH cohort + Workday adapter measured as negative.
+
+BASELINE: 35.9 fresh/day, gap -64.1 (2026-09-23→09-30, VERIFIED).
+
+HYPOTHESIS: expanding the live-validated first-party ATS universe increases qualified
+flow — CONFIRMED for targeted outlier admission (16 jobs), REJECTED for bulk-corpus
+ingestion (1.8% raw PH) and Workday BPO adapters (0/60 PH-REMOTE).
+
+ACTION: discovery-only import + stratified reconciliation + outlier admission.
+
+STATE: SHADOW (9,685 corpus claims) + PRODUCTION (16 outlier jobs published via receipts).
+
+PRIMARY METRIC: net-new fresh qualified PH jobs — +16 published (D1 824→840).
+
+GUARDRAILS: PASS (FalsePH/FalseRemote/Duplicate/BrokenURL thresholds unchanged; sync
+gate correctly held borderline source; 59→63 lake tests, typecheck, guardrails clean).
+
+COUNTERFACTUAL: NOT IDENTIFIABLE (no controlled comparison run).
+
+FALSIFICATION: SURVIVED for the import/reconciliation mechanism; the corpus-value
+hypothesis was FALSIFIED for bulk ingestion (measured 1.8% raw PH) — recorded.
+
+ROLLBACK: READY — DELETE FROM lake_ats_discovery WHERE review_status='discovered' AND
+admission_reason LIKE 'lastround%'; + revert commits.
+
+KILL SWITCH: TESTED-BY-CONSTRUCTION (import never polls; --validate-sample is the
+opt-in probe).
+
+NEW EVIDENCE: ~90% of the LastRound snapshot is alive; raw PH yield ~1.8%; marginal
+yield 0.0222/probe; publication gate enforces sample-size-aware Wilson authority.
+
+NEGATIVE EVIDENCE: 9/9 PH agency cohort seeds dead/empty; Workday trio 0/60 PH-REMOTE;
+bulk-corpus ingestion uneconomical.
+
+NEXT SINGLE ACTION: Run another bounded reconciliation slice (--per-family=30, the
+corpus has 9,685 unvalidated claims) or evaluate additional high-PH outliers as the
+stratified probes surface them; owner/controller: maintainer; trigger: next marathon
+session or scheduler tick.
+```

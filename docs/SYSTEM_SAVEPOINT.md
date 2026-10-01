@@ -1,6 +1,24 @@
 # System Savepoint
 
-## 2026-10-01 — Gauntlet Phase 3 Reconciliation Delivered: 90-Board Stratified Validation, Marginal Yield Measured (0.0222/probe), Sofar Sounds Admitted + Gate-Held (current)
+## 2026-10-01 — Gauntlet Phase 4-5 Measured: PH Cohort Disposition (9/9 Cohort Seeds Negative) + Workday CXS Probe (0/60 PH-REMOTE, Adapter NOT Justified) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation of the "maintenance7" session; commits `99035ec`, `7fca0f0`, `a2ad6e2` pushed).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 2 Sofar Sounds rows correctly gate-held).
+
+**1. Delivered unit — Gauntlet Phase 4 (PH cohort disposition) + Phase 5 (Workday bounded probe, NEGATIVE RESULT):**
+- **PH cohort ATS research (VERIFIED, live webfetch, 32 candidates):** MultiplyMii/Coconut/CrewBloom/Hunt St already admitted through their Workable/Ashby ATS (confirmed live); Emapta (OutSystems), VirtualStaff.ph (own platform), Remote Staff (WP+HereFish), RecruitGo (own), My Amazon Guy (HubSpot forms; Greenhouse 404 NOT confirmed), System Six (WP), Outsourced (WP) have no compliant public-JSON ATS; Satellite Office (captcha), Access Offshoring (522), Flex PH (JS challenge) BLOCKED — never bypassed; Outsourced Doers Breezy board and superstaff Workable widget verified EMPTY; Wing Assistant JazzHR board defunct; Foundever (SuccessFactors), TTEC (Radancy+Taleo), Booth & Partners (Zoho Recruit), Cool Blue VA (RecruitCRM) have no public JSON.
+- **Premier PH agency cohort — NEGATIVE RESULT (measured):** `ingest-ph-agency-cohort.ts` live run: 9/9 seeds (VAA Philippines, Vault Outsourcing, ConnectOS, Global Strategic, MyOutDesk, Outsource Access, Staff Domain, SuperStaff, Virtual Staff 365) non-productive — 0 tenants found; direct endpoint checks: `breezy:vaaphilippines-recruitment` → `[]`, `workable:superstaff` → `{"jobs":[]}` (alive-but-empty), `workable:connectos`/`myoutdesk` → ~50 B error JSON, `lever:vaultoutsourcing` → conn-fail. Seeds were authored 2026-09-27 and never executed until now; boards have died/emptied since.
+- **Workday CXS bounded remote-yield probe — NEGATIVE RESULT (measured):** Concentrix (`cnx.wd1`, 1,621 jobs), TaskUs (`taskus.wd1`, 423), Accenture (`accenture.wd103`, 2,000) expose the same CXS POST pattern, but a 20-job/tenant probe measured **PH-REMOTE yield 0/60 = 0.0%** — Concentrix slice 0 PH-eligible, TaskUs 2 PH-eligible but ONSITE (Pasig, Pampanga), Accenture 0 PH. Enormous raw counts do not satisfy the REMOTE floor requirement. The Workday CXS adapter is NOT built (Gauntlet: do not keep merely because research effort was spent). Falsification: a deeper paginated probe finding material remote-indicated PH roles reopens the decision.
+
+**2. Verification:**
+- Live endpoint checks (5 direct GETs + 3 CXS POSTs) — read-only, bounded.
+- Full artifacts updated: `docs/architecture/CURRENT_STATE_SOURCE_UNIVERSE_GAUNTLET_2026-10-01.md` (Phases 3-5 + session closeout).
+
+**3. Interpretation (honest):** The Gauntlet's core hypothesis is CONFIRMED for targeted outlier admission (16 jobs published through receipts) and REJECTED for bulk-corpus ingestion (1.8% raw PH, marginal 0.0222/probe) and Workday BPO adapters (0/60 PH-REMOTE). Source supply remains the binding constraint; the productive paths are PH-dedicated agencies and mechanized outlier mining.
+
+**NEXT SINGLE ACTION:** Run another bounded reconciliation slice (`bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=30`; 9,685 claims remain unvalidated) or evaluate high-PH outliers as stratified probes surface them. Owner/controller: maintainer; trigger: next marathon session or scheduler tick.
+
+## 2026-10-01 — Gauntlet Phase 3 Reconciliation Delivered: 90-Board Stratified Validation, Marginal Yield Measured (0.0222/probe), Sofar Sounds Admitted + Gate-Held (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation of the "maintenance7" session; commits `99035ec`, `7fca0f0` pushed).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 2 Sofar Sounds rows correctly held by the publication gate).

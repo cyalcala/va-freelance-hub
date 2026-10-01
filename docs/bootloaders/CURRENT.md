@@ -2,46 +2,47 @@
 
 ## Active bounded unit
 
-**Gauntlet Phase 3 Reconciliation Delivered: 90-Board Stratified Validation, Marginal Yield 0.0222/probe, Sofar Sounds Admitted + Gate-Held (2026-10-01, current):**
+**Gauntlet Phase 4-5 Measured: PH Cohort Disposition + Workday CXS Probe Negative — Adapter NOT Justified (2026-10-01, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Reconciliation mechanism live: `scripts/lake/reconcile-discovered-corpus.ts` (+4 tests) — deterministic stratified slices of the `discovered` corpus through the sanctioned Jev+Wilson engine.
-- Live reconciliation (90 boards, 30/family): 1 admitted (`lever:sofarsounds`), 2 shadowed, 53 rejected, marginal qualified yield 0.0222/probe. Corpus: 9,685 claims still unvalidated, 56 evaluated.
-- Publication governance verified end-to-end: sync gate correctly HELD Sofar Sounds (2/10, Wilson ~3.7% < 20% floor) while snappr (52.7%) / the-studio (23.1%) published. D1 840 synced, 0 pending, 15 auto-approved tenants.
-- Live site 200; Snappr outlier jobs visible on `/opportunities`; web suite 328/328; lake tests 63/63; typecheck + guardrails clean.
+- Gauntlet Phase 0-3 delivered: LastRound 9,741 discovery claims in Turso (provenance-preserved, SHADOW), 90-board stratified validation (90% alive, raw PH 1.8%), reconciliation flywheel mechanized (`reconcile-discovered-corpus.ts`), outliers admitted (16 jobs → D1 840, live-verified).
+- Phase 4 measured: PH cohort mostly already represented via its 15 admitted ATS tenants; 9/9 wired PH agency cohort seeds dead/empty (negative result, measured with direct endpoint checks); blocked candidates never bypassed (captcha/anti-bot compliance).
+- Phase 5 measured: Workday CXS trio (Concentrix 1,621 / TaskUs 423 / Accenture 2,000 jobs) has **0/60 PH-REMOTE yield** on the bounded probe — PH roles onsite (Pasig, Pampanga). Adapter NOT justified; falsification condition recorded.
+- Publication gate verified end-to-end: sync correctly HELD Sofar Sounds (2/10, Wilson ~3.7% < 20% floor) while snappr/the-studio published.
+- Tests: 63/63 lake, 328/328 web, typecheck clean, guardrails clean. D1 840 synced, 0 pending, 15 auto-approved tenants.
 
 CURRENT BOTTLENECK:
-Supply gap to 100-150 qualified fresh jobs/day (verified binding). Broad-corpus marginal yield measured LOW (0.0222/probe) — PH-dedicated agencies are the higher-yield path.
+PH-qualified fresh supply (35.9/day vs 100/day floor, verified binding). Broad-corpus mining measured LOW (0.0222 qualified/probe) — productive paths are PH-dedicated agencies and mechanized outlier mining.
 
 ACTIVE UNIT:
-Gauntlet Phase 4 — PH high-prior cohort (PH-dedicated agency reserve).
+Gauntlet Phase 5+ — bounded reconciliation slices + outlier evaluation as evidence surfaces.
 
 LAST COMPLETED UNIT:
-Gauntlet Phase 3 reconciliation mechanism + 90-board live validation + marginal-yield measurement.
+Gauntlet Phase 4-5 (PH cohort disposition, Workday remote-yield probe — both negative results with measured evidence).
 
 RESULT:
-Reconciliation flywheel mechanized and evidenced; 1 outlier admitted; publication gate sample-size-aware authority verified.
+Core hypothesis confirmed for targeted outlier admission; REJECTED for bulk ingestion and Workday adapters. Negative results recorded with falsification conditions.
 
 UNRESOLVED:
 9,685 corpus claims unvalidated (repeatable slices available); Sofar Sounds 2 jobs correctly gate-held pending stronger evidence.
 
 NEXT ACTION:
-Gauntlet Phase 4: run `scripts/lake/ingest-ph-agency-cohort.ts` for the PH-dedicated agency reserve (Cyberbacker, Emapta, Wing Assistant, Remote Staff, VirtualStaff.ph, etc.), evaluate through geoGate+Jev, admit qualifying agencies through the sanctioned pipeline, and sync via `lake:sync`.
+Run another bounded reconciliation slice (`bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=30`) or evaluate high-PH outliers as stratified probes surface them; deeper Workday pagination probe only if new evidence justifies reopening.
 
 WHY NEXT:
-PH-dedicated agencies demonstrate 90-100% qualification yield (vs 0.0222/probe broad-corpus marginal) — the highest-marginal-value path to the 100/day floor.
+The corpus's value is outlier mining (now mechanized); each slice surfaces high-PH tenants for the sanctioned admission pipeline toward the 100/day floor.
 
 ACCEPTANCE:
-Cohort evaluations produce verified yield metrics through compliance gates; admissions recorded; sync receipts durable.
+Slices produce verified yield metrics; admissions pass compliance gates; receipts durable.
 
 FALLBACK:
-If a source violates compliance or yields zero qualified opportunities, quarantine with a dated failure note and continue with the next cohort slice.
+If slices repeatedly yield ~0 qualified (anti-loop), stop corpus mining and re-measure the whole system; the negative result is recorded per Constitution Part L (preserve negative results).
 
 **Prior unit (delivered & deployed):**
 
-**Gauntlet Phase 3/4: High-PH Outliers Admitted — 16 Jobs Synced to D1, Total 840, 15 Tenants (2026-10-01, historical):**
+**Gauntlet Phase 3 Reconciliation Delivered: 90-Board Stratified Validation, Marginal Yield 0.0222/probe, Sofar Sounds Admitted + Gate-Held (2026-10-01, historical):**
 
 **Prior unit (delivered & deployed):**
 
