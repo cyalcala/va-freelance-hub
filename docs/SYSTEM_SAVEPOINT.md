@@ -1,25 +1,19 @@
 # System Savepoint
 
-## 2026-10-03 — PR #162 Blockers Fix: gitleaks False Positives, Indentation, Savepoint Honesty (Headless Relay Session 35, Shift 20261002-2118)
+## 2026-10-03 — PR #162 Blockers Fix: gitleaks FPs, indentation, savepoint honesty (Session 35)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
 **Status:** CODE_ONLY_BRANCH (branch `opencode/shift-20261002-2118`; no production writes).
 
-**1. Fixes applied to resolve PR #162 CI failures:**
-- **gitleaks false positives:** Added `.gitleaks.toml` with allowlist for 40-char hex git SHAs in `docs/SYSTEM_SAVEPOINT.md` (false positives for `sourcegraph-access-token` rule). No secrets invented or committed.
-- **Indentation:** Restored 2-space indentation in `scripts/diagnostics/extract-shadow-dispatch-evidence.test.ts` (last 3 tests) and `scripts/diagnostics/extract-shadow-dispatch-evidence.ts` (enhanced MATH-12 diagnostics block).
-- **MATH-12 wording preserved:** Kept "do not assume quota exhaustion" guidance in `extractShadowDispatchEvidence` for `d1_quota_or_limit` with fingerprint — stage-specific correlation without asserting root cause.
-- **CURRENT.md honesty:** Updated to reflect blockers are being fixed, not resolved; no verification-only pointer swap.
-- **Savepoint discipline:** This entry prepended at top (not appended at EOF); NEXT SINGLE ACTION filled.
+- Added `.gitleaks.toml` allowlist for 40-char hex git SHAs in `docs/SYSTEM_SAVEPOINT.md` (fixes `sourcegraph-access-token` false positives).
+- Verified 2-space indentation in `extract-shadow-dispatch-evidence.test.ts` (last 3 tests) and `extract-shadow-dispatch-evidence.ts` body.
+- MATH-12 "do not assume quota exhaustion" wording preserved in `extractShadowDispatchEvidence`.
+- CURRENT.md reflects blockers prepared locally; CI verification pending.
+- This entry prepended at top; NEXT SINGLE ACTION filled.
 
-**2. Verification (local):**
-- Full test suite: 1,703 passed / 0 failed across 177 files (`bun test`).
-- Typecheck: Clean (`bun run typecheck`, exit 0).
-- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
-- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
-- Parameter parity: PASSED (100% parity, `bun run audit:parameters`).
+**Verification (local):** 1,703 tests pass; typecheck clean; guardrails clean; constitution audit pass; parameter parity 100%.
 
-**NEXT SINGLE ACTION:** Push branch and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits all pass). Owner/controller: maintainer; trigger: push to `opencode/shift-20261002-2118`.
+**NEXT SINGLE ACTION:** Push branch and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). Owner: maintainer; trigger: push to `opencode/shift-20261002-2118`.
 
 ## 2026-10-02 — MATH-12 Failure Telemetry: Failed Lake-Miner Cycles Now Ledgered in `lake_runs` (Headless Relay Session 2, Shift 20261002-2118) (current)
 
