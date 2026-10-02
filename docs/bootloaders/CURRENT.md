@@ -2,7 +2,23 @@
 
 ## Active bounded unit
 
-**Autonomous Worldwide Source Universe & Background Miner Infrastructure Delivered (Unified Runner, Recurring Workflow, GCP Cloud Run Runner, Global Miner Overlay Active) (2026-10-02, current):**
+**MATH-12 Failure Telemetry: Failed Lake-Miner Cycles Now Ledgered in `lake_runs` (Headless Relay Session 2, Shift 20261002-2118, code-only) (2026-10-02, current):**
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+CURRENT STATE:
+- Failed `run-lake-miner` cycles previously left zero durable `lake_runs` evidence and discarded partial phase results; fixed best-effort `status = "failed"` ledger insert with partial aggregates preserved. Full suite 1,701/1,701; typecheck clean. Code-only on branch `opencode/shift-20261002-2118`; no production writes.
+- Live evidence snapshot `.shift/evidence.md`: D1 1,366 active PH-eligible; ledger fresh flow 67 (Oct 1) / 35 (Oct 2 partial).
+
+CURRENT BOTTLENECK: Supply gap (ledger flow ~35–67/day vs 100/day floor).
+
+ACTIVE UNIT: Continuous background mining execution via scheduled workflow; live initial `lake:mine` requires credentials (unavailable in relay sessions).
+
+NEXT ACTION: With Turso credentials, run `bun run lake:mine --reconcile-per-family=30 --domain-limit=25`; acceptance = `lake_runs` row (completed or failed) with aggregate metrics, dual-gate invariants preserved.
+
+**Prior unit (delivered & deployed):**
+
+**Autonomous Worldwide Source Universe & Background Miner Infrastructure Delivered (Unified Runner, Recurring Workflow, GCP Cloud Run Runner, Global Miner Overlay Active) (2026-10-02, historical):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 

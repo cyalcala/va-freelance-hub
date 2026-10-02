@@ -1,6 +1,29 @@
 # System Savepoint
 
-## 2026-10-02 — Autonomous Worldwide Source Universe & Background Miner Infrastructure Delivered (Global Miner Overlay Active, Recurring Workflow, GCP Cloud Run Runner) (current)
+## 2026-10-02 — MATH-12 Failure Telemetry: Failed Lake-Miner Cycles Now Ledgered in `lake_runs` (Headless Relay Session 2, Shift 20261002-2118) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE-ONLY, UNPUSHED AT SESSION END (supervisor pushes branch → draft PR). No production writes were executed; `lake:mine`/cron/deploy were NOT run (relay rubric rule 9).
+
+**0. Start state:** HEAD `68a43a0f` (clean tree). Live evidence snapshot `.shift/evidence.md`: D1 6,573 rows / 1,366 active PH-eligible; ledger fresh flow Oct 1 = 67, Oct 2 partial = 35 (still far below 100/day floor); all 10 latest GHA runs green incl. Lake Miner 17:56 and EX-03 16:37.
+
+**1. Delivered unit — Lake-miner failure telemetry (MATH-12 operational diagnosis):**
+- **Defect found (`scripts/lake/run-lake-miner.ts`):** on a fatal phase error, completed cycles wrote a `lake_runs` `completed` row, but FAILED cycles wrote nothing — scheduled `gha-lake-miner`/GCP runs that crashed left zero durable run evidence, invisible to failure-rate monitoring. Partial phase results (e.g., Phase 1 succeeded, Phase 2 threw) were also discarded into a zeroed aggregate.
+- **Fix:** the catch path now best-effort inserts a `lake_runs` row with `status = "failed"` (error message + partial aggregate + per-phase summaries), mirroring the success-path ledger. Ledger-write failures are caught and only warn, never masking the original error; `dryRun` skips the write. The returned `LakeMinerResult` on failure now carries preserved partial `reconciliation`/`domainDiscovery` summaries and a truthful partial aggregate instead of zeros.
+- **No publication-path change; no hold-list paths touched; dual-gate invariants untouched.**
+
+**2. Verification:**
+- Targeted: `bun test scripts/lake/run-lake-miner.test.ts` — 10/10 pass (3 new tests: failed-run ledger row, ledger-failure masking guard, dry-run skip).
+- Lake suite: 77/77 pass. Full suite: 1,701 pass / 0 fail across 177 files. `bun run typecheck` clean.
+
+**3. Where we have been / are / going:**
+- Been: 2026-10-02 miner infrastructure delivered (prior entry); live `lake:mine` initial cycle remains the named next action but is forbidden in relay sessions.
+- Are: fresh publication flow ~35–67/day (partial-complete mix) vs 100/day floor; supply gap remains THE bottleneck; 25 lake rows still held by Wilson floor per prior evidence (re-measure with credentials before acting).
+- Going: run the authorized live initial mining cycle (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) in an environment WITH Turso credentials; the failure path now has durable telemetry either way.
+
+**NEXT SINGLE ACTION (owner: maintainer; trigger: session with Turso credentials):** execute `bun run lake:mine --reconcile-per-family=30 --domain-limit=25`; acceptance = polite reconciliation + domain discovery run, `lake_runs` row written with aggregate metrics (status `completed` or `failed`), dual-gate publication invariants preserved (zero premature D1 leakage). Fallback: on rate-limit, back off per MATH-04 cooldown; missing credentials fail-skip safely.
+
+## 2026-10-02 — Autonomous Worldwide Source Universe & Background Miner Infrastructure Delivered (Global Miner Overlay Active, Recurring Workflow, GCP Cloud Run Runner) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 840 synced, 0 pending; 25 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).
