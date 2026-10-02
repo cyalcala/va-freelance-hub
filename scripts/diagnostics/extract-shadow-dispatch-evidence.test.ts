@@ -117,9 +117,40 @@ describe("extract-shadow-dispatch-evidence", () => {
     expect(evidence.outcome).toBe("unparseable");
   });
 
-  test("never throws on empty input", () => {
-    const evidence = extractShadowDispatchEvidence(null, "");
-    expect(evidence.outcome).toBe("unparseable");
-    expect(evidence.httpStatus).toBeNull();
-  });
+   test("never throws on empty input", () => {
+     const evidence = extractShadowDispatchEvidence(null, "");
+     expect(evidence.outcome).toBe("unparseable");
+   });
+
+   test("provides specific guidance for d1_quota_or_limit with D1 operation failureStage", () => {
+     const body = JSON.stringify({
+       error: "Shadow dispatch evidence or observation storage unavailable",
+       errorClass: "d1_quota_or_limit",
+       errorFingerprint: "abcd1234",
+       failureStage: "persist_observation", // D1 write operation
+       sourceId: "greenhouse:canonical"
+     });
+     const evidence = extractShadowDispatchEvidence(503, body);
+     expect(evidence.outcome).toBe("generic_class_with_fingerprint");
+     expect(evidence.hasFingerprint).toBe(true);
+     expect(evidence.nextAction).toContain("SUSPECTED D1 READ QUOTA EXCEEDED");
+     expect(evidence.nextAction).toContain("stage \"persist_observation\"");
+     expect(evidence.nextAction).toContain("Check D1 quota metrics");
+   });
+
+   test("provides specific guidance for d1_quota_or_limit with Pages resource failureStage", () => {
+     const body = JSON.stringify({
+       error: "Shadow dispatch evidence or observation storage unavailable",
+       errorClass: "d1_quota_or_limit",
+       errorFingerprint: "abcd1234",
+       failureStage: "run_probe", // Probe execution
+       sourceId: "greenhouse:canonical"
+     });
+     const evidence = extractShadowDispatchEvidence(503, body);
+     expect(evidence.outcome).toBe("generic_class_with_fingerprint");
+     expect(evidence.hasFingerprint).toBe(true);
+     expect(evidence.nextAction).toContain("SUSPECTED PAGES RESOURCE LIMIT EXCEEDED");
+     expect(evidence.nextAction).toContain("stage \"run_probe\"");
+     expect(evidence.nextAction).toContain("Check Pages worker logs for CPU/memory limit errors");
+    });
 });

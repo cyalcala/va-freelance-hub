@@ -178,12 +178,40 @@ export function extractShadowDispatchEvidence(
     };
   }
 
-  return {
-    ...record,
-    outcome: "generic_class_with_fingerprint",
-    pagesTailFilterHint: hint,
-    nextAction: `FALSIFICATION: still ${errorClass ?? "unknown"} at stage ${failureStage ?? "unknown"}${sourceId ? ` for source ${sourceId}` : ""} WITH a fingerprint on enriched code. Reopen MATH-12 diagnosis via Pages-log correlation; do not assume quota exhaustion.`,
-  };
+   // Enhanced MATH-12 diagnostics: provide more specific guidance based on failureStage for d1_quota_or_limit errors
+   let specificNextAction = `FALSIFICATION: still ${errorClass ?? "unknown"} at stage ${failureStage ?? "unknown"}${sourceId ? ` for source ${sourceId}` : ""} WITH a fingerprint on enriched code. Reopen MATH-12 diagnosis via Pages-log correlation; do not assume quota exhaustion.`;
+   
+   if (errorClass === "d1_quota_or_limit" && failureStage !== null) {
+     // D1 quota issues typically occur during D1 read/write operations
+     const d1OperationStages = [
+       "load_host_backoff",
+       "persist_host_backoff",
+       "enumerate_registry",
+       "load_admission_context",
+       "load_observation_history",
+       "persist_observation",
+       "load_anomaly_history"
+     ];
+     
+     // Pages resource issues typically occur during probe execution or API calls
+     const pagesResourceStages = [
+       "run_probe",
+       "jev_adjudication"
+     ];
+     
+     if (d1OperationStages.includes(failureStage)) {
+       specificNextAction = `SUSPECTED D1 READ QUOTA EXCEEDED: error occurred during D1 operation stage "${failureStage}". Check D1 quota metrics and consider reducing probe frequency or increasing quota. Correlate in Pages log within the run window for confirmation.`;
+     } else if (pagesResourceStages.includes(failureStage)) {
+       specificNextAction = `SUSPECTED PAGES RESOURCE LIMIT EXCEEDED: error occurred during stage "${failureStage}" (probe execution or Jev API call). Check Pages worker logs for CPU/memory limit errors and consider reducing probe complexity or increasing resource limits. Correlate in Pages log within the run window for confirmation.`;
+     }
+   }
+   
+   return {
+     ...record,
+     outcome: "generic_class_with_fingerprint",
+     pagesTailFilterHint: hint,
+     nextAction: specificNextAction,
+   };
 }
 
 if (import.meta.main) {
