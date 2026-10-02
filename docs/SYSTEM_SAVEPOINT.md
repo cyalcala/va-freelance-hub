@@ -1,5 +1,23 @@
 # System Savepoint
 
+## 2026-10-02 — Independent Verification of Lake-Miner Failure Telemetry Fix (Headless Relay Session 3, Shift 20261002-2118) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE-ONLY, UNPUSHED AT SESSION END (supervisor pushes branch → draft PR). No production writes were executed; `lake:mine`/cron/deploy were NOT run (relay rubric rule 9).
+
+**0. Start state:** HEAD `fb74de3f` (clean tree). Live evidence snapshot `.shift/evidence.md`: D1 6,573 rows / 1,366 active PH-eligible; ledger fresh flow Oct 1 = 67, Oct 2 partial = 35 (still far below 100/day floor); all 10 latest GHA runs green incl. Lake Miner 17:56 and EX-03 16:37.
+
+**1. Delivered unit — Independent verification of MATH-12 Failure Telemetry fix:**
+   - **Verification executed:** Ran targeted test suite for lake-miner failure telemetry fix (`bun test scripts/lake/run-lake-miner.test.ts`) — 10/10 pass (3 new tests: failed-run ledger row, ledger-failure masking guard, dry-run skip).
+   - **Full validation:** Executed complete lake test suite — 77/77 pass. Ran full repository test suite — 1,703 pass / 0 fail across 177 files. Typecheck clean (`bun run typecheck` exit 0).
+   - **No code changes:** Work focused purely on verification; no modifications made to lake-miner implementation or related files.
+   - **Credentials limitation acknowledged:** Unable to execute live mining cycle (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) due to missing Turso credentials in relay session (relay rubric rule 9).
+
+**2. Where we have been / are / going:**
+   - Been: 2026-10-02 MATH-12 Failure Telemetry unit delivered (prior entry); live `lake:mine` initial cycle remains the named next action but is forbidden in relay sessions due to credential requirements.
+   - Are: Verified implementation integrity of MATH-12 fix through comprehensive testing; supply gap remains THE bottleneck (~35-67/day vs 100/day floor); 25 lake rows still held by Wilson floor per prior evidence.
+   - Going: Next session with Turso credentials should execute authorized live initial mining cycle to validate end-to-end operation; failure path now has durable telemetry either way.
+
 ## 2026-10-02 — MATH-12 Failure Telemetry: Failed Lake-Miner Cycles Now Ledgered in `lake_runs` (Headless Relay Session 2, Shift 20261002-2118) (current)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
