@@ -254,16 +254,64 @@ export async function runLakeMiner(
       })
     );
 
+    // Persist failure evidence into lake_runs so failed cycles are durably
+    // visible (MATH-12); best-effort only — a ledger failure must never mask
+    // the original error. Preserves partial phase results completed before
+    // the failure instead of discarding them.
+    if (!options.dryRun) {
+      try {
+        const client = deps.client ?? getLakeClient();
+        await client.execute({
+          sql: `INSERT INTO lake_runs (script, status, stats_json) VALUES (?, ?, ?);`,
+          args: [
+            "run-lake-miner",
+            "failed",
+            JSON.stringify({
+              timestamp: new Date().toISOString(),
+              durationMs,
+              error: errorMsg,
+              aggregate: {
+                totalProbed:
+                  (reconciliationSummary?.domainsScanned ?? 0) +
+                  (domainDiscoveryStats?.domainsScanned ?? 0),
+                totalAdmitted:
+                  (reconciliationSummary?.admitted ?? 0) + (domainDiscoveryStats?.admitted ?? 0),
+                totalShadowed:
+                  (reconciliationSummary?.shadowed ?? 0) + (domainDiscoveryStats?.shadowed ?? 0),
+                totalRejected:
+                  (reconciliationSummary?.rejected ?? 0) + (domainDiscoveryStats?.rejected ?? 0),
+                totalJobsIngested:
+                  (reconciliationSummary?.jobsIngested ?? 0) +
+                  (domainDiscoveryStats?.jobsIngested ?? 0),
+              },
+              reconciliation: reconciliationSummary,
+              domainDiscovery: domainDiscoveryStats,
+            }),
+          ],
+        });
+      } catch (ledgerErr: any) {
+        console.warn(`[lake-miner] Failure ledger write skipped: ${ledgerErr?.message ?? ledgerErr}`);
+      }
+    }
+
     return {
       ok: false,
       message: errorMsg,
       durationMs,
+      reconciliation: reconciliationSummary,
+      domainDiscovery: domainDiscoveryStats,
       aggregate: {
-        totalProbed: 0,
-        totalAdmitted: 0,
-        totalShadowed: 0,
-        totalRejected: 0,
-        totalJobsIngested: 0,
+        totalProbed:
+          (reconciliationSummary?.domainsScanned ?? 0) +
+          (domainDiscoveryStats?.domainsScanned ?? 0),
+        totalAdmitted:
+          (reconciliationSummary?.admitted ?? 0) + (domainDiscoveryStats?.admitted ?? 0),
+        totalShadowed:
+          (reconciliationSummary?.shadowed ?? 0) + (domainDiscoveryStats?.shadowed ?? 0),
+        totalRejected:
+          (reconciliationSummary?.rejected ?? 0) + (domainDiscoveryStats?.rejected ?? 0),
+        totalJobsIngested:
+          (reconciliationSummary?.jobsIngested ?? 0) + (domainDiscoveryStats?.jobsIngested ?? 0),
       },
     };
   }

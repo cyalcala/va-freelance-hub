@@ -184,4 +184,128 @@ describe("Autonomous Lake Miner Runner (run-lake-miner)", () => {
     expect(res.ok).toBe(false);
     expect(res.message).toContain("Connection reset by peer");
   });
+
+  it("persists a failed run row in lake_runs on fatal error (MATH-12 failure telemetry)", async () => {
+    const mockDiscovery = mock(async () => {
+      throw new Error("phase 2 exploded");
+    });
+    const mockClient = {
+      execute: mock(async () => ({})),
+    };
+
+    const mockReconciliationSummary: ReconciliationSummary = {
+      script: "reconcile-discovered-corpus",
+      startedAt: "2026-10-02T00:00:00Z",
+      finishedAt: "2026-10-02T00:00:05Z",
+      corpusSize: 100,
+      sliceSize: 10,
+      byFamilySlice: { breezy: 10 },
+      domainsScanned: 10,
+      admitted: 1,
+      shadowed: 1,
+      rejected: 8,
+      jobsIngested: 3,
+      marginalQualifiedYieldPerProbe: 0.1,
+      dryRun: false,
+    };
+
+    const res = await runLakeMiner(
+      {
+        reconcilePerFamily: 10,
+        domainLimit: 15,
+        probeDelayMs: 1000,
+        dryRun: false,
+        skipReconcile: false,
+        skipDomainDiscovery: false,
+      },
+      {
+        TURSO_DATABASE_URL: "libsql://mock.turso.io",
+        TURSO_AUTH_TOKEN: "mock-token",
+      },
+      {
+        reconcileFn: mock(async () => mockReconciliationSummary) as any,
+        domainDiscoveryFn: mockDiscovery as any,
+        client: mockClient as any,
+      }
+    );
+
+    expect(res.ok).toBe(false);
+    // Partial phase results are preserved, not zeroed.
+    expect(res.aggregate.totalProbed).toBe(10);
+    expect(res.aggregate.totalJobsIngested).toBe(3);
+    expect(res.reconciliation?.admitted).toBe(1);
+    // One ledger row with status "failed".
+    expect(mockClient.execute).toHaveBeenCalledTimes(1);
+    const call = (mockClient.execute as any).mock.calls[0][0];
+    expect(call.args[0]).toBe("run-lake-miner");
+    expect(call.args[1]).toBe("failed");
+    const stats = JSON.parse(call.args[2]);
+    expect(stats.error).toContain("phase 2 exploded");
+    expect(stats.aggregate.totalJobsIngested).toBe(3);
+  });
+
+  it("never masks the original error when the failure ledger write itself fails", async () => {
+    const mockReconcile = mock(async () => {
+      throw new Error("original phase error");
+    });
+    const mockClient = {
+      execute: mock(async () => {
+        throw new Error("ledger insert unavailable");
+      }),
+    };
+
+    const res = await runLakeMiner(
+      {
+        reconcilePerFamily: 10,
+        domainLimit: 15,
+        probeDelayMs: 1000,
+        dryRun: false,
+        skipReconcile: false,
+        skipDomainDiscovery: true,
+      },
+      {
+        TURSO_DATABASE_URL: "libsql://mock.turso.io",
+        TURSO_AUTH_TOKEN: "mock-token",
+      },
+      {
+        reconcileFn: mockReconcile as any,
+        client: mockClient as any,
+      }
+    );
+
+    expect(res.ok).toBe(false);
+    expect(res.message).toContain("original phase error");
+    expect(mockClient.execute).toHaveBeenCalledTimes(1);
+  });
+
+  it("skips failure ledger writes in dry-run mode", async () => {
+    const mockReconcile = mock(async () => {
+      throw new Error("dry-run failure");
+    });
+    const mockClient = {
+      execute: mock(async () => ({})),
+    };
+
+    const res = await runLakeMiner(
+      {
+        reconcilePerFamily: 10,
+        domainLimit: 15,
+        probeDelayMs: 1000,
+        dryRun: true,
+        skipReconcile: false,
+        skipDomainDiscovery: true,
+      },
+      {
+        TURSO_DATABASE_URL: "libsql://mock.turso.io",
+        TURSO_AUTH_TOKEN: "mock-token",
+      },
+      {
+        reconcileFn: mockReconcile as any,
+        client: mockClient as any,
+      }
+    );
+
+    expect(res.ok).toBe(false);
+    expect(mockClient.execute).toHaveBeenCalledTimes(0);
+  });
 });
