@@ -1,5 +1,16 @@
 # Current resume pointer
 
+## Session 45 Recovery & Savepoint Restore (Headless Relay Session 45, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- PR #162 blockers fully resolved: SYSTEM_SAVEPOINT.md history restored (all origin/main headers present, MATH-12 Failure Telemetry entry restored verbatim with honest `(historical)` label), .gitleaks.toml narrow rule-scoped allowlist in place.
+- All local checks pass: tests, typecheck, guardrails, constitution audit, parameter parity, build.
+- Required reading gate satisfied: all 11 required files read, `.shift/reading-045.md` recorded.
+- Tech lead focus item 1 (savepoint history restore) DONE; item 2 (gitleaks allowlist) DONE; item 3 (CURRENT.md points to hold-list paths) ADDRESSED BELOW.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes; no hold-list paths touched.
+
 ## Session 43 Recovery Verification (Headless Relay Session 43, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
@@ -40,20 +51,26 @@ VERIFICATION COMPLETE:
 
 ## Active bounded unit
 
-**MATH-06A: Publication Authority and Governance Closure (F1/F2/F4) - Preparation for Implementation (Headless Relay Session 26, Shift 20261002-2118)**
+**MATH-03 / Gauntlet Phase 3 Slice 4: Corpus Reconciliation — Validating 9,442 Discovered Claims (Headless Relay Session 45, Shift 20261002-2118)**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- MATH-12 Failure Telemetry fix validated and implemented: comprehensive testing passed, guidance provides stage-specific correlation without asserting quota exhaustion. Code on branch `opencode/shift-20261002-2118`.
-- Live evidence snapshot `.shift/evidence.md`: D1 6,573 rows / 1,366 active PH-eligible; ledger fresh flow Oct 1 = 67, Oct 2 partial = 35 (still far below 100/day floor).
-- MATH-06A publication authority closure prerequisites identified: need to trace every public writer and its authority/receipt path, produce failing fixture cases and a repair contract.
+- PR #162 blockers resolved; savepoint history restored; gitleaks hardened.
+- Lake discovery corpus: 9,442 claims at `review_status = 'discovered'` unvalidated (per prior evidence).
+- Background mining infrastructure delivered and running on schedule (gha-lake-miner.yml every 3 hours).
+- Dual-gate publication invariant holds: 25 QUALIFIED_READY rows safely held by Wilson floor (< 20%), zero premature D1 leakage.
+- Supply gap: ledger fresh flow ~35–67/day vs 100/day floor (-64 to -33 gap).
 
-CURRENT BOTTLENECK: Supply gap (ledger flow ~35-67/day vs 100/day floor) remains the primary constraint to achieving 100-150 qualified fresh jobs/day.
+CURRENT BOTTLENECK: Supply gap — too few qualified, permitted, fresh sources feeding the pipeline. Corpus reconciliation is the highest-yield read-only path to surface new PH-eligible remote employers without touching hold-list paths.
 
-ACTIVE UNIT: Preparation for MATH-06A publication authority closure unit - tracing publication/reactivation workers and designing failing fixtures for F1/F4 findings.
+ACTIVE UNIT: MATH-03 corpus reconciliation slice — run stratified validation of discovered corpus (`scripts/lake/reconcile-discovered-corpus.ts`) to surface high-PH first-party outliers, admit qualified tenants to Lake, and grow the qualified reservoir toward the 100/day floor. This unit is read-only against production (Turso lake only), touches no hold-list paths, and respects all governance gates.
 
-NEXT ACTION: Trace every publication/reactivation writer (scripts/lake/sync-to-d1.ts, packages/scraper/publication-gateway.ts, apps/web/src/lib/publish-opportunities.ts) and create failing fixture cases for F1/F4 bypass/fallback issues; design bounded repair contract covering exceptions, leases, opt-outs and atomic failure behavior.
+NEXT ACTION: Execute `bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=50` (dry-run first, then live) to probe ~150 boards from the 9,442 unvalidated claims, targeting high-PH-yield families. Record marginal yield, admitted tenants, and gate-held reservoir growth. Acceptance: polite execution, structured `lake_runs` ledger entry, zero hold-list paths touched, dual-gate invariants preserved.
+
+WHY NEXT: Corpus reconciliation directly addresses the supply bottleneck by converting unvalidated claims into admitted Lake tenants and qualified reservoir candidates. It is dependency-ready (infrastructure delivered), governance-safe (lake-only, no publication-path changes), and measurable (yield per probe, admitted tenants, reservoir growth).
+
+FALLBACK: If rate limits occur, back off per MATH-04 cooldown; if credentials missing, fail-skip safely and record UNKNOWN. Do not widen source admission or bypass gates to force yield.
 
 **Prior unit (delivered & deployed):**
 
