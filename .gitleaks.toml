@@ -1,0 +1,7 @@
+# Gitleaks configuration for VA Freelance Hub
+# Allows 40-char hex git SHAs in SYSTEM_SAVEPOINT.md (false positives for sourcegraph-access-token)
+
+[allowlist]
+description = "Allow git SHAs in SYSTEM_SAVEPOINT.md"
+paths = ["docs/SYSTEM_SAVEPOINT.md"]
+regexes = ['''[0-9a-f]{40}''']
