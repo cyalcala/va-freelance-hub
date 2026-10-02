@@ -5,7 +5,7 @@
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 VERIFICATION COMPLETE:
-- PR #162 blockers fully resolved: SYSTEM_SAVEPOINT.md history restored (all origin/main headers present, MATH-12 Failure Telemetry entry restored verbatim with honest `(historical)` label), .gitleaks.toml narrow rule-scoped allowlist in place.
+- PR #162 blockers fully resolved: SYSTEM_SAVEPOINT.md history restored (all origin/main headers present, MATH-12 Failure Telemetry entry restored verbatim with `(current)` label matching origin/main), .gitleaks.toml narrow rule-scoped allowlist in place.
 - All local checks pass: tests, typecheck, guardrails, constitution audit, parameter parity, build.
 - Required reading gate satisfied: all 11 required files read, `.shift/reading-045.md` recorded.
 - Tech lead focus item 1 (savepoint history restore) DONE; item 2 (gitleaks allowlist) DONE; item 3 (CURRENT.md points to hold-list paths) ADDRESSED BELOW.
