@@ -2,12 +2,12 @@
 
 ## Prior unit (delivered & deployed)
 
-**Fixing PR #162 Blockers: gitleaks FPs, Indentation, Savepoint Honesty (Headless Relay Session 33, Shift 20261002-2118) (2026-10-03, current):**
+**Fixing PR #162 Blockers: gitleaks FPs, Indentation, Savepoint Honesty (Headless Relay Session 35, Shift 20261002-2118) (2026-10-03, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Working on PR #162 blockers: gitleaks false positives on SHA strings in SYSTEM_SAVEPOINT.md (added .gitleaks.toml allowlist), fixed 2-space indentation in extract-shadow-dispatch-evidence.test.ts and extract.ts body, will prepend honest savepoint entry.
+- Fixed PR #162 blockers: gitleaks false positives on SHA strings in SYSTEM_SAVEPOINT.md (added .gitleaks.toml allowlist), fixed 2-space indentation in extract-shadow-dispatch-evidence.test.ts and extract.ts body, prepended honest savepoint entry.
 - CI verification pending: gitleaks must pass, full test suite must pass, typecheck clean.
 - Code-only on branch `opencode/shift-20261002-2118`; no production writes.
 
