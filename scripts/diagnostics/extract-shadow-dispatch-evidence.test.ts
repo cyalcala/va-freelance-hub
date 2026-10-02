@@ -117,7 +117,7 @@ describe("extract-shadow-dispatch-evidence", () => {
     expect(evidence.outcome).toBe("unparseable");
   });
 
-    test("never throws on empty input", () => {
+  test("never throws on empty input", () => {
     const evidence = extractShadowDispatchEvidence(null, "");
     expect(evidence.outcome).toBe("unparseable");
     expect(evidence.httpStatus).toBeNull();
