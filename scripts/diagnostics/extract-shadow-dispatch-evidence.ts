@@ -201,9 +201,9 @@ export function extractShadowDispatchEvidence(
       
       if (d1OperationStages.includes(failureStage)) {
         specificNextAction = `D1 operation stage "${failureStage}" detected with fingerprint. Correlate in Pages log within the run window to determine if related to D1 resource limits or other causes.`;
-      } else if (pagesResourceStages.includes(failureStage)) {
-        specificNextAction = `Pages resource stage "${failureStage}" detected with fingerprint. Correlate in Pages log within the run window to determine if related to resource limits or other causes.`;
-      }
+} else if (pagesResourceStages.includes(failureStage)) {
+  specificNextAction = `Pages resource stage "${failureStage}" detected with fingerprint. Correlate in Pages log within the run window to determine if related to Pages resource limits or other causes.`;
+}
     }
     
     return {
