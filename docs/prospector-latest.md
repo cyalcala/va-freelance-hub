@@ -1,7 +1,7 @@
 # Prospector Latest
 
 Date: 2026-10-02
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36970042408
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37007948530
 
 | Metric | Value |
 | --- | ---: |
@@ -23,7 +23,7 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/36970042
 
 ## Auto-added companies
 
-- Clover Health
+- Gong.io
 
 ## Durable candidate queue (SP-06, non-publishing)
 
