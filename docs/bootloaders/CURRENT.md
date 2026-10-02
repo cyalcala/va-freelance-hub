@@ -7,7 +7,7 @@
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Fixed PR #162 blockers: gitleaks false positives on SHA strings in SYSTEM_SAVEPOINT.md (added .gitleaks.toml allowlist), fixed 2-space indentation in extract-shadow-dispatch-evidence.test.ts and extract.ts body, prepended honest savepoint entry.
+- Applied fixes for PR #162 blockers: gitleaks false positives on SHA strings in SYSTEM_SAVEPOINT.md (added .gitleaks.toml allowlist), fixed 2-space indentation in extract-shadow-dispatch-evidence.test.ts and extract.ts body, prepended honest savepoint entry.
 - CI verification pending: gitleaks must pass, full test suite must pass, typecheck clean.
 - Code-only on branch `opencode/shift-20261002-2118`; no production writes.
 
