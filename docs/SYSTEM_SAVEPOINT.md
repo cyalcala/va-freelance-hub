@@ -6416,3 +6416,18 @@ has been backed up in Git.
 **1. Delivered unit — Fixed INDENTATION in extract-shadow-dispatch-evidence.ts:**
    - **Issue identified:** Bad indentation in the enhanced MATH-12 diagnostics section around lines 204-206, with inconsistent spacing (odd numbers of spaces instead of consistent 2-space increments).
    - **Fix applied:** Corrected indentation to use consistent 2-space increments throughout the conditional block.
+
+## 2026-10-02 — Fixed PR #162 Blockers: Bad Indentation and Savepoint Truncation (Headless Relay Session 29, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 6,573 synced, 0 pending; 25 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).
+
+**1. Delivered unit — Fixed PR #162 Blockers:**
+   - **Bad indentation fixed:** Corrected inconsistent spacing in enhanced MATH-12 diagnostics section of extract-shadow-dispatch-evidence.ts lines 204-206.
+   - **Savepoint history restored:** Restored full history from origin/main, then appended short entry for the real fix only.
+
+**2. Verification:**
+   - Fixed indentation: 1703/1703 tests pass, typecheck clean, guardrails clean, constitution audit passed.
+   - Savepoint integrity: Full history preserved from origin/main with concise append-only entry.
+
+**NEXT SINGLE ACTION:** Run  to execute an initial live mining cycle, verifying end-to-end runner operation with live Turso database and Jev 1.13 adjudication. Owner/controller: maintainer; trigger: next marathon unit.
