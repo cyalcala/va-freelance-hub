@@ -1,5 +1,17 @@
 # Current resume pointer
 
+## Session 43 Recovery Verification (Headless Relay Session 43, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- PR #162 blockers fully resolved and confirmed: SYSTEM_SAVEPOINT.md history restored (6,460 lines, all historical entries preserved), .gitleaks.toml narrow rule-scoped allowlist in place targeting only `sourcegraph-access-token` with regexes for 40-char hex SHAs in commit-reference lines.
+- All local checks pass: 1,703 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build.
+- Required reading gate satisfied: all 11 required files read, `.shift/reading-043.md` recorded.
+- Tech lead focus items 1 (savepoint history restore) and 2 (gitleaks narrow allowlist) confirmed DONE; item 3 (supply bottleneck) remains active target.
+- CI verification pending on push: gitleaks, full test suite, typecheck, build, audits must pass.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes; no hold-list paths touched.
+
 ## Prior unit (delivered & deployed)
 
 **Fixing PR #162 Blockers: gitleaks FPs, Indentation, Savepoint Honesty (Headless Relay Session 35, Shift 20261002-2118) (2026-10-03, delivered):**
@@ -21,7 +33,7 @@ VERIFICATION COMPLETE:
   1. gitleaks FPs: allowlist in place for 40-char hex SHAs in SYSTEM_SAVEPOINT.md
   2. Savepoint honesty: fix entry prepended at top (not appended); MATH-12 entry restored; NEXT SINGLE ACTION filled
   3. Indentation: 2-space verified in test file (last 3 tests) and extract.ts body
-  4. CURRENT.md: accurately states "prepared locally; CI verification pending" — no false resolution
+  4. CURRENT.md: accurately states "prepared locally; CI verification pending" — no false resolution claim
   5. MATH-12 wording: "do not assume quota exhaustion" preserved
 - Local evidence: 1,703 tests pass; typecheck clean; guardrails clean; constitution audit pass; parameter parity 100%; build passes.
 - Branch ready for supervisor push → draft PR #162 update.
