@@ -1,20 +1,32 @@
 # Current resume pointer
 
-## Active bounded unit
+## Prior unit (delivered & deployed)
 
-**MATH-12 Failure Telemetry: Independent Verification of Lake-Miner Cycles Ledgering Fix (Headless Relay Session 3, Shift 20261002-2118, verification-only) (2026-10-02, current):**
+**MATH-12 Failure Telemetry: Independent Verification of Lake-Miner Cycles Ledgering Fix (Headless Relay Session 26, Shift 20261002-2118) (2026-10-02, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
 - MATH-12 Failure Telemetry fix validated through comprehensive testing: targeted lake-miner tests 10/10 pass, full lake suite 77/77 pass, complete repository test suite 1,703/1,703 pass, typecheck clean. Code-only on branch `opencode/shift-20261002-2118`; no production writes.
-- Live evidence snapshot `.shift/evidence.md`: D1 1,366 active PH-eligible; ledger fresh flow 67 (Oct 1) / 35 (Oct 2 partial).
+- Live evidence snapshot `.shift/evidence.md`: D1 6,573 rows / 1,366 active PH-eligible; ledger fresh flow Oct 1 = 67, Oct 2 partial = 35 (still far below 100/day floor).
+- MATH-12 diagnostics guidance fixed in extract-shadow-dispatch-evidence.ts: changed generic "resource limits" reference to specific "Pages resource limits" for Pages resource stages, preserving the "do not assume quota exhaustion" rule.
 
-CURRENT BOTTLENECK: Supply gap (ledger flow ~35–67/day vs 100/day floor).
+## Active bounded unit
 
-ACTIVE UNIT: Continuous background mining execution via scheduled workflow; live initial `lake:mine` requires credentials (unavailable in relay sessions).
+**MATH-06A: Publication Authority and Governance Closure (F1/F2/F4) - Preparation for Implementation (Headless Relay Session 26, Shift 20261002-2118)**
 
-NEXT ACTION: With Turso credentials, run `bun run lake:mine --reconcile-per-family=30 --domain-limit=25`; acceptance = `lake_runs` row (completed or failed) with aggregate metrics, dual-gate invariants preserved.
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+CURRENT STATE:
+- MATH-12 Failure Telemetry fix validated and implemented: comprehensive testing passed, guidance provides stage-specific correlation without asserting quota exhaustion. Code on branch `opencode/shift-20261002-2118`.
+- Live evidence snapshot `.shift/evidence.md`: D1 6,573 rows / 1,366 active PH-eligible; ledger fresh flow Oct 1 = 67, Oct 2 partial = 35 (still far below 100/day floor).
+- MATH-06A publication authority closure prerequisites identified: need to trace every public writer and its authority/receipt path, produce failing fixture cases and a repair contract.
+
+CURRENT BOTTLENECK: Supply gap (ledger flow ~35-67/day vs 100/day floor) remains the primary constraint to achieving 100-150 qualified fresh jobs/day.
+
+ACTIVE UNIT: Preparation for MATH-06A publication authority closure unit - tracing publication/reactivation workers and designing failing fixtures for F1/F4 findings.
+
+NEXT ACTION: Trace every publication/reactivation writer (scripts/lake/sync-to-d1.ts, packages/scraper/publication-gateway.ts, apps/web/src/lib/publish-opportunities.ts) and create failing fixture cases for F1/F4 bypass/fallback issues; design bounded repair contract covering exceptions, leases, opt-outs and atomic failure behavior.
 
 **Prior unit (delivered & deployed):**
 
