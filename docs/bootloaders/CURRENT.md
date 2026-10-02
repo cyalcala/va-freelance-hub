@@ -2,14 +2,14 @@
 
 ## Prior unit (delivered & deployed)
 
-**MATH-12 Failure Telemetry: Independent Verification of Lake-Miner Cycles Ledgering Fix (Headless Relay Session 26, Shift 20261002-2118) (2026-10-02, current):**
+**Fixed PR #162 Blockers: Bad Indentation and Savepoint Truncation (Headless Relay Session 27, Shift 20261002-2118) (2026-10-03, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- MATH-12 Failure Telemetry fix validated through comprehensive testing: targeted lake-miner tests 10/10 pass, full lake suite 77/77 pass, complete repository test suite 1,703/1,703 pass, typecheck clean. Code-only on branch `opencode/shift-20261002-2118`; no production writes.
-- Live evidence snapshot `.shift/evidence.md`: D1 6,573 rows / 1,366 active PH-eligible; ledger fresh flow Oct 1 = 67, Oct 2 partial = 35 (still far below 100/day floor).
-- MATH-12 diagnostics guidance fixed in extract-shadow-dispatch-evidence.ts: changed generic "resource limits" reference to specific "Pages resource limits" for Pages resource stages, preserving the "do not assume quota exhaustion" rule.
+- PR #162 blockers resolved: fixed bad indentation in extract-shadow-dispatch-evidence.ts and restored SYSTEM_SAVEPOINT.md from origin/main.
+- Verified implementation integrity: targeted lake-miner tests 10/10 pass, full lake suite 77/77 pass, complete repository test suite 1,703/1,703 pass, typecheck clean. Code-only on branch `opencode/shift-20261002-2118`; no production writes.
+- Guardrails check: clean (16/16 tests passed). Constitution audit: passed with expected warnings. Parameter parity audit: PASSED (100% parity).
 
 ## Active bounded unit
 
