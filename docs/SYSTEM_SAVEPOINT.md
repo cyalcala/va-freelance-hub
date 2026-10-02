@@ -1,5 +1,36 @@
 # System Savepoint
 
+## 2026-10-03 — PR #162 Blockers Fully Resolved: SYSTEM_SAVEPOINT.md History Restored, Gitleaks Allowlist Narrowed (Session 41, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Regression fix — SYSTEM_SAVEPOINT.md history restored:**
+- **Defect:** Commit 8be236a4 truncated `docs/SYSTEM_SAVEPOINT.md` from 6,433 lines to ~200, deleting the historical ledger.
+- **Fix:** Restored full file from `git show 2652413e:docs/SYSTEM_SAVEPOINT.md` (6,454 lines incl. Session 33 entry), then applied the shortened Session 40 PR #162 verification entry at the top in place of the long Session 33 entry. Final file: 6,460 lines containing every historical entry that exists on origin/main (6,430 lines).
+- **Verification:** `git diff origin/main -- docs/SYSTEM_SAVEPOINT.md --stat` shows additions only (new top entry + preserved historical entries from original not on main); no deletions of old entries.
+
+**2. Security fix — .gitleaks.toml narrow rule-scoped allowlist:**
+- **Defect:** Path-based allowlist (`paths = ["docs/SYSTEM_SAVEPOINT.md"]`) exempted the entire file from all rules, a broad bypass.
+- **Fix:** Replaced with `[[allowlists]]` targeting only `sourcegraph-access-token` rule, `regexTarget = "line"`, with regexes matching 40-char hex SHAs in `Start HEAD`/`commit`/`origin/main`/`HEAD`/`at` reference lines.
+- **Verification:** `gitleaks detect` scans 2,161 commits, finds no leaks; false positives for SHA references in savepoint eliminated.
+
+**3. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,698 pass / 0 fail across 172 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+- Gitleaks: No leaks found (`gitleaks detect --config .gitleaks.toml`).
+
+**4. Where we have been / are / going:**
+- Been: Session 35–40 delivered PR #162 blocker fixes (gitleaks, indentation, savepoint honesty) on commits 8be236a4, 4065da7f, a0fc9556, 909e5af0; Session 41 completes the regression fix and security hardening.
+- Are: All 5 PR #162 blockers resolved locally; SYSTEM_SAVEPOINT.md history fully restored; gitleaks configuration hardened; CI verification pending on push.
+- Going: Supervisor pushes branch → draft PR #162 updated; CI guardrail workflow runs (gitleaks, tests, typecheck, build, audits). If green, PR eligible for merge per MERGE_RUBRIC gates.
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). If CI passes, PR #162 merges; if red, next session addresses residual failures.
+
 ## 2026-10-03 — PR #162 Blockers Verified: CI Green Path Confirmed (Session 40, Shift 20261002-2118)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
