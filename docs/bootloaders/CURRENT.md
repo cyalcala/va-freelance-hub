@@ -2,12 +2,12 @@
 
 ## Active bounded unit
 
-**MATH-12 Failure Telemetry: Failed Lake-Miner Cycles Now Ledgered in `lake_runs` (Headless Relay Session 2, Shift 20261002-2118, code-only) (2026-10-02, current):**
+**MATH-12 Failure Telemetry: Independent Verification of Lake-Miner Cycles Ledgering Fix (Headless Relay Session 3, Shift 20261002-2118, verification-only) (2026-10-02, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Failed `run-lake-miner` cycles previously left zero durable `lake_runs` evidence and discarded partial phase results; fixed best-effort `status = "failed"` ledger insert with partial aggregates preserved. Full suite 1,701/1,701; typecheck clean. Code-only on branch `opencode/shift-20261002-2118`; no production writes.
+- MATH-12 Failure Telemetry fix validated through comprehensive testing: targeted lake-miner tests 10/10 pass, full lake suite 77/77 pass, complete repository test suite 1,703/1,703 pass, typecheck clean. Code-only on branch `opencode/shift-20261002-2118`; no production writes.
 - Live evidence snapshot `.shift/evidence.md`: D1 1,366 active PH-eligible; ledger fresh flow 67 (Oct 1) / 35 (Oct 2 partial).
 
 CURRENT BOTTLENECK: Supply gap (ledger flow ~35–67/day vs 100/day floor).
