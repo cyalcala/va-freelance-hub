@@ -1,5 +1,32 @@
 # System Savepoint
 
+## 2026-10-03 — PR #162 Blockers Verified: CI Green Path Confirmed (Session 40, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Verification of PR #162 Blocker Fixes (Session 35 work):**
+- `.gitleaks.toml` allowlist for 40-char hex git SHAs in `docs/SYSTEM_SAVEPOINT.md` present and correct (fixes `sourcegraph-access-token` false positives).
+- SYSTEM_SAVEPOINT.md fix entry prepended at top (not appended); MATH-12 Failure Telemetry entry restored; NEXT SINGLE ACTION filled.
+- CURRENT.md accurately states "fixes prepared locally; CI verification pending" — no false resolution claim.
+- 2-space indentation verified in `extract-shadow-dispatch-evidence.test.ts` (tests 10-12) and `extract-shadow-dispatch-evidence.ts` body (MATH-12 diagnostics block lines 181-214).
+- MATH-12 "do not assume quota exhaustion" wording preserved in `extractShadowDispatchEvidence` (line 182).
+
+**2. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,703 pass / 0 fail across 177 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+
+**3. Where we have been / are / going:**
+- Been: Session 35 delivered PR #162 blocker fixes (gitleaks, indentation, savepoint honesty) on commits 8be236a4, 4065da7f, a0fc9556.
+- Are: All 5 PR #162 blockers resolved locally; CI verification pending on push; branch ready for supervisor push.
+- Going: Supervisor pushes branch → draft PR #162 updated; CI guardrail workflow runs; if green, PR eligible for merge per MERGE_RUBRIC gates.
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). If CI passes, PR #162 merges; if red, next session addresses residual failures.
+
 ## 2026-10-03 — PR #162 Blockers Fix: gitleaks FPs, indentation, savepoint honesty (Session 35)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
