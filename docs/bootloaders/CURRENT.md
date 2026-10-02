@@ -380,4 +380,3 @@ portfolio -> adaptive control -> measured operation with drift and recovery chec
 - [EX-03 run 36277921498](https://github.com/cyalcala/va-freelance-hub/actions/runs/36277921498)
    returned HTTP 503 / `d1_quota_or_limit` at 2026-09-26T22:57:38Z (historical; superseded by the 8-failure streak above).
 
-**Follow-on unit:** Capture the actual shadow-dispatch error via tail + sanctioned EX-03 dispatch, then remediate by error class. Measured fleet requirement remains P50 202 / P90 270 active endpoints toward the 100/day floor.
