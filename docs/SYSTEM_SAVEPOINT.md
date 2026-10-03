@@ -1,6 +1,34 @@
 # System Savepoint
 
-## 2026-10-03 — Gauntlet Slice 9 Stratified Reconciliation & Gradient Live Publication: 90 Boards Scanned, Gradient Admitted & Published to D1 (5 Jobs Synced, Total 916 Lake Synced, 1,390 Live Board Total, 42 Held in Reservoir, Unvalidated Down to 8,539) (current)
+## 2026-10-03 — Gauntlet Slice 10 Stratified Reconciliation: 90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified (43 Lake Held, 32 Auto-Approved Tenants, Unvalidated Down to 8,449) (current)
+
+**Unit:** RECONCILE-SLICE-10. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 916 lake-synced opportunities live; 43 Lake QUALIFIED_READY rows held by dual-gate publication floor; 32 auto-approved tenants; 1,390 live opportunities total).
+
+**1. Delivered unit — Stratified Reconciliation Slice 10 (`bun run lake:reconcile`):**
+- **Stratified Slice Executed:**
+  - Scanned 90 boards (30 Ashby, 30 Greenhouse, 30 Lever) against the unvalidated corpus.
+  - *Outlier Admitted:* `greenhouse:trainingthestreet` (Training The Street): 3 live jobs probed, 1 QUALIFIED_READY (33.3% PH rate). Auto-admitted by Jev decision (`confidence=0.75`, deterministic threshold `ph_rate >= 20%`). Ingested 1 QUALIFIED_READY job, 2 excluded into Turso lake reservoir.
+  - *Dual-Gate Invariant Verified:* Wilson score 95% lower bound for Training The Street = 6.1% (< 20.0% publication floor due to sample size n=3). Held safely in reservoir alongside the 42 existing held rows (total 43 held). Dual-gate dry-run verification confirmed: `[AutoPublish] greenhouse:trainingthestreet: HOLD x0 ... [Queue] 43 QUALIFIED_READY row(s) held by the source gate (unauthorized source_id)`. Zero premature leakage into Cloudflare D1.
+  - *Shadow / Rejected:* 3 shadowed (`lever:payjoy` 17.9% PH, `lever:valdera` 9.1% PH, and 1 other), 86 auto-rejected (0-1.4% PH, dead/empty, or insufficient jobs).
+  - *Corpus Reduction:* Unvalidated claims reduced from 8,539 down to **8,449** (total 9,977 claims in discovery table: 32 auto_approved, 142 shadow_monitor, 1,354 auto_rejected, 8,449 discovered).
+- **Lake & Production State Post-Execution:**
+  - Auto-approved tenants: 31 -> 32 (+1 first-party admitted source).
+  - Synced to D1 from Lake: 916 opportunities.
+  - Lake reservoir: 43 held candidate jobs (dual-gate protected).
+  - Production D1 live board: 1,390 active opportunities.
+
+**2. Verification:**
+- Full test suite: 1,747 passed / 0 failed across 177 files (`bun test`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Dual-gate dry-run: Passed (`bun run scripts/lake/sync-to-d1.ts --dry-run`).
+
+**NEXT SINGLE ACTION:** Advance autonomous discovery and corpus validation: run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or domain discovery to continue surfacing first-party high-PH outliers from the remaining 8,449 unvalidated claims toward the 100 fresh qualified jobs/day floor; or proceed with SSAE-00 empirical profiling under the v6.1 sparse compute contract. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-03 — Gauntlet Slice 9 Stratified Reconciliation & Gradient Live Publication: 90 Boards Scanned, Gradient Admitted & Published to D1 (5 Jobs Synced, Total 916 Lake Synced, 1,390 Live Board Total, 42 Held in Reservoir, Unvalidated Down to 8,539) (historical)
 
 **Unit:** RECONCILE-SLICE-09. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 916 lake-synced opportunities live; 42 Lake QUALIFIED_READY rows held by dual-gate publication floor; 31 auto-approved tenants; 1,390 live opportunities total).
