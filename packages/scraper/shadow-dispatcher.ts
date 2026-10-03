@@ -352,6 +352,9 @@ export interface ShadowDispatchSummary {
   /** Sources skipped because their admission context changed or expired concurrently before persistence */
   skippedStaleContext: number;
   staleContextErrors: Array<{ sourceId: string; reason: string }>;
+  /** Sources skipped due to transient D1 quota/limit errors during observation persistence */
+  skippedQuotaError: number;
+  quotaErrors: Array<{ sourceId: string; reason: string }>;
 }
 
 function inputForContext(context: AdmissionContext): CandidateShadowInput {
@@ -433,6 +436,51 @@ export function isStaleAdmissionContextError(error: unknown): boolean {
 }
 
 /**
+ * Test whether an error indicates a transient D1 quota/limit error during
+ * observation persistence. Unlike systemic storage failures (database locked,
+ * schema mismatch, probe contract violation), a transient quota error on one
+ * source's observation write should not block other shadow sources from being
+ * observed. This isolates the failure to prevent head-of-line blocking.
+ */
+export function isTransientD1QuotaError(error: unknown): boolean {
+  if (error == null) return false;
+  let current: unknown = error;
+  const seen = new Set<unknown>();
+  while (current != null && !seen.has(current)) {
+    seen.add(current);
+    if (typeof current === "object") {
+      const entry = current as { message?: unknown; cause?: unknown };
+      if (typeof entry.message === "string") {
+        const msg = entry.message.toLowerCase();
+        if (!msg.trim().startsWith("failed query:")) {
+          if (
+            msg.includes("quota exceeded") ||
+            msg.includes("limit exceeded") ||
+            msg.includes("rate limit") ||
+            msg.includes("too many requests")
+          ) {
+            return true;
+          }
+        }
+      }
+      current = entry.cause;
+    } else {
+      const str = String(current).toLowerCase();
+      if (!str.trim().startsWith("failed query:") && (
+        str.includes("quota exceeded") ||
+        str.includes("limit exceeded") ||
+        str.includes("rate limit") ||
+        str.includes("too many requests")
+      )) {
+        return true;
+      }
+      break;
+    }
+  }
+  return false;
+}
+
+/**
  * Enumerate registry-eligible sources, validate each provider profile, run
  * SP-07's bounded shadow probe, and persist every observation. Never writes
  * outside shadow observations and host scheduling state; never
@@ -470,6 +518,8 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
     anomalies: [],
     skippedStaleContext: 0,
     staleContextErrors: [],
+    skippedQuotaError: 0,
+    quotaErrors: [],
   };
 
   const rateLimitedHosts = new Set<string>();
@@ -626,6 +676,12 @@ export async function dispatchShadowObservations(deps: ShadowDispatchDeps): Prom
         summary.staleContextErrors.push({
           sourceId: row.sourceId,
           reason: (err as Error)?.message ?? "observation admission context changed or expired",
+        });
+      } else if (isTransientD1QuotaError(err)) {
+        summary.skippedQuotaError += 1;
+        summary.quotaErrors.push({
+          sourceId: row.sourceId,
+          reason: (err as Error)?.message ?? "transient D1 quota/limit error during observation persistence",
         });
       } else {
         throw err;

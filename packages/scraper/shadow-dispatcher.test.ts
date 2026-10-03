@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   selectEligibleForDispatch, validateProviderProfileForDispatch, buildObservationRecord,
   dispatchShadowObservations, DEFAULT_MIN_REDISPATCH_MINUTES, MAX_DISPATCHES_PER_RUN,
+  isStaleAdmissionContextError, isTransientD1QuotaError,
   type DispatchProviderProfile, type DispatchRegistryRow, type ShadowDispatchDeps,
   type ShadowObservationContext, type ShadowObservationRecord,
 } from "./shadow-dispatcher";
@@ -478,5 +479,127 @@ describe("current-evidence shadow dispatcher", () => {
     expect(run2.dispatched).toBe(2);
     expect(run2.skippedRateLimitedHost).toBe(0);
     expect(probed).toEqual(["workable:agency1", "workable:agency2"]);
+  });
+});
+
+describe("isStaleAdmissionContextError", () => {
+  test("detects stale context error in D1 trigger message", () => {
+    const err = new Error("D1_ERROR: observation admission context changed or expired");
+    expect(isStaleAdmissionContextError(err)).toBe(true);
+  });
+  test("detects stale context error in error cause chain", () => {
+    const cause = new Error("observation requires a unique dispatch and current admission context");
+    const err = new Error("failed query: INSERT INTO ...");
+    (err as any).cause = cause;
+    expect(isStaleAdmissionContextError(err)).toBe(true);
+  });
+  test("ignores query wrapper messages with stale keywords", () => {
+    const err = new Error("failed query: INSERT INTO source_shadow_observations (admission_evidence_id, ...) VALUES (?)");
+    expect(isStaleAdmissionContextError(err)).toBe(false);
+  });
+  test("returns false for unrelated errors", () => {
+    expect(isStaleAdmissionContextError(new Error("database is locked"))).toBe(false);
+    expect(isStaleAdmissionContextError(new Error("quota exceeded"))).toBe(false);
+    expect(isStaleAdmissionContextError(null)).toBe(false);
+  });
+});
+
+describe("isTransientD1QuotaError", () => {
+  test("detects quota exceeded error", () => {
+    const err = new Error("D1_ERROR: quota exceeded");
+    expect(isTransientD1QuotaError(err)).toBe(true);
+  });
+  test("detects limit exceeded error", () => {
+    const err = new Error("D1_ERROR: limit exceeded");
+    expect(isTransientD1QuotaError(err)).toBe(true);
+  });
+  test("detects rate limit error", () => {
+    const err = new Error("D1_ERROR: rate limit exceeded");
+    expect(isTransientD1QuotaError(err)).toBe(true);
+  });
+  test("detects too many requests error", () => {
+    const err = new Error("D1_ERROR: too many requests");
+    expect(isTransientD1QuotaError(err)).toBe(true);
+  });
+  test("detects quota error in cause chain", () => {
+    const cause = new Error("quota exceeded");
+    const err = new Error("failed query: INSERT INTO source_shadow_observations ...");
+    (err as any).cause = cause;
+    expect(isTransientD1QuotaError(err)).toBe(true);
+  });
+  test("ignores query wrapper messages with quota keywords", () => {
+    const err = new Error("failed query: INSERT INTO source_shadow_observations (quota, limit) VALUES (?, ?)");
+    expect(isTransientD1QuotaError(err)).toBe(false);
+  });
+  test("returns false for unrelated errors", () => {
+    expect(isTransientD1QuotaError(new Error("database is locked"))).toBe(false);
+    expect(isTransientD1QuotaError(new Error("observation admission context changed or expired"))).toBe(false);
+    expect(isTransientD1QuotaError(new Error("probe contract violation"))).toBe(false);
+    expect(isTransientD1QuotaError(null)).toBe(false);
+  });
+});
+
+describe("transient D1 quota error handling in dispatcher", () => {
+  test("transient quota error during persistObservation skips source without head-of-line blocking other sources", async () => {
+    const writtenRecords: ShadowObservationRecord[] = [];
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => [registryRow({ sourceId: "source-a" }), registryRow({ sourceId: "source-b" })],
+      loadAdmissionContext: async sourceId => context(registryRow({ sourceId })),
+      persistObservation: async record => {
+        if (record.sourceId === "source-a") {
+          // Source A hits transient D1 quota limit
+          throw new Error("D1_ERROR: quota exceeded");
+        }
+        writtenRecords.push(record);
+      },
+    }));
+
+    // Source A was skipped safely due to transient quota error
+    expect(result.skippedQuotaError).toBe(1);
+    expect(result.quotaErrors).toHaveLength(1);
+    expect(result.quotaErrors[0].sourceId).toBe("source-a");
+    expect(result.quotaErrors[0].reason).toContain("quota exceeded");
+
+    // Source B was still probed and its observation was written
+    expect(result.dispatched).toBe(1);
+    expect(writtenRecords).toHaveLength(1);
+    expect(writtenRecords[0].sourceId).toBe("source-b");
+  });
+
+  test("systemic storage failures still fail closed and abort dispatch", async () => {
+    // Database locked is systemic -> aborts
+    await expect(dispatchShadowObservations(deps({
+      persistObservation: async () => { throw new Error("D1_ERROR: database is locked [code: 7500]"); }
+    }))).rejects.toThrow("database is locked");
+
+    // Probe contract violation is systemic -> aborts
+    await expect(dispatchShadowObservations(deps({
+      persistObservation: async () => { throw new Error("D1_ERROR: healthy observation requires the current probe contract and successful safety checks"); }
+    }))).rejects.toThrow("probe contract");
+  });
+
+  test("stale context error during persistObservation is handled gracefully", async () => {
+    const writtenRecords: ShadowObservationRecord[] = [];
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => [registryRow({ sourceId: "source-a" }), registryRow({ sourceId: "source-b" })],
+      loadAdmissionContext: async sourceId => context(registryRow({ sourceId })),
+      persistObservation: async record => {
+        if (record.sourceId === "source-a") {
+          // Source A hits stale context error
+          throw new Error("D1_ERROR: observation admission context changed or expired");
+        }
+        writtenRecords.push(record);
+      },
+    }));
+
+    // Source A was skipped safely due to stale context
+    expect(result.skippedStaleContext).toBe(1);
+    expect(result.staleContextErrors).toHaveLength(1);
+    expect(result.staleContextErrors[0].sourceId).toBe("source-a");
+
+    // Source B was still probed and its observation was written
+    expect(result.dispatched).toBe(1);
+    expect(writtenRecords).toHaveLength(1);
+    expect(writtenRecords[0].sourceId).toBe("source-b");
   });
 });
