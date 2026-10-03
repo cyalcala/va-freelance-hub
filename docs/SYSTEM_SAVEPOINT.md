@@ -1,5 +1,53 @@
 # System Savepoint
 
+## 2026-10-03 — MATH-03 Ashby Parser Edge Case Coverage: 28 New fetchAshby Tests (Headless Relay Session 68, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Tech lead focus acknowledged — Supply bottleneck unit delivered:**
+- Fresh first-published flow ~36/day vs 100/day floor (gap -64/day) per prior evidence.
+- Active unit: MATH-03 marginal source portfolio coverage — Ashby parser robustness.
+- **This session:** Added 28 comprehensive edge case tests to `packages/scraper/ashby.test.ts` covering Ashby API response variations that affect supply quality and deduplication correctness.
+
+**2. Changes Delivered (VERIFIED_LOCAL):**
+- **Commit `a7d05324`**: `packages/scraper/ashby.test.ts` — 28 new tests added (210 net lines), covering:
+  - Location handling: object with name, string, missing, empty string
+  - isRemote explicitly false → onsite signal in locationRaw
+  - isListed missing → defaults to true per filter logic
+  - Whitespace-only title/jobUrl → pass filter but normalize to empty string
+  - applyUrl null/undefined → applicationUrl = null
+  - publishedAt in various ISO formats and timezone offsets (PDT → UTC)
+  - Multiple jobs with mixed validity (filtered correctly)
+  - atsJobId whitespace trimming and whitespace-only → undefined
+  - Robust parsing with extra unexpected fields ignored
+  - Large response (500 jobs) performance
+  - Empty jobs list → empty array
+  - HTTP 404/429/401 → throws with status
+  - Non-string id (number) → treated as undefined
+  - Description generation with various location/remote combinations
+
+**3. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,801 pass / 0 fail across 173 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+- `git diff --check`: Clean.
+- Reading gate: All 11 required files read; `.shift/reading-068.md` recorded.
+
+**4. Scope Compliance:**
+- Only `packages/scraper/ashby.test.ts` modified (non-hold test file).
+- No hold-list paths touched (publication-gateway, policy-resolver, geoGate, triage, robots*, jev-client, shadow-verdict, admission-evidence, source-lifecycle, source-admission*, sync-to-d1, auto-publish-policy, enroll/reconcile/run-lake-miner, api/cron/**, migrations, workflows, package.json, bun.lock, bunfig.toml, ACCEPTED_PARAMETERS.yaml, CONSTITUTION.md, docs/decisions/**, docs/governance/**, packages/scraper/paused-sources.json|sources.ts).
+
+**5. Where we have been / are / going:**
+- Been: Sessions 50-57 resolved PR #162 blockers, validated Ashby shadow probe format (54), shadow dispatcher same-host behavior (55), canary admission pipeline tests (56), gitleaks/honesty corrections (57).
+- Are: Ashby parser edge case coverage complete (28 new tests); test suite at 1,801 tests.
+- Going: Supervisor pushes branch `opencode/shift-20261002-2118` and verifies CI green on `ci-guardrail` workflow. Next session observes gha-lake-miner.yml run logs and lake_runs ledger for yield evidence, correlates with EX-03 503 pattern, and continues MATH-03 portfolio coverage work toward admitting Ashby candidates to shadow/canary.
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). If CI passes, PR merges; if red, next session addresses residual failures.
+
 ## 2026-10-03 — Correction Savepoint: PR #162 Blocker Fixes Reverted and Honesty Restored (Headless Relay Session 57, Shift 20261002-2118)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
