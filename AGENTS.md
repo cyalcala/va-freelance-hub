@@ -93,7 +93,7 @@ precedence; source-domain precedence is defined in the masterplan:
 11. current evidence and generated `docs/*-latest.md` operational reports
 
 Canonical prompt entry points are `docs/bootloaders/MAINTAINER_BOOTLOADER.md`
-(v6.2), `MASTER_OPERATING_PROMPT.md` and `EXECUTION_PROMPT.md` (v6.1), and the
+(v6.3), `MASTER_OPERATING_PROMPT.md` and `EXECUTION_PROMPT.md` (v6.3), and the
 navigation-only `docs/bootloaders/CURRENT.md`. For source expansion, also read
 `docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md` and the complete
 `docs/directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md` after recovering

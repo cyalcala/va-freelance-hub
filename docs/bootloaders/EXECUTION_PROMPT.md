@@ -1,6 +1,6 @@
 # VA Freelance Hub — reusable execution prompt
 
-Version 6.1 · 2026-10-03 · PH remote priority and SSAE-CED companion to `MASTER_OPERATING_PROMPT.md`.
+Version 6.3 · 2026-10-04 · Implementation-led urgent PH/VA delivery companion to `MASTER_OPERATING_PROMPT.md`.
 
 Human intake companion: [Human Research Intake Plan v5.3](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
 PH source companion: [priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
@@ -12,6 +12,21 @@ and [complete directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPA
 
 This is a reusable instruction template. Its presence in the repository does not
 start work or grant new production authority. Use it with a concrete user task.
+
+Ready-to-use continuous implementation TASK (replace the placeholder with this):
+
+> Continuously implement SSAE-CED improvements in small verified slices; measure
+> during delivery. Prioritize my submitted Filipino/VA hiring resources, recover
+> the most recent lead and resolve its precise delay to eligible public visibility.
+> Follow master section 10D and the v6.3 maintainer bootloader. Preserve source and
+> item gates, accepted parameters, budgets and the existing publication gateway.
+> Work within my authorized implementation/release scope. Continue dependency-ready
+> work through applicable acceptance, checkpoint pending observations, and leave
+> the next exact action for another model when the host session ends. No new paid
+> services, provider switches or background supervisor are authorized by this TASK.
+
+A prompt cannot itself relaunch a model. Use the bootloader's reentry packet with
+an existing authorized host/supervisor, or paste it into the next session.
 
 Copy the following prompt into a new session and replace the task line:
 
@@ -72,6 +87,12 @@ Recover before acting:
 4. Choose RECOVER, AUDIT, PLAN or EXECUTE from the actual request. Documentation
    work may edit its deliverables; it does not execute their embedded commands.
    Continue useful authorized work without repeatedly asking for permission.
+
+Apply master section 10D for implementation-led work and urgent owner PH/VA
+submissions. Implement and measure in the same bounded loop; do not wait for
+unrelated cohort research to publish qualified jobs on an authorized path.
+Retain required canary/cutover windows and record stage latency/expiry losses.
+The bootloader's host limits and session-reentry semantics apply.
 
 Establish reality:
 - Inventory relevant paths and trace entrypoint -> actual call path -> storage

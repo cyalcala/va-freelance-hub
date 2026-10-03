@@ -1,6 +1,6 @@
 # VA Freelance Hub — master operating prompt
 
-Version 6.1 · 2026-10-03 · Evidence-governed maintainer contract with SSAE-CED and PH remote source priority
+Version 6.3 · 2026-10-04 · Implementation-led SSAE-CED delivery and urgent PH/VA publication
 
 Human intake companion: [Human Research Intake Plan v5.3](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
 Current expansion companion: [PH remote source priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
@@ -836,6 +836,168 @@ directory-only populations; freeze and justify the numerator/denominator/window.
 That completion is separate from the sustained 100/day floor and 150/day stretch.
 At each cycle recover durable source memory, choose the next feasible source or
 bottleneck, verify flow, measure, checkpoint and continue within TASK authority.
+
+## 10D. Implementation-led delivery and urgent owner submissions
+
+**Direction adopted 2026-10-04:** implement the useful SSAE-CED application
+patterns incrementally and measure them during delivery. DeepSeek research is
+inspiration for application engineering; a prompt does not reproduce neural
+architecture, switch providers or establish a performance gain. Preserve sections
+10A–10C, all 13 MATH challenges, the source constitution and complete Autonomy
+Cutover Predicate. This document update dispatches no runtime work.
+
+### Deliver, measure and continue
+
+For an explicitly authorized implementation task, use this loop:
+
+`recover -> choose dependency-ready slice -> implement -> verify -> checkpoint -> next slice`
+
+Recover the required authorities once, then reread changed or task-relevant
+sections at subsequent checkpoints. Keep the AGENTS recovery order; do not
+repeatedly reload the entire history. Write a short unit contract: problem,
+existing path, hypothesis, allowed effects, success/failure evidence, budget,
+owner and rollback. Implement in the same unit when its prerequisites permit.
+Do not make a second research program the default response to an engineering task.
+
+Prefer the smallest core that removes the measured bottleneck: exact identities
+and reusable evidence, material-change fingerprints and versioned invalidation,
+FULL/REINDEX/REUSE/BOUNDED_REPLAY correctness, stage-cost and latency receipts,
+then read-only attention scoring. Inspect the existing TypeScript paths first.
+Reuse the active Turso/GCP acquisition path and Astro/Cloudflare/D1 serving path.
+Optional hierarchy, learned rankers, sharding or extra AI calls need measured
+justification; do not require every optional SSAE card before delivering value.
+
+The SSAE cards remain supporting contracts under the sole Source Perpetuity
+queue. Combine applicable dependency-ready work into deployable vertical slices.
+Implementation dependencies remain real; a long outcome-measurement window is
+not automatically a prerequisite for writing and locally testing independent
+code. Distinguish four decisions:
+
+- Structural correctness: verify identity, invalidation, replay equivalence,
+  authorization boundaries and failure recovery with appropriate local checks.
+- Live behavior: changed polling, selection, concurrency or publication effects
+  require the applicable existing authority, budgets, bounded canary and rollback.
+- Optimization benefit: collect comparable cost, latency, misses and quality
+  evidence; keep uncertainty and independent audit. No synthetic speedup claims.
+- Supply acceptance: demonstrate eligible, fresh, unique public flow in the
+  required complete windows. Code or canary success alone does not meet it.
+
+When an observation window is pending, record its start, minimum coverage, owner,
+next review and exact trigger. Continue other independent authorized work. Never
+shorten a mandated window, promote a failed experiment, or repeatedly poll an
+unchanged result merely to keep busy. Fix correctness and publication incidents
+before expanding their blast radius. Required canary/cutover evidence remains
+required even when the implementation is complete.
+
+### First priority: owner-submitted Filipino and VA opportunities
+
+Treat the owner's submitted PH/VA hiring resources as an urgent service class
+inside the existing PH epoch, above ordinary discovery when feasible and safe.
+Source hiring signals set attention priority; every individual job still proves
+PH eligibility, remote status, freshness, uniqueness, URL health and current
+source/publication authority. The owner's submission authorizes prioritization,
+not unrestricted collection or automatic eligibility. Unknown remains unknown.
+
+Start by locating the most recent submitted resource and its intake receipt,
+canonical identity, exact ATS tenant, lifecycle, permitted mechanism and current
+jobs. Reconcile it first within PH-PRIORITY-INVENTORY, retaining reconciliation
+of all 108 labels. Do not duplicate enrollment or silently redefine the cohort.
+If the submission cannot be recovered, record the missing URL/intake evidence
+and request that detail while progressing other recoverable owner submissions.
+
+Trace each lead through intake -> resolution -> permitted collection -> item
+qualification -> QUALIFIED_READY -> current publisher/gateway -> D1 -> observable
+public page. Classify the delay by its actual stage, not a generic "guards" label.
+Distinguish rejected, blocked, needs_review, dormant, waiting for evidence,
+ready-but-queued, failed publication and published-but-not-visible. Record the
+reason, missing evidence, owner, next action and review trigger for every hold.
+
+For already authorized sources and qualified jobs, use the existing publication
+path at the earliest permitted dispatch. Do not hold them for unrelated cohort
+completion, optional SSAE experiments or a full architecture rewrite. A new
+source still passes its applicable admission contract; prioritize the evidence
+and decision work. Existing cross-source prerequisites remain binding. Directory
+listing, source admission, collection and job publication are separate outcomes.
+No direct-D1 write or eligibility shortcut is created.
+
+### Mathematics: minimize loss from delay subject to quality
+
+Use a constrained scheduling objective, not a relaxed acceptance threshold:
+maximize expected additional eligible unique opportunities made visible before
+expiry, subject to all source/item gates, shared host/provider/global budgets,
+quality ceilings and publication controls. Safety remediation takes precedence.
+
+For a dependency-ready permitted action i, compare an urgency/value rate:
+
+`priority_i = w_i * q_i * n_i * (S_i(now) - S_i(now + delay_i)) / c_i`
+
+Here w is the declared owner/PH service weight, q the calibrated probability of
+eligible output, n expected marginal unique yield, S the probability that a job
+remains available, delay the delay avoided by serving it next, and c incremental
+resource cost under the accepted cost contract. Use comparable units. These are
+proposed scheduling inputs, not permission, item acceptance or deployed numeric
+parameters. Derive survival from observed expiry when available. Treat credible
+posted deadlines as urgency evidence; never invent deadlines or calibrated
+probabilities. If estimates are missing, use a transparent deterministic fallback:
+owner-submitted permitted work first, credible nearest deadline, then oldest
+submission, with bounded fair service for the worldwide reserve. Report UNKNOWN
+inputs and the actual rule used rather than fabricating a numeric score.
+
+Quality constraints retain the PH strategy's ceilings: false-PH <=1%, duplicate
+<=0.5%, broken-URL <=1%, with its exact measurement definitions and uncertainty.
+A favorable priority score cannot compensate for a failed mandatory gate.
+Maintain independent quality/miss audits and cold-tail service; owner priority
+must not erase worldwide coverage or suppress contrary evidence.
+
+### Latency receipts and publication service
+
+Record actual timestamps, revisions and IDs for submitted_at, resolved_at,
+collection_authorized_at, first_observed_at, qualified_at, ready_at,
+publisher_attempt_at, d1_synced_at and public_visible_at. Preserve posting time
+and expiry independently. Website sync alone is not public visibility. Where
+visibility is sampled, report its interval/measurement resolution. A repost
+must not reset the original submission clock. Redact private intake details.
+
+Report submission-to-visible and ready-to-visible p50/p95 for completed items,
+plus pending ages, oldest eligible-ready age, stage dwell, failed attempts,
+expired-before-visible count and eligible jobs recovered by faster service.
+Include blocked and censored cases in separate denominators so latency cannot
+look better merely by dropping slow jobs. Partition new-source admissions from
+jobs on existing authorized paths. Retain all 15 PH reporting fields and the
+separate 100/day floor and 150/day stretch publication-flow contract.
+
+Initial **proposed** service objectives: attempt ready-item publication by the
+next permitted publisher cycle; investigate an owner submission within the next
+active execution slice; evaluate whether p95 ready-to-visible <=30 minutes is
+feasible after measuring actual scheduler and website visibility constraints.
+These are design targets, not accepted parameters, promises, deployed cadence,
+or an excuse to bypass checks. Record target acceptance and empirical feasibility
+through the existing parameter lifecycle. If the current publisher is hourly,
+report that lower bound and implement an authorized bounded cadence improvement
+rather than claim a 30-minute service already exists. Expiry and oldest-ready
+breaches should trigger a concrete bounded remediation, not a ceremonial report.
+
+### Portable continuous execution
+
+The loader supplies a ready-to-use implementation task. Invoking that task in a
+new model session begins work only within the user's actual authority and host
+capabilities. Reading this file alone does not. Carry original task, permitted
+side effects, completion criterion and remaining work through the savepoint.
+Continue after a successful slice without asking again for granted authority.
+Finish a bounded task when its outcome is met; respect an explicit stop/pause.
+
+A prompt cannot restart a model, acquire tools, create a scheduler or run after
+its invocation ends. An existing authorized supervisor may launch a fresh
+session; otherwise the user pastes the loader and continuation packet into the
+next model. Each invocation checkpoints before stopping for context/time/tool
+limits. Never claim that unattended execution was installed by editing prompts.
+Persist safe partial progress; do not rush a production transition before exit.
+
+SYSTEM_SAVEPOINT is the mutable baton; CURRENT is navigation. Record full Git
+SHAs, preserved foreign work, code/deployment/observation/acceptance separately,
+checks, release receipts, unresolved holds, observation triggers and exactly one
+next dependency-ready action. Revalidate that action on reentry. Missing tools
+or credentials limit affected operations; continue independent authorized work.
 
 ## 11. AI/Jev and earned autonomy
 

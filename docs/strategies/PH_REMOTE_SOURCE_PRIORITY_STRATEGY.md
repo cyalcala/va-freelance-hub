@@ -29,6 +29,19 @@ current source-specific authority and complete item publication predicates remai
 binding. The current user's task determines which side effects are authorized.
 A bootloader/documentation edit does not dispatch the commands in the directive.
 
+### Owner-submission urgency overlay — 2026-10-04
+
+Within this cohort, owner's submitted Filipino/VA hiring leads receive first
+feasible service. Apply [master section 10D](../bootloaders/MASTER_OPERATING_PROMPT.md#10d-implementation-led-delivery-and-urgent-owner-submissions)
+for expiry-aware attention, explicit stage holds, submission-to-visible latency
+receipts and implementation-led improvement. Resolve those leads first within
+PH-PRIORITY-INVENTORY; retain the complete cohort and existing source/item gates.
+Qualified jobs on already authorized paths need not wait for unrelated inventory
+or optional architecture work. New admissions retain applicable prerequisites.
+The initial 30-minute p95 ready-to-visible objective remains PROPOSED pending
+scheduler measurement and accepted parameters. No runtime cadence, permission,
+quality ceiling or source lifecycle changes are activated by this update.
+
 ## Complete supplied cohort
 
 These are **108 submitted labels**, not 108 verified companies, tenants or

@@ -1,5 +1,43 @@
 # System Savepoint
 
+## 2026-10-04 — Implementation-led prompts and urgent owner PH/VA service (documentation only)
+
+**Unit:** PROMPT-IMPLEMENTATION-URGENCY-V6.3. **Mode:** bounded documentation.
+**Status:** TERMINAL / KEEP for the local documentation deliverable; branch backup pending below.
+**Start SHA:** ff03991b4fb5d4569203d265648c3f21faf5049f.
+**Fetched origin/main:** bcd26e4856fafb108f7eecefe3a8372f612792eb.
+**Branch:** codex/ph-remote-priority-bootloader. Divergence preserved; no pull/reset.
+**Foreign work:** untracked .agents/skills/ preserved and excluded from this unit.
+
+**Deliverable:** canonical master, loader and execution wrapper v6.3; incremental
+implementation/measurement loop; first feasible service for owner-submitted
+Filipino/VA leads; expiry-aware constrained priority; stage latency receipts and
+portable continuation packet. Supporting PH strategy/SSAE plan/navigation aligned.
+The original directive, source constitution, admission/cutover, publication and
+quality controls remain binding. No runtime state, cadence or admission changed.
+
+**Maturity:** documented design only. The reported resource's URL/intake receipt,
+source status, actual publication delay, all 15 runtime report counts and new
+latency/quality measurements are UNKNOWN. The 30-minute p95 ready-to-visible goal
+is PROPOSED pending feasibility and parameter acceptance. A prompt does not
+install a host capable of restarting sessions or unattended execution.
+
+**Review:** [implementation/urgency review](audits/2026-10-04-IMPLEMENTATION-URGENCY-PROMPT-REVIEW.md).
+Jev attempted once, HTTP 401; direct review used, no Jev verdict claimed.
+**Verification:** document links, fence balance, UTF-8, all three v6.3 versions and git diff --check passed. Bun audit:guardrails, audit:parameters and audit:constitution passed. Constitution warnings retain replay-flag/SQL coverage, concentration enforcement, provisional CV threshold and absent live queue-reading limitations; no runtime acceptance claimed.
+**Release/backup:** payload commit and branch push pending; CI receipt to be appended after observation.
+
+**Next single action:** at the next authorized implementation/source-expansion
+invocation, begin PH-PRIORITY-INVENTORY by recovering the most recent owner-submitted
+PH/VA hiring lead and tracing its exact stage hold with read-only current evidence.
+Keep the complete cohort reconciliation contract. Then resolve the measured
+bottleneck through the smallest dependency-ready authorized slice. Existing
+qualified jobs on authorized paths need not await unrelated cohort completion.
+If the reported URL/intake cannot be recovered, request that detail and progress
+other recoverable submissions. Owner/controller: maintainer; trigger: authorized
+execution invocation with needed repository/runtime access. No live work is
+activated by this documentation checkpoint.
+
 ## 2026-10-03 — PH Remote Priority Bootloader and Recovery Integration (current documentation; runtime not remeasured)
 
 **Unit:** `PROMPT-PH-PRIORITY-V6`. **Mode:** bounded documentation update.
@@ -7103,4 +7141,3 @@ curl -I https://remotejobs-ph.pages.dev/opportunities
 Use read-only D1 queries for data checks. Never mutate production data during an
 audit unless the task explicitly calls for a migration or repair and the change
 has been backed up in Git.
-

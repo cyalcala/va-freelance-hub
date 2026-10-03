@@ -38,6 +38,24 @@ missing evidence; successful ranker benefit is not a prerequisite for collecting
 labels. LIMITED supplies no rollout acceptance or authority to probe. Rebuild
 the dataset and repeat the affected evaluation after measurement matures.
 
+## Implementation-led delivery rule — 2026-10-04
+
+Apply [master section 10D](../bootloaders/MASTER_OPERATING_PROMPT.md#10d-implementation-led-delivery-and-urgent-owner-submissions).
+Cards define evidence/dependencies, not 16 serial waiting periods. Deliver small
+vertical slices with profiling/invalidation/mode checks and receipts alongside
+code; combine applicable cards when their real prerequisites pass. Local
+correctness does not prove rollout or optimization benefit. Keep existing
+selector/allocator prerequisites, bounded canaries, independent quality audit,
+mandatory observation windows and source cutover gates. Continue independent
+implementation while outcome windows mature; do not relabel cards accepted.
+
+Owner-submitted PH/VA leads receive first feasible service within PH inventory.
+Measure submission-to-visible stage delays and expiry loss. Qualified jobs on
+already authorized paths use the earliest permitted existing publication dispatch
+without waiting for unrelated cohort research. New-source admissions retain their
+applicable prerequisites. No scheduling parameters or runtime states are changed
+by this delivery rule; every initial card remains PROPOSED.
+
 ## Dependency outline
 
 ### PH priority cohort mapping — supporting contracts only
