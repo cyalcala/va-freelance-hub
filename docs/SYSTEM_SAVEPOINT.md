@@ -1,5 +1,55 @@
 # System Savepoint
 
+## 2026-10-03 — MATH-03 ATS Parser Edge Case Coverage: 117 New Tests for Lever, Greenhouse, Workable, Breezy (Headless Relay Session 69, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Tech lead focus acknowledged — Supply bottleneck unit delivered:**
+- Fresh first-published flow ~36/day vs 100/day floor (gap -64/day) per prior evidence.
+- Active unit: MATH-03 marginal source portfolio coverage — ATS parser robustness across all major providers.
+- **This session:** Added 117 comprehensive edge case tests across four ATS parsers (Lever: 28, Greenhouse: 26, Workable: 30, Breezy: 33) covering API response variations that affect supply quality and deduplication correctness.
+
+**2. Changes Delivered (VERIFIED_LOCAL):**
+- **Commit `2b2ab96d`**:
+  - `packages/scraper/ats.ts` — Exported `fetchLever`, `fetchGreenhouse`, `fetchWorkable` for testability
+  - `packages/scraper/lever.test.ts` — 28 new tests (new file)
+  - `packages/scraper/greenhouse.test.ts` — 26 new tests (new file)
+  - `packages/scraper/workable.test.ts` — 30 new tests added (fetchWorkable widget API parser)
+  - `packages/scraper/breezy-feed.test.ts` — 33 new tests added (fetchBreezy parser)
+  - Total: 117 new edge case tests covering:
+    - Location handling: missing, null, empty, object/string variations, workplaceType/telecommuting signals
+    - Date parsing: various ISO formats, timezone offsets (PDT → UTC), missing/invalid dates
+    - Field filtering: missing title/url, whitespace-only values (pass filter, normalize to empty)
+    - HTTP error handling: 404, 429, 401, 503 throw with status
+    - Payload validation: non-array responses, missing jobs property
+    - Content hash: standard hash stability, different title/URL produce different hashes
+    - Large responses: 500 jobs performance/memory
+    - Mixed validity: multiple jobs with mixed filter results
+    - Robust parsing: extra unexpected fields ignored
+    - Description/payRange: truncation, fallback, HTML stripping, missing fields
+
+**3. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,903 pass / 0 fail across 180 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+- `git diff --check`: Clean.
+- Reading gate: All 11 required files read; `.shift/reading-069.md` recorded.
+
+**4. Scope Compliance:**
+- Only `packages/scraper/` non-hold files modified (ats.ts export, test files).
+- No hold-list paths touched (publication-gateway, policy-resolver, geoGate, triage, robots*, jev-client, shadow-verdict, admission-evidence, source-lifecycle, source-admission*, sync-to-d1, auto-publish-policy, enroll/reconcile/run-lake-miner, api/cron/**, migrations, workflows, package.json, bun.lock, bunfig.toml, ACCEPTED_PARAMETERS.yaml, CONSTITUTION.md, docs/decisions/**, docs/governance/**, packages/scraper/paused-sources.json|sources.ts).
+
+**5. Where we have been / are / going:**
+- Been: Sessions 50-57 resolved PR #162 blockers, validated Ashby shadow probe format (54), shadow dispatcher same-host behavior (55), canary admission pipeline tests (56), gitleaks/honesty corrections (57). Session 68 added 28 Ashby parser edge case tests.
+- Are: ATS parser edge case coverage complete across all 4 major providers (Lever, Greenhouse, Workable, Breezy + Ashby); test suite at 1,903 tests.
+- Going: Supervisor pushes branch `opencode/shift-20261002-2118` and verifies CI green on `ci-guardrail` workflow. Next session observes gha-lake-miner.yml run logs and lake_runs ledger for yield evidence, correlates with EX-03 503 pattern, and continues MATH-03 portfolio coverage work toward admitting Ashby candidates to shadow/canary.
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). If CI passes, PR merges; if red, next session addresses residual failures.
+
 ## 2026-10-03 — MATH-03 Ashby Parser Edge Case Coverage: 28 New fetchAshby Tests (Headless Relay Session 68, Shift 20261002-2118)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
@@ -1312,7 +1362,7 @@ admission for discovered tenants per ADR-007.
 
 ## 2026-09-27 — Empirical Manila Daily Flow Measurement, MATH-06A Publication Authority Closure & Canonical Strategy V2
 
-**Mode:** EXECUTE, Empirical Measurement, Governance Repair (MATH-06A / F1, F2, F4), Strategy Alignment.  
+**Mode:** EXECUTE, Empirical Measurement, Governance Repair (MATH-06A / F1, F2, F4), Strategy Alignment.
 **Authorization:** User directive under Maintainer Bootloader v5.2: "Proceed and all continue with the bootloader as always. Also ruminate and factor these thoughts and see how we are going and make an action about this, convo from chatgpt session... craft a mathematical strategy about addressing the newly graduated companies from canary why i am not feeling and seeing it on published sites everyday I graduated them last september 24, craft a strategy then address this and resolve this."
 
 **1. Empirical Manila-Day Publication Measurement (D1 Truth, Zero Theater):**

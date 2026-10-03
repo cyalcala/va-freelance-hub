@@ -1,5 +1,16 @@
 # Current resume pointer
 
+## Session 69 MATH-03 ATS Parser Edge Case Coverage: 117 New Tests for Lever, Greenhouse, Workable, Breezy (Headless Relay Session 69, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus: Supply bottleneck unit delivered — 117 comprehensive edge case tests added across 4 ATS parsers (Lever, Greenhouse, Workable, Breezy) for API response variations.
+- Scope compliance: Only `packages/scraper/` non-hold files modified (ats.ts export + 4 test files). No hold-list paths touched.
+- Local checks pass: 1,903 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build successful.
+- Required reading gate satisfied: all 11 required files read; `.shift/reading-069.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes.
+
 ## Session 68 MATH-03 Ashby Parser Edge Case Coverage: 28 New fetchAshby Tests (Headless Relay Session 68, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
