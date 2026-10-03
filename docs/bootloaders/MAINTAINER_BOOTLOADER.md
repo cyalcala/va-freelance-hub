@@ -137,7 +137,8 @@ commit chains; use the finite payload/evidence pair rule in master section 10D.
 At every checkpoint state the SSAE/source/MATH unit, mechanism implemented,
 actual cost/latency/quality/supply effect or UNKNOWN, remaining dependency and
 next smallest adoption step. Prefer useful progress per time/compute; green CI
-and one commit are checkpoints, not completion of the continuing program. Do not ask again for authority already granted; do not
+and one commit are checkpoints, not completion of the continuing program.
+Do not ask again for authority already granted; do not
 claim a push, deployment, schedule or publication without its receipt. Honor
 current collaboration rules and ownership; do not invent available subagents.
 

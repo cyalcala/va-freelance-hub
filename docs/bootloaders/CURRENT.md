@@ -5,6 +5,8 @@ not policy, a runtime health report or a dispatch command.
 
 The v6.3 payload c61ad57e0bc69886febc5d2c75326a925ff40296 is backed up in draft
 PR #166; Sovereign CI Guardrail run 37162690459 passed; production deploy was skipped.
+The mandatory-backup follow-up 1f1c29e837f88607d75a3e9fcd15c6f590e7b97e is
+also verified remotely; CI run 37162923409 passed with production deploy skipped.
 The prior PH-priority backup is also in draft PR #166 on `codex/ph-remote-priority-bootloader`.
 Payload/evidence commits `ec576409cee99e60899831862c586f68562ff2c0` and
 `ff4be62061d22f5e79ca5b448c8541540731b39f` passed Sovereign CI Guardrail runs
