@@ -1,3 +1,19 @@
+## 2026-10-04 — Session 29 SSAE-05 Offline Hardening Tests Committed (session 29)
+
+**Unit:** SSAE-05 offline hardening (test-only follow-on per tech-lead focus). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — committed at `a8131c87` (33 commits ahead of origin/main `4d2e61c2`).
+
+**Session 29 Work:**
+- Reading gate: `.shift/reading-029.md` written (untracked)
+- Completed REQUIRED READING GATE (all 14 required files read)
+- Added deterministic tests for `compareSelectorOutputs` helper (9 tests): agreement classification (BOTH_SELECTED/CONTROL_ONLY/TREATMENT_ONLY/NEITHER), Jaccard overlap rate, Spearman rank correlation, mode agreement rate, excluded source handling, cold revisit handling, empty inputs, single source edge case
+- Added deterministic tests for `runMultiEpochShadowDecisions` (4 tests): multiple epochs, missing snapshot skip, empty snapshot skip, holdout split label propagation
+- All acceptance criteria met: 1,953 pass / 0 fail; `bun run typecheck` clean; all 4 audits pass (guardrails, parameters, orchestrator, constitution)
+- No SQL mutations, no network/prod mutations, no hold-list edits
+- Reading gate: `.shift/reading-029.md` written (untracked); no forbidden SQL patterns in added lines
+
+**NEXT SINGLE ACTION:** SSAE-06 mature labels -> refresh SSAE-01 and repeat SSAE-04/05 evaluation. Owner/controller: maintainer; trigger: completion of SSAE-06 measurement contracts maturation.
+
+---
 ## 2026-10-04 — Session 25 SSAE-05 Shadow Decisions Helper + SSAE-06 Contracts Committed (session 25)
 
 **Unit:** SSAE-05 (Finish shadow-decisions helper) + SSAE-06 (Measurement contracts). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — committed at `bad9f196` (30 commits ahead of origin/main `4d2e61c2`).

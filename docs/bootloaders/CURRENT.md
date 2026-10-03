@@ -1,11 +1,11 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift (session 25). This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 29). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [../SYSTEM_SAVEPOINT.md].
-The latest checkpoint is "Session 25 SSAE-05 Shadow Decisions Helper + SSAE-06 Contracts Committed (session 25)."
-SSAE-05 (VERIFIED_CODE, no runtime change) complete — shadow decisions at scripts/lake/shadow-decisions.ts + deterministic fixtures/tests at scripts/lake/shadow-decisions.test.ts (30 tests) + compareSelectorOutputs helper committed.
+The latest checkpoint is "Session 29 SSAE-05 Offline Hardening Tests Committed (session 29)."
+SSAE-05 (VERIFIED_CODE, no runtime change) complete — shadow decisions at scripts/lake/shadow-decisions.ts + deterministic fixtures/tests at scripts/lake/shadow-decisions.test.ts (43 tests) + compareSelectorOutputs helper + runMultiEpochShadowDecisions tests committed.
 SSAE-06 (PROPOSED, VERIFIED_CODE, no runtime change) complete — measurement contracts at docs/audits/2026-10-04-SSAE-06-MEASUREMENT-CONTRACTS.md.
 SSAE-04 (PROPOSED, VERIFIED_CODE, no runtime change) complete — holdout evaluation at docs/audits/2026-10-04-SSAE-04-TEMPORAL-HOLDOUTS.md + deterministic fixtures/tests at scripts/lake/temporal-holdout-eval.test.ts (24 tests).
 SSAE-03 (PROPOSED, VERIFIED_CODE, no runtime change) complete — ranker created at scripts/lake/source-ranker.ts with 42 tests.
@@ -13,7 +13,7 @@ SSAE-02 (PROPOSED, VERIFIED_CODE, no runtime change) complete — contract creat
 SSAE-01 (PROPOSED, VERIFIED_CODE, no runtime change) complete — dataset card created at docs/audits/2026-10-04-SSAE-01-ATTENTION-DATASET-CARD.md.
 SSAE-00 (PROPOSED, VERIFIED_CODE, no runtime change) complete.
 MATH-06A (OPEN, evidence only, VERIFIED_CODE) complete — inventory fixed against HEAD `b6736aeecec8`, 42 tests pass.
-MATH-12 (24 tests) passes; full suite 1,940 pass; audits clean.
+MATH-12 (24 tests) passes; full suite 1,953 pass; audits clean.
 MATH-05 register state: OPEN (fixtures verified, import fix applied, VERIFIED_CODE).
 MATH-09 register state: OPEN (ASHBY_CONTENT_HASH removed, gap fixture added, VERIFIED_CODE).
 
