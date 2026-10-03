@@ -1,5 +1,34 @@
 # System Savepoint
 
+## 2026-10-04 — MATH-12 Stage-Aware Replay Fixtures Added (session 4)
+
+**Unit:** MATH-12. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — test file passes 24/24, full suite 1,830 pass, audits clean.
+
+**MATH-12 Delivered — Stage-Aware Replay Fixtures:**
+- Added 9 new fixture tests to `scripts/diagnostics/extract-shadow-dispatch-evidence.test.ts` (total 24 tests, was 15):
+  1. `reports no_observation when eligible > 0 but dispatched = 0` — 5 eligible, 3 skippedIneligible, 2 skippedStaleContext correctly classified as no_observation.
+  2. `classifies run-cap skip as no_observation when eligible > 0 but dispatched = 0` — 6 eligible, runCapReached=true, capLimit=4 correctly yields no_observation.
+  3. `extracts failureStage persist_observation in 503 with fingerprint` — D1 operation stage with fingerprint yields generic_class_with_fingerprint and stage-specific nextAction.
+  4. `extracts failureStage run_probe in 503 with fingerprint` — Pages resource stage with fingerprint yields generic_class_with_fingerprint and stage-specific nextAction.
+  5. `extracts failureStage enumerate_registry in 503 with fingerprint` — D1 operation stage with fingerprint.
+  6. `extracts failureStage load_observation_history in 503 with fingerprint` — D1 operation stage with fingerprint.
+  7. `extracts specific error class d1_constraint_violation with failureStage and sourceId` — specific_class_with_fingerprint outcome with ashby:gradient source.
+  8. `extracts specific error class d1_probe_contract_violation with failureStage` — specific_class_with_fingerprint with workable:global source.
+  9. `handles 503 with d1_busy_or_locked specific class and fingerprint` — specific_class_with_fingerprint with greenhouse:canonical source.
+
+**Verification:**
+- `bun test scripts/diagnostics/extract-shadow-dispatch-evidence.test.ts`: 24 pass / 0 fail
+- Full test suite: 1,830 passed / 0 failed across 180 files (`bun test`)
+- Typecheck: Clean (`bun run typecheck`, exit 0)
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0)
+- Constitution audit: Passed with known warnings (`bun scripts/ci/audit-constitution.ts`)
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`)
+- SQL mutation grep: Clean for diagnostic code changes (no mutations in test code)
+
+**NEXT SINGLE ACTION:** Proceed to SSAE-00 profile contract doc (`docs/audits/2026-10-04-SSAE-00-PROFILE-CONTRACT.md`) per tech lead foundation wave order. Owner/controller: maintainer; trigger: next authorized session.
+
+---
+
 ## 2026-10-04 — MATH-05 Metric Cohort Separation Fixtures Added + MATH-09 Identity Fixtures: ASHBY_CONTENT_HASH Removed, fingerprint_hash Gap Pinned (current)
 
 **Units:** MATH-05, MATH-09. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — both test files pass, full suite 1,821 pass, audits clean.
