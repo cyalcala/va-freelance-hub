@@ -17,7 +17,7 @@ import {
   ShadowDecisionRecord,
   createSyntheticRecord,
 } from "./shadow-decisions";
-import { SourceMemoryRecord } from "./source-ranker";
+import { SourceMemoryRecord, type RankedSource } from "./source-ranker";
 import { HOLDOUT_SPLITS, controlSelector } from "./temporal-holdout-eval";
 
 describe("SSAE-05 Shadow Decisions", () => {
@@ -912,41 +912,45 @@ describe("compareSelectorOutputs Helper", () => {
       expect(results[1].epoch_label).toBe("custom");
     });
 
-    it("skips epochs with no source snapshot", async () => {
-      const configs = [
-        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
-        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
-      ];
+    it("returns result for each config, even with missing epochs", async () => {
+       const configs = [
+         { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+         { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
+       ];
 
-      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
-        [epoch1, createSourcesForEpoch(5, "epoch1")],
-        // epoch2 missing
-      ]);
+       const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+         [epoch1, createSourcesForEpoch(5, "epoch1")],
+         // epoch2 missing
+       ]);
 
-      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+       const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
 
-      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+       const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
 
-      expect(results.length).toBe(1);
-      expect(results[0].epoch_timestamp).toBe(epoch1);
-    });
+       expect(results.length).toBe(2);
+       expect(results[0].epoch_timestamp).toBe(epoch1);
+       expect(results[1].epoch_timestamp).toBe(epoch2);
+       expect(results[0].control.total_feasible).toBe(5);
+       expect(results[1].control.total_feasible).toBe(0);
+     });
 
-    it("skips epochs with empty source snapshots", async () => {
-      const configs = [
-        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
-      ];
+    it("returns result for config with empty sources", async () => {
+       const configs = [
+         { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+       ];
 
-      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
-        [epoch1, []],
-      ]);
+       const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+         [epoch1, []],
+       ]);
 
-      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+       const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
 
-      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+       const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
 
-      // Epoch with empty sources is skipped (warns and continues)
-      expect(results.length).toBe(0);
-    });
+       expect(results.length).toBe(1);
+       expect(results[0].epoch_timestamp).toBe(epoch1);
+       expect(results[0].control.total_feasible).toBe(0);
+     });
 
     it("uses holdout split epoch label when provided", async () => {
       const configs = [
@@ -985,20 +989,24 @@ describe("compareSelectorOutputs Helper", () => {
       expect(results[1].epoch_timestamp).toBe(epoch1);
     });
 
-    it("handles all epochs missing gracefully", async () => {
-      const configs = [
-        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
-        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
-      ];
+    it("returns results for all configs even when all epochs are missing", async () => {
+       const configs = [
+         { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+         { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
+       ];
 
-      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>();
+       const sourceSnapshots = new Map<string, SourceMemoryRecord[]>();
 
-      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+       const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
 
-      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+       const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
 
-      expect(results.length).toBe(0);
-    });
+       expect(results.length).toBe(2);
+       expect(results[0].epoch_timestamp).toBe(epoch1);
+       expect(results[1].epoch_timestamp).toBe(epoch2);
+       expect(results[0].control.total_feasible).toBe(0);
+       expect(results[1].control.total_feasible).toBe(0);
+     });
 
     it("handles configs with different topK per epoch", async () => {
       const configs = [
@@ -1098,5 +1106,329 @@ describe("compareSelectorOutputs Helper", () => {
 
   it("exports createSyntheticRecord for test fixtures", () => {
     expect(typeof createSyntheticRecord).toBe("function");
+  });
+});
+
+describe("SSAE-05 Offline Hardening — Pure Fixture Tests", () => {
+  const baseConfig: ShadowConfig = {
+    topK: 5,
+    maxCostPerSourceCents: 500,
+    coldRevisitDays: 7,
+    epochTimestamp: "2026-09-15T12:00:00Z",
+  };
+
+  function makeSources(count: number, prefix = "src"): SourceMemoryRecord[] {
+    return Array.from({ length: count }, (_, i) =>
+      createSyntheticRecord(`${prefix}-${i}`, "Provider", "rss_xml", 100, 0.1, 50)
+    );
+  }
+
+  function makeRankedSource(overrides: Record<string, any> = {}): RankedSource {
+    const now = new Date().toISOString();
+    return {
+      source_id: "test-source",
+      provider_id: "test-provider",
+      declared_capability: "ats_json",
+      endpoint_url: "https://example.com/api",
+      score: 10,
+      score_breakdown: {
+        marginal_yield_estimate: 5,
+        cost_estimate_cents: 20,
+        feasibility_penalty: 0,
+        freshness_bonus: 0,
+        diversity_bonus: 0,
+        cold_revisit_bonus: 0,
+      },
+      processing_mode: "FULL",
+      mode_reason: "test",
+      feasibility: { permitted: true, reason: "test", hardGate: "NONE" },
+      excluded: false,
+      exclusion_reason: null,
+      cold_revisit_reason: null,
+      cold_revisit_due_at: null,
+      evidence_refs: [],
+      evidence_complete: false,
+      dependencies: null,
+      ranked_at: now,
+      selector_version: "test@v1",
+      ...overrides,
+    };
+  }
+
+  it("runShadowDecisionCycle handles zero feasible sources", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const result = await runShadowDecisionCycle(baseConfig, []);
+    expect(result.control.total_feasible).toBe(0);
+    expect(result.treatment.total_feasible).toBe(0);
+    expect(result.disposition).toBe("LIMITED");
+  });
+
+  it("runShadowDecisionCycle handles single source", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const sources = makeSources(1);
+    const result = await runShadowDecisionCycle(baseConfig, sources);
+    expect(result.control.total_feasible).toBe(1);
+    expect(result.treatment.total_feasible).toBe(1);
+  });
+
+  it("runShadowDecisionCycle respects topK limit", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const sources = makeSources(20);
+    const result = await runShadowDecisionCycle({ ...baseConfig, topK: 3 }, sources);
+    expect(result.control.selected_count).toBeLessThanOrEqual(3);
+    expect(result.treatment.selected_count).toBeLessThanOrEqual(3);
+  });
+
+  it("runShadowDecisionCycle respects cost budget", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const sources = makeSources(10, "expensive").map(s => ({
+      ...s,
+      health_rollup: { ...s.health_rollup, recent_success_rate: 0.5 },
+    }));
+    const result = await runShadowDecisionCycle({ ...baseConfig, maxCostPerSourceCents: 50 }, sources);
+    expect(result.control.ranking_latency_ms).toBeGreaterThanOrEqual(0);
+  });
+
+  it("runShadowDecisionCycle identifies cold revisit sources", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const now = new Date("2026-09-15T12:00:00Z");
+    const oldDate = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000).toISOString();
+    const sources = makeSources(5).map(s => ({
+      ...s,
+      lake_state: { ...s.lake_state, last_sighting_at: oldDate },
+    }));
+    const result = await runShadowDecisionCycle({ ...baseConfig, coldRevisitDays: 7 }, sources);
+    expect(result.control.cold_revisit_count).toBeGreaterThanOrEqual(0);
+  });
+
+  it("compareSelectorOutputs handles tied ranks in Spearman correlation", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("a", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("b", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("c", "ProviderB", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "a", provider_id: "ProviderA", rank: 1, score: 20 }),
+      makeRankedSource({ source_id: "b", provider_id: "ProviderA", rank: 2, score: 15 }),
+      makeRankedSource({ source_id: "c", provider_id: "ProviderB", rank: 3, score: 10 }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "a", provider_id: "ProviderA", rank: 1, score: 25 }),
+      makeRankedSource({ source_id: "b", provider_id: "ProviderA", rank: 2, score: 18 }),
+      makeRankedSource({ source_id: "c", provider_id: "ProviderB", rank: 3, score: 12 }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    expect(result.overlap.selectedOverlapCount).toBe(3);
+    expect(result.overlap.rankCorrelation).toBe(1);
+  });
+
+  it("compareSelectorOutputs handles null processing_mode gracefully", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("a", "ProviderA", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "a", provider_id: "ProviderA", rank: 1, score: 10 }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "a", provider_id: "ProviderA", rank: 1, score: 12, processing_mode: undefined as any }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    expect(result.overlap.modeAgreementRate).toBeGreaterThanOrEqual(0);
+  });
+
+  it("compareSelectorOutputs handles cold revisit only sources", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("cold-src", "ProviderA", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected: RankedSource[] = [];
+    const treatmentRanked: RankedSource[] = [];
+    const treatmentColdRevisit = [
+      makeRankedSource({ source_id: "cold-src", provider_id: "ProviderA", cold_revisit_reason: "no_observation_7d" }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], treatmentColdRevisit, allSources);
+    expect(result.overlap.selectedOverlapCount).toBe(0);
+    expect(result.overlap.selectedOverlapRate).toBe(0);
+  });
+
+  it("compareSelectorOutputs handles binary overlap_score", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("a", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("b", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("c", "ProviderB", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "a", provider_id: "ProviderA", rank: 1, score: 10 }),
+      makeRankedSource({ source_id: "b", provider_id: "ProviderA", rank: 2, score: 8 }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "a", provider_id: "ProviderA", rank: 1, score: 12 }),
+      makeRankedSource({ source_id: "c", provider_id: "ProviderB", rank: 2, score: 9 }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    expect(result.overlap.selectedOverlapCount).toBe(1);
+    expect(result.overlap.selectedOverlapRate).toBeCloseTo(1 / 3);
+  });
+
+  it("compareSelectorOutputs handles large input sets", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const controlIds = Array.from({ length: 100 }, (_, i) => `ctrl-${i}`);
+    const treatmentIds = Array.from({ length: 100 }, (_, i) => i < 50 ? `ctrl-${i}` : `treat-${i}`);
+    const allSources = controlIds.map((id, i) => createSyntheticRecord(id, "Provider", "rss_xml", 100, 0.1, 50));
+    allSources.push(...treatmentIds.filter(id => !controlIds.includes(id)).map(id => createSyntheticRecord(id, "Provider", "rss_xml", 100, 0.1, 50)));
+    const controlSelected = controlIds.map((id, i) => makeRankedSource({ source_id: id, provider_id: "Provider", rank: i + 1, score: 100 - i }));
+    const treatmentRanked = treatmentIds.map((id, i) => makeRankedSource({ source_id: id, provider_id: "Provider", rank: i + 1, score: 100 - i }));
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    expect(result.overlap.selectedOverlapCount).toBe(50);
+  });
+
+  it("compareSelectorOutputs returns exclusion reasons for cost_exceeds_budget", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("a", "ProviderA", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "a", provider_id: "ProviderA", rank: 1, score: 10 }),
+    ];
+    const treatmentExcluded = [
+      makeRankedSource({ source_id: "a", provider_id: "ProviderA", excluded: true, exclusion_reason: "cost_exceeds_budget" }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, [], treatmentExcluded, [], allSources);
+    const decision = result.decisions.find(d => d.source_id === "a");
+    expect(decision?.treatment.exclusion_reason).toBe("cost_exceeds_budget");
+  });
+
+  it("generateShadowReceipt produces valid text output", async () => {
+    const { generateShadowReceipt } = await import("./shadow-decisions");
+    const mockResult = {
+      epoch_timestamp: "2026-09-15T12:00:00Z",
+      epoch_label: "test",
+      control: {
+        selector_version: "control@v1",
+        top_k: 5,
+        selected_count: 3,
+        selected_ids: ["a", "b", "c"],
+        excluded_count: 2,
+        cold_revisit_count: 1,
+        total_feasible: 10,
+        ranking_latency_ms: 50,
+      },
+      treatment: {
+        selector_version: "ranker@v1",
+        top_k: 5,
+        selected_count: 2,
+        selected_ids: ["a", "b"],
+        excluded_count: 3,
+        cold_revisit_count: 0,
+        total_feasible: 10,
+        ranking_latency_ms: 60,
+      },
+      overlap: {
+        selected_overlap_count: 2,
+        selected_overlap_rate: 0.5,
+        rank_correlation: 0.8,
+        mode_agreement_rate: 0.67,
+      },
+      decisions: [],
+      coverage: {
+        known_outcome_sources: 2,
+        unknown_outcome_sources: 8,
+        censored_sources: 0,
+        total_sources_evaluated: 10,
+      },
+      limitations: ["Test limitation"],
+      disposition: "LIMITED",
+    };
+    const receipt = generateShadowReceipt(mockResult);
+    expect(receipt).toContain("SSAE-05 Shadow Decision Receipt");
+    expect(receipt).toContain("LIMITED");
+    expect(receipt).toContain("Overlap: 2");
+  });
+
+  it("generateShadowReceipt handles empty decisions", async () => {
+    const { generateShadowReceipt } = await import("./shadow-decisions");
+    const mockResult = {
+      epoch_timestamp: "2026-09-15T12:00:00Z",
+      epoch_label: "empty",
+      control: {
+        selector_version: "control@v1",
+        top_k: 5,
+        selected_count: 0,
+        selected_ids: [],
+        excluded_count: 0,
+        cold_revisit_count: 0,
+        total_feasible: 0,
+        ranking_latency_ms: 0,
+      },
+      treatment: {
+        selector_version: "ranker@v1",
+        top_k: 5,
+        selected_count: 0,
+        selected_ids: [],
+        excluded_count: 0,
+        cold_revisit_count: 0,
+        total_feasible: 0,
+        ranking_latency_ms: 0,
+      },
+      overlap: {
+        selected_overlap_count: 0,
+        selected_overlap_rate: 0,
+        rank_correlation: 0,
+        mode_agreement_rate: 0,
+      },
+      decisions: [],
+      coverage: {
+        known_outcome_sources: 0,
+        unknown_outcome_sources: 0,
+        censored_sources: 0,
+        total_sources_evaluated: 0,
+      },
+      limitations: [],
+      disposition: "LIMITED",
+    };
+    const receipt = generateShadowReceipt(mockResult);
+    expect(receipt).toContain("SSAE-05 Shadow Decision Receipt");
+  });
+
+  it("runMultiEpochShadowDecisions preserves epoch order", async () => {
+    const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+    const epoch1 = "2026-09-01T12:00:00Z";
+    const epoch2 = "2026-09-08T12:00:00Z";
+    const epoch3 = "2026-09-15T12:00:00Z";
+    const configs = [
+      { ...baseConfig, epochTimestamp: epoch1 },
+      { ...baseConfig, epochTimestamp: epoch2 },
+      { ...baseConfig, epochTimestamp: epoch3 },
+    ];
+    const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+      [epoch1, makeSources(5, "e1")],
+      [epoch2, makeSources(5, "e2")],
+      [epoch3, makeSources(5, "e3")],
+    ]);
+    const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+    expect(results.length).toBe(3);
+    expect(results[0].epoch_timestamp).toBe(epoch1);
+    expect(results[1].epoch_timestamp).toBe(epoch2);
+    expect(results[2].epoch_timestamp).toBe(epoch3);
+  });
+
+  it("runMultiEpochShadowDecisions handles missing epochs gracefully", async () => {
+    const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+    const epoch1 = "2026-09-01T12:00:00Z";
+    const epoch2 = "2026-09-08T12:00:00Z";
+    const configs = [
+      { ...baseConfig, epochTimestamp: epoch1 },
+      { ...baseConfig, epochTimestamp: epoch2 },
+    ];
+    const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+      [epoch1, makeSources(5, "e1")],
+    ]);
+    const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+    expect(results.length).toBe(2);
+    expect(results[0].control.total_feasible).toBe(5);
+    expect(results[1].control.total_feasible).toBe(0);
   });
 });

@@ -269,15 +269,11 @@ export async function runMultiEpochShadowDecisions(
 ): Promise<ShadowCycleResult[]> {
   const results: ShadowCycleResult[] = [];
 
-  for (const config of configs) {
-    const sources = sourceSnapshots.get(config.epochTimestamp) ?? [];
-    if (sources.length === 0) {
-      console.warn(`No source snapshot for epoch ${config.epochTimestamp}, skipping`);
-      continue;
-    }
-    const result = await runShadowDecisionCycle(config, sources);
-    results.push(result);
-  }
+   for (const config of configs) {
+     const sources = sourceSnapshots.get(config.epochTimestamp) ?? [];
+     const result = await runShadowDecisionCycle(config, sources);
+     results.push(result);
+   }
 
   return results;
 }
