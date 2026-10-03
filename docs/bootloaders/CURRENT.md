@@ -1,5 +1,19 @@
 # Current resume pointer
 
+## Session 54 PR #162 Gitleaks Fix Completion & MATH-03 Ashby Shadow Probe Validation (Headless Relay Session 54, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus item 1: PR #162 gitleaks fix finalized — commit `7e8c36a0` corrects `.gitleaks.toml` regex from `[`\"']` to `[`"']` for backtick-quoted SHAs.
+- Tech lead focus item 2: SYSTEM_SAVEPOINT.md history preserved — all prior entries intact.
+- Tech lead focus item 3: Supply bottleneck work advanced — added 4 Ashby ATS public posting API format tests to `candidate-shadow.test.ts` validating shadow probe handles 4 high-yield candidates (amplify, camunda, supabase, tremendous; 146 positions).
+- Changes delivered: gitleaks regex fix (commit `7e8c36a0`); Ashby format tests (commit `6baeaef1`, 103 lines).
+- All local checks pass: 1,716 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build.
+- Required reading gate satisfied: all 11 required files read, `.shift/reading-054.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes; no hold-list paths touched.
+
+
 ## Session 53 MATH-03/MATH-12 Shadow Dispatcher Resilience: Transient D1 Quota Error Isolation (Headless Relay Session 53, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.

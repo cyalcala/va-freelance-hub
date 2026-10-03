@@ -1,5 +1,41 @@
 # System Savepoint
 
+## 2026-10-03 — PR #162 Gitleaks Fix Completion & MATH-03 Ashby Shadow Probe Validation (Headless Relay Session 54, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Tech lead focus item 1 COMPLETED — PR #162 gitleaks fix finalized:**
+- Commit `7e8c36a0` corrects `.gitleaks.toml` regex character class from `[`\"']` to `[`"']` so backtick-quoted 40-char hex SHAs in `SYSTEM_SAVEPOINT.md` no longer trigger false positives for `sourcegraph-access-token` rule. The prior commit `e0123f6b` had introduced an erroneous literal backslash in the TOML literal string.
+
+**2. Tech lead focus item 2 COMPLIED — SYSTEM_SAVEPOINT.md history preserved:**
+- All prior entries intact; only prepending this session's entry.
+
+**3. Tech lead focus item 3 ADDRESSED — Supply bottleneck work advanced via MATH-03:**
+- Fresh first-published flow ~36/day vs 100/day floor (-64 gap) per prior evidence.
+- Active unit: MATH-03 marginal source portfolio coverage — 4 Ashby candidates (amplify, camunda, supabase, tremendous) with 146 total open positions identified as high-yield prospects.
+- **This session:** Added 4 unit tests to `packages/scraper/candidate-shadow.test.ts` validating the shadow probe correctly handles Ashby's public posting API format (`https://api.ashbyhq.com/posting-api/job-board/{token}`). Tests cover: jobs array parsing with `isListed` filter and `jobUrl` linkback, string location field, object location field, and rejection of non-jobs-array responses as `SCHEMA_BROKEN`. This ensures reliable shadow observation for canary graduation, directly addressing the MATH-03 supply constraint.
+
+**4. Changes Delivered (VERIFIED_LOCAL):**
+- **Commit `7e8c36a0`**: `.gitleaks.toml` regex fix (5 allowlist patterns corrected).
+- **Commit `6baeaef1`**: `packages/scraper/candidate-shadow.test.ts` — 4 new Ashby format tests added (103 lines).
+
+**5. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,716 pass / 0 fail across 172 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+- Reading gate: All 11 required files read; `.shift/reading-054.md` recorded.
+
+**6. Where we have been / are / going:**
+- Been: Sessions 50-53 resolved PR #162 blockers (gitleaks regex, savepoint history restore) and advanced shadow dispatcher resilience for EX-03 503 (`d1_quota_or_limit`) head-of-line blocking.
+- Are: Gitleaks fix finalized; Ashby shadow probe format validated via tests; 4 high-yield Ashby candidates (146 positions) now have test coverage for reliable observation pipeline. Shadow dispatcher resilience (session 53) isolates transient D1 quota errors, allowing other shadow sources to continue accumulating clean observations.
+- Going: Supervisor pushes branch `opencode/shift-20261002-2118` and verifies CI green on `ci-guardrail` workflow. Next session should observe gha-lake-miner.yml run logs and lake_runs ledger for yield evidence, correlate with EX-03 503 pattern, and continue MATH-03 portfolio coverage work toward admitting Ashby candidates to shadow/canary.
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow. If CI passes, changes merge; if red, next session addresses residual failures.
+
 ## 2026-10-03 — MATH-03/MATH-12 Shadow Dispatcher Resilience: Transient D1 Quota Error Isolation (Headless Relay Session 53, Shift 20261002-2118)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
