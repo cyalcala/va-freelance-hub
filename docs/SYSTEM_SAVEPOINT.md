@@ -7,7 +7,11 @@
 operational steady-state criteria remain unverified. Runtime marathon not activated.
 **Start SHA:** `4d2e61c244338f76398e76444c1b80651925c848`, initially main = fetched origin/main.
 **Review branch:** `codex/ph-remote-priority-bootloader`. Foreign untracked
-`.agents/skills/` preserved. Remote backup/CI receipt will be recorded after verification.
+`.agents/skills/` preserved.
+**Backup receipt:** documentation commit `ec576409cee99e60899831862c586f68562ff2c0`
+verified on the remote review branch; [draft PR #166](https://github.com/cyalcala/va-freelance-hub/pull/166).
+Exact-commit [CI run 37134433988](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134433988)
+was IN_PROGRESS at handoff; CI success is not claimed. No merge/deployment occurred.
 
 - Delivered maintainer loader v6.2, master/execution v6.1 with section 10C and
   the full PH cohort, intake, reusable capability, PH-prior, sparse/adaptive,
