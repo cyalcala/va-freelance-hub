@@ -1,5 +1,5 @@
 import type { NewOpportunity } from "@va-hub/db";
-import { toContentHash } from "./contentHash";
+import { toContentHash, toAshbyContentHash } from "./contentHash";
 import { collectionHeaders } from "./userAgent";
 
 function normalizeText(raw: string | undefined): string {
@@ -92,7 +92,7 @@ export async function fetchATSFeed(
   }
 }
 
-async function fetchLever(token: string, companyName: string): Promise<NewOpportunity[]> {
+export async function fetchLever(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://api.lever.co/v0/postings/${token}?mode=json`, {
     headers: collectionHeaders(),
     signal: AbortSignal.timeout(15_000),
@@ -126,7 +126,7 @@ async function fetchLever(token: string, companyName: string): Promise<NewOpport
     });
 }
 
-async function fetchGreenhouse(token: string, companyName: string): Promise<NewOpportunity[]> {
+export async function fetchGreenhouse(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://boards-api.greenhouse.io/v1/boards/${token}/jobs`, {
     headers: collectionHeaders(),
     signal: AbortSignal.timeout(15_000),
@@ -160,7 +160,7 @@ async function fetchGreenhouse(token: string, companyName: string): Promise<NewO
 // Ashby public posting API (jobs.ashbyhq.com boards). Official job-board
 // distribution endpoint: robots-allowed, returns published/listed roles with a
 // direct linkback to the Ashby-hosted posting. Added 2026-07-12 (RemoteWork3.8).
-export async function fetchAshby(token: string, companyName: string): Promise<NewOpportunity[]> {
+export async function fetchAshby(token: string, companyName: string): Promise<(NewOpportunity & { atsJobId?: string })[]> {
   const res = await fetch(`https://api.ashbyhq.com/posting-api/job-board/${token}`, {
     headers: collectionHeaders({ "Content-Type": "application/json" }),
     signal: AbortSignal.timeout(15_000),
@@ -177,6 +177,7 @@ export async function fetchAshby(token: string, companyName: string): Promise<Ne
     .map((job: any) => {
       const title = normalizeText(job.title);
       const sourceUrl = job.jobUrl;
+      const atsJobId = typeof job.id === "string" && job.id.trim() ? job.id.trim() : undefined;
       return {
         title,
         company: companyName,
@@ -194,12 +195,13 @@ export async function fetchAshby(token: string, companyName: string): Promise<Ne
         description: ashbyLocationSummary(job),
         postedAt: safeNormalizeDate(job.publishedAt),
         isActive: true,
-        contentHash: toContentHash(title, sourceUrl),
+        contentHash: toAshbyContentHash(title, sourceUrl, atsJobId),
+        atsJobId,
       };
     });
 }
 
-async function fetchWorkable(token: string, companyName: string): Promise<NewOpportunity[]> {
+export async function fetchWorkable(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://apply.workable.com/api/v1/widget/accounts/${token}`, {
     headers: collectionHeaders({ Accept: "application/json" }),
     signal: AbortSignal.timeout(15_000),
