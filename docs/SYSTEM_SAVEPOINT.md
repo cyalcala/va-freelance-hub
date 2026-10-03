@@ -1,5 +1,19 @@
 # System Savepoint
 
+## 2026-10-04 — SSAE-04 Deterministic Fixtures & Tests Added (session 17)
+
+**Unit:** SSAE-04 (additive). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — added `scripts/lake/temporal-holdout-eval.test.ts` with 24 deterministic tests, exported metrics functions for testability.
+
+**SSAE-04 Additive — Deterministic Fixtures & Tests:**
+- Exported `computeMetrics`, `compareSelectors`, `createSyntheticRecord` from `temporal-holdout-eval.ts`
+- Added test coverage for: holdout split definitions, control selector (deterministic stride), metrics computation, selector comparison, synthetic fixtures, leakage prevention, LIMITED disposition handling
+- All runtime counts UNKNOWN; no network/prod mutations; no SQL mutations; no hold-list edits
+- Verification: `bun test`: 1,910 pass / 0 fail; `bun run typecheck`: clean; audits clean
+
+**NEXT SINGLE ACTION:** SSAE-05 (Run shadow decisions without extra probes) depends on SSAE-04 holdout baseline and SSAE-03 ranker output. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task OR completion of SSAE-06 measurement contracts.
+
+---
+
 ## 2026-10-04 — SSAE-04 Temporal Holdout Evaluation Delivered (session 14)
 
 **Unit:** SSAE-04. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — docs/audits/2026-10-04-SSAE-04-TEMPORAL-HOLDOUTS.md created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.
