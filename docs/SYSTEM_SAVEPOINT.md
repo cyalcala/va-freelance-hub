@@ -1,5 +1,29 @@
 # System Savepoint
 
+## 2026-10-04 — MATH-05 Metric Cohort Separation Fixtures Verified + Import Fix (session 8)
+
+**Unit:** MATH-05. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — fixtures already present from commit `3e1e8819` (21 tests), import fix applied for `ManilaWindow` type.
+
+**MATH-05 Delivered — Metric Cohort Separation Verification:**
+- Existing fixtures in `scripts/diagnostics/metric-cohort-separation.test.ts` already cover:
+  - `RECEIPT_BACKED = 0` when `published_ids_json` is empty array despite `publishedCount > 0` (test at line 303-315)
+  - Active stock (existing opportunities) with empty receipt yields zero fresh discovery (test at line 340-371)
+  - Stock opportunities with `createdAt` before window classified as `REACTIVATION` if they had receipt IDs (test at line 373-399)
+  - Malformed `published_ids_json` yields zero receipt-backed count (test at line 317-337)
+- Fixed import: `ManilaWindow` type now correctly imported from `./measure-manila-daily-publications` instead of local module
+
+**Verification:**
+- `bun test scripts/diagnostics/metric-cohort-separation.test.ts`: 21 pass / 0 fail
+- Full test suite: 1,842 pass / 0 fail (`bun test`)
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`)
+- Constitution audit: Passed with known warnings (`bun scripts/ci/audit-constitution.ts`)
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`)
+- `git diff origin/main...HEAD -- scripts/diagnostics/metric-cohort-separation.test.ts | grep -iE 'insert into opportunities|update opportunities|delete from|drop trigger'`: clean
+
+**NEXT SINGLE ACTION:** MATH-09 (OPEN) — delete ASHBY_CONTENT_HASH strategy and add fingerprint_hash gap fixture per tech lead order. Owner/controller: maintainer; trigger: next authorized session.
+
+---
+
 ## 2026-10-04 — MATH-06A Writer Inventory Fixed + Gap Tests (session 6)
 
 **Unit:** MATH-06A. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — inventory fixed against HEAD `b6736aeecec8`, tests pass (35/35), full suite 1,842 pass.
