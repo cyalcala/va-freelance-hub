@@ -1,15 +1,12 @@
-# Gitleaks configuration for VA Freelance Hub
-# Allows 40-char hex git SHAs in SYSTEM_SAVEPOINT.md commit-reference lines
-# (false positives for sourcegraph-access-token rule)
+[extend]
+useDefault = true
 
-[[allowlists]]
-description = "Allow 40-char hex git SHAs in SYSTEM_SAVEPOINT.md Start HEAD/commit-reference lines"
-targetRules = ["sourcegraph-access-token"]
+[[rules]]
+id = "sourcegraph-access-token"
+[[rules.allowlists]]
+description = "40-char lowercase hex git SHA references false-positive the bare-hex branch of sourcegraph-access-token"
 regexTarget = "line"
 regexes = [
-    '''Start HEAD [`"'][0-9a-f]{40}[`"']''',
-    '''commit [`"'][0-9a-f]{40}[`"']''',
-    '''origin/main [`"'][0-9a-f]{40}[`"']''',
-    '''HEAD [`"'][0-9a-f]{40}[`"']''',
-    '''at [`"'][0-9a-f]{40}[`"']''',
-  ]
+    '''`[0-9a-f]{40}`''',
+    '''(?i)\b(?:sha|head|commit|main)\b[^\n]{0,24}?[0-9a-f]{40}\b''',
+]
