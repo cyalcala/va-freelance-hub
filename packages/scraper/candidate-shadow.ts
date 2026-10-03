@@ -247,6 +247,63 @@ function parseJsonBodyCount(jsonText: string): ParsedSample {
   throw new Error("unrecognized JSON job collection");
 }
 
+/**
+ * Validates Ashby API response structure.
+ * The Ashby public posting API returns { jobs: [...] } where each job has
+ * id, title, jobUrl, isListed, isRemote, location, publishedAt, applyUrl, etc.
+ * This function validates the expected structure for shadow probe confidence.
+ */
+export function validateAshbyResponseStructure(jsonText: string): { valid: boolean; jobCount: number; errors: string[] } {
+  const errors: string[] = [];
+  let jobCount = 0;
+  try {
+    const data = JSON.parse(jsonText);
+    if (!data || typeof data !== "object") {
+      errors.push("Response root is not an object");
+      return { valid: false, jobCount: 0, errors };
+    }
+    if (!Object.hasOwn(data, "jobs")) {
+      errors.push("Missing 'jobs' property in response");
+      return { valid: false, jobCount: 0, errors };
+    }
+    if (!Array.isArray(data.jobs)) {
+      errors.push("'jobs' property is not an array");
+      return { valid: false, jobCount: 0, errors };
+    }
+    jobCount = data.jobs.length;
+    // Validate each job has required fields
+    for (let i = 0; i < Math.min(jobCount, 10); i++) {
+      const job = data.jobs[i];
+      if (!job || typeof job !== "object") {
+        errors.push(`Job ${i} is not an object`);
+        continue;
+      }
+      if (typeof job.title !== "string" || !job.title.trim()) {
+        errors.push(`Job ${i} missing or empty title`);
+      }
+      if (typeof job.jobUrl !== "string" || !job.jobUrl.trim()) {
+        errors.push(`Job ${i} missing or empty jobUrl`);
+      }
+      if (job.isListed !== undefined && typeof job.isListed !== "boolean") {
+        errors.push(`Job ${i} isListed is not a boolean`);
+      }
+      if (job.isRemote !== undefined && typeof job.isRemote !== "boolean") {
+        errors.push(`Job ${i} isRemote is not a boolean`);
+      }
+      if (job.id !== undefined && typeof job.id !== "string") {
+        errors.push(`Job ${i} id is not a string`);
+      }
+      if (job.publishedAt !== undefined && typeof job.publishedAt !== "string") {
+        errors.push(`Job ${i} publishedAt is not a string`);
+      }
+    }
+    return { valid: errors.length === 0, jobCount, errors };
+  } catch (e) {
+    errors.push(`JSON parse error: ${e instanceof Error ? e.message : String(e)}`);
+    return { valid: false, jobCount: 0, errors };
+  }
+}
+
 /** Count UTF-8 bytes, not JS string length, and cancel as soon as the budget is exceeded. */
 async function readUtf8BodyWithBudget(
   res: { body?: ReadableStream<Uint8Array> | null; text?: () => Promise<string> },

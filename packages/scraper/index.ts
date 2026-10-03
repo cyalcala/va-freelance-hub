@@ -13,7 +13,7 @@ export type { TriageDecision, TriageDecisionInput } from "./triage-decision";
 export { fetchATSFeed, fetchAshby, fetchBreezy, atsEndpointUrl } from "./ats";
 export { conditionalFetchText, unchangedOutput } from "./conditional";
 export type { ConditionalState, ConditionalResult, SourceFetchOutput } from "./conditional";
-export { hashString, sha256Hex, errorMessage } from "./contentHash";
+export { hashString, sha256Hex, errorMessage, toAshbyContentHash } from "./contentHash";
 export {
   normalizeCompanyName, isQualityCompanyName, hostOf, isTrustedSourceUrl,
   extractAtsToken, inferNiche, classifyCandidates,
@@ -168,6 +168,7 @@ export type { ProviderConfig, CandidateRow } from "./prospect-candidate";
 export {
   createMemoryRobotsStore,
   runCandidateShadowProbe,
+  validateAshbyResponseStructure,
   SHADOW_FETCH_TIMEOUT_MS,
   SHADOW_MAX_BYTES,
   SHADOW_MAX_REQUESTS,

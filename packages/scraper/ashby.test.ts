@@ -1,5 +1,6 @@
 import { describe, expect, test, afterEach, mock } from "bun:test";
 import { fetchAshby } from "./ats";
+import { toContentHash, toAshbyContentHash } from "./contentHash";
 
 const realFetch = globalThis.fetch;
 afterEach(() => { globalThis.fetch = realFetch; });
@@ -21,6 +22,7 @@ const job = (over: Record<string, unknown> = {}) => ({
   location: "Remote",
   employmentType: "FullTime",
   publishedAt: "2026-07-01T12:00:00.000+00:00",
+  id: "ashby_job_12345",
   ...over,
 });
 
@@ -69,5 +71,54 @@ describe("fetchAshby", () => {
     const [row] = await fetchAshby("supabase", "Supabase");
     expect(row.applicationUrl).toBeNull();
     expect(row.postedAt).toBeNull();
+  });
+
+  test("extracts and returns Ashby job ID as atsJobId", async () => {
+    mockFetch({ jobs: [job({ id: "ashby_job_abcdef" })] });
+    const [row] = await fetchAshby("supabase", "Supabase");
+    expect(row.atsJobId).toBe("ashby_job_abcdef");
+  });
+
+  test("returns undefined atsJobId when job.id is missing", async () => {
+    mockFetch({ jobs: [job({ id: undefined })] });
+    const [row] = await fetchAshby("supabase", "Supabase");
+    expect(row.atsJobId).toBeUndefined();
+  });
+
+  test("returns undefined atsJobId when job.id is empty string", async () => {
+    mockFetch({ jobs: [job({ id: "" })] });
+    const [row] = await fetchAshby("supabase", "Supabase");
+    expect(row.atsJobId).toBeUndefined();
+  });
+
+  test("uses Ashby-specific content hash incorporating atsJobId when present", async () => {
+    const testJob = job({ id: "ashby_job_12345" });
+    mockFetch({ jobs: [testJob] });
+    const [row] = await fetchAshby("supabase", "Supabase");
+
+    const expectedHash = toAshbyContentHash(testJob.title, testJob.jobUrl, "ashby_job_12345");
+    const standardHash = toContentHash(testJob.title, testJob.jobUrl);
+
+    expect(row.contentHash).toBe(expectedHash);
+    expect(row.contentHash).not.toBe(standardHash);
+  });
+
+  test("falls back to standard content hash when atsJobId is absent", async () => {
+    mockFetch({ jobs: [job({ id: undefined })] });
+    const [row] = await fetchAshby("supabase", "Supabase");
+
+    const standardHash = toContentHash("Senior Engineer", "https://jobs.ashbyhq.com/supabase/abc123");
+    expect(row.contentHash).toBe(standardHash);
+  });
+
+  test("different atsJobId produces different content hash for same title and URL", async () => {
+    const job1 = job({ id: "ashby_job_1" });
+    const job2 = job({ id: "ashby_job_2" });
+    mockFetch({ jobs: [job1] });
+    const [row1] = await fetchAshby("supabase", "Supabase");
+    mockFetch({ jobs: [job2] });
+    const [row2] = await fetchAshby("supabase", "Supabase");
+
+    expect(row1.contentHash).not.toBe(row2.contentHash);
   });
 });

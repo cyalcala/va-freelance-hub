@@ -42,3 +42,16 @@ export async function sha256Hex(message: string): Promise<string> {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(message));
   return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
+
+/**
+ * Ashby-specific content hash that incorporates the ATS job ID when available.
+ * This provides stronger deduplication for Ashby-sourced opportunities since
+ * the Ashby job ID is a stable, unique identifier from the source system.
+ * Falls back to the standard title+sourceUrl hash when no ATS job ID is present.
+ */
+export function toAshbyContentHash(title: string, sourceUrl: string, atsJobId?: string): string {
+  if (atsJobId && atsJobId.trim()) {
+    return hashString(`ashby:${atsJobId.trim()}::${title}::${sourceUrl}`);
+  }
+  return toContentHash(title, sourceUrl);
+}

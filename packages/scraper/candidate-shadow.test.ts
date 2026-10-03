@@ -13,6 +13,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
   createMemoryRobotsStore,
   runCandidateShadowProbe,
+  validateAshbyResponseStructure,
   SHADOW_MAX_BYTES,
   SHADOW_MAX_REQUESTS,
   SHADOW_MAX_ITEMS,
@@ -755,6 +756,118 @@ describe("candidate-shadow — Ashby ATS public posting API (supply bottleneck: 
     const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
     expect(res.diagnostic.outcome).toBe("SCHEMA_BROKEN");
     expect(res.parse.schemaHealth).toBe("broken");
+  });
+});
+
+describe("validateAshbyResponseStructure — Ashby-specific response validation", () => {
+  it("validates correct Ashby response structure", () => {
+    const body = JSON.stringify({
+      jobs: [
+        { id: "1", title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", isListed: true, isRemote: true, location: "Remote", publishedAt: "2026-08-28T00:00:00Z" },
+        { id: "2", title: "Designer", jobUrl: "https://jobs.ashbyhq.com/supabase/2", isListed: true, isRemote: false, location: "San Francisco", publishedAt: "2026-08-27T00:00:00Z" },
+      ],
+    });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(2);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("validates minimal Ashby response with required fields", () => {
+    const body = JSON.stringify({
+      jobs: [
+        { title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1" },
+      ],
+    });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+    expect(result.errors).toHaveLength(0);
+  });
+
+  it("rejects response missing jobs property", () => {
+    const body = JSON.stringify({ data: [] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain("Missing 'jobs' property in response");
+  });
+
+  it("rejects response where jobs is not an array", () => {
+    const body = JSON.stringify({ jobs: {} });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain("'jobs' property is not an array");
+  });
+
+  it("rejects response where root is not an object", () => {
+    const body = JSON.stringify("not an object");
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors).toContain("Response root is not an object");
+  });
+
+  it("validates job title is required string", () => {
+    const body = JSON.stringify({ jobs: [{ jobUrl: "https://example.com/1" }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("title"))).toBe(true);
+  });
+
+  it("validates jobUrl is required string", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer" }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("jobUrl"))).toBe(true);
+  });
+
+  it("validates isListed is boolean when present", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://example.com/1", isListed: "yes" }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("isListed"))).toBe(true);
+  });
+
+  it("validates isRemote is boolean when present", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://example.com/1", isRemote: "true" }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("isRemote"))).toBe(true);
+  });
+
+  it("validates id is string when present", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://example.com/1", id: 123 }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("id"))).toBe(true);
+  });
+
+  it("validates publishedAt is string when present", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://example.com/1", publishedAt: 12345 }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("publishedAt"))).toBe(true);
+  });
+
+  it("handles malformed JSON", () => {
+    const body = "{ invalid json";
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("JSON parse error"))).toBe(true);
+  });
+
+  it("limits validation to first 10 jobs for performance", () => {
+    const manyJobs = Array.from({ length: 20 }, (_, i) => ({ title: `Job ${i}`, jobUrl: `https://example.com/${i}` }));
+    const body = JSON.stringify({ jobs: manyJobs });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(20);
+  });
+
+  it("detects multiple errors in a single invalid job", () => {
+    const body = JSON.stringify({ jobs: [{ title: "", jobUrl: 123, isListed: "yes", isRemote: "no", id: 456, publishedAt: 789 }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.length).toBeGreaterThanOrEqual(4); // title empty, jobUrl not string, isListed not boolean, isRemote not boolean, id not string, publishedAt not string
   });
 });
 
