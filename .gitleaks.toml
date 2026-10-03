@@ -7,9 +7,9 @@ description = "Allow 40-char hex git SHAs in SYSTEM_SAVEPOINT.md Start HEAD/comm
 targetRules = ["sourcegraph-access-token"]
 regexTarget = "line"
 regexes = [
-    '''Start HEAD [`\"'][0-9a-f]{40}[`\"']''',
-    '''commit [`\"'][0-9a-f]{40}[`\"']''',
-    '''origin/main [`\"'][0-9a-f]{40}[`\"']''',
-    '''HEAD [`\"'][0-9a-f]{40}[`\"']''',
-    '''at [`\"'][0-9a-f]{40}[`\"']''',
+    '''Start HEAD [`"'][0-9a-f]{40}[`"']''',
+    '''commit [`"'][0-9a-f]{40}[`"']''',
+    '''origin/main [`"'][0-9a-f]{40}[`"']''',
+    '''HEAD [`"'][0-9a-f]{40}[`"']''',
+    '''at [`"'][0-9a-f]{40}[`"']''',
   ]
