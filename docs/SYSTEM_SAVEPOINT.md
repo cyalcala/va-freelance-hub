@@ -1,5 +1,55 @@
 # System Savepoint
 
+## 2026-10-03 — MATH-03 Workable Parser Edge Case Coverage: 15 New Tests for Supply Quality Robustness (Headless Relay Session 71, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Tech lead focus acknowledged — Supply bottleneck unit delivered:**
+- Fresh first-published flow ~36/day vs 100/day floor (gap -64/day) per prior evidence.
+- Active unit: MATH-03 marginal source portfolio coverage — Workable parser robustness for 8 Philippine VA agencies in canary.
+- **This session:** Added 15 comprehensive edge case tests to `fetchWorkable` covering API response variations that affect supply quality and deduplication correctness for high-yield Workable sources (hunt-st, rocketams, coconutva, crewbloom, hello-rache, pearltalent, pineapple-staffing, multiplymii — 8 canary agencies).
+
+**2. Changes Delivered (VERIFIED_LOCAL):**
+- **Commit `89caa76e`** (this session):
+  - `packages/scraper/workable.test.ts` — 15 new tests covering:
+    - Whitespace-only shortcode in fallback URL
+    - Both url and shortcode as whitespace (truthy but malformed)
+    - telecommuting as string 'true'/'false' type coercion behavior (strict equality)
+    - Location parts with whitespace-only strings
+    - Location parts with mixed null/empty/whitespace
+    - Non-object elements in jobs array (robust filtering)
+    - job.title as non-string (documents pre-existing normalizeText limitation)
+    - job.shortcode as non-string in fallback URL (coerced to string)
+    - Both published_on and created_at invalid (postedAt null)
+    - Shortcode with special characters (URL encoding, spaces in URL)
+    - Missing city/state/country with telecommuting undefined (locationRaw null)
+    - city/state/country all present with telecommuting false (onsite marker)
+    - city/state/country all present with telecommuting true (clean remote)
+    - Response without content-type check (Workable behavior vs Breezy)
+
+**3. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,927 pass / 0 fail across 175 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+- `git diff --check`: Clean.
+- Reading gate: All 11 required files read; `.shift/reading-071.md` recorded.
+
+**4. Scope Compliance:**
+- Only `packages/scraper/` non-hold test file modified (`workable.test.ts`).
+- No hold-list paths touched (publication-gateway, policy-resolver, geoGate, triage, robots*, jev-client, shadow-verdict, admission-evidence, source-lifecycle, source-admission*, sync-to-d1, auto-publish-policy, enroll/reconcile/run-lake-miner, api/cron/**, migrations, workflows, package.json, bun.lock, bunfig.toml, ACCEPTED_PARAMETERS.yaml, CONSTITUTION.md, docs/decisions/**, docs/governance/**, packages/scraper/paused-sources.json|sources.ts).
+- No production writes; no lake:mine/cron/deploy; no new outbound hosts or source IDs.
+
+**5. Where we have been / are / going:**
+- Been: Sessions 50-57 resolved PR #162 blockers, validated Ashby shadow probe format (54), shadow dispatcher same-host behavior (55), canary admission pipeline tests (56), gitleaks/honesty corrections (57). Session 68 added 28 Ashby parser edge case tests. Session 69 added 117 ATS parser edge case tests for Lever, Greenhouse, Workable, Breezy. Session 70 added 15 Ashby shadow probe validation tests + amplify healthy probe.
+- Are: ATS parser edge case coverage strengthened across all 4 major providers + Ashby (1,927 total tests); 8 Workable canary agencies (hunt-st, rocketams, coconutva, crewbloom, hello-rache, pearltalent, pineapple-staffing, multiplymii) benefit from parser robustness.
+- Going: Supervisor pushes branch `opencode/shift-20261002-2118` and verifies CI green on `ci-guardrail` workflow. Next session observes gha-lake-miner.yml run logs and lake_runs ledger for yield evidence, correlates with EX-03 503 pattern, and continues MATH-03 portfolio coverage work toward admitting Ashby candidates to shadow/canary (allowlist update is separate governance step).
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). If CI passes, PR merges; if red, next session addresses residual failures.
+
 ## 2026-10-03 — MATH-03 Ashby Shadow Probe Validation Coverage: 15 New Tests for validateAshbyResponseStructure & amplify Healthy Probe (Headless Relay Session 70, Shift 20261002-2118)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).

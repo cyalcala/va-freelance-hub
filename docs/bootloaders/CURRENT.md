@@ -1,5 +1,16 @@
 # Current resume pointer
 
+## Session 71 MATH-03 Workable Parser Edge Case Coverage: 15 New Tests for Supply Quality Robustness (Headless Relay Session 71, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus: Supply bottleneck unit delivered — 15 comprehensive edge case tests added to `fetchWorkable` for Workable API response variations, strengthening parser robustness for 8 Philippine VA agencies in canary.
+- Scope compliance: Only `packages/scraper/workable.test.ts` modified (non-hold test file). No hold-list paths touched.
+- Local checks pass: 1,927 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build successful.
+- Required reading gate satisfied: all 11 required files read; `.shift/reading-071.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes.
+
 ## Session 70 MATH-03 Ashby Shadow Probe Validation Coverage: 15 New Tests for validateAshbyResponseStructure & amplify Healthy Probe (Headless Relay Session 70, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
