@@ -60,6 +60,9 @@ verdict or acceptance is claimed. Direct document review continued as prescribed
 No new DeepSeek capability claims were introduced; the dated v6.0 research and
 engineering-inference distinctions remain in the sparse strategy.
 
-Validation and release receipts are recorded in the newest SYSTEM_SAVEPOINT.
+Local document checks and guardrail/parameter/constitution audits passed.
+Payload c61ad57e0bc69886febc5d2c75326a925ff40296 was pushed; Sovereign CI Guardrail
+run 37162690459 passed project validation; production deployment was skipped.
+Full release receipts are recorded in the newest SYSTEM_SAVEPOINT.
 Local document checks do not prove any improvement in jobs/day or publication
 latency. No application tests are required for these document-only changes.

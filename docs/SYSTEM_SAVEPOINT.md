@@ -3,7 +3,7 @@
 ## 2026-10-04 — Implementation-led prompts and urgent owner PH/VA service (documentation only)
 
 **Unit:** PROMPT-IMPLEMENTATION-URGENCY-V6.3. **Mode:** bounded documentation.
-**Status:** TERMINAL / KEEP for the local documentation deliverable; branch backup pending below.
+**Status:** TERMINAL / KEEP for the documentation deliverable; payload backed up and CI verified below.
 **Start SHA:** ff03991b4fb5d4569203d265648c3f21faf5049f.
 **Fetched origin/main:** bcd26e4856fafb108f7eecefe3a8372f612792eb.
 **Branch:** codex/ph-remote-priority-bootloader. Divergence preserved; no pull/reset.
@@ -25,7 +25,8 @@ install a host capable of restarting sessions or unattended execution.
 **Review:** [implementation/urgency review](audits/2026-10-04-IMPLEMENTATION-URGENCY-PROMPT-REVIEW.md).
 Jev attempted once, HTTP 401; direct review used, no Jev verdict claimed.
 **Verification:** document links, fence balance, UTF-8, all three v6.3 versions and git diff --check passed. Bun audit:guardrails, audit:parameters and audit:constitution passed. Constitution warnings retain replay-flag/SQL coverage, concentration enforcement, provisional CV threshold and absent live queue-reading limitations; no runtime acceptance claimed.
-**Release/backup:** payload commit and branch push pending; CI receipt to be appended after observation.
+**Release/backup:** payload c61ad57e0bc69886febc5d2c75326a925ff40296 pushed to origin/codex/ph-remote-priority-bootloader in draft PR #166. Sovereign CI Guardrail run 37162690459 passed Validate project-owned code (unit/Python tests, build, strict typecheck and Worker validation included); deploy detection and production deployment were skipped. Evidence-only follow-up commit to be pushed through the same branch.
+**Completion:** documentation unit 100%; operational latency/supply acceptance UNKNOWN.
 
 **Next single action:** at the next authorized implementation/source-expansion
 invocation, begin PH-PRIORITY-INVENTORY by recovering the most recent owner-submitted
