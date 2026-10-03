@@ -20,10 +20,11 @@ No source/network probe or database operation occurred. Runtime counters remain
 UNKNOWN; HRI-01..03 dated acceptance does not close HRI-04/05 or certify PH tiers.
 Jev was unavailable (HTTP 401); no decision was delegated to it.
 GitHub backup is verified in draft PR #166 on branch
-`codex/ph-remote-priority-bootloader`, through remote tip
-`ff4be62061d22f5e79ca5b448c8541540731b39f`. Exact-commit Sovereign CI Guardrail
-runs `37134433988` and `37134502082` succeeded; deploy remained skipped for the
-docs-only PR path. Full
+`codex/ph-remote-priority-bootloader`. Payload/evidence commits
+`ec576409cee99e60899831862c586f68562ff2c0` and
+`ff4be62061d22f5e79ca5b448c8541540731b39f` passed exact-commit Sovereign CI
+Guardrail runs `37134433988` and `37134502082`; the PR carries the current branch
+tip and latest checks. Deploy remained skipped for the docs-only PR path. Full
 [review](audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md) contains coverage and limits.
 
 **One next action:** next authorized expansion task executes

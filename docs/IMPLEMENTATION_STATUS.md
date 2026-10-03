@@ -20,9 +20,11 @@
   [integration review](audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md). Start
   `4d2e61c244338f76398e76444c1b80651925c848`; review branch
   `codex/ph-remote-priority-bootloader`; preserved `.agents/skills/`. Draft
-  PR #166 backs up the docs with remote tip
-  `ff4be62061d22f5e79ca5b448c8541540731b39f`; exact-commit CI runs
-  `37134433988` and `37134502082` succeeded, with deploy skipped for docs-only PR work.
+  PR #166 backs up the docs. Payload/evidence commits
+  `ec576409cee99e60899831862c586f68562ff2c0` and
+  `ff4be62061d22f5e79ca5b448c8541540731b39f` passed exact-commit CI runs
+  `37134433988` and `37134502082`; the PR carries the current branch tip and latest
+  checks, with deploy skipped for docs-only PR work.
 - **Next:** authorized read-only `PH-PRIORITY-INVENTORY`, then one feasible
   unresolved P0 under the existing source/publication gates.
 

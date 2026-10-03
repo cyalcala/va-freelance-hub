@@ -4,8 +4,10 @@ Updated 2026-10-03 for PROMPT-PH-PRIORITY-V6. This is navigation and dated evide
 not policy, a runtime health report or a dispatch command.
 
 GitHub backup is in draft PR #166 on `codex/ph-remote-priority-bootloader`.
-Remote tip `ff4be62061d22f5e79ca5b448c8541540731b39f` passed Sovereign CI
-Guardrail run `37134502082`; deploy was skipped because the PR is docs-only.
+Payload/evidence commits `ec576409cee99e60899831862c586f68562ff2c0` and
+`ff4be62061d22f5e79ca5b448c8541540731b39f` passed Sovereign CI Guardrail runs
+`37134433988` and `37134502082`; the PR carries the current branch tip and latest
+checks. Deploy is skipped because the PR is docs-only.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
 The latest runtime checkpoint is “Gauntlet Slice 10 Stratified Reconciliation:

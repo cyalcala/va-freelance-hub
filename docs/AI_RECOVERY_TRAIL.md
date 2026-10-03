@@ -17,10 +17,11 @@ guardrails, 100% parameter parity and constitution audits exit 0 with existing
 warnings. Jev 1.13 attempted once, HTTP 401; Codex judged directly. Manifest and
 source router absent; portable registry/documentation-and-adrs used.
 Document deliverable TERMINAL / KEEP; operational steady-state and throughput
-UNKNOWN. Remote backup is verified on draft PR #166 with branch tip
-`ff4be62061d22f5e79ca5b448c8541540731b39f`; exact-commit Sovereign CI Guardrail
-runs `37134433988` and `37134502082` completed successfully. This is backup
-evidence, not runtime acceptance.
+UNKNOWN. Remote backup is verified on draft PR #166. The payload and evidence
+commits `ec576409cee99e60899831862c586f68562ff2c0` and
+`ff4be62061d22f5e79ca5b448c8541540731b39f` passed exact-commit Sovereign CI
+Guardrail runs `37134433988` and `37134502082`; the PR itself carries the current
+moving branch tip and latest checks. This is backup evidence, not runtime acceptance.
 
 Full [review](audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md) and newest savepoint
 carry the boundary. Next authorized expansion: `PH-PRIORITY-INVENTORY`, then
