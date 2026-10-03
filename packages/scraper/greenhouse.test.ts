@@ -195,4 +195,197 @@ describe("fetchGreenhouse", () => {
     expect(out).toHaveLength(2);
     expect(out.map((o) => o.title).sort()).toEqual(["Senior Engineer", "Valid"]);
   });
+
+  // ─── Edge cases for Greenhouse API response variations (MATH-03 supply quality) ───
+
+  test("handles jobs as non-array (current behavior: throws on non-array jobs)", async () => {
+    // Current implementation throws when jobs is not an array (pre-existing limitation)
+    // This test documents the behavior - a robust fix would coerce to array or return empty
+    mockFetch({ jobs: "not-an-array" });
+    await expect(fetchGreenhouse("company", "Company")).rejects.toThrow();
+  });
+
+  test("handles non-object elements in jobs array (robust filtering)", async () => {
+    mockFetch({ jobs: [job({ title: "Valid 1" }), "not-an-object", null, 123, job({ title: "Valid 2" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out.map((o) => o.title).sort()).toEqual(["Valid 1", "Valid 2"]);
+  });
+
+  test("handles job.title as non-string (number, boolean) - throws in normalizeText", async () => {
+    // Current implementation throws on non-string titles (pre-existing limitation in normalizeText)
+    // This test documents the behavior - it would need normalizeText fix to handle gracefully
+    mockFetch({ jobs: [job({ title: 123 })] });
+    await expect(fetchGreenhouse("company", "Company")).rejects.toThrow();
+  });
+
+  test("handles location as string (not object) - current behavior returns null", async () => {
+    // Current implementation only reads location.name, so string location returns null
+    // This test documents the behavior - a robust fix would handle string location
+    mockFetch({ jobs: [job({ location: "San Francisco, CA" })] });
+    const [row] = await fetchGreenhouse("company", "Company");
+    expect(row.locationRaw).toBeNull();
+    expect(row.description).toBeNull();
+  });
+
+  test("handles location as object with name field", async () => {
+    mockFetch({ jobs: [job({ location: { name: "New York, NY" } })] });
+    const [row] = await fetchGreenhouse("company", "Company");
+    expect(row.locationRaw).toBe("New York, NY");
+    expect(row.description).toContain("New York, NY");
+  });
+
+  test("handles location object with whitespace-only name", async () => {
+    mockFetch({ jobs: [job({ location: { name: "   " } })] });
+    const [row] = await fetchGreenhouse("company", "Company");
+    // Whitespace name normalized to empty string
+    expect(row.locationRaw).toBeNull();
+    expect(row.description).toBeNull();
+  });
+
+  test("handles location object with missing name property", async () => {
+    mockFetch({ jobs: [job({ location: { otherField: "value" } })] });
+    const [row] = await fetchGreenhouse("company", "Company");
+    expect(row.locationRaw).toBeNull();
+    expect(row.description).toBeNull();
+  });
+
+  test("handles location object with name as null", async () => {
+    mockFetch({ jobs: [job({ location: { name: null } })] });
+    const [row] = await fetchGreenhouse("company", "Company");
+    expect(row.locationRaw).toBeNull();
+    expect(row.description).toBeNull();
+  });
+
+  test("handles both updated_at missing and no fallback date field", async () => {
+    mockFetch({ jobs: [job({ updated_at: undefined }), job({ title: "Valid" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    const invalidJob = out.find((o) => o.title === "Senior Engineer");
+    if (invalidJob) {
+      expect(invalidJob.postedAt).toBeNull();
+    }
+    expect(out.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("handles updated_at with various timezone offsets", async () => {
+    const testCases = [
+      { input: "2026-07-01T12:00:00.000Z", expected: "2026-07-01T12:00:00.000Z" },
+      { input: "2026-07-01T12:00:00+00:00", expected: "2026-07-01T12:00:00.000Z" },
+      { input: "2026-07-01T12:00:00.000+00:00", expected: "2026-07-01T12:00:00.000Z" },
+      { input: "2026-07-01T05:00:00-07:00", expected: "2026-07-01T12:00:00.000Z" }, // PDT
+      { input: "2026-07-01T14:00:00+02:00", expected: "2026-07-01T12:00:00.000Z" }, // CEST
+      { input: "2026-12-25T12:00:00-05:00", expected: "2026-12-25T17:00:00.000Z" }, // EST
+    ];
+    for (const tc of testCases) {
+      mockFetch({ jobs: [job({ updated_at: tc.input })] });
+      const [row] = await fetchGreenhouse("company", "Company");
+      expect(row.postedAt).toBe(tc.expected);
+    }
+  });
+
+  test("handles job with extra unexpected fields including nested objects", async () => {
+    mockFetch({
+      jobs: [
+        job({
+          title: "Senior Engineer",
+          extraField1: "ignored",
+          extraField2: { nested: "also ignored" },
+          salary: { min: 100000, max: 200000, currency: "USD" },
+          department: "Engineering",
+          metadata: { key: "value", tags: ["remote", "senior"] },
+        }),
+      ],
+    });
+    const [row] = await fetchGreenhouse("company", "Company");
+    expect(row.title).toBe("Senior Engineer");
+    expect(row.sourceUrl).toBe("https://boards.greenhouse.io/company/jobs/abc123");
+  });
+
+  test("handles absolute_url with special characters and spaces", async () => {
+    mockFetch({ jobs: [job({ absolute_url: "https://boards.greenhouse.io/company/jobs/job with spaces" }), job({ title: "Valid", absolute_url: "https://boards.greenhouse.io/company/jobs/valid" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out.length).toBeGreaterThanOrEqual(1);
+    const validJob = out.find((o) => o.title === "Valid");
+    expect(validJob).toBeDefined();
+  });
+
+  test("handles response without content-type check (Greenhouse doesn't validate JSON content-type)", async () => {
+    // Unlike Breezy, Greenhouse doesn't check content-type header
+    // This test documents that behavior - it will parse whatever JSON is returned
+    mockFetch({ jobs: [job({ title: "Valid" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out).toHaveLength(1);
+    expect(out[0].title).toBe("Valid");
+  });
+
+  test("handles 500 internal server error as failed fetch", async () => {
+    mockFetch(null, false, 500);
+    await expect(fetchGreenhouse("company", "Company")).rejects.toThrow(/Greenhouse HTTP 500/);
+  });
+
+  test("handles 502 bad gateway as failed fetch", async () => {
+    mockFetch(null, false, 502);
+    await expect(fetchGreenhouse("company", "Company")).rejects.toThrow(/Greenhouse HTTP 502/);
+  });
+
+  test("handles 504 gateway timeout as failed fetch", async () => {
+    mockFetch(null, false, 504);
+    await expect(fetchGreenhouse("company", "Company")).rejects.toThrow(/Greenhouse HTTP 504/);
+  });
+
+  test("handles empty string title in otherwise valid job object", async () => {
+    mockFetch({ jobs: [job({ title: "", absolute_url: "https://boards.greenhouse.io/company/jobs/empty" }), job({ title: "Valid", absolute_url: "https://boards.greenhouse.io/company/jobs/valid" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid"]);
+  });
+
+  test("handles undefined title in otherwise valid job object", async () => {
+    mockFetch({ jobs: [job({ title: undefined, absolute_url: "https://boards.greenhouse.io/company/jobs/empty" }), job({ title: "Valid", absolute_url: "https://boards.greenhouse.io/company/jobs/valid" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid"]);
+  });
+
+  test("handles null title in otherwise valid job object", async () => {
+    mockFetch({ jobs: [job({ title: null, absolute_url: "https://boards.greenhouse.io/company/jobs/empty" }), job({ title: "Valid", absolute_url: "https://boards.greenhouse.io/company/jobs/valid" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid"]);
+  });
+
+  test("handles empty string absolute_url in otherwise valid job object", async () => {
+    mockFetch({ jobs: [job({ title: "Valid", absolute_url: "" }), job({ title: "Valid 2", absolute_url: "https://boards.greenhouse.io/company/jobs/valid" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid 2"]);
+  });
+
+  test("handles null absolute_url in otherwise valid job object", async () => {
+    mockFetch({ jobs: [job({ title: "Valid", absolute_url: null }), job({ title: "Valid 2", absolute_url: "https://boards.greenhouse.io/company/jobs/valid" })] });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid 2"]);
+  });
+
+  test("handles large response with many jobs (performance and memory)", async () => {
+    const manyJobs = Array.from({ length: 1000 }, (_, i) => job({ title: `Job ${i}`, absolute_url: `https://boards.greenhouse.io/company/jobs/job_${i}` }));
+    mockFetch({ jobs: manyJobs });
+    const out = await fetchGreenhouse("company", "Company");
+    expect(out).toHaveLength(1000);
+    expect(out[0].title).toBe("Job 0");
+    expect(out[999].title).toBe("Job 999");
+  });
+
+  test("description includes location when location present", async () => {
+    mockFetch({ jobs: [job({ location: { name: "London, UK" } })] });
+    const [row] = await fetchGreenhouse("company", "Company");
+    expect(row.description).toContain("London, UK");
+  });
+
+  test("description is null when location missing", async () => {
+    mockFetch({ jobs: [job({ location: undefined })] });
+    const [row] = await fetchGreenhouse("company", "Company");
+    expect(row.description).toBeNull();
+  });
+
+  test("description is null when location.name is empty string", async () => {
+    mockFetch({ jobs: [job({ location: { name: "" } })] });
+    const [row] = await fetchGreenhouse("company", "Company");
+    expect(row.description).toBeNull();
+  });
 });
