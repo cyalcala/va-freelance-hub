@@ -1,6 +1,36 @@
 # System Savepoint
 
-## 2026-10-03 — Correction Savepoint: PR #162 Blocker Fixes Reverted and Honesty Restored (Headless Relay Session 57, Shift 20261002-2118)
+## 2026-10-03 — Autonomous Live Mining Cycle Executed: 115 Probed, 13 Admitted, 34 Qualified Ingested, Marginal Yield 0.3778/probe, Lake Reservoir at 36 Held (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 895 synced, 0 pending; 36 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).
+
+**1. Delivered unit — Autonomous Live Mining Cycle Executed (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`):**
+- **Live Mining Cycle Executed:**
+  - Ran `scripts/lake/run-lake-miner.ts` against live Turso database (`lake_runs` row id 16, completed in 654.3s).
+  - *Phase 1 (Corpus Reconciliation):* 90 boards scanned (30 Ashby, 30 Greenhouse, 30 Lever), 51 tenants found (>= 3 jobs), 3 admitted (`lever:decilegroup`, `lever:lwolf`, `lever:beaverprocess`), 3 shadowed, 84 auto-rejected. Net-new qualified jobs ingested: 34. Marginal qualified yield per probe: **0.3778/probe** (major increase from previous slice 0.0400/probe). Unvalidated corpus claims reduced from 9,199 to 9,139.
+  - *Phase 2 (Domain ATS Discovery):* 25 candidate targets probed across proven employer inventory, 13 tenants found, 10 admitted, 4 rejected.
+  - *Deduplication & Rate-Limit Shielding:* Existing tenants (CrewBloom 138, Hunt St 130, Sourcefit 86, MultiplyMii 50, Canonical 310, RocketAMS 9, Hello Rache 3, Yokly 11, VALUE Virtual Assistants 9, Remote Craft 15) cleanly deduplicated without error. Rate-limited hosts: 0 (polite 1500ms pacing cleanly avoided any 429s).
+- **Turso Lake State Post-Execution:**
+  - Auto-approved tenants: 23 -> 27 (+4 admitted tenants).
+  - Lake reservoir (`QUALIFIED_READY` not yet synced): 25 -> 36 (+11 net-new qualified remote opportunities held).
+  - Synced to D1: 895 opportunities.
+- **Dual-Gate Publication Invariant Verified (Dual-Gate Defense-in-Depth):**
+  - `bun run lake:sync -- --dry-run` verified all 36 `QUALIFIED_READY` candidates in the Lake reservoir (`ashby:supabase`: 13, `lever:decilegroup`: 5, `lever:lwolf`: 4, `lever:loadsmart`: 4, `lever:aethoshotels`: 4, `lever:sofarsounds`: 2, `lever:beaverprocess`: 2, `lever:influ2`: 1, `lever:apolloagriculture`: 1) are strictly HELD from D1 publication because their Wilson lower bounds are below the 20% floor.
+  - Zero premature leakage to production D1 (D1 synced remains 895, 0 unauthorized rows published).
+- **Telemetry & Observability:**
+  - Full execution evidence and JSON telemetry persisted to `lake_runs` (id 16, status: completed).
+
+**2. Verification:**
+- Full test suite: 1,740 passed / 0 failed across 172 files (`bun test`, 61.4s).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+
+**NEXT SINGLE ACTION:** Advance MATH-03 portfolio coverage and candidate evaluation: run next stratified reconciliation slice (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) or evaluate Ashby candidate providers (`amplify`, `camunda`, `tremendous`) to expand qualified remote supply toward the 100/day floor. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-03 — Correction Savepoint: PR #162 Blocker Fixes Reverted and Honesty Restored (Headless Relay Session 57, Shift 20261002-2118) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
 **Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).

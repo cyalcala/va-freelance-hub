@@ -16,19 +16,31 @@ VERIFICATION COMPLETE:
 
 ## Active bounded unit
 
-**MATH-12 Failure Telemetry: Failed Lake-Miner Cycles Now Ledgered in `lake_runs` (Headless Relay Session 2, Shift 20261002-2118, code-only) (2026-10-02, current):**
+**Autonomous Live Mining Cycle Executed: 115 Probed, 13 Admitted, 34 Qualified Ingested, Marginal Yield 0.3778/probe, Lake Reservoir at 36 Held (2026-10-03, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Failed `run-lake-miner` cycles previously left zero durable `lake_runs` evidence and discarded partial phase results; fixed best-effort `status = "failed"` ledger insert with partial aggregates preserved. Full suite 1,701/1,701; typecheck clean. Code-only on branch `opencode/shift-20261002-2118`; no production writes.
-- Live evidence snapshot `.shift/evidence.md`: D1 1,366 active PH-eligible; ledger fresh flow 67 (Oct 1) / 35 (Oct 2 partial).
+- Unified background miner (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) executed live against Turso Lake: 115 targets probed (90 stratified reconciliation + 25 domain discovery), 13 tenants admitted, 34 net-new qualified candidate jobs ingested, marginal qualified yield per probe jumped to 0.3778/probe. Telemetry persisted to `lake_runs` row 16 (`status = 'completed'`).
+- Auto-approved tenants expanded to 27; Lake reservoir has 36 `QUALIFIED_READY` jobs strictly HELD by dual-gate Wilson floor (< 20%), zero premature leakage to D1 (D1 synced remains 895). Full test suite 1,740/1,740 passing across 172 files; typecheck and audits clean.
 
-CURRENT BOTTLENECK: Supply gap (ledger flow ~35–67/day vs 100/day floor).
+CURRENT BOTTLENECK:
+Supply gap (~36–67/day vs 100/day floor). 9,139 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
 
-ACTIVE UNIT: Continuous background mining execution via scheduled workflow; live initial `lake:mine` requires credentials (unavailable in relay sessions).
+ACTIVE UNIT:
+Continuous background mining execution via scheduled workflow `.github/workflows/gha-lake-miner.yml` and stratified reconciliation / MATH-03 Ashby candidate evaluation.
 
-NEXT ACTION: With Turso credentials, run `bun run lake:mine --reconcile-per-family=30 --domain-limit=25`; acceptance = `lake_runs` row (completed or failed) with aggregate metrics, dual-gate invariants preserved.
+NEXT ACTION:
+Run next stratified reconciliation slice (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) or evaluate high-yield Ashby candidates (`amplify`, `camunda`, `tremendous`) to expand qualified remote supply toward the 100/day floor.
+
+WHY NEXT:
+Maintains continuous discovery momentum, chips away at the unvalidated corpus (9,139 remaining), and identifies high-PH outlier sources to lift daily qualified flow.
+
+ACCEPTANCE:
+Corpus unvalidated count drops, net-new admitted sources and QUALIFIED_READY jobs ingested to Lake reservoir, dual-gate publication floor strictly held.
+
+FALLBACK:
+If rate limits occur, back off per MATH-04 cooldown; fail-safe skip on missing credentials ensures CI safety.
 
 **Prior unit (delivered & deployed):**
 
