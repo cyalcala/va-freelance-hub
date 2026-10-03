@@ -1,17 +1,17 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift (session 17). This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 18). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest checkpoint is "SSAE-04 Deterministic Fixtures & Tests Added (session 17)."
+The latest checkpoint is "Session 18 Reading Gate & SSAE-04 Verification (session 18)."
 SSAE-04 (PROPOSED, VERIFIED_CODE, no runtime change) complete — holdout evaluation at docs/audits/2026-10-04-SSAE-04-TEMPORAL-HOLDOUTS.md + deterministic fixtures/tests at scripts/lake/temporal-holdout-eval.test.ts (24 tests).
 SSAE-03 (PROPOSED, VERIFIED_CODE, no runtime change) complete — ranker created at scripts/lake/source-ranker.ts with 42 tests.
 SSAE-02 (PROPOSED, VERIFIED_CODE, no runtime change) complete — contract created at docs/audits/2026-10-04-SSAE-02-COMPACT-SOURCE-MEMORY.md.
 SSAE-01 (PROPOSED, VERIFIED_CODE, no runtime change) complete — dataset card created at docs/audits/2026-10-04-SSAE-01-ATTENTION-DATASET-CARD.md.
 SSAE-00 (PROPOSED, VERIFIED_CODE, no runtime change) complete.
 MATH-06A (OPEN, evidence only, VERIFIED_CODE) complete — inventory fixed against HEAD `b6736aeecec8`, 42 tests pass.
-MATH-12 (24 tests) passes; full suite 1,910 pass; audits clean.
+MATH-12 (24 tests) passes; full suite 1,915 pass; audits clean.
 MATH-05 register state: OPEN (fixtures verified, import fix applied, VERIFIED_CODE).
 MATH-09 register state: OPEN (ASHBY_CONTENT_HASH removed, gap fixture added, VERIFIED_CODE).
 

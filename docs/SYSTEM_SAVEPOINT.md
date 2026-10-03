@@ -1,5 +1,22 @@
 # System Savepoint
 
+## 2026-10-04 — Session 18 Reading Gate & SSAE-04 Verification (session 18)
+
+**Unit:** Reading gate + verification. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — completed REQUIRED READING GATE (AGENTS.md, CONSTITUTION.md, SYSTEM_SAVEPOINT.md, CURRENT.md, MASTER_OPERATING_PROMPT.md, EXECUTION_PROMPT.md, SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md, MATHEMATICAL_IMPROVEMENT_STRATEGY.md, MATHEMATICAL_IMPROVEMENT_PLAN.md, HUMAN_RESEARCH_INTAKE_PLAN.md, SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md, SPARSE_SOURCE_ATTENTION_STRATEGY.md, SPARSE_SOURCE_ATTENTION_IMPLEMENTATION_PLAN.md, MERGE_RUBRIC.md). Verified SSAE-04 complete on branch tip `f81f6ee6`.
+
+**Session 18 Work:**
+- Reading gate: `.shift/reading-018.md` written (untracked)
+- Verified SSAE-04: `scripts/lake/temporal-holdout-eval.ts` + `scripts/lake/temporal-holdout-eval.test.ts` (24 tests) complete per sessions 14/17
+- Exports confirmed: `computeMetrics`, `compareSelectors`, `createSyntheticRecord`
+- Holdout windows named: `primary_2026_09`, `extended_2026_08_09`
+- Demo mode functional with synthetic fixtures
+- No SQL mutations in tests; all runtime counts UNKNOWN
+- Full suite: `bun test` 1,915 pass / 0 fail; `bun run typecheck` clean
+
+**NEXT SINGLE ACTION:** SSAE-05 (Run shadow decisions without extra probes) depends on SSAE-04 holdout baseline and SSAE-03 ranker output. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task OR completion of SSAE-06 measurement contracts.
+
+---
+
 ## 2026-10-04 — SSAE-04 Deterministic Fixtures & Tests Added (session 17)
 
 **Unit:** SSAE-04 (additive). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — added `scripts/lake/temporal-holdout-eval.test.ts` with 24 deterministic tests, exported metrics functions for testability.
