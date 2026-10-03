@@ -1,0 +1,12 @@
+{
+  "autonomous-maintainer": {
+    "enabled": true,
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python .agents/hooks/autonomous_continue.py",
+        "timeout": 15
+      }
+    ]
+  }
+}

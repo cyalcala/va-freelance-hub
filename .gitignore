@@ -10,7 +10,12 @@ node_modules/
 # .claude/ holds per-machine Claude Code config (settings.local.json, launch.json);
 # graphify-out/ is regenerable /graphify skill output.
 .claude/
-.agents/
+.agents/runtime/
+.agents/STOP_AUTONOMY
+.agents/MISSION_COMPLETE
+.agents/RESET_AUTONOMY
+.agents/NEW_MISSION
+.agents/.agents
 skills-lock.json
 graphify-out/
 .tmp*
