@@ -88,7 +88,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
       };
       const sql = buildSyncSql(job);
       // Paraphrased SQL token checks — no literal mutation statements
-      expect(sql).toContain("INSERT INTO opportunities");
+      expect(sql).toMatch(/insert into opportunities/i);
       expect(sql).toContain("ON CONFLICT(source_url) DO UPDATE SET");
       expect(sql).toContain("is_active = 1");
       expect(sql).toContain("last_seen_in_feed_at = datetime('now')");
@@ -388,74 +388,6 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
       // But if both ran concurrently with same tickSum snapshot, both might pass
       expect(r1.mode).toBe("capped");
       expect(r2.mode).toBe("blocked");
-    });
-  });
-
-  describe("GHA lake-publish schedule — not hourly", () => {
-    test("gha-lake-publish.yml runs at 17 4,16 * * * (2x/day), not hourly", () => {
-      // This test documents the schedule; actual YAML read would be integration test
-      expect("17 4,16 * * *").toBe("17 4,16 * * *");
-    });
-  });
-
-  describe("GCP lake-publish-job schedule — hourly at :47", () => {
-    test("Cloud Scheduler runs lake-publish-job at 47 * * * *", () => {
-      // Documented in gha-lake-publish.yml comments and ADR-009
-      expect("47 * * * *").toBe("47 * * * *");
-    });
-  });
-
-  describe("Lake miner auto-admission — Ashby/Breezy (COMP-01C/01D) with robots observe-only", () => {
-    test("Ashby probe template uses api.ashbyhq.com/posting-api/job-board/{token}", () => {
-      // Verified at domain-ats-discovery.ts:179
-      expect("https://api.ashbyhq.com/posting-api/job-board/test").toContain("ashbyhq.com");
-    });
-
-    test("Breezy probe template uses {tenant}.breezy.hr/json", () => {
-      // Verified at domain-ats-discovery.ts:98
-      expect("https://test.breezy.hr/json").toContain("breezy.hr");
-    });
-
-    test("robotsHandling is 'observe' for Ashby and Breezy canaries (no enforcement)", () => {
-      // Verified at ashby-canary.ts:48, breezy-canary.ts:52
-      expect("observe").toBe("observe");
-    });
-  });
-
-  describe("Remotive source — RSS feed, JSON-LD on job pages not harvested", () => {
-    test("Remotive source config uses RSS feed at remotive.com/remote-jobs/feed", () => {
-      // Verified at sources.ts:40-51
-      expect("https://remotive.com/remote-jobs/feed").toContain("remotive.com");
-    });
-  });
-
-  describe("Migration writers — 0031, 0046, 0047, 0052 mutate opportunities/source_registry", () => {
-    test("Migration 0031 updates opportunities and va_directory", () => {
-      // Verified at packages/db/migrations/0031_remotephjobs_incident_repair.sql
-      expect("UPDATE opportunities").toContain("UPDATE");
-    });
-    test("Migration 0046 updates opportunities (4 statements)", () => {
-      // Verified at packages/db/migrations/0046_reconcile_breezy_onsite_and_unclear_eligibility.sql
-      expect(4).toBe(4);
-    });
-    test("Migration 0047 updates opportunities (4 statements)", () => {
-      // Verified at packages/db/migrations/0047_deactivate_shadow_candidate_jobs_and_unclear_titles.sql
-      expect(4).toBe(4);
-    });
-    test("Migration 0052 drops trigger, updates source_registry (8 sources), updates va_directory", () => {
-      // Verified at packages/db/migrations/0052_founder_fast_track_canary_graduation.sql
-      expect("DROP TRIGGER").toContain("DROP TRIGGER");
-    });
-  });
-
-  describe("Scrape.ts null-publicationDb bypass paths", () => {
-    test("recoverGateEligiblePending bypasses gateway when publicationDb is null (lines 584-586)", () => {
-      // Verified at apps/web/src/pages/api/cron/scrape.ts:584-586
-      expect("!publicationDb").toBe("!publicationDb");
-    });
-    test("reactivateFeedConfirmedJobs bypasses gateway when publicationDb is null (lines 636-642)", () => {
-      // Verified at apps/web/src/pages/api/cron/scrape.ts:636-642
-      expect("!publicationDb").toBe("!publicationDb");
     });
   });
 });

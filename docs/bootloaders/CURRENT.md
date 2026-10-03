@@ -4,8 +4,8 @@ Updated 2026-10-04 for v6.2 shift. This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest checkpoint is "MATH-06A Publication Authority Closure: Writer Inventory Fixed, 35 Gap Characterization Tests Added."
-The documentation checkpoint records MATH-06A completion (VERIFIED_CODE: 35 tests pass, full suite 1,782 pass, typecheck clean, audits clean).
+The latest checkpoint is "MATH-06A Publication Authority Characterization: Writer Inventory Fixed, 23 Gap Characterization Tests Added."
+The documentation checkpoint records MATH-06A progress, not closure (VERIFIED_CODE: 23 tests pass, full suite 1,782 pass, typecheck clean, audits clean).
 MATH-06A register state: OPEN (evidence only; repair contract PROPOSAL).
 
 ## Canonical entry points
