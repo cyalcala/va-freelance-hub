@@ -22,7 +22,7 @@ fuse that blows every morning.
 | **OpenRouter** | 50 req/day unfunded; 1,000/day after a one-time (lifetime) $10 top-up; 20 RPM always | Too small at true $0. Rejected. |
 | **NVIDIA NIM** (build.nvidia.com) | ~40 RPM, credits effectively unlimited, no card | **Free tier is explicitly dev/test/eval only — production use requires paid NVIDIA AI Enterprise.** Wrong fit for a live public board. Rejected. |
 | **Google Gemini** (Flash-Lite / Flash) | Flash-Lite ~1,000-1,500 req/day, 15 RPM; Flash ~250/day, 10 RPM, more capable; Pro no longer free (since Apr 2026) | **Accepted.** Owner already had `GEMINI_API_KEY`; volume dwarfs the neuron budget; data is public job listings so free-tier training-use terms are an acceptable trade. |
-| **Groq** (LPU inference) | `llama-3.3-70b-versatile`: 30 RPM, 1,000 req/day, 100k tokens/day (~66 full triages/day on the token cap); `llama-3.1-8b-instant`: 30 RPM, 14,400 req/day (higher volume, weaker) | **Accepted**, as a second free provider — not a replacement for Gemini. Free/dev tier (same production caveat as any free tier, acceptable at this project's scale). |
+| **Groq** (LPU inference) | `llama-3.1-70b-versatile`: 30 RPM, 1,000 req/day, 100k tokens/day (~66 full triages/day on the token cap); `llama-3.1-8b-instant`: 30 RPM, 14,400 req/day (higher volume, weaker) | **Accepted**, as a second free provider — not a replacement for Gemini. Free/dev tier (same production caveat as any free tier, acceptable at this project's scale). |
 
 No provider is both more capable AND higher-volume than the incumbent —
 capability and free daily volume trade off against each other. The design
