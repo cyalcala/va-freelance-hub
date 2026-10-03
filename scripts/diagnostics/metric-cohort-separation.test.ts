@@ -8,9 +8,9 @@ import {
   type LedgerPublicationRow,
   type OpportunityRow,
   type SourceRegistryRow,
-  type ManilaWindow,
   type CohortPartitionedRow,
 } from "./metric-cohort-separation";
+import { type ManilaWindow } from "./measure-manila-daily-publications";
 
 const NOW = "2026-09-10T12:00:00.000Z";
 const MANILA_DATES = ["2026-09-09", "2026-09-08", "2026-09-07", "2026-09-06", "2026-09-05", "2026-09-04", "2026-09-03"];
