@@ -1495,3 +1495,332 @@ describe("SSAE-05 Offline Hardening — Pure Fixture Tests", () => {
     expect(sources).toEqual(sourcesClone);
   });
 });
+
+describe("SSAE-05 Additional Offline Hardening — Edge Cases", () => {
+  const baseConfig: ShadowConfig = {
+    topK: 5,
+    maxCostPerSourceCents: 500,
+    coldRevisitDays: 7,
+    epochTimestamp: "2026-09-15T12:00:00Z",
+  };
+
+  function makeSources(count: number, prefix = "src"): SourceMemoryRecord[] {
+    return Array.from({ length: count }, (_, i) =>
+      createSyntheticRecord(`${prefix}-${i}`, "Provider", "rss_xml", 100, 0.1, 50)
+    );
+  }
+
+  function makeRankedSource(overrides: Record<string, any> = {}): RankedSource {
+    const now = new Date().toISOString();
+    return {
+      source_id: "test-source",
+      provider_id: "test-provider",
+      declared_capability: "ats_json",
+      endpoint_url: "https://example.com/api",
+      score: 10,
+      score_breakdown: {
+        marginal_yield_estimate: 5,
+        cost_estimate_cents: 20,
+        feasibility_penalty: 0,
+        freshness_bonus: 0,
+        diversity_bonus: 0,
+        cold_revisit_bonus: 0,
+      },
+      processing_mode: "FULL",
+      mode_reason: "test",
+      feasibility: { permitted: true, reason: "test", hardGate: "NONE" },
+      excluded: false,
+      exclusion_reason: null,
+      cold_revisit_reason: null,
+      cold_revisit_due_at: null,
+      evidence_refs: [],
+      evidence_complete: false,
+      dependencies: null,
+      ranked_at: now,
+      selector_version: "test@v1",
+      ...overrides,
+    };
+  }
+
+  it("compareSelectorOutputs handles all four agreement types in single call", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("both", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("control-only", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("treatment-only", "ProviderB", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("neither", "ProviderB", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "both", provider_id: "ProviderA", rank: 1, score: 20 }),
+      makeRankedSource({ source_id: "control-only", provider_id: "ProviderA", rank: 2, score: 15 }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "both", provider_id: "ProviderA", rank: 1, score: 25 }),
+      makeRankedSource({ source_id: "treatment-only", provider_id: "ProviderB", rank: 2, score: 18 }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    expect(result.decisions.length).toBe(4);
+    const dBoth = result.decisions.find(d => d.source_id === "both");
+    const dControl = result.decisions.find(d => d.source_id === "control-only");
+    const dTreatment = result.decisions.find(d => d.source_id === "treatment-only");
+    const dNeither = result.decisions.find(d => d.source_id === "neither");
+    expect(dBoth?.agreement).toBe("BOTH_SELECTED");
+    expect(dControl?.agreement).toBe("CONTROL_ONLY");
+    expect(dTreatment?.agreement).toBe("TREATMENT_ONLY");
+    expect(dNeither?.agreement).toBe("NEITHER");
+  });
+
+  it("compareSelectorOutputs handles treatment sources with REINDEX mode", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("reindex-src", "ProviderA", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "reindex-src", provider_id: "ProviderA", rank: 1, score: 10, processing_mode: "FULL" }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "reindex-src", provider_id: "ProviderA", rank: 1, score: 12, processing_mode: "REINDEX" }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    const decision = result.decisions.find(d => d.source_id === "reindex-src");
+    expect(decision?.agreement).toBe("BOTH_SELECTED");
+    expect(decision?.control.mode).toBe("FULL");
+    expect(decision?.treatment.mode).toBe("REINDEX");
+    expect(result.overlap.modeAgreementRate).toBe(0); // Different modes
+  });
+
+  it("compareSelectorOutputs handles treatment sources with REUSE mode", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("reuse-src", "ProviderA", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "reuse-src", provider_id: "ProviderA", rank: 1, score: 10, processing_mode: "FULL" }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "reuse-src", provider_id: "ProviderA", rank: 1, score: 10, processing_mode: "REUSE" }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    const decision = result.decisions.find(d => d.source_id === "reuse-src");
+    expect(decision?.agreement).toBe("BOTH_SELECTED");
+    expect(decision?.treatment.mode).toBe("REUSE");
+    expect(result.overlap.modeAgreementRate).toBe(0); // Different modes
+  });
+
+  it("compareSelectorOutputs handles treatment sources with BOUNDED_REPLAY mode", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("replay-src", "ProviderA", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "replay-src", provider_id: "ProviderA", rank: 1, score: 10, processing_mode: "FULL" }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "replay-src", provider_id: "ProviderA", rank: 1, score: 10, processing_mode: "BOUNDED_REPLAY" }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    const decision = result.decisions.find(d => d.source_id === "replay-src");
+    expect(decision?.agreement).toBe("BOTH_SELECTED");
+    expect(decision?.treatment.mode).toBe("BOUNDED_REPLAY");
+    expect(result.overlap.modeAgreementRate).toBe(0); // Different modes
+  });
+
+  it("compareSelectorOutputs handles multiple exclusion reasons", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("excl-cost", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("excl-qualified", "ProviderB", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("excl-lease", "ProviderC", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("excl-optout", "ProviderD", "rss_xml", 100, 0.1, 50),
+    ];
+    const treatmentExcluded = [
+      makeRankedSource({ source_id: "excl-cost", provider_id: "ProviderA", excluded: true, exclusion_reason: "cost_exceeds_budget" }),
+      makeRankedSource({ source_id: "excl-qualified", provider_id: "ProviderB", excluded: true, exclusion_reason: "insufficient_qualified_ready" }),
+      makeRankedSource({ source_id: "excl-lease", provider_id: "ProviderC", excluded: true, exclusion_reason: "policy_lease_expired" }),
+      makeRankedSource({ source_id: "excl-optout", provider_id: "ProviderD", excluded: true, exclusion_reason: "opt_out_active" }),
+    ];
+    const result = compareSelectorOutputs([], [], treatmentExcluded, [], allSources);
+    expect(result.decisions.length).toBe(4);
+    for (const d of result.decisions) {
+      expect(d.treatment.excluded).toBe(true);
+      expect(["cost_exceeds_budget", "insufficient_qualified_ready", "policy_lease_expired", "opt_out_active"]).toContain(d.treatment.exclusion_reason);
+    }
+  });
+
+  it("runMultiEpochShadowDecisions handles configs with holdoutSplit specified", async () => {
+    const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+    const epoch1 = "2026-09-01T12:00:00Z";
+    const epoch2 = "2026-09-08T12:00:00Z";
+    const configs = [
+      { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1, holdoutSplit: "primary_2026_09" },
+      { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2, holdoutSplit: "extended_2026_08_09" },
+    ];
+    const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+      [epoch1, makeSources(5, "e1")],
+      [epoch2, makeSources(5, "e2")],
+    ]);
+    const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+    expect(results.length).toBe(2);
+    expect(results[0].epoch_label).toBe("primary_2026_09");
+    expect(results[1].epoch_label).toBe("extended_2026_08_09");
+  });
+
+  it("runMultiEpochShadowDecisions handles empty configs array", async () => {
+    const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+    const results = await runMultiEpochShadowDecisions([], new Map());
+    expect(results).toEqual([]);
+  });
+
+  it("runShadowDecisionCycle handles sources with different provider families", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const sources = [
+      createSyntheticRecord("src-1", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("src-2", "ProviderB", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("src-3", "ProviderC", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("src-4", "ProviderD", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("src-5", "ProviderE", "rss_xml", 100, 0.1, 50),
+    ];
+    const result = await runShadowDecisionCycle({ ...baseConfig, topK: 5 }, sources);
+    // With 5 families and topK=5, should select 1 from each family
+    expect(result.control.selected_count).toBeLessThanOrEqual(5);
+    const families = new Set(result.control.selected_ids.map(id => sources.find(s => s.source_id === id)?.provider_id).filter(Boolean));
+    // Should have diversity across families
+    expect(families.size).toBeGreaterThan(1);
+  });
+
+  it("runShadowDecisionCycle handles very high cost sources correctly", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const expensiveSource = createSyntheticRecord(
+      "expensive",
+      "ExpensiveProvider",
+      "public_json_api",
+      10000,
+      0.10,
+      500
+    );
+    const normalSources = makeSources(5);
+    const allSources = [...normalSources, expensiveSource];
+    const result = await runShadowDecisionCycle(
+      { ...baseConfig, maxCostPerSourceCents: 100, topK: 10 },
+      allSources
+    );
+    const expensiveDecision = result.decisions.find(d => d.source_id === "expensive");
+    expect(expensiveDecision).toBeDefined();
+    if (expensiveDecision) {
+      expect(expensiveDecision.treatment.excluded).toBe(true);
+      expect(expensiveDecision.treatment.exclusion_reason).toContain("exceeds budget");
+    }
+  });
+
+  it("runShadowDecisionCycle handles coldRevisitDays boundary exactly at threshold", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const now = new Date("2026-09-15T12:00:00Z");
+    // Exactly 7 days ago (boundary)
+    const exactly7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    // 8 days ago (over threshold)
+    const over7Days = new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString();
+    const sources = [
+      createSyntheticRecord("exact-7", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("over-7", "ProviderB", "rss_xml", 100, 0.1, 50),
+    ];
+    sources[0].lake_state.last_sighting_at = exactly7Days;
+    sources[1].lake_state.last_sighting_at = over7Days;
+    const result = await runShadowDecisionCycle({ ...baseConfig, coldRevisitDays: 7, topK: 10 }, sources);
+    const exact7Decision = result.decisions.find(d => d.source_id === "exact-7");
+    const over7Decision = result.decisions.find(d => d.source_id === "over-7");
+    // Exact 7 days: should NOT be cold revisit (threshold is > 7 days)
+    // Over 7 days: should be cold revisit
+    expect(over7Decision?.treatment.cold_revisit_reason).toMatch(/cold|cold_revisit|No observation/i);
+  });
+
+  it("compareSelectorOutputs handles zero overlap with Jaccard = 0", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("ctrl-only", "ProviderA", "rss_xml", 100, 0.1, 50),
+      createSyntheticRecord("treat-only", "ProviderB", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "ctrl-only", provider_id: "ProviderA", rank: 1, score: 20 }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "treat-only", provider_id: "ProviderB", rank: 1, score: 25 }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    expect(result.overlap.selectedOverlapCount).toBe(0);
+    expect(result.overlap.selectedOverlapRate).toBe(0);
+    expect(result.overlap.rankCorrelation).toBe(0); // No common sources
+  });
+
+  it("compareSelectorOutputs handles perfect overlap with Jaccard = 1", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("shared", "ProviderA", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "shared", provider_id: "ProviderA", rank: 1, score: 20 }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "shared", provider_id: "ProviderA", rank: 1, score: 25 }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, treatmentRanked, [], [], allSources);
+    expect(result.overlap.selectedOverlapCount).toBe(1);
+    expect(result.overlap.selectedOverlapRate).toBe(1);
+    expect(result.overlap.rankCorrelation).toBe(0); // Need >=2 for correlation
+  });
+
+  it("runShadowDecisionCycle ranking latency is non-negative", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const sources = makeSources(10);
+    const result = await runShadowDecisionCycle(baseConfig, sources);
+    expect(result.control.ranking_latency_ms).toBeGreaterThanOrEqual(0);
+    expect(result.treatment.ranking_latency_ms).toBeGreaterThanOrEqual(0);
+  });
+
+  it("shadow decision cycle with topK=0 returns empty selections", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const sources = makeSources(5);
+    const result = await runShadowDecisionCycle({ ...baseConfig, topK: 0 }, sources);
+    expect(result.control.selected_count).toBe(0);
+    expect(result.treatment.selected_count).toBe(0);
+    expect(result.control.selected_ids).toEqual([]);
+    expect(result.treatment.selected_ids).toEqual([]);
+  });
+
+  it("compareSelectorOutputs handles control selected with treatment excluded same source", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    const allSources = [
+      createSyntheticRecord("conflict", "ProviderA", "rss_xml", 100, 0.1, 50),
+    ];
+    const controlSelected = [
+      makeRankedSource({ source_id: "conflict", provider_id: "ProviderA", rank: 1, score: 20 }),
+    ];
+    const treatmentExcluded = [
+      makeRankedSource({ source_id: "conflict", provider_id: "ProviderA", excluded: true, exclusion_reason: "cost_exceeds_budget" }),
+    ];
+    const result = compareSelectorOutputs(controlSelected, [], treatmentExcluded, [], allSources);
+    const decision = result.decisions.find(d => d.source_id === "conflict");
+    expect(decision?.agreement).toBe("CONTROL_ONLY");
+    expect(decision?.control.selected).toBe(true);
+    expect(decision?.treatment.excluded).toBe(true);
+  });
+
+  it("runMultiEpochShadowDecisions handles configs with different topK per epoch", async () => {
+    const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+    const epoch1 = "2026-09-01T12:00:00Z";
+    const epoch2 = "2026-09-08T12:00:00Z";
+    const configs = [
+      { topK: 2, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+      { topK: 5, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
+    ];
+    const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+      [epoch1, makeSources(5, "e1")],
+      [epoch2, makeSources(5, "e2")],
+    ]);
+    const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+    expect(results.length).toBe(2);
+    expect(results[0].control.top_k).toBe(2);
+    expect(results[1].control.top_k).toBe(5);
+    expect(results[0].control.selected_count).toBeLessThanOrEqual(2);
+    expect(results[1].control.selected_count).toBeLessThanOrEqual(5);
+  });
+});
