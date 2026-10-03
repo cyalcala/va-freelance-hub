@@ -1,6 +1,6 @@
 # VA Freelance Hub — reusable execution prompt
 
-Version 5.2 · 2026-09-27 · Companion to `MASTER_OPERATING_PROMPT.md`.
+Version 6.0 · 2026-10-03 · SSAE-CED companion to `MASTER_OPERATING_PROMPT.md`.
 
 Human intake companion: [Human Research Intake Plan v5.2](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
 
@@ -44,8 +44,9 @@ At recovery and every meaningful checkpoint, report:
 After reaching the target, maintain measured supply, quality, resilience and
 recovery; reopen work when drift or new evidence shows a gap.
 
-TASK: [State the requested outcome, scope, and constraints here. If no task is
-supplied, recover state and return one evidence-backed next action; do not infer
+TASK: [State the requested outcome, scope, authorized side effects and completion
+criterion here. If no task is supplied, recover state and return one evidence-backed
+next action; do not infer
 permission to deploy, publish jobs, promote sources, or amend governance.]
 
 Recover before acting:
@@ -54,8 +55,10 @@ Recover before acting:
    docs/SYSTEM_SAVEPOINT.md, docs/bootloaders/CURRENT.md, the current
    docs/bootloaders/MASTER_OPERATING_PROMPT.md, and
    docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md (Global Miner Overlay).
-   Set AUTONOMOUS_MARATHON_MODE = ACTIVE. Consult the linked constitutions,
-   source masterplan/ADRs, accepted parameters, runbook, plan, and relevant
+   Apply AUTONOMOUS_MARATHON_MODE = ACTIVE within a currently authorized
+   continuing maintenance task. A bounded task finishes at its stated outcome;
+   recovery, audit and prompt edits do not activate live mining/publication.
+   Consult the linked constitutions, source masterplan/ADRs, accepted parameters, runbook, plan, and relevant
    evidence for this task. A read order is not a policy-precedence order.
 2. Inspect Git status, branch, full HEAD, remote and deployed revisions. Fetch
    origin when available; explain divergence, preserve others' work, and never
@@ -86,6 +89,60 @@ Establish reality:
 - Refresh supply, quality, publication-path coverage, workflow failures, queue
   age, source authority and resource limits when needed. If credentials or
   telemetry are absent, keep those facts UNKNOWN and continue independent work.
+
+Use SSAE-CED sparse processing for compute-allocation work:
+Read master section 10B, docs/strategies/SPARSE_SOURCE_ATTENTION_STRATEGY.md,
+and docs/plans/SPARSE_SOURCE_ATTENTION_IMPLEMENTATION_PLAN.md.
+Treat this as a cross-cutting program over MATH-01..13, with proposed work
+cards supporting the existing execution queue. Do not introduce an accepted
+MATH-14 or activate production scheduling from this template.
+
+Encode permitted evidence once; share versioned source memory. Prefer lookup
+for known identities/capabilities; maintain incremental cohort indexes and
+bounded due work rather than full-universe ranking every epoch.
+Select one primary processing mode per entity/action:
+- FULL for new/materially changed or invalid evidence.
+- REINDEX for ranking/index changes using sufficient compatible stored data.
+- REUSE only with valid material hashes, versions, expiry and durable results.
+- BOUNDED_REPLAY for changed dependencies, with an affected cohort and cursor.
+
+These modes are separate from source authority/lifecycle enums. Same URL,
+fingerprint, ID set, body hash or 304 cannot alone justify cached qualification.
+Unknown dependencies and incomplete evidence invalidate reuse conservatively.
+Replay restrictive rules across qualified/synced/public records too; propagate
+withdrawals and preserve canonical identity and first-publication clocks.
+Recheck current opt-out, lease and publication gates at actual writes.
+
+Apply action-specific hard feasibility before scores. Probe authority is not
+publication authority. Derive Top-K from multiple resources, downstream service
+capacity, shared host pacing, audit and recovery budgets. Honor Retry-After
+across all tenants/phases/shards/runners; process-local sleep is insufficient.
+Do not reject a source permanently for a transient failure or delete jobs from
+a partial snapshot.
+
+Retain the deterministic family-stratified sampler as a reproducible control.
+It is not an unbiased random audit. Design permitted probability sampling and
+log inclusion probabilities before making universe-wide missed-yield claims.
+Shadow ranking reads state without probing hypothetical alternatives.
+Use temporal holdouts, selection-time features, canonical deduplication,
+matched outcome horizons and independent quality/long-tail samples.
+Unknown/held/delayed outcomes are not confirmed zero useful discovery.
+
+Profile total cost and the actual bottleneck; include index/DB/audit/replay
+maintenance. Start with simple empirical baselines. Advanced allocation,
+count models, exploration, adaptive polling, GCP sharding and AI routing must
+earn their complexity. Import no neural hyperparameters, provider requirement
+or 100x claim from DeepSeek. Its mechanisms inspire application proposals;
+our evidence replay must satisfy application correctness, not neural approximation.
+
+Use dependency-ordered SSAE work cards: profile/dataset/state -> read-only
+ranker/temporal replay/shadow -> independent audit and safe invalidation
+-> incremental hierarchy/bounded allocator -> optional advanced controls
+-> authorized scheduling canary -> observed graduation. Predeclare benefit,
+noninferiority, window, sample and stopping rules; retain the control selector
+and tested rollback. Report mode distributions, fresh first-publication yield,
+missed yield/recall limits, actual resource cost, queue age and host health.
+Document completion does not certify any runtime improvement.
 
 Actively advance all 13 challenges through the strategy and working register in
 docs/MATHEMATICAL_IMPROVEMENT_STRATEGY.md and
@@ -128,7 +185,10 @@ After all 13 are accepted, validate their interactions and maintain drift checks
 recovery drills and source resilience. Supply targets and autonomous cutover still
 require their own evidence; 13/13 is not a guarantee of perpetual daily supply.
 
-Trigger.dev is not currently used. Treat its repository assets as historical or future work. The current scheduling system uses the Cloudflare freshness Worker and GitHub Actions; adding Trigger.dev requires a separate architecture decision.
+Verify the current scheduling responsibilities across the Cloudflare freshness
+Worker, GitHub Actions and evidenced GCP jobs; do not infer deployed clocks
+from a plan. Trigger.dev assets remain historical/future work unless a separate
+accepted architecture decision and runtime evidence show otherwise.
 
 Optional human research intake (v5.2):
 

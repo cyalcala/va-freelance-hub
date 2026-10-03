@@ -105,11 +105,15 @@ export function assessShadowResponse(body: string): string {
       }
     }
     const notesPart = verdict.status === "healthy_with_notes" ? `, notes=${verdict.notes.length}` : "";
-    return `shadow dispatched=${value.dispatched}, eligible=${value.eligible}, verdict=${verdict.status}${notesPart}`;
+    return value.dispatched === 0
+      ? `shadow no observations; dispatched=0, eligible=0, verdict=${verdict.status}`
+      : `shadow dispatched=${value.dispatched}, eligible=${value.eligible}, verdict=${verdict.status}${notesPart}`;
   }
 
   if (nonHealthy.length) {
     throw new Error("Shadow dispatch contains unhealthy or unknown outcomes");
   }
-  return `shadow dispatched=${value.dispatched}, eligible=${value.eligible}`;
+  return value.dispatched === 0
+    ? "shadow no observations; dispatched=0, eligible=0"
+    : `shadow dispatched=${value.dispatched}, eligible=${value.eligible}`;
 }

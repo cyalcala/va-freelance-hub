@@ -83,6 +83,7 @@ export function formatGcpLog(result: ShadowDispatchRunResult): string {
     total_registry_rows: result.evidence.totalRegistryRows,
     eligible: result.evidence.eligible,
     dispatched: result.evidence.dispatched,
+    skipped_ineligible: result.evidence.skippedIneligible,
     skipped_stale_context: result.evidence.skippedStaleContext,
     verdict: result.evidence.verdict,
     error_class: result.evidence.errorClass,

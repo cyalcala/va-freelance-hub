@@ -1,6 +1,103 @@
 # System Savepoint
 
-## 2026-10-03 — Gauntlet Slice 6 Outlier Discovery: 3Cloud Admitted & Published to D1 (16 Jobs Synced, Total 911 Lake Synced, 1,385 Live Board Total) (current)
+## 2026-10-03 — Prompt v6.1: Maintainer Bootloader v6.1 with Self-Renewing Session Epochs & Shadow Zero-Observation Diagnostic Hardening (current)
+
+**Unit:** BOOTLOADER-V6.1-RECOVERY. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 911 lake-synced opportunities live; 37 Lake QUALIFIED_READY rows held by dual-gate publication floor; 29 auto-approved tenants; 1,385 live opportunities total).
+
+**1. Delivered unit — Bootloader v6.1 Upgrade & Shadow Diagnostic Hardening:**
+- **Maintainer Bootloader v6.1 Implemented:**
+  - Upgraded `docs/bootloaders/MAINTAINER_BOOTLOADER.md` to Version 6.1 with formal self-renewing session epoch lifecycle (`MARATHON_ID`, `SESSION_EPOCH_ID`, `SESSION_HEALTH AND RENEWAL`, `SESSION_REENTRY_PACKET`, `SESSION REBOOT SEMANTICS`).
+  - Updated canonical companion pointers in `docs/bootloaders/CURRENT.md`.
+  - Rebased local branch cleanly onto `origin/main` at `b10273db15ff50d0ef7cc7f511b75d5bed8f5ff6` while preserving all uncommitted work.
+- **Shadow Response & Diagnostic Watermelon Risk Hardened:**
+  - Hardened `scripts/diagnostics/extract-shadow-dispatch-evidence.ts` and `workers/freshness-cron/src/shadow-response.ts`: zero-dispatch HTTP 200 responses are now classified as `no_observation` rather than false-positive `success_observed`, preventing false closure of the EX-03 incident without actual persisted observations.
+  - Added coverage for `skippedIneligible` in evidence extraction and GCP logs (`scripts/gcp/run-shadow-dispatch.ts`).
+- **Dual-Gate Publication Invariant Re-Verified:**
+  - `bun run scripts/lake/sync-to-d1.ts --dry-run` passed with 37 rows held by the source gate (including newly admitted `lever:90seconds`), 0 unsanctioned syncs.
+  - Lake reservoir: 37 held candidate jobs.
+  - Production D1 live board: 1,385 active opportunities.
+
+**2. Verification:**
+- Full test suite: 1,747 passed / 0 failed across 177 files (`bun test`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Dual-gate dry-run: Passed (`bun run scripts/lake/sync-to-d1.ts --dry-run`).
+
+**NEXT SINGLE ACTION:** Advance autonomous discovery and corpus validation: run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or domain discovery to continue surfacing first-party high-PH outliers from the remaining 8,719 unvalidated claims toward the 100 fresh qualified jobs/day floor; or proceed with SSAE-00 empirical profiling under the v6.1 sparse compute contract. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-03 — Gauntlet Slice 7 Stratified Reconciliation: 90 Boards Scanned, 90 Seconds Admitted, Dual-Gate Invariant Verified (37 Lake Held, 29 Auto-Approved Tenants, Unvalidated Down to 8,719) (historical)
+
+**Unit:** RECONCILE-SLICE-07. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.0 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 911 lake-synced opportunities live; 37 Lake QUALIFIED_READY rows held by dual-gate publication floor; 29 auto-approved tenants; 1,385 live opportunities total).
+
+**1. Delivered unit — Stratified Reconciliation Slice 7 (`bun run lake:reconcile --per-family=30`):**
+- **Stratified Slice Executed:**
+  - Scanned 90 boards (30 Ashby, 30 Greenhouse, 30 Lever) against the unvalidated corpus.
+  - *Outlier Admitted:* `lever:90seconds` (90 Seconds): 7 live jobs probed, 2 QUALIFIED_READY (28.6% PH rate). Auto-admitted by Jev decision (`confidence=0.75`, deterministic threshold `ph_rate >= 20%`). Ingested 1 QUALIFIED_READY job, 4 excluded, 1 duplicates into Turso lake reservoir.
+  - *Dual-Gate Invariant Verified:* Wilson score 95% lower bound for 90 Seconds = 8.2% (< 20.0% publication floor due to sample size n=7). Held safely in reservoir alongside the 36 existing held rows. Dual-gate dry-run verification confirmed: `[AutoPublish] lever:90seconds: HOLD x0 ... [Queue] 37 QUALIFIED_READY row(s) held by the source gate (unauthorized source_id)`. Zero premature leakage into Cloudflare D1.
+  - *Shadow / Rejected:* 2 shadowed (`lever:provectus` 10.8% PH, and 1 other), 87 auto-rejected (0-3.7% PH, dead/empty, or insufficient jobs).
+  - *Corpus Reduction:* Unvalidated claims reduced from 8,809 down to **8,719** (Ashby: 2,477; Greenhouse: 4,506; Lever: 1,736).
+  - *Ledger Evidence:* Telemetry recorded to `lake_runs` row id 21 (`status = 'completed'`).
+- **Lake & Production State Post-Execution:**
+  - Auto-approved tenants: 28 -> 29 (+1 first-party admitted source).
+  - Synced to D1 from Lake: 911 opportunities.
+  - Lake reservoir: 37 held candidate jobs (dual-gate protected).
+  - Production D1 live board: 1,385 active opportunities.
+
+**2. Verification:**
+- Full test suite: 1,747 passed / 0 failed across 177 files (`bun test`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Dual-gate dry-run: `bun run scripts/lake/sync-to-d1.ts --dry-run` passed with 37 held, 0 unsanctioned syncs.
+
+**NEXT SINGLE ACTION:** Advance autonomous discovery and corpus validation: run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or domain discovery to continue surfacing first-party high-PH outliers from the remaining 8,719 unvalidated claims toward the 100 fresh qualified jobs/day floor; or proceed with SSAE-00 empirical profiling under the v6.0 sparse compute contract. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-03 — Prompt v6.0: DeepSeek-Inspired SSAE-CED Contract and Bootloader (documentation checkpoint; local only)
+
+**Unit:** PROMPT-SSAE-V6. **Mode:** PLAN / documentation editing.
+**Status:** VERIFIED_LOCAL_DOCUMENTATION; proposed architecture/work cards, no runtime implementation or acceptance.
+
+- Request: improve the canonical master prompt and bootloader using the supplied
+  SSAE-CED v2 research. Owner confirmed that pasted portion was sufficient.
+  The complete shared conversation remained inaccessible.
+- Full start/local HEAD: `a176bb5d881eb7314222f534a7d1f63f02691987`; branch
+  `main`. Approved fetch observed `origin/main`
+  `19e94696f906a9ec48a3d1f7815e54b6ddd43499` (prospector digest only).
+  Dirty work was preserved; no pull/reset/checkout replacement.
+- Canonical master, maintainer bootloader and execution wrapper are v6.0.
+  Added the [strategy](strategies/SPARSE_SOURCE_ATTENTION_STRATEGY.md) and
+  [SSAE-00..15 work cards](plans/SPARSE_SOURCE_ATTENTION_IMPLEMENTATION_PLAN.md).
+  Shortened CURRENT to navigation without competing stale NEXT blocks.
+- Integrated cheap recognition, shared versioned memory, hierarchical selection,
+  deterministic routing, safe FULL/REINDEX/REUSE/bounded replay, action feasibility,
+  global host budgets/backpressure, independent audit and measured rollout.
+  Preserved identity, thirteen MATH challenges, HRI, fresh-flow targets and the
+  complete source/publication/cutover rules. No accepted MATH-14 or new parameters.
+- Independent scope and technical documentation reviews passed; corrections
+  address overlapping source reward, insufficient-history measurement paths,
+  restrictive public-state replay and stale scheduling descriptions.
+- Verification and source provenance: [revision review](audits/2026-10-03-SPARSE-PROMPT-REVIEW.md).
+  Document checks are recorded there. No current application test count,
+  production supply/health measurement or efficiency improvement is claimed.
+- Release/backup: local and uncommitted. No push, deployment, source probe,
+  production write, live job dispatch or database backup was performed.
+
+The prior runtime checkpoint and saved source/incident continuation remain
+applicable within their actual authority. All earlier savepoint entries are
+preserved below; this documentation checkpoint does not certify their counts
+as current or dispatch their embedded commands.
+
+**NEXT SINGLE ACTION:** At the next authorized compute-allocation engineering
+task, recover the active source unit and incident state, then map SSAE-00 to a
+bounded profile of the actual miner and a measurement contract. Owner/controller:
+maintainer; trigger: that task. Live safety/control incidents retain priority.
+
+## 2026-10-03 — Gauntlet Slice 6 Outlier Discovery: 3Cloud Admitted & Published to D1 (16 Jobs Synced, Total 911 Lake Synced, 1,385 Live Board Total) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 911 lake-synced opportunities live; 36 Lake QUALIFIED_READY rows held by dual-gate publication floor; 28 auto-approved tenants; 1,385 live opportunities total).

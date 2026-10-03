@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { extractShadowDispatchEvidence } from "./extract-shadow-dispatch-evidence";
 
 describe("extract-shadow-dispatch-evidence", () => {
-  test("classifies HTTP 200 with registry rows as incident-closing success", () => {
+  test("classifies HTTP 200 with a persisted observation as observed", () => {
     const body = JSON.stringify({ totalRegistryRows: 3, eligible: 3, dispatched: 2 });
     const evidence = extractShadowDispatchEvidence(200, body, "2026-09-27T20:23:00Z");
     expect(evidence.outcome).toBe("success_observed");
@@ -11,6 +11,20 @@ describe("extract-shadow-dispatch-evidence", () => {
     expect(evidence.eligible).toBe(3);
     expect(evidence.hasFingerprint).toBe(false);
     expect(evidence.pagesTailFilterHint).toBeNull();
+  });
+
+  test("does not close the incident when every shadow row is skipped", () => {
+    const body = JSON.stringify({ totalRegistryRows: 3, eligible: 0, dispatched: 0, skippedIneligible: 3,
+      skippedStaleContext: 0, outcomes: {}, verdict: { status: "healthy" } });
+    const evidence = extractShadowDispatchEvidence(200, body);
+    expect(evidence.outcome).toBe("no_observation");
+    expect(evidence.skippedIneligible).toBe(3);
+    expect(evidence.nextAction).toContain("No observation was persisted");
+  });
+
+  test("does not accept a malformed HTTP 200 summary as observation evidence", () => {
+    const evidence = extractShadowDispatchEvidence(200, JSON.stringify({ totalRegistryRows: 3, dispatched: "1" }));
+    expect(evidence.outcome).toBe("unparseable");
   });
 
   test("routes a specific class with fingerprint to Pages-log correlation", () => {

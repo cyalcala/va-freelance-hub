@@ -8,7 +8,7 @@ const healthy = { totalRegistryRows: 3, eligible: 3, dispatched: 3, skippedIneli
 test("accepts healthy runs and cadence skips", () => {
   expect(assessShadowResponse(JSON.stringify(healthy))).toContain("dispatched=3");
   expect(assessShadowResponse(JSON.stringify({ ...healthy, totalRegistryRows: 5, skippedRunCap: 2 }))).toContain("dispatched=3");
-  expect(assessShadowResponse(JSON.stringify({ ...healthy, eligible: 0, dispatched: 0, skippedIneligible: 3, outcomes: {} }))).toContain("dispatched=0");
+  expect(assessShadowResponse(JSON.stringify({ ...healthy, eligible: 0, dispatched: 0, skippedIneligible: 3, outcomes: {} }))).toContain("no observations");
 });
 test("fails HTTP-200 malformed, unhealthy, and inconsistent summaries", () => {
   for (const body of [null, {}, { totalRegistryRows: 3 }, { ...healthy, probeFailures: 1 },

@@ -8,7 +8,9 @@
  * action. No I/O, no network, no production writes.
  *
  * Outcome vocabulary (mirrors docs/SYSTEM_SAVEPOINT.md NEXT SINGLE ACTION):
- * - "success_observed": HTTP 200 with registry rows; closes the incident.
+ * - "success_observed": HTTP 200 with at least one persisted observation.
+ * - "no_observation": HTTP 200 with zero dispatches; transport worked but
+ *   this run provides no observation or storage-recovery evidence.
  * - "specific_class_with_fingerprint": HTTP 503 with a specific D1 class and
  *   an 8-hex errorFingerprint; proceed to Pages-log correlation filtered by
  *   the fingerprint within the run window.
@@ -41,6 +43,7 @@ export const SHADOW_GENERIC_ERROR_CLASSES = [
 
 export type ShadowDispatchOutcome =
   | "success_observed"
+  | "no_observation"
   | "specific_class_with_fingerprint"
   | "generic_class_with_fingerprint"
   | "legacy_generic_without_fingerprint"
@@ -57,6 +60,7 @@ export interface ShadowDispatchEvidence {
   totalRegistryRows: number | null;
   dispatched: number | null;
   eligible: number | null;
+  skippedIneligible: number | null;
   skippedStaleContext: number | null;
   /** Bounded next action; a human-readable operational instruction. */
   nextAction: string;
@@ -93,6 +97,7 @@ export function extractShadowDispatchEvidence(
     totalRegistryRows: null,
     dispatched: null,
     eligible: null,
+    skippedIneligible: null,
     skippedStaleContext: null,
     pagesTailFilterHint: null,
   };
@@ -119,17 +124,28 @@ export function extractShadowDispatchEvidence(
   const failureStage = typeof body["failureStage"] === "string" ? body["failureStage"] : null;
   const sourceId = typeof body["sourceId"] === "string" ? body["sourceId"] : null;
   const skippedStaleContext = asNonNegativeInt(body["skippedStaleContext"]);
+  const skippedIneligible = asNonNegativeInt(body["skippedIneligible"]);
 
-  if (httpStatus === 200 && typeof body["totalRegistryRows"] !== "undefined") {
+  if (httpStatus === 200) {
+    const totalRegistryRows = asNonNegativeInt(body["totalRegistryRows"]);
+    const dispatched = asNonNegativeInt(body["dispatched"]);
+    const eligible = asNonNegativeInt(body["eligible"]);
+    if (totalRegistryRows === null || dispatched === null || eligible === null
+      || dispatched > eligible || eligible > totalRegistryRows) {
+      return { ...base, outcome: "unparseable",
+        nextAction: "HTTP 200 lacks reconciled dispatch counters; inspect the run payload. Do not infer an observation or storage recovery." };
+    }
     return {
       ...base,
-      outcome: "success_observed",
-      totalRegistryRows: asNonNegativeInt(body["totalRegistryRows"]),
-      dispatched: asNonNegativeInt(body["dispatched"]),
-      eligible: asNonNegativeInt(body["eligible"]),
+      outcome: dispatched > 0 ? "success_observed" : "no_observation",
+      totalRegistryRows,
+      dispatched,
+      eligible,
+      skippedIneligible,
       skippedStaleContext,
-      nextAction:
-        "Incident closed for this run: EX-03 exited 0 on enriched code. Resume clean-day accumulation for the 3 shadow sources toward 8-day canary graduation.",
+      nextAction: dispatched > 0
+        ? "At least one observation was reported persisted. Verify per-source coverage and current authority before closing the incident or counting clean days."
+        : "No observation was persisted in this run. Inspect eligibility and cadence for the skipped sources; storage recovery and clean-day evidence remain unobserved.",
     };
   }
 
@@ -246,6 +262,7 @@ if (import.meta.main) {
     if (evidence.totalRegistryRows !== null) md += `- **Total Registry Rows:** \`${evidence.totalRegistryRows}\`\n`;
     if (evidence.dispatched !== null) md += `- **Dispatched:** \`${evidence.dispatched}\`\n`;
     if (evidence.eligible !== null) md += `- **Eligible:** \`${evidence.eligible}\`\n`;
+    if (evidence.skippedIneligible !== null) md += `- **Skipped Ineligible:** \`${evidence.skippedIneligible}\`\n`;
     if (evidence.skippedStaleContext !== null) md += `- **Skipped Stale Context:** \`${evidence.skippedStaleContext}\`\n`;
     md += `- **Next Action:** ${evidence.nextAction}\n`;
     if (evidence.pagesTailFilterHint) md += `- **Pages Tail Hint:** \`${evidence.pagesTailFilterHint}\`\n`;
