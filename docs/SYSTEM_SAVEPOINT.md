@@ -1,3 +1,21 @@
+## 2026-10-04 — Session 25 SSAE-05 Shadow Decisions Helper + SSAE-06 Contracts Committed (session 25)
+
+**Unit:** SSAE-05 (Finish shadow-decisions helper) + SSAE-06 (Measurement contracts). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — committed at `bad9f196` (30 commits ahead of origin/main `4d2e61c2`).
+
+**Session 25 Work:**
+- Reading gate: `.shift/reading-025.md` written (untracked)
+- Completed REQUIRED READING GATE (all 14 required files read)
+- Finished SSAE-05: Added `compareSelectorOutputs()` pure read-only helper to `scripts/lake/shadow-decisions.ts` derived from SSAE-03 ranker output + SSAE-04 holdout/control contract; compares ranker (treatment) vs deterministic control on frozen/synthetic state; returns advisory decisions and overlap metrics (Jaccard, Spearman rank correlation, mode agreement) without additional probes or network fetches
+- Committed SSAE-06 measurement contracts: `docs/audits/2026-10-04-SSAE-06-MEASUREMENT-CONTRACTS.md` defining five contracts (SSAE-06A through SSAE-06E) to resolve LIMITED gaps in SSAE-01 and SSAE-04
+- All acceptance criteria met: deterministic fixtures/tests (30 tests pass), no SQL mutations, no network/prod mutations, no hold-list edits
+- Full suite: 1,940 pass / 0 fail; `bun run typecheck` clean; all 4 audits clean
+- Reading gate: `.shift/reading-025.md` written (untracked); no forbidden SQL patterns in added lines
+
+**NEXT SINGLE ACTION:** SSAE-06 mature labels -> refresh SSAE-01 and repeat SSAE-04/05 evaluation. Owner/controller: maintainer; trigger: completion of SSAE-06 measurement contracts maturation.
+
+---
+# System Savepoint
+
 ## 2026-10-04 — Session 22 SSAE-06 Measurement Contracts Delivered (session 22)
 
 **Unit:** SSAE-06 (Measurement contracts for per-source epoch features). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — docs/audits/2026-10-04-SSAE-06-MEASUREMENT-CONTRACTS.md created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.

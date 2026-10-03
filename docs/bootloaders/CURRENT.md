@@ -1,12 +1,12 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift (session 22). This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 25). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [../SYSTEM_SAVEPOINT.md].
-The latest checkpoint is "Session 22 SSAE-06 Measurement Contracts Delivered (session 22)."
+The latest checkpoint is "Session 25 SSAE-05 Shadow Decisions Helper + SSAE-06 Contracts Committed (session 25)."
+SSAE-05 (VERIFIED_CODE, no runtime change) complete — shadow decisions at scripts/lake/shadow-decisions.ts + deterministic fixtures/tests at scripts/lake/shadow-decisions.test.ts (30 tests) + compareSelectorOutputs helper committed.
 SSAE-06 (PROPOSED, VERIFIED_CODE, no runtime change) complete — measurement contracts at docs/audits/2026-10-04-SSAE-06-MEASUREMENT-CONTRACTS.md.
-SSAE-05 (PROPOSED, VERIFIED_CODE, no runtime change) complete — shadow decisions at scripts/lake/shadow-decisions.ts + deterministic fixtures/tests at scripts/lake/shadow-decisions.test.ts (30 tests).
 SSAE-04 (PROPOSED, VERIFIED_CODE, no runtime change) complete — holdout evaluation at docs/audits/2026-10-04-SSAE-04-TEMPORAL-HOLDOUTS.md + deterministic fixtures/tests at scripts/lake/temporal-holdout-eval.test.ts (24 tests).
 SSAE-03 (PROPOSED, VERIFIED_CODE, no runtime change) complete — ranker created at scripts/lake/source-ranker.ts with 42 tests.
 SSAE-02 (PROPOSED, VERIFIED_CODE, no runtime change) complete — contract created at docs/audits/2026-10-04-SSAE-02-COMPACT-SOURCE-MEMORY.md.
