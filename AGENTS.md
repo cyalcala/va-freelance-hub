@@ -13,9 +13,12 @@ Repository: `cyalcala/va-freelance-hub`
 
 ## Current Production Reality
 
-The active system is the Cloudflare/Astro implementation. Older Next.js,
-Vercel, Turso, Trigger.dev, and Zig-parser assets remain in the repo as backup
-or historical work, but do not represent the current production path.
+The active serving system is the Cloudflare/Astro implementation. Turso lake
+tooling and GCP lake execution/publication are part of the current documented
+acquisition path; recover exact deployed jobs, schedules and receipts before
+claiming runtime health. Older Next.js, Vercel, Trigger.dev, Zig-parser and
+legacy Turso application assets remain backup or historical work. Do not confuse
+those legacy assets with the active Turso evidence/data lake.
 
 Current active stack:
 
@@ -24,6 +27,9 @@ Current active stack:
 - UI: Tailwind CSS with React islands where needed
 - Hosting: Cloudflare Pages
 - Database: Cloudflare D1, SQLite-compatible
+- Evidence/data lake and source memory: Turso (`scripts/lake`)
+- Lake execution/orchestration and publisher: GCP where configured; verify
+  actual Cloud Run jobs/schedules alongside Worker and Actions paths
 - Primary ingestion clock: Cloudflare Worker every 10 minutes
 - Scheduled maintenance: GitHub Actions pulse workflows
 - Ingestion API: Astro API routes under `apps/web/src/pages/api`
@@ -46,6 +52,12 @@ GitHub Actions daily/periodic maintenance
   -> verify links
   -> prune stale jobs
   -> record source health and operational evidence
+
+Permitted research and first-party/ATS discovery
+  -> Turso source memory, observations and qualified candidates
+  -> current source/publication authorization and existing GCP publisher
+  -> governed Cloudflare D1 opportunities
+  -> public Astro eligibility and visibility checks
 ```
 
 ## Current Core Pages
@@ -79,6 +91,38 @@ precedence; source-domain precedence is defined in the masterplan:
 10. `docs/IMPLEMENTATION_STATUS.md`, `docs/HANDOFF.md`, and
    `docs/AI_RECOVERY_TRAIL.md`
 11. current evidence and generated `docs/*-latest.md` operational reports
+
+Canonical prompt entry points are `docs/bootloaders/MAINTAINER_BOOTLOADER.md`
+(v6.2), `MASTER_OPERATING_PROMPT.md` and `EXECUTION_PROMPT.md` (v6.1), and the
+navigation-only `docs/bootloaders/CURRENT.md`. For source expansion, also read
+`docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md` and the complete
+`docs/directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md` after recovering
+the source constitution/queue. Read order does not change policy precedence.
+
+## Current PH remote priority overlay — 2026-10-03
+
+- For `ph_remote_priority:2026-10-03`, the 108 submitted labels across P0, P1,
+  P1-AI, P2 and marketplaces receive increased feasible source attention. Retain
+  the worldwide universe and SSAE-CED FULL/REINDEX/REUSE/BOUNDED_REPLAY processing.
+- This is a documented priority allocation, not deployed selector/cadence changes,
+  source permission or acceptance evidence. A document-only task does not activate
+  operational commands embedded in the directive.
+- The next authorized expansion begins with `PH-PRIORITY-INVENTORY`: reconcile
+  current Turso/D1 identities, aliases, lifecycle, capabilities, permissions,
+  jobs and publication-control incidents before selecting one unresolved P0.
+- Preserve dynamic research/provenance in Turso, reuse permitted provider
+  capabilities and canonical tenants, and keep directory/discovery value separate
+  from collection and job publication authority. No duplicate enrollment.
+- Source PH priors affect scheduling only. Every posting passes independent
+  geoGate, remote, freshness, deduplication, URL, source, safety and publication
+  gates. Unknown stays unknown; no direct-D1 publication fast lane.
+- Existing source lifecycle, source-specific admissions, complete Autonomy Cutover
+  Predicate, accepted parameters and Source Perpetuity execution queue remain
+  authoritative. The August exact-six observations below are dated history, not
+  a complete current inventory of accepted admissions.
+- Preserve all quality ceilings and the full 15-field reporting/steady-state
+  contract in the strategy. Runtime throughput and cohort integration remain
+  unverified by this documentation update.
 
 The complete user-supplied Gauntlet source is archived verbatim at
 `docs/gauntlet/OPERATING_MANDATE.md`. The Global Miner master directive is
@@ -135,6 +179,8 @@ project's scope:
 Canonical recovery docs:
 
 - `docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md`
+- `docs/directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md`
+- `docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md`
 - `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md`
 - `docs/SOURCE_PERPETUITY_STRATEGY.md`
 - `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`

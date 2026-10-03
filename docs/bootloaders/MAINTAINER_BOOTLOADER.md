@@ -1,6 +1,6 @@
 # VA Freelance Hub — maintainer bootloader
 
-Version 6.1 · 2026-10-03 · SSAE-CED sparse processing · Self-renewing session epochs · Copy the block below into a fresh session.
+Version 6.2 · 2026-10-03 · PH remote priority cohort · SSAE-CED sparse processing · Self-renewing session epochs · Copy the block below into a fresh session.
 
 **Identity:**
 
@@ -10,6 +10,8 @@ Canonical companions: [master operating prompt](MASTER_OPERATING_PROMPT.md),
 [task wrapper](EXECUTION_PROMPT.md), [current pointer](CURRENT.md),
 [sparse-processing strategy](../strategies/SPARSE_SOURCE_ATTENTION_STRATEGY.md)
 and [implementation work cards](../plans/SPARSE_SOURCE_ATTENTION_IMPLEMENTATION_PLAN.md).
+Current expansion companion: [PH remote source priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md),
+with the [complete 32-section directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md).
 The master holds the full contract; this loader locates it, establishes scope,
 recovers durable state and preserves continuity across bounded model sessions.
 
@@ -143,6 +145,8 @@ Then read:
 - docs/bootloaders/MASTER_OPERATING_PROMPT.md
 - docs/bootloaders/EXECUTION_PROMPT.md
 - docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md
+- docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md
+- docs/directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md
 
 Consult scope-relevant:
 - constitutions
@@ -337,6 +341,25 @@ must earn their complexity. REUSE is cheap, not free. Include:
 - orchestration cost where material
 
 Progress through dependency-ordered SSAE-00..15 work cards. Keep: code deployed scheduling canary observed runtime acceptance distinct. No new accepted MATH-14 or competing source-execution queue is created.
+
+============================================================
+PH REMOTE SOURCE PRIORITY EPOCH
+============================================================
+Recover ph_remote_priority:2026-10-03 from master section 10C, the PH priority strategy, CURRENT and SYSTEM_SAVEPOINT. All 108 submitted labels across P0, P1, P1-AI, P2 and marketplaces are research leads; verify aliases and reuse existing exact identities. Their names, PH relevance and claimed research provenance do not grant collection, admission or publication authority.
+
+When TASK authorizes source expansion, bias feasible attention toward this cohort without replacing the global universe or sparse architecture. Start with PH-PRIORITY-INVENTORY: current Turso/D1 identities, lifecycle, capability, permissions, jobs, publication controls and missing evidence. Then resolve the highest-value unresolved feasible P0. Continue A inventory -> B resolution -> C authorized bounded ingestion -> D evaluation -> E governed admission -> F controlled publication -> G adaptive optimization. Existing incidents/dependencies still govern execution. The Source Perpetuity plan remains the sole source queue.
+
+Turso retains durable research, provenance, shared source memory, observations and candidates. Proposed intake provenance: exa_research:ph_remote_market_map:2026-10-03; prove an actual batch receipt before claiming intake. Resolve company -> first-party careers -> provider -> exact tenant -> reusable permitted capability. Prefer existing ATS/RSS/Atom/JSON/XML/static-HTML capabilities where supported; no blind family reprobes or company-specific scraper fleet. Keep directory value separate from automated collection and individual job authorization.
+
+Derive evidenced PH_NATIVE / PH_TARGETED / PH_RECURRING / PH_OBSERVED / GLOBAL_REMOTE / UNKNOWN priors for scheduling only. Every posting independently passes geoGate, remote, freshness, identity/dedup, URL, source authority, safety and complete publication gates. Unknown stays unknown. Only eligible_verified / eligible_likely + QUALIFIED_READY + current publication authorization may proceed through the existing GCP publisher/gateway to D1 and observed public exposure. No direct D1 fast lane.
+
+Measure PH * freshness * marginal yield * change probability * reliability / cost from compatible history; unknown/zero denominators abstain. Keep bounded emerging-source exploration, independent audit and cold-tail revisits. Preserve FULL / REINDEX / REUSE / BOUNDED_REPLAY with current dependency/expiry/opt-out validation. HOT 15-30m, WARM ~1h, COOL 3-6h, COLD daily/adaptive, DORMANT recovery are conceptual starting classes, not deployed clocks. Reconcile actual publisher latency before claiming ~15-minute public freshness; hourly publishing does not prove it.
+
+Keep quality ceilings: false PH <=1%, duplicates <=0.5%, broken URLs <=1%, plus all existing constraints. Report all 15 source/job/economics/bottleneck/NEXT fields from the strategy with windows, denominators and VERIFIED_RUNTIME / VERIFIED_CODE / MEASURED / INFERRED / PROPOSED evidence. Registry/tenant/source/job/sighting/qualified/published counts are distinct.
+
+Steady state requires >=90% of harvestable priority sources with resolved permitted mechanisms, recurring qualified job flow through Turso -> GCP -> D1 -> website, measured health/economics, adaptive sparse polling and no material quality/publication/cost regression. Account for all submitted labels and unresolved/blocked/directory-only dispositions; never inflate the denominator. Cohort done is separate from the sustained 100/day floor and 150/day stretch.
+
+Hold only affected unsafe/unclear sources with owner, missing evidence, deadline and recovery trigger; continue independent authorized work. At each meaningful cycle recover coverage, select the next highest-value feasible source/bottleneck, verify flow, measure and checkpoint. Preserve epoch, batch receipt, dispositions, holds, source and exact next action in SESSION_REENTRY_PACKET. A document edit completes at its document outcome; it does not start this operational loop.
 
 ============================================================
 MATHEMATICAL IMPROVEMENT PROGRAM

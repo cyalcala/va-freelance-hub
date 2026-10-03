@@ -1,6 +1,53 @@
 # System Savepoint
 
-## 2026-10-03 — Gauntlet Slice 10 Stratified Reconciliation: 90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified (43 Lake Held, 32 Auto-Approved Tenants, Unvalidated Down to 8,449) (current)
+## 2026-10-03 — PH Remote Priority Bootloader and Recovery Integration (current documentation; runtime not remeasured)
+
+**Unit:** `PROMPT-PH-PRIORITY-V6`. **Mode:** bounded documentation update.
+**Status/decision:** TERMINAL / KEEP for the document deliverable; the directive's
+operational steady-state criteria remain unverified. Runtime marathon not activated.
+**Start SHA:** `4d2e61c244338f76398e76444c1b80651925c848`, initially main = fetched origin/main.
+**Review branch:** `codex/ph-remote-priority-bootloader`. Foreign untracked
+`.agents/skills/` preserved. Remote backup/CI receipt will be recorded after verification.
+
+- Delivered maintainer loader v6.2, master/execution v6.1 with section 10C and
+  the full PH cohort, intake, reusable capability, PH-prior, sparse/adaptive,
+  governed publication, reporting and steady-state continuation contract.
+- Preserved all 32 supplied directive sections and all 108 nonempty labels:
+  P0 29, P1 22, P1-AI 13, P2 33, marketplaces 11. Original/initial archive
+  SHA-256 `aec1850be993d2014543ac4cec33b150f361e9c91894f21e505bf6727770eef3`;
+  Git may normalize text line endings without changing the directive content.
+- Integrated the strategy into the existing Source Perpetuity queue, source
+  constitution/strategy references, Global Miner, SSAE cards, HRI/lake operations,
+  AGENTS, Source Perpetuity loader and master/G1–G9 context. No second queue or
+  admission/publication authority was created. Corrected legacy-Turso ambiguity
+  and HRI's stale capture summary; HRI-01..03 have dated acceptance, HRI-04/05 OPEN.
+- Preserved all source/job/quality controls. PH priors schedule attention only;
+  source listing does not authorize collection. Existing numeric intake priority
+  1/2 does not implement the PH tier model. Hourly publishing cannot prove
+  15-minute public freshness; that remains a measured engineering constraint.
+- **Verification:** exact local attachment/archive bytes and sections PASS;
+  complete cohort names/order/counts PASS; canonical versions/modes/report fields
+  PASS; 83 new local links checked PASS. `bun run audit:guardrails` exit 0;
+  `bun run audit:parameters` exit 0 (100% parity); `bun run audit:constitution`
+  exit 0 with existing measurement/queue/concentration/provisional-parameter
+  warnings retained. No application behavior change requiring new tests.
+- **Limits:** no source fetch, Turso/D1 query/mutation, intake receipt, enrollment,
+  replay, sync, transition, scheduler change, migration, publication or deployment.
+  All 15 operational source/job/economics counters remain UNKNOWN. The latest
+  runtime checkpoint below is historical evidence, not a new measurement.
+  Jev attempted once, HTTP 401; continued directly. Manifest/router absent;
+  portable registry plus documentation-and-adrs used. Full review:
+  [PH priority integration review](audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md).
+
+**NEXT SINGLE ACTION:** `PH-PRIORITY-INVENTORY` at the next authorized source-expansion
+task: read-only current Turso/D1 identity/alias/lifecycle/capability/authority and
+publication-incident reconciliation for every supplied label, under the full
+contract in `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`; then select one
+highest-value unresolved feasible P0. Owner/controller: maintainer. Do not treat
+this document update as a live source-integration result. Rollback: revert this
+documentation unit; existing data/source histories are untouched.
+
+## 2026-10-03 — Gauntlet Slice 10 Stratified Reconciliation: 90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified (43 Lake Held, 32 Auto-Approved Tenants, Unvalidated Down to 8,449) (latest prior runtime checkpoint; not remeasured)
 
 **Unit:** RECONCILE-SLICE-10. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 916 lake-synced opportunities live; 43 Lake QUALIFIED_READY rows held by dual-gate publication floor; 32 auto-approved tenants; 1,390 live opportunities total).

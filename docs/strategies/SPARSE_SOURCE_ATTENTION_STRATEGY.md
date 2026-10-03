@@ -31,6 +31,19 @@ The owner's pasted research is input, not acceptance evidence. Its 72-result
 Exa audit was not repeated here; its mutable counts and reported production
 outcomes require remeasurement. No runtime improvement is claimed by this file.
 
+## PH remote cohort attention allocation — 2026-10-03
+
+The [PH priority strategy](PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md) supplies the
+108-label temporary high-value cohort and PH-prior/economics inputs. Preserve
+the global universe, FULL/REINDEX/REUSE/BOUNDED_REPLAY, permission feasibility,
+shared pacing, independent audit and cold-tail revisits. Cohort priority changes
+proposed allocation only; selector and cadence integration remain unverified.
+Map inventory/profile, memory, empirical ranking, delta/replay, allocator and
+canary evidence onto existing SSAE cards under the parent source unit. Source PH
+priors never override job geoGate. Conceptual HOT/WARM/COOL/COLD/DORMANT values
+are not accepted schedules. Resolve actual publisher latency before promising
+15-minute public freshness. Dynamic cohort evidence and economics belong in Turso.
+
 ## Verified research and application translation
 
 The latest architecture release verified for this review is V4.1-Flash,

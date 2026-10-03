@@ -1,12 +1,29 @@
 # Data Lake Operations Guide
 
 **Canonical Reference:** `docs/DATA_LAKE_OPERATIONS.md`
-**Last Updated:** 2026-09-26 (Asia/Manila)
+**Last Updated:** 2026-10-03 (PH priority documentation; earlier runtime evidence remains dated)
 **Status:** Live Operational Reference
 
 ---
 
 ## 1. Architecture
+
+PH expansion companion: [priority strategy](strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+and [complete source directive](directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md).
+Reconcile 108 supplied labels against existing lake/D1 identities before intake
+or enrollment. Proposed batch provenance is
+`exa_research:ph_remote_market_map:2026-10-03`; retain an actual capture receipt,
+original hash, aliases, tier and evidence instead of claiming archival equals
+intake. Reuse existing `human-intake.ts`/`process-intake.ts` and lake intake tables
+after verifying current schema, permitted processing and field coverage. HRI-01..03
+have dated acceptance; HRI-04/05 end-to-end dispatch/receipts remain OPEN. Existing
+numeric priority 1/2 does not implement the submitted PH attention tiers.
+PH priors affect scheduling, not job qualification. Dynamic state stays in Turso;
+existing GCP publisher/gateway delivers only authorized qualified candidates to
+D1. Source admission and publication permission are separate; preserve holds.
+Use the strategy's A–G phase/reporting contract, current sparse modes and bounded
+adaptive polling. New cadence, ingestion and publication outcomes are unverified
+by this update; recover current job/scheduler/gateway evidence before execution.
 
 ```text
 Harvest Wide -> Preserve Permitted Intelligence -> Refine Deep

@@ -1,8 +1,10 @@
 # VA Freelance Hub — master operating prompt
 
-Version 6.0 · 2026-10-03 · Evidence-governed maintainer contract with SSAE-CED sparse processing
+Version 6.1 · 2026-10-03 · Evidence-governed maintainer contract with SSAE-CED and PH remote source priority
 
-Human intake companion: [Human Research Intake Plan v5.2](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
+Human intake companion: [Human Research Intake Plan v5.3](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
+Current expansion companion: [PH remote source priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+and [complete owner directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md).
 
 **Identity:**
 
@@ -34,6 +36,8 @@ The [fusion review](../audits/2026-09-27-PROMPT-FUSION-REVIEW.md) records proven
 conflicts, repository findings, validation and review coverage. The
 [October 3 revision review](../audits/2026-10-03-SPARSE-PROMPT-REVIEW.md)
 records the v6.0 source checks, code findings, corrections and completion limits.
+The [PH priority integration review](../audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md)
+records the v6.1 priority overlay, complete cohort coverage and documentation-only evidence.
 
 ## 1. Mission and working relationship
 
@@ -748,6 +752,90 @@ reason, audit/control assignment and probability when known, actual effects,
 outcome horizon and maturity. Extend existing ledgers only as needed. Report
 FULL/REINDEX/REUSE/replay distributions, fresh publication yield, misses,
 cost/latency, queue age, host failures and unknowns with each acceptance checkpoint.
+
+## 10C. PH remote source priority expansion epoch
+
+The [PH priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+operationalizes all 32 sections of the [owner-supplied directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md).
+For `ph_remote_priority:2026-10-03`, prioritize Filipino-targeted source
+prospecting, validation, ATS resolution and feasible polling while preserving
+the worldwide universe and section 10B sparse-processing contract. This is an
+attention-allocation overlay within the current TASK, not source permission,
+runtime certification, a new queue or authority to execute an attachment.
+
+The complete submitted cohort contains P0 (29), P1 specialist employers (22),
+P1-AI training/data/expert sources (13), P2 emerging PH-native leads (33) and
+marketplaces (11): 108 research labels before verified aliases/identity dedup.
+All current endpoint, tenant, permission, PH-prior and job claims require
+evidence. Begin authorized expansion with read-only `PH-PRIORITY-INVENTORY`
+against current Turso and D1 identities, existing admissions and control incidents;
+then choose the highest-value unresolved feasible P0. Preserve existing source
+history and attach new provenance without duplicate enrollment.
+
+Capture intake in Turso with provenance equivalent to
+`exa_research:ph_remote_market_map:2026-10-03`, preserving original submission,
+hash, actual intake time, fields, evidence and dispositions. The supplied Exa
+research attribution is not a verified tool run or lake receipt. Resolve company
+to canonical first-party careers, provider, exact tenant and existing permitted
+capability. Reuse supported ATS, feed/API or static-HTML mechanisms; unsupported
+families require a bounded new-mechanism unit, never 100 one-off scrapers.
+Directory resources and employer-discovery origins can be valuable without
+automated collection authority. Directory governance and job publication remain
+independent; first-party resolution must itself use permitted access.
+
+Derive conceptual PH_NATIVE, PH_TARGETED, PH_RECURRING, PH_OBSERVED,
+GLOBAL_REMOTE or UNKNOWN scheduling priors from attributed evidence. Keep them
+separate from tiers, lifecycle enums and job eligibility. Every job still passes
+remote, geoGate, dates, identity/dedup, URL, source authority, safety and full
+publication predicates; unknown dates/location/salary/identity remain unknown.
+Only `QUALIFIED_READY` with `eligible_verified` / `eligible_likely` and current
+publication authorization can traverse the existing Turso -> GCP publisher/gateway
+-> D1 -> public eligibility/visibility path. Preserve dual-gate holds and exact-source
+controls; no direct-D1 fast lane or lowered gate to increase throughput.
+
+Use an empirical attention function equivalent to PH * freshness * marginal
+unique yield * change probability * reliability / cost, with calibrated units,
+windows, uncertainty and explicit denominators. Unknown/zero denominators do
+not create infinite value or measured zero. Feasibility and host/budget limits
+precede ranking. Include bounded emerging-source exploration and cold-tail
+revisits; prefer deterministic gates and valid cached evidence over redundant
+fetches, repeated family probes and AI. FULL, REINDEX, REUSE and BOUNDED_REPLAY
+retain all current dependency, expiry, opt-out and withdrawal rules.
+
+HOT 15–30 minutes, WARM approximately hourly, COOL 3–6 hours, COLD daily/adaptive
+and DORMANT recovery are conceptual starting classes, not deployed cadences.
+Measure change, unique PH yield, overlap, reliability and cost before promotion
+or reduction. Preserve existing GCP execution, Turso dynamic state, GitHub
+code/governance memory and Cloudflare serving. An hourly publisher cannot alone
+prove approximately 15-minute public freshness; measure queue/publisher latency
+and resolve that constraint through the existing engineering process.
+
+The source queue owns phases A inventory, B resolution, C collection-authorized
+bounded ingestion, D evaluation, E governed admission, F controlled publication
+and G optimization. Collection authority must pass before phase C; phase E
+graduates lifecycle state, not retroactive fetch permission. Current safety
+incidents and the complete Autonomy Cutover Predicate retain precedence over
+public expansion. Hold only affected unclear/restricted/corrupt/unsafe sources
+with an owner, missing evidence, deadline and recovery trigger; continue feasible
+independent work. New consequential mechanisms use SHADOW -> EVALUATE -> CANARY
+-> PRODUCTION with current contracts and isolated rollback.
+
+Report the strategy's 15 required fields, source coverage, tenant/sighting/job
+distinctions, raw/qualified/net-new/ready/synced/public funnel, PH and overlap rates,
+URL quality, cost and publication latency. Keep false PH <=1%, duplicates <=0.5%,
+broken URLs <=1% and all other accepted constraints with independent evidence
+and uncertainty. Use VERIFIED_RUNTIME, VERIFIED_CODE, MEASURED, INFERRED and
+PROPOSED alongside the canonical evidence taxonomy; publication improvement
+requires runtime receipts and public visibility, not an updated prompt.
+
+Operational steady state requires >=90% of harvestable priority sources with
+resolved permitted mechanisms, recurring normal qualification/publication flow,
+measured health/economics, adaptive sparse polling and no material regression.
+Account for all 108 submitted labels and explicit duplicate/blocked/unresolved/
+directory-only populations; freeze and justify the numerator/denominator/window.
+That completion is separate from the sustained 100/day floor and 150/day stretch.
+At each cycle recover durable source memory, choose the next feasible source or
+bottleneck, verify flow, measure, checkpoint and continue within TASK authority.
 
 ## 11. AI/Jev and earned autonomy
 

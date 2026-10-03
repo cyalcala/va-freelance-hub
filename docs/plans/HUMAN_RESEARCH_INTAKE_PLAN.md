@@ -1,6 +1,6 @@
 # Optional human research intake plan
 
-Version 5.2 ? 2026-09-27 ? PLANNED; not implemented or accepted
+Version 5.3 · 2026-10-03 · HRI-01..03 have dated acceptance; HRI-04/05 remain OPEN; PH priority mapping documented
 
 ## Outcome and scope
 
@@ -20,13 +20,35 @@ and [source masterplan](../SOURCE_REPLENISHMENT_MASTERPLAN.md).
 
 The inspected repository includes Turso raw observations, candidate jobs,
 sighting/replay support and structured ATS seed imports in scripts/lake.
-These are reusable foundations, not evidence of a general research inbox.
-Flexible paste intake, automatic processing of every supported research type,
-batch receipts and fair scheduling remain unverified/unimplemented as an integrated
-capability. No live lake or daily publication count was measured for this plan.
-Known publication-control findings remain prerequisites for public release.
+Current code includes `human-intake.ts`, `process-intake.ts` and lake intake
+batch/item tables in `init-lake.ts`. The unit table records September 27
+acceptance of HRI-01..03, including structured JSON capture and prospecting;
+these dated runtime claims were not remeasured in the October 3 documentation
+unit. HRI-04/05 shared publication dispatch, end-to-end receipts/fairness and
+observation remain OPEN. Flexible format coverage and PH-tier scheduling are
+not certified by the existing JSON importer. No live lake or daily publication
+count was measured here. Publication-control closure remains a release gate.
 
 ## User experience and input contract
+
+### Named PH priority intake example — 2026-10-03
+
+The [complete PH priority directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md)
+supplies 108 labels across five cohorts. Use provenance equivalent to
+`exa_research:ph_remote_market_map:2026-10-03` with an explicit owner-submitted
+research origin, original hash and actual intake timestamp; this documentation
+is not an Exa run or Turso capture receipt. Preserve all names, submitted aliases,
+priority tiers, notes and evidenced company/careers/provider/PH fields. Resolve
+against current exact identities before adding entities; unknowns remain unknown.
+The [PH priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+defines resolution, collection/admission, job qualification, directory separation
+and controlled publication. Reuse existing `human-intake.ts`/`process-intake.ts`
+and `lake_intake_batches`/`lake_intake_items` after verifying current schema,
+idempotency, permitted processing and actual receipts. Existing priority 1/2 and
+focus groups do not implement P0/P1/P1-AI/P2/marketplace attention tiers; retain
+the submitted tiers and unknown facts in attributed evidence and map any change
+through a bounded unit. HRI-04/05 remain OPEN. Avoid a parallel intake store or
+claiming that archiving this file populated the lake.
 
 Start with a local maintainer paste/file tool, without a new public account system
 or large dashboard. Accept plain text, URL lists, tab-separated spreadsheet rows,

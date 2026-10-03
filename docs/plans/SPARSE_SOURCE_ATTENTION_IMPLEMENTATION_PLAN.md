@@ -40,6 +40,20 @@ the dataset and repeat the affected evaluation after measurement matures.
 
 ## Dependency outline
 
+### PH priority cohort mapping — supporting contracts only
+
+Use the [PH priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+within the Source Perpetuity queue. Inventory/profile maps to SSAE-00/01,
+PH priors and durable identity/evidence memory to 02, empirical priority to
+03/04/05 with permitted independent audit in 06, reusable cache modes to 07,
+bounded cohort hierarchy to 08, job material delta/replay to 09, adaptive
+allocation to 10 and optional P2 exploration to 11. Consequential rollout uses
+14/15 after their current dependencies pass. A proven existing capability does
+not require implementing every proposed SSAE card merely to resolve a tenant;
+new selector/allocator mechanisms must satisfy their applicable cards. Existing
+publication-control incidents and source admission predicates retain priority.
+No card or source is marked implemented, deployed or accepted by this mapping.
+
 ```text
 00 reality -> 01 dataset -> 02 state -> 03 read-only ranker -> 04 holdout -> 05 shadow
 01/04/05 evidence or LIMITED measurement gaps -> 06 precontracted permitted audit/instrumentation

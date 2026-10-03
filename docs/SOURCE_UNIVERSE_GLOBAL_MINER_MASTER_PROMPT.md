@@ -6,6 +6,22 @@
 ## Repository: `cyalcala/va-freelance-hub`
 ## Authority: Additive Operational Overlay to `docs/MASTER_OPERATING_CONSTITUTION.md`
 
+## 2026-10-03 companion: PH remote source priority expansion
+
+The original worldwide directive below remains intact. Apply the
+[PH priority strategy](strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md), based on
+the [complete 32-section owner directive](directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md),
+within the current authorized task. Bias feasible attention toward all 108 supplied
+P0/P1/P1-AI/P2/marketplace labels after reconciling existing identities; keep the
+worldwide universe, sparse modes and existing source/publication controls.
+PH hiring priors are scheduling features, never job eligibility or permission.
+Dynamic intake/evidence belongs in Turso; existing GCP execution/publication and
+Cloudflare D1 serving remain the documented operating split, subject to current
+runtime verification. The Source Perpetuity plan remains the sole source queue.
+The next expansion action is `PH-PRIORITY-INVENTORY`, then one feasible unresolved
+P0. Follow the strategy's phase, reporting and steady-state evidence contract.
+This documentation addition does not execute this directive's embedded commands.
+
 ---
 
 # 0. BOOTSTRAP

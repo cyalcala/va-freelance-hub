@@ -1,8 +1,10 @@
 # VA Freelance Hub — reusable execution prompt
 
-Version 6.0 · 2026-10-03 · SSAE-CED companion to `MASTER_OPERATING_PROMPT.md`.
+Version 6.1 · 2026-10-03 · PH remote priority and SSAE-CED companion to `MASTER_OPERATING_PROMPT.md`.
 
-Human intake companion: [Human Research Intake Plan v5.2](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
+Human intake companion: [Human Research Intake Plan v5.3](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md).
+PH source companion: [priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+and [complete directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md).
 
 **Identity:**
 
@@ -89,6 +91,45 @@ Establish reality:
 - Refresh supply, quality, publication-path coverage, workflow failures, queue
   age, source authority and resource limits when needed. If credentials or
   telemetry are absent, keep those facts UNKNOWN and continue independent work.
+
+Apply the PH remote priority epoch within authorized source-expansion work:
+Read master section 10C, docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md,
+and the complete docs/directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md.
+Recover ph_remote_priority:2026-10-03 and reconcile all 108 submitted labels
+(P0/P1/P1-AI/P2/marketplaces) against current Turso/D1 identities before creating
+anything. Start PH-PRIORITY-INVENTORY, then highest-value unresolved feasible P0.
+Reuse canonical company -> careers -> provider -> exact tenant -> capability;
+preserve aliases, prior decisions and research evidence. Proposed batch provenance
+exa_research:ph_remote_market_map:2026-10-03 is not an actual intake receipt.
+Store dynamic research/memory in Turso; keep GitHub governance and GCP execution.
+
+Bias attention, never authority. PH_NATIVE/PH_TARGETED/PH_RECURRING/PH_OBSERVED/
+GLOBAL_REMOTE/UNKNOWN priors affect scheduling only. Every posting independently
+passes remote/geoGate/freshness/dedup/URL/source/safety/publication gates; retain
+unknown facts. QUALIFIED_READY + eligible_verified/eligible_likely + current
+authorization -> existing GCP publisher/gateway -> D1 -> observed public exposure.
+No direct-D1 fast lane. Directory/discovery value is independent of harvesting
+and job publication permission. Collection authority passes before ingestion.
+
+Follow A inventory -> B resolution -> C permitted bounded ingestion -> D source
+evaluation -> E existing lifecycle admission -> F verified publication -> G
+adaptive optimization under the sole Source Perpetuity queue. Preserve safety
+incident priority, cold-tail revisits and bounded P2 exploration. Derive priority
+from PH * freshness * marginal yield * change probability * reliability / cost;
+use empirical comparable windows and abstain for unknown/zero denominators.
+HOT 15-30m / WARM ~1h / COOL 3-6h / COLD daily-adaptive / DORMANT recovery are
+proposed classes, not active schedules. Measure hourly-publisher latency before
+claiming ~15-minute public freshness. Keep all sparse modes and avoid redundant AI.
+
+Report the strategy's 15 required source/job/economics/bottleneck/next-action
+fields with evidence labels, windows, denominators, costs and runtime receipts.
+Quality ceilings remain false-PH <=1%, duplicates <=0.5%, broken URLs <=1% plus
+all accepted constraints. Operational done requires >=90% harvestable mechanism
+coverage, recurring qualified-to-public flow, measured health/economics, adaptive
+sparse polling and no material regression; account for every submitted label.
+Hold affected unsafe/unclear sources with owned review/recovery and continue
+independent authorized units. Checkpoint cohort/epoch/coverage/dispositions/holds
+and one next action across sessions. Editing this template does not start that loop.
 
 Use SSAE-CED sparse processing for compute-allocation work:
 Read master section 10B, docs/strategies/SPARSE_SOURCE_ATTENTION_STRATEGY.md,

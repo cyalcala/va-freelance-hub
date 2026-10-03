@@ -1,5 +1,29 @@
 # Implementation Status
 
+## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (current documentation checkpoint)
+
+- **Delivered:** maintainer v6.2, master/execution v6.1; complete 32-section
+  [owner directive](directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md)
+  and [PH priority strategy](strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+  containing all 108 P0/P1/P1-AI/P2/marketplace labels and the phase/reporting/
+  steady-state contract. The source plan remains the sole execution queue.
+- **Integrated:** source/global-miner/sparse/intake/lake plans and recovery
+  pointers; clarified active Turso/GCP versus legacy assets, HRI-01..03 dated
+  acceptance versus HRI-04/05 OPEN, and the hourly-publisher freshness constraint.
+- **Verified:** full source/cohort/version/report-field checks and 83 local
+  links PASS; production guardrails, parameter parity (100%) and constitution
+  audits exit 0, retaining their existing measurement warnings.
+- **Boundary:** documentation TERMINAL / KEEP; no runtime/source/DB/publication
+  changes or live cohort counts. Operational directive is not complete. Manifest
+  and source router absent; portable registry used. Jev HTTP 401 was non-blocking.
+- **Recovery:** newest SYSTEM_SAVEPOINT and
+  [integration review](audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md). Start
+  `4d2e61c244338f76398e76444c1b80651925c848`; review branch
+  `codex/ph-remote-priority-bootloader`; preserved `.agents/skills/`.
+- **Next:** authorized read-only `PH-PRIORITY-INVENTORY`, then one feasible
+  unresolved P0 under the existing source/publication gates. Remote receipt is
+  recorded separately when available.
+
 ## 2026-10-02 — AUTONOMOUS-WORLDWIDE-SOURCE-UNIVERSE-AND-BACKGROUND-MINER (current)
 
 - **What this is**: Delivered Unit GCP-03 (Autonomous Worldwide Source Universe & ATS Miner Engine) under the Global Miner / GCP Automation Overlay (`docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md`) and Master Operating Constitution v3.0 (Part LXII). All 1,698 tests pass repo-wide across 177 files, typecheck clean, CI guardrails clean, production deployment passed in GitHub Actions (Run `36923231906`).
