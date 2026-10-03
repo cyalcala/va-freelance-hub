@@ -16,25 +16,26 @@ VERIFICATION COMPLETE:
 
 ## Active bounded unit
 
-**Autonomous Live Mining Cycle Executed: 115 Probed, 13 Admitted, 34 Qualified Ingested, Marginal Yield 0.3778/probe, Lake Reservoir at 36 Held (2026-10-03, current):**
+**MATH-03 Ashby Cohort Measured & Slice 5 Reconciliation Executed (90 Boards, Unvalidated Down to 8,959) (2026-10-03, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- Unified background miner (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) executed live against Turso Lake: 115 targets probed (90 stratified reconciliation + 25 domain discovery), 13 tenants admitted, 34 net-new qualified candidate jobs ingested, marginal qualified yield per probe jumped to 0.3778/probe. Telemetry persisted to `lake_runs` row 16 (`status = 'completed'`).
-- Auto-approved tenants expanded to 27; Lake reservoir has 36 `QUALIFIED_READY` jobs strictly HELD by dual-gate Wilson floor (< 20%), zero premature leakage to D1 (D1 synced remains 895). Full test suite 1,740/1,740 passing across 172 files; typecheck and audits clean.
+- MATH-03 Ashby candidates measured against live endpoints: `amplify` (27 jobs, 3.7% PH), `camunda` (40 jobs, 0% PH), `tremendous` (26 jobs, 0% PH) empirically auto-rejected per deterministic hard gate. Only `ashby:supabase` (48 jobs, 27.1% PH, 13 QUALIFIED_READY) stands auto-approved in the Lake reservoir.
+- Corpus reconciliation slice 5 executed (`bun run lake:reconcile --per-family=30`): 90 boards evaluated, 2 shadowed (`lever:peakgames` 5.3%, `lever:quadlock` 14.3%), 88 rejected. Unvalidated corpus reduced to 8,959 claims (Ashby 2,557, Greenhouse 4,586, Lever 1,816). Telemetry logged to `lake_runs` row 17 (`status = 'completed'`).
+- Auto-approved tenants: 27. Lake reservoir: 36 `QUALIFIED_READY` jobs strictly held by dual-gate Wilson floor (< 20%), zero premature leakage to D1 (D1 synced remains 895). All checks pass: 1,740 tests, typecheck clean, 100% parameter parity.
 
 CURRENT BOTTLENECK:
-Supply gap (~36–67/day vs 100/day floor). 9,139 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
+Supply gap (~36–67/day vs 100/day floor). 8,959 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
 
 ACTIVE UNIT:
-Continuous background mining execution via scheduled workflow `.github/workflows/gha-lake-miner.yml` and stratified reconciliation / MATH-03 Ashby candidate evaluation.
+Continuous background mining execution via scheduled workflow `.github/workflows/gha-lake-miner.yml` and stratified corpus reconciliation.
 
 NEXT ACTION:
-Run next stratified reconciliation slice (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) or evaluate high-yield Ashby candidates (`amplify`, `camunda`, `tremendous`) to expand qualified remote supply toward the 100/day floor.
+Run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or execute scheduled miner tick (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) to continue driving down unvalidated claims toward high-yield outlier discovery.
 
 WHY NEXT:
-Maintains continuous discovery momentum, chips away at the unvalidated corpus (9,139 remaining), and identifies high-PH outlier sources to lift daily qualified flow.
+Maintains continuous discovery momentum, steadily turns unvalidated claims into classified evidence, and identifies high-PH outlier sources to lift daily qualified flow.
 
 ACCEPTANCE:
 Corpus unvalidated count drops, net-new admitted sources and QUALIFIED_READY jobs ingested to Lake reservoir, dual-gate publication floor strictly held.

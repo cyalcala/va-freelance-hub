@@ -1,6 +1,37 @@
 # System Savepoint
 
-## 2026-10-03 — Autonomous Live Mining Cycle Executed: 115 Probed, 13 Admitted, 34 Qualified Ingested, Marginal Yield 0.3778/probe, Lake Reservoir at 36 Held (current)
+## 2026-10-03 — MATH-03 Ashby Cohort Measured (Amplify 3.7%, Camunda 0%, Tremendous 0%) + Reconciliation Slice 5 (90 Boards, Unvalidated Down to 8,959) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 895 synced, 0 pending; 36 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).
+
+**1. Delivered unit — MATH-03 Ashby Cohort Disposition & Reconciliation Slice 5:**
+- **MATH-03 Ashby High-Yield Candidates Measured & Disposed:**
+  - Evaluated the 3 remaining candidate ATS providers from the session 56 suite (`amplify`, `camunda`, `tremendous`) against live Ashby endpoints:
+    - `Ashby/amplify`: 27 live jobs, 1✓ 26✗ 0? (3.7% PH rate) -> REJECTED (below 5% threshold).
+    - `Ashby/camunda`: 40 live jobs, 0✓ 14✗ 26? (0.0% PH rate) -> REJECTED (below 5% threshold).
+    - `Ashby/tremendous`: 26 live jobs, 0✓ 26✗ 0? (0.0% PH rate) -> REJECTED (below 5% threshold).
+  - Empirically updated placeholders in `lake_ats_discovery` from inert `shadow_monitor` to `auto_rejected` with exact evidence (`job_count`, `ph_rate`, deterministic threshold reasons).
+  - Only `ashby:supabase` (48 jobs, 27.1% PH, 13 QUALIFIED_READY) stands admitted from this cohort.
+- **Corpus Reconciliation Slice 5 Executed (`bun run lake:reconcile --per-family=30`):**
+  - Scanned 90 boards (30 Ashby, 30 Greenhouse, 30 Lever), found 63 tenants (>= 3 jobs), 0 admitted, 2 shadowed (`lever:peakgames` 5.3% PH, `lever:quadlock` 14.3% PH), 88 auto-rejected.
+  - Reduced unvalidated corpus from 9,049 down to **8,959** claims (Ashby 2,557, Greenhouse 4,586, Lever 1,816).
+  - Telemetry logged to `lake_runs` row id 17 (`status = 'completed'`).
+- **Lake State Post-Execution:**
+  - Auto-approved tenants: 27.
+  - Lake reservoir: 36 `QUALIFIED_READY` rows held.
+  - Production D1: 895 synced, 0 pending. Dual-gate publication invariant verified 100%.
+
+**2. Verification:**
+- Full test suite: 1,740 passed / 0 failed across 172 files (`bun test`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+
+**NEXT SINGLE ACTION:** Advance autonomous discovery and corpus validation: run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or execute scheduled miner tick (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) to continue driving down unvalidated claims toward high-yield outlier discovery. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-03 — Autonomous Live Mining Cycle Executed: 115 Probed, 13 Admitted, 34 Qualified Ingested, Marginal Yield 0.3778/probe, Lake Reservoir at 36 Held (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 895 synced, 0 pending; 36 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).
