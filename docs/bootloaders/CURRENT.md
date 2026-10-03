@@ -1,12 +1,13 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift (session 9). This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 10). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest checkpoint is "MATH-06A Writer Inventory Re-Fixed Against HEAD + Expanded Gap Tests (session 9)."
-MATH-06A (OPEN, evidence only, VERIFIED_CODE) complete — inventory fixed against HEAD `b6736aeecec8`, 42 tests pass.
+The latest checkpoint is "SSAE-01 Attention Dataset Card Delivered (session 10)."
+SSAE-01 (PROPOSED, VERIFIED_CODE, no runtime change) complete — dataset card created at docs/audits/2026-10-04-SSAE-01-ATTENTION-DATASET-CARD.md.
 SSAE-00 (PROPOSED, VERIFIED_CODE, no runtime change) complete.
+MATH-06A (OPEN, evidence only, VERIFIED_CODE) complete — inventory fixed against HEAD `b6736aeecec8`, 42 tests pass.
 MATH-12 (24 tests) passes; full suite 1,849 pass; audits clean.
 MATH-05 register state: OPEN (fixtures verified, import fix applied, VERIFIED_CODE).
 MATH-09 register state: OPEN (ASHBY_CONTENT_HASH removed, gap fixture added, VERIFIED_CODE).
@@ -29,7 +30,7 @@ within the current task's authority. A documentation/audit task does not start
 operational mining. Refresh unresolved incidents, including the saved EX-03
 error/observation follow-on; this revision does not declare them fixed.
 
-**Next single action:** Foundation wave continues — MATH-09 (OPEN) next per tech lead order. MATH-06A evidence complete. Owner/controller: maintainer; trigger: next authorized session.
+**Next single action:** SSAE-02 (Define compact source memory and dependency contract) depends on SSAE-01 dataset schema and missing-evidence inventory. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task.
 
 The former long pointer's historical entries remain in SYSTEM_SAVEPOINT and
 Git at `a176bb5d881eb7314222f534a7d1f63f02691987`; they are not competing

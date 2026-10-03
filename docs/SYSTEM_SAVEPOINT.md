@@ -1,5 +1,32 @@
 # System Savepoint
 
+## 2026-10-04 — SSAE-01 Attention Dataset Card Delivered (session 10)
+
+**Unit:** SSAE-01. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — docs/audits/2026-10-04-SSAE-01-ATTENTION-DATASET-CARD.md created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.
+
+**SSAE-01 Delivered — As-of-Selection Attention Dataset Card:**
+- Versioned source-action context schema for both active ingestion paths (Hunter scrape 10-min cron + Lake miner GHA/GCP)
+- Read-only query manifest: epochs from `lake_runs`, `source_fetch_state`, `lake_ats_discovery`, `source_publication_ledger`, `lake_candidate_jobs` with file:line anchors
+- Temporal/independent-label coverage table: FRESH_DISCOVERY (PARTIAL), QUALIFIED_READY (GOOD), ADMIT/SHADOW/REJECT (GOOD), REPLAY_RECOVERY (PARTIAL), REACTIVATION (UNKNOWN)
+- Deduplication mechanisms: lake fingerprint (lake-shared.ts:32), sighting (ingest-to-lake.ts:51), Hunter contentHash (conditional.ts:10), D1 ON CONFLICT(source_url) — leakage risks documented
+- Censoring mechanisms table: AI budget exhaustion, concentration ceiling, opt-out, robots enforcement, lease expiry, hold switch, rate-limit shielding, MIN_JOBS_TO_EVALUATE=3, PH rate floors (REJECT 5%, PUBLISH 20%)
+- Missing evidence gaps → SSAE-06 measurement contracts: per-stage latency, AI call histogram, fetch bytes, conditional-fetch hit rate, queue residence, gateway latency, freshness delta, GCP job duration, per-source Hunter outcomes, canonical cohort labels
+- Attribution rule: earliest first_observation_at wins; ties by source_id lexicographic; marginal yield dedupes by canonical fingerprint
+- Parent dependencies: SSAE-00 (profile), MATH-01/05/09; Source Perpetuity parent UNKNOWN (gap)
+
+**Verification:**
+- `bun test`: 1,849 pass / 0 fail
+- `bun run typecheck`: clean
+- `bun scripts/ci/check-production-guardrails.ts`: clean
+- `bun scripts/ci/audit-constitution.ts`: passed with known warnings
+- `bun scripts/ci/audit-parameters.ts`: 100% parity
+- `bun scripts/ci/check-orchestrator-modifications.ts`: clean
+- `git diff -- docs/audits/2026-10-04-SSAE-01-ATTENTION-DATASET-CARD.md | grep -iE 'insert into opportunities|update opportunities|delete from|drop trigger'`: clean
+
+**NEXT SINGLE ACTION:** SSAE-02 (Define compact source memory and dependency contract) depends on this dataset's schema and missing-evidence inventory. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task.
+
+---
+
 ## 2026-10-04 — MATH-06A Writer Inventory Re-Fixed Against HEAD + Expanded Gap Tests (session 9)
 
 **Unit:** MATH-06A. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — inventory fixed against HEAD `b6736aeecec8`, tests expanded to 42, full suite 1,849 pass.
