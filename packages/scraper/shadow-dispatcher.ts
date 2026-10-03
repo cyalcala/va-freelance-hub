@@ -352,7 +352,7 @@ export interface ShadowDispatchSummary {
   /** Sources skipped because their admission context changed or expired concurrently before persistence */
   skippedStaleContext: number;
   staleContextErrors: Array<{ sourceId: string; reason: string }>;
-  }
+}
 
 function inputForContext(context: AdmissionContext): CandidateShadowInput {
   const { source, provider } = context;
@@ -431,7 +431,6 @@ export function isStaleAdmissionContextError(error: unknown): boolean {
   }
   return false;
 }
-
 
 /**
  * Enumerate registry-eligible sources, validate each provider profile, run

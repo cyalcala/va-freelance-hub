@@ -6768,3 +6768,4 @@ curl -I https://remotejobs-ph.pages.dev/opportunities
 Use read-only D1 queries for data checks. Never mutate production data during an
 audit unless the task explicitly calls for a migration or repair and the change
 has been backed up in Git.
+
