@@ -550,4 +550,128 @@ describe("fetchWorkable — widget API parser edge cases (MATH-03 supply quality
     // Whitespace url is truthy but becomes "   " in sourceUrl - still passes filter
     expect(out.length).toBeGreaterThanOrEqual(1);
   });
+
+  test("handles whitespace-only shortcode in fallback URL", async () => {
+    mockFetch({ jobs: [widgetJob({ url: undefined, shortcode: "   " }), widgetJob({ title: "Valid", url: "https://apply.workable.com/j/valid" })] });
+    const out = await fetchWorkable("company", "Company");
+    // Whitespace shortcode creates malformed fallback URL but passes filter (truthy)
+    expect(out.length).toBeGreaterThanOrEqual(1);
+    const validJob = out.find((o) => o.title === "Valid");
+    expect(validJob).toBeDefined();
+  });
+
+  test("handles both url and shortcode as whitespace (passes filter but malformed URL)", async () => {
+    mockFetch({ jobs: [widgetJob({ url: "   ", shortcode: "   " }), widgetJob({ title: "Valid", url: "https://apply.workable.com/j/valid" })] });
+    const out = await fetchWorkable("company", "Company");
+    // Both whitespace but truthy - passes filter, sourceUrl is whitespace
+    expect(out.length).toBeGreaterThanOrEqual(1);
+    const validJob = out.find((o) => o.title === "Valid");
+    expect(validJob).toBeDefined();
+  });
+
+  test("handles telecommuting as string 'true'/'false' (type coercion)", async () => {
+    const testCases = [
+      { telecommuting: "true", expectedOnsite: false },
+      { telecommuting: "false", expectedOnsite: false }, // string "false" !== false
+      { telecommuting: true, expectedOnsite: false },
+      { telecommuting: false, expectedOnsite: true }, // boolean false === false
+      { telecommuting: undefined, expectedOnsite: false },
+    ];
+    for (const tc of testCases) {
+      mockFetch({ jobs: [widgetJob({ telecommuting: tc.telecommuting, city: "San Francisco", state: "CA", country: "US" })] });
+      const [row] = await fetchWorkable("company", "Company");
+      if (tc.expectedOnsite) {
+        expect(row.locationRaw).toContain("(onsite)");
+      } else {
+        expect(row.locationRaw).not.toContain("(onsite)");
+      }
+      // locationRaw comes from city/state/country join, not telecommuting
+      expect(row.locationRaw).toContain("San Francisco, CA, US");
+    }
+  });
+
+  test("handles location parts with whitespace-only strings", async () => {
+    mockFetch({ jobs: [widgetJob({ city: "   ", state: "CA", country: "US", telecommuting: true })] });
+    const [row] = await fetchWorkable("company", "Company");
+    // Whitespace city not filtered by .filter(Boolean), gets normalized to empty
+    expect(row.locationRaw).toContain("CA, US");
+  });
+
+  test("handles location parts with mixed null/empty/whitespace", async () => {
+    mockFetch({ jobs: [widgetJob({ city: null, state: "", country: "   ", telecommuting: true })] });
+    const [row] = await fetchWorkable("company", "Company");
+    // Null filtered, empty string filtered, whitespace NOT filtered but normalized
+    expect(row.locationRaw).toBe("Remote");
+  });
+
+  test("handles non-object elements in jobs array (robust filtering)", async () => {
+    mockFetch({ jobs: [widgetJob({ title: "Valid 1" }), "not-an-object", null, 123, widgetJob({ title: "Valid 2" })] });
+    const out = await fetchWorkable("company", "Company");
+    expect(out.map((o) => o.title).sort()).toEqual(["Valid 1", "Valid 2"]);
+  });
+
+  test("handles job.title as non-string (number, boolean) - throws in normalizeText", async () => {
+    // Current implementation throws on non-string titles (pre-existing limitation in normalizeText)
+    // This test documents the behavior - it would need normalizeText fix to handle gracefully
+    mockFetch({ jobs: [widgetJob({ title: 123 })] });
+    await expect(fetchWorkable("company", "Company")).rejects.toThrow();
+  });
+
+  test("handles job.shortcode as non-string in fallback URL", async () => {
+    mockFetch({ jobs: [widgetJob({ url: undefined, shortcode: 123 }), widgetJob({ title: "Valid", url: "https://apply.workable.com/j/valid" })] });
+    const out = await fetchWorkable("company", "Company");
+    // Number shortcode coerced to string in template literal
+    expect(out.length).toBeGreaterThanOrEqual(1);
+    const validJob = out.find((o) => o.title === "Valid");
+    expect(validJob).toBeDefined();
+  });
+
+  test("handles both published_on and created_at invalid", async () => {
+    mockFetch({ jobs: [widgetJob({ published_on: "not-a-date", created_at: "also-invalid" }), widgetJob({ title: "Valid" })] });
+    const out = await fetchWorkable("company", "Company");
+    const invalidJob = out.find((o) => o.title === "Senior Engineer");
+    if (invalidJob) {
+      expect(invalidJob.postedAt).toBeNull();
+    }
+    expect(out.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("handles shortcode with special characters (URL encoding)", async () => {
+    mockFetch({ jobs: [widgetJob({ url: undefined, shortcode: "job with spaces" }), widgetJob({ title: "Valid", url: "https://apply.workable.com/j/valid" })] });
+    const out = await fetchWorkable("company", "Company");
+    // Shortcode used directly in template literal - spaces become part of URL
+    expect(out.length).toBeGreaterThanOrEqual(1);
+    const validJob = out.find((o) => o.title === "Valid");
+    expect(validJob).toBeDefined();
+  });
+
+  test("handles missing city/state/country with telecommuting undefined", async () => {
+    mockFetch({ jobs: [widgetJob({ telecommuting: undefined, city: null, state: null, country: null })] });
+    const [row] = await fetchWorkable("company", "Company");
+    // telecommuting undefined is falsy, locationParts empty -> locationRaw null
+    expect(row.locationRaw).toBeNull();
+  });
+
+  test("handles city/state/country all present with telecommuting false", async () => {
+    mockFetch({ jobs: [widgetJob({ telecommuting: false, city: "New York", state: "NY", country: "US" })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.locationRaw).toContain("New York, NY, US");
+    expect(row.locationRaw).toContain("(onsite)");
+  });
+
+  test("handles city/state/country all present with telecommuting true", async () => {
+    mockFetch({ jobs: [widgetJob({ telecommuting: true, city: "San Francisco", state: "CA", country: "US" })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.locationRaw).toContain("San Francisco, CA, US");
+    expect(row.locationRaw).not.toContain("(onsite)");
+  });
+
+  test("handles response without content-type check (Workable doesn't validate JSON content-type)", async () => {
+    // Unlike Breezy, Workable doesn't check content-type header
+    // This test documents that behavior - it will parse whatever JSON is returned
+    mockFetch({ jobs: [widgetJob({ title: "Valid" })] });
+    const out = await fetchWorkable("company", "Company");
+    expect(out).toHaveLength(1);
+    expect(out[0].title).toBe("Valid");
+  });
 });
