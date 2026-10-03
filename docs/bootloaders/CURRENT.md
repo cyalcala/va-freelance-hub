@@ -1,5 +1,18 @@
 # Current resume pointer
 
+## Session 56 MATH-03 Ashby Provider Profile & Candidate Row Validation: Comprehensive Admission Pipeline Tests (Headless Relay Session 56, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus item 1: SYSTEM_SAVEPOINT.md history preserved — all prior entries intact.
+- Tech lead focus item 2: Supply bottleneck work advanced — added 34 comprehensive tests to `ashby-canary.test.ts` validating Ashby provider profile against shadow-dispatcher enum constraints, candidate row generation for all 4 high-yield candidates (amplify, camunda, supabase, tremendous; 146 positions) plus MultiplyMii regression, provenance structure, date computations, admission pipeline readiness, and shadow promotion decision.
+- Changes delivered: Ashby canary tests (commit `9fac1319`, 160 net lines).
+- All local checks pass: 1,750 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build.
+- Required reading gate satisfied: all 11 required files read, `.shift/reading-056.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes; no hold-list paths touched.
+
+
 ## Session 55 MATH-03 Ashby Shadow Dispatcher Validation: 4 Candidates, Same-Host Delay, Mixed Outcomes, Host Backoff (Headless Relay Session 55, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
