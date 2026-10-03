@@ -202,7 +202,7 @@ export async function treatmentSelector(
 
 // ─── Evaluation Metrics ──────────────────────────────────────────────────────
 
-function computeMetrics(
+export function computeMetrics(
   selected: RankedSource[],
   actualYieldMap: Map<string, number>, // source_id -> actual marginal fresh qualified published
   totalSources: number,
@@ -254,7 +254,7 @@ function computeMetrics(
   };
 }
 
-function compareSelectors(control: SelectorMetrics, treatment: SelectorMetrics): ComparisonMetrics {
+export function compareSelectors(control: SelectorMetrics, treatment: SelectorMetrics): ComparisonMetrics {
   return {
     deltaYield: treatment.totalActualYield - control.totalActualYield,
     deltaCostPerYield: treatment.costPerYieldCents - control.costPerYieldCents,
@@ -570,7 +570,7 @@ function runDemoMode(splitName: string, epoch: string, json: boolean) {
   }
 }
 
-function createSyntheticRecord(
+export function createSyntheticRecord(
   sourceId: string,
   providerId: string,
   capability: string,
