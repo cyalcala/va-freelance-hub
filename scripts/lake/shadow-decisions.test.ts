@@ -663,6 +663,221 @@ describe("compareSelectorOutputs Helper", () => {
       expect(result.overlap.rankCorrelation).toBe(0); // Need >=2 for correlation
       expect(result.overlap.modeAgreementRate).toBe(1);
     });
+
+    it("handles tied ranks in Spearman correlation", async () => {
+      // When ranks are tied, Spearman correlation should still compute
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1, score: 20 }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA", rank: 2, score: 15 }),
+        createMockRankedSource({ source_id: "source-c", provider_id: "ProviderB", rank: 2, score: 15 }), // Tied rank
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1, score: 25 }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA", rank: 2, score: 18 }),
+        createMockRankedSource({ source_id: "source-c", provider_id: "ProviderB", rank: 2, score: 18 }), // Tied rank
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        baseSources
+      );
+
+      // With tied ranks, correlation may not be perfect 1.0
+      expect(result.overlap.rankCorrelation).toBeGreaterThanOrEqual(-1);
+      expect(result.overlap.rankCorrelation).toBeLessThanOrEqual(1);
+    });
+
+    it("handles treatment sources with null processing_mode", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1, processing_mode: "FULL" }),
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1, processing_mode: undefined as any }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        baseSources
+      );
+
+      const decisionA = result.decisions.find(d => d.source_id === "source-a");
+      expect(decisionA).toBeDefined();
+      expect(decisionA?.treatment.mode).toBe("N/A"); // Falls back to "N/A" when undefined
+      // Mode agreement should be 0 when treatment mode is missing
+      expect(result.overlap.modeAgreementRate).toBe(0);
+    });
+
+    it("handles sources only in treatment cold revisit", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1 }),
+      ];
+
+      const treatmentColdRevisit = [
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderB", cold_revisit_reason: "no_observation_7d", mode_reason: "cold_revisit" }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        [],
+        [],
+        treatmentColdRevisit,
+        [
+          createSyntheticRecord("source-a", "ProviderA", "rss_xml", 500, 0.15, 200),
+          createSyntheticRecord("source-b", "ProviderB", "rss_xml", 300, 0.12, 150),
+        ]
+      );
+
+      expect(result.decisions.length).toBe(2);
+
+      const decisionB = result.decisions.find(d => d.source_id === "source-b");
+      // Neither control nor treatment selected source-b (it's only in cold revisit)
+      expect(decisionB?.agreement).toBe("NEITHER");
+      expect(decisionB?.treatment.cold_revisit_reason).toBe("no_observation_7d");
+      expect(decisionB?.treatment.reason).toBe("cold_revisit");
+    });
+
+    it("computes overlap_score correctly for binary overlap", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1 }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA", rank: 2 }),
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1 }),
+        createMockRankedSource({ source_id: "source-c", provider_id: "ProviderB", rank: 2 }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        baseSources
+      );
+
+      const decisionA = result.decisions.find(d => d.source_id === "source-a");
+      const decisionB = result.decisions.find(d => d.source_id === "source-b");
+      const decisionC = result.decisions.find(d => d.source_id === "source-c");
+      const decisionD = result.decisions.find(d => d.source_id === "source-d");
+
+      // Overlap score is binary: 1 if both selected, 0 otherwise
+      expect(decisionA?.overlap_score).toBe(1);
+      expect(decisionB?.overlap_score).toBe(0);
+      expect(decisionC?.overlap_score).toBe(0);
+      expect(decisionD?.overlap_score).toBe(0);
+    });
+
+    it("handles large input sets without performance degradation", async () => {
+      // Create 100 sources
+      const largeSources = Array.from({ length: 100 }, (_, i) =>
+        createSyntheticRecord(`source-${i}`, `Provider${i % 10}`, "rss_xml", 100, 0.2, 20)
+      );
+
+      const controlSelected = largeSources.slice(0, 10).map((s, i) =>
+        createMockRankedSource({ source_id: s.source_id, provider_id: s.provider_id, rank: i + 1 })
+      );
+
+      const treatmentRanked = largeSources.slice(5, 15).map((s, i) =>
+        createMockRankedSource({ source_id: s.source_id, provider_id: s.provider_id, rank: i + 1 })
+      );
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const start = Date.now();
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        largeSources
+      );
+      const elapsed = Date.now() - start;
+
+      expect(result.decisions.length).toBe(100);
+      expect(elapsed).toBeLessThan(100); // Should complete quickly
+      expect(result.overlap.selectedOverlapCount).toBe(5); // Sources 5-9 overlap
+    });
+
+    it("handles treatment excluded with cost_exceeds_budget reason", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1 }),
+      ];
+
+      const treatmentExcluded = [
+        createMockRankedSource({
+          source_id: "source-a",
+          provider_id: "ProviderA",
+          excluded: true,
+          exclusion_reason: "cost_exceeds_budget",
+          feasibility: { permitted: false, reason: "cost_exceeds_budget", hardGate: "COST" },
+        }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        [],
+        treatmentExcluded,
+        [],
+        baseSources
+      );
+
+      const decisionA = result.decisions.find(d => d.source_id === "source-a");
+      expect(decisionA?.agreement).toBe("CONTROL_ONLY");
+      expect(decisionA?.treatment.excluded).toBe(true);
+      expect(decisionA?.treatment.exclusion_reason).toBe("cost_exceeds_budget");
+      expect(decisionA?.treatment.feasibility).toContain("cost_exceeds_budget");
+    });
+
+    it("handles treatment excluded with multiple reasons", async () => {
+      const treatmentExcluded = [
+        createMockRankedSource({
+          source_id: "source-a",
+          provider_id: "ProviderA",
+          excluded: true,
+          exclusion_reason: "insufficient_qualified_ready",
+        }),
+        createMockRankedSource({
+          source_id: "source-b",
+          provider_id: "ProviderB",
+          excluded: true,
+          exclusion_reason: "policy_lease_expired",
+        }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        [],
+        [],
+        treatmentExcluded,
+        [],
+        baseSources
+      );
+
+      const decisionA = result.decisions.find(d => d.source_id === "source-a");
+      const decisionB = result.decisions.find(d => d.source_id === "source-b");
+
+      expect(decisionA?.treatment.exclusion_reason).toBe("insufficient_qualified_ready");
+      expect(decisionB?.treatment.exclusion_reason).toBe("policy_lease_expired");
+    });
   });
 
   describe("runMultiEpochShadowDecisions", () => {
@@ -747,6 +962,62 @@ describe("compareSelectorOutputs Helper", () => {
       const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
 
       expect(results[0].epoch_label).toBe("primary_2026_09");
+    });
+
+    it("preserves epoch order in results", async () => {
+      const configs = [
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+      ];
+
+      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+        [epoch1, createSourcesForEpoch(5, "epoch1")],
+        [epoch2, createSourcesForEpoch(5, "epoch2")],
+      ]);
+
+      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+
+      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+
+      // Results should follow config order, not snapshot order
+      expect(results.length).toBe(2);
+      expect(results[0].epoch_timestamp).toBe(epoch2);
+      expect(results[1].epoch_timestamp).toBe(epoch1);
+    });
+
+    it("handles all epochs missing gracefully", async () => {
+      const configs = [
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
+      ];
+
+      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>();
+
+      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+
+      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+
+      expect(results.length).toBe(0);
+    });
+
+    it("handles configs with different topK per epoch", async () => {
+      const configs = [
+        { topK: 2, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+        { topK: 5, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
+      ];
+
+      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+        [epoch1, createSourcesForEpoch(5, "epoch1")],
+        [epoch2, createSourcesForEpoch(5, "epoch2")],
+      ]);
+
+      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+
+      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+
+      expect(results.length).toBe(2);
+      expect(results[0].control.top_k).toBe(2);
+      expect(results[1].control.top_k).toBe(5);
     });
   });
 
