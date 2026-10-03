@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-03 — MATH-03 Ashby Shadow Dispatcher Validation: 4 Candidates, Same-Host Delay, Mixed Outcomes, Host Backoff (Headless Relay Session 55, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Tech lead focus item 1 COMPLIED — SYSTEM_SAVEPOINT.md history preserved:**
+- All prior entries intact; only prepending this session's entry.
+
+**2. Tech lead focus item 2 ADDRESSED — Supply bottleneck work advanced via MATH-03:**
+- Fresh first-published flow ~36/day vs 100/day floor (-64 gap) per prior evidence.
+- Active unit: MATH-03 marginal source portfolio coverage — 4 Ashby candidates (amplify, camunda, supabase, tremendous) with 146 total open positions identified as high-yield prospects.
+- **This session:** Added 3 unit tests to `packages/scraper/shadow-dispatcher.test.ts` validating the shadow dispatcher correctly handles 4 Ashby candidates sharing `api.ashbyhq.com` host. Tests cover: extended 3000ms polite delay for consecutive same-host probes, mixed outcome tracking (HEALTHY_WITH_RESULTS, SCHEMA_BROKEN, HEALTHY_EMPTY) with anomaly recording, and host backoff on RATE_LIMITED skipping remaining same-host candidates. This ensures reliable shadow observation pipeline for Ashby candidates when admitted to registry, directly addressing the MATH-03 supply constraint.
+
+**3. Changes Delivered (VERIFIED_LOCAL):**
+- **Commit `df946acf`**: `packages/scraper/shadow-dispatcher.test.ts` — 3 new Ashby dispatcher tests added (225 lines).
+
+**4. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,724 pass / 0 fail across 177 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+- Reading gate: All 11 required files read; `.shift/reading-055.md` recorded.
+
+**5. Where we have been / are / going:**
+- Been: Sessions 50-54 resolved PR #162 blockers (gitleaks regex, savepoint history restore), advanced shadow dispatcher resilience for EX-03 503 (`d1_quota_or_limit`) head-of-line blocking (session 53), and validated Ashby shadow probe format (session 54).
+- Are: Gitleaks fix finalized; Ashby shadow probe format validated; shadow dispatcher resilience for transient D1 quota errors implemented; 4 high-yield Ashby candidates (146 positions) now have comprehensive test coverage across both candidate probe and dispatcher layers. Shadow dispatcher correctly handles same-host polite delays, mixed outcomes, and host backoff.
+- Going: Supervisor pushes branch `opencode/shift-20261002-2118` and verifies CI green on `ci-guardrail` workflow. Next session should observe gha-lake-miner.yml run logs and lake_runs ledger for yield evidence, correlate with EX-03 503 pattern, and continue MATH-03 portfolio coverage work toward admitting Ashby candidates to shadow/canary.
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow. If CI passes, changes merge; if red, next session addresses residual failures.
+
 ## 2026-10-03 — PR #162 Gitleaks Fix Completion & MATH-03 Ashby Shadow Probe Validation (Headless Relay Session 54, Shift 20261002-2118)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).

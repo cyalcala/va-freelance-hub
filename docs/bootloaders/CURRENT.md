@@ -1,5 +1,18 @@
 # Current resume pointer
 
+## Session 55 MATH-03 Ashby Shadow Dispatcher Validation: 4 Candidates, Same-Host Delay, Mixed Outcomes, Host Backoff (Headless Relay Session 55, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus item 1: SYSTEM_SAVEPOINT.md history preserved — all prior entries intact.
+- Tech lead focus item 2: Supply bottleneck work advanced — added 3 Ashby shadow dispatcher tests to `shadow-dispatcher.test.ts` validating dispatcher handles 4 high-yield candidates (amplify, camunda, supabase, tremendous; 146 positions) sharing `api.ashbyhq.com` host with 3000ms polite delay, mixed outcomes, and host backoff.
+- Changes delivered: Ashby dispatcher tests (commit `df946acf`, 225 lines).
+- All local checks pass: 1,724 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build.
+- Required reading gate satisfied: all 11 required files read, `.shift/reading-055.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes; no hold-list paths touched.
+
+
 ## Session 54 PR #162 Gitleaks Fix Completion & MATH-03 Ashby Shadow Probe Validation (Headless Relay Session 54, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
