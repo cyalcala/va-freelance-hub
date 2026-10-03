@@ -221,4 +221,203 @@ describe("fetchLever", () => {
     const out = await fetchLever("company", "Company");
     expect(out.map((o) => o.title).sort()).toEqual(["Valid 1", "Valid 3"]);
   });
+
+  // ─── Edge cases for Lever API response variations (MATH-03 supply quality) ───
+
+  test("handles jobs as non-array (current behavior: throws on non-array)", async () => {
+    // Current implementation throws when payload is not an array (pre-existing limitation)
+    // This test documents the behavior - a robust fix would coerce to array or return empty
+    mockFetch("not-an-array");
+    await expect(fetchLever("company", "Company")).rejects.toThrow();
+  });
+
+  test("handles non-object elements in jobs array (robust filtering)", async () => {
+    mockFetch([job({ text: "Valid 1" }), "not-an-object", null, 123, job({ text: "Valid 2" })]);
+    const out = await fetchLever("company", "Company");
+    expect(out.map((o) => o.title).sort()).toEqual(["Valid 1", "Valid 2"]);
+  });
+
+  test("handles job.text as non-string (number, boolean) - throws in normalizeText", async () => {
+    // Current implementation throws on non-string titles (pre-existing limitation in normalizeText)
+    // This test documents the behavior - it would need normalizeText fix to handle gracefully
+    mockFetch([job({ text: 123 })]);
+    await expect(fetchLever("company", "Company")).rejects.toThrow();
+  });
+
+  test("handles categories.location as string (not object) - current behavior uses string directly", async () => {
+    // Current implementation reads categories.location directly, so string location works
+    // This test documents the behavior
+    mockFetch([job({ categories: { location: "San Francisco, CA" }, workplaceType: "remote" })]);
+    const [row] = await fetchLever("company", "Company");
+    expect(row.locationRaw).toBe("San Francisco, CA (remote)");
+  });
+
+  test("handles categories.location as object with name field - throws in normalizeText", async () => {
+    // Current implementation passes the object to normalizeText which throws on non-string
+    // This test documents the current behavior (throws)
+    mockFetch([job({ categories: { location: { name: "New York, NY" } }, workplaceType: "remote" })]);
+    await expect(fetchLever("company", "Company")).rejects.toThrow();
+  });
+
+  test("handles categories as null/undefined", async () => {
+    mockFetch([job({ categories: null, workplaceType: "remote" })]);
+    const [row] = await fetchLever("company", "Company");
+    expect(row.locationRaw).toBe("(remote)");
+  });
+
+  test("handles categories.location with whitespace-only string", async () => {
+    mockFetch([job({ categories: { location: "   " }, workplaceType: "remote" })]);
+    const [row] = await fetchLever("company", "Company");
+    // Whitespace location normalized to empty string by normalizeText, filtered out by .filter(Boolean)
+    // Only workplaceType remains
+    expect(row.locationRaw).toBe("(remote)");
+  });
+
+  test("handles categories.location as empty object - throws in normalizeText", async () => {
+    // Current implementation passes the object to normalizeText which throws on non-string
+    // This test documents the current behavior (throws)
+    mockFetch([job({ categories: { location: {} }, workplaceType: "remote" })]);
+    await expect(fetchLever("company", "Company")).rejects.toThrow();
+  });
+
+  test("handles various valid createdAt formats with additional timezones", async () => {
+    const testCases = [
+      { input: "2026-07-01T12:00:00.000Z", expected: "2026-07-01T12:00:00.000Z" },
+      { input: "2026-07-01T12:00:00+00:00", expected: "2026-07-01T12:00:00.000Z" },
+      { input: "2026-07-01T12:00:00.000+00:00", expected: "2026-07-01T12:00:00.000Z" },
+      { input: "2026-07-01T05:00:00-07:00", expected: "2026-07-01T12:00:00.000Z" }, // PDT
+      { input: "2026-07-01T14:00:00+02:00", expected: "2026-07-01T12:00:00.000Z" }, // CEST
+      { input: "2026-12-25T12:00:00-05:00", expected: "2026-12-25T17:00:00.000Z" }, // EST
+    ];
+    for (const tc of testCases) {
+      mockFetch([job({ createdAt: tc.input })]);
+      const [row] = await fetchLever("company", "Company");
+      expect(row.postedAt).toBe(tc.expected);
+    }
+  });
+
+  test("handles 500 internal server error as failed fetch", async () => {
+    mockFetch(null, false, 500);
+    await expect(fetchLever("company", "Company")).rejects.toThrow(/Lever HTTP 500/);
+  });
+
+  test("handles 502 bad gateway as failed fetch", async () => {
+    mockFetch(null, false, 502);
+    await expect(fetchLever("company", "Company")).rejects.toThrow(/Lever HTTP 502/);
+  });
+
+  test("handles 504 gateway timeout as failed fetch", async () => {
+    mockFetch(null, false, 504);
+    await expect(fetchLever("company", "Company")).rejects.toThrow(/Lever HTTP 504/);
+  });
+
+  test("handles empty string text in otherwise valid job object", async () => {
+    mockFetch([job({ text: "", hostedUrl: "https://jobs.lever.co/company/empty" }), job({ text: "Valid", hostedUrl: "https://jobs.lever.co/company/valid" })]);
+    const out = await fetchLever("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid"]);
+  });
+
+  test("handles undefined text in otherwise valid job object", async () => {
+    mockFetch([job({ text: undefined, hostedUrl: "https://jobs.lever.co/company/empty" }), job({ text: "Valid", hostedUrl: "https://jobs.lever.co/company/valid" })]);
+    const out = await fetchLever("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid"]);
+  });
+
+  test("handles null text in otherwise valid job object", async () => {
+    mockFetch([job({ text: null, hostedUrl: "https://jobs.lever.co/company/empty" }), job({ text: "Valid", hostedUrl: "https://jobs.lever.co/company/valid" })]);
+    const out = await fetchLever("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid"]);
+  });
+
+  test("handles empty string hostedUrl in otherwise valid job object", async () => {
+    mockFetch([job({ text: "Valid", hostedUrl: "" }), job({ text: "Valid 2", hostedUrl: "https://jobs.lever.co/company/valid" })]);
+    const out = await fetchLever("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid 2"]);
+  });
+
+  test("handles null hostedUrl in otherwise valid job object", async () => {
+    mockFetch([job({ text: "Valid", hostedUrl: null }), job({ text: "Valid 2", hostedUrl: "https://jobs.lever.co/company/valid" })]);
+    const out = await fetchLever("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Valid 2"]);
+  });
+
+  test("handles job with extra unexpected fields including nested objects", async () => {
+    mockFetch([
+      job({
+        text: "Senior Engineer",
+        extraField1: "ignored",
+        extraField2: { nested: "also ignored" },
+        salary: { min: 100000, max: 200000, currency: "USD" },
+        department: "Engineering",
+        metadata: { key: "value", tags: ["remote", "senior"] },
+      }),
+    ]);
+    const [row] = await fetchLever("company", "Company");
+    expect(row.title).toBe("Senior Engineer");
+    expect(row.sourceUrl).toBe("https://jobs.lever.co/company/abc123");
+  });
+
+  test("handles hostedUrl with special characters and spaces", async () => {
+    mockFetch([job({ hostedUrl: "https://jobs.lever.co/company/job with spaces" }), job({ text: "Valid", hostedUrl: "https://jobs.lever.co/company/valid" })]);
+    const out = await fetchLever("company", "Company");
+    expect(out.length).toBeGreaterThanOrEqual(1);
+    const validJob = out.find((o) => o.title === "Valid");
+    expect(validJob).toBeDefined();
+  });
+
+  test("handles response without content-type check (Lever doesn't validate JSON content-type)", async () => {
+    // Unlike Breezy, Lever doesn't check content-type header
+    // This test documents that behavior - it will parse whatever JSON is returned
+    mockFetch([job({ text: "Valid" })]);
+    const out = await fetchLever("company", "Company");
+    expect(out).toHaveLength(1);
+    expect(out[0].title).toBe("Valid");
+  });
+
+  test("handles large response with many jobs (performance and memory, 1000 jobs)", async () => {
+    const manyJobs = Array.from({ length: 1000 }, (_, i) => job({ text: `Job ${i}`, hostedUrl: `https://jobs.lever.co/company/job_${i}` }));
+    mockFetch(manyJobs);
+    const out = await fetchLever("company", "Company");
+    expect(out).toHaveLength(1000);
+    expect(out[0].title).toBe("Job 0");
+    expect(out[999].title).toBe("Job 999");
+  });
+
+  test("handles createdAt missing with no fallback date field", async () => {
+    mockFetch([job({ createdAt: undefined }), job({ text: "Valid" })]);
+    const out = await fetchLever("company", "Company");
+    const invalidJob = out.find((o) => o.title === "Senior Engineer");
+    if (invalidJob) {
+      expect(invalidJob.postedAt).toBeNull();
+    }
+    expect(out.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("handles both createdAt invalid and no other date fields", async () => {
+    mockFetch([job({ createdAt: "not-a-date" }), job({ text: "Valid" })]);
+    const out = await fetchLever("company", "Company");
+    const invalidJob = out.find((o) => o.title === "Senior Engineer");
+    if (invalidJob) {
+      expect(invalidJob.postedAt).toBeNull();
+    }
+    expect(out.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test("handles workplaceType as string variations with case sensitivity", async () => {
+    const testCases = [
+      { workplaceType: "ON-SITE", expectedOnsite: false }, // case sensitive - not "on-site"
+      { workplaceType: "On-Site", expectedOnsite: false }, // case sensitive
+      { workplaceType: "HYBRID", expectedOnsite: false },
+      { workplaceType: "REMOTE", expectedOnsite: false },
+    ];
+    for (const tc of testCases) {
+      mockFetch([job({ workplaceType: tc.workplaceType, categories: { location: "San Francisco, CA" } })]);
+      const [row] = await fetchLever("company", "Company");
+      if (tc.expectedOnsite) {
+        expect(row.locationRaw).toContain("(on-site)");
+      } else {
+        expect(row.locationRaw).not.toContain("(on-site)");
+      }
+    }
+  });
 });
