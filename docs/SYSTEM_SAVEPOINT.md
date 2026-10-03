@@ -1,5 +1,22 @@
 # System Savepoint
 
+## 2026-10-04 — Session 20 SSAE-05 Shadow Decisions Delivered (session 20)
+
+**Unit:** SSAE-05 (Run shadow decisions without extra probes). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — completed REQUIRED READING GATE (all 14 required files). Delivered SSAE-05 on branch tip `b59b09b6` (26 commits ahead of origin/main `4d2e61c2`).
+
+**Session 20 Work:**
+- Reading gate: `.shift/reading-020.md` written (untracked)
+- Implemented SSAE-05: `scripts/lake/shadow-decisions.ts` + `scripts/lake/shadow-decisions.test.ts` (30 tests)
+- All acceptance criteria met: deterministic fixtures, overlap metrics (Jaccard, Spearman rank correlation, mode agreement), agreement classification (BOTH_SELECTED/CONTROL_ONLY/TREATMENT_ONLY/NEITHER), cold revisit detection, LIMITED disposition
+- Exports confirmed: `runShadowDecisionCycle`, `generateShadowReceipt`, `createSyntheticRecord`, `ShadowConfig`, `ShadowCycleResult`, `ShadowDecisionRecord`
+- Demo mode functional with synthetic fixtures; all runtime counts UNKNOWN per LIMITED disposition
+- No network/prod mutations; no hold-list edits; no SQL mutations
+- Full suite: 1,940 pass / 0 fail; `bun run typecheck` clean; all 4 audits clean
+
+**NEXT SINGLE ACTION:** SSAE-06 (Measurement contracts for per-source epoch features) depends on SSAE-04 holdout baseline and SSAE-05 shadow decision output. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task.
+
+---
+
 ## 2026-10-04 — Session 19 SSAE-04 Verification Complete (session 19)
 
 **Unit:** SSAE-04 verification. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — completed REQUIRED READING GATE (all 14 required files). Verified SSAE-04 complete on branch tip `f81f6ee6` (25 commits ahead of origin/main `4d2e61c2`).
