@@ -1,5 +1,17 @@
 # Current resume pointer
 
+## Session 51 PR #162 Gitleaks Fix & Savepoint Integrity (Headless Relay Session 51, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus item 1: .gitleaks.toml regex fix — changed `['\"]` to [`\"'] in all 5 allowlist regexes to match backtick-quoted SHAs in SYSTEM_SAVEPOINT.md. One commit, no other changes.
+- Tech lead focus item 2: SYSTEM_SAVEPOINT.md history preserved — session 50's MATH-12 entry restore (verbatim from origin/main) committed.
+- Tech lead focus item 3: Supply bottleneck acknowledged — fresh flow ~36/day vs 100/day floor; active unit "MATH-03 / MATH-12: Automated Background Mining Observation & Health Validation" read-only, zero hold-list paths.
+- All local checks pass: 1,698 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build.
+- Required reading gate satisfied: all 11 required files read, `.shift/reading-051.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes; no hold-list paths touched.
+
 ## Session 50 MATH-12 Savepoint Entry Restored Verbatim from origin/main (Headless Relay Session 50, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
