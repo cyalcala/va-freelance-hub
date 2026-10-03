@@ -1,10 +1,10 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift (session 18). This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 19). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest checkpoint is "Session 18 Reading Gate & SSAE-04 Verification (session 18)."
+The latest checkpoint is "Session 19 SSAE-04 Verification Complete (session 19)."
 SSAE-04 (PROPOSED, VERIFIED_CODE, no runtime change) complete — holdout evaluation at docs/audits/2026-10-04-SSAE-04-TEMPORAL-HOLDOUTS.md + deterministic fixtures/tests at scripts/lake/temporal-holdout-eval.test.ts (24 tests).
 SSAE-03 (PROPOSED, VERIFIED_CODE, no runtime change) complete — ranker created at scripts/lake/source-ranker.ts with 42 tests.
 SSAE-02 (PROPOSED, VERIFIED_CODE, no runtime change) complete — contract created at docs/audits/2026-10-04-SSAE-02-COMPACT-SOURCE-MEMORY.md.
