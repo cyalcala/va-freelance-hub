@@ -1431,4 +1431,67 @@ describe("SSAE-05 Offline Hardening — Pure Fixture Tests", () => {
     expect(results[0].control.total_feasible).toBe(5);
     expect(results[1].control.total_feasible).toBe(0);
   });
+
+    it("shadow decision cycle uses only provided epochTimestamp", async () => {
+      const { runShadowDecisionCycle } = await import("./shadow-decisions");
+      const baseConfig: ShadowConfig = {
+        topK: 5,
+        maxCostPerSourceCents: 500,
+        coldRevisitDays: 7,
+        epochTimestamp: "2026-09-15T12:00:00Z",
+      };
+      const sources = makeSources(3);
+      // Run with the given epochTimestamp
+      const result1 = await runShadowDecisionCycle(baseConfig, sources);
+      // Change the epochTimestamp to a different value
+      const modifiedConfig = { ...baseConfig, epochTimestamp: "2026-09-16T12:00:00Z" };
+      const result2 = await runShadowDecisionCycle(modifiedConfig, sources);
+      // The epoch_label should change (if we are using custom label) or at least the epoch_timestamp in the result
+      expect(result1.epoch_timestamp).toBe(baseConfig.epochTimestamp);
+      expect(result2.epoch_timestamp).toBe(modifiedConfig.epochTimestamp);
+      // The rest of the result should be the same because the sources and config (except epochTimestamp) are the same?
+      // Actually, the epochTimestamp is used only for the epoch_label and epoch_timestamp in the result.
+      // The selection logic does not depend on the epochTimestamp value (only on the sources and config parameters like topK, etc.)
+      // So we expect the selected IDs to be the same.
+      expect(result1.control.selected_ids).toEqual(result2.control.selected_ids);
+      expect(result1.treatment.selected_ids).toEqual(result2.treatment.selected_ids);
+    });
+
+    it("shadow receipt includes non-empty selector versions", async () => {
+      const { runShadowDecisionCycle, generateShadowReceipt } = await import("./shadow-decisions");
+      const baseConfig: ShadowConfig = {
+        topK: 5,
+        maxCostPerSourceCents: 500,
+        coldRevisitDays: 7,
+        epochTimestamp: "2026-09-15T12:00:00Z",
+      };
+      const sources = makeSources(3);
+      const result = await runShadowDecisionCycle(baseConfig, sources);
+      const receipt = generateShadowReceipt(result);
+      expect(receipt).toContain("Control (Deterministic Stride)");
+      expect(receipt).toContain("Treatment (SSAE-03 Ranker)");
+      // The selector versions should be non-empty strings
+      expect(result.control.selector_version).toMatch(/^.+$/);
+      expect(result.treatment.selector_version).toMatch(/^.+$/);
+      // The receipt should contain these versions
+      expect(receipt).toContain(result.control.selector_version);
+      expect(receipt).toContain(result.treatment.selector_version);
+    });
+
+
+  it("shadow decision cycle does not mutate input sources", async () => {
+    const { runShadowDecisionCycle } = await import("./shadow-decisions");
+    const baseConfig: ShadowConfig = {
+      topK: 5,
+      maxCostPerSourceCents: 500,
+      coldRevisitDays: 7,
+      epochTimestamp: "2026-09-15T12:00:00Z",
+    };
+    const sources = makeSources(3);
+    // Deep clone the sources to compare later
+    const sourcesClone = JSON.parse(JSON.stringify(sources));
+    await runShadowDecisionCycle(baseConfig, sources);
+    // After the function call, the sources should be unchanged
+    expect(sources).toEqual(sourcesClone);
+  });
 });
