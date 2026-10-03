@@ -1,5 +1,33 @@
 # System Savepoint
 
+## 2026-10-04 — SSAE-03 Pure Read-Only Source Ranker Delivered (session 13)
+
+**Unit:** SSAE-03. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — scripts/lake/source-ranker.ts and scripts/lake/source-ranker.test.ts created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.
+
+**SSAE-03 Delivered — Pure Read-Only Source Ranker:**
+- Deterministic source ranking function producing frozen-input Top-K candidate pool with score/cost decomposition, exclusions, and cold revisit reasons
+- Processing mode selection (FULL/REINDEX/REUSE/BOUNDED_REPLAY) per SSAE-02 SourceMemoryRecord schema and version dependencies
+- Hard feasibility evaluation (g(i,a,t)) with robots, rate-limit, opt-out, policy/lease expiry, consecutive failure gates
+- Marginal yield estimation from recent PH rate × qualified_ready count; cost estimation in cents (fetch, parse, AI, DB)
+- Freshness bonus (≤1h: 1.0, ≤12h: 0.5, ≤48h: 0.2), diversity bonus (under 50% ceiling: up to 0.5), cold revisit detection (configurable days)
+- Version dependency invalidation: single targeted changes (GEO, TRIAGE, FINGERPRINT, CONTENT_HASH, POLICY) → BOUNDED_REPLAY; multiple/broad (PROCESSOR, MODEL) → REINDEX; unknown versions → FULL
+- Evidence refs and completeness flag (requires geo_gate, fingerprint, conditional, triage replay coverage)
+- 42 unit tests covering all mode selections, feasibility gates, bonuses, ranking, exclusions, cold revisit, version invalidation
+
+**Verification:**
+- `bun test scripts/lake/source-ranker.test.ts`: 42 pass / 0 fail
+- `bun test`: 1,891 pass / 0 fail (full suite)
+- `bun run typecheck`: clean
+- `bun scripts/ci/check-production-guardrails.ts`: clean
+- `bun scripts/ci/audit-constitution.ts`: passed with known warnings
+- `bun scripts/ci/audit-parameters.ts`: 100% parity
+- `bun scripts/ci/check-orchestrator-modifications.ts`: clean
+- `git diff -- scripts/lake/source-ranker.ts scripts/lake/source-ranker.test.ts | grep -iE 'insert into opportunities|update opportunities|delete from|drop trigger'`: clean
+
+**NEXT SINGLE ACTION:** SSAE-04 (Evaluate historical temporal holdouts) depends on this unit's ranked output and SSAE-01 dataset schema. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task.
+
+---
+
 ## 2026-10-04 — SSAE-02 Compact Source Memory Contract Delivered (session 11)
 
 **Unit:** SSAE-02. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — docs/audits/2026-10-04-SSAE-02-COMPACT-SOURCE-MEMORY.md created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.
