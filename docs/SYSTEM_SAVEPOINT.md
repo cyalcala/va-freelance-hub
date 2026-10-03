@@ -1,6 +1,38 @@
 # System Savepoint
 
-## 2026-10-03 — Gauntlet Slice 8 Stratified Reconciliation: 90 Boards Scanned, Brafton Admitted, Dual-Gate Invariant Verified (42 Lake Held, 30 Auto-Approved Tenants, Unvalidated Down to 8,629) (current)
+## 2026-10-03 — Gauntlet Slice 9 Stratified Reconciliation & Gradient Live Publication: 90 Boards Scanned, Gradient Admitted & Published to D1 (5 Jobs Synced, Total 916 Lake Synced, 1,390 Live Board Total, 42 Held in Reservoir, Unvalidated Down to 8,539) (current)
+
+**Unit:** RECONCILE-SLICE-09. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 916 lake-synced opportunities live; 42 Lake QUALIFIED_READY rows held by dual-gate publication floor; 31 auto-approved tenants; 1,390 live opportunities total).
+
+**1. Delivered unit — Stratified Reconciliation Slice 9 & Serverless Publication:**
+- **Stratified Slice Executed:**
+  - Scanned 90 boards (30 Ashby, 30 Greenhouse, 30 Lever) against the unvalidated corpus.
+  - *Outlier Admitted:* `ashby:gradient` (gradient): 5 live jobs probed, 5 QUALIFIED_READY (100.0% PH rate). Auto-admitted by Jev decision (`confidence=0.75`, deterministic threshold `ph_rate >= 20%`). Ingested 5 QUALIFIED_READY jobs into Turso lake reservoir.
+  - *Dual-Gate Clearance:* Wilson score 95% lower bound for Gradient = **56.6%**, strictly clearing the 20.0% publication floor. Auto-approved for publication without human bottleneck (`ADR-007` / `ADR-008`).
+  - *Live Production Publication via Cloud Run (`lake-publish-job`):* Triggered serverless execution in GCP `asia-southeast1` (Execution ID: `lake-publish-job-8bmn6`). Published 5 net-new verified remote opportunities from `ashby:gradient` to Cloudflare D1.
+  - *Dual-Gate Invariant Verified:* All 42 remaining `QUALIFIED_READY` candidate rows in the Turso reservoir (`supabase`, `decilegroup`, `brafton`, `lwolf`, `loadsmart`, `aethoshotels`, `sofarsounds`, `beaverprocess`, `influ2`, `apolloagriculture`, `90seconds`) stayed strictly HELD by the source gate (Wilson < 20% floor). Zero premature leakage into Cloudflare D1.
+  - *Post-Publication Production Verification:* `https://remotejobs-ph.pages.dev/opportunities?q=gradient` returns HTTP 200 with 5 Gradient opportunities live and searchable (Jobs 8591..8595). Total active opportunities served on public board increased from 1,385 to **1,390**.
+  - *Shadow / Rejected:* 2 shadowed (`lever:bee-talents` 5.0% PH, and 1 other), 87 auto-rejected (0-1.4% PH, dead/empty, or insufficient jobs).
+  - *Corpus Reduction:* Unvalidated claims reduced from 8,629 down to **8,539** (total 9,977 claims in discovery table: 31 auto_approved, 139 shadow_monitor, 1,268 auto_rejected, 8,539 discovered).
+- **Lake & Production State Post-Execution:**
+  - Auto-approved tenants: 30 -> 31 (+1 first-party admitted source).
+  - Synced to D1 from Lake: 911 -> 916 opportunities (+5 fresh published jobs).
+  - Lake reservoir: 42 held candidate jobs (dual-gate protected).
+  - Production D1 live board: 1,390 active opportunities.
+
+**2. Verification:**
+- Full test suite: 1,747 passed / 0 failed across 177 files (`bun test`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Dual-gate dry-run: Passed (`bun run scripts/lake/sync-to-d1.ts --dry-run`).
+- Serverless publication: `lake-publish-job-8bmn6` completed successfully; live HTTP 200 query verified 5 jobs live on Pages edge.
+
+**NEXT SINGLE ACTION:** Advance autonomous discovery and corpus validation: run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or domain discovery to continue surfacing first-party high-PH outliers from the remaining 8,539 unvalidated claims toward the 100 fresh qualified jobs/day floor; or proceed with SSAE-00 empirical profiling under the v6.1 sparse compute contract. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-03 — Gauntlet Slice 8 Stratified Reconciliation: 90 Boards Scanned, Brafton Admitted, Dual-Gate Invariant Verified (42 Lake Held, 30 Auto-Approved Tenants, Unvalidated Down to 8,629) (historical)
 
 **Unit:** RECONCILE-SLICE-08. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 911 lake-synced opportunities live; 42 Lake QUALIFIED_READY rows held by dual-gate publication floor; 30 auto-approved tenants; 1,385 live opportunities total).
