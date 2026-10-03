@@ -742,6 +742,35 @@ describe("candidate-shadow — Ashby ATS public posting API (supply bottleneck: 
     expect(res.sampleFunnel.plausibleItems).toBe(1);
   });
 
+  it("handles Ashby response for amplify candidate with multiple roles and applyUrl", async () => {
+    const input = candidateInput({
+      sourceId: "ashby:amplify",
+      endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/amplify",
+      provider: {
+        id: "ashby", providerFamily: "ashby", mechanism: "ats_api", authClass: "none",
+        allowedHosts: "api.ashbyhq.com", visibilityFilter: "published", evidenceUrl: "https://developers.ashbyhq.com/docs/public-job-posting-api.md",
+        cadenceMinMinutes: 60, cadenceMaxMinutes: 1440,
+      },
+    } as any);
+    const ashbyBody = JSON.stringify({
+      jobs: [
+        { title: "Senior Backend Engineer", jobUrl: "https://jobs.ashbyhq.com/amplify/abc123", isListed: true, location: "Remote, USA", isRemote: true, applyUrl: "https://jobs.ashbyhq.com/amplify/abc123/application", publishedAt: "2026-08-28T00:00:00Z" },
+        { title: "Product Manager", jobUrl: "https://jobs.ashbyhq.com/amplify/def456", isListed: true, location: { name: "New York, NY (Remote)" }, isRemote: true, applyUrl: "https://jobs.ashbyhq.com/amplify/def456/application", publishedAt: "2026-08-27T12:00:00-04:00" },
+        { title: "DevOps Engineer", jobUrl: "https://jobs.ashbyhq.com/amplify/ghi789", isListed: true, location: "Remote", isRemote: true, publishedAt: "2026-08-26T00:00:00Z" },
+      ],
+    });
+    const fetcher = mockFetchFor({
+      "https://api.ashbyhq.com/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      "https://api.ashbyhq.com/posting-api/job-board/amplify": { status: 200, body: ashbyBody, headers: { "content-type": "application/json" } },
+    });
+    global.fetch = fetcher;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(res.parse.itemCount).toBe(3);
+    expect(res.sampleFunnel.plausibleItems).toBe(3);
+    expect(res.sampleFunnel.parsedItems).toBe(3);
+  });
+
   it("rejects non-jobs-array Ashby response as SCHEMA_BROKEN", async () => {
     const input = candidateInput({
       sourceId: "ashby:amplify",
@@ -868,6 +897,149 @@ describe("validateAshbyResponseStructure — Ashby-specific response validation"
     const result = validateAshbyResponseStructure(body);
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThanOrEqual(4); // title empty, jobUrl not string, isListed not boolean, isRemote not boolean, id not string, publishedAt not string
+  });
+
+  // ─── Edge cases matching fetchAshby parser coverage (MATH-03 supply quality) ───
+
+  it("validates job with location as object containing name field", () => {
+    const body = JSON.stringify({
+      jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", location: { name: "San Francisco, CA" }, isRemote: false }],
+    });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+  });
+
+  it("validates job with location as string", () => {
+    const body = JSON.stringify({
+      jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", location: "Remote, USA", isRemote: true }],
+    });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+  });
+
+  it("validates job with missing location entirely", () => {
+    const body = JSON.stringify({
+      jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", location: undefined, isRemote: true }],
+    });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+  });
+
+  it("validates job with empty string location", () => {
+    const body = JSON.stringify({
+      jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", location: "", isRemote: true }],
+    });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+  });
+
+  it("validates publishedAt in various valid ISO formats", () => {
+    const testCases = [
+      "2026-07-01T12:00:00.000Z",
+      "2026-07-01T12:00:00+00:00",
+      "2026-07-01T12:00:00.000+00:00",
+    ];
+    for (const dateStr of testCases) {
+      const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", publishedAt: dateStr }] });
+      const result = validateAshbyResponseStructure(body);
+      expect(result.valid).toBe(true);
+      expect(result.jobCount).toBe(1);
+    }
+  });
+
+  it("validates publishedAt with timezone offset (non-UTC)", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", publishedAt: "2026-07-01T05:00:00-07:00" }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+  });
+
+  it("handles response with extra unexpected fields (robust parsing)", () => {
+    const body = JSON.stringify({
+      jobs: [
+        {
+          title: "Engineer",
+          jobUrl: "https://jobs.ashbyhq.com/supabase/1",
+          extraField1: "ignored",
+          extraField2: { nested: "also ignored" },
+          salary: "$100k-200k",
+          department: "Engineering",
+        },
+      ],
+    });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+  });
+
+  it("handles large response with many jobs (performance and memory)", () => {
+    const manyJobs = Array.from({ length: 500 }, (_, i) => ({
+      title: `Job ${i}`,
+      jobUrl: `https://jobs.ashbyhq.com/supabase/job_${i}`,
+      id: `job_${i}`,
+    }));
+    const body = JSON.stringify({ jobs: manyJobs });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(500);
+  });
+
+  it("returns valid for empty jobs list", () => {
+    const body = JSON.stringify({ jobs: [] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(0);
+  });
+
+  it("validates job with id containing whitespace (accepted as string)", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", id: "  ashby_job_123  " }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+  });
+
+  it("validates job with id that is only whitespace (accepted as string, not empty)", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", id: "   " }] });
+    const result = validateAshbyResponseStructure(body);
+    // Validator only checks type, not content — empty string is still a string
+    expect(result.valid).toBe(true);
+    expect(result.jobCount).toBe(1);
+  });
+
+  it("handles multiple jobs in single response with mixed validity (first 10 validated)", () => {
+    const jobs = [
+      { title: "Valid 1", jobUrl: "https://jobs.ashbyhq.com/supabase/1", id: "job_1" },
+      { title: "", jobUrl: "https://jobs.ashbyhq.com/supabase/empty" }, // invalid: empty title
+      { jobUrl: "https://jobs.ashbyhq.com/supabase/valid2", title: "Valid 2", id: "job_2" }, // valid
+      { title: "Valid 3", jobUrl: "https://jobs.ashbyhq.com/supabase/valid3", id: "job_3" },
+    ];
+    // Add more to exceed 10
+    for (let i = 4; i <= 11; i++) {
+      jobs.push({ title: `Valid ${i}`, jobUrl: `https://jobs.ashbyhq.com/supabase/valid${i}`, id: `job_${i}` });
+    }
+    const body = JSON.stringify({ jobs });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false); // Second job has empty title
+    expect(result.jobCount).toBe(12);
+    expect(result.errors.some(e => e.includes("title"))).toBe(true);
+  });
+
+  it("validates applyUrl is string when present", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", applyUrl: 123 }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("applyUrl"))).toBe(true);
+  });
+
+  it("validates employmentType is string when present", () => {
+    const body = JSON.stringify({ jobs: [{ title: "Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/1", employmentType: 123 }] });
+    const result = validateAshbyResponseStructure(body);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some(e => e.includes("employmentType"))).toBe(true);
   });
 });
 

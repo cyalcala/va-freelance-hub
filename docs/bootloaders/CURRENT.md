@@ -1,5 +1,16 @@
 # Current resume pointer
 
+## Session 70 MATH-03 Ashby Shadow Probe Validation Coverage: 15 New Tests for validateAshbyResponseStructure & amplify Healthy Probe (Headless Relay Session 70, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus: Supply bottleneck unit delivered — 15 comprehensive edge case tests added to `validateAshbyResponseStructure` and candidate-shadow probe tests, matching parser edge case coverage for 4 high-yield Ashby candidates (146 positions).
+- Scope compliance: Only `packages/scraper/` non-hold files modified (candidate-shadow.ts + candidate-shadow.test.ts). No hold-list paths touched.
+- Local checks pass: 1,918 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build successful.
+- Required reading gate satisfied: all 11 required files read; `.shift/reading-070.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes.
+
 ## Session 69 MATH-03 ATS Parser Edge Case Coverage: 117 New Tests for Lever, Greenhouse, Workable, Breezy (Headless Relay Session 69, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
@@ -24,7 +35,7 @@ VERIFICATION COMPLETE:
 
 ## Active bounded unit
 
-**MATH-03 Ashby Provider Profile & Candidate Row Validation: Comprehensive Admission Pipeline Tests (Headless Relay Session 56, Shift 20261002-2118) (2026-10-03):**
+**MATH-03 Ashby Shadow Probe Validation Parity Complete (Headless Relay Session 70, Shift 20261002-2118) (2026-10-03):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
@@ -32,13 +43,14 @@ CURRENT STATE:
 - 4 high-yield Ashby candidates (amplify, camunda, supabase, tremendous) with 146 total open positions identified.
 - Ashby canary admission pipeline tests comprehensive (34 tests in ashby-canary.test.ts).
 - Shadow probe format validated (session 54), shadow dispatcher same-host behavior validated (session 55).
-- Parser edge cases now covered (session 68: 28 new fetchAshby tests).
+- Parser edge cases covered (session 68: 28 new fetchAshby tests).
+- **Shadow probe validation parity strengthened (session 70): 15 new validateAshbyResponseStructure tests + amplify healthy probe test; admission pipeline robustness for all 4 candidates.**
 
 CURRENT BOTTLENECK: Supply gap (~36/day ledger flow vs 100/day floor).
 
 ACTIVE UNIT: MATH-03 portfolio coverage work toward admitting Ashby candidates to shadow/canary under ADR-007 / Source Perpetuity.
 
-NEXT ACTION: Observe gha-lake-miner.yml run logs and lake_runs ledger for yield evidence; correlate with EX-03 503 pattern; prepare Ashby candidate admission allowlist inclusion.
+NEXT ACTION: Observe gha-lake-miner.yml run logs and lake_runs ledger for yield evidence; correlate with EX-03 503 pattern; prepare Ashby candidate admission allowlist inclusion (governance step).
 
 **Prior unit (delivered & deployed):**
 

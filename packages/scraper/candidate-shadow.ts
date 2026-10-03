@@ -296,6 +296,12 @@ export function validateAshbyResponseStructure(jsonText: string): { valid: boole
       if (job.publishedAt !== undefined && typeof job.publishedAt !== "string") {
         errors.push(`Job ${i} publishedAt is not a string`);
       }
+      if (job.applyUrl !== undefined && typeof job.applyUrl !== "string") {
+        errors.push(`Job ${i} applyUrl is not a string`);
+      }
+      if (job.employmentType !== undefined && typeof job.employmentType !== "string") {
+        errors.push(`Job ${i} employmentType is not a string`);
+      }
     }
     return { valid: errors.length === 0, jobCount, errors };
   } catch (e) {
