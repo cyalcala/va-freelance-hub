@@ -1,5 +1,32 @@
 # System Savepoint
 
+## 2026-10-04 — SSAE-02 Compact Source Memory Contract Delivered (session 11)
+
+**Unit:** SSAE-02. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — docs/audits/2026-10-04-SSAE-02-COMPACT-SOURCE-MEMORY.md created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.
+
+**SSAE-02 Delivered — Compact Source Memory and Dependency Contract:**
+- Typed SourceMemoryRecord schema covering identity, capability/routing, fetch state, lake state, publication state, health rollup, version dependencies, retention, replay coverage, material digests
+- Fact ownership table: 10 fact categories with authoritative owner and replication direction (D1↔Lake)
+- Action feasibility matrix: FULL/REINDEX/REUSE/BOUNDED_REPLAY with hard/soft gates per action
+- Version dependencies: 7 dependencies mapped to code sources; explicit invalidation precedence (opt-out > policy > geo/triage > processor > fingerprint)
+- Replay coverage matrix: 6 replay targets with YES/PARTIAL/NO and missing field gaps
+- 9 missing evidence gaps → SSAE-06 measurement contracts (version stamping, payload truncation, inventory snapshots, fingerprint vs content_hash divergence, Jev logging, quality ceilings, retention enforcement, fetch metadata drift)
+- State fixture cases for: missing evidence→FULL, unknown deps→REUSE denied, policy/opt-out expiry→invalidation, concurrent versions→mismatch, URL vs content distinction
+- Parent dependencies: SSAE-00, SSAE-01, MATH-06, MATH-09, MATH-10
+
+**Verification:**
+- `bun test`: 1,849 pass / 0 fail
+- `bun run typecheck`: clean
+- `bun scripts/ci/check-production-guardrails.ts`: clean
+- `bun scripts/ci/audit-constitution.ts`: passed with known warnings
+- `bun scripts/ci/audit-parameters.ts`: 100% parity
+- `bun scripts/ci/check-orchestrator-modifications.ts`: clean
+- `git diff -- docs/audits/2026-10-04-SSAE-02-COMPACT-SOURCE-MEMORY.md | grep -iE 'insert into opportunities|update opportunities|delete from|drop trigger'`: clean
+
+**NEXT SINGLE ACTION:** SSAE-03 (Implement a pure read-only source ranker) depends on this unit's SourceMemoryRecord schema and replay_coverage matrix. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task.
+
+---
+
 ## 2026-10-04 — SSAE-01 Attention Dataset Card Delivered (session 10)
 
 **Unit:** SSAE-01. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — docs/audits/2026-10-04-SSAE-01-ATTENTION-DATASET-CARD.md created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.

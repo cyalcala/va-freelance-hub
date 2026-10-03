@@ -1,10 +1,11 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift (session 10). This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 11). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest checkpoint is "SSAE-01 Attention Dataset Card Delivered (session 10)."
+The latest checkpoint is "SSAE-02 Compact Source Memory Contract Delivered (session 11)."
+SSAE-02 (PROPOSED, VERIFIED_CODE, no runtime change) complete — contract created at docs/audits/2026-10-04-SSAE-02-COMPACT-SOURCE-MEMORY.md.
 SSAE-01 (PROPOSED, VERIFIED_CODE, no runtime change) complete — dataset card created at docs/audits/2026-10-04-SSAE-01-ATTENTION-DATASET-CARD.md.
 SSAE-00 (PROPOSED, VERIFIED_CODE, no runtime change) complete.
 MATH-06A (OPEN, evidence only, VERIFIED_CODE) complete — inventory fixed against HEAD `b6736aeecec8`, 42 tests pass.
@@ -30,7 +31,7 @@ within the current task's authority. A documentation/audit task does not start
 operational mining. Refresh unresolved incidents, including the saved EX-03
 error/observation follow-on; this revision does not declare them fixed.
 
-**Next single action:** SSAE-02 (Define compact source memory and dependency contract) depends on SSAE-01 dataset schema and missing-evidence inventory. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task.
+**Next single action:** SSAE-03 (Implement a pure read-only source ranker) depends on SSAE-02 SourceMemoryRecord schema and replay_coverage matrix. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task.
 
 The former long pointer's historical entries remain in SYSTEM_SAVEPOINT and
 Git at `a176bb5d881eb7314222f534a7d1f63f02691987`; they are not competing
