@@ -1,5 +1,32 @@
 # System Savepoint
 
+## 2026-10-04 — SSAE-00 Profile Contract Doc Added (session 5)
+
+**Unit:** SSAE-00. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — document created, all links resolve, no SQL mutations, states "no runtime change".
+
+**SSAE-00 Delivered — End-to-End Cost Profile Contract:**
+- Created `docs/audits/2026-10-04-SSAE-00-PROFILE-CONTRACT.md` mapping both active ingestion paths:
+  - Lake Miner (Turso → GCP → D1): GHA `23 */3 * * *`, GCP `47 * * * *` hourly
+  - Hunter Scrape (Freshness Worker → Astro API): Cloudflare `*/10 * * * *`, GCP shadow `53 * * * *`
+- File:line anchors for every stage: selection → fetch → wait → parse → geo → AI → DB → publication
+- Missing telemetry table (10 gaps) for MATH-02/04/10/11/12/13
+- Amdahl hypothesis: AI subrequest budget (Hunter) and GCP scheduler variance (Lake) bound fresh publication rate
+- Parent unit: MATH-13; Source Perpetuity parent: UNKNOWN (gap recorded)
+- All runtime counts labeled UNKNOWN; no invented numbers
+
+**Verification:**
+- All referenced files exist at cited file:line locations
+- `git diff origin/main...HEAD | grep -iE 'insert into opportunities|update opportunities|delete from|drop trigger'` clean for new code
+- Full test suite: 1,825 pass / 0 fail (`bun test`)
+- Typecheck: Clean (`bun run typecheck`, exit 0)
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`)
+- Constitution audit: Passed with known warnings (`bun scripts/ci/audit-constitution.ts`)
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`)
+
+**NEXT SINGLE ACTION:** Foundation wave complete. Next dependency-ready unit per tech lead order would be MATH-06A (evidence only) or MATH-05 (P0 metric), but current task scope ends at SSAE-00. Owner/controller: maintainer; trigger: next authorized session.
+
+---
+
 ## 2026-10-04 — MATH-12 Stage-Aware Replay Fixtures Added (session 4)
 
 **Unit:** MATH-12. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — test file passes 24/24, full suite 1,830 pass, audits clean.

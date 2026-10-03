@@ -1,11 +1,12 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift (session 4). This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 5). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest checkpoint is "MATH-12 Stage-Aware Replay Fixtures Added (session 4)."
-MATH-12 (24 tests) passes; full suite 1,830 pass; audits clean.
+The latest checkpoint is "SSAE-00 Profile Contract Doc Added (session 5)."
+SSAE-00 (PROPOSED, VERIFIED_CODE, no runtime change) complete.
+MATH-12 (24 tests) passes; full suite 1,825 pass; audits clean.
 MATH-05 register state: OPEN (fixtures added, VERIFIED_CODE).
 MATH-09 register state: OPEN (ASHBY_CONTENT_HASH removed, gap fixture added, VERIFIED_CODE).
 MATH-12 register state: OPEN (stage-aware fixtures added, VERIFIED_CODE).
@@ -28,7 +29,7 @@ within the current task's authority. A documentation/audit task does not start
 operational mining. Refresh unresolved incidents, including the saved EX-03
 error/observation follow-on; this revision does not declare them fixed.
 
-**Next single action:** SSAE-00 profile contract doc (`docs/audits/2026-10-04-SSAE-00-PROFILE-CONTRACT.md`) per tech lead foundation wave. Owner/controller: maintainer; trigger: next authorized session.
+**Next single action:** Foundation wave (MATH-06A evidence, MATH-05 P0 metric, MATH-09, MATH-12, SSAE-00) complete per tech lead order. Next dependency-ready unit: MATH-06A (evidence only) or MATH-05 (P0 metric). Owner/controller: maintainer; trigger: next authorized session.
 
 The former long pointer's historical entries remain in SYSTEM_SAVEPOINT and
 Git at `a176bb5d881eb7314222f534a7d1f63f02691987`; they are not competing
