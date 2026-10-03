@@ -4,9 +4,9 @@ Updated 2026-10-03 for PROMPT-SSAE-V6. This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest runtime checkpoint is “Gauntlet Slice 7 Stratified Reconciliation:
-90 Boards Scanned, 90 Seconds Admitted, Dual-Gate Invariant Verified.”
-The documentation checkpoint records the local v6.0 prompt revision.
+The latest runtime checkpoint is “Gauntlet Slice 8 Stratified Reconciliation:
+90 Boards Scanned, Brafton Admitted, Dual-Gate Invariant Verified.”
+The documentation checkpoint records the v6.1 maintainer bootloader revision.
 Its supply counts, source state and NEXT require refresh before use;
 autonomous cutover requires satisfaction of the full predicate.
 

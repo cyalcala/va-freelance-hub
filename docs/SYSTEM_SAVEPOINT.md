@@ -1,6 +1,35 @@
 # System Savepoint
 
-## 2026-10-03 — Prompt v6.1: Maintainer Bootloader v6.1 with Self-Renewing Session Epochs & Shadow Zero-Observation Diagnostic Hardening (current)
+## 2026-10-03 — Gauntlet Slice 8 Stratified Reconciliation: 90 Boards Scanned, Brafton Admitted, Dual-Gate Invariant Verified (42 Lake Held, 30 Auto-Approved Tenants, Unvalidated Down to 8,629) (current)
+
+**Unit:** RECONCILE-SLICE-08. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 911 lake-synced opportunities live; 42 Lake QUALIFIED_READY rows held by dual-gate publication floor; 30 auto-approved tenants; 1,385 live opportunities total).
+
+**1. Delivered unit — Stratified Reconciliation Slice 8 (`bun run lake:reconcile`):**
+- **Stratified Slice Executed:**
+  - Scanned 90 boards (30 Ashby, 30 Greenhouse, 30 Lever) against the unvalidated corpus.
+  - *Outlier Admitted:* `lever:brafton` (Brafton): 24 live jobs probed, 5 QUALIFIED_READY (20.8% PH rate). Auto-admitted by Jev decision (`confidence=0.75`, deterministic threshold `ph_rate >= 20%`). Ingested 5 QUALIFIED_READY jobs, 19 excluded, 0 duplicates into Turso lake reservoir.
+  - *Dual-Gate Invariant Verified:* Wilson score 95% lower bound for Brafton is ~9.3% (< 20.0% publication floor due to sample size n=24). Held safely in reservoir alongside the 37 existing held rows (total 42 held). Dual-gate dry-run verification confirmed: `[AutoPublish] lever:brafton: HOLD x0 ... [Queue] 42 QUALIFIED_READY row(s) held by the source gate (unauthorized source_id)`. Zero premature leakage into Cloudflare D1.
+  - *Shadow / Rejected:* 2 shadowed (`lever:lirvanalabs` 14.3% PH, and 1 other), 87 auto-rejected (0-4.2% PH, dead/empty, or insufficient jobs).
+  - *Corpus Reduction:* Unvalidated claims reduced from 8,719 down to **8,629** (total 9,977 claims in discovery table: 30 auto_approved, 137 shadow_monitor, 1181 auto_rejected, 8629 discovered).
+- **Lake & Production State Post-Execution:**
+  - Auto-approved tenants: 29 -> 30 (+1 first-party admitted source).
+  - Synced to D1 from Lake: 911 opportunities.
+  - Lake reservoir: 42 held candidate jobs (dual-gate protected).
+  - Production D1 live board: 1,385 active opportunities.
+
+**2. Verification:**
+- Full test suite: 1,747 passed / 0 failed across 177 files (`bun test`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Dual-gate dry-run: Passed (`bun run scripts/lake/sync-to-d1.ts --dry-run`).
+- Production deployments: Deploy Freshness Cron Worker `37127315392` green, Sovereign CI Guardrail `37127315387` green.
+
+**NEXT SINGLE ACTION:** Advance autonomous discovery and corpus validation: run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or domain discovery to continue surfacing first-party high-PH outliers from the remaining 8,629 unvalidated claims toward the 100 fresh qualified jobs/day floor; or proceed with SSAE-00 empirical profiling under the v6.1 sparse compute contract. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-03 — Prompt v6.1: Maintainer Bootloader v6.1 with Self-Renewing Session Epochs & Shadow Zero-Observation Diagnostic Hardening (historical)
 
 **Unit:** BOOTLOADER-V6.1-RECOVERY. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 911 lake-synced opportunities live; 37 Lake QUALIFIED_READY rows held by dual-gate publication floor; 29 auto-approved tenants; 1,385 live opportunities total).
