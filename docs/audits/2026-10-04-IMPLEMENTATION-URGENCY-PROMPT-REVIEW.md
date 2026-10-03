@@ -29,6 +29,12 @@ new session. File presence does not activate its embedded implementation TASK.
 The execution wrapper, supporting SSAE plan, PH strategy, CURRENT and AGENTS
 version navigation are aligned. The original owner directive remains untouched.
 
+The owner further required committing, backing up and documenting all task-owned
+changes on GitHub. Master/loader/wrapper now mandate a finite payload/evidence
+commit-and-push workflow with exact remote and CI receipts, honest BACKUP_PENDING
+recovery and an explicit next adoption slice. Review-branch backup remains
+separate from production release authority. No infinite receipt-only commit loop.
+
 ## Preserved contracts
 
 - Cloudflare/Astro/D1 serving and active Turso/GCP acquisition/publication paths.

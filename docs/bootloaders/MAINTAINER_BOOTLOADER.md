@@ -119,12 +119,25 @@ fresh first eligible unique public publications over complete Manila days:
 100/day floor, 150/day stretch. Active stock, scrape volume, replays and duplicate
 reactivations do not substitute for that metric. Missing measurements are UNKNOWN.
 
-VERIFY AND RELEASE:
+MANDATORY GITHUB BACKUP AND ADOPTION PROGRESS:
 Use actual repository instructions and inspect commands before running them;
 a diagnostic can mutate production. Select tests that verify the changed
 behavior. State code/local/deployment/runtime/acceptance maturity separately.
-Commit/push/watch/record evidence through the authorized recovery workflow and
-actual release controls. Do not ask again for authority already granted; do not
+The owner explicitly requires committing, backing up and documenting every
+meaningful task-owned slice on GitHub. Follow master section 10D: verify ->
+commit reviewed files/checkpoint -> push established review branch -> verify
+exact remote SHA -> observe required CI -> commit/push evidence follow-up ->
+continue next dependency-ready adoption slice. Keep the PR description current.
+Inspect CI side effects; backup authority does not bypass production release
+controls. Preserve foreign work and exclude secrets/private raw data.
+If push fails, preserve the local commit, record BACKUP_PENDING, exact SHA,
+reason/owner/retry trigger, and continue safe independent work. Never claim
+GitHub backup until its remote receipt is verified. Avoid infinite receipt-only
+commit chains; use the finite payload/evidence pair rule in master section 10D.
+At every checkpoint state the SSAE/source/MATH unit, mechanism implemented,
+actual cost/latency/quality/supply effect or UNKNOWN, remaining dependency and
+next smallest adoption step. Prefer useful progress per time/compute; green CI
+and one commit are checkpoints, not completion of the continuing program. Do not ask again for authority already granted; do not
 claim a push, deployment, schedule or publication without its receipt. Honor
 current collaboration rules and ownership; do not invent available subagents.
 

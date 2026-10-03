@@ -977,6 +977,53 @@ report that lower bound and implement an authorized bounded cadence improvement
 rather than claim a 30-minute service already exists. Expiry and oldest-ready
 breaches should trigger a concrete bounded remediation, not a ceremonial report.
 
+### Mandatory GitHub backup and documented adoption progress
+
+The owner's 2026-10-04 direction explicitly requires commits, GitHub backup and
+GitHub documentation of all task-owned changes. For this continuing program,
+repository backup is part of the unit deliverable. Use the established review
+branch/PR workflow and inspect CI side effects; this does not grant permission
+for an otherwise unauthorized production deployment, merge or database change.
+Do not repeatedly ask whether to commit or push work already authorized here.
+
+For every meaningful coherent slice:
+
+1. Implement the useful change and run the narrowest applicable checks; preserve
+   foreign work. Stage only this task's reviewed non-secret code/documentation.
+2. Commit the slice with a concrete message. Update SYSTEM_SAVEPOINT and affected
+   plan/status records with the problem, behavior, evidence, maturity and next
+   action. Keep CURRENT concise. Failed/partial work gets an honest disposition.
+3. Push the commit to the established GitHub review branch and verify its exact
+   remote SHA. Keep the PR title/body consistent with the final change. Preserve
+   remote advancement; no force-push, reset or silent overwrite of others' work.
+4. Observe exact-SHA required GitHub Actions and record run IDs, conclusions,
+   skipped steps, first failures and authorized deployment receipts. A docs-only
+   skipped deploy is not runtime evidence. Fix attributable failures in a bounded
+   follow-up; distinguish unrelated baseline/external failures.
+5. Commit and push the evidence/checkpoint follow-up when receipts are known.
+   Verify its remote receipt and observe its required checks. Avoid an infinite
+   chain of commits solely to describe each previous evidence commit: record a
+   finite payload/evidence pair and cite the final observed check in the handoff.
+6. Continue to the next dependency-ready adoption slice within the same authority.
+   A commit, push or green CI does not by itself finish the continuing program.
+
+Do not call a unit fully backed up while task-owned changes remain local or a
+push is unverified. If GitHub/network/credentials are unavailable, preserve a
+local commit and durable pending-backup record with the exact SHA, reason,
+owner and retry trigger. Continue safe independent work where possible; report
+BACKUP_PENDING and never imply the changes are on GitHub. Credentials, private
+raw records and prohibited content stay out of Git; separately governed database
+backup/restore remains a distinct responsibility.
+
+At each checkpoint explicitly connect progress to SSAE-CED adoption: active
+SSAE/source/MATH unit, actual implemented mechanism, verified behavior, measured
+cost/latency/quality/supply effect or UNKNOWN, remaining dependency and the next
+smallest useful slice. Prefer reuse and material-change processing before optional
+architecture. Replan from current bottlenecks and failed evidence. Keep proposed,
+implemented, locally verified, deployed, observed and accepted states separate;
+never label a documentation percentage as architecture or runtime completion.
+Optimize useful progress per unit of time/compute while preserving all gates.
+
 ### Portable continuous execution
 
 The loader supplies a ready-to-use implementation task. Invoking that task in a
