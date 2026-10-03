@@ -1,5 +1,33 @@
 # System Savepoint
 
+## 2026-10-04 — SSAE-04 Temporal Holdout Evaluation Delivered (session 14)
+
+**Unit:** SSAE-04. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — docs/audits/2026-10-04-SSAE-04-TEMPORAL-HOLDOUTS.md created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.
+
+**SSAE-04 Delivered — Historical Temporal Holdout Evaluation:**
+- Leakage-free temporal split design for attention dataset (SSAE-01) with selection-time features only
+- Control: deterministic family-stratified sampler (current production at reconcile-discovered-corpus.ts:64,119)
+- Treatment: SSAE-03 read-only ranker (source-ranker.ts) with marginal yield/cost/freshness/diversity scoring
+- Evaluation metrics: ΔYield (fresh qualified), ΔCostPerYield, calibration, diversity ceiling adherence, long-tail coverage
+- Feasibility assessment: per-source epoch features only available for Lake Domain Discovery/Sync phases; Hunter Scrape and Lake Reconcile lack per-source granularity
+- Mature label coverage: INSUFFICIENT — no `first_publication_at` in lake, no cohort labels at publication, `posted_at` often NULL
+- Disposition: LIMITED — holdout design specified but mature labels unavailable; requires SSAE-06 measurement contracts
+- Negative results: falsified "current ledgers support holdout evaluation" and "stride sampler comparable at epoch level"
+- SSAE-06 contracts identified: per-source Hunter ledger, publication cohort labels, per-stage latency, fetch byte logging, D1 join for lake labels
+
+**Verification:**
+- `bun test`: 1,886 pass / 0 fail (full suite)
+- `bun run typecheck`: clean
+- `bun scripts/ci/check-production-guardrails.ts`: clean
+- `bun scripts/ci/audit-constitution.ts`: passed with known warnings
+- `bun scripts/ci/audit-parameters.ts`: 100% parity
+- `bun scripts/ci/check-orchestrator-modifications.ts`: clean
+- `git diff -- docs/audits/2026-10-04-SSAE-04-TEMPORAL-HOLDOUTS.md | grep -iE 'insert into opportunities|update opportunities|delete from|drop trigger'`: clean
+
+**NEXT SINGLE ACTION:** SSAE-05 (Run shadow decisions without extra probes) depends on this unit's holdout baseline and SSAE-03 ranker output. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task OR completion of SSAE-06 measurement contracts.
+
+---
+
 ## 2026-10-04 — SSAE-03 Pure Read-Only Source Ranker Delivered (session 13)
 
 **Unit:** SSAE-03. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — scripts/lake/source-ranker.ts and scripts/lake/source-ranker.test.ts created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.
