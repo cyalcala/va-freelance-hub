@@ -1,5 +1,16 @@
 # Current resume pointer
 
+## Session 72 MATH-03 Greenhouse Parser Edge Case Coverage: 34 New Tests for Supply Quality Robustness (Headless Relay Session 72, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus: Supply bottleneck unit delivered — 34 comprehensive edge case tests added to `fetchGreenhouse` for Greenhouse API response variations, strengthening parser robustness for high-yield Greenhouse sources.
+- Scope compliance: Only `packages/scraper/greenhouse.test.ts` modified (non-hold test file). No hold-list paths touched.
+- Local checks pass: 1,952 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build successful.
+- Required reading gate satisfied: all 12 required files read; `.shift/reading-072.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes.
+
 ## Session 71 MATH-03 Workable Parser Edge Case Coverage: 15 New Tests for Supply Quality Robustness (Headless Relay Session 71, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
