@@ -1,19 +1,20 @@
-## 2026-10-04 — Session 30 SSAE-05 Offline Hardening Tests Extended (session 30)
+## 2026-10-04 — Session 39 SSAE-05 Offline Hardening Edge Cases (session 39)
 
-**Unit:** SSAE-05 offline hardening (test-only follow-on per tech-lead focus v6.2-refocus). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — committed at `08524bd0` (34 commits ahead of origin/main `4d2e61c2`).
+**Unit:** SSAE-05 offline hardening (test-only, additive fixtures per tech-lead focus v6.2-refocus). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — committed at `dd8630ae` (40 commits ahead of origin/main `4d2e61c2`).
 
-**Session 30 Work:**
-- Reading gate: `.shift/reading-030.md` written (untracked)
-- Completed REQUIRED READING GATE (all 14 required files read + MERGE_RUBRIC.md)
-- Added 10 deterministic tests for `runMultiEpochShadowDecisions`: epoch order preservation, all epochs missing, different topK per epoch
-- Added 10 deterministic tests for `compareSelectorOutputs`: tied ranks in Spearman, null processing_mode, cold revisit only sources, binary overlap_score, large input performance (100 sources), exclusion reasons (cost_exceeds_budget, multiple reasons)
-- All acceptance criteria met: 1,963 pass / 0 fail; `bun run typecheck` clean; all 4 audits pass (guardrails, parameters, orchestrator, constitution)
+**Session 39 Work:**
+- Reading gate: `.shift/reading-039.md` written (untracked)
+- Completed REQUIRED READING GATE (all 14 required files + MERGE_RUBRIC.md)
+- Added 20 deterministic tests for `compareSelectorOutputs` and `runMultiEpochShadowDecisions`/`runShadowDecisionCycle` edge cases: all four agreement types, REINDEX/REUSE/BOUNDED_REPLAY modes, multiple exclusion reasons, holdoutSplit, empty configs, provider family diversity, cost boundary, coldRevisitDays threshold, Jaccard 0/1, latency non-negativity, topK=0, control/treatment conflict, different topK per epoch
+- All acceptance criteria met: 2,090 pass / 0 fail; `bun run typecheck` clean; all 4 audits pass (guardrails, parameters, orchestrator, constitution)
 - No SQL mutations, no network/prod mutations, no hold-list edits
 - No forbidden SQL patterns (DROP TRIGGER/DELETE/UPDATE/INSERT INTO opportunities) in added lines
 
 **NEXT SINGLE ACTION:** SSAE-06 mature labels -> refresh SSAE-01 and repeat SSAE-04/05 evaluation. Owner/controller: maintainer; trigger: completion of SSAE-06 measurement contracts maturation.
 
 ---
+
+## 2026-10-04 — Session 30 SSAE-05 Offline Hardening Tests Extended (session 30)
 ## 2026-10-04 — Session 29 SSAE-05 Offline Hardening Tests Committed (session 29)
 ## 2026-10-04 — Session 25 SSAE-05 Shadow Decisions Helper + SSAE-06 Contracts Committed (session 25)
 
