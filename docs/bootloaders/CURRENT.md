@@ -1,5 +1,17 @@
 # Current resume pointer
 
+## Session 50 MATH-12 Savepoint Entry Restored Verbatim from origin/main (Headless Relay Session 50, Shift 20261002-2118) (2026-10-03):
+
+See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
+
+VERIFICATION COMPLETE:
+- Tech lead focus item 1: MATH-12 savepoint entry restored verbatim from origin/main with `(current)` label (was incorrectly `(historical)`). Entry placed below two PR #162 entries. All 140 origin/main headers present in tip; `git diff origin/main -- docs/SYSTEM_SAVEPOINT.md --stat` shows additions only (two PR #162 top entries + preserved history); only deletion was justified label correction.
+- Tech lead focus item 2: Active unit confirmed "MATH-03 / MATH-12: Automated Background Mining Observation & Health Validation" — read-only, touches NO hold-list paths.
+- Tech lead focus item 3: Stop further #162 doc-verification churn — complied.
+- All local checks pass: 1,703 tests, typecheck, guardrails, constitution audit, parameter parity 100%, build.
+- Required reading gate satisfied: all 11 required files read, `.shift/reading-050.md` recorded.
+- Code-only on branch `opencode/shift-20261002-2118`; no production writes; no hold-list paths touched.
+
 ## Session 49 Savepoint Label Honesty Fix (Headless Relay Session 49, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
