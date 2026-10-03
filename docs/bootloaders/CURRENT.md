@@ -16,29 +16,29 @@ VERIFICATION COMPLETE:
 
 ## Active bounded unit
 
-**MATH-03 Ashby Cohort Measured & Slice 5 Reconciliation Executed (90 Boards, Unvalidated Down to 8,959) (2026-10-03, current):**
+**Gauntlet Slice 6 Outlier Discovery: 3Cloud Admitted & Published to D1 (16 Jobs Synced, Total 911 Lake Synced, 1,385 Live Board Total) (2026-10-03, current):**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
-- MATH-03 Ashby candidates measured against live endpoints: `amplify` (27 jobs, 3.7% PH), `camunda` (40 jobs, 0% PH), `tremendous` (26 jobs, 0% PH) empirically auto-rejected per deterministic hard gate. Only `ashby:supabase` (48 jobs, 27.1% PH, 13 QUALIFIED_READY) stands auto-approved in the Lake reservoir.
-- Corpus reconciliation slice 5 executed (`bun run lake:reconcile --per-family=30`): 90 boards evaluated, 2 shadowed (`lever:peakgames` 5.3%, `lever:quadlock` 14.3%), 88 rejected. Unvalidated corpus reduced to 8,959 claims (Ashby 2,557, Greenhouse 4,586, Lever 1,816). Telemetry logged to `lake_runs` row 17 (`status = 'completed'`).
-- Auto-approved tenants: 27. Lake reservoir: 36 `QUALIFIED_READY` jobs strictly held by dual-gate Wilson floor (< 20%), zero premature leakage to D1 (D1 synced remains 895). All checks pass: 1,740 tests, typecheck clean, 100% parameter parity.
+- Slice 6 corpus reconciliation executed: 90 boards evaluated, outlier `greenhouse:3cloud` (34 jobs, 16 QUALIFIED_READY, 47.1% PH rate, Wilson 31.5% > 20% floor) admitted under ADR-007/008.
+- Published 16 net-new verified remote opportunities from `3Cloud` to Cloudflare D1 via GCP Cloud Run Job (`lake-publish-job`). Verified live on `https://remotejobs-ph.pages.dev/opportunities?q=3Cloud`. Public board now actively serving 1,385 opportunities total.
+- Lake reservoir has 36 `QUALIFIED_READY` candidate jobs held by dual-gate Wilson floor (< 20%), zero premature leakage. Auto-approved tenants expanded to 28. Unvalidated corpus reduced to 8,869 claims. All 1,740 tests pass; typecheck and guardrails clean.
 
 CURRENT BOTTLENECK:
-Supply gap (~36–67/day vs 100/day floor). 8,959 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
+Supply gap (~36–67/day vs 100/day floor). 8,869 claims remain unvalidated in the discovered corpus (`review_status = 'discovered'`).
 
 ACTIVE UNIT:
-Continuous background mining execution via scheduled workflow `.github/workflows/gha-lake-miner.yml` and stratified corpus reconciliation.
+Continuous background mining execution via scheduled workflow `.github/workflows/gha-lake-miner.yml` and progressive stratified corpus reconciliation.
 
 NEXT ACTION:
-Run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or execute scheduled miner tick (`bun run lake:mine --reconcile-per-family=30 --domain-limit=25`) to continue driving down unvalidated claims toward high-yield outlier discovery.
+Run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or domain discovery to continue surfacing first-party high-PH outliers from the remaining 8,869 unvalidated claims toward the 100 fresh qualified jobs/day floor.
 
 WHY NEXT:
-Maintains continuous discovery momentum, steadily turns unvalidated claims into classified evidence, and identifies high-PH outlier sources to lift daily qualified flow.
+Maintains autonomous discovery flywheel, systematically classifies the unvalidated corpus, and captures first-party outliers to bridge the supply gap toward 100 fresh qualified jobs/day.
 
 ACCEPTANCE:
-Corpus unvalidated count drops, net-new admitted sources and QUALIFIED_READY jobs ingested to Lake reservoir, dual-gate publication floor strictly held.
+Unvalidated corpus count decreases, admitted high-PH sources/jobs enter the Lake reservoir, dual-gate publication floor strictly preserved.
 
 FALLBACK:
 If rate limits occur, back off per MATH-04 cooldown; fail-safe skip on missing credentials ensures CI safety.

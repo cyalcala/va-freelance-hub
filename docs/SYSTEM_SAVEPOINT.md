@@ -1,6 +1,38 @@
 # System Savepoint
 
-## 2026-10-03 — MATH-03 Ashby Cohort Measured (Amplify 3.7%, Camunda 0%, Tremendous 0%) + Reconciliation Slice 5 (90 Boards, Unvalidated Down to 8,959) (current)
+## 2026-10-03 — Gauntlet Slice 6 Outlier Discovery: 3Cloud Admitted & Published to D1 (16 Jobs Synced, Total 911 Lake Synced, 1,385 Live Board Total) (current)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
+**Status:** PRODUCTION_PRIMARY_RUNTIME (D1 911 lake-synced opportunities live; 36 Lake QUALIFIED_READY rows held by dual-gate publication floor; 28 auto-approved tenants; 1,385 live opportunities total).
+
+**1. Delivered unit — Slice 6 Outlier Discovery, Dual-Gate Clearance, and Cloud Run Publication:**
+- **Reconciliation Slice 6 Executed (`bun run lake:reconcile --per-family=30`):**
+  - Scanned 90 boards (30 Ashby, 30 Greenhouse, 30 Lever) against the unvalidated corpus.
+  - *Outlier Discovered & Admitted:* `greenhouse:3cloud` (3Cloud): 34 live jobs probed, 16 QUALIFIED_READY, 47.1% PH rate.
+  - *Dual-Gate Clearance:* Wilson score 95% lower bound = **31.5%**, strictly clearing the 20.0% publication floor. Auto-approved without human bottleneck (`ADR-007` / `ADR-008`).
+  - *Shadow / Rejected:* 1 shadowed (`lever:foxitsoftware`, 16.7% PH), 88 auto-rejected (0-3.8% PH or dead/empty).
+  - *Corpus Reduction:* Unvalidated claims reduced from 8,959 down to **8,869**. Telemetry recorded to `lake_runs`.
+- **Live Production Publication via Cloud Run (`lake-publish-job`):**
+  - Triggered serverless execution of `lake-publish-job` in GCP `asia-southeast1` (Execution ID: `lake-publish-job-c9zvw`).
+  - Published 16 net-new verified remote opportunities from `3Cloud` to Cloudflare D1.
+  - *Dual-Gate Protection Verified:* All 36 remaining `QUALIFIED_READY` candidate rows in the Turso reservoir (`supabase`, `decilegroup`, `lwolf`, `loadsmart`, `aethoshotels`, `sofarsounds`, `beaverprocess`, `influ2`, `apolloagriculture`) stayed strictly HELD by the source gate (Wilson < 20% floor). Zero premature leakage.
+  - *Post-Publication Production Verification:* `https://remotejobs-ph.pages.dev/opportunities?q=3Cloud` returns HTTP 200 with 3Cloud opportunities live and searchable. Total active opportunities served on public board increased to **1,385**.
+- **Lake & Production State Post-Execution:**
+  - Auto-approved tenants: 27 -> 28 (+1 first-party admitted source).
+  - Synced to D1 from Lake: 895 -> 911 opportunities (+16 fresh published jobs).
+  - Lake reservoir: 36 held candidate jobs.
+
+**2. Verification:**
+- Full test suite: 1,740 passed / 0 failed across 172 files (`bun test`).
+- Typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`).
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Live production endpoint: Verified HTTP 200, 3Cloud searchable.
+
+**NEXT SINGLE ACTION:** Advance autonomous discovery and corpus validation: run next stratified reconciliation slice (`bun run lake:reconcile --per-family=30`) or domain discovery to continue surfacing first-party high-PH outliers from the remaining 8,869 unvalidated claims toward the 100 fresh qualified jobs/day floor. Owner/controller: maintainer; trigger: next marathon unit.
+
+## 2026-10-03 — MATH-03 Ashby Cohort Measured (Amplify 3.7%, Camunda 0%, Tremendous 0%) + Reconciliation Slice 5 (90 Boards, Unvalidated Down to 8,959) (historical)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v5.3 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 895 synced, 0 pending; 36 Lake QUALIFIED_READY rows safely held by dual-gate publication floor).
