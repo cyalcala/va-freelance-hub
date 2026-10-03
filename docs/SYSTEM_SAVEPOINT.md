@@ -1,5 +1,47 @@
 # System Savepoint
 
+## 2026-10-03 — MATH-03 Prospector Candidate Discovery Edge Case Coverage: 40+ New Tests for Supply Portfolio Robustness (Headless Relay Session 73, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Tech lead focus acknowledged — Supply bottleneck unit delivered:**
+- Fresh first-published flow ~36/day vs 100/day floor (gap -64/day) per prior evidence.
+- Active unit: MATH-03 marginal source portfolio coverage — Prospector candidate discovery/prospecting helpers robustness for autonomous source discovery.
+- **This session:** Added 40+ comprehensive edge case tests to `prospector.test.ts` covering all pure functions (normalizeCompanyName, isQualityCompanyName, exactOrSubdomain, hostOf, isTrustedSourceUrl, extractAtsToken, inferNiche, classifyCandidates) against real-world input variations that affect source discovery quality and portfolio coverage.
+
+**2. Changes Delivered (VERIFIED_LOCAL):**
+- **Commit `8520b855`** (this session):
+  - `packages/scraper/prospector.test.ts` — 40+ new tests covering:
+    - normalizeCompanyName: tabs, newlines, unicode, special chars, punctuation, empty/whitespace-only
+    - isQualityCompanyName: case-insensitive blocklist, unicode, numbers/special chars, blocklist edge cases, generic words with punctuation, whitespace-only
+    - hostOf/exactOrSubdomain/isTrustedSourceUrl: ports, credentials, IP addresses, localhost, IPv6, file:// URLs, malformed URLs, case-insensitive trusted matching, exactOrSubdomain edge cases
+    - extractAtsToken: query params, fragments, case variations, trailing slashes, multiple path segments, Greenhouse API variations, Ashby posting-api variations, Lever API variations, Breezy subdomain variations, Workable widget variations, comprehensive reserved slug rejection across all ATS platforms
+    - inferNiche: case variations, all known categories, unknown categories
+    - classifyCandidates: empty input, all rejected, all review, all auto-add, large mixed batch, ATS ref per platform, unicode names, special chars, deduplication preserving first occurrence, null/undefined sampleUrl, niche assignment from category
+
+**3. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,993 pass / 0 fail across 175 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+- `git diff --check`: Clean.
+- Reading gate: All 12 required files read; `.shift/reading-073.md` recorded.
+
+**4. Scope Compliance:**
+- Only `packages/scraper/` non-hold test file modified (`prospector.test.ts`).
+- No hold-list paths touched (publication-gateway, policy-resolver, geoGate, triage, robots*, jev-client, shadow-verdict, admission-evidence, source-lifecycle, source-admission*, sync-to-d1, auto-publish-policy, enroll/reconcile/run-lake-miner, api/cron/**, migrations, workflows, package.json, bun.lock, bunfig.toml, ACCEPTED_PARAMETERS.yaml, CONSTITUTION.md, docs/decisions/**, docs/governance/**, packages/scraper/paused-sources.json|sources.ts).
+- No production writes; no lake:mine/cron/deploy; no new outbound hosts or source IDs.
+
+**5. Where we have been / are / going:**
+- Been: Sessions 50-57 resolved PR #162 blockers, validated Ashby shadow probe format (54), shadow dispatcher same-host behavior (55), canary admission pipeline tests (56), gitleaks/honesty corrections (57). Session 68 added 28 Ashby parser edge case tests. Session 69 added 117 ATS parser edge case tests for Lever, Greenhouse, Workable, Breezy. Session 70 added 15 Ashby shadow probe validation tests + amplify healthy probe. Session 71 added 15 Workable parser edge case tests. Session 72 added 34 Greenhouse parser edge case tests.
+- Are: ATS parser edge case coverage strengthened across all 4 major providers + Ashby (1,993 total tests); Prospector candidate discovery helpers hardened for autonomous source discovery robustness.
+- Going: Supervisor pushes branch `opencode/shift-20261002-2118` and verifies CI green on `ci-guardrail` workflow. Next session observes gha-lake-miner.yml run logs and lake_runs ledger for yield evidence, correlates with EX-03 503 pattern, and continues MATH-03 portfolio coverage work toward admitting Ashby candidates to shadow/canary (allowlist update is separate governance step).
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). If CI passes, PR merges; if red, next session addresses residual failures.
+
 ## 2026-10-03 — MATH-03 Greenhouse Parser Edge Case Coverage: 34 New Tests for Supply Quality Robustness (Headless Relay Session 72, Shift 20261002-2118)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
