@@ -26,7 +26,7 @@
 - `git diff --check origin/main...HEAD` now clean (trailing blank lines at EOF removed from SYSTEM_SAVEPOINT.md and CURRENT.md).
 
 **5. Local Verification Results (VERIFIED_LOCAL):**
-- Full test suite: 1,745 pass / 0 fail across 177 files (`bun test`).
+- Full test suite: 1,740 pass / 0 fail across 172 files (`bun test`).
 - TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
 - Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
 - Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
