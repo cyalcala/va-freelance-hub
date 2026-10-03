@@ -47,7 +47,7 @@ type ENV = {
   GEMINI_CRITICAL_MODEL?: string;
   // Groq (free tier, fast LPU). Second free provider — absorbs Gemini's
   // rate-limit / quota overflow before the Cloudflare reserve is touched.
-  // GROQ_MODEL default llama-3.3-70b-versatile.
+  // GROQ_MODEL default llama-3.1-70b-versatile.
   GROQ_API_KEY?: string;
   GROQ_MODEL?: string;
 };

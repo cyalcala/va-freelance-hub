@@ -276,7 +276,7 @@ export async function triageViaGemini(
 // overflow (30 RPM, very fast LPU inference) before the Cloudflare neuron reserve
 // is ever touched. 70B-versatile is capable enough for both bulk and the critical
 // skeptic vote; its ~100k-token/day cap is fine because it only sees overflow.
-export const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
+export const GROQ_DEFAULT_MODEL = "llama-3.1-70b-versatile";
 
 // Raw Groq chat/completions call (OpenAI-compatible) → model text output. Throws
 // on any HTTP error (429/5xx) so callers can fall through to the next provider.
