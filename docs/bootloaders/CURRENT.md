@@ -1,14 +1,14 @@
 # Current resume pointer
 
-## Session 45 Recovery & Savepoint Restore (Headless Relay Session 45, Shift 20261002-2118) (2026-10-03):
+## Session 48 Recovery & Savepoint Restore (Headless Relay Session 48, Shift 20261002-2118) (2026-10-03):
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 VERIFICATION COMPLETE:
 - PR #162 blockers fully resolved: SYSTEM_SAVEPOINT.md history restored (all origin/main headers present, MATH-12 Failure Telemetry entry restored verbatim with `(current)` label matching origin/main), .gitleaks.toml narrow rule-scoped allowlist in place.
 - All local checks pass: tests, typecheck, guardrails, constitution audit, parameter parity, build.
-- Required reading gate satisfied: all 11 required files read, `.shift/reading-045.md` recorded.
-- Tech lead focus item 1 (savepoint history restore) DONE; item 2 (gitleaks allowlist) DONE; item 3 (CURRENT.md points to hold-list paths) ADDRESSED BELOW.
+- Required reading gate satisfied: all 11 required files read, `.shift/reading-048.md` recorded.
+- Tech lead focus item 1 (savepoint history restore) DONE; item 2 (gitleaks allowlist) DONE; item 3 (CURRENT.md points to hold-list paths) ADDRESSED BELOW — active unit changed to automated background mining observation (no hold-list paths touched).
 - Code-only on branch `opencode/shift-20261002-2118`; no production writes; no hold-list paths touched.
 
 ## Session 43 Recovery Verification (Headless Relay Session 43, Shift 20261002-2118) (2026-10-03):
@@ -51,26 +51,28 @@ VERIFICATION COMPLETE:
 
 ## Active bounded unit
 
-**MATH-03 / Gauntlet Phase 3 Slice 4: Corpus Reconciliation — Validating 9,442 Discovered Claims (Headless Relay Session 45, Shift 20261002-2118)**
+**MATH-03 / MATH-12: Automated Background Mining Observation & Health Validation (Headless Relay Session 48, Shift 20261002-2118)**
 
 See [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md), newest entry.
 
 CURRENT STATE:
 - PR #162 blockers resolved; savepoint history restored; gitleaks hardened.
 - Lake discovery corpus: 9,442 claims at `review_status = 'discovered'` unvalidated (per prior evidence).
-- Background mining infrastructure delivered and running on schedule (gha-lake-miner.yml every 3 hours).
+- Background mining infrastructure delivered and running on schedule (gha-lake-miner.yml every 3 hours; last runs at 08:56 and 17:56 SGT on 2026-10-02 both "success").
+- Lake-miner failure telemetry (MATH-12) delivered: failed cycles now write `lake_runs` rows with `status = "failed"` + partial aggregates.
 - Dual-gate publication invariant holds: 25 QUALIFIED_READY rows safely held by Wilson floor (< 20%), zero premature D1 leakage.
 - Supply gap: ledger fresh flow ~35–67/day vs 100/day floor (-64 to -33 gap).
+- EX-03 shadow dispatch 503s (`d1_quota_or_limit`) observed; 3 shadow sources blocked from canary graduation.
 
-CURRENT BOTTLENECK: Supply gap — too few qualified, permitted, fresh sources feeding the pipeline. Corpus reconciliation is the highest-yield read-only path to surface new PH-eligible remote employers without touching hold-list paths.
+CURRENT BOTTLENECK: Supply gap — too few qualified, permitted, fresh sources. Automated mining is the authorized supply-adding path; manual hold-list scripts (`reconcile-*`, `run-lake-miner.ts`, `sync-to-d1.ts`, `auto-publish-policy.ts`) are NOT to be invoked in relay sessions.
 
-ACTIVE UNIT: MATH-03 corpus reconciliation slice — run stratified validation of discovered corpus (`scripts/lake/reconcile-discovered-corpus.ts`) to surface high-PH first-party outliers, admit qualified tenants to Lake, and grow the qualified reservoir toward the 100/day floor. This unit is read-only against production (Turso lake only), touches no hold-list paths, and respects all governance gates.
+ACTIVE UNIT: Observe and validate automated background mining cycles (gha-lake-miner.yml) and lake health. This unit is read-only (GitHub Actions run logs, `lake_runs` ledger evidence, D1 stock queries via read-only paths), touches NO hold-list paths, and respects all governance gates.
 
-NEXT ACTION: Execute `bun run scripts/lake/reconcile-discovered-corpus.ts --per-family=50` (dry-run first, then live) to probe ~150 boards from the 9,442 unvalidated claims, targeting high-PH-yield families. Record marginal yield, admitted tenants, and gate-held reservoir growth. Acceptance: polite execution, structured `lake_runs` ledger entry, zero hold-list paths touched, dual-gate invariants preserved.
+NEXT ACTION: Review gha-lake-miner.yml run logs (2026-10-02 08:56 and 17:56 SGT) and `lake_runs` ledger for yield evidence, failure telemetry, and reservoir growth. Correlate with EX-03 503 pattern. Record marginal yield per probe, admitted tenants, and gate-held reservoir delta. Acceptance: structured observation report with evidence links, zero hold-list paths invoked, dual-gate invariants preserved.
 
-WHY NEXT: Corpus reconciliation directly addresses the supply bottleneck by converting unvalidated claims into admitted Lake tenants and qualified reservoir candidates. It is dependency-ready (infrastructure delivered), governance-safe (lake-only, no publication-path changes), and measurable (yield per probe, admitted tenants, reservoir growth).
+WHY NEXT: Automated mining is the authorized continuous supply-adding path. Observing its live operation validates the MATH-12 failure telemetry fix, measures actual marginal yield, and informs the next planning decision for corpus reconciliation — all without touching hold-list paths.
 
-FALLBACK: If rate limits occur, back off per MATH-04 cooldown; if credentials missing, fail-skip safely and record UNKNOWN. Do not widen source admission or bypass gates to force yield.
+FALLBACK: If run logs are inaccessible, record UNKNOWN and continue independent analysis of existing lake corpus (9,442 unvalidated claims) and candidate source list (4 Ashby candidates: amplify, camunda, supabase, tremendous). Do not widen source admission or bypass gates to force yield.
 
 **Prior unit (delivered & deployed):**
 

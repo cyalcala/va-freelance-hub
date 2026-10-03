@@ -31,7 +31,7 @@
 
 **NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). If CI passes, PR #162 merges; if red, next session addresses residual failures.
 
-## 2026-10-02 — MATH-12 Failure Telemetry: Failed Lake-Miner Cycles Now Ledgered in `lake_runs` (Headless Relay Session 2, Shift 20261002-2118) (historical)
+## 2026-10-02 — MATH-12 Failure Telemetry: Failed Lake-Miner Cycles Now Ledgered in `lake_runs` (Headless Relay Session 2, Shift 20261002-2118) (current)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
 **Status:** CODE-ONLY, UNPUSHED AT SESSION END (supervisor pushes branch → draft PR). No production writes were executed; `lake:mine`/cron/deploy were NOT run (relay rubric rule 9).
