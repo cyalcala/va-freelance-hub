@@ -1,6 +1,42 @@
 # System Savepoint
 
-## 2026-10-04 — MATH-06A Publication Authority Characterization: Writer Inventory Fixed, 23 Gap Characterization Tests Added (current)
+## 2026-10-04 — MATH-05 Metric Cohort Separation Fixtures Added + MATH-09 Identity Fixtures: ASHBY_CONTENT_HASH Removed, fingerprint_hash Gap Pinned (current)
+
+**Units:** MATH-05, MATH-09. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — both test files pass, full suite 1,821 pass, audits clean.
+
+**MATH-05 Delivered — Metric Cohort Separation Fixtures:**
+- Checked out `scripts/diagnostics/metric-cohort-separation.ts` and `.test.ts` from `a9a70653`.
+- Added 4 new fixture tests to `metric-cohort-separation.test.ts` (total 21 tests, was 17):
+  1. `RECEIPT_BACKED = 0 when published_ids_json is empty array despite publishedCount > 0` — proves lake receipts with `published_ids_json='[]'` yield zero receipt-backed count while `ledgerPublishedCountSum` reflects the claimed count.
+  2. `malformed published_ids_json yields zero receipt-backed count` — malformed JSON handled gracefully, receipt-backed = 0.
+  3. `active stock (existing opportunities) partitioned from ledger with empty receipt yields zero fresh discovery` — 10 stock opportunities with empty receipt: ledger=10, receipt=0, fresh=0, totalPublished=0.
+  4. `stock opportunities with createdAt before window are REACTIVATION if they had receipt IDs` — 3 old stock items with receipt IDs correctly classified as REACTIVATION (not FRESH_DISCOVERY), fresh=0, reactivations=3.
+- These fixtures document the three measurement layers are NOT equivalent: LEDGER_PUBLISHED_COUNT ≠ RECEIPT_BACKED ≠ FRESH_DISCOVERY. Active stock is never FRESH_DISCOVERY.
+
+**MATH-09 Delivered — Identity Fixtures Updated:**
+- Checked out `scripts/diagnostics/identity-fixtures.ts` and `.test.ts` from `a9a70653`.
+- Removed `ASHBY_CONTENT_HASH` strategy and `toAshbyContentHash` import (function exists only in unported commit `3fdfe4aa`, not in current `packages/scraper/contentHash.ts`).
+- Updated `IdentityStrategy` type to three strategies: `EXACT_ATS_ID` | `NORMALIZED_URL` | `CONTENT_HASH`.
+- Updated `compareIdentityStrategies` to run three strategies; recommendation now `EXACT_ATS_ID` when ATS coverage exists, else `CONTENT_HASH`.
+- Added `FINGERPRINT_HASH_GAP_FIXTURE` pinning the documented gap: METRICS.md Query 3A and `docs/generated/PARAMETERS.md` reference `opportunities.fingerprint_hash` for duplicate detection, but D1 schema has only `content_hash`. Duplicate rate in production is UNMEASURED, not 0%.
+- Added test `FINGERPRINT_HASH_GAP_FIXTURE pins the missing column gap`.
+- All 30 tests pass (removed 1 ASHBY_CONTENT_HASH test, added 1 gap fixture test).
+- Verified: `git diff origin/main -- packages/scraper/contentHash.ts` is empty (no changes to contentHash).
+
+**Verification:**
+- `bun test scripts/diagnostics/metric-cohort-separation.test.ts`: 21 pass / 0 fail
+- `bun test scripts/diagnostics/identity-fixtures.test.ts`: 30 pass / 0 fail
+- Full test suite: 1,821 passed / 0 failed across 180 files (`bun test`)
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0)
+- Constitution audit: Passed with known warnings (`bun scripts/ci/audit-constitution.ts`)
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`)
+- SQL mutation grep: Clean for diagnostic code changes (matches only in writer inventory doc quotations and case-insensitive test regex)
+
+**NEXT SINGLE ACTION:** Proceed to MATH-09 (if not done) → MATH-12 (stage-aware replay fixtures) → SSAE-00 (profile contract doc) per tech lead foundation wave order. Owner/controller: maintainer; trigger: next authorized session.
+
+---
+
+## 2026-10-04 — MATH-06A Publication Authority Characterization: Writer Inventory Fixed, 23 Gap Characterization Tests Added
 
 **Unit:** MATH-06A. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — inventory doc updated against HEAD `4d2e61c2`, test file `packages/scraper/publication-authority-gaps.test.ts` passes 23/23 (MATH-06A remains OPEN; this is characterization, not closure).
 

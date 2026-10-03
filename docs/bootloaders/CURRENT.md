@@ -1,12 +1,13 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift. This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 3). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest checkpoint is "MATH-06A Publication Authority Characterization: Writer Inventory Fixed, 23 Gap Characterization Tests Added."
-The documentation checkpoint records MATH-06A progress, not closure (VERIFIED_CODE: 23 tests pass, full suite 1,782 pass, typecheck clean, audits clean).
-MATH-06A register state: OPEN (evidence only; repair contract PROPOSAL).
+The latest checkpoint is "MATH-05 Metric Cohort Separation Fixtures Added + MATH-09 Identity Fixtures: ASHBY_CONTENT_HASH Removed, fingerprint_hash Gap Pinned."
+Both MATH-05 (21 tests) and MATH-09 (30 tests) pass; full suite 1,821 pass; audits clean.
+MATH-05 register state: OPEN (fixtures added, VERIFIED_CODE).
+MATH-09 register state: OPEN (ASHBY_CONTENT_HASH removed, gap fixture added, VERIFIED_CODE).
 
 ## Canonical entry points
 
@@ -26,7 +27,7 @@ within the current task's authority. A documentation/audit task does not start
 operational mining. Refresh unresolved incidents, including the saved EX-03
 error/observation follow-on; this revision does not declare them fixed.
 
-**Next single action:** MATH-05 metric cohort separation fixtures (`scripts/diagnostics/metric-cohort-separation.ts` + test) per tech lead foundation wave. Owner/controller: maintainer; trigger: next authorized session.
+**Next single action:** MATH-12 stage-aware replay fixtures (`scripts/diagnostics/extract-shadow-dispatch-evidence.test.ts`) → SSAE-00 profile contract doc (`docs/audits/2026-10-04-SSAE-00-PROFILE-CONTRACT.md`) per tech lead foundation wave. Owner/controller: maintainer; trigger: next authorized session.
 
 The former long pointer's historical entries remain in SYSTEM_SAVEPOINT and
 Git at `a176bb5d881eb7314222f534a7d1f63f02691987`; they are not competing
