@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-03 — MATH-12 Savepoint Entry Restored Verbatim from origin/main: PR #162 Blockers Fully Resolved (Headless Relay Session 50, Shift 20261002-2118)
+
+**Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
+**Status:** CODE_ONLY_BRANCH (verified locally; supervisor pushes branch → draft PR).
+
+**1. Tech lead focus item 1 COMPLETED — MATH-12 entry restored verbatim from origin/main:**
+- **Issue:** `git diff origin/main -- docs/SYSTEM_SAVEPOINT.md` showed main's top entry `## 2026-10-02 — MATH-12 Failure Telemetry... (current)` absent from tip (0-line section in prior diff).
+- **Fix:** Changed MATH-12 entry header from `(historical)` back to `(current)` to match origin/main verbatim. Entry content preserved exactly from origin/main. Placed below the two new PR #162 entries (2026-10-03) per instruction.
+- **Verification:** `git diff origin/main -- docs/SYSTEM_SAVEPOINT.md --stat` shows additions only (two PR #162 top entries + preserved historical entries); only deletion was the justified label correction. All 140 `## ` headers from origin/main present in tip.
+
+**2. Tech lead focus item 2 CONFIRMED — Active unit compliant:**
+- Active unit: "MATH-03 / MATH-12: Automated Background Mining Observation & Health Validation" — read-only observation of `gha-lake-miner.yml` runs and `lake_runs` ledger.
+- Touches NO hold-list paths (`sync-to-d1.ts`, `publication-gateway.ts`, `auto-publish-policy.ts` not invoked).
+- Supply gap remains bottleneck: ledger fresh flow ~35–67/day vs 100/day floor.
+
+**3. Tech lead focus item 3 COMPLIED — No further #162 doc-verification churn:**
+- Stop further PR #162 changes after savepoint restore.
+
+**4. Local Verification Results (VERIFIED_LOCAL):**
+- Full test suite: 1,703 pass / 0 fail across 177 files (`bun test`).
+- TypeScript typecheck: Clean (`bun run typecheck`, exit 0).
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0).
+- Constitution audit: Passed (`bun scripts/ci/audit-constitution.ts`) — 4 known standing warnings only.
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`).
+- Build: Successful (`bun run build`, exit 0).
+
+**5. Where we have been / are / going:**
+- Been: Session 49 completed PR #162 label honesty fix; Session 50 restores MATH-12 entry verbatim from origin/main per tech lead review.
+- Are: All PR #162 blockers resolved; SYSTEM_SAVEPOINT.md history fully restored with honest labels matching origin/main; gitleaks hardened; CURRENT.md active unit compliant.
+- Going: Supervisor pushes branch → draft PR #162 updated; CI guardrail workflow runs (gitleaks, tests, typecheck, build, audits). If green, PR eligible for merge per MERGE_RUBRIC gates.
+
+**NEXT SINGLE ACTION (owner: relay supervisor; trigger: end of session):** Push branch `opencode/shift-20261002-2118` and verify CI green on `ci-guardrail` workflow (gitleaks, tests, typecheck, build, audits). If CI passes, PR #162 merges; if red, next session addresses residual failures.
+
 ## 2026-10-03 — PR #162 Savepoint Label Honesty Restored: MATH-12 Entry Relabeled (historical), All Verification Green (Session 49, Shift 20261002-2118)
 
 **Mode:** AUTONOMOUS_MARATHON_MODE (headless relay; no production/GitHub credentials; branch `opencode/shift-20261002-2118` from origin/main `68a43a0feed45f183b33e24a21af005bd7096547`).
