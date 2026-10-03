@@ -1,6 +1,6 @@
 # Writer Inventory — Every Path That Inserts, Reactivates, or Publishes Rows
 
-**Generated:** 2026-10-04 | **Session:** MATH-06A (evidence only) | **Branch:** `opencode/shift-20261003-2357` | **HEAD SHA:** `b6736aeecec84a40f8fa7e3a464fb992514c959e` | **Evidence:** VERIFIED_CODE
+**Generated:** 2026-10-04 | **Session:** 9 | **Branch:** `opencode/shift-20261003-2357` | **Evidence:** VERIFIED_CODE (fixed against HEAD `b6736aeecec8`)
 
 ---
 
@@ -8,10 +8,10 @@
 
 | # | Writer Path | Trigger | Authority Check | Receipt | Bypasses Gateway? |
 |---|-------------|---------|-----------------|---------|-------------------|
-| 1 | `scripts/lake/sync-to-d1.ts` (`buildSyncSql`) | CLI `bun run lake:sync`, GHA `gha-lake-publish.yml` (17 4,16 * * *), GCP `lake-publish-job` (47 * * * * hourly) | Hard-coded `BASE_AUTHORIZED_SOURCE_IDS` + `decideAutoPublish` on `lake_ats_discovery.auto_approved` | `buildPublicationReceiptSql` writes ledger but `published_ids_json='[]'`; `published_count = candidate count` | **YES** — raw INSERT, never calls `publishPublicExposure` |
+| 1 | `scripts/lake/sync-to-d1.ts` (buildSyncSql) | CLI `bun run lake:sync`, GHA `gha-lake-publish.yml`, GCP `lake-publish-job` | Hard-coded `BASE_AUTHORIZED_SOURCE_IDS` + `decideAutoPublish` on `lake_ats_discovery.auto_approved` | `buildPublicationReceiptSql` writes ledger but `published_ids_json='[]'`; `published_count = candidate count` | **YES** — raw INSERT, never calls `publishPublicExposure` |
 | 2 | `packages/scraper/publication-gateway.ts` (`publishPublicExposure`) | Called by #3, #4, #5, #6, #8 | `loadPublicationPolicy` → registry + `source_opt_outs` + lease expiry + canary cap | `INSERT_LEDGER_SQL` with actual `published_ids_json` | N/A — this IS the gateway |
 | 3 | `apps/web/src/lib/publish-opportunities.ts` (`publishGroupedInserts`, `publishGroupedActivations`) | Scrape inline, drain, reactivate, gate-eligible, ingest | Delegates to gateway | Delegates to gateway | NO — uses gateway |
-| 4 | `apps/web/src/pages/api/cron/scrape.ts` (inline scrape) | Cloudflare Worker cron (*/10 * * * *), GHA `gha-hunter-pulse.yml` (*/15) | Registry overlay + `loadPublicationPolicy` via gateway | Via gateway | NO — uses gateway when `publicationDb` present |
+| 4 | `apps/web/src/pages/api/cron/scrape.ts` (inline scrape) | Cloudflare Worker cron (10min), GHA `gha-hunter-pulse.yml` (15min) | Registry overlay + `loadPublicationPolicy` via gateway | Via gateway | NO — uses gateway when `publicationDb` present |
 | 5 | `apps/web/src/pages/api/cron/scrape.ts` (pending-triage drain) | Same as #4, when `DRAIN_PENDING_TRIAGE=1` or AI keys present | Via gateway | Via gateway | NO — uses gateway |
 | 6 | `apps/web/src/pages/api/cron/scrape.ts` (`recoverGateEligiblePending`) | Same as #4, inline path | **BYPASSES GATEWAY** when `publicationDb` is null (lines 584-586) | No ledger write when bypassing | **YES** — direct `db.update` when no `publicationDb` |
 | 7 | `apps/web/src/pages/api/cron/scrape.ts` (`reactivateFeedConfirmedJobs`) | Same as #4, after dedup | **BYPASSES GATEWAY** when `publicationDb` is null (lines 636-642) | No ledger write when bypassing | **YES** — direct `db.update` when no `publicationDb` |
@@ -26,11 +26,11 @@
 
 ### 1. `scripts/lake/sync-to-d1.ts` — Lake → D1 Sync (PRIMARY BYPASS)
 
-**File:** `scripts/lake/sync-to-d1.ts:162-201, 353-372`
-**Trigger:** `bun run lake:sync` (GHA `gha-lake-publish.yml` at `17 4,16 * * *` 2×/day; GCP `lake-publish-job` hourly at `47 * * * *`; manual)
+**File:** `scripts/lake/sync-to-d1.ts:184-200, 353-372`
+**Trigger:** `bun run lake:sync` (GHA 2×/day at 04:17/16:17 UTC, GCP hourly at `47 * * * *` UTC, manual)
 **Authority:**
 - Hard-coded `BASE_AUTHORIZED_SOURCE_IDS` (lines 27-40): exact-six + himalayas + 5 breezy
-- `decideAutoPublish` on `lake_ats_discovery` where `review_status = 'auto_approved'` (lines 95-109, 111-133)
+- `decideAutoPublish` on `lake_ats_discovery` where `review_status = 'auto_approved'` (lines 95-109)
 - **No** `source_registry` query, **no** `source_opt_outs` check, **no** lease expiry check
 - `fetchD1InventorySnapshot` called but **optional** (line 277); when null, `concentrationAllowance` returns `UNKNOWN` and allows full cohort (auto-publish-policy.ts:79-80)
 
@@ -40,11 +40,7 @@
 - `mode = 'unlimited'`
 - Written **after** all upserts succeed (line 371), not atomically
 
-**Reactivation / Upsert Behavior:** `ON CONFLICT(source_url) DO UPDATE SET last_seen_in_feed_at = datetime('now'), is_active = 1, ph_eligibility = excluded.ph_eligibility, geo_scope = excluded.geo_scope` (lines 195-199) — reactivates **any** conflicting URL regardless of prior state (including `verifier/triage/takedown-archived` rows via `is_active = 1`)
-
-**Type/Location Hard-Coding:** Line 190 hard-codes `type = 'freelance'` and `location_type = 'remote'` — these map to JSON-LD `CONTRACTOR` employment type via `apps/web/src/pages/jobs/[id].astro:158-164` (`EMPLOYMENT_TYPE_MAP['freelance'] = 'CONTRACTOR'`)
-
-**datetime('now') Usage:** Lines 193, 196, 197 use `datetime('now')` for `scraped_at` and `last_seen_in_feed_at` — ADR-002 permits this for system timestamps (scrape time) but not for `posted_at` (which correctly stays NULL when unknown)
+**Reactivation:** `ON CONFLICT(source_url) DO UPDATE SET is_active = 1` (line 196-198) — reactivates any conflicting URL regardless of prior state (verifier/triage/takedown-archived rows)
 
 **Gap (F1/F4):** This is the primary lake bypass documented in audit F1. It writes directly to D1 without gateway enforcement.
 
@@ -112,10 +108,6 @@
 
 **Registry Overlay (lines 1945-1959):** Loads `source_registry` policies per-tick; **aborts entire run if unavailable** (503). This is the only writer that fails closed on missing registry.
 
-**Ashby/Breezy (COMP-01C/01D):** Lines 690-709 define `ATS_PLATFORM_POLICIES` — Ashby and Breezy platforms are `enabled: false` / `paused` (COMP-01C/01D terminal). Lines 213-284 (`ATS_TOKEN_POLICIES`) list specific paused tokens (5 Ashby, 5 Greenhouse, 5 Breezy).
-
-**Robots Handling:** Lines 143-154 (`ROBOTS_ENFORCE_SOURCE_IDS`) — exact-six sources enforce robots; all others (including lake fetchers) are `observe` only. Lake miner (`run-lake-miner.ts`) and domain discovery (`domain-ats-discovery.ts`) fetch without robots decisions — they probe endpoints but robots enforcement is deferred to publication gateway.
-
 ---
 
 ### 5. `apps/web/src/pages/api/ingest.ts` — Direct Ingest API
@@ -170,19 +162,77 @@
 **Role:** Pure functions used by writer #1
 **Key Behaviors:**
 - `concentrationAllowance` (lines 74-113): Returns `UNKNOWN` when `inventory` is null or `activeTotal < 100` — **allows full cohort** (line 80)
-- `decideAutoPublish` (lines 115-166): Wilson floor 20% (NOT in ACCEPTED_PARAMETERS.yaml), Jev 0.7 confidence (IS in params)
-- **Jev ADMIT ≥0.7 publishes with "No human approval"** (lines 138-140) — contradicts Constitution L1 ADVISE
-
-**Miner Auto-Admission:** `run-lake-miner.ts` auto-admits tenants via `lake_ats_discovery` `review_status = 'auto_approved'` (line 118 in sync-to-d1). Agent-triggered `lake-publish-job` runs (GCP Cloud Run) then publish these via `lake:sync`.
+- `decideAutoPublish` (lines 115-166): Wilson floor 20% (NOT in ACCEPTED_PARAMETERS), Jev 0.7 confidence (IS in params)
+- **Jev ADMIT ≥0.7 publishes with "No human approval"** (line 138-140) — contradicts Constitution L1 ADVISE
 
 ---
 
-### 9. Remotive JSON-LD/Sitemap Source
+### 9. Migration References (0031, 0046, 0047, 0052)
 
-**File:** `packages/scraper/sources.ts` (lines for Remotive)
-**Mechanism:** Public JSON-LD structured data + sitemap discovery
-**Compliance Notes:** "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs."
-**Robots Mode:** `enforce` (exact-six member, `ROBOTS_ENFORCE_SOURCE_IDS` includes "remotive")
+| Migration | File | Key Behavior |
+|-----------|------|--------------|
+| 0031 | `0031_remotephjobs_incident_repair.sql` | Incident repair — UPDATE/DELETE operations on opportunities |
+| 0046 | `0046_reconcile_breezy_onsite_and_unclear_eligibility.sql` | Breezy onsite eligibility reconciliation |
+| 0047 | `0047_deactivate_shadow_candidate_jobs_and_unclear_titles.sql` | Shadow/candidate deactivation |
+| 0052 | `0052_founder_fast_track_canary_graduation.sql` | Founder fast-track — drops/recreates trigger, batch promotes 8 sources |
+
+---
+
+### 10. Miner Auto-Admission
+
+**File:** `scripts/lake/sync-to-d1.ts:118`, `scripts/lake/domain-ats-discovery.ts:812`
+**Mechanism:** `lake_ats_discovery.review_status = 'auto_approved'` (set by Jev ADMIT in domain-ats-discovery.ts) → `planAutoPublishSources` picks up → GCP `lake-publish-job` hourly at `47 * * * *` executes `lake:sync`
+**Gap:** No human approval gate. Kill switch is `--hold-auto-approved` flag.
+
+---
+
+### 11. Ashby/Breezy COMP-01C/01D Terminal State
+
+**File:** `packages/scraper/policy-resolver.ts:170-182`
+**COMP-01C (Ashby):** `enabled: false, complianceStatus: "paused"` — "Paused 2026-07-12: unknown Ashby orgs require source-specific review"
+**COMP-01D (Breezy):** `enabled: false, complianceStatus: "paused"` — "Paused 2026-06-12: Breezy ATS tokens require source-specific review"
+**Also paused:** Workable, Greenhouse, Lever — all in `ATS_PLATFORM_POLICIES` and `ATS_TOKEN_POLICIES`
+
+---
+
+### 12. Robots Enforcement
+
+**File:** `packages/scraper/policy-resolver.ts:143-154`
+**Exact-six enforce:** `ROBOTS_ENFORCE_SOURCE_IDS` = { we-work-remotely, remotive, real-work-from-anywhere, remote-ok, jobicy-admin-support-apac, jobicy-supporting-apac }
+**Lake fetchers:** Observe-only (no robots enforcement in lake miner/discovery)
+**Authoritative literal:** Lives in `apps/web/src/pages/api/cron/scrape.ts` — `robotsModeForSourceId` mirror used for parity tests only
+
+---
+
+### 13. Remotive
+
+**Status:** Exact-six member, JSON-LD/sitemap supported, robots enforced
+**Mechanism:** RSS/Atom + sitemap + JSON-LD extraction
+**Enforcement:** `remotive` in `ROBOTS_ENFORCE_SOURCE_IDS`
+
+---
+
+### 14. `scrape.ts` Null-publicationDb Bypass Paths
+
+| Function | Lines | Bypass Condition | Action |
+|----------|-------|------------------|--------|
+| `recoverGateEligiblePending` | 584-586 | `!publicationDb` | Direct `db.update` with `isActive: true` |
+| `reactivateFeedConfirmedJobs` | 636-642 | `!publicationDb` | Direct `db.update` with `isActive: true` |
+
+**Gap:** Both paths reactivate/archive jobs without gateway checks (registry, opt-out, lease, canary cap, ledger receipt).
+
+---
+
+### 15. Repair Contract
+
+**Status:** PROPOSAL only — not authorized for implementation
+**Scope:** Would require:
+1. All lake sync paths to route through `publishPublicExposure`
+2. Atomic reservation across writers (shared tick sum)
+3. Ledger-before-persistence or compensating transactions
+4. Removal of hard-coded `BASE_AUTHORIZED_SOURCE_IDS` in favor of registry-only
+5. Migration 0052 replacement with graduated shadow/canary path
+6. Jev auto-publish removal or L2 graduation evidence
 
 ---
 
@@ -190,7 +240,7 @@
 
 ### Lake Sync (#1)
 ```
-Trigger: GHA gha-lake-publish.yml (2×/day at 17 4,16 * * *) / GCP lake-publish-job (hourly 47 * * * *) / manual
+Trigger: GHA gha-lake-publish.yml (2×/day 04:17/16:17 UTC) / GCP lake-publish-job (hourly :47) / manual
   → Dispatch: syncQualifiedJobsToD1(limit, dryRun, {holdAutoApproved})
   → Decision: planAutoPublishSources() → decideAutoPublish() per tenant
   → Write: buildSyncSql() → raw INSERT ON CONFLICT (reactivates) + buildPublicationReceiptSql()
@@ -238,7 +288,7 @@ Trigger: Manual maintainer execution
 
 | Gap | Location | Severity | Evidence |
 |-----|----------|----------|----------|
-| **F1**: Lake sync bypasses gateway entirely | sync-to-d1.ts:162-201 | Critical | Raw INSERT, no registry/opt-out/lease check, receipt has empty IDs |
+| **F1**: Lake sync bypasses gateway entirely | sync-to-d1.ts:184-200 | Critical | Raw INSERT, no registry/opt-out/lease check, receipt has empty IDs |
 | **F2**: Concentration guard disconnected | sync-to-d1.ts:277, auto-publish-policy.ts:79-80 | Critical | `inventory` optional; when null, `concentrationAllowance` returns UNKNOWN → allows all |
 | **F4**: Gateway fallback broader than exact-six | publication-gateway.ts:107-127 | High | Fixed in code (only exact-six gets fallback) but `unattributed` from invalid sourceId enters fallback |
 | **Atomicity**: Persistence before ledger | publication-gateway.ts:199, 226 | High | Row public before receipt; ledger failure = orphan public row |
@@ -246,8 +296,8 @@ Trigger: Manual maintainer execution
 | **Ingest sourceId validation**: None | ingest.ts:60 | Medium | Client-controlled sourceId; invalid → "unattributed" → exact-six fallback |
 | **Migration 0052**: Drops trigger, batch promotes | 0052_founder_fast_track...sql | High | Violates ADR-008, SP-23; auto-applied on merge |
 | **Jev auto-publish**: L1 advisory publishes | auto-publish-policy.ts:138-140 | Medium | "No human approval" at Jev ≥0.7; Constitution says L1 ADVISE only |
-| **datetime('now') in upsert**: Reactivation timestamp | sync-to-d1.ts:196-197 | Low | ADR-002 permits for system timestamps, not for `posted_at` (handled correctly) |
-| **Reactivation revives archived**: `is_active = 1` | sync-to-d1.ts:197 | Medium | Revives verifier/triage/takedown-archived rows without re-verification |
+| **Reactivation bypass**: verifier/triage rows revived | sync-to-d1.ts:196-198 | High | ON CONFLICT sets is_active=1 unconditionally |
+| **Scrape bypass**: null publicationDb paths | scrape.ts:584-586, 636-642 | High | Direct db.update without any authority checks |
 
 ---
 
@@ -259,23 +309,3 @@ Trigger: Manual maintainer execution
 - `packages/scraper/candidate-shadow.ts` — probe only, zero D1 writes
 - `scripts/diagnostics/*.ts` — read-only
 - `apps/web/src/lib/public-query.ts` — read-only public queries
-- `scripts/lake/enroll-published-sources.ts` — writes `source_registry` only (no `opportunities`)
-
----
-
-## Repair Contract (PROPOSAL — Not Authorized for Implementation)
-
-This section records a proposed repair approach for the identified gaps. It does NOT authorize implementation.
-
-1. **F1 Closure:** Route `sync-to-d1.ts` through `publishPublicExposure` by injecting a `PublicationDatabase` implementation that writes to D1 via the gateway's `persist` callback, preserving ledger integrity and atomicity.
-2. **F2 Closure:** Make `fetchD1InventorySnapshot` mandatory (not optional) for `lake:sync`; fail closed if inventory unavailable.
-3. **Atomicity:** Reverse order — write ledger receipt first (with reservation), then persist rows, with compensating delete on failure.
-4. **Cross-writer Reservation:** Introduce a shared `tick_reservations` table or atomic UPSERT for cumulative tick tracking.
-5. **Ingest Validation:** Validate `sourceId` against registry at ingest time; reject unknown/invalid IDs.
-6. **Migration 0052:** Replace with per-source promotion via `scripts/graduation` after shadow observation evidence; never auto-apply batch promotions.
-7. **Jev L1 Enforcement:** Remove "No human approval" auto-publish; require deterministic clearance (Wilson floor) or human approval for Jev ADMIT.
-8. **Reactivation Safety:** Add `AND inactive_reason NOT IN ('verifier-rejected', 'triage-rejected', 'takedown-archived')` to upsert conflict clause, or route reactivations through gateway with re-verification.
-
-**Dependencies:** MATH-06 (publication authority closure), ADR-008 tiered shadow, SP-23 canary plane, ACCEPTED_PARAMETERS.yaml parity.
-**Owner:** Next maintainer with publication-control closure authority.
-**Trigger:** MATH-06A evidence acceptance + F1/F2/F4 reproduction fixtures passing.
