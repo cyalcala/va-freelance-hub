@@ -386,7 +386,371 @@ describe("SSAE-05 Shadow Decisions", () => {
   });
 });
 
-describe("Shadow Decision Exports", () => {
+describe("compareSelectorOutputs Helper", () => {
+    const baseSources = [
+      createSyntheticRecord("source-a", "ProviderA", "rss_xml", 500, 0.15, 200),
+      createSyntheticRecord("source-b", "ProviderA", "rss_xml", 300, 0.12, 150),
+      createSyntheticRecord("source-c", "ProviderB", "rss_xml", 200, 0.08, 80),
+      createSyntheticRecord("source-d", "ProviderC", "public_json_api", 1000, 0.05, 50),
+    ];
+
+    function createMockRankedSource(overrides: Partial<RankedSource> = {}): RankedSource {
+      const now = new Date().toISOString();
+      return {
+        source_id: "test-source",
+        provider_id: "test-provider",
+        declared_capability: "ats_json",
+        endpoint_url: "https://example.com/api",
+        score: 10,
+        score_breakdown: {
+          marginal_yield_estimate: 5,
+          cost_estimate_cents: 20,
+          feasibility_penalty: 0,
+          freshness_bonus: 0,
+          diversity_bonus: 0,
+          cold_revisit_bonus: 0,
+        },
+        processing_mode: "FULL",
+        mode_reason: "test",
+        feasibility: { permitted: true, reason: "test", hardGate: "NONE" },
+        excluded: false,
+        exclusion_reason: null,
+        cold_revisit_reason: null,
+        cold_revisit_due_at: null,
+        evidence_refs: [],
+        evidence_complete: false,
+        dependencies: null,
+        ranked_at: now,
+        selector_version: "test@v1",
+        ...overrides,
+      };
+    }
+
+    it("compares control and treatment selections correctly", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1, score: 15 }),
+        createMockRankedSource({ source_id: "source-c", provider_id: "ProviderB", rank: 2, score: 10 }),
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1, score: 20 }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA", rank: 2, score: 12 }),
+      ];
+
+      const treatmentExcluded = [
+        createMockRankedSource({ source_id: "source-c", provider_id: "ProviderB", excluded: true, exclusion_reason: "cost_exceeds_budget" }),
+      ];
+
+      const treatmentColdRevisit: RankedSource[] = [];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        treatmentExcluded,
+        treatmentColdRevisit,
+        baseSources
+      );
+
+      expect(result.decisions.length).toBe(4);
+
+      const decisionA = result.decisions.find(d => d.source_id === "source-a");
+      expect(decisionA?.agreement).toBe("BOTH_SELECTED");
+      expect(decisionA?.overlap_score).toBe(1);
+
+      const decisionB = result.decisions.find(d => d.source_id === "source-b");
+      expect(decisionB?.agreement).toBe("TREATMENT_ONLY");
+
+      const decisionC = result.decisions.find(d => d.source_id === "source-c");
+      expect(decisionC?.agreement).toBe("CONTROL_ONLY");
+
+      const decisionD = result.decisions.find(d => d.source_id === "source-d");
+      expect(decisionD?.agreement).toBe("NEITHER");
+    });
+
+    it("computes Jaccard overlap rate correctly", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA" }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA" }),
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA" }),
+        createMockRankedSource({ source_id: "source-c", provider_id: "ProviderB" }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        baseSources
+      );
+
+      expect(result.overlap.selectedOverlapCount).toBe(1);
+      expect(result.overlap.selectedOverlapRate).toBeCloseTo(1 / 3, 5); // Jaccard: 1 / (2+2-1) = 1/3
+    });
+
+    it("computes Spearman rank correlation on common sources", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1, score: 20 }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA", rank: 2, score: 15 }),
+        createMockRankedSource({ source_id: "source-c", provider_id: "ProviderB", rank: 3, score: 10 }),
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1, score: 25 }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA", rank: 2, score: 18 }),
+        createMockRankedSource({ source_id: "source-c", provider_id: "ProviderB", rank: 3, score: 12 }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        baseSources
+      );
+
+      expect(result.overlap.rankCorrelation).toBe(1); // Perfect correlation
+    });
+
+    it("handles zero common sources for rank correlation", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1 }),
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderB", rank: 1 }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        baseSources
+      );
+
+      expect(result.overlap.rankCorrelation).toBe(0); // No common sources -> 0
+    });
+
+    it("computes mode agreement rate on common selected sources", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", processing_mode: "FULL" }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA", processing_mode: "REINDEX" }),
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", processing_mode: "FULL" }),
+        createMockRankedSource({ source_id: "source-b", provider_id: "ProviderA", processing_mode: "FULL" }), // Different mode
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        baseSources
+      );
+
+      expect(result.overlap.modeAgreementRate).toBe(0.5); // 1 out of 2 agree
+    });
+
+    it("handles treatment excluded sources correctly", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1 }),
+      ];
+
+      const treatmentRanked: RankedSource[] = [];
+      const treatmentExcluded = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", excluded: true, exclusion_reason: "cost_exceeds_budget" }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        treatmentExcluded,
+        [],
+        baseSources
+      );
+
+      const decisionA = result.decisions.find(d => d.source_id === "source-a");
+      expect(decisionA?.agreement).toBe("CONTROL_ONLY");
+      expect(decisionA?.treatment.excluded).toBe(true);
+      expect(decisionA?.treatment.exclusion_reason).toBe("cost_exceeds_budget");
+    });
+
+    it("handles treatment cold revisit sources correctly", async () => {
+      const controlSelected = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", rank: 1 }),
+      ];
+
+      const treatmentRanked: RankedSource[] = [];
+      const treatmentColdRevisit = [
+        createMockRankedSource({ source_id: "source-a", provider_id: "ProviderA", cold_revisit_reason: "no_observation_7d" }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        treatmentColdRevisit,
+        baseSources
+      );
+
+      const decisionA = result.decisions.find(d => d.source_id === "source-a");
+      expect(decisionA?.agreement).toBe("CONTROL_ONLY");
+      expect(decisionA?.treatment.cold_revisit_reason).toBe("no_observation_7d");
+    });
+
+    it("handles empty inputs gracefully", async () => {
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        [],
+        [],
+        [],
+        [],
+        []
+      );
+
+      expect(result.decisions).toEqual([]);
+      expect(result.overlap.selectedOverlapCount).toBe(0);
+      expect(result.overlap.selectedOverlapRate).toBe(0);
+      expect(result.overlap.rankCorrelation).toBe(0);
+      expect(result.overlap.modeAgreementRate).toBe(0);
+    });
+
+    it("handles single source in both selections", async () => {
+      const singleSource = [createSyntheticRecord("only-source", "OnlyProvider", "rss_xml", 50, 0.3, 15)];
+
+      const controlSelected = [
+        createMockRankedSource({ source_id: "only-source", provider_id: "OnlyProvider", rank: 1, score: 10 }),
+      ];
+
+      const treatmentRanked = [
+        createMockRankedSource({ source_id: "only-source", provider_id: "OnlyProvider", rank: 1, score: 12 }),
+      ];
+
+      const { compareSelectorOutputs } = await import("./shadow-decisions");
+
+      const result = compareSelectorOutputs(
+        controlSelected,
+        treatmentRanked,
+        [],
+        [],
+        singleSource
+      );
+
+      expect(result.decisions.length).toBe(1);
+      expect(result.decisions[0].agreement).toBe("BOTH_SELECTED");
+      expect(result.overlap.selectedOverlapCount).toBe(1);
+      expect(result.overlap.selectedOverlapRate).toBe(1);
+      expect(result.overlap.rankCorrelation).toBe(0); // Need >=2 for correlation
+      expect(result.overlap.modeAgreementRate).toBe(1);
+    });
+  });
+
+  describe("runMultiEpochShadowDecisions", () => {
+    const epoch1 = "2026-09-01T12:00:00Z";
+    const epoch2 = "2026-09-08T12:00:00Z";
+
+    function createSourcesForEpoch(count: number, prefix: string): SourceMemoryRecord[] {
+      return Array.from({ length: count }, (_, i) =>
+        createSyntheticRecord(`${prefix}-source-${i}`, `Provider${i % 3}`, "rss_xml", 100, 0.2, 20)
+      );
+    }
+
+    it("runs shadow decisions for multiple epochs", async () => {
+      const configs = [
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
+      ];
+
+      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+        [epoch1, createSourcesForEpoch(5, "epoch1")],
+        [epoch2, createSourcesForEpoch(5, "epoch2")],
+      ]);
+
+      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+
+      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+
+      expect(results.length).toBe(2);
+      expect(results[0].epoch_timestamp).toBe(epoch1);
+      expect(results[1].epoch_timestamp).toBe(epoch2);
+      expect(results[0].epoch_label).toBe("custom");
+      expect(results[1].epoch_label).toBe("custom");
+    });
+
+    it("skips epochs with no source snapshot", async () => {
+      const configs = [
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch2 },
+      ];
+
+      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+        [epoch1, createSourcesForEpoch(5, "epoch1")],
+        // epoch2 missing
+      ]);
+
+      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+
+      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+
+      expect(results.length).toBe(1);
+      expect(results[0].epoch_timestamp).toBe(epoch1);
+    });
+
+    it("skips epochs with empty source snapshots", async () => {
+      const configs = [
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1 },
+      ];
+
+      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+        [epoch1, []],
+      ]);
+
+      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+
+      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+
+      // Epoch with empty sources is skipped (warns and continues)
+      expect(results.length).toBe(0);
+    });
+
+    it("uses holdout split epoch label when provided", async () => {
+      const configs = [
+        { topK: 3, maxCostPerSourceCents: 500, coldRevisitDays: 7, epochTimestamp: epoch1, holdoutSplit: "primary_2026_09" },
+      ];
+
+      const sourceSnapshots = new Map<string, SourceMemoryRecord[]>([
+        [epoch1, createSourcesForEpoch(5, "epoch1")],
+      ]);
+
+      const { runMultiEpochShadowDecisions } = await import("./shadow-decisions");
+
+      const results = await runMultiEpochShadowDecisions(configs, sourceSnapshots);
+
+      expect(results[0].epoch_label).toBe("primary_2026_09");
+    });
+  });
+
+  describe("Shadow Decision Exports", () => {
   it("exports runShadowDecisionCycle", () => {
     expect(typeof runShadowDecisionCycle).toBe("function");
   });
