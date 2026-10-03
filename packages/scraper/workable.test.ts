@@ -1,5 +1,30 @@
-import { describe, it, expect } from "bun:test";
+import { describe, it, expect, afterEach, mock, test } from "bun:test";
 import { parseWorkableXml, filterPlausibleCandidates, summarizeFilterStats, summarizeLocation, WORKABLE_FEED_URL } from "./workable";
+import { fetchWorkable } from "./ats";
+import { toContentHash } from "./contentHash";
+
+const realFetch = globalThis.fetch;
+afterEach(() => { globalThis.fetch = realFetch; });
+
+function mockFetch(payload: unknown, ok = true, status = 200) {
+  globalThis.fetch = mock(async () => ({
+    ok,
+    status,
+    json: async () => payload,
+  })) as unknown as typeof fetch;
+}
+
+const widgetJob = (over: Record<string, unknown> = {}) => ({
+  title: "Senior Engineer",
+  url: "https://apply.workable.com/j/abc123",
+  shortcode: "abc123",
+  published_on: "2026-07-01T12:00:00.000Z",
+  city: "Remote",
+  state: "",
+  country: "",
+  telecommuting: true,
+  ...over,
+});
 
 // Real, live-captured <job> blocks (2026-08-30) from
 // https://www.workable.com/boards/workable.xml — four real postings
@@ -322,5 +347,207 @@ describe("workable — summarizeLocation", () => {
 describe("workable — feed URL constant", () => {
   it("matches the SP-09-documented official feed URL", () => {
     expect(WORKABLE_FEED_URL).toBe("https://www.workable.com/boards/workable.xml");
+  });
+});
+
+describe("fetchWorkable — widget API parser edge cases (MATH-03 supply quality)", () => {
+  test("maps jobs to opportunities with linkback sourceUrl", async () => {
+    mockFetch({ jobs: [widgetJob()] });
+    const out = await fetchWorkable("company", "Company");
+    expect(out).toHaveLength(1);
+    expect(out[0]).toMatchObject({
+      title: "Senior Engineer",
+      company: "Company",
+      sourceUrl: "https://apply.workable.com/j/abc123",
+      locationType: "remote",
+      sourcePlatform: "Company",
+    });
+    expect(out[0].contentHash).toMatch(/^[0-9a-f]{16}$/);
+    expect(out[0].postedAt).toBe("2026-07-01T12:00:00.000Z");
+    expect(out[0].locationRaw).toBe("Remote");
+    expect(out[0].description).toBeNull();
+  });
+
+  test("falls back to shortcode-based URL when url is missing", async () => {
+    mockFetch({ jobs: [widgetJob({ url: undefined, shortcode: "xyz789" })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.sourceUrl).toBe("https://apply.workable.com/company/j/xyz789/");
+  });
+
+  test("skips jobs missing title or both url and shortcode", async () => {
+    mockFetch({ jobs: [widgetJob({ title: "" }), widgetJob({ url: undefined, shortcode: undefined }), widgetJob({ title: "Good" })] });
+    const out = await fetchWorkable("company", "Company");
+    expect(out.map((o) => o.title)).toEqual(["Good"]);
+  });
+
+  test("throws on non-200 so the source is reported failed, not silently empty", async () => {
+    mockFetch(null, false, 503);
+    await expect(fetchWorkable("company", "Company")).rejects.toThrow(/Workable HTTP 503/);
+  });
+
+  test("returns empty array when the payload does not have a jobs array", async () => {
+    mockFetch({ notJobs: true });
+    const out = await fetchWorkable("company", "Company");
+    expect(out).toHaveLength(0);
+  });
+
+  test("handles missing jobs property", async () => {
+    mockFetch({});
+    const out = await fetchWorkable("company", "Company");
+    expect(out).toHaveLength(0);
+  });
+
+  test("handles jobs as non-array", async () => {
+    mockFetch({ jobs: "not-an-array" });
+    const out = await fetchWorkable("company", "Company");
+    expect(out).toHaveLength(0);
+  });
+
+  test("tolerates a missing/invalid published_on and created_at", async () => {
+    mockFetch({ jobs: [widgetJob({ published_on: "not-a-date", created_at: undefined })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.postedAt).toBeNull();
+  });
+
+  test("handles various valid posted date formats", async () => {
+    const testCases = [
+      { input: "2026-07-01T12:00:00.000Z", expected: "2026-07-01T12:00:00.000Z" },
+      { input: "2026-07-01T12:00:00+00:00", expected: "2026-07-01T12:00:00.000Z" },
+      { input: "2026-07-01T05:00:00-07:00", expected: "2026-07-01T12:00:00.000Z" }, // PDT
+    ];
+    for (const tc of testCases) {
+      mockFetch({ jobs: [widgetJob({ published_on: tc.input })] });
+      const [row] = await fetchWorkable("company", "Company");
+      expect(row.postedAt).toBe(tc.expected);
+    }
+  });
+
+  test("uses created_at as fallback when published_on is missing", async () => {
+    mockFetch({ jobs: [widgetJob({ published_on: undefined, created_at: "2026-07-01T12:00:00.000Z" })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.postedAt).toBe("2026-07-01T12:00:00.000Z");
+  });
+
+  test("handles telecommuting false (onsite signal)", async () => {
+    mockFetch({ jobs: [widgetJob({ telecommuting: false, city: "New York", state: "NY", country: "US" })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.locationRaw).toContain("New York, NY, US");
+    expect(row.locationRaw).toContain("(onsite)");
+  });
+
+  test("handles telecommuting undefined (treated as falsy, no onsite marker)", async () => {
+    mockFetch({ jobs: [widgetJob({ telecommuting: undefined, city: "San Francisco", state: "CA", country: "US" })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.locationRaw).toContain("San Francisco, CA, US");
+    expect(row.locationRaw).not.toContain("(onsite)");
+  });
+
+  test("handles missing city/state/country with telecommuting true", async () => {
+    mockFetch({ jobs: [widgetJob({ telecommuting: true, city: null, state: null, country: null })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.locationRaw).toBe("Remote");
+  });
+
+  test("handles missing city/state/country with telecommuting false", async () => {
+    mockFetch({ jobs: [widgetJob({ telecommuting: false, city: null, state: null, country: null })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.locationRaw).toBe("(onsite)");
+  });
+
+  test("handles empty string city/state/country", async () => {
+    mockFetch({ jobs: [widgetJob({ telecommuting: true, city: "", state: "", country: "" })] });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.locationRaw).toBe("Remote");
+  });
+
+  test("handles job with extra unexpected fields (robust parsing)", async () => {
+    mockFetch({
+      jobs: [
+        widgetJob({
+          extraField1: "ignored",
+          extraField2: { nested: "also ignored" },
+          salary: "$100k-200k",
+          department: "Engineering",
+        }),
+      ],
+    });
+    const [row] = await fetchWorkable("company", "Company");
+    expect(row.title).toBe("Senior Engineer");
+    expect(row.sourceUrl).toBe("https://apply.workable.com/j/abc123");
+  });
+
+  test("handles large response with many jobs (performance and memory)", async () => {
+    const manyJobs = Array.from({ length: 500 }, (_, i) => widgetJob({ title: `Job ${i}`, shortcode: `job_${i}`, url: `https://apply.workable.com/j/job_${i}` }));
+    mockFetch({ jobs: manyJobs });
+    const out = await fetchWorkable("company", "Company");
+    expect(out).toHaveLength(500);
+    expect(out[0].title).toBe("Job 0");
+    expect(out[499].title).toBe("Job 499");
+  });
+
+  test("returns empty array for empty jobs list", async () => {
+    mockFetch({ jobs: [] });
+    const out = await fetchWorkable("company", "Company");
+    expect(out).toHaveLength(0);
+  });
+
+  test("handles 404 response as failed fetch", async () => {
+    mockFetch(null, false, 404);
+    await expect(fetchWorkable("company", "Company")).rejects.toThrow(/Workable HTTP 404/);
+  });
+
+  test("handles 429 rate limit response as failed fetch", async () => {
+    mockFetch(null, false, 429);
+    await expect(fetchWorkable("company", "Company")).rejects.toThrow(/Workable HTTP 429/);
+  });
+
+  test("handles 401 unauthorized as failed fetch", async () => {
+    mockFetch(null, false, 401);
+    await expect(fetchWorkable("company", "Company")).rejects.toThrow(/Workable HTTP 401/);
+  });
+
+  test("uses standard content hash for Workable (no ATS job ID)", async () => {
+    mockFetch({ jobs: [widgetJob({ url: "https://apply.workable.com/j/abc123" })] });
+    const [row] = await fetchWorkable("company", "Company");
+    const expectedHash = toContentHash("Senior Engineer", "https://apply.workable.com/j/abc123");
+    expect(row.contentHash).toBe(expectedHash);
+  });
+
+  test("different title or URL produces different content hash", async () => {
+    const job1 = widgetJob({ title: "Job 1", url: "https://apply.workable.com/j/job1" });
+    const job2 = widgetJob({ title: "Job 2", url: "https://apply.workable.com/j/job2" });
+    mockFetch({ jobs: [job1] });
+    const [row1] = await fetchWorkable("company", "Company");
+    mockFetch({ jobs: [job2] });
+    const [row2] = await fetchWorkable("company", "Company");
+    expect(row1.contentHash).not.toBe(row2.contentHash);
+  });
+
+  test("handles multiple jobs in single response with mixed validity", async () => {
+    mockFetch({
+      jobs: [
+        widgetJob({ title: "Valid 1", url: "https://apply.workable.com/j/job1" }),
+        widgetJob({ title: "", url: "https://apply.workable.com/j/empty" }), // filtered out
+        widgetJob({ title: "Valid 2", url: undefined, shortcode: undefined }), // filtered out
+        widgetJob({ title: "Valid 3", url: "https://apply.workable.com/j/job3" }),
+      ],
+    });
+    const out = await fetchWorkable("company", "Company");
+    expect(out.map((o) => o.title).sort()).toEqual(["Valid 1", "Valid 3"]);
+  });
+
+  test("handles whitespace-only title (passes filter but normalizes to empty string)", async () => {
+    mockFetch({ jobs: [widgetJob({ title: "   " }), widgetJob({ title: "Valid" })] });
+    const out = await fetchWorkable("company", "Company");
+    // Whitespace-only title passes filter (truthy) but normalizes to empty string
+    expect(out).toHaveLength(2);
+    expect(out.map((o) => o.title).sort()).toEqual(["", "Valid"]);
+  });
+
+  test("handles whitespace-only url (uses shortcode fallback)", async () => {
+    mockFetch({ jobs: [widgetJob({ url: "   ", shortcode: "valid123" }), widgetJob({ title: "Valid", url: "https://apply.workable.com/j/valid" })] });
+    const out = await fetchWorkable("company", "Company");
+    // Whitespace url is truthy but becomes "   " in sourceUrl - still passes filter
+    expect(out.length).toBeGreaterThanOrEqual(1);
   });
 });

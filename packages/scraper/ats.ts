@@ -92,7 +92,7 @@ export async function fetchATSFeed(
   }
 }
 
-async function fetchLever(token: string, companyName: string): Promise<NewOpportunity[]> {
+export async function fetchLever(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://api.lever.co/v0/postings/${token}?mode=json`, {
     headers: collectionHeaders(),
     signal: AbortSignal.timeout(15_000),
@@ -126,7 +126,7 @@ async function fetchLever(token: string, companyName: string): Promise<NewOpport
     });
 }
 
-async function fetchGreenhouse(token: string, companyName: string): Promise<NewOpportunity[]> {
+export async function fetchGreenhouse(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://boards-api.greenhouse.io/v1/boards/${token}/jobs`, {
     headers: collectionHeaders(),
     signal: AbortSignal.timeout(15_000),
@@ -201,7 +201,7 @@ export async function fetchAshby(token: string, companyName: string): Promise<(N
     });
 }
 
-async function fetchWorkable(token: string, companyName: string): Promise<NewOpportunity[]> {
+export async function fetchWorkable(token: string, companyName: string): Promise<NewOpportunity[]> {
   const res = await fetch(`https://apply.workable.com/api/v1/widget/accounts/${token}`, {
     headers: collectionHeaders({ Accept: "application/json" }),
     signal: AbortSignal.timeout(15_000),
