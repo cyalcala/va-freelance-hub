@@ -603,3 +603,228 @@ describe("transient D1 quota error handling in dispatcher", () => {
     expect(writtenRecords[0].sourceId).toBe("source-b");
   });
 });
+
+describe("Ashby candidates — supply bottleneck: 4 high-yield candidates sharing api.ashbyhq.com", () => {
+  function ashbyRegistryRow(overrides: Partial<AdmissionSourceSnapshot> = {}): AdmissionSourceSnapshot {
+    return {
+      sourceId: "ashby:supabase",
+      providerId: "ashby-ats",
+      displayName: "Supabase",
+      endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/supabase",
+      companyToken: "supabase",
+      discoveryProvenance: null,
+      complianceState: "allowed",
+      operationalState: "shadow",
+      optOut: false,
+      reviewDeadline: EXPIRY,
+      policyExpiry: EXPIRY,
+      governanceRevision: 1,
+      canaryMaxNewItemsPerTick: 5,
+      lastTransitionHash: "ASHBY123",
+      ...overrides,
+    };
+  }
+
+  function ashbyProvider(overrides: Partial<AdmissionProviderSnapshot> = {}): AdmissionProviderSnapshot {
+    return {
+      id: "ashby-ats",
+      providerFamily: "ashby",
+      mechanism: "ats_api",
+      authClass: "none",
+      endpointPattern: null,
+      allowedHosts: "api.ashbyhq.com",
+      evidenceUrl: "https://developers.ashbyhq.com/docs/public-job-posting-api.md",
+      evidenceHash: "a".repeat(64),
+      evidenceCapturedAt: "2026-09-04T00:00:00.000Z",
+      evidenceLeaseDays: 180,
+      visibilityFilter: "published",
+      contentScope: "minimal",
+      cadenceMinMinutes: 60,
+      cadenceMaxMinutes: 1440,
+      rateGuidance: "one probe per hour",
+      robotsHandling: "enforce",
+      removalSemantics: "reconcile complete feed",
+      governanceRevision: 1,
+      ...overrides,
+    };
+  }
+
+  function ashbyContext(source = ashbyRegistryRow(), profile = ashbyProvider()): Context {
+    const packet: AdmissionEvidencePacket = {
+      version: "sp23-evidence-v1",
+      source,
+      provider: profile,
+      primaryEvidence: [{ url: profile.evidenceUrl!, contentSha256: "a".repeat(64), capturedAt: "2026-09-04T00:00:00.000Z" }],
+      authorityActions: ["recurrent_private_shadow", "public_minimal_metadata_canary"],
+      probe: fakeResult(inputFor(source, profile)),
+      adjudicationRef: "sp23-test",
+      capturedAt: "2026-09-04T00:00:00.000Z",
+      expiresAt: EXPIRY,
+      policyVersion: "sp23-shadow-7d-v1",
+    };
+    return {
+      ok: true,
+      source,
+      provider: profile,
+      packet,
+      evidence: {
+        id: 1,
+        sourceId: source.sourceId,
+        providerId: profile.id,
+        sourceGovernanceRevision: source.governanceRevision,
+        providerGovernanceRevision: profile.governanceRevision,
+        endpointUrl: source.endpointUrl,
+        policyVersion: packet.policyVersion,
+        capturedAt: packet.capturedAt,
+        expiresAt: packet.expiresAt,
+        adjudicationRef: packet.adjudicationRef,
+        packetJson: JSON.stringify(packet),
+        packetSha256: "b".repeat(64),
+      },
+    };
+  }
+
+  test("dispatches 4 Ashby candidates with extended 3000ms delay for same-host probes", async () => {
+    const delays: number[] = [];
+    const sleep = async (ms: number) => { delays.push(ms); };
+
+    const ashbyCandidates = [
+      ashbyRegistryRow({ sourceId: "ashby:amplify", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/amplify", displayName: "Amplify", companyToken: "amplify" }),
+      ashbyRegistryRow({ sourceId: "ashby:camunda", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/camunda", displayName: "Camunda", companyToken: "camunda" }),
+      ashbyRegistryRow({ sourceId: "ashby:supabase", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/supabase", displayName: "Supabase", companyToken: "supabase" }),
+      ashbyRegistryRow({ sourceId: "ashby:tremendous", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/tremendous", displayName: "Tremendous", companyToken: "tremendous" }),
+    ];
+
+    const probed: string[] = [];
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => ashbyCandidates,
+      loadAdmissionContext: async (sourceId) => {
+        const row = ashbyCandidates.find(r => r.sourceId === sourceId);
+        if (!row) throw new Error(`no row for ${sourceId}`);
+        return ashbyContext(row);
+      },
+      runProbe: async (input) => {
+        probed.push(input.sourceId);
+        return fakeResult(input);
+      },
+      sleep,
+    }));
+
+    expect(result.dispatched).toBe(4);
+    expect(probed).toEqual(["ashby:amplify", "ashby:camunda", "ashby:supabase", "ashby:tremendous"]);
+    // All 4 share api.ashbyhq.com -> 3000ms delay between each consecutive probe
+    // Dispatches: 1st (amplify) no delay, 2nd (camunda) 3000ms, 3rd (supabase) 3000ms, 4th (tremendous) 3000ms
+    expect(delays).toEqual([3000, 3000, 3000]);
+    expect(result.outcomes).toEqual({ HEALTHY_WITH_RESULTS: 4 });
+  });
+
+  test("handles mixed outcomes across Ashby candidates and tracks anomalies per source", async () => {
+    const probed: string[] = [];
+    const persisted: string[] = [];
+
+    const ashbyCandidates = [
+      ashbyRegistryRow({ sourceId: "ashby:amplify", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/amplify", displayName: "Amplify", companyToken: "amplify" }),
+      ashbyRegistryRow({ sourceId: "ashby:camunda", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/camunda", displayName: "Camunda", companyToken: "camunda" }),
+      ashbyRegistryRow({ sourceId: "ashby:supabase", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/supabase", displayName: "Supabase", companyToken: "supabase" }),
+      ashbyRegistryRow({ sourceId: "ashby:tremendous", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/tremendous", displayName: "Tremendous", companyToken: "tremendous" }),
+    ];
+
+    function resultFor(input: CandidateShadowInput, outcome: DoctorOutcome): CandidateShadowResult {
+      const base = fakeResult(input);
+      if (outcome === "HEALTHY_EMPTY") {
+        return {
+          ...base,
+          parse: { ...base.parse, schemaHealth: "empty", itemCount: 0 },
+          sampleFunnel: { ...base.sampleFunnel, parsedItems: 0, plausibleItems: 0 },
+          diagnostic: { ...base.diagnostic, outcome: "HEALTHY_EMPTY" },
+        };
+      }
+      if (outcome === "SCHEMA_BROKEN") {
+        return {
+          ...base,
+          parse: { ...base.parse, schemaHealth: "broken", itemCount: 0, error: "unrecognized JSON envelope" },
+          sampleFunnel: { ...base.sampleFunnel, parsedItems: 0, plausibleItems: 0 },
+          diagnostic: { ...base.diagnostic, outcome: "SCHEMA_BROKEN" },
+        };
+      }
+      return base; // HEALTHY_WITH_RESULTS
+    }
+
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => ashbyCandidates,
+      loadAdmissionContext: async (sourceId) => {
+        const row = ashbyCandidates.find(r => r.sourceId === sourceId);
+        if (!row) throw new Error(`no row for ${sourceId}`);
+        return ashbyContext(row);
+      },
+      runProbe: async (input) => {
+        probed.push(input.sourceId);
+        if (input.sourceId === "ashby:camunda") return resultFor(input, "SCHEMA_BROKEN");
+        if (input.sourceId === "ashby:tremendous") return resultFor(input, "HEALTHY_EMPTY");
+        return resultFor(input, "HEALTHY_WITH_RESULTS"); // amplify and supabase
+      },
+      persistObservation: async (record) => {
+        persisted.push(record.sourceId);
+      },
+    }));
+
+    expect(result.dispatched).toBe(4);
+    expect(probed).toEqual(["ashby:amplify", "ashby:camunda", "ashby:supabase", "ashby:tremendous"]);
+    expect(persisted).toEqual(["ashby:amplify", "ashby:camunda", "ashby:supabase", "ashby:tremendous"]);
+    expect(result.outcomes).toEqual({
+      HEALTHY_WITH_RESULTS: 2,
+      SCHEMA_BROKEN: 1,
+      HEALTHY_EMPTY: 1,
+    });
+    // Only non-healthy outcomes (not HEALTHY_WITH_RESULTS or HEALTHY_EMPTY) are recorded in anomalies
+    expect(result.anomalies.map(a => a.sourceId)).toEqual(["ashby:camunda"]);
+    expect(result.anomalies.find(a => a.sourceId === "ashby:camunda")?.outcome).toBe("SCHEMA_BROKEN");
+  });
+
+  test("rate limit on one Ashby candidate triggers host backoff and skips remaining same-host candidates", async () => {
+    const probed: string[] = [];
+    const persisted: string[] = [];
+
+    const ashbyCandidates = [
+      ashbyRegistryRow({ sourceId: "ashby:amplify", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/amplify", displayName: "Amplify", companyToken: "amplify" }),
+      ashbyRegistryRow({ sourceId: "ashby:camunda", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/camunda", displayName: "Camunda", companyToken: "camunda" }),
+      ashbyRegistryRow({ sourceId: "ashby:supabase", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/supabase", displayName: "Supabase", companyToken: "supabase" }),
+      ashbyRegistryRow({ sourceId: "ashby:tremendous", endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/tremendous", displayName: "Tremendous", companyToken: "tremendous" }),
+    ];
+
+    const result = await dispatchShadowObservations(deps({
+      loadRegistryRows: async () => ashbyCandidates,
+      loadAdmissionContext: async (sourceId) => {
+        const row = ashbyCandidates.find(r => r.sourceId === sourceId);
+        if (!row) throw new Error(`no row for ${sourceId}`);
+        return ashbyContext(row);
+      },
+      runProbe: async (input) => {
+        probed.push(input.sourceId);
+        if (input.sourceId === "ashby:amplify") {
+          return {
+            ...fakeResult(input),
+            diagnostic: { ...fakeResult(input).diagnostic, outcome: "RATE_LIMITED" },
+            fetch: { ...fakeResult(input).fetch, status: 429 },
+            rateLimit: { receivedAt: NOW, retryAfter: "3600" },
+          };
+        }
+        return fakeResult(input);
+      },
+      persistObservation: async (record) => {
+        persisted.push(record.sourceId);
+      },
+      loadHostBackoff: async () => null,
+      persistHostBackoff: async () => {},
+    }));
+
+    // Only amplify probed (gets RATE_LIMITED); camunda, supabase, tremendous skipped due to host backoff
+    expect(probed).toEqual(["ashby:amplify"]);
+    expect(persisted).toEqual(["ashby:amplify"]);
+    expect(result.dispatched).toBe(1);
+    expect(result.skippedRateLimitedHost).toBe(3);
+    expect(result.skippedHostLimits.map(s => s.sourceId)).toEqual(["ashby:camunda", "ashby:supabase", "ashby:tremendous"]);
+    expect(result.hostBackoffs).toHaveLength(1);
+    expect(result.hostBackoffs[0].host).toBe("api.ashbyhq.com");
+  });
+});
