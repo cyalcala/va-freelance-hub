@@ -9,9 +9,14 @@ operational steady-state criteria remain unverified. Runtime marathon not activa
 **Review branch:** `codex/ph-remote-priority-bootloader`. Foreign untracked
 `.agents/skills/` preserved.
 **Backup receipt:** documentation commit `ec576409cee99e60899831862c586f68562ff2c0`
-verified on the remote review branch; [draft PR #166](https://github.com/cyalcala/va-freelance-hub/pull/166).
-Exact-commit [CI run 37134433988](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134433988)
-was IN_PROGRESS at handoff; CI success is not claimed. No merge/deployment occurred.
+and evidence commit `ff4be62061d22f5e79ca5b448c8541540731b39f` are verified on
+the remote review branch; [draft PR #166](https://github.com/cyalcala/va-freelance-hub/pull/166).
+Exact-commit CI runs [37134433988](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134433988)
+and [37134502082](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134502082)
+completed successfully. The active project-owned validation passed; deploy jobs
+were skipped for this docs-only PR path. A legacy Vercel status context reported
+failure from an account block, but Vercel is not the active production path for
+this repository. No merge/deployment occurred.
 
 - Delivered maintainer loader v6.2, master/execution v6.1 with section 10C and
   the full PH cohort, intake, reusable capability, PH-prior, sparse/adaptive,

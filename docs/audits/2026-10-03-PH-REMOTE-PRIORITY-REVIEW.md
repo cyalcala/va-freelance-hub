@@ -86,11 +86,15 @@ cohort completeness, prompt versions, new local links, fenced blocks, shared
 constraints/reporting and production/parameter/constitution audits. Application
 code was unchanged, so no new implementation tests or live probes were needed.
 
-Repository backup: `ec576409cee99e60899831862c586f68562ff2c0` verified on remote
+Repository backup: `ec576409cee99e60899831862c586f68562ff2c0` and
+`ff4be62061d22f5e79ca5b448c8541540731b39f` are verified on remote
 `codex/ph-remote-priority-bootloader`; [draft PR #166](https://github.com/cyalcala/va-freelance-hub/pull/166).
-Exact-commit [CI run 37134433988](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134433988)
-was IN_PROGRESS when inspected, not accepted as passing. This review receipt is
-an evidence-only follow-up. No merge or deployment was performed.
+Exact-commit CI runs [37134433988](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134433988)
+and [37134502082](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134502082)
+completed successfully. The active project-owned validation passed; deploy jobs
+were skipped for the docs-only PR path. A legacy Vercel context reports account
+deployment blocked, outside the active Cloudflare/Astro production path. No merge
+or deployment was performed.
 A documentation commit does not establish cohort intake, improved
 throughput, source admission, selector/polling deployment or public visibility.
 Runtime outcome counters remain UNKNOWN. The directive's operational Definition

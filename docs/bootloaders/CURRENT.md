@@ -3,6 +3,10 @@
 Updated 2026-10-03 for PROMPT-PH-PRIORITY-V6. This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
+GitHub backup is in draft PR #166 on `codex/ph-remote-priority-bootloader`.
+Remote tip `ff4be62061d22f5e79ca5b448c8541540731b39f` passed Sovereign CI
+Guardrail run `37134502082`; deploy was skipped because the PR is docs-only.
+
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
 The latest runtime checkpoint is “Gauntlet Slice 10 Stratified Reconciliation:
 90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified.”
