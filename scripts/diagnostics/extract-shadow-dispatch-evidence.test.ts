@@ -122,4 +122,34 @@ describe("extract-shadow-dispatch-evidence", () => {
     expect(evidence.outcome).toBe("unparseable");
     expect(evidence.httpStatus).toBeNull();
   });
+
+  test("provides specific guidance for d1_quota_or_limit with D1 operation failureStage", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_quota_or_limit",
+      errorFingerprint: "abcd1234",
+      failureStage: "persist_observation", // D1 write operation
+      sourceId: "greenhouse:canonical"
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("generic_class_with_fingerprint");
+    expect(evidence.hasFingerprint).toBe(true);
+    expect(evidence.nextAction).toContain("D1 operation stage \"persist_observation\" detected with fingerprint");
+    expect(evidence.nextAction).toContain("Correlate in Pages log within the run window");
+  });
+
+  test("provides specific guidance for d1_quota_or_limit with Pages resource failureStage", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_quota_or_limit",
+      errorFingerprint: "abcd1234",
+      failureStage: "run_probe", // Probe execution
+      sourceId: "greenhouse:canonical"
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("generic_class_with_fingerprint");
+    expect(evidence.hasFingerprint).toBe(true);
+    expect(evidence.nextAction).toContain("Pages resource stage \"run_probe\" detected with fingerprint");
+    expect(evidence.nextAction).toContain("Correlate in Pages log within the run window");
+  });
 });

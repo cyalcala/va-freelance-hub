@@ -1,0 +1,12 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "sourcegraph-access-token"
+[[rules.allowlists]]
+description = "40-char lowercase hex git SHA references false-positive the bare-hex branch of sourcegraph-access-token"
+regexTarget = "line"
+regexes = [
+    '''`[0-9a-f]{40}`''',
+    '''(?i)\b(?:sha|head|commit|main)\b[^\n]{0,24}?[0-9a-f]{40}\b''',
+]

@@ -655,3 +655,106 @@ describe("candidate-shadow — provenance and budget invariants", () => {
   });
 });
 
+describe("candidate-shadow — Ashby ATS public posting API (supply bottleneck: 4 candidates, 146 positions)", () => {
+  beforeEach(() => vi.useFakeTimers({ now: new Date("2026-08-29T12:00:00.000Z") }));
+  afterEach(() => { vi.useRealTimers(); global.fetch = originalFetch; });
+
+  it("parses Ashby API response with isListed filter and jobUrl linkback", async () => {
+    const input = candidateInput({
+      sourceId: "ashby:supabase",
+      endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/supabase",
+      provider: {
+        id: "ashby", providerFamily: "ashby", mechanism: "ats_api", authClass: "none",
+        allowedHosts: "api.ashbyhq.com", visibilityFilter: "published", evidenceUrl: "https://developers.ashbyhq.com/docs/public-job-posting-api.md",
+        cadenceMinMinutes: 60, cadenceMaxMinutes: 1440,
+      },
+    } as any);
+    const ashbyBody = JSON.stringify({
+      jobs: [
+        { title: "Senior Software Engineer", jobUrl: "https://jobs.ashbyhq.com/supabase/abc123", isListed: true, location: "Remote, USA", isRemote: true, applyUrl: "https://jobs.ashbyhq.com/supabase/abc123/application", publishedAt: "2026-08-28T00:00:00Z" },
+        { title: "Product Designer", jobUrl: "https://jobs.ashbyhq.com/supabase/def456", isListed: true, location: "San Francisco, CA", isRemote: false, publishedAt: "2026-08-27T00:00:00Z" },
+        { title: "Hidden Role", jobUrl: "https://jobs.ashbyhq.com/supabase/hidden", isListed: false, location: "Remote", isRemote: true, publishedAt: "2026-08-26T00:00:00Z" },
+      ],
+    });
+    const fetcher = mockFetchFor({
+      "https://api.ashbyhq.com/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      "https://api.ashbyhq.com/posting-api/job-board/supabase": { status: 200, body: ashbyBody, headers: { "content-type": "application/json" } },
+    });
+    global.fetch = fetcher;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(res.parse.itemCount).toBe(3);
+    // Shadow probe parses all items; isListed filtering happens at ingestion layer (ats.ts fetchAshby)
+    expect(res.sampleFunnel.plausibleItems).toBe(3);
+    expect(res.sampleFunnel.parsedItems).toBe(3);
+  });
+
+  it("handles Ashby response with string location field", async () => {
+    const input = candidateInput({
+      sourceId: "ashby:camunda",
+      endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/camunda",
+      provider: {
+        id: "ashby", providerFamily: "ashby", mechanism: "ats_api", authClass: "none",
+        allowedHosts: "api.ashbyhq.com", visibilityFilter: "published", evidenceUrl: "https://developers.ashbyhq.com/docs/public-job-posting-api.md",
+        cadenceMinMinutes: 60, cadenceMaxMinutes: 1440,
+      },
+    } as any);
+    const ashbyBody = JSON.stringify({
+      jobs: [
+        { title: "DevOps Engineer", jobUrl: "https://jobs.ashbyhq.com/camunda/xyz789", isListed: true, location: "Berlin, Germany (Remote)", isRemote: true, publishedAt: "2026-08-28T00:00:00Z" },
+      ],
+    });
+    const fetcher = mockFetchFor({
+      "https://api.ashbyhq.com/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      "https://api.ashbyhq.com/posting-api/job-board/camunda": { status: 200, body: ashbyBody, headers: { "content-type": "application/json" } },
+    });
+    global.fetch = fetcher;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(res.parse.itemCount).toBe(1);
+    expect(res.sampleFunnel.plausibleItems).toBe(1);
+  });
+
+  it("handles Ashby response with object location field", async () => {
+    const input = candidateInput({
+      sourceId: "ashby:tremendous",
+      endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/tremendous",
+      provider: {
+        id: "ashby", providerFamily: "ashby", mechanism: "ats_api", authClass: "none",
+        allowedHosts: "api.ashbyhq.com", visibilityFilter: "published", evidenceUrl: "https://developers.ashbyhq.com/docs/public-job-posting-api.md",
+        cadenceMinMinutes: 60, cadenceMaxMinutes: 1440,
+      },
+    } as any);
+    const ashbyBody = JSON.stringify({
+      jobs: [
+        { title: "Sales Development Rep", jobUrl: "https://jobs.ashbyhq.com/tremendous/aaa", isListed: true, location: { name: "Remote, USA" }, isRemote: true, publishedAt: "2026-08-28T00:00:00Z" },
+      ],
+    });
+    const fetcher = mockFetchFor({
+      "https://api.ashbyhq.com/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      "https://api.ashbyhq.com/posting-api/job-board/tremendous": { status: 200, body: ashbyBody, headers: { "content-type": "application/json" } },
+    });
+    global.fetch = fetcher;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("HEALTHY_WITH_RESULTS");
+    expect(res.parse.itemCount).toBe(1);
+    expect(res.sampleFunnel.plausibleItems).toBe(1);
+  });
+
+  it("rejects non-jobs-array Ashby response as SCHEMA_BROKEN", async () => {
+    const input = candidateInput({
+      sourceId: "ashby:amplify",
+      endpointUrl: "https://api.ashbyhq.com/posting-api/job-board/amplify",
+      provider: { id: "ashby", providerFamily: "ashby", mechanism: "ats_api", authClass: "none", allowedHosts: "api.ashbyhq.com", visibilityFilter: "published" },
+    } as any);
+    const fetcher = mockFetchFor({
+      "https://api.ashbyhq.com/robots.txt": { status: 200, body: "User-agent: *\nAllow: /", headers: { "content-type": "text/plain" } },
+      "https://api.ashbyhq.com/posting-api/job-board/amplify": { status: 200, body: JSON.stringify({ data: { jobs: [] } }), headers: { "content-type": "application/json" } },
+    });
+    global.fetch = fetcher;
+    const res = await runCandidateShadowProbe(input, { fetchImpl: fetcher as any });
+    expect(res.diagnostic.outcome).toBe("SCHEMA_BROKEN");
+    expect(res.parse.schemaHealth).toBe("broken");
+  });
+});
+
