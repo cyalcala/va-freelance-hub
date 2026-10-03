@@ -182,127 +182,31 @@ export async function runShadowDecisionCycle(
 
   const treatmentSelected = treatmentOutput.ranked;
 
-  // Build decision records for all evaluated sources
-  const allSourceIds = new Set(sources.map(s => s.source_id));
-  const controlSelectedIds = new Set(controlSelected.map(s => s.source_id));
-  const treatmentSelectedIds = new Set(treatmentSelected.map(s => s.source_id));
+   // Use additive helper to compare ranker output to control selector (SSAE-05)
+   const allSourceIds = new Set(sources.map(s => s.source_id));
+   const controlSelectedIds = new Set(controlSelected.map(s => s.source_id));
+   const treatmentSelectedIds = new Set(treatmentOutput.ranked.map(s => s.source_id));
+   const {
+     decisions,
+     overlap: { selectedOverlapCount, selectedOverlapRate, rankCorrelation, modeAgreementRate }
+   } = compareSelectorOutputs(
+     controlSelected,
+     treatmentOutput.ranked,
+     treatmentOutput.excluded,
+     treatmentOutput.coldRevisit,
+     sources
+   );
 
-  // Create lookup maps for details
-  const controlMap = new Map(controlSelected.map((s, i) => [s.source_id, { ...s, rank: i + 1 }]));
-  const treatmentMap = new Map(
-    treatmentOutput.ranked.map((s, i) => [s.source_id, { ...s, rank: i + 1 }])
-  );
-  const treatmentExcludedMap = new Map(
-    treatmentOutput.excluded.map(s => [s.source_id, s])
-  );
-  const treatmentColdMap = new Map(
-    treatmentOutput.coldRevisit.map(s => [s.source_id, s])
-  );
+   // Coverage assessment (known vs unknown outcomes)
+   // In production, this would check lake_candidate_jobs for qualified_ready counts
+   // and source_publication_ledger for actual publication outcomes
+   let knownOutcomes = 0;
+   let unknownOutcomes = 0;
+   let censoredOutcomes = 0;
 
-  const decisions: ShadowDecisionRecord[] = [];
-
-  for (const sourceId of allSourceIds) {
-    const c = controlMap.get(sourceId);
-    const t = treatmentMap.get(sourceId);
-    const te = treatmentExcludedMap.get(sourceId);
-    const tc = treatmentColdMap.get(sourceId);
-
-    const controlSelectedFlag = controlSelectedIds.has(sourceId);
-    const treatmentSelectedFlag = treatmentSelectedIds.has(sourceId);
-
-    let agreement: ShadowDecisionRecord["agreement"];
-    if (controlSelectedFlag && treatmentSelectedFlag) agreement = "BOTH_SELECTED";
-    else if (controlSelectedFlag) agreement = "CONTROL_ONLY";
-    else if (treatmentSelectedFlag) agreement = "TREATMENT_ONLY";
-    else agreement = "NEITHER";
-
-    const treatmentRecord = t || te || tc;
-    const treatmentMode = treatmentRecord?.processing_mode ?? "N/A";
-    const treatmentReason = treatmentRecord?.mode_reason ?? (te ? "excluded" : tc ? "cold_revisit" : "not_ranked");
-    const treatmentScore = treatmentRecord?.score ?? 0;
-    const treatmentRank = treatmentRecord?.rank ?? null;
-    const treatmentFeasibility = treatmentRecord?.feasibility.reason ?? "unknown";
-    const treatmentExcluded = !!te;
-    const treatmentExclusionReason = te?.exclusion_reason ?? null;
-    const treatmentColdRevisitReason = tc?.cold_revisit_reason ?? treatmentRecord?.cold_revisit_reason ?? null;
-
-    // Overlap score: 1 if both selected and similar rank, else 0 for binary
-    const overlapScore = controlSelectedFlag && treatmentSelectedFlag ? 1 : 0;
-
-    decisions.push({
-      source_id: sourceId,
-      provider_id: sources.find(s => s.source_id === sourceId)?.provider_id ?? "unknown",
-      control: {
-        selected: controlSelectedFlag,
-        rank: c?.rank ?? null,
-        score: c?.score ?? 0,
-        mode: c?.processing_mode ?? "N/A",
-        reason: c?.mode_reason ?? "not_selected",
-      },
-      treatment: {
-        selected: treatmentSelectedFlag,
-        rank: treatmentRank,
-        score: treatmentScore,
-        mode: treatmentMode,
-        reason: treatmentReason,
-        feasibility: treatmentFeasibility,
-        excluded: treatmentExcluded,
-        exclusion_reason: treatmentExclusionReason,
-        cold_revisit_reason: treatmentColdRevisitReason,
-      },
-      agreement,
-      overlap_score: overlapScore,
-    });
-  }
-
-  // Compute overlap metrics
-  const controlSet = controlSelectedIds;
-  const treatmentSet = treatmentSelectedIds;
-  const intersection = new Set([...controlSet].filter(x => treatmentSet.has(x)));
-  const union = new Set([...controlSet, ...treatmentSet]);
-  const selectedOverlapCount = intersection.size;
-  const selectedOverlapRate = union.size > 0 ? intersection.size / union.size : 0;
-
-  // Rank correlation (Spearman) on common selected sources
-  let rankCorrelation = 0;
-  if (intersection.size >= 2) {
-    const commonSources = Array.from(intersection);
-    const controlRanks = commonSources.map(id => controlMap.get(id)?.rank ?? 0);
-    const treatmentRanks = commonSources.map(id => treatmentMap.get(id)?.rank ?? 0);
-
-    // Spearman correlation
-    const n = commonSources.length;
-    const sumD2 = controlRanks.reduce((sum, cr, i) => {
-      const tr = treatmentRanks[i];
-      return sum + Math.pow(cr - tr, 2);
-    }, 0);
-    const denom = n * (n * n - 1);
-    rankCorrelation = denom > 0 ? 1 - (6 * sumD2) / denom : 0;
-    // Clamp to [-1, 1] for numerical stability
-    rankCorrelation = Math.max(-1, Math.min(1, rankCorrelation));
-  }
-
-  // Mode agreement rate on commonly selected sources
-  let modeAgreementCount = 0;
-  for (const id of intersection) {
-    const cMode = controlMap.get(id)?.processing_mode;
-    const tMode = treatmentMap.get(id)?.processing_mode;
-    if (cMode && tMode && cMode === tMode) modeAgreementCount++;
-  }
-  const modeAgreementRate = intersection.size > 0 ? modeAgreementCount / intersection.size : 0;
-
-  // Coverage assessment (known vs unknown outcomes)
-  // In production, this would check lake_candidate_jobs for qualified_ready counts
-  // and source_publication_ledger for actual publication outcomes
-  let knownOutcomes = 0;
-  let unknownOutcomes = 0;
-  let censoredOutcomes = 0;
-
-  for (const sourceId of allSourceIds) {
-    // Placeholder: would query actual lake state for publication outcomes
-    // For now, mark all as unknown per LIMITED disposition
-    unknownOutcomes++;
-  }
+   // Placeholder: would query actual lake state for publication outcomes
+   // For now, mark all as unknown per LIMITED disposition
+   unknownOutcomes = allSourceIds.size;
 
   const limitations = [
     "All outcome coverage UNKNOWN without live Turso access in this session",
@@ -544,57 +448,217 @@ function runDemoMode(config: ShadowConfig, json: boolean) {
     });
 }
 
-// Re-export createSyntheticRecord from temporal-holdout-eval for demo
-export function createSyntheticRecord(
-  sourceId: string,
-  providerId: string,
-  capability: string,
-  candidateCount: number,
-  phRate: number,
-  qualifiedReady: number
-): SourceMemoryRecord {
-  const now = new Date().toISOString();
-  return {
-    source_id: sourceId,
-    provider_id: providerId,
-    declared_capability: capability as any,
-    endpoint_url: `https://example.com/${sourceId}`,
-    payload_kind: capability === "rss_xml" ? "xml" : "json",
-    selected_processor: capability,
-    routing_warnings: [],
-    fetch_state: {
-      etag: null, last_modified: null, last_body_hash: null,
-      last_fetch_at: now, last_fetch_ok: true, consecutive_failures: 0, backoff_until: null,
-    },
-    lake_state: {
-      last_raw_observation_id: 1, last_candidate_count: candidateCount,
-      last_qualified_ready: qualifiedReady, last_ingestion_at: now, last_sighting_at: now,
-    },
-    publication_state: {
-      compliance_state: "allowed", operational_state: "active", policy_expiry: null,
-      opt_out: false, lease_expiry: null, last_decision: "ADMIT",
-      last_decision_at: now, last_publication_at: now, last_publication_count: 10,
-      last_publication_mode: "unlimited", concentration_status: "OK",
-    },
-    health_rollup: {
-      recent_success_rate: 0.95, recent_ph_rate: phRate, recent_false_ph_rate: 0.01,
-      last_quality_check_at: now, robots_last_checked_at: now, robots_allows: true,
-    },
-    version_deps: {
-      policy_version: "constitution-v5.2", processor_version: "capability-registry@1.0.0",
-      geo_gate_version: "geoGate@2026-09-15", triage_version: "triage@1.0.0",
-      jev_version: "jev-1.13", fingerprint_version: "fingerprint@v1", content_hash_version: "contentHash@v1",
-    },
-    retention: {
-      raw_observation_ttl_days: 30, candidate_ttl_days: 180, sighting_ttl_days: 365,
-      fetch_state_ttl_days: 90, publication_receipt_ttl_days: 3650,
-    },
-    replay_coverage: {
-      can_replay_geo_gate: true, can_replay_triage: false, can_replay_fingerprint: true,
-      can_replay_conditional: true, can_replay_publication: true, missing_fields: ["raw_payload_full", "jev_raw"],
-    },
-    material_digests: {
-      fingerprint_hash: "abc", content_hash: "def", description_hash: null, policy_hash: "constitution-v5.2",
-    },
-  };
-}
+  // Re-export createSyntheticRecord from temporal-holdout-eval for demo
+  export function createSyntheticRecord(
+    sourceId: string,
+    providerId: string,
+    capability: string,
+    candidateCount: number,
+    phRate: number,
+    qualifiedReady: number
+  ): SourceMemoryRecord {
+    const now = new Date().toISOString();
+    return {
+      source_id: sourceId,
+      provider_id: providerId,
+      declared_capability: capability as any,
+      endpoint_url: `https://example.com/${sourceId}`,
+      payload_kind: capability === "rss_xml" ? "xml" : "json",
+      selected_processor: capability,
+      routing_warnings: [],
+      fetch_state: {
+        etag: null, last_modified: null, last_body_hash: null,
+        last_fetch_at: now, last_fetch_ok: true, consecutive_failures: 0, backoff_until: null,
+      },
+      lake_state: {
+        last_raw_observation_id: 1, last_candidate_count: candidateCount,
+        last_qualified_ready: qualifiedReady, last_ingestion_at: now, last_sighting_at: now,
+      },
+      publication_state: {
+        compliance_state: "allowed", operational_state: "active", policy_expiry: null,
+        opt_out: false, lease_expiry: null, last_decision: "ADMIT",
+        last_decision_at: now, last_publication_at: now, last_publication_count: 10,
+        last_publication_mode: "unlimited", concentration_status: "OK",
+      },
+      health_rollup: {
+        recent_success_rate: 0.95, recent_ph_rate: phRate, recent_false_ph_rate: 0.01,
+        last_quality_check_at: now, robots_last_checked_at: now, robots_allows: true,
+      },
+      version_deps: {
+        policy_version: "constitution-v5.2", processor_version: "capability-registry@1.0.0",
+        geo_gate_version: "geoGate@2026-09-15", triage_version: "triage@1.0.0",
+        jev_version: "jev-1.13", fingerprint_version: "fingerprint@v1", content_hash_version: "contentHash@v1",
+      },
+      retention: {
+        raw_observation_ttl_days: 30, candidate_ttl_days: 180, sighting_ttl_days: 365,
+        fetch_state_ttl_days: 90, publication_receipt_ttl_days: 3650,
+      },
+      replay_coverage: {
+        can_replay_geo_gate: true, can_replay_triage: false, can_replay_fingerprint: true,
+        can_replay_conditional: true, can_replay_publication: true, missing_fields: ["raw_payload_full", "jev_raw"],
+      },
+      material_digests: {
+        fingerprint_hash: "abc", content_hash: "def", description_hash: null, policy_hash: "constitution-v5.2",
+      },
+    };
+  }
+
+  // ─── Additive Helper: Compare Ranker Output to Control Selector ────────────────────────
+  /**
+   * Small additive pure read-only helper derived from SSAE-03 ranker output + SSAE-04 holdout/control contract.
+   * Compares ranker (treatment) vs deterministic control (SSAE-04) on frozen/synthetic state.
+   * Returns advisory decisions and overlap metrics without additional probes or network fetches.
+   * 
+   * @param controlSelected - Sources selected by deterministic control selector (SSAE-04)
+   * @param treatmentRanked - Sources ranked by SSAE-03 ranker (treatment)
+   * @param treatmentExcluded - Sources excluded by SSAE-03 ranker due to feasibility/cost
+   * @param treatmentColdRevisit - Sources flagged for cold revisit by SSAE-03 ranker
+   * @param allSources - All source memory records for provider_id lookup and universe size
+   * @returns Object containing shadow decisions and overlap metrics
+   */
+  export function compareSelectorOutputs(
+    controlSelected: RankedSource[],
+    treatmentRanked: RankedSource[],
+    treatmentExcluded: RankedSource[],
+    treatmentColdRevisit: RankedSource[],
+    allSources: SourceMemoryRecord[]
+  ): {
+    decisions: ShadowDecisionRecord[];
+    overlap: {
+      selectedOverlapCount: number;
+      selectedOverlapRate: number;
+      rankCorrelation: number;
+      modeAgreementRate: number;
+    };
+  } {
+    // Create lookup maps for details
+    const controlMap = new Map(controlSelected.map((s, i) => [s.source_id, { ...s, rank: i + 1 }]));
+    const treatmentMap = new Map(
+      treatmentRanked.map((s, i) => [s.source_id, { ...s, rank: i + 1 }])
+    );
+    const treatmentExcludedMap = new Map(
+      treatmentExcluded.map(s => [s.source_id, s])
+    );
+    const treatmentColdMap = new Map(
+      treatmentColdRevisit.map(s => [s.source_id, s])
+    );
+
+    // Build decision records for all evaluated sources
+    const allSourceIds = new Set(allSources.map(s => s.source_id));
+    const controlSelectedIds = new Set(controlSelected.map(s => s.source_id));
+    const treatmentSelectedIds = new Set(treatmentRanked.map(s => s.source_id));
+
+     const decisions: ShadowDecisionRecord[] = [];
+
+     for (const sourceId of Array.from(allSourceIds)) {
+       const c = controlMap.get(sourceId);
+       const t = treatmentMap.get(sourceId);
+       const te = treatmentExcludedMap.get(sourceId);
+       const tc = treatmentColdMap.get(sourceId);
+
+      const controlSelectedFlag = controlSelectedIds.has(sourceId);
+      const treatmentSelectedFlag = treatmentSelectedIds.has(sourceId);
+
+      let agreement: ShadowDecisionRecord["agreement"];
+      if (controlSelectedFlag && treatmentSelectedFlag) agreement = "BOTH_SELECTED";
+      else if (controlSelectedFlag) agreement = "CONTROL_ONLY";
+      else if (treatmentSelectedFlag) agreement = "TREATMENT_ONLY";
+      else agreement = "NEITHER";
+
+     const treatmentRecord = t || te || tc;
+     const treatmentMode = treatmentRecord?.processing_mode ?? "N/A";
+     const treatmentReason = treatmentRecord?.mode_reason ?? (te ? "excluded" : tc ? "cold_revisit" : "not_ranked");
+     const treatmentScore = treatmentRecord?.score ?? 0;
+     // Rank is only meaningful for actually ranked sources
+     const treatmentRank = t ? t.rank : null;
+     const treatmentFeasibility = treatmentRecord?.feasibility.reason ?? "unknown";
+     const treatmentExcluded = !!te;
+     const treatmentExclusionReason = te?.exclusion_reason ?? null;
+     const treatmentColdRevisitReason = tc?.cold_revisit_reason ?? treatmentRecord?.cold_revisit_reason ?? null;
+
+      // Overlap score: 1 if both selected and similar rank, else 0 for binary
+      const overlapScore = controlSelectedFlag && treatmentSelectedFlag ? 1 : 0;
+
+      decisions.push({
+        source_id: sourceId,
+        provider_id: allSources.find(s => s.source_id === sourceId)?.provider_id ?? "unknown",
+        control: {
+          selected: controlSelectedFlag,
+          rank: c?.rank ?? null,
+          score: c?.score ?? 0,
+          mode: c?.processing_mode ?? "N/A",
+          reason: c?.mode_reason ?? "not_selected",
+        },
+        treatment: {
+          selected: treatmentSelectedFlag,
+          rank: treatmentRank,
+          score: treatmentScore,
+          mode: treatmentMode,
+          reason: treatmentReason,
+          feasibility: treatmentFeasibility,
+          excluded: treatmentExcluded,
+          exclusion_reason: treatmentExclusionReason,
+          cold_revisit_reason: treatmentColdRevisitReason,
+        },
+        agreement,
+        overlap_score: overlapScore,
+      });
+    }
+
+     // Compute overlap metrics
+     const controlSet = controlSelectedIds;
+     const treatmentSet = treatmentSelectedIds;
+     const intersectionSet = new Set();
+     for (const id of controlSet) {
+       if (treatmentSet.has(id)) {
+         intersectionSet.add(id);
+       }
+     }
+     const unionSet = new Set();
+     for (const id of controlSet) {
+       unionSet.add(id);
+     }
+     for (const id of treatmentSet) {
+       unionSet.add(id);
+     }
+     const selectedOverlapCount = intersectionSet.size;
+     const selectedOverlapRate = unionSet.size > 0 ? intersectionSet.size / unionSet.size : 0;
+
+     // Rank correlation (Spearman) on common selected sources
+     let rankCorrelation = 0;
+     if (intersectionSet.size >= 2) {
+       const commonSources = Array.from(intersectionSet);
+       const controlRanks = commonSources.map(id => controlMap.get(id)?.rank ?? 0);
+       const treatmentRanks = commonSources.map(id => treatmentMap.get(id)?.rank ?? 0);
+
+       // Spearman correlation
+       const n = commonSources.length;
+       const sumD2 = controlRanks.reduce((sum, cr, i) => {
+         const tr = treatmentRanks[i];
+         return sum + Math.pow(cr - tr, 2);
+       }, 0);
+       const denom = n * (n * n - 1);
+       rankCorrelation = denom > 0 ? 1 - (6 * sumD2) / denom : 0;
+       // Clamp to [-1, 1] for numerical stability
+       rankCorrelation = Math.max(-1, Math.min(1, rankCorrelation));
+     }
+
+      // Mode agreement rate on commonly selected sources
+      let modeAgreementCount = 0;
+      for (const id of Array.from(intersectionSet)) {
+        const cMode = controlMap.get(id)?.processing_mode;
+        const tMode = treatmentMap.get(id)?.processing_mode;
+        if (cMode && tMode && cMode === tMode) modeAgreementCount++;
+      }
+      const modeAgreementRate = intersectionSet.size > 0 ? modeAgreementCount / intersectionSet.size : 0;
+
+    return {
+      decisions,
+      overlap: {
+        selectedOverlapCount,
+        selectedOverlapRate,
+        rankCorrelation,
+        modeAgreementRate,
+      }
+    };
+  }

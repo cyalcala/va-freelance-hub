@@ -1,3 +1,23 @@
+## 2026-10-04 — Session 22 SSAE-06 Measurement Contracts Delivered (session 22)
+
+**Unit:** SSAE-06 (Measurement contracts for per-source epoch features). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** PROPOSED / VERIFIED_CODE — docs/audits/2026-10-04-SSAE-06-MEASUREMENT-CONTRACTS.md created, all runtime counts UNKNOWN, no SQL mutations, no runtime change.
+
+**Session 22 Work:**
+- Reading gate: `.shift/reading-023.md` written (untracked)
+- Defined SSAE-06 measurement contracts to resolve LIMITED gaps in SSAE-01 and SSAE-04
+- Specified five measurement contracts: 
+  * SSAE-06A: Per-source Hunter epoch ledger
+  * SSAE-06B: Publication cohort labels  
+  * SSAE-06C: Per-stage latency instrumentation
+  * SSAE-06D: Fetch byte & conditional-fetch logging
+  * SSAE-06E: D1 join for lake labels
+- All acceptance criteria met: schema/query manifest, temporal/independent-label coverage, deduplication/leakage checks, missingness handling, analysis contract
+- No network/prod mutations; no hold-list edits; no SQL mutations
+- Documentation verified: links, examples, scope and contradictions validated
+
+**NEXT SINGLE ACTION:** SSAE-06 mature labels -> refresh SSAE-01 and repeat SSAE-04/05 evaluation. Owner/controller: maintainer; trigger: completion of SSAE-06 measurement contracts.
+
+---
 # System Savepoint
 
 ## 2026-10-04 — Session 20 SSAE-05 Shadow Decisions Delivered (session 20)

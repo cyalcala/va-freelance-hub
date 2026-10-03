@@ -1,10 +1,11 @@
 # Current resume pointer
 
-Updated 2026-10-04 for v6.2 shift (session 20). This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift (session 22). This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
-Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest checkpoint is "Session 20 SSAE-05 Shadow Decisions Delivered (session 20)."
+Read the newest applicable entries in [../SYSTEM_SAVEPOINT.md].
+The latest checkpoint is "Session 22 SSAE-06 Measurement Contracts Delivered (session 22)."
+SSAE-06 (PROPOSED, VERIFIED_CODE, no runtime change) complete — measurement contracts at docs/audits/2026-10-04-SSAE-06-MEASUREMENT-CONTRACTS.md.
 SSAE-05 (PROPOSED, VERIFIED_CODE, no runtime change) complete — shadow decisions at scripts/lake/shadow-decisions.ts + deterministic fixtures/tests at scripts/lake/shadow-decisions.test.ts (30 tests).
 SSAE-04 (PROPOSED, VERIFIED_CODE, no runtime change) complete — holdout evaluation at docs/audits/2026-10-04-SSAE-04-TEMPORAL-HOLDOUTS.md + deterministic fixtures/tests at scripts/lake/temporal-holdout-eval.test.ts (24 tests).
 SSAE-03 (PROPOSED, VERIFIED_CODE, no runtime change) complete — ranker created at scripts/lake/source-ranker.ts with 42 tests.
@@ -34,7 +35,7 @@ within the current task's authority. A documentation/audit task does not start
 operational mining. Refresh unresolved incidents, including the saved EX-03
 error/observation follow-on; this revision does not declare them fixed.
 
-**Next single action:** SSAE-06 (Measurement contracts for per-source epoch features) depends on SSAE-04 holdout baseline and SSAE-05 shadow decision output. Owner/controller: maintainer; trigger: next authorized mathematical maintenance task.
+**Next single action:** SSAE-06 mature labels -> refresh SSAE-01 and repeat SSAE-04/05 evaluation. Owner/controller: maintainer; trigger: completion of SSAE-06 measurement contracts.
 
 The former long pointer's historical entries remain in SYSTEM_SAVEPOINT and
 Git at `a176bb5d881eb7314222f534a7d1f63f02691987`; they are not competing
