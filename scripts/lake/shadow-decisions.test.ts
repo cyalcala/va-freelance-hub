@@ -1823,4 +1823,61 @@ describe("SSAE-05 Additional Offline Hardening — Edge Cases", () => {
     expect(results[0].control.selected_count).toBeLessThanOrEqual(2);
     expect(results[1].control.selected_count).toBeLessThanOrEqual(5);
   });
+
+  it("compareSelectorOutputs handles sources only in selector outputs (not in allSources)", async () => {
+    const { compareSelectorOutputs } = await import("./shadow-decisions");
+    // allSources is empty, but control and treatment have sources
+    const allSources: SourceMemoryRecord[] = [];
+    const controlSelected = [
+      makeRankedSource({ source_id: "ctrl-only", provider_id: "ProviderA", rank: 1, score: 20 }),
+    ];
+    const treatmentRanked = [
+      makeRankedSource({ source_id: "treat-only", provider_id: "ProviderB", rank: 1, score: 15 }),
+    ];
+    const treatmentExcluded = [
+      makeRankedSource({ source_id: "excluded-only", provider_id: "ProviderC", excluded: true, exclusion_reason: "cost_exceeds_budget" }),
+    ];
+    const treatmentColdRevisit = [
+      makeRankedSource({ source_id: "cold-only", provider_id: "ProviderD", cold_revisit_reason: "no_observation_7d" }),
+    ];
+
+    const result = compareSelectorOutputs(
+      controlSelected,
+      treatmentRanked,
+      treatmentExcluded,
+      treatmentColdRevisit,
+      allSources
+    );
+
+    // Should create decisions for all 4 sources even though allSources is empty
+    expect(result.decisions.length).toBe(4);
+
+    const ctrlDecision = result.decisions.find(d => d.source_id === "ctrl-only");
+    expect(ctrlDecision).toBeDefined();
+    expect(ctrlDecision?.agreement).toBe("CONTROL_ONLY");
+    expect(ctrlDecision?.provider_id).toBe("ProviderA"); // Falls back to controlSelected
+
+    const treatDecision = result.decisions.find(d => d.source_id === "treat-only");
+    expect(treatDecision).toBeDefined();
+    expect(treatDecision?.agreement).toBe("TREATMENT_ONLY");
+    expect(treatDecision?.provider_id).toBe("ProviderB"); // Falls back to treatmentRanked
+
+    const excludedDecision = result.decisions.find(d => d.source_id === "excluded-only");
+    expect(excludedDecision).toBeDefined();
+    expect(excludedDecision?.agreement).toBe("NEITHER");
+    expect(excludedDecision?.treatment.excluded).toBe(true);
+    expect(excludedDecision?.provider_id).toBe("ProviderC"); // Falls back to treatmentExcluded
+
+    const coldDecision = result.decisions.find(d => d.source_id === "cold-only");
+    expect(coldDecision).toBeDefined();
+    expect(coldDecision?.agreement).toBe("NEITHER");
+    expect(coldDecision?.treatment.cold_revisit_reason).toBe("no_observation_7d");
+    expect(coldDecision?.provider_id).toBe("ProviderD"); // Falls back to treatmentColdRevisit
+
+    // Overlap metrics should be 0 since no overlap
+    expect(result.overlap.selectedOverlapCount).toBe(0);
+    expect(result.overlap.selectedOverlapRate).toBe(0);
+    expect(result.overlap.rankCorrelation).toBe(0);
+    expect(result.overlap.modeAgreementRate).toBe(0);
+  });
 });

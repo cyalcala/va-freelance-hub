@@ -539,8 +539,14 @@ function runDemoMode(config: ShadowConfig, json: boolean) {
       treatmentColdRevisit.map(s => [s.source_id, s])
     );
 
-    // Build decision records for all evaluated sources
-    const allSourceIds = new Set(allSources.map(s => s.source_id));
+    // Build decision records for all evaluated sources (union of all inputs for robustness)
+    const allSourceIds = new Set([
+      ...allSources.map(s => s.source_id),
+      ...controlSelected.map(s => s.source_id),
+      ...treatmentRanked.map(s => s.source_id),
+      ...treatmentExcluded.map(s => s.source_id),
+      ...treatmentColdRevisit.map(s => s.source_id),
+    ]);
     const controlSelectedIds = new Set(controlSelected.map(s => s.source_id));
     const treatmentSelectedIds = new Set(treatmentRanked.map(s => s.source_id));
 
@@ -561,23 +567,28 @@ function runDemoMode(config: ShadowConfig, json: boolean) {
       else if (treatmentSelectedFlag) agreement = "TREATMENT_ONLY";
       else agreement = "NEITHER";
 
-     const treatmentRecord = t || te || tc;
-     const treatmentMode = treatmentRecord?.processing_mode ?? "N/A";
-     const treatmentReason = treatmentRecord?.mode_reason ?? (te ? "excluded" : tc ? "cold_revisit" : "not_ranked");
-     const treatmentScore = treatmentRecord?.score ?? 0;
-     // Rank is only meaningful for actually ranked sources
-     const treatmentRank = t ? t.rank : null;
-     const treatmentFeasibility = treatmentRecord?.feasibility.reason ?? "unknown";
-     const treatmentExcluded = !!te;
-     const treatmentExclusionReason = te?.exclusion_reason ?? null;
-     const treatmentColdRevisitReason = tc?.cold_revisit_reason ?? treatmentRecord?.cold_revisit_reason ?? null;
+const treatmentRecord = t || te || tc;
+      const treatmentMode = treatmentRecord?.processing_mode ?? "N/A";
+      const treatmentReason = treatmentRecord?.mode_reason ?? (te ? "excluded" : tc ? "cold_revisit" : "not_ranked");
+      const treatmentScore = treatmentRecord?.score ?? 0;
+      // Rank is only meaningful for actually ranked sources
+      const treatmentRank = t ? t.rank : null;
+      const treatmentFeasibility = treatmentRecord?.feasibility.reason ?? "unknown";
+      const isTreatmentExcluded = !!te;
+      const treatmentExclusionReason = te?.exclusion_reason ?? null;
+      const treatmentColdRevisitReason = tc?.cold_revisit_reason ?? treatmentRecord?.cold_revisit_reason ?? null;
 
       // Overlap score: 1 if both selected and similar rank, else 0 for binary
       const overlapScore = controlSelectedFlag && treatmentSelectedFlag ? 1 : 0;
 
       decisions.push({
         source_id: sourceId,
-        provider_id: allSources.find(s => s.source_id === sourceId)?.provider_id ?? "unknown",
+        provider_id: allSources.find(s => s.source_id === sourceId)?.provider_id ??
+          controlSelected.find(s => s.source_id === sourceId)?.provider_id ??
+          treatmentRanked.find(s => s.source_id === sourceId)?.provider_id ??
+          treatmentExcluded.find(s => s.source_id === sourceId)?.provider_id ??
+          treatmentColdRevisit.find(s => s.source_id === sourceId)?.provider_id ??
+          "unknown",
         control: {
           selected: controlSelectedFlag,
           rank: c?.rank ?? null,
@@ -592,7 +603,7 @@ function runDemoMode(config: ShadowConfig, json: boolean) {
           mode: treatmentMode,
           reason: treatmentReason,
           feasibility: treatmentFeasibility,
-          excluded: treatmentExcluded,
+          excluded: isTreatmentExcluded,
           exclusion_reason: treatmentExclusionReason,
           cold_revisit_reason: treatmentColdRevisitReason,
         },
