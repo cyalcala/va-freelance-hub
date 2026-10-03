@@ -1,14 +1,12 @@
 # Current resume pointer
 
-Updated 2026-10-03 for PROMPT-SSAE-V6. This is navigation and dated evidence,
+Updated 2026-10-04 for v6.2 shift. This is navigation and dated evidence,
 not policy, a runtime health report or a dispatch command.
 
 Read the newest applicable entries in [SYSTEM_SAVEPOINT.md](../SYSTEM_SAVEPOINT.md).
-The latest runtime checkpoint is “Gauntlet Slice 10 Stratified Reconciliation:
-90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified.”
-The documentation checkpoint records the v6.1 maintainer bootloader revision.
-Its supply counts, source state and NEXT require refresh before use;
-autonomous cutover requires satisfaction of the full predicate.
+The latest checkpoint is "MATH-06A Publication Authority Closure: Writer Inventory Fixed, 35 Gap Characterization Tests Added."
+The documentation checkpoint records MATH-06A completion (VERIFIED_CODE: 35 tests pass, full suite 1,782 pass, typecheck clean, audits clean).
+MATH-06A register state: OPEN (evidence only; repair contract PROPOSAL).
 
 ## Canonical entry points
 
@@ -28,10 +26,7 @@ within the current task's authority. A documentation/audit task does not start
 operational mining. Refresh unresolved incidents, including the saved EX-03
 error/observation follow-on; this revision does not declare them fixed.
 
-**Next single action:** at the next authorized compute-allocation task, recover
-the parent source unit and incident state, then map SSAE-00 to a bounded actual
-miner profile/measurement contract. Owner/controller: maintainer; trigger:
-that engineering task. No selector/runtime change has been dispatched here.
+**Next single action:** MATH-05 metric cohort separation fixtures (`scripts/diagnostics/metric-cohort-separation.ts` + test) per tech lead foundation wave. Owner/controller: maintainer; trigger: next authorized session.
 
 The former long pointer's historical entries remain in SYSTEM_SAVEPOINT and
 Git at `a176bb5d881eb7314222f534a7d1f63f02691987`; they are not competing

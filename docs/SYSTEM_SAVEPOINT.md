@@ -1,6 +1,45 @@
 # System Savepoint
 
-## 2026-10-03 — Gauntlet Slice 10 Stratified Reconciliation: 90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified (43 Lake Held, 32 Auto-Approved Tenants, Unvalidated Down to 8,449) (current)
+## 2026-10-04 — MATH-06A Publication Authority Closure: Writer Inventory Fixed, 35 Gap Characterization Tests Added (current)
+
+**Unit:** MATH-06A. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — inventory doc updated against HEAD `4d2e61c2`, test file `packages/scraper/publication-authority-gaps.test.ts` passes 35/35.
+
+**1. Delivered unit — Writer Inventory & Test Coverage:**
+- Checked out `docs/audits/2026-10-03-WRITER-INVENTORY.md` and `packages/scraper/publication-authority-gaps.test.ts` from `a9a70653`.
+- Fixed inventory against current HEAD file:line references:
+  - GHA `gha-lake-publish.yml` schedule corrected to `17 4,16 * * *` (2x/day), GCP `lake-publish-job` hourly at `:47`.
+  - `sync-to-d1.ts` hard-coded `type='freelance'` / `location_type='remote'` (maps to JSON-LD `CONTRACTOR` via `jobs/[id].astro:161-163`).
+  - `datetime('now')` in `scraped_at`/`last_seen_in_feed_at` flagged as ADR-002 violation.
+  - `ON CONFLICT` reactivates verifier/triage/takedown-archived rows without guard.
+  - Migrations 0031/0046/0047/0052 documented as D1 writers.
+  - Miner auto-admission: Ashby/Breezy (COMP-01C/01D) with robots "observe" only.
+  - Remotive RSS feed; JSON-LD on job pages not harvested.
+  - `scrape.ts` null-`publicationDb` bypass paths (lines 584-586, 636-642).
+- Added 14 new test fixtures:
+  - `type='freelance'`/`location_type='remote'` token check
+  - ADR-002 `posted_at=NULL` honesty
+  - ON CONFLICT missing inactive_reason guard
+  - GHA/GCP schedule documentation tests
+  - Ashby/Breezy probe templates + robots observe-only
+  - Remotive RSS feed config
+  - Migration 0031/0046/0047/0052 mutation documentation
+  - Scrape.ts bypass path documentation
+- Repair contract remains PROPOSAL only (no production writes authorized).
+
+**2. Verification:**
+- `bun test packages/scraper/publication-authority-gaps.test.ts`: 35 pass / 0 fail (≥21 required)
+- Full test suite: 1,782 passed / 0 failed across 178 files (`bun test`)
+- Typecheck: Clean (`bun run typecheck`, exit 0)
+- Production guardrails: Clean (`bun scripts/ci/check-production-guardrails.ts`, exit 0)
+- Constitution audit: Passed with known warnings (`bun scripts/ci/audit-constitution.ts`)
+- Parameter parity: 100% (`bun scripts/ci/audit-parameters.ts`)
+- SQL mutation grep: Clean on staged diff
+
+**NEXT SINGLE ACTION:** Proceed to MATH-05 (metric cohort separation fixtures) per tech lead foundation wave order. Owner/controller: maintainer; trigger: next authorized session.
+
+---
+
+## 2026-10-03 — Gauntlet Slice 10 Stratified Reconciliation: 90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified (43 Lake Held, 32 Auto-Approved Tenants, Unvalidated Down to 8,449) (historical)
 
 **Unit:** RECONCILE-SLICE-10. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 916 lake-synced opportunities live; 43 Lake QUALIFIED_READY rows held by dual-gate publication floor; 32 auto-approved tenants; 1,390 live opportunities total).
