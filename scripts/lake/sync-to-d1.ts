@@ -232,6 +232,102 @@ export function isSyncableCandidate(job: Pick<CandidateRow, "title" | "source_ur
   return Boolean(job.title?.trim()) && Boolean(job.source_url?.trim());
 }
 
+/**
+ * `freshness.max_days_since_post` from `docs/ACCEPTED_PARAMETERS.yaml` (line 76). Mirrored,
+ * not invented: `scripts/ci/audit-parameters.ts` does not register a code anchor for it,
+ * which is precisely why this module is the first consumer on the publisher path.
+ */
+export const MAX_DAYS_SINCE_POST = 30;
+
+/** One qualified candidate's freshness decision, before it is allowed near a public write. */
+export type FreshnessVerdict =
+  | { kind: "within_window"; ageDays: number }
+  | { kind: "stale"; ageDays: number; postedAt: string }
+  | { kind: "unknown_date"; raw: string | null };
+
+/**
+ * INCIDENT-0410(x) — the publisher had no freshness ceiling at all.
+ *
+ * `CANDIDATE_SELECT` filtered on `status`, `ph_eligibility` and `source_id` only, and the
+ * candidate loop consulted `posted_at` never. CONSTITUTION §3.2 condition 5 (Freshness
+ * Compliance) was therefore unenforced at the one statement that sets `is_active = 1`, and
+ * §8.4 C19 makes that `UNENFORCED — PAPER RISK`. The lake really does hold such rows:
+ * 60 `QUALIFIED_READY` rows were measured on 2026-10-04, the oldest `posted_at` being
+ * `2022-02-16T19:45:10.612Z`. They are invisible today only because their `source_id` is
+ * unauthorized — the age check cannot be delegated to the source gate.
+ *
+ * Honesty rules this shares with `buildSyncSql`:
+ * - A missing or unparseable date is `unknown_date`, never `now()` and never "fresh". It is
+ *   reported, not blocked: changing how undated rows are treated is a separate decision
+ *   (`unknown_date_policy: retain-unknown-do-not-publish`) and is not taken here.
+ * - The decision is a pure function of the stored date and one `now` captured per tick, so a
+ *   re-run cannot drift and rediscovery cannot reset it.
+ * - No threshold is added, lowered or widened: the window is the accepted parameter.
+ */
+export function classifyCandidateFreshness(
+  postedAt: string | null | undefined,
+  now: Date = new Date(),
+  maxAgeDays: number = MAX_DAYS_SINCE_POST,
+): FreshnessVerdict {
+  if (!Number.isInteger(maxAgeDays) || maxAgeDays < 0) {
+    throw new RangeError(`maxAgeDays must be a non-negative integer, received ${String(maxAgeDays)}`);
+  }
+  const raw = typeof postedAt === "string" ? postedAt.trim() : null;
+  if (!raw) return { kind: "unknown_date", raw: null };
+  const parsed = Date.parse(raw);
+  if (Number.isNaN(parsed)) return { kind: "unknown_date", raw };
+  // A future-dated stamp is not evidence of staleness; it is not clamped into an age either.
+  const ageDays = Math.max(0, (now.getTime() - parsed) / (1000 * 60 * 60 * 24));
+  if (ageDays > maxAgeDays) return { kind: "stale", ageDays, postedAt: raw };
+  return { kind: "within_window", ageDays };
+}
+
+export interface StaleWithheldRow {
+  source_id: string;
+  posted_at: string;
+  age_days: number;
+}
+
+/**
+ * The rows this tick refused to publish for age, per source, most-withheld first.
+ *
+ * Same honesty shape as `formatHeldSupplyNotice`: a withheld cohort that is only counted in
+ * aggregate is invisible, and an invisible drop on the publication path is the failure mode
+ * INCIDENT-0410(v) and (w) were written to remove. Reporting authorizes nothing.
+ */
+export function formatStaleSupplyNotice(
+  withheld: readonly StaleWithheldRow[],
+  topN = 5,
+): string[] {
+  const bySource = new Map<string, { count: number; oldestDays: number }>();
+  for (const row of withheld) {
+    if (!row.source_id || row.age_days <= 0) continue;
+    const entry = bySource.get(row.source_id) ?? { count: 0, oldestDays: 0 };
+    entry.count += 1;
+    entry.oldestDays = Math.max(entry.oldestDays, row.age_days);
+    bySource.set(row.source_id, entry);
+  }
+  const rows = [...bySource.entries()]
+    .map(([sourceId, entry]) => ({ sourceId, ...entry }))
+    .sort((a, b) => b.count - a.count || b.oldestDays - a.oldestDays || a.sourceId.localeCompare(b.sourceId));
+  if (rows.length === 0) return [];
+
+  const shown = rows.slice(0, topN);
+  const lines = shown.map(
+    (row) =>
+      `  [Freshness] WITHHELD ${row.count} qualified row(s) from "${row.sourceId}" — oldest is` +
+      ` ${Math.floor(row.oldestDays)} day(s) old, past the accepted ${MAX_DAYS_SINCE_POST}-day window.`,
+  );
+  if (rows.length > shown.length) {
+    lines.push(`  [Freshness] WITHHELD ... and ${rows.length - shown.length} more source(s) past the freshness window.`);
+  }
+  lines.push(
+    `  [Freshness] WITHHELD TOTAL ${withheld.length} qualified row(s) past the` +
+      ` freshness.max_days_since_post=${MAX_DAYS_SINCE_POST} window; not published, not counted as supply.`,
+  );
+  return lines;
+}
+
 /** Builds one idempotent upsert statement for a qualified lake candidate.
  *
  * HONESTY CONTRACT (§20 freshness, §2 anti-fabrication):
@@ -436,10 +532,22 @@ export async function syncQualifiedJobsToD1(
   const sqlStatements: string[] = [];
   const syncedIds: number[] = [];
   const countsBySource = new Map<string, number>();
+  const staleWithheld: StaleWithheldRow[] = [];
+  // One clock for the whole tick, so a re-run cannot drift a row across the boundary.
+  const tickNow = new Date();
 
   for (const job of candidates) {
     if (!isSyncableCandidate(job)) {
       console.warn(`  [Sync] Skipping unsyncable row id=${job.id} (missing title or source_url).`);
+      continue;
+    }
+    const verdict = classifyCandidateFreshness(job.posted_at, tickNow);
+    if (verdict.kind === "stale") {
+      staleWithheld.push({ source_id: job.source_id, posted_at: verdict.postedAt, age_days: verdict.ageDays });
+      console.warn(
+        `  [Sync] Withholding row id=${job.id} (${job.source_id}): posted_at=${verdict.postedAt}` +
+          ` is ${Math.floor(verdict.ageDays)} day(s) old, past the accepted ${MAX_DAYS_SINCE_POST}-day window.`,
+      );
       continue;
     }
     try {
@@ -451,6 +559,8 @@ export async function syncQualifiedJobsToD1(
     }
     syncedIds.push(job.id);
   }
+
+  for (const line of formatStaleSupplyNotice(staleWithheld)) console.warn(line);
 
   // Record publication receipts for all synced sources (F1 repair)
   const receiptNow = new Date().toISOString();
