@@ -966,22 +966,52 @@ async function evaluateTenant(
   }
 }
 
+/**
+ * INCIDENT-0410(w): the summary previously printed `AUTO-ADMITTED (ingested): 10`
+ * — a TENANT count wearing an ingestion label — four lines above
+ * `Jobs Ingested (QUALIFIED)`, the JOB count. On 2026-10-04 that printed
+ * "ingested: 10" on three consecutive runs that ingested nothing, which is exactly
+ * the reading a supply incident produces in the operator log.
+ *
+ * Pure and exported so the labelling is testable. It derives nothing: every field
+ * of `DiscoveryStats` is printed under its own label, admission is never presented
+ * as ingestion, and the single WARN is categorical (tenants admitted > 0 AND zero
+ * jobs reached QUALIFIED_READY) — decided by presence, never by a score or a new
+ * numeric threshold.
+ */
+export function formatDiscoverySummary(stats: DiscoveryStats): string {
+  const lines = [
+    "=======================================================",
+    "   AUTONOMOUS ATS DISCOVERY & ADMISSION SUMMARY        ",
+    "=======================================================",
+    `Domains Scanned:               ${stats.domainsScanned}`,
+    `Tenants Found (>= min jobs):   ${stats.tenantsFound}`,
+    `Tenants Auto-Admitted:         ${stats.admitted}`,
+    `Shadow Monitored:              ${stats.shadowed}`,
+    `Auto-Rejected:                 ${stats.rejected}`,
+    `Jobs Ingested (QUALIFIED):     ${stats.jobsIngested}`,
+    `Skipped (rate-limited host):   ${stats.skippedRateLimitedHost}`,
+    `Held Tenants Re-adjudicated:   ${stats.heldTenantsReadjudicated ?? 0}`,
+  ];
+
+  if (stats.admitted > 0 && stats.jobsIngested === 0) {
+    lines.push(
+      `WARNING: ${stats.admitted} tenant(s) auto-admitted but 0 job(s) reached QUALIFIED_READY — admission is not supply.`,
+    );
+  }
+
+  lines.push(
+    "-------------------------------------------------------",
+    "Auto-approved tenants publish on the next lake:sync when the Wilson bound clears.",
+    "No separate human approval. --hold-auto-approved is the kill switch.",
+    "=======================================================",
+  );
+
+  return `\n${lines.join("\n")}\n`;
+}
+
 function printDiscoverySummary(stats: DiscoveryStats): void {
-  console.log("\n=======================================================");
-  console.log("   AUTONOMOUS ATS DISCOVERY & ADMISSION SUMMARY        ");
-  console.log("=======================================================");
-  console.log(`Domains Scanned:               ${stats.domainsScanned}`);
-  console.log(`Tenants Found (>= min jobs):   ${stats.tenantsFound}`);
-  console.log(`AUTO-ADMITTED (ingested):      ${stats.admitted}`);
-  console.log(`Shadow Monitored:              ${stats.shadowed}`);
-  console.log(`Auto-Rejected:                 ${stats.rejected}`);
-  console.log(`Jobs Ingested (QUALIFIED):     ${stats.jobsIngested}`);
-  console.log(`Skipped (rate-limited host):   ${stats.skippedRateLimitedHost}`);
-  console.log(`Held tenants re-adjudicated:   ${stats.heldTenantsReadjudicated ?? 0}`);
-  console.log("-------------------------------------------------------");
-  console.log("Auto-approved tenants publish on the next lake:sync when the Wilson bound clears.");
-  console.log("No separate human approval. --hold-auto-approved is the kill switch.");
-  console.log("=======================================================\n");
+  console.log(formatDiscoverySummary(stats));
 }
 
 // ── Core admission engine ─────────────────────────────────────────────────────
