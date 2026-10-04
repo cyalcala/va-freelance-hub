@@ -29,7 +29,7 @@
 
 ---
 
-## 2026-10-04 — Session 21 INCIDENT-0410 The Jev Attempt Was Never Recorded, And A Recorded Verdict Can Be Erased (session 21, current)
+## 2026-10-04 — Session 21 INCIDENT-0410 The Jev Attempt Was Never Recorded, And A Recorded Verdict Can Be Erased (session 21, superseded)
 
 **Unit:** **INCIDENT-0410** sub-question (1) — the tech lead's first ordered target, "find why Jev verdicts are never produced", which sessions 17–19 could not close. Commit `166b0859`. **DEPLOY NOTE: none** — nothing imports the new module (`rg -l jev-verdict-receipt --glob '!*.test.ts'` returns only the module itself), so `oc-gcp-deploy` was correctly not invoked.
 
