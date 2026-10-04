@@ -477,6 +477,132 @@ function shareText(value: number | null): string {
   return value === null ? "an unmeasured share" : `${(value * 100).toFixed(2)}%`;
 }
 
+// ─── Concentration relief: the one concentration outcome a ceiling cannot name ──
+
+/**
+ * Whether publishing this source's room reduces an over-ceiling concentration,
+ * and whose concentration that is.
+ *
+ * `concentrationAllowance` returns exactly one positive signal — `RELIEVES` — and it
+ * is the only one the ceiling projection cannot express. `describeConcentrationCeiling`
+ * answers "which ceiling left no room", so a board where this publication *relieves*
+ * an over-ceiling family held by a different provider family reports `NONE`: the same
+ * value as a board with no concentration pressure at all. The two are not the same
+ * fact, and only the second one means a publication is doing useful concentration work.
+ *
+ * `RELIEVES` is measured, not asserted: it is the leading family's share strictly
+ * above `TOP_PROVIDER_FAMILY_SHARE_MAX` before publication and strictly lower after
+ * it. The leading family is a *family*, so the share moves because the denominator
+ * grew, not because the family shrank. This projection recomputes the same two shares
+ * from the same snapshot rows and the same live ceiling; the tests re-check that
+ * agreement against `concentrationAllowance` itself over every fixture rather than
+ * restating its result.
+ *
+ * Nothing here changes an allowance. `publishes_rows` is the real function's own
+ * `allowed`, and no ceiling is proposed, raised or lowered.
+ */
+export interface ConcentrationRelief {
+  /** True when the snapshot is large enough for a share ceiling to mean anything. */
+  measurable: boolean;
+  /** The provider family holding the largest share of the active board. */
+  leading_family: string | null;
+  leading_family_rows: number | null;
+  leading_family_share: number | null;
+  /** That share strictly above the accepted family ceiling, as RELIEVES tests it. */
+  over_ceiling: boolean;
+  /** Rows by which the leading family exceeds the ceiling; 0 when it does not. */
+  rows_over_ceiling: number | null;
+  /** The leading family's share after this publication adds its room to the board. */
+  leading_family_share_after: number | null;
+  /** True exactly when `concentrationAllowance` reports `RELIEVES`. */
+  relieves: boolean;
+  /** Why it does not relieve, or null when it does. */
+  not_relieved_because: string | null;
+  /** Rows this publication would add to the active board; 0 when it cannot publish. */
+  publishes_rows: number;
+  /** The denominator the shares above were computed on. */
+  denominator: number;
+  /** Sum of the snapshot's own rows, which `concentrationAllowance` never checks. */
+  row_sum: number;
+  /** Whether the declared total is the row sum. Measured whether or not it matters. */
+  denominator_matches_rows: boolean;
+}
+
+export function describeConcentrationRelief(
+  sourceId: string,
+  qualifiedReady: number,
+  inventory: InventorySnapshot | null,
+): ConcentrationRelief {
+  const family = providerFamily(sourceId);
+  const rows: InventorySnapshot["bySource"] = inventory === null ? [] : inventory.bySource;
+  const denominator = inventory === null ? 0 : inventory.activeTotal;
+  const rowSum = rows.reduce((sum, row) => sum + row.count, 0);
+  const measurable = inventory !== null && denominator >= MIN_INVENTORY_FOR_CONCENTRATION;
+
+  const rowsByFamily = new Map<string, number>();
+  for (const row of rows) {
+    const name = providerFamily(row.sourceId);
+    rowsByFamily.set(name, (rowsByFamily.get(name) ?? 0) + row.count);
+  }
+  // Sorted iteration makes a tie resolve to the alphabetically first family, so the
+  // projection is stable where the real function needs no tie-break at all.
+  let leading: string | null = null;
+  for (const name of [...rowsByFamily.keys()].sort()) {
+    if (leading === null || (rowsByFamily.get(name) ?? 0) > (rowsByFamily.get(leading) ?? 0)) {
+      leading = name;
+    }
+  }
+  const leadingRows = leading === null ? null : rowsByFamily.get(leading) ?? 0;
+  const leadingShare = measurable && leadingRows !== null ? leadingRows / denominator : null;
+  // Strictly greater, because that is what `concentrationAllowance` tests. A family
+  // exactly on its ceiling has no room left for itself and is still not `RELIEVES`.
+  const overCeiling = leadingShare !== null && leadingShare > TOP_PROVIDER_FAMILY_SHARE_MAX;
+  const rowsOverCeiling = measurable && leadingRows !== null
+    ? Math.max(0, leadingRows - TOP_PROVIDER_FAMILY_SHARE_MAX * denominator)
+    : null;
+
+  const room = concentrationAllowance(sourceId, qualifiedReady, inventory);
+  const publishes = room.allowed;
+  // The publication's rows land in its own family, so the leading family's numerator
+  // grows only when the leading family is this cohort's own; otherwise the larger
+  // denominator alone is what reduces the share.
+  const leadingShareAfter = measurable && leadingRows !== null && publishes > 0
+    ? (leadingRows + (leading === family ? publishes : 0)) / (denominator + publishes)
+    : null;
+  const relieves = overCeiling && leadingShare !== null && leadingShareAfter !== null
+    && leadingShareAfter < leadingShare;
+
+  let notRelievedBecause: string | null = null;
+  if (!measurable) {
+    notRelievedBecause = `no share ceiling applies below ${MIN_INVENTORY_FOR_CONCENTRATION} active rows`;
+  } else if (publishes <= 0) {
+    notRelievedBecause = "this publication has no room on the active board, so it cannot relieve any share";
+  } else if (!overCeiling) {
+    // The over-ceiling family is never this cohort's own on this branch: an
+    // over-ceiling family has exactly zero share room, so `concentrationAllowance`
+    // returns `allowed: 0` and blocks before any relief can be reported. That is
+    // why the cases are ordered as they are and why `not_relieved_because` has no
+    // "it is my own family" case.
+    notRelievedBecause = "no provider family is above its accepted ceiling, so there is nothing to relieve";
+  }
+
+  return {
+    measurable,
+    leading_family: leading,
+    leading_family_rows: leadingRows,
+    leading_family_share: leadingShare,
+    over_ceiling: overCeiling,
+    rows_over_ceiling: rowsOverCeiling,
+    leading_family_share_after: leadingShareAfter,
+    relieves,
+    not_relieved_because: notRelievedBecause,
+    publishes_rows: publishes,
+    denominator,
+    row_sum: rowSum,
+    denominator_matches_rows: denominator === rowSum,
+  };
+}
+
 // ─── Hold resolution: named missing evidence and a next evidence action ───────
 
 /**
@@ -534,6 +660,13 @@ export interface HoldResolution {
    * not what blocked.
    */
   concentration_ceiling: ConcentrationCeiling;
+  /**
+   * Whether this publication relieves an over-ceiling provider family, and whose
+   * concentration that is. Separate from `concentration_ceiling` because that field
+   * names a ceiling that left *no room* and therefore reports `NONE` for a relieving
+   * publication; without this a caller cannot tell that pressure from none at all.
+   */
+  concentration_relief: ConcentrationRelief;
   /**
    * The result of the repository's own hold-discipline check over the projection
    * of this decision into a latency observation. Recorded as measured, not
@@ -609,6 +742,7 @@ export function deriveHoldResolution(
   const constraint = classifyConstraint(input, decision, sample);
   const additional = Math.max(0, MIN_JOBS_FOR_RATE - sample.total_jobs);
   const ceiling = describeConcentrationCeiling(input.sourceId, input.inventory);
+  const relief = describeConcentrationRelief(input.sourceId, sample.qualified_ready, input.inventory);
 
   const missingEvidence: MissingEvidenceItem[] = [];
   let nextAction: NextEvidenceAction | null = null;
@@ -701,6 +835,7 @@ export function deriveHoldResolution(
     next_action: nextAction,
     floor_lowering_required: false,
     concentration_ceiling: ceiling,
+    concentration_relief: relief,
     hold_discipline: checkHoldDiscipline(observation),
     reason: decision.reason,
   };

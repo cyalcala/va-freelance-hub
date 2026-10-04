@@ -46,6 +46,7 @@ import { describe, expect, it } from "bun:test";
 import {
   concentrationAllowance,
   decideAutoPublish,
+  MIN_INVENTORY_FOR_CONCENTRATION,
   type AutoPublishInput,
   type InventorySnapshot,
 } from "./auto-publish-policy";
@@ -57,6 +58,7 @@ import {
   currentPolicyBinding,
   deriveHoldResolution,
   describeConcentrationCeiling,
+  describeConcentrationRelief,
   policyBindingDigest,
   type BoundDecision,
 } from "./publish-hold-resolution";
@@ -133,6 +135,61 @@ const FAMILY_AT_CEILING: InventorySnapshot = {
 function withInput(inventory: InventorySnapshot | null): AutoPublishInput {
   return { ...COHORT, inventory };
 }
+
+/** No family over its ceiling anywhere: the same `binding: NONE` as ROOMY, no pressure. */
+const UNPRESSURED: InventorySnapshot = {
+  activeTotal: 400,
+  bySource: [
+    { sourceId: "jobicy:ph", count: 60 },
+    { sourceId: "jobicy:sg", count: 40 },
+    { sourceId: "we-work-remotely", count: 150 },
+    { sourceId: "remotive", count: 150 },
+  ],
+};
+
+/** The leading family sits exactly on `TOP_PROVIDER_FAMILY_SHARE_MAX`: 400 of 1000. */
+const FAMILY_EXACTLY_AT_CEILING: InventorySnapshot = {
+  activeTotal: 1000,
+  bySource: [
+    { sourceId: "jobicy:ph", count: 150 },
+    { sourceId: "jobicy:sg", count: 150 },
+    { sourceId: "we-work-remotely", count: 400 },
+    { sourceId: "remotive", count: 300 },
+  ],
+};
+
+/** One row more than the fixture above: the same board with real pressure. */
+const FAMILY_ONE_ROW_OVER_CEILING: InventorySnapshot = {
+  activeTotal: 1000,
+  bySource: [
+    { sourceId: "jobicy:ph", count: 150 },
+    { sourceId: "jobicy:sg", count: 150 },
+    { sourceId: "we-work-remotely", count: 401 },
+    { sourceId: "remotive", count: 299 },
+  ],
+};
+
+/** The cohort's OWN family is the one over its ceiling, so it is blocked, not relieved. */
+const OWN_FAMILY_OVER_CEILING: InventorySnapshot = {
+  activeTotal: 400,
+  bySource: [
+    { sourceId: "jobicy:ph", count: 90 },
+    { sourceId: "jobicy:sg", count: 90 },
+    { sourceId: "we-work-remotely", count: 170 },
+    { sourceId: "remotive", count: 50 },
+  ],
+};
+
+/** Below `MIN_INVENTORY_FOR_CONCENTRATION`: both ceilings are inert. */
+const YOUNG_BOARD: InventorySnapshot = {
+  activeTotal: 99,
+  bySource: [{ sourceId: "jobicy:ph", count: 99 }],
+};
+
+const SINGLE_ROW_BOARD: InventorySnapshot = {
+  activeTotal: 400,
+  bySource: [{ sourceId: "jobicy:ph", count: 400 }],
+};
 
 function bound(input: AutoPublishInput): BoundDecision {
   return { binding: bindDecisionInputs(input), decision: decideAutoPublish(input) };
@@ -604,5 +661,180 @@ describe("MATH-08: F-CI-4 the allowance trusts `activeTotal` over its own rows",
     // the four-value enum, so a stored decision cannot attribute its own block.
     expect(capped.reason).not.toContain(String(TOP_SOURCE_SHARE_MAX));
     expect(blocked.reason).not.toContain(String(TOP_PROVIDER_FAMILY_SHARE_MAX));
+  });
+});
+
+// ─── F-CI-6: the relieving outcome was the one thing no projection named ──────
+//
+// `concentrationAllowance` produces exactly one positive concentration signal,
+// `RELIEVES`, and before this unit nothing in the repository named what it means.
+// `AutoPublishDecision.concentration` is a four-value enum with no family attached,
+// the decision's `reason` prose reports only `Concentration RELIEVES`, and the
+// ceiling projection (`describeConcentrationCeiling`, session 13) answers a
+// different question — "which ceiling left no room" — so it returns `NONE` for a
+// relieving publication. A board under concentration pressure that this publication
+// helps, and a board with no pressure at all, were therefore indistinguishable.
+//
+// `describeConcentrationRelief` names it: which provider family is over its ceiling,
+// by how many rows, and whether this publication reduces it.
+
+describe("MATH-08: F-CI-6 a relieving publication is named, and named correctly", () => {
+  it("the relieving case and the unpressured case were both `binding: NONE`, and only one relieves", () => {
+    const relieving = withInput(ROOMY);
+    const unpressured = withInput(UNPRESSURED);
+
+    // Both publish the whole cohort and both look identical to the ceiling
+    // projection: no ceiling left this publication any less room.
+    expect(decideAutoPublish(relieving).action).toBe("PUBLISH");
+    expect(decideAutoPublish(unpressured).action).toBe("PUBLISH");
+    expect(describeConcentrationCeiling(COHORT.sourceId, ROOMY).binding).toBe("NONE");
+    expect(describeConcentrationCeiling(COHORT.sourceId, UNPRESSURED).binding).toBe("NONE");
+
+    // The real policy function already told them apart, in one enum value that
+    // carries no family, no magnitude and no reason.
+    expect(decideAutoPublish(relieving).concentration).toBe("RELIEVES");
+    expect(decideAutoPublish(unpressured).concentration).toBe("OK");
+
+    const relief = describeConcentrationRelief(COHORT.sourceId, COHORT.qualifiedReady, ROOMY);
+    expect(relief.relieves).toBe(true);
+    expect(relief.leading_family).toBe("we-work-remotely");
+    expect(relief.over_ceiling).toBe(true);
+    expect(relief.leading_family_rows).toBe(200);
+    expect(relief.leading_family_share!).toBeCloseTo(200 / 400, 12);
+    expect(relief.rows_over_ceiling).toBe(200 - TOP_PROVIDER_FAMILY_SHARE_MAX * 400);
+    expect(relief.publishes_rows).toBe(COHORT.qualifiedReady);
+    // Relief comes from the larger denominator: this publication's rows land in the
+    // jobicy family, so the leading family's share falls without it publishing less.
+    expect(relief.leading_family_share_after!).toBeCloseTo(200 / (400 + COHORT.qualifiedReady), 12);
+    expect(relief.leading_family_share_after!).toBeLessThan(relief.leading_family_share!);
+    expect(relief.not_relieved_because).toBeNull();
+
+    const calm = describeConcentrationRelief(COHORT.sourceId, COHORT.qualifiedReady, UNPRESSURED);
+    expect(calm.relieves).toBe(false);
+    expect(calm.over_ceiling).toBe(false);
+    expect(calm.rows_over_ceiling).toBe(0);
+    expect(calm.not_relieved_because).toContain("nothing to relieve");
+    expect(calm.publishes_rows).toBe(COHORT.qualifiedReady);
+  });
+
+  it("the projection agrees with `concentrationAllowance` over every fixture, not with a restatement", () => {
+    // The guard against the duplication this projection introduces: it recomputes
+    // both shares locally, so its `relieves` must equal the real function's
+    // `RELIEVES` and its `publishes_rows` must equal the real `allowed` — measured
+    // against `concentrationAllowance` itself on every fixture in this file.
+    const snapshots: InventorySnapshot[] = [
+      ROOMY,
+      UNPRESSURED,
+      SOURCE_AT_CEILING,
+      ONE_BELOW_SOURCE_CEILING,
+      FAMILY_AT_CEILING,
+      FAMILY_EXACTLY_AT_CEILING,
+      FAMILY_ONE_ROW_OVER_CEILING,
+      OWN_FAMILY_OVER_CEILING,
+      YOUNG_BOARD,
+      SINGLE_ROW_BOARD,
+    ];
+    for (const snapshot of snapshots) {
+      const allowance = concentrationAllowance(COHORT.sourceId, COHORT.qualifiedReady, snapshot);
+      const relief = describeConcentrationRelief(COHORT.sourceId, COHORT.qualifiedReady, snapshot);
+      expect(relief.relieves).toBe(allowance.concentration === "RELIEVES");
+      expect(relief.publishes_rows).toBe(allowance.allowed);
+      expect(relief.denominator).toBe(snapshot.activeTotal);
+      expect(relief.denominator_matches_rows).toBe(true);
+      // Relief is never claimed where there is no room to publish anything.
+      if (relief.relieves) expect(relief.publishes_rows).toBeGreaterThan(0);
+    }
+
+    // A missing snapshot is inert in both functions, and neither invents a share.
+    const absent = describeConcentrationRelief(COHORT.sourceId, COHORT.qualifiedReady, null);
+    expect(absent.measurable).toBe(false);
+    expect(absent.relieves).toBe(false);
+    expect(absent.leading_family_share).toBeNull();
+    expect(absent.leading_family_share_after).toBeNull();
+    expect(absent.not_relieved_because).toContain(String(MIN_INVENTORY_FOR_CONCENTRATION));
+    expect(concentrationAllowance(COHORT.sourceId, COHORT.qualifiedReady, null).concentration).toBe("UNKNOWN");
+  });
+
+  it("a family exactly on its ceiling is not relieved, and one row more is", () => {
+    // The RELIEVES branch tests `topBefore > TOP_PROVIDER_FAMILY_SHARE_MAX`, so
+    // equality is not pressure. Both fixtures are internally consistent, and they
+    // differ by one row in the leading family.
+    const at = describeConcentrationRelief(COHORT.sourceId, COHORT.qualifiedReady, FAMILY_EXACTLY_AT_CEILING);
+    const over = describeConcentrationRelief(COHORT.sourceId, COHORT.qualifiedReady, FAMILY_ONE_ROW_OVER_CEILING);
+
+    expect(at.leading_family_share).toBeCloseTo(TOP_PROVIDER_FAMILY_SHARE_MAX, 12);
+    expect(at.over_ceiling).toBe(false);
+    expect(at.relieves).toBe(false);
+    expect(at.rows_over_ceiling).toBe(0);
+    expect(decideAutoPublish(withInput(FAMILY_EXACTLY_AT_CEILING)).concentration).toBe("OK");
+
+    expect(over.leading_family_share!).toBeGreaterThan(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(over.over_ceiling).toBe(true);
+    expect(over.relieves).toBe(true);
+    expect(over.rows_over_ceiling).toBe(1);
+    expect(decideAutoPublish(withInput(FAMILY_ONE_ROW_OVER_CEILING)).concentration).toBe("RELIEVES");
+  });
+
+  it("an over-ceiling family has zero share room, so a blocked cohort relieves nothing", () => {
+    // The reason `not_relieved_because` has no "it is my own family" case: the
+    // family ceiling gives an over-ceiling family exactly zero room, so the
+    // allowance blocks before any relief can be reported. Measured, not assumed.
+    const own = describeConcentrationRelief(COHORT.sourceId, COHORT.qualifiedReady, OWN_FAMILY_OVER_CEILING);
+    expect(own.leading_family).toBe(providerFamily(COHORT.sourceId));
+    expect(own.leading_family_share!).toBeGreaterThan(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(own.over_ceiling).toBe(true);
+    expect(own.publishes_rows).toBe(0);
+    expect(own.relieves).toBe(false);
+    expect(own.leading_family_share_after).toBeNull();
+    expect(own.not_relieved_because).toContain("no room");
+
+    const decision = decideAutoPublish(withInput(OWN_FAMILY_OVER_CEILING));
+    expect(decision.action).toBe("HOLD");
+    expect(decision.concentration).toBe("BLOCKED");
+  });
+
+  it("the hold projection carries the relief, so a caller cannot read `NONE` as no pressure", () => {
+    // `deriveHoldResolution` is called for every action, so the relieving case is
+    // reachable: the cohort is not held at all here, yet its concentration relief is
+    // exactly the fact a caller would want and previously had nowhere to read.
+    const input = withInput(ROOMY);
+    const resolution = deriveHoldResolution(input, decideAutoPublish(input), "2026-10-04T03:00:00.000Z");
+
+    expect(resolution.action).toBe("PUBLISH");
+    expect(resolution.blocking_constraint).toBe("NOT_HELD");
+    expect(resolution.missing_evidence).toEqual([]);
+    expect(resolution.concentration_ceiling.binding).toBe("NONE");
+    expect(resolution.concentration_relief.relieves).toBe(true);
+    expect(resolution.concentration_relief.leading_family).toBe("we-work-remotely");
+
+    // Nothing about the decision itself moved: the relief projection is additive,
+    // reports no new threshold and grants no publication authority of its own.
+    expect(resolution.floor_lowering_required).toBe(false);
+    expect(resolution.concentration_relief.publishes_rows).toBe(
+      concentrationAllowance(COHORT.sourceId, COHORT.qualifiedReady, ROOMY).allowed,
+    );
+    expect(resolution.next_action).toBeNull();
+  });
+
+  it("F-CI-4 support: the denominator is reported, so an inconsistent snapshot is visible", () => {
+    // The shares are computed on `activeTotal`, which `concentrationAllowance` never
+    // compares with the row sum. The projection records both so a caller can see the
+    // inconsistency rather than inherit it; it changes no allowance.
+    const inconsistent: InventorySnapshot = {
+      activeTotal: 400,
+      bySource: [
+        { sourceId: "jobicy:ph", count: 60 },
+        { sourceId: "jobicy:sg", count: 40 },
+        { sourceId: "we-work-remotely", count: 200 },
+      ],
+    };
+    const relief = describeConcentrationRelief(COHORT.sourceId, COHORT.qualifiedReady, inconsistent);
+    expect(relief.row_sum).toBe(300);
+    expect(relief.denominator).toBe(400);
+    expect(relief.denominator_matches_rows).toBe(false);
+    // Still agrees with the real function on this snapshot too, inconsistency and all.
+    expect(relief.relieves).toBe(
+      concentrationAllowance(COHORT.sourceId, COHORT.qualifiedReady, inconsistent).concentration === "RELIEVES",
+    );
   });
 });
