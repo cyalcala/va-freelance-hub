@@ -66,6 +66,91 @@ export function parseSyncArgs(argv: string[]): {
   };
 }
 
+export interface HeldSourceRow {
+  source_id: string;
+  held_count: number;
+}
+
+/**
+ * The line a publisher tick prints about its own result. `warn` whenever the tick
+ * published nothing while qualified supply was held, because a success exit that reads as
+ * "healthy" is exactly what let a day of held supply pass unremarked.
+ */
+export interface PublishOutcomeNotice {
+  level: "warn" | "log";
+  line: string;
+}
+
+/**
+ * INCIDENT-0410(v) — publisher honesty for a run that publishes nothing.
+ *
+ * A publisher tick that returns success while qualified supply sits held by the source
+ * gate is indistinguishable, in the exit status and in the durable record, from a run with
+ * nothing to publish. That is how 60 held rows stayed invisible for a day. These two pure
+ * functions turn the run's own outcome and the held cohort into what the operator actually
+ * reads: which source_ids the gate refused, how many rows each holds, the total, and
+ * whether this tick published anything at all.
+ *
+ * They report. They authorize nothing, publish nothing, and add no threshold: the rows stay
+ * held exactly as before and the sync decision is untouched.
+ */
+export function formatPublishOutcomeNotice(
+  published: number,
+  held: readonly HeldSourceRow[],
+): PublishOutcomeNotice {
+  const heldTotal = held.reduce((sum, row) => sum + (Number.isFinite(row.held_count) ? row.held_count : 0), 0);
+  const heldSources = held.filter((row) => Number.isFinite(row.held_count) && row.held_count > 0).length;
+  if (published > 0) {
+    return {
+      level: "log",
+      line: `Successfully synced ${published} qualified opportunities from Turso Lake into Production D1!`,
+    };
+  }
+  if (published < 0) {
+    return {
+      level: "warn",
+      line: `Reported a publication count of ${published}, which no run can produce. The receipt is untrustworthy; treat this tick as unobserved rather than healthy.`,
+    };
+  }
+  if (heldTotal > 0) {
+    return {
+      level: "warn",
+      line: `Published 0 opportunities while ${heldTotal} qualified row(s) across ${heldSources} source(s) remain held by the source gate. A success exit here means supply-starved, not healthy.`,
+    };
+  }
+  return {
+    level: "log",
+    line: "Published 0 opportunities: no authorized QUALIFIED_READY candidate was visible to this tick.",
+  };
+}
+/**
+ * Which qualified rows the source gate is withholding, most-held first, so the reason a
+ * tick published nothing is readable without opening a database. Silent for an empty or
+ * all-zero cohort, so a healthy run is never warned about.
+ */
+export function formatHeldSupplyNotice(held: readonly HeldSourceRow[], topN = 5): string[] {
+  const rows = held
+    .filter((row) => row.held_count > 0)
+    .sort((a, b) => b.held_count - a.held_count || a.source_id.localeCompare(b.source_id));
+  if (rows.length === 0) return [];
+
+  const total = rows.reduce((sum, row) => sum + row.held_count, 0);
+  const shown = rows.slice(0, Math.max(0, topN));
+  const lines = shown.map(
+    (row) =>
+      `  [Queue] HELD ${row.held_count} QUALIFIED_READY row(s) — source gate: "${row.source_id}" is not an authorized source_id.`,
+  );
+  if (rows.length > shown.length) {
+    lines.push(
+      `  [Queue] HELD ... and ${rows.length - shown.length} more source(s) withheld by the same gate.`,
+    );
+  }
+  lines.push(
+    `  [Queue] HELD TOTAL ${total} qualified row(s) cannot publish: the source gate refused their source_id.`,
+  );
+  return lines;
+}
+
 export interface DiscoveryTenantRow {
   source_id: string;
   job_count: number;
@@ -320,26 +405,28 @@ export async function syncQualifiedJobsToD1(
 
   const authorizedList = [...baseIds, ...planned.map((source) => source.sourceId)];
   const heldPlaceholders = authorizedList.map(() => "?").join(",");
+  let heldRows: HeldSourceRow[] = [];
   try {
     const held = await client.execute({
       sql: `
-        SELECT COUNT(*) as cnt FROM lake_candidate_jobs
+        SELECT source_id, COUNT(*) AS held_count FROM lake_candidate_jobs
         WHERE status = 'QUALIFIED_READY'
           AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-          AND source_id NOT IN (${heldPlaceholders});
-      `,
+          AND source_id NOT IN (${heldPlaceholders})
+        GROUP BY source_id
+        ORDER BY held_count DESC, source_id ASC;`,
       args: [...authorizedList],
     });
-    const heldCount = Number(held.rows[0]?.cnt ?? 0);
-    if (heldCount > 0) {
-      console.log(`  [Queue] ${heldCount} QUALIFIED_READY row(s) held by the source gate (unauthorized source_id).`);
-    }
+    heldRows = held.rows as unknown as HeldSourceRow[];
+    for (const line of formatHeldSupplyNotice(heldRows)) console.warn(line);
   } catch {
     // Observability only; never blocks the sync.
   }
 
   if (candidates.length === 0) {
-    console.log("No authorized candidates with status = 'QUALIFIED_READY' found to sync.");
+    const notice = formatPublishOutcomeNotice(0, heldRows);
+    if (notice.level === "warn") console.warn(notice.line);
+    else console.log(notice.line);
     return { syncedCount: 0 };
   }
 
@@ -397,7 +484,9 @@ export async function syncQualifiedJobsToD1(
       });
     }
 
-    console.log(`Successfully synced ${syncedIds.length} qualified opportunities from Turso Lake into Production D1!`);
+    const notice = formatPublishOutcomeNotice(syncedIds.length, heldRows);
+    if (notice.level === "warn") console.warn(notice.line);
+    else console.log(notice.line);
     return { syncedCount: syncedIds.length };
   } finally {
     if (fs.existsSync(tempSqlFile)) {
