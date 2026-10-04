@@ -34,6 +34,11 @@ import { markRawProcessed, storeRawObservation } from "./lake-shared";
 import { geoGate } from "../../packages/scraper/geoGate";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
 import { judgeViaJev } from "../../packages/scraper/jev-client";
+import {
+  JEV_RECEIPT_RETENTION_CLAUSE,
+  classifyJevAttempt,
+  renderAttemptReceipt,
+} from "./jev-verdict-receipt";
 import { JEV_MIN_CONFIDENCE, wilsonLowerBound, PUBLISH_PH_RATE_FLOOR } from "./auto-publish-policy";
 import { extractAtsToken } from "../../packages/scraper/prospector";
 import { deriveCandidateSlugs, KNOWN_ATS_TOKENS } from "./process-intake";
@@ -204,7 +209,7 @@ export function probeTemplateForFamily(family: string): AtsProbeTemplate | undef
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
-interface TenantMetrics {
+export interface TenantMetrics {
   totalJobs: number;
   qualifiedReady: number;
   excluded: number;
@@ -290,14 +295,15 @@ export function decideAdmissionDeterministic(metrics: TenantMetrics): AdmissionD
  * threshold when the key is missing, the provider fails, or the answer is
  * invalid — admission never blocks on model availability.
  */
-async function decideAdmission(
+export async function decideAdmission(
   tenantSlug: string,
   family: string,
-  metrics: TenantMetrics
+  metrics: TenantMetrics,
+  judge: typeof judgeViaJev = judgeViaJev,
 ): Promise<AdmissionDecision> {
   const stateStr = `tenant=${family}/${tenantSlug} total=${metrics.totalJobs} qualified=${metrics.qualifiedReady} excluded=${metrics.excluded} ambiguous=${metrics.ambiguous} ph_rate=${metrics.phRate.toFixed(3)} categories=${metrics.topCategories.join(",")}`;
 
-  const result = await judgeViaJev(process.env.OPENROUTER_API_KEY, {
+  const result = await judge(process.env.OPENROUTER_API_KEY, {
     task: "Admit ATS tenant as autonomous VA lake source",
     state: stateStr,
     context: `ATS tenant admission for VA Freelance Hub lake. PH eligibility rate: ${(metrics.phRate * 100).toFixed(1)}%. Min auto-approve threshold: ${AUTO_APPROVE_PH_RATE * 100}%. Min shadow threshold: ${AUTO_REJECT_PH_RATE * 100}%. Advisory only — deterministic thresholds enforce.`,
@@ -321,6 +327,12 @@ async function decideAdmission(
   const decision = mergeAdmissionDecision(metrics, jev);
   if (jev && result.model) {
     decision.jevRaw = `${result.model}:${jev.choice}@${jev.confidence}`.slice(0, 500);
+  } else {
+    // INCIDENT-0410: an attempt that produced no validated verdict is still a
+    // fact. `jev_raw` used to stay NULL, so "never consulted", "no API key",
+    // "timed out" and "invalid answer" were indistinguishable in the lake.
+    // The receipt is content-free and provably inert for the publication gate.
+    decision.jevRaw = renderAttemptReceipt(classifyJevAttempt(result), new Date().toISOString());
   }
   return decision;
 }
@@ -633,7 +645,7 @@ async function evaluateTenant(
         ph_rate = ?,
         review_status = ?,
         admission_reason = ?,
-        jev_raw = ?,
+        jev_raw = ${JEV_RECEIPT_RETENTION_CLAUSE},
         source_id = ?,
         last_evaluated_at = datetime('now');
     `,
@@ -642,7 +654,7 @@ async function evaluateTenant(
       rawJobs.length, metrics.qualifiedReady, metrics.phRate,
       reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
       rawJobs.length, metrics.qualifiedReady, metrics.phRate,
-      reviewStatus, decision.reason, decision.jevRaw ?? null, sourceId,
+      reviewStatus, decision.reason, sourceId,
     ],
   });
 
