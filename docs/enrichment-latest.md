@@ -1,7 +1,7 @@
 # Directory Enrichment — Latest
 
-Date: 2026-10-03
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37145543153
+Date: 2026-10-04
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37194070872
 
 | Metric | Value |
 | --- | ---: |
@@ -13,5 +13,5 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37145543
 
 ## Enrichment details
 
-- #768 Foundry for Good: hiring_page=https://jobs.ashbyhq.com/foundry-for-good; auto-verified (27 verified, 27 PH-eligible jobs)
-- #769 gradient: hiring_page=https://jobs.ashbyhq.com/gradient
+- #762 Snappr: hiring_page=https://jobs.lever.co/snappr; auto-verified (13 verified, 13 PH-eligible jobs)
+- #763 The Utopia Venture Platform: hiring_page=https://jobs.ashbyhq.com/the-studio
