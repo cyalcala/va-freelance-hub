@@ -385,10 +385,17 @@ export {
 export { toContentHash } from "./contentHash";
 export { decodeHtmlEntities, safeFromCodePoint, xmlNodeText, xmlTextList, fixMojibake } from "./text";
 export {
+  classifyFailoverOutcome,
   decideFailoverTakeover,
   DEFAULT_STALE_AFTER_MINUTES,
 } from "./failover-clock";
-export type { FailoverAction, FailoverDecision, FailoverEvidence } from "./failover-clock";
+export type {
+  FailoverAction,
+  FailoverDecision,
+  FailoverEvidence,
+  FailoverOutcome,
+  FailoverOutcomeClassification,
+} from "./failover-clock";
 export {
   selectEligibleForDispatch,
   validateProviderProfileForDispatch,

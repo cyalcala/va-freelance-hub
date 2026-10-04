@@ -74,6 +74,20 @@ export function decideFailoverTakeover(
   evidence: FailoverEvidence,
   staleAfterMinutes: number = DEFAULT_STALE_AFTER_MINUTES,
 ): FailoverDecision {
+  // The threshold is evidence too. A non-positive or non-finite value makes
+  // `minutesSinceAttempt >= staleAfterMinutes` true (or incomparable) for
+  // every heartbeat, which is duplicate scrape traffic against a primary that
+  // may be perfectly healthy — the exact failure mode this module exists to
+  // prevent. Validate it before anything else so the reason names the caller's
+  // actual bug rather than the heartbeat it also happened to be holding.
+  if (!Number.isFinite(staleAfterMinutes) || staleAfterMinutes <= 0) {
+    return {
+      action: "unknown",
+      reason: `stale-after-minutes threshold is not a positive finite number (${String(staleAfterMinutes)}); refusing to decide`,
+      minutesSinceAttempt: null,
+    };
+  }
+
   const now = new Date(evidence.now);
   if (!Number.isFinite(now.getTime())) {
     return { action: "unknown", reason: "evaluation instant is not a valid timestamp", minutesSinceAttempt: null };
@@ -120,5 +134,107 @@ export function decideFailoverTakeover(
     action: "standby",
     reason: `primary clock attempted a run ${minutesSinceAttempt.toFixed(1)}min ago (within ${staleAfterMinutes}min threshold)`,
     minutesSinceAttempt,
+  };
+}
+
+// INCIDENT-0410(s-53) — what the placed call actually did.
+//
+// decideFailoverTakeover answers "should I place a call?". It says nothing
+// about what came back, and /api/cron/scrape answers HTTP **200** with
+// `{skipped: true, reason: "run-lock-held"}` when its reserved
+// `__scrape_run_lock__` row is still claimed — a response byte-shape a caller
+// cannot distinguish from real work. So an authorised takeover can silently
+// fetch nothing, and the only way to notice today is to read the lock row out
+// of D1, which is impossible during exactly the row-read exhaustion that makes
+// a takeover necessary in the first place (Cloudflare error 7500, observed
+// 2026-10-04). This classifier is the pure contract that makes the no-op
+// visible from the response alone.
+//
+// Pure, no I/O. NOT WIRED: scripts/gha/evaluate-failover-clock.ts and
+// apps/web/src/pages/api/cron/scrape.ts are both on the merge HOLD list, so
+// this session cannot connect a caller. Wiring is a reviewer decision, and the
+// reviewed change is deliberately one pure module plus its tests.
+
+export type FailoverOutcome = "worked" | "lock-blocked" | "skipped" | "unreadable";
+
+export interface FailoverOutcomeClassification {
+  outcome: FailoverOutcome;
+  /**
+   * True only when this session authorised a takeover and the primary's
+   * run-lock turned that call into a no-op. That combination is the stale-lock
+   * takeover failure: the primary has been silent past the threshold, yet its
+   * lock is still blocking the fallback.
+   */
+  takeoverBlocked: boolean;
+  reason: string;
+}
+
+/** The exact `reason` string scrape.ts returns when the run-lock short-circuits a run. */
+const RUN_LOCK_HELD_REASON = "run-lock-held";
+
+/**
+ * Classify the scrape response a failover decision produced. Never throws and
+ * never assumes work happened: an unreadable or error-shaped body is
+ * `unreadable`, not `worked`, because "we placed a call" must never be
+ * recorded as "the fallback recovered the pipeline".
+ */
+export function classifyFailoverOutcome(
+  decision: FailoverDecision,
+  response: unknown,
+): FailoverOutcomeClassification {
+  const body =
+    response !== null && typeof response === "object" && !Array.isArray(response)
+      ? (response as Record<string, unknown>)
+      : null;
+  if (!body) {
+    return {
+      outcome: "unreadable",
+      takeoverBlocked: false,
+      reason: "scrape response is not a JSON object",
+    };
+  }
+
+  if (typeof body.error === "string" && body.error.length > 0) {
+    return {
+      outcome: "unreadable",
+      takeoverBlocked: false,
+      reason: `scrape response was an error, not work: ${body.error}`,
+    };
+  }
+
+  if (body.skipped !== true) {
+    return {
+      outcome: "worked",
+      takeoverBlocked: false,
+      reason: "scrape endpoint reported no skip",
+    };
+  }
+
+  const reason = typeof body.reason === "string" ? body.reason : "";
+  if (reason !== RUN_LOCK_HELD_REASON) {
+    return {
+      outcome: "skipped",
+      takeoverBlocked: false,
+      reason: reason
+        ? `scrape endpoint skipped the run: ${reason}`
+        : "scrape endpoint skipped the run without a reason",
+    };
+  }
+
+  if (decision.action === "takeover") {
+    const silent = decision.minutesSinceAttempt === null
+      ? "an unknown amount of"
+      : `${decision.minutesSinceAttempt.toFixed(1)}min of`;
+    return {
+      outcome: "lock-blocked",
+      takeoverBlocked: true,
+      reason: `takeover authorised after ${silent} primary silence was still blocked by the primary run-lock; no stale-lock takeover occurred`,
+    };
+  }
+
+  return {
+    outcome: "lock-blocked",
+    takeoverBlocked: false,
+    reason: "run-lock held as expected: the primary is running and this call correctly stood by",
   };
 }
