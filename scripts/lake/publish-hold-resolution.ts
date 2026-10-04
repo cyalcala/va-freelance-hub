@@ -298,6 +298,25 @@ export type ReuseRefusal =
   | "REFUSED_INPUT_DRIFT"
   | "REFUSED_DECISION_NOT_REPRODUCIBLE";
 
+/**
+ * Which policy constants the decision reads have moved, named one by one in a
+ * stable order as `key old -> new`.
+ *
+ * `POLICY_CONSTANTS_CHANGED` deliberately covers a tightening and a loosening
+ * alike, so a consumer cannot read the class as "safe to re-decide". Naming the
+ * moved constants and their direction is what makes the refusal actionable
+ * without widening the drift taxonomy.
+ */
+export function movedPolicyConstants(
+  stored: PolicyBinding,
+  current: PolicyBinding,
+): string[] {
+  const keys = Object.keys(current).sort() as (keyof PolicyBinding)[];
+  return keys
+    .filter((key) => stored[key] !== current[key])
+    .map((key) => `${key} ${String(stored[key])} -> ${String(current[key])}`);
+}
+
 export interface ReuseVerdict {
   refusal: ReuseRefusal;
   drift: DriftCheck;
@@ -311,17 +330,28 @@ export interface ReuseVerdict {
 /**
  * Whether a stored publication decision may be reused as-is.
  *
- * Two independent refusals, both of which a stored decision's own text cannot
+ * Three independent refusals, none of which a stored decision's own text can
  * detect:
+ * - it carries no input binding at all;
  * - the inputs it was computed over are not the current inputs, so its
- *   `wilsonLower` describes a sample that no longer exists; and
+ *   `wilsonLower` describes a sample that no longer exists;
+ * - a policy constant the decision reads has moved since it was recorded, so
+ *   the decision was computed over rules that no longer hold; and
  * - the stored decision does not equal a fresh `decideAutoPublish` over the
  *   current inputs, which means either the stored record is wrong or the code
  *   changed underneath it.
+ *
+ * `policy` defaults to the live constants and MUST be bound at the current
+ * constants, not the ones recorded in `stored.binding.policy`. Re-binding under
+ * the stored policy compares a decision against the rules that produced it and
+ * can never observe a restrictive rule moving, which is the gap closed here
+ * (F-CI-1). The default is evaluated per call, so a ceiling that moves between
+ * calls is picked up without a version label.
  */
 export function classifyDecisionReuse(
   stored: BoundDecision | null,
   current: AutoPublishInput,
+  policy: PolicyBinding = currentPolicyBinding(),
 ): ReuseVerdict {
   const fresh = decideAutoPublish(current);
   if (!stored) {
@@ -333,8 +363,9 @@ export function classifyDecisionReuse(
       reasons: ["a decision with no input binding cannot be shown to describe the current sample"],
     };
   }
-  const nowBinding = bindDecisionInputs(current, stored.binding.policy);
+  const nowBinding = bindDecisionInputs(current, policy);
   const drift = classifyBindingDrift(stored.binding, nowBinding);
+  const policyMoves = movedPolicyConstants(stored.binding.policy, nowBinding.policy);
   if (drift.drift) {
     return {
       refusal: "REFUSED_INPUT_DRIFT",
@@ -343,8 +374,8 @@ export function classifyDecisionReuse(
       floor_lowering_required: false,
       reasons: [
         `stored decision was computed over ${stored.binding.sample.qualified_ready}/${stored.binding.sample.total_jobs}; current inputs are ${nowBinding.sample.qualified_ready}/${nowBinding.sample.total_jobs}`,
-        ...(stored.binding.policy_digest !== nowBinding.policy_digest
-          ? ["the policy constants the decision reads have moved since the decision was recorded"]
+        ...(policyMoves.length > 0
+          ? [`the policy constants the decision reads have moved since the decision was recorded: ${policyMoves.join("; ")}`]
           : []),
       ],
     };

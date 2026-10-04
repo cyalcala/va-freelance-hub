@@ -53,6 +53,7 @@ import {
   classifyDecisionReuse,
   currentPolicyBinding,
   deriveHoldResolution,
+  policyBindingDigest,
   type BoundDecision,
 } from "./publish-hold-resolution";
 
@@ -272,70 +273,135 @@ describe("MATH-08: both share ceilings bind, and one row of inventory flips them
   });
 });
 
-// ─── F-CI-1: a cohort the live ceilings now block is still REUSE and REUSABLE ──
+// ─── F-CI-1: the binding half, closed. The ladder half is still open ───────────
+//
+// Pre-fix measurement, kept here because it is the reason for the change and the
+// reason this file still has an OPEN case below: `classifyDecisionReuse` re-bound
+// the current inputs under `stored.binding.policy`, so a decision was compared
+// against the very rules that produced it. A binding stamped under
+// `top_source_share_max * 2` came back `REUSABLE` with `UNCHANGED` and an empty
+// `dimensions` list, while `classifyBindingDrift` on the same pair reported
+// `POLICY_CONSTANTS_CHANGED`. Master §10B's "dependency invalidation selects the
+// affected records … when a restrictive rule can change them" therefore had no
+// trigger at all on this path.
 
-describe("MATH-10: F-CI-1 a share-ceiling move produces no invalidation verdict", () => {
-  it("the ceiling blocks the decision the ladder still calls REUSE", () => {
-    // The restrictive rule moved: this cohort is now refused by the live ceilings.
-    expect(decideAutoPublish(withInput(SOURCE_AT_CEILING)).action).toBe("HOLD");
-    expect(decideAutoPublish(withInput(SOURCE_AT_CEILING)).concentration).toBe("BLOCKED");
-
-    // Nothing in the record changed, and no version label moved, so the SSAE-07
-    // ladder still reuses the cached cohort.
-    const mode = selectProcessingMode(sourceRecord(), CURRENT_VERSIONS);
-    expect(mode.mode).toBe("REUSE");
-
-    // The decision binding likewise sees identical inputs.
-    const verdict = classifyDecisionReuse(bound(withInput(SOURCE_AT_CEILING)), withInput(SOURCE_AT_CEILING));
-    expect(verdict.refusal).toBe("REUSABLE");
-    expect(verdict.drift.class).toBe("UNCHANGED");
-    expect(verdict.drift.dimensions).toEqual([]);
-  });
-
-  it("the reuse path cannot see the live policy, by signature and by behaviour", () => {
-    // Structural: the second parameter is the input record, not a policy, so no
-    // caller can hand the live constants to the reuse check.
+describe("MATH-10: F-CI-1 the reuse path is bound at the live constants", () => {
+  it("the reuse signature can now be handed the live policy, and defaults to it", () => {
+    // Structural, restated after the change: `.length` is still 2 because the
+    // policy parameter is defaulted, so a caller that omits it reads the live
+    // constants and a caller that supplies one is no longer unable to.
     expect(classifyDecisionReuse.length).toBe(2);
 
-    // Behavioural: a binding stamped under a superseded ceiling is compared under
-    // that same superseded ceiling, so the move is invisible on the reuse path.
+    const live = currentPolicyBinding();
+    const input = withInput(ROOMY);
+    const stored = bound(input);
+
+    // Omitting the policy compares against the live constants.
+    expect(classifyDecisionReuse(stored, input).refusal).toBe("REUSABLE");
+
+    // Supplying a different, looser policy is honoured rather than ignored.
+    const looser = { ...live, top_source_share_max: live.top_source_share_max * 2 };
+    const explicit = classifyDecisionReuse(stored, input, looser);
+    expect(explicit.refusal).toBe("REFUSED_INPUT_DRIFT");
+    expect(explicit.drift.class).toBe("POLICY_CONSTANTS_CHANGED");
+  });
+
+  it("a ceiling that moved since the decision was recorded now refuses reuse", () => {
+    // Behavioural, restated after the change: the same pair that measured
+    // `REUSABLE` / `UNCHANGED` / no `policy_digest` dimension now refuses, and
+    // names the constant and its direction.
     const live = currentPolicyBinding();
     const stale = { ...live, top_source_share_max: live.top_source_share_max * 2 };
     const input = withInput(ROOMY);
     const stored: BoundDecision = { binding: bindDecisionInputs(input, stale), decision: decideAutoPublish(input) };
 
     expect(stored.binding.policy.top_source_share_max).not.toBe(live.top_source_share_max);
+
     const verdict = classifyDecisionReuse(stored, input);
-    expect(verdict.refusal).toBe("REUSABLE");
-    expect(verdict.drift.class).toBe("UNCHANGED");
-    expect(verdict.drift.dimensions).not.toContain("policy_digest");
-
-    // The same comparison made the way the existing suites make it does name the
-    // move. So the finding is about the reuse path, not about the binding.
-    expect(classifyBindingDrift(stored.binding, bindDecisionInputs(input)).class).toBe("POLICY_CONSTANTS_CHANGED");
+    expect(verdict.refusal).toBe("REFUSED_INPUT_DRIFT");
+    expect(verdict.drift.class).toBe("POLICY_CONSTANTS_CHANGED");
+    expect(verdict.drift.dimensions).toContain("policy_digest");
+    expect(verdict.drift.reusable).toBe(false);
+    expect(verdict.floor_lowering_required).toBe(false);
+    expect(verdict.reasons.join(" ")).toContain("top_source_share_max");
   });
 
-  it("the ceiling is a ceiling in both directions, and the stored text hides which one bit", () => {
-    // Tightening: the same cohort and inventory, a lower source ceiling.
+  it("the refusal names direction, which one drift class cannot carry", () => {
+    // The same `POLICY_CONSTANTS_CHANGED` class covers a tightening and a
+    // loosening, so the reasons are what make a re-decision evaluable.
     const live = currentPolicyBinding();
-    const tightened = { ...live, top_source_share_max: live.top_source_share_max / 2 };
     const input = withInput(ROOMY);
-    const stored: BoundDecision = { binding: bindDecisionInputs(input, tightened), decision: decideAutoPublish(input) };
-    expect(classifyBindingDrift(stored.binding, bindDecisionInputs(input)).class).toBe("POLICY_CONSTANTS_CHANGED");
 
-    // A single drift class covers a tightening and a loosening, and neither says
-    // which direction moved, so a consumer cannot infer that re-decision is safe.
-    const loosened: BoundDecision = { binding: bindDecisionInputs(input, { ...live, top_source_share_max: live.top_source_share_max * 2 }), decision: decideAutoPublish(input) };
-    const tightenDrift = classifyBindingDrift(stored.binding, bindDecisionInputs(input));
-    const loosenDrift = classifyBindingDrift(loosened.binding, bindDecisionInputs(input));
-    expect(tightenDrift.class).toBe(loosenDrift.class);
-    expect(tightenDrift.dimensions).toEqual(loosenDrift.dimensions);
+    const tightened: BoundDecision = {
+      binding: bindDecisionInputs(input, { ...live, top_source_share_max: live.top_source_share_max / 2 }),
+      decision: decideAutoPublish(input),
+    };
+    const loosened: BoundDecision = {
+      binding: bindDecisionInputs(input, { ...live, top_source_share_max: live.top_source_share_max * 2 }),
+      decision: decideAutoPublish(input),
+    };
+
+    const tighten = classifyDecisionReuse(tightened, input);
+    const loosen = classifyDecisionReuse(loosened, input);
+
+    // The class is identical, as measured before the change and unchanged by it.
+    expect(tighten.drift.class).toBe("POLICY_CONSTANTS_CHANGED");
+    expect(loosen.drift.class).toBe(tighten.drift.class);
+
+    // The named constants differ, which is the part a consumer can act on.
+    expect(tighten.reasons.join(" ")).toContain(
+      `top_source_share_max ${live.top_source_share_max / 2} -> ${live.top_source_share_max}`,
+    );
+    expect(loosen.reasons.join(" ")).toContain(
+      `top_source_share_max ${live.top_source_share_max * 2} -> ${live.top_source_share_max}`,
+    );
   });
 
-  it("the inventory dimension, unlike the constants, does invalidate", () => {
-    // Contrast case, so F-CI-1 is bounded: an input the binding *does* cover is
-    // caught. The concentration row's gap is specific to the ceiling constants
-    // and is separate from F-RC-3's missing-snapshot gap.
+  it("the refusal describes the ceilings that hold now, not the ones that held then", () => {
+    // The live ceilings block this cohort, so the recomputed decision is the
+    // refusal the operator must act on. The stored text is whatever the code
+    // produced when it ran: `decideAutoPublish` reads the live constants, so a
+    // record stamped under a superseded ceiling can only come from a run before
+    // the change — which is exactly why the binding has to carry the digest
+    // rather than trust the decision's own words.
+    const live = currentPolicyBinding();
+    const input = withInput(SOURCE_AT_CEILING);
+    const stale = { ...live, top_source_share_max: live.top_source_share_max * 2 };
+    const stored: BoundDecision = { binding: bindDecisionInputs(input, stale), decision: decideAutoPublish(input) };
+
+    expect(stored.binding.policy.top_source_share_max).toBe(live.top_source_share_max * 2);
+    expect(stored.binding.policy_digest).not.toBe(policyBindingDigest(live));
+
+    const verdict = classifyDecisionReuse(stored, input);
+    expect(verdict.refusal).toBe("REFUSED_INPUT_DRIFT");
+    expect(verdict.drift.class).toBe("POLICY_CONSTANTS_CHANGED");
+    expect(verdict.current_decision!.action).toBe("HOLD");
+    expect(verdict.current_decision!.concentration).toBe("BLOCKED");
+    expect(verdict.current_decision!.publishCount).toBe(0);
+  });
+
+  it("an unchanged policy is still reusable, so the change costs nothing when nothing moved", () => {
+    const stored = bound(withInput(ROOMY));
+    const verdict = classifyDecisionReuse(stored, withInput(ROOMY));
+    expect({ refusal: verdict.refusal, class: verdict.drift.class, dimensions: verdict.drift.dimensions })
+      .toEqual({ refusal: "REUSABLE", class: "UNCHANGED", dimensions: [] });
+  });
+
+  it("OPEN, not closed by this unit: the SSAE-07 ladder still reuses the blocked cohort", () => {
+    // The ladder keys its POLICY dependency off the `policy_version` string, so
+    // with no label move it still returns REUSE for a cohort the live ceilings
+    // refuse. The binding half of F-CI-1 is closed; this half is not, and this
+    // assertion exists so the gap cannot be forgotten.
+    expect(decideAutoPublish(withInput(SOURCE_AT_CEILING)).action).toBe("HOLD");
+    expect(decideAutoPublish(withInput(SOURCE_AT_CEILING)).concentration).toBe("BLOCKED");
+
+    const mode = selectProcessingMode(sourceRecord(), CURRENT_VERSIONS);
+    expect(mode.mode).toBe("REUSE");
+  });
+
+  it("the inventory dimension, unlike the constants, invalidates as before", () => {
+    // Contrast case, so the change is bounded: an input the binding covered
+    // before it is still covered, and its class is unchanged.
     const stored = bound(withInput(ROOMY));
     const verdict = classifyDecisionReuse(stored, withInput(SOURCE_AT_CEILING));
     expect(verdict.refusal).toBe("REFUSED_INPUT_DRIFT");

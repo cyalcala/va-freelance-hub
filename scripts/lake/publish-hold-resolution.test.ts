@@ -34,6 +34,7 @@ import {
   classifyDecisionReuse,
   currentPolicyBinding,
   deriveHoldResolution,
+  movedPolicyConstants,
   normalizeInventory,
   normalizeSample,
   policyBindingDigest,
@@ -599,5 +600,111 @@ describe("v6.5-CASES: MATH-05 characterized findings, not fixes", () => {
     const findings = characterizeDecisionBinding(AMBIGUOUS, policy, "2026-10-04T03:00:00Z");
 
     expect(findings.limitations.some((line) => line.includes(policyBindingDigest(policy)))).toBe(true);
+  });
+});
+
+// ─── Policy moves are visible on the reuse path (F-CI-1, binding half) ─────────
+
+describe("MATH-10: a moved policy constant invalidates a stored publication decision", () => {
+  it("names each moved constant once, with its old and new value", () => {
+    const live = currentPolicyBinding();
+    const moved: PolicyBinding = {
+      ...live,
+      min_jobs_for_rate: MIN_JOBS_FOR_RATE + 1,
+      publish_ph_rate_floor: PUBLISH_PH_RATE_FLOOR / 2,
+    };
+
+    expect(movedPolicyConstants(moved, live)).toEqual([
+      `min_jobs_for_rate ${MIN_JOBS_FOR_RATE + 1} -> ${MIN_JOBS_FOR_RATE}`,
+      `publish_ph_rate_floor ${PUBLISH_PH_RATE_FLOOR / 2} -> ${PUBLISH_PH_RATE_FLOOR}`,
+    ]);
+  });
+
+  it("reports no move for an identical policy, and orders names by key not by insertion", () => {
+    const live = currentPolicyBinding();
+    expect(movedPolicyConstants(live, { ...live })).toEqual([]);
+
+    // Two moves supplied in reverse alphabetical insertion order still come back
+    // in sorted key order, so the reason text is stable across callers.
+    const reversed: PolicyBinding = {
+      ...live,
+      top_provider_family_share_max: TOP_PROVIDER_FAMILY_SHARE_MAX / 2,
+      top_source_share_max: TOP_SOURCE_SHARE_MAX / 2,
+    };
+    expect(movedPolicyConstants(reversed, live)).toEqual([
+      `top_provider_family_share_max ${TOP_PROVIDER_FAMILY_SHARE_MAX / 2} -> ${TOP_PROVIDER_FAMILY_SHARE_MAX}`,
+      `top_source_share_max ${TOP_SOURCE_SHARE_MAX / 2} -> ${TOP_SOURCE_SHARE_MAX}`,
+    ]);
+  });
+
+  it("refuses reuse of a PUBLISH recorded under a looser sample floor", () => {
+    const live = currentPolicyBinding();
+    const looser: PolicyBinding = { ...live, min_jobs_for_rate: MIN_JOBS_FOR_RATE - 1 };
+    const stored: BoundDecision = { binding: bindDecisionInputs(CLEARING, looser), decision: decideAutoPublish(CLEARING) };
+
+    // Pre-fix this returned REUSABLE: the decision was re-bound under the very
+    // constants that produced it, so the move was invisible.
+    const verdict = classifyDecisionReuse(stored, CLEARING);
+
+    expect(stored.decision.action).toBe("PUBLISH");
+    expect(verdict.refusal).toBe("REFUSED_INPUT_DRIFT");
+    expect(verdict.drift.class).toBe("POLICY_CONSTANTS_CHANGED");
+    expect(verdict.drift.reusable).toBe(false);
+    expect(verdict.floor_lowering_required).toBe(false);
+    expect(verdict.reasons.some((reason) => reason.includes(`min_jobs_for_rate ${MIN_JOBS_FOR_RATE - 1} -> ${MIN_JOBS_FOR_RATE}`))).toBe(true);
+  });
+
+  it("refuses reuse of a decision recorded under a higher Jev confidence floor", () => {
+    const live = currentPolicyBinding();
+    const stricter: PolicyBinding = { ...live, jev_min_confidence: JEV_MIN_CONFIDENCE + 0.05 };
+    const input: AutoPublishInput = { ...AMBIGUOUS, jevChoice: "ADMIT", jevConfidence: JEV_MIN_CONFIDENCE };
+    const stored: BoundDecision = { binding: bindDecisionInputs(input, stricter), decision: decideAutoPublish(input) };
+
+    const verdict = classifyDecisionReuse(stored, input);
+
+    expect(verdict.refusal).toBe("REFUSED_INPUT_DRIFT");
+    expect(verdict.drift.dimensions).toContain("policy_digest");
+    expect(verdict.reasons.join(" ")).toContain("jev_min_confidence");
+  });
+
+  it("still reuses a decision whose policy is exactly the live one", () => {
+    const stored = bound(CLEARING);
+    const verdict = classifyDecisionReuse(stored, CLEARING, currentPolicyBinding());
+
+    expect(verdict.refusal).toBe("REUSABLE");
+    expect(verdict.drift).toEqual({ class: "UNCHANGED", drift: false, dimensions: [], reusable: true });
+    expect(verdict.reasons).toEqual([]);
+  });
+
+  it("reads the live constants on every call, not once at module load", () => {
+    // A ceiling move is a code change, so this is proven by construction rather
+    // than by a mutation test: the default argument is evaluated per call, and
+    // the explicit parameter is what the ceiling fixture drives.
+    const live = currentPolicyBinding();
+    const atFloor = { ...live, publish_ph_rate_floor: PUBLISH_PH_RATE_FLOOR };
+    const belowFloor = { ...live, publish_ph_rate_floor: PUBLISH_PH_RATE_FLOOR * 2 };
+    const stored: BoundDecision = { binding: bindDecisionInputs(CLEARING), decision: decideAutoPublish(CLEARING) };
+
+    expect(classifyDecisionReuse(stored, CLEARING, atFloor).refusal).toBe("REUSABLE");
+    expect(classifyDecisionReuse(stored, CLEARING, belowFloor).refusal).toBe("REFUSED_INPUT_DRIFT");
+    // The stored record is untouched by either comparison.
+    expect(stored.binding.policy_digest).toBe(policyBindingDigest(live));
+  });
+
+  it("does not let a policy move rescue a stored decision that does not reproduce", () => {
+    // Both refusals stay independent: matching policy, tampered decision text.
+    const stored = bound(CLEARING);
+    const tampered: BoundDecision = {
+      binding: stored.binding,
+      decision: { ...stored.decision, action: "PUBLISH", publishCount: stored.decision.publishCount + 5 },
+    };
+
+    expect(classifyDecisionReuse(tampered, CLEARING).refusal).toBe("REFUSED_DECISION_NOT_REPRODUCIBLE");
+  });
+
+  it("a null binding is refused before any policy comparison is attempted", () => {
+    const verdict = classifyDecisionReuse(null, CLEARING);
+    expect(verdict.refusal).toBe("REFUSED_NO_BINDING");
+    expect(verdict.drift.dimensions).toEqual(["binding"]);
   });
 });
