@@ -399,6 +399,84 @@ export function classifyDecisionReuse(
   return { refusal: "REUSABLE", drift, current_decision: fresh, floor_lowering_required: false, reasons: [] };
 }
 
+// ─── Concentration ceiling: which accepted ceiling actually left no room ──────
+
+/**
+ * Which of the two accepted share ceilings blocked, each half in the unit it is
+ * measured in: a share against a share, a row count against a row count.
+ *
+ * `concentrationAllowance` returns only `{ allowed, concentration }`, so a caller
+ * that is held cannot tell which ceiling bit — its only clue is the prose in
+ * `AutoPublishDecision.reason`. This recomputes both shares from the same snapshot
+ * rows and the same two live constants. `shareRoom` in
+ * `scripts/lake/auto-publish-policy.ts` returns zero room exactly when
+ * `rows >= ceiling * activeTotal`, so `binding` names the ceiling on the same
+ * arithmetic the allowance acts on; the tests re-check that agreement against
+ * `concentrationAllowance` itself rather than restating it as a constant.
+ *
+ * No ceiling is proposed, raised or lowered, and no numeric gate is added: both
+ * thresholds are read from `scripts/ci/constitution-metrics.ts`, the module that
+ * owns them.
+ */
+export interface ConcentrationCeiling {
+  /** An inventory snapshot was supplied at all. */
+  present: boolean;
+  /** The snapshot is large enough for a ceiling to be measured on it. */
+  measurable: boolean;
+  source_family: string;
+  active_total: number;
+  source_rows: number;
+  family_rows: number;
+  /** Share of the active board, or null when it cannot be measured. */
+  source_share: number | null;
+  family_share: number | null;
+  /** The ceiling that leaves no room; `NONE` when the allowance is positive. */
+  binding: "TOP_SOURCE_SHARE_MAX" | "TOP_PROVIDER_FAMILY_SHARE_MAX" | "BOTH" | "NONE";
+}
+
+export function describeConcentrationCeiling(
+  sourceId: string,
+  inventory: InventorySnapshot | null,
+): ConcentrationCeiling {
+  const family = providerFamily(sourceId);
+  const rows: InventorySnapshot["bySource"] = inventory === null ? [] : inventory.bySource;
+  const activeTotal = inventory === null ? 0 : inventory.activeTotal;
+  const measurable = inventory !== null && activeTotal >= MIN_INVENTORY_FOR_CONCENTRATION;
+  const sourceRows = rows
+    .filter((row) => row.sourceId === sourceId)
+    .reduce((sum, row) => sum + row.count, 0);
+  const familyRows = rows
+    .filter((row) => providerFamily(row.sourceId) === family)
+    .reduce((sum, row) => sum + row.count, 0);
+  const sourceShare = measurable ? sourceRows / activeTotal : null;
+  const familyShare = measurable ? familyRows / activeTotal : null;
+  const sourceAtCeiling = sourceShare !== null && sourceShare >= TOP_SOURCE_SHARE_MAX;
+  const familyAtCeiling = familyShare !== null && familyShare >= TOP_PROVIDER_FAMILY_SHARE_MAX;
+  const binding = sourceAtCeiling && familyAtCeiling
+    ? "BOTH"
+    : sourceAtCeiling
+      ? "TOP_SOURCE_SHARE_MAX"
+      : familyAtCeiling
+        ? "TOP_PROVIDER_FAMILY_SHARE_MAX"
+        : "NONE";
+  return {
+    present: inventory !== null,
+    measurable,
+    source_family: family,
+    active_total: activeTotal,
+    source_rows: sourceRows,
+    family_rows: familyRows,
+    source_share: sourceShare,
+    family_share: familyShare,
+    binding,
+  };
+}
+
+/** A share as a percentage string for prose, without inventing precision. */
+function shareText(value: number | null): string {
+  return value === null ? "an unmeasured share" : `${(value * 100).toFixed(2)}%`;
+}
+
 // ─── Hold resolution: named missing evidence and a next evidence action ───────
 
 /**
@@ -449,6 +527,13 @@ export interface HoldResolution {
   next_action: NextEvidenceAction | null;
   /** Always false: a hold resolves with evidence, never with a lower floor. */
   floor_lowering_required: false;
+  /**
+   * Both share ceilings as measured on the snapshot, and which one actually left
+   * no room. Present on every decision, not only a concentration hold, so a
+   * caller never has to re-derive it and can see `NONE` where the ceilings were
+   * not what blocked.
+   */
+  concentration_ceiling: ConcentrationCeiling;
   /**
    * The result of the repository's own hold-discipline check over the projection
    * of this decision into a latency observation. Recorded as measured, not
@@ -523,7 +608,7 @@ export function deriveHoldResolution(
   const sample = normalizeSample(input);
   const constraint = classifyConstraint(input, decision, sample);
   const additional = Math.max(0, MIN_JOBS_FOR_RATE - sample.total_jobs);
-  const inventory = normalizeInventory(input.inventory);
+  const ceiling = describeConcentrationCeiling(input.sourceId, input.inventory);
 
   const missingEvidence: MissingEvidenceItem[] = [];
   let nextAction: NextEvidenceAction | null = null;
@@ -562,21 +647,38 @@ export function deriveHoldResolution(
     };
   } else if (constraint === "CONCENTRATION_CEILING") {
     const room = concentrationAllowance(input.sourceId, sample.qualified_ready, input.inventory);
+    // One item per ceiling that actually left no room, each a share against a
+    // share, so a caller can evaluate `observed >= required` on every item. The
+    // denominator is reported as the row count it is, with no invented threshold.
+    if (ceiling.binding === "TOP_SOURCE_SHARE_MAX" || ceiling.binding === "BOTH") {
+      missingEvidence.push({
+        field: "inventory.source_share",
+        why: `this source already holds ${shareText(ceiling.source_share)} of the ${ceiling.active_total} active rows, so the source share ceiling leaves no room for another publication from it`,
+        observed: ceiling.source_share,
+        required: TOP_SOURCE_SHARE_MAX,
+      });
+    }
+    if (ceiling.binding === "TOP_PROVIDER_FAMILY_SHARE_MAX" || ceiling.binding === "BOTH") {
+      missingEvidence.push({
+        field: "inventory.family_share",
+        why: `provider family ${ceiling.source_family} already holds ${shareText(ceiling.family_share)} of the active rows, so the family share ceiling leaves no room for another publication from it`,
+        observed: ceiling.family_share,
+        required: TOP_PROVIDER_FAMILY_SHARE_MAX,
+      });
+    }
     missingEvidence.push({
       field: "inventory.active_total",
-      why: "the concentration allowance is zero, so another publication from this family would breach a share ceiling",
-      observed: inventory.present ? inventory.active_total : null,
-      required: TOP_PROVIDER_FAMILY_SHARE_MAX,
-    });
-    missingEvidence.push({
-      field: "family.share",
-      why: "the provider family is already at or over its ceiling share",
-      observed: providerFamily(input.sourceId),
-      required: TOP_SOURCE_SHARE_MAX,
+      why: "share room is a ratio of this board's active rows to a ceiling, so it is reported as the row count it is; it is the denominator of the shares above, not a threshold of its own",
+      observed: ceiling.active_total,
+      required: null,
     });
     nextAction = {
-      description: "re-run the allowance against the current inventory once the family share changes; no share ceiling may be raised",
-      produces_field: "inventory.active_total",
+      description: "re-measure both share ceilings against the current inventory; the producer is other sources publishing or existing rows leaving the active board, not further observations from this cohort, and no share ceiling may be raised",
+      produces_field: ceiling.binding === "TOP_SOURCE_SHARE_MAX"
+        ? "inventory.source_share"
+        : ceiling.binding === "TOP_PROVIDER_FAMILY_SHARE_MAX"
+          ? "inventory.family_share"
+          : "inventory.active_total",
       owner_role: "MAINTAINER",
       trigger: `allowance is ${room.allowed}; re-check when the active inventory changes`,
     };
@@ -598,6 +700,7 @@ export function deriveHoldResolution(
     missing_evidence: missingEvidence,
     next_action: nextAction,
     floor_lowering_required: false,
+    concentration_ceiling: ceiling,
     hold_discipline: checkHoldDiscipline(observation),
     reason: decision.reason,
   };

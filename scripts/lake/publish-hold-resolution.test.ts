@@ -541,14 +541,83 @@ describe("v6.5-CASES: MATH-08 a concentration hold names the ceiling", () => {
     expect(decision.concentration).toBe("BLOCKED");
   });
 
-  it("names the inventory and the family share as the missing facts", () => {
+  it("names each ceiling that actually bit, share against share, and counts the denominator as rows", () => {
     const resolution = deriveHoldResolution(saturated, decideAutoPublish(saturated), "2026-10-04T03:00:00Z");
 
+    // This cohort is the whole board, so BOTH ceilings leave no room and both are
+    // named. Each pair is commensurable: `observed` and `required` are shares.
     expect(resolution.blocking_constraint).toBe("CONCENTRATION_CEILING");
-    expect(resolution.missing_evidence.map((item) => item.field)).toEqual(["inventory.active_total", "family.share"]);
-    expect(resolution.missing_evidence[1].observed).toBe(providerFamily("saturated-source"));
-    expect(resolution.missing_evidence[0].required).toBe(TOP_PROVIDER_FAMILY_SHARE_MAX);
-    expect(resolution.missing_evidence[1].required).toBe(TOP_SOURCE_SHARE_MAX);
+    expect(resolution.concentration_ceiling.binding).toBe("BOTH");
+    expect(resolution.missing_evidence.map((item) => item.field)).toEqual([
+      "inventory.source_share",
+      "inventory.family_share",
+      "inventory.active_total",
+    ]);
+
+    const [source, family, denominator] = resolution.missing_evidence;
+    expect(source.observed).toBeCloseTo(1, 12);
+    expect(source.required).toBe(TOP_SOURCE_SHARE_MAX);
+    expect(family.observed).toBeCloseTo(1, 12);
+    // The family is held to its own ceiling, not to the stricter source ceiling.
+    expect(family.required).toBe(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(family.required).not.toBe(TOP_SOURCE_SHARE_MAX);
+
+    // The denominator is a row count and states no threshold, because no count of
+    // active rows is commensurable with a share on its own.
+    expect(denominator.observed).toBe(saturated.inventory!.activeTotal);
+    expect(denominator.required).toBeNull();
+    expect(typeof denominator.observed).toBe("number");
+  });
+
+  it("names only the ceiling that bit when the family is under its own ceiling", () => {
+    // `jobicy:ph` sits exactly on the source ceiling while its family is at 0.35,
+    // legitimately under the 0.40 family ceiling: the source ceiling is the only
+    // one that left no room, and it is the only one named.
+    const sourceAtCeiling: AutoPublishInput = {
+      sourceId: "jobicy:ph",
+      totalJobs: 100,
+      qualifiedReady: 40,
+      jevChoice: null,
+      jevConfidence: null,
+      inventory: {
+        activeTotal: 400,
+        bySource: [
+          { sourceId: "jobicy:ph", count: 100 },
+          { sourceId: "jobicy:sg", count: 40 },
+          { sourceId: "we-work-remotely", count: 201 },
+          { sourceId: "remotive", count: 59 },
+        ],
+      },
+    };
+    const decision = decideAutoPublish(sourceAtCeiling);
+    expect(decision.action).toBe("HOLD");
+    expect(decision.concentration).toBe("BLOCKED");
+
+    const resolution = deriveHoldResolution(sourceAtCeiling, decision, "2026-10-04T03:00:00Z");
+    expect(resolution.concentration_ceiling.binding).toBe("TOP_SOURCE_SHARE_MAX");
+    expect(resolution.concentration_ceiling.family_share).toBeCloseTo(140 / 400, 12);
+    expect(resolution.concentration_ceiling.family_share!).toBeLessThan(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(resolution.missing_evidence.map((item) => item.field)).toEqual([
+      "inventory.source_share",
+      "inventory.active_total",
+    ]);
+    expect(resolution.next_action!.produces_field).toBe("inventory.source_share");
+  });
+
+  it("reports no binding ceiling, and an unmeasurable board, rather than inventing a block", () => {
+    // Below the live minimum the allowance is inert, so nothing is measured.
+    const young = deriveHoldResolution(
+      { ...saturated, inventory: { activeTotal: 99, bySource: [{ sourceId: "saturated-source", count: 99 }] } },
+      decideAutoPublish({ ...saturated, inventory: { activeTotal: 99, bySource: [{ sourceId: "saturated-source", count: 99 }] } }),
+      "2026-10-04T03:00:00Z",
+    );
+    expect(young.concentration_ceiling.measurable).toBe(false);
+    expect(young.concentration_ceiling.binding).toBe("NONE");
+    expect(young.concentration_ceiling.source_share).toBeNull();
+
+    const absent = deriveHoldResolution({ ...saturated, inventory: null }, decideAutoPublish({ ...saturated, inventory: null }), null);
+    expect(absent.concentration_ceiling.present).toBe(false);
+    expect(absent.concentration_ceiling.binding).toBe("NONE");
   });
 
   it("resolves by re-checking the allowance, never by raising a ceiling", () => {

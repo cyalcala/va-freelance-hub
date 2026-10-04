@@ -33,8 +33,11 @@
  * - Every record is a synthetic fixture. No D1, lake, runtime or deployment
  *   evidence is claimed; all runtime invalidation and replay rates are UNKNOWN.
  * - Findings (F-CI-*) state reproducible CURRENT behaviour with the consequence
- *   named. None is fixed here; each needs its own authorized unit, and the fix
- *   that would work is on the MERGE_RUBRIC §4.3 hold list, so it is proposed.
+ *   named. F-CI-2 and F-CI-3 were characterized here and are now fixed in
+ *   `scripts/lake/publish-hold-resolution.ts`, so their cases below are closure
+ *   tests over the same fixtures; every other finding still states open current
+ *   behaviour and needs its own authorized unit. None of these findings was ever
+ *   production behaviour — no writer imports that module.
  * - SSAE-02 stays PROPOSED. Nothing here accepts SSAE-02, MATH-08 or MATH-10.
  */
 
@@ -53,6 +56,7 @@ import {
   classifyDecisionReuse,
   currentPolicyBinding,
   deriveHoldResolution,
+  describeConcentrationCeiling,
   policyBindingDigest,
   type BoundDecision,
 } from "./publish-hold-resolution";
@@ -411,57 +415,119 @@ describe("MATH-10: F-CI-1 the reuse path is bound at the live constants", () => 
   });
 });
 
-// ─── F-CI-2 / F-CI-3: what the concentration hold tells the next operator ──────
+// ─── F-CI-2 / F-CI-3 closed: what the concentration hold tells the next operator ─
+//
+// Session 11 characterised both defects against the previous behaviour of
+// `deriveHoldResolution`. They are now fixed in that module, so the
+// characterization is restated as a closure test over the same fixtures. The
+// historical shape is recorded in `docs/SYSTEM_SAVEPOINT.md` (sessions 11 and 12);
+// nothing else in this file changes, and the defects were never production
+// behaviour — no writer imports the module.
 
-describe("MATH-08: F-CI-2 the concentration hold names a share where it measured a count", () => {
-  it("the missing-evidence pairs are incommensurable, and the family share is given the wrong ceiling", () => {
+describe("MATH-08: F-CI-2 closed — each missing-evidence pair is commensurable", () => {
+  it("a source blocked at its own ceiling names that ceiling, share against share", () => {
     const input = withInput(SOURCE_AT_CEILING);
     const decision = decideAutoPublish(input);
     expect(decision.action).toBe("HOLD");
 
     const resolution = deriveHoldResolution(input, decision, "2026-10-04T03:00:00.000Z");
     expect(resolution.blocking_constraint).toBe("CONCENTRATION_CEILING");
-    expect(resolution.missing_evidence.map((item) => item.field)).toEqual(["inventory.active_total", "family.share"]);
 
-    const [countItem, shareItem] = resolution.missing_evidence;
-    // The first item observed a *count* of active rows and states its requirement
-    // as a *share*, so no caller can evaluate `observed >= required` on it.
-    expect(countItem.observed).toBe(SOURCE_AT_CEILING.activeTotal);
-    expect(countItem.required).toBe(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    // Previously this pair was `{ observed: 400 rows, required: 0.4 }`: a count
+    // measured against a share, which no caller can evaluate.
+    const denominator = resolution.missing_evidence.find((item) => item.field === "inventory.active_total")!;
+    expect(denominator.observed).toBe(SOURCE_AT_CEILING.activeTotal);
+    expect(denominator.required).toBeNull();
 
-    // The second item is about the family's share, and the value it must reach is
-    // the *source* ceiling. A family is legitimately allowed up to the family
-    // ceiling, so this target is wrong for the constraint that actually blocked.
-    expect(shareItem.observed).toBe(providerFamily(COHORT.sourceId));
-    expect(shareItem.required).toBe(TOP_SOURCE_SHARE_MAX);
-    expect(shareItem.required).not.toBe(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    // The share pair is commensurable. The family is at 140/400 = 0.35, legitimately
+    // under its own 0.40 ceiling, so it is correctly *not* named: under the old
+    // behaviour the hold told the operator to bring the family down to the stricter
+    // 0.25 *source* ceiling, which is not the constraint that bit and is not
+    // required of a family.
+    const source = resolution.missing_evidence.find((item) => item.field === "inventory.source_share")!;
+    expect(resolution.missing_evidence.map((item) => item.field)).toEqual([
+      "inventory.source_share",
+      "inventory.active_total",
+    ]);
+    expect(source.observed).toBeCloseTo(100 / 400, 12);
+    expect(source.required).toBe(TOP_SOURCE_SHARE_MAX);
+    expect(resolution.concentration_ceiling.binding).toBe("TOP_SOURCE_SHARE_MAX");
+    expect(resolution.concentration_ceiling.family_share!).toBeLessThan(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(resolution.next_action!.produces_field).toBe("inventory.source_share");
 
-    // In this fixture the family ceiling is the one that bit, yet the hold's own
-    // stated target for the family is the stricter source ceiling.
-    const familyNow = SOURCE_AT_CEILING.bySource
-      .filter((row) => providerFamily(row.sourceId) === providerFamily(COHORT.sourceId))
-      .reduce((sum, row) => sum + row.count, 0) / SOURCE_AT_CEILING.activeTotal;
-    expect(familyNow).toBeLessThan(TOP_PROVIDER_FAMILY_SHARE_MAX);
-    expect(shareItem.required).toBeLessThan(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    // Every named requirement is one the cohort is actually measured against, so
+    // `observed >= required` is evaluable on all of them.
+    for (const item of resolution.missing_evidence) {
+      if (item.required === null) continue;
+      expect(typeof item.observed).toBe(typeof item.required);
+    }
   });
 
-  it("F-CI-3 — the hold needs no observation from this cohort, and the next action names the wrong producer", () => {
+  it("a family blocked at its own ceiling names the family ceiling and not the source ceiling", () => {
+    const input = withInput(FAMILY_AT_CEILING);
+    const decision = decideAutoPublish(input);
+    expect(decision.action).toBe("HOLD");
+    expect(decision.concentration).toBe("BLOCKED");
+
+    const resolution = deriveHoldResolution(input, decision, "2026-10-04T03:00:00.000Z");
+    expect(resolution.concentration_ceiling.binding).toBe("TOP_PROVIDER_FAMILY_SHARE_MAX");
+    expect(resolution.missing_evidence.map((item) => item.field)).toEqual([
+      "inventory.family_share",
+      "inventory.active_total",
+    ]);
+    const family = resolution.missing_evidence[0];
+    expect(family.observed).toBeCloseTo(160 / 400, 12);
+    expect(family.required).toBe(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    // The cohort's own source is well under the source ceiling, so naming it
+    // would send the operator after a constraint that is not binding.
+    expect(resolution.concentration_ceiling.source_share!).toBeLessThan(TOP_SOURCE_SHARE_MAX);
+    expect(resolution.next_action!.produces_field).toBe("inventory.family_share");
+  });
+
+  it("the recomputed ceiling agrees with `concentrationAllowance` itself, not with a restatement", () => {
+    // The guard against the duplication this fix introduces: `describeConcentrationCeiling`
+    // recomputes both shares locally because `concentrationAllowance` does not
+    // expose them. Over every fixture, "a ceiling left no room" must agree with
+    // "the allowance granted nothing" — measured against the real function.
+    const snapshots: InventorySnapshot[] = [
+      ROOMY,
+      SOURCE_AT_CEILING,
+      ONE_BELOW_SOURCE_CEILING,
+      FAMILY_AT_CEILING,
+      { activeTotal: 99, bySource: [{ sourceId: "jobicy:ph", count: 99 }] },
+      { activeTotal: 400, bySource: [{ sourceId: "jobicy:ph", count: 400 }] },
+    ];
+    for (const snapshot of snapshots) {
+      const ceiling = describeConcentrationCeiling(COHORT.sourceId, snapshot);
+      const allowance = concentrationAllowance(COHORT.sourceId, COHORT.qualifiedReady, snapshot);
+      const blockedByACeiling = ceiling.binding !== "NONE";
+      expect(blockedByACeiling).toBe(allowance.allowed === 0);
+      if (blockedByACeiling) expect(allowance.concentration).toBe("BLOCKED");
+      expect(ceiling.active_total).toBe(snapshot.activeTotal);
+    }
+    expect(describeConcentrationCeiling(COHORT.sourceId, null).binding).toBe("NONE");
+  });
+
+  it("F-CI-3 closed — the named producer is the share that must move, and this cohort cannot move it", () => {
     const input = withInput(SOURCE_AT_CEILING);
     const resolution = deriveHoldResolution(input, decideAutoPublish(input), "2026-10-04T03:00:00.000Z");
 
-    // Nothing the cohort can observe releases it: more postings from this source
-    // make the breach worse, not better.
+    // Unchanged and honest: nothing the cohort observes releases it, because more
+    // postings from this source make the breach worse.
     expect(resolution.additional_observations_needed).toBe(0);
     expect(resolution.resolution_requires_new_observations).toBe(false);
     expect(resolution.floor_lowering_required).toBe(false);
 
-    // The named producer is `inventory.active_total`, i.e. other rows leaving the
-    // active board — an inventory fact, not an observation this cohort produces.
-    expect(resolution.next_action?.produces_field).toBe("inventory.active_total");
-    expect(resolution.missing_evidence.map((item) => item.field)).toContain("inventory.active_total");
+    // Previously `produces_field` was `inventory.active_total` while the trigger
+    // waited on a share change. It now names the share that must actually fall,
+    // and the description names the real producers.
+    expect(resolution.next_action?.produces_field).toBe("inventory.source_share");
+    expect(resolution.next_action?.description).toContain("not further observations from this cohort");
+    expect(resolution.next_action?.description).toContain("no share ceiling may be raised");
+    expect(resolution.next_action?.description).toContain("re-measure both share ceilings");
   });
 
-  it("F-CI-5 — the hold's own discipline check is measured, and passes vacuously without a clock", () => {
+  it("F-CI-5 still open — the hold's own discipline check passes vacuously without a clock", () => {
     const input = withInput(SOURCE_AT_CEILING);
     const withClock = deriveHoldResolution(input, decideAutoPublish(input), "2026-10-04T03:00:00.000Z");
     const withoutClock = deriveHoldResolution(input, decideAutoPublish(input), null);
@@ -477,6 +543,7 @@ describe("MATH-08: F-CI-2 the concentration hold names a share where it measured
     // Without a hold clock the same held decision reports `valid: true`, because
     // `checkHoldDiscipline` short-circuits on `held_at === null`. A caller that
     // forgets the clock therefore sees a *passing* discipline check on a live hold.
+    // UNFIXED: changing that is a change to `checkHoldDiscipline`, proposed.
     expect(withoutClock.hold_discipline.held).toBe(false);
     expect(withoutClock.hold_discipline.valid).toBe(true);
     expect(withoutClock.hold_discipline.reasons).toEqual([]);
