@@ -5,14 +5,17 @@
  * A-G before runtime acceptance"). They exercise real repository logic
  * (packages/scraper/geoGate.ts, scripts/lake/auto-publish-policy.ts,
  * scripts/lake/lake-shared.ts, scripts/lake/source-ranker.ts,
- * scripts/lake/measurement-contracts.ts) with deterministic fixtures.
+ * scripts/lake/observation-clocks.ts, scripts/lake/measurement-contracts.ts)
+ * with deterministic fixtures.
  *
  * Scope limits, stated honestly:
  * - Nothing here proves a runtime SLO, publication effect or deployed behavior.
  * - No case widens publication authority, lowers a Wilson/sample floor, or
  *   bypasses the publication gateway; that authority remains untouched.
  * - Where a case needs a seam that does not exist as a pure function, the test is
- *   `it.skip` with the exact missing seam named instead of a fake pass.
+ *   `it.skip` with the exact missing seam named instead of a fake pass. Case G's
+ *   age-preservation seam was closed by scripts/lake/observation-clocks.ts on
+ *   2026-10-04, so the file currently has no skipped test.
  *
  * Labels: "v6.5-CASES:" + MATH id.
  */
@@ -20,6 +23,11 @@
 import { describe, expect, it } from "bun:test";
 import { geoGate } from "../../packages/scraper/geoGate";
 import { computeFingerprint } from "./lake-shared";
+import {
+  applySighting,
+  emptyClocks,
+  observationAgeDays,
+} from "./observation-clocks";
 import { decideAutoPublish, wilsonLowerBound } from "./auto-publish-policy";
 import {
   checkColdRevisit,
@@ -492,12 +500,38 @@ describe("v6.5-CASES: MATH-09 case G — rediscovery and idempotent age", () => 
     expect(label.cohort).not.toBe("FRESH_DISCOVERY");
   });
 
-  it.skip("v6.5-CASES: MATH-09 case G — original first-observation age is not reset by rediscovery", () => {
-    // Missing seam: no pure function in the repository compares an original
-    // first-observation/first-publication clock against a rediscovery. The age
-    // clock lives in the ingest/sighting writer (scripts/lake/ingest-to-lake.ts,
-    // scripts/lake/sync-to-d1.ts), both hold-list paths this unit may not edit,
-    // and the publication path is a production writer. Needs an owner-authorized
-    // pure age-preservation helper plus its own unit; not a fake pass here.
+  it("v6.5-CASES: MATH-09 case G — original first-observation age is not reset by rediscovery", () => {
+    // Seam closed 2026-10-04 by scripts/lake/observation-clocks.ts (MATH-09 /
+    // MATH-10, clock half of SSAE-09): a pure idempotent clock-reconciliation module.
+    // The age anchor is first_observed_at, which no later sighting may move.
+    const identity = computeFingerprint("Owner Co", "Remote VA", "https://careers.owner.example/jobs/42");
+    const facts = {
+      title: "Remote VA",
+      location_raw: "Remote - Philippines",
+      remote: "remote" as const,
+      description_digest: "d41d8cd98f00b204e9800998ecf8427e",
+      apply_url: "https://careers.owner.example/jobs/42",
+      posted_at: "2026-09-28T00:00:00.000Z",
+      safety: "clear" as const,
+    };
+
+    const first = applySighting(emptyClocks(identity), {
+      observed_at: "2026-09-28T02:00:00.000Z",
+      identity_hash: identity,
+      facts,
+    });
+    const rediscovered = applySighting(first.clocks, {
+      observed_at: "2026-10-03T02:00:00.000Z",
+      identity_hash: computeFingerprint("owner co", "remote va", "https://careers.owner.example/jobs/42?utm=x"),
+      facts: { ...facts, location_raw: "Remote (PH)" },
+    });
+
+    expect(first.clocks.first_observed_at).toBe("2026-09-28T02:00:00.000Z");
+    expect(rediscovered.clocks.first_observed_at).toBe(first.clocks.first_observed_at);
+    expect(observationAgeDays(first.clocks, "2026-10-04T02:00:00.000Z")).toBe(6);
+    expect(observationAgeDays(rediscovered.clocks, "2026-10-04T02:00:00.000Z")).toBe(6);
+    expect(rediscovered.changed_fields).toEqual(["location_raw"]);
+    expect(rediscovered.requires_reevaluation).toBe(true);
+    expect(observationAgeDays(emptyClocks(identity), "2026-10-04T02:00:00.000Z")).toBeNull();
   });
 });
