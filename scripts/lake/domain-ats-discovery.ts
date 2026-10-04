@@ -301,6 +301,14 @@ export async function decideAdmission(
   metrics: TenantMetrics,
   judge: typeof judgeViaJev = judgeViaJev,
 ): Promise<AdmissionDecision> {
+  // INCIDENT-0410(i): a hard reject is already decided. `mergeAdmissionDecision`
+  // returns the deterministic decision verbatim for that cohort, so asking the
+  // judge spent a rate-limited paid call only to discard the answer — and then
+  // wrote a `jevRaw` the decision never rested on. Decide first, consult only
+  // where a verdict can still change the outcome. No threshold moves here.
+  const settled = decideAdmissionDeterministic(metrics);
+  if (settled.verdict === "REJECT") return settled;
+
   const stateStr = `tenant=${family}/${tenantSlug} total=${metrics.totalJobs} qualified=${metrics.qualifiedReady} excluded=${metrics.excluded} ambiguous=${metrics.ambiguous} ph_rate=${metrics.phRate.toFixed(3)} categories=${metrics.topCategories.join(",")}`;
 
   const result = await judge(process.env.OPENROUTER_API_KEY, {
