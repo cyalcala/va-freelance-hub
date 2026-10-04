@@ -274,9 +274,11 @@ export async function triageViaGemini(
 
 // Groq is the SECOND free provider — it absorbs Gemini's rate-limit/quota
 // overflow (30 RPM, very fast LPU inference) before the Cloudflare neuron reserve
-// is ever touched. 70B-versatile is capable enough for both bulk and the critical
-// skeptic vote; its ~100k-token/day cap is fine because it only sees overflow.
-export const GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile";
+// is ever touched. The default must name a model Groq currently serves: the
+// previous llama-3.3-70b-versatile default was retired upstream, so the whole rung
+// failed before it could absorb any overflow (INCIDENT-0410). An operator can
+// still override it per-environment with GROQ_MODEL.
+export const GROQ_DEFAULT_MODEL = "openai/gpt-oss-120b";
 
 // Raw Groq chat/completions call (OpenAI-compatible) → model text output. Throws
 // on any HTTP error (429/5xx) so callers can fall through to the next provider.
@@ -286,18 +288,24 @@ export async function groqGenerateContent(
   model?: unknown,
 ): Promise<string> {
   const groqModel = (typeof model === "string" && model.trim()) || GROQ_DEFAULT_MODEL;
+  const request: Record<string, unknown> = {
+    model: groqModel,
+    messages: [
+      { role: "system", content: "You are a precise JSON generator. Output only valid JSON objects." },
+      { role: "user", content: prompt },
+    ],
+    temperature: 0,
+  };
+  // JSON mode (grammar-constrained output) kills parse failures on models that
+  // serve it, and is a hard 400 from the provider on models that do not — which
+  // would throw and drop the whole Groq rung. Guarded per model, like the
+  // Workers AI ladder below; other rungs answer free-form text that
+  // parseLooseJson already recovers, so the guard cannot cost a verdict.
+  if (groqModel.includes("llama-3.3")) request.response_format = { type: "json_object" };
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      model: groqModel,
-      messages: [
-        { role: "system", content: "You are a precise JSON generator. Output only valid JSON objects." },
-        { role: "user", content: prompt },
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0,
-    }),
+    body: JSON.stringify(request),
     signal: AbortSignal.timeout(20_000),
   });
   if (!res.ok) {
