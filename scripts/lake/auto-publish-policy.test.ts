@@ -103,6 +103,54 @@ describe("automatic publication policy", () => {
     })).toEqual(held);
   });
 
+  // The next two cases are CHARACTERIZATION of an unclosed constitutional gap,
+  // not an approval of it. CONSTITUTION.md 3.2 condition 6 requires the source to
+  // be in the D1 `source_registry` as active/canary under a valid lease. Measured
+  // read-only on 2026-10-04: of the 17 tenants holding the 60 QUALIFIED_READY
+  // rows, 16 have no row in `source_registry` at all, and the 17th,
+  // ashby:supabase, is operational_state=candidate, compliance_state=needs_review,
+  // policy_expiry=NULL, canary_max_new_items_per_tick=2. `AutoPublishInput` has no
+  // field for any of that, so the gate is structurally absent on this path, not
+  // merely defaulted. These tests exist to make the gap executable and will be
+  // EXPECTED TO FAIL once a registry/lease precondition is implemented.
+  it("publishes a registry-unadmitted tenant's ambiguous band on Jev alone, with no human", () => {
+    const decision = decideAutoPublish({
+      sourceId: "ashby:supabase",
+      totalJobs: 48,
+      qualifiedReady: 13,
+      jevChoice: "ADMIT",
+      jevConfidence: 0.7,
+      inventory: null,
+    });
+    expect(decision.action).toBe("PUBLISH");
+    expect(decision.publishCount).toBe(13);
+    expect(decision.reason).toContain("No human approval");
+  });
+
+  it("cannot see registry admission state, so the same cohort decides identically either way", () => {
+    const cohort = {
+      sourceId: "ashby:supabase",
+      totalJobs: 48,
+      qualifiedReady: 13,
+      jevChoice: "ADMIT" as const,
+      jevConfidence: 0.7,
+      inventory: null,
+    };
+    // The D1 registry row for this tenant as measured on 2026-10-04.
+    const withAdmissionFacts = {
+      ...cohort,
+      sourceAdmission: {
+        operationalState: "candidate",
+        complianceState: "needs_review",
+        policyExpiry: null,
+        canaryMaxNewItemsPerTick: 2,
+      },
+    };
+    expect(decideAutoPublish(withAdmissionFacts)).toEqual(decideAutoPublish(cohort));
+    // Opt-out is the only source-level authority the input can express.
+    expect(decideAutoPublish({ ...cohort, optOut: true }).action).toBe("REJECT");
+  });
+
   it("blocks more jobs from a family that is already over the ceiling", () => {
     const room = concentrationAllowance("we-work-remotely", 50, canonicalInventory);
     expect(room.allowed).toBe(0);
