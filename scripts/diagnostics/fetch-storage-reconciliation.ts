@@ -68,6 +68,7 @@ export type PlatformMatch = "exact" | "normalized" | "none" | "collision";
 export type FetchStorageClass =
   | "storing_new"
   | "known_only"
+  | "platform_population_unresolved"
   | "fetched_but_unaccounted"
   | "fetch_failed"
   | "skipped"
@@ -89,6 +90,12 @@ export interface SourceReconciliation {
   newlyStored: number;
   /** fetched - alreadyKnown - newlyStored, floored at 0. */
   unexplained: number | null;
+  /**
+   * Rows the serving table holds for this platform over its whole lifetime, when the
+   * caller supplied them. It bounds nothing about these specific URLs: a platform can
+   * hold more rows than the run fetched and still be missing every one of them.
+   */
+  platformRowTotal: number | null;
   anomalous: boolean;
   class: FetchStorageClass;
 }
@@ -130,6 +137,14 @@ export interface ReconcileInput {
    * find, so omitting it turns a real gap into `unmapped_unknown`.
    */
   platformNames?: string[];
+  /**
+   * Lifetime row count per `source_platform`, from a `GROUP BY` over the serving table
+   * with no time bound. Used only to keep the module from calling a gap a storage loss
+   * that its own columns cannot support: when the platform already holds at least as
+   * many rows as the run fetched, "never stored" and "stored with an aged stamp" are
+   * indistinguishable here, and per-URL evidence from the raw payload is required.
+   */
+  platformRowCounts?: ReadonlyArray<{ source_platform: string; rows: number }>;
 }
 
 /**
@@ -222,6 +237,7 @@ function classifySource(input: {
   alreadyKnown: number | null;
   newlyStored: number;
   unexplained: number | null;
+  platformRowTotal: number | null;
   measurable: boolean;
 }): FetchStorageClass {
   if (!input.measurable) return "censored_unknown";
@@ -229,7 +245,14 @@ function classifySource(input: {
   if (input.error !== null || input.ok === 0) return "fetch_failed";
   if (input.fetched === 0) return input.skipped > 0 ? "skipped" : "known_only";
   if (input.newlyStored > 0) return "storing_new";
-  if ((input.unexplained ?? 0) > 0) return "fetched_but_unaccounted";
+  if ((input.unexplained ?? 0) > 0) {
+    // The gap stays unexplained either way; this only refuses to attribute it. The
+    // population count cannot identify these URLs, so a gap on a platform that already
+    // holds more rows than were fetched is reported as unresolved, not as loss.
+    return input.platformRowTotal !== null && input.platformRowTotal >= input.fetched
+      ? "platform_population_unresolved"
+      : "fetched_but_unaccounted";
+  }
   return "known_only";
 }
 
@@ -265,6 +288,16 @@ export function reconcileFetchStorage(input: ReconcileInput): FetchStorageReconc
       "No platform universe was supplied, so only platforms carrying a row inside the trailing window can be joined; a source whose stamps have all expired is reported unmapped_unknown rather than as a gap.",
     );
   }
+  if (input.platformRowCounts === undefined) {
+    caveats.push(
+      "No platform row totals were supplied, so an unexplained gap is reported as unattributed; see the per-URL note in this module for why the durable columns cannot separate storage loss from an aged stamp.",
+    );
+  }
+
+  const rowTotals = new Map<string, number>();
+  for (const entry of input.platformRowCounts ?? []) {
+    if (!rowTotals.has(entry.source_platform)) rowTotals.set(entry.source_platform, Number(entry.rows) || 0);
+  }
 
   const fromMs = Number.isFinite(runAtMs) ? windowStartMs(runAtMs, input.trailingWindowHours) : Number.NaN;
   const knownFromMs = Number.isFinite(runAtMs) ? debounceStartMs(runAtMs, debounceHours) : Number.NaN;
@@ -286,6 +319,7 @@ export function reconcileFetchStorage(input: ReconcileInput): FetchStorageReconc
         ).length;
     const fetched = Number(event.count) || 0;
     const unexplained = alreadyKnown === null ? null : Math.max(0, fetched - alreadyKnown - newlyStored);
+    const platformRowTotal = platform === null ? null : rowTotals.get(platform) ?? null;
 
     return {
       sourceId: event.source_id,
@@ -299,6 +333,7 @@ export function reconcileFetchStorage(input: ReconcileInput): FetchStorageReconc
       alreadyKnown,
       newlyStored,
       unexplained,
+      platformRowTotal,
       anomalous: measurable && unexplained !== null && unexplained > 0,
       class: classifySource({
         fetched,
@@ -309,10 +344,17 @@ export function reconcileFetchStorage(input: ReconcileInput): FetchStorageReconc
         alreadyKnown,
         newlyStored,
         unexplained,
+        platformRowTotal,
         measurable,
       }),
     } satisfies SourceReconciliation;
   });
+
+  if (sources.some((source) => source.class === "platform_population_unresolved")) {
+    caveats.push(
+      "A platform row total is not per-URL identity: where the serving table already holds at least as many rows for the platform as the run fetched, \"never stored\" and \"stored with a stamp older than the debounce\" are indistinguishable here, so the gap is left unresolved and only per-URL evidence from the raw payload can settle it.",
+    );
+  }
 
   const mapped = sources.filter((source) => source.alreadyKnown !== null);
   const knownSum = mapped.length === sources.length
@@ -360,6 +402,10 @@ export const FETCH_STORAGE_RECONCILIATION_SQL = {
   // stamps have all expired cannot be joined to its own platform name at all.
   platforms:
     "SELECT DISTINCT source_platform FROM opportunities WHERE source_platform IS NOT NULL",
+  // Feed this to ReconcileInput.platformRowCounts. It bounds nothing per URL; it only
+  // stops the module from calling an unattributed gap a storage loss.
+  platformRowCounts:
+    "SELECT source_platform, COUNT(*) AS rows FROM opportunities WHERE source_platform IS NOT NULL GROUP BY source_platform",
   stored:
     "SELECT source_platform, scraped_at FROM opportunities WHERE scraped_at >= ?",
 } as const;

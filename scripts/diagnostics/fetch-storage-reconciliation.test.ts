@@ -284,3 +284,64 @@ describe("platform universe coverage for a source whose stamps have expired", ()
     expect(withExpiredRow.sources[0]!.unexplained).toBe(41);
   });
 });
+
+// The live remote-ok measurement (2026-10-04): the platform holds 1223 rows whose
+// newest stamp is 2026-10-03T14:01:02.516Z, while four consecutive runs fetched 41
+// items with ok=1 and no error. Durable columns therefore cannot say whether those 41
+// URLs are stored-with-aged-stamps or were never stored.
+const REMOTE_OK_ROW_TOTALS = [{ source_platform: "RemoteOK", rows: 1223 }];
+
+describe("platform population vs a fetched gap", () => {
+  const base = {
+    runAt: "2026-10-04T05:01:02.032Z",
+    trailingWindowHours: 24,
+    events: REMOTE_OK_EVENTS,
+    knownRows: [] as KnownRow[],
+    storedRows: [] as StoredRow[],
+    platformNames: ["RemoteOK"],
+  };
+
+  test("a platform holding at least as many rows as were fetched cannot be called a storage loss", () => {
+    const report = reconcileFetchStorage({ ...base, platformRowCounts: REMOTE_OK_ROW_TOTALS });
+    const source = report.sources[0]!;
+    expect(source.platformRowTotal).toBe(1223);
+    expect(source.fetched).toBe(41);
+    expect(source.unexplained).toBe(41);
+    // Still an unexplained gap, and still flagged: the population count does not
+    // prove these URLs are stored, so the anomaly claim is not withdrawn.
+    expect(source.anomalous).toBe(true);
+    expect(classifyFetchStorage(report)).toEqual(["platform_population_unresolved"]);
+  });
+
+  test("the unresolved state names the missing evidence instead of implying storage loss", () => {
+    const report = reconcileFetchStorage({ ...base, platformRowCounts: REMOTE_OK_ROW_TOTALS });
+    expect(report.caveats.join(" ")).toContain("per-URL");
+  });
+
+  test("a population smaller than the fetched count keeps the storage-loss class", () => {
+    // The genuine-loss shape must not be excused by the new state: if the platform
+    // holds fewer rows lifetime than the run fetched, the gap cannot be an aged stamp.
+    const report = reconcileFetchStorage({
+      ...base,
+      platformRowCounts: [{ source_platform: "RemoteOK", rows: 3 }],
+    });
+    expect(report.sources[0]!.platformRowTotal).toBe(3);
+    expect(classifyFetchStorage(report)).toEqual(["fetched_but_unaccounted"]);
+  });
+
+  test("omitting the input changes no class and says so", () => {
+    const report = reconcileFetchStorage(base);
+    expect(report.sources[0]!.platformRowTotal).toBeNull();
+    expect(classifyFetchStorage(report)).toEqual(["fetched_but_unaccounted"]);
+    expect(report.caveats.join(" ")).toContain("No platform row totals");
+  });
+
+  test("a count for another platform never attributes itself to this source", () => {
+    const report = reconcileFetchStorage({
+      ...base,
+      platformRowCounts: [{ source_platform: "NeverFetched", rows: 1223 }],
+    });
+    expect(report.sources[0]!.platformRowTotal).toBeNull();
+    expect(classifyFetchStorage(report)).toEqual(["fetched_but_unaccounted"]);
+  });
+});
