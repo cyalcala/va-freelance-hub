@@ -11,10 +11,15 @@
  * recomputed from the owning module or is an independently derived value such as
  * a Wilson bound on a hand-checked cohort.
  *
+ * The reject-resolution block also exercises the real `decideAutoPublish` reject
+ * branches and compares the two refusals field-for-field, so the claim that a
+ * decision record cannot name its own cause is measured on real decisions rather
+ * than asserted from the type.
+ *
  * Nothing here proves a runtime effect, publishes anything, lowers a floor or
  * reads a threshold as authority.
  *
- * Labels: "v6.5-CASES:" + MATH id.
+ * Labels: "v6.5-CASES:" + MATH-05 / MATH-10.
  */
 
 import { describe, expect, it } from "bun:test";
@@ -24,6 +29,7 @@ import {
   concentrationAllowance,
   MIN_JOBS_FOR_RATE,
   PUBLISH_PH_RATE_FLOOR,
+  REJECT_PH_RATE_FLOOR,
   JEV_MIN_CONFIDENCE,
   type AutoPublishInput,
 } from "./auto-publish-policy";
@@ -33,7 +39,9 @@ import {
   classifyBindingDrift,
   classifyDecisionReuse,
   currentPolicyBinding,
+  decisionsAreIndistinguishableWithoutReason,
   deriveHoldResolution,
+  describeReject,
   movedPolicyConstants,
   normalizeInventory,
   normalizeSample,
@@ -43,6 +51,7 @@ import {
   DECISION_BINDING_SCHEMA_VERSION,
   type BoundDecision,
   type PolicyBinding,
+  type RejectCause,
 } from "./publish-hold-resolution";
 import { checkHoldDiscipline } from "./stage-latency";
 
@@ -775,5 +784,223 @@ describe("MATH-10: a moved policy constant invalidates a stored publication deci
     const verdict = classifyDecisionReuse(null, CLEARING);
     expect(verdict.refusal).toBe("REFUSED_NO_BINDING");
     expect(verdict.drift.dimensions).toEqual(["binding"]);
+  });
+});
+
+// ─── Reject resolution: the branch, its evidence, and the missing record ───────
+
+describe("MATH-05/MATH-10 a reject names the branch that refused it", () => {
+  it("refuses an opt-out with no evidence item, because no observation resolves it", () => {
+    const input: AutoPublishInput = { ...AMBIGUOUS, optOut: true };
+    const decision = decideAutoPublish(input);
+
+    const rejected = describeReject(input, decision);
+
+    expect(decision.action).toBe("REJECT");
+    expect(decision.reason).toBe("source is opted out");
+    expect(rejected.reject_cause).toBe("OPT_OUT");
+    expect(rejected.action).toBe("REJECT");
+    expect(rejected.cause_agrees_with_decision).toBe(true);
+    // No floor applies to an opt-out, so there is nothing to be below.
+    expect(rejected.observed_against_floor).toBeNull();
+    expect(rejected.reject_floor).toBeNull();
+    expect(rejected.below_floor_by).toBeNull();
+    expect(rejected.missing_evidence).toEqual([]);
+    expect(rejected.next_action).toBeNull();
+    expect(rejected.resolution_requires_new_observations).toBe(false);
+    expect(rejected.floor_lowering_required).toBe(false);
+    // The opt-out wins over a rate that would otherwise have published.
+    expect(rejected.ph_rate).toBeCloseTo(8 / 30, 12);
+  });
+
+  it("refuses a weak PH rate with a rate against a rate, not a count against a floor", () => {
+    const decision = decideAutoPublish(REFUSED);
+
+    const rejected = describeReject(REFUSED, decision);
+
+    expect(decision.action).toBe("REJECT");
+    expect(rejected.reject_cause).toBe("PH_RATE_BELOW_REJECT_FLOOR");
+    expect(rejected.cause_agrees_with_decision).toBe(true);
+    expect(rejected.ph_rate).toBeCloseTo(1 / 25, 12);
+    expect(rejected.observed_against_floor).toBeCloseTo(1 / 25, 12);
+    expect(rejected.reject_floor).toBe(REJECT_PH_RATE_FLOOR);
+    expect(rejected.below_floor_by).toBeCloseTo(REJECT_PH_RATE_FLOOR - 1 / 25, 12);
+    expect(rejected.missing_evidence[0].field).toBe("cohort.ph_rate");
+    expect(rejected.missing_evidence[0].observed).toBeCloseTo(1 / 25, 12);
+    expect(rejected.missing_evidence[0].required).toBe(REJECT_PH_RATE_FLOOR);
+    expect(rejected.missing_evidence[0].why).toContain("before any advisory verdict is consulted");
+    // The sample is the evidence that can move a rate, and no observation count
+    // is invented to promise that it will.
+    expect(rejected.missing_evidence[1].field).toBe("cohort.total_jobs");
+    expect(rejected.missing_evidence[1].observed).toBe(25);
+    expect(rejected.missing_evidence[1].required).toBeNull();
+    expect(rejected.resolution_requires_new_observations).toBe(true);
+    expect(rejected.next_action?.produces_field).toBe("cohort.total_jobs");
+    expect(rejected.next_action?.owner_role).toBe("MAINTAINER");
+    expect(rejected.next_action?.description).toContain("reject floor is not lowered");
+  });
+
+  it("refuses a confident advisory REJECT with the confidence it refused", () => {
+    const input: AutoPublishInput = { ...AMBIGUOUS, jevChoice: "REJECT", jevConfidence: 0.9 };
+    const decision = decideAutoPublish(input);
+
+    const rejected = describeReject(input, decision);
+
+    expect(decision.action).toBe("REJECT");
+    expect(rejected.reject_cause).toBe("JEV_ADVISORY_REJECT");
+    expect(rejected.cause_agrees_with_decision).toBe(true);
+    expect(rejected.observed_against_floor).toBe(0.9);
+    expect(rejected.reject_floor).toBe(JEV_MIN_CONFIDENCE);
+    // The verdict cleared the confidence floor, which is why it decided the band,
+    // so there is no shortfall to report.
+    expect(rejected.below_floor_by).toBeNull();
+    expect((rejected.observed_against_floor ?? 0) >= (rejected.reject_floor ?? 0)).toBe(true);
+    expect(rejected.missing_evidence[0].field).toBe("jev.choice");
+    expect(rejected.missing_evidence[0].required).toBe(JEV_MIN_CONFIDENCE);
+    expect(rejected.missing_evidence).toHaveLength(1);
+    // A verdict, not an observation, is what resolves the band.
+    expect(rejected.resolution_requires_new_observations).toBe(false);
+    expect(rejected.next_action?.produces_field).toBe("jev.choice");
+    expect(rejected.next_action?.description).toContain("advisory");
+  });
+
+  it("refuses a below-floor confidence as a rate reject, never as an advisory one", () => {
+    // Same cohort, but the verdict lost the confidence floor: the band stays a hold.
+    const input: AutoPublishInput = { ...AMBIGUOUS, jevChoice: "REJECT", jevConfidence: JEV_MIN_CONFIDENCE - 0.01 };
+    const decision = decideAutoPublish(input);
+
+    expect(decision.action).toBe("HOLD");
+    expect(describeReject(input, decision).reject_cause).toBe("NOT_REJECTED");
+  });
+
+  it("keeps a held cohort with an under-floor rate from being read as a rate reject", () => {
+    // The sample floor is tested before the rate, so this is a hold, not a refusal.
+    const input: AutoPublishInput = { ...REFUSED, totalJobs: 2, qualifiedReady: 0 };
+    const decision = decideAutoPublish(input);
+
+    const rejected = describeReject(input, decision);
+
+    expect(decision.action).toBe("HOLD");
+    expect(rejected.reject_cause).toBe("NOT_REJECTED");
+    expect(rejected.cause_agrees_with_decision).toBe(true);
+    expect(rejected.missing_evidence).toEqual([]);
+    // deriveHoldResolution owns a held cohort's evidence; this one must not
+    // report a competing scope for the same decision.
+    expect(deriveHoldResolution(input, decision).blocking_constraint).toBe("SAMPLE_FLOOR");
+  });
+
+  it("reports no reject cause for a publishing decision", () => {
+    const decision = decideAutoPublish(CLEARING);
+    const rejected = describeReject(CLEARING, decision);
+
+    expect(decision.action).toBe("PUBLISH");
+    expect(rejected.reject_cause).toBe("NOT_REJECTED");
+    expect(rejected.cause_agrees_with_decision).toBe(true);
+    expect(rejected.missing_evidence).toEqual([]);
+    expect(rejected.next_action).toBeNull();
+    expect(rejected.floor_lowering_required).toBe(false);
+  });
+
+  it("shows a mismatched decision instead of re-labelling it", () => {
+    // A PUBLISH decision paired with an opted-out input: the record cannot belong
+    // to this cohort, and the projection says so rather than reporting an opt-out.
+    const stale = decideAutoPublish(CLEARING);
+
+    const rejected = describeReject({ ...CLEARING, optOut: true }, stale);
+
+    expect(rejected.action).toBe("PUBLISH");
+    expect(rejected.reject_cause).toBe("NOT_REJECTED");
+    expect(rejected.cause_agrees_with_decision).toBe(false);
+  });
+
+  it("agrees with the real function's own reason prose on every branch", () => {
+    const cases: Array<{ input: AutoPublishInput; cause: RejectCause; reason: string }> = [
+      { input: { ...AMBIGUOUS, optOut: true }, cause: "OPT_OUT", reason: "source is opted out" },
+      { input: REFUSED, cause: "PH_RATE_BELOW_REJECT_FLOOR", reason: "PH rate is below the reject floor" },
+      {
+        input: { ...AMBIGUOUS, jevChoice: "REJECT", jevConfidence: 0.9 },
+        cause: "JEV_ADVISORY_REJECT",
+        reason: "Jev REJECT at 0.9 executes the ambiguous band.",
+      },
+    ];
+
+    for (const testCase of cases) {
+      const decision = decideAutoPublish(testCase.input);
+      const rejected = describeReject(testCase.input, decision);
+
+      expect(decision.reason).toBe(testCase.reason);
+      expect(rejected.reject_cause).toBe(testCase.cause);
+      expect(rejected.reason).toBe(decision.reason);
+    }
+  });
+});
+
+describe("MATH-10 the reject record carries nothing but prose", () => {
+  it("makes an opt-out refusal and an advisory refusal the same record", () => {
+    const optedOut = decideAutoPublish({ ...AMBIGUOUS, optOut: true });
+    const advisory = decideAutoPublish({ ...AMBIGUOUS, jevChoice: "REJECT", jevConfidence: 0.9 });
+
+    // Two genuinely different branches, two different causes, and every recorded
+    // field identical: action, count, Wilson bound and concentration all agree.
+    expect(optedOut.reason).not.toBe(advisory.reason);
+    expect(describeReject({ ...AMBIGUOUS, optOut: true }, optedOut).reject_cause).toBe("OPT_OUT");
+    expect(
+      describeReject({ ...AMBIGUOUS, jevChoice: "REJECT", jevConfidence: 0.9 }, advisory).reject_cause,
+    ).toBe("JEV_ADVISORY_REJECT");
+    expect(decisionsAreIndistinguishableWithoutReason(optedOut, advisory)).toBe(true);
+  });
+
+  it("tells two refusals apart when their own recorded fields differ", () => {
+    const weakRate = decideAutoPublish(REFUSED);
+    const advisory = decideAutoPublish({ ...AMBIGUOUS, jevChoice: "REJECT", jevConfidence: 0.9 });
+
+    // The Wilson bound is retained by the decision object, so these two are not
+    // interchangeable: the comparison is not vacuously true.
+    expect(weakRate.wilsonLower).not.toBe(advisory.wilsonLower);
+    expect(decisionsAreIndistinguishableWithoutReason(weakRate, advisory)).toBe(false);
+  });
+
+  it("reports the decision's UNKNOWN concentration against a measurable snapshot", () => {
+    // A board where this source sits exactly on the accepted source share ceiling.
+    const inventory = {
+      activeTotal: 400,
+      bySource: [
+        { sourceId: AMBIGUOUS.sourceId, count: 400 * TOP_SOURCE_SHARE_MAX },
+        { sourceId: "other-family-source", count: 400 * (1 - TOP_SOURCE_SHARE_MAX) },
+      ],
+    };
+    const input: AutoPublishInput = {
+      ...AMBIGUOUS,
+      inventory,
+      jevChoice: "REJECT",
+      jevConfidence: 0.9,
+    };
+
+    const decision = decideAutoPublish(input);
+    const rejected = describeReject(input, decision);
+
+    // The refusal short-circuits before the allowance is consulted, so the
+    // decision records UNKNOWN while the same snapshot measures the source at its
+    // ceiling: a rejected source can be over-concentrated and the record says nothing.
+    expect(decision.concentration).toBe("UNKNOWN");
+    expect(rejected.decision_concentration).toBe("UNKNOWN");
+    expect(rejected.concentration_unknown_despite_snapshot).toBe(true);
+    expect(rejected.concentration_ceiling.measurable).toBe(true);
+    expect(rejected.concentration_ceiling.binding).toBe("TOP_SOURCE_SHARE_MAX");
+    expect(rejected.concentration_ceiling.source_share).toBeCloseTo(TOP_SOURCE_SHARE_MAX, 12);
+    expect(describeReject(AMBIGUOUS, decision).concentration_unknown_despite_snapshot).toBe(false);
+  });
+
+  it("reports a caller-supplied numerator above the denominator instead of hiding it", () => {
+    // The policy function clamps the Wilson numerator but computes the rate from
+    // the unclamped one, so a caller can report a PH rate above 1.
+    const input: AutoPublishInput = { ...AMBIGUOUS, totalJobs: 10, qualifiedReady: 12 };
+    const decision = decideAutoPublish(input);
+
+    const rejected = describeReject(input, decision);
+
+    expect(rejected.ph_rate).toBeCloseTo(1.2, 12);
+    expect(rejected.ph_rate_exceeds_one).toBe(true);
+    expect(normalizeSample(input).wilson_successes).toBe(10);
   });
 });

@@ -24,6 +24,16 @@
  *    derives the missing-evidence scope and next action from the sample that the
  *    decision was computed over.
  *
+ * 3. **A REJECT is the only decision class with no evidence record at all.**
+ *    `decideAutoPublish` has three distinct reject branches — an opt-out, a raw
+ *    PH rate under the reject floor, and a confident advisory `REJECT` — and
+ *    `AutoPublishDecision` carries nothing that tells them apart: `action` is
+ *    `"REJECT"` in all three, `concentration` is `"UNKNOWN"` on every reject
+ *    path whatever inventory was supplied, and the rate, the confidence and the
+ *    floor the decision compared against survive only inside the `reason` prose.
+ *    `describeReject` measures the branch and names the evidence, or states
+ *    plainly that no observation resolves it.
+ *
  * Scope limits, stated honestly:
  * - Pure. No writer, gateway, network, database or clock import.
  * - Adds no numeric gate. Every threshold is read from the module that owns it.
@@ -839,6 +849,211 @@ export function deriveHoldResolution(
     hold_discipline: checkHoldDiscipline(observation),
     reason: decision.reason,
   };
+}
+
+// ─── Reject resolution: which branch refused, and what evidence could change it ─
+
+/**
+ * Which of `decideAutoPublish`'s three reject branches produced a decision.
+ *
+ * The order mirrors the function's own: an opt-out is refused before the sample
+ * is looked at, and a raw rate under the reject floor is refused before any
+ * advisory verdict is consulted. `JEV_ADVISORY_REJECT` is therefore the residual
+ * case — a cohort that cleared the reject floor, sat inside the ambiguous band
+ * and was refused by a confident advisory verdict.
+ */
+export type RejectCause =
+  | "OPT_OUT"
+  | "PH_RATE_BELOW_REJECT_FLOOR"
+  | "JEV_ADVISORY_REJECT"
+  | "NOT_REJECTED";
+
+export interface RejectResolution {
+  source_id: string;
+  provider_family: string;
+  action: AutoPublishDecision["action"];
+  reject_cause: RejectCause;
+  /**
+   * True when `reject_cause` and `action` describe the same decision, both read
+   * against the input's own branch conditions. A caller that pairs a decision
+   * with the wrong input — a stale record replayed against a current cohort —
+   * sees this go false instead of reading a cause that does not belong to it.
+   */
+  cause_agrees_with_decision: boolean;
+  /**
+   * The raw PH rate `decideAutoPublish` compares against its floors, measured on
+   * the same normalized sample the policy function used. It is reported here
+   * because the decision object discards it.
+   *
+   * `qualified_ready > total_jobs` is caller-reachable, and the policy function
+   * computes this ratio from the unclamped numerator, so the rate can exceed 1.
+   * `ph_rate_exceeds_one` reports that rather than hiding it; no gate is added.
+   */
+  ph_rate: number | null;
+  ph_rate_exceeds_one: boolean;
+  /** The rate the decision refused, or the advisory confidence it refused. */
+  observed_against_floor: number | null;
+  /**
+   * The floor `observed_against_floor` was compared against, read from the module
+   * that owns it. `observed_against_floor` and `reject_floor` always share units
+   * within one cause: both are rates, or both are confidences. Null for an
+   * opt-out, which compares against no floor.
+   */
+  reject_floor: number | null;
+  /** `reject_floor - observed_against_floor`, only when the observed value is below it. */
+  below_floor_by: number | null;
+  wilson_lower: number | null;
+  /**
+   * Whether further permitted observations can change this outcome. True only for
+   * a rate reject, where the rate is computed from a sample that can grow. False
+   * for an advisory reject, which a new verdict resolves rather than an
+   * observation, and false for an opt-out, which no observation resolves.
+   */
+  resolution_requires_new_observations: boolean;
+  /** The decision's own concentration field, `UNKNOWN` on every reject path. */
+  decision_concentration: AutoPublishDecision["concentration"];
+  /**
+   * True when the decision reports `UNKNOWN` concentration although a measurable
+   * snapshot was supplied, so a reader cannot tell an unmeasured share from a
+   * rejected source that is at its ceiling.
+   */
+  concentration_unknown_despite_snapshot: boolean;
+  /** Both share ceilings measured on the snapshot, independent of the reject. */
+  concentration_ceiling: ConcentrationCeiling;
+  missing_evidence: MissingEvidenceItem[];
+  next_action: NextEvidenceAction | null;
+  /** Always false, exactly as on a hold: a reject resolves with evidence, not with a moved floor. */
+  floor_lowering_required: false;
+  reason: string;
+}
+
+/**
+ * Describe a real `REJECT` decision: which branch refused it, what it was
+ * measured against, and what evidence could change it.
+ *
+ * This names evidence. It never moves a floor, never re-runs the decision with
+ * different inputs, and never treats a reject as a hold: an opt-out stays an
+ * opt-out, and `deriveHoldResolution` remains the projection that owns a held
+ * cohort's evidence. A non-rejecting decision yields `NOT_REJECTED` with no
+ * missing evidence, so this projection and `deriveHoldResolution` cannot report
+ * conflicting scopes for the same decision.
+ */
+export function describeReject(
+  input: AutoPublishInput,
+  decision: AutoPublishDecision,
+): RejectResolution {
+  const sample = normalizeSample(input);
+  // The policy function's own ratio: normalized `qualified_ready` over normalized
+  // `total_jobs`, unclamped, and only reached after the sample floor is met.
+  const phRate = sample.total_jobs > 0 ? sample.qualified_ready / sample.total_jobs : null;
+
+  // The branch this input selects, read from the same conditions the policy
+  // function tests in the same order, so a stale decision paired with a current
+  // input is visible rather than silently re-labelled.
+  const jevConfident = (input.jevConfidence ?? 0) >= JEV_MIN_CONFIDENCE;
+  const impliedCause: RejectCause = input.optOut === true
+    ? "OPT_OUT"
+    : sample.qualified_ready <= 0 || sample.total_jobs < MIN_JOBS_FOR_RATE
+      ? "NOT_REJECTED"
+      : phRate !== null && phRate < REJECT_PH_RATE_FLOOR
+        ? "PH_RATE_BELOW_REJECT_FLOOR"
+        : jevConfident && input.jevChoice === "REJECT"
+          ? "JEV_ADVISORY_REJECT"
+          : "NOT_REJECTED";
+  const cause: RejectCause = decision.action === "REJECT" ? impliedCause : "NOT_REJECTED";
+
+  const missingEvidence: MissingEvidenceItem[] = [];
+  let nextAction: NextEvidenceAction | null = null;
+  let requiresObservations = false;
+  let observed: number | null = null;
+  let floor: number | null = null;
+
+  if (cause === "PH_RATE_BELOW_REJECT_FLOOR") {
+    observed = phRate;
+    floor = REJECT_PH_RATE_FLOOR;
+    requiresObservations = true;
+    missingEvidence.push({
+      field: "cohort.ph_rate",
+      why: "the cohort's PH rate is below the existing reject floor, so the deterministic gate refuses it before any advisory verdict is consulted",
+      observed: phRate,
+      required: REJECT_PH_RATE_FLOOR,
+    });
+    missingEvidence.push({
+      field: "cohort.total_jobs",
+      why: "the floor is applied to a rate over a sample, so the sample is the evidence that can move it; no finite observation count is named by current authority and none is invented here",
+      observed: sample.total_jobs,
+      required: null,
+    });
+    nextAction = {
+      description: "observe further permitted postings from this source and re-run the existing decision; the reject floor is not lowered, and a deterministic rate reject is not rescued through the ambiguous band",
+      produces_field: "cohort.total_jobs",
+      owner_role: "MAINTAINER",
+      trigger: "new permitted observations land in the lake, or the cohort ages past its review deadline",
+    };
+  } else if (cause === "JEV_ADVISORY_REJECT") {
+    observed = input.jevConfidence ?? null;
+    floor = JEV_MIN_CONFIDENCE;
+    missingEvidence.push({
+      field: "jev.choice",
+      why: "the cohort cleared the reject floor and sat inside the ambiguous band, where a recorded advisory verdict at or above the confidence floor is the only evidence that decides it; the verdict recorded here refused",
+      observed: input.jevChoice ?? null,
+      required: JEV_MIN_CONFIDENCE,
+    });
+    nextAction = {
+      description: "request one bounded advisory verdict for this cohort and record its choice and confidence with the sample it judged; the verdict is advisory and is never itself a publication authority",
+      produces_field: "jev.choice",
+      owner_role: "MAINTAINER",
+      trigger: "the cohort is still inside the ambiguous band at the next decision epoch",
+    };
+  }
+
+  const ceiling = describeConcentrationCeiling(input.sourceId, input.inventory);
+
+  return {
+    source_id: input.sourceId,
+    provider_family: providerFamily(input.sourceId),
+    action: decision.action,
+    reject_cause: cause,
+    cause_agrees_with_decision:
+      cause === impliedCause && (decision.action === "REJECT") === (impliedCause !== "NOT_REJECTED"),
+    ph_rate: phRate,
+    ph_rate_exceeds_one: phRate !== null && phRate > 1,
+    observed_against_floor: observed,
+    reject_floor: floor,
+    below_floor_by: observed !== null && floor !== null && observed < floor ? floor - observed : null,
+    wilson_lower: sample.wilson_lower,
+    resolution_requires_new_observations: requiresObservations,
+    decision_concentration: decision.concentration,
+    concentration_unknown_despite_snapshot:
+      decision.concentration === "UNKNOWN" && ceiling.measurable,
+    concentration_ceiling: ceiling,
+    missing_evidence: missingEvidence,
+    next_action: nextAction,
+    floor_lowering_required: false,
+    reason: decision.reason,
+  };
+}
+
+/**
+ * Whether two decisions are distinguishable without reading their prose.
+ *
+ * Compared with the `reason` string removed and the remaining fields serialized in
+ * a fixed key order. Two refusals that differ only in which branch produced them
+ * are field-identical, so an auditor reading the recorded decision — or the single
+ * console line `planAutoPublishSources` writes for it — cannot recover the cause
+ * from the record.
+ */
+export function decisionsAreIndistinguishableWithoutReason(
+  a: AutoPublishDecision,
+  b: AutoPublishDecision,
+): boolean {
+  const strip = (decision: AutoPublishDecision): string => JSON.stringify([
+    decision.action,
+    decision.publishCount,
+    decision.wilsonLower,
+    decision.concentration,
+  ]);
+  return strip(a) === strip(b) && a.reason !== b.reason;
 }
 
 /**
