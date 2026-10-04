@@ -1,25 +1,47 @@
-name: EX-03 Shadow Dispatch (Standby / GHA Fallback)
+name: EX-03 Shadow Dispatch (Fenced GCP Fallback)
 
 # ==============================================================================
-# ROLE: Secondary Standby & Manual Fallback Runner
+# ROLE: FENCED FALLBACK ONLY. Never a second primary clock.
 # PRIMARY RUNTIME: Google Cloud Platform (Cloud Scheduler + Cloud Run Job)
-#   - Cloud Run Job:       shadow-dispatch-job (asia-southeast1)
+#   - Cloud Run Job:       shadow-dispatch-job (antigravity-494415, asia-southeast1)
 #   - Cloud Scheduler:     shadow-dispatch-hourly (53 * * * * UTC)
 #   - Authority:           docs/decisions/ADR-009-constitution-governed-cloud-runtime-migration.md
-#   - Reason:              GHA sub-6-hour scheduler delivery dropped 78.9% of slots.
+#   - Clock runbook:       docs/RUNTIME_CLOCKS.md
+#
+# Every run (scheduled or manual) passes scripts/gha/gcp-fallback-gate.ts first:
+#   1. TIME fence: work never starts unless its whole budget fits outside
+#      [:45, :07) UTC (GCP :47 lake-publish and :53 shadow-dispatch slots plus
+#      worst-case run time and margins) and [:19, :22) (Cloudflare Worker
+#      shadow call at :20). GitHub delivers these schedules hours late at
+#      random minutes, so the gate waits for the free window instead of
+#      trusting the cron minute.
+#   2. HEALTH fence: dispatch only if the GCP primary missed its slot or
+#      failed. Signal: Cloud Run executions API when GCP_RUN_VIEWER_SA_KEY (a
+#      roles/run.viewer key) is configured; otherwise a read-only D1 SELECT of
+#      the latest shadow observation (no observation from any clock for 4 h =
+#      takeover). Unknown evidence = standby.
+# A standby run exits green and dispatches nothing. Manual `force` skips the
+# health check only; the time fence still applies.
 # ==============================================================================
-# Hourly observation of live shadow rows. Does not scrape jobs onto the
-# public board and does not admit or promote sources. Dispatcher cadence
-# still floors each identity (Grafana Labs: 60 minutes).
+# Observation of live shadow rows. Does not scrape jobs onto the public board
+# and does not admit or promote sources. The route's per-identity cadence floor
+# (60 min minimum) still applies to every clock.
 
 on:
   schedule:
-    - cron: '23 * * * *' # Secondary standby clock (GCP is primary at :53 hourly)
+    - cron: '9 * * * *' # Fallback tick :09 UTC (:09 SGT). Nominal only: the gate enforces the fence.
   workflow_dispatch:
+    inputs:
+      force:
+        description: "EMERGENCY: skip the GCP health check (time fence still applies)"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
+# One fallback run at a time; a newer tick queues behind a waiting run.
 concurrency:
   group: gha-shadow-dispatch
   cancel-in-progress: false
@@ -31,23 +53,41 @@ jobs:
   dispatch:
     name: Dispatch shadow observations
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 55
     env:
-      PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
       SHADOW_DISPATCH_API_URL: "https://remotejobs-ph.pages.dev/api/cron/shadow-dispatch"
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.3.14
-      - name: POST shadow-dispatch
+      - name: Install dependencies (pinned Wrangler for the read-only heartbeat)
+        run: bun install --frozen-lockfile
+
+      - name: GCP-primary fence (time window + health)
+        id: gate
+        timeout-minutes: 40
+        env:
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force == true }}
+          GCP_RUN_VIEWER_SA_KEY: ${{ secrets.GCP_RUN_VIEWER_SA_KEY }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bun scripts/gha/gcp-fallback-gate.ts --job shadow-dispatch-job --work-budget-minutes 4 --max-wait-minutes 35 --output gate.json
+
+      - name: POST shadow-dispatch (fallback takeover only)
+        if: ${{ steps.gate.outputs.proceed == 'true' }}
+        timeout-minutes: 4
+        env:
+          PROXY_SECRET: ${{ secrets.PROXY_SECRET }}
+          GATE_REASON: ${{ steps.gate.outputs.reason }}
         run: |
           set -euo pipefail
+          echo "Fallback takeover: ${GATE_REASON}"
           if [ -z "${PROXY_SECRET:-}" ]; then
             echo "PROXY_SECRET is required"
             exit 1
           fi
-          HTTP=$(curl -sS -o dispatch.json -w "%{http_code}" -X POST "$SHADOW_DISPATCH_API_URL" \
+          HTTP=$(curl -sS --max-time 150 -o dispatch.json -w "%{http_code}" -X POST "$SHADOW_DISPATCH_API_URL" \
             -H "Authorization: Bearer ${PROXY_SECRET}" \
             -H "Content-Type: application/json")
           cat dispatch.json
@@ -63,11 +103,12 @@ jobs:
             jq -r '.verdict.classifications[]? | "verdict: \(.sourceId) \(.outcome) -> \(.classification)"' dispatch.json >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Upload shadow dispatch evidence
+      - name: Upload fence decision and shadow dispatch evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: shadow-dispatch-payload-${{ github.run_id }}
-          path: dispatch.json
+          path: |
+            gate.json
+            dispatch.json
           if-no-files-found: ignore
-

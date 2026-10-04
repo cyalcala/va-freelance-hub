@@ -1,4 +1,7 @@
 # UNIT GCP-02: RESERVOIR LAKE PUBLICATION RUNTIME MIGRATION TO GOOGLE CLOUD
+
+> **Clock update 2026-10-04:** GCP `lake-publish-job` is the primary runtime. The GitHub Actions workflow is now a *fenced fallback*: time-fenced away from the GCP slots and health-gated, so it does nothing while GCP is healthy. The current clocks are in `docs/RUNTIME_CLOCKS.md`. The schedule details below are historical.
+
 ## Unified Unit Contract v3.0 (Master Operating Constitution Part LXII)
 
 ```text
