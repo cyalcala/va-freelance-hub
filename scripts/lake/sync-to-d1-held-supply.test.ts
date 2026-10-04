@@ -143,7 +143,9 @@ describe("sync-to-d1 wiring", () => {
 
   it("routes both result sites through the outcome notice", () => {
     expect(SOURCE).toContain("const notice = formatPublishOutcomeNotice(0, heldRows);");
-    expect(SOURCE).toContain("const notice = formatPublishOutcomeNotice(syncedIds.length, heldRows);");
+    // INCIDENT-0410(w): the second site reports the *confirmed* count, not the count of
+    // statements the tick sent, so a batch D1 did not fully apply cannot read as published.
+    expect(SOURCE).toContain("const notice = formatPublishOutcomeNotice(confirmedIds.length, heldRows);");
     expect(SOURCE).toContain("if (notice.level === \"warn\") console.warn(notice.line);");
   });
 

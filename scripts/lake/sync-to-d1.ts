@@ -1,6 +1,11 @@
 import { getLakeClient } from "./client";
 import { toContentHash } from "../../packages/scraper/contentHash";
 import { decideAutoPublish, parseJevRaw, type InventorySnapshot } from "./auto-publish-policy";
+import {
+  formatUnconfirmedPublishNotice,
+  parseD1BatchConfirmation,
+  selectConfirmedCandidateIds,
+} from "./d1-batch-confirmation";
 import { execSync } from "child_process";
 import * as fs from "fs";
 import * as os from "os";
@@ -585,19 +590,28 @@ export async function syncQualifiedJobsToD1(
     const output = execSync(cmd, { encoding: "utf-8" });
     console.log("Wrangler D1 execution output:", output);
 
-    // 4. Mark candidate rows as SYNCED_TO_D1 in Turso Lake
+    // 4. Mark only the candidate rows D1 actually applied as SYNCED_TO_D1 in the lake.
+    // A non-throwing execSync is an exit code, not a landing, so the receipt is conditional on the
+    // batch count. Statements are emitted in file order, so only the confirmed prefix is receipted;
+    // unconfirmed rows stay QUALIFIED_READY and are retried next tick (upserts are idempotent).
+    const confirmation = parseD1BatchConfirmation(output, syncedIds.length);
+    const confirmedIds = selectConfirmedCandidateIds(syncedIds, confirmation);
+    if (confirmedIds.length < syncedIds.length) {
+      console.warn(formatUnconfirmedPublishNotice(confirmation, sqlStatements.length));
+    }
+
     console.log("Marking candidate rows as SYNCED_TO_D1 in Turso Lake...");
-    for (const id of syncedIds) {
+    for (const id of confirmedIds) {
       await client.execute({
         sql: `UPDATE lake_candidate_jobs SET status = 'SYNCED_TO_D1', synced_to_d1_at = datetime('now') WHERE id = ?;`,
         args: [id],
       });
     }
 
-    const notice = formatPublishOutcomeNotice(syncedIds.length, heldRows);
+    const notice = formatPublishOutcomeNotice(confirmedIds.length, heldRows);
     if (notice.level === "warn") console.warn(notice.line);
     else console.log(notice.line);
-    return { syncedCount: syncedIds.length };
+    return { syncedCount: confirmedIds.length };
   } finally {
     if (fs.existsSync(tempSqlFile)) {
       fs.unlinkSync(tempSqlFile);
