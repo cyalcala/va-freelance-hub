@@ -83,7 +83,7 @@ describe("MATH-09: Offline Identity Fixtures — False Split/Merge Measurement",
       expect(key).toMatch(/^content:[a-f0-9]{16}$/);
     });
 
-    
+
   });
 
   describe("resolveIdentities", () => {

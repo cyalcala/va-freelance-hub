@@ -1,9 +1,9 @@
 # SSAE-00 — End-to-End Cost Profile Contract
 
-**Date:** 2026-10-04  
-**Status:** PROPOSED — no runtime change  
-**Parent unit (mathematical):** MATH-13 (End-to-end latency and Amdahl analysis)  
-**Source Perpetuity parent:** UNKNOWN (recorded as a gap — no executable SP unit currently maps to this profile work)  
+**Date:** 2026-10-04\
+**Status:** PROPOSED — no runtime change\
+**Parent unit (mathematical):** MATH-13 (End-to-end latency and Amdahl analysis)\
+**Source Perpetuity parent:** UNKNOWN (recorded as a gap — no executable SP unit currently maps to this profile work)\
 **Evidence labels:** VERIFIED_CODE (file:line anchors), UNKNOWN (all runtime counts and latencies)
 
 ---
@@ -198,6 +198,6 @@ SSAE-01 (Build an as-of-selection attention dataset) depends on this profile's b
 
 ---
 
-**Owner/Controller:** maintainer  
-**Trigger:** next authorized mathematical maintenance task  
+**Owner/Controller:** maintainer\
+**Trigger:** next authorized mathematical maintenance task\
 **Rollback:** N/A (no runtime change)

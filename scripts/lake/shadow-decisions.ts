@@ -504,7 +504,7 @@ function runDemoMode(config: ShadowConfig, json: boolean) {
    * Small additive pure read-only helper derived from SSAE-03 ranker output + SSAE-04 holdout/control contract.
    * Compares ranker (treatment) vs deterministic control (SSAE-04) on frozen/synthetic state.
    * Returns advisory decisions and overlap metrics without additional probes or network fetches.
-   * 
+   *
    * @param controlSelected - Sources selected by deterministic control selector (SSAE-04)
    * @param treatmentRanked - Sources ranked by SSAE-03 ranker (treatment)
    * @param treatmentExcluded - Sources excluded by SSAE-03 ranker due to feasibility/cost

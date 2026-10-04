@@ -1,9 +1,9 @@
 # SSAE-01 — As-of-Selection Attention Dataset Card
 
-**Date:** 2026-10-04  
-**Status:** PROPOSED — no runtime change  
-**Parent unit (mathematical):** MATH-01 (constrained source allocation), MATH-05 (eligibility calibration), MATH-09 (entity resolution)  
-**Source Perpetuity parent:** UNKNOWN — SSAE chain is a cross-cutting architecture; no SP unit currently owns the attention dataset artifact  
+**Date:** 2026-10-04\
+**Status:** PROPOSED — no runtime change\
+**Parent unit (mathematical):** MATH-01 (constrained source allocation), MATH-05 (eligibility calibration), MATH-09 (entity resolution)\
+**Source Perpetuity parent:** UNKNOWN — SSAE chain is a cross-cutting architecture; no SP unit currently owns the attention dataset artifact\
 **Evidence labels:** VERIFIED_CODE (file:line anchors from current HEAD), UNKNOWN (all runtime counts, costs, yields, latencies)
 
 ---
@@ -383,6 +383,6 @@ SSAE-02 (Define compact source memory and dependency contract) depends on this d
 
 ---
 
-**Owner/Controller:** maintainer  
-**Trigger:** next authorized mathematical maintenance task  
+**Owner/Controller:** maintainer\
+**Trigger:** next authorized mathematical maintenance task\
 **Rollback:** N/A (no runtime change)

@@ -240,7 +240,7 @@ describe("SSAE-05 Shadow Decisions", () => {
         // Should be flagged for cold revisit in treatment
         expect(oldDecision.treatment.cold_revisit_reason).toMatch(/cold|cold_revisit|No observation/i);
         // Or it could be in cold revisit list
-        const isColdRevisit = oldDecision.treatment.reason === "cold_revisit" || 
+        const isColdRevisit = oldDecision.treatment.reason === "cold_revisit" ||
                               oldDecision.treatment.cold_revisit_reason !== null;
         expect(isColdRevisit).toBe(true);
       }

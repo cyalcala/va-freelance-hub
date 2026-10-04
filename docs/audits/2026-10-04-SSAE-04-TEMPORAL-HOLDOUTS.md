@@ -1,8 +1,8 @@
 # SSAE-04 — Evaluate Historical Temporal Holdouts
 
-**Date:** 2026-10-04  
-**Status:** PROPOSED — no runtime change  
-**Parent units:** SSAE-01 (attention dataset), SSAE-03 (read-only ranker), MATH-01 (dynamic source allocation), MATH-05 (eligibility calibration), MATH-13 (compute profiling)  
+**Date:** 2026-10-04\
+**Status:** PROPOSED — no runtime change\
+**Parent units:** SSAE-01 (attention dataset), SSAE-03 (read-only ranker), MATH-01 (dynamic source allocation), MATH-05 (eligibility calibration), MATH-13 (compute profiling)\
 **Evidence labels:** VERIFIED_CODE (file:line anchors from current HEAD), UNKNOWN (all runtime counts, costs, yields, latencies, mature labels)
 
 ---
@@ -319,6 +319,6 @@ SSAE-05 (Run shadow decisions without extra probes) depends on SSAE-04's holdout
 
 ---
 
-**Owner/Controller:** maintainer  
-**Trigger:** next authorized mathematical maintenance task OR completion of SSAE-06 measurement contracts  
+**Owner/Controller:** maintainer\
+**Trigger:** next authorized mathematical maintenance task OR completion of SSAE-06 measurement contracts\
 **Rollback:** N/A (no runtime change)

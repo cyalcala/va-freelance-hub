@@ -21,7 +21,7 @@ Based on gaps identified in SSAE-01 and SSAE-04 evaluations, the following measu
 
 ### SSAE-06A: Per-source Hunter epoch ledger
 **Purpose:** Track per-source fetch states to enable granular attribution and replay.
-**Specification:** 
+**Specification:**
 - Add per-source sub-ledger to `scrape.ts` run lock
 - Emit `source_fetch_state` per source per epoch
 - Refactor `acquireRunLock()` to support per-source tracking or add dedicated sub-ledger

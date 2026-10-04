@@ -1,9 +1,9 @@
 # SSAE-02: Compact Source Memory and Dependency Contract
 
-**Date:** 2026-10-04  
-**Session:** 11 (v6.2 shift `opencode/shift-20261003-2357`)  
-**Status:** PROPOSED / VERIFIED_CODE  
-**Unit:** SSAE-02 (depends on SSAE-00, SSAE-01; enables SSAE-03, SSAE-07, SSAE-08)  
+**Date:** 2026-10-04\
+**Session:** 11 (v6.2 shift `opencode/shift-20261003-2357`)\
+**Status:** PROPOSED / VERIFIED_CODE\
+**Unit:** SSAE-02 (depends on SSAE-00, SSAE-01; enables SSAE-03, SSAE-07, SSAE-08)\
 **Mode:** EXECUTE (branch-only) — no runtime change, no SQL mutations, no hold-list edits
 
 ---
@@ -143,12 +143,12 @@ interface SourceMemoryRecord {
   declared_capability: StandardCapability;
   endpoint_url: string;
   company_token?: string;               // ATS tenant identifier
-  
+
   // Capability & routing (C17)
   payload_kind: PayloadKind;            // json | xml | html
   selected_processor: string;           // e.g., "ats_json", "rss_xml"
   routing_warnings: string[];
-  
+
   // Conditional fetch state (Hunter path)
   fetch_state: {
     etag: string | null;
@@ -159,7 +159,7 @@ interface SourceMemoryRecord {
     consecutive_failures: number;
     backoff_until: string | null;       // ISO8601, honors Retry-After
   };
-  
+
   // Lake admission state
   lake_state: {
     last_raw_observation_id: number | null;
@@ -168,7 +168,7 @@ interface SourceMemoryRecord {
     last_ingestion_at: string | null;
     last_sighting_at: string | null;
   };
-  
+
   // Publication authorization state
   publication_state: {
     compliance_state: ComplianceState;      // from source_registry
@@ -183,7 +183,7 @@ interface SourceMemoryRecord {
     last_publication_mode: PublishMode;     // unlimited | capped | blocked | rolled_back
     concentration_status: "OK" | "RELIEVES" | "BLOCKED" | "UNKNOWN";
   };
-  
+
   // Quality & health rollup
   health_rollup: {
     recent_success_rate: number;            // last N fetches
@@ -193,7 +193,7 @@ interface SourceMemoryRecord {
     robots_last_checked_at: string | null;
     robots_allows: boolean | null;
   };
-  
+
   // Version dependencies (invalidation triggers)
   version_deps: {
     policy_version: string;                 // e.g., "constitution-v5.2"
@@ -204,7 +204,7 @@ interface SourceMemoryRecord {
     fingerprint_version: string;            // e.g., "fingerprint@v1"
     content_hash_version: string;           // e.g., "contentHash@v1"
   };
-  
+
   // TTL / Retention
   retention: {
     raw_observation_ttl_days: number;       // default 30
@@ -213,7 +213,7 @@ interface SourceMemoryRecord {
     fetch_state_ttl_days: number;           // default 90
     publication_receipt_ttl_days: number;   // forever (append-only ledger)
   };
-  
+
   // Replay coverage matrix (what can be re-evaluated from stored evidence)
   replay_coverage: {
     can_replay_geo_gate: boolean;           // has location_raw, description, tags
@@ -223,7 +223,7 @@ interface SourceMemoryRecord {
     can_replay_publication: boolean;        // has lake_state + publication_state
     missing_fields: string[];               // e.g., ["raw_payload", "jev_raw"]
   };
-  
+
   // Material digests (for change detection)
   material_digests: {
     fingerprint_hash: string;               // computeFingerprint(company, title, apply_domain)

@@ -1,3 +1,30 @@
+# System Savepoint
+
+## 2026-10-04 — PR #168 Tech-Lead Review Fixup Before Merge (current)
+
+**Unit:** review of PR #168 (`opencode/shift-20261003-2357`) at head `a155cb1c018928acfb52d2c052c7fd38ee487acc`, plus one review fixup commit. **Mode:** tech-lead review; the owner authorised merging this PR to main under MERGE_RUBRIC. **Status:** VERIFIED_LOCAL / VERIFIED_CODE. No MATH or SSAE status changes: MATH-05, MATH-06A, MATH-09 and MATH-12 stay OPEN; SSAE-00..06 stay PROPOSED. No autonomy label changed and no lease was created.
+
+**Fixups in this commit:**
+- Reverted the Groq default-model change in `packages/scraper/triage.ts` (hold-list B), `apps/web/src/env.d.ts` and `docs/ai-fallback-cascade-2026-08-20.md`. The value goes from `llama-3.1-70b-versatile` back to main's `llama-3.3-70b-versatile`. Commits `92b11b62` and `6307dcbc` described the change as hygiene with "no runtime behavior change" and "no hold-list edits". In fact it changed the model ID the Groq fallback sends whenever `GROQ_MODEL` is unset. Groq also retired `llama-3.1-70b-versatile` on 2025-01-24 (Groq deprecations page, read 2026-10-04).
+- **Separate open finding, not fixed here:** the same Groq page lists `llama-3.3-70b-versatile` as shut down for free and developer-tier use on 2026-08-16 (replacement: `openai/gpt-oss-120b`). The Groq fallback default may therefore already be failing in production unless `GROQ_MODEL` is set. Changing it changes runtime behaviour in a hold-list file, so it needs its own unit. Whether `GROQ_MODEL` is set in Pages production is UNKNOWN.
+- `docs/bootloaders/CURRENT.md`: restored the broken savepoint link, pointed the latest checkpoint at this entry and session 42, marked MATH-12 OPEN, and aligned NEXT with session 42.
+- This file: moved the `# System Savepoint` title back to line 1, removed two duplicate mid-file titles, and relabelled the older session-8 "(current)" heading as "(historical)". No history was removed. All origin/main entries below the branch's additions are byte-identical.
+- Whitespace only: cleared the `git diff --check` findings in the new audit docs and four new TS files. Markdown hard breaks are kept as a trailing `\`.
+
+**Checks at `a155cb1c` (Bun 1.3.14, VERIFIED_LOCAL):**
+- `bun run test`: 2115 pass / 1 skip / 0 fail across 180 files.
+- `bun run typecheck`: exit 0.
+- `audit:guardrails`, `audit:parameters` (100% parity), `audit:orchestrator`, `audit:constitution`: all exit 0. The constitution warnings were already there.
+- CI: `ci-guardrail / validate` is green on `a155cb1c`. The Vercel check fails because the account is blocked; that is unrelated and not counted.
+
+**Pre-merge D1 backup (box-local):**
+- Time Travel bookmark: `00004b95-00000000-000050fa-f52cb3277a3b664b37f22d403c43bb1e`, taken 2026-10-04T09:07:11+08:00.
+- Read-only paged SELECT dump: `/workspace/backups/pr168-20261004-090711/`.
+- `wrangler d1 export` was not used.
+
+**NEXT SINGLE ACTION:** unchanged from session 42: SSAE-07 processing modes and cache validity as a pure module plus tests, or Wave 2 characterization of MATH-02, MATH-10 and MATH-13. Also open a separately authorised unit for the Groq default model (see above). Owner/controller: maintainer. Trigger: reviewer picks the next slice.
+
+---
 ## 2026-10-04 — Session 42 v6.5 Priority Cases A-G Offline Verification (session 42)
 
 **Unit:** v6.5 priority cases A-G as offline tests against existing pure functions (tech-lead focus option 1). **Mode:** EXECUTE (branch-only, v6.5 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_LOCAL / VERIFIED_CODE — test-only slice, no runtime, schema, publication or parameter change.
@@ -80,7 +107,6 @@
 **NEXT SINGLE ACTION:** SSAE-06 mature labels -> refresh SSAE-01 and repeat SSAE-04/05 evaluation. Owner/controller: maintainer; trigger: completion of SSAE-06 measurement contracts maturation.
 
 ---
-# System Savepoint
 
 ## 2026-10-04 — Session 22 SSAE-06 Measurement Contracts Delivered (session 22)
 
@@ -89,9 +115,9 @@
 **Session 22 Work:**
 - Reading gate: `.shift/reading-023.md` written (untracked)
 - Defined SSAE-06 measurement contracts to resolve LIMITED gaps in SSAE-01 and SSAE-04
-- Specified five measurement contracts: 
+- Specified five measurement contracts:
   * SSAE-06A: Per-source Hunter epoch ledger
-  * SSAE-06B: Publication cohort labels  
+  * SSAE-06B: Publication cohort labels\
   * SSAE-06C: Per-stage latency instrumentation
   * SSAE-06D: Fetch byte & conditional-fetch logging
   * SSAE-06E: D1 join for lake labels
@@ -102,7 +128,6 @@
 **NEXT SINGLE ACTION:** SSAE-06 mature labels -> refresh SSAE-01 and repeat SSAE-04/05 evaluation. Owner/controller: maintainer; trigger: completion of SSAE-06 measurement contracts.
 
 ---
-# System Savepoint
 
 ## 2026-10-04 — Session 20 SSAE-05 Shadow Decisions Delivered (session 20)
 
@@ -429,7 +454,7 @@
 
 ---
 
-## 2026-10-04 — MATH-05 Metric Cohort Separation Fixtures Added + MATH-09 Identity Fixtures: ASHBY_CONTENT_HASH Removed, fingerprint_hash Gap Pinned (current)
+## 2026-10-04 — MATH-05 Metric Cohort Separation Fixtures Added + MATH-09 Identity Fixtures: ASHBY_CONTENT_HASH Removed, fingerprint_hash Gap Pinned (historical)
 
 **Units:** MATH-05, MATH-09. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — both test files pass, full suite 1,821 pass, audits clean.
 
