@@ -47,7 +47,9 @@ type ENV = {
   GEMINI_CRITICAL_MODEL?: string;
   // Groq (free tier, fast LPU). Second free provider — absorbs Gemini's
   // rate-limit / quota overflow before the Cloudflare reserve is touched.
-  // GROQ_MODEL default llama-3.3-70b-versatile.
+  // GROQ_MODEL default openai/gpt-oss-120b (the previous llama-3.3-70b-versatile
+  // default was retired upstream). JSON mode is requested per model, so an
+  // override naming a model that does not serve response_format still works.
   GROQ_API_KEY?: string;
   GROQ_MODEL?: string;
 };
