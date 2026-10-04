@@ -62,3 +62,67 @@ describe("classifyExactSixYield", () => {
     expect(rwfa.repairable).toBe(false);
   });
 });
+
+/**
+ * Characterization of an OPEN measurement defect, measured 2026-10-04 on live D1.
+ *
+ * `classifyExactSixYield` counts a rejection from `is_active` and `inactive_reason`
+ * alone and never reads `ph_eligibility`, even though `FirstStorageOutcomeRow` carries
+ * it. Live D1 holds rows where the two disagree: 33 rows across `greenhouse:gitlab`
+ * (12 `eligible_likely`, 3 `eligible_verified` with `geo_scope = 'apac_incl_ph'`) and
+ * `greenhouse:grafanalabs` (18 `eligible_likely`) sit at `is_active = 0` with
+ * `inactive_reason = 'policy-rejected'`, all with `failed_verification_count = 0` and
+ * `geo_checked_at` in Jul–Sep 2026. No current writer produces that combination —
+ * `scrape.ts:2588-2610` (geo gate) and `:1319-1345` (AI re-triage) always write
+ * `ineligible` or `unclear` alongside it, and `verify-links.ts:170` writes
+ * `ineligible`. Migration `0047` lines 35-43 and 86-91 write `policy-rejected` *without*
+ * touching `ph_eligibility`, which is how those rows got an eligible verdict and an
+ * inactive row at the same time.
+ *
+ * The consequence is that an admission-state hold and a genuine PH ineligibility are
+ * one indistinguishable bucket here, so a source whose eligible supply was suppressed
+ * rather than denied is reported as `fetching_but_ineligible` and `repairable: false` —
+ * telling the operator not to look for a fix. These two tests pin that behaviour so the
+ * first change to discriminate on `ph_eligibility` fails loudly.
+ */
+describe("classifyExactSixYield rejection-cause blindness (OPEN defect)", () => {
+  const NO_INFLOW = [
+    { source_id: "remotive", eligible_active: 0, first_storage_1d: 0, first_storage_7d: 0 },
+  ];
+
+  test("an eligible_verified admission hold is counted as a rejection and reported not repairable", () => {
+    const report = classifyExactSixYield({
+      perSourceSupply: NO_INFLOW,
+      firstStorageOutcomes7d: [
+        {
+          source_id: "remotive",
+          is_active: 0,
+          ph_eligibility: "eligible_verified",
+          inactive_reason: "policy-rejected",
+          row_count: 3,
+        },
+      ],
+    });
+    const remotive = report.sources.find((s) => s.sourceId === "remotive")!;
+    expect(remotive.rejected7d).toBe(3);
+    expect(remotive.class).toBe("fetching_but_ineligible");
+    expect(remotive.repairable).toBe(false);
+  });
+
+  test("a country-locked ineligible cohort and an eligible admission hold produce an identical diagnosis", () => {
+    const diagnose = (phEligibility: string) =>
+      classifyExactSixYield({
+        perSourceSupply: NO_INFLOW,
+        firstStorageOutcomes7d: [
+          {
+            source_id: "remotive",
+            is_active: 0,
+            ph_eligibility: phEligibility,
+            inactive_reason: "policy-rejected",
+            row_count: 3,
+          },
+        ],
+      });
+    expect(diagnose("eligible_verified")).toEqual(diagnose("ineligible"));
+  });
+});
