@@ -1,5 +1,21 @@
 # System Savepoint
 
+## 2026-10-04 — OPS: GitHub Actions clocks fenced as GCP fallbacks (branch `ops/gha-fallback-fence`, PR pending review)
+
+**Unit:** owner-approved ops change (2026-10-04). GCP Cloud Run is primary for lake publish and shadow dispatch. `gha-lake-publish.yml` and `gha-shadow-dispatch.yml` become fenced fallbacks. **Mode:** branch + PR only; not merged. **Status:** IMPLEMENTED / VERIFIED_LOCAL. No GCP job, scheduler, D1 or Turso state was changed. No autonomy label changed and no lease was created.
+
+- **Fence:** new `scripts/gha/gcp-fallback-gate.ts` (pure logic in `gcp-fallback-fence.ts`, 29 tests) runs before any work.
+  - Time fence: work never starts unless its budget fits outside `[:45, :07)` UTC (GCP :47 / :53 slots plus an 11-min worst case), plus `[:19, :22)` for the shadow fallback (Worker :20).
+  - Health fence: Cloud Run executions API when `GCP_RUN_VIEWER_SA_KEY` exists (it does **not** yet); otherwise read-only proxies (D1 shadow-observation age ≥ 4 h; Turso/D1 lake-backlog straddle across a :47 slot). Unknown evidence = standby.
+  - `force` dispatch input skips the health check only.
+- **New fallback crons:** shadow `9 * * * *` (:09 UTC/SGT); lake `7 4,16 * * *` (04:07/16:07 UTC = 12:07/00:07 SGT). Concurrency groups were kept.
+- **Measured:** GCP lake-publish max 46.6 s create→complete (68 executions); shadow-dispatch max 26.7 s (67 executions). GHA lake fallback arrived 3–9 h late; shadow fallback arrived at random minutes, including inside the GCP slots.
+- **Gaps:** no read-only GCP credential (`GCP_SA_KEY` is deploy-capable and deliberately unused). No cross-runtime DB lock. Worker :20 shadow clock unchanged (hold list A). The lake discovery schedule condition never matched its cron, so discovery stays manual.
+- **Runbook:** `docs/RUNTIME_CLOCKS.md`.
+
+**NEXT SINGLE ACTION:** owner reviews and merges the PR (hold list: `.github/workflows/**`, `scripts/gha/**`), then watches the first fallback runs for `STANDBY` decisions. Optionally create a `roles/run.viewer` service account and store it as `GCP_RUN_VIEWER_SA_KEY`. Otherwise, the previous entry's NEXT is unchanged.
+
+---
 ## 2026-10-04 — PR #168 Tech-Lead Review Fixup Before Merge (current)
 
 **Unit:** review of PR #168 (`opencode/shift-20261003-2357`) at head `a155cb1c018928acfb52d2c052c7fd38ee487acc`, plus one review fixup commit. **Mode:** tech-lead review; the owner authorised merging this PR to main under MERGE_RUBRIC. **Status:** VERIFIED_LOCAL / VERIFIED_CODE. No MATH or SSAE status changes: MATH-05, MATH-06A, MATH-09 and MATH-12 stay OPEN; SSAE-00..06 stay PROPOSED. No autonomy label changed and no lease was created.

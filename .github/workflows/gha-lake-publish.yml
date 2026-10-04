@@ -1,28 +1,48 @@
-name: Automatic Lake Publish (Standby / GHA Fallback)
+name: Automatic Lake Publish (Fenced GCP Fallback)
 
 # ==============================================================================
-# ROLE: Secondary Standby & Manual Fallback Runner
+# ROLE: FENCED FALLBACK ONLY. Never a second primary clock.
 # PRIMARY RUNTIME: Google Cloud Platform (Cloud Scheduler + Cloud Run Job)
-#   - Cloud Run Job:       lake-publish-job (asia-southeast1)
+#   - Cloud Run Job:       lake-publish-job (antigravity-494415, asia-southeast1)
 #   - Cloud Scheduler:     lake-publish-hourly (47 * * * * UTC)
 #   - Authority:           docs/decisions/ADR-009-constitution-governed-cloud-runtime-migration.md
-#   - Reason:              GHA sub-6-hour scheduler delivery dropped 75.0% of slots.
+#   - Clock runbook:       docs/RUNTIME_CLOCKS.md
+#
+# Every run (scheduled or manual) passes scripts/gha/gcp-fallback-gate.ts first:
+#   1. TIME fence: publish/enroll never start unless the whole work budget fits
+#      outside [:45, :07) UTC (GCP :47 lake-publish and :53 shadow-dispatch
+#      slots plus worst-case run time and margins). GitHub delivered this
+#      schedule 3-9 h late at random minutes (2026-09-30..10-03), so the gate
+#      waits for the free window instead of trusting the cron minute.
+#   2. HEALTH fence: publish only if the GCP primary missed its slot or failed.
+#      Signal: Cloud Run executions API when GCP_RUN_VIEWER_SA_KEY (a
+#      roles/run.viewer key) is configured; otherwise a read-only Turso/D1
+#      backlog straddle: an inventory-aware `lake:sync` DRY RUN before a :47
+#      slot and again after it settles. Takeover only if rows publishable
+#      before the slot are still unpublished after it and the slot synced
+#      nothing. Empty backlog = standby at once. Unknown evidence = standby.
+# A standby run exits green and writes nothing. Manual `force` skips the health
+# check only; the time fence still applies. Kill switch for auto-approved
+# tenants stays `lake:sync --hold-auto-approved`.
 # ==============================================================================
-# Publishes qualified lake rows that already cleared the mathematical gate.
-# No human approval step. Missing credentials skip the job instead of failing closed
-# into a red cron; the kill switch is `lake:sync --hold-auto-approved`.
 
 on:
   schedule:
-    - cron: '17 4,16 * * *' # 2x/day secondary safety fallback (GCP is primary at :47 hourly)
+    - cron: '7 4,16 * * *' # 04:07 / 16:07 UTC = 12:07 / 00:07 SGT. Nominal only: the gate enforces the fence.
   workflow_dispatch:
     inputs:
       discover:
-        description: "Probe up to 25 employer domains before publishing"
+        description: "Probe up to 25 employer domains (GHA-only work; still time-fenced)"
+        required: false
+        default: false
+        type: boolean
+      force:
+        description: "EMERGENCY: skip the GCP health check (time fence still applies)"
         required: false
         default: false
         type: boolean
 
+# One fallback run at a time; a newer tick queues behind a waiting run.
 concurrency:
   group: gha-lake-publish
   cancel-in-progress: false
@@ -32,9 +52,10 @@ permissions:
 
 jobs:
   publish:
-    name: Publish qualified lake rows
+    name: Publish qualified lake rows (fallback)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # The backlog straddle may wait for one full GCP slot (up to ~80 min).
+    timeout-minutes: 120
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -49,8 +70,29 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: GCP-primary fence (time window + health)
+        id: gate
+        timeout-minutes: 100
+        env:
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force == true }}
+          GCP_RUN_VIEWER_SA_KEY: ${{ secrets.GCP_RUN_VIEWER_SA_KEY }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DISCOVER: ${{ github.event_name == 'workflow_dispatch' && inputs.discover == true }}
+        run: |
+          set -euo pipefail
+          if [ "$DISCOVER" = "true" ]; then BUDGET=18; HOLD=true; else BUDGET=10; HOLD=false; fi
+          bun scripts/gha/gcp-fallback-gate.ts --job lake-publish-job \
+            --work-budget-minutes "$BUDGET" --hold-window "$HOLD" --max-wait-minutes 95 --output gate.json
+
+      # Discovery is GHA-only work (lake-publish-job does not run it), so it is
+      # not health-gated, only time-fenced. Manual only: the former schedule
+      # condition compared against a cron string that never matched.
       - name: Discover a bounded cohort
-        if: github.event.schedule == '17 4 * * *' || inputs.discover == true
+        if: ${{ inputs.discover == true && steps.gate.outputs.window_ok == 'true' }}
+        timeout-minutes: 8
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
@@ -63,21 +105,27 @@ jobs:
           fi
           bun run scripts/lake/domain-ats-discovery.ts --limit=25
 
-      - name: Publish qualified rows
+      - name: Publish qualified rows (fallback takeover only)
+        if: ${{ steps.gate.outputs.proceed == 'true' }}
+        timeout-minutes: 6
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GATE_REASON: ${{ steps.gate.outputs.reason }}
         run: |
           set -euo pipefail
+          echo "Fallback takeover: ${GATE_REASON}"
           if [ -z "${TURSO_DATABASE_URL:-}" ] || [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
             echo "Publish skipped: lake or Cloudflare credentials are not configured on this runner."
             exit 0
           fi
           bun run lake:sync
 
-      - name: Enroll published sources on the shadow clock
+      - name: Enroll published sources on the shadow clock (fallback takeover only)
+        if: ${{ steps.gate.outputs.proceed == 'true' }}
+        timeout-minutes: 4
         env:
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
@@ -89,3 +137,11 @@ jobs:
             exit 0
           fi
           bun run scripts/lake/enroll-published-sources.ts
+
+      - name: Upload fence decision
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lake-publish-fence-${{ github.run_id }}
+          path: gate.json
+          if-no-files-found: ignore

@@ -426,9 +426,11 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
   });
 
   describe("GHA and GCP Schedule Configuration", () => {
-    test("gha-lake-publish.yml runs 2x/day at 04:17 and 16:17 UTC", () => {
+    test("gha-lake-publish.yml is a fenced fallback ticking 2x/day at 04:07 and 16:07 UTC", () => {
       const content = readFile(".github/workflows/gha-lake-publish.yml");
-      expect(content).toContain("17 4,16 * * *");
+      expect(content).toContain("7 4,16 * * *");
+      // Fallback only: lake:sync runs behind the GCP-primary fence (docs/RUNTIME_CLOCKS.md).
+      expect(content).toContain("gcp-fallback-gate.ts --job lake-publish-job");
     });
 
     test("GCP lake-publish-job runs hourly at minute 47 UTC", () => {

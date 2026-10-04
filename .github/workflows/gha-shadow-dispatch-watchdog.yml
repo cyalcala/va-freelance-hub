@@ -1,9 +1,13 @@
 name: EX-03 Schedule Watchdog
 
 # MATH-12: GitHub schedules have no delivery SLA. EX-03's hourly
-# `23 * * * *` schedule has repeatedly gone silent for 5+h without any
-# monitoring — the Ingestion Heartbeat Watchdog covers only the primary
-# ingestion clock, not EX-03. This hourly monitor is read-only evidence:
+# fallback schedule (`9 * * * *`) has repeatedly gone silent for 5+h without
+# any monitoring — the Ingestion Heartbeat Watchdog covers only the primary
+# ingestion clock, not EX-03. Since 2026-10-04 EX-03 is a fenced fallback for
+# the GCP Cloud Run primary (shadow-dispatch-job, :53 UTC); see
+# docs/RUNTIME_CLOCKS.md. A standby (no-op) EX-03 run still proves the
+# fallback scheduler fired, so silence here means the FALLBACK clock is down,
+# not the GCP primary. This hourly monitor is read-only evidence:
 # it never POSTs the shadow-dispatch route and never writes production
 # data; the only writes are the OPS-05 tracking issue lifecycle below.
 
@@ -136,7 +140,7 @@ jobs:
               echo
               echo "| Evidence | Timestamp / value |"
               echo "| --- | --- |"
-              echo "| Schedule | hourly at minute 23 UTC (no delivery SLA) |"
+              echo "| Schedule | fallback tick hourly at minute 9 UTC (no delivery SLA; GCP shadow-dispatch-job at :53 is primary) |"
               echo "| Last updated | ${NOW} |"
               echo "| Detection evaluated | ${DETECTED_AT} |"
               echo "| Last scheduled run | ${LAST_RUN} |"
