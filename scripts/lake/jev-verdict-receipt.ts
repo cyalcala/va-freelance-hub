@@ -173,7 +173,7 @@ export function renderAttemptReceipt(record: JevAttemptRecord, observedAt: strin
     return `${model}:${record.choice}@${record.confidence}`;
   }
   const status = record.httpStatus === null ? "" : `/http${record.httpStatus}`;
-  return `attempt:${record.outcome}${status}@${observedAt}`.slice(0, 500);
+  return `${JEV_ATTEMPT_RECEIPT_PREFIX}${record.outcome}${status}@${observedAt}`.slice(0, 500);
 }
 
 /**
@@ -183,6 +183,59 @@ export function renderAttemptReceipt(record: JevAttemptRecord, observedAt: strin
  * verdict. This is proposal text for the HOLD-path writer, not production SQL.
  */
 export const JEV_RECEIPT_CONFLICT_CLAUSE = "coalesce(excluded.jev_raw, jev_raw)";
+
+/**
+ * Prefix that marks a stored value as an attempt receipt rather than a verdict.
+ * A verdict is `<model>:<CHOICE>@<confidence>`; a receipt never starts this way,
+ * so the two are distinguishable without re-parsing the confidence.
+ */
+export const JEV_ATTEMPT_RECEIPT_PREFIX = "attempt:";
+
+/**
+ * The conflict clause a `lake_ats_discovery` upsert must use when attempt
+ * receipts share the `jev_raw` column with recorded verdicts.
+ *
+ * It is strictly stronger than {@link JEV_RECEIPT_CONFLICT_CLAUSE}, which only
+ * stops a null proposal from blanking a stored value. C18 (CONSTITUTION §8.3)
+ * protects a recorded *decision*: an attempt receipt is not a decision, so a
+ * receipt proposed by a later evaluation must not displace a verdict that was
+ * actually recorded. Otherwise the observability fix would itself erase the
+ * historical fact, which §1.3 #4 forbids.
+ *
+ *   stored verdict + new receipt -> keep the verdict
+ *   stored anything  + new null   -> keep the stored value
+ *   stored verdict + new verdict  -> supersede (allowed, reported)
+ */
+export const JEV_RECEIPT_RETENTION_CLAUSE = `CASE
+  WHEN jev_raw IS NOT NULL
+   AND jev_raw NOT LIKE '${JEV_ATTEMPT_RECEIPT_PREFIX}%'
+   AND excluded.jev_raw LIKE '${JEV_ATTEMPT_RECEIPT_PREFIX}%'
+  THEN jev_raw
+  ELSE coalesce(excluded.jev_raw, jev_raw)
+END`;
+
+/** True when a stored `jev_raw` value is an attempt receipt, not a verdict. */
+export function isJevAttemptReceipt(value: string | null | undefined): boolean {
+  return typeof value === "string" && value.startsWith(JEV_ATTEMPT_RECEIPT_PREFIX);
+}
+
+/**
+ * Executable specification of {@link JEV_RECEIPT_RETENTION_CLAUSE}.
+ *
+ * `retainVerdictReceipt` implements the weaker null-only rule that predates
+ * receipts; this is the rule a writer must use once receipts and verdicts share
+ * the column. Kept as an explicit second function rather than folded into the
+ * first so the two contracts cannot be confused.
+ */
+export function resolveJevRawTransition(
+  stored: string | null | undefined,
+  proposed: string | null | undefined,
+): string | null {
+  const prior = stored ?? null;
+  const next = proposed ?? null;
+  if (prior !== null && !isJevAttemptReceipt(prior) && isJevAttemptReceipt(next)) return prior;
+  return next ?? prior;
+}
 
 /**
  * Executable proof harness: the real `lake_ats_discovery` column shape
