@@ -1,5 +1,33 @@
 # AI Recovery Trail
 
+## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (current documentation milestone)
+
+Owner requested updating the bootloader and everything in the supplied PH remote
+source expansion directive. Identical attachments were reconciled; all 32 source
+sections and 108 labels archived without omission. Added the practical priority
+strategy and integrated loader v6.2, master/execution v6.1, source queue, Global
+Miner, sparse/intake/lake references and recovery docs. Corrected stale Turso
+quarantine wording and intake maturity summary, preserving dated acceptance and
+all source/job/publication controls. No operational command in the prompt ran.
+
+Baseline `4d2e61c244338f76398e76444c1b80651925c848`; branch
+`codex/ph-remote-priority-bootloader`; foreign `.agents/skills/` preserved.
+Source hash/sections/cohort/version/report fields and 83 new local links passed;
+guardrails, 100% parameter parity and constitution audits exit 0 with existing
+warnings. Jev 1.13 attempted once, HTTP 401; Codex judged directly. Manifest and
+source router absent; portable registry/documentation-and-adrs used.
+Document deliverable TERMINAL / KEEP; operational steady-state and throughput
+UNKNOWN. Remote backup is verified on draft PR #166. The payload and evidence
+commits `ec576409cee99e60899831862c586f68562ff2c0` and
+`ff4be62061d22f5e79ca5b448c8541540731b39f` passed exact-commit Sovereign CI
+Guardrail runs `37134433988` and `37134502082`; the PR itself carries the current
+moving branch tip and latest checks. This is backup evidence, not runtime acceptance.
+
+Full [review](audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md) and newest savepoint
+carry the boundary. Next authorized expansion: `PH-PRIORITY-INVENTORY`, then
+the highest-value unresolved feasible P0. Preserve durable source memory and
+owned holds; do not restart discovery, fabricate coverage or bypass publication.
+
 ## 2026-10-02 — AUTONOMOUS-WORLDWIDE-SOURCE-UNIVERSE-AND-BACKGROUND-MINER (current)
 
 Delivered Unit GCP-03 (Autonomous Worldwide Source Universe & ATS Miner Engine) under the Global Miner / GCP Automation Overlay (`docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md`) and Master Operating Constitution v3.0 (Part LXII). All 1,698 tests pass repo-wide across 177 files, typecheck clean, CI guardrails clean, production deployment passed in GitHub Actions (Run `36923231906`).

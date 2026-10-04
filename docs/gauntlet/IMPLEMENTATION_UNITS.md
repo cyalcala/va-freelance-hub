@@ -18,6 +18,13 @@ These are bounded work orders for interchangeable executors. They preserve the a
 
 ## Shared contract resolved by every unit
 
+2026-10-03 architectural clarification for new units: G1's Turso quarantine refers
+to the legacy application path. Preserve the current documented Turso evidence
+lake and governed GCP-to-D1 publisher, as recovered through AGENTS and the active
+maintainer contract. The [PH priority overlay](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+adds attention allocation under the existing source queue and G1–G9 rules; it
+does not reopen any terminal unit or grant collection/publication permission.
+
 | Contract | Required behavior |
 | --- | --- |
 | G1 — Preserve | Keep the active Cloudflare/Astro/D1 architecture deployable; retain public-source and robots/terms boundaries; preserve unrelated user work; do not revive quarantined Next.js, Turso, Vercel, Trigger.dev, or Zig paths. |

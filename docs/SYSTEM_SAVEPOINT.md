@@ -1,6 +1,194 @@
 # System Savepoint
 
-## 2026-10-03 — Gauntlet Slice 10 Stratified Reconciliation: 90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified (43 Lake Held, 32 Auto-Approved Tenants, Unvalidated Down to 8,449) (current)
+## 2026-10-04 08:17 Manila — Canonical PH/VA freshness and GCP/Git reconciliation v6.5
+
+**Unit:** CANONICAL-PH-VA-FRESHNESS-V6.5. **Mode:** documentation + read-only metadata.
+**Start SHA:** 4d09b050ea3902eda1452b6e8855256aeaafa4f9.
+**Fetched origin/main:** bcd26e4856fafb108f7eecefe3a8372f612792eb.
+**Branch:** codex/ph-remote-priority-bootloader. No pull/reset; foreign .agents/skills/
+preserved. Prior stopped local v6.4 docs/evidence incorporated into this unit.
+
+**Deliverable:** master/loader/execution v6.5 reconciled in place; GitHub source
+code/tests/infra/history plus GCP background execution, Turso acquisition and
+Cloudflare/D1 serving; conceptual PH/VA service-0..4 classes, durable HRI intake,
+expiry-loss constrained math, queue reserve/fairness, proposed SLOs, current policy
+fast-decision safeguards, mandatory GitHub backup and GCP provenance/continuity.
+CURRENT/AGENTS/architecture/ADR and sparse/HRI companions agree. The full 27-section
+resource is archived verbatim with hash/coverage in the [upgrade review](audits/2026-10-04-CANONICAL-FRESHNESS-UPGRADE-REVIEW.md).
+October 1 architecture bytes preserved in a historical snapshot; original mandates
+and savepoint history retained. No source code, params, runtime cadence or data changed.
+
+**Fresh GCP evidence:** 08:17:15 Manila read-only API confirmed two jobs and two
+ENABLED hourly schedules (:47 publication / :53 shadow) in the inspected project/
+region; latest execution summaries succeeded. Prior same-day audit found retained
+Cloudflare/Turso/D1 dependencies and five sampled active GitHub runtime workflows.
+Complete background cutover and exact Git-to-running-image mapping remain unproved.
+
+**Maturity:** canonical design/documentation only. Service-0..4 integration,
+HRI-04/05 dispatch/fairness, real item latency/expiry loss, quality/supply improvement
+and SSAE deployed benefit remain unverified. Proposed p95 targets: established-source
+decision <=10m, clearance->visible <=5m, end-to-end <=15m; new structured priority
+source PUBLISH/HOLD/REJECT decision <=30m. These supersede the earlier proposed
+30-minute ready-to-visible goal; no accepted numerical thresholds weakened.
+No cases A–G runtime tests or target SLAs are claimed by this document unit.
+
+**What was not done:** no job launch, mining, enrollment, migration replay,
+source promotion, scheduler retirement, DB write, production deploy or publication.
+**Verification:** local links/fences/UTF-8/version consistency, archive SHA-256,
+historical architecture/savepoint preservation and git diff --check passed.
+Bun audit:guardrails, audit:parameters and audit:constitution passed; existing
+measurement/enforcement warnings retained. No priority-runtime acceptance claimed.
+**Status:** TERMINAL / KEEP for the local document deliverable, 100% documentation
+only; operational acceptance UNKNOWN.
+**GitHub payload receipt:** c835d875ee5263fc264d7bb2fe27bebdcdcacf67 verified on
+origin/codex/ph-remote-priority-bootloader in draft PR #166. Exact-SHA Sovereign
+CI Guardrail run 37164707420 passed project validation; deploy detection and
+production migration/deployment were skipped. This evidence follow-up is committed/
+pushed through the same branch; final observed check reported at handoff.
+
+**Next single action:** in the next authorized execution unit, recover the latest
+owner PH/VA resource's durable intake/canonical tenant and exact stage hold through
+actual GCP/Turso/D1/public visibility. Give permitted missing evidence immediate
+OWNER_PH_VA service inside PH-PRIORITY-INVENTORY; retain all 108 cohort labels and
+current source/item/cutover gates. Already cleared jobs need not wait for unrelated
+bulk inventory. Owner/controller: maintainer; trigger: authorized execution with
+needed runtime access. Missing URL/intake gets a focused request while other leads
+progress. Continue the smallest dependency-ready SSAE/MATH slice, not a full rewrite.
+
+## 2026-10-04 — GCP working code / GitHub memory correction (current documentation)
+
+**Unit:** PROMPT-GCP-MEMORY-V6.4. **Mode:** bounded documentation correction.
+**Owner direction:** GCP executes working code; GitHub serves memory/documentation.
+**Live reconciliation:** GCP publication/shadow jobs and two enabled hourly
+schedules verified; five latest executions each succeeded. Cloudflare endpoint/
+Turso/D1 dependencies and five active GitHub scheduled runtime workflows remain.
+No GCP miner job or web service found in the inspected project/region. Complete
+migration is NOT demonstrated. Source-to-image mapping and full backup/restore
+remain UNKNOWN. Do not disable residual paths before governed replacement.
+
+**Start SHA:** 4d09b050ea3902eda1452b6e8855256aeaafa4f9; review branch
+codex/ph-remote-priority-bootloader. Foreign .agents/skills/ preserved.
+**Deliverable:** AGENTS persistent project memory and canonical master/loader/
+wrapper v6.4, CURRENT and PH platform note. Working artifacts are versioned/backed
+up through the established GCP mechanism; reviewed memory/documentation commits
+and GCP evidence are backed up to GitHub. GitHub document CI is not runtime proof.
+Owner-submission urgency, mathematical quality, sparse application adoption,
+complete source/item controls and incremental continuous execution remain intact.
+No code migration, resource deletion, schedule change or job launch occurred.
+**Evidence:** [live migration reconciliation](architecture/GCP_MIGRATION_RECONCILIATION_2026-10-04.md)
+with redacted API metadata and limits. Latest GCP publication log synced 0 jobs;
+success is not evidence of new visible supply. Publisher hourly :47 UTC creates
+up-to-nearly-60-minute pre-dispatch wait; actual p95 latency remains UNKNOWN.
+
+**Validation/backup:** pending document checks, commit/push and exact remote receipt.
+**Next single action:** trace the latest owner PH/VA lead's stage delay inside
+PH-PRIORITY-INVENTORY using verified GCP publisher and actual retained storage/
+serving paths; recover source-to-image provenance and residual runtime ownership. Owner/controller: maintainer. Trigger:
+next authorized execution invocation with actual GCP access. If access is absent,
+record missing evidence and continue independent documentation/analysis.
+
+## 2026-10-04 — Implementation-led prompts and urgent owner PH/VA service (documentation only)
+
+**Unit:** PROMPT-IMPLEMENTATION-URGENCY-V6.3. **Mode:** bounded documentation.
+**Status:** TERMINAL / KEEP for the documentation deliverable; payload backed up and CI verified below.
+**Start SHA:** ff03991b4fb5d4569203d265648c3f21faf5049f.
+**Fetched origin/main:** bcd26e4856fafb108f7eecefe3a8372f612792eb.
+**Branch:** codex/ph-remote-priority-bootloader. Divergence preserved; no pull/reset.
+**Foreign work:** untracked .agents/skills/ preserved and excluded from this unit.
+
+**Deliverable:** canonical master, loader and execution wrapper v6.3; incremental
+implementation/measurement loop; first feasible service for owner-submitted
+Filipino/VA leads; expiry-aware constrained priority; stage latency receipts and
+portable continuation packet. Supporting PH strategy/SSAE plan/navigation aligned.
+Owner follow-up mandates commit/push/GitHub documentation for all meaningful
+task-owned slices, exact remote/CI receipts, BACKUP_PENDING recovery and continued
+concrete SSAE adoption progress. Follow-up payload 1f1c29e837f88607d75a3e9fcd15c6f590e7b97e
+is verified on the remote review branch; Sovereign CI Guardrail run 37162923409
+passed project validation. Production deploy was skipped. This finite evidence
+follow-up records both accepted documentation payloads; final CI is reported at handoff.
+The original directive, source constitution, admission/cutover, publication and
+quality controls remain binding. No runtime state, cadence or admission changed.
+
+**Maturity:** documented design only. The reported resource's URL/intake receipt,
+source status, actual publication delay, all 15 runtime report counts and new
+latency/quality measurements are UNKNOWN. The 30-minute p95 ready-to-visible goal
+is PROPOSED pending feasibility and parameter acceptance. A prompt does not
+install a host capable of restarting sessions or unattended execution.
+
+**Review:** [implementation/urgency review](audits/2026-10-04-IMPLEMENTATION-URGENCY-PROMPT-REVIEW.md).
+Jev attempted once, HTTP 401; direct review used, no Jev verdict claimed.
+**Verification:** document links, fence balance, UTF-8, all three v6.3 versions and git diff --check passed. Bun audit:guardrails, audit:parameters and audit:constitution passed. Constitution warnings retain replay-flag/SQL coverage, concentration enforcement, provisional CV threshold and absent live queue-reading limitations; no runtime acceptance claimed.
+**Release/backup:** payload c61ad57e0bc69886febc5d2c75326a925ff40296 pushed to origin/codex/ph-remote-priority-bootloader in draft PR #166. Sovereign CI Guardrail run 37162690459 passed Validate project-owned code (unit/Python tests, build, strict typecheck and Worker validation included); deploy detection and production deployment were skipped. Evidence-only follow-up commit to be pushed through the same branch.
+**Completion:** documentation unit 100%; operational latency/supply acceptance UNKNOWN.
+
+**Next single action:** at the next authorized implementation/source-expansion
+invocation, begin PH-PRIORITY-INVENTORY by recovering the most recent owner-submitted
+PH/VA hiring lead and tracing its exact stage hold with read-only current evidence.
+Keep the complete cohort reconciliation contract. Then resolve the measured
+bottleneck through the smallest dependency-ready authorized slice. Existing
+qualified jobs on authorized paths need not await unrelated cohort completion.
+If the reported URL/intake cannot be recovered, request that detail and progress
+other recoverable submissions. Owner/controller: maintainer; trigger: authorized
+execution invocation with needed repository/runtime access. No live work is
+activated by this documentation checkpoint.
+
+## 2026-10-03 — PH Remote Priority Bootloader and Recovery Integration (current documentation; runtime not remeasured)
+
+**Unit:** `PROMPT-PH-PRIORITY-V6`. **Mode:** bounded documentation update.
+**Status/decision:** TERMINAL / KEEP for the document deliverable; the directive's
+operational steady-state criteria remain unverified. Runtime marathon not activated.
+**Start SHA:** `4d2e61c244338f76398e76444c1b80651925c848`, initially main = fetched origin/main.
+**Review branch:** `codex/ph-remote-priority-bootloader`. Foreign untracked
+`.agents/skills/` preserved.
+**Backup receipt:** documentation commit `ec576409cee99e60899831862c586f68562ff2c0`
+and evidence commit `ff4be62061d22f5e79ca5b448c8541540731b39f` are verified on
+the remote review branch; [draft PR #166](https://github.com/cyalcala/va-freelance-hub/pull/166).
+Exact-commit CI runs [37134433988](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134433988)
+and [37134502082](https://github.com/cyalcala/va-freelance-hub/actions/runs/37134502082)
+completed successfully. The active project-owned validation passed; deploy jobs
+were skipped for this docs-only PR path. A legacy Vercel status context reported
+failure from an account block, but Vercel is not the active production path for
+this repository. No merge/deployment occurred.
+
+- Delivered maintainer loader v6.2, master/execution v6.1 with section 10C and
+  the full PH cohort, intake, reusable capability, PH-prior, sparse/adaptive,
+  governed publication, reporting and steady-state continuation contract.
+- Preserved all 32 supplied directive sections and all 108 nonempty labels:
+  P0 29, P1 22, P1-AI 13, P2 33, marketplaces 11. Original/initial archive
+  SHA-256 `aec1850be993d2014543ac4cec33b150f361e9c91894f21e505bf6727770eef3`;
+  Git may normalize text line endings without changing the directive content.
+- Integrated the strategy into the existing Source Perpetuity queue, source
+  constitution/strategy references, Global Miner, SSAE cards, HRI/lake operations,
+  AGENTS, Source Perpetuity loader and master/G1–G9 context. No second queue or
+  admission/publication authority was created. Corrected legacy-Turso ambiguity
+  and HRI's stale capture summary; HRI-01..03 have dated acceptance, HRI-04/05 OPEN.
+- Preserved all source/job/quality controls. PH priors schedule attention only;
+  source listing does not authorize collection. Existing numeric intake priority
+  1/2 does not implement the PH tier model. Hourly publishing cannot prove
+  15-minute public freshness; that remains a measured engineering constraint.
+- **Verification:** exact local attachment/archive bytes and sections PASS;
+  complete cohort names/order/counts PASS; canonical versions/modes/report fields
+  PASS; 83 new local links checked PASS. `bun run audit:guardrails` exit 0;
+  `bun run audit:parameters` exit 0 (100% parity); `bun run audit:constitution`
+  exit 0 with existing measurement/queue/concentration/provisional-parameter
+  warnings retained. No application behavior change requiring new tests.
+- **Limits:** no source fetch, Turso/D1 query/mutation, intake receipt, enrollment,
+  replay, sync, transition, scheduler change, migration, publication or deployment.
+  All 15 operational source/job/economics counters remain UNKNOWN. The latest
+  runtime checkpoint below is historical evidence, not a new measurement.
+  Jev attempted once, HTTP 401; continued directly. Manifest/router absent;
+  portable registry plus documentation-and-adrs used. Full review:
+  [PH priority integration review](audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md).
+
+**NEXT SINGLE ACTION:** `PH-PRIORITY-INVENTORY` at the next authorized source-expansion
+task: read-only current Turso/D1 identity/alias/lifecycle/capability/authority and
+publication-incident reconciliation for every supplied label, under the full
+contract in `docs/plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md`; then select one
+highest-value unresolved feasible P0. Owner/controller: maintainer. Do not treat
+this document update as a live source-integration result. Rollback: revert this
+documentation unit; existing data/source histories are untouched.
+
+## 2026-10-03 — Gauntlet Slice 10 Stratified Reconciliation: 90 Boards Scanned, Training The Street Admitted, Dual-Gate Invariant Verified (43 Lake Held, 32 Auto-Approved Tenants, Unvalidated Down to 8,449) (latest prior runtime checkpoint; not remeasured)
 
 **Unit:** RECONCILE-SLICE-10. **Mode:** AUTONOMOUS_MARATHON_MODE (continuation under Maintainer Bootloader v6.1 & Global Miner / GCP Automation Overlay).
 **Status:** PRODUCTION_PRIMARY_RUNTIME (D1 916 lake-synced opportunities live; 43 Lake QUALIFIED_READY rows held by dual-gate publication floor; 32 auto-approved tenants; 1,390 live opportunities total).
@@ -7047,4 +7235,3 @@ curl -I https://remotejobs-ph.pages.dev/opportunities
 Use read-only D1 queries for data checks. Never mutate production data during an
 audit unless the task explicitly calls for a migration or repair and the change
 has been backed up in Git.
-

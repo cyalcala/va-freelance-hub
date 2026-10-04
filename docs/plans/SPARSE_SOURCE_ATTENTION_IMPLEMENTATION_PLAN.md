@@ -38,7 +38,45 @@ missing evidence; successful ranker benefit is not a prerequisite for collecting
 labels. LIMITED supplies no rollout acceptance or authority to probe. Rebuild
 the dataset and repeat the affected evaluation after measurement matures.
 
+## Implementation-led delivery rule — 2026-10-04
+
+Apply [master section 10D](../bootloaders/MASTER_OPERATING_PROMPT.md#10d-implementation-led-delivery-and-urgent-owner-submissions).
+Cards define evidence/dependencies, not 16 serial waiting periods. Deliver small
+vertical slices with profiling/invalidation/mode checks and receipts alongside
+code; combine applicable cards when their real prerequisites pass. Local
+correctness does not prove rollout or optimization benefit. Keep existing
+selector/allocator prerequisites, bounded canaries, independent quality audit,
+mandatory observation windows and source cutover gates. Continue independent
+implementation while outcome windows mature; do not relabel cards accepted.
+
+Owner-submitted PH/VA leads receive first feasible service within PH inventory.
+Measure submission-to-visible stage delays and expiry loss. Qualified jobs on
+already authorized paths use the earliest permitted existing publication dispatch
+without waiting for unrelated cohort research. New-source admissions retain their
+applicable prerequisites. Service-0..4 classes and expiry/age/evidence inputs feed SSAE attention under
+the existing cards, not cohort-tier renaming or new DB enums. Priority-path
+acceptance covers master cases A–G: valid owner lead, invalid vacancy, small
+sample evidence, restrictive source, bulk backlog, repeated-owner fairness and
+rediscovery clocks. Proposed SLOs require real telemetry/deployed cadence. All
+meaningful source/test/config/doc slices are Git-backed; GCP deployment needs
+immutable image/config provenance. No scheduling parameters or runtime states
+are changed by this delivery rule; every initial card remains PROPOSED.
+
 ## Dependency outline
+
+### PH priority cohort mapping — supporting contracts only
+
+Use the [PH priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+within the Source Perpetuity queue. Inventory/profile maps to SSAE-00/01,
+PH priors and durable identity/evidence memory to 02, empirical priority to
+03/04/05 with permitted independent audit in 06, reusable cache modes to 07,
+bounded cohort hierarchy to 08, job material delta/replay to 09, adaptive
+allocation to 10 and optional P2 exploration to 11. Consequential rollout uses
+14/15 after their current dependencies pass. A proven existing capability does
+not require implementing every proposed SSAE card merely to resolve a tenant;
+new selector/allocator mechanisms must satisfy their applicable cards. Existing
+publication-control incidents and source admission predicates retain priority.
+No card or source is marked implemented, deployed or accepted by this mapping.
 
 ```text
 00 reality -> 01 dataset -> 02 state -> 03 read-only ranker -> 04 holdout -> 05 shadow

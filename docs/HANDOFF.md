@@ -1,5 +1,40 @@
 # Handoff
 
+## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (current documentation handoff)
+
+The bootloader is v6.2; master/execution are v6.1. Read
+[CURRENT](bootloaders/CURRENT.md), the newest [savepoint](SYSTEM_SAVEPOINT.md),
+the [PH priority strategy](strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md) and
+the [complete 32-section directive](directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md).
+All 108 submitted labels are preserved; identity/permission/PH/job claims still
+require current evidence. The source queue owns A–G phases; all sparse modes,
+global discovery, source gates, independent geoGate and controlled Turso -> GCP
+publisher/gateway -> D1 -> website publication remain intact.
+
+This was documentation only, TERMINAL / KEEP. Start SHA
+`4d2e61c244338f76398e76444c1b80651925c848`; branch
+`codex/ph-remote-priority-bootloader`; untracked `.agents/skills/` preserved.
+Source/cohort/version/report-field checks and 83 links passed; guardrails,
+100% parameter parity and constitution audits passed with existing warnings.
+No source/network probe or database operation occurred. Runtime counters remain
+UNKNOWN; HRI-01..03 dated acceptance does not close HRI-04/05 or certify PH tiers.
+Jev was unavailable (HTTP 401); no decision was delegated to it.
+GitHub backup is verified in draft PR #166 on branch
+`codex/ph-remote-priority-bootloader`. Payload/evidence commits
+`ec576409cee99e60899831862c586f68562ff2c0` and
+`ff4be62061d22f5e79ca5b448c8541540731b39f` passed exact-commit Sovereign CI
+Guardrail runs `37134433988` and `37134502082`; the PR carries the current branch
+tip and latest checks. Deploy remained skipped for the docs-only PR path. Full
+[review](audits/2026-10-03-PH-REMOTE-PRIORITY-REVIEW.md) contains coverage and limits.
+
+**One next action:** next authorized expansion task executes
+`PH-PRIORITY-INVENTORY` from the sole Source Perpetuity plan: inspect current
+Turso/D1 identities/aliases/lifecycle/capabilities/permissions, jobs and control
+incidents for every supplied label, then choose one unresolved feasible P0.
+No enrollment, fetch, replay or publication is part of that read-only inventory.
+Carry the epoch, actual batch receipt, prior dispositions and owned holds across
+sessions; reconcile publisher latency before claiming 15-minute freshness.
+
 ## 2026-10-02 — AUTONOMOUS-WORLDWIDE-SOURCE-UNIVERSE-AND-BACKGROUND-MINER (current)
 
 Delivered Unit GCP-03 (Autonomous Worldwide Source Universe & ATS Miner Engine) under the Global Miner / GCP Automation Overlay (`docs/SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md`) and Master Operating Constitution v3.0 (Part LXII). All 1,698 tests pass repo-wide across 177 files, typecheck clean, CI guardrails clean, production deployment passed in GitHub Actions (Run `36923231906`).

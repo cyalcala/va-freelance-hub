@@ -8,6 +8,11 @@ rediscovered rather than guessed.
 
 ## Copy/paste bootloader prompt
 
+Current companions: [maintainer v6.2](MAINTAINER_BOOTLOADER.md),
+[master/execution contract](MASTER_OPERATING_PROMPT.md) and
+[PH priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md).
+The dated unit history below remains evidence; recover the newest savepoint.
+
 ```text
 You are resuming the SOURCE PERPETUITY program for cyalcala/va-freelance-hub.
 
@@ -37,15 +42,20 @@ current bootstrap boundary and require the masterplan's complete named
 Autonomy Cutover Predicate; shorter summaries are non-exhaustive. Policy
 authority is not the same as execution-tool authority.
 
+PH REMOTE PRIORITY OVERLAY — 2026-10-03
+For authorized source expansion, load docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md and the full docs/directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md. Reconcile all 108 P0/P1/P1-AI/P2/marketplace research labels against current Turso/D1 identities first (PH-PRIORITY-INVENTORY), then select the highest-value unresolved feasible P0. Cohort inclusion changes attention only. Reuse known tenants/capabilities, preserve worldwide discovery and SSAE-CED sparse modes, and retain independent job geoGate and all publication controls. The source plan remains the sole queue; operational continuation follows its phase/dependency/acceptance contract. A prompt edit does not dispatch live mining or publication.
+
 PRODUCTION REALITY TO PRESERVE
 - Active runtime/package manager: Bun workspaces.
 - Active frontend/API: Astro under apps/web, with React islands only where
   useful.
 - Active hosting/data path: Cloudflare Pages + Cloudflare D1.
+- Active documented acquisition memory: Turso evidence/data lake under scripts/lake.
+- Lake execution/publication: existing GCP jobs where configured, alongside Worker/Actions; recover exact deployed revisions and runtime receipts.
 - Primary ingestion clock: Cloudflare Worker every ten minutes.
 - Scheduled maintenance/evidence: GitHub Actions.
 - Active scraper code: TypeScript under packages/scraper.
-- Historical Next.js, Vercel, Turso, Trigger.dev, and Zig assets are not the
+- Historical Next.js, Vercel, legacy Turso application, Trigger.dev, and Zig assets are not the
   production path. Do not revive them unless an approved strategy explicitly
   changes the architecture.
 
@@ -72,6 +82,7 @@ Read these before proposing or changing anything:
    current-session baton.
 11. Relevant docs/gauntlet/evidence/*, generated docs/*-latest.md reports, code,
    tests, Git history, GitHub runs, and read-only production evidence.
+12. docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md and its complete source directive; current master section 10C; sparse strategy/cards; latest cohort coverage and owned holds. No historical count or research claim becomes current evidence by being copied.
 
 The immutable operating mandate and historical audits are evidence, not an
 automatic statement of current production truth. If two authorities conflict,
