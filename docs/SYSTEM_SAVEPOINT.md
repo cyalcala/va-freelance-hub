@@ -1,3 +1,51 @@
+## 2026-10-04 — Session 42 v6.5 Priority Cases A-G Offline Verification (session 42)
+
+**Unit:** v6.5 priority cases A-G as offline tests against existing pure functions (tech-lead focus option 1). **Mode:** EXECUTE (branch-only, v6.5 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_LOCAL / VERIFIED_CODE — test-only slice, no runtime, schema, publication or parameter change.
+
+**Contract:** Start HEAD `b26f30a013250a0225955c173505b777815629e4` on `opencode/shift-20261003-2357`, 41 commits ahead of `origin/main` `4d2e61c244338f76398e76444c1b80651925c848`. Deployed revision, GCP job/image/scheduler/policy versions: UNKNOWN (no credentials in this sandbox; no deploy, no clock change, no prod write). Owned file: `scripts/lake/v65-priority-cases.test.ts` (new, tests only). Exclusions: every hold-list path (see MERGE_RUBRIC §4.3), including `docs/bootloaders/**` (CURRENT.md deliberately not edited), `.github/**`, migrations, `packages/scraper/{geoGate,publication-gateway,policy-resolver,triage,sources,paused-sources.json}`, `scripts/lake/{sync-to-d1,auto-publish-policy,run-lake-miner,domain-ats-discovery,reconcile-*}`, `ACCEPTED_PARAMETERS.yaml`, CONSTITUTION/MOC/decisions. Budgets: zero network, zero DB, zero AI calls, zero cost.
+
+**Work:**
+- Reading gate completed for all 14 required documents plus MERGE_RUBRIC.md (see `.shift/reading-042.md`, untracked). Gate deviation disclosed there: the note was written after the test file, not before the first edit.
+- Added `scripts/lake/v65-priority-cases.test.ts`: 24 deterministic tests over real repo code, plus 1 honest `it.skip` naming a missing seam. Labels `v6.5-CASES:` + MATH id.
+  - A / MATH-05: PH-targeted remote owner lead -> `geoGate` `eligible_verified`; one canonical identity from `computeFingerprint`; mature cohort publishes only through the Wilson floor path in `decideAutoPublish`.
+  - B / MATH-05: onsite marker -> `ineligible` "Not fully remote" (checked before PH text); US-pinned vacancy -> `ineligible`; cohort below the reject floor -> `REJECT`, `publishCount` 0.
+  - C / MATH-05: n=2 with a 100% rate and a confident Jev ADMIT stays `HOLD` (sample floor not lowered); 1/3 raw PH rate stays `HOLD` and its Wilson lower bound is strictly below the raw rate; 2/3 is the narrow clearing case and the returned interval equals `wilsonLowerBound(2,3)`; invalid samples return `null` rather than a favorable bound.
+  - D / MATH-06: `evaluateFeasibility` refuses opt-out (`OPT_OUT`), robots-disallowed (`ROBOTS`), blocked compliance and expired lease (`POLICY_EXPIRY`/`LEASE_EXPIRY`); `rankSources` excludes the opted-out source with the reason preserved; `decideAutoPublish` rejects an opted-out source even with a fully cleared cohort.
+  - E / MATH-02: a 200-source burst is bounded at `topK` (no unbounded admission); an unqualified backlog source is excluded by a named reason; a never-observed backlog source receives a cold-revisit due date instead of silent denial.
+  - F / MATH-08: diversity bonus falls as a repeated family's share grows, the repeated family does not monopolize the selected set, and repeated submissions of one owner lead collapse to a single canonical identity.
+  - G / MATH-09: rediscovery with unchanged identity fields yields the same fingerprint; `validatePublicationCohortLabel` refuses `FRESH_DISCOVERY` when `posted_at` is unknown and accepts a rediscovery only as `REPLAY_RECOVERY` (no freshness reset by rediscovery). The "original age is preserved" clause is `it.skip`: no pure function compares an original first-observation/first-publication clock against a rediscovery; that clock lives in hold-list writers (`ingest-to-lake.ts`, `sync-to-d1.ts`) and needs its own authorized unit.
+- Full gate: `bun run test` 2115 pass / 1 skip / 0 fail across 180 files; `bun run typecheck` clean; `audit:guardrails`, `audit:parameters` (100% parity), `audit:orchestrator`, `audit:constitution` all clean (constitution warnings pre-existing and unchanged). Case-insensitive grep of added lines for forbidden data-mutating SQL (trigger drop, row delete, row update, direct opportunity insert) prints nothing.
+
+**What is / is not proved:** proved is only local, deterministic behavior of the named pure functions at this SHA (VERIFIED_LOCAL / VERIFIED_CODE). Not proved: any runtime SLO, latency, publication, freshness, GCP provenance, deployment or fresh-flow effect; all remain UNKNOWN from this sandbox. No case grants or widens publication authority; gateway, Wilson/sample floors, Jev confidence floor and quality ceilings are untouched. No MATH item and no SSAE card moved to ACCEPTED; no MATH-14 or neural adoption claim.
+
+**Foreign/dirty work:** the uncommitted `docs/SYSTEM_SAVEPOINT.md` change at session start was the additive session-40 entry for already-committed code `b26f30a0`; it is valid and complete, so it is committed here rather than reverted. Nothing else was dirty; no reset/clean/force operation was used.
+
+**Risk:** low. One new test file, no production surface. Residual duplication risk unchanged: the three shadow-dispatch clocks and GCP/GHA publisher skew are dated facts, not re-measured here. BACKUP_PENDING for GCP artifacts (platform `gcp`, no credentials in sandbox, owner: maintainer, retry trigger: next session with GCP access or a reviewer-supplied receipt). Git backup: this branch commit.
+
+**NEXT SINGLE ACTION:** SSAE-07 processing modes/cache validity as a pure module plus tests (tech-lead option 3) — or, if a reviewer prefers breadth first, Wave 2 MATH-02/MATH-10/MATH-13 characterization. The saved session-40 NEXT (SSAE-06 mature labels) was revalidated: it needs live labels no sandbox can produce, so it stays blocked on runtime evidence and is not re-attempted here. Owner/controller: maintainer; trigger: reviewer selection of the next dependency-ready slice.
+
+---
+
+## 2026-10-04 — Session 40 SSAE-05 Empty-Source Behavior Fix (session 40)
+
+**Unit:** SSAE-05 Groq C3 fix for empty-source behavior in `compareSelectorOutputs`. **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — committed at `b26f30a0` (41 commits ahead of origin/main `4d2e61c2`).
+
+**Session 40 Work:**
+- Reading gate: `.shift/reading-040.md` written (untracked)
+- Completed REQUIRED READING GATE (all 14 required files + MERGE_RUBRIC.md)
+- Fixed empty-source behavior in `scripts/lake/shadow-decisions.ts`:
+  - `compareSelectorOutputs` now uses union of all input source IDs (controlSelected, treatmentRanked, treatmentExcluded, treatmentColdRevisit, allSources) instead of only allSources
+  - Fixed variable name collision: renamed local boolean `treatmentExcluded` to `isTreatmentExcluded` to avoid shadowing parameter
+  - Added fallback provider_id lookup through all input arrays
+- Added test for edge case where sources exist only in selector outputs (not in allSources)
+- All acceptance criteria met: 2,096 pass / 0 fail; `bun run typecheck` clean; all 4 audits pass (guardrails, parameters, orchestrator, constitution)
+- No SQL mutations, no network/prod mutations, no hold-list edits
+- No forbidden data-mutating SQL patterns (trigger drop, row delete, row update, direct opportunity insert) in added lines
+
+**NEXT SINGLE ACTION:** SSAE-06 mature labels -> refresh SSAE-01 and repeat SSAE-04/05 evaluation. Owner/controller: maintainer; trigger: completion of SSAE-06 measurement contracts maturation.
+
+---
+
 ## 2026-10-04 — Session 39 SSAE-05 Offline Hardening Edge Cases (session 39)
 
 **Unit:** SSAE-05 offline hardening (test-only, additive fixtures per tech-lead focus v6.2-refocus). **Mode:** EXECUTE (branch-only, v6.2 shift `opencode/shift-20261003-2357`). **Status:** VERIFIED_CODE — committed at `dd8630ae` (40 commits ahead of origin/main `4d2e61c2`).
