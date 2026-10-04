@@ -212,3 +212,75 @@ describe("classifyFetchStorage", () => {
     expect(classifyFetchStorage(censored)).toEqual(["censored_unknown"]);
   });
 });
+// Measured live on 2026-10-04 (session 27, D1 read-only): at run
+// 2026-10-04T05:01:02.032Z `remote-ok` fetched 41 items with ok=1 and no error, yet
+// `opportunities` carries 1223 rows under source_platform "RemoteOK" whose newest
+// `last_seen_in_feed_at` is 2026-10-03T14:01:02.516Z — older than the run's
+// 24h trailing window. Its sibling platform name differs only by a space, so the
+// normalized join would have attributed it if the platform had been in the set.
+const REMOTE_OK_EVENTS: FetchEventRow[] = [
+  { source_id: "remote-ok", source_name: "Remote OK", count: 41, skipped: 0, ok: 1, error: null },
+];
+const EXPIRED_REMOTE_OK_STAMP = "2026-10-03T14:01:02.516Z";
+
+describe("platform universe coverage for a source whose stamps have expired", () => {
+  const base = {
+    runAt: "2026-10-04T05:01:02.032Z",
+    trailingWindowHours: 24,
+    events: REMOTE_OK_EVENTS,
+    // The trailing window is empty: every RemoteOK stamp predates it.
+    knownRows: [] as KnownRow[],
+    storedRows: [] as StoredRow[],
+  };
+
+  test("is UNKNOWN when the caller supplies only rows inside the window", () => {
+    // The honest reading, but the blind spot: a source that stopped stamping
+    // vanishes from the platform universe and cannot be reported at all.
+    const report = reconcileFetchStorage(base);
+    expect(report.sources[0]!.platform).toBeNull();
+    expect(report.sources[0]!.alreadyKnown).toBeNull();
+    expect(classifyFetchStorage(report)).toEqual(["unmapped_unknown"]);
+    expect(report.caveats.join(" ")).toContain("platform universe");
+  });
+
+  test("attributes and then reports the gap when the platform universe is supplied", () => {
+    const report = reconcileFetchStorage({ ...base, platformNames: ["RemoteOK"] });
+    expect(report.sources[0]!.platform).toBe("RemoteOK");
+    expect(report.sources[0]!.platformMatch).toBe("normalized");
+    expect(report.sources[0]!.fetched).toBe(41);
+    // No stamp inside run-12h, so "already known" is 0 and the whole payload is unaccounted.
+    expect(report.sources[0]!.alreadyKnown).toBe(0);
+    expect(report.sources[0]!.unexplained).toBe(41);
+    expect(report.sources[0]!.anomalous).toBe(true);
+    expect(classifyFetchStorage(report)).toEqual(["fetched_but_unaccounted"]);
+  });
+
+  test("an in-window stamp for that platform still closes the reconciliation", () => {
+    const closed = reconcileFetchStorage({
+      ...base,
+      platformNames: ["RemoteOK"],
+      knownRows: [{ source_platform: "RemoteOK", last_seen_in_feed_at: "2026-10-03T22:21:03.852Z" }],
+    });
+    expect(closed.sources[0]!.alreadyKnown).toBe(1);
+    expect(closed.sources[0]!.unexplained).toBe(40);
+    expect(classifyFetchStorage(closed)).toEqual(["fetched_but_unaccounted"]);
+  });
+
+  test("a supplied name that no row carries stays unresolved rather than becoming zero", () => {
+    const report = reconcileFetchStorage({ ...base, platformNames: ["NeverFetched"] });
+    expect(report.sources[0]!.platform).toBeNull();
+    expect(classifyFetchStorage(report)).toEqual(["unmapped_unknown"]);
+  });
+
+  test("the expired stamp itself would be outside every debounce-bounded count", () => {
+    // Documents why widening the window does not help: the stamp is older than
+    // run - 12h, so including the row still yields alreadyKnown 0.
+    const withExpiredRow = reconcileFetchStorage({
+      ...base,
+      platformNames: ["RemoteOK"],
+      knownRows: [{ source_platform: "RemoteOK", last_seen_in_feed_at: EXPIRED_REMOTE_OK_STAMP }],
+    });
+    expect(withExpiredRow.sources[0]!.alreadyKnown).toBe(0);
+    expect(withExpiredRow.sources[0]!.unexplained).toBe(41);
+  });
+});

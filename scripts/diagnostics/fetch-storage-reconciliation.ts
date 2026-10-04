@@ -122,6 +122,14 @@ export interface ReconcileInput {
   knownRows: KnownRow[];
   /** `opportunities` rows whose first storage happened in that run. */
   storedRows: StoredRow[];
+  /**
+   * Every `source_platform` the serving table has ever carried, regardless of the
+   * trailing window. Attribution can only join a source whose platform name is in
+   * the set, and a source that has stopped stamping drops out of a
+   * window-bounded row set — which is exactly the failure this module exists to
+   * find, so omitting it turns a real gap into `unmapped_unknown`.
+   */
+  platformNames?: string[];
 }
 
 /**
@@ -246,10 +254,17 @@ export function reconcileFetchStorage(input: ReconcileInput): FetchStorageReconc
   }
 
   const platforms = new Set<string>([
+    ...(input.platformNames ?? []),
     ...input.knownRows.map((row) => row.source_platform),
     ...input.storedRows.map((row) => row.source_platform),
   ]);
   const attribution = resolvePlatform(input.events, platforms);
+
+  if (input.platformNames === undefined) {
+    caveats.push(
+      "No platform universe was supplied, so only platforms carrying a row inside the trailing window can be joined; a source whose stamps have all expired is reported unmapped_unknown rather than as a gap.",
+    );
+  }
 
   const fromMs = Number.isFinite(runAtMs) ? windowStartMs(runAtMs, input.trailingWindowHours) : Number.NaN;
   const knownFromMs = Number.isFinite(runAtMs) ? debounceStartMs(runAtMs, debounceHours) : Number.NaN;
@@ -341,6 +356,10 @@ export const FETCH_STORAGE_RECONCILIATION_SQL = {
     "SELECT source_id, source_name, count, skipped, ok, error FROM source_fetch_events WHERE timestamp = ? ORDER BY source_id",
   known:
     "SELECT source_platform, last_seen_in_feed_at FROM opportunities WHERE last_seen_in_feed_at IS NOT NULL AND last_seen_in_feed_at >= ? AND last_seen_in_feed_at <= ?",
+  // Feed this to ReconcileInput.platformNames. Without it a source whose last-seen
+  // stamps have all expired cannot be joined to its own platform name at all.
+  platforms:
+    "SELECT DISTINCT source_platform FROM opportunities WHERE source_platform IS NOT NULL",
   stored:
     "SELECT source_platform, scraped_at FROM opportunities WHERE scraped_at >= ?",
 } as const;
