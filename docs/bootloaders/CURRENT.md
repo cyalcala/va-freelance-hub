@@ -3,7 +3,10 @@
 Updated 2026-10-04 for CANONICAL-PH-VA-FRESHNESS-V6.5. Navigation only; not runtime
 health, policy precedence or dispatch authority. Read the newest applicable
 [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and [upgrade review](../audits/2026-10-04-CANONICAL-FRESHNESS-UPGRADE-REVIEW.md)
-for exact payload/evidence/backup receipts. Earlier v6.3 receipts remain historical.
+for exact payload/evidence/backup receipts. v6.5 payload
+c835d875ee5263fc264d7bb2fe27bebdcdcacf67 is verified in draft PR #166;
+CI run 37164707420 passed, production deployment skipped.
+Earlier v6.3 receipts remain historical.
 
 Canonical platform: GitHub source control/governance/memory; GCP background
 scheduling/compute; Turso acquisition memory; Cloudflare D1 serving mart;

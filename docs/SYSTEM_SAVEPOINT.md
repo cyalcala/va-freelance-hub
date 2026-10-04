@@ -39,7 +39,12 @@ historical architecture/savepoint preservation and git diff --check passed.
 Bun audit:guardrails, audit:parameters and audit:constitution passed; existing
 measurement/enforcement warnings retained. No priority-runtime acceptance claimed.
 **Status:** TERMINAL / KEEP for the local document deliverable, 100% documentation
-only; operational acceptance UNKNOWN. Payload/evidence GitHub receipts pending.
+only; operational acceptance UNKNOWN.
+**GitHub payload receipt:** c835d875ee5263fc264d7bb2fe27bebdcdcacf67 verified on
+origin/codex/ph-remote-priority-bootloader in draft PR #166. Exact-SHA Sovereign
+CI Guardrail run 37164707420 passed project validation; deploy detection and
+production migration/deployment were skipped. This evidence follow-up is committed/
+pushed through the same branch; final observed check reported at handoff.
 
 **Next single action:** in the next authorized execution unit, recover the latest
 owner PH/VA resource's durable intake/canonical tenant and exact stage hold through
