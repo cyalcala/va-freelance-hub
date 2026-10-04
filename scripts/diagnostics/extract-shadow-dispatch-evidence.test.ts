@@ -166,4 +166,144 @@ describe("extract-shadow-dispatch-evidence", () => {
     expect(evidence.nextAction).toContain("Pages resource stage \"run_probe\" detected with fingerprint");
     expect(evidence.nextAction).toContain("Correlate in Pages log within the run window");
   });
+
+  test("reports no_observation when eligible > 0 but dispatched = 0", () => {
+    const body = JSON.stringify({
+      totalRegistryRows: 10,
+      eligible: 5,
+      dispatched: 0,
+      skippedIneligible: 3,
+      skippedStaleContext: 2,
+    });
+    const evidence = extractShadowDispatchEvidence(200, body);
+    expect(evidence.outcome).toBe("no_observation");
+    expect(evidence.eligible).toBe(5);
+    expect(evidence.dispatched).toBe(0);
+    expect(evidence.skippedIneligible).toBe(3);
+    expect(evidence.skippedStaleContext).toBe(2);
+    expect(evidence.nextAction).toContain("No observation was persisted");
+  });
+
+  test("classifies run-cap skip as no_observation when eligible > 0 but dispatched = 0", () => {
+    const body = JSON.stringify({
+      totalRegistryRows: 8,
+      eligible: 6,
+      dispatched: 0,
+      skippedIneligible: 0,
+      skippedStaleContext: 0,
+      runCapReached: true,
+      capLimit: 4,
+    });
+    const evidence = extractShadowDispatchEvidence(200, body);
+    expect(evidence.outcome).toBe("no_observation");
+    expect(evidence.eligible).toBe(6);
+    expect(evidence.dispatched).toBe(0);
+    expect(evidence.nextAction).toContain("No observation was persisted");
+  });
+
+  test("extracts failureStage persist_observation in 503 with fingerprint", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_quota_or_limit",
+      errorFingerprint: "a1b2c3d4",
+      failureStage: "persist_observation",
+      sourceId: "ashby:example-tenant",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("generic_class_with_fingerprint");
+    expect(evidence.failureStage).toBe("persist_observation");
+    expect(evidence.sourceId).toBe("ashby:example-tenant");
+    expect(evidence.nextAction).toContain('D1 operation stage "persist_observation" detected');
+  });
+
+  test("extracts failureStage run_probe in 503 with fingerprint", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_quota_or_limit",
+      errorFingerprint: "f0e1d2c3",
+      failureStage: "run_probe",
+      sourceId: "greenhouse:tenant-xyz",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("generic_class_with_fingerprint");
+    expect(evidence.failureStage).toBe("run_probe");
+    expect(evidence.sourceId).toBe("greenhouse:tenant-xyz");
+    expect(evidence.nextAction).toContain('Pages resource stage "run_probe" detected');
+  });
+
+  test("extracts failureStage enumerate_registry in 503 with fingerprint", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_quota_or_limit",
+      errorFingerprint: "11223344",
+      failureStage: "enumerate_registry",
+      sourceId: "lever:acme",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("generic_class_with_fingerprint");
+    expect(evidence.failureStage).toBe("enumerate_registry");
+    expect(evidence.nextAction).toContain('D1 operation stage "enumerate_registry" detected');
+  });
+
+  test("extracts failureStage load_observation_history in 503 with fingerprint", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_quota_or_limit",
+      errorFingerprint: "55667788",
+      failureStage: "load_observation_history",
+      sourceId: "breezy:company-jobs",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("generic_class_with_fingerprint");
+    expect(evidence.failureStage).toBe("load_observation_history");
+    expect(evidence.nextAction).toContain('D1 operation stage "load_observation_history" detected');
+  });
+
+  test("extracts specific error class d1_constraint_violation with failureStage and sourceId", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_constraint_violation",
+      errorFingerprint: "99aabbcc",
+      failureStage: "persist_observation",
+      sourceId: "ashby:gradient",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("specific_class_with_fingerprint");
+    expect(evidence.errorClass).toBe("d1_constraint_violation");
+    expect(evidence.failureStage).toBe("persist_observation");
+    expect(evidence.sourceId).toBe("ashby:gradient");
+    expect(evidence.nextAction).toContain("stage persist_observation");
+    expect(evidence.nextAction).toContain("ashby:gradient");
+  });
+
+  test("extracts specific error class d1_probe_contract_violation with failureStage", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_probe_contract_violation",
+      errorFingerprint: "ddeeff00",
+      failureStage: "run_probe",
+      sourceId: "workable:global",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("specific_class_with_fingerprint");
+    expect(evidence.errorClass).toBe("d1_probe_contract_violation");
+    expect(evidence.failureStage).toBe("run_probe");
+    expect(evidence.sourceId).toBe("workable:global");
+  });
+
+  test("handles 503 with d1_busy_or_locked specific class and fingerprint", () => {
+    const body = JSON.stringify({
+      error: "Shadow dispatch evidence or observation storage unavailable",
+      errorClass: "d1_busy_or_locked",
+      errorFingerprint: "1234abcd",
+      failureStage: "load_admission_context",
+      sourceId: "greenhouse:canonical",
+    });
+    const evidence = extractShadowDispatchEvidence(503, body);
+    expect(evidence.outcome).toBe("specific_class_with_fingerprint");
+    expect(evidence.errorClass).toBe("d1_busy_or_locked");
+    expect(evidence.failureStage).toBe("load_admission_context");
+    expect(evidence.sourceId).toBe("greenhouse:canonical");
+    expect(evidence.pagesTailFilterHint).toContain("1234abcd");
+  });
 });
