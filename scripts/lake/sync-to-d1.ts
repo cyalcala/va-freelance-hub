@@ -452,6 +452,36 @@ const CANDIDATE_SELECT = `
     AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
     AND source_id IN (`;
 
+/**
+ * INCIDENT-0410(y) — candidate selection was ordered by insertion, so a tenant's stale rows
+ * consumed its whole publish budget and then kept their place at the head of the queue.
+ *
+ * Measured 2026-10-04 (read-only, Turso lake): of the 60 `QUALIFIED_READY` rows, 50 are older
+ * than the accepted 30-day window and only 10 are inside it. `ORDER BY id ASC LIMIT ?` handed the
+ * oldest rows to the budget first, `classifyCandidateFreshness` then withheld them for age, and a
+ * withheld row keeps its status — so the next tick re-selected the same head of the queue and the
+ * in-window rows behind it were never reached. That is permanent head-of-line blocking, and it caps
+ * a source's real output below what the source gate authorised.
+ *
+ * Newest first, undated last, `id ASC` as the deterministic tiebreak:
+ * - It cannot publish anything new. The `status`, `ph_eligibility` and `source_id` predicates are
+ *   unchanged, and `classifyCandidateFreshness` still withholds every out-of-window row. Ordering
+ *   only decides which rows reach that gate first.
+ * - No date is invented or substituted. `posted_at` is read exactly as stored; `julianday()` only
+ *   ranks it, and an unparseable date ranks with the undated ones instead of being treated as fresh.
+ * - `id ASC` last keeps the selection reproducible, so a re-run cannot reshuffle a cohort.
+ */
+const CANDIDATE_PUBLISH_ORDER = `ORDER BY
+     (posted_at IS NULL OR TRIM(posted_at) = '') ASC,
+     julianday(posted_at) DESC,
+     id ASC`;
+
+/** The one statement both publisher call sites use, so their ordering can never diverge. */
+export function buildCandidateSelectSql(sourceIds: readonly string[]): string {
+  const placeholders = sourceIds.map(() => "?").join(",");
+  return `${CANDIDATE_SELECT}${placeholders}) ${CANDIDATE_PUBLISH_ORDER} LIMIT ?;`;
+}
+
 export async function syncQualifiedJobsToD1(
   limit = 200,
   dryRun = false,
@@ -480,7 +510,7 @@ export async function syncQualifiedJobsToD1(
     if (remaining <= 0) break;
     const take = Math.min(source.publishCount, remaining);
     const res = await client.execute({
-      sql: `${CANDIDATE_SELECT}?) ORDER BY id ASC LIMIT ?;`,
+      sql: buildCandidateSelectSql([source.sourceId]),
       args: [source.sourceId, take],
     });
     for (const row of res.rows as unknown as CandidateRow[]) {
@@ -492,9 +522,8 @@ export async function syncQualifiedJobsToD1(
   }
 
   if (remaining > 0 && baseIds.length > 0) {
-    const placeholders = baseIds.map(() => "?").join(",");
     const res = await client.execute({
-      sql: `${CANDIDATE_SELECT}${placeholders}) ORDER BY id ASC LIMIT ?;`,
+      sql: buildCandidateSelectSql(baseIds),
       args: [...baseIds, remaining],
     });
     for (const row of res.rows as unknown as CandidateRow[]) {

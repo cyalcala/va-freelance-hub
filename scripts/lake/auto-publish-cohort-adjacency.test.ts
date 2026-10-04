@@ -31,7 +31,7 @@ import {
   MIN_JOBS_FOR_RATE,
   type InventorySnapshot,
 } from "./auto-publish-policy";
-import { planAutoPublishSources, type DiscoveryTenantRow } from "./sync-to-d1";
+import { buildCandidateSelectSql, planAutoPublishSources, type DiscoveryTenantRow } from "./sync-to-d1";
 
 const REPO_ROOT = path.resolve(import.meta.dir, "..", "..");
 
@@ -321,7 +321,11 @@ describe("INCIDENT-0410: source agreement with the live publish path", () => {
   test("the planner spends a grant against the same tenant id the queue is queried by", () => {
     const grantLoop = syncSource.slice(syncSource.indexOf("for (const source of planned)"));
     expect(grantLoop).toContain("source.sourceId");
-    expect(grantLoop).toContain("LIMIT ?");
+    // INCIDENT-0410(y): the statement is built by the shared builder, so the grant and the
+    // LIMIT are still bound together at the call site instead of only inside a helper.
+    expect(grantLoop).toContain("buildCandidateSelectSql([source.sourceId])");
+    expect(grantLoop).toContain("args: [source.sourceId, take]");
+    expect(buildCandidateSelectSql(["lever:deliverect"])).toContain("LIMIT ?");
     expect(grantLoop).toContain("candidates.length === 0");
     expect(grantLoop).toContain("return { syncedCount: 0 }");
   });
