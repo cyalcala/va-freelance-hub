@@ -1,0 +1,53 @@
+{
+  "observed_at": "2026-10-04T00:17:15.356Z",
+  "scope": {
+    "project": "antigravity-494415",
+    "region": "asia-southeast1",
+    "read_only": true
+  },
+  "jobs_http_status": 200,
+  "jobs": [
+    {
+      "name": "lake-publish-job",
+      "updateTime": "2026-10-01T12:49:51.138347Z",
+      "image": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish:latest",
+      "latest": {
+        "name": "lake-publish-job-n8ptc",
+        "createTime": "2026-10-03T23:47:05.721335Z",
+        "completionTime": "2026-10-03T23:47:29.553534Z",
+        "completionStatus": "EXECUTION_SUCCEEDED"
+      }
+    },
+    {
+      "name": "shadow-dispatch-job",
+      "updateTime": "2026-10-01T12:19:25.984680Z",
+      "image": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch:latest",
+      "latest": {
+        "name": "shadow-dispatch-job-ffq2j",
+        "createTime": "2026-10-03T23:53:04.653411Z",
+        "completionTime": "2026-10-03T23:53:17.482899Z",
+        "completionStatus": "EXECUTION_SUCCEEDED"
+      },
+      "public_shadow_endpoint": "https://remotejobs-ph.pages.dev/api/cron/shadow-dispatch"
+    }
+  ],
+  "schedules_http_status": 200,
+  "schedules": [
+    {
+      "name": "lake-publish-hourly",
+      "state": "ENABLED",
+      "schedule": "47 * * * *",
+      "timeZone": "UTC",
+      "target": "https://asia-southeast1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/antigravity-494415/jobs/lake-publish-job:run",
+      "lastAttemptTime": "2026-10-03T23:47:05.619496Z"
+    },
+    {
+      "name": "shadow-dispatch-hourly",
+      "state": "ENABLED",
+      "schedule": "53 * * * *",
+      "timeZone": "UTC",
+      "target": "https://asia-southeast1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/antigravity-494415/jobs/shadow-dispatch-job:run",
+      "lastAttemptTime": "2026-10-03T23:53:04.587975Z"
+    }
+  ]
+}

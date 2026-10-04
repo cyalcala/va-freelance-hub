@@ -11,7 +11,11 @@
 The original worldwide directive below remains intact. Apply the
 [PH priority strategy](strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md), based on
 the [complete 32-section owner directive](directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md),
-within the current authorized task. Bias feasible attention toward all 108 supplied
+within the current authorized task. Use canonical master 7/10D for GCP background
+execution, GitHub source/provenance, priority service and proposed freshness SLOs.
+Owner-reported PH/VA leads receive immediate permitted evidence attention ahead
+of bulk exploration; service classes do not rename cohort tiers. Retain quality,
+shared budgets and bounded audit/exploration. Bias attention toward all 108 supplied
 P0/P1/P1-AI/P2/marketplace labels after reconciling existing identities; keep the
 worldwide universe, sparse modes and existing source/publication controls.
 PH hiring priors are scheduling features, never job eligibility or permission.

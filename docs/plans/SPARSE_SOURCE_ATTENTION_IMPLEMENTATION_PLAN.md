@@ -53,8 +53,14 @@ Owner-submitted PH/VA leads receive first feasible service within PH inventory.
 Measure submission-to-visible stage delays and expiry loss. Qualified jobs on
 already authorized paths use the earliest permitted existing publication dispatch
 without waiting for unrelated cohort research. New-source admissions retain their
-applicable prerequisites. No scheduling parameters or runtime states are changed
-by this delivery rule; every initial card remains PROPOSED.
+applicable prerequisites. Service-0..4 classes and expiry/age/evidence inputs feed SSAE attention under
+the existing cards, not cohort-tier renaming or new DB enums. Priority-path
+acceptance covers master cases A–G: valid owner lead, invalid vacancy, small
+sample evidence, restrictive source, bulk backlog, repeated-owner fairness and
+rediscovery clocks. Proposed SLOs require real telemetry/deployed cadence. All
+meaningful source/test/config/doc slices are Git-backed; GCP deployment needs
+immutable image/config provenance. No scheduling parameters or runtime states
+are changed by this delivery rule; every initial card remains PROPOSED.
 
 ## Dependency outline
 

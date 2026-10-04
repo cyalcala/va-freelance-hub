@@ -44,6 +44,17 @@ priors never override job geoGate. Conceptual HOT/WARM/COOL/COLD/DORMANT values
 are not accepted schedules. Resolve actual publisher latency before promising
 15-minute public freshness. Dynamic cohort evidence and economics belong in Turso.
 
+Owner/freshness attention follows canonical [master 10D](../bootloaders/MASTER_OPERATING_PROMPT.md#10d-implementation-led-delivery-and-urgent-owner-submissions):
+service class, current PH/first-party evidence, queue age, conditional survival/
+expiry loss and marginal eligible yield/cost feed cheap recognition and bounded
+attention. Use existing SSAE-02/03/07/09/10 and MATH challenges, not a new queue.
+Keep permitted evidence-action feasibility separate from publication clearance.
+Unknown estimates use transparent class/deadline/age fallback. Reserve audit/
+exploration capacity and shared host pacing; no unmeasured allocation fractions.
+Deployment is GCP background execution with GitHub committed source/provenance,
+Turso memory and governed Cloudflare/D1 serving. Proposed 10/5/15-minute existing
+source and 30-minute new-source decision SLOs are not deployed guarantees.
+
 ## Verified research and application translation
 
 The latest architecture release verified for this review is V4.1-Flash,

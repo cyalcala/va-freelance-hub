@@ -1,6 +1,6 @@
 # Optional human research intake plan
 
-Version 5.3 · 2026-10-03 · HRI-01..03 have dated acceptance; HRI-04/05 remain OPEN; PH priority mapping documented
+Version 5.4 · 2026-10-04 · PH/VA service priority; HRI-01..03 dated acceptance; HRI-04/05 OPEN
 
 ## Outcome and scope
 
@@ -15,6 +15,15 @@ This is a supporting specification for the
 [Source Perpetuity execution queue](SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md),
 not a second dispatch queue. Read the [mathematical program](MATHEMATICAL_IMPROVEMENT_PLAN.md)
 and [source masterplan](../SOURCE_REPLENISHMENT_MASTERPLAN.md).
+
+Owner-reported PH/VA sources receive immediate permitted evidence attention under
+[master section 10D](../bootloaders/MASTER_OPERATING_PROMPT.md#10d-implementation-led-delivery-and-urgent-owner-submissions).
+Reuse existing intake entities to preserve source identity/origin/priority reason,
+evidence/policy/job count, class/queue position, probe/qualification/visibility
+timestamps, holds and next evidence/owner/trigger. Conceptual service-0..4 classes
+do not rename cohort tiers or implement existing priority fields. Proposed new
+structured priority-source submission-to-decision p95 <=30m requires real HOLD
+follow-up. No runtime fast lane or SLO is certified; HRI-04/05 remain OPEN.
 
 ## Where we have been and where we are
 

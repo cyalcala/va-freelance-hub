@@ -5,6 +5,12 @@
 **Source:** [complete owner-supplied directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md), all 32 sections preserved verbatim.
 **Execution queue:** [Source Perpetuity implementation plan](../plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md).
 
+**Canonical platform — 2026-10-04:** GitHub source control/code/governance/memory;
+GCP primary background execution; Turso acquisition; Cloudflare/D1 public serving.
+Read [current architecture](../architecture/CURRENT_STATE.md) for observed residual
+GitHub clocks and migration gaps. No GitHub cron dependency is accepted for the
+proposed freshness targets; no fallback is retired by a documentation update.
+
 ## Outcome and authority
 
 For this expansion epoch, Filipino-targeted remote-work sources are the hottest
@@ -38,8 +44,10 @@ receipts and implementation-led improvement. Resolve those leads first within
 PH-PRIORITY-INVENTORY; retain the complete cohort and existing source/item gates.
 Qualified jobs on already authorized paths need not wait for unrelated inventory
 or optional architecture work. New admissions retain applicable prerequisites.
-The initial 30-minute p95 ready-to-visible objective remains PROPOSED pending
-scheduler measurement and accepted parameters. No runtime cadence, permission,
+The latest resource supersedes that earlier visibility objective: proposed
+established-source p95 decision <=10m, clearance->visible <=5m, end-to-end <=15m;
+new structured priority-source decision <=30m. All await empirical/parameter
+acceptance. Service classes in master 10D are not renamed cohort tiers. No runtime cadence, permission,
 quality ceiling or source lifecycle changes are activated by this update.
 
 ## Complete supplied cohort

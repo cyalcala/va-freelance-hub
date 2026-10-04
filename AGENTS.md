@@ -13,52 +13,34 @@ Repository: `cyalcala/va-freelance-hub`
 
 ## Current Production Reality
 
-The active serving system is the Cloudflare/Astro implementation. Turso lake
-tooling and GCP lake execution/publication are part of the current documented
-acquisition path; recover exact deployed jobs, schedules and receipts before
-claiming runtime health. Older Next.js, Vercel, Trigger.dev, Zig-parser and
-legacy Turso application assets remain backup or historical work. Do not confuse
-those legacy assets with the active Turso evidence/data lake.
+The October 4 owner resource defines the canonical split:
 
-Current active stack:
+- GitHub: durable source code/tests/infrastructure, version control, governance,
+  prompts, plans, evidence, reviews and recovery history; no required production clock.
+- GCP: primary background scheduling/orchestration and jobs/controllers/compute.
+- Turso: acquisition lake, candidate reservoir, observations and replay/source memory.
+- Cloudflare D1: governed public serving mart and publication/control records.
+- Cloudflare: Astro frontend/edge/API serving and retained verified dependencies.
 
-- Runtime and package manager: Bun workspaces
-- Frontend: Astro in `apps/web`
-- UI: Tailwind CSS with React islands where needed
-- Hosting: Cloudflare Pages
-- Database: Cloudflare D1, SQLite-compatible
-- Evidence/data lake and source memory: Turso (`scripts/lake`)
-- Lake execution/orchestration and publisher: GCP where configured; verify
-  actual Cloud Run jobs/schedules alongside Worker and Actions paths
-- Primary ingestion clock: Cloudflare Worker every 10 minutes
-- Scheduled maintenance: GitHub Actions pulse workflows
-- Ingestion API: Astro API routes under `apps/web/src/pages/api`
-- Scrapers: TypeScript packages under `packages/scraper`
-- AI/category helpers: Gemini -> Groq -> Cloudflare reserve where configured;
-  durable inline deferral is the production default
-- Versioning and backup: GitHub commits, pushes, workflow run evidence
+Code stored in GitHub is not code executing in GitHub. All meaningful code/config/
+test/doc changes must be committed and backed up there; every GCP deployment maps
+to a Git SHA or reproducible artifact with Git-backed provenance. Keep actual
+artifact/state backups separately; Git is not a database restoration receipt.
 
-## Active Architecture
+Read docs/architecture/CURRENT_STATE.md and the dated
+GCP_MIGRATION_RECONCILIATION_2026-10-04.md. Its bounded live audit verified two
+GCP jobs/two hourly schedules and ten recent successful executions in
+antigravity-494415 / asia-southeast1. Cloudflare/Turso/D1 dependencies and five
+sampled active GitHub production workflows remain. The intended GCP-only background
+ownership is not a demonstrated complete cutover. Classify residual clocks as
+CURRENT/LEGACY/MIGRATED/FALLBACK/CI-ONLY/DOCUMENTATION-ONLY/UNKNOWN and retire only
+with verified replacement, fencing, observation and rollback. GitHub CI proves
+only its inspected scope, never GCP runtime/publication health.
 
-```text
-Cloudflare freshness Worker (every 10 minutes)
-  -> authenticated Astro /api/cron/scrape route
-  -> allowed RSS/API/public ATS sources
-  -> normalize, deduplicate, geo-gate, and AI-triage
-  -> Cloudflare D1
-  -> Astro pages serve the public board and directory
-
-GitHub Actions daily/periodic maintenance
-  -> verify links
-  -> prune stale jobs
-  -> record source health and operational evidence
-
-Permitted research and first-party/ATS discovery
-  -> Turso source memory, observations and qualified candidates
-  -> current source/publication authorization and existing GCP publisher
-  -> governed Cloudflare D1 opportunities
-  -> public Astro eligibility and visibility checks
-```
+No source permission, quality threshold, publication gateway, source admission
+or complete Autonomy Cutover Predicate is relaxed by architecture/freshness work.
+Owner PH/VA submissions get immediate permitted evidence attention under canonical
+master section 10D; existing cleared jobs need not await unrelated bulk research.
 
 ## Current Core Pages
 
@@ -93,7 +75,7 @@ precedence; source-domain precedence is defined in the masterplan:
 11. current evidence and generated `docs/*-latest.md` operational reports
 
 Canonical prompt entry points are `docs/bootloaders/MAINTAINER_BOOTLOADER.md`
-(v6.3), `MASTER_OPERATING_PROMPT.md` and `EXECUTION_PROMPT.md` (v6.3), and the
+(v6.5), `MASTER_OPERATING_PROMPT.md` and `EXECUTION_PROMPT.md` (v6.5), and the
 navigation-only `docs/bootloaders/CURRENT.md`. For source expansion, also read
 `docs/strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md` and the complete
 `docs/directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md` after recovering
@@ -170,11 +152,11 @@ project's scope:
 1. Make the smallest useful slice.
 2. Run the narrowest meaningful verification.
 3. Commit the behavior or documentation slice.
-4. Push to GitHub.
-5. Watch GitHub Actions for the pushed commit.
+4. Push task-owned source code, tests, infrastructure and documentation to GitHub; verify the remote SHA. Back up GCP artifacts/state by their supported mechanisms.
+5. Observe applicable source/CI checks and actual GCP execution/deployment receipts separately; repository CI is not runtime acceptance.
 6. Record the checkpoint with percentage, commit hash, verification, workflow
    run ID, and next task.
-7. Push acceptance documentation when the evidence is known.
+7. Push acceptance documentation to GitHub when the GCP/runtime evidence is known.
 
 Canonical recovery docs:
 
@@ -251,7 +233,7 @@ republishing automatically compliant.
 
 ## Engineering Preferences
 
-- Keep the Cloudflare/Astro/D1 path as the active production path.
+- Keep GCP as primary background execution, GitHub as source control/memory, Turso acquisition, and Cloudflare/D1 serving; verify actual resources and residual clocks.
 - Make vertical slices that leave the site deployable after each commit.
 - Add observability before increasing ingestion complexity.
 - Prefer data-source configuration and source status tables over hard-coded

@@ -1,5 +1,87 @@
 # System Savepoint
 
+## 2026-10-04 08:17 Manila — Canonical PH/VA freshness and GCP/Git reconciliation v6.5
+
+**Unit:** CANONICAL-PH-VA-FRESHNESS-V6.5. **Mode:** documentation + read-only metadata.
+**Start SHA:** 4d09b050ea3902eda1452b6e8855256aeaafa4f9.
+**Fetched origin/main:** bcd26e4856fafb108f7eecefe3a8372f612792eb.
+**Branch:** codex/ph-remote-priority-bootloader. No pull/reset; foreign .agents/skills/
+preserved. Prior stopped local v6.4 docs/evidence incorporated into this unit.
+
+**Deliverable:** master/loader/execution v6.5 reconciled in place; GitHub source
+code/tests/infra/history plus GCP background execution, Turso acquisition and
+Cloudflare/D1 serving; conceptual PH/VA service-0..4 classes, durable HRI intake,
+expiry-loss constrained math, queue reserve/fairness, proposed SLOs, current policy
+fast-decision safeguards, mandatory GitHub backup and GCP provenance/continuity.
+CURRENT/AGENTS/architecture/ADR and sparse/HRI companions agree. The full 27-section
+resource is archived verbatim with hash/coverage in the [upgrade review](audits/2026-10-04-CANONICAL-FRESHNESS-UPGRADE-REVIEW.md).
+October 1 architecture bytes preserved in a historical snapshot; original mandates
+and savepoint history retained. No source code, params, runtime cadence or data changed.
+
+**Fresh GCP evidence:** 08:17:15 Manila read-only API confirmed two jobs and two
+ENABLED hourly schedules (:47 publication / :53 shadow) in the inspected project/
+region; latest execution summaries succeeded. Prior same-day audit found retained
+Cloudflare/Turso/D1 dependencies and five sampled active GitHub runtime workflows.
+Complete background cutover and exact Git-to-running-image mapping remain unproved.
+
+**Maturity:** canonical design/documentation only. Service-0..4 integration,
+HRI-04/05 dispatch/fairness, real item latency/expiry loss, quality/supply improvement
+and SSAE deployed benefit remain unverified. Proposed p95 targets: established-source
+decision <=10m, clearance->visible <=5m, end-to-end <=15m; new structured priority
+source PUBLISH/HOLD/REJECT decision <=30m. These supersede the earlier proposed
+30-minute ready-to-visible goal; no accepted numerical thresholds weakened.
+No cases A–G runtime tests or target SLAs are claimed by this document unit.
+
+**What was not done:** no job launch, mining, enrollment, migration replay,
+source promotion, scheduler retirement, DB write, production deploy or publication.
+**Verification:** local links/fences/UTF-8/version consistency, archive SHA-256,
+historical architecture/savepoint preservation and git diff --check passed.
+Bun audit:guardrails, audit:parameters and audit:constitution passed; existing
+measurement/enforcement warnings retained. No priority-runtime acceptance claimed.
+**Status:** TERMINAL / KEEP for the local document deliverable, 100% documentation
+only; operational acceptance UNKNOWN. Payload/evidence GitHub receipts pending.
+
+**Next single action:** in the next authorized execution unit, recover the latest
+owner PH/VA resource's durable intake/canonical tenant and exact stage hold through
+actual GCP/Turso/D1/public visibility. Give permitted missing evidence immediate
+OWNER_PH_VA service inside PH-PRIORITY-INVENTORY; retain all 108 cohort labels and
+current source/item/cutover gates. Already cleared jobs need not wait for unrelated
+bulk inventory. Owner/controller: maintainer; trigger: authorized execution with
+needed runtime access. Missing URL/intake gets a focused request while other leads
+progress. Continue the smallest dependency-ready SSAE/MATH slice, not a full rewrite.
+
+## 2026-10-04 — GCP working code / GitHub memory correction (current documentation)
+
+**Unit:** PROMPT-GCP-MEMORY-V6.4. **Mode:** bounded documentation correction.
+**Owner direction:** GCP executes working code; GitHub serves memory/documentation.
+**Live reconciliation:** GCP publication/shadow jobs and two enabled hourly
+schedules verified; five latest executions each succeeded. Cloudflare endpoint/
+Turso/D1 dependencies and five active GitHub scheduled runtime workflows remain.
+No GCP miner job or web service found in the inspected project/region. Complete
+migration is NOT demonstrated. Source-to-image mapping and full backup/restore
+remain UNKNOWN. Do not disable residual paths before governed replacement.
+
+**Start SHA:** 4d09b050ea3902eda1452b6e8855256aeaafa4f9; review branch
+codex/ph-remote-priority-bootloader. Foreign .agents/skills/ preserved.
+**Deliverable:** AGENTS persistent project memory and canonical master/loader/
+wrapper v6.4, CURRENT and PH platform note. Working artifacts are versioned/backed
+up through the established GCP mechanism; reviewed memory/documentation commits
+and GCP evidence are backed up to GitHub. GitHub document CI is not runtime proof.
+Owner-submission urgency, mathematical quality, sparse application adoption,
+complete source/item controls and incremental continuous execution remain intact.
+No code migration, resource deletion, schedule change or job launch occurred.
+**Evidence:** [live migration reconciliation](architecture/GCP_MIGRATION_RECONCILIATION_2026-10-04.md)
+with redacted API metadata and limits. Latest GCP publication log synced 0 jobs;
+success is not evidence of new visible supply. Publisher hourly :47 UTC creates
+up-to-nearly-60-minute pre-dispatch wait; actual p95 latency remains UNKNOWN.
+
+**Validation/backup:** pending document checks, commit/push and exact remote receipt.
+**Next single action:** trace the latest owner PH/VA lead's stage delay inside
+PH-PRIORITY-INVENTORY using verified GCP publisher and actual retained storage/
+serving paths; recover source-to-image provenance and residual runtime ownership. Owner/controller: maintainer. Trigger:
+next authorized execution invocation with actual GCP access. If access is absent,
+record missing evidence and continue independent documentation/analysis.
+
 ## 2026-10-04 — Implementation-led prompts and urgent owner PH/VA service (documentation only)
 
 **Unit:** PROMPT-IMPLEMENTATION-URGENCY-V6.3. **Mode:** bounded documentation.
