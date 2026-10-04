@@ -32,6 +32,50 @@ export function toContentHash(title: string, sourceUrl: string): string {
   return hashString(`${title}::${sourceUrl}`);
 }
 
+/**
+ * Canonicalize a posting URL for IDENTITY use: lowercase the scheme and host
+ * only, because RFC 3986 6.2.2.1 makes both case-insensitive while path, query
+ * and fragment case can be significant (ATS routes and apply tokens routinely
+ * carry it).
+ *
+ * Why this exists (INCIDENT-0410(aa-47), measured against prod D1 on
+ * 2026-10-04): two ingest planes canonicalized the same posting differently.
+ * The scraper plane (`normalizeRemoteOkUrl`) lowercases the host; the lake
+ * intake plane stored `item.url` verbatim, and RemoteOK's API returns
+ * `https://remoteOK.com/...`. D1's `UNIQUE(source_url)` and the
+ * `content_hash` index are both case-sensitive, so one canonical opening was
+ * served as two active rows with two ids and two hashes (9 pairs / 18 active
+ * rows, all RemoteOK).
+ *
+ * This function fails OPEN on identity: anything it cannot parse is returned
+ * byte-for-byte unchanged, so it can never drop or invent a candidate. It is
+ * deliberately NOT a URL normalizer — it does not strip default ports, add a
+ * trailing slash, sort query parameters, drop fragments or upgrade http, since
+ * none of those are needed for identity and each would change stored keys.
+ */
+export function canonicalizeSourceUrl(raw: string): string {
+  if (!raw) return raw;
+
+  // Only absolute scheme://authority URLs have a host to canonicalize.
+  const schemeEnd = raw.indexOf("://");
+  if (schemeEnd <= 0) return raw;
+
+  const authorityStart = schemeEnd + 3;
+  let authorityEnd = raw.length;
+  for (const delimiter of ["/", "?", "#"]) {
+    const index = raw.indexOf(delimiter, authorityStart);
+    if (index !== -1 && index < authorityEnd) authorityEnd = index;
+  }
+  const authority = raw.slice(authorityStart, authorityEnd);
+
+  // Userinfo is opaque and can carry a secret; lowercasing it could corrupt it.
+  if (authority.includes("@")) return raw;
+
+  const scheme = raw.slice(0, schemeEnd).toLowerCase();
+  const host = authority.toLowerCase();
+  return `${scheme}://${host}${raw.slice(authorityEnd)}`;
+}
+
 /** Extract an error message from an unknown thrown value. */
 export function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
