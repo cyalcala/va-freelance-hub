@@ -251,6 +251,57 @@ describe("ATS discovery admission thresholds", () => {
     expect(decision.verdict).toBe("ADMIT");
   });
 
+  it("does not let a maximally confident Jev ADMIT overturn a hard reject", () => {
+    // Both hard-reject routes: ph_rate below the reject floor, and an
+    // insufficient job sample. AI is L1 ADVISE (CONSTITUTION 2.2), so a
+    // 0.99-confidence ADMIT must not widen admission for either.
+    const belowFloor = {
+      totalJobs: 38,
+      qualifiedReady: 1,
+      excluded: 37,
+      ambiguous: 0,
+      phRate: 1 / 38,
+      topCategories: ["engineering"],
+    };
+    const tooFewJobs = {
+      totalJobs: 2,
+      qualifiedReady: 1,
+      excluded: 1,
+      ambiguous: 0,
+      phRate: 0.5,
+      topCategories: ["support"],
+    };
+    for (const metrics of [belowFloor, tooFewJobs]) {
+      expect(decideAdmissionDeterministic(metrics).verdict).toBe("REJECT");
+      const decision = mergeAdmissionDecision(metrics, { choice: "ADMIT", confidence: 0.99 });
+      expect(decision.verdict).toBe("REJECT");
+      expect(decision.reason).toBe(decideAdmissionDeterministic(metrics).reason);
+    }
+  });
+
+  it("returns the identical hard-reject decision whether or not Jev answered", () => {
+    // The load-bearing invariant for skipping the discarded Jev call on a hard
+    // reject: the merge result is the deterministic decision itself, so the
+    // verdict, confidence and reason cannot change when the answer is absent.
+    // Only a receipt can differ, and merge writes none on this path.
+    const metrics = {
+      totalJobs: 38,
+      qualifiedReady: 1,
+      excluded: 37,
+      ambiguous: 0,
+      phRate: 1 / 38,
+      topCategories: ["engineering"],
+    };
+    const deterministic = decideAdmissionDeterministic(metrics);
+    const withJev = mergeAdmissionDecision(metrics, { choice: "ADMIT", confidence: 0.99 });
+    const withoutJev = mergeAdmissionDecision(metrics, null);
+    expect(deterministic.verdict).toBe("REJECT");
+    expect(withJev).toEqual(deterministic);
+    expect(withoutJev).toEqual(deterministic);
+    expect(withJev.jevRaw).toBeUndefined();
+    expect(withoutJev.jevRaw).toBeUndefined();
+  });
+
   it("admits strong PH signal, shadows borderline, rejects weak signal", () => {
     expect(
       decideAdmissionDeterministic({

@@ -4,6 +4,8 @@ import {
   decideAutoPublish,
   parseJevRaw,
   wilsonLowerBound,
+  PUBLISH_PH_RATE_FLOOR,
+  REJECT_PH_RATE_FLOOR,
 } from "./auto-publish-policy";
 import { planAutoPublishSources } from "./sync-to-d1";
 
@@ -68,6 +70,37 @@ describe("automatic publication policy", () => {
     });
     expect(published.action).toBe("PUBLISH");
     expect(published.publishCount).toBe(4);
+  });
+
+  it("holds an already-admitted tenant in the ambiguous band while Jev is silent", () => {
+    // ashby:supabase as measured in lake_ats_discovery on 2026-10-04: admitted
+    // (review_status auto_approved) with a 27.1% PH rate, but the 13/48 Wilson
+    // lower bound is ~16.6%, below the 20% floor, and jev_raw is NULL. A NULL
+    // receipt must be read as "no verdict", never as permission: the rows stay
+    // recoverable (HOLD, not REJECT) until a real verdict or a human decides.
+    const held = decideAutoPublish({
+      sourceId: "ashby:supabase",
+      totalJobs: 48,
+      qualifiedReady: 13,
+      jevRaw: null,
+      inventory: null,
+    });
+    expect(held.action).toBe("HOLD");
+    expect(held.publishCount).toBe(0);
+    expect(held.reason).toContain("ambiguous cohort stays in shadow");
+    expect(held.wilsonLower).toBe(wilsonLowerBound(13, 48));
+    expect(held.wilsonLower!).toBeGreaterThanOrEqual(REJECT_PH_RATE_FLOOR);
+    expect(held.wilsonLower!).toBeLessThan(PUBLISH_PH_RATE_FLOOR);
+    // A receipt written by any other producer is equally unparsed here: a NULL
+    // column and an absent receipt reach the same fail-closed decision.
+    expect(parseJevRaw(null)).toBeNull();
+    expect(decideAutoPublish({
+      sourceId: "ashby:supabase",
+      totalJobs: 48,
+      qualifiedReady: 13,
+      jevRaw: null,
+      inventory: null,
+    })).toEqual(held);
   });
 
   it("blocks more jobs from a family that is already over the ceiling", () => {
