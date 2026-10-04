@@ -9,6 +9,7 @@ import {
 import { parseHimalayasResponse, type RawHimalayasResponse } from "../../packages/scraper/himalayas";
 import { fetchRSSFeed } from "../../packages/scraper/rss";
 import { geoGate } from "../../packages/scraper/geoGate";
+import { canonicalizeSourceUrl } from "../../packages/scraper/contentHash";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
 import type { Source } from "../../packages/scraper/sources";
 
@@ -45,12 +46,21 @@ export async function processAndRefineCandidate(
     stats.excluded++;
     return;
   }
-  const fingerprint = computeFingerprint(draft.company, draft.title, draft.applicationUrl || draft.sourceUrl);
+  // Canonicalize once, here, because this is the single shared intake boundary
+  // for every lake ingester (ingest-to-lake, domain-ats-discovery, himalayas-sweep,
+  // remotive-full). Before this, `sourceUrl` reached the lake verbatim while the
+  // scraper plane lowercased its host, and D1's UNIQUE(source_url) plus the
+  // content_hash index are both case-sensitive (INCIDENT-0410(aa-47)).
+  const sourceUrl = canonicalizeSourceUrl(draft.sourceUrl);
+  const applicationUrl = canonicalizeSourceUrl(draft.applicationUrl || draft.sourceUrl);
+  const fingerprint = computeFingerprint(draft.company, draft.title, applicationUrl);
 
-  // Check for existing candidate by fingerprint or source URL
+  // Check for existing candidate by fingerprint or source URL. The URL comparison
+  // is case-insensitive so candidates already stored before the canonicalization
+  // above still match instead of forking a twin on the next sighting.
   const existing = await client.execute({
-    sql: `SELECT id, status, sighting_count FROM lake_candidate_jobs WHERE fingerprint_hash = ? OR source_url = ? LIMIT 1;`,
-    args: [fingerprint, draft.sourceUrl],
+    sql: `SELECT id, status, sighting_count FROM lake_candidate_jobs WHERE fingerprint_hash = ? OR lower(source_url) = lower(?) LIMIT 1;`,
+    args: [fingerprint, sourceUrl],
   });
 
   if (existing.rows.length > 0) {
@@ -64,7 +74,7 @@ export async function processAndRefineCandidate(
       rawObservationId: rawObsId,
       sourceId: draft.sourceId,
       sourcePlatform: draft.sourcePlatform,
-      sourceUrl: draft.sourceUrl,
+      sourceUrl,
       currentCount,
     });
 
@@ -112,13 +122,13 @@ export async function processAndRefineCandidate(
       rawObsId,
       draft.sourceId,
       draft.sourcePlatform,
-      draft.sourceUrl,
+      sourceUrl,
       draft.title,
       draft.company || "Unknown",
       draft.category || "other",
       draft.locationRaw || "Remote",
       draft.description?.slice(0, 10_000) || "",
-      draft.applicationUrl || draft.sourceUrl,
+      applicationUrl,
       draft.postedAt,
       fingerprint,
       statusCol,
