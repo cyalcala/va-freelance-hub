@@ -285,3 +285,117 @@ test("qualified supply excludes unclear, inactive, and future first-stored rows"
   expect(sqlite.query(query.sql(WINDOWS)).get()).toEqual({ qualified_active: 2, qualified_new_7d: 1, qualified_new_30d: 2 });
   sqlite.close();
 });
+
+/**
+ * Characterization of a LATENT metric defect in the second `policy-rejected`
+ * consumer, measured 2026-10-04 on live D1 (read-only).
+ *
+ * `triage_outcomes_7d` derives `policy_rejected` from `inactive_reason` alone and
+ * never joins the row's `ph_eligibility`, so three different causes collapse into
+ * one published column: genuine PH ineligibility, honest abstention
+ * (CONSTITUTION §3.2 #4), and an *admission hold* — a PH-eligible row suppressed
+ * by source-admission state. Live D1 holds 126 such admission-held eligible rows
+ * across 8 sources (`greenhouse:remotecom` 31, `ashby:supabase` 31,
+ * `greenhouse:grafanalabs` 18, `greenhouse:gitlab` 15, `ashby:camunda` 15,
+ * `ashby:ashby` 8, `ashby:tremendous` 6, `ashby:amplify` 2), all with
+ * `posted_at` outside the 30-day freshness window and none scraped after
+ * 2026-08-28 — so the defect currently contaminates **no** live 7-day report and
+ * none of the 126 rows is recoverable supply. It is a trap that re-arms the
+ * moment admission holds resume, and it is invisible to the report's own
+ * reconciliation, which is what these tests pin.
+ *
+ * No remediation is applied here: changing the query or the rendered table
+ * changes published SP-02 semantics, which is reviewer-owned. These tests fail
+ * the moment anyone starts discriminating on `ph_eligibility`, which is the
+ * signal to delete this block and ship the split instead.
+ */
+describe("triage_outcomes_7d rejection-cause blindness (LATENT defect)", () => {
+  /**
+   * Query-result shape, derived by executing the real `triage_outcomes_7d` SQL
+   * against an in-memory SQLite mirror of `opportunities` during this session.
+   * Both cohorts are 3 inactive `policy-rejected` rows inside the 7d window;
+   * `held` differs from `locked` only in the stored verdict of its first row,
+   * which carries `eligible_verified` — a verdict no current writer produces
+   * beside `policy-rejected`, because migration 0047 writes the admission hold
+   * without touching `ph_eligibility`.
+   */
+  const TRIAGE_RESULTS: Record<string, unknown>[] = [
+    { source_id: "greenhouse:held", eligible: 1, unclear: 0, ineligible: 2, policy_rejected: 3, total_stored: 3 },
+    { source_id: "greenhouse:locked", eligible: 0, unclear: 0, ineligible: 3, policy_rejected: 3, total_stored: 3 },
+  ];
+
+  const SUPPLY = [
+    { source_id: "greenhouse:held", source_platform: "Greenhouse", active: 0, net_new_7d: 0, net_new_14d: 0, net_new_30d: 0, inactive: 3 },
+    { source_id: "greenhouse:locked", source_platform: "Greenhouse", active: 0, net_new_7d: 0, net_new_14d: 0, net_new_30d: 0, inactive: 3 },
+  ];
+
+  const byName: Record<string, Record<string, unknown>[]> = {
+    identity_coverage: [{ total: 6, active: 0, inactive: 6, with_source_id: 6, null_source_id: 0, active_with_source_id: 0, active_null_source_id: 0 }],
+    supply_totals: [{ active: 0, net_new_7d: 0, net_new_14d: 0, net_new_30d: 0 }],
+    source_supply: SUPPLY,
+    fetch_outcomes_7d: [],
+    triage_outcomes_7d: TRIAGE_RESULTS,
+  };
+
+/** Pull one rendered 7-column triage-table row back out of the real report. */
+  function triageRow(md: string, sourceId: string): string[] {
+    const cells = md
+      .split("\n")
+      .filter((l) => l.startsWith(`| ${sourceId} |`))
+      .map((l) => l.split("|").map((c) => c.trim()))
+      // The report also prints a 7-column supply table keyed by the same id;
+      // the triage table is the one with exactly seven populated columns.
+      .find((c) => c.length === 9 && c[0] === "");
+    if (cells === undefined) throw new Error(`no triage row rendered for ${sourceId}`);
+    return cells;
+  }
+
+  test("a held eligible row and a country-locked row share one published rejection cell", () => {
+    const md = renderReport(byName, emitMeta(WINDOWS));
+    // Header order: source_id | eligible | unclear | ineligible | policy_rejected | total | qualified_rate
+    const held = triageRow(md, "greenhouse:held");
+    const locked = triageRow(md, "greenhouse:locked");
+    // The published rejection column (index 5) cannot separate the two causes...
+    expect(held[5]).toBe(locked[5]);
+    // ...while the eligibility partition and qualified_rate are the only places
+    // the difference survives, and neither names the cause.
+    expect(held[2]).toBe("1");
+    expect(locked[2]).toBe("0");
+    expect(held[7]).toBe("33.3%");
+    expect(locked[7]).toBe("0.0%");
+  });
+
+  test("the report's own reconciliation cannot see the conflation", () => {
+    // eligible + unclear + ineligible partitions total_stored in both cohorts, so
+    // every delta is zero whether or not an admission hold is present. The
+    // integrity check reports OK for a truthful rejection and for a suppressed
+    // eligible row alike.
+    const result = reconcile(byName);
+    expect(result.ok).toBe(true);
+    for (const [k, v] of Object.entries(result.deltas)) expect(`${k}=${v}`).toBe(`${k}=0`);
+  });
+
+  test("renderReport prints the held row as 33.3% qualified and as a rejection, with no cause split", () => {
+    const md = renderReport(byName, emitMeta(WINDOWS));
+    // 1 of 3 stored rows is PH-eligible yet inactive: it inflates qualified_rate
+    // and is simultaneously counted in the rejection column.
+    expect(md).toContain("| greenhouse:held | 1 | 0 | 2 | 3 | 3 | 33.3% |");
+    expect(md).toContain("| greenhouse:locked | 0 | 0 | 3 | 3 | 3 | 0.0% |");
+    // Trip-wire: a cause split would introduce one of these words.
+    expect(md).not.toContain("admission");
+    expect(md).not.toContain("hold");
+  });
+
+  test("the emitted metric reads inactive_reason alone, with no eligibility or admission key", () => {
+    const triageSql = ECONOMICS_QUERIES.find((q) => q.name === "triage_outcomes_7d")!.sql(WINDOWS);
+    // The single line that defines the published rejection count. A cause split
+    // rewrites exactly this line, which is why it is pinned verbatim.
+    const metricLine = triageSql.split("\n").find((l) => l.includes("AS policy_rejected"));
+    expect(metricLine).toBe(
+      "  SUM(CASE WHEN inactive_reason = 'policy-rejected' THEN 1 ELSE 0 END) AS policy_rejected,",
+    );
+    expect(metricLine).not.toContain("ph_eligibility");
+    // The proposed split keys on the stored verdict; that column is absent today.
+    expect(triageSql).not.toContain("geo_scope");
+  });
+});
