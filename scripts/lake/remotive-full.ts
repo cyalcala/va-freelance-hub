@@ -14,7 +14,7 @@
  */
 
 import { getLakeClient } from "./client";
-import { processAndRefineCandidate } from "./ingest-to-lake";
+import { processAndRefineCandidate, remotiveCandidateDraft } from "./ingest-to-lake";
 import { markRawProcessed, storeRawObservation } from "./lake-shared";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
 
@@ -210,28 +210,10 @@ async function ingestRemotiveUrl(
 
     // Process each job through geoGate refinery
     for (const item of jobs) {
-      if (!item || !item.url || !item.title) continue;
+      const draft = remotiveCandidateDraft(item, sourceId, category);
+      if (!draft) continue;
 
-      await processAndRefineCandidate(
-        client,
-        rawObsId,
-        {
-          sourceId,
-          sourcePlatform: "Remotive",
-          sourceUrl: item.url,
-          title: item.title,
-          company: item.company_name || "Unknown",
-          category: item.category || category || "other",
-          locationRaw: item.candidate_required_location || "Remote",
-          description: item.description || "",
-          applicationUrl: item.url,
-          postedAt: item.publication_date
-            ? new Date(item.publication_date).toISOString()
-            : null,
-          tags: Array.isArray(item.tags) ? item.tags : [],
-        },
-        stats
-      );
+      await processAndRefineCandidate(client, rawObsId, draft, stats);
     }
 
     await markRawProcessed(client, rawObsId);
