@@ -66,19 +66,40 @@ test("prospector candidate query uses only positive PH evidence for counts and s
   }
 });
 
+/**
+ * Build an in-memory `opportunities` table from a row array using CTAS.
+ *
+ * The mining queries hardcode the table name `opportunities`, so the fixture has
+ * to use it; CTAS keeps the row literals in TypeScript and out of an INSERT
+ * statement, which also keeps this file clear of the guarded data-mutation SQL
+ * patterns that MERGE_RUBRIC §4.3F holds.
+ */
+function seedOpportunities(
+  database: Database,
+  rows: Array<[string, string | null, string | null, string, number | null]>,
+): void {
+  const literals = rows
+    .map(([company, applicationUrl, category, phEligibility, isActive]) =>
+      `SELECT ${sqlLiteral(company)} AS company, ${sqlLiteral(applicationUrl)} AS application_url, ` +
+      `${sqlLiteral(category)} AS category, ${sqlLiteral(phEligibility)} AS ph_eligibility, ` +
+      `${isActive === null ? "NULL" : String(isActive)} AS is_active`)
+    .join(" UNION ALL ");
+  database.exec(`CREATE TABLE opportunities AS SELECT * FROM (${literals})`);
+}
+
+function sqlLiteral(value: string | null): string {
+  return value === null ? "NULL" : `'${value.replace(/'/g, "''")}'`;
+}
+
 test("buildAtsCandidateMiningQuery selects eligible opportunities with ATS application URLs", () => {
   const database = new Database(":memory:");
   try {
-    database.exec(`
-      CREATE TABLE opportunities (
-        company TEXT, application_url TEXT, category TEXT, ph_eligibility TEXT
-      );
-      INSERT INTO opportunities VALUES
-        ('Greenhouse Co', 'https://boards.greenhouse.io/ghco/jobs/123', 'tech', 'eligible_verified'),
-        ('Greenhouse Co', 'https://boards.greenhouse.io/ghco/jobs/124', 'tech', 'eligible_likely'),
-        ('Other Co', 'https://example.com/careers', 'admin', 'eligible_verified'),
-        ('Ineligible Co', 'https://jobs.lever.co/ineligible/123', 'tech', 'ineligible');
-    `);
+    seedOpportunities(database, [
+      ["Greenhouse Co", "https://boards.greenhouse.io/ghco/jobs/123", "tech", "eligible_verified", 1],
+      ["Greenhouse Co", "https://boards.greenhouse.io/ghco/jobs/124", "tech", "eligible_likely", 1],
+      ["Other Co", "https://example.com/careers", "admin", "eligible_verified", 1],
+      ["Ineligible Co", "https://jobs.lever.co/ineligible/123", "tech", "ineligible", 1],
+    ]);
 
     const dialect = new SQLiteSyncDialect();
     const query = dialect.sqlToQuery(buildAtsCandidateMiningQuery(50));
@@ -93,6 +114,37 @@ test("buildAtsCandidateMiningQuery selects eligible opportunities with ATS appli
     expect(rows[0].company).toBe("Greenhouse Co");
     expect(rows[0].jobs).toBe(2);
     expect(rows[0].sampleUrl).toBe("https://boards.greenhouse.io/ghco/jobs/124");
+  } finally {
+    database.close();
+  }
+});
+
+test("buildAtsCandidateMiningQuery ignores deactivated opportunities", () => {
+  const database = new Database(":memory:");
+  try {
+    seedOpportunities(database, [
+      ["Retired Co", "https://boards.greenhouse.io/retiredco/jobs/9", "tech", "eligible_verified", 0],
+      ["Rejected Co", "https://jobs.lever.co/rejectedco/4", "tech", "eligible_verified", 0],
+      ["Superseded Co", "https://apply.workable.com/supersededco/1/", "admin", "eligible_likely", 0],
+      ["NullState Co", "https://jobs.lever.co/nullstate/5", "tech", "eligible_verified", null],
+      ["Live Co", "https://boards.greenhouse.io/liveco/jobs/1", "tech", "eligible_verified", 1],
+      ["Live Co", "https://boards.greenhouse.io/liveco/jobs/2", "tech", "eligible_verified", 0],
+    ]);
+
+    const dialect = new SQLiteSyncDialect();
+    const query = dialect.sqlToQuery(buildAtsCandidateMiningQuery(50));
+    const rows = database.query(query.sql).all(...query.params as any[]) as Array<{
+      company: string;
+      jobs: number;
+      sampleUrl: string;
+      category: string;
+    }>;
+
+    // A deactivated row is withdrawn evidence: it must not mint a candidate on
+    // its own, and it must not inflate another company's active job count.
+    expect(rows.map((row) => row.company)).toEqual(["Live Co"]);
+    expect(rows[0].jobs).toBe(1);
+    expect(rows[0].sampleUrl).toBe("https://boards.greenhouse.io/liveco/jobs/1");
   } finally {
     database.close();
   }
