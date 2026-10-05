@@ -216,4 +216,80 @@ describe("normalizeCheckUrl", () => {
     expect(normalizeCheckUrl(null)).toBeNull();
     expect(normalizeCheckUrl("   ")).toBeNull();
   });
+
+  // The directory pulse performs a real fetch() on whatever this function
+  // returns, so it is a network-egress guard, not a formatter. It must reject
+  // the same local/loopback/IP-literal targets and credential-bearing URLs that
+  // the sibling job-apply gate already rejects via sanitizeSourceUrl.
+  it("rejects link-local, loopback and private-range targets", () => {
+    expect(normalizeCheckUrl("http://169.254.169.254/latest/meta-data/")).toBeNull();
+    expect(normalizeCheckUrl("http://127.0.0.1:8787/")).toBeNull();
+    expect(normalizeCheckUrl("http://192.168.1.1/")).toBeNull();
+    expect(normalizeCheckUrl("http://localhost/admin")).toBeNull();
+    expect(normalizeCheckUrl("http://svc.internal.localhost/x")).toBeNull();
+    expect(normalizeCheckUrl("http://[::1]/")).toBeNull();
+  });
+
+  it("rejects credential-bearing check URLs", () => {
+    expect(normalizeCheckUrl("http://user:pass@internal.corp/x")).toBeNull();
+    expect(normalizeCheckUrl("https://recruiter@internal.corp/x")).toBeNull();
+  });
+
+  it("keeps ordinary public directory targets byte-identical", () => {
+    expect(normalizeCheckUrl("https://www.acme.com/careers")).toBe("https://www.acme.com/careers");
+    expect(normalizeCheckUrl("acme.com")).toBe("https://acme.com");
+    expect(normalizeCheckUrl("http://example.com")).toBe("http://example.com");
+    // A subdomain of an IP-literal shape is still an ordinary public name.
+    expect(normalizeCheckUrl("http://jobs.1.2.3.example.com/x")).toBe(
+      "http://jobs.1.2.3.example.com/x",
+    );
+  });
+});
+
+// The defect that motivated the guard above is an ISSUED FETCH, not a returned
+// string. These assert on the URLs the module actually hands to fetch(), so a
+// future refactor cannot re-open the egress hole while keeping normalizeCheckUrl
+// itself green.
+describe("checkDirectoryLink egress guard", () => {
+  const withStubbedFetch = async (fn: (seen: string[]) => Promise<void>) => {
+    const original = globalThis.fetch;
+    const seen: string[] = [];
+    try {
+      globalThis.fetch = (async (input: any) => {
+        seen.push(String(input));
+        return new Response("<html>ok</html>", { status: 200 });
+      }) as unknown as typeof fetch;
+      await fn(seen);
+    } finally {
+      globalThis.fetch = original;
+    }
+  };
+
+  it("issues no fetch at all for a link-local metadata target", async () => {
+    await withStubbedFetch(async (seen) => {
+      const verdict = await checkDirectoryLink("http://169.254.169.254/latest/meta-data/iam/security-credentials/");
+      expect(seen).toEqual([]);
+      expect(verdict.status).toBe("no_url");
+      expect(verdict.isHardDead).toBe(false);
+      // no_url must carry no strike-eligible diagnostic fields.
+      expect(verdict.unreachableReason).toBeUndefined();
+      expect(verdict.unreachableCode).toBeUndefined();
+    });
+  });
+
+  it("issues no fetch for a credential-bearing or private-range target", async () => {
+    await withStubbedFetch(async (seen) => {
+      expect((await checkDirectoryLink("http://user:pass@10.0.0.5/internal")).status).toBe("no_url");
+      expect((await checkDirectoryLink("http://127.0.0.1:8787/")).status).toBe("no_url");
+      expect(seen).toEqual([]);
+    });
+  });
+
+  it("still fetches an ordinary public target exactly once", async () => {
+    await withStubbedFetch(async (seen) => {
+      const verdict = await checkDirectoryLink("acme.com/careers");
+      expect(seen).toEqual(["https://acme.com/careers"]);
+      expect(verdict.status).toBe("ok");
+    });
+  });
 });
