@@ -36,10 +36,31 @@
 
 export type FailoverAction = "takeover" | "standby" | "unknown";
 
+/**
+ * What the reserved `__scrape_run_lock__` row says about a run in flight.
+ *
+ * - `unknown`   — no usable lock evidence (row missing, read failed, unparseable,
+ *                 or the evaluation instant itself was invalid). Fail-open: the
+ *                 heartbeat decision stands unchanged.
+ * - `released`  — the lock row carries the `1970-01-01T00:00:00.000Z` sentinel
+ *                 that `releaseRunLock` writes, so no run holds it.
+ * - `held`      — claimed inside the stale window; a run is (or very recently
+ *                 was) working. Placing a takeover call now is duplicate traffic.
+ * - `stale`     — claimed before the stale window, so the claim itself is
+ *                 reclaimable and the fallback may take over.
+ * - `future`    — a future-dated claim (clock skew). Not proof that a live run
+ *                 holds it, so it does not block, but it is not trustworthy.
+ */
+export type RunLockState = "unknown" | "released" | "held" | "stale" | "future";
+
 export interface FailoverDecision {
   action: FailoverAction;
   reason: string;
   minutesSinceAttempt: number | null;
+  /** State of the reserved run-lock row, when lock evidence was supplied. */
+  lockState: RunLockState;
+  /** Age of the run-lock claim in minutes; null when it cannot be established. */
+  lockAgeMinutes: number | null;
 }
 
 export interface FailoverEvidence {
@@ -49,6 +70,20 @@ export interface FailoverEvidence {
    * null/undefined when the row is missing or the read itself failed.
    */
   lastAttemptAt: string | null | undefined;
+  /**
+   * OPTIONAL ISO timestamp of the reserved run-lock row's claim
+   * (source_fetch_state.last_attempt_at for source_id='__scrape_run_lock__').
+   *
+   * The scrape cron endpoint gates mutual exclusion on that row: `acquireRunLock`
+   * claims it only when the stored claim is older than the run lock TTL, and
+   * `releaseRunLock` resets it to the epoch sentinel. A primary that is killed
+   * mid-run (Cloudflare Pages free-tier CPU limit) leaves the claim behind, so
+   * the heartbeat alone cannot distinguish "no run in progress" from "a run
+   * claimed the lock after the last recorded heartbeat". Optional so every
+   * existing caller keeps today's exact behaviour when it has no lock evidence
+   * to offer.
+   */
+  lockLastAttemptAt?: string | null;
   /** Evaluation instant, ISO timestamp. */
   now: string;
 }
@@ -62,6 +97,15 @@ export interface FailoverEvidence {
 // minutes."
 export const DEFAULT_STALE_AFTER_MINUTES = 30;
 
+// The sentinel `acquireRunLock` seeds and `releaseRunLock` restores. Any claim
+// older than this is indistinguishable from "never claimed" by design, so it
+// is read as released rather than as an infinitely old lock.
+const RUN_LOCK_RELEASED_SENTINEL = "1970-01-01T00:00:00.000Z";
+
+function unknownDecision(reason: string): FailoverDecision {
+  return { action: "unknown", reason, minutesSinceAttempt: null, lockState: "unknown", lockAgeMinutes: null };
+}
+
 /**
  * Decide whether the secondary scheduling path should take over one bounded
  * scrape call. Never throws; unreadable or nonsensical evidence always
@@ -69,6 +113,15 @@ export const DEFAULT_STALE_AFTER_MINUTES = 30;
  * a wrong "takeover" guess risks duplicate ingestion traffic against a
  * primary that is actually fine, and a wrong "standby" guess merely waits for
  * the next scheduled check, which already recurs on a short interval.
+ *
+ * When the caller supplies the reserved run lock's claim
+ * (`lockLastAttemptAt`), the decision also refuses to place a takeover call
+ * while a run has claimed the lock inside the stale window: the endpoint's own
+ * `acquireRunLock` would reject that call with `run-lock-held`, spending the
+ * fallback's one permitted invocation for nothing. The lock claim is an
+ * operational fact about who is working, never a publication authority signal:
+ * an older-than-window claim is reported `stale` and the takeover proceeds, so
+ * a lock left behind by a killed run cannot wedge the fallback either.
  */
 export function decideFailoverTakeover(
   evidence: FailoverEvidence,
@@ -76,25 +129,17 @@ export function decideFailoverTakeover(
 ): FailoverDecision {
   const now = new Date(evidence.now);
   if (!Number.isFinite(now.getTime())) {
-    return { action: "unknown", reason: "evaluation instant is not a valid timestamp", minutesSinceAttempt: null };
+    return unknownDecision("evaluation instant is not a valid timestamp");
   }
 
   const raw = evidence.lastAttemptAt;
   if (!raw) {
-    return {
-      action: "unknown",
-      reason: "no heartbeat evidence (row missing or read failed)",
-      minutesSinceAttempt: null,
-    };
+    return unknownDecision("no heartbeat evidence (row missing or read failed)");
   }
 
   const lastAttempt = new Date(raw);
   if (!Number.isFinite(lastAttempt.getTime())) {
-    return {
-      action: "unknown",
-      reason: `heartbeat timestamp is not a valid ISO date: ${raw}`,
-      minutesSinceAttempt: null,
-    };
+    return unknownDecision(`heartbeat timestamp is not a valid ISO date: ${raw}`);
   }
 
   const minutesSinceAttempt = (now.getTime() - lastAttempt.getTime()) / 60_000;
@@ -105,20 +150,87 @@ export function decideFailoverTakeover(
       action: "unknown",
       reason: `heartbeat timestamp is in the future (${minutesSinceAttempt.toFixed(1)}min)`,
       minutesSinceAttempt,
+      lockState: "unknown",
+      lockAgeMinutes: null,
     };
   }
 
+  const lock = readRunLock(evidence.lockLastAttemptAt, now, staleAfterMinutes);
+
   if (minutesSinceAttempt >= staleAfterMinutes) {
+    if (lock.state === "held") {
+      // The heartbeat says stalled but a run claimed the lock inside the
+      // window, so a scrape is very likely already in progress. Standing by is
+      // the smaller mistake: the next scheduled check recurs in minutes.
+      return {
+        action: "standby",
+        reason: `primary heartbeat is stale (${minutesSinceAttempt.toFixed(1)}min >= ${staleAfterMinutes}min)${lock.suffix}; a scrape run holds the lock`,
+        minutesSinceAttempt,
+        lockState: lock.state,
+        lockAgeMinutes: lock.ageMinutes,
+      };
+    }
+
     return {
       action: "takeover",
-      reason: `primary clock has not attempted a run in ${minutesSinceAttempt.toFixed(1)}min (>= ${staleAfterMinutes}min threshold)`,
+      reason: `primary clock has not attempted a run in ${minutesSinceAttempt.toFixed(1)}min (>= ${staleAfterMinutes}min threshold)${lock.suffix}`,
       minutesSinceAttempt,
+      lockState: lock.state,
+      lockAgeMinutes: lock.ageMinutes,
     };
   }
 
   return {
     action: "standby",
-    reason: `primary clock attempted a run ${minutesSinceAttempt.toFixed(1)}min ago (within ${staleAfterMinutes}min threshold)`,
+    reason: `primary clock attempted a run ${minutesSinceAttempt.toFixed(1)}min ago (within ${staleAfterMinutes}min threshold)${lock.suffix}`,
     minutesSinceAttempt,
+    lockState: lock.state,
+    lockAgeMinutes: lock.ageMinutes,
+  };
+}
+
+interface RunLockReading {
+  state: RunLockState;
+  ageMinutes: number | null;
+  /** Appended to the heartbeat reason so the CLI already logs the lock. */
+  suffix: string;
+}
+
+function readRunLock(
+  raw: string | null | undefined,
+  now: Date,
+  staleAfterMinutes: number,
+): RunLockReading {
+  if (!raw) {
+    return { state: "unknown", ageMinutes: null, suffix: "" };
+  }
+  if (raw === RUN_LOCK_RELEASED_SENTINEL) {
+    return { state: "released", ageMinutes: null, suffix: "; run lock released" };
+  }
+
+  const claimedAt = new Date(raw);
+  if (!Number.isFinite(claimedAt.getTime())) {
+    return { state: "unknown", ageMinutes: null, suffix: "; run lock evidence unreadable" };
+  }
+
+  const ageMinutes = (now.getTime() - claimedAt.getTime()) / 60_000;
+  if (ageMinutes < 0) {
+    return {
+      state: "future",
+      ageMinutes,
+      suffix: `; run lock claim is future-dated (${ageMinutes.toFixed(1)}min)`,
+    };
+  }
+  if (ageMinutes >= staleAfterMinutes) {
+    return {
+      state: "stale",
+      ageMinutes,
+      suffix: `; run lock claim is ${ageMinutes.toFixed(1)}min old and reclaimable`,
+    };
+  }
+  return {
+    state: "held",
+    ageMinutes,
+    suffix: `; run lock claimed ${ageMinutes.toFixed(1)}min ago`,
   };
 }

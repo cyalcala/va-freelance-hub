@@ -388,7 +388,7 @@ export {
   decideFailoverTakeover,
   DEFAULT_STALE_AFTER_MINUTES,
 } from "./failover-clock";
-export type { FailoverAction, FailoverDecision, FailoverEvidence } from "./failover-clock";
+export type { FailoverAction, FailoverDecision, FailoverEvidence, RunLockState } from "./failover-clock";
 export {
   selectEligibleForDispatch,
   validateProviderProfileForDispatch,

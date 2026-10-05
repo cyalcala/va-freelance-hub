@@ -86,3 +86,126 @@ describe("decideFailoverTakeover", () => {
     expect(DEFAULT_STALE_AFTER_MINUTES).toBe(30);
   });
 });
+
+describe("decideFailoverTakeover with run-lock evidence", () => {
+  // A separate instant so these cases can use the same clock the incident did.
+  const now = "2026-10-05T04:00:00.000Z";
+  const staleHeartbeat = "2026-10-05T02:00:00.000Z"; // 120min old at `now`
+
+  test("standby when the heartbeat is stale but a run claimed the lock inside the window", () => {
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "2026-10-05T03:55:00.000Z", // claimed 5min ago
+        now,
+      }),
+    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 5 });
+  });
+
+  test("the standby reason names the run lock, not the heartbeat", () => {
+    const decision = decideFailoverTakeover({
+      lastAttemptAt: staleHeartbeat,
+      lockLastAttemptAt: "2026-10-05T03:55:00.000Z",
+      now,
+    });
+    expect(decision.reason).toContain("run lock");
+    expect(decision.minutesSinceAttempt).toBe(120);
+  });
+
+  test("takeover when the lock has itself been held past the stale window", () => {
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "2026-10-05T03:20:00.000Z", // claimed 40min ago
+        now,
+      }),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 40 });
+  });
+
+  test("lock exactly at the stale-window boundary is reclaimable (boundary)", () => {
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "2026-10-05T03:30:00.000Z", // exactly 30min ago
+        now,
+      }),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 30 });
+  });
+
+  test("one minute inside the boundary still defers to the running run (boundary)", () => {
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "2026-10-05T03:31:00.000Z", // 29min ago
+        now,
+      }),
+    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 29 });
+  });
+
+  test("released lock sentinel never blocks a stale-heartbeat takeover", () => {
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "1970-01-01T00:00:00.000Z",
+        now,
+      }),
+    ).toMatchObject({ action: "takeover", lockState: "released" });
+  });
+
+  test.each([null, undefined, "", "not-a-timestamp"])(
+    "absent or unreadable lock evidence leaves the decision unchanged: %s",
+    (lockLastAttemptAt) => {
+      const decision = decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt,
+        now,
+      });
+      expect(decision).toMatchObject({ action: "takeover", lockState: "unknown", lockAgeMinutes: null });
+    },
+  );
+
+  test("a future-dated lock claim does not block, but is reported as untrustworthy", () => {
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "2026-10-05T05:00:00.000Z",
+        now,
+      }),
+    ).toMatchObject({ action: "takeover", lockState: "future", lockAgeMinutes: -60 });
+  });
+
+  test("a fresh heartbeat still stands by regardless of the lock row", () => {
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: "2026-10-05T03:55:00.000Z",
+        lockLastAttemptAt: "2026-10-05T03:58:00.000Z",
+        now,
+      }),
+    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 2 });
+  });
+
+  test("the lock window follows the caller's stale-after-minutes parameter", () => {
+    expect(
+      decideFailoverTakeover(
+        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: "2026-10-05T03:57:00.000Z", now },
+        5,
+      ),
+    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 3 });
+    expect(
+      decideFailoverTakeover(
+        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: "2026-10-05T03:50:00.000Z", now },
+        5,
+      ),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 10 });
+  });
+
+  test("an invalid evaluation instant still fails safe before any lock is consulted", () => {
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "2026-10-05T03:55:00.000Z",
+        now: "not-a-timestamp",
+      }),
+    ).toMatchObject({ action: "unknown", lockState: "unknown", lockAgeMinutes: null });
+  });
+});
