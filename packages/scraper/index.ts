@@ -386,6 +386,7 @@ export { toContentHash } from "./contentHash";
 export { decodeHtmlEntities, safeFromCodePoint, xmlNodeText, xmlTextList, fixMojibake } from "./text";
 export {
   decideFailoverTakeover,
+  DEFAULT_RUN_LOCK_TTL_MINUTES,
   DEFAULT_STALE_AFTER_MINUTES,
 } from "./failover-clock";
 export type { FailoverAction, FailoverDecision, FailoverEvidence, RunLockState } from "./failover-clock";

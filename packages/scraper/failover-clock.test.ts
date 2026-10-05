@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { decideFailoverTakeover, DEFAULT_STALE_AFTER_MINUTES } from "./failover-clock";
+import {
+  decideFailoverTakeover,
+  DEFAULT_RUN_LOCK_TTL_MINUTES,
+  DEFAULT_STALE_AFTER_MINUTES,
+} from "./failover-clock";
 
 const now = "2026-09-02T04:00:00.000Z";
 
@@ -112,7 +116,7 @@ describe("decideFailoverTakeover with run-lock evidence", () => {
     expect(decision.minutesSinceAttempt).toBe(120);
   });
 
-  test("takeover when the lock has itself been held past the stale window", () => {
+  test("takeover when the lock has itself been held well past the server TTL", () => {
     expect(
       decideFailoverTakeover({
         lastAttemptAt: staleHeartbeat,
@@ -122,24 +126,27 @@ describe("decideFailoverTakeover with run-lock evidence", () => {
     ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 40 });
   });
 
-  test("lock exactly at the stale-window boundary is reclaimable (boundary)", () => {
+  test("lock exactly at the server TTL is still held, because the server's grant is a strict less-than", () => {
+    // acquireRunLock grants only when last_attempt_at < Date.now() - TTL, so at
+    // exactly the TTL the endpoint still answers run-lock-held. Mirroring the
+    // refusal here means the fence never spends its one call on a rejection.
     expect(
       decideFailoverTakeover({
         lastAttemptAt: staleHeartbeat,
-        lockLastAttemptAt: "2026-10-05T03:30:00.000Z", // exactly 30min ago
+        lockLastAttemptAt: "2026-10-05T03:52:00.000Z", // exactly 8min ago
         now,
       }),
-    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 30 });
+    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 8 });
   });
 
-  test("one minute inside the boundary still defers to the running run (boundary)", () => {
+  test("one minute past the server TTL is reclaimable, so the fallback proceeds", () => {
     expect(
       decideFailoverTakeover({
         lastAttemptAt: staleHeartbeat,
-        lockLastAttemptAt: "2026-10-05T03:31:00.000Z", // 29min ago
+        lockLastAttemptAt: "2026-10-05T03:51:00.000Z", // 9min ago
         now,
       }),
-    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 29 });
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 9 });
   });
 
   test("released lock sentinel never blocks a stale-heartbeat takeover", () => {
@@ -184,19 +191,53 @@ describe("decideFailoverTakeover with run-lock evidence", () => {
     ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 2 });
   });
 
-  test("the lock window follows the caller's stale-after-minutes parameter", () => {
+  test("the lock window does NOT follow the caller's heartbeat-staleness parameter", () => {
+    // Reusing staleAfterMinutes for the lock was the defect this session
+    // corrects: the endpoint's lock TTL is independent of how long the primary
+    // heartbeat may be silent, so a caller who tightens the heartbeat window
+    // must not start refusing takeovers the server would happily grant.
+    const tenMinuteOldLock = "2026-10-05T03:50:00.000Z"; // 10min old, > the 8min TTL
     expect(
-      decideFailoverTakeover(
-        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: "2026-10-05T03:57:00.000Z", now },
-        5,
-      ),
+      decideFailoverTakeover({ lastAttemptAt: staleHeartbeat, lockLastAttemptAt: tenMinuteOldLock, now }, 5),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 10 });
+    expect(
+      decideFailoverTakeover({ lastAttemptAt: staleHeartbeat, lockLastAttemptAt: tenMinuteOldLock, now }, 120),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 10 });
+  });
+
+  test("a lock inside the server TTL defers regardless of the heartbeat threshold", () => {
+    const threeMinuteOldLock = "2026-10-05T03:57:00.000Z"; // 3min old, < the 8min TTL
+    expect(
+      decideFailoverTakeover({ lastAttemptAt: staleHeartbeat, lockLastAttemptAt: threeMinuteOldLock, now }, 5),
     ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 3 });
     expect(
+      decideFailoverTakeover({ lastAttemptAt: staleHeartbeat, lockLastAttemptAt: threeMinuteOldLock, now }, 120),
+    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 3 });
+  });
+
+  test("an explicit run-lock TTL overrides the mirrored default", () => {
+    // A deployment whose scrape endpoint runs a longer TTL must be able to say
+    // so without editing this module: a 40min-old lock is reclaimable under the
+    // default 8min TTL, but still held under an explicit 45min TTL.
+    const fortyMinuteOldLock = "2026-10-05T03:20:00.000Z";
+    expect(
       decideFailoverTakeover(
-        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: "2026-10-05T03:50:00.000Z", now },
-        5,
+        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: fortyMinuteOldLock, now },
+        DEFAULT_STALE_AFTER_MINUTES,
+        45,
       ),
-    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 10 });
+    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 40 });
+    expect(
+      decideFailoverTakeover(
+        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: fortyMinuteOldLock, now },
+        DEFAULT_STALE_AFTER_MINUTES,
+      ),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 40 });
+  });
+
+  test("the mirrored run-lock TTL default is the endpoint's 8 minutes", () => {
+    // Must track RUN_LOCK_TTL_MIN in apps/web/src/pages/api/cron/scrape.ts.
+    expect(DEFAULT_RUN_LOCK_TTL_MINUTES).toBe(8);
   });
 
   test("an invalid evaluation instant still fails safe before any lock is consulted", () => {

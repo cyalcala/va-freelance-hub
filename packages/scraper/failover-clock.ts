@@ -44,10 +44,12 @@ export type FailoverAction = "takeover" | "standby" | "unknown";
  *                 heartbeat decision stands unchanged.
  * - `released`  — the lock row carries the `1970-01-01T00:00:00.000Z` sentinel
  *                 that `releaseRunLock` writes, so no run holds it.
- * - `held`      — claimed inside the stale window; a run is (or very recently
- *                 was) working. Placing a takeover call now is duplicate traffic.
- * - `stale`     — claimed before the stale window, so the claim itself is
- *                 reclaimable and the fallback may take over.
+ * - `held`      — claimed at or inside the endpoint's run-lock TTL; `acquireRunLock`
+ *                 would still refuse, so placing a takeover call now is a wasted
+ *                 pulse that returns `run-lock-held`.
+ * - `stale`     — claimed outside that TTL, so the endpoint has already made the
+ *                 claim reclaimable and the fallback may take over. An abandoned
+ *                 claim from a killed run therefore cannot wedge the fallback.
  * - `future`    — a future-dated claim (clock skew). Not proof that a live run
  *                 holds it, so it does not block, but it is not trustworthy.
  */
@@ -97,6 +99,27 @@ export interface FailoverEvidence {
 // minutes."
 export const DEFAULT_STALE_AFTER_MINUTES = 30;
 
+// The scrape endpoint's own run-lock TTL, mirroring `RUN_LOCK_TTL_MIN` in
+// apps/web/src/pages/api/cron/scrape.ts. This is a DIFFERENT clock from
+// DEFAULT_STALE_AFTER_MINUTES and must not be derived from it:
+//
+//   - DEFAULT_STALE_AFTER_MINUTES answers "how long may the primary clock's
+//     heartbeat stay silent before I believe the primary is dead?"
+//   - DEFAULT_RUN_LOCK_TTL_MINUTES answers "how old may a lock claim be before
+//     `acquireRunLock` hands the lock to the next caller?"
+//
+// `acquireRunLock` grants only when `last_attempt_at < Date.now() - TTL`, so a
+// claim of exactly TTL minutes is still refused with `run-lock-held`. The fence
+// below mirrors that strict-less-than boundary: `held` while
+// `ageMinutes <= ttl`, reclaimable only once `ageMinutes > ttl`. Basing this on
+// the 30-minute heartbeat window instead would refuse takeover for every claim
+// aged 8–30 min — a window in which the endpoint is free and would serve the
+// call — delaying exactly the incident recovery this fence exists for.
+//
+// Change this only together with the endpoint constant, and prefer passing an
+// explicit override when the two deployments ever diverge.
+export const DEFAULT_RUN_LOCK_TTL_MINUTES = 8;
+
 // The sentinel `acquireRunLock` seeds and `releaseRunLock` restores. Any claim
 // older than this is indistinguishable from "never claimed" by design, so it
 // is read as released rather than as an infinitely old lock.
@@ -116,16 +139,23 @@ function unknownDecision(reason: string): FailoverDecision {
  *
  * When the caller supplies the reserved run lock's claim
  * (`lockLastAttemptAt`), the decision also refuses to place a takeover call
- * while a run has claimed the lock inside the stale window: the endpoint's own
- * `acquireRunLock` would reject that call with `run-lock-held`, spending the
- * fallback's one permitted invocation for nothing. The lock claim is an
- * operational fact about who is working, never a publication authority signal:
- * an older-than-window claim is reported `stale` and the takeover proceeds, so
- * a lock left behind by a killed run cannot wedge the fallback either.
+ * while the endpoint would refuse it: `acquireRunLock` grants only when the
+ * claim is older than its TTL (`runLockTtlMinutes`), so a call placed inside
+ * that TTL spends the fallback's one permitted invocation and returns
+ * `run-lock-held`. The lock claim is an operational fact about who is working,
+ * never a publication authority signal: a claim older than the TTL is reported
+ * `stale` and the takeover proceeds.
+ *
+ * The heartbeat window (`staleAfterMinutes`) and the lock window
+ * (`runLockTtlMinutes`) are deliberately independent. Conflating them is a
+ * measured defect, not a simplification: it made the fence refuse takeover for
+ * claims the endpoint would have granted, delaying recovery in exactly the
+ * killed-run scenario the fence was written for.
  */
 export function decideFailoverTakeover(
   evidence: FailoverEvidence,
   staleAfterMinutes: number = DEFAULT_STALE_AFTER_MINUTES,
+  runLockTtlMinutes: number = DEFAULT_RUN_LOCK_TTL_MINUTES,
 ): FailoverDecision {
   const now = new Date(evidence.now);
   if (!Number.isFinite(now.getTime())) {
@@ -155,7 +185,7 @@ export function decideFailoverTakeover(
     };
   }
 
-  const lock = readRunLock(evidence.lockLastAttemptAt, now, staleAfterMinutes);
+  const lock = readRunLock(evidence.lockLastAttemptAt, now, runLockTtlMinutes);
 
   if (minutesSinceAttempt >= staleAfterMinutes) {
     if (lock.state === "held") {
@@ -199,7 +229,7 @@ interface RunLockReading {
 function readRunLock(
   raw: string | null | undefined,
   now: Date,
-  staleAfterMinutes: number,
+  runLockTtlMinutes: number,
 ): RunLockReading {
   if (!raw) {
     return { state: "unknown", ageMinutes: null, suffix: "" };
@@ -221,7 +251,10 @@ function readRunLock(
       suffix: `; run lock claim is future-dated (${ageMinutes.toFixed(1)}min)`,
     };
   }
-  if (ageMinutes >= staleAfterMinutes) {
+  // `<=` not `<`: `acquireRunLock` uses `lt(lastAttemptAt, cutoff)`, so a claim
+  // of exactly the TTL is still refused. Mirroring the refusal keeps the fence
+  // from spending its single permitted call on a guaranteed rejection.
+  if (ageMinutes > runLockTtlMinutes) {
     return {
       state: "stale",
       ageMinutes,
