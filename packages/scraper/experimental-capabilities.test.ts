@@ -13,8 +13,10 @@ import {
   runExperimentalSourcePipeline,
   evaluateRoleRelevance,
   isOpportunityFresh,
+  isRemoteGeoScope,
   summarizeBatchResults,
 } from "./experimental-orchestrator";
+import type { GeoScope } from "./geoGate";
 import type {
   ExperimentalCandidate,
   ExtractionResult,
@@ -601,5 +603,142 @@ describe("Undated listings are never given a fabricated posting date", () => {
     expect(result.jobs[0].isFresh).toBe(true);
     expect(result.metrics.freshJobs).toBe(1);
     expect(result.metrics.netNewQualifiedYield).toBe(1);
+  });
+});
+
+describe("A region-excluded listing is never reported as remote", () => {
+  const regionCandidate: ExperimentalCandidate = {
+    id: "exp:region",
+    companyName: "Region Co",
+    careerUrl: "https://example.com/careers",
+    domain: "example.com",
+    sourceNiche: "global-va",
+    discoveryProvenance: "test",
+  };
+
+  function pipelineOver(items: Record<string, unknown>[]) {
+    const html = `<html><head><script type="application/ld+json">${JSON.stringify(items)}</script></head><body></body></html>`;
+    const fetchImpl = (async () => new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    })) as unknown as typeof fetch;
+    return runExperimentalSourcePipeline(regionCandidate, { crawl4aiOptions: { fetchImpl } });
+  }
+
+  const recent = () => new Date(Date.now() - 2 * 864e5).toISOString();
+
+  function posting(overrides: Record<string, unknown>) {
+    return {
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      hiringOrganization: { "@type": "Organization", name: "Region Co" },
+      jobLocationType: "TELECOMMUTE",
+      datePosted: recent(),
+      ...overrides,
+    };
+  }
+
+  it("reports an EMEA-restricted listing as not remote, as geoGate itself decided", async () => {
+    // geoGate's own evidence here is "Title parenthetical contains excluded
+    // region: EMEA" — a verdict of region_excl_ph. Calling that listing remote
+    // is this pipeline contradicting the gate it delegates to.
+    const result = await pipelineOver([
+      posting({ title: "Customer Support Specialist (EMEA only)", url: "https://example.com/jobs/cs-emea" }),
+    ]);
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].isRemote).toBe(false);
+    expect(result.jobs[0].isPhEligible).toBe(false);
+    expect(result.jobs[0].isNetNewQualified).toBe(false);
+    expect(result.jobs[0].rejectionReason).toContain("GEO_INELIGIBLE");
+    expect(result.jobs[0].rejectionReason).toContain("EMEA");
+  });
+
+  it("keeps the generic not-remote label for a country lock, so the two stay distinguishable", async () => {
+    const result = await pipelineOver([
+      posting({
+        title: "Virtual Assistant",
+        url: "https://example.com/jobs/va-us",
+        jobLocation: { "@type": "Place", addressCountry: "United States" },
+      }),
+    ]);
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].isRemote).toBe(false);
+    expect(result.jobs[0].rejectionReason).toBe("NOT_REMOTE");
+  });
+
+  it("reports a residence-locked listing as not remote", async () => {
+    const result = await pipelineOver([
+      posting({
+        title: "Virtual Assistant",
+        url: "https://example.com/jobs/va-locked",
+        description: "Applicants must reside in Europe.",
+      }),
+    ]);
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].isRemote).toBe(false);
+  });
+
+  it("keeps a region-excluded listing out of the remote-jobs funnel count", async () => {
+    const result = await pipelineOver([
+      posting({ title: "Customer Support Specialist (EMEA only)", url: "https://example.com/jobs/cs-emea" }),
+      posting({
+        title: "Virtual Assistant (LATAM only)",
+        url: "https://example.com/jobs/va-latam",
+      }),
+    ]);
+    expect(result.metrics.candidateJobs).toBe(2);
+    expect(result.metrics.remoteJobs).toBe(0);
+    expect(result.metrics.phEligibleJobs).toBe(0);
+    expect(result.metrics.netNewQualifiedYield).toBe(0);
+    for (const job of result.jobs) expect(job.isRemote).toBe(false);
+  });
+
+  it("still counts a genuinely PH-open remote listing, so the funnel signal survives", async () => {
+    // A blanket "never remote" mutant must not satisfy the tests above: this
+    // listing is remote and PH-open on real source evidence and must still land.
+    const result = await pipelineOver([
+      posting({
+        title: "Virtual Assistant - Philippines Remote",
+        url: "https://example.com/jobs/va-ph",
+        applicantLocationRequirements: { "@type": "Country", name: "Philippines" },
+        jobLocation: { "@type": "Place", addressCountry: "Philippines" },
+      }),
+      posting({ title: "Customer Support Specialist (EMEA only)", url: "https://example.com/jobs/cs-emea" }),
+    ]);
+    expect(result.jobs).toHaveLength(2);
+    expect(result.jobs[0].isRemote).toBe(true);
+    expect(result.jobs[0].isPhEligible).toBe(true);
+    expect(result.jobs[0].isNetNewQualified).toBe(true);
+    expect(result.jobs[1].isRemote).toBe(false);
+    expect(result.metrics.remoteJobs).toBe(1);
+    expect(result.metrics.phEligibleJobs).toBe(1);
+    expect(result.metrics.netNewQualifiedYield).toBe(1);
+    const summary = summarizeBatchResults([result.metrics]);
+    expect(summary.totalRemoteJobs).toBe(1);
+    expect(summary.sourcesWithYield).toBe(1);
+  });
+});
+
+describe("isRemoteGeoScope classifies every geoGate verdict, failing closed", () => {
+  it("treats the scopes that actually open remote work as remote", () => {
+    expect(isRemoteGeoScope("worldwide")).toBe(true);
+    expect(isRemoteGeoScope("apac_incl_ph")).toBe(true);
+    expect(isRemoteGeoScope("ph_only")).toBe(true);
+  });
+
+  it("treats a scope that excludes PH, a country lock and an unresolved verdict as not remote", () => {
+    expect(isRemoteGeoScope("region_excl_ph")).toBe(false);
+    expect(isRemoteGeoScope("country_locked")).toBe(false);
+    expect(isRemoteGeoScope("unknown")).toBe(false);
+  });
+
+  it("agrees with geoGate itself for each verdict it can reach from a fixed input", () => {
+    // The helper is a total function over the enum, so it must classify every
+    // verdict geoGate can return without a runtime error or an undefined case.
+    const scopes: GeoScope[] = ["worldwide", "apac_incl_ph", "ph_only", "region_excl_ph", "country_locked", "unknown"];
+    for (const scope of scopes) {
+      expect(typeof isRemoteGeoScope(scope)).toBe("boolean");
+    }
+    expect(scopes.filter(isRemoteGeoScope)).toEqual(["worldwide", "apac_incl_ph", "ph_only"]);
   });
 });

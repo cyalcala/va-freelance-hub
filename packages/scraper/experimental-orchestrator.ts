@@ -14,7 +14,7 @@
  */
 
 import { extractAtsToken } from "./prospector";
-import { geoGate, type GeoVerdict } from "./geoGate";
+import { geoGate, type GeoScope, type GeoVerdict } from "./geoGate";
 import { executeCrawl4Ai, type Crawl4AiOptions } from "./crawl4ai-capability";
 import { executeKitesurf, qualifiesForKitesurfEscalation, type KitesurfOptions } from "./kitesurf-capability";
 import type {
@@ -41,6 +41,24 @@ export const ROLE_FAMILY_PATTERNS: Record<string, RegExp> = {
   adjacent_professional:
     /\b(social media manager|community manager|video editor|graphic designer|marketing assistant|seo specialist|accountant|frontend developer|web developer|qa tester|recruiter|talent acquisition)\b/i,
 };
+
+/**
+ * Whether a geoGate verdict describes work a remote worker can actually take.
+ *
+ * This is an allowlist on purpose. geoGate emits `region_excl_ph` when the
+ * posting restricts the region or the residence/work authorization in a way
+ * that excludes the Philippines, and CONSTITUTION §3.2 #2 is explicit that a
+ * bare label is not proof of PH remoteness — a region that excludes PH is not
+ * remote work for this product. A deny-list (`!== "country_locked" && !==
+ * "unknown"`) read every other scope as remote, so a `region_excl_ph` verdict
+ * was reported as `isRemote: true` and counted into `metrics.remoteJobs`, the
+ * funnel number used to decide which experimental sources get more compute.
+ * Adding a member to `GeoScope` later therefore also fails closed here: a new
+ * scope is not remote until someone classifies it deliberately.
+ */
+export function isRemoteGeoScope(geoScope: GeoScope): boolean {
+  return geoScope === "worldwide" || geoScope === "apac_incl_ph" || geoScope === "ph_only";
+}
 
 export function evaluateRoleRelevance(title: string, descriptionSnippet?: string): {
   isRelevant: boolean;
@@ -235,7 +253,7 @@ export async function runExperimentalSourcePipeline(
       locationRaw: raw.location || "Remote",
     });
 
-    const isRemote = geoGateVerdict.geoScope !== "country_locked" && geoGateVerdict.geoScope !== "unknown";
+    const isRemote = isRemoteGeoScope(geoGateVerdict.geoScope);
     const isPhEligible =
       geoGateVerdict.phEligibility === "eligible_verified" ||
       geoGateVerdict.phEligibility === "eligible_likely";
@@ -260,10 +278,14 @@ export async function runExperimentalSourcePipeline(
       netNewQualifiedYield++;
     }
 
+    const geoIneligible = `GEO_INELIGIBLE: ${geoGateVerdict.evidence}`;
     let rejectionReason: string | undefined;
     if (isDuplicate) rejectionReason = "DUPLICATE";
-    else if (!isRemote) rejectionReason = "NOT_REMOTE";
-    else if (!isPhEligible) rejectionReason = `GEO_INELIGIBLE: ${geoGateVerdict.evidence}`;
+    // A region exclusion is a PH-eligibility finding, so it keeps the gate's
+    // evidence instead of collapsing into the generic not-remote label.
+    else if (!isRemote)
+      rejectionReason = geoGateVerdict.geoScope === "region_excl_ph" ? geoIneligible : "NOT_REMOTE";
+    else if (!isPhEligible) rejectionReason = geoIneligible;
     else if (!roleCheck.isRelevant) rejectionReason = "ROLE_IRRELEVANT";
     else if (!isFresh) rejectionReason = postedAt === null ? "DATE_UNKNOWN" : "STALE";
 
