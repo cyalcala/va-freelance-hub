@@ -6,7 +6,11 @@ import {
   recordSighting,
   storeRawObservation,
 } from "./lake-shared";
-import { parseHimalayasResponse, type RawHimalayasResponse } from "../../packages/scraper/himalayas";
+import {
+  parseHimalayasResponse,
+  type NormalizedHimalayasJob,
+  type RawHimalayasResponse,
+} from "../../packages/scraper/himalayas";
 import { fetchRSSFeed } from "../../packages/scraper/rss";
 import { geoGate } from "../../packages/scraper/geoGate";
 import { canonicalizeSourceUrl } from "../../packages/scraper/contentHash";
@@ -28,6 +32,36 @@ export interface CandidateDraft {
 }
 
 export { computeFingerprint };
+
+/**
+ * Map one parsed Himalayas job to the shared lake intake draft.
+ *
+ * One pure mapper for both lake Himalayas adapters (single-page ingest here and the
+ * paginated sweep), so they cannot disagree about what the source said. `locationRaw`
+ * carries the API's own `locationRestrictions` and nothing else: since
+ * INCIDENT-0410(aj), absent upstream location evidence parses to an empty list, and
+ * answering that absence with the literal string "Remote" would re-introduce at the
+ * adapter boundary the fabricated geographic claim the parser fix removed
+ * (CONSTITUTION §1.3 #2). `category` is the caller's taxonomy decision, not the source's.
+ */
+export function himalayasCandidateDraft(
+  item: NormalizedHimalayasJob,
+  category: string,
+): CandidateDraft {
+  return {
+    sourceId: "himalayas:remote-jobs",
+    sourcePlatform: "Himalayas",
+    sourceUrl: item.guid || item.applicationLink,
+    title: item.title,
+    company: item.companyName,
+    category,
+    locationRaw: item.locationRestrictions.join(", ") || (item.isWorldwide ? "Worldwide" : ""),
+    description: item.excerpt || "",
+    applicationUrl: item.applicationLink,
+    postedAt: item.postedAt,
+    tags: item.categories,
+  };
+}
 
 export async function processAndRefineCandidate(
   client: ReturnType<typeof getLakeClient>,
@@ -126,7 +160,11 @@ export async function processAndRefineCandidate(
       draft.title,
       draft.company || "Unknown",
       draft.category || "other",
-      draft.locationRaw || "Remote",
+      // Store exactly what geoGate adjudicated above, never a substitute value. Binding
+      // `|| "Remote"` wrote a geographic claim the decision never rested on and, for a
+      // posting with no location at all, contradicted the `unclear` / "No deterministic
+      // geo signal" verdict stored three columns away (CONSTITUTION §1.3 #2, §3.2 #4).
+      draft.locationRaw || "",
       draft.description?.slice(0, 10_000) || "",
       applicationUrl,
       draft.postedAt,
@@ -230,19 +268,7 @@ export async function runIngestionPipeline() {
         await processAndRefineCandidate(
           client,
           rawObsId,
-          {
-            sourceId: "himalayas:remote-jobs",
-            sourcePlatform: "Himalayas",
-            sourceUrl: item.guid || item.applicationLink,
-            title: item.title,
-            company: item.companyName,
-            category: item.categories[0] || "other",
-            locationRaw: item.locationRestrictions.join(", ") || (item.isWorldwide ? "Worldwide" : "Remote"),
-            description: item.excerpt || "",
-            applicationUrl: item.applicationLink,
-            postedAt: item.postedAt,
-            tags: item.categories,
-          },
+          himalayasCandidateDraft(item, item.categories[0] || "other"),
           stats
         );
       }
