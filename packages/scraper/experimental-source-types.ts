@@ -14,7 +14,8 @@ export interface NormalizedOpportunity {
   category: string;
   applicationUrl: string;
   tags: string[];
-  publishedAt: string;
+  /** The source's stated posting date; null when the source stated none. */
+  publishedAt: string | null;
   is_active: number;
   location?: string;
   descriptionSnippet?: string;

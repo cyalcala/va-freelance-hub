@@ -241,20 +241,37 @@ describe("Experimental Orchestrator & Success Equation", () => {
       discoveryProvenance: "test",
     };
 
+    // JSON-LD, not HTML links: the freshness gate can only pass a listing whose
+    // source stated a date, and HTML-link extraction never carries one. Under the
+    // pre-fix fail-open gate this fixture qualified job-1 on a fabricated "now",
+    // which is exactly the claim under test.
+    const freshDate = new Date(Date.now() - 864e5).toISOString();
+    const posting = (
+      title: string,
+      path: string,
+      country: string,
+      datePosted?: string,
+    ) => ({
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      title,
+      url: `https://example.com${path}`,
+      hiringOrganization: { "@type": "Organization", name: "Manila Operations Hub" },
+      jobLocationType: "TELECOMMUTE",
+      jobLocation: { "@type": "Place", addressCountry: country },
+      ...(datePosted ? { datePosted } : {}),
+    });
+
     const mockFetch = (async () => {
-      return new Response(`
-        <html>
-          <body>
-            <a href="/jobs/job-1">Virtual Assistant - Philippines Remote</a>
-            <a href="/jobs/job-2">Customer Service Specialist - US Only</a>
-            <a href="/jobs/job-3">Forklift Operator</a>
-            <a href="/jobs/job-4">Already Known Job</a>
-          </body>
-        </html>
-      `, {
-        status: 200,
-        headers: { "Content-Type": "text/html" },
-      });
+      return new Response(
+        `<html><head><script type="application/ld+json">${JSON.stringify([
+          posting("Virtual Assistant - Philippines Remote", "/jobs/job-1", "Philippines", freshDate),
+          posting("Customer Service Specialist - US Only", "/jobs/job-2", "United States", freshDate),
+          posting("Forklift Operator", "/jobs/job-3", "Philippines", freshDate),
+          posting("Already Known Job", "/jobs/job-4", "Philippines"),
+        ])}</script></head><body></body></html>`,
+        { status: 200, headers: { "Content-Type": "text/html" } },
+      );
     }) as unknown as typeof fetch;
 
     const knownUrls = new Set(["https://example.com/jobs/job-4"]);
@@ -368,5 +385,221 @@ describe("Experimental Orchestrator & Success Equation", () => {
     expect(summary.totalNetNewQualifiedYield).toBe(4);
     expect(summary.sourcesWithYield).toBe(2);
     expect(summary.averageNetNewPerSource).toBe(2);
+  });
+});
+
+// CONSTITUTION §1.3 #2 forbids fabricating a source posting timestamp, and
+// ACCEPTED_PARAMETERS sets unknown_date_policy: retain-unknown-do-not-publish.
+// "Absent evidence" must stay absent through normalization AND must not be
+// reported as a passing freshness gate.
+describe("Undated listings are never given a fabricated posting date", () => {
+  const undatedCandidate: ExperimentalCandidate = {
+    id: "exp:undated",
+    companyName: "Undated Co",
+    careerUrl: "https://example.com/careers",
+    domain: "example.com",
+    sourceNiche: "global-va",
+    discoveryProvenance: "test",
+  };
+
+  function pipelineWithLinks(links: string) {
+    const fetchImpl = (async () => new Response(`<html><body>${links}</body></html>`, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    })) as unknown as typeof fetch;
+    return runExperimentalSourcePipeline(undatedCandidate, { crawl4aiOptions: { fetchImpl } });
+  }
+
+  it("does not report an absent, empty or unparseable date as fresh", () => {
+    expect(isOpportunityFresh(undefined)).toBe(false);
+    expect(isOpportunityFresh("")).toBe(false);
+    expect(isOpportunityFresh("   ")).toBe(false);
+    expect(isOpportunityFresh("not-a-date")).toBe(false);
+    expect(isOpportunityFresh("null")).toBe(false);
+  });
+
+  it("still accepts a real recent date and still rejects a real stale one", () => {
+    const now = Date.now();
+    expect(isOpportunityFresh(new Date(now - 864e5).toISOString())).toBe(true);
+    expect(isOpportunityFresh(new Date(now - 90 * 864e5).toISOString())).toBe(false);
+  });
+
+  it("does not launder an unparseable source date into a stored timestamp", async () => {
+    const html = `<html><head><script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      title: "Virtual Assistant",
+      url: "https://example.com/jobs/va-garbage-date",
+      hiringOrganization: { "@type": "Organization", name: "Undated Co" },
+      jobLocationType: "TELECOMMUTE",
+      jobLocation: { "@type": "Place", addressCountry: "Philippines" },
+      datePosted: "sometime last spring",
+    })}</script></head><body></body></html>`;
+    const fetchImpl = (async () => new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    })) as unknown as typeof fetch;
+    const result = await runExperimentalSourcePipeline(undatedCandidate, {
+      crawl4aiOptions: { fetchImpl },
+    });
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].normalized.publishedAt).toBeNull();
+    expect(result.jobs[0].isFresh).toBe(false);
+    expect(result.jobs[0].rejectionReason).toBe("DATE_UNKNOWN");
+  });
+
+  it("does not fabricate a date on the schema-invalid branch either", async () => {
+    // A non-http(s) URL fails the schema guard, which builds a normalized
+    // record through a different code path than the qualified branch.
+    const html = `<html><head><script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      title: "Virtual Assistant",
+      url: "javascript:alert(1)",
+      hiringOrganization: { "@type": "Organization", name: "Undated Co" },
+    })}</script></head><body></body></html>`;
+    const fetchImpl = (async () => new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    })) as unknown as typeof fetch;
+    const result = await runExperimentalSourcePipeline(undatedCandidate, {
+      crawl4aiOptions: { fetchImpl },
+    });
+    expect(result.metrics.invalidJobs).toBe(1);
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].isValid).toBe(false);
+    expect(result.jobs[0].normalized.publishedAt).toBeNull();
+    expect(result.jobs[0].normalized.is_active).toBe(0);
+  });
+
+  it("withholds a whitespace-padded timestamp rather than repairing it into a usable date", async () => {
+    // Date.parse rejects surrounding whitespace, so this value is not a date the
+    // source stated. Trimming it here would be this code authoring a date.
+    const padded = ` ${new Date(Date.now() - 864e5).toISOString()} `;
+    const html = `<html><head><script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      title: "Virtual Assistant",
+      url: "https://example.com/jobs/va-padded",
+      hiringOrganization: { "@type": "Organization", name: "Undated Co" },
+      jobLocationType: "TELECOMMUTE",
+      jobLocation: { "@type": "Place", addressCountry: "Philippines" },
+      datePosted: padded,
+    })}</script></head><body></body></html>`;
+    const fetchImpl = (async () => new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    })) as unknown as typeof fetch;
+    const result = await runExperimentalSourcePipeline(undatedCandidate, {
+      crawl4aiOptions: { fetchImpl },
+    });
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].normalized.publishedAt).toBeNull();
+    expect(result.jobs[0].isFresh).toBe(false);
+    expect(result.jobs[0].rejectionReason).toBe("DATE_UNKNOWN");
+  });
+
+  it("keeps the posting date unknown instead of substituting the fetch time", async () => {
+    const result = await pipelineWithLinks(
+      '<a href="/jobs/va-1">Virtual Assistant - Philippines Remote</a>',
+    );
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].normalized.publishedAt).toBeNull();
+  });
+
+  it("excludes an undated listing from fresh jobs and from net-new qualified yield", async () => {
+    const result = await pipelineWithLinks(
+      '<a href="/jobs/va-1">Virtual Assistant - Philippines Remote</a>' +
+      '<a href="/jobs/cs-1">Customer Service Specialist - Remote</a>',
+    );
+    expect(result.metrics.candidateJobs).toBe(2);
+    expect(result.metrics.freshJobs).toBe(0);
+    expect(result.metrics.netNewQualifiedYield).toBe(0);
+    for (const job of result.jobs) {
+      expect(job.isFresh).toBe(false);
+      expect(job.isNetNewQualified).toBe(false);
+      expect(job.rejectionReason).not.toBe("STALE");
+    }
+  });
+
+  it("withholds an otherwise qualified undated listing as DATE_UNKNOWN, not as STALE", async () => {
+    const html = `<html><head><script type="application/ld+json">${JSON.stringify([
+      {
+        "@context": "https://schema.org",
+        "@type": "JobPosting",
+        title: "Virtual Assistant",
+        url: "https://example.com/jobs/va-undated",
+        hiringOrganization: { "@type": "Organization", name: "Undated Co" },
+        jobLocationType: "TELECOMMUTE",
+        applicantLocationRequirements: { "@type": "Country", name: "Philippines" },
+        jobLocation: { "@type": "Place", addressCountry: "Philippines" },
+      },
+    ])}</script></head><body></body></html>`;
+    const fetchImpl = (async () => new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    })) as unknown as typeof fetch;
+    const result = await runExperimentalSourcePipeline(undatedCandidate, {
+      crawl4aiOptions: { fetchImpl },
+    });
+    expect(result.jobs).toHaveLength(1);
+    const job = result.jobs[0];
+    expect(job.isRemote).toBe(true);
+    expect(job.isPhEligible).toBe(true);
+    expect(job.isRoleRelevant).toBe(true);
+    expect(job.isFresh).toBe(false);
+    expect(job.rejectionReason).toBe("DATE_UNKNOWN");
+    expect(job.normalized.publishedAt).toBeNull();
+  });
+
+  it("labels a genuinely stale dated listing STALE, so the two causes stay distinguishable", async () => {
+    const stale = new Date(Date.now() - 90 * 864e5).toISOString();
+    const html = `<html><head><script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      title: "Virtual Assistant",
+      url: "https://example.com/jobs/va-stale",
+      hiringOrganization: { "@type": "Organization", name: "Undated Co" },
+      jobLocationType: "TELECOMMUTE",
+      applicantLocationRequirements: { "@type": "Country", name: "Philippines" },
+      jobLocation: { "@type": "Place", addressCountry: "Philippines" },
+      datePosted: stale,
+    })}</script></head><body></body></html>`;
+    const fetchImpl = (async () => new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    })) as unknown as typeof fetch;
+    const result = await runExperimentalSourcePipeline(undatedCandidate, {
+      crawl4aiOptions: { fetchImpl },
+    });
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].isFresh).toBe(false);
+    expect(result.jobs[0].rejectionReason).toBe("STALE");
+    expect(result.jobs[0].normalized.publishedAt).toBe(stale);
+  });
+
+  it("still credits a genuinely dated listing, so the yield signal survives the narrowing", async () => {
+    const dated = new Date(Date.now() - 2 * 864e5).toISOString();
+    const html = `<html><head><script type="application/ld+json">${JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "JobPosting",
+      title: "Virtual Assistant - Philippines Remote",
+      url: "https://example.com/jobs/va-1",
+      hiringOrganization: { "@type": "Organization", name: "Undated Co" },
+      jobLocationType: "TELECOMMUTE",
+      datePosted: dated,
+    })}</script></head><body></body></html>`;
+    const fetchImpl = (async () => new Response(html, {
+      status: 200,
+      headers: { "Content-Type": "text/html" },
+    })) as unknown as typeof fetch;
+    const result = await runExperimentalSourcePipeline(undatedCandidate, {
+      crawl4aiOptions: { fetchImpl },
+    });
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].normalized.publishedAt).toBe(dated);
+    expect(result.jobs[0].isFresh).toBe(true);
+    expect(result.metrics.freshJobs).toBe(1);
+    expect(result.metrics.netNewQualifiedYield).toBe(1);
   });
 });
