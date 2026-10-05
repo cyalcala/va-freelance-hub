@@ -12,7 +12,7 @@ import {
   type DirectoryCategory,
 } from '@/lib/directory-categories';
 import { loadDirectoryPage, type DirectoryAgency } from '@/lib/directory-page';
-import { sanitizeSourceUrl } from '@va-hub/scraper';
+import { normalizeDirectoryUrl, toDirectoryCard, type DirectoryCard } from '@/lib/directory-card';
 
 export const prerender = false;
 
@@ -33,11 +33,6 @@ const selectedCategory = parseDirectoryCategory(rawCategory);
 if (rawCategory && !selectedCategory) {
   Astro.response.headers.set('Cache-Control', 'no-store');
   return new Response('Unknown directory category.', { status: 400 });
-}
-
-function normalizeDirectoryUrl(raw: string | null): string | null {
-  if (!raw) return null;
-  return sanitizeSourceUrl(raw) ?? sanitizeSourceUrl(`https://${raw.trim().replace(/^\/\//, '')}`);
 }
 
 function buildPageUrl(page: number) {
@@ -79,16 +74,10 @@ if (pageOutOfRange && !dataUnavailable) {
 
 const resultStart = totalAgencies === 0 ? 0 : resultOffset + 1;
 const resultEnd = Math.min(resultOffset + agencies.length, totalAgencies);
-const cards = agencies.map((agency) => {
-  const href = normalizeDirectoryUrl(agency.website);
-  let logoDomain: string | null = null;
-  try {
-    logoDomain = href ? new URL(href).hostname : null;
-  } catch {}
-  return { ...agency, href, logoDomain };
-});
+const cards: DirectoryCard[] = agencies.map((agency) =>
+  toDirectoryCard(agency, normalizeDirectoryUrl(agency.website))
+);
 
-type DirectoryCard = (typeof cards)[number];
 type DirectoryGroup = {
   key: DirectoryCategory;
   cards: DirectoryCard[];
