@@ -34,6 +34,73 @@ export interface CandidateDraft {
 export { computeFingerprint };
 
 /**
+ * Normalise one source-provided posting date to an ISO string, or `null` when the
+ * source gave nothing usable.
+ *
+ * `new Date(x).toISOString()` **throws** `RangeError: Invalid time value` on an
+ * unparseable value. Both lake adapters that dated their drafts inline (Breezy at
+ * :236, Remote OK at :456) called it inside the per-item `for` loop, inside the
+ * per-source `try`, so a single malformed `updated_at` / `date` field aborted every
+ * remaining posting of that tenant's batch and skipped `markRawProcessed`, leaving
+ * the raw observation permanently unprocessed — a silent whole-batch supply loss
+ * with no error count anywhere.
+ *
+ * This is the one place that decision is made, for every adapter. An unusable value
+ * binds `null`, which is the honest reading of `unknown_date_policy:
+ * retain-unknown-do-not-publish` and of CONSTITUTION §1.3 #2: never substitute the
+ * current time for a date the source did not give. Dropping the posting was the
+ * other option and it discards real evidence the source did supply.
+ */
+export function sourcePostedAtOrNull(value: unknown): string | null {
+  if (typeof value !== "string" && typeof value !== "number") return null;
+  if (typeof value === "string" && !value.trim()) return null;
+  // A numeric field is epoch milliseconds. Reject the degenerate ones the previous
+  // falsy check also rejected (`0`, `NaN`), so `0` never becomes 1970-01-01.
+  if (typeof value === "number" && (!Number.isFinite(value) || value <= 0)) return null;
+  const at = new Date(value);
+  if (Number.isNaN(at.getTime())) return null;
+  return at.toISOString();
+}
+
+/**
+ * Map one Remote OK API posting to the shared lake intake draft.
+ *
+ * One pure mapper, like `himalayasCandidateDraft` and `breezyAgencyCandidateDraft`,
+ * so the adapter and the date rule cannot drift apart and both are unit-testable.
+ * The `locationRaw` fallback is carried over **unchanged**: session 16 measured a
+ * bare `"Remote"` as verdict-neutral against the real `geoGate` (identical verdict
+ * to `""`), so changing it is not a safety fix and stays out of this unit.
+ */
+export function remoteOkCandidateDraft(item: {
+  position?: unknown;
+  url?: unknown;
+  company?: unknown;
+  tags?: unknown;
+  location?: unknown;
+  description?: unknown;
+  apply_url?: unknown;
+  date?: unknown;
+}): CandidateDraft | null {
+  if (!item || typeof item.position !== "string" || !item.position.trim()) return null;
+  if (typeof item.url !== "string" || !item.url.trim()) return null;
+
+  return {
+    sourceId: "remote-ok",
+    sourcePlatform: "RemoteOK",
+    sourceUrl: item.url,
+    title: item.position,
+    company: (typeof item.company === "string" && item.company) || "Unknown",
+    category: Array.isArray(item.tags) ? item.tags[0] || "other" : "other",
+    locationRaw: (typeof item.location === "string" && item.location) || "Remote",
+    description: typeof item.description === "string" ? item.description : "",
+    applicationUrl:
+      (typeof item.apply_url === "string" && item.apply_url.trim() && item.apply_url) || item.url,
+    postedAt: sourcePostedAtOrNull(item.date),
+    tags: Array.isArray(item.tags) ? item.tags : [],
+  };
+}
+
+/**
  * Map one parsed Himalayas job to the shared lake intake draft.
  *
  * One pure mapper for both lake Himalayas adapters (single-page ingest here and the
@@ -230,10 +297,11 @@ export function breezyAgencyCandidateDraft(
   if (typeof posting?.name !== "string" || !posting.name.trim()) return null;
   if (typeof posting.url !== "string" || !posting.url.trim()) return null;
 
-  // Date handling is carried over unchanged from the inline loop, including its
-  // throw on an unparseable value; changing it is a separate decision, PROPOSE-only.
-  const rawDate = (posting.updated_at || posting.created_at) as string | undefined;
-  const postedAt = rawDate ? new Date(rawDate).toISOString() : null;
+  // Prefer the source's own `updated_at`; fall back to `created_at` when it is
+  // absent **or unusable**, so a malformed update timestamp does not discard the
+  // creation date the source also sent. Both bind null when neither is usable.
+  const postedAt =
+    sourcePostedAtOrNull(posting.updated_at) ?? sourcePostedAtOrNull(posting.created_at);
 
   return {
     sourceId: agency.id,
@@ -438,26 +506,10 @@ export async function runIngestionPipeline() {
       console.log(`Parsed ${jobs.length} opportunities from Remote OK.`);
 
       for (const item of jobs) {
-        if (!item || !item.position || !item.url) continue;
+        const draft = remoteOkCandidateDraft(item);
+        if (!draft) continue;
 
-        await processAndRefineCandidate(
-          client,
-          rawObsId,
-          {
-            sourceId: "remote-ok",
-            sourcePlatform: "RemoteOK",
-            sourceUrl: item.url,
-            title: item.position,
-            company: item.company || "Unknown",
-            category: Array.isArray(item.tags) ? item.tags[0] || "other" : "other",
-            locationRaw: item.location || "Remote",
-            description: item.description || "",
-            applicationUrl: item.apply_url || item.url,
-            postedAt: item.date ? new Date(item.date).toISOString() : null,
-            tags: Array.isArray(item.tags) ? item.tags : [],
-          },
-          stats
-        );
+        await processAndRefineCandidate(client, rawObsId, draft, stats);
       }
 
       await markRawProcessed(client, rawObsId);
