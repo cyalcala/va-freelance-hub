@@ -14,7 +14,7 @@
  */
 
 import { getLakeClient } from "./client";
-import { processAndRefineCandidate } from "./ingest-to-lake";
+import { processAndRefineCandidate, himalayasCandidateDraft } from "./ingest-to-lake";
 import { markRawProcessed, storeRawObservation } from "./lake-shared";
 import { parseHimalayasResponse, type RawHimalayasResponse } from "../../packages/scraper/himalayas";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
@@ -138,24 +138,7 @@ export async function runHimalayasSweep(options: { dryRun?: boolean } = {}) {
           await processAndRefineCandidate(
             client,
             rawObsId,
-            {
-              sourceId: "himalayas:remote-jobs",
-              sourcePlatform: "Himalayas",
-              sourceUrl: item.guid || item.applicationLink,
-              title: item.title,
-              company: item.companyName,
-              category: cat.slug,
-              locationRaw:
-                item.locationRestrictions.length > 0
-                  ? item.locationRestrictions.join(", ")
-                  : item.isWorldwide
-                  ? "Worldwide"
-                  : "Remote",
-              description: item.excerpt || "",
-              applicationUrl: item.applicationLink,
-              postedAt: item.postedAt,
-              tags: item.categories,
-            },
+            himalayasCandidateDraft(item, cat.slug),
             stats
           );
         }
