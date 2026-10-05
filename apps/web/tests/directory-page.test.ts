@@ -371,7 +371,44 @@ test("the same filter key on a later page is served without another statement", 
   expect(other.totalAgencies).toBe(70);
 });
 
-test("the cache retains, expires, coalesces, isolates keys and never caches a failure", async () => {
+test("the key cap evicts the oldest retained entry and keeps the newest, under a frozen clock", async () => {
+  // The clock never moves, so a reload here can only be explained by eviction.
+  // Without this the cap is unfalsifiable: an expired entry reloads either way.
+  let loads = 0;
+  const value: DirectoryAgency[] = [agency(1)];
+  const cache = createDirectoryListingCache({
+    ttlMs: 5_000,
+    maxKeys: 2,
+    maxRows: 10,
+    now: () => 1_000,
+  });
+  const load = async () => {
+    loads++;
+    return value;
+  };
+
+  await cache.load("k1", load);
+  await cache.load("k2", load);
+  expect(loads).toBe(2);
+
+  // A third key exceeds the cap: the oldest entry is evicted, the newest retained.
+  await cache.load("k3", load);
+  expect(loads).toBe(3);
+  expect(await cache.load("k2", load)).toEqual(value);
+  expect(loads).toBe(3);
+  expect(await cache.load("k3", load)).toEqual(value);
+  expect(loads).toBe(3);
+  // k1 was the oldest, so only the cap can explain this reload.
+  expect(await cache.load("k1", load)).toEqual(value);
+  expect(loads).toBe(4);
+  // Reloading k1 makes it the newest entry, so k2 is now the one evicted.
+  expect(await cache.load("k3", load)).toEqual(value);
+  expect(loads).toBe(4);
+  expect(await cache.load("k2", load)).toEqual(value);
+  expect(loads).toBe(5);
+});
+
+test("the cache retains, expires, isolates keys, never coalesces and never caches a failure", async () => {
   let now = 1_000;
   let loads = 0;
   const value: DirectoryAgency[] = [agency(1)];
@@ -390,23 +427,23 @@ test("the cache retains, expires, coalesces, isolates keys and never caches a fa
   expect(await cache.load("a", load)).toEqual(value);
   expect(loads).toBe(1);
 
-  // Concurrent callers share one read.
+  /**
+   * Two concurrent misses each read once. Sharing one in-flight promise across
+   * requests would let one cancelled request wedge the key for the whole isolate,
+   * so the cache never hands a promise to a caller it did not create.
+   */
   const [x, y] = await Promise.all([cache.load("b", load), cache.load("b", load)]);
   expect(x).toEqual(value);
   expect(y).toEqual(value);
-  expect(loads).toBe(2);
+  expect(loads).toBe(3);
+
+  // The resolved value is cached, so the coalesced-away read was not a lost cache.
+  expect(await cache.load("b", load)).toEqual(value);
+  expect(loads).toBe(3);
 
   now += 5_001;
   expect(await cache.load("a", load)).toEqual(value);
-  expect(loads).toBe(3);
-
-  // Key cap: a third key evicts the oldest retained entry, not the newest.
-  await cache.load("c", load);
   expect(loads).toBe(4);
-  expect(await cache.load("a", load)).toEqual(value);
-  expect(loads).toBe(4);
-  await cache.load("b", load);
-  expect(loads).toBe(5);
 
   // A failure is never retained.
   let failures = 0;
