@@ -3,11 +3,28 @@ import { getDb, opportunities } from "@va-hub/db";
 import { sql } from "drizzle-orm";
 import { publicOpportunityFilters } from "@/lib/public-opportunities";
 import { markPublicDataUnavailable } from "@/lib/public-route-load";
+import {
+  createSitemapRowsCache,
+  SITEMAP_ROWS_CACHE_MAX_JOBS,
+  SITEMAP_ROWS_CACHE_TTL_MS,
+} from "@/lib/sitemap-rows-cache";
 import { normalizeUtcIso } from "@/lib/time";
 
 export const prerender = false;
 
 const SITE_ORIGIN = "https://remotejobs-ph.pages.dev";
+
+/**
+ * One resolved read per isolate per TTL. This route is not in the shared Cloudflare edge
+ * cache allowlist, so it read the whole public-eligible corpus on every crawler hit while
+ * telling each client the document was reusable for an hour. The window and the payload
+ * bound match that published contract, and a failed read stores nothing, so the 503
+ * contract below still holds. See `lib/sitemap-rows-cache.ts`.
+ */
+const sitemapRowsCache = createSitemapRowsCache({
+  ttlMs: SITEMAP_ROWS_CACHE_TTL_MS,
+  maxJobs: SITEMAP_ROWS_CACHE_MAX_JOBS,
+});
 
 const STATIC_PAGES = [
   { loc: "/", changefreq: "daily", priority: "1.0" },
@@ -24,13 +41,15 @@ export const GET: APIRoute = async ({ locals }) => {
     const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
     const db = getDb(env);
 
-    const rows = await db
-      .select({
-        id: opportunities.id,
-        updatedAt: sql<string>`coalesce(${opportunities.updatedAt}, ${opportunities.postedAt}, ${opportunities.scrapedAt})`,
-      })
-      .from(opportunities)
-      .where(publicOpportunityFilters());
+    const rows = await sitemapRowsCache.load((env?.DB ?? env) as object, async () => {
+      return db
+        .select({
+          id: opportunities.id,
+          updatedAt: sql<string>`coalesce(${opportunities.updatedAt}, ${opportunities.postedAt}, ${opportunities.scrapedAt})`,
+        })
+        .from(opportunities)
+        .where(publicOpportunityFilters());
+    });
 
     for (const row of rows) {
       // `updatedAt` is `coalesce(updated_at, posted_at, scraped_at)`, so it can still
