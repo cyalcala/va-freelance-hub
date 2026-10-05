@@ -318,6 +318,61 @@ export function breezyAgencyCandidateDraft(
   };
 }
 
+export interface RemotiveApiPosting {
+  url?: unknown;
+  title?: unknown;
+  company_name?: unknown;
+  category?: unknown;
+  candidate_required_location?: unknown;
+  description?: unknown;
+  publication_date?: unknown;
+  tags?: unknown;
+}
+
+/**
+ * Map one Remotive API posting to the shared lake intake draft.
+ *
+ * The last reachable copy of the INCIDENT-0410(ar) date-throw class. The Remotive
+ * adapter used to bind `item.publication_date ? new Date(item.publication_date)
+ * .toISOString() : null` inline, inside the per-item `for` loop, inside the
+ * per-URL `try` — so one unparseable `publication_date` aborted every remaining
+ * posting of that category page, skipped the `markRawProcessed` that follows the
+ * loop, and was swallowed by the adapter's own `catch`. A whole category page
+ * therefore vanished with no error count anywhere. It routes through the shared
+ * `sourcePostedAtOrNull` instead, so the rule cannot fork per adapter, and one
+ * pure mapper keeps the adapter and the date rule from drifting apart.
+ *
+ * Every other field is carried over **unchanged**, including the
+ * `candidate_required_location || "Remote"` fallback: session 16 measured a bare
+ * `"Remote"` as verdict-neutral against the real `geoGate`, so changing it is not
+ * a safety fix and stays out of this unit. `category` prefers the API's own value
+ * and falls back to the category being fetched, as before.
+ */
+export function remotiveCandidateDraft(
+  item: RemotiveApiPosting | null | undefined,
+  sourceId: string,
+  category: string,
+): CandidateDraft | null {
+  if (typeof item?.title !== "string" || !item.title.trim()) return null;
+  if (typeof item.url !== "string" || !item.url.trim()) return null;
+
+  return {
+    sourceId,
+    sourcePlatform: "Remotive",
+    sourceUrl: item.url,
+    title: item.title,
+    company: (typeof item.company_name === "string" && item.company_name) || "Unknown",
+    category: (typeof item.category === "string" && item.category) || category || "other",
+    locationRaw:
+      (typeof item.candidate_required_location === "string" && item.candidate_required_location) ||
+      "Remote",
+    description: typeof item.description === "string" ? item.description : "",
+    applicationUrl: item.url,
+    postedAt: sourcePostedAtOrNull(item.publication_date),
+    tags: Array.isArray(item.tags) ? item.tags : [],
+  };
+}
+
 export interface LakeStats {
   totalRawCount: number;
   totalExtracted: number;
