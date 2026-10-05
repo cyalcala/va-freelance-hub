@@ -10,6 +10,7 @@
 //   runs (the 3-strike system) before any flagging.
 
 import { linkCheckHeaders } from "./userAgent";
+import { sanitizeSourceUrl } from "./urls";
 
 // "dead_dns" retained only for backward-compat with rows written before
 // 2026-07-21; the checker no longer produces it. Network failures now classify
@@ -133,11 +134,44 @@ export function classifyLinkResponse(status: number, bodySnippet: string): LinkV
   return { status: "bot_wall", evidence: `HTTP ${status} (ambiguous — not counted dead)`, isHardDead: false };
 }
 
+/**
+ * Reduce a stored company website to the absolute http(s) URL the pulse will
+ * fetch, or null when there is nothing safe to fetch.
+ *
+ * This is an EGRESS GUARD, not a formatter: `checkDirectoryLink` performs a real
+ * `fetch()` on whatever this returns, from a Pages Function that runs on a
+ * schedule over stored `va_directory.website` values. With no host check it was
+ * a request-forgery primitive — a link-local metadata target or a
+ * credential-bearing internal URL was passed to `fetch` verbatim (measured by
+ * calling the exported function with a stubbed fetch).
+ *
+ * The rule is the sibling module's own rather than a restatement:
+ * `sanitizeSourceUrl` already rejects a non-http(s) scheme, a dotless host,
+ * embedded credentials and local/loopback/IP-literal targets, which is what
+ * `docs/plans/HUMAN_RESEARCH_INTAKE_PLAN.md` §4 already requires of permitted
+ * link checks. It is used as a BOOLEAN GATE only — its normalized output is
+ * deliberately discarded so every previously accepted value is still returned
+ * byte-identically and no caller contract changes.
+ *
+ * Fails closed: a rejected target becomes `no_url`, i.e. `isHardDead: false`, so
+ * `buildDirectoryHealthUpdate` resets the strike counter instead of accruing
+ * one and a bad website value can never de-verify a real company.
+ *
+ * Known residuals, deliberately not closed here. (1) `checkDirectoryLink` requests
+ * `redirect: "follow"`, so a public host that redirects to a link-local address is
+ * still followed; bounding it needs a redirect-hop limit — a numeric gate absent
+ * from ACCEPTED_PARAMETERS.yaml — and `redirect: "error"` would mark ordinary
+ * redirecting company sites unhealthy and defeat link detection. (2) A public
+ * hostname whose DNS record resolves to a private address is not blocked; that
+ * needs resolution plus a range check the Workers runtime cannot do in-process.
+ * Both are PROPOSE-only for a reviewer with parameter/runtime authority.
+ */
 export function normalizeCheckUrl(raw: string | null | undefined): string | null {
   if (!raw) return null;
   const trimmed = raw.trim();
   if (!trimmed) return null;
-  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  const candidate = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+  return sanitizeSourceUrl(candidate) ? candidate : null;
 }
 
 /**
