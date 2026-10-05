@@ -68,12 +68,30 @@ export function evaluateRoleRelevance(title: string, descriptionSnippet?: string
   return { isRelevant: false, category: "other" };
 }
 
+/**
+ * Freshness is a claim about the SOURCE's posting date, so it can only be
+ * answered from a date the source actually stated. An absent, blank or
+ * unparseable date is unknown, not fresh: `unknown_date_policy` is
+ * retain-unknown-do-not-publish, and CONSTITUTION §1.3 #2 forbids substituting
+ * fetch time for a missing posting timestamp. Fails closed — callers withhold.
+ */
 export function isOpportunityFresh(publishedAt?: string, maxAgeDays = 30): boolean {
-  if (!publishedAt) return true; // Default to fresh if undated in custom career listings
+  if (typeof publishedAt !== "string" || publishedAt.trim() === "") return false;
   const parsed = Date.parse(publishedAt);
-  if (Number.isNaN(parsed)) return true;
+  if (Number.isNaN(parsed)) return false;
   const ageDays = (Date.now() - parsed) / (1000 * 60 * 60 * 24);
   return ageDays <= maxAgeDays;
+}
+
+/**
+ * The source's posting date verbatim, or null when it stated none that parses.
+ * Never the fetch time. A whitespace-padded value does not parse and is
+ * therefore withheld rather than repaired — repairing it would be this code
+ * inventing a date the source did not state in that form.
+ */
+function statedPostedAt(publishedAt?: string): string | null {
+  if (typeof publishedAt !== "string" || publishedAt.trim() === "") return null;
+  return Number.isNaN(Date.parse(publishedAt)) ? null : publishedAt;
 }
 
 export interface ExperimentalPipelineOptions {
@@ -183,7 +201,7 @@ export async function runExperimentalSourcePipeline(
           category: "other",
           applicationUrl: raw.url || candidate.careerUrl,
           tags: ["experimental"],
-          publishedAt: raw.publishedAt || new Date().toISOString(),
+          publishedAt: statedPostedAt(raw.publishedAt),
           is_active: 0, // INVARIANT: NEVER ACTIVE
         },
         isValid: false,
@@ -229,7 +247,8 @@ export async function runExperimentalSourcePipeline(
     const roleCheck = evaluateRoleRelevance(raw.title, raw.descriptionSnippet);
     if (roleCheck.isRelevant) roleRelevantJobs++;
 
-    // Step E: Freshness Gate
+    // Step E: Freshness Gate — an undated listing is withheld, never assumed fresh.
+    const postedAt = statedPostedAt(raw.publishedAt);
     const isFresh = isOpportunityFresh(raw.publishedAt);
     if (isFresh) freshJobs++;
 
@@ -246,7 +265,7 @@ export async function runExperimentalSourcePipeline(
     else if (!isRemote) rejectionReason = "NOT_REMOTE";
     else if (!isPhEligible) rejectionReason = `GEO_INELIGIBLE: ${geoGateVerdict.evidence}`;
     else if (!roleCheck.isRelevant) rejectionReason = "ROLE_IRRELEVANT";
-    else if (!isFresh) rejectionReason = "STALE";
+    else if (!isFresh) rejectionReason = postedAt === null ? "DATE_UNKNOWN" : "STALE";
 
     filteredJobs.push({
       normalized: {
@@ -256,7 +275,7 @@ export async function runExperimentalSourcePipeline(
         category: roleCheck.category,
         applicationUrl: raw.url,
         tags: ["experimental", extractionResult.capability],
-        publishedAt: raw.publishedAt || new Date().toISOString(),
+        publishedAt: statedPostedAt(raw.publishedAt),
         is_active: 0, // INVARIANT: NEVER ACTIVE
       },
       isValid: true,
