@@ -109,8 +109,18 @@ export function parseLocationRestrictions(raw: unknown): {
   isWorldwide: boolean;
   isPhilippinesExplicit: boolean;
 } {
+  // INCIDENT-0410(aj): absent evidence is NOT worldwide evidence. This function
+  // used to answer "the source said nothing" with `["Worldwide"]` and
+  // isWorldwide: true, which is a fabricated geographic-eligibility claim
+  // (CONSTITUTION §1.3 #2 lists fabricating geographic eligibility flags as a
+  // mandatory refusal; §3.2 #4 requires honest abstention). Because
+  // `himalayasJobToOpportunity` turns the result into `locationRaw`, and the live
+  // `geoGate` returns `eligible_likely` the moment `locationRaw` matches
+  // WORLDWIDE_REGEX, one absent upstream field produced a positive PH verdict
+  // from no source evidence at all. Unknown now stays unknown, and the item
+  // lands in `unclear` for the advisory layer instead of `eligible_likely`.
   if (!raw) {
-    return { locations: ["Worldwide"], isWorldwide: true, isPhilippinesExplicit: false };
+    return { locations: [], isWorldwide: false, isPhilippinesExplicit: false };
   }
 
   let list: string[] = [];
@@ -120,7 +130,7 @@ export function parseLocationRestrictions(raw: unknown): {
   } else if (typeof raw === "string") {
     const cleaned = cleanText(raw);
     if (!cleaned) {
-      return { locations: ["Worldwide"], isWorldwide: true, isPhilippinesExplicit: false };
+      return { locations: [], isWorldwide: false, isPhilippinesExplicit: false };
     }
     // If comma or semicolon separated
     if (cleaned.includes(",") || cleaned.includes(";")) {
@@ -131,7 +141,7 @@ export function parseLocationRestrictions(raw: unknown): {
   }
 
   if (list.length === 0) {
-    return { locations: ["Worldwide"], isWorldwide: true, isPhilippinesExplicit: false };
+    return { locations: [], isWorldwide: false, isPhilippinesExplicit: false };
   }
 
   const isWorldwide = list.some((loc) =>
