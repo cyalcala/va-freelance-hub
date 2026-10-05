@@ -3,12 +3,57 @@ const MAX_SEARCH_QUERY_LENGTH = 160;
 const MAX_SEARCH_TOKENS = 8;
 
 type ValidPage = { ok: true; page: number };
+type ValidJobId = { ok: true; id: number };
 type InvalidRequest = { ok: false; status: 400; message: string };
 
 export type PublicPageRequest = ValidPage | InvalidRequest;
 export type JobBoardRequest =
   | (ValidPage & { query: string; fresh: FreshFilter | null })
   | InvalidRequest;
+export type PublicJobIdRequest = ValidJobId | InvalidRequest;
+
+/**
+ * Restrict a public job id before it reaches D1.
+ *
+ * Two live public routes take a job id from the URL: `pages/jobs/[id].astro`
+ * and the outbound apply redirect `pages/api/click/[id].ts`. The detail route
+ * validated it with `/^[1-9]\d*$/` plus a safe-integer check, while the click
+ * route used `parseInt(idStr, 10)`, which accepts any numeric PREFIX. So
+ * `/api/click/12abc`, `/api/click/ 12`, `/api/click/+12`, `/api/click/1e3` and
+ * `/api/click/12.9` all resolved job 12.
+ *
+ * Two reasons that mattered, both on an unauthenticated path:
+ *
+ * 1. COST. The prefix parsed fine, so the route performed its D1 read and only
+ *    then compared the requested redirect target. Every malformed request
+ *    therefore cost one prod D1 row read — the same cost class that exhausted
+ *    the Cloudflare free-tier daily row-read limit and served 503s for ~14 h
+ *    (error 7500, prod D1, 2026-10-04/05). Rejecting here means the malformed
+ *    request costs nothing, which is why the call sites parse BEFORE touching
+ *    the binding rather than after.
+ * 2. IDENTITY. `/jobs/12abc` is a 404, but `/api/click/12abc` was a live 302
+ *    that incremented job 12's `click_count`, so one canonical opening accrued
+ *    analytics under two spellings. CONSTITUTION §3.2 #11 requires public
+ *    surfaces to obey one eligibility contract; two id grammars for one
+ *    resource is the same class of divergence.
+ *
+ * The grammar is deliberately identical to the detail route's: positive
+ * decimal, no sign, no leading zero (SQLite `INTEGER PRIMARY KEY` starts at 1),
+ * no exponent, no decimal point, and inside the safe-integer range so the value
+ * bound into the query is the integer that was validated.
+ */
+export function parseJobIdRequest(rawId: string | null | undefined): PublicJobIdRequest {
+  if (typeof rawId !== "string" || !/^[1-9]\d*$/.test(rawId)) {
+    return { ok: false, status: 400, message: "Invalid job ID." };
+  }
+
+  const id = Number(rawId);
+  if (!Number.isSafeInteger(id)) {
+    return { ok: false, status: 400, message: "Invalid job ID." };
+  }
+
+  return { ok: true, id };
+}
 
 /**
  * Recency filter for the public board. `24h` is a rolling 24-hour window on

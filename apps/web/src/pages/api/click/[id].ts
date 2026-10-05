@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { eq, sql } from "drizzle-orm";
 import { resolveOutboundUrl } from "@/lib/outbound-url";
+import { parseJobIdRequest } from "@/lib/public-query";
 
 export const prerender = false;
 
@@ -11,15 +12,13 @@ type ClickHandlerDependencies = {
 
 export function createClickHandler(dependencies: ClickHandlerDependencies): APIRoute {
   return async ({ params, request, locals, redirect }) => {
-  const idStr = params.id;
-  if (!idStr) {
-    return new Response("Missing job ID", { status: 400 });
+  // Validate the id before the D1 binding is touched at all: a malformed id
+  // must cost zero row reads, not one read followed by a 400.
+  const parsedId = parseJobIdRequest(params.id);
+  if (!parsedId.ok) {
+    return new Response(parsedId.message, { status: parsedId.status });
   }
-
-  const id = parseInt(idStr, 10);
-  if (isNaN(id)) {
-    return new Response("Invalid job ID", { status: 400 });
-  }
+  const id = parsedId.id;
 
   const url = new URL(request.url);
   const targetUrl = url.searchParams.get("url");
