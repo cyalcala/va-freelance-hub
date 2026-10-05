@@ -152,14 +152,14 @@ describe("the sitemap route stays a single public read", () => {
     expect(order).toEqual(["updated_at", "posted_at", "scraped_at"]);
   });
 
-  test("a total D1 failure still returns a valid sitemap of the static pages", async () => {
+test("a total D1 failure is reported as a failure rather than a static-only 200", async () => {
     const env = {
       DB: {
         prepare() {
           // Drizzle calls `prepare` lazily inside the awaited query, so this throw
           // surfaces from the route's own try/catch, as a real D1 failure would.
           return {
-            bind: () => {
+            bind() {
               throw new Error("D1 unavailable");
             },
           };
@@ -168,9 +168,15 @@ describe("the sitemap route stays a single public read", () => {
     };
     const response = await GET({ locals: { runtime: { env } } as never } as never);
     const xml = await response.text();
-    expect(response.headers.get("Content-Type")).toContain("application/xml");
-    expect(xml).toContain("</urlset>");
+    // A usable date must not be the only thing the route protects: an unreadable D1
+    // used to be answered with a cacheable 200 holding only the five static pages,
+    // which reads to a crawler as "these are all the job URLs". It is now a 503 with a
+    // non-cacheable body; see sitemap-failure-honesty.test.ts for the full contract.
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(xml).not.toContain("<urlset");
+    expect(xml).not.toContain("</urlset>");
     expect(jobLocs(xml)).toEqual([]);
-    expect(xml).toContain("<loc>https://remotejobs-ph.pages.dev/</loc>");
   });
+
 });
