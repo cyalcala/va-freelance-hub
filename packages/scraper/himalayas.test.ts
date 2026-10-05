@@ -14,6 +14,7 @@ import {
   buildHimalayasCandidateRow,
   HIMALAYAS_PROVIDER_ID,
 } from "./himalayas-canary";
+import { geoGate } from "./geoGate";
 
 describe("Himalayas Adapter — Pure Parsing & Normalization", () => {
   it("parseHimalayasPubDate correctly parses seconds, ms, strings, and handles invalid dates", () => {
@@ -67,9 +68,17 @@ describe("Himalayas Adapter — Pure Parsing & Normalization", () => {
     expect(nlResult.isPhilippinesExplicit).toBe(false);
     expect(nlResult.locations).toEqual(["Netherlands"]);
 
-    // Empty / null defaults to Worldwide
-    expect(parseLocationRestrictions(null).isWorldwide).toBe(true);
-    expect(parseLocationRestrictions([]).isWorldwide).toBe(true);
+    // Absent evidence is NOT worldwide evidence (CONSTITUTION §1.3 #2 forbids
+    // fabricating a geographic eligibility flag; §3.2 #4 requires honest
+    // abstention). Previously null / [] / "" all defaulted to isWorldwide:true,
+    // which let the geo-gate return eligible_likely from zero source evidence.
+    expect(parseLocationRestrictions(null).isWorldwide).toBe(false);
+    expect(parseLocationRestrictions([]).isWorldwide).toBe(false);
+    expect(parseLocationRestrictions("").isWorldwide).toBe(false);
+    expect(parseLocationRestrictions("   ").isWorldwide).toBe(false);
+    expect(parseLocationRestrictions(undefined).isWorldwide).toBe(false);
+    expect(parseLocationRestrictions(null).locations).toEqual([]);
+    expect(parseLocationRestrictions([]).locations).toEqual([]);
   });
 
   it("normalizeHimalayasPayRange formats salary ranges cleanly", () => {
@@ -197,5 +206,113 @@ describe("Himalayas Adapter — Pure Parsing & Normalization", () => {
     expect(candidate.complianceState).toBe("conditional");
     expect(candidate.canaryMaxNewItemsPerTick).toBe(2);
     expect(candidate.optOut).toBe(0);
+  });
+
+  // INCIDENT-0410(aj). This is the whole defect in one test: a payload whose
+  // location field is ABSENT must not acquire a worldwide eligibility verdict.
+  // It exercises the real chain — parseHimalayasResponse ->
+  // himalayasJobToOpportunity -> geoGate — with no stub, no fake and no
+  // production data, and it is what fails before the fix.
+  it("does not manufacture worldwide eligibility when the source stated no location", () => {
+    const payloadWithNoLocationField: RawHimalayasResponse = {
+      total_count: 1,
+      jobs: [
+        {
+          title: "Data Analyst",
+          companyName: "Some Employer",
+          applicationLink: "https://himalayas.app/companies/x/jobs/analyst",
+          guid: "https://himalayas.app/companies/x/jobs/analyst",
+          pubDate: "2026-10-01T00:00:00.000Z",
+          // locationRestrictions is deliberately absent.
+          excerpt: "Looking for a data analyst to join our team.",
+        },
+      ],
+    };
+
+    const [parsed] = parseHimalayasResponse(payloadWithNoLocationField);
+    expect(parsed.isWorldwide).toBe(false);
+    expect(parsed.isPhilippinesExplicit).toBe(false);
+    expect(parsed.locationRestrictions).toEqual([]);
+
+    // The plausible-candidate filter must not admit it on invented evidence.
+    expect(filterHimalayasPlausibleCandidates([parsed])).toHaveLength(0);
+
+    // And the stored row must carry no fabricated location, so the live geo-gate
+    // abstains (`unclear`) instead of returning a positive PH verdict.
+    const opp = himalayasJobToOpportunity(parsed);
+    expect(opp.locationRaw).toBe("");
+
+    const verdict = geoGate({
+      title: opp.title,
+      description: opp.description ?? "",
+      locationRaw: opp.locationRaw ?? "",
+      tags: [],
+    });
+    expect(verdict.geoScope).toBe("unknown");
+    expect(verdict.phEligibility).toBe("unclear");
+  });
+
+  it("still returns a worldwide verdict for genuinely worldwide evidence (control)", () => {
+    const payloadStatingWorldwide: RawHimalayasResponse = {
+      total_count: 1,
+      jobs: [
+        {
+          title: "Data Analyst",
+          companyName: "Some Employer",
+          applicationLink: "https://himalayas.app/companies/x/jobs/analyst2",
+          guid: "https://himalayas.app/companies/x/jobs/analyst2",
+          pubDate: "2026-10-01T00:00:00.000Z",
+          locationRestrictions: "Worldwide",
+          excerpt: "Looking for a data analyst.",
+        },
+      ],
+    };
+
+    const [parsed] = parseHimalayasResponse(payloadStatingWorldwide);
+    expect(parsed.isWorldwide).toBe(true);
+    expect(filterHimalayasPlausibleCandidates([parsed])).toHaveLength(1);
+
+    const opp = himalayasJobToOpportunity(parsed);
+    expect(opp.locationRaw).toBe("Worldwide (Remote)");
+
+    const verdict = geoGate({
+      title: opp.title,
+      description: opp.description ?? "",
+      locationRaw: opp.locationRaw ?? "",
+      tags: [],
+    });
+    expect(verdict.geoScope).toBe("worldwide");
+    expect(verdict.phEligibility).toBe("eligible_likely");
+  });
+
+  it("keeps an explicit non-PH country lock ineligible (control)", () => {
+    const payloadCountryLocked: RawHimalayasResponse = {
+      total_count: 1,
+      jobs: [
+        {
+          title: "Dentist",
+          companyName: "Dutch Dental",
+          applicationLink: "https://himalayas.app/jobs/dutch-dentist",
+          guid: "https://himalayas.app/jobs/dutch-dentist",
+          pubDate: "2026-10-01T00:00:00.000Z",
+          locationRestrictions: "Netherlands",
+          excerpt: "Dutch dental practice hiring a dentist.",
+        },
+      ],
+    };
+
+    const [parsed] = parseHimalayasResponse(payloadCountryLocked);
+    expect(parsed.isWorldwide).toBe(false);
+    expect(parsed.locationRestrictions).toEqual(["Netherlands"]);
+    expect(filterHimalayasPlausibleCandidates([parsed])).toHaveLength(0);
+
+    const opp = himalayasJobToOpportunity(parsed);
+    const verdict = geoGate({
+      title: opp.title,
+      description: opp.description ?? "",
+      locationRaw: opp.locationRaw ?? "",
+      tags: [],
+    });
+    expect(verdict.phEligibility).toBe("ineligible");
   });
 });
