@@ -138,6 +138,17 @@ export function sliceDirectoryPage(
   };
 }
 
+/**
+ * A resolved-value cache for one bounded read per filter key. There is
+ * deliberately no in-flight coalescing: coalescing would hand a caller a promise
+ * whose I/O belongs to a *different* request, and in a Workers/Pages isolate a
+ * promise whose originating request was cancelled may never settle. Because the
+ * deletion of the in-flight entry lived in that promise's `.finally`, a
+ * never-settling promise would leave the key permanently in-flight and every
+ * later `/directory` render on that isolate would await a value that can never
+ * arrive. Not sharing is the safe default: two concurrent misses cost at most one
+ * extra bounded read, which is what every render before the cache existed cost.
+ */
 export function createDirectoryListingCache(options: {
   ttlMs: number;
   maxKeys: number;
@@ -146,7 +157,6 @@ export function createDirectoryListingCache(options: {
 }) {
   const now = options.now ?? Date.now;
   const entries = new Map<string, { value: DirectoryAgency[]; expiresAt: number }>();
-  const inFlight = new Map<string, Promise<DirectoryAgency[]>>();
 
   return {
     async load(
@@ -156,27 +166,17 @@ export function createDirectoryListingCache(options: {
       const entry = entries.get(key);
       if (entry && entry.expiresAt > now()) return entry.value;
       if (entry) entries.delete(key);
-      const pending = inFlight.get(key);
-      if (pending) return pending;
 
-      const promise = Promise.resolve()
-        .then(load)
-        .then((rows) => {
-          if (rows.length <= options.maxRows) {
-            entries.set(key, { value: rows, expiresAt: now() + options.ttlMs });
-            while (entries.size > options.maxKeys) {
-              const oldest = entries.keys().next();
-              if (oldest.done) break;
-              entries.delete(oldest.value);
-            }
-          }
-          return rows;
-        })
-        .finally(() => {
-          inFlight.delete(key);
-        });
-      inFlight.set(key, promise);
-      return promise;
+      const rows = await load();
+      if (rows.length <= options.maxRows) {
+        entries.set(key, { value: rows, expiresAt: now() + options.ttlMs });
+        while (entries.size > options.maxKeys) {
+          const oldest = entries.keys().next();
+          if (oldest.done) break;
+          entries.delete(oldest.value);
+        }
+      }
+      return rows;
     },
   };
 }
