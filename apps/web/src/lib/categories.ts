@@ -15,3 +15,25 @@ export const JOB_CATEGORY_MAP: Record<string, { title: string, color: string }> 
 export function getJobCategory(opp: Opportunity): string {
   return opp.category || 'other';
 }
+
+export type JobCategory = { slug: string; title: string; color: string };
+
+/**
+ * Resolve a category slug to its label, or `null` when the slug is not one of
+ * ours.
+ *
+ * `Object.hasOwn`, not a truthiness lookup: `JOB_CATEGORY_MAP['constructor']`
+ * resolves through the prototype chain to a function, which defeated the
+ * `/categories/[category]` guard and made that route read `.title` off a
+ * function. One call now returns the slug and the label together, so no public
+ * surface has to index the map a second time and re-introduce that check.
+ */
+export function parseJobCategory(value: string | null | undefined): JobCategory | null {
+  if (!value) return null;
+  if (!Object.hasOwn(JOB_CATEGORY_MAP, value)) return null;
+  const { title, color } = JOB_CATEGORY_MAP[value];
+  return { slug: value, title, color };
+}
+
+/** The fallback label used when a stored category is absent or unrecognised. */
+export const OTHER_JOB_CATEGORY: JobCategory = { slug: 'other', ...JOB_CATEGORY_MAP['other'] };

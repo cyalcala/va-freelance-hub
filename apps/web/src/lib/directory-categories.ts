@@ -72,9 +72,17 @@ export const DIRECTORY_CATEGORY_INFO: Record<DirectoryCategory, DirectoryCategor
   },
 };
 
+/**
+ * Resolve a public `?category=` value to a curated category.
+ *
+ * `Object.hasOwn`, not `in`: the `in` operator walks the prototype chain, so
+ * every `Object.prototype` member name ("constructor", "toString", "__proto__",
+ * ...) was accepted as a category and the caller's `DIRECTORY_CATEGORY_INFO[key]`
+ * read returned a function whose `.shortTitle` is `undefined`.
+ */
 export function parseDirectoryCategory(value: string | null): DirectoryCategory | null {
   if (!value) return null;
-  return value in DIRECTORY_CATEGORY_INFO ? value as DirectoryCategory : null;
+  return Object.hasOwn(DIRECTORY_CATEGORY_INFO, value) ? value as DirectoryCategory : null;
 }
 
 export function isDirectoryNiche(value: DirectoryCategory): value is DirectoryNiche {
