@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
 import { sql } from "drizzle-orm";
 import { publicOpportunityFilters } from "@/lib/public-opportunities";
+import { markPublicDataUnavailable } from "@/lib/public-route-load";
 import { normalizeUtcIso } from "@/lib/time";
 
 export const prerender = false;
@@ -47,7 +48,27 @@ export const GET: APIRoute = async ({ locals }) => {
       jobEntries += `<url><loc>${SITE_ORIGIN}/jobs/${row.id}</loc>${lastmodEntry}<changefreq>weekly</changefreq><priority>0.6</priority></url>\n`;
     }
   } catch (e) {
-    console.error("[sitemap.xml] DB error:", e);
+    // An incomplete read must never be published as a success. Falling through to the
+    // success path answered 200 with a document that listed only the static pages, so
+    // the status claimed success, `Cache-Control: public, max-age=3600` let Cloudflare
+    // and crawlers store it for an hour, and the document itself asserted "this is the
+    // complete list of job URLs" while every job URL was missing — indistinguishable
+    // from "there are no jobs". Every other public surface in this app already answers
+    // the same condition honestly, so reuse that contract: 503, `no-store`, and a
+    // redacted error classification instead of the raw upstream error (which carries
+    // the full SQL text and bound parameters).
+    //
+    // `Response.status` is not writable in every runtime, so the shared helper is given
+    // the very `Headers` instance the response is built from and its resulting status
+    // is read back. Nothing is emitted from `jobEntries` on this path: a partial list
+    // is the same lie as an empty one.
+    const failure: { status: number; headers: Headers } = { status: 200, headers: new Headers() };
+    markPublicDataUnavailable(failure, e);
+
+    return new Response("Service temporarily unavailable", {
+      status: failure.status,
+      headers: failure.headers,
+    });
   }
 
   const staticEntries = STATIC_PAGES.map(
