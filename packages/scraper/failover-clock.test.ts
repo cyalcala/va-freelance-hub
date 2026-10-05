@@ -250,3 +250,92 @@ describe("decideFailoverTakeover with run-lock evidence", () => {
     ).toMatchObject({ action: "unknown", lockState: "unknown", lockAgeMinutes: null });
   });
 });
+
+describe("decideFailoverTakeover threshold validation", () => {
+  // A threshold is operator-supplied configuration, not measured evidence, so a
+  // nonsensical one must be refused the same way a nonsensical timestamp is:
+  // as `unknown` (place no call), never as a confident-looking decision.
+  const now = "2026-10-05T04:00:00.000Z";
+  const staleHeartbeat = "2026-10-05T02:00:00.000Z"; // 120min old at `now`
+  const fortyMinuteOldLock = "2026-10-05T03:20:00.000Z"; // 40min old, reclaimable under the real 8min TTL
+
+  test.each([
+    ["NaN", Number.NaN],
+    ["Infinity", Number.POSITIVE_INFINITY],
+    ["-Infinity", Number.NEGATIVE_INFINITY],
+    ["a negative number", -5],
+  ])("a non-finite or negative stale-after-minutes (%s) fails safe to unknown", (_label, staleAfterMinutes) => {
+    // Without validation, NaN makes `minutesSinceAttempt >= NaN` false, so the
+    // fence stands by forever with a normal-looking "within NaNmin threshold"
+    // reason — the permanent-starvation failure the module documents refusing.
+    expect(
+      decideFailoverTakeover({ lastAttemptAt: staleHeartbeat, now }, staleAfterMinutes),
+    ).toMatchObject({
+      action: "unknown",
+      reason: "stale-after-minutes threshold is not a finite non-negative number",
+      minutesSinceAttempt: null,
+      lockState: "unknown",
+      lockAgeMinutes: null,
+    });
+  });
+
+  test.each([
+    ["NaN", Number.NaN],
+    ["Infinity", Number.POSITIVE_INFINITY],
+    ["-Infinity", Number.NEGATIVE_INFINITY],
+    ["a negative number", -1],
+  ])("a non-finite or negative run-lock TTL (%s) fails safe to unknown", (_label, runLockTtlMinutes) => {
+    // Without validation, `ageMinutes > NaN` is false so every claim reads
+    // `held`, and `ageMinutes > -1` is true so every claim reads `reclaimable`.
+    // Either way the fence stops mirroring the endpoint's actual TTL.
+    expect(
+      decideFailoverTakeover(
+        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: fortyMinuteOldLock, now },
+        DEFAULT_STALE_AFTER_MINUTES,
+        runLockTtlMinutes,
+      ),
+    ).toMatchObject({
+      action: "unknown",
+      reason: "run-lock TTL minutes is not a finite non-negative number",
+      lockState: "unknown",
+      lockAgeMinutes: null,
+    });
+  });
+
+  test("an invalid stale-after-minutes is refused even when the heartbeat itself is unusable", () => {
+    // Threshold validation runs before evidence is interpreted, so the reason
+    // names the operator error rather than the missing row. Both are `unknown`,
+    // so the placed call is the same either way.
+    expect(
+      decideFailoverTakeover({ lastAttemptAt: null, now }, Number.NaN),
+    ).toMatchObject({
+      action: "unknown",
+      reason: "stale-after-minutes threshold is not a finite non-negative number",
+    });
+  });
+
+  test("a zero run-lock TTL is accepted: it claims nothing is protected", () => {
+    // Zero is finite and non-negative, so it is a coherent (if unusual)
+    // configuration, not an operator error. It must not be conflated with NaN.
+    expect(
+      decideFailoverTakeover(
+        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: fortyMinuteOldLock, now },
+        DEFAULT_STALE_AFTER_MINUTES,
+        0,
+      ),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 40 });
+  });
+
+  test("a zero stale-after-minutes is accepted: any heartbeat age counts as stale", () => {
+    expect(
+      decideFailoverTakeover({ lastAttemptAt: "2026-10-05T03:59:59.000Z", now }, 0),
+    ).toMatchObject({ action: "takeover", minutesSinceAttempt: 0.016666666666666666 });
+  });
+
+  test("a valid caller is unaffected by threshold validation", () => {
+    // The pre-existing two-argument call must stay byte-identical.
+    expect(
+      decideFailoverTakeover({ lastAttemptAt: staleHeartbeat, lockLastAttemptAt: fortyMinuteOldLock, now }),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 40 });
+  });
+});

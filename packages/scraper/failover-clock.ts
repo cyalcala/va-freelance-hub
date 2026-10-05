@@ -151,12 +151,35 @@ function unknownDecision(reason: string): FailoverDecision {
  * measured defect, not a simplification: it made the fence refuse takeover for
  * claims the endpoint would have granted, delaying recovery in exactly the
  * killed-run scenario the fence was written for.
+ *
+ * A nonsensical threshold (`NaN`, `Infinity`, or a negative number) yields
+ * `unknown` with a named reason rather than a confident-looking decision. Both
+ * parameters are operator-supplied configuration; validating them is what keeps
+ * the fail-safe contract above true for configuration errors, not just for
+ * malformed evidence.
  */
 export function decideFailoverTakeover(
   evidence: FailoverEvidence,
   staleAfterMinutes: number = DEFAULT_STALE_AFTER_MINUTES,
   runLockTtlMinutes: number = DEFAULT_RUN_LOCK_TTL_MINUTES,
 ): FailoverDecision {
+  // Both thresholds are operator-supplied configuration, so a nonsensical one is
+  // as unusable as a nonsensical timestamp and must be refused before any
+  // evidence is interpreted. Left unvalidated they fail in the *confident*
+  // direction: `minutesSinceAttempt >= NaN` is false, so the fence stands by
+  // forever behind a normal-looking "within NaNmin threshold" reason — the
+  // permanent starvation this module exists to avoid — and `ageMinutes > NaN`
+  // is false (every claim `held`) just as `ageMinutes > -1` is true (every
+  // claim reclaimable), which silently detaches the fence from the endpoint's
+  // real TTL. Zero is finite and non-negative, so it stays a coherent if
+  // unusual configuration and is not treated as an operator error.
+  if (!Number.isFinite(staleAfterMinutes) || staleAfterMinutes < 0) {
+    return unknownDecision("stale-after-minutes threshold is not a finite non-negative number");
+  }
+  if (!Number.isFinite(runLockTtlMinutes) || runLockTtlMinutes < 0) {
+    return unknownDecision("run-lock TTL minutes is not a finite non-negative number");
+  }
+
   const now = new Date(evidence.now);
   if (!Number.isFinite(now.getTime())) {
     return unknownDecision("evaluation instant is not a valid timestamp");
