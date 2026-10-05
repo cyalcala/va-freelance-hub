@@ -150,18 +150,33 @@ test("buildAtsCandidateMiningQuery ignores deactivated opportunities", () => {
   }
 });
 
+/**
+ * Build an in-memory `va_directory` table from a row array using CTAS, for the
+ * same reason as `seedOpportunities`: the mining query hardcodes the table name
+ * `va_directory`, so the fixture must use it, while keeping row literals in
+ * TypeScript and out of a data-mutation statement.
+ */
+function seedDirectory(
+  database: Database,
+  rows: Array<[string, string | null, string | null, string | null, number, number]>,
+): void {
+  const literals = rows
+    .map(([companyName, website, niche, hiringPageUrl, hiresFilipinos, linkFailCount]) =>
+      `SELECT ${sqlLiteral(companyName)} AS company_name, ${sqlLiteral(website)} AS website, ` +
+      `${sqlLiteral(niche)} AS niche, ${sqlLiteral(hiringPageUrl)} AS hiring_page_url, ` +
+      `${String(hiresFilipinos)} AS hires_filipinos, ${String(linkFailCount)} AS link_fail_count`)
+    .join(" UNION ALL ");
+  database.exec(`CREATE TABLE va_directory AS SELECT * FROM (${literals})`);
+}
+
 test("buildDirectoryAtsMiningQuery selects directory entries with ATS website URLs or hiring_page_url", () => {
   const database = new Database(":memory:");
   try {
-    database.exec(`
-      CREATE TABLE va_directory (
-        company_name TEXT, website TEXT, niche TEXT, hiring_page_url TEXT
-      );
-      INSERT INTO va_directory VALUES
-        ('Breezy Agency', 'https://agency.breezy.hr', 'global-va', NULL),
-        ('Workable Agency', 'https://workableagency.com', 'admin', 'https://apply.workable.com/workable-agency'),
-        ('Standard Agency', 'https://standardagency.com', 'admin', 'https://standardagency.com/careers');
-    `);
+    seedDirectory(database, [
+      ["Breezy Agency", "https://agency.breezy.hr", "global-va", null, 1, 0],
+      ["Workable Agency", "https://workableagency.com", "admin", "https://apply.workable.com/workable-agency", 1, 0],
+      ["Standard Agency", "https://standardagency.com", "admin", "https://standardagency.com/careers", 1, 0],
+    ]);
 
     const dialect = new SQLiteSyncDialect();
     const query = dialect.sqlToQuery(buildDirectoryAtsMiningQuery(50));
@@ -179,6 +194,36 @@ test("buildDirectoryAtsMiningQuery selects directory entries with ATS website UR
     expect(rows[1].company).toBe("Workable Agency");
     expect(rows[1].sampleUrl).toBe("https://apply.workable.com/workable-agency");
     expect(rows[1].category).toBe("admin");
+  } finally {
+    database.close();
+  }
+});
+
+test("buildDirectoryAtsMiningQuery ignores directory entries the public directory hides", () => {
+  const database = new Database(":memory:");
+  try {
+    seedDirectory(database, [
+      // Hidden because it is not positively identified as Filipino-friendly.
+      ["Not Ph Co", "https://notph.breezy.hr", "admin", null, 0, 0],
+      // Hidden because the link verifier struck it three times.
+      ["Dead Link Co", "https://apply.workable.com/deadlink", "admin", null, 1, 3],
+      ["Live Co", "https://live.breezy.hr", "admin", null, 1, 2],
+    ]);
+
+    const dialect = new SQLiteSyncDialect();
+    const query = dialect.sqlToQuery(buildDirectoryAtsMiningQuery(50));
+    const rows = database.query(query.sql).all(...query.params as any[]) as Array<{
+      company: string;
+      jobs: number;
+      sampleUrl: string;
+      category: string;
+    }>;
+
+    // A hidden directory row is evidence the public product does not stand
+    // behind, so it must not mint an ATS candidate. A row two strikes old is
+    // still visible and must keep mining.
+    expect(rows.map((row) => row.company)).toEqual(["Live Co"]);
+    expect(rows[0].sampleUrl).toBe("https://live.breezy.hr");
   } finally {
     database.close();
   }

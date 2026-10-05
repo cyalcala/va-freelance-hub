@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import { directoryVisibilityFilters } from "./directory-visibility";
 
 // `opportunities` has `posted_at` and `scraped_at`, but no `created_at`.
 // Keep the trusted raw fragments here so the cron query and its regression
@@ -71,21 +72,31 @@ export function buildAtsCandidateMiningQuery(limit = 100) {
 
 /**
  * Mine curated va_directory hiring page or website links pointing to known ATS platforms.
+ *
+ * `directoryVisibilityFilters()` is load-bearing here, exactly as it is on `/` and
+ * `/directory`. A directory row the public directory hides — not positively
+ * identified as Filipino-friendly, or struck three times by the link verifier — is
+ * evidence the product does not stand behind, so minting an ATS source candidate
+ * from it would record provenance the public surface contradicts. Reusing the
+ * shared predicate also means the mining query cannot drift from the surfaces
+ * that decide what is publicly visible; for the same reason the table is
+ * referenced unqualified, because the predicate qualifies its own columns.
  */
 export function buildDirectoryAtsMiningQuery(limit = 100) {
   return sql`
-    SELECT d.company_name AS company,
+    SELECT company_name AS company,
            1 AS jobs,
-           COALESCE(d.hiring_page_url, d.website) AS sampleUrl,
-           d.niche AS category
-    FROM va_directory d
-    WHERE COALESCE(d.hiring_page_url, d.website) IS NOT NULL
+           COALESCE(hiring_page_url, website) AS sampleUrl,
+           niche AS category
+    FROM va_directory
+    WHERE ${directoryVisibilityFilters()}
+      AND COALESCE(hiring_page_url, website) IS NOT NULL
       AND (
-        COALESCE(d.hiring_page_url, d.website) LIKE '%greenhouse.io%'
-        OR COALESCE(d.hiring_page_url, d.website) LIKE '%lever.co%'
-        OR COALESCE(d.hiring_page_url, d.website) LIKE '%ashbyhq.com%'
-        OR COALESCE(d.hiring_page_url, d.website) LIKE '%breezy.hr%'
-        OR COALESCE(d.hiring_page_url, d.website) LIKE '%workable.com%'
+        COALESCE(hiring_page_url, website) LIKE '%greenhouse.io%'
+        OR COALESCE(hiring_page_url, website) LIKE '%lever.co%'
+        OR COALESCE(hiring_page_url, website) LIKE '%ashbyhq.com%'
+        OR COALESCE(hiring_page_url, website) LIKE '%breezy.hr%'
+        OR COALESCE(hiring_page_url, website) LIKE '%workable.com%'
       )
     LIMIT ${limit}
   `;
