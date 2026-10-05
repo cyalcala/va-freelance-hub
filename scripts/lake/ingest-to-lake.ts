@@ -178,6 +178,78 @@ export async function processAndRefineCandidate(
   });
 }
 
+export interface BreezyAgencyPosting {
+  name?: unknown;
+  url?: unknown;
+  description?: unknown;
+  location?: { name?: unknown; is_remote?: unknown; country?: { name?: unknown } | null } | null;
+  updated_at?: unknown;
+  created_at?: unknown;
+}
+
+/**
+ * Location evidence for one Breezy VA-agency posting, exactly as the API sent it.
+ *
+ * Breezy's JSON omits `location` on some postings and sends only
+ * `is_remote: false` on others. The previous expression answered every one of
+ * those absent-evidence branches with the literal string `"Philippines"`, so a
+ * posting the source never located — or one it explicitly marked non-remote —
+ * was stored with `ph_only` / `eligible_verified`, the strongest eligibility
+ * tier `geoGate` returns, and all five tenants in this loop are on the D1
+ * publisher's authorized-source list. Fabricating a geographic eligibility flag
+ * is a mandatory refusal (CONSTITUTION §1.3 #2) and honest abstention is
+ * required when evidence is absent (§3.2 #4), so absent evidence now binds ""
+ * and the gate records `unclear` for the qualification layer to resolve.
+ *
+ * `is_remote: true` is the source's own statement and is kept as `"Remote"`,
+ * which the real gate treats as no deterministic geo signal — evidence, not a
+ * verdict. A named location or country is passed through verbatim, including a
+ * restricting one, so the gate can still reject it.
+ */
+export function breezyAgencyLocationRaw(posting: BreezyAgencyPosting | null | undefined): string {
+  const location = posting?.location;
+  if (!location) return "";
+  if (typeof location.name === "string" && location.name.trim()) return location.name.trim();
+  const countryName = location.country?.name;
+  if (typeof countryName === "string" && countryName.trim()) return countryName.trim();
+  // `=== true` on purpose: a stringly-typed "false" is truthy and would turn an
+  // explicit non-remote statement into remote evidence.
+  if (location.is_remote === true) return "Remote";
+  return "";
+}
+
+/**
+ * Map one Breezy VA-agency posting to the shared lake intake draft, so the
+ * agency adapter and the location rule cannot drift apart. `category` is this
+ * plane's taxonomy decision for VA-agency postings, not the source's.
+ */
+export function breezyAgencyCandidateDraft(
+  posting: BreezyAgencyPosting,
+  agency: { id: string; name: string },
+): CandidateDraft | null {
+  if (typeof posting?.name !== "string" || !posting.name.trim()) return null;
+  if (typeof posting.url !== "string" || !posting.url.trim()) return null;
+
+  // Date handling is carried over unchanged from the inline loop, including its
+  // throw on an unparseable value; changing it is a separate decision, PROPOSE-only.
+  const rawDate = (posting.updated_at || posting.created_at) as string | undefined;
+  const postedAt = rawDate ? new Date(rawDate).toISOString() : null;
+
+  return {
+    sourceId: agency.id,
+    sourcePlatform: agency.name,
+    sourceUrl: posting.url,
+    title: posting.name,
+    company: agency.name,
+    category: "admin",
+    locationRaw: breezyAgencyLocationRaw(posting),
+    description: typeof posting.description === "string" ? posting.description : "",
+    applicationUrl: posting.url,
+    postedAt,
+    tags: ["VA", "philippines"],
+  };
+}
+
 export interface LakeStats {
   totalRawCount: number;
   totalExtracted: number;
@@ -514,29 +586,10 @@ export async function runIngestionPipeline() {
       console.log(`Parsed ${jobs.length} opportunities from ${agency.name}.`);
 
       for (const item of jobs) {
-        if (!item || !item.name || !item.url) continue;
+        const draft = breezyAgencyCandidateDraft(item, agency);
+        if (!draft) continue;
 
-        const locName = item.location?.name || item.location?.country?.name || (item.location?.is_remote ? "Remote" : "Philippines");
-        const postedAtDate = item.updated_at || item.created_at ? new Date(item.updated_at || item.created_at).toISOString() : null;
-
-        await processAndRefineCandidate(
-          client,
-          rawObsId,
-          {
-            sourceId: agency.id,
-            sourcePlatform: agency.name,
-            sourceUrl: item.url,
-            title: item.name,
-            company: agency.name,
-            category: "admin",
-            locationRaw: locName,
-            description: item.description || "",
-            applicationUrl: item.url,
-            postedAt: postedAtDate,
-            tags: ["VA", "philippines"],
-          },
-          stats
-        );
+        await processAndRefineCandidate(client, rawObsId, draft, stats);
       }
 
       await markRawProcessed(client, rawObsId);
