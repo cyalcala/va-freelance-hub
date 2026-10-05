@@ -50,8 +50,11 @@ export type FailoverAction = "takeover" | "standby" | "unknown";
  * - `stale`     — claimed outside that TTL, so the endpoint has already made the
  *                 claim reclaimable and the fallback may take over. An abandoned
  *                 claim from a killed run therefore cannot wedge the fallback.
- * - `future`    — a future-dated claim (clock skew). Not proof that a live run
- *                 holds it, so it does not block, but it is not trustworthy.
+ * - `future`    — a future-dated claim (clock skew). Untrustworthy in BOTH
+ *                 directions: it is equally consistent with a run that claimed
+ *                 the lock seconds ago and with an abandoned claim, so the
+ *                 decision fails safe to `unknown` instead of reading it as
+ *                 either held or reclaimable.
  */
 export type RunLockState = "unknown" | "released" | "held" | "stale" | "future";
 
@@ -152,6 +155,13 @@ function unknownDecision(reason: string): FailoverDecision {
  * claims the endpoint would have granted, delaying recovery in exactly the
  * killed-run scenario the fence was written for.
  *
+ * Lock evidence that cannot be placed on the timeline — a future-dated claim —
+ * fails safe to `unknown` for the same reason a future-dated heartbeat does. It
+ * is neither proof that a run is in progress nor proof that the claim is
+ * abandoned, and the module's contract is to refuse to guess. The cost is one
+ * scheduled interval of recovery delay; the benefit is that no caller can reach
+ * `takeover` on evidence the module itself calls untrustworthy.
+ *
  * A nonsensical threshold (`NaN`, `Infinity`, or a negative number) yields
  * `unknown` with a named reason rather than a confident-looking decision. Both
  * parameters are operator-supplied configuration; validating them is what keeps
@@ -209,6 +219,28 @@ export function decideFailoverTakeover(
   }
 
   const lock = readRunLock(evidence.lockLastAttemptAt, now, runLockTtlMinutes);
+
+  // A future-dated claim is clock skew between this evaluation and whatever wrote
+  // the row, and it is simultaneously consistent with "a run claimed the lock
+  // seconds ago" and "the claim is hours old". Deciding either way is a guess,
+  // and the two guesses have opposite failure modes: `held` risks a permanent
+  // stall behind an abandoned claim, `takeover` spends the fallback's one call
+  // against a primary that may be mid-run — the duplicate-ingestion cost this
+  // fence exists to bound. The heartbeat branch above already refuses to guess
+  // on a future-dated heartbeat for exactly this reason; refusing here is the
+  // same fail-safe contract applied to the same class of nonsensical evidence,
+  // not a second rule. Cost of refusing: the next scheduled check re-reads the
+  // claim with a sane clock and decides normally, so recovery is delayed by at
+  // most one interval.
+  if (lock.state === "future") {
+    return {
+      action: "unknown",
+      reason: `run lock claim is future-dated (${lock.ageMinutes?.toFixed(1)}min), so its age cannot be established; primary heartbeat is ${minutesSinceAttempt.toFixed(1)}min old`,
+      minutesSinceAttempt,
+      lockState: lock.state,
+      lockAgeMinutes: lock.ageMinutes,
+    };
+  }
 
   if (minutesSinceAttempt >= staleAfterMinutes) {
     if (lock.state === "held") {

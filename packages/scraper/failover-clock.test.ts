@@ -171,14 +171,77 @@ describe("decideFailoverTakeover with run-lock evidence", () => {
     },
   );
 
-  test("a future-dated lock claim does not block, but is reported as untrustworthy", () => {
+  test("a future-dated lock claim is untrustworthy evidence, so it fails safe to unknown", () => {
+    // The heartbeat branch already refuses to guess on a future-dated row: clock
+    // skew is nonsensical evidence, not proof of health. A future-dated LOCK
+    // claim is the same class of evidence — it is simultaneously consistent with
+    // "a run started seconds ago" and "the claim is hours old" — so it must not
+    // buy a confident takeover. Before the fix this returned `takeover`, the one
+    // action in this module that places a second scrape against a possibly live
+    // primary. Recovery costs at most the next scheduled check.
     expect(
       decideFailoverTakeover({
         lastAttemptAt: staleHeartbeat,
         lockLastAttemptAt: "2026-10-05T05:00:00.000Z",
         now,
       }),
-    ).toMatchObject({ action: "takeover", lockState: "future", lockAgeMinutes: -60 });
+    ).toMatchObject({
+      action: "unknown",
+      lockState: "future",
+      lockAgeMinutes: -60,
+      minutesSinceAttempt: 120,
+      reason: expect.stringContaining("future-dated"),
+    });
+  });
+
+  test("a future-dated lock claim fails safe even when the heartbeat is fresh", () => {
+    // Fail-safe means fail-safe: a fresh heartbeat already yields standby, and
+    // the untrustworthy claim must not be laundered into an actionable lockState.
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: "2026-10-05T03:59:00.000Z",
+        lockLastAttemptAt: "2026-10-05T06:00:00.000Z",
+        now,
+      }),
+    ).toMatchObject({ action: "unknown", lockState: "future", lockAgeMinutes: -120 });
+  });
+
+  test("a future-dated lock claim is refused regardless of the TTL the caller passes", () => {
+    // Not a threshold problem: no TTL makes a clock-skewed claim trustworthy, so
+    // widening or shrinking the window must not restore the confident takeover.
+    expect(
+      decideFailoverTakeover(
+        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: "2026-10-05T05:00:00.000Z", now },
+        30,
+        1,
+      ),
+    ).toMatchObject({ action: "unknown", lockState: "future" });
+    expect(
+      decideFailoverTakeover(
+        { lastAttemptAt: staleHeartbeat, lockLastAttemptAt: "2026-10-05T05:00:00.000Z", now },
+        30,
+        10_000,
+      ),
+    ).toMatchObject({ action: "unknown", lockState: "future" });
+  });
+
+  test("the refusal is specifically about skew: a claim one minute in the past is classified normally", () => {
+    // Pins the boundary so the guard cannot be widened into "any recent claim".
+    // 1min old is inside the 8min TTL, so the fence stands by — no unknown.
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "2026-10-05T03:59:00.000Z",
+        now,
+      }),
+    ).toMatchObject({ action: "standby", lockState: "held", lockAgeMinutes: 1 });
+    expect(
+      decideFailoverTakeover({
+        lastAttemptAt: staleHeartbeat,
+        lockLastAttemptAt: "2026-10-05T03:50:00.000Z",
+        now,
+      }),
+    ).toMatchObject({ action: "takeover", lockState: "stale", lockAgeMinutes: 10 });
   });
 
   test("a fresh heartbeat still stands by regardless of the lock row", () => {
