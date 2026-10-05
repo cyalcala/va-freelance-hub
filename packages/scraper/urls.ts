@@ -63,6 +63,12 @@ export function sanitizeApplyUrl(raw: unknown): string | null {
       return EMAIL_RE.test(url.pathname) ? `mailto:${url.pathname}` : null;
     }
     if (!url.hostname || !url.hostname.includes(".")) return null;
+    // An apply URL is stored and rendered as the public outbound link, so it
+    // must satisfy the same two rules the source gate already enforces above:
+    // no embedded credentials (a `https://user@host/` lure renders the trusted
+    // host while carrying attacker-chosen userinfo) and no local/loopback or
+    // IP-literal target.
+    if (url.username || url.password || isLocalOrIpHost(url.hostname)) return null;
     return url.toString();
   }
 
