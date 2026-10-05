@@ -3,7 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import { getDb, opportunities } from '@va-hub/db';
 import { and, asc, count, desc, eq, type SQL, sql } from 'drizzle-orm';
 import { OpportunityCard, type OpportunityCardData } from '@/components/opportunity-card';
-import { JOB_CATEGORY_MAP } from '@/lib/categories';
+import { JOB_CATEGORY_MAP, parseJobCategory } from '@/lib/categories';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parseJobBoardRequest } from '@/lib/public-query';
@@ -34,6 +34,7 @@ if (!parsedRequest.ok) {
 
 const { query, page: currentPage, fresh } = parsedRequest;
 const category = searchParams.get('category') || '';
+const selectedCategory = parseJobCategory(category);
 const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
 const geoScope = searchParams.get('geoScope') || '';
@@ -76,8 +77,11 @@ try {
   const db = getDb(Astro.locals.runtime.env);
   const filters: SQL[] = [publicOpportunityFilters()];
 
-  if (category && JOB_CATEGORY_MAP[category]) {
-    filters.push(eq(opportunities.category, category));
+  // Own-property guard: an unrecognised category is ignored, exactly like an
+  // unrecognised `type` or `geoScope`, instead of filtering the board to an
+  // empty result set.
+  if (selectedCategory) {
+    filters.push(eq(opportunities.category, selectedCategory.slug));
   }
 
   if (type && TYPE_OPTIONS.includes(type)) {
@@ -109,7 +113,7 @@ try {
 
     const ftsQueries = buildOpportunityFtsQueries({
       ftsMatch,
-      category: category && JOB_CATEGORY_MAP[category] ? category : undefined,
+      category: selectedCategory ? selectedCategory.slug : undefined,
       type: type && TYPE_OPTIONS.includes(type) ? type : undefined,
       platform: platform || undefined,
       geoScope: geoScope && GEO_SCOPE_OPTIONS.some((opt) => opt.value === geoScope) ? geoScope : undefined,
