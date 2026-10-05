@@ -1,19 +1,59 @@
 import { describe, expect, test } from "bun:test";
+import { type SQL } from "drizzle-orm";
+import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 import { createClickHandler } from "../src/pages/api/click/[id]";
+import { PUBLIC_PH_ELIGIBILITIES } from "../src/lib/public-opportunities";
 
 const STORED_URL = "https://example.com/jobs/123";
 
-function makeDb(options: { updateError?: Error } = {}) {
+type StoredRow = {
+  sourceUrl: string;
+  applicationUrl: string | null;
+  isActive?: boolean;
+  phEligibility?: string;
+};
+
+const PUBLIC_ROW: Required<StoredRow> = {
+  sourceUrl: STORED_URL,
+  applicationUrl: null,
+  isActive: true,
+  phEligibility: "eligible_verified",
+};
+
+/**
+ * The fake answers row visibility from the eligibility columns the route's own
+ * `where` clause mentions, not from a hard-coded answer. It compiles the real
+ * drizzle condition the handler passed in, so dropping the shared predicate from
+ * the query makes a non-public row visible again and the assertions below fail.
+ * That keeps these behavioural tests (real handler, real SQL composition)
+ * instead of source-grep `toContain` assertions.
+ */
+function makeDb(options: { updateError?: Error; row?: StoredRow | null } = {}) {
   let updates = 0;
   let reads = 0;
+  const whereClauses: Array<{ sql: string; params: unknown[] }> = [];
+  const row = options.row === undefined ? PUBLIC_ROW : options.row;
+  const dialect = new SQLiteSyncDialect();
   const db = {
     select: () => {
       reads += 1;
       return {
         from: () => ({
-          where: () => ({
-            limit: async () => [{ sourceUrl: STORED_URL, applicationUrl: null }],
-          }),
+          where: (condition: SQL) => {
+            const compiled = dialect.sqlToQuery(condition);
+            whereClauses.push({ sql: compiled.sql, params: [...compiled.params] });
+            return {
+              limit: async () => {
+                if (!row) return [];
+                const constrainsEligibility =
+                  /is_active/i.test(compiled.sql) && /ph_eligibility/i.test(compiled.sql);
+                const visible = constrainsEligibility
+                  ? row.isActive === true && PUBLIC_PH_ELIGIBILITIES.includes(row.phEligibility as never)
+                  : true;
+                return visible ? [{ sourceUrl: row.sourceUrl, applicationUrl: row.applicationUrl }] : [];
+              },
+            };
+          },
         }),
       };
     },
@@ -26,7 +66,7 @@ function makeDb(options: { updateError?: Error } = {}) {
       }),
     }),
   };
-  return { db, updateCount: () => updates, readCount: () => reads };
+  return { db, updateCount: () => updates, readCount: () => reads, whereClauses };
 }
 
 function requestContext(env: Record<string, unknown>, target = STORED_URL, id = "123") {
@@ -190,5 +230,99 @@ describe("click route job-id validation", () => {
 
     expect(response.status).toBe(400);
     expect(readCount()).toBe(0);
+  });
+});
+
+/**
+ * Public-eligibility parity on the outbound apply redirect (v6.5 §3.2 #11).
+ *
+ * `/api/click/<id>` is the site's outbound apply redirect — the surface that
+ * actually sends a job seeker off-site — and it was the only public surface
+ * taking a job id that did NOT compose the shared eligibility contract:
+ * `jobs/[id].astro` selected with `and(eq(id), publicOpportunityFilters())`,
+ * while the click route selected with `eq(id)` alone. So a row the site has
+ * decided is not publicly eligible (`is_active = 0` after link verification,
+ * prune or a source leaving compliance; `ph_eligibility` outside
+ * `eligible_verified` / `eligible_likely`) 404s on `/jobs/<id>`, is absent from
+ * the board, search, sitemap and JSON-LD, and yet answered a live 302 to that
+ * hidden row's stored apply URL — while incrementing its `click_count`.
+ *
+ * `public-eligibility-parity.test.ts` lists the surfaces that must reference the
+ * shared predicate; the click route was not on that list, which is why the
+ * divergence survived sessions 19-24. These assert the behaviour through the real
+ * handler, with the fake deriving row visibility from the predicate the route
+ * actually composed.
+ */
+describe("click route honours the public eligibility contract", () => {
+  test("the single lookup composes the shared eligibility predicate", async () => {
+    const { db, whereClauses } = makeDb();
+    const response = await createClickHandler({ getDb: () => db as any })(requestContext({}, STORED_URL));
+
+    expect(response.status).toBe(302);
+    expect(whereClauses).toHaveLength(1);
+    const [clause] = whereClauses;
+    expect(clause.sql.toLowerCase()).toContain("is_active");
+    expect(clause.sql.toLowerCase()).toContain("ph_eligibility");
+    // The bound values are the accepted pair, not a route-local copy.
+    expect(clause.params).toContain("eligible_verified");
+    expect(clause.params).toContain("eligible_likely");
+    // One lookup only: the predicate rides along on the read that already happened.
+    expect(clause.sql.toLowerCase()).toContain('"id" =');
+  });
+
+  const NON_PUBLIC_ROWS: Array<[string, StoredRow]> = [
+    ["deactivated (is_active = 0)", { ...PUBLIC_ROW, isActive: false }],
+    ["geo-unclear", { ...PUBLIC_ROW, phEligibility: "unclear" }],
+    ["geo-ineligible", { ...PUBLIC_ROW, phEligibility: "ineligible" }],
+    ["eligibility never adjudicated", { ...PUBLIC_ROW, phEligibility: "pending" }],
+  ];
+
+  for (const [label, row] of NON_PUBLIC_ROWS) {
+    test(`a ${label} row is not redirected, not written and not rate limited`, async () => {
+      const { db, updateCount, readCount } = makeDb({ row });
+      let limiterCalls = 0;
+      const env = { API_RATE_LIMITER: { limit: async () => { limiterCalls += 1; return { success: true }; } } };
+
+      const response = await createClickHandler({ getDb: () => db as any })(
+        requestContext(env, STORED_URL),
+      );
+
+      expect(response.status).toBe(404);
+      expect(response.headers.get("location")).toBeNull();
+      expect(readCount()).toBe(1);
+      // The refusal must precede the limiter and the prod D1 write.
+      expect(limiterCalls).toBe(0);
+      expect(updateCount()).toBe(0);
+    });
+  }
+
+  test("an eligible_likely row still redirects exactly as before", async () => {
+    const { db, updateCount } = makeDb({ row: { ...PUBLIC_ROW, phEligibility: "eligible_likely" } });
+    const env = { API_RATE_LIMITER: { limit: async () => ({ success: true }) } };
+
+    const response = await createClickHandler({ getDb: () => db as any })(requestContext(env));
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(STORED_URL);
+    expect(updateCount()).toBe(1);
+  });
+
+  test("the cross-host application_url fallback is still reachable for a public row", async () => {
+    const { db } = makeDb({
+      row: {
+        ...PUBLIC_ROW,
+        applicationUrl: "https://jobs.unrelated-host.example/apply/9",
+      },
+    });
+
+    const response = await createClickHandler({ getDb: () => db as any })(
+      requestContext({}, "https://jobs.unrelated-host.example/apply/9"),
+    );
+
+    // Not the unrelated host: resolveOutboundUrl falls back to the attributable
+    // source listing. Unchanged by this unit, asserted so the 404 path above
+    // cannot be confused with a sanitization failure.
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(STORED_URL);
   });
 });

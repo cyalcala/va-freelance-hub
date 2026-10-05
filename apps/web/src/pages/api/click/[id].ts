@@ -1,7 +1,8 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities } from "@va-hub/db";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { resolveOutboundUrl } from "@/lib/outbound-url";
+import { publicOpportunityFilters } from "@/lib/public-opportunities";
 import { parseJobIdRequest } from "@/lib/public-query";
 
 export const prerender = false;
@@ -31,10 +32,21 @@ export function createClickHandler(dependencies: ClickHandlerDependencies): APIR
     const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
     const db = dependencies.getDb(env);
 
-    // Validate the target URL belongs to this job (prevents open redirect)
+    // Validate the target URL belongs to this job (prevents open redirect).
+    //
+    // The lookup composes the SAME public eligibility contract as the detail
+    // page: a row the site will not show anywhere else (`is_active = 0` after
+    // link verification, prune or a source leaving compliance, or a
+    // `ph_eligibility` outside `eligible_verified` / `eligible_likely`) must not
+    // be redirected to from here either. CONSTITUTION §3.2 #11 requires one
+    // eligibility contract across public surfaces, and this is the surface that
+    // actually sends a job seeker off-site, so the predicate rides along on the
+    // read that already happens — same primary-key lookup, no extra row read —
+    // and the existing `if (!job)` refusal then precedes `resolveOutboundUrl`,
+    // the limiter and the `click_count` write.
     const [job] = await db.select({ sourceUrl: opportunities.sourceUrl, applicationUrl: opportunities.applicationUrl })
       .from(opportunities)
-      .where(eq(opportunities.id, id))
+      .where(and(eq(opportunities.id, id), publicOpportunityFilters()))
       .limit(1);
 
     if (!job) {

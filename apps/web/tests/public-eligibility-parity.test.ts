@@ -19,6 +19,13 @@ const ROUTE_SURFACES = [
   "src/pages/categories/[category].astro",
   "src/lib/homepage-data.ts",
   "src/lib/opportunity-fts-query.ts",
+  // The outbound apply redirect is a public surface too: it emits a stored
+  // source URL to the browser and writes click_count to prod D1 for any job id
+  // it can resolve. It selected on `eq(id)` alone, so a row hidden from every
+  // other surface (is_active = 0, or ph_eligibility outside the accepted pair)
+  // was still redirected. The behaviour is proven through the real handler in
+  // `click-route.test.ts`; this entry keeps the surface from silently diverging.
+  "src/pages/api/click/[id].ts",
 ];
 
 test("the shared predicate compiles to is_active + both eligibilities", () => {
