@@ -1,7 +1,7 @@
 # Directory Enrichment — Latest
 
-Date: 2026-10-04
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37225605871
+Date: 2026-10-05
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37298834343
 
 | Metric | Value |
 | --- | ---: |
@@ -13,296 +13,6 @@ Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37225605
 
 ## Enrichment details
 
-- #624 Native Camp: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Native Camp
-- #679 Knock: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Knock
-- #613 FIXD Automotive: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: FIXD Automotive
-- #665 Platform.sh: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Platform.sh
-- #731 Powered by search: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Powered by search
-- #646 Mercury: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Mercury
-- #710 Profitable Painter CPA PLLC: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Profitable Painter CPA PLLC
-- #618 Bright Vision Technologies: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Bright Vision Technologies
-- #560 Parity: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Parity
-- #688 Rubrik Job Board: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Rubrik Job Board
-- #622 Faith Technologies: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Faith Technologies
-- #686 6sense: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: 6sense
-- #674 Webflow: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Webflow
-- #764 Clover Health: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Clover Health
-- #599 Hospitable: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Hospitable
-- #606 Circle: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Circle
-- #544 AHU Technologies: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: AHU Technologies
-- #657 Celonis: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Celonis
-- #605 Claimsorted: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Claimsorted
-- #684 Vonage: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Vonage
-- #652 Everpure: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Everpure
-- #660 Maven Clinic: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Maven Clinic
-- #711 Ellipsis®: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Ellipsis®
-- #543 Instrumentl: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Instrumentl
-- #627 MapTiler: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: MapTiler
-- #566 Atticus: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Atticus
-- #770 Talkspace: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Talkspace
-- #771 Feedzai: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: Feedzai
-- #555 TELUS Digital: error: Failed query: 
-          SELECT
-            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
-            COUNT(*) AS total_ph_jobs
-          FROM opportunities
-          WHERE LOWER(company) = LOWER(?)
-            AND is_active = 1
-            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
-        
-params: TELUS Digital
 - #553 Clearer: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
@@ -313,7 +23,7 @@ params: TELUS Digital
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
 params: Clearer
-- #701 Toggl: error: Failed query: 
+- #600 HappyCo: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -322,8 +32,8 @@ params: Clearer
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Toggl
-- #706 Cribl: error: Failed query: 
+params: HappyCo
+- #766 Kit: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -332,8 +42,8 @@ params: Toggl
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Cribl
-- #675 Storyblok: error: Failed query: 
+params: Kit
+- #571 Paired: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -342,8 +52,8 @@ params: Cribl
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Storyblok
-- #631 Gusto, Inc.: error: Failed query: 
+params: Paired
+- #499 VA Workers PH: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -352,8 +62,8 @@ params: Storyblok
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Gusto, Inc.
-- #632 Dropbox: error: Failed query: 
+params: VA Workers PH
+- #676 SoFi: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -362,8 +72,8 @@ params: Gusto, Inc.
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Dropbox
-- #582 Spiralyze: error: Failed query: 
+params: SoFi
+- #562 EverAI: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -372,8 +82,8 @@ params: Dropbox
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Spiralyze
-- #716 Discord: error: Failed query: 
+params: EverAI
+- #627 MapTiler: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -382,8 +92,8 @@ params: Spiralyze
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Discord
-- #695 IxDF - Interaction Design Foundation: error: Failed query: 
+params: MapTiler
+- #629 Twilio: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -392,8 +102,8 @@ params: Discord
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: IxDF - Interaction Design Foundation
-- #583 Speechify Inc: error: Failed query: 
+params: Twilio
+- #661 TestGorilla: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -402,8 +112,8 @@ params: IxDF - Interaction Design Foundation
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Speechify Inc
-- #755 Postscript: error: Failed query: 
+params: TestGorilla
+- #611 Adoreal: error: Failed query: 
           SELECT
             COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
             COUNT(*) AS total_ph_jobs
@@ -412,4 +122,294 @@ params: Speechify Inc
             AND is_active = 1
             AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
         
-params: Postscript
+params: Adoreal
+- #732 UCM Practice Growth Systems: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: UCM Practice Growth Systems
+- #658 Twitch: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Twitch
+- #694 Keeper Security: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Keeper Security
+- #871 Teleiman: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Teleiman
+- #645 Reddit: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Reddit
+- #678 Pixel One: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Pixel One
+- #977 First Mate Technologies: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: First Mate Technologies
+- #772 JobsDone: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: JobsDone
+- #615 Abbott: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Abbott
+- #934 Your Virtual Partner: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Your Virtual Partner
+- #940 Virtual Staffing Solutions: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Virtual Staffing Solutions
+- #585 Rimini Street: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Rimini Street
+- #636 Asana: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Asana
+- #917 TwinDesk: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: TwinDesk
+- #888 VirtuoStaff: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: VirtuoStaff
+- #950 VAM Virtual Assistant Management Solutions: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: VAM Virtual Assistant Management Solutions
+- #777 Virtual RNs PH: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Virtual RNs PH
+- #549 Proxify AB: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Proxify AB
+- #747 Dremio: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Dremio
+- #789 Buddle: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Buddle
+- #703 Animalz: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Animalz
+- #567 A.Team: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: A.Team
+- #839 Noventralink: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Noventralink
+- #653 OnTheGoSystems: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: OnTheGoSystems
+- #752 Checkr: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Checkr
+- #610 Alpaca: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Alpaca
+- #803 Bolton International, Inc.: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Bolton International, Inc.
+- #699 Databricks: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: Databricks
+- #730 EMPIRE ASSETS: error: Failed query: 
+          SELECT
+            COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs,
+            COUNT(*) AS total_ph_jobs
+          FROM opportunities
+          WHERE LOWER(company) = LOWER(?)
+            AND is_active = 1
+            AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+        
+params: EMPIRE ASSETS
