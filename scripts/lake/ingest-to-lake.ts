@@ -6,7 +6,11 @@ import {
   recordSighting,
   storeRawObservation,
 } from "./lake-shared";
-import { parseHimalayasResponse, type RawHimalayasResponse } from "../../packages/scraper/himalayas";
+import {
+  parseHimalayasResponse,
+  type NormalizedHimalayasJob,
+  type RawHimalayasResponse,
+} from "../../packages/scraper/himalayas";
 import { fetchRSSFeed } from "../../packages/scraper/rss";
 import { geoGate } from "../../packages/scraper/geoGate";
 import { canonicalizeSourceUrl } from "../../packages/scraper/contentHash";
@@ -28,6 +32,36 @@ export interface CandidateDraft {
 }
 
 export { computeFingerprint };
+
+/**
+ * Map one parsed Himalayas job to the shared lake intake draft.
+ *
+ * One pure mapper for both lake Himalayas adapters (single-page ingest here and the
+ * paginated sweep), so they cannot disagree about what the source said. `locationRaw`
+ * carries the API's own `locationRestrictions` and nothing else: since
+ * INCIDENT-0410(aj), absent upstream location evidence parses to an empty list, and
+ * answering that absence with the literal string "Remote" would re-introduce at the
+ * adapter boundary the fabricated geographic claim the parser fix removed
+ * (CONSTITUTION §1.3 #2). `category` is the caller's taxonomy decision, not the source's.
+ */
+export function himalayasCandidateDraft(
+  item: NormalizedHimalayasJob,
+  category: string,
+): CandidateDraft {
+  return {
+    sourceId: "himalayas:remote-jobs",
+    sourcePlatform: "Himalayas",
+    sourceUrl: item.guid || item.applicationLink,
+    title: item.title,
+    company: item.companyName,
+    category,
+    locationRaw: item.locationRestrictions.join(", ") || (item.isWorldwide ? "Worldwide" : ""),
+    description: item.excerpt || "",
+    applicationUrl: item.applicationLink,
+    postedAt: item.postedAt,
+    tags: item.categories,
+  };
+}
 
 export async function processAndRefineCandidate(
   client: ReturnType<typeof getLakeClient>,
@@ -126,7 +160,11 @@ export async function processAndRefineCandidate(
       draft.title,
       draft.company || "Unknown",
       draft.category || "other",
-      draft.locationRaw || "Remote",
+      // Store exactly what geoGate adjudicated above, never a substitute value. Binding
+      // `|| "Remote"` wrote a geographic claim the decision never rested on and, for a
+      // posting with no location at all, contradicted the `unclear` / "No deterministic
+      // geo signal" verdict stored three columns away (CONSTITUTION §1.3 #2, §3.2 #4).
+      draft.locationRaw || "",
       draft.description?.slice(0, 10_000) || "",
       applicationUrl,
       draft.postedAt,
@@ -138,6 +176,78 @@ export async function processAndRefineCandidate(
       rejectionReason,
     ],
   });
+}
+
+export interface BreezyAgencyPosting {
+  name?: unknown;
+  url?: unknown;
+  description?: unknown;
+  location?: { name?: unknown; is_remote?: unknown; country?: { name?: unknown } | null } | null;
+  updated_at?: unknown;
+  created_at?: unknown;
+}
+
+/**
+ * Location evidence for one Breezy VA-agency posting, exactly as the API sent it.
+ *
+ * Breezy's JSON omits `location` on some postings and sends only
+ * `is_remote: false` on others. The previous expression answered every one of
+ * those absent-evidence branches with the literal string `"Philippines"`, so a
+ * posting the source never located — or one it explicitly marked non-remote —
+ * was stored with `ph_only` / `eligible_verified`, the strongest eligibility
+ * tier `geoGate` returns, and all five tenants in this loop are on the D1
+ * publisher's authorized-source list. Fabricating a geographic eligibility flag
+ * is a mandatory refusal (CONSTITUTION §1.3 #2) and honest abstention is
+ * required when evidence is absent (§3.2 #4), so absent evidence now binds ""
+ * and the gate records `unclear` for the qualification layer to resolve.
+ *
+ * `is_remote: true` is the source's own statement and is kept as `"Remote"`,
+ * which the real gate treats as no deterministic geo signal — evidence, not a
+ * verdict. A named location or country is passed through verbatim, including a
+ * restricting one, so the gate can still reject it.
+ */
+export function breezyAgencyLocationRaw(posting: BreezyAgencyPosting | null | undefined): string {
+  const location = posting?.location;
+  if (!location) return "";
+  if (typeof location.name === "string" && location.name.trim()) return location.name.trim();
+  const countryName = location.country?.name;
+  if (typeof countryName === "string" && countryName.trim()) return countryName.trim();
+  // `=== true` on purpose: a stringly-typed "false" is truthy and would turn an
+  // explicit non-remote statement into remote evidence.
+  if (location.is_remote === true) return "Remote";
+  return "";
+}
+
+/**
+ * Map one Breezy VA-agency posting to the shared lake intake draft, so the
+ * agency adapter and the location rule cannot drift apart. `category` is this
+ * plane's taxonomy decision for VA-agency postings, not the source's.
+ */
+export function breezyAgencyCandidateDraft(
+  posting: BreezyAgencyPosting,
+  agency: { id: string; name: string },
+): CandidateDraft | null {
+  if (typeof posting?.name !== "string" || !posting.name.trim()) return null;
+  if (typeof posting.url !== "string" || !posting.url.trim()) return null;
+
+  // Date handling is carried over unchanged from the inline loop, including its
+  // throw on an unparseable value; changing it is a separate decision, PROPOSE-only.
+  const rawDate = (posting.updated_at || posting.created_at) as string | undefined;
+  const postedAt = rawDate ? new Date(rawDate).toISOString() : null;
+
+  return {
+    sourceId: agency.id,
+    sourcePlatform: agency.name,
+    sourceUrl: posting.url,
+    title: posting.name,
+    company: agency.name,
+    category: "admin",
+    locationRaw: breezyAgencyLocationRaw(posting),
+    description: typeof posting.description === "string" ? posting.description : "",
+    applicationUrl: posting.url,
+    postedAt,
+    tags: ["VA", "philippines"],
+  };
 }
 
 export interface LakeStats {
@@ -230,19 +340,7 @@ export async function runIngestionPipeline() {
         await processAndRefineCandidate(
           client,
           rawObsId,
-          {
-            sourceId: "himalayas:remote-jobs",
-            sourcePlatform: "Himalayas",
-            sourceUrl: item.guid || item.applicationLink,
-            title: item.title,
-            company: item.companyName,
-            category: item.categories[0] || "other",
-            locationRaw: item.locationRestrictions.join(", ") || (item.isWorldwide ? "Worldwide" : "Remote"),
-            description: item.excerpt || "",
-            applicationUrl: item.applicationLink,
-            postedAt: item.postedAt,
-            tags: item.categories,
-          },
+          himalayasCandidateDraft(item, item.categories[0] || "other"),
           stats
         );
       }
@@ -488,29 +586,10 @@ export async function runIngestionPipeline() {
       console.log(`Parsed ${jobs.length} opportunities from ${agency.name}.`);
 
       for (const item of jobs) {
-        if (!item || !item.name || !item.url) continue;
+        const draft = breezyAgencyCandidateDraft(item, agency);
+        if (!draft) continue;
 
-        const locName = item.location?.name || item.location?.country?.name || (item.location?.is_remote ? "Remote" : "Philippines");
-        const postedAtDate = item.updated_at || item.created_at ? new Date(item.updated_at || item.created_at).toISOString() : null;
-
-        await processAndRefineCandidate(
-          client,
-          rawObsId,
-          {
-            sourceId: agency.id,
-            sourcePlatform: agency.name,
-            sourceUrl: item.url,
-            title: item.name,
-            company: agency.name,
-            category: "admin",
-            locationRaw: locName,
-            description: item.description || "",
-            applicationUrl: item.url,
-            postedAt: postedAtDate,
-            tags: ["VA", "philippines"],
-          },
-          stats
-        );
+        await processAndRefineCandidate(client, rawObsId, draft, stats);
       }
 
       await markRawProcessed(client, rawObsId);
