@@ -39,6 +39,12 @@ export function buildProspectCandidateQuery(input: {
  * Mine active eligible opportunities where application_url points to a known ATS platform.
  * Enables Prospector 2.0 to discover direct ATS candidate feeds even for companies
  * already in va_directory.
+ *
+ * `is_active = 1` matches `buildProspectCandidateQuery` above and is load-bearing:
+ * a deactivated row is withdrawn evidence — the verifier deactivates rows for dead
+ * apply links, policy rejection and duplicate supersession — so mining it would mint
+ * an ATS candidate whose entire provenance is a row the system no longer stands
+ * behind, and would inflate `jobs` with postings nobody can apply to.
  */
 export function buildAtsCandidateMiningQuery(limit = 100) {
   return sql`
@@ -47,7 +53,8 @@ export function buildAtsCandidateMiningQuery(limit = 100) {
            MAX(o.application_url) AS sampleUrl,
            MAX(o.category) AS category
     FROM opportunities o
-    WHERE o.ph_eligibility IN ('eligible_verified', 'eligible_likely')
+    WHERE o.is_active = 1
+      AND o.ph_eligibility IN ('eligible_verified', 'eligible_likely')
       AND o.application_url IS NOT NULL
       AND (
         o.application_url LIKE '%greenhouse.io%'
