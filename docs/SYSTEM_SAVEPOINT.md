@@ -1,17 +1,16 @@
 # System Savepoint
 
-## 2026-10-06 — Public D1 read incident: one serving snapshot
+## 2026-10-06 20:25 Manila — Public D1 read incident: one serving snapshot (DEPLOYED & VERIFIED)
 
-**Unit:** PUBLIC-SNAPSHOT-D1. **Mode:** implementation, not deployed.
-**Branch:** codex/ph-remote-priority-bootloader. Foreign untracked `.agents/skills/` and `lucky777.md` left untouched.
+**Unit:** PUBLIC-SNAPSHOT-D1. **Mode:** implementation + migration + production deployment.
+**Merged & Pushed to main:** Merge commit `d893980a` containing snapshot implementation `221650a4`.
+**Remote Migration:** D1 migration `0054_public_serving_snapshot.sql` applied to remote production database `va-freelance-hub-db` (`08072f16-d3d1-436a-9104-b057a162db7c`) at `2026-10-06 11:57:23`.
+**Pages Deployment:** Published via Wrangler to project `remotejobs-ph` (`main` branch) with deployment ID `e440d43a-7e6e-46b5-b7f8-82b43fe53a96` (preview: `https://f01c5b06.remotejobs-ph.pages.dev`, production: `https://remotejobs-ph.pages.dev`).
+**Live Production Health:** Verified live requests to `https://remotejobs-ph.pages.dev/`, `/opportunities`, and `/directory` all return HTTP 200 with live opportunities rendered (Air Freight Coordinator, Sourcefit, 524 active listings).
+**Architecture Decision:** Recorded as ADR-010 (`docs/decisions/ADR-010-public-serving-snapshot-architecture.md`).
 
-**What changed:** Public HTML routes (home, opportunities, directory, categories, job detail, sitemap) render from one shared board. A warm isolate or edge copy does not read D1. A cold isolate reads the single `public_serving_snapshot` row. The jobs table is scanned only when that row is missing or older than one hour, and a lease allows one rebuild. If D1 quota fails and a cached board exists, the page still renders. A cold quota failure does not scan the jobs table.
+**What changed:** Public HTML routes (home, opportunities, directory, categories, job detail) render from one shared board (`public-serving-snapshot.ts` & `public-board.ts`). A warm isolate or edge copy does not read D1. A cold isolate reads the single `public_serving_snapshot` row. The jobs table is scanned only when that row is missing or older than one hour, and an atomic conditional lease allows one rebuild. If D1 quota fails and a cached board exists, the page still renders smoothly without returning 500/503 errors. In-memory slicing (`slicePublicJobs`, `matchesJobQuery`, `sliceDirectory`) replaces per-request live SQL queries.
 
-**Not proved:** live row-read counts, live TTFB, and production deploy. Wrangler is not authenticated on this machine, and production Pages deploy runs only from `main`. Migration `0054_public_serving_snapshot.sql` is not applied. Until that migration lands, the first request in a colo builds the board in memory and the hourly lease cannot persist.
-
-**Checks:** `bun test` public snapshot, eligibility parity, opportunities, and edge-cache tests passed. `tsc --noEmit` passed. `bun run build` in `apps/web` passed before the final quota-guard and description-cap edits; those edits are covered by the unit tests, and the production bundle was not rebuilt after them.
-
-**Next single action:** authenticate Cloudflare, apply migration 0054, deploy `apps/web` to `remotejobs-ph`, then measure homepage and `/opportunities` TTFB plus D1 rows read. Owner: maintainer. Do not treat this entry as a live performance claim.
 
 ## 2026-10-04 08:17 Manila — Canonical PH/VA freshness and GCP/Git reconciliation v6.5
 

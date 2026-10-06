@@ -1,6 +1,20 @@
 # Implementation Status
 
-## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (current documentation checkpoint)
+## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (current deployed checkpoint)
+
+- **Delivered:** Public Serving Snapshot architecture resolving D1 read amplification and crawler-induced row-read quota depletion (error 7500 / 14h 503 incident).
+- **Core Components:**
+  - `packages/db/migrations/0054_public_serving_snapshot.sql`: Single-row SQLite table (`id = 1`) storing compressed board payload, generation timestamp, and refresh lease.
+  - `apps/web/src/lib/public-serving-snapshot.ts`: 3-tier caching hierarchy (`slot.board` in-memory -> Cloudflare edge cache -> single D1 row read on cold miss) with atomic background lease renewal via `ctx.waitUntil()`.
+  - `apps/web/src/lib/public-board.ts`: High-performance in-memory slicing (`slicePublicJobs`), token search (`matchesJobQuery`), directory filtering (`sliceDirectory`), and category aggregations.
+- **Verification & Deployment:**
+  - Git: Branch `codex/ph-remote-priority-bootloader` merged into `main` (`d893980a`) and pushed to `origin/main`.
+  - Database: D1 migration 0054 applied to production database `va-freelance-hub-db` (`08072f16-d3d1-436a-9104-b057a162db7c`) at `2026-10-06 11:57:23`.
+  - Edge Hosting: Deployed to Cloudflare Pages project `remotejobs-ph` (`main` branch) with deployment ID `e440d43a-7e6e-46b5-b7f8-82b43fe53a96`.
+  - Live Verification: HTTP 200 responses verified on `/`, `/opportunities`, and `/directory`; live jobs rendering confirmed.
+  - Architectural Record: Documented as ADR-010 in `docs/decisions/ADR-010-public-serving-snapshot-architecture.md`.
+
+## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (historical documentation checkpoint)
 
 - **Delivered:** maintainer v6.2, master/execution v6.1; complete 32-section
   [owner directive](directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md)

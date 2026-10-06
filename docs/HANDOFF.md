@@ -1,6 +1,17 @@
 # Handoff
 
-## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (current documentation handoff)
+## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (current deployed handoff)
+
+The Public Serving Snapshot architecture is deployed to Cloudflare Pages production and backed by D1 migration 0054 on `va-freelance-hub-db`.
+- **Target**: Protect production D1 from crawler and traffic row-read exhaustion (error 7500 / 14h 503 incident on 2026-10-04) and reduce cold-start latency.
+- **Merge State**: Branch `codex/ph-remote-priority-bootloader` merged into `main` (`d893980a`) and pushed to `origin/main`.
+- **D1 Migration**: `0054_public_serving_snapshot.sql` applied to remote production database at `2026-10-06 11:57:23`.
+- **Pages Deployment**: Published to Cloudflare Pages project `remotejobs-ph` (`main` branch) with deployment ID `e440d43a-7e6e-46b5-b7f8-82b43fe53a96` (preview: `https://f01c5b06.remotejobs-ph.pages.dev`, production: `https://remotejobs-ph.pages.dev`).
+- **Live Health**: `GET /`, `/opportunities`, and `/directory` all return HTTP 200 with live opportunities rendering.
+- **Architecture**: Recorded in `docs/decisions/ADR-010-public-serving-snapshot-architecture.md`. Public pages read from a 3-tier caching hierarchy (`slot.board` in-memory -> Cloudflare edge cache -> single D1 row `public_serving_snapshot` with atomic lease for 1-hour background rebuilds).
+- **Next Actions**: Continue monitor D1 read metrics in Cloudflare dashboard; monitor edge hit ratios; resume autonomous background mining and source replenishment under established constitution.
+
+## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (historical documentation handoff)
 
 The bootloader is v6.2; master/execution are v6.1. Read
 [CURRENT](bootloaders/CURRENT.md), the newest [savepoint](SYSTEM_SAVEPOINT.md),

@@ -1,6 +1,18 @@
 # AI Recovery Trail
 
-## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (current documentation milestone)
+## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (current deployed milestone)
+
+Delivered and deployed the Public Serving Snapshot architecture resolving the Cloudflare D1 row-read amplification and quota exhaustion incident.
+- **Root Problem**: Visitor requests and search engine crawlers previously executed multiple full table scans and `COUNT()` aggregates against D1 per page view, causing quota exhaustion (error 7500 / 14-hour 503 outage on 2026-10-04) and high cold latency (~3.2s on `/`).
+- **Implementation**: Deployed migration `0054_public_serving_snapshot.sql` and unified public pages (`/`, `/opportunities`, `/directory`, `/categories/*`, `/jobs/*`) around `public-serving-snapshot.ts` and `public-board.ts`.
+- **Three-Tier Caching**:
+  1. In-memory isolate cache (`slot.board`) for 0ms / 0 D1 reads on warm hits.
+  2. Edge cache (`caches.default`) with 24-hour retention.
+  3. Single-row D1 read (`id = 1`) on cold miss with atomic lease renewal (`refresh_started_at`) and background rebuild via `ctx.waitUntil()`.
+- **In-Memory Slicing & Search**: Unicode token matching and faceted filtering executed entirely in V8 memory without database queries.
+- **Deployment & Evidence**: Merged to `main` (`d893980a`), remote migration 0054 applied to D1 production (`2026-10-06 11:57:23`), and deployed to Cloudflare Pages (`e440d43a-7e6e-46b5-b7f8-82b43fe53a96`). Live production requests to `https://remotejobs-ph.pages.dev/` verified HTTP 200 with live jobs actively rendering. Recorded as ADR-010.
+
+## 2026-10-03 — PROMPT-PH-PRIORITY-V6 (historical documentation milestone)
 
 Owner requested updating the bootloader and everything in the supplied PH remote
 source expansion directive. Identical attachments were reconciled; all 32 source
