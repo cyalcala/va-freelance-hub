@@ -136,10 +136,10 @@ describe("public category surfaces route through the shared guard", () => {
     expect(source).toContain("selectedCategory.slug");
   });
 
-  test("the directory route refuses an unknown category before it reads the listing", () => {
+  test("the directory route refuses an unknown category before it reads the snapshot", () => {
     const source = readRouteSource("src/pages/directory.astro");
     const refusalAt = source.indexOf("'Unknown directory category.'");
-    const readAt = source.indexOf("await loadDirectoryPage(");
+    const readAt = source.indexOf("await readPublicDirectorySnapshot(");
     expect(refusalAt).toBeGreaterThan(-1);
     expect(readAt).toBeGreaterThan(-1);
     expect({ refusalBeforeRead: refusalAt < readAt }).toEqual({ refusalBeforeRead: true });

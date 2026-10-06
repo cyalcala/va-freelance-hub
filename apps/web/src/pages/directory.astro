@@ -11,7 +11,11 @@ import {
   parseDirectoryCategory,
   type DirectoryCategory,
 } from '@/lib/directory-categories';
-import { loadDirectoryPage, type DirectoryAgency } from '@/lib/directory-page';
+import {
+  readPublicDirectorySnapshot,
+  filterDirectorySnapshotRows,
+} from '@/lib/public-snapshot';
+import { sliceDirectoryPage, DIRECTORY_PAGE_SIZE } from '@/lib/directory-page';
 import { normalizeDirectoryUrl, toDirectoryCard, type DirectoryCard } from '@/lib/directory-card';
 
 export const prerender = false;
@@ -52,16 +56,26 @@ let dataUnavailable = false;
 let pageOutOfRange = false;
 
 try {
-  const directoryPage = await loadDirectoryPage(Astro.locals.runtime.env, {
-    category: selectedCategory,
-    query,
-    page: currentPage,
-  });
-  agencies = directoryPage.agencies;
-  totalAgencies = directoryPage.totalAgencies;
-  totalPages = directoryPage.totalPages;
-  resultOffset = directoryPage.offset;
-  pageOutOfRange = directoryPage.pageOutOfRange;
+  // Read the single surface-wide snapshot; rebuild cost is bounded by the
+  // snapshot windows (<= ~4 rebuilds/day/colo under defaults), and the
+  // snapshot is keyed per surface so a free-text ?q=/category can never
+  // trigger a rebuild. Filtering and pagination run in memory over it.
+  const snapshot = await readPublicDirectorySnapshot(Astro.locals.runtime.env, null, "");
+  // buildFailed means the rebuild threw and no usable envelope existed:
+  // treat this as unavailable and show ServiceUnavailable, matching the
+  // previous behaviour of loadDirectoryPage.
+  if (snapshot.buildFailed) {
+    dataUnavailable = true;
+    markPublicDataUnavailable(Astro.response, new Error("directory snapshot load failed"));
+  } else {
+    const filtered = filterDirectorySnapshotRows(snapshot.data, selectedCategory, query);
+    const sliced = sliceDirectoryPage(filtered, currentPage, DIRECTORY_PAGE_SIZE);
+    agencies = sliced.agencies as DirectoryAgency[];
+    totalAgencies = sliced.totalAgencies;
+    totalPages = sliced.totalPages;
+    resultOffset = sliced.offset;
+    pageOutOfRange = sliced.pageOutOfRange;
+  }
 } catch (error) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, error);

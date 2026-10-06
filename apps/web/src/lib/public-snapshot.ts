@@ -1,7 +1,7 @@
 import { getDb, opportunities, vaDirectory } from "@va-hub/db";
 import type { DbEnvironment } from "@va-hub/db/client";
 import type { Opportunity } from "@va-hub/db/schema";
-import { and, asc, desc, eq, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, sql, type SQL } from "drizzle-orm";
 import { publicOpportunityFilters } from "./public-opportunities";
 import { directoryVisibilityFilters } from "./directory-visibility";
 import { isDirectoryNiche, type DirectoryCategory } from "./directory-categories";
@@ -19,17 +19,33 @@ export interface SnapshotEnvelope<T = unknown> {
   built_at: string;
   source_rows: number;
   rows: T[];
+  /** Exact visible-row count across the full corpus (used for stats). */
+  total_rows?: number;
+  /** Per-category visible-row counts (used for the homepage "Browse by category"
+   * totals) — exact even when the snapshot's rendered window is capped. */
+  category_counts?: Record<string, number>;
 }
 
 export interface SnapshotResult<T> {
   data: T[];
   stale: boolean;
   servedFromCache: boolean;
+  /** true when the rebuild threw and no usable envelope existed; the page layer
+   * must treat this as "no snapshot at all and D1 failed" and render
+   * ServiceUnavailable. */
+  buildFailed: boolean;
+}
+
+/** Result of a snapshot build: the rendered rows plus optional exact totals. */
+export interface SnapshotBuild<T> {
+  rows: T[];
+  total_rows?: number;
+  category_counts?: Record<string, number>;
 }
 
 export interface SnapshotBuilder<T> {
   schema: string;
-  build(env: DbEnvironment): Promise<T[]>;
+  build(env: DbEnvironment): Promise<SnapshotBuild<T>>;
 }
 
 /** Thrown by KVSnapshotStore when PUBLIC_SNAPSHOTS is absent. The store
@@ -71,6 +87,7 @@ interface BuildResult<T> {
   rows: T[];
   stale: boolean;
   servedFromCache: boolean;
+  buildFailed: boolean;
 }
 
 const pendingBuilds = new Map<string, Promise<BuildResult<unknown>>>();
@@ -96,14 +113,18 @@ export async function readThroughSnapshot<T>(
     if (cached && cached.built_at) {
       const age = now - new Date(cached.built_at).getTime();
       if (age < options.freshAfterMs) {
-        return { rows: cached.rows, stale: false, servedFromCache: true };
+        return { rows: cached.rows, stale: false, servedFromCache: true, buildFailed: false };
       }
       if (age < options.staleWhileRevalidateMs) {
-        void rebuildSnapshot<T>(store, key, env, cached.schema, cached.rows).catch(() => {
+        void rebuildSnapshot<T>(store, key, env, cached.schema, {
+          rows: cached.rows,
+          total_rows: cached.total_rows,
+          category_counts: cached.category_counts,
+        }).catch(() => {
           /* a failed background rebuild is harmless: the stale slice
-           * already went out, and the next request will refresh again */
+           * already went out, and the next request rebuilds again */
         });
-        return { rows: cached.rows, stale: true, servedFromCache: true };
+        return { rows: cached.rows, stale: true, servedFromCache: true, buildFailed: false };
       }
     }
 
@@ -112,27 +133,28 @@ export async function readThroughSnapshot<T>(
       // A concurrent request is already rebuilding: coalesce onto its promise.
       // The data came from the first read, so to the follower it is cache-served.
       const br = (await pending) as BuildResult<T>;
-      return { rows: br.rows, stale: br.stale, servedFromCache: true };
+      return { rows: br.rows, stale: br.stale, servedFromCache: true, buildFailed: br.buildFailed };
     }
 
     const buildPromise = (async () => {
       try {
-        const rows = await builder.build(env);
-        await rebuildSnapshot(store, key, env, builder.schema, rows).catch((e) => {
+        const buildResult = await builder.build(env);
+        const rows = buildResult.rows;
+        await rebuildSnapshot(store, key, env, builder.schema, buildResult).catch((e) => {
           /* a failed store write does not undo a successful D1 read; the fresh
            * slice is still returned, and the next request rebuilds again */
         });
-        return { rows, stale: false, servedFromCache: false };
+        return { rows, stale: false, servedFromCache: false, buildFailed: false };
       } catch {
         /* a D1 read error (e.g. 7500) must not surface to the page:
          * serve the last known-good envelope, marked stale, so the board
          * continues to render instead of the ServiceUnavailable page. */
         if (cached && cached.built_at) {
-          return { rows: cached.rows, stale: true, servedFromCache: true };
+          return { rows: cached.rows, stale: true, servedFromCache: true, buildFailed: false };
         }
-        /* no snapshot exists and the rebuild failed: return an empty slice
-         * that the page layer renders with its own fallback. */
-        return { rows: [], stale: true, servedFromCache: true };
+        /* no snapshot exists and the rebuild failed: return an empty slice and
+         * mark buildFailed so the page layer renders ServiceUnavailable. */
+        return { rows: [], stale: true, servedFromCache: true, buildFailed: true };
       }
     })();
 
@@ -145,7 +167,7 @@ export async function readThroughSnapshot<T>(
   };
 
   const result = await runBuild();
-  return { data: result.rows, stale: result.stale, servedFromCache: result.servedFromCache };
+  return { data: result.rows, stale: result.stale, servedFromCache: result.servedFromCache, buildFailed: result.buildFailed };
 }
 
 async function rebuildSnapshot<T>(
@@ -153,13 +175,15 @@ async function rebuildSnapshot<T>(
   key: string,
   env: DbEnvironment,
   schema: string,
-  rows?: T[],
+  buildResult: SnapshotBuild<T>,
 ): Promise<void> {
   const envelope: SnapshotEnvelope<T> = {
     schema,
     built_at: new Date().toISOString(),
-    source_rows: rows?.length ?? 0,
-    rows: rows ?? [],
+    source_rows: buildResult.rows.length,
+    rows: buildResult.rows,
+    total_rows: buildResult.total_rows,
+    category_counts: buildResult.category_counts,
   };
   await store.put(key, envelope);
 }
@@ -269,6 +293,7 @@ export type PublicOpportunitySnapshotRow = Pick<
   | "type"
   | "sourceUrl"
   | "sourcePlatform"
+  | "sourceId"
   | "tags"
   | "category"
   | "experienceLevel"
@@ -286,6 +311,7 @@ const OPPORTUNITY_CARD_PROJECTION = {
   type: opportunities.type,
   sourceUrl: opportunities.sourceUrl,
   sourcePlatform: opportunities.sourcePlatform,
+  sourceId: opportunities.sourceId,
   tags: opportunities.tags,
   category: opportunities.category,
   experienceLevel: opportunities.experienceLevel,
@@ -309,8 +335,15 @@ export const OPPORTUNITY_MAX_ROWS = 300;
 
 export async function buildOpportunitiesSnapshot(
   env: DbEnvironment,
-): Promise<PublicOpportunitySnapshotRow[]> {
+): Promise<SnapshotBuild<PublicOpportunitySnapshotRow>> {
   const db = getDb(env);
+  const [countRows, categoryRows] = await Promise.all([
+    db.select({ total: count() }).from(opportunities).where(publicOpportunityFilters()),
+    db.select({ category: opportunities.category, n: count() })
+      .from(opportunities)
+      .where(publicOpportunityFilters())
+      .groupBy(opportunities.category),
+  ]);
   const rows = await db
     .select(OPPORTUNITY_CARD_PROJECTION)
     .from(opportunities)
@@ -320,11 +353,13 @@ export async function buildOpportunitiesSnapshot(
       desc(opportunities.id),
     )
     .limit(OPPORTUNITY_MAX_ROWS);
-  return rows as PublicOpportunitySnapshotRow[];
+  const total = countRows[0]?.total ?? 0;
+  const categoryCounts = Object.fromEntries(categoryRows.map((r) => [r.category, r.n]));
+  return { rows: rows as PublicOpportunitySnapshotRow[], total_rows: total, category_counts: categoryCounts };
 }
 
 export const OPPORTUNITY_SNAPSHOT_BUILDER: SnapshotBuilder<PublicOpportunitySnapshotRow> = {
-  schema: "opportunity-v1",
+  schema: "opportunity-v2",
   build: buildOpportunitiesSnapshot,
 };
 
@@ -425,7 +460,7 @@ export function buildDirectoryFilters(
 
 export const DIRECTORY_SNAPSHOT_BUILDER: SnapshotBuilder<PublicDirectorySnapshotRow> = {
   schema: "directory-v1",
-  build: (env: DbEnvironment) => buildDirectorySnapshot(env),
+  build: (env: DbEnvironment) => buildDirectorySnapshot(env).then((rows) => ({ rows })),
 };
 
 // --- Convenience ---
@@ -472,5 +507,6 @@ export async function readPublicDirectorySnapshot(
     data: filterDirectorySnapshotRows(result.data, category, query),
     stale: result.stale,
     servedFromCache: result.servedFromCache,
+    buildFailed: result.buildFailed,
   };
 }

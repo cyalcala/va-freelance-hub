@@ -14,7 +14,9 @@ import {
   DIRECTORY_PROJECTION,
   buildDirectoryFilters,
   type SnapshotBuilder,
+  type SnapshotBuild,
   type PublicDirectorySnapshotRow,
+  type PublicOpportunitySnapshotRow,
   DEFAULT_FRESH_AFTER_MS,
   DEFAULT_STALE_WHILE_REVALIDATE_MS,
   OPPORTUNITY_MAX_ROWS,
@@ -190,7 +192,7 @@ test("0 D1 prepare calls on a snapshot cache hit (within fresh window)", async (
 
   // Prime the store with a fresh envelope so the next read never rebuilds.
   await store.put(OPPORTUNITY_SNAPSHOT_BUILDER.schema, {
-    schema: "opportunity-v1",
+    schema: "opportunity-v2",
     built_at: new Date(Date.now() - 1000).toISOString(),
     source_rows: 2,
     rows: [{ id: 1, title: "x", company: null, type: null, sourceUrl: "https://x", sourcePlatform: "y", tags: null, category: null, experienceLevel: null, postedAt: null, scrapedAt: null, geoScope: null, phEligibility: null, geoEvidence: null }],
@@ -218,7 +220,7 @@ test("exactly 1 D1 prepare call on a cold miss", async () => {
   }, env);
 
   expect(result.data.length).toBe(2); // ineligible, deactivated and unclear are filtered out
-  expect(env.DB.prepareCalls).toBe(1);
+  expect(env.DB.prepareCalls).toBe(3);
   expect(result.stale).toBe(false);
   expect(result.servedFromCache).toBe(false);
 });
@@ -236,7 +238,7 @@ test("50 concurrent cold misses coalesce into a single D1 read (single-flight)",
   );
   const results = await Promise.all(reads);
 
-  expect(env.DB.prepareCalls).toBe(1);
+  expect(env.DB.prepareCalls).toBe(3);
   expect(results.every((r) => r.data.length === 2)).toBe(true);
   // exactly one caller performs the single D1 read (the first builder);
   // the other 49 coalesce onto it and are served with servedFromCache=true.
@@ -257,9 +259,11 @@ test("serves the last good snapshot when the D1 read throws instead of surfacing
   });
 
   // The builder now throws (simulating D1 error 7500 / free-tier exhaustion).
+  // Its schema must match the envelope key so the cached slice is served from
+  // the store instead of triggering a rebuild under a different key.
   const thrower = {
-    schema: "opportunity-v1",
-    build: async (): Promise<{ id: number }[]> => {
+    schema: OPPORTUNITY_SNAPSHOT_BUILDER.schema,
+    build: async (): Promise<SnapshotBuild<{ id: number }>> => {
       throw new Error("D1 error 7500");
     },
   };
@@ -282,6 +286,38 @@ test("serves the last good snapshot when the D1 read throws instead of surfacing
     staleWhileRevalidateMs: DEFAULT_STALE_WHILE_REVALIDATE_MS,
   }, env);
   expect(result2.servedFromCache).toBe(true);
+  expect(env.DB.prepareCalls).toBe(0);
+});
+
+test("buildFailed is true when no snapshot exists and the build throws", async () => {
+  const fake = seededOpportunitiesDb();
+  const env = makeEnv(fake);
+  const store = new InMemorySnapshotStore();
+
+  const thrower = {
+    schema: "opportunity-v2",
+    build: async (): Promise<SnapshotBuild<PublicOpportunitySnapshotRow>> => {
+      throw new Error("D1 error 7500");
+    },
+  };
+
+  const result = await readThroughSnapshot(store, thrower, {
+    freshAfterMs: DEFAULT_FRESH_AFTER_MS,
+    staleWhileRevalidateMs: DEFAULT_STALE_WHILE_REVALIDATE_MS,
+  }, env);
+
+  expect(result.data).toHaveLength(0);
+  expect(result.buildFailed).toBe(true);
+  expect(result.servedFromCache).toBe(true);
+  expect(result.stale).toBe(true);
+  expect(env.DB.prepareCalls).toBe(0);
+
+  // Subsequent reads do not re-probe D1; they continue to hold buildFailed and
+  // keep serving the empty slice (the page layer will render ServiceUnavailable).
+  expect((await readThroughSnapshot(store, thrower, {
+    freshAfterMs: DEFAULT_FRESH_AFTER_MS,
+    staleWhileRevalidateMs: DEFAULT_STALE_WHILE_REVALIDATE_MS,
+  }, env)).buildFailed).toBe(true);
   expect(env.DB.prepareCalls).toBe(0);
 });
 
@@ -313,10 +349,10 @@ test("a successful rebuild replaces the envelope and returns fresh data with no 
     staleWhileRevalidateMs: DEFAULT_STALE_WHILE_REVALIDATE_MS,
   }, env);
   expect(result2.servedFromCache).toBe(true);
-  expect(env.DB.prepareCalls).toBe(1);
+  expect(env.DB.prepareCalls).toBe(3);
 });
 
-test("the envelope preserves schema, built_at, source_rows and rows", async () => {
+test("the opportunity envelope carries schema v2, total_rows and per-category counts", async () => {
   const fake = seededOpportunitiesDb();
   const env = makeEnv(fake);
   const store = new InMemorySnapshotStore();
@@ -328,9 +364,12 @@ test("the envelope preserves schema, built_at, source_rows and rows", async () =
 
   const raw = await store.get(OPPORTUNITY_SNAPSHOT_BUILDER.schema);
   expect(raw).toMatchObject({
-    schema: "opportunity-v1",
+    schema: "opportunity-v2",
     source_rows: 2,
+    total_rows: 2,
   });
+  expect(raw!.category_counts).toHaveProperty("engineering");
+  expect(raw!.category_counts).toHaveProperty("support");
   expect(new Date(raw!.built_at).getTime()).toBeGreaterThan(0);
 });
 
@@ -424,6 +463,87 @@ test("in-memory directory filter produces identical results to the SQL filter", 
   ).toEqual(snapShape(await sqlTruth(null, "")));
 });
 
+/** Paged directory query mirroring the page layer's filter logic, for parity testing. */
+async function sqlTruthPaged(
+  category: DirectoryCategory | null,
+  query: string,
+  limit: number,
+  offset: number,
+): Promise<{ total: number; rows: PublicDirectorySnapshotRow[] }> {
+  const db = seededDirectoryDb() as any;
+  const filters: string[] = ["hires_filipinos = 1", "link_fail_count < 3"];
+  if (category === "dayshift") filters.push("is_dayshift = 1");
+  else if (category === "marketplaces") filters.push("is_marketplace = 1");
+  else if (category && DIRECTORY_NICHES.includes(category as DirectoryNiche)) {
+    filters.push(`niche = '${category.replace(/'/g, "''")}'`);
+  }
+  if (query) {
+    filters.push(`company_name LIKE '%${query.replace(/'/g, "''")}%' ESCAPE '\\'`);
+  }
+  const countResult = await db.prepare(`SELECT COUNT(*) AS total FROM va_directory WHERE ${filters.join(" AND ")}`).all();
+  const total = (Array.isArray(countResult) ? countResult : countResult.results)?.[0]?.total ?? 0;
+  const sql = `SELECT id, company_name AS companyName, website, niche, is_dayshift AS isDayshift, is_verified AS isVerified, is_remote AS isRemote, is_marketplace AS isMarketplace FROM va_directory WHERE ${filters.join(" AND ")} ORDER BY company_name LIMIT ? OFFSET ?`;
+  const rawRows = await db.prepare(sql).all([limit, offset]);
+  const rows = Array.isArray(rawRows) ? (rawRows as PublicDirectorySnapshotRow[]) : ((rawRows as any).results ?? []);
+  return { total, rows };
+}
+
+test("directory snapshot pagination and totals equal a direct query for every filter", async () => {
+  const fake = seededDirectoryDb();
+  const env = makeEnv(fake);
+  const store = new InMemorySnapshotStore();
+
+  const shapeRow = (r: PublicDirectorySnapshotRow) => ({
+    ...r,
+    isDayshift: Boolean(r.isDayshift),
+    isVerified: Boolean(r.isVerified),
+    isRemote: Boolean(r.isRemote),
+    isMarketplace: Boolean(r.isMarketplace),
+  });
+
+  // Build the single surface-wide snapshot; no rebuild on cache hits.
+  const snapshot = await readThroughSnapshot(store, DIRECTORY_SNAPSHOT_BUILDER, {
+    freshAfterMs: DEFAULT_FRESH_AFTER_MS,
+    staleWhileRevalidateMs: DEFAULT_STALE_WHILE_REVALIDATE_MS,
+  }, env);
+  expect(env.DB.prepareCalls).toBe(1);
+  expect(snapshot.buildFailed).toBe(false);
+
+  // Every filter resolves from the in-memory slice with zero additional D1 reads;
+  // totals come from the slice length, never a COUNT.
+  const pageSizes = [1, 3, 10, 48, 1000];
+  const filterKeys: Array<[string | null, string]> = [
+    [null, ""],
+    ["bpo", "bright"],
+    ["dayshift", ""],
+    ["marketplaces", ""],
+    ["global-va", ""],
+    ["tech", "three"],
+    [null, "acme"],
+    ["australian-dayshift", ""],
+  ];
+
+  for (const [cat, q] of filterKeys) {
+    const filtered = filterDirectorySnapshotRows(snapshot.data, cat as DirectoryCategory, q);
+    for (const pageSize of pageSizes) {
+      for (const page of [1, 2, 3]) {
+        const direct = await sqlTruthPaged(cat as DirectoryCategory, q, pageSize, (page - 1) * pageSize);
+      expect(filtered.length).toBe(direct.total);
+      expect(filtered.slice((page - 1) * pageSize, page * pageSize).map(shapeRow)).toEqual(
+        direct.rows.map(shapeRow),
+      );
+      }
+    }
+  }
+
+  // A second read of the same snapshot costs nothing.
+  expect((await readThroughSnapshot(store, DIRECTORY_SNAPSHOT_BUILDER, {
+    freshAfterMs: DEFAULT_FRESH_AFTER_MS,
+    staleWhileRevalidateMs: DEFAULT_STALE_WHILE_REVALIDATE_MS,
+  }, env)).data.length).toBe(snapshot.data.length);
+  expect(env.DB.prepareCalls).toBe(1);
+});
+
 test("budget math stays inside the 5M row-read free tier", () => {
   // Fresh must be >= 30 min and stale >= 6 h so rebuilds are rare (<= ~4/day/
   // colo for a per-colocation Cache API store; at most ~3.7 rebuilds/day/colo
@@ -454,9 +574,9 @@ test("budget math stays inside the 5M row-read free tier", () => {
   ).toBeLessThan(5_000_000);
 });
 
-test("no non-test source file imports bun:* modules", () => {
+test("no non-test source file under apps/web/src imports bun:* modules", () => {
   const sourceFiles: string[] = [];
-  const root = join(__dirname, "src");
+  const root = join(__dirname, "../src");
 
   function walk(dir: string): void {
     if (!existsSync(dir)) return;
