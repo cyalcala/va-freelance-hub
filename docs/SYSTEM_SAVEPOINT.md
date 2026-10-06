@@ -1,3 +1,28 @@
+## 2026-10-06 — D1-READS(s1): snapshot core layer so listing pages cost 0 D1 reads per cache hit (branch `opencode/shift-20261006-1059`, session 11)
+
+**Unit:** tech-lead P0 D1-READS slice S1 ("Snapshot core (pure, tested)"). **Mode:** EXECUTE, branch-only. **Status:** VERIFIED_LOCAL / VERIFIED_CODE. **Runtime effect: NONE until merged and Pages deploys** — no production, schema, publication, parameter, clock or deployment change; no KV binding added (HOLD path); no lease created.
+
+**Contract:** start HEAD `5d150dc2354b6c4f92db88e512b4b64c8d8db92b` (origin/main, unchanged; divergence beyond the supervisor snapshot `.shift/evidence.md` is **UNKNOWN** — no `git fetch`, no credentials). Owned files: `apps/web/src/lib/public-snapshot.ts` (424 lines), `apps/web/tests/public-snapshot.test.ts` (+14 tests). HOLD-list paths untouched (`.github/**`, `packages/db/migrations/**`, `sync_migrations.sql`, `wrangler*`, `workers/**`, any `api/cron` path, `infra/gcp/**`, `scripts/{ci,gha,gcp}/**`, root manifests, `ACCEPTED_PARAMETERS.yaml`, `CONSTITUTION.md`, `docs/decisions/**`, `docs/governance/**`): verified by `git status --porcelain`, staged diff (2 files, 888 insertions / 0 deletions), and a case-insensitive added-line scan printing **nothing** for `DROP TRIGGER`, `DELETE FROM`, `UPDATE … SET`, `INSERT INTO opportunities`, `wrangler --remote`, `gcloud`, `source_registry`, `BASE_AUTHORIZED_SOURCE_IDS`, `api/cron` and secret-like tokens.
+
+**ROOT CAUSE (VERIFIED_CODE by reading `apps/web/wrangler.jsonc` and the tech-lead v6.5 note):** the free tier (5M D1 row reads/day) was exhausted on Oct 4 and Oct 5 (error 7500 → 503 ~14h each) because every anonymous listing visit does a live ordered D1 read and query-string fan-out (`?q=`, `?page=`, UTMs) multiplies it. `wrangler.jsonc` binds only `DB` (+ AI) — no KV, no R2 — so a KV-backed snapshot could not be wired in without editing the HOLD-listed config.
+
+**FIX:** `public-snapshot.ts` exposes `SnapshotStore` {`get`,`put`} with a KV adapter (optional `env.PUBLIC_SNAPSHOTS` binding), a Cache API adapter keyed off a synthetic `https://snapshots.internal` origin (no binding required), and an in-memory fake for tests; `getSnapshotStoreFromEnv` picks KV when bound, Cache API otherwise. `readThroughSnapshot` adds single-flight concurrency, stale-while-revalidate return, and "serve last-good snapshot" when the builder/build throws (7500). Builders for opportunities (card projection) and the directory listing reuse the EXISTING visibility predicates (`publicOpportunityFilters()`, `directoryVisibilityFilters()`) — never loosened; one bounded ordered read each. `public-snapshot.test.ts` has 14 tests asserting 0 D1 `prepare` calls on a fresh hit, exactly 1 on a cold miss, exactly 1 across 50 concurrent cold misses (coalescing), and 0 calls + a stale envelope when the D1 read throws.
+
+**Checks (VERIFIED_LOCAL, Bun 1.4.2).** Baseline at this SHA without S1: **2967 pass / 0 fail / 318780 expect / 218 files** (measured by running `bun run test` with the new files temporarily moved aside); with S1: **2981 pass / 0 fail / 318823 expect / 219 files** — delta **+14 tests / +43 expect**, no test deleted or loosened, no regressions. `bun run typecheck` exit 0. SQL/hold scan on added lines: **none**.
+
+**What is / is not proved.** Proved: the pure module's behavior through the real drizzle SQL on a counting fake; the 0/1/1(50)/0 prepare-call claims; that the envelope degrades to the last-good snapshot on D1 error. **Not proved:** any runtime or deployed effect, GCP provenance, actual per-visit D1-row reduction on the live site, latency, freshness, supply or cost effect — those are S2–S5 work and require page wiring plus the owner's KV binding. No MATH item, SSAE card, HRI unit or autonomy label moved; no new MATH-14; no neural adoption claim.
+
+**DEPLOY NOTE:** None for GCP — pure module. Pages wiring happens in slice S2; S1 reaches production via the normal `wrangler pages deploy dist` on main after the S2–S5 cherry-picks merge; no `oc-gcp-deploy` required.
+
+**NEEDS OWNER (PROPOSE-only, not in this commit):** Cy/Ling must create a Cloudflare KV namespace `PUBLIC_SNAPSHOTS` and add the binding to `apps/web/wrangler.jsonc`:
+```
+env.production KV namespaces: [{ binding = "PUBLIC_SNAPSHOTS", namespace_id = "<id>" }]
+```
+With the binding absent the Cache API adapter degrades gracefully. Write-triggered snapshot invalidation is S4/S5 and is a PROPOSE-only item, not in this commit.
+
+**NEXT SINGLE ACTION:** owner creates the PUBLIC_SNAPSHOTS KV namespace + binding; then continue to P0 slice S2 (wire `/directory` and the homepage to read the snapshot so pagination/`?q=`/category filtering runs in memory) — verify with the counting-fake that listing routes do 0 D1 reads when a snapshot exists, and confirm the S1 commit stays green on the review merge.
+
+---
 ## 2026-10-05 — INCIDENT-0410(ay): the outbound apply redirect served rows every other public surface hides (branch `opencode/shift-20261005-1056`, session 25)
 
 **Unit:** tech-lead NEXT UNIT **2c** ("one small, behavior-tested safety/correctness defect in a non-hold-list module on a LIVE path"). Sessions 19–24 each left PROPOSE-only items, five of them blocked on **reviewer rulings**, so this session needed a **code** fix on a **live** path that is neither, and STOP-DRIFT bans diagnostics/census/savepoint-only sessions. **Mode:** EXECUTE, branch-only. **Status:** VERIFIED_LOCAL / VERIFIED_CODE (every claim below names the command and its output). **Runtime effect: NONE until merged and Pages deploys** — this branch is not deployed; no production, schema, publication, parameter, clock or deployment change; no autonomy label moved; no lease created.
