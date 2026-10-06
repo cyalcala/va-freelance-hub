@@ -1,4 +1,3 @@
-import { Database } from "bun:sqlite";
 import { getDb, opportunities, vaDirectory } from "@va-hub/db";
 import type { DbEnvironment } from "@va-hub/db/client";
 import type { Opportunity } from "@va-hub/db/schema";
@@ -45,11 +44,24 @@ export class NoSnapshotBindingError extends Error {
 
 // --- Default windows ---
 
-/** Fresh window: no D1 read at all on a request; serve memory only. */
-export const DEFAULT_FRESH_AFTER_MS = 60_000;
+/** Fresh window: no D1 read at all on a request; serve memory only.
+ *
+ * Must be >= 30 minutes. With a per-colocation Cache API store a rebuild only
+ * happens once per cache expiry, so a 60s window meant ~1,440 rebuilds/day/
+ * colo; at 30 min that drops to ~48/day/colo, and the 6h stale window means
+ * the background rebuild refreshes the envelope at most once every ~6.5h
+ * (~4/day/colo). At <=300 rows per rebuild that is ~1,200 rows scanned/day/
+ * colo even before the serving-colo cache is considered — a few % of the 5M
+ * row-read free tier. See the test `budget math stays inside the 5M row-read
+ * free tier` for the full arithmetic. */
+export const DEFAULT_FRESH_AFTER_MS = 30 * 60 * 1000;
 /** Stale-while-revalidate window: serve the old snapshot while rebuilding in
- * the background, so D1 cost stays near zero for ordinary page views. */
-export const DEFAULT_STALE_WHILE_REVALIDATE_MS = 300_000;
+ * the background, so D1 cost stays near zero for ordinary page views.
+ *
+ * Must be >= 6 hours: that bounds rebuilds to ~4/day/colo and means the
+ * synchronous "beyond stale" rebuild on the request path is the rare escape
+ * hatch, never the norm. */
+export const DEFAULT_STALE_WHILE_REVALIDATE_MS = 6 * 60 * 60 * 1000;
 
 // --- Core read ---
 
@@ -285,9 +297,15 @@ const OPPORTUNITY_CARD_PROJECTION = {
 };
 
 /** Maximum rows kept in the snapshot envelope. The acceptance goal is
- * 100-150/day, so the visible corpus stays small; the cap is a safety net
- * that degrades to "today's read cost" only when the corpus exceeds it. */
-const OPPORTUNITY_MAX_ROWS = 100_000;
+ * 100-150/day, the homepage renders <= ~60 cards (category previews +
+ * featured), and /opportunities /categories render PAGE_SIZE = 30 per page;
+ * 300 covers ~10 pages — the active rendering window — while capping the worst-
+ * case rebuild scan to a few hundred rows. This is a safety net: if the public
+ * corpus ever outgrows it the envelope degrades to "today's read cost" only
+ * when a rebuild actually happens, and a failed rebuild still serves the last
+ * good snapshot. Never loosen it to 100k: the free tier is 5M row reads/day and
+ * rebuilds at 100k rows/day/colo would exhaust it. */
+export const OPPORTUNITY_MAX_ROWS = 300;
 
 export async function buildOpportunitiesSnapshot(
   env: DbEnvironment,
@@ -321,7 +339,7 @@ export type PublicDirectorySnapshotRow = {
   isMarketplace: boolean;
 };
 
-const DIRECTORY_PROJECTION = {
+export const DIRECTORY_PROJECTION = {
   id: vaDirectory.id,
   companyName: vaDirectory.companyName,
   website: vaDirectory.website,
@@ -333,26 +351,56 @@ const DIRECTORY_PROJECTION = {
 };
 
 /**
- * The public directory is a curated, bounded list; one snapshot per
- * category+query key mirrors `directoryFilterKey()` and `loadDirectoryPage()`
- * so the page can paginate and search entirely in memory.
+ * Build the public directory snapshot for ONE surface. It reads every visible
+ * row once (bounded by the curated va_directory table; DIRECTORY_MAX_ROWS is a
+ * safety net on a table that is already small) and returns the ordered listing
+ * for in-memory slicing. Category and query are NOT part of the build key:
+ * there is exactly one snapshot per surface, and the page layer filters/paginates
+ * over the envelope in memory, so a free-text `?q=` can never trigger a rebuild.
  */
 const DIRECTORY_MAX_ROWS = 1_000;
 
 export async function buildDirectorySnapshot(
   env: DbEnvironment,
-  category: DirectoryCategory | null,
-  query: string,
 ): Promise<PublicDirectorySnapshotRow[]> {
   const db = getDb(env);
-  const where = buildDirectoryFilters(category, query);
   const rows = await db
     .select(DIRECTORY_PROJECTION)
     .from(vaDirectory)
-    .where(where)
+    .where(directoryVisibilityFilters())
     .orderBy(asc(vaDirectory.companyName))
     .limit(DIRECTORY_MAX_ROWS);
   return rows as PublicDirectorySnapshotRow[];
+}
+
+/**
+ * Pure in-memory filter that replicates the directory category/query logic
+ * (`buildDirectoryFilters` in `directory-page.ts`) exactly, so the page layer
+ * can slice the single surface-wide snapshot without another D1 round trip.
+ * Order matches the build ordering (company name ascending), so pagination over
+ * the filtered rows preserves the same sort the page expects.
+ */
+export function filterDirectorySnapshotRows(
+  rows: PublicDirectorySnapshotRow[],
+  category: DirectoryCategory | null,
+  query: string,
+): PublicDirectorySnapshotRow[] {
+  const filtered = rows.filter((row) => {
+    if (category === "dayshift") {
+      if (!row.isDayshift) return false;
+    } else if (category === "marketplaces") {
+      if (!row.isMarketplace) return false;
+    } else if (category && isDirectoryNiche(category)) {
+      if (row.niche !== category) return false;
+    }
+    if (query) {
+      if (!row.companyName?.toLowerCase().includes(query.toLowerCase())) {
+        return false;
+      }
+    }
+    return true;
+  });
+  return filtered;
 }
 
 export function buildDirectoryFilters(
@@ -377,8 +425,7 @@ export function buildDirectoryFilters(
 
 export const DIRECTORY_SNAPSHOT_BUILDER: SnapshotBuilder<PublicDirectorySnapshotRow> = {
   schema: "directory-v1",
-  build: (env: DbEnvironment, category: DirectoryCategory | null = null, query: string = "") =>
-    buildDirectorySnapshot(env, category, query),
+  build: (env: DbEnvironment) => buildDirectorySnapshot(env),
 };
 
 // --- Convenience ---
@@ -401,24 +448,29 @@ export async function readPublicOpportunitiesSnapshot(
 }
 
 /** Read a public directory listing from the snapshot pipeline with the
- * default fresh/stale windows. */
+ * default fresh/stale windows. The snapshot holds ONE surface-wide listing of
+ * all visible directory rows; category and query are applied in memory after the
+ * snapshot is served, so a free-text `?q=` can never trigger a rebuild — the
+ * single-flight rebuild (at most ~4/day/colo under the defaults) is the same
+ * full-visible listing for every category and search. */
 export async function readPublicDirectorySnapshot(
   env: DbEnvironment & KVEnv,
   category: DirectoryCategory | null,
   query: string,
   options: { freshAfterMs?: number; staleWhileRevalidateMs?: number } = {},
 ): Promise<SnapshotResult<PublicDirectorySnapshotRow>> {
-  const builder: SnapshotBuilder<PublicDirectorySnapshotRow> = {
-    schema: DIRECTORY_SNAPSHOT_BUILDER.schema,
-    build: (e) => buildDirectorySnapshot(e, category, query),
-  };
-  return readThroughSnapshot(
+  const result = await readThroughSnapshot(
     getSnapshotStoreFromEnv(env),
-    builder,
+    DIRECTORY_SNAPSHOT_BUILDER,
     {
       freshAfterMs: options.freshAfterMs ?? DEFAULT_FRESH_AFTER_MS,
       staleWhileRevalidateMs: options.staleWhileRevalidateMs ?? DEFAULT_STALE_WHILE_REVALIDATE_MS,
     },
     env,
-  );
+  ) as SnapshotResult<PublicDirectorySnapshotRow>;
+  return {
+    data: filterDirectorySnapshotRows(result.data, category, query),
+    stale: result.stale,
+    servedFromCache: result.servedFromCache,
+  };
 }

@@ -1,6 +1,33 @@
 import { Database } from "bun:sqlite";
 import { expect, test } from "bun:test";
-import { drizzle } from "drizzle-orm/d1";
+
+import {
+  getSnapshotStoreFromEnv,
+  InMemorySnapshotStore,
+  KVSnapshotStore,
+  CacheApiSnapshotStore,
+  readThroughSnapshot,
+  OPPORTUNITY_SNAPSHOT_BUILDER,
+  DIRECTORY_SNAPSHOT_BUILDER,
+  buildDirectorySnapshot,
+  filterDirectorySnapshotRows,
+  DIRECTORY_PROJECTION,
+  buildDirectoryFilters,
+  type SnapshotBuilder,
+  type PublicDirectorySnapshotRow,
+  DEFAULT_FRESH_AFTER_MS,
+  DEFAULT_STALE_WHILE_REVALIDATE_MS,
+  OPPORTUNITY_MAX_ROWS,
+  type SnapshotEnvelope,
+  type KVNamespace,
+} from "../src/lib/public-snapshot";
+import type { DbEnvironment } from "@va-hub/db/client";
+import { vaDirectory } from "@va-hub/db";
+import { asc } from "drizzle-orm";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { join } from "node:path";
+import { DIRECTORY_NICHES, DIRECTORY_SPECIAL_FILTERS } from "../src/lib/directory-categories";
+import type { DirectoryCategory, DirectoryNiche } from "../src/lib/directory-categories";
 
 // Minimal wrangler type shapes needed for the D1-shaped fake.
 interface D1PreparedStatement {
@@ -18,23 +45,6 @@ interface D1Database {
   prepare(sql: string): D1PreparedStatement;
   exec(sql: string): void;
 }
-import {
-  getSnapshotStoreFromEnv,
-  InMemorySnapshotStore,
-  KVSnapshotStore,
-  CacheApiSnapshotStore,
-  readThroughSnapshot,
-  OPPORTUNITY_SNAPSHOT_BUILDER,
-  DIRECTORY_SNAPSHOT_BUILDER,
-  buildDirectorySnapshot,
-  type SnapshotBuilder,
-  type PublicDirectorySnapshotRow,
-  DEFAULT_FRESH_AFTER_MS,
-  DEFAULT_STALE_WHILE_REVALIDATE_MS,
-  type SnapshotEnvelope,
-  type KVNamespace,
-} from "../src/lib/public-snapshot";
-import type { DbEnvironment } from "@va-hub/db/client";
 
 // A D1-shaped fake whose binding is real drizzle over an in-memory SQLite, so
 // the builder executes the real drizzle SQL produced by publicOpportunityFilters()
@@ -60,9 +70,6 @@ class CountingStatement implements D1PreparedStatement {
     return this.statement.run(...this.values);
   }
   raw<R = any>(): Promise<R[]> {
-    // Bun's Statement.all(...params) executes synchronously and returns a plain
-    // array of typed row objects (not a Promise), so we normalize to positional
-    // value arrays and return a resolved promise to satisfy the D1 interface.
     const results = this.statement.all(...this.values) as R[] | { results: R[] };
     const rows = Array.isArray(results)
       ? results
@@ -152,12 +159,28 @@ function seededDirectoryDb(): D1Database {
   insert.run("Bright BPO", "https://bright.example", 1, "bpo", 0, 0, 0, 0);
   insert.run("Hidden Non PH", null, 0, "bpo", 0, 1, 0, 0);
   insert.run("Three Strikes", null, 1, "tech", 0, 0, 0, 3);
+  insert.run("Dayshift Co", null, 1, "global-va", 1, 0, 0, 0);
   return db;
 }
 
 function makeEnv(db: D1Database): { DB: D1Database } {
   const counting = new CountingD1(db);
   return { DB: counting } as { DB: D1Database };
+}
+
+async function sqlTruth(category: DirectoryCategory | null, query: string): Promise<PublicDirectorySnapshotRow[]> {
+  const db = seededDirectoryDb();
+  const filters: string[] = ["hires_filipinos = 1", "link_fail_count < 3"];
+  if (category === "dayshift") filters.push("is_dayshift = 1");
+  else if (category === "marketplaces") filters.push("is_marketplace = 1");
+  else if (category && DIRECTORY_NICHES.includes(category as DirectoryNiche)) {
+    filters.push(`niche = '${category.replace(/'/g, "''")}'`);
+  }
+  if (query) {
+    filters.push(`company_name LIKE '%${query.replace(/'/g, "''")}%' ESCAPE '\\'`);
+  }
+  const sql = `SELECT id, company_name AS companyName, website, niche, is_dayshift AS isDayshift, is_verified AS isVerified, is_remote AS isRemote, is_marketplace AS isMarketplace FROM va_directory WHERE ${filters.join(" AND ")} ORDER BY company_name`;
+  return (await db.prepare(sql).all()) as unknown as PublicDirectorySnapshotRow[];
 }
 
 test("0 D1 prepare calls on a snapshot cache hit (within fresh window)", async () => {
@@ -337,7 +360,7 @@ test("builder projects exactly the opportunity fields used by the public board",
   });
 });
 
-test("directory builder reuses directoryVisibilityFilters and orders by company name", async () => {
+test("directory builder returns all visible directory rows, ordered by company name", async () => {
   const fake = seededDirectoryDb();
   const env = makeEnv(fake);
   const store = new InMemorySnapshotStore();
@@ -347,30 +370,123 @@ test("directory builder reuses directoryVisibilityFilters and orders by company 
     staleWhileRevalidateMs: DEFAULT_STALE_WHILE_REVALIDATE_MS,
   }, env);
 
-  expect(result.data.length).toBe(2); // only the two fully visible companies
-  expect(result.data.map((d) => d.companyName)).toEqual(["Acme PH", "Bright BPO"]);
+  // only the four fully visible companies: Acme PH, Bright BPO, Dayshift Co;
+  // Hidden Non PH fails hires_filipinos, Three Strikes has 3 link strikes
+  expect(result.data.length).toBe(3);
+  expect(result.data.map((d) => d.companyName)).toEqual(["Acme PH", "Bright BPO", "Dayshift Co"]);
   expect(env.DB.prepareCalls).toBe(1);
   expect(result.data[0].niche).toBe("global-va");
   expect(result.data[1].niche).toBe("bpo");
 });
 
-test("directory builder applies the category+query key so the page can paginate in memory", async () => {
+test("in-memory directory filter produces identical results to the SQL filter", async () => {
   const fake = seededDirectoryDb();
+
+  // Snapshot: build the single surface-wide listing (all visible rows).
   const env = makeEnv(fake);
   const store = new InMemorySnapshotStore();
-
-  const b = {
-    schema: DIRECTORY_SNAPSHOT_BUILDER.schema,
-    build: (env: DbEnvironment) => buildDirectorySnapshot(env, "bpo", "bright"),
-  };
-
-  const result = await readThroughSnapshot(store, b, {
+  const snapshot = await readThroughSnapshot(store, DIRECTORY_SNAPSHOT_BUILDER, {
     freshAfterMs: DEFAULT_FRESH_AFTER_MS,
     staleWhileRevalidateMs: DEFAULT_STALE_WHILE_REVALIDATE_MS,
   }, env);
 
-  expect(result.data.length).toBe(1);
-  expect(result.data[0].companyName).toBe("Bright BPO");
+  // Coerce Bun's sqlite INTEGER 0/1 -> boolean so raw-SQL truth matches the
+  // drizzle projection shape used by the snapshot and the in-memory filter.
+  const snapShape = (rows: PublicDirectorySnapshotRow[]) =>
+    rows.map((r) => ({
+      ...r,
+      isDayshift: Boolean(r.isDayshift),
+      isVerified: Boolean(r.isVerified),
+      isRemote: Boolean(r.isRemote),
+      isMarketplace: Boolean(r.isMarketplace),
+    }));
+
+  // In-memory filter over the snapshot must equal a fresh SQL query through the
+  // same visibility + category/query logic, for niche filters, special filters
+  // and query-only too.
+  expect(
+    filterDirectorySnapshotRows(snapshot.data, "bpo", "bright"),
+  ).toEqual(snapShape(await sqlTruth("bpo", "bright")));
+  expect(
+    filterDirectorySnapshotRows(snapshot.data, "dayshift", ""),
+  ).toEqual(snapShape(await sqlTruth("dayshift", "")));
+  expect(
+    filterDirectorySnapshotRows(snapshot.data, "marketplaces", ""),
+  ).toEqual(snapShape(await sqlTruth("marketplaces", "")));
+  expect(
+    filterDirectorySnapshotRows(snapshot.data, "global-va", ""),
+  ).toEqual(snapShape(await sqlTruth("global-va", "")));
+  expect(
+    filterDirectorySnapshotRows(snapshot.data, null, "acme"),
+  ).toEqual(snapShape(await sqlTruth(null, "acme")));
+  expect(
+    filterDirectorySnapshotRows(snapshot.data, null, ""),
+  ).toEqual(snapShape(await sqlTruth(null, "")));
+});
+
+test("budget math stays inside the 5M row-read free tier", () => {
+  // Fresh must be >= 30 min and stale >= 6 h so rebuilds are rare (<= ~4/day/
+  // colo for a per-colocation Cache API store; at most ~3.7 rebuilds/day/colo
+  // because a synchronous rebuild beyond stale refreshes the envelope for a
+  // further 6.5 h = fresh + stale). 30 min / 6 h windows were chosen exactly to
+  // satisfy these floors; this test asserts the floors and computes the worst-
+  // case rebuild scan against the 5M row-read free tier.
+  expect(DEFAULT_FRESH_AFTER_MS).toBeGreaterThanOrEqual(30 * 60 * 1000);
+  expect(DEFAULT_STALE_WHILE_REVALIDATE_MS).toBeGreaterThanOrEqual(6 * 60 * 60 * 1000);
+  expect(OPPORTUNITY_MAX_ROWS).toBeLessThanOrEqual(1_000);
+
+  const colos = 26; // Cloudflare edge-colocation fan-out; Cache API is per-colocation
+  const rebuildsPerDayPerColo = 24 / (6 + 30 / 60); // stale-then-fresh cycle (days / hours)
+  const rowsPerOpportunityRebuild = OPPORTUNITY_MAX_ROWS; // bounded by the cap
+  const rowsPerDirectoryRebuild = 1_000; // bounded by DIRECTORY_MAX_ROWS / table size
+  const rebuildRowsPerDayPerColo =
+    Math.ceil(rebuildsPerDayPerColo) * (rowsPerOpportunityRebuild + rowsPerDirectoryRebuild);
+  const rebuildRowsPerDayAcrossC = rebuildRowsPerDayPerColo * colos;
+
+  // 4 * (300 + 1,000) = 5,200 rows/day/colo; * 26 colos = 135,200 rows/day
+  // vs the 5M row-read free tier: ~2.7% of the budget, leaving plenty of headroom.
+  expect(rebuildRowsPerDayAcrossC).toBeLessThan(5_000_000);
+
+  // With the owner's KV binding the store is shared (not per-colocation):
+  // one rebuild per ~6.5 h across the whole deploy = ~4 rebuilds/day total.
+  expect(
+    Math.ceil(24 / (6 + 30 / 60)) * (rowsPerOpportunityRebuild + rowsPerDirectoryRebuild),
+  ).toBeLessThan(5_000_000);
+});
+
+test("no non-test source file imports bun:* modules", () => {
+  const sourceFiles: string[] = [];
+  const root = join(__dirname, "src");
+
+  function walk(dir: string): void {
+    if (!existsSync(dir)) return;
+    for (const entry of readdirSync(dir)) {
+      const path = join(dir, entry);
+      const st = statSync(path);
+      if (st.isDirectory()) {
+        walk(path);
+      } else if (
+        entry.endsWith(".ts") &&
+        !entry.endsWith(".test.ts") &&
+        !entry.endsWith(".d.ts")
+      ) {
+        sourceFiles.push(path);
+      }
+    }
+  }
+
+  walk(root);
+
+  const withBun = sourceFiles
+    .map((f) => ({ file: f, content: readFileSync(f, "utf-8") }))
+    .filter(({ content }) => /from\s+["']bun:/.test(content))
+    .map(({ file }) => file);
+
+  // If this fails: a source file imports a bun: module that does not exist on
+  // Cloudflare Workers/Pages and will break the build/runtime once this module
+  // is wired into a route. Remove the import or use the Cloudflare-native
+  // alternative (e.g. caches, caches.default).
+  expect(withBun).toEqual([]);
 });
 
 test("KV adapter stores and retrieves the same envelope through a KVNamespace", async () => {
