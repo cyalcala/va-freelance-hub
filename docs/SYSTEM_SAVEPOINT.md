@@ -1,3 +1,28 @@
+## 2026-10-06 — D1-READS(s2): wire /directory to read snapshot; in-memory filter/paginate, 0 D1 reads on hit (branch `opencode/shift-20261006-1059`, session 15)
+
+**Unit:** P0 D1-READS slice S2, per tech-lead v6.5 focus and savepoint NEXT. **Mode:** EXECUTE, branch-only. **Status:** VERIFIED_LOCAL / VERIFIED_CODE. **Runtime effect: NONE until merged and Pages deploys** — no production, schema, publication, parameter, clock or deployment change; no KV binding added (HOLD path); no lease created; no savepoint-only churn.
+
+**ROOT CAUSE:** The `/directory` page used `loadDirectoryPage` which did a live ordered D1 read per request. Query-string fan-out (`?q=`, `?page=`, `?category=`, UTMs) multiplied row reads. With the free tier at 5M reads/day, this caused exhaustion and 503s on Oct 4-5.
+
+**FIX:**
+- `/directory` now calls `readPublicDirectorySnapshot` (single surface-wide key)
+- Category/query filtering and pagination run in memory via `filterDirectorySnapshotRows` + `sliceDirectoryPage`
+- Category validation (`parseDirectoryCategory`) still runs BEFORE the snapshot read, preserving the guard that rejects unknown categories without a D1 read
+- `buildFailed` on the snapshot result triggers `ServiceUnavailable`, matching previous `loadDirectoryPage` behavior
+- Job-category-guard test updated to assert refusalBeforeSnapshotRead
+
+**Changes:** `apps/web/src/lib/public-snapshot.ts` (+67/-14), `apps/web/src/pages/directory.astro` (+15/-9), `apps/web/tests/job-category-guard.test.ts` (+1/-1), `apps/web/tests/public-snapshot.test.ts` (+134/-22: new parity test, buildFailed test, updated counts).
+
+**Checks (VERIFIED_LOCAL, Bun 1.4.2).** `bun run test apps/web/tests/public-snapshot.test.ts` -> 22 pass / 0 fail. Full suite: `bun run test` -> 2985 pass / 0 fail / 319086 expect / 219 files (baseline 2983/0/318833/219; delta +2 tests / +1253 expect, zero regressions). `bun run typecheck` exit 0. `bun run audit:guardrails` exit 0. Hold-list/SQL scan on added lines: none.
+
+**What is/is not proved.** Proved: /directory reads snapshot (0 D1 reads on cache hit); in-memory filter equals SQL filter across all niche/special-filter/query/page cases; category guard runs before snapshot read; buildFailed triggers ServiceUnavailable. Not proved: homepage wiring (S3), actual per-visit D1-row reduction on live site, latency/freshness/supply/cost effect on prod — these need S3 wiring plus owner's PUBLIC_SNAPSHOTS KV binding.
+
+**NEXT SINGLE ACTION:** S3 — wire homepage (/) to read the opportunity snapshot so pagination/?q= runs in memory; verify with counting fake that listing routes do 0 D1 reads when a snapshot exists.
+
+**NEEDS OWNER (PROPOSE-only, not in this commit):** Cy/Ling must create a Cloudflare KV namespace `PUBLIC_SNAPSHOTS` and add the binding to `apps/web/wrangler.jsonc`; with the binding absent the Cache API adapter degrades gracefully. Write-triggered invalidation is S4/S5 and PROPOSE-only.
+
+**SKILLS.** START: using-agent-skills, context-engineering, planning-and-task-breakdown (recover S2 as cohesive unit; reading-gate complete) -> BUILD: test-driven-development (failing test first, then fix; 2985/0 suite), incremental-implementation, api-and-interface-design (SnapshotStore/SnapshotBuilder boundary; single in-memory filter), performance-optimization (D1 rows-read cost: 30m/6h/300 => ~4 rebuilds/day/colo x <=1300 rows = 135200/day << 5M) -> BEFORE COMMIT: code-review-and-quality, code-simplification, security-and-hardening (no secrets/keys in code; guard test on bun:*; hold-list scan) -> DOCS: documentation-and-adrs (prepend one short savepoint section; no ADR needed — wiring existing pure module, visibility predicates unchanged; stated in the commit body).
+---
 ## 2026-10-06 — D1-READS(s1-fix): fix the snapshot core — budget math, single-surface directory builder, bun:* guard (branch `opencode/shift-20261006-1059`, session 12)
 
 **Unit:** P0 D1-READS(s1-fix), per the session-11 review of 6bdb1809. **Mode:** EXECUTE, branch-only. **Status:** VERIFIED_LOCAL / VERIFIED_CODE. **Runtime effect: NONE** — no production, schema, publication, parameter, clock or deployment change; no KV binding added (HOLD path); no lease created; no savepoint-only churn (see commit).
