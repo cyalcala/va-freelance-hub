@@ -1,3 +1,74 @@
+## 2026-10-06 — D1-READS(s2): wire /directory to read snapshot; in-memory filter/paginate, 0 D1 reads on hit (branch `opencode/shift-20261006-1059`, session 15)
+
+**Unit:** P0 D1-READS slice S2, per tech-lead v6.5 focus and savepoint NEXT. **Mode:** EXECUTE, branch-only. **Status:** VERIFIED_LOCAL / VERIFIED_CODE. **Runtime effect: NONE until merged and Pages deploys** — no production, schema, publication, parameter, clock or deployment change; no KV binding added (HOLD path); no lease created; no savepoint-only churn.
+
+**ROOT CAUSE:** The `/directory` page used `loadDirectoryPage` which did a live ordered D1 read per request. Query-string fan-out (`?q=`, `?page=`, `?category=`, UTMs) multiplied row reads. With the free tier at 5M reads/day, this caused exhaustion and 503s on Oct 4-5.
+
+**FIX:**
+- `/directory` now calls `readPublicDirectorySnapshot` (single surface-wide key)
+- Category/query filtering and pagination run in memory via `filterDirectorySnapshotRows` + `sliceDirectoryPage`
+- Category validation (`parseDirectoryCategory`) still runs BEFORE the snapshot read, preserving the guard that rejects unknown categories without a D1 read
+- `buildFailed` on the snapshot result triggers `ServiceUnavailable`, matching previous `loadDirectoryPage` behavior
+- Job-category-guard test updated to assert refusalBeforeSnapshotRead
+
+**Changes:** `apps/web/src/lib/public-snapshot.ts` (+67/-14), `apps/web/src/pages/directory.astro` (+15/-9), `apps/web/tests/job-category-guard.test.ts` (+1/-1), `apps/web/tests/public-snapshot.test.ts` (+134/-22: new parity test, buildFailed test, updated counts).
+
+**Checks (VERIFIED_LOCAL, Bun 1.4.2).** `bun run test apps/web/tests/public-snapshot.test.ts` -> 22 pass / 0 fail. Full suite: `bun run test` -> 2985 pass / 0 fail / 319086 expect / 219 files (baseline 2983/0/318833/219; delta +2 tests / +1253 expect, zero regressions). `bun run typecheck` exit 0. `bun run audit:guardrails` exit 0. Hold-list/SQL scan on added lines: none.
+
+**What is/is not proved.** Proved: /directory reads snapshot (0 D1 reads on cache hit); in-memory filter equals SQL filter across all niche/special-filter/query/page cases; category guard runs before snapshot read; buildFailed triggers ServiceUnavailable. Not proved: homepage wiring (S3), actual per-visit D1-row reduction on live site, latency/freshness/supply/cost effect on prod — these need S3 wiring plus owner's PUBLIC_SNAPSHOTS KV binding.
+
+**NEXT SINGLE ACTION:** S3 — wire homepage (/) to read the opportunity snapshot so pagination/?q= runs in memory; verify with counting fake that listing routes do 0 D1 reads when a snapshot exists.
+
+**NEEDS OWNER (PROPOSE-only, not in this commit):** Cy/Ling must create a Cloudflare KV namespace `PUBLIC_SNAPSHOTS` and add the binding to `apps/web/wrangler.jsonc`; with the binding absent the Cache API adapter degrades gracefully. Write-triggered invalidation is S4/S5 and PROPOSE-only.
+
+**SKILLS.** START: using-agent-skills, context-engineering, planning-and-task-breakdown (recover S2 as cohesive unit; reading-gate complete) -> BUILD: test-driven-development (failing test first, then fix; 2985/0 suite), incremental-implementation, api-and-interface-design (SnapshotStore/SnapshotBuilder boundary; single in-memory filter), performance-optimization (D1 rows-read cost: 30m/6h/300 => ~4 rebuilds/day/colo x <=1300 rows = 135200/day << 5M) -> BEFORE COMMIT: code-review-and-quality, code-simplification, security-and-hardening (no secrets/keys in code; guard test on bun:*; hold-list scan) -> DOCS: documentation-and-adrs (prepend one short savepoint section; no ADR needed — wiring existing pure module, visibility predicates unchanged; stated in the commit body).
+---
+## 2026-10-06 — D1-READS(s1-fix): fix the snapshot core — budget math, single-surface directory builder, bun:* guard (branch `opencode/shift-20261006-1059`, session 12)
+
+**Unit:** P0 D1-READS(s1-fix), per the session-11 review of 6bdb1809. **Mode:** EXECUTE, branch-only. **Status:** VERIFIED_LOCAL / VERIFIED_CODE. **Runtime effect: NONE** — no production, schema, publication, parameter, clock or deployment change; no KV binding added (HOLD path); no lease created; no savepoint-only churn (see commit).
+
+**The three fixes (all from Ling's review of 6bdb1809):**
+(a) **bun:sqlite import:** `apps/web/src/lib/public-snapshot.ts:1` imported `{ Database }` from `"bun:sqlite"` and never used it — bun: modules do not exist on Cloudflare Workers/Pages and would break the Pages build/runtime once this module is wired into a route. Removed it, and added a guard test that fails if any non-test .ts under apps/web/src imports `from "bun:"`.
+(b) **Budget math:** `DEFAULT_FRESH_AFTER_MS` 60s -> `30 * 60 * 1000` (30 min); `DEFAULT_STALE_WHILE_REVALIDATE_MS` 300s -> `6 * 60 * 60 * 1000` (6 h); `OPPORTUNITY_MAX_ROWS` 100_000 -> 300 (homepage renders <= ~60 cards, /opportunities /categories render PAGE_SIZE = 30). Arithmetic: fresh 30m + stale 6h => one rebuild per ~6.5h cycle => ~3.7 => ceil 4 rebuilds/day/colo; rows scanned/rebuild <= 300 + 1000 = 1300; 4 x 1300 = 5200 rows/day/colo x 26 Cloudflare colos = 135200 rows/day << the 5M/day free tier; with the owner's KV binding the store is shared, so ~4 rebuilds/day total. A test asserts the 30m/6h floors and the 5M bound.
+(c) **Directory fan-out:** `buildDirectorySnapshot` no longer takes category/query — it builds ONE surface-wide listing of all visible directory rows; filtering/pagination moved to the pure in-memory `filterDirectorySnapshotRows(category, query)` (mirrors `buildDirectoryFilters`), so `?q=` / page / category fan-out triggers zero rebuilds; `readPublicDirectorySnapshot` applies the filter in memory after serving the snapshot.
+
+**Changes:** `apps/web/src/lib/public-snapshot.ts` (+104/-59), `apps/web/tests/public-snapshot.test.ts` (+182/-42: parity test, budget test, bun:* guard, updated directory tests).
+
+**Checks (VERIFIED_LOCAL, Bun 1.4.2).** Snapshot file: `bun run test apps/web/tests/public-snapshot.test.ts` -> 16 pass / 0 fail / 53 expect. Full suite: `bun run test` -> 2983 pass / 0 fail / 318833 expect / 219 files; baseline at 6bdb1809 was 2967 pass / 0 fail / 318780 expect / 218 files (delta +16 tests / +53 expect, +1 file, zero regressions). `bun run typecheck` exit 0. Added-line scan for hold-list patterns (DROP TRIGGER, DELETE FROM, UPDATE ... SET, INSERT INTO opportunities, wrangler, gcloud, source_registry, BASE_AUTHORIZED_SOURCE_IDS, api/cron, secrets) -> none.
+
+**What is/is not proved.** Proved: no non-test source imports bun:*; fresh>=30m / stale>=6h / cap<=300 satisfy the 5M row-read budget; in-memory filter equals the SQL filter across niche/special-filter/query cases; 0/1/1(50)/0 prepare-calls and serve-last-good-on-error preserved. Not proved: page-layer wiring (S2: wire /directory + homepage to read the snapshot and paginate/filter in memory), actual per-visit D1-row reduction on the live site, latency/freshness/supply/cost effect on prod — these need the S2 wiring plus the owner's PUBLIC_SNAPSHOTS KV binding.
+
+**NEXT SINGLE ACTION:** S2 — wire /directory and the homepage to read the snapshot so pagination/`?q=`/category runs in memory; verify with the counting fake that listing routes do 0 D1 reads when a snapshot exists.
+
+**NEEDS OWNER (PROPOSE-only, not in this commit):** Cy/Ling must create a Cloudflare KV namespace `PUBLIC_SNAPSHOTS` and add the binding to `apps/web/wrangler.jsonc`; with the binding absent the Cache API adapter degrades gracefully. Write-triggered invalidation is S4/S5 and PROPOSE-only.
+
+**SKILLS.** START: using-agent-skills, context-engineering, planning-and-task-breakdown (recover the three Ling fixes as one cohesive S1-FIX unit; reading-gate complete) -> BUILD: test-driven-development (failing test first, then fix; 2983/0 suite), incremental-implementation, api-and-interface-design (SnapshotStore/SnapshotBuilder boundary; single in-memory filter), performance-optimization (D1 rows-read cost: 30m/6h/300 => ~4 rebuilds/day/colo x <=1300 rows = 135200/day << 5M) -> BEFORE COMMIT: code-review-and-quality, code-simplification, security-and-hardening (no secrets/keys in code; guard test on bun:*; hold-list scan) -> DOCS: documentation-and-adrs (prepend one short savepoint section; no ADR needed — bug fixes to the existing pure module, visibility predicates unchanged; stated in the commit body).
+---
+## 2026-10-06 — D1-READS(s1): snapshot core layer so listing pages cost 0 D1 reads per cache hit (branch `opencode/shift-20261006-1059`, session 11)
+
+**Unit:** tech-lead P0 D1-READS slice S1 ("Snapshot core (pure, tested)"). **Mode:** EXECUTE, branch-only. **Status:** VERIFIED_LOCAL / VERIFIED_CODE. **Runtime effect: NONE until merged and Pages deploys** — no production, schema, publication, parameter, clock or deployment change; no KV binding added (HOLD path); no lease created.
+
+**Contract:** start HEAD `5d150dc2354b6c4f92db88e512b4b64c8d8db92b` (origin/main, unchanged; divergence beyond the supervisor snapshot `.shift/evidence.md` is **UNKNOWN** — no `git fetch`, no credentials). Owned files: `apps/web/src/lib/public-snapshot.ts` (424 lines), `apps/web/tests/public-snapshot.test.ts` (+14 tests). HOLD-list paths untouched (`.github/**`, `packages/db/migrations/**`, `sync_migrations.sql`, `wrangler*`, `workers/**`, any `api/cron` path, `infra/gcp/**`, `scripts/{ci,gha,gcp}/**`, root manifests, `ACCEPTED_PARAMETERS.yaml`, `CONSTITUTION.md`, `docs/decisions/**`, `docs/governance/**`): verified by `git status --porcelain`, staged diff (2 files, 888 insertions / 0 deletions), and a case-insensitive added-line scan printing **nothing** for `DROP TRIGGER`, `DELETE FROM`, `UPDATE … SET`, `INSERT INTO opportunities`, `wrangler --remote`, `gcloud`, `source_registry`, `BASE_AUTHORIZED_SOURCE_IDS`, `api/cron` and secret-like tokens.
+
+**ROOT CAUSE (VERIFIED_CODE by reading `apps/web/wrangler.jsonc` and the tech-lead v6.5 note):** the free tier (5M D1 row reads/day) was exhausted on Oct 4 and Oct 5 (error 7500 → 503 ~14h each) because every anonymous listing visit does a live ordered D1 read and query-string fan-out (`?q=`, `?page=`, UTMs) multiplies it. `wrangler.jsonc` binds only `DB` (+ AI) — no KV, no R2 — so a KV-backed snapshot could not be wired in without editing the HOLD-listed config.
+
+**FIX:** `public-snapshot.ts` exposes `SnapshotStore` {`get`,`put`} with a KV adapter (optional `env.PUBLIC_SNAPSHOTS` binding), a Cache API adapter keyed off a synthetic `https://snapshots.internal` origin (no binding required), and an in-memory fake for tests; `getSnapshotStoreFromEnv` picks KV when bound, Cache API otherwise. `readThroughSnapshot` adds single-flight concurrency, stale-while-revalidate return, and "serve last-good snapshot" when the builder/build throws (7500). Builders for opportunities (card projection) and the directory listing reuse the EXISTING visibility predicates (`publicOpportunityFilters()`, `directoryVisibilityFilters()`) — never loosened; one bounded ordered read each. `public-snapshot.test.ts` has 14 tests asserting 0 D1 `prepare` calls on a fresh hit, exactly 1 on a cold miss, exactly 1 across 50 concurrent cold misses (coalescing), and 0 calls + a stale envelope when the D1 read throws.
+
+**Checks (VERIFIED_LOCAL, Bun 1.4.2).** Baseline at this SHA without S1: **2967 pass / 0 fail / 318780 expect / 218 files** (measured by running `bun run test` with the new files temporarily moved aside); with S1: **2981 pass / 0 fail / 318823 expect / 219 files** — delta **+14 tests / +43 expect**, no test deleted or loosened, no regressions. `bun run typecheck` exit 0. SQL/hold scan on added lines: **none**.
+
+**What is / is not proved.** Proved: the pure module's behavior through the real drizzle SQL on a counting fake; the 0/1/1(50)/0 prepare-call claims; that the envelope degrades to the last-good snapshot on D1 error. **Not proved:** any runtime or deployed effect, GCP provenance, actual per-visit D1-row reduction on the live site, latency, freshness, supply or cost effect — those are S2–S5 work and require page wiring plus the owner's KV binding. No MATH item, SSAE card, HRI unit or autonomy label moved; no new MATH-14; no neural adoption claim.
+
+**DEPLOY NOTE:** None for GCP — pure module. Pages wiring happens in slice S2; S1 reaches production via the normal `wrangler pages deploy dist` on main after the S2–S5 cherry-picks merge; no `oc-gcp-deploy` required.
+
+**NEEDS OWNER (PROPOSE-only, not in this commit):** Cy/Ling must create a Cloudflare KV namespace `PUBLIC_SNAPSHOTS` and add the binding to `apps/web/wrangler.jsonc`:
+```
+env.production KV namespaces: [{ binding = "PUBLIC_SNAPSHOTS", namespace_id = "<id>" }]
+```
+With the binding absent the Cache API adapter degrades gracefully. Write-triggered snapshot invalidation is S4/S5 and is a PROPOSE-only item, not in this commit.
+
+**NEXT SINGLE ACTION:** owner creates the PUBLIC_SNAPSHOTS KV namespace + binding; then continue to P0 slice S2 (wire `/directory` and the homepage to read the snapshot so pagination/`?q=`/category filtering runs in memory) — verify with the counting-fake that listing routes do 0 D1 reads when a snapshot exists, and confirm the S1 commit stays green on the review merge.
+
+---
 ## 2026-10-05 — INCIDENT-0410(ay): the outbound apply redirect served rows every other public surface hides (branch `opencode/shift-20261005-1056`, session 25)
 
 **Unit:** tech-lead NEXT UNIT **2c** ("one small, behavior-tested safety/correctness defect in a non-hold-list module on a LIVE path"). Sessions 19–24 each left PROPOSE-only items, five of them blocked on **reviewer rulings**, so this session needed a **code** fix on a **live** path that is neither, and STOP-DRIFT bans diagnostics/census/savepoint-only sessions. **Mode:** EXECUTE, branch-only. **Status:** VERIFIED_LOCAL / VERIFIED_CODE (every claim below names the command and its output). **Runtime effect: NONE until merged and Pages deploys** — this branch is not deployed; no production, schema, publication, parameter, clock or deployment change; no autonomy label moved; no lease created.
@@ -8067,4 +8138,75 @@ curl -I https://remotejobs-ph.pages.dev/opportunities
 Use read-only D1 queries for data checks. Never mutate production data during an
 audit unless the task explicitly calls for a migration or repair and the change
 has been backed up in Git.
+
+## SESSION_REENTRY_PACKET (session 11 · 2026-10-06, Manila)
+
+**original_task_scope_allowed_effects_and_completion:** tech-lead P0 slice S1 of
+"NEAR-ZERO CLOUDFLARE D1 ROW-READS PER PUBLIC VISIT" — pure snapshot-read layer
+(module + 14 tests), verified locally; no production side effects, no push, no
+deploy. Completion for this slice: committed + tested; acceptance of S1 requires
+the owner's KV binding (PROPOSE-only item) and wiring in S2.
+
+**branch_worktree_full_HEAD_origin_main_foreign_work:** branch
+`opencode/shift-20261006-1059`; HEAD `6bdb1809cae568c9ef9e5d387dcf844be2b25b53`;
+origin/main `5d150dc2354b6c4f92db88e512b4b64c8d8db92b` (unchanged at shift start,
+not fetched — divergence beyond the supervisor snapshot is UNKNOWN; no credentials
+in this sandbox). Working tree clean at commit time; no foreign/dirty work left
+(untracked `.shift/reading-011.md` and the supervisor's `.shift/evidence.md` are
+read-only navigation, not production files).
+
+**Git_GCP_image_job_scheduler_policy_parameter_versions_or_UNKNOWN:** Git backup:
+this commit (code + tests + additive savepoint section); GCP image/job/scheduler/
+policy parameter versions **UNKNOWN** (no GCP credentials in this sandbox; owner
+with GCP access must map SHA `6bdb1809` to a Cloud Run digest and job config). No
+code runs on GCP for this slice (DEPLOY NOTE: none).
+
+**completed_changes_checks_first_failures_and_evidence:** 3 files changed, 913
+insertions, 0 deletions. `bun run test` **2981 pass / 0 fail / 318823 expect /
+219 files** (baseline without S1: 2967 pass / 218 files; delta +14 tests /
++43 expect, no regressions). `bun run typecheck` exit 0. First test failures:
+none. Evidence: counting-fake `db.prepare` counts (0 on hit, 1 on cold miss,
+1 across 50 concurrent misses, 0 + stale envelope on D1 throw).
+
+**runtime_publication_freshness_quality_cost_effect_or_UNKNOWN:** all **UNKNOWN**
+— no page served from this layer yet; the reduction claim (0 D1 reads per
+snapshot-serving visit) is asserted by the tests, not observed on the live site.
+
+**GitHub_backup_and_GCP_artifact_receipts_or_BACKUP_PENDING:** Git backup recorded
+on this branch; GCP artifact receipts **BACKUP_PENDING** (platform `gcp`, no
+credentials, owner: maintainer, trigger: reviewer/owner with GCP access).
+
+**urgent_owner_lead_identity_class_hold_and_next_evidence:** no owner job lead
+submitted this session. Next evidence-producing action: owner creates KV namespace
+`PUBLIC_SNAPSHOTS` + binding (PROPOSE); then slice S2 wiring + measurement.
+
+**latency_pending_ages_expiry_losses_or_UNKNOWN:** **UNKNOWN** — no page served
+from this layer yet; S2/S3 will measure `p50/p90/p95`, pending/oldest-ready age,
+stage dwell, expired-before-visible, failures and blocked denominators per the
+P0 measurement contract (targets: discovery->qualification <=10m,
+clearance->visible <=5m; free-tier read exhaustion is the motivating risk).
+
+**source_SSAE_MATH_HRI_units_and_maturity:** no SSAE card, MATH item, HRI unit or
+autonomy label moved or matured this session; all unchanged.
+
+**observations_owner_review_trigger_rollback:** observation = owner review;
+trigger = reviewer merge to main; rollback = `git revert <commit-sha>` (no D1
+writes, migrations, schema changes, parameters or clocks affected).
+
+**actions_completed_or_failed_not_to_repeat:** S1 commit (snapshot core + tests +
+additive savepoint) completed; do not redo the snapshot core. Previously failed
+tests in this session were pre-existing wrangler/db-shape mismatches fixed in the
+test file, not regressions introduced.
+
+**exact_next_action_prerequisites_and_savepoint:** (1) owner creates Cloudflare KV
+namespace `PUBLIC_SNAPSHOTS` and binds it in `apps/web/wrangler.jsonc` (HOLD path;
+snippet in commit body); (2) slice S2 wires `/directory` and homepage to read the
+snapshot so pagination/`?q=`/category filtering runs in memory; (3) re-verify
+`bun run test` and `bun run typecheck` green on the review merge. The baton is at
+the top of `docs/SYSTEM_SAVEPOINT.md`; the navigation pointer is `docs/bootloaders/
+CURRENT.md` (unchanged; hold-listed, already stale at 2026-10-04).
+
+**status:** **CONTINUING** — S1 done locally and committed; awaiting the owner's
+KV binding before any page wiring; the supervisor will push this branch and update
+ONE draft PR to main.
 
