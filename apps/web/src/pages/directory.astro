@@ -2,16 +2,14 @@
 import Layout from '../layouts/Layout.astro';
 import DirectoryAgencyCard from '@/components/DirectoryAgencyCard.astro';
 import DirectoryCategoryNav from '@/components/DirectoryCategoryNav.astro';
-import { getDb, vaDirectory } from '@va-hub/db';
-import { and, asc, count, eq, sql, type SQL } from 'drizzle-orm';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
+import { sliceDirectory, type PublicDirectoryRow } from '@/lib/public-board';
+import { loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
-import { escapeSqlLike, parseJobBoardRequest } from '@/lib/public-query';
-import { directoryVisibilityFilters } from '@/lib/directory-visibility';
+import { parseJobBoardRequest } from '@/lib/public-query';
 import {
   DIRECTORY_CATEGORY_INFO,
   DIRECTORY_NICHES,
-  isDirectoryNiche,
   parseDirectoryCategory,
   type DirectoryCategory,
 } from '@/lib/directory-categories';
@@ -40,16 +38,7 @@ if (rawCategory && !selectedCategory) {
 }
 const offset = (currentPage - 1) * DIRECTORY_PAGE_SIZE;
 
-type DirectoryAgency = {
-  id: number;
-  companyName: string;
-  website: string | null;
-  niche: string;
-  isDayshift: boolean;
-  isVerified: boolean;
-  isRemote: boolean;
-  isMarketplace: boolean;
-};
+type DirectoryAgency = PublicDirectoryRow;
 
 function normalizeDirectoryUrl(raw: string | null): string | null {
   if (!raw) return null;
@@ -71,45 +60,16 @@ let dataUnavailable = false;
 let pageOutOfRange = false;
 
 try {
-  const db = getDb(Astro.locals.runtime.env);
-  const filters: SQL[] = [directoryVisibilityFilters()];
-  if (selectedCategory === 'dayshift') {
-    filters.push(eq(vaDirectory.isDayshift, true));
-  } else if (selectedCategory === 'marketplaces') {
-    filters.push(eq(vaDirectory.isMarketplace, true));
-  } else if (selectedCategory && isDirectoryNiche(selectedCategory)) {
-    filters.push(eq(vaDirectory.niche, selectedCategory));
-  }
-  if (query) {
-    filters.push(sql`lower(${vaDirectory.companyName}) LIKE ${`%${escapeSqlLike(query.toLowerCase())}%`} ESCAPE '\\'`);
-  }
-  const whereClause = and(...filters);
-
-  const [totalResult] = await db
-    .select({ total: count() })
-    .from(vaDirectory)
-    .where(whereClause);
-  totalAgencies = totalResult?.total ?? 0;
+  const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
+  const sliced = sliceDirectory(board.directory, {
+    query,
+    category: selectedCategory,
+    offset,
+    limit: DIRECTORY_PAGE_SIZE,
+  });
+  totalAgencies = sliced.total;
   pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalAgencies / DIRECTORY_PAGE_SIZE));
-
-  if (!pageOutOfRange) {
-    agencies = await db
-      .select({
-        id: vaDirectory.id,
-        companyName: vaDirectory.companyName,
-        website: vaDirectory.website,
-        niche: vaDirectory.niche,
-        isDayshift: vaDirectory.isDayshift,
-        isVerified: vaDirectory.isVerified,
-        isRemote: vaDirectory.isRemote,
-        isMarketplace: vaDirectory.isMarketplace,
-      })
-      .from(vaDirectory)
-      .where(whereClause)
-      .orderBy(asc(vaDirectory.companyName))
-      .limit(DIRECTORY_PAGE_SIZE)
-      .offset(offset);
-  }
+  if (!pageOutOfRange) agencies = sliced.rows;
 } catch (error) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, error);

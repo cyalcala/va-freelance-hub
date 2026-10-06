@@ -1,5 +1,18 @@
 # System Savepoint
 
+## 2026-10-06 — Public D1 read incident: one serving snapshot
+
+**Unit:** PUBLIC-SNAPSHOT-D1. **Mode:** implementation, not deployed.
+**Branch:** codex/ph-remote-priority-bootloader. Foreign untracked `.agents/skills/` and `lucky777.md` left untouched.
+
+**What changed:** Public HTML routes (home, opportunities, directory, categories, job detail, sitemap) render from one shared board. A warm isolate or edge copy does not read D1. A cold isolate reads the single `public_serving_snapshot` row. The jobs table is scanned only when that row is missing or older than one hour, and a lease allows one rebuild. If D1 quota fails and a cached board exists, the page still renders. A cold quota failure does not scan the jobs table.
+
+**Not proved:** live row-read counts, live TTFB, and production deploy. Wrangler is not authenticated on this machine, and production Pages deploy runs only from `main`. Migration `0054_public_serving_snapshot.sql` is not applied. Until that migration lands, the first request in a colo builds the board in memory and the hourly lease cannot persist.
+
+**Checks:** `bun test` public snapshot, eligibility parity, opportunities, and edge-cache tests passed. `tsc --noEmit` passed. `bun run build` in `apps/web` passed before the final quota-guard and description-cap edits; those edits are covered by the unit tests, and the production bundle was not rebuilt after them.
+
+**Next single action:** authenticate Cloudflare, apply migration 0054, deploy `apps/web` to `remotejobs-ph`, then measure homepage and `/opportunities` TTFB plus D1 rows read. Owner: maintainer. Do not treat this entry as a live performance claim.
+
 ## 2026-10-04 08:17 Manila — Canonical PH/VA freshness and GCP/Git reconciliation v6.5
 
 **Unit:** CANONICAL-PH-VA-FRESHNESS-V6.5. **Mode:** documentation + read-only metadata.

@@ -1,14 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getDb, opportunities } from '@va-hub/db';
-import { and, asc, count, desc, eq, type SQL, sql } from 'drizzle-orm';
 import { OpportunityCard, type OpportunityCardData } from '@/components/opportunity-card';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
+import { publicPlatforms, slicePublicJobs } from '@/lib/public-board';
+import { loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parseJobBoardRequest } from '@/lib/public-query';
-import { buildOpportunityFtsQueries } from '@/lib/opportunity-fts-query';
-import { publicOpportunityFilters } from '@/lib/public-opportunities';
 
 export const prerender = false;
 
@@ -73,100 +71,21 @@ function buildFreshUrl(value: string | null) {
 }
 
 try {
-  const db = getDb(Astro.locals.runtime.env);
-  const filters: SQL[] = [publicOpportunityFilters()];
-
-  if (category && JOB_CATEGORY_MAP[category]) {
-    filters.push(eq(opportunities.category, category));
-  }
-
-  if (type && TYPE_OPTIONS.includes(type)) {
-    filters.push(eq(opportunities.type, type));
-  }
-
-  if (platform) {
-    filters.push(eq(opportunities.sourcePlatform, platform));
-  }
-
-  if (geoScope && GEO_SCOPE_OPTIONS.some((opt) => opt.value === geoScope)) {
-    filters.push(eq(opportunities.geoScope, geoScope as any));
-  }
-
-  // Fresh-arrivals slice: first-seen (`scraped_at`) recency. `today` is the
-  // current Asia/Manila calendar day. Absent by default — no behavior change.
-  if (fresh === '24h') {
-    filters.push(sql`unixepoch(${opportunities.scrapedAt}) >= unixepoch('now') - 86400`);
-  } else if (fresh === 'today') {
-    filters.push(sql`date(${opportunities.scrapedAt}, '+8 hours') = date('now', '+8 hours')`);
-  }
-
-  if (query) {
-    const ftsMatch = query
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((w) => `"${w.replace(/"/g, '""')}"`)
-      .join(' ');
-
-    const ftsQueries = buildOpportunityFtsQueries({
-      ftsMatch,
-      category: category && JOB_CATEGORY_MAP[category] ? category : undefined,
-      type: type && TYPE_OPTIONS.includes(type) ? type : undefined,
-      platform: platform || undefined,
-      geoScope: geoScope && GEO_SCOPE_OPTIONS.some((opt) => opt.value === geoScope) ? geoScope : undefined,
-      fresh: fresh ?? undefined,
-      limit: PAGE_SIZE,
-      offset,
-    });
-    const d1 = Astro.locals.runtime.env.DB;
-    const countRow = await d1
-      .prepare(ftsQueries.countSql)
-      .bind(...ftsQueries.filterParams)
-      .first<{ total: number }>();
-    totalJobs = countRow?.total ?? 0;
-
-    pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
-    if (!pageOutOfRange) {
-      const pageResult = await d1
-        .prepare(ftsQueries.pageSql)
-        .bind(...ftsQueries.pageParams)
-        .all<OpportunityCardData>();
-      pageJobs = pageResult.results;
-    }
-  } else {
-    const whereClause = and(...filters);
-
-    const [totalResult] = await db
-      .select({ total: count() })
-      .from(opportunities)
-      .where(whereClause);
-
-    totalJobs = totalResult?.total ?? 0;
-
-    pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
-    if (!pageOutOfRange) {
-      // Fresh view orders by discovery (first-seen); default board keeps the
-      // source-posted-date order.
-      const freshOrder = fresh
-        ? desc(opportunities.scrapedAt)
-        : desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`);
-      pageJobs = await db
-        .select()
-        .from(opportunities)
-        .where(whereClause)
-        .orderBy(freshOrder)
-        .limit(PAGE_SIZE)
-        .offset(offset);
-    }
-  }
-
-  const platforms = await db
-    .select({ name: opportunities.sourcePlatform })
-    .from(opportunities)
-    .where(publicOpportunityFilters())
-    .groupBy(opportunities.sourcePlatform)
-    .orderBy(asc(opportunities.sourcePlatform));
-
-  platformOptions = platforms.map((item) => item.name).filter(Boolean);
+  const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
+  platformOptions = publicPlatforms(board.jobs);
+  const sliced = slicePublicJobs(board.jobs, {
+    category: category && JOB_CATEGORY_MAP[category] ? category : undefined,
+    type: type && TYPE_OPTIONS.includes(type) ? type : undefined,
+    platform: platform || undefined,
+    geoScope: geoScope && GEO_SCOPE_OPTIONS.some((option) => option.value === geoScope) ? geoScope : undefined,
+    fresh,
+    query,
+    offset,
+    limit: PAGE_SIZE,
+  });
+  totalJobs = sliced.total;
+  pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
+  if (!pageOutOfRange) pageJobs = sliced.jobs;
 } catch (e) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, e);

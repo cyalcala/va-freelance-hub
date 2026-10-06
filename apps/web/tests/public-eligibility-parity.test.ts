@@ -12,12 +12,18 @@ import { buildOpportunityFtsQueries } from "../src/lib/opportunity-fts-query";
 // refactor cannot silently diverge one route again.
 
 const ROUTE_SURFACES = [
+  "src/lib/public-serving-snapshot.ts",
+  "src/lib/homepage-data.ts",
+  "src/lib/opportunity-fts-query.ts",
+];
+
+const PUBLIC_PAGES = [
+  "src/pages/index.astro",
   "src/pages/opportunities.astro",
   "src/pages/jobs/[id].astro",
   "src/pages/sitemap.xml.ts",
   "src/pages/categories/[category].astro",
-  "src/lib/homepage-data.ts",
-  "src/lib/opportunity-fts-query.ts",
+  "src/pages/directory.astro",
 ];
 
 test("the shared predicate compiles to is_active + both eligibilities", () => {
@@ -52,5 +58,16 @@ test("every public route surface references the shared predicate", () => {
       surface,
       usesSharedContract: true,
     });
+  }
+});
+
+test("public pages render from the snapshot instead of scanning D1", () => {
+  for (const surface of PUBLIC_PAGES) {
+    const source = readFileSync(resolve(import.meta.dir, "../", surface), "utf8");
+    expect({ surface, scansD1: source.includes("getDb(") || source.includes(".prepare(") }).toEqual({
+      surface,
+      scansD1: false,
+    });
+    expect(source.includes("loadPublicBoard") || source.includes("loadHomepageData")).toBe(true);
   }
 });

@@ -21,7 +21,7 @@ let dataUnavailable = false;
 
 try {
   ({ stats, latestOpportunities, featuredAgencyOpportunities, categoryTotals } =
-    await loadHomepageData(Astro.locals.runtime.env));
+    await loadHomepageData(Astro.locals.runtime.env, Astro.locals.runtime.ctx));
 } catch (error) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, error);

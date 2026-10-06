@@ -1,12 +1,11 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getDb, opportunities } from '@va-hub/db';
-import { and, eq } from 'drizzle-orm';
 import { JOB_CATEGORY_MAP } from '@/lib/categories';
+import { findPublicJob, type PublicJob } from '@/lib/public-board';
+import { loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { serializeJsonLd } from '@/lib/json-ld';
 import { sanitizeSourceUrl, classifyShift } from '@va-hub/scraper';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
-import { publicOpportunityFilters } from '@/lib/public-opportunities';
 
 export const prerender = false;
 
@@ -22,23 +21,12 @@ if (!id || !/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(numericId)) {
   return new Response('Not found', { status: 404 });
 }
 
-let job: typeof opportunities.$inferSelect | null = null;
+let job: PublicJob | null = null;
 let dataUnavailable = false;
 
 try {
-  const db = getDb(Astro.locals.runtime.env);
-  const [row] = await db
-    .select()
-    .from(opportunities)
-    .where(
-      and(
-        eq(opportunities.id, numericId),
-        publicOpportunityFilters()
-      )
-    )
-    .limit(1);
-
-  job = row ?? null;
+  const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
+  job = findPublicJob(board.jobs, numericId);
 } catch (e) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, e);

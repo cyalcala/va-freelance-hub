@@ -26,13 +26,12 @@ cutover and exact Git-to-running-image mapping are not demonstrated. Refresh fac
 - [SSAE strategy](../strategies/SPARSE_SOURCE_ATTENTION_STRATEGY.md) / [SSAE-00..15 cards](../plans/SPARSE_SOURCE_ATTENTION_IMPLEMENTATION_PLAN.md): proposed supporting work.
 - [HRI plan](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md), [MATH-01..13](../plans/MATHEMATICAL_IMPROVEMENT_PLAN.md), [source execution queue](../plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md) and [Global Miner directive](../SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md).
 
-**Next single action:** in the next authorized execution unit, recover the latest
-owner-reported PH/VA lead's durable intake/canonical tenant and exact stage hold
-using the actual GCP publisher and Turso/D1/public visibility path. Give permitted
-evidence immediate OWNER_PH_VA attention within PH-PRIORITY-INVENTORY; preserve
-complete cohort reconciliation and all source/job gates. Do not make cleared jobs
-wait for unrelated bulk inventory. Missing URL/intake evidence requires a focused
-request while recoverable leads progress. Owner/controller: maintainer.
+**Next single action:** authenticate Cloudflare, apply migration
+`0054_public_serving_snapshot.sql`, deploy `apps/web` to `remotejobs-ph`, and
+measure homepage and `/opportunities` TTFB plus D1 rows read. The public snapshot
+is implemented and tested; it is not deployed, so do not claim a live read or
+speed result. After that measurement, recover the latest owner-reported PH/VA
+lead's durable intake and exact stage hold. Owner/controller: maintainer.
 
 Proposed freshness targets are not implemented parameters: established-source
 p95 decision <=10m, clearance->visible <=5m, end-to-end <=15m; new structured

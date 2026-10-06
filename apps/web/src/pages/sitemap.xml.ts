@@ -1,7 +1,6 @@
 import type { APIRoute } from "astro";
-import { getDb, opportunities } from "@va-hub/db";
-import { sql } from "drizzle-orm";
-import { publicOpportunityFilters } from "@/lib/public-opportunities";
+import { loadPublicBoard } from "@/lib/public-serving-snapshot";
+import { publicDataErrorClass } from "@/lib/public-route-load";
 
 export const prerender = false;
 
@@ -20,15 +19,8 @@ export const GET: APIRoute = async ({ locals }) => {
 
   try {
     const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
-    const db = getDb(env);
-
-    const rows = await db
-      .select({
-        id: opportunities.id,
-        updatedAt: sql<string>`coalesce(${opportunities.updatedAt}, ${opportunities.postedAt}, ${opportunities.scrapedAt})`,
-      })
-      .from(opportunities)
-      .where(publicOpportunityFilters());
+    const board = await loadPublicBoard(env, locals.runtime?.ctx);
+    const rows = board.jobs;
 
     for (const row of rows) {
       const lastmod = row.updatedAt
@@ -37,7 +29,7 @@ export const GET: APIRoute = async ({ locals }) => {
       jobEntries += `<url><loc>${SITE_ORIGIN}/jobs/${row.id}</loc>${lastmod}<changefreq>weekly</changefreq><priority>0.6</priority></url>\n`;
     }
   } catch (e) {
-    console.error("[sitemap.xml] DB error:", e);
+    console.error("[sitemap.xml] snapshot unavailable", publicDataErrorClass(e) ?? "Error");
   }
 
   const staticEntries = STATIC_PAGES.map(
