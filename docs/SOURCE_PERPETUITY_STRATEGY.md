@@ -46,6 +46,19 @@ when that work occurred; it is not a permanent founder-approval requirement.
 
 ## Executive decision
 
+### 2026-10-03 PH remote priority companion
+
+Apply the [PH remote priority strategy](strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+for the current expansion epoch: 108 submitted P0/P1/P1-AI/P2/marketplace labels,
+identity reconciliation before enrollment, existing reusable capabilities, Turso
+memory and the existing controlled GCP-to-D1 publication path. Preserve the
+worldwide portfolio, source economics, Source Doctor and sparse processing.
+The supplied labels are research leads; no permission, PH eligibility, source
+graduation or runtime improvement follows from membership. The companion holds
+the complete phase, reporting, adaptive polling and >=90% harvestable-coverage
+acceptance contract. This transition strategy's August baseline remains dated
+history; recover current admissions and all source/publication constraints.
+
 VA Freelance Hub will keep automated ATS ingestion and expand it into a
 **controlled source-replenishment system**.
 

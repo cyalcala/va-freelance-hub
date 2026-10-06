@@ -1,0 +1,84 @@
+{
+  "observed_at": "2026-10-03T23:57:01.800Z",
+  "operation": "READ_ONLY_CONFIG_ARTIFACT_AND_LOG_METADATA",
+  "shadow_api_endpoint": "https://remotejobs-ph.pages.dev/api/cron/shadow-dispatch",
+  "artifact_http_status": 200,
+  "images": [
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/repositories/va-hub-runner/dockerImages/lake-publish@sha256:8efec6a36d0a4bf353bdc45c196fb04dbbc8aa45905981a656d61dfbefb3cbd4",
+      "uri": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish@sha256:8efec6a36d0a4bf353bdc45c196fb04dbbc8aa45905981a656d61dfbefb3cbd4",
+      "tags": [
+        "latest"
+      ],
+      "uploadTime": "2026-10-01T12:53:42.816767Z"
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/repositories/va-hub-runner/dockerImages/lake-publish@sha256:d3625c10d046452dcebf0a0e7dc5257df8c9af4fa6cf21687fcfc865300a0e2a",
+      "uri": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish@sha256:d3625c10d046452dcebf0a0e7dc5257df8c9af4fa6cf21687fcfc865300a0e2a",
+      "uploadTime": "2026-10-01T12:41:50.138047Z"
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/repositories/va-hub-runner/dockerImages/shadow-dispatch@sha256:1a5e88e7469c881b79a125073fc3482472beeb5a205ae50727065ad79f1a1cf0",
+      "uri": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch@sha256:1a5e88e7469c881b79a125073fc3482472beeb5a205ae50727065ad79f1a1cf0",
+      "uploadTime": "2026-10-01T11:52:17.507071Z"
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/repositories/va-hub-runner/dockerImages/shadow-dispatch@sha256:352b7d3accfd538616352e1721f31700c2e6014f49e86bbcb5fb129d7d41f5b4",
+      "uri": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch@sha256:352b7d3accfd538616352e1721f31700c2e6014f49e86bbcb5fb129d7d41f5b4",
+      "uploadTime": "2026-10-01T11:49:44.088895Z"
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/repositories/va-hub-runner/dockerImages/shadow-dispatch@sha256:8f8c98ffb6704fe5cb26c6cf1b04384c8d021be23207468f6e63e966b0ea9296",
+      "uri": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch@sha256:8f8c98ffb6704fe5cb26c6cf1b04384c8d021be23207468f6e63e966b0ea9296",
+      "uploadTime": "2026-10-01T12:12:47.102719Z"
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/repositories/va-hub-runner/dockerImages/shadow-dispatch@sha256:da44950cde52aa440819da62fd40528418d72026d66b4f28cf4054dbbb7eab73",
+      "uri": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch@sha256:da44950cde52aa440819da62fd40528418d72026d66b4f28cf4054dbbb7eab73",
+      "tags": [
+        "latest"
+      ],
+      "uploadTime": "2026-10-01T12:19:09.228271Z"
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/repositories/va-hub-runner/dockerImages/shadow-dispatch@sha256:dc8d5d98dc9bf6cde909a021856f44dca6abe4f832c860901fd04a45904d1030",
+      "uri": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch@sha256:dc8d5d98dc9bf6cde909a021856f44dca6abe4f832c860901fd04a45904d1030",
+      "uploadTime": "2026-10-01T12:09:30.120623Z"
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/repositories/va-hub-runner/dockerImages/shadow-dispatch@sha256:e24f34676e7492fc2f7128cedec25f99a571521b27529bb68690a0fe22954f8f",
+      "uri": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/shadow-dispatch@sha256:e24f34676e7492fc2f7128cedec25f99a571521b27529bb68690a0fe22954f8f",
+      "uploadTime": "2026-10-01T11:47:18.963615Z"
+    }
+  ],
+  "logs_http_status": 200,
+  "log_receipts": [
+    {
+      "time": "2026-10-03T23:53:13.319240Z",
+      "job": "shadow-dispatch-job",
+      "execution": "shadow-dispatch-job-ffq2j",
+      "fields": {
+        "eligible": 1,
+        "execution_time_ms": 986,
+        "outcome": "success_observed",
+        "dispatched": 1,
+        "failure_stage": null,
+        "total_registry_rows": 3,
+        "error_class": null
+      }
+    },
+    {
+      "time": "2026-10-03T23:47:27.041539Z",
+      "job": "lake-publish-job",
+      "execution": "lake-publish-job-n8ptc",
+      "fields": {
+        "syncedCount": 0,
+        "durationMs": 15365,
+        "component": "lake-publish",
+        "unit": "GCP-02",
+        "event": "lake_publish_completed",
+        "enrolledSources": 12
+      }
+    }
+  ]
+}

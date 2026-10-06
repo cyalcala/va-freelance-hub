@@ -3,6 +3,18 @@
 ## Status
 Accepted (Governed under Master Operating Constitution v3.0, Unit GCP-01)
 
+## October 4 canonical reconciliation
+
+The [latest complete owner resource](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
+clarifies GitHub source control/code/provenance and GCP primary background
+execution, with Turso acquisition and Cloudflare/D1 serving retained. GitHub
+Actions must not be a required production clock or freshness dependency.
+The [current architecture](../architecture/CURRENT_STATE.md) and [bounded live audit](../architecture/GCP_MIGRATION_RECONCILIATION_2026-10-04.md)
+separate that intended ownership from active fallback/residual clocks. They do
+not claim complete cutover or retire fallback from this documentation task.
+Original incremental decision/measurements below remain dated evidence; source
+controls, observation, rollback and deployed provenance remain required.
+
 ## Context
 VA Freelance Hub relies on scheduled batch workloads for:
 1. Primary Ingestion: Edge-hosted Cloudflare Freshness Worker (`workers/freshness-cron`) triggering `/api/cron/scrape` every 10 minutes.

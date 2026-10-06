@@ -3,6 +3,8 @@ import Layout from '../layouts/Layout.astro';
 import DirectoryAgencyCard from '@/components/DirectoryAgencyCard.astro';
 import DirectoryCategoryNav from '@/components/DirectoryCategoryNav.astro';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
+import { sliceDirectory, type PublicDirectoryRow } from '@/lib/public-board';
+import { loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parseJobBoardRequest } from '@/lib/public-query';
 import {
@@ -11,8 +13,7 @@ import {
   parseDirectoryCategory,
   type DirectoryCategory,
 } from '@/lib/directory-categories';
-import { loadDirectoryPage, type DirectoryAgency } from '@/lib/directory-page';
-import { normalizeDirectoryUrl, toDirectoryCard, type DirectoryCard } from '@/lib/directory-card';
+import { sanitizeSourceUrl } from '@va-hub/scraper';
 
 export const prerender = false;
 
@@ -21,6 +22,7 @@ Astro.response.headers.set(
   'public, max-age=60, s-maxage=300, stale-while-revalidate=600'
 );
 
+const DIRECTORY_PAGE_SIZE = 48;
 const parsedRequest = parseJobBoardRequest(Astro.url.searchParams);
 if (!parsedRequest.ok) {
   Astro.response.headers.set('Cache-Control', 'no-store');
@@ -34,6 +36,14 @@ if (rawCategory && !selectedCategory) {
   Astro.response.headers.set('Cache-Control', 'no-store');
   return new Response('Unknown directory category.', { status: 400 });
 }
+const offset = (currentPage - 1) * DIRECTORY_PAGE_SIZE;
+
+type DirectoryAgency = PublicDirectoryRow;
+
+function normalizeDirectoryUrl(raw: string | null): string | null {
+  if (!raw) return null;
+  return sanitizeSourceUrl(raw) ?? sanitizeSourceUrl(`https://${raw.trim().replace(/^\/\//, '')}`);
+}
 
 function buildPageUrl(page: number) {
   const params = new URLSearchParams();
@@ -46,22 +56,20 @@ function buildPageUrl(page: number) {
 
 let agencies: DirectoryAgency[] = [];
 let totalAgencies = 0;
-let totalPages = 1;
-let resultOffset = 0;
 let dataUnavailable = false;
 let pageOutOfRange = false;
 
 try {
-  const directoryPage = await loadDirectoryPage(Astro.locals.runtime.env, {
-    category: selectedCategory,
+  const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
+  const sliced = sliceDirectory(board.directory, {
     query,
-    page: currentPage,
+    category: selectedCategory,
+    offset,
+    limit: DIRECTORY_PAGE_SIZE,
   });
-  agencies = directoryPage.agencies;
-  totalAgencies = directoryPage.totalAgencies;
-  totalPages = directoryPage.totalPages;
-  resultOffset = directoryPage.offset;
-  pageOutOfRange = directoryPage.pageOutOfRange;
+  totalAgencies = sliced.total;
+  pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalAgencies / DIRECTORY_PAGE_SIZE));
+  if (!pageOutOfRange) agencies = sliced.rows;
 } catch (error) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, error);
@@ -72,12 +80,19 @@ if (pageOutOfRange && !dataUnavailable) {
   return new Response('Not found', { status: 404 });
 }
 
-const resultStart = totalAgencies === 0 ? 0 : resultOffset + 1;
-const resultEnd = Math.min(resultOffset + agencies.length, totalAgencies);
-const cards: DirectoryCard[] = agencies.map((agency) =>
-  toDirectoryCard(agency, normalizeDirectoryUrl(agency.website))
-);
+const totalPages = Math.max(1, Math.ceil(totalAgencies / DIRECTORY_PAGE_SIZE));
+const resultStart = totalAgencies === 0 ? 0 : offset + 1;
+const resultEnd = Math.min(offset + agencies.length, totalAgencies);
+const cards = agencies.map((agency) => {
+  const href = normalizeDirectoryUrl(agency.website);
+  let logoDomain: string | null = null;
+  try {
+    logoDomain = href ? new URL(href).hostname : null;
+  } catch {}
+  return { ...agency, href, logoDomain };
+});
 
+type DirectoryCard = (typeof cards)[number];
 type DirectoryGroup = {
   key: DirectoryCategory;
   cards: DirectoryCard[];

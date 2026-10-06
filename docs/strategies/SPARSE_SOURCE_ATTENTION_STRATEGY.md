@@ -31,6 +31,30 @@ The owner's pasted research is input, not acceptance evidence. Its 72-result
 Exa audit was not repeated here; its mutable counts and reported production
 outcomes require remeasurement. No runtime improvement is claimed by this file.
 
+## PH remote cohort attention allocation — 2026-10-03
+
+The [PH priority strategy](PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md) supplies the
+108-label temporary high-value cohort and PH-prior/economics inputs. Preserve
+the global universe, FULL/REINDEX/REUSE/BOUNDED_REPLAY, permission feasibility,
+shared pacing, independent audit and cold-tail revisits. Cohort priority changes
+proposed allocation only; selector and cadence integration remain unverified.
+Map inventory/profile, memory, empirical ranking, delta/replay, allocator and
+canary evidence onto existing SSAE cards under the parent source unit. Source PH
+priors never override job geoGate. Conceptual HOT/WARM/COOL/COLD/DORMANT values
+are not accepted schedules. Resolve actual publisher latency before promising
+15-minute public freshness. Dynamic cohort evidence and economics belong in Turso.
+
+Owner/freshness attention follows canonical [master 10D](../bootloaders/MASTER_OPERATING_PROMPT.md#10d-implementation-led-delivery-and-urgent-owner-submissions):
+service class, current PH/first-party evidence, queue age, conditional survival/
+expiry loss and marginal eligible yield/cost feed cheap recognition and bounded
+attention. Use existing SSAE-02/03/07/09/10 and MATH challenges, not a new queue.
+Keep permitted evidence-action feasibility separate from publication clearance.
+Unknown estimates use transparent class/deadline/age fallback. Reserve audit/
+exploration capacity and shared host pacing; no unmeasured allocation fractions.
+Deployment is GCP background execution with GitHub committed source/provenance,
+Turso memory and governed Cloudflare/D1 serving. Proposed 10/5/15-minute existing
+source and 30-minute new-source decision SLOs are not deployed guarantees.
+
 ## Verified research and application translation
 
 The latest architecture release verified for this review is V4.1-Flash,

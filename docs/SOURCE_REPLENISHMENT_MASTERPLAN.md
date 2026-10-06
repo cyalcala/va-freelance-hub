@@ -109,6 +109,19 @@ than improvising.
 The words **MUST**, **MUST NOT**, **SHOULD**, and **MAY** are normative in this
 document.
 
+## 2026-10-03 PH remote attention overlay (no constitutional amendment)
+
+The [PH source priority strategy](strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+maps the [full owner directive](directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md)
+to the existing source execution queue. Its 108 submitted research labels receive
+temporary higher feasible discovery/resolution/polling priority while the global
+universe and sparse architecture remain intact. Scheduling priors do not alter
+item geoGate, source authority, lifecycle predicates, the full Autonomy Cutover
+Predicate, publication gates or accepted parameters. Collection authority is
+required before any fetch; directory value is independent of harvesting rights.
+This companion reference documents allocation intent only. It changes no
+constitutional clause and certifies no runtime capability or source admission.
+
 ## 3. Constitutional invariants
 
 The following rules survive changes of source, provider, model, maintainer, and

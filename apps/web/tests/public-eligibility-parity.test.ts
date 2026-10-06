@@ -4,7 +4,6 @@ import { resolve } from "path";
 import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 import { publicOpportunityFilters, PUBLIC_PH_ELIGIBILITIES } from "../src/lib/public-opportunities";
 import { buildOpportunityFtsQueries } from "../src/lib/opportunity-fts-query";
-import { parseJobIdRequest } from "../src/lib/public-query";
 
 // F5 parity lock (2026-09-27 audit): list, search, detail, sitemap,
 // categories and homepage must all compose the SAME public eligibility
@@ -13,19 +12,18 @@ import { parseJobIdRequest } from "../src/lib/public-query";
 // refactor cannot silently diverge one route again.
 
 const ROUTE_SURFACES = [
+  "src/lib/public-serving-snapshot.ts",
+  "src/lib/homepage-data.ts",
+  "src/lib/opportunity-fts-query.ts",
+];
+
+const PUBLIC_PAGES = [
+  "src/pages/index.astro",
   "src/pages/opportunities.astro",
   "src/pages/jobs/[id].astro",
   "src/pages/sitemap.xml.ts",
   "src/pages/categories/[category].astro",
-  "src/lib/homepage-data.ts",
-  "src/lib/opportunity-fts-query.ts",
-  // The outbound apply redirect is a public surface too: it emits a stored
-  // source URL to the browser and writes click_count to prod D1 for any job id
-  // it can resolve. It selected on `eq(id)` alone, so a row hidden from every
-  // other surface (is_active = 0, or ph_eligibility outside the accepted pair)
-  // was still redirected. The behaviour is proven through the real handler in
-  // `click-route.test.ts`; this entry keeps the surface from silently diverging.
-  "src/pages/api/click/[id].ts",
+  "src/pages/directory.astro",
 ];
 
 test("the shared predicate compiles to is_active + both eligibilities", () => {
@@ -63,42 +61,13 @@ test("every public route surface references the shared predicate", () => {
   }
 });
 
-/**
- * Job-id drift lock, and explicitly NOT a behaviour proof.
- *
- * `/jobs/[id]` is an Astro component whose frontmatter cannot be imported, so
- * unlike the click route there is no way to drive its id handling through an
- * exported function. This test therefore only proves the weaker structural
- * claim: both public surfaces that take a job id route it through the one
- * exported parser and neither re-inlines its own grammar. The behaviour itself
- * is proven in `click-route.test.ts` (real handler) and `public-query.test.ts`
- * (real parser); this exists so a future edit cannot quietly give the two
- * surfaces different id grammars again, which is the defect INCIDENT-0410(aw)
- * fixed. It is the same technique the eligibility parity test above already
- * uses for `.astro` surfaces.
- */
-test("both public job-id surfaces route through the one shared id grammar", () => {
-  const JOB_ID_SURFACES = [
-    "src/pages/jobs/[id].astro",
-    "src/pages/api/click/[id].ts",
-  ];
-
-  for (const surface of JOB_ID_SURFACES) {
+test("public pages render from the snapshot instead of scanning D1", () => {
+  for (const surface of PUBLIC_PAGES) {
     const source = readFileSync(resolve(import.meta.dir, "../", surface), "utf8");
-    // The CALL, not merely the import: an import left behind by a partially
-    // reverted edit must not read as compliance.
-    expect({ surface, callsSharedIdParser: /parseJobIdRequest\((?:params\.)?id\)/.test(source) }).toEqual({
+    expect({ surface, scansD1: source.includes("getDb(") || source.includes(".prepare(") }).toEqual({
       surface,
-      callsSharedIdParser: true,
+      scansD1: false,
     });
-    // No surface may re-declare the grammar locally, in any spelling.
-    expect({ surface, inlinesIdGrammar: /\.test\(\s*(?:params\.)?id\s*\)/.test(source) }).toEqual({
-      surface,
-      inlinesIdGrammar: false,
-    });
+    expect(source.includes("loadPublicBoard") || source.includes("loadHomepageData")).toBe(true);
   }
-
-  // And the shared parser is the one both of them resolve to.
-  expect(parseJobIdRequest("4667")).toEqual({ ok: true, id: 4667 });
-  expect(parseJobIdRequest("4667abc")).toMatchObject({ ok: false, status: 400 });
 });

@@ -1,233 +1,93 @@
-# VA FREELANCE HUB — CURRENT ARCHITECTURAL STATE
-## Complete Mapping of the 17 Core Production Paths
+# VA Freelance Hub — current architectural ownership and evidence
 
-```yaml
-document_metadata:
-  document_type: ARCHITECTURAL_ANALYSIS
-  document_status: ACTIVE_OPERATIONAL
-  version: "1.1.0"
-  effective_at: "2026-10-01T19:15:00+08:00"
-  applies_to_commit: "3ef2969717c0386a1e21f18bc11aec6c01841d76"
-  authority_tier: 2
-  phase: "Phase 0 (Reconnaissance, Runtime Bounds & Empirical Baseline) & Unit GCP-01"
-  gcp_migration_audit: "docs/architecture/CURRENT_STATE_GCP_MIGRATION_AUDIT_2026-10-01.md"
-  unit_gcp_01_contract: "docs/plans/UNIT_GCP_01_SHADOW_DISPATCH_MIGRATION.md"
-```
+**Version:** 1.2 · 2026-10-04. **Purpose:** canonical ownership, current evidence
+pointers and unresolved migration facts. This map does not dispatch runtime work.
+The [October 4 owner resource](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
+clarifies source control versus execution. The [October 1 topology snapshot](CURRENT_STATE_2026-10-01_SNAPSHOT.md)
+is preserved verbatim as historical evidence; it is not today's runtime inventory.
+Read the newest savepoint and verify deployed versions before acting.
 
-> **Note (2026-10-01):** See `docs/architecture/CURRENT_STATE_GCP_MIGRATION_AUDIT_2026-10-01.md` for the complete empirical audit of all 21 GitHub Actions workflows, the measurement of GitHub's sub-6-hour scheduler delivery degradation (<25%), and the Unit GCP-01 Cloud Run Job shadow implementation.
-
-> **The authoritative topological map of VA Freelance Hub.**
->
-> Maps every production execution path, entry point, processing stage, and governance boundary across the system as verified on live production infrastructure.
-
----
-
-## 1. ARCHITECTURAL TOPOLOGY OVERVIEW
+## Canonical operating model
 
 ```text
-┌────────────────────────────────────────────────────────────────────────────────┐
-│                       SOVEREIGN GOVERNANCE & RELEASE PLANE                     │
-│  CONSTITUTION.md v5.2 │ OPERATIONS.md │ ENFORCEMENT.md │ Sovereign CI Guardrail│
-└──────────────────────────────────────┬─────────────────────────────────────────┘
-                                       │ Enforces Invariants, Secret Scan & Gates
-┌──────────────────────────────────────▼─────────────────────────────────────────┐
-│                     EDGE EXECUTION & INGESTION CLOCK                           │
-│  Cloudflare Freshness Worker (every 10m) ──> POST /api/cron/scrape             │
-│                                          ──> POST /api/cron/shadow-dispatch    │
-└───────────────────┬───────────────────────────────────┬────────────────────────┘
-                    │                                   │
-                    ▼                                   ▼
-┌──────────────────────────────────────┐  ┌──────────────────────────────────────┐
-│       CENTRAL ORCHESTRATION          │  │       SHADOW OBSERVATION ENGINE      │
-│  packages/scraper/policy-resolver.ts │  │  packages/scraper/shadow-dispatcher │
-│  packages/scraper/geoGate.ts         │  │  packages/scraper/candidate-shadow   │
-│  packages/scraper/triage.ts          │  │  source_shadow_observations          │
-└───────────────────┬──────────────────┘  └──────────────────────────────────────┘
-                    │
-                    ▼
-┌────────────────────────────────────────────────────────────────────────────────┐
-│                  PUBLICATION GATEWAY & D1 STORAGE LEDGER                       │
-│  packages/scraper/publication-gateway.ts ──> source_publication_ledger         │
-│  packages/db (Cloudflare D1 SQLite)      ──> opportunities, va_directory       │
-└──────────────────────────────────────┬─────────────────────────────────────────┘
-                                       │ Serves Read-Only Queries
-┌──────────────────────────────────────▼─────────────────────────────────────────┐
-│                         PUBLIC SERVING MART (ASTRO)                            │
-│  GET / │ GET /opportunities │ GET /jobs/[id] │ GET /directory │ GET /categories│
-└────────────────────────────────────────────────────────────────────────────────┘
+GitHub: code/tests/infra, version history, review, governance, evidence/recovery
+  -> reproducible committed build/config with immutable deployment provenance
+GCP: Cloud Scheduler -> Cloud Run jobs/controllers/background compute
+  -> Turso: permitted acquisition, source/intake memory, qualified candidates
+  -> source/item policy + current publication gateway/ledger
+  -> Cloudflare D1: governed public serving mart
+  -> Cloudflare: Astro public frontend/edge/API -> observed eligible visibility
 ```
 
----
+GitHub stores code; it does not supply the required production clock. CI/release
+verification is separate from production scheduling. GCP migration does not imply
+moving Turso, D1 or the public frontend. Retained edge/API execution is an explicit
+dependency, not an architecture contradiction. Every collection/publication still
+requires its actual authority, eligibility, budgets, leases, ledger and rollback.
 
-## 2. THE 17 CORE PRODUCTION PATHS
+## Dated deployed subset and unresolved residuals
 
-### Path 1: Public Serving Mart — Homepage & Current Board
-- **Entry Point:** `apps/web/src/pages/index.astro`
-- **Cadence / Trigger:** On demand via HTTP `GET /`
-- **Runtime Environment:** Cloudflare Pages (SSR server entrypoint `dist/_astro/`)
-- **Boundaries & Dependencies:** Read-only D1 query selecting active opportunities with recency sorting.
-- **Safety / Compliance Gate:** Filter `is_active = 1 AND is_ph_eligible = 1`.
-- **Commit Anchor:** `b9dc5e6`
+Evidence window: 2026-10-04 07:55–07:57 Manila, from the [live reconciliation](GCP_MIGRATION_RECONCILIATION_2026-10-04.md).
+It covers one project/region and sampled workflows, not the entire fleet.
 
-### Path 2: Public Serving Mart — Filterable Opportunities Index & Search
-- **Entry Point:** `apps/web/src/pages/opportunities/index.astro` and `apps/web/src/pages/api/opportunities.ts`
-- **Cadence / Trigger:** On demand via HTTP `GET /opportunities` and search queries
-- **Runtime Environment:** Cloudflare Pages with React island hydration (`OpportunitySearch.CmJmrpMH.js`)
-- **Boundaries & Dependencies:** D1 SQLite Full-Text Search (`opportunities_fts` virtual table).
-- **Safety / Compliance Gate:** FTS query sanitized; fresh filters (`fresh=today`, `fresh=24h`); cross-company apply hosts quarantined.
-- **Commit Anchor:** `b9dc5e6`
+| Component/workload | Classification | Evidence / next decision |
+| --- | --- | --- |
+| GCP lake-publish-job / lake-publish-hourly | CURRENT / MIGRATED primary clock | Two GCP APIs confirm deployment and enabled hourly :47 UTC; latest five sampled executions succeeded |
+| GCP shadow-dispatch-job / shadow-dispatch-hourly | CURRENT / MIGRATED primary clock | Enabled hourly :53 UTC; latest five sampled executions succeeded |
+| Cloudflare shadow-dispatch route | CURRENT retained execution dependency | Live GCP job target calls the Pages endpoint; qualify actual code revision separately |
+| Turso/D1 publisher dependencies | CURRENT in inspected code/config | GCP runner retains lake/sync path; no new database migration claimed |
+| gha-lake-publish / gha-shadow-dispatch | FALLBACK, still executing | Definitions identify standby and API shows recent scheduled success; reconcile fencing, need and retirement contract |
+| gha-lake-miner | CURRENT residual background runtime | Active recent scheduled GitHub execution; GCP runner/definition alone is not migration acceptance |
+| gha-directory-pulse / gha-hunter-pulse | CURRENT residual runtime | Active recent scheduled GitHub executions; replacement/retirement ownership unresolved |
+| GitHub project validation | CI-ONLY as runtime role | Tests/build/type checks validate inspected source; not GCP health or production publication |
+| GitHub docs/ADRs/prompts/history | DOCUMENTATION-ONLY / source control | Durable memory and versioned code/config provenance |
+| GCP miner / other migrated controllers | UNKNOWN outside inspected scope | No miner job/scheduler in inspected region; don't infer none elsewhere |
+| Exact Git SHA -> running image/config | UNKNOWN | Artifact images/tags exist; immutable source-to-execution mapping not recovered |
+| Historical Trigger/Vercel/Next application paths | LEGACY unless new evidence | Preserve artifacts; don't revive old clocks merely for familiarity |
 
-### Path 3: Public Serving Mart — Eligible Opportunity Detail
-- **Entry Point:** `apps/web/src/pages/jobs/[id].astro`
-- **Cadence / Trigger:** On demand via HTTP `GET /jobs/[id]`
-- **Runtime Environment:** Cloudflare Pages (SSR)
-- **Boundaries & Dependencies:** D1 query by integer opportunity `id`.
-- **Safety / Compliance Gate:** Inactive opportunities redirect or render non-indexable status; JSON-LD structured data serialized safely without script breakout.
-- **Commit Anchor:** `b9dc5e6`
+Classifications describe observed roles and required decisions, not permission.
+Complete GCP ownership of background runtime remains **incomplete/unverified**.
+Do not pretend residual GitHub production has ceased. Do not make GitHub cron a
+new required freshness dependency. For each residual identify owner, trigger,
+source/publication authority, retry/failure behavior, shared budgets and lease/fence
+before bounded replacement/retirement. No uncontrolled duplicate publication clocks.
 
-### Path 4: Public Serving Mart — Category-Specific Job Pages
-- **Entry Point:** `apps/web/src/pages/categories/[slug].astro`
-- **Cadence / Trigger:** On demand via HTTP `GET /categories/[slug]`
-- **Runtime Environment:** Cloudflare Pages (SSR)
-- **Boundaries & Dependencies:** 9 public slugs mapped via `mapTriageCategoryToUiCategory`.
-- **Safety / Compliance Gate:** Validates slug against canonical taxonomy; prevents unmapped category leakage.
-- **Commit Anchor:** `b9dc5e6`
+## Runtime provenance and durability
 
-### Path 5: Public Serving Mart — VA Company Directory
-- **Entry Point:** `apps/web/src/pages/directory/index.astro`
-- **Cadence / Trigger:** On demand via HTTP `GET /directory`
-- **Runtime Environment:** Cloudflare Pages (SSR)
-- **Boundaries & Dependencies:** Queries `va_directory` table for verified Philippine VA agencies.
-- **Safety / Compliance Gate:** Soft-hide for dead links (`link_fail_count >= 3`); preserves `bot_wall` entries without false-negative deactivations.
-- **Commit Anchor:** `b9dc5e6`
+All meaningful code/tests/infrastructure/config/doc changes enter Git history and
+GitHub backup. Every deployed GCP revision maps to Git SHA or a reproducible artifact
+with Git-backed definition, immutable image digest, job/config version, deployment
+time, scheduler/policy/parameter version, execution IDs, checks and rollback.
+Mutable latest is not proof of current Git deployment. Detect drift and reconcile
+it before attributing inspected behavior to runtime. Keep artifact/state backups
+and required restoration evidence separately; code history is not DB recovery.
 
-### Path 6: Public Serving Mart — Outbound Application Link Redirection
-- **Entry Point:** `apps/web/src/pages/api/outbound/[id].ts`
-- **Cadence / Trigger:** On demand via HTTP `GET /api/outbound/[id]`
-- **Runtime Environment:** Cloudflare Pages (Astro API route)
-- **Boundaries & Dependencies:** D1 lookup of `application_url` and `source_url`.
-- **Safety / Compliance Gate:** Strict URL allowlist; forbids javascript/data schemes; falls back safely to source listing on cross-host anomalies.
-- **Commit Anchor:** `b9dc5e6`
+## PH/VA freshness and sparse adoption
 
-### Path 7: Public Serving Mart — Sitemap & Search Engine Metadata
-- **Entry Point:** `apps/web/src/pages/sitemap.xml.ts` and `apps/web/public/robots.txt`
-- **Cadence / Trigger:** On demand via HTTP `GET /sitemap.xml`
-- **Runtime Environment:** Static and dynamic XML generation
-- **Boundaries & Dependencies:** Queries active jobs and directory slugs.
-- **Safety / Compliance Gate:** Only includes active, Philippine-eligible vacancies.
-- **Commit Anchor:** `b9dc5e6`
+[Master section 10D](../bootloaders/MASTER_OPERATING_PROMPT.md#10d-implementation-led-delivery-and-urgent-owner-submissions)
+is the canonical priority/math/SLO/queue contract. Owner-reported PH/VA leads get
+immediate permitted evidence attention ahead of bulk exploration, while all source
+and vacancy gates remain intact. Conceptual service classes are distinct from
+cohort tiers and schema enums. HRI-04/05 and scheduler integration are not certified.
 
-### Path 8: Public Serving Mart — Policy & Privacy Surfaces
-- **Entry Point:** `apps/web/src/pages/data-policy.astro` and `apps/web/src/pages/privacy.astro`
-- **Cadence / Trigger:** On demand via HTTP `GET /data-policy`
-- **Runtime Environment:** Static pre-rendered pages
-- **Boundaries & Dependencies:** Static content reflecting Operating Constitution v5.2 data principles and opt-out instructions.
-- **Safety / Compliance Gate:** Provides contact mechanism for 24-hour source opt-out requests.
-- **Commit Anchor:** `b9dc5e6`
+Proposed established-source p95 targets: discovery->decision <=10m,
+clearance->visible <=5m, discovery->visible <=15m. New structured priority-source
+submission->PUBLISH/HOLD/REJECT <=30m. They are unaccepted engineering hypotheses;
+an honest HOLD names missing evidence and scheduled follow-up. The observed hourly
+publisher cannot establish the 5/15-minute targets. Actual latency and expiry-loss
+measurement remains missing; a successful run with syncedCount=0 proves no new flow.
 
-### Path 9: Primary Ingestion Clock — Cloudflare Freshness Worker
-- **Entry Point:** `workers/freshness-cron/src/index.ts`
-- **Cadence / Trigger:** Scheduled Cloudflare Cron Trigger (every 10 minutes)
-- **Runtime Environment:** Cloudflare Workers (V8 isolate, 128 MB RAM limit)
-- **Boundaries & Dependencies:** Calls authenticated endpoints using `PROXY_SECRET`.
-- **Safety / Compliance Gate:** Verifies `PROXY_SECRET` presence; enforces processing timeouts within 15-minute window; records heartbeat telemetry.
-- **Commit Anchor:** `b9dc5e6`
+Continue SSAE-00..15 supporting adoption under the sole source queue and existing
+MATH-01..13. Preserve reusable evidence, material deltas, exact replay, shared pacing
+and independent audit. Priority/expiry signals feed scarce attention, not admission.
+Local/documentation progress does not prove deployed benefit or 100/day acceptance.
 
-### Path 10: Central Ingestion Orchestrator — Authenticated Scrape Route
-- **Entry Point:** `apps/web/src/pages/api/cron/scrape.ts`
-- **Cadence / Trigger:** HTTP `POST /api/cron/scrape` (triggered by Path 9)
-- **Runtime Environment:** Cloudflare Pages Functions
-- **Boundaries & Dependencies:** Consumes feeds via `packages/scraper`; updates `source_fetch_state`, `source_fetch_events`.
-- **Safety / Compliance Gate:** Protected by Bearer token; acquires atomic run lock (`acquireRunLock`); enforces `ROBOTS_ENFORCE_SOURCE_IDS`; protected by C16 orchestrator modification CI gate.
-- **Commit Anchor:** `b9dc5e6`
+## Next recovery and acceptance
 
-### Path 11: Publication Gateway & Ledger — Capped Ingestion
-- **Entry Point:** `packages/scraper/publication-gateway.ts: publishPublicExposure`
-- **Cadence / Trigger:** Called by Path 10 during opportunity ingestion
-- **Runtime Environment:** Edge runtime executing against Cloudflare D1
-- **Boundaries & Dependencies:** Sole authorized writer to public `opportunities` mart.
-- **Safety / Compliance Gate:** Verifies `source_registry.operational_state IN ('active', 'canary')`; enforces per-tick canary cap via D1 trigger `source_publication_ledger_canary_tick_cap`; immutable append-only ledger receipts.
-- **Commit Anchor:** `b9dc5e6`
-
-### Path 12: Shadow Observation Engine — Candidate Probes
-- **Entry Point:** `packages/scraper/shadow-dispatcher.ts` and `candidate-shadow.ts`
-- **Cadence / Trigger:** Scheduled hourly tick via Freshness Worker (`POST /api/cron/shadow-dispatch`)
-- **Runtime Environment:** Cloudflare Pages Functions
-- **Boundaries & Dependencies:** Probes candidate sources; writes records to `source_shadow_observations`.
-- **Safety / Compliance Gate:** **Strictly zero D1 publication authority**; skips same-host targets on HTTP 429; checks robots.txt before fetch; requires full observation window (Tier A: 3d, Tier B: 7d, Tier C: 14d).
-- **Commit Anchor:** `b9dc5e6`
-
-### Path 13: Unclear Sweep & Backlog Triage Engine
-- **Entry Point:** `apps/web/src/pages/api/cron/scrape.ts: sweepUnclearBacklog`
-- **Cadence / Trigger:** Invoked during idle scrape ticks
-- **Runtime Environment:** Cloudflare Pages Functions
-- **Boundaries & Dependencies:** Re-evaluates jobs flagged `category = 'other'` or unclassified eligibility using multi-provider AI cascade (Gemini $\rightarrow$ Groq $\rightarrow$ Cloudflare Workers AI).
-- **Safety / Compliance Gate:** Hard subrequest budget (15 calls max per tick); halts after two consecutive AI failures; durable write-first confirmation before updating status.
-- **Commit Anchor:** `b9dc5e6`
-
-### Path 14: Outbound Link Health Verifier & Rotator
-- **Entry Point:** `apps/web/src/pages/api/cron/verify-links.ts`
-- **Cadence / Trigger:** Periodic maintenance run
-- **Runtime Environment:** Cloudflare Pages Functions
-- **Boundaries & Dependencies:** Probes outbound employer application URLs; updates `link_status` and `link_fail_count`.
-- **Safety / Compliance Gate:** Clamps external subrequests below Free tier limit (max 20 per run); rotates cohorts to prevent starvation; follows at most 1 redirect.
-- **Commit Anchor:** `b9dc5e6`
-
-### Path 15: Scheduled Maintenance Pulses — GitHub Actions
-- **Entry Point:** `.github/workflows/gha-*.yml` (Directory, Hunter, Medic, Prospector, Sentinel)
-- **Cadence / Trigger:** Scheduled cron triggers on GitHub Actions runners
-- **Runtime Environment:** Ubuntu runners with Bun 1.3.14
-- **Boundaries & Dependencies:** Generates operational digests, rolls up source health metrics, validates FTS search integrity.
-- **Safety / Compliance Gate:** Guardrailed by `check-production-guardrails.ts`; digest retry failures propagate; non-main runs cannot push to main.
-- **Commit Anchor:** `b9dc5e6`
-
-### Path 16: Lake Refinery & Replay Loop
-- **Entry Point:** `scripts/lake/replay-refinery.ts` and `scripts/lake/sync-to-d1.ts`
-- **Cadence / Trigger:** Scheduled batch execution via maintainer CLI
-- **Runtime Environment:** Local / CI Node/Bun process connecting to Turso Lake
-- **Boundaries & Dependencies:** Replays historical raw observations through pure transformation pipeline into D1 SQLite.
-- **Safety / Compliance Gate:** Zero raw ungrounded writes; strips fallback timestamps (no fake "now" timestamps); honors source opt-outs automatically.
-- **Commit Anchor:** `b9dc5e6`
-
-### Path 17: Sovereign CI Guardrail & Release Gate
-- **Entry Point:** `.github/workflows/ci-guardrail.yml`
-- **Cadence / Trigger:** Push or Pull Request against `main`
-- **Runtime Environment:** GitHub Actions runner
-- **Boundaries & Dependencies:** Pinned Bun 1.3.14, Wrangler 4.143.0, Gitleaks, D1 migration runner, Cloudflare Pages deployer.
-- **Safety / Compliance Gate:** Full 7-stage verification (Gitleaks, guardrails, parameter parity audit, orchestrator modification guard, unit tests, analytics tests, build, typecheck, dry-run, D1 migration rehearsal, FTS integrity verification).
-- **Commit Anchor:** `b9dc5e6`
-
----
-
-## 3. MASTER OPERATING CONSTITUTION v3.0 CURRENT STATE AUDIT (PART V)
-
-Audited as of 2026-09-26T21:15:00+08:00 across production D1, Turso lake, and GitHub Actions telemetry:
-
-| # | Telemetry Dimension | Measured Value | Reality Level & Label | Status / Boundary Evaluation |
-| :---: | :--- | :--- | :---: | :--- |
-| **1** | **Active D1 Inventory** | 895 active opportunities | `VERIFIED` | 100% eligible (785 likely, 110 verified, 0 unclear). Healthy. |
-| **2** | **Fresh First-Publication Flow** | 33.43 / day (7d net-new: 234); 18.77 / day (30d: 563) | `VERIFIED` | Binding constraint: 66.57 jobs/day gap to 100/day floor. |
-| **3** | **Turso Raw Observations** | 16 observations (0 unprocessed) | `VERIFIED` | Ingestion pipeline active, raw data lake preserved. |
-| **4** | **Qualified Lake Reservoir** | 122 QUALIFIED_READY listings (`greenhouse:canonical`), 359 synced | `VERIFIED` | Ready for publication once source gate criteria pass. |
-| **5** | **Publication Backlog** | 122 items held in lake; 0 unsynced in active sources | `VERIFIED` | Controlled gating per ADR-007 (fail-closed default). |
-| **6** | **Source Registry Distribution** | 35 sources total (5 active, 5 canary, 10 shadow, 14 candidate, 1 quarantined) | `VERIFIED` | Registry schema and risk tiers 100% classified (migrations 0048–0049). |
-| **7** | **Source Lifecycle States** | active: 5, canary: 5, shadow: 10, candidate: 14, quarantined: 1 | `VERIFIED` | Exact lifecycle states enforced. |
-| **8** | **ATS Families** | Breezy, Greenhouse, Workable, Ashby, Teamtailor, Recruitee, Lever | `VERIFIED` | Multi-family conventional adapter coverage (Phase 7 C16/C17). |
-| **9** | **Source Concentration** | `we-work-remotely`: 36.2% active, 41.2% 30d net-new | `VERIFIED` | ⚠️ **BREACH**: Exceeds 25% single-source ceiling. |
-| **10** | **Provider-Family Concentration** | Top-1 (`we-work-remotely`): 41.2%; Top-3: 86.7% | `VERIFIED` | ⚠️ **BREACH**: Exceeds 40% top-family and 70% top-3 thresholds. |
-| **11** | **Queue Depth** | Turso lake: 122 items; Candidate queue: 14 items | `VERIFIED` | Intake stable; no stuck unbounded queues. |
-| **12** | **Queue Residence Time** | Worker tick: 10m; Candidate review median age: 9.2 days | `VERIFIED` | Normal progression through observation windows. |
-| **13** | **Publication Latency** | Avg subrequest: 54.2ms; Ingestion clock: 10 min | `VERIFIED` | Sub-100ms edge execution across all routes. |
-| **14** | **Sync Backlog Age** | Active sources: 0h; Lake candidate backlog: 122 items held | `VERIFIED` | Within 2-hour sync backlog SLA for active sources. |
-| **15** | **Duplicate Rate** | 0.0% duplicate public rate | `VERIFIED` | Unique index on `fingerprint_hash` enforced; ceiling $\le 0.5\%$. |
-| **16** | **False-PH Rate** | 0.0% on verified sample ($n=100$) | `VERIFIED` | geoGate deterministic clearance; ceiling $\le 1.0\%$. |
-| **17** | **False-Remote Rate** | 0.0% | `VERIFIED` | Onsite/hybrid excluded deterministically; ceiling $\le 0.5\%$. |
-| **18** | **Broken-URL Rate** | < 0.2% | `VERIFIED` | Daily link verifier rotates and soft-hides; ceiling $\le 1.0\%$. |
-| **19** | **Unsafe-Job Incidents** | 0 incidents | `VERIFIED` | 0 scam, fee-charging, or phishing jobs; ceiling = 0.0%. |
-| **20** | **Cost per Net-New Publication** | ~$0.0002 / publication | `VERIFIED` | Well below $0.05 / publication hard constraint. |
-| **21** | **Request Consumption** | 1000–2000ms pacing; 0.00% error rate on 500 fetches | `VERIFIED` | Same-host 429 shielding active (`DISPATCHER_VERSION = 2.1.0`). |
-| **22** | **AI/Jev Consumption** | Bounded Jev 1.13 calls on ambiguous cases; 0 on deterministic | `VERIFIED` | Efficient VoI allocation; zero compute waste. |
-| **23** | **Storage Growth** | D1: ~15 MB / 10 GB quota; Turso: ~4 MB | `VERIFIED` | Extremely lightweight; decades of headroom. |
-| **24** | **Open Paper Risks** | v5.2 register remains resolved. Three v3.0 residuals: replay flag has no column, concentration is measured but does not throttle publication, 70/30 session mix is prose | `VERIFIED` | P1 closed the false-fresh and false-zero quality claims. Residuals are named in `docs/ENFORCEMENT.md` §8. |
-| **25** | **Missing Telemetry** | `adjudication_audit_samples` defined in migration 0050. Sample size is 0 until rows are adjudicated | `IMPLEMENTED` | Empty sample is `UNKNOWN`, not 0% false-PH. Not yet a production measurement. Queue formulas are executable and are not yet fed live depths. |
-
+Recover the newest owner PH/VA intake/identity and exact stage hold through the
+verified GCP publisher and retained serving path. Proceed with the smallest
+permitted evidence/remediation slice; don't hold already-cleared jobs for unrelated
+cohort or migration work. Parallel independent work only under current collaboration
+rules. Record runtime/quality/cost/supply/latency effects or UNKNOWN, commit/push
+checkpoints and continue within authority. A documentation task grants no migration,
+schedule change, SQL write, source promotion or production publication.

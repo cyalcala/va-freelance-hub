@@ -1,13 +1,12 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getDb, opportunities } from '@va-hub/db';
-import { eq, desc, and, count, sql } from 'drizzle-orm';
 import { OpportunityCard } from '@/components/opportunity-card';
-import { parseJobCategory } from '@/lib/categories';
+import { JOB_CATEGORY_MAP } from '@/lib/categories';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
+import { slicePublicJobs, type PublicJob } from '@/lib/public-board';
+import { loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parsePageRequest } from '@/lib/public-query';
-import { publicOpportunityFilters } from '@/lib/public-opportunities';
 
 export const prerender = false;
 
@@ -18,13 +17,11 @@ Astro.response.headers.set(
 
 const { category } = Astro.params;
 
-// Own-property guard, before any D1 work: a slug that is not one of ours is
-// refused here, so a malformed URL costs no production row reads.
-const info = parseJobCategory(category);
-if (!info) {
+if (!category || !JOB_CATEGORY_MAP[category]) {
   return Astro.redirect('/');
 }
 
+const info = JOB_CATEGORY_MAP[category];
 const PAGE_SIZE = 30;
 const parsedPage = parsePageRequest(Astro.url.searchParams.get('page'));
 if (!parsedPage.ok) {
@@ -34,7 +31,7 @@ if (!parsedPage.ok) {
 const currentPage = parsedPage.page;
 const offset = (currentPage - 1) * PAGE_SIZE;
 
-let categoryJobs = [];
+let categoryJobs: PublicJob[] = [];
 let totalJobs = 0;
 let dataUnavailable = false;
 let pageOutOfRange = false;
@@ -43,33 +40,19 @@ function buildPageUrl(page: number) {
   const params = new URLSearchParams();
   if (page > 1) params.set('page', String(page));
   const qs = params.toString();
-  return qs ? `/categories/${info.slug}?${qs}` : `/categories/${info.slug}`;
+  return qs ? `/categories/${category}?${qs}` : `/categories/${category}`;
 }
 
 try {
-  const db = getDb(Astro.locals.runtime.env);
-  const whereClause = and(
-    publicOpportunityFilters(),
-    eq(opportunities.category, info.slug)
-  );
-
-  const [totalResult] = await db
-    .select({ total: count() })
-    .from(opportunities)
-    .where(whereClause);
-
-  totalJobs = totalResult?.total ?? 0;
-
+  const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
+  const sliced = slicePublicJobs(board.jobs, {
+    category,
+    offset,
+    limit: PAGE_SIZE,
+  });
+  totalJobs = sliced.total;
   pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
-  if (!pageOutOfRange) {
-    categoryJobs = await db
-      .select()
-      .from(opportunities)
-      .where(whereClause)
-      .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
-      .limit(PAGE_SIZE)
-      .offset(offset);
-  }
+  if (!pageOutOfRange) categoryJobs = sliced.jobs;
 } catch (e) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, e);
@@ -128,7 +111,7 @@ const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
       <p class="tabular-nums">
         Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
       </p>
-      <a href={`/opportunities?category=${info.slug}#search`} class="text-accent hover:text-accent-hover transition-colors font-medium">
+      <a href={`/opportunities?category=${category}#search`} class="text-accent hover:text-accent-hover transition-colors font-medium">
         Search this category →
       </a>
     </div>

@@ -19,6 +19,16 @@ or integration is available.
 
 ## 2026-08-31 Source Replenishment constitutional overlay
 
+Current source-priority companion (2026-10-03):
+[PH remote priority strategy](strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+and [complete directive](directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md).
+The Source Perpetuity plan remains the sole source queue; the 24 Gauntlet units
+below remain historical. Cohort inventory and feasible P0 resolution take supply
+priority within authorized expansion without displacing safety incidents or
+changing source/publication gates. Preserve global discovery and sparse processing.
+The active documented lake path uses Turso/GCP; old Turso application quarantine
+does not prohibit the newer evidence lake. No runtime unit is dispatched here.
+
 `docs/SOURCE_REPLENISHMENT_MASTERPLAN.md` is the durable authority for
 decades-scale source governance. ADR-007 amends ADR-006 by removing mandatory
 founder/reviewer approval from the **target steady state** for ordinary source

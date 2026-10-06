@@ -1,9 +1,9 @@
-import { getDb, opportunities, vaDirectory, type Opportunity } from "@va-hub/db";
-import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { opportunities, type Opportunity } from "@va-hub/db";
+import { and, inArray, sql } from "drizzle-orm";
 import { JOB_CATEGORY_MAP } from "./categories";
-import { directoryVisibilityFilters } from "./directory-visibility";
+import { effectivePostedMs, isFeaturedAgencyJob, type PublicBoard, type PublicJob } from "./public-board";
 import { publicOpportunityFilters } from "./public-opportunities";
-import { createTimedDataCache } from "./timed-data-cache";
+import { loadPublicBoard } from "./public-serving-snapshot";
 
 type CardData = Pick<Opportunity,
   "id" | "title" | "company" | "type" | "sourceUrl" | "sourcePlatform" |
@@ -18,24 +18,10 @@ export type HomepageData = {
   categoryTotals: Record<string, number>;
 };
 
-const cardProjection = {
-  id: opportunities.id,
-  title: opportunities.title,
-  company: opportunities.company,
-  type: opportunities.type,
-  sourceUrl: opportunities.sourceUrl,
-  sourcePlatform: opportunities.sourcePlatform,
-  tags: opportunities.tags,
-  category: opportunities.category,
-  experienceLevel: opportunities.experienceLevel,
-  postedAt: opportunities.postedAt,
-  scrapedAt: opportunities.scrapedAt,
-  geoScope: opportunities.geoScope,
-  phEligibility: opportunities.phEligibility,
-  geoEvidence: opportunities.geoEvidence,
-};
-
-/** Partitions by category and stops at six; restricted to the 9 UI categories to avoid compound SELECT limits and stay under 100 binds. */
+/**
+ * Bind-ceiling lock for the old per-request preview. The live homepage uses
+ * homepagePreviewJobs on the shared snapshot and does not run this query.
+ */
 export function homepagePreviewQuery() {
   const allowedCategories = Object.keys(JOB_CATEGORY_MAP);
   return sql`
@@ -49,43 +35,59 @@ export function homepagePreviewQuery() {
   `;
 }
 
-// Five minutes matches the public HTML cache; never return stale data on error.
-// A deployment has one configured DB. The module resets on deployment/cold start.
-const cachedHomepage = createTimedDataCache<HomepageData>(5 * 60 * 1000);
+function byNewest(a: PublicJob, b: PublicJob): number {
+  return effectivePostedMs(b) - effectivePostedMs(a) || b.id - a.id;
+}
 
-export function loadHomepageData(env: Parameters<typeof getDb>[0]): Promise<HomepageData> {
-  return cachedHomepage(async () => {
-    const db = getDb(env);
-    const totalRows = await db.select({ category: opportunities.category, n: count() })
-      .from(opportunities).where(publicOpportunityFilters()).groupBy(opportunities.category);
-    const categoryTotals = Object.fromEntries(totalRows.map((row) => [row.category, row.n]));
-    // Derive the global total from the same category scan instead of counting twice.
-    const opportunityCount = totalRows.reduce((sum, row) => sum + row.n, 0);
-    const [directoryCount] = await db.select({ count: count() }).from(vaDirectory)
-      .where(directoryVisibilityFilters());
+/** Top six public jobs in each homepage category, then newest across that set. */
+export function homepagePreviewJobs(jobs: readonly PublicJob[]): PublicJob[] {
+  const grouped = new Map<string, PublicJob[]>();
+  for (const job of jobs) {
+    if (!JOB_CATEGORY_MAP[job.category]) continue;
+    const list = grouped.get(job.category) ?? [];
+    list.push(job);
+    grouped.set(job.category, list);
+  }
+  const picked: PublicJob[] = [];
+  for (const list of grouped.values()) picked.push(...[...list].sort(byNewest).slice(0, 6));
+  return picked.sort(byNewest);
+}
 
-    const featuredAgencyOpportunities = await db.select(cardProjection).from(opportunities)
-      .where(and(publicOpportunityFilters(), sql`(
-        ${opportunities.sourceId} LIKE 'breezy:%' OR
-        ${opportunities.sourceId} LIKE 'workable:%' OR
-        ${opportunities.sourceId} LIKE 'ashby:%' OR
-        ${opportunities.sourcePlatform} IN ('20Four7VA', 'Sourcefit', 'Yokly', 'VALUE Virtual Assistants', 'Remote Craft', 'MultiplyMii')
-      )`))
-      .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`)).limit(6);
+function asCard(job: PublicJob): CardData {
+  return {
+    id: job.id,
+    title: job.title,
+    company: job.company,
+    type: job.type,
+    sourceUrl: job.sourceUrl,
+    sourcePlatform: job.sourcePlatform,
+    tags: job.tags,
+    category: job.category,
+    experienceLevel: job.experienceLevel,
+    postedAt: job.postedAt,
+    scrapedAt: job.scrapedAt ?? job.postedAt ?? "",
+    geoScope: job.geoScope,
+    phEligibility: job.phEligibility,
+    geoEvidence: job.geoEvidence,
+  };
+}
 
-    const idRows = await db.all<{ id: number }>(homepagePreviewQuery());
-    const ids = idRows.map((row) => Number(row.id)).filter(Number.isFinite);
-    const latestOpportunities = ids.length
-      ? await db.select(cardProjection).from(opportunities)
-        .where(and(publicOpportunityFilters(), inArray(opportunities.id, ids)))
-        .orderBy(desc(sql`coalesce(${opportunities.postedAt}, ${opportunities.scrapedAt})`))
-      : [];
+export function homepageFromSnapshot(board: PublicBoard): HomepageData {
+  const categoryTotals: Record<string, number> = {};
+  for (const job of board.jobs) {
+    categoryTotals[job.category] = (categoryTotals[job.category] ?? 0) + 1;
+  }
+  return {
+    stats: { opportunities: board.jobs.length, companies: board.directory.length },
+    categoryTotals,
+    latestOpportunities: homepagePreviewJobs(board.jobs).map(asCard),
+    featuredAgencyOpportunities: board.jobs.filter(isFeaturedAgencyJob).sort(byNewest).slice(0, 6).map(asCard),
+  };
+}
 
-    return {
-      stats: { opportunities: opportunityCount, companies: directoryCount?.count ?? 0 },
-      categoryTotals,
-      latestOpportunities,
-      featuredAgencyOpportunities,
-    };
-  });
+export function loadHomepageData(
+  env: Parameters<typeof loadPublicBoard>[0],
+  ctx?: Parameters<typeof loadPublicBoard>[1],
+): Promise<HomepageData> {
+  return loadPublicBoard(env, ctx).then(homepageFromSnapshot);
 }

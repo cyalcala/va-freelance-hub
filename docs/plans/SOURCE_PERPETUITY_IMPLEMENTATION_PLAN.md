@@ -33,7 +33,77 @@ and `docs/decisions/ADR-006-controlled-source-replenishment.md`
 
 **Resume prompt:** `docs/bootloaders/SOURCE_PERPETUITY_BOOTLOADER.md`
 
-## 2026-09-27 mathematical improvement overlay (v5.2)
+## 2026-10-03 PH remote source priority allocation
+
+The [priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)
+operationalizes all 32 sections and 108 submitted labels in the
+[owner directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md).
+This file remains the sole source execution queue. The temporary cohort changes
+which feasible dependency-ready source receives attention; it creates no parallel
+queue, admission shortcut, schema enum, scheduler or accepted runtime change.
+Retain the global miner, source economics, Source Doctor and SSAE-CED processing.
+Source/PH priors do not replace per-job qualification or publication authority.
+
+**Current expansion NEXT:** `PH-PRIORITY-INVENTORY` (read-only). The September
+mathematical NEXT below is dated planning context; recover its publication-control
+findings as prerequisites, not a competing unconditional dispatch command. Active
+safety/publication incidents retain priority over public expansion. Independent
+permitted inventory/intake/resolution can continue while a public gate is held.
+
+| Continuation phase | Existing supporting contracts | Required exit |
+| --- | --- | --- |
+| A inventory | Parent source unit; existing HRI-01/02 capture/normalization; SSAE-00/01; MATH-06/09/13 | As-of reconciliation of every supplied label, aliases and existing exact identities; runtime vs documented evidence separated |
+| B resolution | Existing prospecting/capability paths; HRI enrichment; SSAE-02 | Canonical careers/provider/tenant, supported permitted mechanism, primary authority evidence or owned bounded hold |
+| C ingestion | Existing lawful lake ingestion, qualification, dedup and geoGate; applicable SSAE-07/09 | Bounded observations/candidates with provenance, material-delta and idempotency evidence; collection authority proven before fetch |
+| D evaluation | Existing source economics/metrics; SSAE-01/03/04/05/06 as applicable | Marginal unique PH yield, overlap, change, reliability, URLs, cost and publication conversion with windows/denominators |
+| E admission | Current source lifecycle/SP controls; full cutover predicate; applicable SSAE-14 | Current authority, recurrent shadow/canary, mechanically enforced caps, source kill switch and rollback; no priority-forced promotion |
+| F publication | Existing GCP publisher/gateway and D1/public surfaces; MATH-06 | Qualified/authorized candidates yield durable publication receipts and list/detail/apply visibility; source-gated rows remain held |
+| G optimize | Existing accepted schedule; applicable SSAE-10/11/14/15 | Empirically adaptive cadence, shared pacing, nonstarved cold tail and bounded P2 exploration; measured quality/cost and sustained flow |
+
+These mappings describe dependencies, not new implementation acceptance.
+HRI-01..03 have dated acceptance; HRI-04/05 remain OPEN and SSAE cards remain
+PROPOSED. Existing proven mechanisms may resolve tenants under their actual
+source contract without implementing every optional supporting card. New
+consequential mechanisms require SHADOW -> EVALUATE -> CANARY -> PRODUCTION and
+their own measured release/rollback contract. HOT/WARM/COOL/COLD/DORMANT and the
+PH-prior states remain conceptual until mapped to supported schema/parameters.
+Do not change clocks to conceal the hourly-publisher/15-minute-freshness gap.
+
+### PH-PRIORITY-INVENTORY — bounded first continuation contract
+
+- **Mode/owner/trigger:** RECOVER/AUDIT; maintainer; next authorized source-expansion
+  task. This documentation update does not dispatch it.
+- **Preflight:** fetch and record full start/origin SHA; preserve foreign work;
+  recover latest savepoint, source authority/cutover state, active incidents,
+  current lake/D1 schemas and deployed scheduler/publisher revisions.
+- **Scope:** reconcile all 108 submitted labels against current Turso and D1
+  identities, aliases, directory records, capabilities, lifecycle and source
+  decisions using inspected read-only queries. No fetch probes, enrollment,
+  source transitions, ingestion, replay, sync, migrations or publication.
+- **Deliver:** compact aggregate evidence in Git; dynamic source-level inventory
+  stays in its governed evidence plane when a later capture unit is authorized.
+  For each label record matched identity/alias or UNKNOWN, current authority,
+  capability, lifecycle, PH evidence, recent-job/publication coverage, blockers
+  and next trigger; evidence time/revision/query/hash and coverage gaps.
+- **Verify/accept:** all 108 labels accounted for exactly once at intake-label
+  level; actual identities deduplicated separately; no invented tenants/URLs,
+  no mutation receipts, and current facts distinguished from old checkpoints.
+  Credentials/telemetry gaps yield owned UNKNOWNs rather than a fabricated count.
+- **Rollback/stops:** no production change to reverse. Stop only affected reads
+  that cannot meet access/data limits; continue independent evidence gathering.
+- **Exit/NEXT:** KEEP the inventory when reviewable; select one highest-value
+  unresolved feasible P0 resolution unit or a demonstrated gating bottleneck,
+  with collection authority, budgets, acceptance, failure paths and rollback.
+
+Every subsequent meaningful unit reports all 15 fields in the priority strategy,
+plus SHAs, window, denominators, versions, costs and evidence taxonomy. Operational
+cohort done requires >=90% of harvestable mechanisms resolved, recurring qualified
+flow through Turso -> GCP -> D1 -> website, measured health/economics, adaptive
+sparse polling and no material regression. Explicitly account for unresolved,
+blocked, directory-only and duplicate labels in the coverage denominator. This
+does not certify the separate sustained 100/day floor or 150/day stretch.
+
+## 2026-09-27 mathematical improvement overlay (v5.2, dated context)
 
 The [mathematical strategy](../MATHEMATICAL_IMPROVEMENT_STRATEGY.md) and
 [working register](MATHEMATICAL_IMPROVEMENT_PLAN.md) make all 13 mathematical
