@@ -8093,3 +8093,74 @@ Use read-only D1 queries for data checks. Never mutate production data during an
 audit unless the task explicitly calls for a migration or repair and the change
 has been backed up in Git.
 
+## SESSION_REENTRY_PACKET (session 11 · 2026-10-06, Manila)
+
+**original_task_scope_allowed_effects_and_completion:** tech-lead P0 slice S1 of
+"NEAR-ZERO CLOUDFLARE D1 ROW-READS PER PUBLIC VISIT" — pure snapshot-read layer
+(module + 14 tests), verified locally; no production side effects, no push, no
+deploy. Completion for this slice: committed + tested; acceptance of S1 requires
+the owner's KV binding (PROPOSE-only item) and wiring in S2.
+
+**branch_worktree_full_HEAD_origin_main_foreign_work:** branch
+`opencode/shift-20261006-1059`; HEAD `6bdb1809cae568c9ef9e5d387dcf844be2b25b53`;
+origin/main `5d150dc2354b6c4f92db88e512b4b64c8d8db92b` (unchanged at shift start,
+not fetched — divergence beyond the supervisor snapshot is UNKNOWN; no credentials
+in this sandbox). Working tree clean at commit time; no foreign/dirty work left
+(untracked `.shift/reading-011.md` and the supervisor's `.shift/evidence.md` are
+read-only navigation, not production files).
+
+**Git_GCP_image_job_scheduler_policy_parameter_versions_or_UNKNOWN:** Git backup:
+this commit (code + tests + additive savepoint section); GCP image/job/scheduler/
+policy parameter versions **UNKNOWN** (no GCP credentials in this sandbox; owner
+with GCP access must map SHA `6bdb1809` to a Cloud Run digest and job config). No
+code runs on GCP for this slice (DEPLOY NOTE: none).
+
+**completed_changes_checks_first_failures_and_evidence:** 3 files changed, 913
+insertions, 0 deletions. `bun run test` **2981 pass / 0 fail / 318823 expect /
+219 files** (baseline without S1: 2967 pass / 218 files; delta +14 tests /
++43 expect, no regressions). `bun run typecheck` exit 0. First test failures:
+none. Evidence: counting-fake `db.prepare` counts (0 on hit, 1 on cold miss,
+1 across 50 concurrent misses, 0 + stale envelope on D1 throw).
+
+**runtime_publication_freshness_quality_cost_effect_or_UNKNOWN:** all **UNKNOWN**
+— no page served from this layer yet; the reduction claim (0 D1 reads per
+snapshot-serving visit) is asserted by the tests, not observed on the live site.
+
+**GitHub_backup_and_GCP_artifact_receipts_or_BACKUP_PENDING:** Git backup recorded
+on this branch; GCP artifact receipts **BACKUP_PENDING** (platform `gcp`, no
+credentials, owner: maintainer, trigger: reviewer/owner with GCP access).
+
+**urgent_owner_lead_identity_class_hold_and_next_evidence:** no owner job lead
+submitted this session. Next evidence-producing action: owner creates KV namespace
+`PUBLIC_SNAPSHOTS` + binding (PROPOSE); then slice S2 wiring + measurement.
+
+**latency_pending_ages_expiry_losses_or_UNKNOWN:** **UNKNOWN** — no page served
+from this layer yet; S2/S3 will measure `p50/p90/p95`, pending/oldest-ready age,
+stage dwell, expired-before-visible, failures and blocked denominators per the
+P0 measurement contract (targets: discovery->qualification <=10m,
+clearance->visible <=5m; free-tier read exhaustion is the motivating risk).
+
+**source_SSAE_MATH_HRI_units_and_maturity:** no SSAE card, MATH item, HRI unit or
+autonomy label moved or matured this session; all unchanged.
+
+**observations_owner_review_trigger_rollback:** observation = owner review;
+trigger = reviewer merge to main; rollback = `git revert <commit-sha>` (no D1
+writes, migrations, schema changes, parameters or clocks affected).
+
+**actions_completed_or_failed_not_to_repeat:** S1 commit (snapshot core + tests +
+additive savepoint) completed; do not redo the snapshot core. Previously failed
+tests in this session were pre-existing wrangler/db-shape mismatches fixed in the
+test file, not regressions introduced.
+
+**exact_next_action_prerequisites_and_savepoint:** (1) owner creates Cloudflare KV
+namespace `PUBLIC_SNAPSHOTS` and binds it in `apps/web/wrangler.jsonc` (HOLD path;
+snippet in commit body); (2) slice S2 wires `/directory` and homepage to read the
+snapshot so pagination/`?q=`/category filtering runs in memory; (3) re-verify
+`bun run test` and `bun run typecheck` green on the review merge. The baton is at
+the top of `docs/SYSTEM_SAVEPOINT.md`; the navigation pointer is `docs/bootloaders/
+CURRENT.md` (unchanged; hold-listed, already stale at 2026-10-04).
+
+**status:** **CONTINUING** — S1 done locally and committed; awaiting the owner's
+KV binding before any page wiring; the supervisor will push this branch and update
+ONE draft PR to main.
+
