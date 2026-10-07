@@ -69,9 +69,15 @@ function buildFilterRemovalUrl(key: string) {
   return qs ? `/opportunities?${qs}` : '/opportunities';
 }
 
+function categoryTitle(title: string) {
+  return title.replace(/\b[A-Z]+\b/g, (word) =>
+    word === 'AI' || word === 'IT' ? word : word[0] + word.slice(1).toLowerCase()
+  );
+}
+
 const activeFilters = [
   { key: 'q', value: query, label: `Search: ${query}` },
-  { key: 'category', value: category, label: `Category: ${selectedCategory?.title.toLowerCase() ?? category}` },
+  { key: 'category', value: category, label: `Category: ${selectedCategory ? categoryTitle(selectedCategory.title) : category}` },
   { key: 'type', value: type, label: `Type: ${TYPE_LABELS[type] ?? type}` },
   { key: 'platform', value: platform, label: `Source: ${platform}` },
   { key: 'geoScope', value: geoScope, label: `Scope: ${GEO_SCOPE_OPTIONS.find((option) => option.value === geoScope)?.label ?? geoScope}` },
@@ -150,7 +156,7 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
               <select id="category" name="category" form="search" class="field-select">
                 <option value="">All categories</option>
                 {Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => (
-                  <option value={slug} selected={category === slug}>{info.title.toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase())}</option>
+                  <option value={slug} selected={category === slug}>{categoryTitle(info.title)}</option>
                 ))}
               </select>
             </div>
