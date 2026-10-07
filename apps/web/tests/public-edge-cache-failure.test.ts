@@ -47,3 +47,28 @@ test("cache lookup failure returns a miss instead of propagating to middleware",
   const result = await readPublicHtmlCache({ async match() { throw new Error("cache read failed"); }, async put() {} }, new Request("https://example.com/"));
   expect(result).toBeUndefined();
 });
+
+test("a cached stale HTML page cannot conceal recovered fresh data", async () => {
+  let writes = 0;
+  Object.defineProperty(globalThis, "caches", { configurable: true, value: { default: {
+    async match() { return new Response("Old saved listings notice", { headers: { "X-Public-Snapshot": "stale" } }); },
+    async put() { writes += 1; },
+  } } });
+  const response = await render();
+  expect(await response.text()).toBe("Verified last-known-good board");
+  expect(response.headers.get("X-Edge-Cache")).toBe("MISS");
+  expect(writes).toBe(1);
+});
+
+test("new fallback HTML stays usable without being stored as a fresh cached page", async () => {
+  let writes = 0;
+  Object.defineProperty(globalThis, "caches", { configurable: true, value: { default: {
+    async match() { return undefined; }, async put() { writes += 1; },
+  } } });
+  const response = await onRequest({ request: new Request("https://example.com/"), locals: {} } as never,
+    async () => new Response("Saved board", { headers: { "X-Public-Snapshot": "lkg_fallback" } })) as Response;
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe("Saved board");
+  expect(writes).toBe(0);
+  expect(response.headers.get("Cache-Control")).toBe("no-store");
+});

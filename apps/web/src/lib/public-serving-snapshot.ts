@@ -7,10 +7,14 @@ import { timestampMs } from "./public-board";
 import { getDurableLkgSnapshot } from "./durable-lkg-snapshot";
 
 const FRESH_MS = 15 * 60 * 1000;
+const STALE_RECHECK_MS = 60_000;
 const REBUILD_AFTER_MS = 60 * 60 * 1000;
 const LEASE_MS = 10 * 60 * 1000;
 const MAX_PAYLOAD_CHARS = 900_000;
 const DEPENDENCY_TIMEOUT_MS = 2_000;
+// Serving remains bounded to 2s. Retain the complete background chain within
+// Cloudflare's 30s waitUntil window instead of abandoning it at the serving cap.
+const BACKGROUND_REFRESH_TIMEOUT_MS = 25_000;
 const CACHE_URL = "https://remotejobs-ph.pages.dev/__snapshot/public-board-v1";
 
 const dialect = new SQLiteSyncDialect();
@@ -312,7 +316,9 @@ export function promoteSnapshot(
 
   slot.activeBoard = validation.board;
   slot.activeSource = source;
-  slot.serveUntil = now + FRESH_MS;
+  // Failed/leased refreshes must not grant old data another 15-minute warm
+  // exemption. One cheap row recheck per minute lets a recovered board appear.
+  slot.serveUntil = now + (Date.parse(candidate.generatedAt) + REBUILD_AFTER_MS <= now ? STALE_RECHECK_MS : FRESH_MS);
   slot.lastPromotionAt = new Date(now).toISOString();
   slot.lastRefreshResult = "success";
   slot.lastRefreshError = null;
@@ -633,7 +639,7 @@ async function withServingDeadline<T>(pending: Promise<T>, timeoutMs: number): P
 function schedule(work: () => Promise<void>, waitUntil?: (promise: Promise<unknown>) => void): void {
   if (slot.refresh) return;
   const started = performance.now();
-  const pending = withServingDeadline(Promise.resolve().then(work), DEPENDENCY_TIMEOUT_MS).catch((err) => {
+  const pending = withServingDeadline(Promise.resolve().then(work), BACKGROUND_REFRESH_TIMEOUT_MS).catch((err) => {
     slot.lastRefreshResult = "failed";
     slot.lastRefreshError = publicDataErrorClass(err) ?? (err instanceof Error && err.message === "snapshot_timeout" ? "snapshot_timeout" : "snapshot_refresh_failed");
     console.error("public snapshot background refresh failed", publicDataErrorClass(err) ?? "Error");
@@ -763,10 +769,10 @@ async function loadCold(
     if (stored?.payload) {
       const candidate = await unpackBoard(stored);
       if (promoteSnapshot(candidate, "d1", now)) {
-        writeEdge(cache, candidate).catch(() => {});
-        if (Date.parse(candidate.generatedAt) + REBUILD_AFTER_MS <= now) {
-          schedule(() => refreshStored(store, cache, now), waitUntil);
-        }
+        schedule(async () => {
+          await writeEdge(cache, candidate);
+          if (Date.parse(candidate.generatedAt) + REBUILD_AFTER_MS <= now) await refreshStored(store, cache, now);
+        }, waitUntil);
         return slot.activeBoard!;
       }
     }
@@ -814,7 +820,7 @@ async function loadCold(
   if (allowLkgFallback) {
     const lkg = getDurableLkgSnapshot();
     if (promoteSnapshot(lkg, "durable_lkg", now)) {
-      writeEdge(cache, lkg).catch(() => {});
+      schedule(() => writeEdge(cache, lkg), waitUntil);
       return slot.activeBoard!;
     }
   }
@@ -852,7 +858,7 @@ export async function resolvePublicBoard(options: {
 
   // 3. Stale in-memory board (TTL means "refresh this data", NOT "delete usable data")
   if (slot.activeBoard) {
-    slot.serveUntil = now + FRESH_MS;
+    slot.serveUntil = now + (Date.parse(slot.activeBoard.generatedAt) + REBUILD_AFTER_MS <= now ? STALE_RECHECK_MS : FRESH_MS);
     schedule(() => refreshStored(store, cache, now), waitUntil);
     return slot.activeBoard;
   }
@@ -861,9 +867,14 @@ export async function resolvePublicBoard(options: {
   if (slot.inflight) return slot.inflight;
 
   // 5. Cold isolate initialization
-  const pending = withServingDeadline(
-    loadCold(store, cache, now, waitUntil, allowLkgFallback), dependencyTimeoutMs,
-  ).catch((error) => {
+  const coldLoad = loadCold(store, cache, now, waitUntil, allowLkgFallback);
+  // A fast LKG response must not detach the lease-winning reconstruction.
+  // Keep it alive independently of the foreground Promise.race deadline.
+  if (waitUntil) {
+    const backgroundCold = withServingDeadline(coldLoad, BACKGROUND_REFRESH_TIMEOUT_MS).then(() => {}, () => {});
+    try { waitUntil(backgroundCold); } catch { console.warn("public snapshot cold background context unavailable"); }
+  }
+  const pending = withServingDeadline(coldLoad, dependencyTimeoutMs).catch((error) => {
     if (!allowLkgFallback) throw error;
     if (slot.activeBoard) return slot.activeBoard;
     const lkg = getDurableLkgSnapshot();

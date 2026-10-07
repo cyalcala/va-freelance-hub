@@ -34,12 +34,14 @@ export function publicHtmlCacheKey(request: Request): Request | null {
   // create fresh database reads for identical content.
   if (url.pathname === "/") url.search = "";
   // A new schema of public eligibility must not reuse pre-repair cache entries.
-  url.searchParams.set("__public_cache_revision", "2026-09-27-eligibility");
+  url.searchParams.set("__public_cache_revision", "2026-10-07-refresh-recovery");
   return new Request(url.toString(), { method: "GET" });
 }
 
 export function mayStorePublicHtml(response: Response): boolean {
+  const snapshot = response.headers.get("X-Public-Snapshot");
   return response.status === 200 &&
+    !["stale", "lkg_fallback", "degraded"].includes(snapshot ?? "") &&
     !response.headers.has("Set-Cookie") &&
     !/\b(no-store|private|no-cache)\b/i.test(response.headers.get("Cache-Control") ?? "");
 }
