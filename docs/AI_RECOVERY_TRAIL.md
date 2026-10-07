@@ -1,6 +1,30 @@
 # AI Recovery Trail
 
-## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (current deployed milestone)
+## 2026-10-07 — Public serving availability and recovery (current milestone)
+
+Completed three owner-directed slices: [availability PR #215](https://github.com/cyalcala/va-freelance-hub/pull/215),
+[safeguards PR #217](https://github.com/cyalcala/va-freelance-hub/pull/217), and
+[refresh recovery PR #219](https://github.com/cyalcala/va-freelance-hub/pull/219).
+The public board now has a verified durable fallback, validated release capture,
+bounded Apply eligibility handling and retained refresh work. Stale HTML no
+longer conceals a recovered serving row; genuine stale/LKG serving keeps its notice.
+
+Latest runtime `91641445985d8f3230e8e54ccf857c637bc3b551` / Pages `aa8ce5b8`
+passed main release `37614492584`. 3,018 tests passed; 20 live routes were
+200/fresh and the browser showed warning absence. Exact release artifact without
+D1 served eight routes and refused Apply safely with 503 / Retry-After 30.
+[PR #220](https://github.com/cyalcala/va-freelance-hub/pull/220) merged acceptance
+records to `0bde87f4d317f6e136fde8665f32aa976c1b71d5`, verified on origin/main;
+its main CI `37615599312` passed. A single homepage check at 12:03:32 UTC again
+returned 200/fresh, 1,519 jobs / 735 companies, no saved notice.
+
+The owner requested a quick progress discussion and GitHub backup. This finite
+docs-only slice aligns the status/handoff/trail with the accepted evidence,
+preserving dated milestones. No source work, DB mutation, runtime or GCP change.
+GitHub code/docs and 30-day captured release artifacts are separate from database
+restoration evidence. [Current acceptance and limits](incident-2026-10-07-snapshot-refresh-recovery.md).
+
+## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (historical deployed milestone)
 
 Delivered and deployed the Public Serving Snapshot architecture resolving the Cloudflare D1 row-read amplification and quota exhaustion incident.
 - **Root Problem**: Visitor requests and search engine crawlers previously executed multiple full table scans and `COUNT()` aggregates against D1 per page view, causing quota exhaustion (error 7500 / 14-hour 503 outage on 2026-10-04) and high cold latency (~3.2s on `/`).

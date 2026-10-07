@@ -1,6 +1,34 @@
 # Handoff
 
-## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (current deployed handoff)
+## 2026-10-07 — Public serving recovery complete (current handoff)
+
+Availability recovery, risk mitigation and saved-notice recovery are complete.
+Read the newest [savepoint](SYSTEM_SAVEPOINT.md), [current status](IMPLEMENTATION_STATUS.md)
+and [latest acceptance](incident-2026-10-07-snapshot-refresh-recovery.md) before
+using older incident/deployment references below.
+
+Latest accepted runtime: `91641445985d8f3230e8e54ccf857c637bc3b551`, Pages
+`aa8ce5b8-d084-466b-bd8c-24d3e9ebe7c4`, main release `37614492584` passed.
+[PR #220](https://github.com/cyalcala/va-freelance-hub/pull/220) backed up its
+acceptance records to main `0bde87f4d317f6e136fde8665f32aa976c1b71d5`;
+main CI `37615599312` passed. This documentation slice starts from that full SHA
+on `codex/recent-progress-backup`, with foreign `.agents/skills/` and
+`lucky777.md` preserved.
+
+Evidence: 3,018 implementation tests pass, 20 live routes 200/fresh, ordinary
+homepage cache hits and browser reload show the warning removed. At 12:03:32 UTC
+a single ordinary homepage request again returned 200/fresh, 1,519 jobs / 735
+companies, generation 11:13:48.359 UTC, no saved notice. Exact release workerd
+without D1 keeps eight public routes available and Apply retryable at 503.
+
+Real outage notices remain necessary; saved listings can age during a prolonged
+outage and Apply refuses when current eligibility cannot be checked. Code/tests/
+docs are in GitHub; captured release fallback and receipts have 30-day artifact
+retention. Database restore readiness and complete GCP cutover are separate work.
+No source admission or quality gate changed. No public-serving task remains;
+resume other source or migration work only under its separately scoped queue.
+
+## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (historical deployed handoff)
 
 The Public Serving Snapshot architecture is deployed to Cloudflare Pages production and backed by D1 migration 0054 on `va-freelance-hub-db`.
 - **Target**: Protect production D1 from crawler and traffic row-read exhaustion (error 7500 / 14h 503 incident on 2026-10-04) and reduce cold-start latency.

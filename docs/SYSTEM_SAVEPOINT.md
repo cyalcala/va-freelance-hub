@@ -1,5 +1,27 @@
 # System Savepoint
 
+## 2026-10-07 20:03 Manila — Recent progress and GitHub backup summary
+
+**Scope:** owner-requested quick progress discussion and durable documentation.
+**Start:** `0bde87f4d317f6e136fde8665f32aa976c1b71d5`, verified origin/main;
+branch `codex/recent-progress-backup`. Acceptance PR #220 is merged and its
+exact-SHA main CI `37615599312` passed. Status/handoff/recovery trail now point
+to the October 7 runtime and preserve October 6 as dated history.
+
+Public availability, safeguards and refresh recovery are **TERMINAL — KEEP**;
+no overall autonomy percentage. Runtime release `91641445985d8f3230e8e54ccf857c637bc3b551`
+maps to Pages `aa8ce5b8`; release `37614492584` passed. Prior implementation
+evidence remains 3,018 tests, 20 live routes 200/fresh and browser warning absence.
+An ordinary homepage check at 12:03:32 UTC returned 200/fresh, 1,519 jobs / 735
+companies, generation 11:13:48.359 UTC, no saved notice.
+
+**Backup:** merged GitHub code/tests/acceptance records; captured release bundle
+and receipts retained for 30 days. This does not prove database restoration.
+This documentation slice's commit/PR receipts live in normal Git history.
+Foreign work preserved. No runtime/source/GCP changes or new operational task.
+**Next:** no remaining work for these incident tasks; other queues require
+separate scope. [Progress and limits](IMPLEMENTATION_STATUS.md).
+
 ## 2026-10-07 19:36 Manila — Screenshot notice recovery released and accepted
 
 **Unit:** PUBLIC-SNAPSHOT-REFRESH-RECOVERY. **Status:** TERMINAL — KEEP, 100%
