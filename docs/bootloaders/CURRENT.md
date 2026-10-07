@@ -1,10 +1,15 @@
 # Current resume pointer
 
-Active owner task (2026-10-07 19:26 Manila): resolve the saved-listings notice in
-the supplied screenshot. Snapshot recovery fix `457c9805` is locally verified;
-normal PR/release and visible production acceptance pending. Read the newest
-savepoint and [refresh recovery record](../incident-2026-10-07-snapshot-refresh-recovery.md).
-The earlier risk acceptance below is dated history, not this new task's outcome.
+Current owner task (2026-10-07 19:36 Manila): the saved-listings screenshot
+recovery is **TERMINAL — KEEP**. PR #219 merged normally; release SHA
+`91641445985d8f3230e8e54ccf857c637bc3b551` maps to Pages `aa8ce5b8`.
+Main validation/release `37614492584` passed. Twenty ordinary public route
+checks were 200/fresh; three ordinary home HTML cache hits and browser reload
+confirmed the notice disappeared. 3,018 tests pass, exact release artifact
+without D1 serves eight routes 200 and keeps Apply 503 without a redirect.
+Read the newest savepoint and [refresh recovery acceptance](../incident-2026-10-07-snapshot-refresh-recovery.md)
+for capture/hash/backup receipts and bounded limits. No implementation work
+remains for this screenshot task. The source lead below is separately scoped.
 
 Current owner task (2026-10-07 18:31 Manila): public availability risk mitigation
 is **TERMINAL — KEEP**. PR #217 merged; `59dd4f900cf03ec7db98db47aa441634ad0e5757`

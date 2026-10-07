@@ -3,7 +3,10 @@
 Owner trigger: screenshot of the homepage's persistent saved-listings notice.
 Start `36b6eff402cc238e408cbed30bff280029f416a3`, branch
 `codex/public-snapshot-refresh-recovery`. Runtime `457c9805999aa9b1cc7a3bc461125049734df17c`.
-Status: local checks passed; normal release and visible production acceptance pending.
+Status: **TERMINAL — KEEP, 100%** of this bounded screenshot recovery task.
+Accepted `2026-10-07T11:36:05Z` (19:36 Manila) after normal release and ordinary
+visitor/browser verification. [PR #219](https://github.com/cyalcala/va-freelance-hub/pull/219)
+merged to `91641445985d8f3230e8e54ccf857c637bc3b551`, verified on origin/main.
 The earlier availability/risk acceptances remain dated history.
 
 ## Observed failure and reproduced mechanisms
@@ -59,15 +62,48 @@ upstream outage still serves saved listings. The 25-second background deadline i
 bounded, not a delivery guarantee or a new source scheduling parameter. No new
 service, paid dependency, background clock or GCP deployment was introduced.
 
-## Verification and pending release
+## Verification and production acceptance
 
 Final local suite: **3,018 tests pass / 0 fail** (221 files). All five new tests
 first failed and then passed. Build, typecheck and four governance audits passed;
-the D1-free workerd smoke remains required locally/CI and on the exact release
+the D1-free workerd smoke passed locally/CI and on the exact release
 artifact. Jev's advisory boundary consultation returned 401; direct evidence and
 tests governed the fix. Browser skill applied with the available Codex in-app
 browser; no additional DevTools integration was installed.
 
-Production deployment/SHA, fresh snapshot, normal visitor/cache behavior, route
-smoke and browser notice absence will be recorded after the normal PR/main release.
+PR CI [37614316524](https://github.com/cyalcala/va-freelance-hub/actions/runs/37614316524)
+and main validation/release [37614492584](https://github.com/cyalcala/va-freelance-hub/actions/runs/37614492584)
+passed. Main release mapped SHA `91641445985d8f3230e8e54ccf857c637bc3b551` to
+Cloudflare Pages `aa8ce5b8-d084-466b-bd8c-24d3e9ebe7c4` (Wrangler Source
+`9164144`), immutable [deployment](https://aa8ce5b8.remotejobs-ph.pages.dev).
+The legacy Vercel status was account-blocked and is outside the required
+Cloudflare deployment path; its status is not represented as a passing check.
+
+At `11:36:05Z`, ten routes on each of production and the immutable deployment
+returned 200 with a **fresh** snapshot generated `2026-10-07T11:13:48.359Z`,
+1,519 jobs / 735 companies, and zero saved-listings notices. Requests used no
+cookies or cache-bypass headers. Three additional ordinary homepage requests
+were fresh HTML cache hits, displayed the automatic-update badge and contained
+no saved notice. [HTTP receipt](audits/2026-10-07-snapshot-refresh-production-smoke.json).
+The Codex in-app browser independently displayed the restored homepage after
+reload; a local screenshot preserves the visible result. This is bounded
+point-in-time acceptance, not continuous availability or fleet-wide certification.
+
+Release capture refreshed its bundled LKG to the same `11:13:48.359Z` generation,
+age 1,053 seconds at capture, 1,519 jobs / 735 companies. Downloaded artifact
+SHA-256 independently matched
+`7cd90b59233ceedfd910709e226deaec41360ffa6f7d9198638156c5987d2a26`.
+Exact release-artifact workerd acceptance at `11:31:37.441Z`, without D1:
+eight public routes 200; Apply 503 with Retry-After 30 and no outbound redirect.
+[Capture and offline receipts](audits/2026-10-07-snapshot-refresh-release-evidence.json).
+The full captured bundle is retained with the Pages/release artifact under
+`public-availability-release-91641445985d8f3230e8e54ccf857c637bc3b551`
+for 30 days. Git stores the reviewed code/baseline and these acceptance records;
+neither artifact retention nor Git history is a database restoration receipt.
+
+Acceptance records are backed up through a finite docs-only PR from
+`codex/snapshot-refresh-acceptance`; its commit/merge receipt is normal Git history.
+No remaining implementation work is dispatched by this record. Genuine prolonged
+outages still show the saved-data notice and keep Apply fail-closed when current
+eligibility authority cannot be checked.
 Rollback: prior working LKG Pages deployment `676ee426` / `59dd4f90`.

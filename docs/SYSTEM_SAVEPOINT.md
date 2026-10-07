@@ -1,5 +1,39 @@
 # System Savepoint
 
+## 2026-10-07 19:36 Manila — Screenshot notice recovery released and accepted
+
+**Unit:** PUBLIC-SNAPSHOT-REFRESH-RECOVERY. **Status:** TERMINAL — KEEP, 100%
+of this bounded task. [PR #219](https://github.com/cyalcala/va-freelance-hub/pull/219)
+merged normally to `91641445985d8f3230e8e54ccf857c637bc3b551`, verified on
+origin/main. Runtime `457c9805`; pushed review head `cc37020a` matched its remote.
+PR CI `37614316524` and main validation/release `37614492584` passed.
+
+**Production:** Pages `aa8ce5b8-d084-466b-bd8c-24d3e9ebe7c4`, Wrangler Source
+`9164144`, pinned release SHA above. At 11:36:05 UTC, ten ordinary routes on both
+production/immutable deployment returned 200, fresh 1,519-job / 735-company board,
+generation `2026-10-07T11:13:48.359Z`, zero saved notices. Three ordinary home
+HTML cache hits also fresh, automatic-update badge visible. Browser reload and
+screenshot independently confirmed the notice disappeared.
+
+**Checks:** 3,018 tests pass; five red-then-green regressions; build/typecheck,
+governance/secret/worker checks and required release steps pass. Exact captured
+release artifact without D1 served eight routes 200; Apply 503 / Retry-After 30 /
+no outbound redirect. Capture refreshed to 11:13:48 UTC, age 1,053s, independently
+verified SHA-256 `7cd90b59233ceedfd910709e226deaec41360ffa6f7d9198638156c5987d2a26`.
+Pages and 30-day release artifacts back up the runtime; Git backs up reviewed
+code/recovery records, not database state. Legacy Vercel account-blocked status
+is outside the required Cloudflare release path.
+
+**Limits:** bounded point-in-time acceptance; no proven live lease-winner
+cancellation, induced quota outage or continuous/fleet-wide health claim.
+Genuine outage notices and authoritative Apply refusal remain. No source gates,
+background clock, service or GCP change. [Acceptance and receipts](incident-2026-10-07-snapshot-refresh-recovery.md).
+Foreign work preserved; finite docs-only acceptance PR on
+`codex/snapshot-refresh-acceptance`. Rollback Pages `676ee426` / `59dd4f90`.
+
+**Next:** no remaining implementation work for this screenshot task. Recover any
+PH/VA lead under its own source queue only when separately scoped.
+
 ## 2026-10-07 19:26 Manila — Owner screenshot: stale notice recovery fix
 
 **Unit:** PUBLIC-SNAPSHOT-REFRESH-RECOVERY. **Start:**
