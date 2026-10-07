@@ -120,6 +120,80 @@ check. Separate spec review approved this SHA with no material findings.
 Separate code-quality review also approved this SHA with no material actionable
 findings. Task 3 is locally accepted; integrated release QA remains pending.
 
+## Task 4 — Directory, details and legal reading
+
+Implementation `c231f86329cf0a336f1d828a4a06f6dac870844c` passed separate spec and
+code-quality reviews. Directory search leads compact category navigation and
+grouped rows; its 48-row loader, validation, ordering, safe website handling and
+missing-website state remain intact. Native query/category links now retain the
+other choice while resetting pagination. Root observed 20Four7VA returning one
+row, Global VA retaining that query, Marketplaces returning a clear empty state,
+and both individual removal paths working. Global VA page 2 showed 49–96 of 382.
+
+Directory and details were rendered at 390/768/1280/1440 without overflow. Actual
+logo fallback/lazy/async behavior and source flags are preserved. Details show
+unknown pay/schedule explicitly and qualify likely eligibility. The 89-character
+Passion.io title wraps at 390. Mobile Apply is early and its keyboard-focused
+44px target remains clear of bottom navigation; desktop scrolling kept the panel
+at 88px below the 64.8px header. Remote OK retains its direct link and `noopener`;
+other Apply URLs retain the encoded original source and tracked route/rel.
+Source-only descriptions were rendered. All saved fixture descriptions are null;
+the permitted-excerpt path is preserved and reviewed in code, rather than claimed
+as a populated browser case. Legal visible wording, metadata and May/June dates
+were independently compared unchanged. Reading width is about 683px at desktop,
+with 16px body and 28px line height. Verification: 98 focused tests plus 15
+refinement checks, typecheck and build passed.
+
+## Task 5 — Integrated acceptance before release
+
+Source is locally accepted at `98a6d1777941e7d5c27bf6d482aede6d4031655f`.
+Full pre-final-fix suite: 3,017 tests / zero failures; final cache/failure/snapshot
+slice: 47 tests / zero failures, including one new release-cache regression.
+Typecheck and four repository audits passed. Final build passed. The once-only
+static Impeccable scan covered 14 changed frontend files and reported one
+`single-font` advisory. One Manrope family is explicit in DESIGN.md, with measured
+size/weight hierarchy; no second family was added to satisfy the heuristic.
+The bounded final Jev consultation returned HTTP 401 and remained non-blocking.
+
+Adversarial review found the category `#search` target hidden by the sticky
+header. Fix `307803f4` adds 88px scroll margin; rendered desktop/mobile label top
+is now 88px, below their 64.8/60.8px headers. Root additionally measured original
+selected coral-on-tint text at 4.39:1. Selected navigation now uses the existing
+darker coral for 5.76:1; white primary buttons retain 5.12:1. Both fixes passed
+independent review and native browser rechecks.
+
+A rebuilt local preview then exposed an actual release-boundary issue: cached
+legal HTML still referenced the previous stylesheet (404), while cookie-bypassed
+HTML referenced the final stylesheet (200). `98a6d177` changes only the HTML cache
+revision and adds a regression fencing the precise prior revision. Key routing,
+privacy guards, saved-state storage rules and TTLs are unchanged. Ordinary
+cookieless post-fix requests at 14:58:28 UTC returned **11 routes and their sole
+stylesheet 200**. The built Worker has no D1 binding; tracked Apply returned
+503 / Retry-After 30 / no-store / no Location. Independent final review approved
+this SHA. Pre-fix diagnostic and final receipts are retained separately.
+
+The existing offline harness at `c231f863` completed all eight route and Apply
+assertions, then exited nonzero on Windows EBUSY temporary-folder cleanup.
+Automatic policy blocked recursive cleanup; that temporary folder was retained.
+The separate final persistent Worker probe completed successfully without a
+cleanup operation. Linux required CI must independently verify the original
+harness before release. Expected missing-D1 diagnostic logs in this local test
+are not production observations.
+
+Decoded final HTML: home 74,166 bytes, board 40,213, directory 58,365; sole CSS
+37,705 bytes. The earlier ordinary production baseline was 210,167 / 92,681 /
+84,894 HTML bytes, with the same board counts but different generation/serving
+states. These are payload observations, not compressed transfer or field Core
+Web Vitals. Every inspected built page has zero hydrated islands and no external
+client script source. The React integration still emits a 194,632-byte runtime
+file that these pages do not reference; it was not treated as a downloaded page
+resource. Browser inventory observed one Manrope font resource. Reduced-motion
+rules were inspected; an OS motion preference was not emulated.
+
+Required PR CI, production deployment and live acceptance remain pending at this
+checkpoint. The rollback tag remains on GitHub; source/DB/GCP behavior is unchanged
+apart from the narrowly documented frontend HTML-cache revision fence.
+
 ## Advisory and boundaries
 
 The separate concept spec review passed at `068e7c94`. Code-quality review then

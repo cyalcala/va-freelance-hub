@@ -1,5 +1,22 @@
 # System Savepoint
 
+## 2026-10-07 — Premium frontend locally accepted; release pending
+
+**Progress:** 4 of 5 frontend checkpoints complete (80% by checkpoint count).
+Final source `98a6d1777941e7d5c27bf6d482aede6d4031655f` is independently reviewed.
+All product surfaces, native flows and responsive checks pass; full local suite
+3,017/0, final cache/snapshot slice 47/0, typecheck, build and four audits pass.
+Final ordinary no-D1 Worker probe: 11 routes and sole stylesheet 200; Apply
+503 / Retry-After 30 / no-store / no redirect. An initial Windows smoke cleanup
+lock is documented separately from its successful functional assertions.
+[Complete evidence and boundaries](design/PREMIUM_2026_REVIEW.md).
+
+**Next:** required GitHub PR CI, normal release, live acceptance and final recovery
+backup. Existing production runtime is still `91641445` / Pages `aa8ce5b8`.
+The only cache adjustment fences old HTML from new frontend assets; no source
+admission, business eligibility, database, scheduling or GCP behavior changed.
+Rollback tag: `savepoint/pre-premium-design-2026-10-07`.
+
 ## 2026-10-07 22:24 Manila — Homepage and categories locally accepted
 
 **Progress:** 3 of 5 frontend checkpoints complete (60% by checkpoint count).

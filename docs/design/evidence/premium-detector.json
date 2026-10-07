@@ -1,0 +1,12 @@
+[
+  {
+    "antipattern": "single-font",
+    "name": "Single font without hierarchy",
+    "description": "Only one font family is used for the entire page. A single family can work when weight and size contrast carry the hierarchy; otherwise pair a distinctive display font with a refined body font.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\admin\\.codex\\worktrees\\premium-2026-design\\va-freelance-hub\\apps\\web\\src\\layouts\\Layout.astro",
+    "line": 48,
+    "snippet": "only font used is manrope"
+  }
+]

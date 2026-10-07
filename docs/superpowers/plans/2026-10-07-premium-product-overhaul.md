@@ -79,26 +79,31 @@ Owned files: `src/pages/directory.astro`, `src/components/DirectoryCategoryNav.a
 `src/components/DirectoryAgencyCard.astro`, `src/pages/jobs/[id].astro`,
 `src/pages/data-policy.astro`, `src/pages/privacy.astro`.
 
-- [ ] Move directory search before category navigation and use calm grouped
+- [x] Move directory search before category navigation and use calm grouped
   employer rows with existing truthful attributes and logo fallbacks.
-- [ ] Retain directory categories/query/pagination, safe website handling and
+- [x] Retain directory categories/query/pagination, safe website handling and
   missing URL state. Add no invented active-role counts or verification times.
-- [ ] Give job detail a nearby/sticky application panel and labelled facts;
+- [x] Give job detail a nearby/sticky application panel and labelled facts;
   maintain JSON-LD, excerpt permissions, safe source link and Apply authority.
-- [ ] Apply shared reading typography to legal pages, fix low-contrast update
+- [x] Apply shared reading typography to legal pages, fix low-contrast update
   metadata and Astro heading class attributes; preserve all policy wording.
-- [ ] Inspect unknown salary/shift, long titles, source-only description,
+- [x] Inspect unknown salary/shift, long titles, source-only description,
   directory empty/category/query and mobile safe-area behavior.
-- [ ] Review spec then code, fix and commit.
+- [x] Review spec then code, fix and commit.
+
+Task 4 accepted at `c231f863`. Final review fixes `307803f4` and frontend release
+cache fence `98a6d177` are independently accepted with ordinary built receipts.
+The fence only invalidates HTML tied to old assets; cache/data/publication rules
+remain unchanged. [Evidence and limits](../../design/PREMIUM_2026_REVIEW.md).
 
 ## Task 5 — QA, backup and release
 
 - [ ] Run applicable tests, typecheck, build and existing no-D1 workerd smoke.
-- [ ] Check contrast, keyboard, reduced motion, overflow, touch targets and
+- [x] Check contrast, keyboard, reduced motion, overflow, touch targets and
   representative real URLs at required breakpoints. Save screenshots/receipts.
-- [ ] Run separate adversarial design/code review and bounded Jev acceptance
+- [x] Run separate adversarial design/code review and bounded Jev acceptance
   consultation. Jev 401/timeout is advisory and non-blocking.
-- [ ] Fix the top material defects; run Impeccable detector once and document
+- [x] Fix the top material defects; run Impeccable detector once and document
   findings honestly, plus measured resource/bundle limits.
 - [ ] Update recovery docs, commit/push logical slices, verify remote SHAs.
 - [ ] Complete normal PR checks and release, verify deployed public pages,
