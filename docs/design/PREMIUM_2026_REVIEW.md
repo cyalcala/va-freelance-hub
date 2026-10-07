@@ -1,5 +1,9 @@
 # Premium 2026 direction review
 
+**Final status:** deployed and live-accepted at runtime `3519878f`, Pages
+`41bf9716`; main release `37643252423` passed. The dated local checkpoints below
+preserve their original boundaries. [Final release/HTTP/browser/artifact acceptance](PREMIUM_2026_ACCEPTANCE.md).
+
 Date: 7 October 2026. Scope: frontend product design only.
 Return point: `savepoint/pre-premium-design-2026-10-07`, source
 `50d8daa280d74b2a34f8d9ec1ed4a8dd1a5d0c73`.

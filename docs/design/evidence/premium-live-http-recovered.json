@@ -1,0 +1,159 @@
+{
+  "checkedAt": "2026-10-07T15:30:20.751Z",
+  "sourceSha": "3519878f8825ce808e6817febb5f8815ad5c467c",
+  "origin": "https://remotejobs-ph.pages.dev",
+  "measurement": "Ordinary HTTP requests; decoded HTML/CSS bytes, not compressed transfer sizes or field Core Web Vitals.",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 73797,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/opportunities",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 40017,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/opportunities?q=assistant",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 40709,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/directory",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 58108,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/directory?q=unmatchedpremiumqa",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 13157,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/categories/admin",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 35269,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/jobs/8992",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 11957,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/jobs/7508",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 12817,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/data-policy",
+      "status": 200,
+      "snapshot": null,
+      "source": null,
+      "generatedAt": null,
+      "jobs": null,
+      "companies": null,
+      "htmlBytes": 7903,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "snapshot": null,
+      "source": null,
+      "generatedAt": null,
+      "jobs": null,
+      "companies": null,
+      "htmlBytes": 7446,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "snapshot": "fresh",
+      "source": "d1",
+      "generatedAt": "2026-10-07T14:36:47.152Z",
+      "jobs": "1520",
+      "companies": "735",
+      "htmlBytes": 225655,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    }
+  ],
+  "stylesheets": [
+    {
+      "url": "https://remotejobs-ph.pages.dev/_astro/_category_.BJHPf6hR.css",
+      "status": 200,
+      "decodedBytes": 37705
+    }
+  ],
+  "applyProbe": null
+}

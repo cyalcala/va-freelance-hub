@@ -1,5 +1,26 @@
 # Handoff
 
+## 2026-10-07 23:30 Manila — Premium frontend complete (current handoff)
+
+Owner-directed premium redesign is TERMINAL / KEEP, five of five frontend
+checkpoints complete. [Final acceptance](design/PREMIUM_2026_ACCEPTANCE.md) owns
+the release/HTTP/browser/artifact evidence and limits. Normal implementation
+[PR #222](https://github.com/cyalcala/va-freelance-hub/pull/222) merged to
+`3519878f8825ce808e6817febb5f8815ad5c467c`; main release `37643252423` passed
+3,018 tests and deployed Pages `41bf9716-0c8f-481d-b1ff-56dd85c03832`.
+
+Exact release offline Worker and ordinary live checks pass; every inspected data
+route was fresh at 15:30:20 UTC. Desktop/mobile native search, detail and directory
+pass. Legitimate outage notices and Apply eligibility safeguards remain intact.
+The temporary GitHub write blocker resolved through normal merge; do not resume
+the failed attempts below. No premium implementation/release task remains.
+
+Accepted source/docs/evidence live in GitHub. The original managed worktree is
+retained for review; primary foreign work remains untouched. Return tag
+`savepoint/pre-premium-design-2026-10-07` preserves `50d8daa2`; use its documented
+new-branch restore, preserving later operational changes. Git is not a database
+restore receipt. Source/migration work follows its separately scoped queue.
+
 ## 2026-10-07 23:16 Manila — Premium release continuation
 
 Owner-directed premium frontend implementation and independent reviews are

@@ -1,5 +1,28 @@
 # AI Recovery Trail
 
+## 2026-10-07 23:30 Manila — Premium frontend accepted in production
+
+The owner's pre-design savepoint was created first and remotely verified. All
+five premium frontend checkpoints are now complete (100% by checkpoint count).
+Separate reviews accepted all surfaces and final fixes. Required PR CI passed
+at `515a68e3` and `33cd404f`. GitHub writes temporarily returned errors; a later
+normal squash merge of [PR #222](https://github.com/cyalcala/va-freelance-hub/pull/222)
+succeeded at 15:21:33 UTC without override/force/reset.
+
+Main/runtime `3519878f8825ce808e6817febb5f8815ad5c467c` passed release
+`37643252423` with 3,018 tests and deployed Pages `41bf9716`. Exact captured
+release artifact passed no-D1 Worker checks, including bounded Apply refusal.
+Eleven ordinary live routes and stylesheet return 200; the initial cached stale
+home/board recovered to fresh by the 15:30:20 UTC check. Browser desktop/mobile
+home had no warning or overflow; native job search, detail Apply link and company
+search pass. [Full acceptance and durable receipts](design/PREMIUM_2026_ACCEPTANCE.md).
+
+Source tag `savepoint/pre-premium-design-2026-10-07`, design contracts, reviewed
+source, screenshots and recovery records are preserved. Actual release fallback
+remains in the named 30-day artifact, separate from source/DB restore evidence.
+No source admission, ranking, eligibility, DB schema, GCP or publication change.
+No remaining premium frontend task; preserve the separate source/migration queue.
+
 ## 2026-10-07 23:16 Manila — Premium implementation and CI accepted
 
 Created and remotely verified the owner's pre-design savepoint first, archived
