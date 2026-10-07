@@ -33,8 +33,9 @@ export function publicHtmlCacheKey(request: Request): Request | null {
   // The homepage does not consume query parameters. Tracking URLs must not
   // create fresh database reads for identical content.
   if (url.pathname === "/") url.search = "";
-  // A new schema of public eligibility must not reuse pre-repair cache entries.
-  url.searchParams.set("__public_cache_revision", "2026-10-07-refresh-recovery");
+  // New frontend assets must not reuse HTML that points to a previous build's
+  // stylesheet. Keep the existing eligibility, private-request and TTL rules.
+  url.searchParams.set("__public_cache_revision", "2026-10-07-premium-ui");
   return new Request(url.toString(), { method: "GET" });
 }
 
