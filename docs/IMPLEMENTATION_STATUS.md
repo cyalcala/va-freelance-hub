@@ -1,6 +1,34 @@
 # Implementation Status
 
-## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (current deployed checkpoint)
+## 2026-10-07 — Public availability, safeguards and recovery (current checkpoint)
+
+The three bounded public-serving tasks are **TERMINAL — KEEP**. This records
+their completion, not an overall source-autonomy or platform-migration percentage.
+
+| Delivered | Outcome | GitHub receipt |
+| --- | --- | --- |
+| Availability recovery | Verified bundled board keeps public pages available when D1 and ephemeral caches are unavailable | [PR #215](https://github.com/cyalcala/va-freelance-hub/pull/215), [incident](incident-2026-10-07-public-snapshot-availability.md) |
+| Risk mitigation | Validated release-time fallback capture; bounded, fail-closed Apply; missing-row lease; required no-D1 workerd checks | [PR #217](https://github.com/cyalcala/va-freelance-hub/pull/217), [acceptance](incident-2026-10-07-public-serving-risk-mitigation.md) |
+| Saved-notice recovery | Retained complete refresh work, rechecked stale memory after one minute, and prevented stale HTML from concealing recovered data | [PR #219](https://github.com/cyalcala/va-freelance-hub/pull/219), [acceptance](incident-2026-10-07-snapshot-refresh-recovery.md) |
+
+Latest runtime release `91641445985d8f3230e8e54ccf857c637bc3b551` maps to Pages
+`aa8ce5b8-d084-466b-bd8c-24d3e9ebe7c4`; release CI `37614492584` passed.
+Acceptance docs [PR #220](https://github.com/cyalcala/va-freelance-hub/pull/220)
+merged to `0bde87f4d317f6e136fde8665f32aa976c1b71d5`; exact-SHA main CI
+`37615599312` passed and origin/main was verified at that SHA before this slice.
+Implementation evidence: 3,018 tests pass; 20 live route checks were 200/fresh;
+browser reload confirmed warning absence; exact release artifact without D1
+served eight routes and safely refused Apply with 503 / Retry-After 30.
+
+One ordinary homepage check at `2026-10-07T12:03:32Z` again returned 200/fresh,
+1,519 jobs / 735 companies, generation `11:13:48.359Z`, no saved notice. This is
+a dated observation. Prolonged outages can still age the saved board and prevent
+Apply authority checks. GitHub preserves code/tests/docs; 30-day release artifacts
+preserve the captured fallback and receipts. Neither is a database restoration
+receipt. Source admission/publication gates and the GCP migration queue are unchanged.
+No further public-serving implementation is pending from these tasks.
+
+## 2026-10-06 — PUBLIC-SNAPSHOT-D1 (historical deployed checkpoint)
 
 - **Delivered:** Public Serving Snapshot architecture resolving D1 read amplification and crawler-induced row-read quota depletion (error 7500 / 14h 503 incident).
 - **Core Components:**

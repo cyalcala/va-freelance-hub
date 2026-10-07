@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Progress/backup update (2026-10-07 20:03 Manila): acceptance PR #220 is merged
+to `0bde87f4d317f6e136fde8665f32aa976c1b71d5`, verified on origin/main; main CI
+`37615599312` passed. [Status](../IMPLEMENTATION_STATUS.md),
+[handoff](../HANDOFF.md) and [recovery trail](../AI_RECOVERY_TRAIL.md) summarize
+the completed availability/safeguard/refresh tasks. A single ordinary homepage
+check at 12:03:32 UTC again returned 200/fresh with no saved notice. This is
+dated evidence; GitHub backups are not a database restore receipt.
+
 Current owner task (2026-10-07 19:36 Manila): the saved-listings screenshot
 recovery is **TERMINAL — KEEP**. PR #219 merged normally; release SHA
 `91641445985d8f3230e8e54ccf857c637bc3b551` maps to Pages `aa8ce5b8`.
