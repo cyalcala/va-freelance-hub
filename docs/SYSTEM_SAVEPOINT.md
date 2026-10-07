@@ -1,5 +1,20 @@
 # System Savepoint
 
+## 2026-10-07 — Pre-premium-design return point
+
+Owner requested a savepoint before the premium redesign. Exact baseline:
+`50d8daa280d74b2a34f8d9ec1ed4a8dd1a5d0c73`, tag
+`savepoint/pre-premium-design-2026-10-07`. Baseline main CI `37618929662` passed.
+Accepted runtime remains `91641445` / Pages `aa8ce5b8`, including the public
+fallback, Apply safeguards and refresh recovery. No UI change exists at this
+checkpoint. [Return procedure and backup boundary](design/PREMIUM_2026_SAVEPOINT.md).
+The [owner design brief](design/PREMIUM_2026_OWNER_BRIEF.md) is archived verbatim.
+Foreign untracked work preserved; tagged source is not a database backup.
+
+**Next:** isolated `codex/premium-2026-overhaul`, preserving the warm cream,
+charcoal and coral identity while following Warm Precision + Employment
+Intelligence. Discover/critique/concepts first, then one surface at a time.
+
 ## 2026-10-07 20:03 Manila — Recent progress and GitHub backup summary
 
 **Scope:** owner-requested quick progress discussion and durable documentation.
