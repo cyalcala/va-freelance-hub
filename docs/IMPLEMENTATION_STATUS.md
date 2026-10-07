@@ -1,5 +1,15 @@
 # Implementation Status
 
+## 2026-10-08 05:00 Manila — Pigment & Paper frontend TERMINAL / KEEP
+
+Five of five frontend checkpoints complete. PR #224 merged normally to
+`e29d9905f1b7b85bb8cb7d8747377812ecd71e56`; main release `37685745355` passed and
+deployed Pages `28dadacb`. Watercolor texture, thick paper surfaces/shadows and
+recorded company marks are live. Responsive, native interaction, contrast and
+3,023-test CI acceptance passed. [Final acceptance](design/PIGMENT_PAPER_2026_ACCEPTANCE.md)
+records source savepoint, artifacts, SlopMonster limitations and live evidence.
+Earlier restrained styling is superseded; operational/source queues are unchanged.
+
 ## 2026-10-08 — Pigment & Paper frontend revision active
 
 Owner rejected the previous flat visual treatment. The new watercolor/paper

@@ -1,5 +1,16 @@
 # AI Recovery Trail
 
+## 2026-10-08 05:00 Manila — Pigment & Paper accepted in production
+
+Pre-edit source was tagged and backed up first. Exact-head independent review
+approved `20e656fa`; required PR CI `37685463212` passed 3,023 tests, 15 Python
+tests and original Linux offline checks. Normal PR #224 squash merge produced
+runtime `e29d9905f1b7b85bb8cb7d8747377812ecd71e56`. Exact-SHA main release
+`37685745355` passed and deployed Pages `28dadacb`. Release fallback/offline
+receipts downloaded; live eleven-route/CSS checks and desktop/mobile native
+search passed, with genuine fresh state after refresh. No source/GCP governance
+change or operational-health inference. [Final record](design/PIGMENT_PAPER_2026_ACCEPTANCE.md).
+
 ## 2026-10-08 — Owner-directed Pigment & Paper revision
 
 Created and remotely verified `savepoint/pre-pigment-paper-2026-10-08` before

@@ -1,6 +1,16 @@
 # Handoff
 
-## 2026-10-08 — Pigment & Paper current handoff
+## 2026-10-08 05:00 Manila — Pigment & Paper complete (current handoff)
+
+Owner's latest watercolor/shade/company-mark revision is deployed and accepted:
+PR #224, runtime `e29d9905f1b7b85bb8cb7d8747377812ecd71e56`, successful release
+`37685745355`, Pages `28dadacb`. Five of five frontend checkpoints complete.
+[Acceptance](design/PIGMENT_PAPER_2026_ACCEPTANCE.md) owns evidence and limits.
+Both source savepoints and task-owned code/evidence are backed up on GitHub.
+No pending implementation action for this revision; future owner visual feedback
+may refine it. Source-perpetuity/GCP work retains its independent queue/predicates.
+
+## 2026-10-08 — Pigment & Paper implementation checkpoint (superseded above)
 
 Continue `codex/pigment-paper-design` from the attached premium-2026-design
 worktree. The owner's latest thicker watercolor/shade/logo request supersedes
