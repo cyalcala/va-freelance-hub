@@ -1,5 +1,40 @@
 # System Savepoint
 
+## 2026-10-07 18:31 Manila — Public risk mitigation released and accepted
+
+**Unit:** PUBLIC-AVAILABILITY-RISK-MITIGATION. **Status:** TERMINAL — KEEP, 100%
+of this bounded task. [PR #217](https://github.com/cyalcala/va-freelance-hub/pull/217)
+merged normally; release SHA `59dd4f900cf03ec7db98db47aa441634ad0e5757`, verified
+on origin/main. Pushed implementation head `55192e62dae43d301fcab1d05525ab41be87319f`
+matched its remote. PR CI `37607203086` and main CI/release `37607368827` passed.
+
+**Production:** Pages `676ee426-9afc-408f-a56d-bef43c22d442`, Wrangler Source
+`59dd4f9`, pinned main release above. Ten routes 200 on both production and
+immutable deployment (20 checks); valid Apply 302, unsafe target 403. Fresh board
+1,519 jobs / 735 companies, generation `2026-10-07T09:35:53.265Z`.
+**Failover:** exact release artifact tested by workerd without D1, eight routes
+200 and Apply eligibility 503 / Retry-After 30 / no-store / no outbound redirect.
+Release capture retained the reviewed same-age baseline (`snapshot_not_newer`),
+real age 3,093 seconds and SHA-256 `59826ec68a83b14e0d7b5827d93c6e1257680919710735e4444c1b40fa5d2aa7`.
+
+**Controls:** automatic validated release capture/retention, saved-date notice,
+bounded Apply/analytics waits, first-row atomic rebuild lease, required no-D1 CI
+and exact-artifact release probes. **Checks:** 3,013 tests pass, build/typechecks,
+Python/governance/secret/worker checks and release steps pass. No induced live
+quota outage or fleet-wide SQL/CPU certification. No weaker source/item/withdrawal
+gate, new production clock, service or GCP change. Prolonged outages still age a
+saved board; Apply refuses when current authority cannot be checked.
+
+**Durability:** Git-backed code/baseline/recovery history in PR #217; Pages
+artifact and 30-day captured-bundle/hash/source/offline artifacts. This is not a
+database restoration claim. [Risk acceptance and receipts](incident-2026-10-07-public-serving-risk-mitigation.md).
+Foreign work preserved. Acceptance documentation is a finite docs-only review
+slice on `codex/public-risk-acceptance`; its commit/PR receipt is normal Git
+history/final handoff. Rollback Pages `c6d071c1` / `6297335a`.
+
+**Next:** this task has no remaining implementation work. Recover the owner PH/VA
+lead under its source queue only as a separately scoped task.
+
 ## 2026-10-07 18:23 Manila — Public serving risk mitigation, local checks passed
 
 **Unit:** PUBLIC-AVAILABILITY-RISK-MITIGATION, owner-authorized incident follow-up.

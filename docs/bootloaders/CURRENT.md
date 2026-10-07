@@ -1,11 +1,13 @@
 # Current resume pointer
 
-Current owner task (2026-10-07 18:23 Manila): mitigate public availability risks.
-Runtime `e72f8b47` and release tooling `9c546701` are locally verified on
-`codex/public-availability-risk-mitigation`; production acceptance remains pending.
-Read the newest savepoint and [risk follow-up](../incident-2026-10-07-public-serving-risk-mitigation.md).
-Next: normal PR/main release and production/fallback verification. The older
-PH/VA lead pointer below remains the next separately scoped source task.
+Current owner task (2026-10-07 18:31 Manila): public availability risk mitigation
+is **TERMINAL — KEEP**. PR #217 merged; `59dd4f900cf03ec7db98db47aa441634ad0e5757`
+released as Pages `676ee426`. Main CI/release `37607368827` passed, including exact
+release-artifact no-D1 smoke. Ten routes returned 200 on production and immutable
+deployment; valid Apply 302, unsafe target 403. Bundle/current board: 1,519 jobs /
+735 companies. Read the newest savepoint and [risk acceptance](../incident-2026-10-07-public-serving-risk-mitigation.md)
+for hash/time/failover/backup receipts and remaining limits. No availability work
+remains. The older PH/VA lead pointer below is a separately scoped source task.
 
 Updated 2026-10-04 for CANONICAL-PH-VA-FRESHNESS-V6.5. Navigation only; not runtime
 health, policy precedence or dispatch authority. Read the newest applicable

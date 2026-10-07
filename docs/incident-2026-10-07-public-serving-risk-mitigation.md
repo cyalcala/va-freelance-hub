@@ -2,9 +2,9 @@
 
 Scope: follow-up to the [accepted availability incident](incident-2026-10-07-public-snapshot-availability.md).
 Start SHA `d9708e9eac641e5be4f34be69bb13e7bffa3c3e8` on
-`codex/public-availability-risk-mitigation`. Status: local implementation verified;
-normal PR/main release and production acceptance pending. Historical incident
-receipts remain unchanged.
+`codex/public-availability-risk-mitigation`. Status: **TERMINAL — KEEP**; production
+and exact release-artifact acceptance observed through `2026-10-07T10:29:18Z`.
+100% of this bounded risk task; historical incident receipts remain unchanged.
 
 ## Mitigations
 
@@ -54,10 +54,44 @@ recorded. Foreign `.agents/skills/` and `lucky777.md` were preserved.
 
 ## Release and acceptance
 
-Pending normal PR/main CI, Pages deployment-to-SHA confirmation, release fallback
-receipt and healthy production route/Apply smoke. Do not claim these from local
-unit success. Rollback uses the preceding working LKG deployment `c6d071c1` /
-`6297335a`, preserving serving availability while reverting these new mitigations.
+[PR #217](https://github.com/cyalcala/va-freelance-hub/pull/217) merged normally at
+`2026-10-07T10:26:03Z`, release SHA
+`59dd4f900cf03ec7db98db47aa441634ad0e5757`. Pushed branch head
+`55192e62dae43d301fcab1d05525ab41be87319f` matched its remote. PR validation
+[37607203086](https://github.com/cyalcala/va-freelance-hub/actions/runs/37607203086)
+and main validation/release
+[37607368827](https://github.com/cyalcala/va-freelance-hub/actions/runs/37607368827)
+passed, including all tests, governance, secret scan, Python tests, build/typechecks,
+worker checks, migration/source-transition/FTS checks and both offline smoke steps.
+The legacy Vercel account check remains outside the active Cloudflare path; no
+admin merge bypass was used.
+
+Pages production **`676ee426-9afc-408f-a56d-bef43c22d442`** was listed by Wrangler
+with Source `59dd4f9`, matching that pinned workflow's release SHA:
+[immutable artifact](https://676ee426.remotejobs-ph.pages.dev),
+[production](https://remotejobs-ph.pages.dev). At `2026-10-07T10:29:18.002Z`, all
+ten routes returned 200 on both origins (20 responses), serving the fresh
+1,519-job / 735-company board. Valid Apply returned 302; an unsafe target returned
+403 without Location. [Live receipt](audits/2026-10-07-public-risk-production-smoke.json).
+These probes bypassed HTML cache; latency measurements are local client timings,
+not a fleet-wide CPU/read/SLO certification.
+
+The release exporter reported **retained / snapshot_not_newer**, because the
+serving row matched the already refreshed committed baseline, with real age 3,093
+seconds and unchanged SHA-256. [Exact release capture](audits/2026-10-07-public-risk-release-capture.json).
+The release workerd smoke at `2026-10-07T10:27:42.953Z` used that exact captured
+artifact and the full release SHA: eight public routes 200; unavailable eligibility
+503, Retry-After 30, no-store and no redirect.
+[Exact release offline receipt](audits/2026-10-07-public-risk-release-offline.json).
+The CI artifacts include the fallback itself, hash/source receipt and offline
+receipt for 30 days. Checked-in acceptance JSON contains operational metadata only.
+No raw job descriptions, tokens, cookies or private records were added to evidence.
+
+Acceptance is a finite docs-only branch `codex/public-risk-acceptance`; its Git/PR
+backup receipt comes from normal history and the final handoff. Existing GCP jobs
+were not deployed or certified here. Rollback uses the preceding working LKG Pages
+deployment `c6d071c1` / `6297335a`; it reverts these mitigations while retaining
+public-board fallback.
 
 The remaining irreducible tradeoff is availability versus recency during a prolonged
 upstream outage. The dated board remains visible with honest freshness context;
