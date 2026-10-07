@@ -19,7 +19,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (edgeCache && cacheKey) {
     try {
       const match = await readPublicHtmlCache(edgeCache, cacheKey);
-      if (match) {
+      if (match && mayStorePublicHtml(match)) {
         const cached = new Response(match.body, match);
         cached.headers.set("X-Edge-Cache", "HIT");
         return cached;
@@ -31,6 +31,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
   applySecurityHeaders(response.headers);
+
+  // A saved/outage page must not pin its notice in HTML cache after the shared
+  // board recovers. Rendering this page still uses the in-memory/edge snapshot.
+  if (["stale", "lkg_fallback", "degraded"].includes(response.headers.get("X-Public-Snapshot") ?? "")) {
+    response.headers.set("Cache-Control", "no-store");
+  }
 
   if (edgeCache && cacheKey && mayStorePublicHtml(response)) {
     try {

@@ -435,6 +435,75 @@ describe("Phase 4 — Snapshot Validation", () => {
 });
 
 describe("Phase 6 — Failure-Injection Tests (Tests A through I)", () => {
+  test("waitUntil retains a valid refresh that outlasts the page-serving deadline", async () => {
+    resetPublicBoardState();
+    const initial = Date.parse("2026-10-07T09:00:00.000Z");
+    const now = initial + 2 * 60 * 60 * 1000;
+    promoteSnapshot({ generatedAt: new Date(initial).toISOString(), jobs: [job({ id: 1, title: "Previous" })], directory: [] }, "memory", initial);
+    const pending: Promise<unknown>[] = [];
+    let complete!: () => void;
+    const finished = new Promise<void>((resolve) => { complete = resolve; });
+    const served = await resolvePublicBoard({ now, cache: null, waitUntil(p) { pending.push(p); }, store: {
+      async read() { await new Promise((resolve) => setTimeout(resolve, 2_100)); return null; },
+      async claimRefresh() { return true; },
+      async build(generatedAt) { return { generatedAt, jobs: [job({ id: 2, title: "Refreshed" })], directory: [] }; },
+      async write() { complete(); },
+    } });
+    expect(served.jobs[0]?.id).toBe(1);
+    await Promise.all(pending);
+    const atLifetimeEnd = getPublicSnapshotHealth(now);
+    // Drain even the old implementation's detached work before the next test.
+    await finished;
+    expect(atLifetimeEnd.lastRefreshResult).toBe("success");
+    expect(atLifetimeEnd.generatedAt).toBe(new Date(now).toISOString());
+  });
+
+  test("a stale warm board rechecks recovered D1 after one minute rather than another fifteen", async () => {
+    resetPublicBoardState();
+    const now = Date.parse("2026-10-07T12:00:00.000Z");
+    const old = { generatedAt: new Date(now - 2 * 60 * 60 * 1000).toISOString(), jobs: [job({ id: 1, title: "Saved" })], directory: [] };
+    const current = { generatedAt: new Date(now).toISOString(), jobs: [job({ id: 2, title: "Recovered" })], directory: [] };
+    promoteSnapshot(old, "edge", now);
+    let reads = 0;
+    const pending: Promise<unknown>[] = [];
+    const store: SnapshotStore = {
+      async read() { reads += 1; return { generatedAt: current.generatedAt, payload: await packBoard(current) }; },
+      async claimRefresh() { return false; }, async write() {}, async build() { throw new Error("No scan needed"); },
+    };
+    const options = { cache: null, store, waitUntil(p: Promise<unknown>) { pending.push(p); } };
+    await resolvePublicBoard({ ...options, now: now + 30_000 });
+    expect(reads).toBe(0);
+    await resolvePublicBoard({ ...options, now: now + 61_000 });
+    await Promise.all(pending);
+    expect(reads).toBe(1);
+    const recovered = await resolvePublicBoard({ ...options, now: now + 61_001 });
+    expect(recovered.jobs[0]?.id).toBe(2);
+    expect(reads).toBe(1);
+  });
+
+  test("cold serving timeout retains the underlying reconstruction until its verified promotion", async () => {
+    resetPublicBoardState();
+    const now = Date.now();
+    const pending: Promise<unknown>[] = [];
+    let writes = 0;
+    let complete!: () => void;
+    const finished = new Promise<void>((resolve) => { complete = resolve; });
+    const served = await resolvePublicBoard({ now, cache: null, dependencyTimeoutMs: 5,
+      waitUntil(p) { pending.push(p); }, store: {
+        async read() { await new Promise((resolve) => setTimeout(resolve, 30)); return null; },
+        async claimRefresh() { return true; },
+        async build(generatedAt) { return { ...getDurableLkgSnapshot(), generatedAt }; },
+        async write() { writes += 1; complete(); },
+      },
+    });
+    expect(served.generatedAt).toBe(getDurableLkgSnapshot().generatedAt);
+    await Promise.all(pending);
+    const retainedWrites = writes;
+    await finished;
+    expect(retainedWrites).toBe(1);
+    expect(getPublicSnapshotHealth(now).generatedAt).toBe(new Date(now).toISOString());
+  });
+
   test("an oversized candidate cannot replace memory, edge, or the durable row", async () => {
     resetPublicBoardState();
     const initial = Date.parse("2026-10-06T00:00:00.000Z");

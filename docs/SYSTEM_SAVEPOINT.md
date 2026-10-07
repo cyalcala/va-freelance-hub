@@ -1,5 +1,26 @@
 # System Savepoint
 
+## 2026-10-07 19:26 Manila — Owner screenshot: stale notice recovery fix
+
+**Unit:** PUBLIC-SNAPSHOT-REFRESH-RECOVERY. **Start:**
+`36b6eff402cc238e408cbed30bff280029f416a3`, branch
+`codex/public-snapshot-refresh-recovery`. **Runtime:** `457c9805`.
+**Status:** local verification passed, production acceptance pending.
+
+Healthy D1 later held generation 11:13:48 UTC while browser/edge displayed the
+09:35:53 saved notice. Five red-then-green tests cover stale HTML concealing
+recovery, fallback HTML caching, detached slow background/cold reconstruction
+and fifteen-minute stale recheck delay. Preserve the notice for genuine fallback;
+fix retention and recovery propagation. Separate bounded 25s background lifetime
+from 2s serving deadline; retain cold/edge writes; stale memory rechecks at 1m;
+fresh warm path stays zero-D1; stale HTML no-store and cache revision changed.
+
+**Checks:** 3,018 tests pass, build/typecheck/four governance audits pass.
+No induced quota outage, source/eligibility relaxation, new clock/service or GCP
+change. Tail evidence did not prove the original lease winner's failure; do not
+invent that receipt. [Incident follow-up](incident-2026-10-07-snapshot-refresh-recovery.md).
+**Next:** normal PR/main release and ordinary browser/HTTP recovery verification.
+
 ## 2026-10-07 18:31 Manila — Public risk mitigation released and accepted
 
 **Unit:** PUBLIC-AVAILABILITY-RISK-MITIGATION. **Status:** TERMINAL — KEEP, 100%

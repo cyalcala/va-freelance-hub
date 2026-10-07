@@ -97,3 +97,10 @@ The remaining irreducible tradeoff is availability versus recency during a prolo
 upstream outage. The dated board remains visible with honest freshness context;
 current Apply authority remains fail-closed. Refreshing the bundle at releases and
 requiring a real Worker outage smoke mitigates this risk without weakening gates.
+
+## Subsequent owner screenshot
+
+The later persistent saved-notice report is tracked in
+[snapshot refresh recovery](incident-2026-10-07-snapshot-refresh-recovery.md).
+It exposed recovery propagation and async-lifetime gaps outside the earlier fast
+mock refresh checks. The earlier production/offline receipts above are preserved.
