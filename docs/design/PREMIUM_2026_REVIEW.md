@@ -190,9 +190,14 @@ file that these pages do not reference; it was not treated as a downloaded page
 resource. Browser inventory observed one Manrope font resource. Reduced-motion
 rules were inspected; an OS motion preference was not emulated.
 
-Required PR CI, production deployment and live acceptance remain pending at this
-checkpoint. The rollback tag remains on GitHub; source/DB/GCP behavior is unchanged
-apart from the narrowly documented frontend HTML-cache revision fence.
+Required PR CI subsequently passed at head `515a68e3`: run `37641913191`,
+3,018 tests / zero failures, including the original Linux offline harness. Its
+downloaded receipt is retained in `evidence/premium-pr-ci-offline.json`.
+Production deployment and live acceptance remain pending because normal GitHub
+merge and main push operations returned server errors. [Exact receipts and safe
+continuation](PREMIUM_2026_RELEASE_CHECKPOINT.md). The rollback tag remains on
+GitHub; source/DB/GCP behavior is unchanged apart from the narrowly documented
+frontend HTML-cache revision fence.
 
 ## Advisory and boundaries
 

@@ -1,6 +1,24 @@
 # Implementation Status
 
-## 2026-10-07 — Public availability, safeguards and recovery (current checkpoint)
+## 2026-10-07 23:16 Manila — Premium frontend accepted; release pending
+
+The premium cream/charcoal/coral redesign is complete and independently reviewed:
+search-first home/board, readable category and directory rows, nearby Apply and
+policy typography. Required [PR #222](https://github.com/cyalcala/va-freelance-hub/pull/222)
+[CI 37641913191](https://github.com/cyalcala/va-freelance-hub/actions/runs/37641913191)
+passed at head `515a68e3`: 3,018 tests / zero failures, build/typecheck/audits and
+the original Linux no-D1 Worker check. Four of five frontend checkpoints are
+complete (80% by checkpoint count); production acceptance is not complete.
+
+Normal GitHub merge and main push returned internal server errors. PR remains
+OPEN, main `7648fb2b`; existing accepted runtime is still `91641445` / Pages
+`aa8ce5b8`. [Release receipts, evidence and safe continuation](design/PREMIUM_2026_RELEASE_CHECKPOINT.md).
+Code/design evidence is backed up on `codex/premium-2026-overhaul`; the pre-design
+return tag is `savepoint/pre-premium-design-2026-10-07`. No source/DB/GCP or
+publication change; the frontend HTML revision fences old assets. The prior
+public-serving recovery remains accepted separately below.
+
+## 2026-10-07 — Public availability, safeguards and recovery (earlier accepted checkpoint)
 
 The three bounded public-serving tasks are **TERMINAL — KEEP**. This records
 their completion, not an overall source-autonomy or platform-migration percentage.

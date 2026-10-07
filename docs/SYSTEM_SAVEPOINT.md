@@ -1,6 +1,6 @@
 # System Savepoint
 
-## 2026-10-07 — Premium frontend locally accepted; release pending
+## 2026-10-07 23:16 Manila — Premium frontend and CI accepted; release blocked
 
 **Progress:** 4 of 5 frontend checkpoints complete (80% by checkpoint count).
 Final source `98a6d1777941e7d5c27bf6d482aede6d4031655f` is independently reviewed.
@@ -8,11 +8,17 @@ All product surfaces, native flows and responsive checks pass; full local suite
 3,017/0, final cache/snapshot slice 47/0, typecheck, build and four audits pass.
 Final ordinary no-D1 Worker probe: 11 routes and sole stylesheet 200; Apply
 503 / Retry-After 30 / no-store / no redirect. An initial Windows smoke cleanup
-lock is documented separately from its successful functional assertions.
+lock is documented separately from its successful functional assertions. Required
+PR CI `37641913191` at documentation head `515a68e3` passed 3,018 tests / zero
+failures and the original Linux no-D1 harness. PR synthetic merge tested by that
+harness: `12c0d9ea974a8010316691d75f2d311c6df62583`.
 [Complete evidence and boundaries](design/PREMIUM_2026_REVIEW.md).
 
-**Next:** required GitHub PR CI, normal release, live acceptance and final recovery
-backup. Existing production runtime is still `91641445` / Pages `aa8ce5b8`.
+**Next:** normal release, live acceptance and final recovery backup. GitHub normal
+merge/main push returned internal server errors; PR #222 is OPEN and main remains
+`7648fb2becaa65110e249e69b0fabfd836d48b75`. No force/reset or alternate deployment.
+[Exact release receipts and continuation](design/PREMIUM_2026_RELEASE_CHECKPOINT.md).
+Existing production runtime is still `91641445` / Pages `aa8ce5b8`.
 The only cache adjustment fences old HTML from new frontend assets; no source
 admission, business eligibility, database, scheduling or GCP behavior changed.
 Rollback tag: `savepoint/pre-premium-design-2026-10-07`.

@@ -98,7 +98,7 @@ remain unchanged. [Evidence and limits](../../design/PREMIUM_2026_REVIEW.md).
 
 ## Task 5 — QA, backup and release
 
-- [ ] Run applicable tests, typecheck, build and existing no-D1 workerd smoke.
+- [x] Run applicable tests, typecheck, build and existing no-D1 workerd smoke.
 - [x] Check contrast, keyboard, reduced motion, overflow, touch targets and
   representative real URLs at required breakpoints. Save screenshots/receipts.
 - [x] Run separate adversarial design/code review and bounded Jev acceptance
@@ -108,6 +108,11 @@ remain unchanged. [Evidence and limits](../../design/PREMIUM_2026_REVIEW.md).
 - [ ] Update recovery docs, commit/push logical slices, verify remote SHAs.
 - [ ] Complete normal PR checks and release, verify deployed public pages,
   original Apply behavior and honest saved-board state; retain rollback tag.
+
+Required PR CI `37641913191` passed at head `515a68e3` with 3,018 tests and the
+original Linux offline harness. Normal GitHub merge/main push returned server
+errors; production/live acceptance remains pending. [Release checkpoint and
+safe continuation](../../design/PREMIUM_2026_RELEASE_CHECKPOINT.md).
 
 No ingestion, scheduling, source admission, ranking, database or publication
 contract changes are part of any task. Existing foreign work is preserved.

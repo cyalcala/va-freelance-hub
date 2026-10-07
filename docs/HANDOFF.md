@@ -1,6 +1,27 @@
 # Handoff
 
-## 2026-10-07 — Public serving recovery complete (current handoff)
+## 2026-10-07 23:16 Manila — Premium release continuation
+
+Owner-directed premium frontend implementation and independent reviews are
+complete. [PR #222](https://github.com/cyalcala/va-freelance-hub/pull/222) contains
+accepted behavior `98a6d177` and passed required CI `37641913191` at head
+`515a68e3`: 3,018 tests / zero failures and clean Linux offline Worker acceptance.
+[Review evidence](design/PREMIUM_2026_REVIEW.md).
+
+Release is pending: GitHub normal merge and main push returned server errors;
+read-back found PR OPEN and main `7648fb2b`. Do not assume a failed mutation did
+nothing: read back current state before a spaced normal retry and preserve any
+automated main update. Let required checks finish for newer heads. Then observe
+main release/Pages provenance, verify ordinary live routes/assets and browser
+flows, and commit/push final acceptance docs. [Exact receipt and return procedure](design/PREMIUM_2026_RELEASE_CHECKPOINT.md).
+
+Worktree `premium-2026-design`, branch `codex/premium-2026-overhaul`, holds the
+source and evidence; original foreign work is preserved. GitHub return tag
+`savepoint/pre-premium-design-2026-10-07` preserves `50d8daa2`. Source recovery
+does not certify database restoration. The earlier accepted runtime remains
+`91641445` / Pages `aa8ce5b8`; no premium live deployment is claimed.
+
+## 2026-10-07 — Public serving recovery complete (earlier accepted handoff)
 
 Availability recovery, risk mitigation and saved-notice recovery are complete.
 Read the newest [savepoint](SYSTEM_SAVEPOINT.md), [current status](IMPLEMENTATION_STATUS.md)

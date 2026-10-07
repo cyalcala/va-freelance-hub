@@ -1,6 +1,29 @@
 # AI Recovery Trail
 
-## 2026-10-07 — Public serving availability and recovery (current milestone)
+## 2026-10-07 23:16 Manila — Premium implementation and CI accepted
+
+Created and remotely verified the owner's pre-design savepoint first, archived
+the full brief, then implemented the approved A×B direction in an isolated
+managed worktree. Separate spec then quality reviews accepted each surface;
+integrated adversarial review accepted the final anchor/contrast and release
+HTML-cache fence. Actual native/responsive evidence is retained in
+[design review](design/PREMIUM_2026_REVIEW.md).
+
+[PR #222](https://github.com/cyalcala/va-freelance-hub/pull/222) required CI
+`37641913191` passed at `515a68e3`, with 3,018 tests / zero failures and the
+original Linux no-D1 Worker receipt. The prior Windows cleanup lock was recorded
+separately; automatic policy blocked removing that temporary folder, which was
+retained. Jev was advisory/unavailable; no invented advisory approval.
+
+GitHub's normal merge and main update operations returned internal server
+errors, leaving PR OPEN and main `7648fb2b`. No override, force push or alternate
+production deployment. [Exact receipts and remaining release work](design/PREMIUM_2026_RELEASE_CHECKPOINT.md).
+Frontend progress remains 4/5 checkpoints, not production acceptance. Source,
+evidence and recovery records are backed up; return tag
+`savepoint/pre-premium-design-2026-10-07` preserves `50d8daa2`. No source
+admission, ranking, eligibility, DB, GCP or publication change.
+
+## 2026-10-07 — Public serving availability and recovery (earlier accepted milestone)
 
 Completed three owner-directed slices: [availability PR #215](https://github.com/cyalcala/va-freelance-hub/pull/215),
 [safeguards PR #217](https://github.com/cyalcala/va-freelance-hub/pull/217), and
