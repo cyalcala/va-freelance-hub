@@ -1,7 +1,9 @@
 # ADR-010: Public Serving Snapshot Architecture
 
 ## Status
-Accepted and Deployed (2026-10-06)
+Accepted. Production correction recorded 2026-10-07.
+
+The status line on 2026-10-06 was "Accepted and Deployed (2026-10-06)". That deployment claim was not true of Cloudflare Pages on the morning of 2026-10-07. The correction below is the production evidence. The 2026-10-04 quota facts in Context are unchanged.
 
 ## Context
 On 2026-10-04, production Cloudflare D1 experienced a daily row-read quota exhaustion incident (code 7500 / 14-hour 503 outage) under search crawler and visitor traffic. Prior to this ADR, every public route request (`/`, `/opportunities`, `/directory`, `/categories/[slug]`, `/jobs/[id]`) performed un-coalesced D1 queries:
@@ -42,6 +44,40 @@ We implement a three-tier **Public Serving Snapshot** architecture (`public-serv
    - Payloads are gzipped using native `CompressionStream("gzip")` and base64 encoded.
    - If payload size approaches quota ceilings, `packBoard()` sheds job descriptions while preserving all core discovery metadata.
    - If D1 quota fails (`d1_quota` or `d1_busy`) but a cached snapshot is available, the board continues serving smoothly without returning 500/503 errors.
+
+## Correction 2026-10-07 — availability when the snapshot cannot be read
+
+On 2026-10-07 the live Pages deployment was still git `8875e2328443c82e71c0fe1473b1edd4da03c615` (deployment `53fe5e7b`). That build has no `public-serving-snapshot.ts`. Migration `0054_public_serving_snapshot.sql` was not applied. `221650a4` was on `main` and was not an ancestor of the deployed SHA. A cold isolate in `221650a4` also threw from `loadCold` when D1 quota or a missing snapshot row left no memory and no edge copy. Cache TTL and a failed refresh could therefore become a public 503. The edge cache and isolate memory are not durable across a deploy.
+
+The availability invariant is: a backend failure may reduce freshness, and it must not remove the public board while a previously valid board exists.
+
+What shipped on branch `codex/public-availability-lkg` commit `019333f72261e8d182567163239f23e663c8d43f`:
+
+- A candidate snapshot is validated and promoted atomically. An empty board, a malformed board, or a collapse below 10% of an active board of at least 20 jobs is rejected. The active board stays.
+- A stale in-memory board is served while a refresh is scheduled. Expiry does not delete the only copy.
+- When memory, edge, and D1 cannot supply a valid board, the worker serves `apps/web/src/data/public-lkg.json`, a production export captured `2026-10-07T08:15:58.968Z` (1,518 jobs, 735 directory rows). Descriptions are omitted in that file. It is real inventory, not a sample catalog.
+- Public routes set `X-Public-Snapshot`, `X-Public-Snapshot-Jobs`, and `X-Public-Snapshot-Source`.
+- Migration `0054` was applied to D1 `08072f16-d3d1-436a-9104-b057a162db7c` on 2026-10-07. The first successful rebuild wrote one row: `generated_at` `2026-10-07T08:34:17.737Z`, payload length 598,055, lease clear. A follow-up read of that row reported `rows_read` 1.
+
+Pages deployment `https://62a5be85.remotejobs-ph.pages.dev` was published to project `remotejobs-ph` branch `main` and was serving on `https://remotejobs-ph.pages.dev` the same afternoon. Measured with `curl` after the snapshot row existed:
+
+| URL | HTTP | TTFB | Snapshot |
+| --- | --- | --- | --- |
+| `/` | 200 | 0.220s | fresh, 1518 jobs, source d1, edge HIT |
+| `/opportunities` | 200 | 0.237s | fresh, 1518, source d1, edge HIT |
+| `/directory` | 200 | 0.211s | fresh, 1518, source d1, edge HIT |
+| `/categories/admin` | 200 | 0.255s | fresh, 1518, source d1 |
+| `/categories/customer-service` | 200 | 0.231s | fresh, 1518, source d1 |
+| `/jobs/7` | 200 | 0.210s | NoGigiddy, lastmod 2026-09-27 |
+| `/jobs/251` | 200 | 0.208s | Inside Sales Contractor |
+| `/sitemap.xml` | 200 | 0.200s | fresh, 1518, both job URLs present |
+| `/categories/not-a-category` | 302 | 0.224s | redirect to `/` before a board load |
+
+The first miss on the new deployment, before the row existed, took 2.3s on `/` and then wrote the snapshot. Later misses stayed near 0.23s. Directory HTML included Affordable Staff, 20Four7VA, and 24x7 Direct. No invented Athena listings were present.
+
+The consequence line that claimed sub-50ms cached responses was not met. Warm edge TTFB in this measurement was about 0.20–0.25s. A live quota failure was not injected against production D1. Tests A–I in `apps/web/tests/public-snapshot.test.ts` cover that path. `apps/web` `bun test` was 441 pass, `tsc --noEmit` passed, and `bun run build` passed before the Pages upload.
+
+`main` was still `f35bcdc3` when this correction was written. A later CI deploy from that SHA would replace this Pages build with the pre-fallback snapshot. Merging the review branch is what makes GitHub match production.
 
 ## Consequences
 - **Positive**: D1 row reads per public visitor dropped from thousands to 0 (warm) or 1 (cold miss).

@@ -1,5 +1,30 @@
 # System Savepoint
 
+## 2026-10-07 16:40 Manila — Public availability: durable last-known-good board
+
+**Unit:** PUBLIC-AVAILABILITY-LKG. **Mode:** incident recovery, verified against production.
+**Branch:** `codex/public-availability-lkg`. **Code SHA:** `019333f72261e8d182567163239f23e663c8d43f`.
+**Start SHA:** `f35bcdc3a2b341b62b22adcf6f0f2e279ed4e6e5` on `main`. Not merged to `main` in this unit.
+**Foreign work left untracked:** `.agents/skills/`, `lucky777.md`. No reset, no force-push.
+
+**What was actually live before this unit:** Pages deployment `53fe5e7b` serving git `8875e2328443c82e71c0fe1473b1edd4da03c615`. That SHA does not contain `public-serving-snapshot.ts`. Migration `0054` was not applied. The 2026-10-06 section below, which says the snapshot was deployed and that 0054 was applied at 11:57, does not match the Pages and D1 state observed on 2026-10-07. That section is kept as written. This section is the correction.
+
+**Root cause:** Public HTML still ran the pre-snapshot per-request D1 path in production. On `main`, `221650a4` reduced scans but `loadCold` still threw when a cold isolate had no memory, no edge copy, and D1 could not return a snapshot row. The Oct 4 failure (D1 code 7500) is that class. A missing row is the same class, because the snapshot table did not exist.
+
+**Fix:** Validate and atomically promote a candidate. Reject empty, malformed, and collapsed candidates. Serve a stale board while refresh runs. If memory, edge, and D1 all fail, serve the bundled production export in `apps/web/src/data/public-lkg.json` (captured `2026-10-07T08:15:58.968Z`, 1,518 jobs, 735 directory rows, descriptions omitted). Public responses set `X-Public-Snapshot`, `X-Public-Snapshot-Jobs`, and `X-Public-Snapshot-Source`.
+
+**Migration:** `0054_public_serving_snapshot.sql` applied 2026-10-07 to database id `08072f16-d3d1-436a-9104-b057a162db7c` (wrangler name `DB`, database name `remoteph-jobs-db`). After the first rebuild the single row was `generated_at` `2026-10-07T08:34:17.737Z`, payload length 598,055, lease clear. Confirming `SELECT` reported `rows_read` 1.
+
+**Pages:** `wrangler pages deploy` of the local `apps/web` build to project `remotejobs-ph`, branch `main`, commit `019333f7`. Deployment URL `https://62a5be85.remotejobs-ph.pages.dev`. Production alias `https://remotejobs-ph.pages.dev` served the same board.
+
+**Production check, 2026-10-07, after the row existed (`curl` TTFB):** `/` 200 in 0.220s, `/opportunities` 200 in 0.237s, `/directory` 200 in 0.211s, `/categories/admin` 200 in 0.255s, `/categories/customer-service` 200 in 0.231s, `/jobs/7` 200 in 0.210s (NoGigiddy, sitemap lastmod 2026-09-27), `/jobs/251` 200 in 0.208s (Inside Sales Contractor), `/sitemap.xml` 200 in 0.200s with both job URLs. Headers: `X-Public-Snapshot: fresh`, jobs `1518`, source `d1`. Directory names included Affordable Staff, 20Four7VA, and 24x7 Direct. Unknown category `/categories/not-a-category` returned 302 to `/` with no snapshot header. The first miss before the row existed took 2.3s on `/` and wrote the row. No live D1-quota injection was performed.
+
+**Checks:** `apps/web` `bun test` 441 pass / 0 fail. `bunx tsc --noEmit` pass. `bun run build` pass. Failure-injection tests A–I live in `apps/web/tests/public-snapshot.test.ts`.
+
+**Not proved:** that a production quota failure stays on LKG (covered by tests, not by an induced production outage). Warm TTFB was about 0.20–0.25s, not the sub-50ms figure in ADR-010. Cron and shadow jobs can still spend D1 quota. The apply-click route still reads D1 once per redirect.
+
+**Next single action:** merge `codex/public-availability-lkg` so a CI deploy from `f35bcdc3` cannot replace this Pages build. Then recover the latest owner-reported PH/VA lead's intake and stage hold. Owner/controller: maintainer.
+
 ## 2026-10-06 20:25 Manila — Public D1 read incident: one serving snapshot (DEPLOYED & VERIFIED)
 
 **Unit:** PUBLIC-SNAPSHOT-D1. **Mode:** implementation + migration + production deployment.
