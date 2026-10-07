@@ -287,6 +287,32 @@ test("the refresh lease cannot be taken twice inside its window", () => {
   }
 });
 
+test("independent stores share the first missing-row lease and recover an abandoned claim", async () => {
+  const db = sourceDatabase();
+  try {
+    const first = createD1SnapshotStore(d1Like(db));
+    const second = createD1SnapshotStore(d1Like(db));
+    const claims = await Promise.all([first, second].map((store) => store.claimRefresh(
+      "2026-10-07T10:00:00.000Z", "2026-10-07T09:00:00.000Z", "2026-10-07T09:50:00.000Z",
+    )));
+    expect(claims.filter(Boolean)).toHaveLength(1);
+    expect((await first.read())?.payload).toBe("");
+    expect(await second.claimRefresh("2026-10-07T10:11:00.000Z", "2026-10-07T09:11:00.000Z", "2026-10-07T10:01:00.000Z")).toBe(true);
+  } finally { db.close(); }
+});
+
+test("a cold loser of the missing-row lease serves LKG without scanning tables", async () => {
+  resetPublicBoardState();
+  let builds = 0;
+  const board = await resolvePublicBoard({ now: Date.parse("2026-10-07T10:00:00.000Z"), cache: null, store: {
+    async read() { return null; }, async claimRefresh() { return false; }, async write() {},
+    async build() { builds += 1; throw new Error("Must not scan"); },
+  } });
+  expect(builds).toBe(0);
+  expect(board.jobs.length).toBeGreaterThan(0);
+  expect(getPublicSnapshotHealth().lastSource).toBe("durable_lkg");
+});
+
 test("a late writer from an expired lease cannot roll back the durable snapshot row", () => {
   const db = sourceDatabase();
   try {
@@ -719,7 +745,7 @@ describe("Phase 6 — Failure-Injection Tests (Tests A through I)", () => {
     let builds = 0;
     const slowStore: SnapshotStore = {
       async read() { return null; },
-      async claimRefresh() { return false; },
+      async claimRefresh() { return true; },
       async write() {},
       async build(generatedAt) {
         builds += 1;

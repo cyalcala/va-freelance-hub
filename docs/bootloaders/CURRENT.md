@@ -1,5 +1,12 @@
 # Current resume pointer
 
+Current owner task (2026-10-07 18:23 Manila): mitigate public availability risks.
+Runtime `e72f8b47` and release tooling `9c546701` are locally verified on
+`codex/public-availability-risk-mitigation`; production acceptance remains pending.
+Read the newest savepoint and [risk follow-up](../incident-2026-10-07-public-serving-risk-mitigation.md).
+Next: normal PR/main release and production/fallback verification. The older
+PH/VA lead pointer below remains the next separately scoped source task.
+
 Updated 2026-10-04 for CANONICAL-PH-VA-FRESHNESS-V6.5. Navigation only; not runtime
 health, policy precedence or dispatch authority. Read the newest applicable
 [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and [upgrade review](../audits/2026-10-04-CANONICAL-FRESHNESS-UPGRADE-REVIEW.md)

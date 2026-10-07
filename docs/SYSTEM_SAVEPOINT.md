@@ -1,5 +1,30 @@
 # System Savepoint
 
+## 2026-10-07 18:23 Manila — Public serving risk mitigation, local checks passed
+
+**Unit:** PUBLIC-AVAILABILITY-RISK-MITIGATION, owner-authorized incident follow-up.
+**Start:** `d9708e9eac641e5be4f34be69bb13e7bffa3c3e8`, branch
+`codex/public-availability-risk-mitigation`. **Runtime:** `e72f8b47`.
+**Release tooling/baseline:** `9c546701`. **Status:** implementation locally
+verified; production acceptance pending. No overall autonomy/program percentage.
+
+Release-time single-row read-only LKG capture, validation/atomic retention and
+artifact receipts mitigate fallback age. Stale/LKG HTML shows saved generation
+time. Apply eligibility remains authoritative, with bounded waits and uncached
+retryable 503; optional analytics cannot hang a validated redirect. An atomic
+missing-row lease fences cold scans. Required CI and exact release artifact run
+D1-free workerd smoke. No production quota exhaustion, source expansion, clock,
+paid service, GCP change or weaker gate. Bundle updated to 1,519 jobs / 735
+companies with its original 09:35:53 UTC generation timestamp.
+
+**Checks:** 3,013 tests pass, focused export tests pass after baseline refresh,
+typecheck/build/four governance audits pass; eight D1-free routes 200 and Apply
+503 with no redirect. [Risk record](incident-2026-10-07-public-serving-risk-mitigation.md)
+contains local receipts and remaining limits. Foreign work preserved.
+
+**Next single action:** push normal review PR, observe exact-SHA CI/main release,
+verify Pages production and release fallback receipts, then append acceptance.
+
 ## 2026-10-07 17:45 Manila — Public availability acceptance, PR #215 merged
 
 **Unit:** PUBLIC-AVAILABILITY-LKG, follow-up acceptance. **Status:** TERMINAL — KEEP;

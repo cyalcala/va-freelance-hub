@@ -15,11 +15,14 @@ const CACHE_URL = "https://remotejobs-ph.pages.dev/__snapshot/public-board-v1";
 
 const dialect = new SQLiteSyncDialect();
 
-export const CLAIM_REFRESH_SQL = `UPDATE public_serving_snapshot
-SET refresh_started_at = ?
-WHERE id = 1
-  AND generated_at < ?
-  AND (refresh_started_at IS NULL OR refresh_started_at < ?)`;
+// The same atomic claim also fences the very first rebuild when row 1 is
+// absent. The empty placeholder is lease metadata, never a serving candidate.
+export const CLAIM_REFRESH_SQL = `INSERT INTO public_serving_snapshot
+  (id, generated_at, refresh_started_at, payload)
+VALUES (1, '1970-01-01T00:00:00.000Z', ?, '')
+ON CONFLICT(id) DO UPDATE SET refresh_started_at = excluded.refresh_started_at
+WHERE public_serving_snapshot.generated_at < ?
+  AND (public_serving_snapshot.refresh_started_at IS NULL OR public_serving_snapshot.refresh_started_at < ?)`;
 
 export const READ_SNAPSHOT_SQL = `SELECT generated_at AS generatedAt, payload
 FROM public_serving_snapshot WHERE id = 1`;
@@ -781,6 +784,15 @@ async function loadCold(
   // If D1 did not hit quota or lock limits, attempt rebuilding from source tables
   if (readClass !== "d1_quota" && readClass !== "d1_busy") {
     try {
+      // A cold isolate must win the shared lease before scanning source tables.
+      // Losing isolates serve the bundled board while the winner reconstructs.
+      const claimed = await store.claimRefresh(iso(now), iso(now - REBUILD_AFTER_MS), iso(now - LEASE_MS));
+      if (!claimed) {
+        if (!allowLkgFallback) throw new Error("Snapshot reconstruction already leased");
+        const lkg = getDurableLkgSnapshot();
+        if (promoteSnapshot(lkg, "durable_lkg", now)) return slot.activeBoard!;
+        throw new Error("Invalid durable snapshot");
+      }
       const generatedAt = iso(now);
       const candidate = await store.build(generatedAt);
       if (!validateSnapshotCandidate(candidate, slot.activeBoard).ok) {

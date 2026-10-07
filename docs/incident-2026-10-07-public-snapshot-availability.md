@@ -146,3 +146,9 @@ Never roll back to the pre-LKG build merely to reduce freshness.
 Next action: recover the latest owner-reported PH/VA lead's durable intake and stage
 hold under the existing source queue, as a separately scoped task. This availability
 incident is complete; no recurring monitor or source expansion was dispatched.
+
+## Owner-authorized risk follow-up
+
+The subsequent request to mitigate remaining risks is tracked separately in
+[public serving risk mitigation](incident-2026-10-07-public-serving-risk-mitigation.md).
+The original acceptance and its dated limits above are preserved.

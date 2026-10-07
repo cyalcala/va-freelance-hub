@@ -32,7 +32,7 @@ try {
 
 <Layout
   title="VA & Freelance Hub — Remote Jobs & VA Work That Hire Filipino Talent"
-  description="A curated, always-current board of remote and virtual-assistant roles from companies that actually hire in the Philippines. Auto-updated all day. Free, forever."
+  description="A curated board of remote and virtual-assistant roles from companies that hire in the Philippines. Refreshed automatically from public sources. Free, forever."
 >
   {dataUnavailable && <ServiceUnavailable />}
   <section class="max-w-3xl mx-auto text-center pt-8 sm:pt-14 md:pt-20 pb-12 sm:pb-16 md:pb-20">
@@ -41,7 +41,7 @@ try {
         <span class="absolute inline-flex h-full w-full rounded-full bg-accent/60 animate-ping"></span>
         <span class="relative inline-flex h-2 w-2 rounded-full bg-accent"></span>
       </span>
-      Updated automatically, all day
+      {['stale', 'lkg_fallback'].includes(Astro.response.headers.get('X-Public-Snapshot') ?? '') ? 'Showing saved listings' : 'Updated automatically, all day'}
     </div>
 
     <h1 class="text-[2.25rem] leading-[1.08] sm:text-5xl md:text-[4rem] font-extrabold tracking-tight text-ink text-balance">
