@@ -57,6 +57,16 @@ added as the corresponding surfaces are implemented. No release is claimed yet.
 
 ## Advisory and boundaries
 
+The separate concept spec review passed at `068e7c94`. Code-quality review then
+found three accessibility defects: desktop pointer-disabled disclosure remained
+keyboard-toggleable, desktop result labels were hidden from assistive technology,
+and the dark review header had insufficient focus contrast. Bounded fixes at
+`7fe5489d` and `08c401a3` restore native interaction, field labels and a cream
+header focus outline. Desktop Enter collapse/expand and mobile rendering were
+rechecked in the browser. Control borders also use `#938B83` rather than a faint
+decorative divider. White-on-coral contrast is 5.12:1, muted-on-cream 5.78:1,
+control-on-white 3.35:1 and control-on-cream 3.19:1 by sRGB calculation.
+
 A bounded Jev direction consultation returned HTTP 401. Jev is advisory and
 non-blocking; the owner brief, direct browser evidence and engineering contracts
 remain the decision basis. No token from the failed call is stored here.

@@ -50,7 +50,8 @@ Keep existing Tailwind color names compatible and add semantic roles.
 | Coral tint | `#F8EBE5` |
 | Healthy/evidence | `#24634C` on `#EDF5F0`, only actual semantic states |
 | Attention | `#815C18` on `#FBF3DF`, genuine saved-board state |
-| Border | Ink alpha 12–16%; controls visibly distinguishable |
+| Divider border | Ink alpha 12–16%; decorative separators |
+| Control border | `#938B83`, at least 3:1 against white/cream |
 | Font | Manrope variable sans; system-ui fallback, one family |
 | Type | 13 metadata, 14 controls, 15/16 body, 17 job title, 28–36 page title, 40–52 home title |
 | Weight | 400 body, 500 metadata, 600 controls/titles, 700 headline |

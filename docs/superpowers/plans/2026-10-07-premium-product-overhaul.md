@@ -24,11 +24,11 @@ change; [restore procedure](../../design/PREMIUM_2026_SAVEPOINT.md).
 - [x] Archive the complete owner brief and preserve/verify the baseline tag.
 - [x] Inspect the current layout, palette, home, job board and data boundaries.
 - [x] Record PRODUCT.md and DESIGN.md from the supplied brief and existing facts.
-- [ ] Create `docs/design/premium-concepts.html` with three distinct structures,
+- [x] Create `docs/design/premium-concepts.html` with three distinct structures,
   real minimal dated public records and explicit preview labelling.
-- [ ] Render/inspect A, B and C at desktop and mobile; record the A×B selection
+- [x] Render/inspect A, B and C at desktop and mobile; record the A×B selection
   and current defects in `docs/design/PREMIUM_2026_REVIEW.md`.
-- [ ] Commit and push the design contract/concepts before production UI edits.
+- [x] Commit and push the design contract/concepts before production UI edits.
 
 ## Task 2 — Foundations and flagship opportunities
 
