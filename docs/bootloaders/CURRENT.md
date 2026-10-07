@@ -1,5 +1,11 @@
 # Current resume pointer
 
+Active owner task (2026-10-07 19:26 Manila): resolve the saved-listings notice in
+the supplied screenshot. Snapshot recovery fix `457c9805` is locally verified;
+normal PR/release and visible production acceptance pending. Read the newest
+savepoint and [refresh recovery record](../incident-2026-10-07-snapshot-refresh-recovery.md).
+The earlier risk acceptance below is dated history, not this new task's outcome.
+
 Current owner task (2026-10-07 18:31 Manila): public availability risk mitigation
 is **TERMINAL — KEEP**. PR #217 merged; `59dd4f900cf03ec7db98db47aa441634ad0e5757`
 released as Pages `676ee426`. Main CI/release `37607368827` passed, including exact
