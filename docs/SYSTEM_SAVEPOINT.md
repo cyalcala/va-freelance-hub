@@ -1,5 +1,53 @@
 # System Savepoint
 
+## 2026-10-07 17:45 Manila — Public availability acceptance, PR #215 merged
+
+**Unit:** PUBLIC-AVAILABILITY-LKG, follow-up acceptance. **Status:** TERMINAL — KEEP;
+100% of this bounded incident task, not a Source Perpetuity/autonomy percentage.
+**Start:** `3220bc5ef855397c9d84d5c8cabfa4df072c547a`, branch
+`codex/public-availability-lkg`. **Additional behavior:** `a31d999b`; scanner
+`71ab5b92`, test/tooling `dd9e5e11`. **Pushed head:**
+`e4c5e6ba24947f250b0676e0496c57de4c141717`, verified against remote.
+**Merged main/released Git SHA:** `6297335ac3bbeb84f4f094a916d2155b8ac83adb`,
+[PR #215](https://github.com/cyalcala/va-freelance-hub/pull/215).
+
+The earlier recovery below is preserved. This follow-up reproduced five additional
+gaps before correction and hardened schema/render validation, empty/collapsed boards,
+persist-before-promotion, late D1/edge writers, hung dependencies, outer HTML cache
+failure and throwing `waitUntil`. The bundled real LKG remains 1,518 jobs / 735
+companies. See the [incident record](incident-2026-10-07-public-snapshot-availability.md)
+for exact hypotheses, changed files, metrics, rollback and remaining limits.
+
+**Checks:** 3,003 local tests pass / 0 fail; normal build, app/worker type checks,
+four governance audits, 15 Python tests and worker dry-run pass. PR CI
+`37601727644` and main CI/release `37602023203` passed. No new migration was
+required. Jev advisory review was unavailable (401); direct review governed acceptance.
+Missing `.ai/manifest.yaml` and `scripts/skill-router.py` were recorded. Installed
+Addy debugging skill used. Foreign `.agents/skills/` and `lucky777.md` remain intact;
+the pre-existing narrow `.gitleaks.toml` fix was verified and included deliberately.
+
+**Production:** Pages `c6d071c1-3c10-4d4e-b3c0-5d607b688170`, source `6297335a`,
+released by the main workflow. All ten public smoke routes returned 200, including
+four categories, two jobs and sitemap. Normal home traffic served a fresh board of
+1,519 jobs / 735 companies, generation `2026-10-07T09:35:53.265Z`; subsequent home
+requests were edge HITs. The built Worker with D1 absent served all eight outage-smoke
+routes with 200 and the 1,518-job LKG/cached stale board. Warm zero-D1 behavior is
+counted in tests; fleet-wide SQL/CPU telemetry and live destructive quota injection
+were not performed. Snapshot/export sizes and the read-only one-row D1 receipt are
+in the incident evidence. GCP jobs, source gates, accepted parameters and clocks were
+unchanged; SSAE/MATH/PH supply and quality maturity receive no new certification.
+
+**Durability:** Code and initial recovery docs merged/backed by PR #215; immutable
+Pages artifact and successful release above. This acceptance documentation is a
+finite evidence-only review slice on `codex/public-availability-acceptance`; its Git
+commit/PR receipt is supplied by normal Git history and the final handoff. It adds no
+database/state restoration claim. Existing apply-click live-D1 gating and aging bundled
+fallback remain documented limits. Rollback: Pages `62a5be85` / `019333f7`.
+
+**Next single action:** recover the latest owner-reported PH/VA lead's durable intake
+and exact stage hold under the current source queue in a separately scoped task.
+Owner/controller: maintainer. The availability incident is complete.
+
 ## 2026-10-07 16:40 Manila — Public availability: durable last-known-good board
 
 **Unit:** PUBLIC-AVAILABILITY-LKG. **Mode:** incident recovery, verified against production.
