@@ -1,5 +1,18 @@
 # System Savepoint
 
+## 2026-10-08 05:00 Manila — Pigment & Paper deployed and accepted
+
+Five of five frontend checkpoints complete (100% by checkpoint count). Owner's
+watercolor/shade/logo revision merged in PR #224 to runtime
+`e29d9905f1b7b85bb8cb7d8747377812ecd71e56`. Required PR CI `37685463212` and
+main release `37685745355` pass, including 3,023 tests and Linux offline checks.
+Pages `28dadacb` is live. Eleven live routes and both CSS assets return 200;
+recovered data routes are fresh. Desktop/mobile render and native search verified.
+[Acceptance and limits](design/PIGMENT_PAPER_2026_ACCEPTANCE.md) owns receipts.
+Pre-edit tag remains verified at `2661cbb6a8bdb815bef58241a1ec7c45a20c1cab`.
+Source/GCP/database acceptance is unchanged; Git backup covers task-owned source
+and documentation, not restoration of database state.
+
 ## 2026-10-08 — Pigment & Paper revision, local acceptance pending release
 
 Owner feedback supersedes the prior restrained visual direction. Recovery point
