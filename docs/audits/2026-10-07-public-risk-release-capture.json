@@ -1,0 +1,10 @@
+{
+  "status": "retained",
+  "reason": "snapshot_not_newer",
+  "sha256": "59826ec68a83b14e0d7b5827d93c6e1257680919710735e4444c1b40fa5d2aa7",
+  "generatedAt": "2026-10-07T09:35:53.265Z",
+  "ageSeconds": 3093,
+  "jobs": 1519,
+  "companies": 735,
+  "sourceSha": "59dd4f900cf03ec7db98db47aa441634ad0e5757"
+}

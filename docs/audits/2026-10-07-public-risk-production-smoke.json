@@ -1,0 +1,239 @@
+{
+  "checkedAt": "2026-10-07T10:29:18.002Z",
+  "sourceSha": "59dd4f900cf03ec7db98db47aa441634ad0e5757",
+  "deploymentId": "676ee426-9afc-408f-a56d-bef43c22d442",
+  "results": [
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/",
+      "status": 200,
+      "durationMs": 633,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/opportunities?q=assistant",
+      "status": 200,
+      "durationMs": 109,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/directory",
+      "status": 200,
+      "durationMs": 365,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/categories/admin",
+      "status": 200,
+      "durationMs": 128,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/categories/customer-service",
+      "status": 200,
+      "durationMs": 158,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/categories/writing",
+      "status": 200,
+      "durationMs": 81,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/categories/tech",
+      "status": 200,
+      "durationMs": 98,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/jobs/7",
+      "status": 200,
+      "durationMs": 79,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/jobs/251",
+      "status": 200,
+      "durationMs": 73,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://remotejobs-ph.pages.dev",
+      "route": "/sitemap.xml",
+      "status": 200,
+      "durationMs": 81,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": null
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/",
+      "status": 200,
+      "durationMs": 379,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/opportunities?q=assistant",
+      "status": 200,
+      "durationMs": 106,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/directory",
+      "status": 200,
+      "durationMs": 83,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/categories/admin",
+      "status": 200,
+      "durationMs": 99,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/categories/customer-service",
+      "status": 200,
+      "durationMs": 160,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/categories/writing",
+      "status": 200,
+      "durationMs": 78,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/categories/tech",
+      "status": 200,
+      "durationMs": 84,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/jobs/7",
+      "status": 200,
+      "durationMs": 77,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/jobs/251",
+      "status": 200,
+      "durationMs": 75,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": false
+    },
+    {
+      "origin": "https://676ee426.remotejobs-ph.pages.dev",
+      "route": "/sitemap.xml",
+      "status": 200,
+      "durationMs": 83,
+      "snapshot": "fresh",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "savedNotice": null
+    },
+    {
+      "route": "/api/click/7",
+      "case": "eligible",
+      "status": 302,
+      "outboundRedirect": true
+    },
+    {
+      "route": "/api/click/7",
+      "case": "unsafe",
+      "status": 403,
+      "outboundRedirect": false
+    }
+  ]
+}
