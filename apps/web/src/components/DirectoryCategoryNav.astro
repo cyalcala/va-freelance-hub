@@ -7,67 +7,65 @@ import {
 
 type Props = {
   selectedCategory: DirectoryCategory | null;
+  query: string;
 };
 
-const { selectedCategory } = Astro.props;
+const { selectedCategory, query } = Astro.props;
 
-function categoryUrl(category: DirectoryCategory) {
-  return `/directory?category=${encodeURIComponent(category)}`;
+function categoryUrl(category: DirectoryCategory | null) {
+  const params = new URLSearchParams();
+  if (query) params.set('q', query);
+  if (category) params.set('category', category);
+  const qs = params.toString();
+  return qs ? `/directory?${qs}` : '/directory';
 }
 ---
 
-<section aria-labelledby="directory-index-title" class="mb-10">
-  <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
-    <div>
-      <h2 id="directory-index-title" class="text-xl font-extrabold tracking-tight text-ink">Find your lane</h2>
-      <p class="mt-1 text-sm text-ink/50">Choose a category first so you are not scanning one giant company list.</p>
-    </div>
-    {selectedCategory && <a href="/directory" class="text-sm font-semibold text-accent hover:text-accent-hover">View all categories</a>}
-  </div>
-
-  <nav aria-label="Agency categories" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+<section aria-labelledby="directory-index-title" class="directory-categories">
+  <h2 id="directory-index-title">Browse by category</h2>
+  <nav aria-label="Agency categories" class="category-links">
+    <a href={categoryUrl(null)} aria-current={!selectedCategory ? 'page' : undefined}>All categories</a>
     {DIRECTORY_NICHES.map((category) => {
       const info = DIRECTORY_CATEGORY_INFO[category];
-      const isActive = selectedCategory === category;
       return (
         <a
           href={categoryUrl(category)}
-          aria-current={isActive ? 'page' : undefined}
-          class:list={[
-            'group flex items-start gap-3 rounded-xl border px-3.5 sm:px-4 py-3 transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-            isActive
-              ? 'border-accent/35 bg-accent-soft text-accent shadow-soft'
-              : 'border-ink/[0.08] bg-surface hover:border-accent/25 hover:bg-accent-soft/40',
-          ]}
+          aria-current={selectedCategory === category ? 'page' : undefined}
+          title={info.description}
         >
-          <span class={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${info.dot}`} aria-hidden="true"></span>
-          <span class="min-w-0">
-            <span class="block text-sm font-bold text-ink group-hover:text-accent transition-colors">{info.shortTitle}</span>
-            <span class="mt-0.5 block text-xs leading-relaxed text-ink/50">{info.description}</span>
-          </span>
-        </a>
-      );
-    })}
-  </nav>
-
-  <div class="mt-3.5 flex flex-wrap items-center gap-2" aria-label="Focused directory views">
-    <span class="mr-1 text-xs font-bold uppercase tracking-overline text-ink/40">Quick views</span>
-    {(['dayshift', 'marketplaces'] as const).map((category) => {
-      const info = DIRECTORY_CATEGORY_INFO[category];
-      const isActive = selectedCategory === category;
-      return (
-        <a
-          href={categoryUrl(category)}
-          aria-current={isActive ? 'page' : undefined}
-          class:list={[
-            'inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 min-h-[34px] text-xs font-semibold transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent',
-            isActive ? 'border-accent bg-accent text-white shadow-soft' : 'border-ink/10 bg-surface text-ink/65 hover:border-accent/30 hover:text-accent',
-          ]}
-        >
-          <span class={`h-1.5 w-1.5 rounded-full ${info.dot}`} aria-hidden="true"></span>
           {info.shortTitle}
         </a>
       );
     })}
-  </div>
+  </nav>
+  <nav aria-label="Focused directory views" class="category-links focused-views">
+    <span class="text-muted">Focused views</span>
+    {(['dayshift', 'marketplaces'] as const).map((category) => {
+      const info = DIRECTORY_CATEGORY_INFO[category];
+      return (
+        <a
+          href={categoryUrl(category)}
+          aria-current={selectedCategory === category ? 'page' : undefined}
+          title={info.description}
+        >
+          {info.shortTitle}
+        </a>
+      );
+    })}
+  </nav>
 </section>
+
+<style>
+  .directory-categories { margin-bottom: 32px; padding-bottom: 20px; border-bottom: 1px solid var(--divider); }
+  h2 { margin-bottom: 8px; font-size: 15px; font-weight: 600; }
+  .category-links { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+  .category-links a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 12px; border-radius: 6px; color: var(--muted); font-size: 14px; font-weight: 500; line-height: 1.5; transition: color 160ms, background-color 160ms; }
+  .category-links a:hover { color: var(--ink); background: var(--recessed); }
+  .category-links a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); font-weight: 600; }
+  .focused-views { margin-top: 8px; }
+  .focused-views > span { display: inline-flex; align-items: center; min-height: 44px; padding-right: 4px; font-size: 13px; }
+  @media (width < 768px) {
+    .category-links { gap: 4px; }
+    .category-links a { padding-inline: 10px; }
+  }
+</style>
