@@ -196,7 +196,7 @@
     .search-shortcut { display: inline; }
   }
 
-  @media (max-width: 767px) {
+  @media (width < 768px) {
     .site-header-inner { min-height: 60px; }
     .site-brand { gap: 8px; font-size: 16px; }
     .site-brand-mark { width: 28px; height: 28px; font-size: 12px; }
