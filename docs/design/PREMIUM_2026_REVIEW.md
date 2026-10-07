@@ -55,6 +55,48 @@ Concept screenshots are retained under `evidence/` as review evidence. Productio
 screenshots, behavior checks, independent reviews and acceptance receipts will be
 added as the corresponding surfaces are implemented. No release is claimed yet.
 
+## Task 2 — Shared foundations and opportunities
+
+Implementation: `105858083f672b5dc76cd1766ee271eb1f0045f0`; continuous mobile
+navigation boundary fix: `90bc788d575f7a7b8b8abcec082142c44b700787`.
+The original board loader, slicer, headers, validation, pagination and card
+eligibility/Apply URL logic remain unchanged. The surface now has a broad search,
+232px desktop rail, native mobile disclosure, readable rows and shared chrome.
+
+Root browser verification on the local saved fixture:
+
+| Check | Observed outcome |
+| --- | --- |
+| 390 / 768 / 1280 / 1440 | Rendered and inspected; no horizontal overflow |
+| 320 / 1920 | Supplemental boundary inspection; no horizontal overflow |
+| Navigation boundary | 767: mobile only; 768: desktop only; fractional gap found, fixed and rendered again |
+| Mobile disclosure | Initially collapsed without selected filters; Enter expands; active filter selections remain exposed |
+| Combined GET filters | Query + category + type + source + scope retained in URL and native selected controls; correct empty state |
+| Individual removal | Removing category retained other selections and returned 15 jobs; removing source retained query/type/scope and returned 29 |
+| Pagination and removal | Query + PH scope page 2 showed 31–40 of 40; removing scope retained query and reset to page 1 |
+| Empty recovery | Explicit unmatched query showed 0–0, disabled pagination and working Reset filters |
+| Keyboard | Skip link focused MAIN; `/` outside an input focused search; `/` inside the search input remained literal text |
+| Job focus/type | Inset coral focus remained visible within the result surface; title 17px and metadata 13px; metadata RGB 104,97,91 |
+| Browser console | No captured warnings or errors in this inspection |
+| Saved state | Genuine local LKG warning retained its exact generation timestamp and retry meaning |
+
+Focused implementation checks: 30 tests passed (29 relevant data/card tests plus
+retained company-logo transport regression), typecheck and build passed. Separate
+spec review passed at `90bc788d`, with 45 independent focused tests. The obsolete
+test that merely required old literal Tailwind class strings was removed; actual
+767/768 browser observations now document its intended behavior. This is not a
+replacement assertion on the new CSS implementation.
+
+The initial viewport receipt records the discovered boundary issue before its
+fix; `premium-nav-boundaries.json` is the corrected observation. No production
+release is claimed by these local checks. Final full-suite, no-D1 runtime,
+resource and integrated workflow acceptance remain pending.
+
+Separate code-quality review approved Task 2 at `90bc788d`: no critical,
+important or actionable minor findings. Root's remaining empty, focus, skip and
+boundary checks then passed. Task 2 is locally accepted; integrated release QA
+and the remaining product surfaces still need completion.
+
 ## Advisory and boundaries
 
 The separate concept spec review passed at `068e7c94`. Code-quality review then

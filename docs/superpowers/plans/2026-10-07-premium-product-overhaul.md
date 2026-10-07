@@ -36,19 +36,24 @@ Owned files: `apps/web/tailwind.config.mjs`, `src/styles/globals.css`,
 `src/layouts/Layout.astro`, `src/components/footer.tsx`,
 `src/components/opportunity-card.tsx`, `src/pages/opportunities.astro`.
 
-- [ ] Introduce documented tokens and one sans family, restrained radii,
+- [x] Introduce documented tokens and one sans family, restrained radii,
   visible focus and reduced motion. Remove ambient decorative blur.
-- [ ] Modernize shared header/footer, add skip link, preserve mobile navigation.
-- [ ] Rebuild the shared opportunity row: readable title/company/date, quiet
+- [x] Modernize shared header/footer, add skip link, preserve mobile navigation.
+- [x] Rebuild the shared opportunity row: readable title/company/date, quiet
   source/type text, one honest geo status; preserve target/rel/Apply URLs.
-- [ ] Rebuild `/opportunities` with query-first controls, labelled desktop
+- [x] Rebuild `/opportunities` with query-first controls, labelled desktop
   filter rail, native mobile disclosure, active-filter removal and GET state.
   Keep frontmatter board loading, filtering and pagination semantics unchanged.
-- [ ] Add only meaningful behavioral regressions for query/filter removal and
+- [x] Add only meaningful behavioral regressions for query/filter removal and
   shortcuts if extracted; no tests that merely mirror CSS.
-- [ ] Build/typecheck, exercise real searches/filter combinations/pagination/
+- [x] Build/typecheck, exercise real searches/filter combinations/pagination/
   empty reset and no-JS paths; inspect 390/768/1280/1440, fix and commit.
-- [ ] Separate spec-compliance review, then code-quality review; fix findings.
+- [x] Separate spec-compliance review, then code-quality review; fix findings.
+
+Task 2 accepted at `90bc788d`; URL helper remains page-local. Existing data/card
+tests and actual rendered interactions provide coverage; no CSS mirror test was
+added. The obsolete literal Tailwind nav assertion was removed, with the intended
+767/768 behavior verified in the browser. Full integrated QA remains Task 5.
 
 ## Task 3 — Homepage discovery and categories
 
@@ -67,7 +72,8 @@ Owned files: `src/pages/index.astro`, `src/components/OpportunitySearch.tsx`
 ## Task 4 — Directory and details
 
 Owned files: `src/pages/directory.astro`, `src/components/DirectoryCategoryNav.astro`,
-`src/components/DirectoryAgencyCard.astro`, `src/pages/jobs/[id].astro`.
+`src/components/DirectoryAgencyCard.astro`, `src/pages/jobs/[id].astro`,
+`src/pages/data-policy.astro`, `src/pages/privacy.astro`.
 
 - [ ] Move directory search before category navigation and use calm grouped
   employer rows with existing truthful attributes and logo fallbacks.
@@ -75,6 +81,8 @@ Owned files: `src/pages/directory.astro`, `src/components/DirectoryCategoryNav.a
   missing URL state. Add no invented active-role counts or verification times.
 - [ ] Give job detail a nearby/sticky application panel and labelled facts;
   maintain JSON-LD, excerpt permissions, safe source link and Apply authority.
+- [ ] Apply shared reading typography to legal pages, fix low-contrast update
+  metadata and Astro heading class attributes; preserve all policy wording.
 - [ ] Inspect unknown salary/shift, long titles, source-only description,
   directory empty/category/query and mobile safe-area behavior.
 - [ ] Review spec then code, fix and commit.
