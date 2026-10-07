@@ -10,6 +10,7 @@ const FRESH_MS = 15 * 60 * 1000;
 const REBUILD_AFTER_MS = 60 * 60 * 1000;
 const LEASE_MS = 10 * 60 * 1000;
 const MAX_PAYLOAD_CHARS = 900_000;
+const DEPENDENCY_TIMEOUT_MS = 2_000;
 const CACHE_URL = "https://remotejobs-ph.pages.dev/__snapshot/public-board-v1";
 
 const dialect = new SQLiteSyncDialect();
@@ -29,7 +30,8 @@ VALUES (1, ?, NULL, ?)
 ON CONFLICT(id) DO UPDATE SET
   generated_at = excluded.generated_at,
   refresh_started_at = NULL,
-  payload = excluded.payload`;
+  payload = excluded.payload
+WHERE excluded.generated_at >= public_serving_snapshot.generated_at`;
 
 type SqlQuery = { sql: string; params: unknown[] };
 
@@ -123,6 +125,8 @@ export type SnapshotHealthTelemetry = {
   lastRefreshError: string | null;
   lastPromotionAt: string | null;
   d1QuotaFailed: boolean;
+  refreshing: boolean;
+  lastRefreshDurationMs: number | null;
 };
 
 type Slot = {
@@ -135,6 +139,7 @@ type Slot = {
   lastRefreshResult?: "success" | "failed" | "rejected" | "none";
   lastRefreshError?: string | null;
   d1QuotaFailed: boolean;
+  lastRefreshDurationMs?: number;
 };
 
 const slot: Slot = {
@@ -154,6 +159,7 @@ export function resetPublicBoardState(): void {
   slot.lastRefreshResult = "none";
   slot.lastRefreshError = null;
   slot.d1QuotaFailed = false;
+  slot.lastRefreshDurationMs = undefined;
 }
 
 export type SnapshotValidationResult =
@@ -191,6 +197,9 @@ export function validateSnapshotCandidate(
     return { ok: false, reason: "directory property must be an array" };
   }
 
+  const nullableText = (value: unknown) => value === null || typeof value === "string";
+  const jobIds = new Set<number>();
+
   // Validate job items
   for (let i = 0; i < c.jobs.length; i++) {
     const job = c.jobs[i];
@@ -198,8 +207,10 @@ export function validateSnapshotCandidate(
       return { ok: false, reason: `Job at index ${i} is not an object` };
     }
     if (!Number.isSafeInteger(job.id) || job.id <= 0) {
-      return { ok: false, reason: `Job at index ${i} has invalid id: ${job.id}` };
+      return { ok: false, reason: `Job at index ${i} has invalid id` };
     }
+    if (jobIds.has(job.id)) return { ok: false, reason: `Duplicate job id at index ${i}` };
+    jobIds.add(job.id);
     if (typeof job.title !== "string" || !job.title.trim()) {
       return { ok: false, reason: `Job at index ${i} is missing title` };
     }
@@ -212,19 +223,39 @@ export function validateSnapshotCandidate(
     if (typeof job.category !== "string" || !job.category.trim()) {
       return { ok: false, reason: `Job at index ${i} is missing category` };
     }
+    if (!Array.isArray(job.tags) || !job.tags.every((tag) => typeof tag === "string")) {
+      return { ok: false, reason: `Job at index ${i} has invalid tags` };
+    }
+    for (const field of ["company", "sourceId", "postedAt", "scrapedAt", "updatedAt", "geoEvidence", "description", "clientTimezone", "payRange"] as const) {
+      if (!nullableText(job[field])) return { ok: false, reason: `Job at index ${i} has invalid ${field}` };
+    }
+    if (!["VA", "freelance", "project", "full-time", "part-time"].includes(job.type)
+      || ![null, "entry", "mid", "senior", "any"].includes(job.experienceLevel)
+      || ![null, "worldwide", "apac_incl_ph", "ph_only", "region_excl_ph", "country_locked", "unknown"].includes(job.geoScope)
+      || ![null, "eligible_verified", "eligible_likely", "unclear", "ineligible"].includes(job.phEligibility)
+      || ![null, "remote", "hybrid", "onsite"].includes(job.locationType)) {
+      return { ok: false, reason: `Job at index ${i} has invalid enum fields` };
+    }
   }
 
   // Validate directory items
+  const directoryIds = new Set<number>();
   for (let i = 0; i < c.directory.length; i++) {
     const row = c.directory[i];
     if (!row || typeof row !== "object") {
       return { ok: false, reason: `Directory row at index ${i} is not an object` };
     }
     if (!Number.isSafeInteger(row.id) || row.id <= 0) {
-      return { ok: false, reason: `Directory row at index ${i} has invalid id: ${row.id}` };
+      return { ok: false, reason: `Directory row at index ${i} has invalid id` };
     }
+    if (directoryIds.has(row.id)) return { ok: false, reason: `Duplicate directory id at index ${i}` };
+    directoryIds.add(row.id);
     if (typeof row.companyName !== "string" || !row.companyName.trim()) {
       return { ok: false, reason: `Directory row at index ${i} is missing companyName` };
+    }
+    if (!nullableText(row.website) || typeof row.niche !== "string"
+      || [row.isDayshift, row.isVerified, row.isRemote, row.isMarketplace].some((flag) => typeof flag !== "boolean")) {
+      return { ok: false, reason: `Directory row at index ${i} has invalid public fields` };
     }
   }
 
@@ -243,11 +274,14 @@ export function validateSnapshotCandidate(
         reason: `Suspicious job count collapse: ${c.jobs.length} candidate jobs vs ${activeCount} active jobs`,
       };
     }
-  } else if (c.jobs.length === 0 && c.directory.length === 0) {
+  } else if (c.jobs.length === 0) {
     return {
       ok: false,
-      reason: "Candidate snapshot has 0 jobs and 0 directory entries",
+      reason: "Candidate snapshot has 0 jobs",
     };
+  }
+  if (activeBoard && activeBoard.directory.length >= 20 && c.directory.length < Math.floor(activeBoard.directory.length * 0.1)) {
+    return { ok: false, reason: "Suspicious directory count collapse" };
   }
 
   return { ok: true, board: candidate as PublicBoard };
@@ -262,6 +296,9 @@ export function promoteSnapshot(
   source: "memory" | "edge" | "d1" | "durable_lkg",
   now: number,
 ): boolean {
+  if (slot.activeBoard && Date.parse(candidate.generatedAt) < Date.parse(slot.activeBoard.generatedAt)) {
+    return false; // An older edge/D1 response cannot roll back an active board.
+  }
   const validation = validateSnapshotCandidate(candidate, slot.activeBoard);
   if (!validation.ok) {
     console.warn(`[public-snapshot] candidate from ${source} rejected: ${validation.reason}`);
@@ -276,6 +313,12 @@ export function promoteSnapshot(
   slot.lastPromotionAt = new Date(now).toISOString();
   slot.lastRefreshResult = "success";
   slot.lastRefreshError = null;
+  if (source === "d1") slot.d1QuotaFailed = false;
+  console.info(JSON.stringify({
+    event: source === "durable_lkg" ? "SNAPSHOT_LKG_FALLBACK" : Date.parse(candidate.generatedAt) + REBUILD_AFTER_MS <= now ? "SNAPSHOT_STALE" : "SNAPSHOT_FRESH",
+    generatedAt: candidate.generatedAt, ageMs: Math.max(0, now - Date.parse(candidate.generatedAt)),
+    jobs: candidate.jobs.length, companies: candidate.directory.length, source,
+  }));
   return true;
 }
 
@@ -284,6 +327,9 @@ export function applySnapshotHeaders(headers: Headers, now = Date.now()): void {
   headers.set("X-Public-Snapshot", health.status);
   headers.set("X-Public-Snapshot-Jobs", String(health.jobCount));
   headers.set("X-Public-Snapshot-Source", health.lastSource);
+  headers.set("X-Public-Snapshot-Generated-At", health.generatedAt ? new Date(health.generatedAt).toISOString() : "unknown");
+  headers.set("X-Public-Snapshot-Age-Seconds", String(Math.floor(health.ageMs / 1000)));
+  headers.set("X-Public-Snapshot-Companies", String(health.directoryCount));
 }
 
 export function getPublicSnapshotHealth(now = Date.now()): SnapshotHealthTelemetry {
@@ -314,6 +360,8 @@ export function getPublicSnapshotHealth(now = Date.now()): SnapshotHealthTelemet
     lastRefreshError: slot.lastRefreshError ?? null,
     lastPromotionAt: slot.lastPromotionAt ?? null,
     d1QuotaFailed: slot.d1QuotaFailed,
+    refreshing: !!slot.refresh,
+    lastRefreshDurationMs: slot.lastRefreshDurationMs ?? null,
   };
 }
 
@@ -565,17 +613,41 @@ function iso(ms: number): string {
   return new Date(ms).toISOString();
 }
 
+async function withServingDeadline<T>(pending: Promise<T>, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      pending,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error("snapshot_timeout")), timeoutMs);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function schedule(work: () => Promise<void>, waitUntil?: (promise: Promise<unknown>) => void): void {
   if (slot.refresh) return;
-  const pending = work().catch((err) => {
+  const started = performance.now();
+  const pending = withServingDeadline(Promise.resolve().then(work), DEPENDENCY_TIMEOUT_MS).catch((err) => {
     slot.lastRefreshResult = "failed";
-    slot.lastRefreshError = err instanceof Error ? err.message : String(err);
+    slot.lastRefreshError = publicDataErrorClass(err) ?? (err instanceof Error && err.message === "snapshot_timeout" ? "snapshot_timeout" : "snapshot_refresh_failed");
     console.error("public snapshot background refresh failed", publicDataErrorClass(err) ?? "Error");
   }).finally(() => {
+    slot.lastRefreshDurationMs = Math.round(performance.now() - started);
+    console.info(JSON.stringify({
+      event: slot.lastRefreshResult === "failed" ? "SNAPSHOT_REFRESH_FAILED" : slot.lastRefreshResult === "rejected" ? "SNAPSHOT_INVALID" : "SNAPSHOT_REFRESH_FINISHED",
+      durationMs: slot.lastRefreshDurationMs, result: slot.lastRefreshResult, errorClass: slot.lastRefreshError,
+    }));
     if (slot.refresh === pending) slot.refresh = undefined;
   });
   slot.refresh = pending;
-  if (waitUntil) waitUntil(pending);
+  try {
+    waitUntil?.(pending);
+  } catch {
+    console.warn("public snapshot background context unavailable");
+  }
 }
 
 async function refreshStored(
@@ -592,7 +664,7 @@ async function refreshStored(
       slot.d1QuotaFailed = true;
     }
     slot.lastRefreshResult = "failed";
-    slot.lastRefreshError = error instanceof Error ? error.message : String(error);
+    slot.lastRefreshError = errClass ?? "snapshot_read_failed";
     console.error("public snapshot read failed during refresh", errClass ?? "Error");
     return;
   }
@@ -601,10 +673,12 @@ async function refreshStored(
     try {
       const board = await unpackBoard(stored);
       if (promoteSnapshot(board, "d1", now)) {
-        writeEdge(cache, board).catch(() => {});
+        await writeEdge(cache, board);
       }
     } catch (unpackErr) {
-      console.error("public snapshot unpack failed during refresh", unpackErr);
+      slot.lastRefreshResult = "rejected";
+      slot.lastRefreshError = "snapshot_parse_failed";
+      console.error("public snapshot unpack failed during refresh");
     }
     return;
   }
@@ -618,7 +692,7 @@ async function refreshStored(
       slot.d1QuotaFailed = true;
     }
     slot.lastRefreshResult = "failed";
-    slot.lastRefreshError = error instanceof Error ? error.message : String(error);
+    slot.lastRefreshError = errClass ?? "snapshot_lease_failed";
     console.error("public snapshot lease failed", errClass ?? "Error");
     return;
   }
@@ -628,7 +702,7 @@ async function refreshStored(
     try {
       const board = await unpackBoard(stored);
       if (promoteSnapshot(board, "d1", now)) {
-        writeEdge(cache, board).catch(() => {});
+        await writeEdge(cache, board);
       }
     } catch {
       // Discard unparseable stored snapshot without replacing active board
@@ -646,19 +720,28 @@ async function refreshStored(
       slot.d1QuotaFailed = true;
     }
     slot.lastRefreshResult = "failed";
-    slot.lastRefreshError = error instanceof Error ? error.message : String(error);
+    slot.lastRefreshError = errClass ?? "snapshot_build_failed";
     console.error("public snapshot build failed during refresh", errClass ?? "Error");
     return;
   }
 
-  // Atomically promote candidate only if valid
-  if (candidate && promoteSnapshot(candidate, "d1", now)) {
-    writeEdge(cache, candidate).catch(() => {});
+  // Validate and persist before promoting. A failed write retains the active
+  // board and durable previous row, rather than advertising a successful refresh.
+  if (candidate) {
+    if (!validateSnapshotCandidate(candidate, slot.activeBoard).ok) {
+      promoteSnapshot(candidate, "d1", now); // Records the validation rejection.
+      return;
+    }
     try {
       await store.write(generatedAt, await packBoard(candidate));
     } catch (error) {
+      slot.lastRefreshResult = "failed";
+      slot.lastRefreshError = publicDataErrorClass(error) ?? "snapshot_write_failed";
+      slot.d1QuotaFailed = slot.lastRefreshError === "d1_quota" || slot.lastRefreshError === "d1_busy";
       console.error("public snapshot write failed", publicDataErrorClass(error) ?? "Error");
+      return;
     }
+    if (promoteSnapshot(candidate, "d1", now)) await writeEdge(cache, candidate);
   }
 }
 
@@ -700,14 +783,14 @@ async function loadCold(
     try {
       const generatedAt = iso(now);
       const candidate = await store.build(generatedAt);
-      if (promoteSnapshot(candidate, "d1", now)) {
-        writeEdge(cache, candidate).catch(() => {});
-        packBoard(candidate)
-          .then((packed) => store.write(generatedAt, packed))
-          .catch((writeErr) => {
-            console.error("public snapshot write failed", publicDataErrorClass(writeErr) ?? "Error");
-          });
-        return slot.activeBoard!;
+      if (!validateSnapshotCandidate(candidate, slot.activeBoard).ok) {
+        promoteSnapshot(candidate, "d1", now);
+      } else {
+        await store.write(generatedAt, await packBoard(candidate));
+        if (promoteSnapshot(candidate, "d1", now)) {
+          schedule(() => writeEdge(cache, candidate), waitUntil);
+          return slot.activeBoard!;
+        }
       }
     } catch (buildErr) {
       console.error("public snapshot build failed", publicDataErrorClass(buildErr) ?? "Error");
@@ -735,8 +818,9 @@ export async function resolvePublicBoard(options: {
   store: SnapshotStore;
   waitUntil?: (promise: Promise<unknown>) => void;
   allowLkgFallback?: boolean;
+  dependencyTimeoutMs?: number;
 }): Promise<PublicBoard> {
-  const { now, cache, store, waitUntil, allowLkgFallback = true } = options;
+  const { now, cache, store, waitUntil, allowLkgFallback = true, dependencyTimeoutMs = DEPENDENCY_TIMEOUT_MS } = options;
 
   // 1. In-memory warm hit (0ms, 0 D1 reads)
   if (slot.activeBoard && now < slot.serveUntil) {
@@ -744,7 +828,7 @@ export async function resolvePublicBoard(options: {
   }
 
   // 2. Edge cache hit
-  const edge = await readEdge(cache);
+  const edge = await withServingDeadline(readEdge(cache), dependencyTimeoutMs).catch(() => null);
   if (edge) {
     if (promoteSnapshot(edge, "edge", now)) {
       if (Date.parse(edge.generatedAt) + FRESH_MS <= now) {
@@ -765,7 +849,18 @@ export async function resolvePublicBoard(options: {
   if (slot.inflight) return slot.inflight;
 
   // 5. Cold isolate initialization
-  const pending = loadCold(store, cache, now, waitUntil, allowLkgFallback).finally(() => {
+  const pending = withServingDeadline(
+    loadCold(store, cache, now, waitUntil, allowLkgFallback), dependencyTimeoutMs,
+  ).catch((error) => {
+    if (!allowLkgFallback) throw error;
+    if (slot.activeBoard) return slot.activeBoard;
+    const lkg = getDurableLkgSnapshot();
+    if (!promoteSnapshot(lkg, "durable_lkg", now)) throw error;
+    slot.lastRefreshResult = "failed";
+    slot.lastRefreshError = error instanceof Error && error.message === "snapshot_timeout" ? "snapshot_timeout" : "snapshot_load_failed";
+    console.warn("public snapshot cold load failed; serving durable LKG");
+    return slot.activeBoard!;
+  }).finally(() => {
     if (slot.inflight === pending) slot.inflight = undefined;
   });
   slot.inflight = pending;

@@ -42,6 +42,7 @@ function makeEnv(read: () => unknown[]) {
             return { success: true, results: read()[0] ?? null };
           },
           async run() {
+            if (/\bpublic_serving_snapshot\b/i.test(sql)) return { meta: { changes: 1 } };
             throw new Error("the sitemap route must never write");
           },
         };

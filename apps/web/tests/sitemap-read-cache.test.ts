@@ -50,6 +50,7 @@ function rowsEnv(rows: StubRow[]) {
             return { success: true, results: rows.map((row) => [row.id, row.updatedAt])[0] ?? null };
           },
           async run() {
+            if (/\bpublic_serving_snapshot\b/i.test(sql)) return { meta: { changes: 1 } };
             throw new Error("the sitemap route must never write");
           },
         };
