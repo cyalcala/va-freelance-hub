@@ -80,7 +80,20 @@ The consequence line that claimed sub-50ms cached responses was not met. Warm ed
 `main` was still `f35bcdc3` when this correction was written. A later CI deploy from that SHA would replace this Pages build with the pre-fallback snapshot. Merging the review branch is what makes GitHub match production.
 
 ## Consequences
-- **Positive**: D1 row reads per public visitor dropped from thousands to 0 (warm) or 1 (cold miss).
-- **Positive**: Site latency dropped to sub-50ms for cached responses.
-- **Positive**: Full immunity to search crawler read-amplification.
+- **Positive**: Warm board loads and HTML edge hits do not query D1. A cold stored-snapshot read uses one row; a missing row can still require controlled reconstruction.
+- **Positive**: Database, refresh and cache failures preserve a validated cached or bundled board. Cache expiry triggers refresh without deleting usable in-memory data.
+- **Measured limit**: The October 7 evidence did not establish sub-50ms public network latency or fleet-wide immunity to database read amplification. Headers retain a board's origin and are not SQL counters.
 - **Trade-off**: Newly published jobs or agency updates become visible on the public site after the 1-hour snapshot refresh interval (or upon an explicit snapshot rebuild) rather than synchronously on the next HTTP request.
+
+## Follow-up acceptance — 2026-10-07 17:45 Manila
+
+PR #215 merged and main CI/release `37602023203` successfully deployed
+`6297335ac3bbeb84f4f094a916d2155b8ac83adb` as Pages `c6d071c1`. The additional
+hardening persists candidates before promotion, rejects unsafe renderer fields and
+severe directory collapse, fences older stored/edge writes, bounds dependency waits
+and contains outer HTML cache failures. All 3,003 tests pass; ten production routes
+returned 200. A built Worker without D1 served the dated real LKG with 200 on eight
+routes. The live board progressed from a stale 1,518-job edge copy to fresh 1,519 jobs.
+No live quota exhaustion was induced. The bundled fallback ages until a reviewed
+replacement build; apply-click redirects retain their live-D1 gate. Exact receipts,
+measurements and rollback: [incident record](../incident-2026-10-07-public-snapshot-availability.md).

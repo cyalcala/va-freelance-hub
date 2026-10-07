@@ -1,0 +1,162 @@
+[
+  {
+    "route": "/",
+    "status": 200,
+    "snapshot": [
+      "lkg_fallback"
+    ],
+    "source": [
+      "durable_lkg"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:15:58.968Z"
+    ],
+    "bytes": 209768
+  },
+  {
+    "route": "/opportunities?q=assistant",
+    "status": 200,
+    "snapshot": [
+      "lkg_fallback"
+    ],
+    "source": [
+      "durable_lkg"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:15:58.968Z"
+    ],
+    "bytes": 93027
+  },
+  {
+    "route": "/directory",
+    "status": 200,
+    "snapshot": [
+      "lkg_fallback"
+    ],
+    "source": [
+      "durable_lkg"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:15:58.968Z"
+    ],
+    "bytes": 84873
+  },
+  {
+    "route": "/categories/admin",
+    "status": 200,
+    "snapshot": [
+      "lkg_fallback"
+    ],
+    "source": [
+      "durable_lkg"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:15:58.968Z"
+    ],
+    "bytes": 84284
+  },
+  {
+    "route": "/categories/customer-service",
+    "status": 200,
+    "snapshot": [
+      "lkg_fallback"
+    ],
+    "source": [
+      "durable_lkg"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:15:58.968Z"
+    ],
+    "bytes": 85055
+  },
+  {
+    "route": "/jobs/7",
+    "status": 200,
+    "snapshot": [
+      "lkg_fallback"
+    ],
+    "source": [
+      "durable_lkg"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:15:58.968Z"
+    ],
+    "bytes": 13106
+  },
+  {
+    "route": "/jobs/251",
+    "status": 200,
+    "snapshot": [
+      "lkg_fallback"
+    ],
+    "source": [
+      "durable_lkg"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:15:58.968Z"
+    ],
+    "bytes": 13049
+  },
+  {
+    "route": "/sitemap.xml",
+    "status": 200,
+    "snapshot": [
+      "stale"
+    ],
+    "source": [
+      "edge"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:15:58.968Z"
+    ],
+    "bytes": 225359
+  }
+]

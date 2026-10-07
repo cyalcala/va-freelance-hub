@@ -1,0 +1,242 @@
+[
+  {
+    "route": "/",
+    "status": 200,
+    "snapshot": [
+      "stale"
+    ],
+    "source": [
+      "edge"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:34:17.737Z"
+    ],
+    "ageSeconds": [
+      "4103"
+    ],
+    "elapsedMs": 986,
+    "bytes": 209789
+  },
+  {
+    "route": "/opportunities?q=assistant",
+    "status": 200,
+    "snapshot": [
+      "stale"
+    ],
+    "source": [
+      "edge"
+    ],
+    "jobs": [
+      "1518"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T08:34:17.737Z"
+    ],
+    "ageSeconds": [
+      "4104"
+    ],
+    "elapsedMs": 286,
+    "bytes": 93047
+  },
+  {
+    "route": "/directory",
+    "status": 200,
+    "snapshot": [
+      "fresh"
+    ],
+    "source": [
+      "d1"
+    ],
+    "jobs": [
+      "1519"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T09:35:53.265Z"
+    ],
+    "ageSeconds": [
+      "409"
+    ],
+    "elapsedMs": 270,
+    "bytes": 84893
+  },
+  {
+    "route": "/categories/admin",
+    "status": 200,
+    "snapshot": [
+      "fresh"
+    ],
+    "source": [
+      "d1"
+    ],
+    "jobs": [
+      "1519"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T09:35:53.265Z"
+    ],
+    "ageSeconds": [
+      "409"
+    ],
+    "elapsedMs": 277,
+    "bytes": 84304
+  },
+  {
+    "route": "/categories/customer-service",
+    "status": 200,
+    "snapshot": [
+      "fresh"
+    ],
+    "source": [
+      "d1"
+    ],
+    "jobs": [
+      "1519"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T09:35:53.265Z"
+    ],
+    "ageSeconds": [
+      "409"
+    ],
+    "elapsedMs": 280,
+    "bytes": 85075
+  },
+  {
+    "route": "/categories/writing",
+    "status": 200,
+    "snapshot": [
+      "fresh"
+    ],
+    "source": [
+      "d1"
+    ],
+    "jobs": [
+      "1519"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T09:35:53.265Z"
+    ],
+    "ageSeconds": [
+      "409"
+    ],
+    "elapsedMs": 199,
+    "bytes": 27986
+  },
+  {
+    "route": "/categories/tech",
+    "status": 200,
+    "snapshot": [
+      "fresh"
+    ],
+    "source": [
+      "d1"
+    ],
+    "jobs": [
+      "1519"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T09:35:53.265Z"
+    ],
+    "ageSeconds": [
+      "410"
+    ],
+    "elapsedMs": 216,
+    "bytes": 85383
+  },
+  {
+    "route": "/jobs/7",
+    "status": 200,
+    "snapshot": [
+      "fresh"
+    ],
+    "source": [
+      "d1"
+    ],
+    "jobs": [
+      "1519"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T09:35:53.265Z"
+    ],
+    "ageSeconds": [
+      "410"
+    ],
+    "elapsedMs": 280,
+    "bytes": 14442
+  },
+  {
+    "route": "/jobs/251",
+    "status": 200,
+    "snapshot": [
+      "fresh"
+    ],
+    "source": [
+      "d1"
+    ],
+    "jobs": [
+      "1519"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T09:35:53.265Z"
+    ],
+    "ageSeconds": [
+      "410"
+    ],
+    "elapsedMs": 201,
+    "bytes": 14278
+  },
+  {
+    "route": "/sitemap.xml",
+    "status": 200,
+    "snapshot": [
+      "fresh"
+    ],
+    "source": [
+      "d1"
+    ],
+    "jobs": [
+      "1519"
+    ],
+    "companies": [
+      "735"
+    ],
+    "generatedAt": [
+      "2026-10-07T09:35:53.265Z"
+    ],
+    "ageSeconds": [
+      "410"
+    ],
+    "elapsedMs": 263,
+    "bytes": 225507
+  }
+]

@@ -26,15 +26,16 @@ cutover and exact Git-to-running-image mapping are not demonstrated. Refresh fac
 - [SSAE strategy](../strategies/SPARSE_SOURCE_ATTENTION_STRATEGY.md) / [SSAE-00..15 cards](../plans/SPARSE_SOURCE_ATTENTION_IMPLEMENTATION_PLAN.md): proposed supporting work.
 - [HRI plan](../plans/HUMAN_RESEARCH_INTAKE_PLAN.md), [MATH-01..13](../plans/MATHEMATICAL_IMPROVEMENT_PLAN.md), [source execution queue](../plans/SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md) and [Global Miner directive](../SOURCE_UNIVERSE_GLOBAL_MINER_MASTER_PROMPT.md).
 
-**Next single action:** merge the review branch `codex/public-availability-lkg`
-so `main` matches the Pages deployment already serving
-`https://remotejobs-ph.pages.dev` (commit `019333f7`, deployment
-`62a5be85`, measured 2026-10-07). Until that merge, a CI deploy from
-`f35bcdc3` would put the pre-fallback build back in front of visitors.
-After the merge, recover the latest owner-reported PH/VA lead's durable
-intake and exact stage hold. Owner/controller: maintainer. Do not treat
-the 2026-10-06 savepoint's "deployed" paragraph as the live receipt; the
-2026-10-07 savepoint is the correction.
+**Next single action:** recover the latest owner-reported PH/VA lead's durable
+intake and exact stage hold under the current source queue, as a separately scoped
+task. Owner/controller: maintainer. PR #215 is merged; released main SHA
+`6297335ac3bbeb84f4f094a916d2155b8ac83adb` maps to Pages deployment `c6d071c1`.
+Main CI/release `37602023203` passed; ten live public routes returned 200 with
+the current 1,519-job / 735-company board. The D1-free built Worker served the
+1,518-job bundled/cached LKG board. Read the latest savepoint and the
+[incident acceptance](../incident-2026-10-07-public-snapshot-availability.md) for
+bounded evidence, rollback and limits. The October 6 deployment paragraph remains
+historical; October 7 receipts are the correction. This availability incident is complete.
 
 Proposed freshness targets are not implemented parameters: established-source
 p95 decision <=10m, clearance->visible <=5m, end-to-end <=15m; new structured
