@@ -33,6 +33,11 @@ const savedBoard = ['stale', 'lkg_fallback'].includes(
   Astro.response.headers.get('X-Public-Snapshot') ?? ''
 );
 const recentOpportunities = latestOpportunities.slice(0, 6);
+const companySpotlight = [...new Map(
+  [...featuredAgencyOpportunities, ...latestOpportunities]
+    .filter((job) => job.company && job.logoDomain)
+    .map((job) => [job.company, { name: job.company!, domain: job.logoDomain! }])
+).values()].slice(0, 3);
 const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
   slug,
   title: info.title.replace(/\b[A-Z]+\b/g, (word) =>
@@ -46,14 +51,15 @@ const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
 
 <Layout
   title="VA & Freelance Hub — Remote Jobs & VA Opportunities"
-  description="Explore remote and virtual-assistant opportunities for Filipino professionals. Search roles, compare the available facts, and follow the original listing to apply."
+  description="Find remote jobs and VA roles for Filipino professionals. Search by role or company and follow the original listing to apply."
 >
   {dataUnavailable && <ServiceUnavailable />}
   <section class="home-intro" aria-labelledby="home-title">
+    <div class="home-intro-content">
+    <p class="home-eyebrow"><span aria-hidden="true">✳</span> For Filipino talent</p>
     <h1 id="home-title" class="home-title">Find your next <span>remote role.</span></h1>
     <p class="home-description">
-      Remote and VA opportunities for Filipino professionals. See the company,
-      source and available location evidence before you apply.
+      Search remote jobs and VA roles, then head to the original listing to apply.
     </p>
 
     <form action="/opportunities" method="get" class="home-search">
@@ -61,18 +67,16 @@ const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
       <div class="board-search-row">
         <div class="board-search-field">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
-          <input id="home-query" name="q" type="search" placeholder="Job title, skill or company" class="field-input" />
+          <input id="home-query" name="q" type="search" placeholder="Role or company" class="field-input" />
         </div>
         <button type="submit" class="button button-primary">Search</button>
       </div>
     </form>
 
     <nav class="home-shortcuts" aria-label="Browse job categories">
-      <span class="home-nav-label">Browse by role</span>
-      {categories.slice(0, 4).map((category) => (
+      {categories.slice(0, 3).map((category) => (
         <a href={`/categories/${category.slug}`}>
           {category.title}
-          {!dataUnavailable && <span class="home-count">{category.total.toLocaleString()}<span class="sr-only"> jobs</span></span>}
         </a>
       ))}
       <a href="#categories" class="home-link">All categories <span aria-hidden="true">→</span></a>
@@ -80,8 +84,25 @@ const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
 
     {!dataUnavailable && <p class="home-board-counts">
       <span>{stats.opportunities.toLocaleString()} jobs in {savedBoard ? 'this saved board' : 'the board'}</span>
-      <span>{stats.companies.toLocaleString()} company directory entries</span>
+      <span>Free to browse. No account needed.</span>
     </p>}
+    </div>
+    <aside class="home-company-note" aria-label="Company directory">
+      <span class="home-note-tab" aria-hidden="true"></span>
+      <p class="home-note-eyebrow">Meet the companies</p>
+      <h2>Explore the<br />company directory.</h2>
+      <p class="home-note-description">Look up a company before you apply.</p>
+      {companySpotlight.length > 0 && <div class="home-company-stack">
+        {companySpotlight.map((company) => <a href={`/directory?q=${encodeURIComponent(company.name)}`}>
+          <span class="company-mark" aria-hidden="true">
+            <span>{company.name.slice(0, 2).toUpperCase()}</span>
+            <img src={`/api/company-logo?domain=${encodeURIComponent(company.domain)}&initial=${encodeURIComponent(company.name[0])}`} width="40" height="40" alt="" loading="lazy" decoding="async" data-company-logo="" />
+          </span>
+          <span>{company.name}</span><span aria-hidden="true">↗</span>
+        </a>)}
+      </div>}
+      <a href="/directory" class="home-note-link">Explore {dataUnavailable ? 'the directory' : `${stats.companies.toLocaleString()} companies`} <span aria-hidden="true">→</span></a>
+    </aside>
   </section>
 
   {!dataUnavailable && <section class="home-section" aria-labelledby="recent-title">
@@ -108,8 +129,7 @@ const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
         <div>
           <h2 id="agency-title">From VA &amp; staffing agencies</h2>
           <p class="home-section-description">
-            Agency opportunities in the board. Review each listing for its requirements
-            and original application link.
+            Check the requirements and apply through the original listing.
           </p>
         </div>
         <a href="/opportunities?type=VA" class="home-link">Browse VA roles <span aria-hidden="true">→</span></a>
@@ -164,42 +184,73 @@ const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
 </Layout>
 
 <style>
-  .home-intro { padding-block: 32px 24px; border-bottom: 1px solid var(--divider); }
-  .home-title { max-width: 24ch; font-size: 36px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
+  .home-intro { position: relative; isolation: isolate; display: grid; gap: 28px; margin-top: 24px; padding: 28px 24px; border: 2px solid #B79979; border-radius: 24px; background: #FAF0DF; box-shadow: 0 7px 0 #DFC5A7, 0 20px 38px rgb(84 47 21 / .06); }
+  .home-intro::before { content: ''; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: url('/textures/pigment-paper.webp') center / cover no-repeat; opacity: .9; }
+  .home-intro-content { min-width: 0; }
+  .home-eyebrow { display: flex; align-items: center; gap: 9px; width: fit-content; padding: 2px 6px; border-radius: 6px; background: #FFF8EC; font-size: 13px; font-weight: 800; letter-spacing: .025em; }
+  .home-eyebrow span { color: var(--accent); font-size: 25px; line-height: 1; }
+  .home-title { max-width: 13ch; margin-top: 16px; font-family: var(--font-display); font-size: 42px; font-weight: 650; line-height: 1.03; letter-spacing: -.045em; text-wrap: balance; }
   .home-title span { color: var(--accent); }
-  .home-description { max-width: 70ch; margin-top: 12px; color: var(--muted); font-size: 16px; }
-  .home-search { max-width: 800px; margin-top: 24px; margin-bottom: 12px; }
-  .home-shortcuts { display: flex; flex-wrap: wrap; align-items: center; gap: 0 20px; font-size: 13px; }
+  .home-description { max-width: 44ch; margin-top: 16px; padding: 4px 6px; border-radius: 6px; background: #FFF8EC; color: #514334; font-size: 16px; line-height: 1.6; }
+  .home-search .field-label { width: fit-content; padding-inline: 6px; border-radius: 4px; background: #FFF8EC; }
+  .home-search { max-width: 640px; margin-top: 22px; margin-bottom: 12px; }
+  .home-shortcuts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 13px; }
   .home-nav-label { color: var(--muted); }
-  .home-shortcuts a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 500; transition: color 160ms; }
-  .home-shortcuts a:hover { color: var(--accent); }
+  .home-shortcuts a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #BBA187; border-radius: 10px; background: #FFF8EC; font-weight: 700; transition: color 160ms, background 160ms; }
+  .home-shortcuts a:hover { color: var(--accent); background: #FFE4CE; }
   .home-count { flex-shrink: 0; color: var(--muted); font-size: 13px; font-weight: 400; font-variant-numeric: tabular-nums; }
-  .home-board-counts { display: flex; flex-wrap: wrap; gap: 4px 24px; margin-top: 12px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .home-board-counts { display: flex; flex-wrap: wrap; gap: 4px 20px; width: fit-content; margin-top: 18px; padding: 6px 10px; border-radius: 8px; background: #FFF8EC; color: #65503D; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .home-company-note { display: none; }
+  .home-note-tab { position: absolute; top: -11px; left: calc(50% - 30px); width: 60px; height: 24px; background: #E8B778; border: 1px solid #D4A365; transform: rotate(-3deg); opacity: .9; }
+  .home-note-eyebrow { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .12em; color: #76604B; }
+  .home-company-note h2 { margin-top: 12px; font-family: var(--font-display); font-size: 25px; font-weight: 650; line-height: 1.15; letter-spacing: -.035em; }
+  .home-note-description { margin-top: 12px; font-size: 13px; color: var(--muted); }
+  .home-company-stack { display: grid; gap: 8px; margin-top: 20px; }
+  .home-company-stack a { display: grid; grid-template-columns: 44px minmax(0, 1fr) 16px; gap: 10px; align-items: center; padding: 8px; border: 1px solid #D9C7AF; border-radius: 12px; background: #FFFDF7; font-size: 13px; font-weight: 800; }
+  .home-company-stack a:hover { border-color: var(--accent); background: #FFF0DB; }
+  .home-company-stack :global(.company-mark) { width: 44px; height: 44px; border-radius: 10px; }
+  .home-company-stack :global(.company-mark img) { width: 32px; height: 32px; }
+  .home-note-link { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 44px; margin-top: 12px; font-size: 13px; color: var(--accent); font-weight: 800; }
   .home-section { margin-top: 32px; }
   .home-section-heading, .home-group-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin-bottom: 16px; }
-  .home-section-heading h2 { font-size: 22px; font-weight: 600; }
+  .home-section-heading h2 { font-family: var(--font-display); font-size: 28px; font-weight: 650; letter-spacing: -.035em; }
   .home-section-description { max-width: 70ch; margin-top: 8px; color: var(--muted); font-size: 15px; }
   .home-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--accent); font-size: 14px; font-weight: 600; transition: color 160ms; }
   .home-link:hover { color: var(--accent-hover); }
   .home-empty-title { font-size: 20px; font-weight: 600; }
   .home-agency-links { margin-top: 12px; }
   .home-categories { scroll-margin-top: 88px; }
-  .home-category-index { display: grid; column-gap: 32px; }
-  .home-category-index a { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding-block: 12px; border-bottom: 1px solid var(--divider); font-size: 14px; font-weight: 500; transition: color 160ms; }
+  .home-category-index { display: grid; gap: 12px; }
+  .home-category-index a { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 72px; padding: 16px; border: 1.5px solid #C5AB8D; border-radius: 14px; background: #F4E4CD; box-shadow: 0 3px 0 #DFC5A7; font-size: 14px; font-weight: 800; transition: color 160ms; }
+  .home-category-index a:nth-child(3n + 2) { background: #F7DCCD; }
+  .home-category-index a:nth-child(3n) { background: #E6E7D4; }
   .home-category-index a:hover { color: var(--accent); }
   .home-category-group { margin-top: 32px; }
   .home-group-heading h3 { font-size: 18px; font-weight: 600; }
 
   @media (min-width: 768px) {
-    .home-intro { padding-top: 40px; }
-    .home-title { font-size: 48px; }
+    .home-intro { padding: 36px; }
+    .home-title { font-size: 60px; }
     .home-section { margin-top: 48px; }
     .home-category-index { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
+  @media (min-width: 1024px) {
+    .home-intro { grid-template-columns: minmax(0, 1fr) 280px; gap: 60px; padding: 40px; }
+    .home-intro-content { max-width: 640px; }
+    .home-company-note { display: block; align-self: center; position: relative; padding: 26px 22px 14px; border: 1.5px solid #AB8261; border-radius: 18px; background: #FFF8EAF2; box-shadow: 5px 7px 0 rgb(116 54 25 / .17), 0 16px 25px rgb(93 45 24 / .09); transform: rotate(1.5deg); }
+  }
 
   @media (width < 768px) {
-    .home-shortcuts { gap: 0 16px; }
+    .home-intro { padding: 24px 20px; }
+    .home-intro::before { background-position: left center; opacity: .45; }
+    .home-shortcuts { gap: 8px; }
+    .home-shortcuts a { padding-inline: 9px; }
     .home-shortcuts .home-nav-label { flex-basis: 100%; }
     .home-search .button { padding-inline: 16px; }
+    .home-search .board-search-row { gap: 8px; }
+    .home-search .field-input { padding-left: 40px; }
+    .home-title { font-size: 39px; }
+    .home-description { font-size: 15px; }
+    .home-search { margin-top: 18px; }
   }
 </style>

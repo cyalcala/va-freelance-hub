@@ -44,8 +44,11 @@ unsupported filtering, ranking, new profile routes or backend semantics.
 
 VA & Freelance Hub. Owner explicitly preserves the warm neutral, charcoal and
 coral/vermilion family while asking for a more premium product experience.
-Warm Precision + Employment Intelligence is the supplied preferred direction.
-Calm, practical, specific language; no fake proof, testimonials or freshness.
+October 8 owner feedback supersedes the earlier restrained visual direction:
+thicker watercolor texture, substantial shade and visible company identities.
+Pigment & Paper keeps search practical while giving the site warmth and character.
+Specific language; no fake proof, testimonials or freshness. Company marks use
+recorded websites with exact directory identity matches and initials when unknown.
 
 ## Evidence on Hand
 
