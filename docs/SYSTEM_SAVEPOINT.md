@@ -1,5 +1,20 @@
 # System Savepoint
 
+## 2026-10-07 22:24 Manila — Homepage and categories locally accepted
+
+**Progress:** 3 of 5 frontend checkpoints complete (60% by checkpoint count).
+Task 3 source `9a595cf076051d4206c7e50fe246d5f025e0c5d2` is pushed and its remote
+SHA verified. Separate spec and code-quality reviews passed. Root rendered
+390/768/1280/1440 without overflow and exercised home search → results → detail,
+category pagination and preselected category search. Implementation passed 85
+focused tests, typecheck and build. [Evidence](design/PREMIUM_2026_REVIEW.md).
+
+Main advanced with two generated digest updates; merge `a3ba42f5` preserves them.
+**Release:** frontend changes are not deployed yet. **Next:** Task 4 directory,
+detail and legal typography is in progress, followed by integrated QA and release.
+The GitHub rollback tag remains `savepoint/pre-premium-design-2026-10-07`.
+No operational, source admission, database or publication contract changes.
+
 ## 2026-10-07 21:58 Manila — Premium job board locally accepted
 
 **Progress:** 2 of 5 frontend checkpoints complete (40% by checkpoint count).

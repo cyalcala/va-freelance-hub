@@ -97,6 +97,29 @@ important or actionable minor findings. Root's remaining empty, focus, skip and
 boundary checks then passed. Task 2 is locally accepted; integrated release QA
 and the remaining product surfaces still need completion.
 
+## Task 3 — Homepage and categories
+
+Implementation: `9a595cf076051d4206c7e50fe246d5f025e0c5d2`, pushed and remote
+SHA verified. Native homepage search, six recent rows, original agency records,
+ordered category previews and real category totals use the existing loaders.
+No homepage hydration or dependency was added. Category guards, ordering,
+pagination and shared Apply authority are preserved.
+
+Root rendered 390/768/1280/1440 without horizontal overflow. With the genuine
+local saved-board warning, the first row began at 839.6/683.2/618.4/618.4 CSS pixels
+respectively. The original production desktop baseline began at 972.4px without
+that warning, so these are layout observations across different serving states,
+not a controlled performance comparison. Mobile keeps the warning and usable
+search ahead of listings; the explicit first-desktop-viewport requirement passes.
+
+Native GET search for MultiplyMii returned 68 rows and opened eligible job 8992.
+The AI category showed 40 jobs, page 2 showed 31–40, and Search this category
+preselected its native board filter. Screenshots are retained in `evidence/`.
+Implementation verification passed 85 focused tests, typecheck, build and diff
+check. Separate spec review approved this SHA with no material findings.
+Separate code-quality review also approved this SHA with no material actionable
+findings. Task 3 is locally accepted; integrated release QA remains pending.
+
 ## Advisory and boundaries
 
 The separate concept spec review passed at `068e7c94`. Code-quality review then

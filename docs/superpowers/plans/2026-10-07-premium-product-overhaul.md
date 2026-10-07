@@ -60,14 +60,18 @@ added. The obsolete literal Tailwind nav assertion was removed, with the intende
 Owned files: `src/pages/index.astro`, `src/components/OpportunitySearch.tsx`
 (if retained), `src/pages/categories/[category].astro`.
 
-- [ ] Expose a real GET search and useful category shortcuts immediately.
-- [ ] Compact left-aligned headline and board counts/status; preview real jobs
+- [x] Expose a real GET search and useful category shortcuts immediately.
+- [x] Compact left-aligned headline and board counts/status; preview real jobs
   within first desktop viewport, retaining agency and category data unchanged.
-- [ ] Use server-rendered category previews where no client interaction is
+- [x] Use server-rendered category previews where no client interaction is
   needed; preserve category totals and original job ordering.
-- [ ] Apply shared row/results/pagination grammar to category pages.
-- [ ] Inspect responsive hierarchy and navigate home search → results → detail.
+- [x] Apply shared row/results/pagination grammar to category pages.
+- [x] Inspect responsive hierarchy and navigate home search → results → detail.
   Review spec then code; fix and commit this surface slice.
+
+Task 3 accepted at `9a595cf0`: 85 focused tests/typecheck/build, root responsive
+and native navigation checks, separate spec and quality approvals. Main's two
+generated digest updates were preserved by merge `a3ba42f5` before Task 4.
 
 ## Task 4 — Directory and details
 
