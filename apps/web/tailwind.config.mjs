@@ -6,33 +6,39 @@ const config = {
   theme: {
     extend: {
       colors: {
-        // Warm editorial base. Existing token names kept so every current
-        // utility class inherits the refined palette; values tuned for a
-        // calmer, studio-grade look.
-        parchment: "#FBFAF7", // warm paper base
-        surface: "#FFFFFF",   // cards / raised surfaces
-        sunken: "#F4F1EA",    // recessed fills, chips
-        ink: "#17140F",       // warm near-black
-        line: "#17140F",      // used at low opacity for hairline borders
-        accent: "#DC5A34",    // refined terracotta
-        "accent-hover": "#C24A28",
-        "accent-soft": "#FBEDE6", // accent tint background
+        // Existing names remain compatible with every public route.
+        parchment: "#FAF9F6",
+        surface: "#FFFFFF",
+        sunken: "#F1EFEB",
+        ink: "#24211E",
+        muted: "#68615B",
+        line: "#24211E",
+        control: "#938B83",
+        accent: "#BC482D",
+        "accent-hover": "#9F3B24",
+        "accent-soft": "#F8EBE5",
+        evidence: "#24634C",
+        "evidence-soft": "#EDF5F0",
+        attention: "#815C18",
+        "attention-soft": "#FBF3DF",
       },
       fontFamily: {
-        sans: ["Outfit", "Inter", "system-ui", "sans-serif"],
-        display: ["Outfit", "system-ui", "sans-serif"],
+        sans: ["Manrope", "system-ui", "sans-serif"],
+        display: ["Manrope", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "JetBrains Mono", "monospace"],
       },
       borderRadius: {
-        xl: "1rem",
-        "2xl": "1.25rem",
-        "3xl": "1.75rem",
+        sm: "0.25rem",
+        md: "0.375rem",
+        lg: "0.5rem",
+        xl: "0.5rem",
+        "2xl": "0.5rem",
+        "3xl": "0.5rem",
       },
       boxShadow: {
-        // One calm elevation system instead of scattered shadow-lg.
-        soft: "0 1px 2px rgb(23 20 15 / 0.04), 0 4px 16px -8px rgb(23 20 15 / 0.10)",
-        lift: "0 2px 4px rgb(23 20 15 / 0.05), 0 12px 32px -12px rgb(23 20 15 / 0.16)",
-        card: "0 1px 2px rgb(23 20 15 / 0.04)",
+        soft: "0 2px 8px rgb(36 33 30 / 0.08)",
+        lift: "0 2px 8px rgb(36 33 30 / 0.08)",
+        card: "none",
       },
       letterSpacing: {
         overline: "0.14em",
