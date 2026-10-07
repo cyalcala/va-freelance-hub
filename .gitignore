@@ -98,3 +98,8 @@ bun-debug.log*
 
 # Trigger.dev
 .trigger/
+
+# Generated release availability receipts (selected evidence lives in docs/audits).
+/public-lkg-release-receipt.json
+/public-offline-smoke.json
+/apps/web/src/data/public-lkg.json.release-tmp
