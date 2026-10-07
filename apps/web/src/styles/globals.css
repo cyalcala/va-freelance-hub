@@ -122,7 +122,7 @@
   .site-nav { display: flex; gap: 8px; }
   .site-nav a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border-radius: 6px; color: var(--muted); font-size: 14px; font-weight: 600; transition: color 160ms, background-color 160ms; }
   .site-nav a:hover { color: var(--ink); background: var(--recessed); }
-  .site-nav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+  .site-nav a[aria-current="page"] { color: var(--accent-hover); background: var(--accent-soft); }
   .saved-board-notice { margin-top: 24px; padding: 12px 16px; border: 1px solid rgb(129 92 24 / 0.25); border-radius: 6px; color: var(--attention); background: var(--attention-soft); font-size: 13px; line-height: 1.6; }
   .saved-board-notice strong { font-weight: 600; }
   .site-footer-wrap { margin-top: auto; border-top: 1px solid var(--divider); }
@@ -150,7 +150,7 @@
   .opportunity-arrow { grid-column: 3; grid-row: 1; align-self: center; color: var(--muted); }
   .opportunity-date { font-variant-numeric: tabular-nums; }
 
-  .board-search { margin-bottom: 24px; }
+  .board-search { margin-bottom: 24px; scroll-margin-top: 88px; }
   .board-search-label { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
   .search-shortcut { display: none; color: var(--muted); font-size: 13px; font-weight: 400; }
   .search-shortcut kbd { margin-inline: 4px; padding: 1px 6px; border: 1px solid var(--control-border); border-radius: 4px; font: inherit; }
@@ -204,7 +204,7 @@
     .site-footer { padding-bottom: calc(96px + var(--safe-bottom)); }
     .mobile-nav { position: fixed; bottom: 0; inset-inline: 0; z-index: 50; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding-bottom: max(4px, var(--safe-bottom)); border-top: 1px solid var(--divider); background: var(--page); }
     .mobile-nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 60px; padding: 8px; color: var(--muted); font-size: 12px; font-weight: 600; transition: color 160ms, background-color 160ms; }
-    .mobile-nav a[aria-current="page"] { color: var(--accent); background: var(--accent-soft); }
+    .mobile-nav a[aria-current="page"] { color: var(--accent-hover); background: var(--accent-soft); }
     .mobile-nav svg { width: 20px; height: 20px; }
   }
 }

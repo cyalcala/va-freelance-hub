@@ -65,6 +65,8 @@ Keep existing Tailwind color names compatible and add semantic roles.
 ## Component grammar
 
 Coral identifies primary actions, selected controls and a small brand emphasis.
+Selected navigation text uses the darker coral `#9F3B24` on the coral tint for
+5.76:1 contrast; primary white-on-coral buttons retain `#BC482D`.
 No rainbow platform badges. Job title, company, source posted date, employment
 type and source attribution are legible text. At most one meaningful geographic
 status treatment; evidence tooltip remains supplemental. Do not label likely PH
