@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { OpportunitySearch } from '@/components/OpportunitySearch';
+import { JOB_CATEGORY_MAP } from '@/lib/categories';
 import { OpportunityCard } from '@/components/opportunity-card';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
@@ -28,121 +28,178 @@ try {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, error);
 }
+
+const savedBoard = ['stale', 'lkg_fallback'].includes(
+  Astro.response.headers.get('X-Public-Snapshot') ?? ''
+);
+const recentOpportunities = latestOpportunities.slice(0, 6);
+const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
+  slug,
+  title: info.title.replace(/\b[A-Z]+\b/g, (word) =>
+    word === 'AI' || word === 'IT' ? word : word[0] + word.slice(1).toLowerCase()
+  ),
+  total: categoryTotals[slug] ?? 0,
+  jobs: latestOpportunities.filter((opportunity) => (opportunity.category || 'other') === slug).slice(0, 5),
+}));
+
 ---
 
 <Layout
-  title="VA & Freelance Hub — Remote Jobs & VA Work That Hire Filipino Talent"
-  description="A curated board of remote and virtual-assistant roles from companies that hire in the Philippines. Refreshed automatically from public sources. Free, forever."
+  title="VA & Freelance Hub — Remote Jobs & VA Opportunities"
+  description="Explore remote and virtual-assistant opportunities for Filipino professionals. Search roles, compare the available facts, and follow the original listing to apply."
 >
   {dataUnavailable && <ServiceUnavailable />}
-  <section class="max-w-3xl mx-auto text-center pt-8 sm:pt-14 md:pt-20 pb-12 sm:pb-16 md:pb-20">
-    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-ink/[0.08] bg-surface/80 text-ink/60 text-xs font-semibold mb-6 sm:mb-8 shadow-card">
-      <span class="relative flex h-2 w-2">
-        <span class="absolute inline-flex h-full w-full rounded-full bg-accent/60 animate-ping"></span>
-        <span class="relative inline-flex h-2 w-2 rounded-full bg-accent"></span>
-      </span>
-      {['stale', 'lkg_fallback'].includes(Astro.response.headers.get('X-Public-Snapshot') ?? '') ? 'Showing saved listings' : 'Updated automatically, all day'}
-    </div>
-
-    <h1 class="text-[2.25rem] leading-[1.08] sm:text-5xl md:text-[4rem] font-extrabold tracking-tight text-ink text-balance">
-      Remote work that hires
-      <span class="text-accent"> Filipino talent.</span>
-    </h1>
-
-    <div class="mt-4 sm:mt-5 flex justify-center">
-      <a href="https://www.linkedin.com/in/cyrusalcala/" target="_blank" rel="noopener noreferrer"
-         class="group inline-flex items-center gap-2 pl-1.5 pr-3.5 py-1.5 rounded-full border border-ink/[0.09] bg-surface/80 text-sm text-ink/60 hover:text-ink hover:border-ink/20 transition-all shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-        <span class="grid place-items-center w-6 h-6 rounded-full bg-ink text-parchment text-[10px] font-bold tracking-tight">CY</span>
-        <span>Built &amp; curated by <span class="font-semibold text-ink group-hover:text-accent transition-colors">CY Alcala</span></span>
-      </a>
-    </div>
-
-    <p class="mt-5 sm:mt-6 text-base sm:text-lg md:text-xl text-ink/65 leading-relaxed max-w-xl mx-auto text-balance">
-      A curated, always-current board of remote and VA roles from companies
-      that actually hire in the Philippines. Refreshed automatically — free,
-      forever.
+  <section class="home-intro" aria-labelledby="home-title">
+    <h1 id="home-title" class="home-title">Find your next <span>remote role.</span></h1>
+    <p class="home-description">
+      Remote and VA opportunities for Filipino professionals. See the company,
+      source and available location evidence before you apply.
     </p>
 
-    <div class="mt-8 sm:mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
-      <a href="/opportunities"
-         class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3.5 rounded-full text-[15px] font-semibold shadow-soft hover:shadow-lift transition-all duration-200 ease-out-soft active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-        Browse all jobs
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
-      <a href="/directory"
-         class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 rounded-full text-[15px] font-semibold text-ink bg-surface border border-ink/[0.09] hover:border-ink/20 hover:bg-ink/[0.02] shadow-card transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-        Explore agencies
-      </a>
-    </div>
-
-    <!-- Direct VA Agency Quick Filter Pills -->
-    <div class="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs">
-      <span class="text-ink/45 font-medium">Direct VA Employers:</span>
-      <a href="/opportunities?platform=Workable%2Fhunt-st" class="px-2.5 py-1 rounded-full bg-surface border border-sky-500/30 text-sky-800 font-semibold hover:bg-sky-50/50 transition-colors shadow-sm">Hunt St</a>
-      <a href="/opportunities?platform=MultiplyMii" class="px-2.5 py-1 rounded-full bg-surface border border-indigo-500/30 text-indigo-800 font-semibold hover:bg-indigo-50/50 transition-colors shadow-sm">MultiplyMii</a>
-      <a href="/opportunities?platform=20Four7VA" class="px-2.5 py-1 rounded-full bg-surface border border-teal-500/30 text-teal-800 font-semibold hover:bg-teal-50/50 transition-colors shadow-sm">20Four7VA</a>
-      <a href="/opportunities?platform=Sourcefit" class="px-2.5 py-1 rounded-full bg-surface border border-emerald-500/30 text-emerald-800 font-semibold hover:bg-emerald-50/50 transition-colors shadow-sm">Sourcefit</a>
-      <a href="/opportunities?platform=Workable%2Fcoconutva" class="px-2.5 py-1 rounded-full bg-surface border border-amber-500/30 text-amber-800 font-semibold hover:bg-amber-50/50 transition-colors shadow-sm">Coconut VA</a>
-      <a href="/opportunities?platform=Yokly" class="px-2.5 py-1 rounded-full bg-surface border border-purple-500/30 text-purple-800 font-semibold hover:bg-purple-50/50 transition-colors shadow-sm">Yokly</a>
-      <a href="/directory" class="px-2.5 py-1 rounded-full bg-ink/[0.04] text-ink/65 font-medium hover:text-ink transition-colors">View all agencies &rarr;</a>
-    </div>
-
-    <div class="mt-8 sm:mt-12 flex items-stretch justify-center divide-x divide-ink/[0.08]">
-      <div class="px-6 sm:px-8">
-        <div class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink tabular-nums">{stats.opportunities.toLocaleString()}</div>
-        <div class="mt-1.5 text-xs font-semibold uppercase tracking-overline text-ink/45">Open roles</div>
+    <form action="/opportunities" method="get" class="home-search">
+      <label for="home-query" class="field-label">Role, company or keyword</label>
+      <div class="board-search-row">
+        <div class="board-search-field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          <input id="home-query" name="q" type="search" placeholder="Job title, skill or company" class="field-input" />
+        </div>
+        <button type="submit" class="button button-primary">Search</button>
       </div>
-      <div class="px-6 sm:px-8">
-        <div class="text-3xl sm:text-4xl font-extrabold tracking-tight text-ink tabular-nums">{stats.companies.toLocaleString()}</div>
-        <div class="mt-1.5 text-xs font-semibold uppercase tracking-overline text-ink/45">Vetted companies</div>
-      </div>
-    </div>
+    </form>
+
+    <nav class="home-shortcuts" aria-label="Browse job categories">
+      <span class="home-nav-label">Browse by role</span>
+      {categories.slice(0, 4).map((category) => (
+        <a href={`/categories/${category.slug}`}>
+          {category.title}
+          {!dataUnavailable && <span class="home-count">{category.total.toLocaleString()}<span class="sr-only"> jobs</span></span>}
+        </a>
+      ))}
+      <a href="#categories" class="home-link">All categories <span aria-hidden="true">→</span></a>
+    </nav>
+
+    {!dataUnavailable && <p class="home-board-counts">
+      <span>{stats.opportunities.toLocaleString()} jobs in {savedBoard ? 'this saved board' : 'the board'}</span>
+      <span>{stats.companies.toLocaleString()} company directory entries</span>
+    </p>}
   </section>
 
+  {!dataUnavailable && <section class="home-section" aria-labelledby="recent-title">
+    <div class="home-section-heading">
+      <h2 id="recent-title">Recent listings</h2>
+      <a href="/opportunities" class="home-link">Browse all jobs <span aria-hidden="true">→</span></a>
+    </div>
+    {recentOpportunities.length > 0 ? (
+      <div class="result-list">
+        {recentOpportunities.map((opportunity) => <OpportunityCard opportunity={opportunity} />)}
+      </div>
+    ) : (
+      <div class="surface-panel empty-state">
+        <h3 class="home-empty-title">No listings in this board.</h3>
+        <p>You can explore the company directory or check the job board again later.</p>
+        <a href="/directory" class="button button-secondary">Explore companies</a>
+      </div>
+    )}
+  </section>}
+
   {featuredAgencyOpportunities.length > 0 && (
-    <section class="mb-14 sm:mb-20">
-      <div class="mb-5 sm:mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
+    <section class="home-section" aria-labelledby="agency-title">
+      <div class="home-section-heading">
         <div>
-          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-800 text-xs font-semibold uppercase tracking-wider mb-2">
-            <span>🇵🇭</span> Direct VA Agency Roles
-          </div>
-          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">Verified Philippine Agency Openings</h2>
-          <p class="mt-1.5 sm:mt-2 text-sm sm:text-[15px] text-ink/65 max-w-xl">
-            Active roles from vetted Philippine virtual assistant &amp; staffing agencies (Hunt St, MultiplyMii, 20Four7VA, Sourcefit, etc.). Fast-tracked hiring directly for Filipino talent.
+          <h2 id="agency-title">From VA &amp; staffing agencies</h2>
+          <p class="home-section-description">
+            Agency opportunities in the board. Review each listing for its requirements
+            and original application link.
           </p>
         </div>
-        <a href="/opportunities?type=VA"
-           class="inline-flex items-center gap-1.5 text-sm font-semibold text-accent hover:text-accent-hover transition-colors self-start sm:self-auto shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg">
-          Browse all agency roles
-          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-        </a>
+        <a href="/opportunities?type=VA" class="home-link">Browse VA roles <span aria-hidden="true">→</span></a>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
-        {featuredAgencyOpportunities.map((opp) => (
-          <div class="bg-surface rounded-2xl border border-ink/[0.08] shadow-card hover:shadow-soft hover:-translate-y-0.5 transition-all duration-200 p-1">
-            <OpportunityCard opportunity={opp} />
-          </div>
-        ))}
+      <div class="result-list">
+        {featuredAgencyOpportunities.map((opportunity) => <OpportunityCard opportunity={opportunity} />)}
       </div>
+      <nav class="home-shortcuts home-agency-links" aria-label="Browse agency sources">
+        <span class="home-nav-label">Browse by source</span>
+        <a href="/opportunities?platform=Workable%2Fhunt-st">Hunt St</a>
+        <a href="/opportunities?platform=MultiplyMii">MultiplyMii</a>
+        <a href="/opportunities?platform=20Four7VA">20Four7VA</a>
+        <a href="/opportunities?platform=Sourcefit">Sourcefit</a>
+        <a href="/opportunities?platform=Workable%2Fcoconutva">Coconut VA</a>
+        <a href="/opportunities?platform=Yokly">Yokly</a>
+        <a href="/directory" class="home-link">Explore companies <span aria-hidden="true">→</span></a>
+      </nav>
     </section>
   )}
 
-  <section class="pb-12">
-    <div class="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4">
+  <section id="categories" class="home-section home-categories" aria-labelledby="categories-title">
+    <div class="home-section-heading">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-1.5 sm:mb-2">Freshest roles</p>
-        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-ink">Browse by category</h2>
-        <p class="mt-1.5 sm:mt-2 text-sm sm:text-[15px] text-ink/55 max-w-xl">
-          The newest openings in each field. Open a category for the full list,
-          search, and filters.
+        <h2 id="categories-title">Explore by category</h2>
+        <p class="home-section-description">
+          Choose a field for its full list.
         </p>
       </div>
-      <a href="/opportunities"
-         class="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold text-ink/70 hover:text-accent transition-colors self-start sm:self-auto shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg">
-        View all jobs
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      </a>
+      <a href="/opportunities" class="home-link">Search all jobs <span aria-hidden="true">→</span></a>
     </div>
-    <OpportunitySearch client:load opportunities={latestOpportunities} categoryTotals={categoryTotals} showSearch={false} />
+    <nav class="home-category-index" aria-label="All job categories">
+      {categories.map((category) => (
+        <a href={`/categories/${category.slug}`}>
+          <span>{category.title}</span>
+          {!dataUnavailable && <span class="home-count">{category.total.toLocaleString()} {category.total === 1 ? 'job' : 'jobs'}</span>}
+        </a>
+      ))}
+    </nav>
+
+    {categories.filter((category) => category.jobs.length > 0).map((category) => (
+      <section class="home-category-group" aria-labelledby={`category-${category.slug}`}>
+        <div class="home-group-heading">
+          <h3 id={`category-${category.slug}`}>{category.title}</h3>
+          <a href={`/categories/${category.slug}`} class="home-link">See all {category.total.toLocaleString()} jobs <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="result-list">
+          {category.jobs.map((opportunity) => <OpportunityCard opportunity={opportunity} />)}
+        </div>
+      </section>
+    ))}
   </section>
 </Layout>
+
+<style>
+  .home-intro { padding-block: 32px 24px; border-bottom: 1px solid var(--divider); }
+  .home-title { max-width: 24ch; font-size: 36px; font-weight: 700; line-height: 1.15; text-wrap: balance; }
+  .home-title span { color: var(--accent); }
+  .home-description { max-width: 70ch; margin-top: 12px; color: var(--muted); font-size: 16px; }
+  .home-search { max-width: 800px; margin-top: 24px; margin-bottom: 12px; }
+  .home-shortcuts { display: flex; flex-wrap: wrap; align-items: center; gap: 0 20px; font-size: 13px; }
+  .home-nav-label { color: var(--muted); }
+  .home-shortcuts a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-weight: 500; transition: color 160ms; }
+  .home-shortcuts a:hover { color: var(--accent); }
+  .home-count { flex-shrink: 0; color: var(--muted); font-size: 13px; font-weight: 400; font-variant-numeric: tabular-nums; }
+  .home-board-counts { display: flex; flex-wrap: wrap; gap: 4px 24px; margin-top: 12px; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .home-section { margin-top: 32px; }
+  .home-section-heading, .home-group-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin-bottom: 16px; }
+  .home-section-heading h2 { font-size: 22px; font-weight: 600; }
+  .home-section-description { max-width: 70ch; margin-top: 8px; color: var(--muted); font-size: 15px; }
+  .home-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--accent); font-size: 14px; font-weight: 600; transition: color 160ms; }
+  .home-link:hover { color: var(--accent-hover); }
+  .home-empty-title { font-size: 20px; font-weight: 600; }
+  .home-agency-links { margin-top: 12px; }
+  .home-categories { scroll-margin-top: 88px; }
+  .home-category-index { display: grid; column-gap: 32px; }
+  .home-category-index a { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding-block: 12px; border-bottom: 1px solid var(--divider); font-size: 14px; font-weight: 500; transition: color 160ms; }
+  .home-category-index a:hover { color: var(--accent); }
+  .home-category-group { margin-top: 32px; }
+  .home-group-heading h3 { font-size: 18px; font-weight: 600; }
+
+  @media (min-width: 768px) {
+    .home-intro { padding-top: 40px; }
+    .home-title { font-size: 48px; }
+    .home-section { margin-top: 48px; }
+    .home-category-index { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+
+  @media (width < 768px) {
+    .home-shortcuts { gap: 0 16px; }
+    .home-shortcuts .home-nav-label { flex-basis: 100%; }
+    .home-search .button { padding-inline: 16px; }
+  }
+</style>
