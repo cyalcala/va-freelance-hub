@@ -10,3 +10,12 @@ regexes = [
     '''`[0-9a-f]{40}`''',
     '''(?i)\b(?:sha|head|commit|main)\b[^\n]{0,24}?[0-9a-f]{40}\b''',
 ]
+
+[[rules]]
+id = "linkedin-client-id"
+[[rules.allowlists]]
+description = "Public job JSON stores the 14-character key sourcePlatform immediately after slugs that contain linkedin. Match-scoped so a real linkedin client id on the same one-line export still fails, and the file is not path-exempted."
+regexTarget = "match"
+regexes = [
+    '''(?i)linkedin[\w.-]{0,20}","sourcePlatform"''',
+]
