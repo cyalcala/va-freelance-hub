@@ -1,5 +1,26 @@
 # System Savepoint
 
+## 2026-10-07 21:58 Manila — Premium job board locally accepted
+
+**Progress:** 2 of 5 frontend checkpoints complete (40% by checkpoint count).
+Source `10585808` and boundary fix `90bc788d` implement shared tokens/chrome,
+accessible job rows and native GET search/filtering. Separate spec and code-quality
+reviews passed at `90bc788d`, with no outstanding material findings. The evidence
+checkpoint `99d135b3c9efe9ef77cf4db60444040e3d817738` matches its remote branch.
+
+**Verified:** build/typecheck; 30 implementation focused tests and 45 independent
+spec-review tests; rendered 390/768/1280/1440 plus 320/1920 without overflow;
+767/768 navigation, keyboard focus/skip/search shortcut, combined filters,
+individual removal, page persistence/reset, empty recovery and truthful local LKG
+warning. [Detailed evidence](design/PREMIUM_2026_REVIEW.md).
+
+**Release:** no design PR CI or production deployment yet. Existing accepted
+runtime remains `91641445` / Pages `aa8ce5b8`; this is frontend local acceptance.
+Rollback tag `savepoint/pre-premium-design-2026-10-07` remains on GitHub.
+**Next:** Task 3 homepage/category discovery is in progress; then directory/detail/
+legal reading surfaces, full integrated/no-D1 QA and normal reviewed release.
+Source admission, ranking, publication, database and GCP behavior remain unchanged.
+
 ## 2026-10-07 21:28 Manila — Premium design direction accepted
 
 **Scope:** owner-authorized frontend overhaul, preserving cream/charcoal/coral.
