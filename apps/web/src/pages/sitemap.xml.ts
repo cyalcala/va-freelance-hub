@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
-import { loadPublicBoard } from "@/lib/public-serving-snapshot";
-import { publicDataErrorClass } from "@/lib/public-route-load";
+import { applySnapshotHeaders, loadPublicBoard } from "@/lib/public-serving-snapshot";
+import { markPublicDataUnavailable } from "@/lib/public-route-load";
+import { normalizeUtcIso } from "@/lib/time";
 
 export const prerender = false;
 
@@ -16,20 +17,27 @@ const STATIC_PAGES = [
 
 export const GET: APIRoute = async ({ locals }) => {
   let jobEntries = "";
+  const headers = new Headers({
+    "Content-Type": "application/xml; charset=utf-8",
+    "Cache-Control": "public, max-age=3600, s-maxage=3600",
+  });
 
   try {
     const env = (locals.runtime?.env ?? (import.meta as any).env) as any;
     const board = await loadPublicBoard(env, locals.runtime?.ctx);
-    const rows = board.jobs;
-
-    for (const row of rows) {
-      const lastmod = row.updatedAt
-        ? `<lastmod>${new Date(row.updatedAt).toISOString().split("T")[0]}</lastmod>`
-        : "";
-      jobEntries += `<url><loc>${SITE_ORIGIN}/jobs/${row.id}</loc>${lastmod}<changefreq>weekly</changefreq><priority>0.6</priority></url>\n`;
+    applySnapshotHeaders(headers);
+    for (const row of board.jobs) {
+      const lastmod = normalizeUtcIso(row.updatedAt ?? row.postedAt ?? row.scrapedAt);
+      const lastmodEntry = lastmod ? `<lastmod>${lastmod.split("T")[0]}</lastmod>` : "";
+      jobEntries += `<url><loc>${SITE_ORIGIN}/jobs/${row.id}</loc>${lastmodEntry}<changefreq>weekly</changefreq><priority>0.6</priority></url>\n`;
     }
   } catch (e) {
-    console.error("[sitemap.xml] snapshot unavailable", publicDataErrorClass(e) ?? "Error");
+    const failure: { status: number; headers: Headers } = { status: 200, headers: new Headers() };
+    markPublicDataUnavailable(failure, e);
+    return new Response("Service temporarily unavailable", {
+      status: failure.status,
+      headers: failure.headers,
+    });
   }
 
   const staticEntries = STATIC_PAGES.map(
@@ -42,10 +50,5 @@ export const GET: APIRoute = async ({ locals }) => {
 ${staticEntries}
 ${jobEntries}</urlset>`;
 
-  return new Response(xml, {
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
-    },
-  });
+  return new Response(xml, { headers });
 };

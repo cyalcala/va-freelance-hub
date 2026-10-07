@@ -1,10 +1,10 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import { OpportunityCard } from '@/components/opportunity-card';
-import { JOB_CATEGORY_MAP } from '@/lib/categories';
+import { parseJobCategory } from '@/lib/categories';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { slicePublicJobs, type PublicJob } from '@/lib/public-board';
-import { loadPublicBoard } from '@/lib/public-serving-snapshot';
+import { applySnapshotHeaders, loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parsePageRequest } from '@/lib/public-query';
 
@@ -17,11 +17,12 @@ Astro.response.headers.set(
 
 const { category } = Astro.params;
 
-if (!category || !JOB_CATEGORY_MAP[category]) {
+// Own-property guard, before any D1 / board load:
+const info = parseJobCategory(category);
+if (!info) {
   return Astro.redirect('/');
 }
 
-const info = JOB_CATEGORY_MAP[category];
 const PAGE_SIZE = 30;
 const parsedPage = parsePageRequest(Astro.url.searchParams.get('page'));
 if (!parsedPage.ok) {
@@ -40,13 +41,14 @@ function buildPageUrl(page: number) {
   const params = new URLSearchParams();
   if (page > 1) params.set('page', String(page));
   const qs = params.toString();
-  return qs ? `/categories/${category}?${qs}` : `/categories/${category}`;
+  return qs ? `/categories/${info.slug}?${qs}` : `/categories/${info.slug}`;
 }
 
 try {
   const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
+  applySnapshotHeaders(Astro.response.headers);
   const sliced = slicePublicJobs(board.jobs, {
-    category,
+    category: info.slug,
     offset,
     limit: PAGE_SIZE,
   });
@@ -111,7 +113,7 @@ const resultEnd = Math.min(offset + categoryJobs.length, totalJobs);
       <p class="tabular-nums">
         Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
       </p>
-      <a href={`/opportunities?category=${category}#search`} class="text-accent hover:text-accent-hover transition-colors font-medium">
+      <a href={`/opportunities?category=${info.slug}#search`} class="text-accent hover:text-accent-hover transition-colors font-medium">
         Search this category →
       </a>
     </div>

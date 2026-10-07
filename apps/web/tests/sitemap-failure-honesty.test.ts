@@ -1,23 +1,17 @@
-import { describe, expect, spyOn, test } from "bun:test";
+import { beforeEach, describe, expect, spyOn, test } from "bun:test";
 import { GET } from "../src/pages/sitemap.xml";
+import { getDurableLkgSnapshot } from "../src/lib/durable-lkg-snapshot";
+import { resetPublicBoardState } from "../src/lib/public-serving-snapshot";
 
 /**
- * `/sitemap.xml` is the discovery surface search engines crawl for job URLs, and it
- * is a live public route (`prerender = false`, served from prod D1 through Cloudflare
- * Pages SSR). A D1 failure therefore has to be reported as a failure.
+ * `/sitemap.xml` is the discovery surface search engines crawl for job URLs.
+ * The old bug was a cacheable HTTP 200 that contained only the five static pages
+ * after a D1 failure, which told crawlers the job URL list was empty.
  *
- * The bug: the route's single `catch` logged the error and then fell through to the
- * success path, returning a **cacheable HTTP 200** whose document contained only the
- * five static pages. That is a success-shaped answer to an incomplete read: the HTTP
- * status says success, the `Cache-Control` header lets Cloudflare and crawlers store it
- * for an hour, and the document itself asserts "this is the complete list of job URLs"
- * while every job URL is missing. Nothing anywhere counted the loss — the log line was
- * the only signal, and it carried the raw upstream error object.
- *
- * Every other public surface in this app already answers the same condition honestly:
- * `markPublicDataUnavailable()` in `src/lib/public-route-load.ts` sets 503 +
- * `Cache-Control: no-store` and logs a *redacted* error classification. This file pins
- * the sitemap route to that same contract.
+ * A D1 failure now serves the durable last-known-good board: a complete previous
+ * URL list, marked `X-Public-Snapshot: lkg_fallback`. That is a freshness
+ * degradation, not a partial document. 503 remains only when no board can be
+ * served at all. The log still classifies the quota error and omits raw SQL.
  */
 
 type StubRow = { id: number; updatedAt: string | null };
@@ -48,6 +42,7 @@ function makeEnv(read: () => unknown[]) {
             return { success: true, results: read()[0] ?? null };
           },
           async run() {
+            if (/\bpublic_serving_snapshot\b/i.test(sql)) return { meta: { changes: 1 } };
             throw new Error("the sitemap route must never write");
           },
         };
@@ -78,35 +73,42 @@ const quotaError = () =>
 
 const jobLocs = (xml: string) => [...xml.matchAll(/<loc>[^<]*\/jobs\/(\d+)<\/loc>/g)].map((m) => Number(m[1]));
 
-describe("a D1 failure is reported as a failure, not as a successful sitemap", () => {
-  test("a total D1 failure answers 503 and never presents a partial sitemap as success", async () => {
+function expectCompleteLkg(response: Response, body: string) {
+  const lkg = getDurableLkgSnapshot();
+  expect(response.status).toBe(200);
+  expect(response.headers.get("X-Public-Snapshot")).toBe("lkg_fallback");
+  expect(response.headers.get("X-Public-Snapshot-Jobs")).toBe(String(lkg.jobs.length));
+  expect(response.headers.get("X-Public-Snapshot-Source")).toBe("durable_lkg");
+  expect(body).toContain("<urlset");
+  expect(jobLocs(body)).toEqual(lkg.jobs.map((job) => job.id));
+}
+
+describe("a D1 failure serves the last-known-good board, not a partial sitemap", () => {
+  beforeEach(() => {
+    resetPublicBoardState();
+  });
+
+  test("a total D1 failure answers 200 with the complete durable URL list", async () => {
     const { response, body } = await render(() => {
       throw quotaError();
     });
 
-    expect(response.status).toBe(503);
-    // No success-shaped sitemap document: a `<urlset>` (or even just the static
-    // pages) here would still tell a crawler this is the complete list.
-    expect(body).not.toContain("<urlset");
-    expect(body).not.toContain("<loc>");
-    expect(body).not.toContain("</url>");
+    // A static-only urlset would still tell a crawler the job list is empty.
+    // The durable board is the complete previous list, so it is a real 200.
+    expectCompleteLkg(response, body);
+    expect(body).toContain("<loc>https://remotejobs-ph.pages.dev/</loc>");
   });
 
-  test("the failure cannot be cached and served later as a valid sitemap", async () => {
+  test("the last-known-good sitemap stays cacheable because it is a complete document", async () => {
     const { response } = await render(() => {
       throw quotaError();
     });
 
-    // The success path advertises `public, max-age=3600`. A transient D1 outage must
-    // not be stored by the CDN or a crawler under those terms, otherwise the outage
-    // keeps removing job URLs from the index long after D1 recovered.
-    expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(response.headers.get("Cache-Control")).not.toContain("max-age");
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=3600, s-maxage=3600");
+    expect(response.headers.get("X-Public-Snapshot")).toBe("lkg_fallback");
   });
 
-  test("a failure while materializing rows is also a 503, not a silent empty sitemap", async () => {
-    // Drizzle maps the driver's positional rows before the route sees them, so a
-    // mapping failure lands in the same try. It must not look like "zero jobs".
+  test("a failure while materializing rows serves the durable board, not an empty sitemap", async () => {
     const { response, body } = await render(() => {
       const results: unknown[] = [
         [1, "2026-09-30T12:00:00Z"],
@@ -122,14 +124,10 @@ describe("a D1 failure is reported as a failure, not as a successful sitemap", (
       return results;
     });
 
-    expect(response.status).toBe(503);
-    expect(body).not.toContain("<loc>");
+    expectCompleteLkg(response, body);
   });
 
-  test("a throw after some URLs were accumulated answers 503 rather than a truncated 200", async () => {
-    // The accumulation loop sits inside the same try, so a partial list must never be
-    // published as if it were complete: a crawler would treat the short list as
-    // authoritative and drop the missing job URLs from the index.
+  test("a throw while reading rows does not publish a truncated job list", async () => {
     const hostileId = {
       toString() {
         throw new Error("unrenderable id");
@@ -141,9 +139,9 @@ describe("a D1 failure is reported as a failure, not as a successful sitemap", (
       [3, "2026-09-30T12:00:00Z"],
     ]);
     const response = await GET({ locals: { runtime: { env } } as never } as never);
+    const body = await response.text();
 
-    expect(response.status).toBe(503);
-    expect(await response.text()).not.toContain("<loc>");
+    expectCompleteLkg(response, body);
   });
 
   test("the failure log keeps the D1 classification and drops the raw upstream text", async () => {
@@ -169,6 +167,10 @@ describe("a D1 failure is reported as a failure, not as a successful sitemap", (
 });
 
 describe("the healthy sitemap path is untouched by the failure contract", () => {
+  beforeEach(() => {
+    resetPublicBoardState();
+  });
+
   test("a successful read still answers 200, cacheable, with every job URL", async () => {
     const env = rowsEnv([
       { id: 1, updatedAt: "2026-09-30T12:00:00Z" },
@@ -181,19 +183,16 @@ describe("the healthy sitemap path is untouched by the failure contract", () => 
     expect(response.headers.get("Content-Type")).toContain("application/xml");
     expect(response.headers.get("Cache-Control")).toBe("public, max-age=3600, s-maxage=3600");
     expect(jobLocs(xml)).toEqual([1, 2]);
+    expect(response.headers.get("X-Public-Snapshot")).toBe("fresh");
     expect(xml).toContain("<loc>https://remotejobs-ph.pages.dev/</loc>");
     expect(xml).toContain("<lastmod>2026-09-30</lastmod>");
   });
 
-  test("an empty result set is still a successful sitemap of the static pages", async () => {
-    // Zero eligible rows is a real, honest 200 — it must not be confused with the
-    // failure case above, which is the whole point of separating the two.
+  test("an empty upstream result does not replace the durable board with a static-only sitemap", async () => {
     const env = rowsEnv([]);
     const response = await GET({ locals: { runtime: { env } } as never } as never);
     const xml = await response.text();
 
-    expect(response.status).toBe(200);
-    expect(xml).toContain("</urlset>");
-    expect(jobLocs(xml)).toEqual([]);
+    expectCompleteLkg(response, xml);
   });
 });

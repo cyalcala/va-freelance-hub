@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { applySecurityHeaders } from "@/lib/security-headers";
-import { publicHtmlCacheKey, mayStorePublicHtml } from "@/lib/public-edge-cache";
+import { publicHtmlCacheKey, mayStorePublicHtml, runtimePublicHtmlCache, readPublicHtmlCache } from "@/lib/public-edge-cache";
 
 // Cloudflare Pages `_headers` rules do not cover SSR/API responses. Apply the
 // shared policy at Astro's server boundary, while static assets get their own
@@ -14,11 +14,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const cacheKey = publicHtmlCacheKey(request);
 
   // Access Cloudflare Edge Cache API (available in Cloudflare runtime)
-  const edgeCache = typeof caches !== "undefined" ? (caches as any).default : null;
+  const edgeCache = runtimePublicHtmlCache();
 
   if (edgeCache && cacheKey) {
     try {
-      const match = await edgeCache.match(cacheKey);
+      const match = await readPublicHtmlCache(edgeCache, cacheKey);
       if (match) {
         const cached = new Response(match.body, match);
         cached.headers.set("X-Edge-Cache", "HIT");
@@ -44,7 +44,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const responseToCache = response.clone();
       const waitUntil = (context.locals as any)?.runtime?.ctx?.waitUntil;
       if (typeof waitUntil === "function") {
-        waitUntil.call((context.locals as any).runtime.ctx, edgeCache.put(cacheKey, responseToCache));
+        waitUntil.call((context.locals as any).runtime.ctx, edgeCache.put(cacheKey, responseToCache).catch(() => {}));
       } else {
         edgeCache.put(cacheKey, responseToCache).catch(() => {});
       }

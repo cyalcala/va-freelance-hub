@@ -13,7 +13,15 @@ export function publicDataErrorClass(error: unknown): string | null {
   for (let depth = 0; depth < 5 && current instanceof Error; depth++) {
     const message = current.message.toLowerCase();
     if (message.includes("too many sql variables")) return "d1_bind_limit";
-    if (message.includes("quota") || message.includes("daily limit")) return "d1_quota";
+    if (
+      message.includes("quota") ||
+      message.includes("daily limit") ||
+      message.includes("row read limit") ||
+      message.includes("7500") ||
+      (message.includes("daily") && message.includes("limit"))
+    ) {
+      return "d1_quota";
+    }
     if (message.includes("no such table") || message.includes("no such column")) return "d1_schema";
     if (message.includes("database is locked") || message.includes("overloaded")) return "d1_busy";
     current = current.cause;

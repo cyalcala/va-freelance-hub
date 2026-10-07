@@ -5,6 +5,7 @@ import { OpportunityCard } from '@/components/opportunity-card';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { loadHomepageData, type HomepageData } from '@/lib/homepage-data';
+import { applySnapshotHeaders } from '@/lib/public-serving-snapshot';
 
 export const prerender = false;
 
@@ -22,6 +23,7 @@ let dataUnavailable = false;
 try {
   ({ stats, latestOpportunities, featuredAgencyOpportunities, categoryTotals } =
     await loadHomepageData(Astro.locals.runtime.env, Astro.locals.runtime.ctx));
+  applySnapshotHeaders(Astro.response.headers);
 } catch (error) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, error);

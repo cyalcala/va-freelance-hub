@@ -1,10 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { OpportunityCard, type OpportunityCardData } from '@/components/opportunity-card';
-import { JOB_CATEGORY_MAP } from '@/lib/categories';
+import { JOB_CATEGORY_MAP, parseJobCategory } from '@/lib/categories';
 import ServiceUnavailable from '@/components/ServiceUnavailable.astro';
 import { publicPlatforms, slicePublicJobs } from '@/lib/public-board';
-import { loadPublicBoard } from '@/lib/public-serving-snapshot';
+import { applySnapshotHeaders, loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parseJobBoardRequest } from '@/lib/public-query';
 
@@ -32,6 +32,7 @@ if (!parsedRequest.ok) {
 
 const { query, page: currentPage, fresh } = parsedRequest;
 const category = searchParams.get('category') || '';
+const selectedCategory = parseJobCategory(category);
 const type = searchParams.get('type') || '';
 const platform = searchParams.get('platform') || '';
 const geoScope = searchParams.get('geoScope') || '';
@@ -72,9 +73,10 @@ function buildFreshUrl(value: string | null) {
 
 try {
   const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
+  applySnapshotHeaders(Astro.response.headers);
   platformOptions = publicPlatforms(board.jobs);
   const sliced = slicePublicJobs(board.jobs, {
-    category: category && JOB_CATEGORY_MAP[category] ? category : undefined,
+    category: selectedCategory ? selectedCategory.slug : undefined,
     type: type && TYPE_OPTIONS.includes(type) ? type : undefined,
     platform: platform || undefined,
     geoScope: geoScope && GEO_SCOPE_OPTIONS.some((option) => option.value === geoScope) ? geoScope : undefined,

@@ -1,59 +1,82 @@
-import { describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 import { GET } from "../src/pages/sitemap.xml";
+import { getDurableLkgSnapshot } from "../src/lib/durable-lkg-snapshot";
+import type { PublicJob } from "../src/lib/public-board";
+import { opportunitySnapshotQuery, promoteSnapshot, resetPublicBoardState } from "../src/lib/public-serving-snapshot";
 import { normalizeUtcIso } from "../src/lib/time";
 
 /**
- * `/sitemap.xml` is the discovery surface search engines crawl, and it is a live
- * public route (`prerender = false`, served from prod D1 through Cloudflare Pages
- * SSR). Every public-eligible opportunity must appear in it.
+ * `/sitemap.xml` is the discovery surface search engines crawl. Every job on the
+ * public board must appear in it. An unusable date omits `<lastmod>` and must
+ * not drop the URL or be replaced with "now".
  */
 
-type StubRow = { id: number; updatedAt: string | null };
-
-function stubLocals(rows: StubRow[]) {
-  // D1 `.all()` returns positional arrays in projection order (id, updatedAt).
-  const dbRows = rows.map((row) => [row.id, row.updatedAt]);
-  const statements: Array<{ sql: string; params: unknown[] }> = [];
-  const env = {
-    DB: {
-      prepare(sql: string) {
-        const record = { sql, params: [] as unknown[] };
-        statements.push(record);
-        const statement = {
-          bind(...values: unknown[]) {
-            record.params = values;
-            return statement;
-          },
-          async all() {
-            return { success: true, results: dbRows };
-          },
-          async first() {
-            return { success: true, results: dbRows[0] ?? null };
-          },
-          async raw() {
-            return dbRows;
-          },
-          async run() {
-            throw new Error("the sitemap route must never write");
-          },
-        };
-        return statement;
-      },
-      async batch() {
-        throw new Error("the sitemap route must never batch");
-      },
-    },
+function boardJob(partial: Partial<PublicJob> & Pick<PublicJob, "id">): PublicJob {
+  return {
+    title: `Role ${partial.id}`,
+    company: null,
+    type: "VA",
+    sourceUrl: `https://example.com/jobs/${partial.id}`,
+    sourcePlatform: "WeWorkRemotely",
+    sourceId: null,
+    tags: [],
+    category: "design",
+    experienceLevel: null,
+    postedAt: null,
+    scrapedAt: null,
+    geoScope: "worldwide",
+    phEligibility: "eligible_likely",
+    geoEvidence: null,
+    description: null,
+    clientTimezone: null,
+    locationType: "remote",
+    payRange: null,
+    updatedAt: null,
+    ...partial,
   };
-  return { locals: { runtime: { env } } as never, statements };
 }
 
-async function render(rows: StubRow[]): Promise<{ xml: string; statements: Array<{ sql: string }> }> {
-  const { locals, statements } = stubLocals(rows);
-  const response = await GET({ locals } as never);
-  return { xml: await response.text(), statements };
+async function renderBoard(jobs: PublicJob[]): Promise<string> {
+  const promoted = promoteSnapshot(
+    {
+      generatedAt: "2026-09-30T12:00:00.000Z",
+      jobs,
+      directory: [{
+        id: 1,
+        companyName: "Upwork",
+        website: null,
+        niche: "global-va",
+        isDayshift: false,
+        isVerified: false,
+        isRemote: true,
+        isMarketplace: true,
+      }],
+    },
+    "memory",
+    Date.now(),
+  );
+  if (!promoted) throw new Error("fixture board was rejected");
+  const response = await GET({
+    locals: {
+      runtime: {
+        env: {
+          DB: {
+            prepare() {
+              throw new Error("a warm board must not read D1");
+            },
+          },
+        },
+      },
+    },
+  } as never);
+  return response.text();
 }
 
 const jobLocs = (xml: string) => [...xml.matchAll(/<loc>[^<]*\/jobs\/(\d+)<\/loc>/g)].map((m) => Number(m[1]));
+
+beforeEach(() => {
+  resetPublicBoardState();
+});
 
 describe("sitemap job URLs survive an unusable source date", () => {
   test("a malformed date does not drop the remaining job URLs", async () => {
@@ -61,10 +84,10 @@ describe("sitemap job URLs survive an unusable source date", () => {
     // unparseable value, inside the accumulation loop, inside the route's single
     // try/catch. The catch then returns a sitemap containing only the five static
     // pages: one bad row silently deletes every job URL that came after it.
-    const { xml } = await render([
-      { id: 1, updatedAt: "2026-09-30T12:00:00Z" },
-      { id: 2, updatedAt: "not-a-date" },
-      { id: 3, updatedAt: "2026-09-29T00:00:00Z" },
+    const xml = await renderBoard([
+      boardJob({ id: 1, updatedAt: "2026-09-30T12:00:00Z" }),
+      boardJob({ id: 2, updatedAt: "not-a-date" }),
+      boardJob({ id: 3, updatedAt: "2026-09-29T00:00:00Z" }),
     ]);
     expect(jobLocs(xml)).toEqual([1, 2, 3]);
   });
@@ -79,10 +102,10 @@ describe("sitemap job URLs survive an unusable source date", () => {
       "yesterday",
       "2026-09-30T12:00:00Zextra",
     ];
-    const rows: StubRow[] = unusable.map((updatedAt, index) => ({ id: index + 1, updatedAt }));
-    rows.push({ id: 99, updatedAt: "2026-09-30T12:00:00Z" });
+    const jobs = unusable.map((updatedAt, index) => boardJob({ id: index + 1, updatedAt }));
+    jobs.push(boardJob({ id: 99, updatedAt: "2026-09-30T12:00:00Z" }));
 
-    const { xml } = await render(rows);
+    const xml = await renderBoard(jobs);
     expect(jobLocs(xml)).toEqual([...unusable.map((_, index) => index + 1), 99]);
   });
 
@@ -90,9 +113,9 @@ describe("sitemap job URLs survive an unusable source date", () => {
     // CONSTITUTION §1.3 #2 and `unknown_date_policy: retain-unknown-do-not-publish`.
     // A missing or unusable date must never be replaced by "now": that would tell a
     // crawler the job changed today.
-    const { xml } = await render([
-      { id: 1, updatedAt: null },
-      { id: 2, updatedAt: "not-a-date" },
+    const xml = await renderBoard([
+      boardJob({ id: 1, updatedAt: null }),
+      boardJob({ id: 2, updatedAt: "not-a-date" }),
     ]);
     expect(jobLocs(xml)).toEqual([1, 2]);
     for (const loc of ["/jobs/1", "/jobs/2"]) {
@@ -108,11 +131,11 @@ describe("sitemap job URLs survive an unusable source date", () => {
 
 describe("sitemap lastmod stays truthful for usable dates", () => {
   test("a usable date keeps its real calendar day, in UTC", async () => {
-    const { xml } = await render([
-      { id: 1, updatedAt: "2026-09-30T23:30:00Z" },
+    const xml = await renderBoard([
+      boardJob({ id: 1, updatedAt: "2026-09-30T23:30:00Z" }),
       // Same local wall-clock day as row 1, but +08:00 puts the instant on the 29th
       // in UTC, so a correct UTC lastmod is the 29th.
-      { id: 2, updatedAt: "2026-09-30T00:30:00+08:00" },
+      boardJob({ id: 2, updatedAt: "2026-09-30T00:30:00+08:00" }),
     ]);
     const lastmods = [...xml.matchAll(/<lastmod>([^<]*)<\/lastmod>/g)].map((m) => m[1]);
     // UTC-day semantics are kept deliberately: the previous
@@ -123,41 +146,34 @@ describe("sitemap lastmod stays truthful for usable dates", () => {
 
   test("the emitted lastmod is exactly the shared safe binder's day", async () => {
     const values = ["2026-09-30T12:00:00Z", "2026-01-01T00:00:00Z", "2026-12-31T23:59:59Z"];
-    const { xml } = await render(values.map((updatedAt, index) => ({ id: index + 1, updatedAt })));
+    const xml = await renderBoard(values.map((updatedAt, index) => boardJob({ id: index + 1, updatedAt })));
     const emitted = [...xml.matchAll(/<lastmod>([^<]*)<\/lastmod>/g)].map((m) => m[1]);
     expect(emitted).toEqual(values.map((value) => normalizeUtcIso(value)!.split("T")[0]));
   });
 });
 
-describe("the sitemap route stays a single public read", () => {
-  test("issues one read, applies the public eligibility predicate, and never writes", async () => {
-    const { statements } = await render([{ id: 1, updatedAt: "2026-09-30T12:00:00Z" }]);
-    expect(statements).toHaveLength(1);
-    const sqlText = statements[0]!.sql;
+describe("the sitemap is rendered from the shared snapshot query", () => {
+  test("the snapshot query applies the public eligibility predicate and never writes", () => {
+    const sqlText = opportunitySnapshotQuery().sql;
     expect(sqlText).toMatch(/\bis_active\b/i);
     expect(sqlText).toMatch(/\bph_eligibility\b/i);
     expect(sqlText).not.toMatch(/\b(INSERT|UPDATE|DELETE|DROP|ALTER)\b/i);
   });
 
-  test("lastmod prefers the real update clock, then the posted date, then first-seen", async () => {
+  test("lastmod prefers the real update clock, then the posted date, then first-seen", () => {
     // The projected column is `coalesce(updated_at, posted_at, scraped_at)`. A
     // sitemap lastmod answers "when did this page last change", so the update clock
-    // must win over the posting date and over first-seen. Reordering these would
-    // silently misdate every URL on the surface, so the precedence is pinned here
-    // rather than left to a future edit.
-    const { statements } = await render([{ id: 1, updatedAt: "2026-09-30T12:00:00Z" }]);
-    const coalesce = statements[0]!.sql.match(/coalesce\(([^)]*)\)/i)?.[1] ?? "";
+    // must win over the posting date and over first-seen.
+    const coalesce = opportunitySnapshotQuery().sql.match(/coalesce\(([^)]*)\)/i)?.[1] ?? "";
     const order = [...coalesce.matchAll(/(?:"?\w+"?\.)?"?(updated_at|posted_at|scraped_at)"?/gi)]
       .map((match) => match[1]!.toLowerCase());
     expect(order).toEqual(["updated_at", "posted_at", "scraped_at"]);
   });
 
-test("a total D1 failure is reported as a failure rather than a static-only 200", async () => {
+  test("a total D1 failure serves the durable board rather than a static-only sitemap", async () => {
     const env = {
       DB: {
         prepare() {
-          // Drizzle calls `prepare` lazily inside the awaited query, so this throw
-          // surfaces from the route's own try/catch, as a real D1 failure would.
           return {
             bind() {
               throw new Error("D1 unavailable");
@@ -168,15 +184,11 @@ test("a total D1 failure is reported as a failure rather than a static-only 200"
     };
     const response = await GET({ locals: { runtime: { env } } as never } as never);
     const xml = await response.text();
-    // A usable date must not be the only thing the route protects: an unreadable D1
-    // used to be answered with a cacheable 200 holding only the five static pages,
-    // which reads to a crawler as "these are all the job URLs". It is now a 503 with a
-    // non-cacheable body; see sitemap-failure-honesty.test.ts for the full contract.
-    expect(response.status).toBe(503);
-    expect(response.headers.get("Cache-Control")).toBe("no-store");
-    expect(xml).not.toContain("<urlset");
-    expect(xml).not.toContain("</urlset>");
-    expect(jobLocs(xml)).toEqual([]);
+    const lkg = getDurableLkgSnapshot();
+    // An unreadable D1 used to be answered with a cacheable 200 holding only the
+    // five static pages. The durable board keeps every previously verified job URL.
+    expect(response.status).toBe(200);
+    expect(response.headers.get("X-Public-Snapshot")).toBe("lkg_fallback");
+    expect(jobLocs(xml)).toEqual(lkg.jobs.map((job) => job.id));
   });
-
 });
