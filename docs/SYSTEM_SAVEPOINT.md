@@ -1,5 +1,29 @@
 # System Savepoint
 
+## 2026-10-07 21:28 Manila — Premium design direction accepted
+
+**Scope:** owner-authorized frontend overhaul, preserving cream/charcoal/coral.
+**Progress:** 1 of 5 planned frontend checkpoints complete (20% by checkpoint
+count, not effort or overall autonomy). Production UI is not changed yet.
+Savepoint tag `savepoint/pre-premium-design-2026-10-07` preserves baseline
+`50d8daa280d74b2a34f8d9ec1ed4a8dd1a5d0c73` on GitHub. Reviewed design head
+`96ce7344d1a6dd0dc32d98dd1d93289e21797804` matches its remote branch.
+
+Complete owner brief, PRODUCT/DESIGN contracts, three real-data concept previews,
+desktop/mobile screenshots and bounded critique are backed up. Separate spec
+review passed; code-quality findings were fixed and independently rechecked at
+`08c401a3`. Native disclosure was rendered and exercised with Enter. Approved
+direction is A×B, as supplied by the owner. Jev returned HTTP 401 and is advisory.
+[Evidence and limitations](design/PREMIUM_2026_REVIEW.md).
+
+**CI/runtime:** no PR CI or design release yet. The accepted runtime remains
+`91641445` / Pages `aa8ce5b8`, main release `37614492584` passed. This checkpoint
+does not re-certify current operational health or database restoration.
+**Next:** Task 2 shared foundations and `/opportunities`, then home/categories,
+directory/details and final browser/regression/release acceptance. Work stays in
+attached managed worktree `premium-2026-design`, branch
+`codex/premium-2026-overhaul`; original foreign work remains preserved.
+
 ## 2026-10-07 — Pre-premium-design return point
 
 Owner requested a savepoint before the premium redesign. Exact baseline:
