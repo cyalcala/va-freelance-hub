@@ -1,0 +1,169 @@
+{
+  "checkedAt": "2026-10-07T20:49:36.589Z",
+  "sourceSha": "working-tree",
+  "origin": "http://127.0.0.1:8788",
+  "measurement": "Ordinary HTTP requests; decoded HTML/CSS bytes, not compressed transfer sizes or field Core Web Vitals.",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 77454,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/opportunities",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 42771,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/opportunities?q=assistant",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 45601,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/directory",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 58990,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/directory?q=unmatchedpremiumqa",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 13454,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/categories/admin",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 39050,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/jobs/8992",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 12803,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/jobs/7508",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 12121,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/data-policy",
+      "status": 200,
+      "snapshot": null,
+      "source": null,
+      "generatedAt": null,
+      "jobs": null,
+      "companies": null,
+      "htmlBytes": 8195,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "snapshot": null,
+      "source": null,
+      "generatedAt": null,
+      "jobs": null,
+      "companies": null,
+      "htmlBytes": 7738,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "source": "durable_lkg",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 225507,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    }
+  ],
+  "stylesheets": [
+    {
+      "url": "http://127.0.0.1:8788/_astro/_category_.B7JO9gX8.css",
+      "status": 200,
+      "decodedBytes": 42410
+    },
+    {
+      "url": "http://127.0.0.1:8788/_astro/index.DEKxGg_m.css",
+      "status": 200,
+      "decodedBytes": 7423
+    }
+  ],
+  "applyProbe": {
+    "status": 503,
+    "retryAfter": "30",
+    "cacheControl": "no-store",
+    "outboundRedirect": false
+  }
+}

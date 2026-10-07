@@ -26,7 +26,7 @@ const savedBoardDate = boardTime && Number.isFinite(Date.parse(boardTime))
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#FAF9F6" />
+    <meta name="theme-color" content="#FFF8EC" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Open Graph / Facebook -->
@@ -45,10 +45,10 @@ const savedBoardDate = boardTime && Number.isFinite(Date.parse(boardTime))
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400..700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600..700&family=Manrope:wght@400..800&display=swap" rel="stylesheet">
     <slot name="head" />
   </head>
-  <body class="min-h-screen bg-parchment text-ink antialiased selection:bg-accent/20 selection:text-ink flex flex-col">
+  <body class="min-h-screen antialiased selection:bg-accent/20 selection:text-ink flex flex-col">
 
     <a href="#main-content" class="skip-link">Skip to content</a>
 
@@ -101,3 +101,14 @@ const savedBoardDate = boardTime && Number.isFinite(Date.parse(boardTime))
     </nav>
   </body>
 </html>
+
+<script>
+  const showCompanyFallback = (image: HTMLImageElement) => { image.hidden = true; };
+  document.addEventListener('error', (event) => {
+    const image = event.target;
+    if (image instanceof HTMLImageElement && image.hasAttribute('data-company-logo')) showCompanyFallback(image);
+  }, true);
+  document.querySelectorAll<HTMLImageElement>('img[data-company-logo]').forEach((image) => {
+    if (image.complete && image.naturalWidth === 0) showCompanyFallback(image);
+  });
+</script>

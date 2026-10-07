@@ -1,5 +1,19 @@
 # AI Recovery Trail
 
+## 2026-10-08 — Owner-directed Pigment & Paper revision
+
+Created and remotely verified `savepoint/pre-pigment-paper-2026-10-08` before
+changing source `2661cbb6a8bdb815bef58241a1ec7c45a20c1cab`. Reused the existing
+managed worktree on `codex/pigment-paper-design`; primary untracked work preserved.
+Implemented authored watercolor decoration, thick surfaces, display typography
+and actual recorded company marks. Independent review caught shared social hosts
+and terminal-dot variants bypassing provider-logo exclusions; both fixed with
+regression coverage. 3,023 full tests pass plus final identity/cache checks,
+four audits/typecheck/build. Final browser/CI/release receipts remain pending.
+SlopMonster pinned checker/editorial workflow used; rival Claude authentication
+failed without edits or credential changes. No production acceptance inferred
+from local fallback behavior; no source/GCP governance relaxed.
+
 ## 2026-10-07 23:30 Manila — Premium frontend accepted in production
 
 The owner's pre-design savepoint was created first and remotely verified. All

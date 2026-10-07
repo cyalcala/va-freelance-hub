@@ -1,4 +1,5 @@
 ---
+import { employerLogoDomain } from '@/lib/company-identity';
 type Props = {
   agency: {
     companyName: string;
@@ -13,8 +14,9 @@ type Props = {
 
 const { agency } = Astro.props;
 const initial = agency.companyName.charAt(0).toUpperCase();
-const logoUrl = agency.logoDomain
-  ? `/api/company-logo?domain=${encodeURIComponent(agency.logoDomain)}&initial=${encodeURIComponent(initial)}`
+const logoDomain = employerLogoDomain(agency.logoDomain);
+const logoUrl = logoDomain
+  ? `/api/company-logo?domain=${encodeURIComponent(logoDomain)}&initial=${encodeURIComponent(initial)}`
   : null;
 const Row = agency.href ? 'a' : 'div';
 ---
@@ -26,17 +28,18 @@ const Row = agency.href ? 'a' : 'div';
     rel={agency.href ? 'noopener noreferrer' : undefined}
     class="directory-row"
   >
-    <div class="directory-logo" aria-hidden="true">
+    <div class="directory-logo company-mark" aria-hidden="true">
       <span>{initial}</span>
       {logoUrl && (
         <img
           src={logoUrl}
           alt=""
           aria-hidden="true"
-          width="24"
-          height="24"
+          width="40"
+          height="40"
           loading="lazy"
           decoding="async"
+          data-company-logo
         />
       )}
     </div>
@@ -58,11 +61,11 @@ const Row = agency.href ? 'a' : 'div';
 </article>
 
 <style>
-  .directory-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 16px; min-height: 80px; padding: 16px 24px; transition: background-color 160ms; }
+  .directory-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 16px; min-height: 92px; padding: 18px 24px; transition: background-color 160ms; }
   a.directory-row:hover { background: var(--page); }
   a.directory-row:focus-visible { outline-offset: -3px; }
-  .directory-logo { position: relative; display: grid; place-items: center; width: 40px; height: 40px; overflow: hidden; border: 1px solid var(--divider); border-radius: 6px; color: var(--muted); background: var(--recessed); font-size: 13px; font-weight: 600; }
-  .directory-logo img { position: absolute; inset: 0; width: 24px; height: 24px; margin: auto; object-fit: contain; }
+  .directory-logo { width: 56px; height: 56px; }
+  .directory-logo img { width: 40px; height: 40px; }
   .directory-company { min-width: 0; }
   h3 { font-size: 17px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; transition: color 160ms; }
   a.directory-row:hover h3 { color: var(--accent); }

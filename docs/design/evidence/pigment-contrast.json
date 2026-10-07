@@ -1,0 +1,106 @@
+[
+  {
+    "label": "body",
+    "foreground": "#2B241E",
+    "background": "#F8F0E4",
+    "ratio": 13.521,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "muted",
+    "foreground": "#6B5C50",
+    "background": "#F8F0E4",
+    "ratio": 5.677,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "muted surface",
+    "foreground": "#6B5C50",
+    "background": "#FFFCF6",
+    "ratio": 6.268,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "accent link",
+    "foreground": "#A93E25",
+    "background": "#F8F0E4",
+    "ratio": 5.459,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "primary button",
+    "foreground": "#2B241E",
+    "background": "#F17A54",
+    "ratio": 5.57,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "field edge",
+    "foreground": "#8E7662",
+    "background": "#FFFDF8",
+    "ratio": 4.2,
+    "target": 3,
+    "passAA": true
+  },
+  {
+    "label": "field focus",
+    "foreground": "#A93E25",
+    "background": "#FFFDF8",
+    "ratio": 6.071,
+    "target": 3,
+    "passAA": true
+  },
+  {
+    "label": "saved notice",
+    "foreground": "#815C18",
+    "background": "#FBF3DF",
+    "ratio": 5.46,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "evidence",
+    "foreground": "#24634C",
+    "background": "#EDF5F0",
+    "ratio": 6.383,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "likely",
+    "foreground": "#6B5C50",
+    "background": "#EEE2D2",
+    "ratio": 5.026,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "home counts",
+    "foreground": "#65503D",
+    "background": "#FFF8EC",
+    "ratio": 7.185,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "footer",
+    "foreground": "#D7C8B6",
+    "background": "#302920",
+    "ratio": 8.763,
+    "target": 4.5,
+    "passAA": true
+  },
+  {
+    "label": "footer hover",
+    "foreground": "#FFA788",
+    "background": "#302920",
+    "ratio": 7.607,
+    "target": 4.5,
+    "passAA": true
+  }
+]

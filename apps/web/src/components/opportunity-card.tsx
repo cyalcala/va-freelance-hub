@@ -18,6 +18,8 @@ export type OpportunityCardData = Pick<
   /** First-seen instant. Optional so slim projections (e.g. homepage) keep
    * compiling; carried for recency filtering, not displayed. */
   scrapedAt?: string | null;
+  /** Recorded directory identity, never a guessed source-platform host. */
+  logoDomain?: string | null;
 };
 
 interface Props {
@@ -89,6 +91,9 @@ export function OpportunityCard({ opportunity: opp }: Props) {
     : companyWords.length === 1 ? Array.from(companyWords[0]).slice(0, 2).join('').toUpperCase() : '—';
   const geoLabel = hasDetailPage && opp.geoScope ? GEO_LABELS[opp.geoScope] : undefined;
   const isLikely = opp.phEligibility === "eligible_likely";
+  const logoUrl = opp.logoDomain
+    ? `/api/company-logo?domain=${encodeURIComponent(opp.logoDomain)}&initial=${encodeURIComponent(initials[0] ?? '?')}`
+    : null;
 
   return (
     <a
@@ -97,7 +102,10 @@ export function OpportunityCard({ opportunity: opp }: Props) {
       rel={rel}
       className="opportunity-row"
     >
-      <span className="opportunity-initials" aria-hidden="true">{initials}</span>
+      <span className="opportunity-initials company-mark" aria-hidden="true">
+        <span>{initials}</span>
+        {logoUrl && <img src={logoUrl} width="40" height="40" alt="" loading="lazy" decoding="async" data-company-logo="" />}
+      </span>
       <div className="min-w-0">
         <span className="opportunity-title">{opp.title}</span>
         <div className="opportunity-meta">

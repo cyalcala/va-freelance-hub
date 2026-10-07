@@ -4,12 +4,13 @@ import { JOB_CATEGORY_MAP } from "./categories";
 import { effectivePostedMs, isFeaturedAgencyJob, type PublicBoard, type PublicJob } from "./public-board";
 import { publicOpportunityFilters } from "./public-opportunities";
 import { loadPublicBoard } from "./public-serving-snapshot";
+import { companyLogoDomains, withCompanyLogo } from './company-identity';
 
 type CardData = Pick<Opportunity,
   "id" | "title" | "company" | "type" | "sourceUrl" | "sourcePlatform" |
   "tags" | "category" | "experienceLevel" | "postedAt" | "scrapedAt" |
   "geoScope" | "phEligibility" | "geoEvidence"
->;
+> & { logoDomain?: string | null };
 
 export type HomepageData = {
   stats: { opportunities: number; companies: number };
@@ -73,6 +74,7 @@ function asCard(job: PublicJob): CardData {
 }
 
 export function homepageFromSnapshot(board: PublicBoard): HomepageData {
+  const domains = companyLogoDomains(board.directory);
   const categoryTotals: Record<string, number> = {};
   for (const job of board.jobs) {
     categoryTotals[job.category] = (categoryTotals[job.category] ?? 0) + 1;
@@ -80,8 +82,8 @@ export function homepageFromSnapshot(board: PublicBoard): HomepageData {
   return {
     stats: { opportunities: board.jobs.length, companies: board.directory.length },
     categoryTotals,
-    latestOpportunities: homepagePreviewJobs(board.jobs).map(asCard),
-    featuredAgencyOpportunities: board.jobs.filter(isFeaturedAgencyJob).sort(byNewest).slice(0, 6).map(asCard),
+    latestOpportunities: homepagePreviewJobs(board.jobs).map((job) => withCompanyLogo(asCard(job), domains)),
+    featuredAgencyOpportunities: board.jobs.filter(isFeaturedAgencyJob).sort(byNewest).slice(0, 6).map((job) => withCompanyLogo(asCard(job), domains)),
   };
 }
 

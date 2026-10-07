@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-10-08 — Pigment & Paper current handoff
+
+Continue `codex/pigment-paper-design` from the attached premium-2026-design
+worktree. The owner's latest thicker watercolor/shade/logo request supersedes
+the earlier restrained aesthetic. Pre-edit savepoint is backed up on GitHub.
+Implementation and independent review are locally ready; finish final browser
+receipts, normal required CI/release and live acceptance before marking complete.
+SlopMonster copy checks pass; its Claude second-family pass could not authenticate
+and is documented honestly. No source admission, publication or GCP change.
+
 ## 2026-10-07 23:30 Manila — Premium frontend complete (current handoff)
 
 Owner-directed premium redesign is TERMINAL / KEEP, five of five frontend

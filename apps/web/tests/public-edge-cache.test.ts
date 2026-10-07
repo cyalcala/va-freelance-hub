@@ -8,13 +8,14 @@ test("homepage tracking variants share one key while list filters remain distinc
   expect(key("/opportunities?page=2")).not.toBe(key("/opportunities"));
 });
 
-test("premium release does not reuse HTML entries from the previous asset build", () => {
+test("design releases do not reuse HTML entries from previous asset builds", () => {
   for (const path of ["/", "/opportunities?q=writer&page=2", "/data-policy", "/privacy"]) {
     const key = publicHtmlCacheKey(new Request(`https://example.com${path}`));
     expect(key).not.toBeNull();
     const revision = new URL(key!.url).searchParams.get("__public_cache_revision");
     expect(revision).toBeTruthy();
     expect(revision).not.toBe("2026-10-07-refresh-recovery");
+    expect(revision).not.toBe("2026-10-07-premium-ui");
   }
 });
 

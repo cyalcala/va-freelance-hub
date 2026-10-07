@@ -1,0 +1,10 @@
+{
+  "ok": false,
+  "decision": "ESCALATE_TO_CODEX",
+  "confidence": 0,
+  "probabilities": {},
+  "error": "OpenRouter request failed (HTTP 401)",
+  "status": 401,
+  "fallback": true,
+  "recommendation": "Jev is unavailable. The calling agent (Codex or Gemini) should continue by making the decision directly."
+}

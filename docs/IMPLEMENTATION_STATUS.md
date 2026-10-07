@@ -1,5 +1,15 @@
 # Implementation Status
 
+## 2026-10-08 — Pigment & Paper frontend revision active
+
+Owner rejected the previous flat visual treatment. The new watercolor/paper
+direction supersedes its styling rules in apps/web/DESIGN.md. Company marks use
+exact recorded directory identities, excluding shared ATS/social hosts and
+conflicting domains. Native search/filters, source Apply and data governance stay
+intact. Local tests/audits/typecheck/build pass; independent review has no remaining
+blockers. Production acceptance is pending. Source return point is tagged at
+`2661cbb6a8bdb815bef58241a1ec7c45a20c1cab`; see SYSTEM_SAVEPOINT.md.
+
 ## 2026-10-07 23:30 Manila — Premium frontend TERMINAL / KEEP
 
 The approved cream/charcoal/coral redesign is deployed and accepted. All five

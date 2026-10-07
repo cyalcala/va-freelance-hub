@@ -1,0 +1,12 @@
+[
+  {
+    "antipattern": "overused-font",
+    "name": "Overused font",
+    "description": "Inter, Roboto, Fraunces, Geist, Plus Jakarta Sans, and Space Grotesk are used on so many sites they no longer feel distinctive. Each new wave of AI-generated UIs converges on the same handful of faces. Choose a face that gives your interface personality.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "C:\\Users\\admin\\.codex\\worktrees\\premium-2026-design\\va-freelance-hub\\apps\\web\\src\\layouts\\Layout.astro",
+    "line": 48,
+    "snippet": "Google Fonts: fraunces"
+  }
+]

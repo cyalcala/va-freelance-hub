@@ -1,5 +1,21 @@
 # System Savepoint
 
+## 2026-10-08 — Pigment & Paper revision, local acceptance pending release
+
+Owner feedback supersedes the prior restrained visual direction. Recovery point
+created before edits: annotated `savepoint/pre-pigment-paper-2026-10-08`, remotely
+verified at source `2661cbb6a8bdb815bef58241a1ec7c45a20c1cab` (tag object
+`642a7996fd8ae0b1945711b604956582ebc8b2f4`). Restore into a new branch; do not reset
+shared main. The older pre-premium savepoint also remains available.
+
+Current work: `codex/pigment-paper-design`, warm watercolor/ink/paper UI and exact
+recorded company marks. [Brief](design/PIGMENT_PAPER_2026_BRIEF.md) and
+[provenance](design/PIGMENT_PAPER_2026_PROVENANCE.md) record authority and limits.
+Full suite: 3,023 pass; four audits, typecheck and build pass. Independent review
+found two logo identity edges, both fixed and rechecked. Final responsive/build
+receipts, required CI, production release and live acceptance are pending.
+This is a frontend checkpoint; source-perpetuity/GCP acceptance is unchanged.
+
 ## 2026-10-07 23:30 Manila — Premium frontend deployed and accepted
 
 **Progress:** five of five frontend checkpoints complete (100% by checkpoint

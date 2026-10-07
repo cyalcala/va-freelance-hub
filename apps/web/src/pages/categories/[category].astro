@@ -7,6 +7,7 @@ import { slicePublicJobs, type PublicJob } from '@/lib/public-board';
 import { applySnapshotHeaders, loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parsePageRequest } from '@/lib/public-query';
+import { companyLogoDomains, withCompanyLogo } from '@/lib/company-identity';
 
 export const prerender = false;
 
@@ -32,7 +33,7 @@ if (!parsedPage.ok) {
 const currentPage = parsedPage.page;
 const offset = (currentPage - 1) * PAGE_SIZE;
 
-let categoryJobs: PublicJob[] = [];
+let categoryJobs: (PublicJob & { logoDomain: string | null })[] = [];
 let totalJobs = 0;
 let dataUnavailable = false;
 let pageOutOfRange = false;
@@ -54,7 +55,10 @@ try {
   });
   totalJobs = sliced.total;
   pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
-  if (!pageOutOfRange) categoryJobs = sliced.jobs;
+  if (!pageOutOfRange) {
+    const domains = companyLogoDomains(board.directory);
+    categoryJobs = sliced.jobs.map((job) => withCompanyLogo(job, domains));
+  }
 } catch (e) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, e);

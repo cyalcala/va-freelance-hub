@@ -7,6 +7,7 @@ import { publicPlatforms, slicePublicJobs } from '@/lib/public-board';
 import { applySnapshotHeaders, loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
 import { parseJobBoardRequest } from '@/lib/public-query';
+import { companyLogoDomains, withCompanyLogo } from '@/lib/company-identity';
 
 export const prerender = false;
 
@@ -100,7 +101,10 @@ try {
   });
   totalJobs = sliced.total;
   pageOutOfRange = currentPage > Math.max(1, Math.ceil(totalJobs / PAGE_SIZE));
-  if (!pageOutOfRange) pageJobs = sliced.jobs;
+  if (!pageOutOfRange) {
+    const domains = companyLogoDomains(board.directory);
+    pageJobs = sliced.jobs.map((job) => withCompanyLogo(job, domains));
+  }
 } catch (e) {
   dataUnavailable = true;
   markPublicDataUnavailable(Astro.response, e);
@@ -120,14 +124,14 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
 
 <Layout
   title="Remote Jobs for Filipinos — VA & Freelance Hub"
-  description="Search remote and VA opportunities, compare their available facts, and follow the original source listing."
+  description="Search remote jobs and VA roles by company, category or source. Follow the original listing to apply."
 >
   <section class="page-section">
     <div class="page-heading">
       <h1 class="page-title">Find your next opportunity</h1>
       <p class="page-description">
-        Search remote roles for Filipino professionals. Compare the available facts,
-        then review the original listing.
+        Search remote jobs and VA roles. Filter by category or company, then
+        follow the original listing to apply.
       </p>
     </div>
 

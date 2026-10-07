@@ -1,0 +1,378 @@
+[
+  {
+    "companyNote": "none",
+    "controlHeights": [
+      54,
+      54,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+    ],
+    "firstJobTop": 886.5250244140625,
+    "fonts": [
+      true,
+      true
+    ],
+    "heroHeight": 531.3250122070312,
+    "heroTop": 221.6000061035156,
+    "route": "/",
+    "scrollWidth": 360,
+    "width": 375
+  },
+  {
+    "companyNote": "none",
+    "controlHeights": [
+      54,
+      54,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+    ],
+    "firstJobTop": 844.9249877929688,
+    "fonts": [
+      true,
+      true
+    ],
+    "heroHeight": 531.3250122070312,
+    "heroTop": 221.6000061035156,
+    "route": "/",
+    "scrollWidth": 375,
+    "width": 390
+  },
+  {
+    "companyNote": "none",
+    "controlHeights": [
+      54,
+      54,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+    ],
+    "firstJobTop": 830.6000366210938,
+    "fonts": [
+      true,
+      true
+    ],
+    "heroHeight": 530.6000366210938,
+    "heroTop": 192,
+    "route": "/",
+    "scrollWidth": 753,
+    "width": 768
+  },
+  {
+    "companyNote": "block",
+    "controlHeights": [
+      54,
+      54,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+    ],
+    "firstJobTop": 890.6000366210938,
+    "fonts": [
+      true,
+      true
+    ],
+    "heroHeight": 590.6000366210938,
+    "heroTop": 192,
+    "route": "/",
+    "scrollWidth": 1009,
+    "width": 1024
+  },
+  {
+    "companyNote": "block",
+    "controlHeights": [
+      54,
+      54,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+    ],
+    "firstJobTop": 817.7999877929688,
+    "fonts": [
+      true,
+      true
+    ],
+    "heroHeight": 538.6000366210938,
+    "heroTop": 171.1999969482422,
+    "route": "/",
+    "scrollWidth": 1265,
+    "width": 1280
+  },
+  {
+    "companyNote": "block",
+    "controlHeights": [
+      54,
+      54,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+    ],
+    "firstJobTop": 817.7999877929688,
+    "fonts": [
+      true,
+      true
+    ],
+    "heroHeight": 538.6000366210938,
+    "heroTop": 171.1999969482422,
+    "route": "/",
+    "scrollWidth": 1425,
+    "width": 1440
+  },
+  {
+    "companyNote": "block",
+    "controlHeights": [
+      54,
+      54,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44,
+      44
+    ],
+    "firstJobTop": 817.7999877929688,
+    "fonts": [
+      true,
+      true
+    ],
+    "heroHeight": 538.6000366210938,
+    "heroTop": 171.1999969482422,
+    "route": "/",
+    "scrollWidth": 1905,
+    "width": 1920
+  },
+  {
+    "main": {
+      "bottom": 7903.500198364258,
+      "height": 7814.7001953125,
+      "left": 20,
+      "right": 355.20001220703125,
+      "top": 88.80000305175781,
+      "width": 335.20001220703125,
+      "x": 20,
+      "y": 88.80000305175781
+    },
+    "marks": [
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=multiplymii.com&initial=M"
+      },
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=about.gitlab.com&initial=G"
+      },
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=sourcefit.com&initial=S"
+      }
+    ],
+    "route": "/opportunities",
+    "scrollWidth": 375,
+    "smallControls": [],
+    "width": 390
+  },
+  {
+    "main": {
+      "bottom": 4657.199905395508,
+      "height": 4556.39990234375,
+      "left": 112.4000015258789,
+      "right": 1312.400001525879,
+      "top": 100.8000030517578,
+      "width": 1200,
+      "x": 112.4000015258789,
+      "y": 100.8000030517578
+    },
+    "marks": [
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=multiplymii.com&initial=M"
+      },
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=about.gitlab.com&initial=G"
+      },
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=sourcefit.com&initial=S"
+      }
+    ],
+    "route": "/opportunities",
+    "scrollWidth": 1425,
+    "smallControls": [],
+    "width": 1440
+  },
+  {
+    "marks": [
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=www.multiplymii.com&initial=M"
+      }
+    ],
+    "route": "/directory",
+    "scrollWidth": 375,
+    "smallControls": [],
+    "width": 390
+  },
+  {
+    "marks": [
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=www.multiplymii.com&initial=M"
+      }
+    ],
+    "route": "/directory",
+    "scrollWidth": 1425,
+    "smallControls": [],
+    "width": 1440
+  },
+  {
+    "marks": [
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=multiplymii.com&initial=M"
+      }
+    ],
+    "route": "/jobs/8992",
+    "scrollWidth": 375,
+    "smallControls": [],
+    "width": 390
+  },
+  {
+    "marks": [
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=multiplymii.com&initial=M"
+      }
+    ],
+    "route": "/jobs/8992",
+    "scrollWidth": 1425,
+    "smallControls": [],
+    "width": 1440
+  },
+  {
+    "marks": [
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=20four7va.com&initial=2"
+      },
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=about.gitlab.com&initial=G"
+      },
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=20four7va.com&initial=2"
+      }
+    ],
+    "route": "/categories/admin",
+    "scrollWidth": 375,
+    "smallControls": [],
+    "width": 390
+  },
+  {
+    "marks": [
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=20four7va.com&initial=2"
+      },
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=about.gitlab.com&initial=G"
+      },
+      {
+        "complete": true,
+        "hidden": false,
+        "naturalWidth": 64,
+        "src": "/api/company-logo?domain=20four7va.com&initial=2"
+      }
+    ],
+    "route": "/categories/admin",
+    "scrollWidth": 1425,
+    "smallControls": [],
+    "width": 1440
+  }
+]
