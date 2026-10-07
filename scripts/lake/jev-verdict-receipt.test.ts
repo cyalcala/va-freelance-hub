@@ -102,7 +102,13 @@ describe("classifyJevAttempt over the real client", () => {
       { ...ADMISSION_REQUEST, timeoutMs: 20 },
       ((_url: string, init: RequestInit) =>
         new Promise((_resolve, reject) => {
-          init.signal?.addEventListener("abort", () => reject(new Error("aborted")));
+          // AbortSignal.timeout uses an unreferenced timer. Keep this fake
+          // transport alive like a real socket until the actual signal fires.
+          const keepAlive = setInterval(() => {}, 10);
+          init.signal?.addEventListener("abort", () => {
+            clearInterval(keepAlive);
+            reject(new Error("aborted"));
+          }, { once: true });
         })) as unknown as typeof fetch,
     );
     expect(classifyJevAttempt(slow).outcome).toBe("transport_failed_or_timed_out");

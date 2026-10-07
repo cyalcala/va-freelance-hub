@@ -10,4 +10,7 @@ linker = "isolated"
 # Add any private registry scopes here if needed
 
 [run]
-bun = true
+# Keep Astro/Wrangler/TypeScript on their declared Node runtime. Project test
+# and operations scripts invoke Bun explicitly; forcing Node CLIs through Bun
+# caused Astro's Windows content sync to fail with EEXIST.
+bun = false

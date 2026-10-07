@@ -16,7 +16,7 @@
  * the recorded outbound requests, or the returned stats.
  */
 
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
 import {
   HELD_READJUDICATION_CAP_PER_RUN,
@@ -92,8 +92,16 @@ function fakeLake(rows: HeldTenantCandidateRow[]) {
 }
 
 const originalFetch = globalThis.fetch;
+const originalJevKey = process.env.OPENROUTER_API_KEY;
+beforeEach(() => {
+  // These wiring tests exercise the deterministic fallback. A developer's
+  // .env must not add a provider request to the recorded ATS probe calls.
+  delete process.env.OPENROUTER_API_KEY;
+});
 afterEach(() => {
   globalThis.fetch = originalFetch;
+  if (originalJevKey === undefined) delete process.env.OPENROUTER_API_KEY;
+  else process.env.OPENROUTER_API_KEY = originalJevKey;
 });
 
 function stubFetch(handler: (url: string) => { status: number; body: unknown }) {
