@@ -1,5 +1,5 @@
 import type { Opportunity } from "@/lib/db";
-import { Briefcase, ChevronRight, ExternalLink } from "lucide-react";
+import { ChevronRight, ExternalLink } from "lucide-react";
 
 export type OpportunityCardData = Pick<
   Opportunity,
@@ -24,24 +24,6 @@ interface Props {
   opportunity: OpportunityCardData;
 }
 
-const PLATFORM_COLORS: Record<string, string> = {
-  WeWorkRemotely: "text-emerald-700 bg-emerald-500/[0.08]",
-  Remotive: "text-sky-700 bg-sky-500/[0.08]",
-  Jobicy: "text-cyan-700 bg-cyan-500/[0.08]",
-  RealWorkFromAnywhere: "text-indigo-700 bg-indigo-500/[0.08]",
-  RemoteOK: "text-violet-700 bg-violet-500/[0.08]",
-  ProBlogger: "text-orange-700 bg-orange-500/[0.08]",
-  RemoteCo: "text-violet-700 bg-violet-500/[0.08]",
-  OnlineJobsPH: "text-yellow-700 bg-yellow-500/[0.08]",
-  "20Four7VA": "text-teal-800 bg-teal-500/[0.12] border border-teal-500/25",
-  Sourcefit: "text-emerald-800 bg-emerald-500/[0.12] border border-emerald-500/25",
-  Yokly: "text-purple-800 bg-purple-500/[0.12] border border-purple-500/25",
-  "VALUE Virtual Assistants": "text-blue-800 bg-blue-500/[0.12] border border-blue-500/25",
-  "Remote Craft": "text-amber-800 bg-amber-500/[0.12] border border-amber-500/25",
-  "Time Etc": "text-sky-800 bg-sky-500/[0.12] border border-sky-500/25",
-  "Greenhouse/canonical": "text-orange-800 bg-orange-500/[0.12] border border-orange-500/25",
-};
-
 const PLATFORM_LABELS: Record<string, string> = {
   WeWorkRemotely: "We Work Remotely",
   RealWorkFromAnywhere: "Real Work From Anywhere",
@@ -57,13 +39,12 @@ const TYPE_LABELS: Record<string, string> = {
   "part-time": "Part-time",
 };
 
-// Geo badges (geo masterplan L5): only the three positively-verified scopes
-// get a badge — accuracy made visible. geo_evidence rides along as a tooltip
-// so users can see WHY a listing earned it.
-const GEO_BADGES: Record<string, { label: string; className: string }> = {
-  ph_only: { label: "🇵🇭 PH-exclusive", className: "text-red-700 bg-red-500/[0.08]" },
-  apac_incl_ph: { label: "⏰ APAC-friendly", className: "text-teal-700 bg-teal-500/[0.08]" },
-  worldwide: { label: "🌍 Worldwide", className: "text-blue-700 bg-blue-500/[0.08]" },
+// Only positive recorded scopes appear. Likely eligibility keeps its qualifier;
+// source evidence is supplemental and never implies a new employer check.
+const GEO_LABELS: Record<string, string> = {
+  ph_only: "Philippines",
+  apac_incl_ph: "APAC incl. PH",
+  worldwide: "Worldwide",
 };
 
 const MANILA_TZ = "Asia/Manila";
@@ -87,8 +68,6 @@ function formatDate(isoString: string | null | undefined): string | null {
 }
 
 export function OpportunityCard({ opportunity: opp }: Props) {
-  const platformColor =
-    PLATFORM_COLORS[opp.sourcePlatform] ?? "text-ink/60 bg-ink/5";
   const platformLabel = PLATFORM_LABELS[opp.sourcePlatform] ?? opp.sourcePlatform;
   const typeLabel = TYPE_LABELS[opp.type] ?? opp.type;
   const postedDate = formatDate(opp.postedAt);
@@ -104,77 +83,44 @@ export function OpportunityCard({ opportunity: opp }: Props) {
   const href = hasDetailPage ? `/jobs/${opp.id}` : externalHref;
   const target = hasDetailPage ? undefined : "_blank";
   const rel = hasDetailPage ? undefined : isRemoteOk ? "noopener" : "noopener noreferrer";
-
-  let hostname = "";
-  try {
-    hostname = new URL(opp.sourceUrl).hostname;
-  } catch (e) {
-    hostname = "";
-  }
+  const companyWords = (opp.company ?? '').trim().split(/\s+/).filter(Boolean);
+  const initials = companyWords.length > 1
+    ? `${Array.from(companyWords[0])[0]}${Array.from(companyWords[1])[0]}`.toUpperCase()
+    : companyWords.length === 1 ? Array.from(companyWords[0]).slice(0, 2).join('').toUpperCase() : '—';
+  const geoLabel = hasDetailPage && opp.geoScope ? GEO_LABELS[opp.geoScope] : undefined;
+  const isLikely = opp.phEligibility === "eligible_likely";
 
   return (
     <a
       href={href}
       target={target}
       rel={rel}
-      className="group flex items-start sm:items-center gap-3 sm:gap-3.5 p-3 sm:p-3.5 rounded-xl transition-all duration-200 ease-out-soft hover:bg-ink/[0.035] active:bg-ink/[0.06] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      className="opportunity-row"
     >
-      <div className="w-10 h-10 rounded-xl bg-surface flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden mt-0.5 sm:mt-0">
-        {hostname ? (
-          <img
-            src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
-            alt=""
-            aria-hidden="true"
-            className="w-5 h-5 object-contain"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-            }}
-          />
-        ) : null}
-        <Briefcase className={`w-4 h-4 text-ink/30 ${hostname ? 'hidden' : ''}`} />
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-semibold text-ink text-[15px] sm:text-base group-hover:text-accent transition-colors leading-snug line-clamp-2 sm:line-clamp-1">
-            {opp.title}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1.5 mt-1 text-[13px] text-ink/50 min-w-0 flex-wrap">
-          {opp.company && <span className="font-medium text-ink/70 truncate">{opp.company}</span>}
-          {opp.company && postedDate && <span className="text-ink/25">·</span>}
-          {postedDate && <span className="shrink-0 text-ink/40">{postedDate}</span>}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1.5 mt-2">
-          <span className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${platformColor}`}>
-            {platformLabel}
-          </span>
-          <span className="text-[10px] px-2 py-0.5 rounded-md bg-ink/[0.05] text-ink/55 font-semibold">
-            {typeLabel}
-          </span>
+      <span className="opportunity-initials" aria-hidden="true">{initials}</span>
+      <div className="min-w-0">
+        <span className="opportunity-title">{opp.title}</span>
+        <div className="opportunity-meta">
+          {opp.company && <span className="opportunity-company">{opp.company}</span>}
+          <span>{typeLabel}</span>
           {opp.experienceLevel && opp.experienceLevel !== 'any' && (
-            <span className="text-[10px] px-2 py-0.5 rounded-md bg-accent-soft text-accent font-semibold capitalize">
+            <span className="capitalize">
               {opp.experienceLevel}
             </span>
           )}
-          {opp.geoScope && GEO_BADGES[opp.geoScope] && (
-            <span
-              className={`text-[10px] px-2 py-0.5 rounded-md font-semibold ${GEO_BADGES[opp.geoScope].className}`}
-              title={opp.geoEvidence ?? undefined}
-            >
-              {GEO_BADGES[opp.geoScope].label}
-            </span>
-          )}
         </div>
+        <p className="opportunity-source">Source: {platformLabel}</p>
       </div>
-
+      <div className="opportunity-facts">
+        {geoLabel && <span className={`opportunity-geo${isLikely ? ' opportunity-geo-likely' : ''}`} title={opp.geoEvidence ?? undefined}>
+          {geoLabel}{isLikely ? ' · likely' : ''}
+        </span>}
+        {postedDate && <span className="opportunity-date">Source posted <time dateTime={opp.postedAt!}>{postedDate}</time></span>}
+      </div>
       {hasDetailPage ? (
-        <ChevronRight className="w-4 h-4 text-ink/25 group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0 self-center" />
+        <ChevronRight className="opportunity-arrow w-4 h-4" aria-hidden="true" />
       ) : (
-        <ExternalLink className="w-4 h-4 text-ink/25 group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0 self-center" />
+        <ExternalLink className="opportunity-arrow w-4 h-4" aria-hidden="true" />
       )}
     </a>
   );

@@ -17,10 +17,13 @@ Astro.response.headers.set(
 
 const PAGE_SIZE = 30;
 const TYPE_OPTIONS = ['VA', 'freelance', 'project', 'full-time', 'part-time'];
+const TYPE_LABELS: Record<string, string> = {
+  VA: 'VA', freelance: 'Freelance', project: 'Project', 'full-time': 'Full-time', 'part-time': 'Part-time',
+};
 const GEO_SCOPE_OPTIONS = [
-  { value: 'ph_only', label: '🇵🇭 PH-exclusive' },
-  { value: 'apac_incl_ph', label: '⏰ APAC-friendly' },
-  { value: 'worldwide', label: '🌍 Worldwide' },
+  { value: 'ph_only', label: 'Philippines' },
+  { value: 'apac_incl_ph', label: 'APAC incl. PH' },
+  { value: 'worldwide', label: 'Worldwide' },
 ];
 
 const searchParams = Astro.url.searchParams;
@@ -59,17 +62,27 @@ function buildPageUrl(page: number) {
   return qs ? `/opportunities?${qs}` : '/opportunities';
 }
 
-function buildFreshUrl(value: string | null) {
-  const params = new URLSearchParams();
-  if (query) params.set('q', query);
-  if (category) params.set('category', category);
-  if (type) params.set('type', type);
-  if (platform) params.set('platform', platform);
-  if (geoScope) params.set('geoScope', geoScope);
-  if (value) params.set('fresh', value);
+function buildFilterRemovalUrl(key: string) {
+  const params = new URLSearchParams(buildPageUrl(1).split('?')[1] ?? '');
+  params.delete(key);
   const qs = params.toString();
   return qs ? `/opportunities?${qs}` : '/opportunities';
 }
+
+function categoryTitle(title: string) {
+  return title.replace(/\b[A-Z]+\b/g, (word) =>
+    word === 'AI' || word === 'IT' ? word : word[0] + word.slice(1).toLowerCase()
+  );
+}
+
+const activeFilters = [
+  { key: 'q', value: query, label: `Search: ${query}` },
+  { key: 'category', value: category, label: `Category: ${selectedCategory ? categoryTitle(selectedCategory.title) : category}` },
+  { key: 'type', value: type, label: `Type: ${TYPE_LABELS[type] ?? type}` },
+  { key: 'platform', value: platform, label: `Source: ${platform}` },
+  { key: 'geoScope', value: geoScope, label: `Scope: ${GEO_SCOPE_OPTIONS.find((option) => option.value === geoScope)?.label ?? geoScope}` },
+  { key: 'fresh', value: fresh, label: `Arrivals: ${fresh === 'today' ? 'Today (Manila)' : 'Last 24 hours'}` },
+].filter((filter) => filter.value);
 
 try {
   const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
@@ -106,240 +119,162 @@ const resultEnd = Math.min(offset + pageJobs.length, totalJobs);
 ---
 
 <Layout
-  title="Browse Remote Jobs for Filipinos — VA & Freelance Hub"
-  description="Search and filter every active remote and VA role open to Filipino talent. Updated automatically, all day."
+  title="Remote Jobs for Filipinos — VA & Freelance Hub"
+  description="Search remote and VA opportunities, compare their available facts, and follow the original source listing."
 >
-  {dataUnavailable && <ServiceUnavailable />}
-  <section class="w-full max-w-5xl mx-auto pt-6 sm:pt-10 md:pt-14">
-    <div class="mb-5 sm:mb-8">
-      <a
-        href="/"
-        class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-3 sm:mb-6"
-      >
-        <span class="inline-block transition-transform group-hover:-translate-x-0.5">&larr;</span>
-        Home
-      </a>
-
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 sm:gap-4">
-        <div>
-          <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-1.5 sm:mb-2">The full board</p>
-          <div class="flex items-center gap-2.5">
-            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-ink">
-              Every open remote role
-            </h1>
-            <span class="sm:hidden text-xs font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-2.5 py-1 rounded-full shrink-0 tabular-nums">
-              {totalJobs.toLocaleString()} jobs
-            </span>
-          </div>
-          <p class="text-ink/55 text-sm sm:text-[15px] max-w-xl mt-2 sm:mt-3 leading-relaxed">
-            Search, filter, and page through every active opportunity open to
-            Filipino remote workers. Every listing is geo-checked for
-            Philippine eligibility &mdash; country-locked &ldquo;remote&rdquo;
-            jobs are filtered out automatically.
-          </p>
-        </div>
-        <div class="hidden sm:inline-flex text-sm font-semibold text-ink/60 bg-surface border border-ink/[0.09] px-4 py-2 rounded-full self-start sm:self-auto shrink-0 tabular-nums">
-          {totalJobs.toLocaleString()} {totalJobs === 1 ? 'job' : 'jobs'}
-        </div>
-      </div>
+  <section class="page-section">
+    <div class="page-heading">
+      <h1 class="page-title">Find your next opportunity</h1>
+      <p class="page-description">
+        Search remote roles for Filipino professionals. Compare the available facts,
+        then review the original listing.
+      </p>
     </div>
 
-    <form
-      id="search"
-      method="get"
-      action="/opportunities"
-      class="scroll-mt-20 sticky top-[4rem] sm:top-[4.5rem] z-40 mt-5 sm:mt-8 mb-6 sm:mb-8 bg-parchment/90 backdrop-blur-xl border border-ink/[0.08] rounded-2xl p-2 sm:p-2.5 shadow-soft transition-all"
-    >
-      <div class="flex flex-col lg:grid lg:grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,0.85fr))_auto] gap-2">
-        <!-- Hidden peer checkbox for mobile filter disclosure state -->
-        <input
-          type="checkbox"
-          id="filters-expanded"
-          class="peer sr-only"
-          checked={activeFilterCount > 0 ? true : undefined}
-        />
-
-        <!-- Top bar on mobile (search input + filter toggle + search button) / Inline on desktop -->
-        <div class="flex items-center gap-2 lg:contents">
-          <label class="sr-only" for="q">Search jobs</label>
-          <div class="relative flex-1 min-w-0">
-            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink/35 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input
-              id="q"
-              type="search"
-              name="q"
-              value={query}
-              placeholder="Search roles, companies, platforms…"
-              class="w-full h-11 pl-9 pr-3 bg-surface border border-ink/[0.09] rounded-xl text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 transition-all placeholder:text-ink/35"
-            />
-          </div>
-
-          <!-- Mobile filter toggle button (hidden on desktop) -->
-          <label
-            for="filters-expanded"
-            class={`lg:hidden inline-flex items-center justify-center gap-1.5 h-11 px-3 rounded-xl border text-xs font-semibold cursor-pointer select-none transition-all shrink-0 ${activeFilterCount > 0 ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-surface border-ink/[0.09] text-ink/70 hover:text-ink hover:bg-ink/[0.03]'}`}
-          >
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-            <span>Filters</span>
-            {activeFilterCount > 0 && (
-              <span class="inline-flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold bg-accent text-white tabular-nums">
-                {activeFilterCount}
-              </span>
-            )}
-          </label>
-
-          <!-- Search button (always accessible) -->
-          <button
-            type="submit"
-            class="h-11 bg-accent hover:bg-accent-hover text-white px-4 sm:px-5 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift shrink-0 active:scale-[0.98] lg:order-last"
-          >
-            Search
-          </button>
+    <form id="search" method="get" action="/opportunities" class="board-search">
+      <div class="board-search-label">
+        <label for="q" class="field-label">Role, company or keyword</label>
+        <span class="search-shortcut">Press <kbd>/</kbd> to search</span>
+      </div>
+      <div class="board-search-row">
+        <div class="board-search-field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          <input id="q" type="search" name="q" value={query} placeholder="Search all opportunities" class="field-input" />
         </div>
-
-        <!-- 4 Secondary filters: hidden by default on mobile, 2x2 grid when peer checked, inline grid columns on desktop -->
-        <div class="hidden peer-checked:grid grid-cols-2 gap-2 pt-1 lg:pt-0 lg:contents">
-          <div class="relative">
-            <label class="sr-only" for="category">Category</label>
-            <select
-              id="category"
-              name="category"
-              class="w-full h-10 lg:h-11 px-2.5 lg:px-3 bg-surface border border-ink/[0.09] rounded-lg lg:rounded-xl text-xs lg:text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 truncate"
-            >
-              <option value="">All categories</option>
-              {Object.entries(JOB_CATEGORY_MAP).map(([key, info]) => (
-                <option value={key} selected={category === key}>{info.title}</option>
-              ))}
-            </select>
-          </div>
-
-          <div class="relative">
-            <label class="sr-only" for="type">Type</label>
-            <select
-              id="type"
-              name="type"
-              class="w-full h-10 lg:h-11 px-2.5 lg:px-3 bg-surface border border-ink/[0.09] rounded-lg lg:rounded-xl text-xs lg:text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 truncate"
-            >
-              <option value="">All types</option>
-              {TYPE_OPTIONS.map((option) => (
-                <option value={option} selected={type === option}>{option}</option>
-              ))}
-            </select>
-          </div>
-
-          <div class="relative">
-            <label class="sr-only" for="platform">Platform</label>
-            <select
-              id="platform"
-              name="platform"
-              class="w-full h-10 lg:h-11 px-2.5 lg:px-3 bg-surface border border-ink/[0.09] rounded-lg lg:rounded-xl text-xs lg:text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 truncate"
-            >
-              <option value="">All platforms</option>
-              {platformOptions.map((option) => (
-                <option value={option} selected={platform === option}>{option}</option>
-              ))}
-            </select>
-          </div>
-
-          <div class="relative">
-            <label class="sr-only" for="geoScope">Eligibility</label>
-            <select
-              id="geoScope"
-              name="geoScope"
-              class="w-full h-10 lg:h-11 px-2.5 lg:px-3 bg-surface border border-ink/[0.09] rounded-lg lg:rounded-xl text-xs lg:text-sm text-ink font-medium focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/15 truncate"
-            >
-              <option value="">All geo scopes</option>
-              {GEO_SCOPE_OPTIONS.map((option) => (
-                <option value={option.value} selected={geoScope === option.value}>{option.label}</option>
-              ))}
-            </select>
-          </div>
-        </div>
+        <button type="submit" class="button button-primary">Search</button>
       </div>
     </form>
 
-    <!-- Direct Agency Quick Filters -->
-    <div class="mb-4 flex flex-wrap items-center gap-1.5 text-xs">
-      <span class="text-ink/40 font-medium mr-1">Direct VA Agencies:</span>
-      <a href="/opportunities?platform=20Four7VA" class={`px-2.5 py-1 rounded-full border transition-all ${platform === '20Four7VA' ? 'bg-teal-600 text-white border-teal-600 font-bold' : 'bg-surface border-ink/[0.08] text-teal-800 hover:border-teal-500/40 font-semibold'}`}>20Four7VA</a>
-      <a href="/opportunities?platform=Sourcefit" class={`px-2.5 py-1 rounded-full border transition-all ${platform === 'Sourcefit' ? 'bg-emerald-600 text-white border-emerald-600 font-bold' : 'bg-surface border-ink/[0.08] text-emerald-800 hover:border-emerald-500/40 font-semibold'}`}>Sourcefit</a>
-      <a href="/opportunities?platform=Yokly" class={`px-2.5 py-1 rounded-full border transition-all ${platform === 'Yokly' ? 'bg-purple-600 text-white border-purple-600 font-bold' : 'bg-surface border-ink/[0.08] text-purple-800 hover:border-purple-500/40 font-semibold'}`}>Yokly</a>
-      <a href="/opportunities?platform=VALUE+Virtual+Assistants" class={`px-2.5 py-1 rounded-full border transition-all ${platform === 'VALUE Virtual Assistants' ? 'bg-blue-600 text-white border-blue-600 font-bold' : 'bg-surface border-ink/[0.08] text-blue-800 hover:border-blue-500/40 font-semibold'}`}>VALUE VA</a>
-      <a href="/opportunities?type=VA" class={`px-2.5 py-1 rounded-full border transition-all ${type === 'VA' && !platform ? 'bg-accent text-white border-accent font-bold' : 'bg-surface border-ink/[0.08] text-ink/65 hover:border-accent/40 font-medium'}`}>All VA Roles</a>
-    </div>
+    <div class="board-shell">
+      <aside class="filter-rail" aria-label="Job filters">
+        <h2 class="filter-heading">Refine your search</h2>
+        <details class="filter-disclosure" id="job-filters" open data-active-filters={activeFilterCount > 0 ? 'true' : 'false'}>
+          <summary>Filters{activeFilterCount > 0 && <span class="text-muted"> · {activeFilterCount} active</span>}</summary>
+          <div class="filter-fields">
+            <div>
+              <label for="category" class="field-label">Category</label>
+              <select id="category" name="category" form="search" class="field-select">
+                <option value="">All categories</option>
+                {Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => (
+                  <option value={slug} selected={category === slug}>{categoryTitle(info.title)}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label for="type" class="field-label">Employment type</label>
+              <select id="type" name="type" form="search" class="field-select">
+                <option value="">All types</option>
+                {TYPE_OPTIONS.map((option) => (
+                  <option value={option} selected={type === option}>{TYPE_LABELS[option]}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label for="platform" class="field-label">Source</label>
+              <select id="platform" name="platform" form="search" class="field-select">
+                <option value="">All sources</option>
+                {platformOptions.map((option) => (
+                  <option value={option} selected={platform === option}>{option}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label for="geoScope" class="field-label">Geographic scope</label>
+              <select id="geoScope" name="geoScope" form="search" class="field-select">
+                <option value="">All scopes</option>
+                {GEO_SCOPE_OPTIONS.map((option) => (
+                  <option value={option.value} selected={geoScope === option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label for="fresh" class="field-label">New arrivals</label>
+              <select id="fresh" name="fresh" form="search" aria-describedby="arrivals-note" class="field-select">
+                <option value="" selected={!fresh}>Any time</option>
+                <option value="24h" selected={fresh === '24h'}>Last 24 hours</option>
+                <option value="today" selected={fresh === 'today'}>Today (Manila)</option>
+              </select>
+              <p id="arrivals-note" class="field-note">When first seen by the index, separate from the source posted date.</p>
+            </div>
+          </div>
+          <div class="filter-actions">
+            <button type="submit" form="search" class="button button-secondary">Apply filters</button>
+            {hasActiveFilters && <a href="/opportunities" class="filter-reset text-link">Clear all</a>}
+          </div>
+        </details>
+      </aside>
 
-    <div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[13px] font-semibold text-ink/45">
-      <p class="tabular-nums">
-        Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}
-      </p>
-      <div class="flex items-center gap-2">
-        <span class="text-ink/35 font-medium">New arrivals:</span>
-        <a
-          href={buildFreshUrl('24h')}
-          aria-current={fresh === '24h' ? 'page' : undefined}
-          class={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${fresh === '24h' ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-surface border-ink/[0.09] text-ink/60 hover:text-accent hover:border-accent/30'}`}
-        >
-          Last 24h
-        </a>
-        <a
-          href={buildFreshUrl('today')}
-          aria-current={fresh === 'today' ? 'page' : undefined}
-          class={`px-3 py-1.5 rounded-full border text-xs font-semibold transition-colors ${fresh === 'today' ? 'bg-accent/10 border-accent/30 text-accent' : 'bg-surface border-ink/[0.09] text-ink/60 hover:text-accent hover:border-accent/30'}`}
-        >
-          Today (Manila)
-        </a>
-        {(query || category || type || platform || geoScope || fresh) && (
-          <a href="/opportunities" class="text-accent hover:text-accent-hover transition-colors">
-            Clear filters
-          </a>
+      <div class="board-results">
+        {hasActiveFilters && (
+          <nav class="active-filters" aria-label="Active filters">
+            {activeFilters.map((filter) => (
+              <a href={buildFilterRemovalUrl(filter.key)} class="active-filter" aria-label={`Remove ${filter.label}`}>
+                <span>{filter.label}</span>
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m4 4 8 8M12 4l-8 8"/></svg>
+              </a>
+            ))}
+            <a href="/opportunities" class="filter-reset text-link">Clear all</a>
+          </nav>
+        )}
+        {dataUnavailable ? (
+          <ServiceUnavailable />
+        ) : (
+          <>
+            <div class="results-summary">
+              <strong>{totalJobs.toLocaleString()} {totalJobs === 1 ? 'opportunity' : 'opportunities'}</strong>
+              <p>Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalJobs.toLocaleString()}</p>
+            </div>
+
+            {pageJobs.length === 0 ? (
+              <div class="surface-panel empty-state">
+                <h2>{hasActiveFilters ? 'No jobs match this search' : 'No listings to show right now'}</h2>
+                <p>{hasActiveFilters ? 'Try a broader keyword or remove a filter to see more opportunities.' : 'Please check back later for available opportunities.'}</p>
+                {hasActiveFilters && <a href="/opportunities" class="button button-secondary">Reset filters</a>}
+              </div>
+            ) : (
+              <div class="result-list">
+                {pageJobs.map((opp) => <OpportunityCard opportunity={opp} />)}
+              </div>
+            )}
+
+            <nav class="pagination" aria-label="Opportunity pagination">
+              {hasPrevious ? (
+                <a href={buildPageUrl(currentPage - 1)} class="pagination-control">&larr; Previous</a>
+              ) : (
+                <span class="pagination-control" aria-disabled="true">&larr; Previous</span>
+              )}
+              <span class="text-muted">Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}</span>
+              {hasNext ? (
+                <a href={buildPageUrl(currentPage + 1)} class="pagination-control">Next &rarr;</a>
+              ) : (
+                <span class="pagination-control" aria-disabled="true">Next &rarr;</span>
+              )}
+            </nav>
+          </>
         )}
       </div>
     </div>
-
-    {pageJobs.length === 0 ? (
-      <div class="text-center py-24 bg-surface/60 rounded-2xl border border-ink/[0.07]">
-        <p class="text-ink/55 font-semibold text-lg">No jobs match these filters.</p>
-        <p class="text-ink/40 text-sm mt-1">Try removing a filter or broadening your search.</p>
-        <a href="/opportunities" class="inline-flex items-center mt-5 px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Reset filters</a>
-      </div>
-    ) : (
-      <div class="bg-surface border border-ink/[0.07] rounded-2xl p-2 sm:p-3 shadow-card flex flex-col divide-y divide-ink/[0.05]">
-        {pageJobs.map((opp) => (
-          <OpportunityCard opportunity={opp} />
-        ))}
-      </div>
-    )}
-
-    <nav class="mt-8 flex items-center justify-between gap-4" aria-label="Opportunity pagination">
-      {hasPrevious ? (
-        <a
-          href={buildPageUrl(currentPage - 1)}
-          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-colors"
-        >
-          &larr; Previous
-        </a>
-      ) : (
-        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
-          &larr; Previous
-        </span>
-      )}
-
-      <span class="text-[13px] font-semibold text-ink/45 tabular-nums">
-        Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}
-      </span>
-
-      {hasNext ? (
-        <a
-          href={buildPageUrl(currentPage + 1)}
-          class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-colors"
-        >
-          Next &rarr;
-        </a>
-      ) : (
-        <span class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
-          Next &rarr;
-        </span>
-      )}
-    </nav>
   </section>
 </Layout>
+
+<script>
+  const filters = document.querySelector<HTMLDetailsElement>('#job-filters');
+  const desktop = window.matchMedia('(min-width: 1024px)');
+  if (filters) {
+    const setFilterLayout = () => {
+      filters.open = desktop.matches || filters.dataset.activeFilters === 'true';
+    };
+    setFilterLayout();
+    desktop.addEventListener('change', setFilterLayout);
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.defaultPrevented || event.key !== '/' || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (event.target instanceof Element && event.target.closest('input, select, textarea, [contenteditable]:not([contenteditable="false"])')) return;
+    const search = document.querySelector<HTMLInputElement>('#q');
+    if (search) {
+      event.preventDefault();
+      search.focus();
+    }
+  });
+</script>

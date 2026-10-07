@@ -103,45 +103,50 @@ const TYPE_LABELS: Record<string, string> = {
   'part-time': 'Part-time',
 };
 
-const GEO_BADGES: Record<string, { label: string; className: string }> = {
-  ph_only: { label: '\u{1F1F5}\u{1F1ED} PH-exclusive', className: 'text-red-700 bg-red-500/[0.08]' },
-  apac_incl_ph: { label: '⏰ APAC-friendly', className: 'text-teal-700 bg-teal-500/[0.08]' },
-  worldwide: { label: '\u{1F30D} Worldwide', className: 'text-blue-700 bg-blue-500/[0.08]' },
-};
-
-const PLATFORM_COLORS: Record<string, string> = {
-  WeWorkRemotely: 'text-emerald-700 bg-emerald-500/[0.08]',
-  Remotive: 'text-sky-700 bg-sky-500/[0.08]',
-  Jobicy: 'text-cyan-700 bg-cyan-500/[0.08]',
-  RealWorkFromAnywhere: 'text-indigo-700 bg-indigo-500/[0.08]',
-  RemoteOK: 'text-violet-700 bg-violet-500/[0.08]',
+const GEO_LABELS: Record<string, string> = {
+  ph_only: 'Philippines',
+  apac_incl_ph: 'APAC incl. PH',
+  worldwide: 'Worldwide',
 };
 
 const typeLabel = TYPE_LABELS[job.type] ?? job.type;
 const categoryInfo = parseJobCategory(job.category) ?? OTHER_JOB_CATEGORY;
-const platformColor = PLATFORM_COLORS[job.sourcePlatform] ?? 'text-ink/60 bg-ink/5';
-const geoBadge = job.geoScope ? GEO_BADGES[job.geoScope] : null;
+const geoLabel = job.geoScope ? GEO_LABELS[job.geoScope] : undefined;
+const isLikely = job.phEligibility === 'eligible_likely';
+const companyWords = (job.company ?? '').trim().split(/\s+/).filter(Boolean);
+const initials = companyWords.length > 1
+  ? `${Array.from(companyWords[0])[0]}${Array.from(companyWords[1])[0]}`.toUpperCase()
+  : companyWords.length === 1 ? Array.from(companyWords[0]).slice(0, 2).join('').toUpperCase() : '—';
+
+function categoryTitle(title: string) {
+  return title.replace(/\b[A-Z]+\b/g, (word) =>
+    word === 'AI' || word === 'IT' ? word : word[0] + word.slice(1).toLowerCase()
+  );
+}
+
+const manilaDate = new Intl.DateTimeFormat('en-PH', {
+  timeZone: 'Asia/Manila', month: 'short', day: 'numeric', year: 'numeric',
+});
 
 function formatDate(isoString: string | null | undefined): string | null {
   if (!isoString) return null;
   try {
     const d = new Date(isoString);
     if (isNaN(d.getTime())) return null;
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${months[d.getUTCMonth()]} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
+    return manilaDate.format(d);
   } catch {
     return null;
   }
 }
 
-const postedDate = formatDate(job.postedAt) ?? formatDate(job.scrapedAt);
+const sourcePostedDate = formatDate(job.postedAt);
+const postedDate = sourcePostedDate ?? formatDate(job.scrapedAt);
+const postedDateLabel = sourcePostedDate ? 'Source posted' : 'First seen by index';
+const displayDateTime = sourcePostedDate ? job.postedAt : job.scrapedAt;
 const isoPostedDate = job.postedAt ?? job.scrapedAt ?? '';
 
-let hostname = '';
-try { hostname = safeSourceUrl ? new URL(safeSourceUrl).hostname : ''; } catch {}
-
 const pageTitle = `${job.title}${job.company ? ` at ${job.company}` : ''} — VA & Freelance Hub`;
-const pageDescription = `${typeLabel} role${job.company ? ` at ${job.company}` : ''}. ${job.locationType === 'remote' ? 'Remote, open to Philippines. ' : ''}Apply on ${platformLabel}.`;
+const pageDescription = `${typeLabel} role${job.company ? ` at ${job.company}` : ''}. ${job.locationType === 'remote' ? 'Remote role. ' : ''}Apply on ${platformLabel}.`;
 
 // --- JobPosting JSON-LD (ADR-003 §5) ---
 const EMPLOYMENT_TYPE_MAP: Record<string, string> = {
@@ -185,175 +190,175 @@ jsonLd.directApply = false;
 <Layout title={pageTitle} description={pageDescription}>
   <script type="application/ld+json" set:html={serializeJsonLd(jsonLd)} slot="head" />
 
-  <section class="w-full max-w-3xl mx-auto pt-6 sm:pt-10 md:pt-14 pb-16">
-    <a
-      href="/opportunities"
-      class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-ink/50 hover:text-accent transition-colors group mb-6 sm:mb-8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-lg"
-    >
-      <span class="inline-block transition-transform group-hover:-translate-x-0.5">&larr;</span>
-      All jobs
-    </a>
+  <section class="page-section job-detail">
+    <a href="/opportunities" class="detail-back text-link">← All jobs</a>
 
     <article>
-      <!-- Header -->
-      <div class="flex items-start gap-3.5 sm:gap-4 mb-5 sm:mb-6">
-        <div class="w-11 sm:w-12 h-11 sm:h-12 rounded-xl bg-surface flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden mt-0.5 sm:mt-0">
-          {hostname ? (
-            <img
-              src={`https://www.google.com/s2/favicons?domain=${hostname}&sz=64`}
-              alt=""
-              aria-hidden="true"
-              class="w-5 sm:w-6 h-5 sm:h-6 object-contain"
-            />
-          ) : (
-            <svg class="w-5 h-5 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          )}
-        </div>
-
-        <div class="flex-1 min-w-0">
-          <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-ink leading-snug">
-            {job.title}
-          </h1>
-          {job.company && (
-            <p class="text-ink/65 text-sm sm:text-[15px] mt-1 font-medium">{job.company}</p>
-          )}
-        </div>
-      </div>
-
-      <!-- Badges -->
-      <div class="flex flex-wrap items-center gap-2 mb-8">
-        <span class={`text-xs px-2.5 py-1 rounded-md font-semibold ${platformColor}`}>
-          {platformLabel}
-        </span>
-        <span class="text-xs px-2.5 py-1 rounded-md bg-ink/[0.05] text-ink/55 font-semibold">
-          {typeLabel}
-        </span>
-        {categoryInfo && job.category !== 'other' && (
-          <span class="text-xs px-2.5 py-1 rounded-md bg-ink/[0.05] text-ink/55 font-semibold">
-            {categoryInfo.title}
-          </span>
-        )}
-        {job.experienceLevel && job.experienceLevel !== 'any' && (
-          <span class="text-xs px-2.5 py-1 rounded-md bg-accent-soft text-accent font-semibold capitalize">
-            {job.experienceLevel}
-          </span>
-        )}
-        {geoBadge && (
-          <span
-            class={`text-xs px-2.5 py-1 rounded-md font-semibold ${geoBadge.className}`}
-            title={job.geoEvidence ?? undefined}
-          >
-            {geoBadge.label}
-          </span>
-        )}
-      </div>
-
-      <!-- Meta grid -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8 bg-surface border border-ink/[0.07] rounded-2xl p-5">
-        {postedDate && (
-          <div>
-            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Posted</p>
-            <p class="text-sm font-semibold text-ink">{postedDate}</p>
-          </div>
-        )}
+      <header class="detail-heading">
+        <span class="opportunity-initials" aria-hidden="true">{initials}</span>
         <div>
-          <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Location</p>
-          <p class="text-sm font-semibold text-ink capitalize">{job.locationType ?? 'Remote'}</p>
-        </div>
-        {job.payRange && (
-          <div>
-            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Pay</p>
-            <p class="text-sm font-semibold text-ink">{job.payRange}</p>
-          </div>
-        )}
-        {job.clientTimezone && (
-          <div>
-            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Timezone</p>
-            <p class="text-sm font-semibold text-ink">{job.clientTimezone}</p>
-          </div>
-        )}
-        {shiftInfo.category !== 'unknown' && (
-          <div>
-            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1">Schedule mentioned</p>
-            <p class="text-sm font-semibold text-ink">{shiftInfo.category.replaceAll('_', ' ')}</p>
-            <p class="text-xs text-ink/50">Confirm exact hours in the original listing.</p>
-          </div>
-        )}
-        {Array.isArray(job.tags) && job.tags.length > 0 && (
-          <div class="col-span-2 sm:col-span-3">
-            <p class="text-[11px] font-semibold uppercase tracking-overline text-ink/40 mb-1.5">Tags</p>
-            <div class="flex flex-wrap gap-1.5">
-              {(job.tags as string[]).map((tag: string) => (
-                <span class="text-[11px] px-2 py-0.5 rounded-md bg-ink/[0.04] text-ink/55 font-medium">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <!-- Description (source-aware per ADR-003) -->
-      {canShowDescription && displayDescription && (
-        <div class="mb-8">
-          <h2 class="text-sm font-semibold uppercase tracking-overline text-ink/50 mb-3">About this role</h2>
-          <div class="bg-surface border border-ink/[0.07] rounded-2xl p-5 sm:p-6">
-            <p class="text-[15px] text-ink/75 leading-relaxed whitespace-pre-line">{displayDescription}{isTruncated ? '...' : ''}</p>
-            {isTruncated && safeSourceUrl && (
-              <a
-                href={safeSourceUrl}
-                target="_blank"
-                rel={applyRel}
-                class="inline-flex items-center gap-1 mt-4 text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
-              >
-                Read full listing on {platformLabel}
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </a>
+          <h1 class="page-title">{job.title}</h1>
+          {job.company && <p class="detail-company">{job.company}</p>}
+          <div class="detail-status">
+            {geoLabel ? (
+              <span class:list={['opportunity-geo', { 'opportunity-geo-likely': isLikely }]} title={job.geoEvidence ?? undefined}>
+                {geoLabel}{isLikely ? ' · likely' : ''}
+              </span>
+            ) : (
+              <span class="text-muted">Geographic scope unspecified</span>
             )}
           </div>
         </div>
-      )}
+      </header>
 
-      {!canShowDescription && (
-        <div class="mb-8">
-          <div class="bg-surface border border-ink/[0.07] rounded-2xl p-5 sm:p-6 text-center">
-            <p class="text-sm text-ink/50">
-              Full job details are available on the original listing.
-            </p>
-            {safeSourceUrl && (
-              <a
-                href={safeSourceUrl}
-                target="_blank"
-                rel={applyRel}
-                class="inline-flex items-center gap-1 mt-2 text-sm font-semibold text-accent hover:text-accent-hover transition-colors"
-              >
-                View on {platformLabel}
-                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1 2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </a>
-            )}
-          </div>
+      <div class="detail-layout">
+        <aside class="surface-panel application-panel" aria-labelledby="application-title">
+          <h2 id="application-title">Apply for this role</h2>
+          <p class="application-source text-muted">Listed on <strong>{platformLabel}</strong></p>
+          {applyHref ? (
+            <a href={applyHref} target="_blank" rel={applyRel} class="button button-primary">
+              Apply on {platformLabel}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6M10 14 21 3"/></svg>
+            </a>
+          ) : (
+            <p class="field-note">This listing does not have a safe outbound link.</p>
+          )}
+          <p class="field-note">Confirm availability, requirements and application instructions in the original listing.</p>
+        </aside>
+
+        <div class="detail-content">
+          <section aria-labelledby="role-facts-title">
+            <h2 id="role-facts-title" class="detail-section-title">Role details</h2>
+            <dl class="role-facts">
+              <div>
+                <dt>Employment type</dt>
+                <dd>{typeLabel}</dd>
+              </div>
+              <div>
+                <dt>Work location</dt>
+                <dd class="capitalize">{job.locationType ?? 'Not specified in the source'}</dd>
+              </div>
+              {job.category !== 'other' && (
+                <div>
+                  <dt>Category</dt>
+                  <dd>{categoryTitle(categoryInfo.title)}</dd>
+                </div>
+              )}
+              {job.experienceLevel && job.experienceLevel !== 'any' && (
+                <div>
+                  <dt>Experience</dt>
+                  <dd class="capitalize">{job.experienceLevel}</dd>
+                </div>
+              )}
+              <div>
+                <dt>Pay</dt>
+                <dd>{job.payRange || 'Not specified in the source'}</dd>
+              </div>
+              {job.clientTimezone && (
+                <div>
+                  <dt>Client timezone</dt>
+                  <dd>{job.clientTimezone}</dd>
+                </div>
+              )}
+              <div>
+                {shiftInfo.category !== 'unknown' ? (
+                  <>
+                    <dt>Schedule mentioned</dt>
+                    <dd>
+                      <span class="capitalize">{shiftInfo.category.replaceAll('_', ' ')}</span>
+                      <p class="field-note">Confirm exact hours in the original listing.</p>
+                    </dd>
+                  </>
+                ) : (
+                  <>
+                    <dt>Schedule</dt>
+                    <dd>Not specified in the source</dd>
+                  </>
+                )}
+              </div>
+              {postedDate && (
+                <div>
+                  <dt>{postedDateLabel}</dt>
+                  <dd><time datetime={displayDateTime ?? undefined}>{postedDate}</time></dd>
+                </div>
+              )}
+              {Array.isArray(job.tags) && job.tags.length > 0 && (
+                <div class="role-tags">
+                  <dt>Tags</dt>
+                  <dd>{(job.tags as string[]).join(' · ')}</dd>
+                </div>
+              )}
+            </dl>
+          </section>
+
+          {canShowDescription && displayDescription && (
+            <section class="detail-description" aria-labelledby="description-title">
+              <h2 id="description-title" class="detail-section-title">About this role</h2>
+              <div class="reading-copy">
+                <p class="source-excerpt">{displayDescription}{isTruncated ? '...' : ''}</p>
+              </div>
+              {isTruncated && safeSourceUrl && (
+                <a href={safeSourceUrl} target="_blank" rel={applyRel} class="detail-source-link text-link">
+                  Read full listing on {platformLabel} ↗
+                </a>
+              )}
+            </section>
+          )}
+
+          {!canShowDescription && (
+            <section class="detail-description" aria-labelledby="description-title">
+              <h2 id="description-title" class="detail-section-title">About this role</h2>
+              <p class="reading-copy">Full job details are available on the original listing.</p>
+              {safeSourceUrl && (
+                <a href={safeSourceUrl} target="_blank" rel={applyRel} class="detail-source-link text-link">
+                  View on {platformLabel} ↗
+                </a>
+              )}
+            </section>
+          )}
         </div>
-      )}
-
-      <!-- Attribution + CTA -->
-      <div class="bg-surface border border-ink/[0.07] rounded-2xl p-5 sm:p-6">
-        <p class="text-sm text-ink/50 mb-4">
-          Listed on <span class="font-semibold text-ink/70">{platformLabel}</span>
-        </p>
-        {applyHref ? (
-          <a
-            href={applyHref}
-            target="_blank"
-            rel={applyRel}
-            class="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent-hover text-white px-6 py-3.5 rounded-xl text-sm font-semibold transition-all shadow-soft hover:shadow-lift active:scale-[0.98] w-full sm:w-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            Apply on {platformLabel}
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          </a>
-        ) : (
-          <p class="text-sm text-ink/50">This listing does not have a safe outbound link.</p>
-        )}
       </div>
     </article>
   </section>
 </Layout>
+
+<style>
+  .job-detail { max-width: 1120px; margin-inline: auto; }
+  .detail-back { display: inline-flex; align-items: center; min-height: 44px; margin-bottom: 20px; font-size: 14px; }
+  .detail-heading { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 16px; margin-bottom: 32px; }
+  .detail-heading .opportunity-initials { margin-top: 4px; }
+  .detail-heading h1 { max-width: 30ch; line-height: 1.25; overflow-wrap: anywhere; }
+  .detail-company { margin-top: 8px; color: var(--ink); font-size: 17px; font-weight: 500; overflow-wrap: anywhere; }
+  .detail-status { margin-top: 12px; font-size: 13px; }
+  .detail-layout { display: grid; gap: 32px; }
+  .detail-content { min-width: 0; }
+  .detail-section-title { margin-bottom: 16px; font-size: 22px; font-weight: 600; }
+  .role-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; padding-block: 24px; border-top: 1px solid var(--divider); border-bottom: 1px solid var(--divider); }
+  .role-facts dt { margin-bottom: 4px; color: var(--muted); font-size: 13px; font-weight: 500; }
+  .role-facts dd { font-size: 15px; font-weight: 500; line-height: 1.6; overflow-wrap: anywhere; }
+  .role-facts time { font-variant-numeric: tabular-nums; }
+  .role-tags { grid-column: 1 / -1; }
+  .detail-description { margin-top: 40px; }
+  .source-excerpt { white-space: pre-line; overflow-wrap: anywhere; }
+  .detail-source-link { display: inline-flex; align-items: center; min-height: 44px; margin-top: 16px; font-size: 14px; }
+  .application-panel { align-self: start; padding: 24px; }
+  .application-panel h2 { font-size: 20px; font-weight: 600; }
+  .application-source { margin-top: 8px; font-size: 13px; overflow-wrap: anywhere; }
+  .application-source strong { color: var(--ink); font-weight: 600; }
+  .application-panel .button { width: 100%; margin-top: 20px; }
+  .application-panel svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .application-panel .field-note { margin-top: 16px; }
+  @media (min-width: 1024px) {
+    .detail-layout { grid-template-columns: minmax(0, 1fr) 304px; gap: 48px; }
+    .application-panel { position: sticky; top: 88px; grid-column: 2; grid-row: 1; }
+    .detail-content { grid-column: 1; grid-row: 1; }
+  }
+  @media (width < 768px) {
+    .job-detail { padding-bottom: calc(24px + var(--safe-bottom)); }
+    .detail-back { margin-bottom: 16px; }
+    .detail-heading { gap: 12px; margin-bottom: 24px; }
+    .detail-heading h1 { font-size: 28px; }
+    .application-panel { padding: 20px; }
+    .role-facts { gap: 20px 16px; }
+  }
+</style>

@@ -7,9 +7,9 @@ const categoryNavSource = await Bun.file(
   new URL("../src/components/DirectoryCategoryNav.astro", import.meta.url),
 ).text();
 
-test("directory presents category-first navigation instead of one undifferentiated grid", () => {
+test("directory presents compact category navigation and grouped entries", () => {
   expect(categoryNavSource).toContain('aria-label="Agency categories"');
-  expect(categoryNavSource).toContain("Find your lane");
+  expect(categoryNavSource).toContain("Browse by category");
   expect(directorySource).toContain("groupedCards.map");
   expect(directorySource).toContain("View this category →");
 });

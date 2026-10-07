@@ -1,0 +1,164 @@
+{
+  "checkedAt": "2026-10-07T14:58:28.370Z",
+  "sourceSha": "98a6d1777941e7d5c27bf6d482aede6d4031655f",
+  "origin": "http://127.0.0.1:4322",
+  "measurement": "Ordinary HTTP requests; decoded HTML/CSS bytes, not compressed transfer sizes or field Core Web Vitals.",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 74166,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/opportunities",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 40213,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/opportunities?q=assistant",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 40966,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/directory",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 58365,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/directory?q=unmatchedpremiumqa",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 13414,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/categories/admin",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 35576,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/jobs/8992",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 12214,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/jobs/7508",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 11705,
+      "savedNotice": true,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/data-policy",
+      "status": 200,
+      "snapshot": null,
+      "source": null,
+      "generatedAt": null,
+      "jobs": null,
+      "companies": null,
+      "htmlBytes": 7883,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "snapshot": null,
+      "source": null,
+      "generatedAt": null,
+      "jobs": null,
+      "companies": null,
+      "htmlBytes": 7426,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "snapshot": "stale",
+      "source": "edge",
+      "generatedAt": "2026-10-07T09:35:53.265Z",
+      "jobs": "1519",
+      "companies": "735",
+      "htmlBytes": 225507,
+      "savedNotice": false,
+      "hydratedIslands": 0,
+      "clientScriptSources": []
+    }
+  ],
+  "stylesheets": [
+    {
+      "url": "http://127.0.0.1:4322/_astro/_category_.BJHPf6hR.css",
+      "status": 200,
+      "decodedBytes": 37705
+    }
+  ],
+  "applyProbe": {
+    "status": 503,
+    "retryAfter": "30",
+    "cacheControl": "no-store",
+    "outboundRedirect": false
+  }
+}

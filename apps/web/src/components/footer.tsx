@@ -1,44 +1,30 @@
 export function Footer() {
   const year = 2026;
   return (
-    <footer className="py-12">
-      <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-        <div className="max-w-sm">
-          <a href="/" className="inline-flex items-center gap-2.5 group">
-            <span className="grid place-items-center w-8 h-8 rounded-lg bg-ink text-parchment font-extrabold text-base">V</span>
-            <span className="text-lg font-extrabold tracking-tight text-ink">
-              VA <span className="text-accent">&amp;</span> Freelance Hub
-            </span>
+    <footer className="site-footer">
+      <div className="site-footer-main">
+        <div>
+          <a href="/" className="site-brand">
+            VA <span className="text-accent">&amp;</span> Freelance Hub
           </a>
-          <p className="mt-3 text-sm text-ink/55 leading-relaxed">
-            A self-updating home for remote and VA-friendly work that hires
-            Filipino talent — curated from trusted job boards, refreshed
-            automatically, always free.
+          <p className="site-footer-description">
+            A public index of remote opportunities and companies for Filipino
+            professionals. Review the source listing for requirements and availability.
           </p>
         </div>
-
-        <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-overline text-ink/40 mb-1">Explore</span>
-            <a href="/opportunities" className="text-ink/65 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm">Browse jobs</a>
-            <a href="/directory" className="text-ink/65 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm">Agency directory</a>
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-[11px] font-bold uppercase tracking-overline text-ink/40 mb-1">About</span>
-            <a href="/data-policy" className="text-ink/65 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm">Data policy</a>
-            <a href="/privacy" className="text-ink/65 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm">Privacy</a>
-            <a href="https://github.com/cyalcala/va-freelance-hub" target="_blank" rel="noopener noreferrer" className="text-ink/65 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm">Source code</a>
-          </div>
-        </div>
+        <nav className="site-footer-links" aria-label="Footer">
+          <a href="/opportunities">Find jobs</a>
+          <a href="/directory">Companies</a>
+          <a href="/data-policy">Data policy</a>
+          <a href="/privacy">Privacy</a>
+          <a href="https://github.com/cyalcala/va-freelance-hub" target="_blank" rel="noopener noreferrer">Source code</a>
+        </nav>
       </div>
-
-      <div className="mt-10 pt-6 border-t border-ink/[0.07] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-ink/50">
-        <p>© {year} VA &amp; Freelance Hub · Self-updating on Cloudflare Edge</p>
+      <div className="site-footer-credit">
+        <p>© {year} VA &amp; Freelance Hub</p>
         <p>
-          Crafted by{" "}
-          <a href="https://www.linkedin.com/in/cyrusalcala/" target="_blank" rel="noopener noreferrer" className="font-semibold text-ink/70 hover:text-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-sm">
-            CY Alcala
-          </a>
+          Built by{" "}
+          <a href="https://www.linkedin.com/in/cyrusalcala/" target="_blank" rel="noopener noreferrer">CY Alcala</a>
         </p>
       </div>
     </footer>

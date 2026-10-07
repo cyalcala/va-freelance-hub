@@ -16,43 +16,61 @@ const initial = agency.companyName.charAt(0).toUpperCase();
 const logoUrl = agency.logoDomain
   ? `/api/company-logo?domain=${encodeURIComponent(agency.logoDomain)}&initial=${encodeURIComponent(initial)}`
   : null;
+const Row = agency.href ? 'a' : 'div';
 ---
 
-<article class="break-inside-avoid overflow-hidden rounded-xl border border-ink/[0.07] bg-surface transition-all duration-200 hover:border-accent/25 hover:shadow-soft">
-  {agency.href ? (
-    <a href={agency.href} target="_blank" rel="noopener noreferrer" class="group flex items-start gap-3.5 p-3.5 sm:p-4 hover:bg-ink/[0.025] transition-all duration-200 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded-xl">
-      <div class="relative w-10 h-10 rounded-xl bg-parchment flex items-center justify-center shrink-0 border border-ink/[0.08] overflow-hidden">
-        <span class="text-sm font-bold text-ink/45" aria-hidden="true">{initial}</span>
-        {logoUrl && (
-          <img
-            src={logoUrl}
-            alt=""
-            aria-hidden="true"
-            width="24"
-            height="24"
-            loading="lazy"
-            decoding="async"
-            class="absolute inset-0 m-auto h-6 w-6 object-contain"
-          />
-        )}
-      </div>
-      <div class="min-w-0 flex-1">
-        <div class="flex items-center gap-1.5">
-          <h3 class="truncate text-[15px] font-semibold text-ink transition-colors group-hover:text-accent">{agency.companyName}</h3>
-          {agency.isVerified && <span class="shrink-0 text-blue-500 font-bold text-xs" aria-label="Verified company">✓</span>}
-        </div>
-        <div class="mt-2.5 flex flex-wrap items-center gap-1.5">
-          {agency.isDayshift && <span class="rounded-md bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">Dayshift</span>}
-          {agency.isRemote && <span class="rounded-md bg-ink/[0.05] px-2 py-0.5 text-[10px] font-semibold text-ink/55">Remote</span>}
-          {agency.isMarketplace && <span class="rounded-md bg-violet-500/[0.08] px-2 py-0.5 text-[10px] font-semibold text-violet-700">Marketplace</span>}
-        </div>
-      </div>
-      <svg class="mt-1 h-4 w-4 shrink-0 text-ink/25 transition-all duration-200 group-hover:text-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg>
-    </a>
-  ) : (
-    <div class="flex items-start gap-3.5 p-3.5 sm:p-4">
-      <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-ink/[0.08] bg-parchment"><svg class="h-4 w-4 text-ink/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div>
-      <div class="min-w-0 flex-1"><h3 class="truncate text-[15px] font-semibold text-ink">{agency.companyName}</h3><p class="mt-1 text-xs text-ink/45">Website unavailable</p></div>
+<article>
+  <Row
+    href={agency.href ?? undefined}
+    target={agency.href ? '_blank' : undefined}
+    rel={agency.href ? 'noopener noreferrer' : undefined}
+    class="directory-row"
+  >
+    <div class="directory-logo" aria-hidden="true">
+      <span>{initial}</span>
+      {logoUrl && (
+        <img
+          src={logoUrl}
+          alt=""
+          aria-hidden="true"
+          width="24"
+          height="24"
+          loading="lazy"
+          decoding="async"
+        />
+      )}
     </div>
-  )}
+    <div class="directory-company">
+      <h3>{agency.companyName}</h3>
+      <div class="directory-attributes text-muted">
+        {agency.isVerified && <span>Verified company</span>}
+        {agency.isDayshift && <span>Dayshift</span>}
+        {agency.isRemote && <span>Remote</span>}
+        {agency.isMarketplace && <span>Marketplace</span>}
+        {!agency.href && <span>Website unavailable</span>}
+      </div>
+    </div>
+    {agency.href && <span class="directory-visit text-muted">
+      <span>Visit website</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M14 3h7v7M10 14 21 3M21 14v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h6"/></svg>
+    </span>}
+  </Row>
 </article>
+
+<style>
+  .directory-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 16px; min-height: 80px; padding: 16px 24px; transition: background-color 160ms; }
+  a.directory-row:hover { background: var(--page); }
+  a.directory-row:focus-visible { outline-offset: -3px; }
+  .directory-logo { position: relative; display: grid; place-items: center; width: 40px; height: 40px; overflow: hidden; border: 1px solid var(--divider); border-radius: 6px; color: var(--muted); background: var(--recessed); font-size: 13px; font-weight: 600; }
+  .directory-logo img { position: absolute; inset: 0; width: 24px; height: 24px; margin: auto; object-fit: contain; }
+  .directory-company { min-width: 0; }
+  h3 { font-size: 17px; font-weight: 600; line-height: 1.4; overflow-wrap: anywhere; transition: color 160ms; }
+  a.directory-row:hover h3 { color: var(--accent); }
+  .directory-attributes { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 4px; font-size: 13px; line-height: 1.5; }
+  .directory-visit { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .directory-visit svg { width: 16px; height: 16px; flex-shrink: 0; }
+  @media (width < 768px) {
+    .directory-row { gap: 12px; padding: 16px; }
+    .directory-visit > span { display: none; }
+  }
+</style>

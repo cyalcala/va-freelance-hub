@@ -110,122 +110,128 @@ const selectedInfo = selectedCategory ? DIRECTORY_CATEGORY_INFO[selectedCategory
 
 function buildCategoryUrl(category: DirectoryCategory | null) {
   const params = new URLSearchParams();
+  if (query) params.set('q', query);
   if (category) params.set('category', category);
   const qs = params.toString();
   return qs ? `/directory?${qs}` : '/directory';
 }
 
 function buildClearSearchUrl() {
-  return selectedCategory ? buildCategoryUrl(selectedCategory) : '/directory';
+  return selectedCategory ? `/directory?category=${encodeURIComponent(selectedCategory)}` : '/directory';
 }
 ---
 
 <Layout
   title="Agencies & Companies That Hire Filipinos — VA & Freelance Hub"
-  description="A curated, vetted directory of VA agencies and remote-first companies that actively hire Filipino talent."
+  description="Search our directory of VA agencies, remote employers and job platforms that hire Filipino talent."
 >
-  {dataUnavailable && <ServiceUnavailable />}
-  <div class="max-w-5xl mx-auto pt-6 sm:pt-10 md:pt-14">
-    <div class="mb-6 sm:mb-9 max-w-2xl">
-      <p class="text-xs font-semibold uppercase tracking-overline text-accent mb-1.5 sm:mb-2">The directory</p>
-      <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-ink">
-        Companies that hire Filipinos
-      </h1>
-      <p class="mt-2 sm:mt-3 text-sm sm:text-base text-ink/55 leading-relaxed">
-        Start with the kind of work or schedule you want. Every visible entry is
-        known to hire in the Philippines; job platforms are separated from direct employers.
+  <section class="page-section">
+    <div class="page-heading">
+      <h1 class="page-title">Companies that hire Filipinos</h1>
+      <p class="page-description">
+        Search VA agencies, remote employers and job platforms. Browse by work
+        category or find a company by name.
       </p>
     </div>
 
-    <DirectoryCategoryNav selectedCategory={selectedCategory} />
-
-    <form
-      id="search"
-      method="get"
-      action="/directory"
-      class="scroll-mt-20 sticky top-[4rem] sm:top-[4.5rem] z-40 max-w-2xl mb-6 sm:mb-8 bg-parchment/90 backdrop-blur-xl rounded-full"
-    >
+    <form id="search" method="get" action="/directory" class="board-search directory-search">
       {selectedCategory && <input type="hidden" name="category" value={selectedCategory} />}
-      <label class="sr-only" for="q">Search companies</label>
-      <div class="flex gap-2 rounded-full border border-ink/[0.1] bg-surface p-1.5 shadow-soft focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/15 transition-all">
-        <svg class="ml-3 shrink-0 self-center h-4 sm:h-5 w-4 sm:w-5 text-ink/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input
-          id="q"
-          name="q"
-          type="search"
-          value={query}
-          placeholder={selectedInfo ? `Search ${selectedInfo.shortTitle.toLowerCase()}…` : 'Search companies…'}
-          class="min-w-0 flex-1 h-10 sm:h-11 bg-transparent text-ink text-sm sm:text-base font-medium outline-none placeholder:text-ink/35"
-        />
-        <button type="submit" class="shrink-0 rounded-full bg-accent px-4 sm:px-5 text-sm font-semibold text-white hover:bg-accent-hover transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">Search</button>
+      <label class="field-label" for="q">Search companies</label>
+      <div class="board-search-row">
+        <div class="board-search-field">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input
+            id="q"
+            name="q"
+            type="search"
+            value={query}
+            placeholder={selectedInfo ? `Search ${selectedInfo.shortTitle.toLowerCase()}…` : 'Company or agency name…'}
+            class="field-input"
+          />
+        </div>
+        <button type="submit" class="button button-primary">Search</button>
       </div>
     </form>
 
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-3 text-[13px] font-semibold text-ink/45">
-      <p class="tabular-nums">
-        Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalAgencies.toLocaleString()}
-        {selectedInfo ? ` in ${selectedInfo.shortTitle}` : ' companies'}
-      </p>
-      {(query || selectedCategory) && (
-        <div class="flex items-center gap-3">
-          {query && <a href={buildClearSearchUrl()} class="text-accent hover:text-accent-hover transition-colors">Clear search</a>}
-          {selectedCategory && <a href="/directory" class="text-ink/50 hover:text-accent transition-colors">Clear category</a>}
-        </div>
-      )}
-    </div>
+    <DirectoryCategoryNav selectedCategory={selectedCategory} query={query} />
 
-    {cards.length === 0 ? (
-      <div class="text-center py-24 bg-surface/60 rounded-2xl border border-ink/[0.07]">
-        <p class="text-ink/55 font-semibold text-lg">{query ? `No companies match “${query}”.` : 'No companies are available right now.'}</p>
-        {(query || selectedCategory) && <a href="/directory" class="mt-5 inline-flex items-center px-4 py-2 rounded-full bg-ink/[0.05] hover:bg-accent-soft text-ink hover:text-accent font-semibold text-sm transition-colors">Clear filters</a>}
-      </div>
-    ) : (
-      <div class="space-y-10">
-        {groupedCards.map((group) => {
-          const info = DIRECTORY_CATEGORY_INFO[group.key];
-          return (
-          <section aria-labelledby={`directory-group-${group.key}`}>
-            <div class="mb-4 border-b border-ink/[0.08] pb-3">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 id={`directory-group-${group.key}`} class="flex items-center gap-2.5 text-xl font-extrabold tracking-tight text-ink">
-                  <span class={`h-2 w-2 rounded-full ${info.dot}`} aria-hidden="true"></span>
-                  {info.title}
-                </h2>
-                {!selectedCategory && (
-                  <a href={buildCategoryUrl(group.key)} class="text-sm font-semibold text-accent hover:text-accent-hover">View this category →</a>
-                )}
-              </div>
-              <p class="mt-1 max-w-2xl text-sm leading-relaxed text-ink/50">{info.description}</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-              {group.cards.map((agency) => <DirectoryAgencyCard agency={agency} />)}
-            </div>
-          </section>
-          );
-        })}
-      </div>
+    {(query || selectedCategory) && (
+      <nav class="directory-resets" aria-label="Active directory filters">
+        {query && <a href={buildClearSearchUrl()} class="text-link">Clear search</a>}
+        {selectedCategory && <a href={buildCategoryUrl(null)} class="text-link">Clear category</a>}
+        <a href="/directory" class="text-link">Reset filters</a>
+      </nav>
     )}
 
-    <nav class="mt-8 flex items-center justify-between gap-4" aria-label="Directory pagination">
-      {currentPage > 1 ? (
-        <a href={buildPageUrl(currentPage - 1)} class="inline-flex items-center min-h-[44px] px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-all shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-          ← Previous
-        </a>
-      ) : (
-        <span class="inline-flex items-center min-h-[44px] px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
-          ← Previous
-        </span>
-      )}
-      <p class="text-xs sm:text-sm font-semibold text-ink/45 tabular-nums">Page {currentPage} of {totalPages}</p>
-      {currentPage < totalPages ? (
-        <a href={buildPageUrl(currentPage + 1)} class="inline-flex items-center min-h-[44px] px-4 py-2.5 rounded-full bg-surface border border-ink/[0.09] text-sm font-semibold text-ink/70 hover:text-accent hover:border-accent/30 transition-all shadow-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-          Next →
-        </a>
-      ) : (
-        <span class="inline-flex items-center min-h-[44px] px-4 py-2.5 rounded-full bg-ink/[0.03] border border-ink/[0.05] text-sm font-semibold text-ink/25">
-          Next →
-        </span>
-      )}
-    </nav>
-  </div>
+    {dataUnavailable ? (
+      <ServiceUnavailable />
+    ) : (
+      <>
+        <div class="results-summary">
+          <strong>{totalAgencies.toLocaleString()} {totalAgencies === 1 ? 'directory entry' : 'directory entries'}{selectedInfo ? ` in ${selectedInfo.shortTitle}` : ''}</strong>
+          <p>Showing {resultStart.toLocaleString()}–{resultEnd.toLocaleString()} of {totalAgencies.toLocaleString()}</p>
+        </div>
+
+        {cards.length === 0 ? (
+          <div class="surface-panel empty-state">
+            <h2>{query ? `No companies match “${query}”` : selectedCategory ? 'No companies in this category right now' : 'No companies to show right now'}</h2>
+            <p>{query || selectedCategory ? 'Try a broader company name or remove a category to see more entries.' : 'Please check back later for available directory entries.'}</p>
+            {(query || selectedCategory) && <a href="/directory" class="button button-secondary">Reset filters</a>}
+          </div>
+        ) : (
+          <div class="directory-groups">
+            {groupedCards.map((group) => {
+              const info = DIRECTORY_CATEGORY_INFO[group.key];
+              return (
+                <section aria-labelledby={`directory-group-${group.key}`}>
+                  <div class="directory-group-heading">
+                    <div>
+                      <h2 id={`directory-group-${group.key}`}>{info.title}</h2>
+                      <p class="text-muted">{info.description}</p>
+                    </div>
+                    {!selectedCategory && (
+                      <a href={buildCategoryUrl(group.key)} class="text-link">View this category →</a>
+                    )}
+                  </div>
+                  <div class="result-list">
+                    {group.cards.map((agency) => <DirectoryAgencyCard agency={agency} />)}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
+
+        <nav class="pagination" aria-label="Directory pagination">
+          {currentPage > 1 ? (
+            <a href={buildPageUrl(currentPage - 1)} class="pagination-control">← Previous</a>
+          ) : (
+            <span class="pagination-control" aria-disabled="true">← Previous</span>
+          )}
+          <span class="text-muted">Page {currentPage.toLocaleString()} of {totalPages.toLocaleString()}</span>
+          {currentPage < totalPages ? (
+            <a href={buildPageUrl(currentPage + 1)} class="pagination-control">Next →</a>
+          ) : (
+            <span class="pagination-control" aria-disabled="true">Next →</span>
+          )}
+        </nav>
+      </>
+    )}
+  </section>
 </Layout>
+
+<style>
+  .directory-search { max-width: 880px; }
+  .directory-resets { display: flex; flex-wrap: wrap; gap: 4px 24px; margin-bottom: 16px; font-size: 13px; }
+  .directory-resets a { display: inline-flex; align-items: center; min-height: 44px; }
+  .directory-groups { display: grid; gap: 40px; }
+  .directory-group-heading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: start; gap: 8px 24px; margin-bottom: 16px; }
+  .directory-group-heading > div { flex: 1; min-width: min(100%, 280px); }
+  .directory-group-heading h2 { font-size: 22px; font-weight: 600; }
+  .directory-group-heading p { max-width: 70ch; margin-top: 8px; font-size: 14px; line-height: 1.6; }
+  .directory-group-heading > a { display: inline-flex; align-items: center; min-height: 44px; font-size: 13px; }
+  @media (width < 768px) {
+    .directory-search .board-search-row { gap: 8px; }
+    .directory-search .button { padding-inline: 16px; }
+  }
+</style>

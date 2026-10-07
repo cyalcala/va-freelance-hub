@@ -1,0 +1,20 @@
+[
+  {
+    "desktopNav": "none",
+    "documentWidth": 752,
+    "mobileNav": "grid",
+    "width": 767
+  },
+  {
+    "desktopNav": "flex",
+    "documentWidth": 753,
+    "mobileNav": "none",
+    "width": 768
+  },
+  {
+    "desktopNav": "none",
+    "documentWidth": 375,
+    "mobileNav": "grid",
+    "width": 390
+  }
+]

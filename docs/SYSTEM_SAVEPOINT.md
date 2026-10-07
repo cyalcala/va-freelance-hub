@@ -1,5 +1,103 @@
 # System Savepoint
 
+## 2026-10-07 23:16 Manila — Premium frontend and CI accepted; release blocked
+
+**Progress:** 4 of 5 frontend checkpoints complete (80% by checkpoint count).
+Final source `98a6d1777941e7d5c27bf6d482aede6d4031655f` is independently reviewed.
+All product surfaces, native flows and responsive checks pass; full local suite
+3,017/0, final cache/snapshot slice 47/0, typecheck, build and four audits pass.
+Final ordinary no-D1 Worker probe: 11 routes and sole stylesheet 200; Apply
+503 / Retry-After 30 / no-store / no redirect. An initial Windows smoke cleanup
+lock is documented separately from its successful functional assertions. Required
+PR CI `37641913191` at documentation head `515a68e3` passed 3,018 tests / zero
+failures and the original Linux no-D1 harness. PR synthetic merge tested by that
+harness: `12c0d9ea974a8010316691d75f2d311c6df62583`.
+[Complete evidence and boundaries](design/PREMIUM_2026_REVIEW.md).
+
+**Next:** normal release, live acceptance and final recovery backup. GitHub normal
+merge/main push returned internal server errors; PR #222 is OPEN and main remains
+`7648fb2becaa65110e249e69b0fabfd836d48b75`. No force/reset or alternate deployment.
+[Exact release receipts and continuation](design/PREMIUM_2026_RELEASE_CHECKPOINT.md).
+Existing production runtime is still `91641445` / Pages `aa8ce5b8`.
+The only cache adjustment fences old HTML from new frontend assets; no source
+admission, business eligibility, database, scheduling or GCP behavior changed.
+Rollback tag: `savepoint/pre-premium-design-2026-10-07`.
+
+## 2026-10-07 22:24 Manila — Homepage and categories locally accepted
+
+**Progress:** 3 of 5 frontend checkpoints complete (60% by checkpoint count).
+Task 3 source `9a595cf076051d4206c7e50fe246d5f025e0c5d2` is pushed and its remote
+SHA verified. Separate spec and code-quality reviews passed. Root rendered
+390/768/1280/1440 without overflow and exercised home search → results → detail,
+category pagination and preselected category search. Implementation passed 85
+focused tests, typecheck and build. [Evidence](design/PREMIUM_2026_REVIEW.md).
+
+Main advanced with two generated digest updates; merge `a3ba42f5` preserves them.
+**Release:** frontend changes are not deployed yet. **Next:** Task 4 directory,
+detail and legal typography is in progress, followed by integrated QA and release.
+The GitHub rollback tag remains `savepoint/pre-premium-design-2026-10-07`.
+No operational, source admission, database or publication contract changes.
+
+## 2026-10-07 21:58 Manila — Premium job board locally accepted
+
+**Progress:** 2 of 5 frontend checkpoints complete (40% by checkpoint count).
+Source `10585808` and boundary fix `90bc788d` implement shared tokens/chrome,
+accessible job rows and native GET search/filtering. Separate spec and code-quality
+reviews passed at `90bc788d`, with no outstanding material findings. The evidence
+checkpoint `99d135b3c9efe9ef77cf4db60444040e3d817738` matches its remote branch.
+
+**Verified:** build/typecheck; 30 implementation focused tests and 45 independent
+spec-review tests; rendered 390/768/1280/1440 plus 320/1920 without overflow;
+767/768 navigation, keyboard focus/skip/search shortcut, combined filters,
+individual removal, page persistence/reset, empty recovery and truthful local LKG
+warning. [Detailed evidence](design/PREMIUM_2026_REVIEW.md).
+
+**Release:** no design PR CI or production deployment yet. Existing accepted
+runtime remains `91641445` / Pages `aa8ce5b8`; this is frontend local acceptance.
+Rollback tag `savepoint/pre-premium-design-2026-10-07` remains on GitHub.
+**Next:** Task 3 homepage/category discovery is in progress; then directory/detail/
+legal reading surfaces, full integrated/no-D1 QA and normal reviewed release.
+Source admission, ranking, publication, database and GCP behavior remain unchanged.
+
+## 2026-10-07 21:28 Manila — Premium design direction accepted
+
+**Scope:** owner-authorized frontend overhaul, preserving cream/charcoal/coral.
+**Progress:** 1 of 5 planned frontend checkpoints complete (20% by checkpoint
+count, not effort or overall autonomy). Production UI is not changed yet.
+Savepoint tag `savepoint/pre-premium-design-2026-10-07` preserves baseline
+`50d8daa280d74b2a34f8d9ec1ed4a8dd1a5d0c73` on GitHub. Reviewed design head
+`96ce7344d1a6dd0dc32d98dd1d93289e21797804` matches its remote branch.
+
+Complete owner brief, PRODUCT/DESIGN contracts, three real-data concept previews,
+desktop/mobile screenshots and bounded critique are backed up. Separate spec
+review passed; code-quality findings were fixed and independently rechecked at
+`08c401a3`. Native disclosure was rendered and exercised with Enter. Approved
+direction is A×B, as supplied by the owner. Jev returned HTTP 401 and is advisory.
+[Evidence and limitations](design/PREMIUM_2026_REVIEW.md).
+
+**CI/runtime:** no PR CI or design release yet. The accepted runtime remains
+`91641445` / Pages `aa8ce5b8`, main release `37614492584` passed. This checkpoint
+does not re-certify current operational health or database restoration.
+**Next:** Task 2 shared foundations and `/opportunities`, then home/categories,
+directory/details and final browser/regression/release acceptance. Work stays in
+attached managed worktree `premium-2026-design`, branch
+`codex/premium-2026-overhaul`; original foreign work remains preserved.
+
+## 2026-10-07 — Pre-premium-design return point
+
+Owner requested a savepoint before the premium redesign. Exact baseline:
+`50d8daa280d74b2a34f8d9ec1ed4a8dd1a5d0c73`, tag
+`savepoint/pre-premium-design-2026-10-07`. Baseline main CI `37618929662` passed.
+Accepted runtime remains `91641445` / Pages `aa8ce5b8`, including the public
+fallback, Apply safeguards and refresh recovery. No UI change exists at this
+checkpoint. [Return procedure and backup boundary](design/PREMIUM_2026_SAVEPOINT.md).
+The [owner design brief](design/PREMIUM_2026_OWNER_BRIEF.md) is archived verbatim.
+Foreign untracked work preserved; tagged source is not a database backup.
+
+**Next:** isolated `codex/premium-2026-overhaul`, preserving the warm cream,
+charcoal and coral identity while following Warm Precision + Employment
+Intelligence. Discover/critique/concepts first, then one surface at a time.
+
 ## 2026-10-07 20:03 Manila — Recent progress and GitHub backup summary
 
 **Scope:** owner-requested quick progress discussion and durable documentation.

@@ -1,0 +1,26 @@
+[
+  {
+    "route": "/",
+    "observedAt": "2026-10-07T13:30:05.6407407Z",
+    "status": 200,
+    "htmlUtf8Bytes": 210167,
+    "snapshot": "stale",
+    "generatedAt": "2026-10-07T12:19:17.332Z"
+  },
+  {
+    "route": "/opportunities",
+    "observedAt": "2026-10-07T13:30:05.9359994Z",
+    "status": 200,
+    "htmlUtf8Bytes": 92681,
+    "snapshot": "fresh",
+    "generatedAt": "2026-10-07T13:22:04.643Z"
+  },
+  {
+    "route": "/directory",
+    "observedAt": "2026-10-07T13:30:06.1637801Z",
+    "status": 200,
+    "htmlUtf8Bytes": 84894,
+    "snapshot": "fresh",
+    "generatedAt": "2026-10-07T13:22:04.643Z"
+  }
+]
