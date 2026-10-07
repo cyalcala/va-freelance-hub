@@ -4,12 +4,25 @@ import { and, eq, sql } from "drizzle-orm";
 import { resolveOutboundUrl } from "@/lib/outbound-url";
 import { publicOpportunityFilters } from "@/lib/public-opportunities";
 import { parseJobIdRequest } from "@/lib/public-query";
+import { publicDataErrorClass } from "@/lib/public-route-load";
 
 export const prerender = false;
 
 type ClickHandlerDependencies = {
   getDb: typeof getDb;
+  eligibilityTimeoutMs?: number;
+  analyticsTimeoutMs?: number;
 };
+
+async function bounded<T>(work: PromiseLike<T>, timeoutMs: number): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      Promise.resolve(work),
+      new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("click_timeout")), timeoutMs); }),
+    ]);
+  } finally { clearTimeout(timer); }
+}
 
 export function createClickHandler(dependencies: ClickHandlerDependencies): APIRoute {
   return async ({ params, request, locals, redirect }) => {
@@ -44,10 +57,10 @@ export function createClickHandler(dependencies: ClickHandlerDependencies): APIR
     // read that already happens — same primary-key lookup, no extra row read —
     // and the existing `if (!job)` refusal then precedes `resolveOutboundUrl`,
     // the limiter and the `click_count` write.
-    const [job] = await db.select({ sourceUrl: opportunities.sourceUrl, applicationUrl: opportunities.applicationUrl })
+    const [job] = await bounded(db.select({ sourceUrl: opportunities.sourceUrl, applicationUrl: opportunities.applicationUrl })
       .from(opportunities)
       .where(and(eq(opportunities.id, id), publicOpportunityFilters()))
-      .limit(1);
+      .limit(1), dependencies.eligibilityTimeoutMs ?? 2_000);
 
     if (!job) {
       return new Response("Job not found", { status: 404 });
@@ -66,22 +79,26 @@ export function createClickHandler(dependencies: ClickHandlerDependencies): APIR
     if (rateLimiter) {
       try {
         const clientIp = request.headers.get("cf-connecting-ip") || "unknown";
-        const { success } = await rateLimiter.limit({ key: `click:${clientIp}` });
+        const { success } = await bounded<{ success: boolean }>(rateLimiter.limit({ key: `click:${clientIp}` }), dependencies.analyticsTimeoutMs ?? 500);
         if (success) {
-          await db.update(opportunities)
+          await bounded(db.update(opportunities)
             .set({ clickCount: sql`${opportunities.clickCount} + 1` })
-            .where(eq(opportunities.id, id));
+            .where(eq(opportunities.id, id)), dependencies.analyticsTimeoutMs ?? 500);
         }
       } catch (analyticsError) {
-        console.warn(`[api/click] Optional analytics failed for job ${id}:`, analyticsError);
+        console.warn(JSON.stringify({ event: "CLICK_ANALYTICS_UNAVAILABLE", id, errorClass: publicDataErrorClass(analyticsError) ?? "analytics_unavailable" }));
       }
     }
 
     return redirect(safeTargetUrl, 302);
   } catch (err) {
-    console.error(`[api/click] Failed to track click for job ${id}:`, err);
-    // Still redirect to the sourceUrl if we validated it, otherwise fail
-    return new Response("Internal error", { status: 500 });
+    console.warn(JSON.stringify({ event: "CLICK_ELIGIBILITY_UNAVAILABLE", id, errorClass: publicDataErrorClass(err) ?? "eligibility_unavailable" }));
+    // A stale board cannot prove that this job remains eligible or unwithdrawn.
+    // Refuse briefly and explicitly; never cache an outage or bypass the gate.
+    return new Response("We couldn't verify this posting right now. Please retry shortly.", {
+      status: 503,
+      headers: { "Retry-After": "30", "Cache-Control": "no-store", "Content-Type": "text/plain; charset=utf-8" },
+    });
   }
   };
 }

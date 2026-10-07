@@ -28,7 +28,7 @@ const PUBLIC_ROW: Required<StoredRow> = {
  * That keeps these behavioural tests (real handler, real SQL composition)
  * instead of source-grep `toContain` assertions.
  */
-function makeDb(options: { updateError?: Error; row?: StoredRow | null } = {}) {
+function makeDb(options: { updateError?: Error; readError?: Error; readWait?: Promise<void>; updateWait?: Promise<void>; row?: StoredRow | null } = {}) {
   let updates = 0;
   let reads = 0;
   const whereClauses: Array<{ sql: string; params: unknown[] }> = [];
@@ -44,6 +44,8 @@ function makeDb(options: { updateError?: Error; row?: StoredRow | null } = {}) {
             whereClauses.push({ sql: compiled.sql, params: [...compiled.params] });
             return {
               limit: async () => {
+                if (options.readError) throw options.readError;
+                if (options.readWait) await options.readWait;
                 if (!row) return [];
                 const constrainsEligibility =
                   /is_active/i.test(compiled.sql) && /ph_eligibility/i.test(compiled.sql);
@@ -61,6 +63,7 @@ function makeDb(options: { updateError?: Error; row?: StoredRow | null } = {}) {
       set: () => ({
         where: async () => {
           updates += 1;
+          if (options.updateWait) await options.updateWait;
           if (options.updateError) throw options.updateError;
         },
       }),
@@ -150,6 +153,45 @@ describe("click route analytics isolation", () => {
     expect(response.status).toBe(403);
     expect(limiterCalls).toBe(0);
     expect(updateCount()).toBe(0);
+  });
+});
+
+describe("click outage recovery", () => {
+  test("D1 quota failure gives a retryable uncached refusal without an outbound redirect", async () => {
+    const { db, updateCount } = makeDb({ readError: new Error("D1 daily limit exceeded [7500]") });
+    const response = await createClickHandler({ getDb: () => db as any })(requestContext({}));
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("30");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
+    expect(response.headers.get("Location")).toBeNull();
+    expect(await response.text()).toContain("retry");
+    expect(updateCount()).toBe(0);
+  });
+
+  test("a hung eligibility read is bounded and never authorizes a fallback redirect", async () => {
+    const { db, updateCount } = makeDb({ readWait: new Promise(() => {}) });
+    const response = await createClickHandler({ getDb: () => db as any, eligibilityTimeoutMs: 10 })(requestContext({}));
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Location")).toBeNull();
+    expect(updateCount()).toBe(0);
+  });
+
+  test("a hung optional limiter cannot strand a validated redirect", async () => {
+    const { db, updateCount } = makeDb();
+    const response = await createClickHandler({ getDb: () => db as any, analyticsTimeoutMs: 10 })(
+      requestContext({ API_RATE_LIMITER: { limit: () => new Promise(() => {}) } }),
+    );
+    expect(response.status).toBe(302);
+    expect(updateCount()).toBe(0);
+  });
+
+  test("a hung optional analytics write cannot strand a validated redirect", async () => {
+    const { db } = makeDb({ updateWait: new Promise(() => {}) });
+    const response = await createClickHandler({ getDb: () => db as any, analyticsTimeoutMs: 10 })(
+      requestContext({ API_RATE_LIMITER: { limit: async () => ({ success: true }) } }),
+    );
+    expect(response.status).toBe(302);
+    expect(response.headers.get("Location")).toBe(STORED_URL);
   });
 });
 

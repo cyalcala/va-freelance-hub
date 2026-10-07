@@ -11,6 +11,12 @@ const { title, description } = Astro.props;
 const path = Astro.url.pathname;
 const isActive = (base: string) =>
   base === '/' ? path === '/' : path.startsWith(base);
+const boardStatus = Astro.response.headers.get('X-Public-Snapshot');
+const boardTime = Astro.response.headers.get('X-Public-Snapshot-Generated-At');
+const savedBoard = boardStatus === 'stale' || boardStatus === 'lkg_fallback';
+const savedBoardDate = boardTime && Number.isFinite(Date.parse(boardTime))
+  ? new Intl.DateTimeFormat('en-PH', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Manila' }).format(new Date(boardTime))
+  : null;
 ---
 
 <html lang="en">
@@ -77,6 +83,10 @@ const isActive = (base: string) =>
 
     <div class="max-w-[80rem] mx-auto w-full px-4 sm:px-6 lg:px-8 flex-1">
       <main class="w-full pb-24 md:pb-16">
+        {savedBoard && <p class="mt-6 rounded-xl border border-ink/10 bg-surface px-4 py-3 text-sm text-ink/75">
+          Showing saved listings{savedBoardDate && <> last refreshed <time datetime={boardTime!}>{savedBoardDate} Philippine time</time></>}.
+          {' '}Confirm availability with the employer. If Apply is temporarily unavailable, please retry shortly.
+        </p>}
         <slot />
       </main>
     </div>
