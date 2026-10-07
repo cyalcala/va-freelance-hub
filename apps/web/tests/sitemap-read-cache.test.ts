@@ -1,5 +1,6 @@
-import { describe, expect, test } from "bun:test";
+import { beforeEach, describe, expect, test } from "bun:test";
 import { GET } from "../src/pages/sitemap.xml";
+import { resetPublicBoardState } from "../src/lib/public-serving-snapshot";
 import {
   createSitemapRowsCache,
   SITEMAP_ROWS_CACHE_MAX_JOBS,
@@ -70,6 +71,10 @@ function render(env: unknown) {
 const jobLocs = (xml: string) => [...xml.matchAll(/<loc>[^<]*\/jobs\/(\d+)<\/loc>/g)].map((m) => Number(m[1]));
 
 describe("repeated sitemap renders do not re-read the whole eligible corpus", () => {
+  beforeEach(() => {
+    resetPublicBoardState();
+  });
+
   test("a second render inside the cache window costs zero additional D1 reads", async () => {
     const env = rowsEnv([
       { id: 1, updatedAt: "2026-09-30T12:00:00Z" },
@@ -101,9 +106,9 @@ describe("repeated sitemap renders do not re-read the whole eligible corpus", ()
     expect(jobLocs(secondBody)).toEqual([7]);
   });
 
-  test("a different database binding is a different corpus and is read separately", async () => {
-    // The cache is keyed on the live D1 binding, so one database's rows can never be
-    // served as another's document — including between separate environments.
+  test("a warm isolate does not scan opportunities again for another binding", async () => {
+    // One isolate serves one public board. A second request must not scan the
+    // opportunities table, including when the caller passes a different D1 binding.
     const firstEnv = rowsEnv([{ id: 1, updatedAt: "2026-09-30T12:00:00Z" }]);
     const secondEnv = rowsEnv([{ id: 2, updatedAt: "2026-09-30T12:00:00Z" }]);
 
@@ -111,16 +116,16 @@ describe("repeated sitemap renders do not re-read the whole eligible corpus", ()
     const second = await render(secondEnv);
 
     expect(firstEnv.reads()).toBe(1);
-    expect(secondEnv.reads()).toBe(1);
-    expect(jobLocs(await second.text())).toEqual([2]);
+    expect(secondEnv.reads()).toBe(0);
+    expect(jobLocs(await second.text())).toEqual([1]);
   });
 
-  test("a D1 failure is still reported as a failure and is never cached", async () => {
+  test("a D1 quota failure serves the durable board and the next render does not scan again", async () => {
     let reads = 0;
     const failingEnv = {
       DB: {
-        prepare() {
-          reads += 1;
+        prepare(sql: string) {
+          if (/\bfrom\s+"?opportunities"?/i.test(sql)) reads += 1;
           return {
             bind() {
               return this;
@@ -131,6 +136,9 @@ describe("repeated sitemap renders do not re-read the whole eligible corpus", ()
             async all() {
               throw new Error("D1 daily row read limit exceeded [code: 7500]");
             },
+            async first() {
+              throw new Error("D1 daily row read limit exceeded [code: 7500]");
+            },
           };
         },
       },
@@ -138,15 +146,17 @@ describe("repeated sitemap renders do not re-read the whole eligible corpus", ()
     };
 
     const failure = await render(failingEnv);
-    expect(failure.status).toBe(503);
-    expect(failure.headers.get("Cache-Control")).toBe("no-store");
+    const body = await failure.text();
+    expect(failure.status).toBe(200);
+    expect(failure.headers.get("X-Public-Snapshot")).toBe("lkg_fallback");
+    expect(failure.headers.get("Cache-Control")).toBe("public, max-age=3600, s-maxage=3600");
+    expect(jobLocs(body).length).toBeGreaterThan(100);
+    expect(failingEnv.reads()).toBe(0);
 
-    // Nothing was stored, so the next render after D1 recovers performs a real read
-    // instead of replaying the outage.
-    const recovered = rowsEnv([{ id: 9, updatedAt: "2026-09-30T12:00:00Z" }]);
-    const response = await render(recovered);
-    expect(response.status).toBe(200);
-    expect(jobLocs(await response.text())).toEqual([9]);
+    const again = await render(failingEnv);
+    expect(again.status).toBe(200);
+    expect(await again.text()).toBe(body);
+    expect(failingEnv.reads()).toBe(0);
   });
 });
 describe("the cache bounds itself: window, payload and failures", () => {

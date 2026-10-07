@@ -1,16 +1,20 @@
 import { Database } from "bun:sqlite";
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { homepageFromSnapshot } from "../src/lib/homepage-data";
 import { matchesJobQuery, sliceDirectory, slicePublicJobs, type PublicJob } from "../src/lib/public-board";
 import {
   CLAIM_REFRESH_SQL,
   createD1SnapshotStore,
+  getPublicSnapshotHealth,
   packBoard,
+  promoteSnapshot,
   resetPublicBoardState,
   resolvePublicBoard,
+  validateSnapshotCandidate,
   type SnapshotDatabase,
   type SnapshotStore,
 } from "../src/lib/public-serving-snapshot";
+import { getDurableLkgSnapshot } from "../src/lib/durable-lkg-snapshot";
 
 function job(partial: Partial<PublicJob> & Pick<PublicJob, "id" | "title">): PublicJob {
   return {
@@ -159,7 +163,7 @@ test("one stale snapshot row is served immediately and rebuilt by a single lease
   }
 });
 
-test("a cold quota failure does not scan the jobs table", async () => {
+test("a cold quota failure serves the durable LKG snapshot and does not scan the jobs table", async () => {
   resetPublicBoardState();
   let builds = 0;
   const store: SnapshotStore = {
@@ -171,7 +175,14 @@ test("a cold quota failure does not scan the jobs table", async () => {
       return { generatedAt: "2026-10-06T00:00:00.000Z", jobs: [], directory: [] };
     },
   };
-  await expect(resolvePublicBoard({ now: Date.now(), cache: null, store })).rejects.toThrow("daily limit");
+  // With LKG fallback, availability is preserved (no 503) and D1 jobs table is NOT scanned
+  const board = await resolvePublicBoard({ now: Date.now(), cache: null, store });
+  expect(board.jobs.length).toBeGreaterThan(0);
+  expect(builds).toBe(0);
+
+  // If fallback is explicitly disabled, it re-throws without scanning D1
+  resetPublicBoardState();
+  await expect(resolvePublicBoard({ now: Date.now(), cache: null, store, allowLkgFallback: false })).rejects.toThrow("daily limit");
   expect(builds).toBe(0);
 });
 
@@ -273,3 +284,399 @@ test("the refresh lease cannot be taken twice inside its window", () => {
     db.close();
   }
 });
+
+describe("Phase 4 — Snapshot Validation", () => {
+  test("accepts a well-formed candidate snapshot", () => {
+    const candidate = {
+      generatedAt: "2026-10-06T12:00:00.000Z",
+      jobs: [job({ id: 1, title: "Valid Job" })],
+      directory: [{ id: 1, companyName: "Valid Co", website: null, niche: "global-va", isDayshift: false, isVerified: true, isRemote: true, isMarketplace: false }],
+    };
+    const result = validateSnapshotCandidate(candidate);
+    expect(result.ok).toBe(true);
+  });
+
+  test("rejects candidates with invalid or unparseable timestamps", () => {
+    expect(validateSnapshotCandidate({ generatedAt: "not-a-date", jobs: [], directory: [] }).ok).toBe(false);
+    expect(validateSnapshotCandidate({ generatedAt: "", jobs: [], directory: [] }).ok).toBe(false);
+    expect(validateSnapshotCandidate({ jobs: [], directory: [] }).ok).toBe(false);
+  });
+
+  test("rejects candidate with invalid job IDs or missing required fields", () => {
+    const badId = {
+      generatedAt: "2026-10-06T12:00:00.000Z",
+      jobs: [job({ id: NaN, title: "Bad ID" })],
+      directory: [],
+    };
+    expect(validateSnapshotCandidate(badId).ok).toBe(false);
+
+    const missingTitle = {
+      generatedAt: "2026-10-06T12:00:00.000Z",
+      jobs: [{ id: 1, title: "", sourceUrl: "https://a.com", sourcePlatform: "X", category: "admin" }],
+      directory: [],
+    };
+    expect(validateSnapshotCandidate(missingTitle).ok).toBe(false);
+  });
+
+  test("rejects candidate with empty jobs array when active board has active listings (anti-collapse)", () => {
+    const active = {
+      generatedAt: "2026-10-06T10:00:00.000Z",
+      jobs: [job({ id: 1, title: "Job 1" }), job({ id: 2, title: "Job 2" }), job({ id: 3, title: "Job 3" })],
+      directory: [],
+    };
+    const emptyCandidate = {
+      generatedAt: "2026-10-06T11:00:00.000Z",
+      jobs: [],
+      directory: [{ id: 1, companyName: "Co", website: null, niche: "global-va", isDayshift: false, isVerified: true, isRemote: true, isMarketplace: false }],
+    };
+    const result = validateSnapshotCandidate(emptyCandidate, active);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toContain("Unexpected empty candidate");
+    }
+  });
+
+  test("rejects severe count collapse when active board has large corpus", () => {
+    const activeJobs = Array.from({ length: 100 }, (_, i) => job({ id: i + 1, title: `Job ${i}` }));
+    const active = {
+      generatedAt: "2026-10-06T10:00:00.000Z",
+      jobs: activeJobs,
+      directory: [],
+    };
+    const collapsedCandidate = {
+      generatedAt: "2026-10-06T11:00:00.000Z",
+      jobs: [job({ id: 999, title: "Only One Survives" })],
+      directory: [],
+    };
+    const result = validateSnapshotCandidate(collapsedCandidate, active);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason).toContain("Suspicious job count collapse");
+    }
+  });
+});
+
+describe("Phase 6 — Failure-Injection Tests (Tests A through I)", () => {
+  // Test A: D1 unavailable + valid cached snapshot -> serves cached board
+  test("Test A: D1 unavailable + valid in-memory snapshot continues serving without throwing", async () => {
+    resetPublicBoardState();
+    const goodBoard = {
+      generatedAt: "2026-10-06T10:00:00.000Z",
+      jobs: [job({ id: 42, title: "Cached Production Job" })],
+      directory: [],
+    };
+    promoteSnapshot(goodBoard, "memory", Date.now());
+
+    const failingStore: SnapshotStore = {
+      async read() { throw new Error("D1 connection lost"); },
+      async claimRefresh() { throw new Error("D1 unavailable"); },
+      async write() { throw new Error("D1 unavailable"); },
+      async build() { throw new Error("D1 unavailable"); },
+    };
+
+    const board = await resolvePublicBoard({
+      now: Date.now(),
+      cache: null,
+      store: failingStore,
+    });
+    expect(board.jobs.map((j) => j.id)).toEqual([42]);
+  });
+
+  // Test B: D1 unavailable + cold runtime + durable LKG exists -> serves durable LKG
+  test("Test B: D1 unavailable + cold runtime serves durable LKG without crashing", async () => {
+    resetPublicBoardState();
+    const failingStore: SnapshotStore = {
+      async read() { throw new Error("D1 daily row read limit exceeded [code: 7500]"); },
+      async claimRefresh() { throw new Error("D1 unavailable"); },
+      async write() { throw new Error("D1 unavailable"); },
+      async build() { throw new Error("D1 unavailable"); },
+    };
+
+    const board = await resolvePublicBoard({
+      now: Date.now(),
+      cache: null,
+      store: failingStore,
+    });
+    expect(board.jobs.length).toBeGreaterThan(0);
+    const health = getPublicSnapshotHealth();
+    expect(health.status).toBe("lkg_fallback");
+    expect(health.d1QuotaFailed).toBe(true);
+  });
+
+  // Test C: Snapshot refresh throws exception -> existing snapshot remains available
+  test("Test C: snapshot refresh throws exception -> existing snapshot remains available", async () => {
+    resetPublicBoardState();
+    const initialTime = Date.parse("2026-10-06T00:00:00.000Z");
+    const activeBoard = {
+      generatedAt: new Date(initialTime).toISOString(),
+      jobs: [job({ id: 50, title: "Steady Job" })],
+      directory: [],
+    };
+    promoteSnapshot(activeBoard, "memory", initialTime);
+
+    // After 2 hours, snapshot is stale; refresh is scheduled but throws
+    const now = initialTime + 2 * 60 * 60 * 1000;
+    const failingStore: SnapshotStore = {
+      async read() { return null; },
+      async claimRefresh() { return true; },
+      async write() {},
+      async build() { throw new Error("Upstream API timeout during build"); },
+    };
+
+    const pending: Promise<unknown>[] = [];
+    const board = await resolvePublicBoard({
+      now,
+      cache: null,
+      store: failingStore,
+      waitUntil(p) { pending.push(p); },
+    });
+    // The active board was preserved and served immediately
+    expect(board.jobs.map((j) => j.id)).toEqual([50]);
+
+    await Promise.allSettled(pending);
+    // Even after background failure, active snapshot is still intact
+    const health = getPublicSnapshotHealth(now);
+    expect(health.lastRefreshResult).toBe("failed");
+    expect(health.jobCount).toBe(1);
+  });
+
+  // Test D: Candidate snapshot malformed -> candidate rejected; previous snapshot retained
+  test("Test D: candidate snapshot malformed -> candidate rejected; previous snapshot retained", async () => {
+    resetPublicBoardState();
+    const initialTime = Date.parse("2026-10-06T00:00:00.000Z");
+    const activeBoard = {
+      generatedAt: new Date(initialTime).toISOString(),
+      jobs: [job({ id: 70, title: "Protected Job" })],
+      directory: [],
+    };
+    promoteSnapshot(activeBoard, "memory", initialTime);
+
+    const now = initialTime + 2 * 60 * 60 * 1000;
+    const malformedStore: SnapshotStore = {
+      async read() { return null; },
+      async claimRefresh() { return true; },
+      async write() {},
+      async build() {
+        return {
+          generatedAt: new Date(now).toISOString(),
+          jobs: [{ id: NaN, title: "" } as unknown as PublicJob],
+          directory: [],
+        };
+      },
+    };
+
+    const pending: Promise<unknown>[] = [];
+    const board = await resolvePublicBoard({
+      now,
+      cache: null,
+      store: malformedStore,
+      waitUntil(p) { pending.push(p); },
+    });
+    expect(board.jobs.map((j) => j.id)).toEqual([70]);
+
+    await Promise.allSettled(pending);
+    const health = getPublicSnapshotHealth(now);
+    expect(health.lastRefreshResult).toBe("rejected");
+    expect(health.jobCount).toBe(1);
+  });
+
+  // Test E: Candidate snapshot unexpectedly empty -> candidate rejected unless explicitly allowed
+  test("Test E: candidate snapshot unexpectedly empty -> candidate rejected; previous retained", async () => {
+    resetPublicBoardState();
+    const initialTime = Date.parse("2026-10-06T00:00:00.000Z");
+    const activeBoard = {
+      generatedAt: new Date(initialTime).toISOString(),
+      jobs: [job({ id: 80, title: "Job A" }), job({ id: 81, title: "Job B" })],
+      directory: [],
+    };
+    promoteSnapshot(activeBoard, "memory", initialTime);
+
+    const now = initialTime + 2 * 60 * 60 * 1000;
+    const emptyStore: SnapshotStore = {
+      async read() { return null; },
+      async claimRefresh() { return true; },
+      async write() {},
+      async build() {
+        return {
+          generatedAt: new Date(now).toISOString(),
+          jobs: [],
+          directory: [],
+        };
+      },
+    };
+
+    const pending: Promise<unknown>[] = [];
+    const board = await resolvePublicBoard({
+      now,
+      cache: null,
+      store: emptyStore,
+      waitUntil(p) { pending.push(p); },
+    });
+    expect(board.jobs.length).toBe(2);
+
+    await Promise.allSettled(pending);
+    const health = getPublicSnapshotHealth(now);
+    expect(health.lastRefreshResult).toBe("rejected");
+    expect(health.jobCount).toBe(2);
+  });
+
+  // Test F: Quota error during refresh -> public board remains operational
+  test("Test F: quota error during refresh -> public board remains operational", async () => {
+    resetPublicBoardState();
+    const initialTime = Date.parse("2026-10-06T00:00:00.000Z");
+    const activeBoard = {
+      generatedAt: new Date(initialTime).toISOString(),
+      jobs: [job({ id: 90, title: "Quota Immune Job" })],
+      directory: [],
+    };
+    promoteSnapshot(activeBoard, "memory", initialTime);
+
+    const now = initialTime + 2 * 60 * 60 * 1000;
+    const quotaStore: SnapshotStore = {
+      async read() { throw new Error("D1 daily row read limit exceeded [code: 7500]"); },
+      async claimRefresh() { throw new Error("D1 daily row read limit exceeded [code: 7500]"); },
+      async write() { throw new Error("D1 daily row read limit exceeded [code: 7500]"); },
+      async build() { throw new Error("D1 daily row read limit exceeded [code: 7500]"); },
+    };
+
+    const pending: Promise<unknown>[] = [];
+    const board = await resolvePublicBoard({
+      now,
+      cache: null,
+      store: quotaStore,
+      waitUntil(p) { pending.push(p); },
+    });
+    expect(board.jobs.map((j) => j.id)).toEqual([90]);
+
+    await Promise.allSettled(pending);
+    expect(getPublicSnapshotHealth(now).d1QuotaFailed).toBe(true);
+    expect(getPublicSnapshotHealth(now).jobCount).toBe(1);
+  });
+
+  // Test G: Multiple concurrent refresh requests -> no corruption/race-induced outage
+  test("Test G: multiple concurrent requests share single inflight load and do not corrupt state", async () => {
+    resetPublicBoardState();
+    let builds = 0;
+    const slowStore: SnapshotStore = {
+      async read() { return null; },
+      async claimRefresh() { return false; },
+      async write() {},
+      async build(generatedAt) {
+        builds += 1;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return {
+          generatedAt,
+          jobs: [job({ id: 100, title: "Concurrency Safe" })],
+          directory: [],
+        };
+      },
+    };
+
+    const now = Date.now();
+    const [boardA, boardB, boardC] = await Promise.all([
+      resolvePublicBoard({ now, cache: null, store: slowStore }),
+      resolvePublicBoard({ now, cache: null, store: slowStore }),
+      resolvePublicBoard({ now, cache: null, store: slowStore }),
+    ]);
+
+    expect(boardA.jobs.map((j) => j.id)).toEqual([100]);
+    expect(boardB.jobs.map((j) => j.id)).toEqual([100]);
+    expect(boardC.jobs.map((j) => j.id)).toEqual([100]);
+    expect(builds).toBe(1);
+  });
+
+  // Test H: Deployment / cold start -> durable snapshot restores board without requiring upstream availability
+  test("Test H: deployment cold start restores board without requiring upstream availability", async () => {
+    resetPublicBoardState();
+    const offlineStore: SnapshotStore = {
+      async read() { throw new Error("Database offline"); },
+      async claimRefresh() { throw new Error("Database offline"); },
+      async write() { throw new Error("Database offline"); },
+      async build() { throw new Error("Database offline"); },
+    };
+
+    const board = await resolvePublicBoard({
+      now: Date.now(),
+      cache: null,
+      store: offlineStore,
+    });
+
+    expect(board.jobs.length).toBeGreaterThanOrEqual(10);
+    expect(board.directory.length).toBeGreaterThanOrEqual(5);
+    expect(board.jobs.some((j) => j.category === "admin")).toBe(true);
+    expect(board.jobs.some((j) => j.category === "tech")).toBe(true);
+  });
+
+  // Test I: Snapshot cache expired -> triggers refresh behavior but DOES NOT remove the usable stale snapshot
+  test("Test I: snapshot cache expired triggers refresh but DOES NOT delete the usable stale snapshot", async () => {
+    resetPublicBoardState();
+    const initialTime = Date.parse("2026-10-06T00:00:00.000Z");
+    const activeBoard = {
+      generatedAt: new Date(initialTime).toISOString(),
+      jobs: [job({ id: 200, title: "Long-lived Stale Job" })],
+      directory: [],
+    };
+    promoteSnapshot(activeBoard, "memory", initialTime);
+
+    // Request arrives well past TTL (e.g. 5 hours later)
+    const now = initialTime + 5 * 60 * 60 * 1000;
+    let refreshTriggered = false;
+    const store: SnapshotStore = {
+      async read() { return null; },
+      async claimRefresh() {
+        refreshTriggered = true;
+        return false;
+      },
+      async write() {},
+      async build(generatedAt) {
+        return { generatedAt, jobs: [job({ id: 201, title: "Fresh" })], directory: [] };
+      },
+    };
+
+    const pending: Promise<unknown>[] = [];
+    const served = await resolvePublicBoard({
+      now,
+      cache: null,
+      store,
+      waitUntil(p) { pending.push(p); },
+    });
+
+    // Stale snapshot is served immediately (0ms wait, no deletion)
+    expect(served.jobs.map((j) => j.id)).toEqual([200]);
+    await Promise.allSettled(pending);
+    expect(refreshTriggered).toBe(true);
+  });
+});
+
+describe("Phase 7 — Observability & Telemetry", () => {
+  test("getPublicSnapshotHealth reflects current snapshot lifecycle and status", () => {
+    resetPublicBoardState();
+    expect(getPublicSnapshotHealth().status).toBe("degraded");
+
+    const now = Date.now();
+    const lkg = getDurableLkgSnapshot();
+    promoteSnapshot(lkg, "durable_lkg", now);
+    const lkgHealth = getPublicSnapshotHealth(now);
+    expect(lkgHealth.status).toBe("lkg_fallback");
+    expect(lkgHealth.lastSource).toBe("durable_lkg");
+    expect(lkgHealth.jobCount).toBe(lkg.jobs.length);
+
+    resetPublicBoardState();
+    const freshBoard = {
+      generatedAt: new Date(now).toISOString(),
+      jobs: [job({ id: 301, title: "Freshly Generated" })],
+      directory: [],
+    };
+    promoteSnapshot(freshBoard, "d1", now);
+    const freshHealth = getPublicSnapshotHealth(now);
+    expect(freshHealth.status).toBe("fresh");
+    expect(freshHealth.lastSource).toBe("d1");
+    expect(freshHealth.jobCount).toBe(1);
+
+    // Stale after 2 hours
+    const staleHealth = getPublicSnapshotHealth(now + 2 * 60 * 60 * 1000);
+    expect(staleHealth.status).toBe("stale");
+    expect(staleHealth.ageMs).toBeGreaterThanOrEqual(2 * 60 * 60 * 1000);
+  });
+});
+

@@ -120,7 +120,9 @@ describe("public category surfaces route through the shared guard", () => {
     // The invariant is about the REFUSAL, not the parse: parsing early and only
     // acting on it after the read would still spend the two row reads.
     const refusalAt = source.indexOf("return Astro.redirect('/');");
-    const bindingAt = source.indexOf("getDb(Astro.locals.runtime.env)");
+    const bindingAt = source.indexOf("loadPublicBoard(Astro.locals.runtime.env") !== -1
+      ? source.indexOf("loadPublicBoard(Astro.locals.runtime.env")
+      : source.indexOf("getDb(Astro.locals.runtime.env)");
     expect(refusalAt).toBeGreaterThan(-1);
     expect(bindingAt).toBeGreaterThan(-1);
     expect({ refusalBeforeBinding: refusalAt < bindingAt }).toEqual({
@@ -139,7 +141,9 @@ describe("public category surfaces route through the shared guard", () => {
   test("the directory route refuses an unknown category before it reads the listing", () => {
     const source = readRouteSource("src/pages/directory.astro");
     const refusalAt = source.indexOf("'Unknown directory category.'");
-    const readAt = source.indexOf("await loadDirectoryPage(");
+    const readAt = source.indexOf("loadPublicBoard(Astro.locals.runtime.env") !== -1
+      ? source.indexOf("loadPublicBoard(Astro.locals.runtime.env")
+      : source.indexOf("await loadDirectoryPage(");
     expect(refusalAt).toBeGreaterThan(-1);
     expect(readAt).toBeGreaterThan(-1);
     expect({ refusalBeforeRead: refusalAt < readAt }).toEqual({ refusalBeforeRead: true });

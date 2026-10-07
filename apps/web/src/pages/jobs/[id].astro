@@ -1,8 +1,8 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { JOB_CATEGORY_MAP } from '@/lib/categories';
+import { OTHER_JOB_CATEGORY, parseJobCategory } from '@/lib/categories';
 import { findPublicJob, type PublicJob } from '@/lib/public-board';
-import { loadPublicBoard } from '@/lib/public-serving-snapshot';
+import { applySnapshotHeaders, loadPublicBoard } from '@/lib/public-serving-snapshot';
 import { serializeJsonLd } from '@/lib/json-ld';
 import { sanitizeSourceUrl, classifyShift } from '@va-hub/scraper';
 import { markPublicDataUnavailable } from '@/lib/public-route-load';
@@ -26,6 +26,7 @@ let dataUnavailable = false;
 
 try {
   const board = await loadPublicBoard(Astro.locals.runtime.env, Astro.locals.runtime.ctx);
+  applySnapshotHeaders(Astro.response.headers);
   job = findPublicJob(board.jobs, numericId);
 } catch (e) {
   dataUnavailable = true;
@@ -117,7 +118,7 @@ const PLATFORM_COLORS: Record<string, string> = {
 };
 
 const typeLabel = TYPE_LABELS[job.type] ?? job.type;
-const categoryInfo = JOB_CATEGORY_MAP[job.category] ?? JOB_CATEGORY_MAP['other'];
+const categoryInfo = parseJobCategory(job.category) ?? OTHER_JOB_CATEGORY;
 const platformColor = PLATFORM_COLORS[job.sourcePlatform] ?? 'text-ink/60 bg-ink/5';
 const geoBadge = job.geoScope ? GEO_BADGES[job.geoScope] : null;
 
