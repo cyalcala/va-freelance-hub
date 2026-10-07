@@ -1,0 +1,71 @@
+{
+  "checkedAt": "2026-10-07T15:23:10.706Z",
+  "runtime": "workerd",
+  "d1Binding": false,
+  "sourceSha": "3519878f8825ce808e6817febb5f8815ad5c467c",
+  "generatedAt": "2026-10-07T14:36:47.152Z",
+  "results": [
+    {
+      "route": "/",
+      "status": 200,
+      "source": "durable_lkg",
+      "jobs": 1520,
+      "companies": 735
+    },
+    {
+      "route": "/opportunities?q=assistant",
+      "status": 200,
+      "source": "durable_lkg",
+      "jobs": 1520,
+      "companies": 735
+    },
+    {
+      "route": "/directory",
+      "status": 200,
+      "source": "durable_lkg",
+      "jobs": 1520,
+      "companies": 735
+    },
+    {
+      "route": "/categories/admin",
+      "status": 200,
+      "source": "durable_lkg",
+      "jobs": 1520,
+      "companies": 735
+    },
+    {
+      "route": "/categories/customer-service",
+      "status": 200,
+      "source": "durable_lkg",
+      "jobs": 1520,
+      "companies": 735
+    },
+    {
+      "route": "/jobs/1859",
+      "status": 200,
+      "source": "durable_lkg",
+      "jobs": 1520,
+      "companies": 735
+    },
+    {
+      "route": "/jobs/7508",
+      "status": 200,
+      "source": "durable_lkg",
+      "jobs": 1520,
+      "companies": 735
+    },
+    {
+      "route": "/sitemap.xml",
+      "status": 200,
+      "source": "durable_lkg",
+      "jobs": 1520,
+      "companies": 735
+    },
+    {
+      "route": "/api/click/[id]",
+      "status": 503,
+      "retryAfter": "30",
+      "outboundRedirect": false
+    }
+  ]
+}

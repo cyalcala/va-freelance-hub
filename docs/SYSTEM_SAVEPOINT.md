@@ -1,5 +1,25 @@
 # System Savepoint
 
+## 2026-10-07 23:30 Manila — Premium frontend deployed and accepted
+
+**Progress:** five of five frontend checkpoints complete (100% by checkpoint
+count). [PR #222](https://github.com/cyalcala/va-freelance-hub/pull/222) merged
+normally to `3519878f8825ce808e6817febb5f8815ad5c467c`. Exact-SHA main release
+`37643252423` passed 3,018 tests / zero failures and deployed Pages
+`41bf9716-0c8f-481d-b1ff-56dd85c03832`. Prior GitHub write errors are resolved.
+
+Exact release no-D1 Worker: eight routes 200; tracked Apply 503 / Retry-After 30 /
+no outbound redirect. Ordinary live acceptance: eleven routes and sole stylesheet
+200, all data routes fresh at 15:30:20 UTC; desktop/mobile browser native search,
+detail and directory checks pass, no home warning or overflow. Source/evidence
+and original return tag remain backed up. [Final receipts and limitations](design/PREMIUM_2026_ACCEPTANCE.md).
+
+**Return point:** `savepoint/pre-premium-design-2026-10-07` preserves baseline
+`50d8daa280d74b2a34f8d9ec1ed4a8dd1a5d0c73`. This is source recovery, not a DB
+restoration receipt. **Next:** no remaining premium frontend task; keep the
+accepted UI, and resume operational/source work only under its separate queue.
+No source admission, ranking, eligibility, DB schema, GCP or publication change.
+
 ## 2026-10-07 23:16 Manila — Premium frontend and CI accepted; release blocked
 
 **Progress:** 4 of 5 frontend checkpoints complete (80% by checkpoint count).

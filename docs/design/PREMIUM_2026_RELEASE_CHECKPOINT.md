@@ -1,5 +1,10 @@
 # Premium 2026 release checkpoint
 
+**Resolved:** normal merge succeeded at 15:21:33 UTC. Main release `37643252423`
+passed and deployed source `3519878f` to Pages `41bf9716`. Live acceptance and
+exact artifact receipts are in [final acceptance](PREMIUM_2026_ACCEPTANCE.md).
+The dated failed attempts below remain historical recovery evidence.
+
 ## 2026-10-07 23:16 Manila — Implementation accepted, release blocked
 
 The owner-authorized cream/charcoal/coral frontend redesign is complete and

@@ -105,14 +105,15 @@ remain unchanged. [Evidence and limits](../../design/PREMIUM_2026_REVIEW.md).
   consultation. Jev 401/timeout is advisory and non-blocking.
 - [x] Fix the top material defects; run Impeccable detector once and document
   findings honestly, plus measured resource/bundle limits.
-- [ ] Update recovery docs, commit/push logical slices, verify remote SHAs.
-- [ ] Complete normal PR checks and release, verify deployed public pages,
+- [x] Update recovery docs, commit/push logical slices, verify remote SHAs.
+- [x] Complete normal PR checks and release, verify deployed public pages,
   original Apply behavior and honest saved-board state; retain rollback tag.
 
-Required PR CI `37641913191` passed at head `515a68e3` with 3,018 tests and the
-original Linux offline harness. Normal GitHub merge/main push returned server
-errors; production/live acceptance remains pending. [Release checkpoint and
-safe continuation](../../design/PREMIUM_2026_RELEASE_CHECKPOINT.md).
+Required PR CI passed at `515a68e3` and `33cd404f`. Normal GitHub writes initially
+returned errors, then PR #222 merged normally to `3519878f`; exact-SHA main
+release `37643252423` passed with 3,018 tests and deployed Pages `41bf9716`.
+Exact release no-D1 and ordinary live/browser acceptance passed. All five
+frontend checkpoints are complete. [Final receipts and recovery boundary](../../design/PREMIUM_2026_ACCEPTANCE.md).
 
 No ingestion, scheduling, source admission, ranking, database or publication
 contract changes are part of any task. Existing foreign work is preserved.
