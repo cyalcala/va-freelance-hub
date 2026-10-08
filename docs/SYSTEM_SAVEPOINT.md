@@ -1,5 +1,100 @@
 # System Savepoint
 
+## 2026-10-09 04:40 Manila — Three-company facts reviewed; guarded preparation backed up on GitLab
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual directory enrichment;
+all MATH-01..13 and existing SSAE-CED/DeepSeek cards; lucky777/Addy resumability and
+owner-authorized GitLab fallback. Accepted MATH remains **0/13**, certified fresh
+flow NULL/UNKNOWN, actual directory updates in this unit **zero**.
+
+**Reentry/Git:** start `a6af33eb775413e84e04e3ee646482f4fb981f21`, same
+`codex/verified-flow-directory-checkpoint` branch, authenticated GitLab fetched with
+zero divergence. Source/evidence `594f107e71f35e71f8aad03bf7d21327253814c0` pushed
+and exact remote SHA verified at 20:40:27 UTC. [Source receipt](operations/gitlab-directory-cohort-source-backup-2026-10-09.json).
+Origin/cached main `926d39a0ea2db80a7eba8d541d12906a0c8b0837` preserved; unchanged
+GitHub suspension not reprobed. GitLab main's independent README remains untouched.
+No MR, equivalent GitLab CI, release or runtime acceptance is implied. Final
+documentation HEAD/readback, full committed-source bundle and fresh exact-SHA
+restore receipt are external at
+`C:\Users\admin\Desktop\va-freelance-hub-recovery\directory-cohort-2026-10-08-204030Z.full.bundle`
+and matching `directory-cohort-2026-10-08-204030Z.full.receipt.json`; verify that final
+receipt rather than assuming a restore from
+this pointer. Bundle scope is selected-branch committed source/tests/docs/history,
+not DB/GCP-state backup. Foreign `.agents/skills/` and root `lucky777.md` preserved.
+
+**Recovery/constraints:** desktop lucky777, AGENTS, absent manifest/router, CURRENT,
+current task contract, source constitution/accepted parameters/queue/deployment
+provenance recovered. Installed Addy source/TDD/review/Git/docs methods applied;
+Jev's unchanged provider failure remains non-blocking without retry/failover.
+No new provider/service/grant, accepted parameter or production clock changed.
+Existing hourly lucky777 coordination remains ACTIVE; older APEX remains PAUSED.
+
+**Completed bounded slice:** [DIRECTORY_FACTUAL_COHORT_2026-10-09](operations/DIRECTORY_FACTUAL_COHORT_2026-10-09.md)
+advances the exact three-row NEXT: 234 Upwork, 236 FVA, 237 Intogreat Solutions.
+Official corporate careers links for Upwork/Intogreat are reviewed proposals only.
+FVA stays held: reported legacy domain-for-sale redirect, singular/plural identity
+and exact Surge legal/duplicate mapping unresolved. Retain Intogreat's valid old
+official domain; no unnecessary website replacement. No PH/remote/hiring badges,
+ATS enrollment, job acquisition, publication or stored provenance inferred.
+
+Pure three-row patch preparation pins known exact current values and flags,
+requires dated primary field evidence/independent review and provides guarded undo.
+Website replacement requires known health coverage, invalidates only affected
+provenance/status/check/evidence and preserves strikes/flags. Health/URL drift,
+NULL versus known empty strings, replay and unknown baselines are tested natively.
+Real retained input yields **3 HELD / zero READY / no SQL**; [plan/hash receipt](operations/directory-factual-plan-2026-10-09.json).
+Metadata review is not an authorization/authentication/publication gateway.
+
+**Acceptance:** 26 focused native SQLite tests / 742 assertions; independent code
+and evidence reviews PASS. Frozen-source full suite **3,261 pass / zero fail /
+322,448 assertions / 238 files / 176.29 seconds**; web and standalone strict helper
+typechecks, Astro build (100 seconds within Astro; command duration UNKNOWN), four
+governance audits, JSON and staged whitespace checks pass. Earlier passing full
+run superseded after the coupled-health correction; genuine RED receipts retained.
+[Finite checks](operations/directory-factual-local-checks-2026-10-09.json).
+Local integrity/identity/invalidation prerequisites support MATH-06/09 and SSAE-02/07;
+controlled benefit, Turso integration, all-writer closure and deployment stay open.
+Normal source revert is rollback; no production data compensation for this unit.
+
+**New access/public evidence and owner/trigger:** one exact-three-ID D1 SELECT
+failed Cloudflare **7403**, returned no rows/read receipt. One ordinary `whoami`
+reports logged-in OAuth, the configured owner account and D1 scope; this does not
+prove service access/root cause. No account switch/grant/login or retry occurred.
+Owner owns normal account/service prerequisites; retry only on materially changed
+authorization/configuration evidence. Current D1 baselines remain UNKNOWN.
+Three ordinary directory GETs returned 200 with stale snapshot generated
+`2026-10-08T18:43:16.637Z`, 735 companies / 1,556 jobs, age 4,915 seconds at
+20:05:11 UTC. Served stock is neither current DB truth nor fresh flow.
+[Access](operations/directory-cloudflare-access-2026-10-09.json) and
+[snapshot observations](operations/directory-cohort-public-observation-2026-10-09.json).
+Directory application requires a new successful baseline and appropriate subsequent
+per-row review; do not reuse old review as post-baseline acceptance or extend the
+packet window silently. This hold does not block independent local control work.
+
+**Other dated holds:** GitHub backup/review/release, PR #228 runtime/per-row outcome,
+GCP BILLING_DISABLED and six CONTAINER_PERMISSION_DENIED container starts, and
+Janes 9046/9047 publication-control incident remain unresolved and were not reprobed.
+No scheduler fence, compensation, executed publisher tick, cap enforcement or
+current runtime/public health is established. Owner owns normal access/image
+prerequisites; changed evidence/new actual execution is the trigger.
+
+**One NEXT:** repair strict existing publication-receipt replay binding in
+`packages/scraper/publication-gateway.ts` and grouped insert identity in
+`apps/web/src/lib/publish-opportunities.ts`, adapting existing direct callers in
+`scrape.ts` / `triage-drain.ts` as required. Current retry lookup omits stored
+source/tick/proposed-count checks; grouped key truncates URL material at 200 chars.
+Use a versioned digest binding request source/tick/action and complete canonical
+write material; validate persisted source/tick/proposed count, mode, published
+count and actual unique IDs. Reject mismatch or malformed receipt
+without invoking persistence/adding ledger rows. Preserve exact legitimate replay,
+append-only historical receipts, current modes/caps/leases/parameters and schema.
+Use actual existing SQLite migration fixtures for changed source/tick/count, same
+URLs with changed material, distinct cohorts beyond character 200, corrupt modes/
+IDs/counts, zero-callback rejection and exact replay. Maintainer owns local source
+implementation; no production access needed. This closes a concrete control gap,
+not full atomic publication, lawful collection, shared budgets or certified supply.
+
 ## 2026-10-09 03:44 Manila — Native geography checked locally; source backed up through GitLab
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

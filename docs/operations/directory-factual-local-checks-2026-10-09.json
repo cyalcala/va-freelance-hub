@@ -54,7 +54,7 @@
     "explicitCredentialsOrGrantsChanged": 0, "automaticOAuthRefresh": "UNKNOWN"
   },
   "accessHold": {"receipt": "directory-cloudflare-access-2026-10-09.json", "providerCode": 7403, "currentD1Values": "UNKNOWN", "owner": "NORMAL_OWNER_ACCOUNT_SERVICE_ACCESS", "retryTrigger": "Changed normal authorization/configuration evidence only"},
-  "sourceBackup": {"gitLab": "EXACT_NEW_SHA_PUSH_READBACK_REQUIRED", "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED", "gitLabExactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED", "runtimeAcceptance": "NOT_ESTABLISHED"},
+  "sourceBackup": {"gitLab": "PASS_EXACT_SOURCE_SHA_PUSH_READBACK", "sourceSha": "594f107e71f35e71f8aad03bf7d21327253814c0", "receipt": "gitlab-directory-cohort-source-backup-2026-10-09.json", "finalReentryDocumentationHead": "SEPARATE_FINAL_READBACK_AND_EXTERNAL_FULL_BUNDLE_RESTORE_RECEIPT", "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED", "gitLabExactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED", "runtimeAcceptance": "NOT_ESTABLISHED"},
   "mathAccepted": "0/13",
   "verifiedFreshPublicFlow": null,
   "certification": "UNKNOWN"

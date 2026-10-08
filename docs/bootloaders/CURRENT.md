@@ -4,16 +4,20 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 03:44 Manila): native geo diagnostics at `49822e52`
-complete the saved geo step. Only current, exactly bound native title/location
-enters unchanged canonical geoGate; negative cases reject privately while positive
-hints remain held with full remote/exclusion proof UNKNOWN and false authority.
-3,235 tests, typecheck/build, four audits and a source-module workerd fixture pass.
-Collection/full independent item proof, budgets, atomic writer/controller and
-production acceptance remain open. The sole NEXT in SYSTEM_SAVEPOINT returns to
-factual enrichment of one three-row cohort from the existing directory backlog,
-with official field provenance and expected-value guards, no source/publication
-permission inferred. Prior correspondence binder `61144ed4` remains complete.
+Latest continuation (2026-10-09 04:40 Manila): the saved three-company cohort at
+`594f107e` has official Upwork/Intogreat careers proposals, an FVA parked-link/
+identity hold and a tested pure guarded patch/undo helper. D1's new 7403 service
+access failure leaves every current baseline UNKNOWN; real packet 3 HELD, zero
+READY/no SQL, zero applied updates. Three ordinary 200 directory observations
+are stale snapshots, not fresh DB/publication evidence. 3,261 tests, web/helper
+typechecks, build and four audits pass; exact source SHA is verified on GitLab.
+The sole NEXT in SYSTEM_SAVEPOINT is strict existing receipt replay binding and
+complete grouped-write identity, using native SQLite mismatch/replay fixtures.
+Owner normal Cloudflare access/fresh baseline remains the separate directory
+application trigger; no retry without changed evidence. All MATH accepted 0/13
+and certified daily flow UNKNOWN remain. Prior native geo `49822e52` and exact
+correspondence binder `61144ed4` are completed local prerequisites; collection,
+item proof, shared budgets, atomic writer/controller and rollout remain open.
 The owner-authorized GitLab remote is authenticated and exact new source SHA backed up;
 [fallback/explicit-branch restore contract](../operations/SOURCE_CONTROL_FALLBACK_2026-10-09.md).
 Use it during the unchanged GitHub suspension, preserving origin and reconciling

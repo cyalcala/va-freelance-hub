@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-08T20:40:27.8140616+00:00",
+  "unit": "DIRECTORY_FACTUAL_COHORT_2026-10-09",
+  "url": "https://gitlab.com/cyrus-group4793641/va-freelance-hub.git",
+  "branch": "codex/verified-flow-directory-checkpoint",
+  "sourceSha": "594f107e71f35e71f8aad03bf7d21327253814c0",
+  "remoteSha": "594f107e71f35e71f8aad03bf7d21327253814c0",
+  "pushExit": 0,
+  "exactShaReadback": "PASS",
+  "gitHubBackup": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED",
+  "gitLabCi": "UNKNOWN_NO_EQUIVALENT_CI_ACCEPTANCE",
+  "gitLabCiConfigurationPresent": false,
+  "runtimeAcceptance": "NOT_ESTABLISHED",
+  "scope": "COMMITTED_SOURCE_TESTS_AND_FACTUAL_EVIDENCE_NOT_FINAL_REENTRY_DOCS_DATABASE_OR_GCP_STATE"
+}
