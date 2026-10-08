@@ -42,8 +42,26 @@ try {
     const jobs = Number(response.headers.get("X-Public-Snapshot-Jobs"));
     if (response.status !== 200 || jobs !== board.jobs.length || !["durable_lkg", "edge", "memory"].includes(source ?? "") || response.headers.get("X-Public-Snapshot-Generated-At") !== board.generatedAt) throw new Error(`Offline serving failed on ${route}`);
     const status = response.headers.get("X-Public-Snapshot");
-    if (route !== "/sitemap.xml" && ["stale", "lkg_fallback"].includes(status ?? "") && !text.includes("Showing saved listings")) throw new Error("Saved listings lack a visitor freshness notice");
-    results.push({ route, status: response.status, source, jobs, companies: Number(response.headers.get("X-Public-Snapshot-Companies")) });
+    if (route !== "/sitemap.xml") {
+      // The owner's October 8 refinement moves serving state out of visitor UI.
+      // Require truthful machine-readable diagnostics instead of dropping evidence.
+      const fields = [
+        ["status", "X-Public-Snapshot"],
+        ["generated-at", "X-Public-Snapshot-Generated-At"],
+        ["source", "X-Public-Snapshot-Source"],
+        ["age-seconds", "X-Public-Snapshot-Age-Seconds"],
+        ["jobs", "X-Public-Snapshot-Jobs"],
+        ["companies", "X-Public-Snapshot-Companies"],
+      ];
+      for (const [name, header] of fields) {
+        const expected = response.headers.get(header);
+        if (expected === null || !text.includes(`<meta name="va-hub:snapshot-${name}" content="${expected}"`)) {
+          throw new Error(`Snapshot diagnostic metadata disagrees with ${header} on ${route}`);
+        }
+      }
+      if (text.includes("Showing saved listings")) throw new Error("Visitor snapshot banner was unexpectedly rendered");
+    }
+    results.push({ route, status: response.status, snapshot: status, source, jobs, companies: Number(response.headers.get("X-Public-Snapshot-Companies")), internalMetadataChecked: route !== "/sitemap.xml" });
   }
   const response = await fetch(origin + `/api/click/${board.jobs[0].id}?url=${encodeURIComponent(board.jobs[0].sourceUrl)}`, { redirect: "manual", signal: AbortSignal.timeout(5_000) });
   await response.arrayBuffer();

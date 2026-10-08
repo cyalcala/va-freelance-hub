@@ -1,5 +1,15 @@
 # Handoff
 
+## 2026-10-08 — Talent mark/internal diagnostics refinement (current handoff)
+
+Continue `codex/filipino-talent-pulse` in the attached premium-2026-design worktree,
+starting at `93c2e1e4f0da8f82c0f143ed76ccd9904eebb286`. Owner explicitly removed
+the visitor saved-listings strip; do not restore it from historical design docs.
+Read [internal diagnostic contract](operations/PUBLIC_SNAPSHOT_DIAGNOSTICS.md).
+Orange pulse, metadata, local verification and independent review are complete;
+finish normal required CI/release and live acceptance. [Evidence](design/TALENT_DIAGNOSTICS_2026_ACCEPTANCE.md).
+Keep earlier source tags and unrelated work. No source/GCP task is dispatched.
+
 ## 2026-10-08 05:00 Manila — Pigment & Paper complete (current handoff)
 
 Owner's latest watercolor/shade/company-mark revision is deployed and accepted:

@@ -30,7 +30,9 @@ Home uses a painted introduction with native search and category links, then rea
 
 Opportunities uses a 264px paper filter rail above 1024px and native disclosure below it. Search/filter/pagination URLs remain useful without JavaScript. Directory uses the same paper rows and existing safe company website links. Details retain original-source Apply, source-aware excerpt limits, unknown facts and JobPosting JSON-LD. Legal pages inherit type and chrome without legal edits.
 
-Check 390/768/1280/1440 plus 375/1024/1920 boundaries. No horizontal scrolling, legible wrapping, controls at least 44px, clear keyboard focus and reduced motion. Saved-board notices keep their actual generation timestamp; no freshness claim.
+Check 390/768/1280/1440 plus 375/1024/1920 boundaries. No horizontal scrolling, legible wrapping, controls at least 44px, clear keyboard focus and reduced motion. October 8 owner refinement removes the public saved-board strip: truthful serving state/timestamp remain in response headers and `va-hub:snapshot-*` head metadata. See `../../docs/operations/PUBLIC_SNAPSHOT_DIAGNOSTICS.md`; no freshness claim.
+
+The “For Filipino talent” mark is a 12px deep-orange circle (`#C55729`) with a soft halo and 2.6-second opacity/scale pulse. It is decorative, aria-hidden and conveys no operational status. Reduced motion makes it fully static. No starburst mark.
 
 ## Company marks
 

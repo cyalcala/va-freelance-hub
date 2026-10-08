@@ -1,5 +1,14 @@
 # Implementation Status
 
+## 2026-10-08 — Talent mark/internal diagnostics refinement active
+
+Three of five frontend checkpoints complete. Owner-directed orange pulse and
+visitor strip removal are implemented; 50 targeted tests, typecheck/build and
+local no-D1/browser checks pass. Six matching header/head-meta fields preserve
+truthful diagnostics; no-store/Apply safeguards remain. Independent review approved;
+required CI and live release pending. [Current evidence](design/TALENT_DIAGNOSTICS_2026_ACCEPTANCE.md).
+This refines the accepted watercolor UI, with no source/GCP/DB authority change.
+
 ## 2026-10-08 05:00 Manila — Pigment & Paper frontend TERMINAL / KEEP
 
 Five of five frontend checkpoints complete. PR #224 merged normally to

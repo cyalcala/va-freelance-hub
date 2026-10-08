@@ -32,7 +32,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const response = await next();
   applySecurityHeaders(response.headers);
 
-  // A saved/outage page must not pin its notice in HTML cache after the shared
+  // A saved/outage page must not pin old listings/diagnostics after the shared
   // board recovers. Rendering this page still uses the in-memory/edge snapshot.
   if (["stale", "lkg_fallback", "degraded"].includes(response.headers.get("X-Public-Snapshot") ?? "")) {
     response.headers.set("Cache-Control", "no-store");

@@ -31,6 +31,8 @@ Astro server-rendered public routes with React components and Tailwind. GET quer
 URLs retain search, supported filters and pagination. A public serving snapshot
 and verified durable fallback keep listings readable during upstream outages.
 Apply authority and source-aware description limits remain authoritative.
+The owner's October 8 refinement keeps snapshot diagnostics in response headers
+and HTML head metadata for maintainers/AI tooling, with no visitor status strip.
 
 ## Capabilities and Constraints
 

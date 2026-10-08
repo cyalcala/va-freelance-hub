@@ -12,12 +12,15 @@ const path = Astro.url.pathname;
 const isActive = (base: string) =>
   base === '/' ? path === '/' : path.startsWith(base);
 const jobsActive = isActive('/opportunities') || isActive('/categories') || isActive('/jobs');
-const boardStatus = Astro.response.headers.get('X-Public-Snapshot');
-const boardTime = Astro.response.headers.get('X-Public-Snapshot-Generated-At');
-const savedBoard = boardStatus === 'stale' || boardStatus === 'lkg_fallback';
-const savedBoardDate = boardTime && Number.isFinite(Date.parse(boardTime))
-  ? new Intl.DateTimeFormat('en-PH', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Manila' }).format(new Date(boardTime))
-  : null;
+const snapshotMetadata = [
+  ['va-hub:snapshot-status', 'X-Public-Snapshot'],
+  ['va-hub:snapshot-generated-at', 'X-Public-Snapshot-Generated-At'],
+  ['va-hub:snapshot-source', 'X-Public-Snapshot-Source'],
+  ['va-hub:snapshot-age-seconds', 'X-Public-Snapshot-Age-Seconds'],
+  ['va-hub:snapshot-jobs', 'X-Public-Snapshot-Jobs'],
+  ['va-hub:snapshot-companies', 'X-Public-Snapshot-Companies'],
+].map(([name, header]) => ({ name, content: Astro.response.headers.get(header) }))
+  .filter((field) => field.content !== null);
 ---
 
 <html lang="en">
@@ -27,6 +30,7 @@ const savedBoardDate = boardTime && Number.isFinite(Date.parse(boardTime))
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#FFF8EC" />
+    {snapshotMetadata.map(({ name, content }) => <meta name={name} content={content} />)}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 
     <!-- Open Graph / Facebook -->
@@ -71,10 +75,6 @@ const savedBoardDate = boardTime && Number.isFinite(Date.parse(boardTime))
 
     <div class="site-container flex-1">
       <main id="main-content" class="site-main" tabindex="-1">
-        {savedBoard && <p class="saved-board-notice">
-          <strong>Showing saved listings</strong>{savedBoardDate && <> last refreshed <time datetime={boardTime!}>{savedBoardDate} Philippine time</time></>}.
-          {' '}Confirm availability with the employer. If Apply is temporarily unavailable, please retry shortly.
-        </p>}
         <slot />
       </main>
     </div>
