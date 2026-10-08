@@ -1,0 +1,44 @@
+{
+  "recordedAt": "2026-10-08T13:52:56.000Z",
+  "unit": "LAKE_SOURCE_AUTHORITY_AND_POSTING_EVIDENCE_PREREQUISITES",
+  "status": "LOCAL_ACCEPTED_DEPENDENCIES_ONLY",
+  "startSha": "5bb4a5957091ad6953eaa7001523da6561d1fedc",
+  "sourceSha": "e63eb1b12439bd21dd7564377ac759ff5d148997",
+  "relatedBehaviorShas": [
+    "a6ab5f6e1535f1ee1cf19250928036f15e3a9ada",
+    "ad007b8074c3869ccba7281289ec035b79b6cad7"
+  ],
+  "verifiedRemoteBase": "926d39a0ea2db80a7eba8d541d12906a0c8b0837",
+  "goalComplete": false,
+  "tests": { "pass": 3126, "fail": 0, "assertions": 319941, "files": 230, "newTests": 28, "seconds": 67.64 },
+  "checks": {
+    "typecheck": "PASS", "astroBuild": "PASS", "astroBuildSeconds": 41.81,
+    "guardrails": "PASS", "parameters": "PASS", "orchestrator": "PASS", "constitution": "PASS",
+    "categoriesPassed": 7, "categoriesRequired": 7
+  },
+  "independentReview": "PASS_DEPENDENCY_SCOPE_ONLY",
+  "authorityScopedTests": { "pass": 13, "fail": 0, "assertions": 85, "independentlyRepeated": true },
+  "authorityGenuineRed": { "pass": 1, "fail": 10, "assertions": 14, "fixtureSetupFailureExcluded": true },
+  "networkAndProductionEffects": {
+    "sourceRequests": 0, "productionD1Reads": 0, "productionD1Writes": 0, "productionMigrations": 0,
+    "productionApiRequests": 0, "deployments": 0, "sourceAdmissions": 0, "gcpMutations": 0,
+    "newClocks": 0, "gitHubPushes": 0,
+    "primaryDocumentationLookups": "Official Greenhouse Job Board API; separate from source acquisition"
+  },
+  "authorityDependency": {
+    "publicationAuthorized": false, "itemProofRequired": true, "aggregateProofRequired": true,
+    "integration": "NOT_WIRED_INTO_ROUTES_OR_CONTROLLERS",
+    "snapshot": "ISSUED_FROZEN_RUNTIME_OPAQUE",
+    "guard": "CALLER_MUST_INCLUDE_WITH_WRITES_IN_SAME_NATIVE_BATCH",
+    "evidenceScope": "OFFLINE_ACTUAL_SQLITE_MIGRATIONS_AND_BINDING_FIXTURES"
+  },
+  "mainLakeFreshness": "NOT_REPAIRED_BY_EXPERIMENTAL_HELPER",
+  "mathAccepted": "0/13", "verifiedFreshPublicFlow": null, "certification": "UNKNOWN",
+  "remoteExactShaCi": "UNKNOWN_NOT_DISPATCHED_ACCOUNT_SUSPENDED",
+  "gitHubBackup": "BACKUP_PENDING", "liveContainment": "NOT_ESTABLISHED",
+  "directoryAcceptance": "RELEASE_AND_PER_ROW_READBACK_PENDING",
+  "externalPrerequisites": ["GITHUB_ACCOUNT_SUSPENDED", "GCP_SCHEDULER_BILLING_DISABLED"],
+  "publicationPrerequisites": ["INDEPENDENT_ITEM_PROOF_ABSENT", "SHARED_PUBLICATION_BUDGET_EPOCH_LEASE_CONTRACT_ABSENT"],
+  "next": "SYSTEM_SAVEPOINT: independent server-produced material-bound item-proof prerequisite",
+  "backupScope": "SOURCE_TEST_DOCS_ONLY_NO_DATABASE_OR_GCP_STATE_RESTORE"
+}

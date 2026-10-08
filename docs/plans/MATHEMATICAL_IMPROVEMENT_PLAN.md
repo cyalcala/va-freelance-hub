@@ -98,6 +98,21 @@ the sole NEXT in SYSTEM_SAVEPOINT. All thirteen accepted resolutions stay 0/13.
 The [repair evidence](../operations/LAKE_PUBLICATION_GATEWAY_REPAIR_2026-10-08.md)
 retains the full fifteen-field report and remaining directory/supply/access bounds.
 
+**2026-10-08 source/date prerequisite checkpoint:** `a6ab5f6e` removes the
+unattributed legacy fallback and requires strict current active-registry leases;
+`ad007b80` preserves original Greenhouse dates, excludes explicit prospects and
+withholds experimental future-date yield. `e63eb1b1` adds read-only current registry
+capture and an opaque native-batch stale-state guard with identity/admission,
+revision, unbumped state/provider, opt-out and D1-clock lease checks. It is not a
+publication writer and always grants false publication authority. Final local
+3,126 tests / zero fail, typecheck, build and four audits pass; independent reviews
+found no blockers. Complete item proof and shared budget ownership remain missing;
+the exact dependency-ready item-proof NEXT is only in SYSTEM_SAVEPOINT. No source
+admission, live containment, release, directory readback or certified daily supply
+is established. All thirteen accepted resolutions remain **0/13**; the finite
+[local receipt](../operations/lake-authority-date-local-checks-2026-10-08.json)
+distinguishes this prerequisite from runtime acceptance.
+
 | ID | Challenge | Initial state | Production-rollout prerequisites |
 | --- | --- | --- | --- |
 | MATH-01 | Dynamic source allocation | OPEN — reward/decision data not validated | MATH-00, 03, 04, 06, 08, 12; 02 capacity envelope |

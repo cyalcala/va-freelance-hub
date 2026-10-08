@@ -1,5 +1,82 @@
 # System Savepoint
 
+## 2026-10-08 21:53 Manila — Source/date prerequisites verified locally; publication proof still incomplete
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the existing
+735-visible-company directory; MATH-01..13, SSAE-CED and lucky777/Addy continuity.
+Accepted mathematical resolutions remain **0/13**; certified daily flow remains
+NULL/UNKNOWN. This is a useful local MATH-05/06 dependency slice.
+
+**Git/reentry:** started at `5bb4a5957091ad6953eaa7001523da6561d1fedc` on
+`codex/verified-flow-directory-checkpoint`. Task commits:
+`a6ab5f6e1535f1ee1cf19250928036f15e3a9ada` (source fallback/current leases),
+`ad007b8074c3869ccba7281289ec035b79b6cad7` (original posting/future dates),
+`e63eb1b12439bd21dd7564377ac759ff5d148997` (current registry CAS dependency).
+Previously verified remote base is `926d39a0ea2db80a7eba8d541d12906a0c8b0837`.
+GitHub suspension remains unchanged: fetch/push/review/CI/release stay pending;
+no repeated failed probe or alternative identity. Verify the final docs HEAD in
+this session's unique `authority-date-*` incremental bundle and receipt in
+`C:\Users\admin\Desktop\va-freelance-hub-recovery`; source/tests/docs backup only,
+not database or GCP-state restoration. Foreign `.agents/skills/` and `lucky777.md`
+remain preserved. Manifest/router are absent; installed Addy API/interface,
+incremental implementation and TDD skills supplied the bounded workflow. Jev's
+unchanged provider failure is non-blocking; tests/reviews settle this decision.
+
+**Local behavior:** only six real unregistered legacy sources retain their
+accepted fallback; unattributed rows stay hidden with zero-ID blocked receipts.
+Active registry sources require canonical leases strictly after evaluation time.
+Both Greenhouse intake planes exclude explicit prospect posts and use only a
+supplied original `first_published`; absent/malformed/wrong-type/rolled dates stay
+NULL without substituting edit/creation/fetch time or adding a detail GET.
+Experimental future dates retain their evidence but receive no fresh/net-new
+credit. These changes do not supply main-lake freshness or complete item proof.
+
+**Registry dependency:** read-only current admission validation requires explicit
+public action and active/canary state. Stable source/provider/tenant identity is
+separate from current evidence/CAS. Issued frozen snapshots reject caller forgery.
+A scalar native-batch guard checks latest packet, both revisions, unbumped provider
+reassignment and state/transition pointer, leases/caps, endpoint/tenant and both
+opt-outs against the D1 clock. SQLite race tests roll back earlier private writes.
+Every capture grants false publication authority and retains item/aggregate proof
+requirements. The helper is not wired into any route/controller; no atomic public
+writer, new source admission or runtime containment is claimed.
+
+**Acceptance:** 3,126 tests / zero fail / 319,941 assertions / 230 files
+(67.64 seconds), typecheck, Astro build (41.81 seconds), and four governance audits
+pass. Seven local categories out of seven (100% for this slice); 28 new tests;
+independent reviews found no blockers. Red-first defects and fixture limits are in
+the [repair contract](operations/LAKE_PUBLICATION_GATEWAY_REPAIR_2026-10-08.md) and
+[finite receipt](operations/lake-authority-date-local-checks-2026-10-08.json).
+Exact-source remote CI and deployment/runtime acceptance remain UNKNOWN. No
+production D1 read/write/migration/API request, source probe/admission, deployment,
+GCP mutation, GitHub push or new clock occurred. Primary documentation lookups
+are separate from source acquisition; no additional runtime measurement was made.
+
+**External/runtime holds:** account owner restores normal GitHub and GCP access;
+prior scheduler GET returned 403/BILLING_DISABLED, not a confirmed scheduler pause.
+The deployed primary/fallback writer remains unfenced; Janes rows 9046/9047 and
+exact compensation remain unresolved. Preserve the local raw-lake fence. Directory
+PR #228 is merged but normal release/per-row enrichment readback remains pending.
+The latest 735-visible/761-stored directory counts and 28.3/day storage proxy are
+dated observations, not this session's measurement or certified daily supply.
+Complete item evidence and an accepted shared cross-controller budget/epoch/lease
+contract remain missing; do not infer either from lake readiness, a geography
+verdict, target counts, HTTP bounds or per-controller timestamps.
+
+**One NEXT:** implement the independent item-proof producer prerequisite under
+the repair contract: versioned server-produced material-bound vacancy, full remote,
+PH restrictions, original freshness, safety, application and canonical-identity
+evidence. Unknown/contradictory facts withhold; fixtures cannot grant clearance.
+Maintainer/current-chat heartbeat owns this implementation; owner owns external
+access and unresolved accepted-policy changes. Shared budget ownership, the full
+atomic ledger/activation/outcome writer, Bun controller replacement, normal
+release/Git-SHA provenance, coordinated containment and bounded runtime/serving
+acceptance remain subsequent requirements. Rollback of this slice is normal
+source revert; no production schema or data compensation was dispatched. Hourly
+local lucky777 heartbeat remains ACTIVE with host availability; older APEX remains
+PAUSED. This prerequisite NEXT supersedes the broader NEXT below.
+
 ## 2026-10-08 21:11 Manila — Private lake intent accepted locally; governed publication still required
 
 **Owner scope CONTINUING:** 100 verified fresh public jobs per complete Manila
