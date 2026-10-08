@@ -12,7 +12,7 @@ import {
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
 import { d1Changes } from "@/lib/d1-result";
-import { publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts } from "@/lib/publish-opportunities";
+import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts } from "@/lib/publish-opportunities";
 import { publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
@@ -2813,9 +2813,8 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         const published = await publishGroupedInserts(
           publicationDb,
           async (batch) => {
-            const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
-            if (res && (res as any).meta && typeof (res as any).meta.changes === "number") return d1Changes(res);
-            throw new Error("D1 insert metadata did not include meta.changes");
+            const rows = await db.insert(opportunities).values(batch).onConflictDoNothing().returning({ id: opportunities.id });
+            return normalizePersistedOpportunityIds(rows.map((row) => row.id));
           },
           triagedItems,
           observedAt,
@@ -2837,18 +2836,8 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       const batch = triagedItems.slice(i, i + D1_INSERT_BATCH_SIZE);
       try {
         console.log(`[api/cron/scrape] Inserting batch of ${batch.length} items (index ${i}).`);
-        const res = await db.insert(opportunities).values(batch).onConflictDoNothing();
-        if (res && (res as any).meta && typeof (res as any).meta.changes === "number") {
-          actualChanges += d1Changes(res);
-        } else {
-          insertFailedBatches += 1;
-          markItemsForRetry(batch);
-          insertErrors.push({
-            batchStart: i,
-            batchSize: batch.length,
-            error: "D1 insert metadata did not include meta.changes",
-          });
-        }
+        const rows = await db.insert(opportunities).values(batch).onConflictDoNothing().returning({ id: opportunities.id });
+        actualChanges += normalizePersistedOpportunityIds(rows.map((row) => row.id)).length;
       } catch (err) {
         insertFailedBatches += 1;
         markItemsForRetry(batch);

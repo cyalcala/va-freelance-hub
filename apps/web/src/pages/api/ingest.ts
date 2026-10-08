@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, type NewOpportunity } from "@va-hub/db";
 import { chunkArray, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
-import { publicationDbFromEnv, publishGroupedInserts } from "@/lib/publish-opportunities";
+import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedInserts } from "@/lib/publish-opportunities";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
 import { isAuthorized } from "@/lib/auth";
@@ -156,7 +156,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         .values(chunk)
         .onConflictDoNothing()
         .returning({ id: opportunities.id });
-      return result.length;
+      return normalizePersistedOpportunityIds(result.map((row) => row.id));
     };
     if (publicationDb && publicItems.length > 0) {
       const published = await publishGroupedInserts(publicationDb, insertChunk, publicItems, observedAt, "ingest");
@@ -164,11 +164,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       insertedCount += published.published;
     } else {
       for (const chunk of chunkArray(publicItems, DIRECT_INGEST_BATCH_SIZE)) {
-        insertedCount += await insertChunk(chunk);
+        insertedCount += (await insertChunk(chunk)).length;
       }
     }
     for (const chunk of chunkArray(hiddenItems, DIRECT_INGEST_BATCH_SIZE)) {
-      insertedCount += await insertChunk(chunk);
+      insertedCount += (await insertChunk(chunk)).length;
     }
 
     return new Response(JSON.stringify({

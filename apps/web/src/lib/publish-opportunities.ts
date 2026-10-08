@@ -15,6 +15,12 @@ function canonicalPublicationSourceId(sourceId: string | null | undefined): stri
   return sourceId && /^[a-z0-9:._-]+$/.test(sourceId) ? sourceId : "unattributed";
 }
 
+/** IDs returned by the opportunity INSERT, never inferred from D1 write metadata. */
+export function normalizePersistedOpportunityIds(ids: readonly number[]): number[] {
+  if (!Array.isArray(ids)) throw new Error("opportunity insert must return persisted IDs");
+  return [...new Set(ids.filter((id) => Number.isSafeInteger(id) && id > 0))];
+}
+
 /**
  * EX-CANARY-INGESTION: clamp a proposed batch to a canary source's enforced
  * per-tick cap so the publication gateway never fires its automatic
@@ -41,7 +47,7 @@ async function canaryClampedProposal(
 
 export async function publishGroupedInserts(
   publicationDb: PublicationDatabase,
-  insertBatch: (rows: NewOpportunity[]) => Promise<number>,
+  insertBatch: (rows: NewOpportunity[]) => Promise<number[]>,
   rows: NewOpportunity[],
   now: string,
   channel: string,
@@ -65,8 +71,9 @@ export async function publishGroupedInserts(
       retryKey: `${tickKey}:${sourceId}:insert:${proposedCount}:${urls.slice(0, 200)}`,
       proposedCount,
       persist: async (allowed) => {
-        const written = await insertBatch(group.slice(0, allowed));
-        return { publishedCount: written, ids: [] };
+        const ids = normalizePersistedOpportunityIds(await insertBatch(group.slice(0, allowed)));
+        if (ids.length > allowed) throw new Error("insert returned more persisted IDs than allowed");
+        return { publishedCount: ids.length, ids };
       },
     });
     if (!result.ok) return { published, failed: true };
