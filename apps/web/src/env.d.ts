@@ -11,6 +11,9 @@ type ENV = {
   AI: any;
   PROXY_SECRET?: string;
   CRON_SECRET?: string;
+  // Private lake inspection only; a deployed read-only token is a prerequisite.
+  TURSO_DATABASE_URL?: string;
+  TURSO_READONLY_AUTH_TOKEN?: string;
   API_RATE_LIMITER?: RateLimitBinding;
   // Inngest signing key (set on the Pages project via `wrangler pages secret
   // put`). Inngest needs it to verify its requests to /api/inngest. It is NO
