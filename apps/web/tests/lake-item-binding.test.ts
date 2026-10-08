@@ -139,9 +139,91 @@ test("actual SQLite candidate/native replay binds exact private material but nev
       binding: { sourceId, candidateId: 1, rawObservationId: f.rawId, retainedSha256: f.receipt.retainedSha256,
         index: 0, itemMaterialSha256: f.receipt.items[0]!.materialSha256, postingId: 1, requisitionId: 101 } });
     expect(result.outcomes[0].reasons).toContain("LEGACY_COLLECTION_UNVERIFIED");
+    expect(result.outcomes[0]?.nativeGeoInspection).toMatchObject({
+      version: "lake-item-geo-inspection-v1", state: "HELD", geoScope: "ph_only",
+      phEligibility: "eligible_verified", fullRemote: "UNKNOWN", phExclusions: "UNKNOWN",
+      coverage: { title: "value", locationName: "value", description: "NOT_RETAINED", tags: "NOT_RETAINED" },
+      publicationAuthorized: false, qualificationAuthorized: false,
+    });
     expect(f.sqlite.serialize()).toEqual(before);
     expect(JSON.stringify(result)).not.toContain("Virtual Assistant");
     expect(JSON.stringify(result)).not.toContain("Location: Philippines");
+  } finally { f.sqlite.close(); }
+});
+
+test("current bound native onsite and US-only jobs are rejected without public writes", async () => {
+  for (const [title, location] of [["Virtual Assistant (On-site)", "Philippines"],
+    ["Virtual Assistant", "United States (Remote)"]] as const) {
+    const f = await fixture({ items: [{ id: 1, internal_job_id: 101, title,
+      absolute_url: "https://boards.greenhouse.io/test/jobs/1", location: { name: location },
+      first_published: instant(Date.now() - 7 * 86_400_000) }] });
+    try {
+      expect(f.sqlite.query("SELECT status FROM lake_candidate_jobs WHERE id=1").get())
+        .toMatchObject({ status: "EXCLUDED" });
+      const before = f.sqlite.serialize();
+      const input = await f.input();
+      const result = await inspectLakeItemBindings(input);
+      expect(result.outcomes[0]?.binding).toBeDefined();
+      expect(result.outcomes[0]).toMatchObject({ state: "REJECTED", freshness: "WITHIN_WINDOW",
+        nativeGeoInspection: { state: "REJECTED", phEligibility: "ineligible",
+          fullRemote: "UNKNOWN", phExclusions: "UNKNOWN", publicationAuthorized: false, qualificationAuthorized: false } });
+      expect(result.outcomes[0]?.reasons).toContain("NATIVE_GEO_INELIGIBLE");
+      expect(result.outcomes[0]?.reasons).toContain("LEGACY_COLLECTION_UNVERIFIED");
+      expect(result).toMatchObject({ publicationAuthorized: false, qualificationAuthorized: false,
+        publishedCount: 0, syncedCount: 0 });
+      expect(f.sqlite.serialize()).toEqual(before);
+      expect(JSON.stringify(result)).not.toContain(title);
+      expect(JSON.stringify(result)).not.toContain(location);
+    } finally { f.sqlite.close(); }
+  }
+});
+
+test("native worldwide and bare Remote hints never confer complete remote or PH proof", async () => {
+  for (const [location, geoScope] of [["Worldwide", "worldwide"], ["Remote", "unknown"]] as const) {
+    const f = await fixture({ items: [{ id: 1, internal_job_id: 101, title: "Virtual Assistant",
+      absolute_url: "https://boards.greenhouse.io/test/jobs/1", location: { name: location },
+      first_published: instant(Date.now() - 7 * 86_400_000) }] });
+    try {
+      const result = await inspectLakeItemBindings(await f.input());
+      expect(result.outcomes[0]).toMatchObject({ state: "HELD", nativeGeoInspection: {
+        state: "HELD", geoScope, fullRemote: "UNKNOWN", phExclusions: "UNKNOWN",
+        publicationAuthorized: false, qualificationAuthorized: false } });
+      expect(result.outcomes[0]?.reasons).toContain("ITEM_REMOTE_PROOF_UNKNOWN");
+      expect(result.outcomes[0]?.reasons).toContain("PH_EXCLUSIONS_UNKNOWN");
+      expect(result).toMatchObject({ publicationAuthorized: false, qualificationAuthorized: false,
+        publishedCount: 0, syncedCount: 0 });
+    } finally { f.sqlite.close(); }
+  }
+});
+
+test("native geography preserves missing, null and invalid location coverage", async () => {
+  for (const [location, state] of [[undefined, "missing"], [null, "null"], [123, "invalid"]] as const) {
+    const f = await fixture({ items: [{ id: 1, internal_job_id: 101, title: "Virtual Assistant",
+      absolute_url: "https://boards.greenhouse.io/test/jobs/1", location: { name: location },
+      first_published: instant(Date.now() - 7 * 86_400_000) }] });
+    try {
+      const result = await inspectLakeItemBindings(await f.input());
+      expect(result.outcomes[0]?.binding).toBeDefined();
+      expect(result.outcomes[0]).toMatchObject({ state: "HELD", nativeGeoInspection: {
+        state: "HELD", geoScope: "unknown", phEligibility: "unclear",
+        coverage: { locationName: state, description: "NOT_RETAINED", tags: "NOT_RETAINED" },
+        fullRemote: "UNKNOWN", phExclusions: "UNKNOWN" } });
+    } finally { f.sqlite.close(); }
+  }
+});
+
+test("native PH precedence remains a partial hint even when title has a US authorization lock", async () => {
+  const f = await fixture({ items: [{ id: 1, internal_job_id: 101,
+    title: "Virtual Assistant (must be authorized to work in the US)",
+    absolute_url: "https://boards.greenhouse.io/test/jobs/1", location: { name: "Philippines" },
+    first_published: instant(Date.now() - 7 * 86_400_000) }] });
+  try {
+    const result = await inspectLakeItemBindings(await f.input());
+    expect(result.outcomes[0]).toMatchObject({ state: "HELD", nativeGeoInspection: {
+      geoScope: "ph_only", phEligibility: "eligible_verified", state: "HELD",
+      fullRemote: "UNKNOWN", phExclusions: "UNKNOWN" } });
+    expect(result.outcomes[0]?.reasons).toContain("PH_EXCLUSIONS_UNKNOWN");
+    expect(result.qualificationAuthorized).toBe(false);
   } finally { f.sqlite.close(); }
 });
 
@@ -156,6 +238,7 @@ test("all eleven staged facts must match the conservative server profile; no cla
       const input = { ...await f.input(), intent: await f.stage(change) };
       const result = await inspectLakeItemBindings(input);
       expect(result.outcomes[0]?.binding).toBeUndefined();
+      expect(result.outcomes[0]?.nativeGeoInspection).toBeUndefined();
       expect(result.publicationAuthorized).toBe(false);
       expect(result.outcomes[0]?.reasons.length).toBeGreaterThan(0);
       expect(input.intent).toEqual(await f.stage(change));
@@ -171,6 +254,7 @@ test("raw bytes, stored digest, source, endpoint and status mismatch cannot prod
       const input = await f.input(); Object.assign(input.snapshot.rawObservations[0]!, change);
       const result = await inspectLakeItemBindings(input);
       expect(result.outcomes[0]?.binding).toBeUndefined();
+      expect(result.outcomes[0]?.nativeGeoInspection).toBeUndefined();
       expect(result.outcomes[0]?.state).toBe("REJECTED");
     }
     const input = await f.input(); const envelope = JSON.parse(f.receipt.payload);
@@ -192,6 +276,7 @@ test("candidate/native material drift stays held even when old geo-only status w
       expect(result.outcomes[0]?.state).toBe("HELD");
       expect(result.outcomes[0]?.reasons).toContain("CANDIDATE_NATIVE_MATERIAL_MISMATCH");
       expect(result.outcomes[0]?.binding).toBeUndefined();
+      expect(result.outcomes[0]?.nativeGeoInspection).toBeUndefined();
     }
   } finally { f.sqlite.close(); }
 });
@@ -208,6 +293,7 @@ test("coarse-fingerprint consolidation and every additional sighting hold lineag
     const result = await inspectLakeItemBindings(await f.input());
     expect(result.outcomes[0]?.reasons).toContain("LINEAGE_SIGHTINGS_UNRECONCILED");
     expect(result.outcomes[0]?.binding).toBeUndefined();
+    expect(result.outcomes[0]?.nativeGeoInspection).toBeUndefined();
     for (const metadata of [[], [{ ...f.snapshot().sightingMetadata[0], complete: false }]]) {
       const input = await f.input(); input.snapshot.sightingMetadata = metadata as any;
       expect((await inspectLakeItemBindings(input)).outcomes[0]?.binding).toBeUndefined();
@@ -225,6 +311,7 @@ test("current time re-evaluates original posting date without resetting captured
       const result = await inspectLakeItemBindings(await f.input());
       expect(result.outcomes[0]?.freshness).toBe(expected);
       expect(result.outcomes[0]?.state).toBe(expected === "UNKNOWN" ? "HELD" : "REJECTED");
+      expect(result.outcomes[0]?.nativeGeoInspection).toBeUndefined();
       expect(f.receipt.payload).toBe(before);
       if (expected === "STALE") expect(f.receipt.items[0]!.assessment.freshness).toBe("WITHIN_WINDOW");
     } finally { f.sqlite.close(); }

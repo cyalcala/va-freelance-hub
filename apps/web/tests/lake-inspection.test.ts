@@ -373,6 +373,11 @@ test("actual route inspects native evidence through readonly HTTP with zero publ
     expect(result.outcomes[0].binding).toMatchObject({ sourceId, candidateId: 1, rawObservationId: 1, index: 0,
       postingId: 1, requisitionId: 101 });
     expect(result.outcomes[0].reasons).toContain("LEGACY_COLLECTION_UNVERIFIED");
+    expect(result.outcomes[0].nativeGeoInspection).toMatchObject({
+      version: "lake-item-geo-inspection-v1", state: "HELD", geoScope: "ph_only",
+      fullRemote: "UNKNOWN", phExclusions: "UNKNOWN", publicationAuthorized: false,
+      qualificationAuthorized: false, coverage: { description: "NOT_RETAINED", tags: "NOT_RETAINED" },
+    });
     expect(text).not.toContain(readonlyEnv.TURSO_READONLY_AUTH_TOKEN);
     expect(text).not.toContain("raw_payload");
     expect(response.headers.get("Cache-Control")).toBe("no-store");

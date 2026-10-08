@@ -6,6 +6,7 @@ import { hashLakeStageCandidate, hashLakeStageManifest, type LakeStageCandidateD
 import { isIssuedLakePublicationAuthoritySnapshot, type LakePublicationAuthoritySnapshot } from "./lake-publication-authority";
 import type { LakeInspectIntent } from "./lake-publication-intent";
 import type { LakeEvidenceSnapshot, LakeEvidenceCandidateRow } from "./lake-evidence-reader";
+import { inspectLakeItemGeo, type LakeItemGeoInspection } from "./lake-item-geo-inspection";
 
 export type LakeItemBindingState = "HELD" | "REJECTED" | "UNKNOWN";
 export type LakeItemFreshness = "UNKNOWN" | "INVALID" | "FUTURE" | "STALE" | "WITHIN_WINDOW";
@@ -16,6 +17,7 @@ export interface LakeNativeItemBinding {
 export interface LakeItemBindingOutcome {
   lakeCandidateId: number; state: LakeItemBindingState; reasons: string[];
   freshness: LakeItemFreshness; binding?: LakeNativeItemBinding;
+  nativeGeoInspection?: LakeItemGeoInspection;
 }
 export interface LakeItemBindingInspection {
   version: "lake-item-binding-v1"; mappingProfile: "greenhouse-private-native-v1";
@@ -196,11 +198,17 @@ export async function inspectLakeItemBindings(input: LakeItemBindingInput): Prom
       || metadata.distinct_source_url_count !== 0 || metadata.mismatched_sighting_count !== 0 || metadata.latest_observed_at !== null) {
       result.outcomes.push(outcome(id, "HELD", "LINEAGE_SIGHTINGS_UNRECONCILED", freshness)); continue;
     }
+    // Retained title/location are interpretable only after exact correspondence,
+    // complete lineage and current freshness. They never prove omitted fields.
+    const nativeGeoInspection = freshness === "WITHIN_WINDOW" && item.assessment.disposition !== "REJECTED"
+      ? inspectLakeItemGeo(facts) : undefined;
     const state: LakeItemBindingState = freshness === "INVALID" || freshness === "FUTURE" || freshness === "STALE"
-      || item.assessment.disposition === "REJECTED" ? "REJECTED" : "HELD";
+      || item.assessment.disposition === "REJECTED" || nativeGeoInspection?.state === "REJECTED" ? "REJECTED" : "HELD";
     result.outcomes.push({ lakeCandidateId: id, state, freshness,
       reasons: [...BASE_HOLDS, ...(freshness === "UNKNOWN" ? ["ORIGINAL_DATE_UNKNOWN"] : freshness !== "WITHIN_WINDOW" ? [`ORIGINAL_DATE_${freshness}`] : []),
-        ...(item.assessment.disposition === "REJECTED" ? ["NATIVE_CAPTURE_REJECTED"] : [])],
+        ...(item.assessment.disposition === "REJECTED" ? ["NATIVE_CAPTURE_REJECTED"] : []),
+        ...(nativeGeoInspection?.reasons ?? [])],
+      ...(nativeGeoInspection ? { nativeGeoInspection } : {}),
       binding: { sourceId: intent.sourceId, candidateId: id, rawObservationId: raw.id, retainedSha256: evidence.retainedSha256,
         index: item.index, itemMaterialSha256: item.materialSha256, postingId: facts.postingId.value,
         requisitionId: facts.internalJobId.value, stageMaterialSha256 } });
