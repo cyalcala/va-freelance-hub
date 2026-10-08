@@ -77,6 +77,8 @@ function seedDirectory(
     ats_token?: string | null;
     is_verified?: number;
     hires_filipinos?: number;
+    qualified_jobs?: number;
+    verified_jobs?: number;
   }>,
 ): Database {
   const db = new Database(":memory:");
@@ -91,6 +93,7 @@ function seedDirectory(
       is_verified INTEGER NOT NULL DEFAULT 0,
       hires_filipinos INTEGER NOT NULL DEFAULT 1
     );
+    CREATE TABLE opportunities (company TEXT, ph_eligibility TEXT, is_active INTEGER);
   `);
   const stmt = db.prepare(
     `INSERT INTO va_directory
@@ -108,6 +111,10 @@ function seedDirectory(
       r.is_verified ?? 0,
       r.hires_filipinos ?? 1,
     );
+    for (let index = 0; index < (r.qualified_jobs ?? 0); index++) {
+      db.query("INSERT INTO opportunities VALUES (?, ?, 1)").run(`Co${r.id}`,
+        index < (r.verified_jobs ?? 0) ? "eligible_verified" : "eligible_likely");
+    }
   }
   return db;
 }
@@ -121,10 +128,10 @@ describe("buildEnrichmentTargetSql", () => {
     // lowest-id un-enrichable prospector rows. Prove that starvation for the old
     // ordering, then prove the new ordering reaches every row across runs.
     const db = seedDirectory([
-      { id: 1, website: null, is_verified: 0 },
-      { id: 2, website: null, is_verified: 0 },
-      { id: 3, website: null, is_verified: 0 },
-      { id: 4, website: null, is_verified: 0 },
+      { id: 1, website: null, is_verified: 0, qualified_jobs: 2, verified_jobs: 1 },
+      { id: 2, website: null, is_verified: 0, qualified_jobs: 2, verified_jobs: 1 },
+      { id: 3, website: null, is_verified: 0, qualified_jobs: 2, verified_jobs: 1 },
+      { id: 4, website: null, is_verified: 0, qualified_jobs: 2, verified_jobs: 1 },
     ]);
     try {
       const oldOrder = db
@@ -166,7 +173,7 @@ describe("buildEnrichmentTargetSql", () => {
   test("missing website alone is not actionable; verification candidates still are", () => {
     const db = seedDirectory([
       { id: 1, website: null, is_verified: 1 }, // website-only gap: intentionally skipped
-      { id: 2, website: "https://c.com", is_verified: 0, hires_filipinos: 1 }, // needs verification
+      { id: 2, website: "https://c.com", is_verified: 0, hires_filipinos: 1, qualified_jobs: 2, verified_jobs: 1 }, // evidence-ready verification
       { id: 3, website: "   ", is_verified: 1 }, // blank website-only gap: skipped
       // Complete non-ATS row: website + verified + hiring page set → excluded.
       { id: 4, website: "https://d.com", hiring_page_url: "https://d.com/jobs", is_verified: 1, hires_filipinos: 1 },
@@ -208,6 +215,33 @@ describe("buildEnrichmentTargetSql", () => {
     expect(buildEnrichmentTargetSql(Number.NaN)).toContain("LIMIT 1");
     // Not a whole number → floored, never interpolated verbatim.
     expect(buildEnrichmentTargetSql(3.9)).toContain("LIMIT 3");
+  });
+});
+
+describe("actionable enrichment selection", () => {
+  test("a large no-op cohort cannot consume the budget ahead of an evidence-ready company", () => {
+    const db = seedDirectory([...Array.from({ length: 100 }, (_, i) => ({ id: i + 1 })),
+      { id: 101, qualified_jobs: 2, verified_jobs: 1 }]);
+    try {
+      const rows = db.query(buildEnrichmentTargetSql(1)).all() as EnrichmentTarget[];
+      expect(rows.map((row) => row.id)).toEqual([101]);
+      db.exec("UPDATE opportunities SET is_active = 0");
+      expect(db.query(buildEnrichmentTargetSql(1)).all()).toEqual([]);
+    } finally { db.close(); }
+  });
+
+  test("insufficient, unclear or non-PH evidence and unsupported/empty ATS identities stay out", () => {
+    const db = seedDirectory([
+      { id: 1, qualified_jobs: 1, verified_jobs: 1 },
+      { id: 2, qualified_jobs: 5, verified_jobs: 0 },
+      { id: 3, ats_platform: "unsupported", ats_token: "co" },
+      { id: 4, ats_platform: "lever", ats_token: " " },
+      { id: 5, ats_platform: "lever", ats_token: "co5", is_verified: 1 },
+    ]);
+    try {
+      db.exec("INSERT INTO opportunities VALUES ('Co3','unclear',1),('Co3','ineligible',1)");
+      expect((db.query(buildEnrichmentTargetSql(100)).all() as EnrichmentTarget[]).map((row) => row.id)).toEqual([5]);
+    } finally { db.close(); }
   });
 });
 
