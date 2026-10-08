@@ -48,7 +48,7 @@ describe("reactivateFeedConfirmedJobs", () => {
     expect(captured.sets[0].failedVerificationCount).toBe(0);
   });
 
-  test("with a publication db, reserves exposure before flipping rows active", async () => {
+  test("with a publication db, reactivates attributed rows and holds missing source identities", async () => {
     const { db, captured } = fakeDb(
       [{ id: 11, sourceId: "we-work-remotely" }, { id: 12, sourceId: null }],
       1,
@@ -60,10 +60,16 @@ describe("reactivateFeedConfirmedJobs", () => {
       OBSERVED,
       publicationDb,
     );
-    expect(n).toBe(2);
+    expect(n).toBe(1);
     expect(captured.selected).toBe(true);
-    expect(captured.sets.length).toBe(2);
-    expect(publicationDb.runs.some((run) => run.query.includes("INSERT INTO source_publication_ledger"))).toBe(true);
+    expect(captured.sets.length).toBe(1);
+    expect(captured.sets[0].isActive).toBe(true);
+    const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
+    expect(captured.whereClauses).toHaveLength(2);
+    expect(new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[1]).params).toEqual([11]);
+    expect(publicationDb.runs.filter(run => run.query.includes("INSERT INTO source_publication_ledger"))
+      .map(run => [run.values[0], run.values[3], run.values[5], run.values[6]]))
+      .toEqual([["we-work-remotely", "unlimited", 1, "[11]"], ["unattributed", "blocked", 0, "[]"]]);
   });
 
   test("blocked publication leaves archived rows inactive", async () => {

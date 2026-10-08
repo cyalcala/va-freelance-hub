@@ -3,12 +3,18 @@ import {
   publishPublicExposure,
   publicationTickKey,
   clampLedgerPublishedCount,
+  LEGACY_EXACT_SIX_SOURCE_IDS,
+  loadPublicationPolicy,
   type PublicationDatabase,
   type PublicationStatement,
 } from "./publication-gateway";
 
 const NOW = "2026-09-06T12:00:00.000Z";
 const TICK = publicationTickKey("scrape", NOW);
+const REAL_LEGACY_SOURCES = ["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac", "jobicy-supporting-apac"];
+const activePolicy = (sourceId: string, policyExpiry: unknown) => ({
+  sourceId, compliance: "allowed", operational: "active", optOut: 0, policyExpiry, canaryMaxNewItemsPerTick: null,
+});
 
 class FakeStatement implements PublicationStatement {
   constructor(
@@ -42,6 +48,104 @@ class FakeDatabase implements PublicationDatabase {
 }
 
 describe("SP-23C publication gateway", () => {
+  test("unattributed has no unregistered legacy publication exemption", async () => {
+    const db = new FakeDatabase({ registry: [null], retry: [null], optOut: [null] });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, { sourceId: "unattributed", now: NOW, tickKey: TICK,
+      retryKey: "unattributed-held", proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; } });
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
+    expect(persisted).toBe(0);
+    expect(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values.slice(3, 7))
+      .toEqual(["blocked", 1, 0, "[]"]);
+    expect(LEGACY_EXACT_SIX_SOURCE_IDS.has("unattributed")).toBe(false);
+  });
+
+  test("all six real unregistered legacy sources retain their accepted null-lease exemption", async () => {
+    expect([...LEGACY_EXACT_SIX_SOURCE_IDS].sort()).toEqual([...REAL_LEGACY_SOURCES].sort());
+    for (const sourceId of REAL_LEGACY_SOURCES) {
+      const db = new FakeDatabase({ registry: [null], retry: [null], optOut: [null] });
+      let persisted = 0;
+      const result = await publishPublicExposure(db, { sourceId, now: NOW, tickKey: TICK,
+        retryKey: `legacy:${sourceId}`, proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; } });
+      expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1 });
+      expect(persisted).toBe(1);
+    }
+  });
+
+  test("registry active sources require a valid exact canonical future policy lease", async () => {
+    for (const policyExpiry of [null, undefined, "", "invalid", "2026-10-01", "2026-10-01T00:00:00Z",
+      "2026-10-01T00:00:00.000+00:00", "2027-02-30T00:00:00.000Z", "2026-10-01T00:00:00.000Z\0hidden", 123]) {
+      const db = new FakeDatabase({ registry: [activePolicy("greenhouse:tenant", policyExpiry)], retry: [null], optOut: [null] });
+      let persisted = 0;
+      const result = await publishPublicExposure(db, { sourceId: "greenhouse:tenant", now: NOW, tickKey: TICK,
+        retryKey: "invalid-active-lease", proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; } });
+      expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
+      expect(persisted).toBe(0);
+      expect(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values.slice(3, 7))
+        .toEqual(["blocked", 1, 0, "[]"]);
+    }
+  });
+
+  test("an active lease expires at equality rather than one instant afterward", async () => {
+    const db = new FakeDatabase({ registry: [activePolicy("greenhouse:tenant", NOW)], retry: [null], optOut: [null] });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, { sourceId: "greenhouse:tenant", now: NOW, tickKey: TICK,
+      retryKey: "equal-active-lease", proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; } });
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, reason: "source policy has expired" });
+    expect(persisted).toBe(0);
+  });
+
+  test("registered real legacy sources obey registry restrictions instead of a null-lease fallback", async () => {
+    for (const sourceId of REAL_LEGACY_SOURCES) {
+      const db = new FakeDatabase({ registry: [{ ...activePolicy(sourceId, null), authorityOrigin: "legacy-fallback" }], retry: [null], optOut: [null] });
+      let persisted = 0;
+      const result = await publishPublicExposure(db, { sourceId, now: NOW, tickKey: TICK,
+        retryKey: `registered:${sourceId}`, proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; } });
+      expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0 });
+      expect(persisted).toBe(0);
+    }
+  });
+
+  test("durable opt-outs block both legacy fallback and current leased registry sources", async () => {
+    for (const sourceId of REAL_LEGACY_SOURCES.concat("greenhouse:tenant")) {
+      for (const registry of [null, activePolicy(sourceId, "2026-10-01T00:00:00.000Z")]) {
+        const db = new FakeDatabase({ registry: [registry], retry: [null], optOut: [{ source_id: sourceId }] });
+        let persisted = 0;
+        const result = await publishPublicExposure(db, { sourceId, now: NOW, tickKey: TICK,
+          retryKey: `opt-out:${sourceId}`, proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; } });
+        expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0 });
+        expect(persisted).toBe(0);
+      }
+    }
+  });
+
+  test("policy provenance is server-derived and registry opt-outs remain effective", async () => {
+    for (const [sourceId, registry, authorityOrigin] of [
+      ["remotive", null, "legacy-fallback"], ["unattributed", null, "unregistered"],
+      ["remotive", { ...activePolicy("remotive", null), authorityOrigin: "legacy-fallback" }, "registry"],
+    ] as const) {
+      const db = new FakeDatabase({ registry: [registry], optOut: [null] });
+      expect(await loadPublicationPolicy(db, sourceId)).toMatchObject({ authorityOrigin });
+    }
+    const db = new FakeDatabase({ registry: [{ ...activePolicy("remotive", "2026-10-01T00:00:00.000Z"), optOut: 1 }], retry: [null], optOut: [null] });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, { sourceId: "remotive", now: NOW, tickKey: TICK,
+      retryKey: "registry-opt-out", proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; } });
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0 });
+    expect(persisted).toBe(0);
+  });
+
+  test("a canonical registry lease strictly after now permits allowed and conditional active sources", async () => {
+    for (const compliance of ["allowed", "conditional"]) {
+      const db = new FakeDatabase({ registry: [{ ...activePolicy("greenhouse:tenant", "2026-09-06T12:00:00.001Z"), compliance }], retry: [null], optOut: [null] });
+      let persisted = 0;
+      const result = await publishPublicExposure(db, { sourceId: "greenhouse:tenant", now: NOW, tickKey: TICK,
+        retryKey: `valid-active:${compliance}`, proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [7] }; } });
+      expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, ids: [7] });
+      expect(persisted).toBe(1);
+    }
+  });
+
   test("keeps an unregistered exact-six source unlimited", async () => {
     const db = new FakeDatabase({ registry: [null], retry: [null] });
     const result = await publishPublicExposure(db, {

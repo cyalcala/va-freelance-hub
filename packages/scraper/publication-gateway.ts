@@ -10,6 +10,7 @@
 import { applyTypedTransition, type TransitionGatewayDatabase } from "./transition-gateway";
 import { decideCanaryPublication } from "./transition-plane";
 import type { RegistryComplianceState, RegistryOperationalState } from "./policy-resolver";
+import { isAdmissionInstant } from "./admission-evidence";
 
 export interface PublicationStatement {
   bind(...values: unknown[]): PublicationStatement;
@@ -46,6 +47,8 @@ export interface PublicationPolicySnapshot {
   optOut: boolean;
   policyExpiry: string | null;
   canaryMaxNewItemsPerTick: number | null;
+  /** Server-derived provenance; a missing registry lease never implies legacy authority. */
+  authorityOrigin?: "registry" | "legacy-fallback" | "unregistered";
 }
 
 export interface PublishPublicExposureRequest {
@@ -93,7 +96,6 @@ export const LEGACY_EXACT_SIX_SOURCE_IDS = new Set<string>([
   "remote-ok",
   "jobicy-admin-support-apac",
   "jobicy-supporting-apac",
-  "unattributed",
 ]);
 
 export async function loadPublicationPolicy(
@@ -115,6 +117,7 @@ export async function loadPublicationPolicy(
         optOut: isOptedOut,
         policyExpiry: null,
         canaryMaxNewItemsPerTick: null,
+        authorityOrigin: "legacy-fallback",
       };
     }
     return {
@@ -124,6 +127,7 @@ export async function loadPublicationPolicy(
       optOut: isOptedOut,
       policyExpiry: null,
       canaryMaxNewItemsPerTick: null,
+      authorityOrigin: "unregistered",
     };
   }
   const effectiveOptOut = Boolean(row.optOut) || isOptedOut;
@@ -132,6 +136,7 @@ export async function loadPublicationPolicy(
     optOut: effectiveOptOut,
     compliance: effectiveOptOut ? "blocked" : row.compliance,
     operational: effectiveOptOut ? "retired" : row.operational,
+    authorityOrigin: "registry",
   };
 }
 
@@ -203,12 +208,15 @@ export async function publishPublicExposure(
     return { ok: true, mode: "capped", publishedCount: safePublished, ids: safeIds, replayed: false };
   }
 
-  const nowMs = new Date(request.now).getTime();
-  const isExpired = policy.policyExpiry ? nowMs > new Date(policy.policyExpiry).getTime() : false;
+  const expiry = policy.policyExpiry;
+  const canonicalLease = isAdmissionInstant(expiry) && isAdmissionInstant(request.now);
+  const isExpired = canonicalLease && request.now >= expiry;
+  const hasCurrentLease = policy.authorityOrigin === "legacy-fallback"
+    || (canonicalLease && request.now < expiry);
 
   if (
     policy.optOut ||
-    isExpired ||
+    !hasCurrentLease ||
     (policy.compliance !== "allowed" && policy.compliance !== "conditional") ||
     policy.operational !== "active"
   ) {
@@ -219,7 +227,8 @@ export async function publishPublicExposure(
       publishedCount: 0,
       ids: [],
       replayed: false,
-      reason: isExpired ? "source policy has expired" : "source is not publication-eligible",
+      reason: isExpired ? "source policy has expired" : policy.authorityOrigin === "registry" && !hasCurrentLease
+        ? "source requires a current canonical policy lease" : "source is not publication-eligible",
     };
   }
 

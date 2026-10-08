@@ -14,7 +14,7 @@ const CANARY_ROW = {
 };
 
 describe("publishGroupedActivations", () => {
-  test("reserves unlimited exact-six exposure grouped by source identity", async () => {
+  test("publishes attributed exact-six rows and holds rows without a source identity", async () => {
     const db = new FakePublicationDatabase();
     const persisted: number[][] = [];
     const result = await publishGroupedActivations(
@@ -31,9 +31,12 @@ describe("publishGroupedActivations", () => {
         return { publishedCount: ids.length, ids };
       },
     );
-    expect(result).toEqual({ published: 3, failed: false });
-    expect(persisted).toEqual([[1, 2], [9]]);
-    expect(db.runs.filter((run) => run.query.includes("INSERT INTO source_publication_ledger"))).toHaveLength(2);
+    expect(result).toEqual({ published: 2, failed: false });
+    expect(persisted).toEqual([[1, 2]]);
+    expect(persisted.flat()).not.toContain(9);
+    expect(db.runs.filter(run => run.query.includes("INSERT INTO source_publication_ledger"))
+      .map(run => [run.values[0], run.values[3], run.values[5], run.values[6]]))
+      .toEqual([["we-work-remotely", "unlimited", 2, "[1,2]"], ["unattributed", "blocked", 0, "[]"]]);
   });
 
   test("does not persist when the gateway blocks the source", async () => {

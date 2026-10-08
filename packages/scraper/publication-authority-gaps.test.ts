@@ -324,7 +324,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
     });
   });
 
-  describe("Gateway fallback behavior — F4 Gap: 'unattributed' enters exact-six fallback", () => {
+  describe("Gateway fallback behavior — F4 unattributed fallback repair", () => {
     test("unregistered exact-six source gets unlimited fallback", async () => {
       const db = new FakeDatabase({ registry: [null], retry: [null] });
       const result = await publishPublicExposure(db, {
@@ -345,17 +345,22 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
       expect(persisted).toBe(0);
     });
 
-    test("'unattributed' sourceId (from invalid client input) is in LEGACY_EXACT_SIX_SOURCE_IDS and gets fallback", () => {
-      expect(LEGACY_EXACT_SIX_SOURCE_IDS.has("unattributed")).toBe(true);
+    test("'unattributed' has no exact-six fallback exemption", () => {
+      expect(LEGACY_EXACT_SIX_SOURCE_IDS.has("unattributed")).toBe(false);
+      expect(LEGACY_EXACT_SIX_SOURCE_IDS.size).toBe(6);
     });
 
-    test("gateway allows 'unattributed' as unlimited (F4 gap: client can spoof sourceId)", async () => {
+    test("gateway blocks unattributed publication before persistence and records zero exposure", async () => {
       const db = new FakeDatabase({ registry: [null], retry: [null] });
+      let persisted = 0;
       const result = await publishPublicExposure(db, {
         sourceId: "unattributed", now: NOW, tickKey: TICK, retryKey: "unatt1", proposedCount: 3,
-        persist: async (allowed) => ({ publishedCount: allowed, ids: [1, 2, 3] }),
+        persist: async (allowed) => { persisted++; return { publishedCount: allowed, ids: [1, 2, 3] }; },
       });
-      expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 3 });
+      expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
+      expect(persisted).toBe(0);
+      expect(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values.slice(3, 7))
+        .toEqual(["blocked", 3, 0, "[]"]);
     });
 
     test("opt-out checked BEFORE registry fallback (F4 repair)", async () => {

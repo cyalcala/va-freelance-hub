@@ -68,12 +68,12 @@ describe("recoverGateEligiblePending", () => {
     expect(n).toBe(0);
   });
 
-  test("with a publication db, selects pending rows and reserves exposure before publishing", async () => {
+  test("with a publication db, publishes attributed pending rows and holds missing source identities", async () => {
     const rows = [
       { id: 3, sourceId: "we-work-remotely" },
       { id: 4, sourceId: null },
     ];
-    const captured: { set?: any; selected: boolean; updates: number } = { selected: false, updates: 0 };
+    const captured: { set?: any; selected: boolean; updates: number; whereClauses: any[] } = { selected: false, updates: 0, whereClauses: [] };
     const db: any = {
       select() {
         captured.selected = true;
@@ -88,7 +88,8 @@ describe("recoverGateEligiblePending", () => {
           set: (vals: any) => {
             captured.set = vals;
             return {
-              where: () => {
+              where: (clause: any) => {
+                captured.whereClauses.push(clause);
                 captured.updates += 1;
                 return Promise.resolve({ meta: { changes: 1 } });
               },
@@ -99,12 +100,16 @@ describe("recoverGateEligiblePending", () => {
     };
     const publicationDb = new FakePublicationDatabase();
     const n = await recoverGateEligiblePending(db, OBSERVED, publicationDb);
-    expect(n).toBe(2);
+    expect(n).toBe(1);
     expect(captured.selected).toBe(true);
-    expect(captured.updates).toBe(2);
+    expect(captured.updates).toBe(1);
     expect(captured.set.isActive).toBe(true);
     expect(captured.set.inactiveReason).toBe(null);
-    expect(publicationDb.runs.some((run) => run.query.includes("INSERT INTO source_publication_ledger"))).toBe(true);
+    const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
+    expect(captured.whereClauses.map(clause => new SQLiteSyncDialect().sqlToQuery(clause).params)).toEqual([[3]]);
+    expect(publicationDb.runs.filter(run => run.query.includes("INSERT INTO source_publication_ledger"))
+      .map(run => [run.values[0], run.values[3], run.values[5], run.values[6]]))
+      .toEqual([["we-work-remotely", "unlimited", 1, "[3]"], ["unattributed", "blocked", 0, "[]"]]);
   });
 
   test("blocked publication leaves gate-eligible pending rows hidden", async () => {
