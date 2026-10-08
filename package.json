@@ -27,6 +27,7 @@
     "lake:bulk-seed": "bun run scripts/lake/bulk-ats-seed.ts",
     "lake:focused-va-cohort": "bun run scripts/lake/ingest-focused-va-cohort.ts",
     "measure:funnel": "bun run scripts/diagnostics/measure-first-publication-funnel.ts",
+    "measure:directory": "bun run scripts/diagnostics/directory-enrichment-backlog.ts",
     "lake:replay": "bun run scripts/lake/replay-refinery.ts",
     "lake:sync": "bun run scripts/lake/sync-to-d1.ts",
     "lake:enroll": "bun run scripts/lake/enroll-published-sources.ts",
