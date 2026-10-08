@@ -1,5 +1,75 @@
 # System Savepoint
 
+## 2026-10-08 21:11 Manila — Private lake intent accepted locally; governed publication still required
+
+**Owner scope CONTINUING:** 100 verified fresh public jobs per complete Manila
+day, 150 stretch; the existing 735-visible-company directory; all MATH-01..13;
+DeepSeek-inspired SSAE-CED and lucky777/Addy continuity. This is meaningful local
+MATH-06 progress, not certified supply, math resolution or autonomy cutover.
+
+**Git:** this continuation started at `6f8bf489644b0ed31400703d9ba1e91ac106d491`.
+Behavior commit `31501d8d278fc2bc96c4a16175b01e57949ee84d` on
+`codex/verified-flow-directory-checkpoint` adds authenticated private lake intent.
+Previously verified remote base remains `926d39a0ea2db80a7eba8d541d12906a0c8b0837`.
+GitHub suspension and GCP scheduler 403/BILLING_DISABLED remain unchanged external
+prerequisites; no repeated failed probe, alternative account or billing/IAM change.
+This and the earlier local receipt/fence commits remain **BACKUP_PENDING**.
+Foreign `.agents/skills/` and `lucky777.md` are preserved. Verify the incremental
+local bundle/receipt in the sibling recovery folder; no DB/state restore claim.
+
+**Implemented/accepted locally:** explicit `lake-stage` version-one mode at the
+existing authenticated/body-limited API; exact fields/nulls/unknowns, bounded safe
+URLs and server material/manifest hashes. Migration 0055 and matching schema
+store only immutable minimal descriptors in a private control table. Native
+batch guard/exact readback preserves operation identity, original server clock
+and revision across retries and ambiguous responses. DELETE and both unique-key
+REPLACE paths cannot erase/rebind control records. Malformed durable responses
+stay UNKNOWN; confirmed material/advanced-state conflicts are 409. Every stage
+success reports zero published/synced jobs and false publication authority.
+Future identity/tick/receipt/outcomes remain null. No opportunities, FTS, ledger,
+source authority or candidate-body storage is touched by this mode.
+
+**Why private intent:** the deployed raw upsert can reactivate hidden opportunity
+rows, and existing ID-only activation callbacks cannot provide full race closure.
+Therefore staging no longer creates hidden public-table rows. This corrects the
+previous NEXT's staging assumption; the complete governed atomic commit and
+actual per-candidate outcomes remain required. Existing ordinary ingestion and
+deployed publishers are not repaired/fenced by the new mode.
+
+**Verification:** 3,098 tests / zero fail / 319,687 assertions / 228 files;
+38 new tests; web typecheck, Astro build (47.61 seconds), and all four governance
+audits pass. Seven local check categories out of seven (100% for this unit only).
+Independent reviews identified parser/storage, acknowledgement and SQL replacement
+defects; red-first regressions and repairs are recorded in the
+[repair contract](operations/LAKE_PUBLICATION_GATEWAY_REPAIR_2026-10-08.md) and
+[finite local receipt](operations/lake-private-intent-local-checks-2026-10-08.json).
+Wrangler LF/CRLF transport and SQLite checks are local, not live D1 proof.
+No production migration/request/write/deploy, source probe/admission, GCP mutation,
+GitHub push or clock change occurred. Prior Jev failure remains non-blocking;
+tests/review settle this bounded acceptance without another unchanged retry.
+
+**Runtime/directory/flow:** the earlier dated 735-visible directory, evidence
+gaps and actionable selector remain the latest observations; merged PR #228
+still needs normal release and per-row enrichment readback. Fresh-publication
+flow remains NULL/UNKNOWN, all thirteen accepted MATH resolutions remain 0/13.
+The existing lake authority incident, rows 9046/9047, primary/fallback fencing
+and exact-row compensation remain unresolved. No live containment is claimed.
+
+**One NEXT:** finish the governed atomic publication commit/controller replacement
+under the repair contract: exact material resubmission, independent vacancy/
+remote/PH/freshness/safety gates, verified current source identity/admission/lease/
+opt-out, source and aggregate budget ownership across controllers, deduplication,
+actual-ID ledger/activation/outcomes and crash/retry/race recovery. Use private
+intent without granting it authority; retain the raw-writer fence. Account owner
+restores normal GitHub/GCP access in parallel; subsequent normal backup/release,
+SHA-proven artifact, coordinated containment and bounded runtime/serving evidence
+remain required before activation. Maintainer/current-chat heartbeat owns this
+implementation; owner owns external access. Rollback: normal source revert;
+unapplied additive migration has no production compensation. Preserve future
+control data through supported backup before schema removal. Hourly local
+lucky777 heartbeat remains ACTIVE and requires host availability; older APEX
+remains PAUSED. This NEXT supersedes the stage-only NEXT below.
+
 ## 2026-10-08 20:22 Manila — Receipt repairs local; lake authority incident and blocked containment
 
 **Owner scope CONTINUING:** 100 verified fresh public jobs/day, 150 stretch;

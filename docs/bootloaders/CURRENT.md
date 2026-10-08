@@ -4,7 +4,12 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation: local receipt/metric repairs and a demonstrated raw-lake
+Latest continuation: locally accepted authenticated private lake intent at
+`31501d8d`, with strict server hashes, native batch/readback and immutable control
+records. [Repair contract and verification](../operations/LAKE_PUBLICATION_GATEWAY_REPAIR_2026-10-08.md).
+Staging reports zero published/synced jobs and grants no authority; complete
+governed atomic publication/controller replacement is the next bounded work.
+Earlier receipt/metric repairs and a demonstrated raw-lake
 authority incident; [incident boundary and stopped containment](../operations/SEV2_LAKE_AUTHORITY_2026-10-08.md).
 Scheduler GET returned 403/BILLING_DISABLED; no pause or row withdrawal succeeded.
 GitHub suspension still blocks backup/release, and deployed primary/fallback

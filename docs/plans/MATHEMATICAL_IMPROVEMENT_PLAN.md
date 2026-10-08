@@ -84,6 +84,20 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-08 private-intent checkpoint:** `31501d8d` advances MATH-06 locally:
+strict authenticated lake staging, server material/manifest hashes, immutable
+private control records and native atomic registration/readback. Staging never
+creates opportunities or receipts, grants no source authority and reports zero
+published/synced jobs. Private intent is necessary because the deployed raw writer
+can reactivate hidden opportunity rows. DELETE/REPLACE, byte/NUL bounds and corrupt
+acknowledgement regressions were repaired after independent review. Final combined
+3,098 tests, typecheck, Astro build and four governance audits pass; no production
+migration, release, runtime containment or new supply is established. Full source/
+item/cap/lease/opt-out/dedup/actual-ID atomic commit and controller replacement remain
+the sole NEXT in SYSTEM_SAVEPOINT. All thirteen accepted resolutions stay 0/13.
+The [repair evidence](../operations/LAKE_PUBLICATION_GATEWAY_REPAIR_2026-10-08.md)
+retains the full fifteen-field report and remaining directory/supply/access bounds.
+
 | ID | Challenge | Initial state | Production-rollout prerequisites |
 | --- | --- | --- | --- |
 | MATH-01 | Dynamic source allocation | OPEN — reward/decision data not validated | MATH-00, 03, 04, 06, 08, 12; 02 capacity envelope |

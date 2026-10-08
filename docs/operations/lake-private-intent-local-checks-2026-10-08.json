@@ -1,0 +1,61 @@
+{
+  "recordedAt": "2026-10-08T13:11:37.000Z",
+  "unit": "LAKE_PRIVATE_PUBLICATION_INTENT_V1",
+  "status": "LOCAL_ACCEPTED_PRIVATE_STAGING",
+  "startSha": "6f8bf489644b0ed31400703d9ba1e91ac106d491",
+  "sourceSha": "31501d8d278fc2bc96c4a16175b01e57949ee84d",
+  "verifiedRemoteBase": "926d39a0ea2db80a7eba8d541d12906a0c8b0837",
+  "goalComplete": false,
+  "tests": {
+    "pass": 3098,
+    "fail": 0,
+    "assertions": 319687,
+    "files": 228,
+    "newTests": 38,
+    "seconds": 83.35
+  },
+  "checks": {
+    "typecheck": "PASS",
+    "astroBuild": "PASS",
+    "astroBuildSeconds": 47.61,
+    "guardrails": "PASS",
+    "parameters": "PASS",
+    "orchestrator": "PASS",
+    "constitution": "PASS",
+    "categoriesPassed": 7,
+    "categoriesRequired": 7
+  },
+  "independentReview": "PASS_PRIVATE_STAGING_ONLY",
+  "networkAndProductionEffects": {
+    "sourceRequests": 0,
+    "productionD1Writes": 0,
+    "productionMigrations": 0,
+    "productionStageRequests": 0,
+    "deployments": 0,
+    "sourceAdmissions": 0,
+    "gcpMutations": 0,
+    "newClocks": 0,
+    "gitHubPushes": 0
+  },
+  "stageOutcome": {
+    "state": "STAGED",
+    "publishedCount": 0,
+    "syncedCount": 0,
+    "publicationAuthorized": false,
+    "receiptAndIdentityFields": "NULL",
+    "revision": 0,
+    "evidenceScope": "OFFLINE_SQLITE_AND_NATIVE_BINDING_FIXTURES"
+  },
+  "mathAccepted": "0/13",
+  "verifiedFreshPublicFlow": null,
+  "certification": "UNKNOWN",
+  "gitHubBackup": "BACKUP_PENDING",
+  "externalPrerequisites": [
+    "GITHUB_ACCOUNT_SUSPENDED",
+    "GCP_SCHEDULER_BILLING_DISABLED"
+  ],
+  "liveContainment": "NOT_ESTABLISHED",
+  "directoryAcceptance": "RELEASE_AND_PER_ROW_READBACK_PENDING",
+  "next": "SYSTEM_SAVEPOINT: governed atomic publication commit/controller replacement before activation",
+  "backupScope": "SOURCE_TEST_DOCS_ONLY_NO_DATABASE_OR_GCP_STATE_RESTORE"
+}
