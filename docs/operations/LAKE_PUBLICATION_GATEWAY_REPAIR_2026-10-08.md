@@ -152,3 +152,109 @@ unit; neither is a database or GCP-state restoration receipt. The existing
 directory-enrichment selection merged in PR #228 still needs normal release and
 per-row runtime evidence. All MATH-01..13 accepted resolutions remain 0/13; the
 100/day floor across every complete day and 150 stretch remain unestablished.
+
+## Stage-2 prerequisite slice — current authority and posting evidence
+
+Start SHA: `5bb4a5957091ad6953eaa7001523da6561d1fedc`. Independent
+code review exposed three prerequisites to the saved governed-commit NEXT:
+geography-only lake readiness is not item qualification, controller timestamp
+ticks do not establish a shared publication budget, and the old gateway includes
+`unattributed` among the six accepted missing-registry source exceptions.
+Registry leases also permit missing, malformed or exactly expired values.
+This bounded dependency slice repairs the concrete gateway/date defects and adds
+a private current-authority capture/CAS guard. It does not dispatch publication.
+
+Preserve only the six real legacy source IDs when no registry row exists;
+registered policies retain their restrictions and require a canonical lease
+strictly later than the evaluation clock. Durable and registry opt-outs continue
+to hold publication. A server-derived authority origin prevents nullable lease
+fields from masquerading as legacy provenance. Current registry capture requires
+an immutable admission packet with explicit public-minimal-metadata action,
+source/provider/tenant identity, current policy/provider/admission leases and
+revisions. Its issued frozen snapshot is a dependency, always returning false
+publication authority; cloned or caller-forged snapshots cannot produce a guard.
+The native-batch guard must recheck current identity, packet, operational state,
+transition hash, caps and opt-outs, including fields not covered by revision
+triggers. No new source exception, enrollment or accepted parameter is introduced.
+
+Greenhouse's [official Job Board API](https://docs.greenhouse.io/job-board.html)
+documents prospect posts with null `internal_job_id` and distinguishes
+`first_published` from `updated_at`. Both intake planes will omit explicit
+prospect posts and use only a supplied valid `first_published` as posting evidence.
+The list endpoint is not assumed to supply that field: absence remains NULL,
+without a detail request or edit/creation/fetch-time substitution. Experimental
+freshness will reject future dates and preserve their stated timestamps as
+inactive evidence. These fixes do not certify a genuine vacancy, full remoteness,
+PH exclusions, application availability, safety or canonical identity.
+
+Acceptance is red-first local regressions, real SQLite admission/CAS rollback
+fixtures, scoped checks, full existing tests/typecheck/build/audits and independent
+review. No opportunity ownership migration, fake qualification callback, invented
+aggregate caps, production request or deployment is part of this slice. The
+existing raw-lake fence remains. Complete item-proof production and an accepted
+cross-controller budget/lease contract still precede atomic ledger/activation,
+controller replacement and runtime acceptance. GitHub and GCP access failures
+are unchanged; repeat neither failed probe without changed evidence. Jev's prior
+provider failure remains non-blocking and is not retried for this bounded decision.
+
+### Prerequisite implementation and local acceptance
+
+`a6ab5f6e1535f1ee1cf19250928036f15e3a9ada` repairs the missing-registry
+unattributed fallback and active registry lease checks. Mixed-source activation
+fixtures retain null source IDs and prove those rows receive zero-ID blocked
+receipts without activation, while attributed successes retain their actual IDs.
+`ad007b8074c3869ccba7281289ec035b79b6cad7` corrects both Greenhouse intake
+planes and experimental future-date treatment. A shared original-date parser
+rejects wrong types, incomplete dates, calendar rollover and 24:00 while preserving
+valid timezone offsets. Absence of internal job identity is retained without
+claiming vacancy clearance; explicit null prospect identity is excluded. Existing
+`fetchATSFeed` active flags and main-lake geography-only readiness are not thereby
+complete qualification. Other providers' original-date semantics remain unproven.
+
+The registry prerequisite is implemented in `lake-publication-authority.ts`.
+It reuses actual current immutable-admission validation, derives a stable source/
+provider/tenant identity hash, issues frozen opaque snapshots and prepares a scalar
+JSON-abort guard for the caller's native batch. The guard binds latest packet,
+current source/provider revisions, unbumped provider reassignment, state/transition
+pointer, leases/caps, endpoint/tenant and both opt-outs. Its database clock checks
+source, provider and admission expiry. A missing/deleted source throws rather than
+silently returning no row. It is not wired into any route/controller and does not
+authorize publication; item and aggregate proof requirements remain true.
+
+Genuine red-first authority result: one pass/ten fail after correcting an existing
+immutable-cap fixture setup failure; final and independent scoped result:
+13 pass/zero fail/85 assertions. Gateway regressions first reproduced five defects.
+Original-date/future tests reproduced edit-date substitution, prospect inclusion,
+future freshness, boolean-to-epoch coercion and February-30 rollover before fixes.
+The first malformed adapter test import was a harness error, not implementation
+failure. The expiry fixture uses real SQLite time with a bounded 650ms wait; a
+slightly earlier fixture capture clock avoids Windows/SQLite clock resolution
+skew without weakening production checks.
+
+Final combined acceptance: **3,126 tests / zero fail / 319,941 assertions /
+230 files (67.64 seconds)**, typecheck, Astro build (41.81 seconds), and all four
+governance audits pass. Seven categories out of seven apply only to this bounded
+local unit. Three independent reviews found no blocking issue. New tests total
+28 compared with the previous 3,098-test checkpoint. No additional broad rerun
+is required after documentation-only checkpointing.
+
+No production D1 read/write, migration, API request, source acquisition/admission,
+GCP mutation, deployment, GitHub push or new clock occurred. Official primary
+documentation lookups are separate from job-source probes. The earlier runtime,
+directory and incident receipts remain dated evidence. All fifteen PH report
+fields above retain zero attributable acquisition/publication progress or UNKNOWN
+runtime benefit for this slice; directory release/readback remains pending.
+Accepted MATH resolutions stay **0/13**, certified fresh flow stays NULL/UNKNOWN,
+and live containment is not established. Normal GitHub access remains suspended;
+no unchanged failed probe is retried and backup remains pending despite verified
+local Git-bundle durability. No database/GCP-state restoration claim is made.
+
+One next evidence-producing action is the saved item-proof prerequisite:
+implement independently produced, versioned, material-bound vacancy/remote/PH/
+original-freshness/safety/application/canonical-identity evidence. Unknown or
+contradictory facts must withhold; tests cannot manufacture source clearance.
+An accepted shared budget/epoch/lease contract across controllers remains missing
+and cannot be inferred from the target, body bounds or per-controller ticks.
+Full atomic publication/controller replacement, normal release/provenance,
+coordinated containment and bounded runtime/serving acceptance remain subsequent
+requirements. Preserve the raw-writer fence throughout.
