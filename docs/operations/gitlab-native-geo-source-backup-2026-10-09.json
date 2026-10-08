@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-08T19:42:45.0242881Z",
+  "unit": "LAKE_NATIVE_GEO_INSPECTION_PREREQUISITE",
+  "url": "https://gitlab.com/cyrus-group4793641/va-freelance-hub.git",
+  "branch": "codex/verified-flow-directory-checkpoint",
+  "sourceSha": "49822e52d801e86c431d2a6bc806a094cbd6f622",
+  "remoteSha": "49822e52d801e86c431d2a6bc806a094cbd6f622",
+  "pushExit": 0,
+  "exactShaReadback": "PASS",
+  "gitHubBackup": "BACKUP_PENDING",
+  "gitLabCi": "UNKNOWN_NO_EQUIVALENT_CI_ACCEPTANCE",
+  "runtimeAcceptance": "NOT_ESTABLISHED",
+  "scope": "COMMITTED_SOURCE_TESTS_NOT_FINAL_DOCS_DATABASE_OR_GCP_STATE"
+}

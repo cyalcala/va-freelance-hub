@@ -146,6 +146,20 @@ runtime evidence, not executed tick-enforcement proof. Directory runtime
 enrichment and certified daily flow are unestablished; **0/13** accepted
 resolutions. The sole dependency-ready NEXT remains in SYSTEM_SAVEPOINT.
 
+**2026-10-09 native-geo prerequisite checkpoint:** `49822e52` advances MATH-05/06
+item diagnostics through unchanged canonical geoGate over exact native title/
+location only. Observed ineligible geography rejects privately; positive hints
+remain HELD with full remote/PH-exclusion proof UNKNOWN. Current freshness,
+correspondence and lineage guards precede interpretation; collection and every
+other qualification/publication hold remain. Frozen-source 3,235 tests,
+typecheck/build, four audits and source-module workerd execution pass; independent
+review accepts prerequisite scope. [Finite evidence](../operations/lake-native-geo-local-checks-2026-10-09.json)
+and exact GitLab source backup distinguish local correctness from CI/release/runtime
+acceptance. No production effects or measured supply/optimization benefit; accepted
+resolutions stay **0/13** and certified fresh flow UNKNOWN. The sole NEXT in the
+savepoint prioritizes a permitted factual directory cohort while wider publication
+and acquisition prerequisites remain unresolved.
+
 | ID | Challenge | Initial state | Production-rollout prerequisites |
 | --- | --- | --- | --- |
 | MATH-01 | Dynamic source allocation | OPEN — reward/decision data not validated | MATH-00, 03, 04, 06, 08, 12; 02 capacity envelope |

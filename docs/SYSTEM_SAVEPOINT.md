@@ -1,5 +1,78 @@
 # System Savepoint
 
+## 2026-10-09 03:44 Manila — Native geography checked locally; source backed up through GitLab
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the existing
+reported 735-visible-company directory; all MATH-01..13 and SSAE-CED, resumable
+lucky777/Addy maintenance and owner-authorized GitLab fallback. Accepted MATH
+resolutions remain **0/13**; certified fresh public flow remains NULL/UNKNOWN.
+
+**Reentry/Git:** start `10bf107f8b72633ab3a0a0990b0be7b0ad070956`, same
+`codex/verified-flow-directory-checkpoint` branch, fetched GitLab with zero divergence.
+Behavior `49822e52d801e86c431d2a6bc806a094cbd6f622` is pushed and exact remote SHA
+verified at 19:42:45 UTC. [Source receipt](operations/gitlab-native-geo-source-backup-2026-10-09.json).
+GitHub cached base remains `926d39a0ea2db80a7eba8d541d12906a0c8b0837`; its unchanged
+suspension was not reprobed. Preserve origin and GitLab main's README; no merge
+request, equivalent CI, release or runtime acceptance follows from the push.
+Final docs HEAD/readback and incremental archive/restore receipt belong in
+`C:\Users\admin\Desktop\va-freelance-hub-recovery\native-geo-*`. Its required base
+is this start SHA, covered by verified full bundle `lake-private-inspection-2026-10-08-191749Z.full.bundle`
+and receipt. Source/tests/docs/history only; no database/GCP-state restoration.
+Foreign `.agents/skills/` and root `lucky777.md` remain untouched. Desktop bootloader,
+AGENTS, absent manifest/router, current constitution/parameters/queue/provenance
+recovered; installed Addy source/TDD/review methods used. Jev's unchanged provider
+failure stayed non-blocking without retry or replacement provider.
+
+**Completed slice:** private geo diagnostics use only exact bound native title
+and location with unchanged canonical geoGate ordering and 300/500 UTF-16 bounds.
+Observed canonical ineligible cases reject privately; positive/unclear hints stay
+HELD. Native missing/null/invalid and malformed coverage is explicit. No copied
+native text, source PH priors, legacy defaults or omitted description/tags supply
+facts. Complete remote/PH-exclusion proof remains UNKNOWN. Interpretation requires
+exact source/manifest/native/material correspondence, complete zero-sighting
+lineage, current freshness and non-rejected capture; earlier failures expose no
+geo diagnosis. Existing collection/safety/budget/identity holds, immutable stage/
+native hashes and all false authority/zero counters remain. Actual SQLite refinery
+EXCLUDED rows prove the new negative path; read-only route/control records stay
+unchanged. No source request, production read/write, migration, grant, deployment,
+GCP read/mutation, accepted parameter or production clock changed.
+
+**Acceptance:** frozen-source **3,235 pass / zero fail / 321,706 assertions /
+237 files / 142.83 seconds**, 23 new tests. Focused and independent runs: 112 pass,
+1,455 assertions. Typecheck, Astro build (33.32 seconds; command 85.056), four
+governance audits and diff check pass; existing audit warnings remain. Isolated
+workerd executes native geo plus producer/replay/HTTP SDK/missing-binding checks
+under existing 2024-11-01/nodejs_compat with no production bindings. This is a
+source-module fixture, not a deployed Astro route or read-only grant receipt.
+[Finite checks/red evidence](operations/lake-native-geo-local-checks-2026-10-09.json),
+[runtime fixture](operations/lake-native-geo-workerd-2026-10-09.json),
+[repair/report](operations/LAKE_PUBLICATION_GATEWAY_REPAIR_2026-10-08.md).
+
+**Remaining evidence/owners:** full lawful acquisition/current collection and
+independent item proof, shared budget/epoch/lease contract, atomic writer/controller,
+release and coordinated containment remain open. Prior six GCP container-start
+failures/CONTAINER_PERMISSION_DENIED, scheduler BILLING_DISABLED and Janes 9046/9047
+incident are dated; runtime health was not remeasured. Owner owns normal access/
+image prerequisites; retry on changed evidence/new execution. Directory PR #228
+release/per-row readback remains pending. GitHub backup and equivalent GitLab CI
+stay pending separately; private unauthenticated API 404 was not repeated. These
+holds do not prevent permitted factual company research. Normal source revert is
+rollback; no production compensation is attributable to this unit.
+
+**One NEXT:** enrich one bounded cohort of three existing visible directory rows
+from the canonical evidence backlog. Refresh only their current factual fields/
+visibility through the existing read-only diagnostic path, reconcile exact identity
+and inspect permitted official website/careers evidence. Prepare reviewed field
+patches with URLs, dates, field-level provenance and expected-current-value guards;
+unsupported facts stay UNKNOWN. Preserve hiring/PH/verification flags unless their
+existing evidence rules independently pass; directory discovery grants no job
+collection/admission/publication authority. Keep deployment/per-row public acceptance
+pending behind the normal release path. Maintainer/current-chat heartbeat owns the
+cohort; owner owns external release/access prerequisites. This independent directory
+slice replaces the completed native-geo NEXT below. Lucky777 remains ACTIVE hourly
+with verified GitLab checkpoint fallback; older APEX remains PAUSED.
+
 ## 2026-10-09 03:15 Manila — Private correspondence verified; GitLab authentication and source fallback accepted
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

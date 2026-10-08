@@ -1,0 +1,139 @@
+{
+  "recordedAt": "2026-10-08T19:42:45.0242881Z",
+  "unit": "LAKE_NATIVE_GEO_INSPECTION_PREREQUISITE",
+  "status": "LOCAL_ACCEPTED_PREREQUISITE_ONLY_SOURCE_BACKUP_VERIFIED",
+  "startSha": "10bf107f8b72633ab3a0a0990b0be7b0ad070956",
+  "sourceSha": "49822e52d801e86c431d2a6bc806a094cbd6f622",
+  "sourceShaStatus": "COMMITTED_AND_EXACT_SHA_VERIFIED_ON_GITLAB",
+  "goalComplete": false,
+  "evidenceScope": "FROZEN_SOURCE_LOCAL_NATIVE_GEO_AND_SQLITE_BINDER_ROUTE_REGRESSIONS_ONLY",
+  "frozenSourceFiles": [
+    "apps/web/src/lib/lake-item-geo-inspection.ts",
+    "apps/web/src/lib/lake-item-binding.ts",
+    "apps/web/tests/lake-item-geo-inspection.test.ts",
+    "apps/web/tests/lake-item-binding.test.ts",
+    "apps/web/tests/lake-inspection.test.ts"
+  ],
+  "genuineBehavioralRed": {
+    "nativeGeoWorkingStub": {
+      "red": { "pass": 2, "fail": 17, "assertions": 155, "tests": 19, "seconds": 0.159 },
+      "green": { "pass": 19, "fail": 0, "assertions": 871, "tests": 19, "seconds": 0.154 }
+    },
+    "binderIntegration": {
+      "red": { "pass": 13, "fail": 5, "assertions": 202, "tests": 18, "seconds": 7.53 },
+      "harnessFailure": false
+    },
+    "missingImportsOrSetupFailuresCounted": false
+  },
+  "supersededVerification": {
+    "nativeGeoFirstImplementation": {
+      "pass": 18,
+      "fail": 1,
+      "assertions": 863,
+      "classification": "TEST_ASSERTION_SUBSTRING_ERROR_NOT_BEHAVIORAL_RED",
+      "reason": "Privacy assertion searched for script, which also matched the required description coverage key",
+      "correction": "Assert absence of the exact <script> native-text marker; preserve the description NOT_RETAINED field"
+    }
+  },
+  "focusedTests": { "status": "PASS", "pass": 112, "fail": 0, "assertions": 1455, "files": 4, "seconds": 15.13 },
+  "independentReview": {
+    "focusedRecheck": { "status": "PASS", "pass": 112, "fail": 0, "assertions": 1455 },
+    "readonlyRegression": "PASS",
+    "acceptanceScope": "LOCAL_PRIVATE_PREREQUISITE_ONLY",
+    "runtimePublicationAcceptance": false
+  },
+  "tests": {
+    "status": "PASS_FROZEN_SOURCE",
+    "log": ".tmp-lake-native-geo-full-tests.log",
+    "pass": 3235,
+    "fail": 0,
+    "assertions": 321706,
+    "files": 237,
+    "newTests": 23,
+    "seconds": 142.83
+  },
+  "checks": {
+    "typecheck": { "status": "PASS", "exitCode": 0 },
+    "astroBuild": { "status": "PASS", "astroSeconds": 33.32, "commandSeconds": 85.056, "deploymentAcceptance": false },
+    "guardrails": { "status": "PASS", "exitCode": 0 },
+    "parameters": { "status": "PASS", "exitCode": 0, "parityPercent": 100 },
+    "orchestrator": { "status": "PASS", "exitCode": 0 },
+    "constitution": { "status": "PASS", "exitCode": 0, "existingWarningsPreserved": true },
+    "diffCheck": { "status": "PASS_FROZEN_SOURCE", "finalStagedDocsCheck": "REQUIRED_BEFORE_DOCS_COMMIT" }
+  },
+  "workerd": { "status": "PASS_ISOLATED_SOURCE_MODULE_FIXTURE_ONLY", "receipt": "lake-native-geo-workerd-2026-10-09.json",
+    "checkedAt": "2026-10-08T19:40:55.705Z", "compatibilityDate": "2024-11-01", "compatibilityFlags": ["nodejs_compat"],
+    "nativeGeoExecution": "PASS", "producerReplayAndHttpSdkImport": "PASS", "missingBindingBeforeNetwork": "PASS",
+    "productionBindings": false, "productionAcceptance": false },
+  "inspectionContract": {
+    "version": "lake-item-geo-inspection-v1",
+    "gate": "UNCHANGED_CANONICAL_GEO_GATE",
+    "inputs": "EXACT_NATIVE_TITLE_AND_LOCATION_FACTS_ONLY",
+    "factCoverageStates": ["missing", "null", "invalid", "value", "MALFORMED"],
+    "descriptionCoverage": "NOT_RETAINED",
+    "tagsCoverage": "NOT_RETAINED",
+    "titleMaxUtf16Units": 300,
+    "locationMaxUtf16Units": 500,
+    "nulAllowed": false,
+    "coercionOrTruncation": false,
+    "nativeTextOrCanonicalEvidenceReturned": false,
+    "sourcePriorsUsed": false,
+    "onlyCanonicalIneligibleRejects": true,
+    "positiveOrUnclearHints": "HELD",
+    "malformedFactsOrUnusableTitle": "UNKNOWN",
+    "fullRemote": "UNKNOWN",
+    "phExclusions": "UNKNOWN",
+    "collectionAuthority": "UNVERIFIED",
+    "qualificationAuthorized": false,
+    "publicationAuthorized": false,
+    "publishedCount": 0,
+    "syncedCount": 0,
+    "fullItemQualification": "NOT_ESTABLISHED",
+    "readonlyProductionBindingGrant": "UNVERIFIED",
+    "deployedInspectionRoute": "UNVERIFIED"
+  },
+  "unchangedContracts": ["NATIVE_ENVELOPE_SCHEMA", "STAGE_CONTRACT", "EVIDENCE_READER", "PUBLICATION_CONTROLLER", "ACCEPTED_PARAMETERS"],
+  "networkAndProductionEffects": {
+    "jobSourceRequests": 0,
+    "productionReads": 0,
+    "productionD1Writes": 0,
+    "productionLakeWrites": 0,
+    "productionMigrations": 0,
+    "gcpReadOnlyMetadataGets": 0,
+    "gcpMutations": 0,
+    "deployments": 0,
+    "sourceAdmissions": 0,
+    "newProductionClocks": 0
+  },
+  "datedPriorAccessAndRuntimeEvidence": {
+    "reference": "lake-private-inspection-local-checks-2026-10-09.json",
+    "scheduleDateUtc": "2026-10-08",
+    "failedScheduledContainerStarts": 6,
+    "reason": "CONTAINER_PERMISSION_DENIED",
+    "gitHubAccessResult": "HTTP_403",
+    "reprobedByThisUnit": false,
+    "currentRuntimeHealth": "NOT_REMEASURED",
+    "completedPublisherTickHistory": "UNKNOWN",
+    "automaticContainment": "NOT_ESTABLISHED"
+  },
+  "backup": {
+    "gitLabStartCheckpoint": { "status": "PASS_EXACT_SHA_VERIFIED_BEFORE_THIS_UNIT", "exactSha": "10bf107f8b72633ab3a0a0990b0be7b0ad070956" },
+    "newSlice": "PASS_EXACT_SOURCE_SHA_GITLAB_READBACK_2026-10-08T19:42:45.0242881Z",
+    "sourceReceipt": "gitlab-native-geo-source-backup-2026-10-09.json",
+    "finalDocumentationHead": "SEPARATE_FINAL_READBACK_AND_INCREMENTAL_RESTORE_RECEIPT_REQUIRED",
+    "gitLabExactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED_PRIVATE_API_ACCESS_HOLD_UNCHANGED",
+    "gitHub": "PENDING_UNCHANGED_ACCESS_HOLD_NOT_REPROBED",
+    "scope": "COMMITTED_SOURCE_TEST_DOCS_HISTORY_ONLY_NO_DATABASE_OR_GCP_STATE_RESTORE"
+  },
+  "mathAccepted": "0/13",
+  "verifiedFreshPublicFlow": null,
+  "certification": "UNKNOWN",
+  "directoryAcceptance": "RELEASE_AND_PER_ROW_READBACK_PENDING",
+  "nextBoundedUnit": {
+    "scope": "CANONICAL_DIRECTORY_COHORT_FACTUAL_ENRICHMENT",
+    "evidence": "PRIMARY_OFFICIAL_EVIDENCE",
+    "sourceOrPublicationAuthorityInferred": false
+  },
+  "foreignFilesPreserved": [".agents/skills/", "lucky777.md"],
+  "rollback": "NORMAL_SOURCE_REVERT_NO_PRODUCTION_COMPENSATION_REQUIRED"
+}

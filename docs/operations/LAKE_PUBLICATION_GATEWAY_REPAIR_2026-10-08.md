@@ -499,3 +499,88 @@ application liveness, identity/taxonomy/company and permitted acquisition proof
 remain required. Directory release/per-row evidence and all MATH acceptances
 remain open (0/13). Rollback is a normal source revert; no production data
 compensation is attributable to this unit.
+
+## Native geo diagnostic unit — start `10bf107f8b72633ab3a0a0990b0be7b0ad070956`
+
+The saved dependency-ready step interprets only already bound native Greenhouse
+title and location through the unchanged canonical geoGate. The problem is that
+stored lake rows can have EXCLUDED geography while private correspondence alone
+reports HELD. Hypothesis: exact native interpretation can reject explicit observed
+onsite/PH-excluding cases and make missing coverage visible without granting false
+qualification. Existing gate ordering, thresholds and classification are preserved.
+No description/tags, source PH prior, legacy location_type, synthesized location
+or experimental geographic remoteness predicate supplies absent evidence.
+
+The pure helper returns bounded enums/fixed reason codes and the original native
+fact states; it emits no native text. Valid canonical ineligible results become
+private REJECTED outcomes. Positive and unclear hints stay HELD, with fullRemote
+and complete PH-exclusion coverage UNKNOWN and both authority flags false. Invoke
+only after exact manifest/source/native/material/lineage correspondence and current
+freshness; earlier failures and rejected native captures expose no geo diagnosis.
+Diagnostics stay outside immutable envelope, stage hashes and binding identity.
+
+Own the new private helper/fixture plus binder integration/fixture. Budget: zero
+source requests, production DB reads/writes, migrations, new bindings/grants,
+deployments or production clock changes. Use actual canonical gate and current
+SQLite/refinery/route fixtures, genuine behavioral RED, focused/full tests,
+typecheck/build/governance checks and independent review. Jev's unchanged provider
+failure remains non-blocking; no replacement provider or retry. Preserve foreign
+files, GitHub origin and branch ownership; verified GitLab fallback supplies
+source backup during the recorded suspension. Normal source revert is rollback;
+full qualification/acquisition/budget/writer/controller/release acceptance remains
+separate. Final mutable evidence and exactly one NEXT belong in SYSTEM_SAVEPOINT.
+
+## Native-geo acceptance — local prerequisite only
+
+Behavior `49822e52d801e86c431d2a6bc806a094cbd6f622` implements the new pure
+helper, guarded binder integration and private route-output regressions. Frozen
+source passes **3,235 tests / zero failures / 321,706 assertions / 237 files /
+142.83 seconds**, with 23 new tests. Focused and independent checks: 112 pass,
+1,455 assertions. Typecheck, Astro build (33.32 seconds; command 85.056), all four
+governance audits and diff checks pass. Existing audit warnings are unchanged.
+Isolated workerd executes the new native geo helper and existing producer/replay/
+HTTP SDK/missing-binding checks under unchanged compatibility settings; it is a
+source-module fixture, not an Astro route/deployment or production grant receipt.
+[Finite checks and genuine reds](lake-native-geo-local-checks-2026-10-09.json),
+[workerd receipt](lake-native-geo-workerd-2026-10-09.json).
+
+The original helper RED is 2 pass/17 fail/155 assertions; binder integration RED
+is 13 pass/5 fail/202 assertions. A first-implementation helper test incorrectly
+searched for `script`, also matching the required `description` key; its exact
+native-marker correction is a test assertion fix, not an additional behavioral
+RED. Independent static/regression reviews found no blocker in prerequisite scope.
+The actual refinery fixtures preserve EXCLUDED onsite/US-only rows and prove
+inspection rejects them without writes. Positive PH/APAC/worldwide hints still
+grant no complete remote/PH-exclusion, collection, safety or publication clearance.
+
+GitLab source SHA push/readback passes at 19:42:45 UTC:
+[source backup](gitlab-native-geo-source-backup-2026-10-09.json). Final documentation
+HEAD/readback and incremental restore require their own external recovery receipt
+after final docs commit, push/readback and restore verification, using the previously
+verified full start-SHA bundle. GitHub backup and equivalent
+GitLab CI/review/release/runtime acceptance remain pending separately. No repeated
+unchanged GitHub/GCP/private API probe occurred in this unit; previous runtime
+container-start failures/containment incident retain their dated scope.
+
+| PH reporting field | Native-geo slice |
+| --- | --- |
+| Sources evaluated | 0 live probes; exact native/canonical gate and SQLite/refinery/route fixtures |
+| Sources resolved | 0 source-authority resolutions |
+| ATS/provider identities discovered | 0 production identities |
+| Sources admitted | 0 |
+| Sources shadowed | 0 |
+| Sources blocked, reasons/triggers | 0 lifecycle changes; retain raw-writer/access/image holds |
+| Raw jobs observed | 0 live acquisitions |
+| PH-qualified jobs generated | 0 |
+| Net-new unique jobs | 0 attributable |
+| QUALIFIED_READY added | 0 production additions |
+| Jobs synced to D1 | 0 attributable |
+| Jobs visibly active on site | 0 attributable; certified fresh flow NULL/UNKNOWN |
+| Source economics changes | UNKNOWN; no measured production benefit |
+| Primary remaining bottleneck | Full lawful acquisition/item proof, shared budget, atomic writer/controller, release/containment |
+| Next autonomous action | Sole NEXT in SYSTEM_SAVEPOINT: factual enrichment of a bounded existing-directory cohort |
+
+No source request, production read/write, migration, credential grant, deployment,
+GCP read/mutation, accepted parameter, paid service or production clock changed.
+Directory runtime enrichment and MATH acceptance remain unestablished (0/13).
+Normal source revert is rollback; no production compensation is attributable.

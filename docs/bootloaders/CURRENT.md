@@ -4,15 +4,17 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09): private correspondence inspection at `61144ed4`
-completes the saved binder using internal bounded read-only snapshots, strict
-current source/stage recapture, native replay and all eleven staged facts.
-3,212 tests, typecheck/build, four audits and a bounded source-module workerd
-fixture pass. Every outcome grants false qualification/publication authority;
-collection/full independent item proof, budgets and atomic writer remain open.
-The sole NEXT in SYSTEM_SAVEPOINT is conservative native geo diagnostics through
-canonical geoGate, with positive hints held and remote/exclusion proof UNKNOWN.
-The owner-authorized GitLab remote is authenticated and exact source SHA backed up;
+Latest continuation (2026-10-09 03:44 Manila): native geo diagnostics at `49822e52`
+complete the saved geo step. Only current, exactly bound native title/location
+enters unchanged canonical geoGate; negative cases reject privately while positive
+hints remain held with full remote/exclusion proof UNKNOWN and false authority.
+3,235 tests, typecheck/build, four audits and a source-module workerd fixture pass.
+Collection/full independent item proof, budgets, atomic writer/controller and
+production acceptance remain open. The sole NEXT in SYSTEM_SAVEPOINT returns to
+factual enrichment of one three-row cohort from the existing directory backlog,
+with official field provenance and expected-value guards, no source/publication
+permission inferred. Prior correspondence binder `61144ed4` remains complete.
+The owner-authorized GitLab remote is authenticated and exact new source SHA backed up;
 [fallback/explicit-branch restore contract](../operations/SOURCE_CONTROL_FALLBACK_2026-10-09.md).
 Use it during the unchanged GitHub suspension, preserving origin and reconciling
 any branch advance/divergence. GitLab main is only an independent README.
