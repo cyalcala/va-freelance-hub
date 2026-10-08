@@ -386,3 +386,116 @@ Directory release/per-row readback and every MATH-01..13 acceptance remain open
 (0/13). This slice adds no source permission, accepted parameter, schema, public
 writer, paid provider or production clock. Rollback is a normal source revert;
 no production data compensation is required.
+
+## Current private correspondence unit — start `209e45ace7669e395a53048e5a27c2bd27305c57`
+
+Implement a separate authenticated, read-only `lake-inspect` operation (version 1)
+on the existing ingest endpoint. Its four wire fields are operation, version,
+operationId and sourceId. The server loads the existing immutable staged intent;
+the caller supplies no candidates, evidence, clock, SQL, URL or PASS assertion.
+The existing eleven-field stage contract and its retry behavior remain intact.
+Inspection neither writes control records nor sets source identity, tick, receipt,
+qualification or publication slots. It returns bounded HELD/REJECTED/UNKNOWN
+diagnostics with false authorization and zero published/synced counters.
+
+Current admission/opt-out/lease/source context is captured before internal lake
+reads and recaptured afterward; a changed context withholds. Runtime issuance
+checks distinguish an internally issued snapshot from a caller clone, without
+claiming freshness or clearance. Collection authority in the retained legacy
+envelope remains UNVERIFIED; a current admission cannot retroactively clear it.
+
+The optional server bindings TURSO_DATABASE_URL and TURSO_READONLY_AUTH_TOKEN
+are declared prerequisites, not evidence of deployed bindings or a read-only
+grant. Missing configuration fails before client/network use. The installed
+HTTP SDK executes fixed, parameterized read statements; credential forwarding is
+pinned to the configured origin, redirects are refused, and response bytes,
+request count and elapsed time are bounded. Distinct retained raw payloads are
+bounded in aggregate before loading. Candidate/sighting metadata is read in the
+same read transaction; historical raw foreign keys, coarse fingerprints and a
+latest-only observation shortcut cannot supply exact current correspondence.
+
+Replay binds source, stored envelope SHA, native array index and item material
+SHA to one exact posting URL/tenant/native identity. All eleven staged facts are
+compared to a conservative reconstruction; unsupported non-null claims and changed
+material withhold rather than rewriting the staged intent. Freshness uses the
+current server clock and original posting evidence. Additional or ambiguous
+sightings retain a lineage hold. Independent remote/PH/safety/application/
+canonical/taxonomy and permitted collection proof remain required afterward.
+
+The synchronous native producer is moved into the shared scraper package with
+a compatibility re-export for the existing collector. It uses the already
+declared production nodejs_compat contract; no compatibility date/flag changes.
+Local tests/build are separate from an actual deployed runtime receipt. Red-first
+route/reader/binder tests use actual SQLite schemas and fake HTTP transport,
+without production lake reads, source requests, native CLI mocks or writes.
+
+No source permission, accepted parameter, schema, paid provider or background
+clock changes. The complete atomic writer, accepted shared budget/epoch/lease,
+release/Git provenance, containment and daily flow acceptance remain open.
+Finalize the bounded source slice only after frozen-source checks and review;
+record actual evidence and one dependency-ready NEXT in SYSTEM_SAVEPOINT.
+
+## Private-inspection acceptance — 2026-10-09 local prerequisite
+
+Source commits `65f7646ab2f8787df4d24b5aabfd8f370ba714ef` (shared producer),
+`9ec12d1559b0c185c76e4b7c55dd92c346ffff7b` (bounded read-only reader) and
+`61144ed4eb79d020b7f40b579f9cae50a5ef1682` (authenticated private inspection)
+complete the saved correspondence binder. The server also rereads staged intent
+after acquisition, refusing concurrent revision/state changes. Mixed SQLite/ISO
+sighting times use chronological comparison with strict validation of every
+clock. Any extra/mismatched sighting withholds; duplicate native posting IDs
+cannot produce a binding. Replay/context parsing is cached once per distinct
+bounded raw envelope. Exact staged facts are preserved rather than rewritten.
+
+Frozen-source full suite: **3,212 pass / zero fail / 320,772 assertions / 236
+files / 141.65 seconds**, 56 new tests. Web typecheck, Astro build (53.28 seconds;
+79.238 command seconds), all four governance audits and diff check pass.
+Independent reader and route/binder reviews found no remaining blocker in this
+prerequisite scope. The isolated local workerd fixture passes producer/replay,
+HTTP SDK import and missing-binding-before-network checks using existing
+2024-11-01/nodejs_compat settings. It is a source-module fixture, not an Astro
+route/deployment/production read-only grant receipt. The full-suite timeout run
+and parallel workerd setup timeout were superseded by actual passing reruns;
+production/test policy limits were not relaxed. [Finite checks and red evidence](lake-private-inspection-local-checks-2026-10-09.json),
+[workerd receipt](lake-private-inspection-workerd-2026-10-09.json).
+
+GitLab source backup is verified at the exact source SHA above through the
+owner-authorized second remote; [push/readback](gitlab-source-backup-2026-10-09.json)
+and [fallback contract](SOURCE_CONTROL_FALLBACK_2026-10-09.md). GitHub backup
+remains pending. No merge request, equivalent GitLab CI, deployment or runtime
+acceptance follows from source upload. The final documentation HEAD has a
+separate readback/archive receipt in the external recovery directory.
+
+Four finite read-only GCP metadata GETs recorded six failed scheduled container
+starts from 12:47 through 17:47 UTC; exact newest execution v625c reports
+CONTAINER_PERMISSION_DENIED. Executed tick history/enforcement, root cause,
+Git-SHA provenance and full containment stay UNKNOWN. [Incident receipts](SEV2_LAKE_AUTHORITY_2026-10-08.md)
+retain the image/service-agent evidence. No production credentials/grants,
+source fetch, D1/Turso production write, migration, admission, deploy, paid
+service, accepted parameter or background clock changed.
+
+| PH reporting field | Private-inspection slice |
+| --- | --- |
+| Sources evaluated | 0 live probes; offline collector/SQLite/route/HTTP fixtures only |
+| Sources resolved | 0 source-authority resolutions |
+| ATS/provider identities discovered | 0 production identities |
+| Sources admitted | 0 |
+| Sources shadowed | 0 |
+| Sources blocked, reasons/triggers | 0 lifecycle changes; retain raw-writer fence and access/image holds |
+| Raw jobs observed | 0 live acquisitions |
+| PH-qualified jobs generated | 0 |
+| Net-new unique jobs | 0 attributable |
+| QUALIFIED_READY added | 0 production additions |
+| Jobs synced to D1 | 0 attributable |
+| Jobs visibly active on site | 0 attributable; certified fresh flow NULL/UNKNOWN |
+| Source economics changes | UNKNOWN; no measured production benefit |
+| Primary remaining bottleneck | Permitted collection and full independent item proof, shared budgets, atomic writer/controller, release/containment |
+| Next autonomous action | Follow the sole NEXT in SYSTEM_SAVEPOINT; do not repeat the completed correspondence binder |
+
+All inspection outcomes remain HELD/REJECTED/UNKNOWN with false publication and
+qualification authority and zero published/synced counters. Current admission
+cannot retroactively establish legacy collection permission. Remote/PH/safety,
+application liveness, identity/taxonomy/company and permitted acquisition proof
+remain required. Directory release/per-row evidence and all MATH acceptances
+remain open (0/13). Rollback is a normal source revert; no production data
+compensation is attributable to this unit.

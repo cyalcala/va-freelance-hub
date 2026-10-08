@@ -129,6 +129,23 @@ and the incident retain limits. No directory runtime enrichment or MATH closure
 is attributed; all thirteen accepted resolutions remain **0/13**. Exact NEXT is
 only in SYSTEM_SAVEPOINT; GitHub backup/release remains pending.
 
+**2026-10-09 private-inspection prerequisite checkpoint:** `61144ed4` completes
+the saved internal read-only correspondence binder. Authenticated four-field
+inspection rereads current source/admission/lease and staged revision, replays
+exact retained native evidence and checks all eleven facts without rewriting
+claims. Chronological sighting validation and ambiguity/cache regressions pass.
+Local 3,212 tests, typecheck/build, four audits and a bounded source-module
+workerd fixture pass; independent reviews accept prerequisite scope only.
+No collection/qualification/publication authority is issued, no live source or
+production write occurs and full independent item proof/shared budgets/atomic
+writer/controller/release/containment remain open. [Finite receipt](../operations/lake-private-inspection-local-checks-2026-10-09.json)
+records actual verification and limits. The owner-authorized GitLab second
+remote verifies the exact source SHA; GitHub backup and equivalent CI/runtime
+acceptance remain pending separately. Six failed GCP container starts are dated
+runtime evidence, not executed tick-enforcement proof. Directory runtime
+enrichment and certified daily flow are unestablished; **0/13** accepted
+resolutions. The sole dependency-ready NEXT remains in SYSTEM_SAVEPOINT.
+
 | ID | Challenge | Initial state | Production-rollout prerequisites |
 | --- | --- | --- | --- |
 | MATH-01 | Dynamic source allocation | OPEN — reward/decision data not validated | MATH-00, 03, 04, 06, 08, 12; 02 capacity envelope |

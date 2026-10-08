@@ -1,0 +1,59 @@
+{
+  "recordedAt": "2026-10-08T18:29:11.338Z",
+  "mode": "BOUNDED_READ_ONLY_EXECUTION_REFRESH",
+  "project": "antigravity-494415",
+  "region": "asia-southeast1",
+  "job": "lake-publish-job",
+  "schedulerReprobe": false,
+  "mutationCount": 0,
+  "sourceRequests": 0,
+  "provenance": "EXECUTION_STATE_ONLY_NOT_GIT_SHA_OR_PUBLICATION_ACCEPTANCE",
+  "httpStatus": 200,
+  "executions": [
+    {
+      "id": "lake-publish-job-v625c",
+      "createTime": "2026-10-08T17:47:05.769049Z",
+      "completionTime": null,
+      "runningCount": null,
+      "succeededCount": null,
+      "failedCount": null,
+      "completedState": "CONDITION_FAILED"
+    },
+    {
+      "id": "lake-publish-job-9pbkc",
+      "createTime": "2026-10-08T16:47:05.622103Z",
+      "completionTime": null,
+      "runningCount": null,
+      "succeededCount": null,
+      "failedCount": null,
+      "completedState": "CONDITION_FAILED"
+    },
+    {
+      "id": "lake-publish-job-rd5lk",
+      "createTime": "2026-10-08T15:47:05.767402Z",
+      "completionTime": null,
+      "runningCount": null,
+      "succeededCount": null,
+      "failedCount": null,
+      "completedState": "CONDITION_FAILED"
+    },
+    {
+      "id": "lake-publish-job-8lhnr",
+      "createTime": "2026-10-08T14:47:05.751475Z",
+      "completionTime": null,
+      "runningCount": null,
+      "succeededCount": null,
+      "failedCount": null,
+      "completedState": "CONDITION_FAILED"
+    },
+    {
+      "id": "lake-publish-job-7g975",
+      "createTime": "2026-10-08T13:47:05.734100Z",
+      "completionTime": null,
+      "runningCount": null,
+      "succeededCount": null,
+      "failedCount": null,
+      "completedState": "CONDITION_FAILED"
+    }
+  ]
+}

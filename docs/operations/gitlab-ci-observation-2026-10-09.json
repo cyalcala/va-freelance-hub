@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-10-08T19:11:17.9684363Z",
+  "scope": "PUBLIC_API_READ_WITHOUT_CREDENTIALS",
+  "sha": "61144ed4eb79d020b7f40b579f9cae50a5ef1682",
+  "httpStatus": 404,
+  "pipelines": null,
+  "acceptance": "UNKNOWN_API_ACCESS_DID_NOT_ESTABLISH_CI",
+  "credentialsRead": false
+}

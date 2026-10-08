@@ -1,5 +1,91 @@
 # System Savepoint
 
+## 2026-10-09 03:15 Manila — Private correspondence verified; GitLab authentication and source fallback accepted
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+735-visible-company directory; all MATH-01..13, SSAE-CED and lucky777/Addy continuity.
+Accepted resolutions remain **0/13**; certified fresh flow NULL/UNKNOWN. The
+owner additionally authorized GitLab source fallback and completed Chrome/Git
+Credential Manager authentication. This checkpoint does not close the wider goal.
+
+**Git/reentry:** start `209e45ace7669e395a53048e5a27c2bd27305c57`, same
+`codex/verified-flow-directory-checkpoint` branch; source commits `65f7646a`
+(shared native producer), `9ec12d15` (bounded read-only snapshot) and
+`61144ed4eb79d020b7f40b579f9cae50a5ef1682` (private correspondence inspection).
+Cached GitHub base remains `926d39a0ea2db80a7eba8d541d12906a0c8b0837`.
+GitHub fetch/push/review/CI/release remain pending behind the unchanged suspension.
+The verified credential-free `gitlab` remote is
+`https://gitlab.com/cyrus-group4793641/va-freelance-hub.git`. Noninteractive fetch,
+dry-run and real push pass; source SHA readback matches at 19:08:30 UTC.
+[Source receipt](operations/gitlab-source-backup-2026-10-09.json) and
+[fallback/restore contract](operations/SOURCE_CONTROL_FALLBACK_2026-10-09.md).
+GitLab `main`'s independent README commit is preserved; restore the explicit review
+branch. Final acceptance-docs HEAD requires its separate final GitLab SHA receipt
+and full source bundle/manifest in `C:\Users\admin\Desktop\va-freelance-hub-recovery`.
+The archive contains committed source/tests/docs/history, not database or GCP-state
+restoration. Foreign `.agents/skills/` and root `lucky777.md` remain untouched.
+
+**Local behavior:** separate authenticated four-field `lake-inspect` version 1
+loads the immutable staged intent, captures current source/admission/lease/opt-out,
+reads internal candidate/raw/sighting evidence through fixed bounded read-only
+HTTP SDK statements, then recaptures both intent and current source context.
+Issued snapshots cannot be replaced by caller clones. Replay binds exact retained
+SHA, source/tenant/native identity/index/material and all eleven staged facts.
+Strict chronological sighting validation, ambiguous posting IDs and lineage holds
+prevent false correspondence; bounded raw replay is cached once per envelope.
+Original-date freshness is reevaluated at server time. No stage/control slot is
+advanced and no public writer is called. Unsupported claims are held rather than
+rewritten. All outcomes grant false qualification/publication authority and report
+zero published/synced. Legacy collection stays UNVERIFIED; present admission cannot
+retroactively clear it. Optional read-only bindings/grants/deployed route are
+unverified; remote/PH/safety/liveness/identity/taxonomy/full collection proof,
+shared budget/epoch/lease, atomic writer/controller and release remain open.
+
+**Acceptance:** frozen-source **3,212 pass / zero fail / 320,772 assertions /
+236 files / 141.65 seconds**, 56 new tests; web typecheck, Astro build (53.28
+seconds; command 79.238), four governance audits and diff check pass. Independent
+reader and route/binder reviews accept prerequisite scope. Isolated workerd
+producer/replay/HTTP SDK/missing-binding-before-network fixture passes existing
+2024-11-01/nodejs_compat; it is neither an Astro route nor a deployed grant receipt.
+[Finite checks](operations/lake-private-inspection-local-checks-2026-10-09.json)
+retain genuine reds, interrupted chronology totals UNKNOWN, superseded full-suite
+and setup timeouts and actual reruns. No source fetch, production D1/Turso write,
+migration, admission, deployment, credential grant, paid service, accepted parameter
+or production clock changed. Addy source/API/incremental/TDD/review/Git/CI methods
+were used; Jev's unchanged provider failure was not retried. Desktop lucky777,
+AGENTS, absent manifest/router, constitution/parameters/queue/provenance recovered.
+
+**Runtime/access holds:** four finite GCP metadata GETs recorded six failed
+scheduled container starts 12:47..17:47 UTC, newest `lake-publish-job-v625c`, reason
+CONTAINER_PERMISSION_DENIED on the same image/service agent. These are not executed
+publisher-tick or cap-enforcement receipts. Root cause, Git-SHA image provenance,
+other writers/public outcomes and full containment remain UNKNOWN. The separate
+scheduler BILLING_DISABLED hold and Janes 9046/9047 compensation remain unresolved;
+owner owns normal access/image prerequisites, with changed evidence/new execution
+as trigger. [Incident](operations/SEV2_LAKE_AUTHORITY_2026-10-08.md). Directory
+PR #228 release/per-row evidence remains pending; counts are dated. Exact-source-SHA
+public GitLab pipeline API returned 404, leaving CI UNKNOWN; authentication is proved
+by actual Git push, not that API read. No GitLab merge request or equivalent release
+is established. GitHub CI and runtime acceptance remain separate from local checks.
+
+**One NEXT:** implement private native geo inspection over already internally
+bound Greenhouse title/location in `apps/web/src/lib/lake-item-geo-inspection.ts`
+and focused tests, invoked by the binder only after exact correspondence succeeds.
+Reuse canonical geoGate unchanged; expose bounded geoScope/phEligibility
+diagnostics with explicit title/location-only coverage. Negative geo verdicts may
+reject; positive hints remain HELD because description/remote/exclusion coverage is
+absent. Full remote and PH-exclusion clearance stay UNKNOWN; experimental
+isRemoteGeoScope is not remote proof. Preserve envelope/schema/stage contract,
+collection UNVERIFIED and all safety/publication/budget holds. Use actual canonical
+gate fixtures, including onsite, unsupported geography and ambiguous evidence;
+zero public writes/authority. Maintainer/current chat owns this dependency-ready
+local slice; acquisition attestation/shared-budget policy are later prerequisites,
+not retroactive repairs. Normal source revert is rollback; no production compensation
+is attributable to this unit. Lucky777 remains ACTIVE hourly on the same chat,
+now with verified GitLab checkpoint fallback; older APEX remains PAUSED. This sole
+NEXT supersedes the completed correspondence binder below.
+
 ## 2026-10-08 22:37 Manila — Complete native observations verified locally; new GCP start failure recorded
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

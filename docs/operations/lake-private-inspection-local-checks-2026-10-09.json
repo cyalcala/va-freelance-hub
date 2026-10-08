@@ -1,0 +1,196 @@
+{
+  "recordedAt": "2026-10-08T19:10:28.000Z",
+  "unit": "LAKE_PRIVATE_ITEM_INSPECTION_PREREQUISITE",
+  "status": "LOCAL_ACCEPTED_PREREQUISITE_ONLY_SOURCE_BACKUP_VERIFIED",
+  "startSha": "209e45ace7669e395a53048e5a27c2bd27305c57",
+  "sourceSha": "61144ed4eb79d020b7f40b579f9cae50a5ef1682",
+  "sourceShaStatus": "COMMITTED_AND_EXACT_SHA_VERIFIED_ON_GITLAB",
+  "goalComplete": false,
+  "evidenceScope": "FROZEN_SOURCE_OFFLINE_SQLITE_NATIVE_BINDING_AND_SOURCE_MODULE_WORKERD_FIXTURES",
+  "tests": {
+    "status": "PASS",
+    "log": ".tmp-lake-inspect-full-tests-final.log",
+    "pass": 3212,
+    "fail": 0,
+    "assertions": 320772,
+    "files": 236,
+    "newTests": 56,
+    "seconds": 141.65
+  },
+  "checks": {
+    "typecheck": { "status": "PASS", "exitCode": 0 },
+    "astroBuild": {
+      "status": "PASS",
+      "log": ".tmp-lake-inspect-build.log",
+      "astroSeconds": 53.28,
+      "commandSeconds": 79.238,
+      "deploymentAcceptance": false
+    },
+    "guardrails": { "status": "PASS", "log": ".tmp-lake-inspect-audit-guardrails.log" },
+    "parameters": { "status": "PASS", "log": ".tmp-lake-inspect-audit-parameters.log" },
+    "orchestrator": { "status": "PASS", "log": ".tmp-lake-inspect-audit-orchestrator.log" },
+    "constitution": {
+      "status": "PASS",
+      "log": ".tmp-lake-inspect-audit-constitution.log",
+      "existingWarningsPreserved": true
+    },
+    "diffCheck": { "status": "PASS", "evidence": "git diff --check exited zero; final staged check is required before docs commit" }
+  },
+  "supersededVerification": {
+    "initialFullRun": {
+      "status": "SUPERSEDED_BY_FINAL_FULL_PASS",
+      "log": ".tmp-lake-inspect-full-tests.log",
+      "pass": 3210,
+      "timeoutFailures": 2,
+      "betweenTestErrors": 1
+    },
+    "isolatedTimeoutRechecks": [
+      { "log": ".tmp-lake-inspect-timeout-recheck.log", "pass": 16, "fail": 0, "assertions": 75 },
+      { "log": ".tmp-lake-inspect-held-timeout-recheck.log", "pass": 14, "fail": 0, "assertions": 45 }
+    ],
+    "initialFrozenWorkerd": {
+      "status": "SETUP_TIMEOUT_SUPERSEDED_BY_ISOLATED_PASS",
+      "setupTimeoutSeconds": 30,
+      "isolatedSetupTimeoutSeconds": 45,
+      "productionLimitsChanged": false
+    }
+  },
+  "genuineBehavioralRed": {
+    "weakSetIssuance": {
+      "red": { "pass": 12, "fail": 1, "assertions": 81, "tests": 13 },
+      "green": { "pass": 13, "fail": 0, "assertions": 94 }
+    },
+    "actualRoute": {
+      "red": { "pass": 0, "fail": 3, "assertions": 6 },
+      "harnessFailure": false
+    },
+    "staleIntentConcurrentRevision": {
+      "red": { "pass": 0, "fail": 1, "assertions": 1 },
+      "green": { "pass": 1, "fail": 0, "assertions": 3 }
+    },
+    "initialReaderStub": { "red": { "pass": 0, "fail": 8, "assertions": 9 } },
+    "initialBinderStub": { "red": { "pass": 1, "fail": 7, "assertions": 16 } },
+    "cacheAndDuplicateIdRefinement": {
+      "red": { "pass": 12, "fail": 2, "assertions": 161 },
+      "green": { "pass": 14, "fail": 0, "assertions": 171, "seconds": 2.18 }
+    },
+    "mixedClockChronology": {
+      "red": {
+        "status": "PARTIAL_LOG_FINAL_TOTALS_UNKNOWN",
+        "log": ".tmp-lake-reader-chronology-red.log",
+        "observedLatest": "2026-10-08T01:00:00.000Z",
+        "expectedLatest": "2026-10-08T23:00:00.000Z",
+        "pass": null,
+        "fail": null,
+        "assertions": null,
+        "reason": "TOOL_HOST_INTERRUPTION_AND_TEST_HANDLE_NO_LONGER_AVAILABLE"
+      },
+      "green": {
+        "log": ".tmp-lake-reader-chronology-green.log",
+        "pass": 15,
+        "fail": 0,
+        "assertions": 99,
+        "seconds": 23.68
+      },
+      "repair": "CHRONOLOGICAL_JULIANDAY_MAX_WITH_CANONICAL_UTC_OUTPUT_AND_STRICT_PER_SIGHTING_CLOCK_VALIDATION"
+    },
+    "missingImportOrHarnessFailuresCounted": false
+  },
+  "independentReview": {
+    "reader": "PASS_PREREQUISITE_SCOPE_ONLY",
+    "readerChronologyDelta": "PASS_NO_NEW_CALENDAR_NORMALIZATION_FALSE_ACCEPTANCE",
+    "routeAndBinder": "PASS_PREREQUISITE_SCOPE_ONLY",
+    "runtimePublicationAcceptance": false
+  },
+  "workerd": {
+    "status": "PASS_ISOLATED_SOURCE_MODULE_FIXTURE_ONLY",
+    "receipt": "lake-private-inspection-workerd-2026-10-09.json",
+    "checkedAt": "2026-10-08T19:04:05.124Z",
+    "compatibilityDate": "2024-11-01",
+    "compatibilityFlags": ["nodejs_compat"],
+    "scope": "SOURCE_MODULE_FIXTURE_NOT_ASTRO_ROUTE_OR_DEPLOYMENT",
+    "productionBindings": false,
+    "sourceRequests": 0,
+    "productionReads": 0,
+    "productionWrites": 0,
+    "nodeCryptoProducerAndReplay": "PASS",
+    "httpSdkImport": "PASS",
+    "missingBindingBeforeNetwork": "PASS",
+    "publicationAuthorized": false,
+    "publishedCount": 0,
+    "syncedCount": 0
+  },
+  "inspectionOutcome": {
+    "publicationAuthorized": false,
+    "qualificationAuthorized": false,
+    "publishedCount": 0,
+    "syncedCount": 0,
+    "collectionAuthority": "UNVERIFIED",
+    "fullItemQualification": "NOT_ESTABLISHED",
+    "readonlyProductionBindingGrant": "UNVERIFIED",
+    "deployedInspectionRoute": "UNVERIFIED",
+    "correspondenceEvidenceIsPublicationClearance": false
+  },
+  "networkAndProductionEffects": {
+    "sourceRequests": 0,
+    "productionD1Writes": 0,
+    "productionLakeWrites": 0,
+    "productionMigrations": 0,
+    "gcpReadOnlyMetadataGets": 4,
+    "gcpMutations": 0,
+    "deployments": 0,
+    "sourceAdmissions": 0,
+    "newClocks": 0,
+    "gitHubPushes": 0
+  },
+  "runtimeRefresh": {
+    "scope": "FINITE_GCP_EXECUTION_METADATA_READS_ONLY",
+    "receipts": [
+      "publisher-execution-refresh-2026-10-08-145047Z.json",
+      "publisher-container-start-failure-2026-10-08-145109Z.json",
+      "publisher-execution-refresh-2026-10-08-182911Z.json",
+      "publisher-container-start-failure-2026-10-08-184018Z.json"
+    ],
+    "consecutiveFailedScheduledStarts": 6,
+    "scheduleSlotsUtc": ["12:47", "13:47", "14:47", "15:47", "16:47", "17:47"],
+    "scheduleDateUtc": "2026-10-08",
+    "reason": "CONTAINER_PERMISSION_DENIED",
+    "newestExecution": "lake-publish-job-v625c",
+    "completedPublisherTickHistory": "UNKNOWN",
+    "actualTickEnforcement": "UNKNOWN",
+    "rootCause": "UNKNOWN",
+    "gitShaProvenance": "UNKNOWN",
+    "publicationAcceptance": "UNKNOWN",
+    "automaticContainment": "UNKNOWN",
+    "clockDisabledOrFullyContained": "NOT_ESTABLISHED",
+    "otherWritersAndPublicOutcomes": "UNKNOWN"
+  },
+  "backup": {
+    "gitHub": { "status": "PENDING", "accessResult": "HTTP_403" },
+    "gitLabPreflight": { "read": "PASS", "fetch": "PASS", "dryRunPush": "PASS" },
+    "gitLabInitialBasePush": {
+      "status": "PASS",
+      "exactSha": "209e45ace7669e395a53048e5a27c2bd27305c57",
+      "verifiedAt": "2026-10-08T19:05:52.9214663Z"
+    },
+    "currentUnitSourceCommit": "61144ed4eb79d020b7f40b579f9cae50a5ef1682",
+    "currentUnitExactShaBackup": "PASS_GITLAB_SOURCE_SHA_READBACK_2026-10-08T19:08:30.4423095Z",
+    "currentUnitBackupReceipt": "gitlab-source-backup-2026-10-09.json",
+    "finalAcceptanceDocsHead": "SEPARATE_FINAL_READBACK_AND_ARCHIVE_RECEIPT_REQUIRED",
+    "gitLabExactShaCi": "UNKNOWN_UNAUTHENTICATED_PIPELINE_API_404",
+    "gitLabCiObservationReceipt": "gitlab-ci-observation-2026-10-09.json",
+    "scope": "SOURCE_TEST_DOCS_ONLY_NO_DATABASE_OR_GCP_STATE_RESTORE"
+  },
+  "mathAccepted": "0/13",
+  "verifiedFreshPublicFlow": null,
+  "certification": "UNKNOWN",
+  "directoryAcceptance": "RELEASE_AND_PER_ROW_READBACK_PENDING",
+  "liveContainment": "NOT_ESTABLISHED",
+  "openPublicationPrerequisites": [
+    "CURRENT_COLLECTION_CONTEXT_AND_COLLECTION_AUTHORITY",
+    "COMPLETE_INDEPENDENT_ITEM_PROOF",
+    "SHARED_PUBLICATION_BUDGET_EPOCH_AND_LEASE_CONTRACT",
+    "GOVERNED_ATOMIC_PUBLICATION_WRITER",
+    "CONTROLLER_REPLACEMENT_AND_RUNTIME_ACCEPTANCE"
+  ]
+}

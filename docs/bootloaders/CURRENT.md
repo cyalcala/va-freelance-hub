@@ -4,15 +4,23 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation: complete minimal native observations at `a651cf98` repair
-Greenhouse all-item provenance and exact-byte replay/storage. 3,156 tests,
-typecheck/build and four audits pass; 30 new tests and independent review.
-Collection/current-admission/origin and complete qualification remain unverified;
-every native assessment grants false publication authority. The exact NEXT in
-SYSTEM_SAVEPOINT wires internal observation replay/current context and staged
-material together. New 12:47/13:47 publisher starts failed; exact newest reason
-CONTAINER_PERMISSION_DENIED on the configured image, separate from scheduler
-BILLING_DISABLED. Normal access/containment/release remain unresolved.
+Latest continuation (2026-10-09): private correspondence inspection at `61144ed4`
+completes the saved binder using internal bounded read-only snapshots, strict
+current source/stage recapture, native replay and all eleven staged facts.
+3,212 tests, typecheck/build, four audits and a bounded source-module workerd
+fixture pass. Every outcome grants false qualification/publication authority;
+collection/full independent item proof, budgets and atomic writer remain open.
+The sole NEXT in SYSTEM_SAVEPOINT is conservative native geo diagnostics through
+canonical geoGate, with positive hints held and remote/exclusion proof UNKNOWN.
+The owner-authorized GitLab remote is authenticated and exact source SHA backed up;
+[fallback/explicit-branch restore contract](../operations/SOURCE_CONTROL_FALLBACK_2026-10-09.md).
+Use it during the unchanged GitHub suspension, preserving origin and reconciling
+any branch advance/divergence. GitLab main is only an independent README.
+GitHub backup/review/release and equivalent GitLab CI remain pending separately.
+Lucky777's existing hourly heartbeat now includes the verified fallback; no new
+production ingestion clock. Six GCP container starts 12:47..17:47 failed, exact
+newest CONTAINER_PERMISSION_DENIED, separate from scheduler BILLING_DISABLED.
+Executed tick history/containment/Git-SHA image provenance remain unverified.
 Earlier locally accepted source/date prerequisites at `a6ab5f6e`,
 `ad007b80` and `e63eb1b1`: six real legacy fallbacks, strict active registry leases,
 original Greenhouse posting evidence/future-date abstention, and read-only registry
@@ -24,7 +32,7 @@ Earlier private intent at `31501d8d` reports zero published/synced and no author
 Earlier receipt/metric repairs and a demonstrated raw-lake
 authority incident; [incident boundary and stopped containment](../operations/SEV2_LAKE_AUTHORITY_2026-10-08.md).
 Scheduler GET returned 403/BILLING_DISABLED; no pause or row withdrawal succeeded.
-GitHub suspension still blocks backup/release, and deployed primary/fallback
+GitHub suspension still blocks its backup/release, and deployed primary/fallback
 remain unfenced. The exact current NEXT is in SYSTEM_SAVEPOINT; older release-only
 instructions below are dated. All thirteen MATH acceptances and certified supply
 remain open; hourly local lucky777 continuity remains active.

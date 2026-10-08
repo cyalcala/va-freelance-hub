@@ -137,6 +137,46 @@ rollout, provider request or D1 mutation was dispatched. The next observation is
 triggered by changed access/configuration or a new execution; do not spin on the
 same failed probe. Dependency-ready local evidence work continues.
 
+## Third consecutive scheduled start failure — 14:50–14:51 UTC read
+
+Two further read-only metadata GETs observed the changed 14:47 schedule slot.
+The [new execution list](publisher-execution-refresh-2026-10-08-145047Z.json)
+reports `lake-publish-job-8lhnr` created 14:47:05.751475 UTC and failed, following
+the failed 12:47 and 13:47 executions. The
+[exact execution](publisher-container-start-failure-2026-10-08-145109Z.json)
+reports all four conditions failed with `CONTAINER_PERMISSION_DENIED`, last
+transitioned 14:47:06.174101 UTC. Start/completion/count fields remain NULL.
+The configured image digest is unchanged. There are three consecutive failed
+scheduled execution starts. The accepted reliability parameter is three failed
+ticks; these containers never started, so completed publisher-tick history and
+automatic enforcement are not established by that numerical coincidence. This
+does not demonstrate a fence, recovered publication, a required IAM grant or the
+root cause of image access.
+
+No job launch, deployment, scheduler pause, billing/IAM change or D1 compensation
+was performed. Other writers and public outcomes remain separately unresolved.
+Owner investigation of normal access and image-read prerequisites remains open;
+observe again after changed access/configuration or a new execution. These finite
+receipts supersede the two-failure count without replacing its dated history.
+
+## Post-interruption refresh — 18:29–18:40 UTC read
+
+Two metadata GETs observed changed schedule slots after maintainer execution was
+interrupted. The [five-execution list](publisher-execution-refresh-2026-10-08-182911Z.json)
+adds failed 15:47, 16:47 and 17:47 starts. Together with the preceding dated
+receipts, six consecutive scheduled execution starts from 12:47 through 17:47
+failed after the 11:47 success. The
+[exact newest execution](publisher-container-start-failure-2026-10-08-184018Z.json)
+is `lake-publish-job-v625c`: all four conditions report
+`CONTAINER_PERMISSION_DENIED`, last transition 17:47:06.155672 UTC, with the same
+configured image digest. Start/completion/count fields remain NULL. These are
+container-start observations, not completed publisher ticks or public-flow counts.
+
+No new job, resource/IAM/billing change, scheduler pause, D1 compensation or
+writer rollout occurred. Other writers, public outcomes, root cause and automatic
+containment remain UNKNOWN. GitLab source-backup preparation does not repair
+this GCP prerequisite. Retain owner investigation and changed-evidence trigger.
+
 ## Required replacement boundary — not deployed
 
 The next implementation uses an authenticated lake publication operation behind

@@ -1,0 +1,43 @@
+{
+  "recordedAt": "2026-10-08T14:51:09.016Z",
+  "mode": "EXACT_FAILED_EXECUTION_READ_ONLY",
+  "executionId": "lake-publish-job-8lhnr",
+  "mutationCount": 0,
+  "sourceRequests": 0,
+  "schedulerReprobe": false,
+  "httpStatus": 200,
+  "conditions": [
+    {
+      "type": "ContainerReady",
+      "state": "CONDITION_FAILED",
+      "reason": "CONTAINER_PERMISSION_DENIED",
+      "message": "Google Cloud Run Service Agent service-296059249147@serverless-robot-prod.iam.gserviceaccount.com must have permission to read the image, asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish@sha256:97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a. Ensure that the provided container image URL is correct and that the above account has permission to access the image. If you just enabled the Cloud Run API, the permissions might take a few minutes to propagate.",
+      "lastTransitionTime": "2026-10-08T14:47:06.174101Z"
+    },
+    {
+      "type": "ResourcesAvailable",
+      "state": "CONDITION_FAILED",
+      "reason": "CONTAINER_PERMISSION_DENIED",
+      "message": "Google Cloud Run Service Agent service-296059249147@serverless-robot-prod.iam.gserviceaccount.com must have permission to read the image, asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish@sha256:97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a. Ensure that the provided container image URL is correct and that the above account has permission to access the image. If you just enabled the Cloud Run API, the permissions might take a few minutes to propagate.",
+      "lastTransitionTime": "2026-10-08T14:47:06.174101Z"
+    },
+    {
+      "type": "Started",
+      "state": "CONDITION_FAILED",
+      "reason": "CONTAINER_PERMISSION_DENIED",
+      "message": "Google Cloud Run Service Agent service-296059249147@serverless-robot-prod.iam.gserviceaccount.com must have permission to read the image, asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish@sha256:97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a. Ensure that the provided container image URL is correct and that the above account has permission to access the image. If you just enabled the Cloud Run API, the permissions might take a few minutes to propagate.",
+      "lastTransitionTime": "2026-10-08T14:47:06.174101Z"
+    },
+    {
+      "type": "Completed",
+      "state": "CONDITION_FAILED",
+      "reason": "CONTAINER_PERMISSION_DENIED",
+      "message": "Google Cloud Run Service Agent service-296059249147@serverless-robot-prod.iam.gserviceaccount.com must have permission to read the image, asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish@sha256:97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a. Ensure that the provided container image URL is correct and that the above account has permission to access the image. If you just enabled the Cloud Run API, the permissions might take a few minutes to propagate.",
+      "lastTransitionTime": "2026-10-08T14:47:06.174101Z"
+    }
+  ],
+  "createTime": "2026-10-08T14:47:05.751475Z",
+  "startTime": null,
+  "completionTime": null,
+  "generation": "1"
+}
