@@ -1,0 +1,20 @@
+{
+  "measuredAt": "2026-10-08T11:53:17.3279549Z",
+  "routes": [
+    {
+      "id": 9046,
+      "url": "https://remotejobs-ph.pages.dev/jobs/9046",
+      "failed": true,
+      "status": "NotFound",
+      "providerPayloadSuppressed": true
+    },
+    {
+      "id": 9047,
+      "url": "https://remotejobs-ph.pages.dev/jobs/9047",
+      "failed": true,
+      "status": "NotFound",
+      "providerPayloadSuppressed": true
+    }
+  ],
+  "limitations": "Present detail route only; current source authority, first-publication history and independent quality remain unverified."
+}

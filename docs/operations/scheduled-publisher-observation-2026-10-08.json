@@ -1,0 +1,92 @@
+{
+  "measuredAt": "2026-10-08T11:49:01.334Z",
+  "job": {
+    "generation": "3",
+    "image": "asia-southeast1-docker.pkg.dev/antigravity-494415/va-hub-runner/lake-publish@sha256:97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a",
+    "latestExecution": {
+      "name": "lake-publish-job-drv4t",
+      "createTime": "2026-10-08T11:47:05.754622Z",
+      "completionTime": "2026-10-08T11:47:53.303405Z",
+      "completionStatus": "EXECUTION_SUCCEEDED"
+    }
+  },
+  "logs": {
+    "entryCount": 110,
+    "nextPagePresent": false,
+    "autoPublishLines": 49,
+    "concentrationUnknownLines": 49,
+    "messages": [
+      {
+        "timestamp": "2026-10-08T11:47:22.612190Z",
+        "execution": "lake-publish-job-drv4t",
+        "line": "[lake-publish] Starting synchronization from Turso Lake to Cloudflare D1..."
+      },
+      {
+        "timestamp": "2026-10-08T11:47:28.364293Z",
+        "execution": "lake-publish-job-drv4t",
+        "line": "  [AutoPublish] greenhouse:janes: PUBLISH x2 — Jev ADMIT at 0.85 executes the ambiguous band. No human approval. Publishing 2 of 2. Concentration UNKNOWN."
+      },
+      {
+        "timestamp": "2026-10-08T11:47:28.364429Z",
+        "execution": "lake-publish-job-drv4t",
+        "line": "  [AuthSet] Base sources 12; auto-publish sources 49."
+      },
+      {
+        "timestamp": "2026-10-08T11:47:38.817296Z",
+        "execution": "lake-publish-job-drv4t",
+        "line": "[lake-publish] Synced 11 opportunities to D1."
+      },
+      {
+        "timestamp": "2026-10-08T11:47:50.696075Z",
+        "execution": "lake-publish-job-drv4t",
+        "line": "[lake-publish] Enrolled 13/49 auto-approved sources."
+      }
+    ],
+    "structured": [
+      {
+        "timestamp": "2026-10-08T11:47:50.696094Z",
+        "execution": "lake-publish-job-drv4t",
+        "event": "lake_publish_completed",
+        "syncedCount": 11,
+        "enrolledSources": 13
+      }
+    ]
+  },
+  "lake": [
+    {
+      "status": "EXCLUDED",
+      "count": 8,
+      "oldest_observed_at": "2026-10-08 10:47:41",
+      "oldest_posted_at": "2026-09-24T15:37:57.000Z",
+      "newest_posted_at": "2026-10-07T16:09:08.000Z"
+    },
+    {
+      "status": "SYNCED_TO_D1",
+      "count": 2,
+      "oldest_observed_at": "2026-10-08 10:47:42",
+      "oldest_posted_at": "2026-09-24T14:08:08.000Z",
+      "newest_posted_at": "2026-10-05T15:22:18.000Z"
+    }
+  ],
+  "controls": {
+    "results": [],
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.145
+      },
+      "duration": 0.145,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 74952704,
+      "rows_read": 0,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  "limitations": "Read-only existing scheduled execution; no manual sync/deploy/enrollment. Job exit and D1 sync do not prove fresh-publication flow or public visibility."
+}

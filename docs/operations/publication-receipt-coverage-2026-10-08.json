@@ -1,0 +1,80 @@
+{
+  "measuredAt": "2026-10-08T11:45:37.711Z",
+  "query": "SELECT * FROM (\n  WITH RECURSIVE days(manila_date, n) AS (\n    SELECT date('now', '+8 hours', '-1 day'), 1\n    UNION ALL SELECT date(manila_date, '-1 day'), n + 1 FROM days WHERE n < 7\n  ), ledger AS (\n    SELECT id, published_count, published_ids_json,\n      date(decided_at, '+8 hours') AS manila_date\n    FROM source_publication_ledger\n    WHERE mode IN ('unlimited', 'capped') AND published_count > 0\n      AND datetime(decided_at) >= datetime('now', '+8 hours', 'start of day', '-7 days', '-8 hours')\n      AND datetime(decided_at) < datetime('now', '+8 hours', 'start of day', '-8 hours')\n  ), claims AS (\n    SELECT manila_date, COUNT(*) AS ledger_rows, SUM(published_count) AS claimed_count\n    FROM ledger GROUP BY manila_date\n  ), receipt_ids AS (\n    SELECT DISTINCT l.manila_date, j.value AS opportunity_id\n    FROM ledger l, json_each(CASE WHEN json_valid(l.published_ids_json)\n      THEN CASE WHEN json_type(l.published_ids_json) = 'array' THEN l.published_ids_json ELSE '[]' END\n      ELSE '[]' END) j\n    WHERE j.type = 'integer' AND j.value > 0 AND j.value <= 9007199254740991\n  ), coverage AS (\n    SELECT manila_date, COUNT(*) AS unique_receipt_ids FROM receipt_ids GROUP BY manila_date\n  )\n  SELECT d.manila_date, COALESCE(c.ledger_rows, 0) AS ledger_rows,\n    COALESCE(c.claimed_count, 0) AS claimed_count,\n    COALESCE(r.unique_receipt_ids, 0) AS unique_receipt_ids,\n    NULL AS verified_fresh_flow, 'UNKNOWN' AS certification\n  FROM days d LEFT JOIN claims c USING (manila_date)\n  LEFT JOIN coverage r USING (manila_date)\n  ORDER BY d.manila_date DESC\n);",
+  "results": [
+    {
+      "manila_date": "2026-10-07",
+      "ledger_rows": 29,
+      "claimed_count": 49,
+      "unique_receipt_ids": 30,
+      "verified_fresh_flow": null,
+      "certification": "UNKNOWN"
+    },
+    {
+      "manila_date": "2026-10-06",
+      "ledger_rows": 38,
+      "claimed_count": 46,
+      "unique_receipt_ids": 32,
+      "verified_fresh_flow": null,
+      "certification": "UNKNOWN"
+    },
+    {
+      "manila_date": "2026-10-05",
+      "ledger_rows": 8,
+      "claimed_count": 27,
+      "unique_receipt_ids": 0,
+      "verified_fresh_flow": null,
+      "certification": "UNKNOWN"
+    },
+    {
+      "manila_date": "2026-10-04",
+      "ledger_rows": 17,
+      "claimed_count": 49,
+      "unique_receipt_ids": 13,
+      "verified_fresh_flow": null,
+      "certification": "UNKNOWN"
+    },
+    {
+      "manila_date": "2026-10-03",
+      "ledger_rows": 27,
+      "claimed_count": 60,
+      "unique_receipt_ids": 21,
+      "verified_fresh_flow": null,
+      "certification": "UNKNOWN"
+    },
+    {
+      "manila_date": "2026-10-02",
+      "ledger_rows": 19,
+      "claimed_count": 36,
+      "unique_receipt_ids": 10,
+      "verified_fresh_flow": null,
+      "certification": "UNKNOWN"
+    },
+    {
+      "manila_date": "2026-10-01",
+      "ledger_rows": 25,
+      "claimed_count": 67,
+      "unique_receipt_ids": 18,
+      "verified_fresh_flow": null,
+      "certification": "UNKNOWN"
+    }
+  ],
+  "meta": {
+    "served_by": "v3-prod",
+    "served_by_region": "APAC",
+    "served_by_colo": "SIN",
+    "served_by_primary": true,
+    "timings": {
+      "sql_duration_ms": 4.3054
+    },
+    "duration": 4.3054,
+    "changes": 0,
+    "last_row_id": 0,
+    "changed_db": false,
+    "size_after": 74932224,
+    "rows_read": 1246,
+    "rows_written": 0,
+    "total_attempts": 1
+  },
+  "limitations": "Ledger receipt coverage only; verified fresh-publication flow and authority/visibility coverage UNKNOWN."
+}

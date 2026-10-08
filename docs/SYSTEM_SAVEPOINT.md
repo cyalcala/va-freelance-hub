@@ -1,5 +1,87 @@
 # System Savepoint
 
+## 2026-10-08 20:22 Manila — Receipt repairs local; lake authority incident and blocked containment
+
+**Owner scope CONTINUING:** 100 verified fresh public jobs/day, 150 stretch;
+existing 735-company directory enrichment; all MATH-01..13; DeepSeek-inspired
+SSAE-CED; resumable lucky777 maintenance using Addy skills. No supply/math/autonomy
+completion claimed. This continuation advances actual-ID accounting and a narrow
+SEV-2 raw-writer fence; directory selection release remains unverified.
+
+**Git:** start/recovery base `926d39a0ea2db80a7eba8d541d12906a0c8b0837` (PR #228,
+already remote-verified). Local branch `codex/verified-flow-directory-checkpoint`
+retains checkpoint `559024e7`, receipt repair `8b7f1009` and metric repair
+`e3897609`, raw-writer fence `6307bae8` and coverage audit repair `09ee1a41`.
+GitHub account suspension is unchanged: these local commits and the
+current finite incident evidence are **BACKUP_PENDING**. No bypass or unchanged
+failed access retry. Foreign `.agents/skills/` and `lucky777.md` are preserved.
+
+**Accounting:** actual inserted web IDs replace trigger-amplified changes and
+discarded RETURNING rows. The fixture metric deduplicates IDs and requires
+explicit nullable first-exposure evidence; storage/decision time cannot certify
+fresh flow. Seven complete Manila days Oct 1–7 contain 173 ledger rows / 334 claims /
+124 distinct recorded IDs summed across daily denominators. October 5 records
+27 claims / zero IDs. All certified fresh-flow values remain NULL/UNKNOWN.
+The earlier 28.3/day storage proxy and 735 visible directory entries remain dated
+measurements, not a 100/day certificate. MATH-05/06 are partial local progress;
+all thirteen acceptance obligations remain active.
+
+**Actual runtime incident:** existing scheduled GCP execution
+`lake-publish-job-drv4t` completed successfully at 11:47:53 UTC with 11 reported
+syncs, including two Janes rows. All 49 sampled concentration decisions were
+UNKNOWN. Janes has no D1 registry row but active IDs 9046/9047 and an unlimited
+count-two ledger receipt with empty IDs. Both detail routes returned 404, so
+public exposure and independent vacancy qualification are unestablished. No
+certified supply is assigned to those syncs. The deployed generation 3/image
+digest is unchanged; Git-to-image provenance remains unresolved.
+
+**Containment STOPPED BEFORE EFFECTS:** the 11:59 preflight retained five terminal
+executions, then stopped before scheduler state. Separate exact scheduler GET at
+12:03:32 UTC returned 403 / PERMISSION_DENIED / BILLING_DISABLED. No pause, D1
+UPDATE, row hold or complete cross-runtime fence succeeded. The provider result
+does not prove future execution has stopped or an IAM defect. No billing change,
+IAM grant, replacement clock or forced raw sync. Primary and GitHub fallback
+remain unfenced; account-owner action is required for both external prerequisites.
+[Incident contract and finite receipts](operations/SEV2_LAKE_AUTHORITY_2026-10-08.md)
+own bounds, recovery conditions and the pending gated replacement.
+
+**Local fence:** non-dry-run lake sync now throws a named error before I/O, with
+no override. GCP/CLI report failure before enrollment; read-only planning returns
+zero syncs and a separate statement count. This does not fence deployed images,
+independent discovery/enrollment operations or current production rows.
+
+**Checks:** final combined 3,060 tests / zero fail / 319,148 assertions / 225 files,
+typecheck and four governance audits pass. Local check categories: 7/7 (100%:
+suite, typecheck, web build and four audits); this is not overall goal progress.
+Earlier receipt-slice Astro build
+passed; subsequent changes affect scripts/tests/documentation only. A combined
+recheck first found the stale Query 1 audit (3,056 pass / one fail). Three new
+audit regressions failed before repair; current audit requires NULL/UNKNOWN
+receipt coverage, not a fabricated fresh count. Independent reviews approved
+both fence and static audit; neither constitutes runtime acceptance.
+Independent review corrected an exposure/decision ordering bug before commit.
+Actual SQLite/FTS/conflict/retry tests are covered;
+full scrape runtime, historical authority, public visibility, atomic failure closure
+and release acceptance are not. Safe isolated fence tests first failed before
+the guard; no production I/O or task-attributed writes occurred in those tests.
+[Accounting evidence](operations/PUBLICATION_RECEIPT_ACCOUNTING_2026-10-08.md).
+
+**Continuity:** current-chat hourly local lucky777 heartbeat remains ACTIVE;
+older APEX stays PAUSED. Host availability is required. Recover the supplied
+bootloader and current contracts; skip completed work and unchanged failed probes.
+
+**One NEXT:** implement and verify a staging-only authenticated atomic lake
+publication operation under the incident contract's replacement boundary, with
+stable operation/manifest identity, current gateway controls and actual-ID outcomes.
+Do not enable activation until its crash/retry/concurrency regressions and independent
+review pass. In parallel the account owner must restore normal GitHub access and
+resolve the GCP billing prerequisite; backup/normal release, coordinated primary/
+fallback STOP-AUTHORITY and exact-row compensation remain pending. This supersedes
+the older directory-release-only NEXT because of the newly demonstrated authority
+incident. Maintainer/current-chat heartbeat owns the bounded implementation;
+account owner owns external access. Rollback: normal revert of local behavior
+commits; no task-attributed production mutation requires compensation.
+
 ## 2026-10-08 19:23 Manila — Directory slice merged; release unverified, GitHub suspension
 
 **Owner scope CONTINUING:** 100 verified fresh public jobs/day, 150 stretch;

@@ -1,0 +1,117 @@
+{
+  "measuredAt": "2026-10-08T11:52:34.530Z",
+  "controls": {
+    "results": [
+      {
+        "registry_rows": 0,
+        "opt_out_rows": 0,
+        "stored_jobs": 2,
+        "active_jobs": 2
+      }
+    ],
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 22.8581
+      },
+      "duration": 22.8581,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 74973184,
+      "rows_read": 8639,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  "rows": {
+    "results": [
+      {
+        "id": 9046,
+        "title": "Don't see what you are looking for?",
+        "posted_at": "2026-09-24T14:08:08.000Z",
+        "ph_eligibility": "eligible_verified",
+        "location_type": "remote",
+        "is_active": 1
+      },
+      {
+        "id": 9047,
+        "title": "Solutions Team Lead, APAC ",
+        "posted_at": "2026-10-05T15:22:18.000Z",
+        "ph_eligibility": "eligible_verified",
+        "location_type": "remote",
+        "is_active": 1
+      }
+    ],
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 12.7134
+      },
+      "duration": 12.7134,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 74973184,
+      "rows_read": 7091,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  "ledger": {
+    "results": [
+      {
+        "source_id": "greenhouse:janes",
+        "mode": "unlimited",
+        "proposed_count": 2,
+        "published_count": 2,
+        "published_ids_json": "[]",
+        "decided_at": "2026-10-08T11:47:32.192Z"
+      }
+    ],
+    "meta": {
+      "served_by": "v3-prod",
+      "served_by_region": "APAC",
+      "served_by_colo": "SIN",
+      "served_by_primary": true,
+      "timings": {
+        "sql_duration_ms": 0.5603
+      },
+      "duration": 0.5603,
+      "changes": 0,
+      "last_row_id": 0,
+      "changed_db": false,
+      "size_after": 74973184,
+      "rows_read": 3,
+      "rows_written": 0,
+      "total_attempts": 1
+    }
+  },
+  "routes": [
+    {
+      "id": 9046,
+      "url": "https://remotejobs-ph.pages.dev/jobs/9046",
+      "status": 404,
+      "snapshot": null,
+      "hasJobPostingStructuredData": false,
+      "hasTitle": false,
+      "contentType": "text/plain;charset=UTF-8"
+    },
+    {
+      "id": 9047,
+      "url": "https://remotejobs-ph.pages.dev/jobs/9047",
+      "status": 404,
+      "snapshot": null,
+      "hasJobPostingStructuredData": false,
+      "hasTitle": false,
+      "contentType": "text/plain;charset=UTF-8"
+    }
+  ],
+  "limitations": "Read-only route evidence of present detail exposure; does not establish publication-time source/item authority, independent quality, list consistency or fresh first exposure history."
+}

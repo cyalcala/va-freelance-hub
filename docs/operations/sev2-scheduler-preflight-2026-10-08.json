@@ -1,0 +1,11 @@
+{
+  "observedAt": "2026-10-08T12:03:32.017Z",
+  "operation": "GET exact scheduler preflight",
+  "httpStatus": 403,
+  "errorCode": 403,
+  "errorStatus": "PERMISSION_DENIED",
+  "errorReasons": [
+    "BILLING_DISABLED"
+  ],
+  "scheduler": null
+}

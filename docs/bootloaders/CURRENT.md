@@ -4,6 +4,13 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
+Latest continuation: local receipt/metric repairs and a demonstrated raw-lake
+authority incident; [incident boundary and stopped containment](../operations/SEV2_LAKE_AUTHORITY_2026-10-08.md).
+Scheduler GET returned 403/BILLING_DISABLED; no pause or row withdrawal succeeded.
+GitHub suspension still blocks backup/release, and deployed primary/fallback
+remain unfenced. The exact current NEXT is in SYSTEM_SAVEPOINT; older release-only
+instructions below are dated. All thirteen MATH acceptances and certified supply
+remain open; hourly local lucky777 continuity remains active.
 Diagnostics and actionable enrichment selection merged in PR #228 to `926d39a0`
 after exact-head CI passed. Normal main release/real enrichment acceptance is
 unverified: GitHub API reports account suspension and Cloudflare still showed

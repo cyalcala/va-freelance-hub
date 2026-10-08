@@ -40,6 +40,45 @@ Baseline: September 27 review of source SHA
 are in the [repository report](../audits/2026-09-27-REPOSITORY-CHECK.md).
 Current production measurements are not supplied by this planning task.
 
+**2026-10-08 bounded update:** owner-authorized maintenance measured directory
+evidence gaps and advanced MATH-05/06 accounting, without accepting a mathematical
+resolution. Local commits `8b7f1009` (web receipt IDs) and `e3897609` (fixture
+metric accounting) passed 3,051 tests, typecheck, Astro build and the guardrail,
+parameter, orchestrator and constitution audits. They are not released. Local
+web writers now retain actual inserted IDs; the fixture metric deduplicates daily
+opportunity IDs, requires explicit exposure evidence and marks certification
+UNKNOWN. Seven complete days have 334 ledger claims versus 124
+daily distinct recorded IDs; actual verified first-publication flow remains UNKNOWN.
+[Accounting scope/verification](../operations/PUBLICATION_RECEIPT_ACCOUNTING_2026-10-08.md)
+and [directory scope](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md) own dated
+receipts. Lake authority/receipt closure, current gateway failure/concurrency
+semantics, runtime release, independent quality and exposure history remain open.
+The initial-state table below remains dated program context; current unit/NEXT
+is only in SYSTEM_SAVEPOINT. All thirteen owner obligations remain active.
+
+**2026-10-08 runtime incident:** scheduled GCP execution `lake-publish-job-drv4t`
+succeeded at 11:47:53 UTC and reported eleven syncs, including two Janes jobs.
+At 11:52 UTC, `greenhouse:janes` had no registry row but two active D1 rows
+(9046/9047), plus an unlimited count-two receipt with empty IDs. Both detail GETs
+returned 404; public exposure and independent qualification are unestablished.
+This is evidence of the existing lake authority bypass, not progress toward a
+certified daily floor. The bounded containment attempt failed at preflight;
+its receipt confirms neither scheduler pause nor row hold. A separate exact
+scheduler GET at 12:03 UTC returned 403 / BILLING_DISABLED, which does not prove
+future executions stopped or an IAM defect. Containment remains pending under the
+[incident contract](../operations/SEV2_LAKE_AUTHORITY_2026-10-08.md). MATH-05/06
+remain partial local work; the existing scheduled image does not prove either
+new commit deployed. The accounting document links the finite runtime receipts.
+
+**2026-10-08 final local checkpoint:** `6307bae8` fails closed before live lake
+sync I/O; read-only planning and independent discovery/enrollment stay distinct.
+`09ee1a41` repairs a stale static audit exposed by the corrected coverage query,
+with three red-first regressions against fabricated zero/certification/comments.
+Final combined tests: 3,060 pass / zero fail; typecheck and four governance audits
+pass. Neither commit is released or GitHub-backed while account access is
+suspended. The deployed writer, external containment, atomic gateway and legacy
+classifier/SQL reconciliation remain open. No additional MATH acceptance is claimed.
+
 **Program position:** strategy and thirteen work cards specified; no new runtime
 solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing helper
 code is partial implementation, not automatically an accepted program solution.
@@ -177,6 +216,10 @@ system-wide dataset before any repair can begin.
 
 ### MATH-05 — Qualification, selective prediction and calibration
 
+- **2026-10-08 evidence state:** partial local accounting support only. Commit
+  `e3897609` prevents duplicate daily receipt IDs and storage clocks from being
+  treated as explicit first exposure; independent qualification/calibration,
+  runtime release and verified-fresh-flow certification remain open.
 - **Question:** How reliably do actual PH/remote qualification decisions match
   independent evidence, including difficult and abstained cases?
 - **Baseline/data:** repair dimension-specific denominators; collect representative
@@ -196,6 +239,12 @@ system-wide dataset before any repair can begin.
 
 ### MATH-06 — Controlled transitions and publication integrity
 
+- **2026-10-08 evidence state:** partial local receipt repair (`8b7f1009`), not
+  all-writer authority closure. Scheduled Janes sync demonstrated active rows
+  without registry authority and an empty-ID unlimited receipt. Public detail
+  exposure is unestablished; incident pause/row holds remain unconfirmed after
+  failed preflight. See the accounting and incident receipts above; current
+  incident action/NEXT is maintained only in SYSTEM_SAVEPOINT.
 - **Question:** Can every public insert/reactivation be justified and bounded by
   the same current authority, item-quality and exposure controls?
 - **Baseline/data:** review findings F1/F4; trace lake/cron/replay writers, registry

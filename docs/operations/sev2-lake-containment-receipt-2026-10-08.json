@@ -1,0 +1,126 @@
+{
+  "unit": "SEV2-LAKE-AUTHORITY-2026-10-08",
+  "startedAt": "2026-10-08T11:59:33.648Z",
+  "completeFence": false,
+  "githubFallback": "UNCONTROLLED: account suspended; existing fallback may take over missed primary",
+  "executions": [
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/jobs/lake-publish-job/executions/lake-publish-job-drv4t",
+      "createTime": "2026-10-08T11:47:05.754622Z",
+      "completionTime": "2026-10-08T11:47:53.303405Z",
+      "conditions": [
+        {
+          "type": "Started",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "Completed",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ContainerReady",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ResourcesAvailable",
+          "state": "CONDITION_SUCCEEDED"
+        }
+      ]
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/jobs/lake-publish-job/executions/lake-publish-job-9b8tv",
+      "createTime": "2026-10-08T10:47:07.093851Z",
+      "completionTime": "2026-10-08T10:47:41.869206Z",
+      "conditions": [
+        {
+          "type": "Started",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "Completed",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ContainerReady",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ResourcesAvailable",
+          "state": "CONDITION_SUCCEEDED"
+        }
+      ]
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/jobs/lake-publish-job/executions/lake-publish-job-5wvhf",
+      "createTime": "2026-10-08T09:47:05.727410Z",
+      "completionTime": "2026-10-08T09:47:45.103720Z",
+      "conditions": [
+        {
+          "type": "Started",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "Completed",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ContainerReady",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ResourcesAvailable",
+          "state": "CONDITION_SUCCEEDED"
+        }
+      ]
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/jobs/lake-publish-job/executions/lake-publish-job-ghzgh",
+      "createTime": "2026-10-08T08:47:05.680045Z",
+      "completionTime": "2026-10-08T08:47:41.232956Z",
+      "conditions": [
+        {
+          "type": "Started",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "Completed",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ContainerReady",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ResourcesAvailable",
+          "state": "CONDITION_SUCCEEDED"
+        }
+      ]
+    },
+    {
+      "name": "projects/antigravity-494415/locations/asia-southeast1/jobs/lake-publish-job/executions/lake-publish-job-p7fv8",
+      "createTime": "2026-10-08T07:47:05.842478Z",
+      "completionTime": "2026-10-08T07:47:43.022440Z",
+      "conditions": [
+        {
+          "type": "Started",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "Completed",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ContainerReady",
+          "state": "CONDITION_SUCCEEDED"
+        },
+        {
+          "type": "ResourcesAvailable",
+          "state": "CONDITION_SUCCEEDED"
+        }
+      ]
+    }
+  ],
+  "failedStage": "preflight",
+  "errorName": "Error",
+  "providerPayloadSuppressed": true
+}
