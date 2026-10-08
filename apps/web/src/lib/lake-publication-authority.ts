@@ -48,6 +48,12 @@ export type LakePublicationAuthorityCaptureResult =
 // A serialized snapshot is evidence for review, never a caller-supplied proof.
 // Only this module can issue the frozen objects accepted by the guard builder.
 const issuedSnapshots = new WeakSet<LakePublicationAuthoritySnapshot>();
+
+/** Runtime issuance only: this is neither a freshness check nor publication clearance. */
+export function isIssuedLakePublicationAuthoritySnapshot(value: unknown): value is LakePublicationAuthoritySnapshot {
+  return value !== null && typeof value === "object"
+    && issuedSnapshots.has(value as LakePublicationAuthoritySnapshot);
+}
 const positiveInteger = (value: unknown): value is number => typeof value === "number" && Number.isSafeInteger(value) && value > 0;
 const identityText = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0 && !value.includes("\0");
 const hash = (value: unknown): value is string => typeof value === "string" && /^[a-f0-9]{64}$/.test(value);

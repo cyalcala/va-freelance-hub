@@ -8,7 +8,7 @@ import {
 import type { AdmissionStatement } from "../../../packages/scraper/admission-evidence";
 import { liveAdmissionFixture } from "../../../packages/scraper/test-fixtures/admission";
 import {
-  captureLakePublicationAuthority, prepareLakePublicationAuthorityGuard,
+  captureLakePublicationAuthority, prepareLakePublicationAuthorityGuard, isIssuedLakePublicationAuthoritySnapshot,
   type LakeAuthorityDatabase, type LakePublicationAuthoritySnapshot,
 } from "../src/lib/lake-publication-authority";
 
@@ -169,7 +169,10 @@ test("frozen issued snapshots reject caller cloning, forged identity and missing
     expect(Object.isFrozen(snapshot.sourceIdentity)).toBe(true);
     expect(Object.isFrozen(snapshot.cas)).toBe(true);
     expect(() => { (snapshot.cas as any).policyExpiry = "2099-01-01T00:00:00.000Z"; }).toThrow();
+    expect(isIssuedLakePublicationAuthoritySnapshot(snapshot)).toBe(true);
+    for (const invalid of [null, undefined, 1, "snapshot", {}]) expect(isIssuedLakePublicationAuthoritySnapshot(invalid)).toBe(false);
     for (const forged of [JSON.parse(JSON.stringify(snapshot)), { ...snapshot }, { ...snapshot, sourceIdentityHash: "a".repeat(64) }]) {
+      expect(isIssuedLakePublicationAuthoritySnapshot(forged)).toBe(false);
       expect(() => prepareLakePublicationAuthorityGuard(f.db, forged)).toThrow();
     }
     expect(() => prepareLakePublicationAuthorityGuard({ prepare: f.db.prepare.bind(f.db) } as any, snapshot)).toThrow();

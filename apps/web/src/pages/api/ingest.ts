@@ -6,8 +6,11 @@ import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
 import { isAuthorized } from "@/lib/auth";
 import { readJsonBodyLimited } from "@/lib/request-body";
-import { parseLakeStageRequest } from "@/lib/lake-publication-contract";
-import { stageLakePublicationIntent } from "@/lib/lake-publication-intent";
+import { parseLakeInspectRequest, parseLakeStageRequest } from "@/lib/lake-publication-contract";
+import { readLakePublicationIntent, stageLakePublicationIntent } from "@/lib/lake-publication-intent";
+import { captureLakePublicationAuthority } from "@/lib/lake-publication-authority";
+import { readLakeEvidenceSnapshot } from "@/lib/lake-evidence-reader";
+import { inspectLakeItemBindings } from "@/lib/lake-item-binding";
 
 export const prerender = false;
 
@@ -126,6 +129,50 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const payload = record(parsedBody.value);
     if (Object.prototype.hasOwnProperty.call(payload, "operation")) {
       const headers = { "Content-Type": "application/json", "Cache-Control": "no-store" };
+      if (payload.operation === "lake-inspect") {
+        const reply = (value: object, status: number) => new Response(JSON.stringify({ ...value,
+          publicationAuthorized: false, qualificationAuthorized: false, publishedCount: 0, syncedCount: 0,
+        }), { status, headers });
+        const parsed = parseLakeInspectRequest(payload);
+        if (!parsed.ok) return reply(parsed, 400);
+        try {
+          const stored = await readLakePublicationIntent(env?.DB, {
+            operationKey: parsed.request.operationId, sourceId: parsed.request.sourceId,
+          });
+          if (!stored.ok) return reply(stored, stored.status);
+          const before = await captureLakePublicationAuthority(env?.DB, stored.intent.sourceId, nowUtcIso());
+          if (!before.ok) return reply({ ok: false, code: before.code === "LAKE_AUTHORITY_BINDING_UNAVAILABLE"
+            ? "INSPECTION_BINDING_UNAVAILABLE" : "INSPECTION_AUTHORITY_REJECTED" },
+            before.code === "LAKE_AUTHORITY_BINDING_UNAVAILABLE" ? 503 : 409);
+          const evidence = await readLakeEvidenceSnapshot({ env, sourceId: stored.intent.sourceId,
+            candidateIds: stored.intent.descriptors.map(row => row.lakeCandidateId) });
+          if (!evidence.ok) return reply(evidence, evidence.status);
+          const latestIntent = await readLakePublicationIntent(env?.DB, {
+            operationKey: parsed.request.operationId, sourceId: parsed.request.sourceId,
+          });
+          if (!latestIntent.ok) return reply(latestIntent, latestIntent.status);
+          if (latestIntent.intent.manifestHash !== stored.intent.manifestHash
+            || JSON.stringify(latestIntent.intent.descriptors) !== JSON.stringify(stored.intent.descriptors)) {
+            return reply({ ok: false, code: "INSPECTION_INTENT_INVALID" }, 503);
+          }
+          // Internal reads may take time. Re-read current authority without any
+          // guard/write, and never treat an earlier context as current clearance.
+          const now = nowUtcIso();
+          const current = await captureLakePublicationAuthority(env?.DB, stored.intent.sourceId, now);
+          if (!current.ok) return reply({ ok: false, code: "INSPECTION_AUTHORITY_REJECTED" }, 409);
+          if (current.snapshot.sourceIdentityHash !== before.snapshot.sourceIdentityHash
+            || JSON.stringify(current.snapshot.cas) !== JSON.stringify(before.snapshot.cas)) {
+            return reply({ ok: false, code: "INSPECTION_AUTHORITY_CHANGED" }, 409);
+          }
+          const result = await inspectLakeItemBindings({ intent: stored.intent, snapshot: evidence.snapshot,
+            currentAuthority: current.snapshot, now });
+          return reply(result, 200);
+        } catch {
+          // Transport/database messages can contain credentials. Inspection has
+          // fixed private diagnostics and never reaches the ordinary ingest writer.
+          return reply({ ok: false, code: "INSPECTION_UNAVAILABLE" }, 503);
+        }
+      }
       if (payload.operation !== "lake-stage") {
         return new Response(JSON.stringify({ error: "Unsupported ingest operation", code: "INVALID_OPERATION" }), { status: 400, headers });
       }

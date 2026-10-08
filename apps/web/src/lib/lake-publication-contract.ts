@@ -31,6 +31,15 @@ export interface LakeStageRequest {
   candidates: LakeStageCandidate[];
 }
 
+export interface LakeInspectRequest {
+  operation: "lake-inspect";
+  version: 1;
+  operationId: string;
+  sourceId: string;
+}
+export type LakeInspectParseResult = { ok: true; request: LakeInspectRequest }
+  | { ok: false; code: "INVALID_LAKE_INSPECT_REQUEST" };
+
 export type LakeStageParseResult =
   | { ok: true; request: LakeStageRequest; manifestHash: string; candidateDescriptorsJson: string; descriptors: LakeStageCandidateDescriptor[] }
   | { ok: false; code: "INVALID_LAKE_STAGE_REQUEST"; message: string };
@@ -134,4 +143,18 @@ export async function parseLakeStageRequest(value: unknown): Promise<LakeStagePa
   })));
   const request: LakeStageRequest = { operation: "lake-stage", version: 1, operationId, sourceId, candidates };
   return { ok: true, request, descriptors, manifestHash: await hashLakeStageManifest(sourceId, descriptors), candidateDescriptorsJson: JSON.stringify(descriptors) };
+}
+
+/** Inspection selects a stored private intent; callers cannot supply evidence or authority. */
+export function parseLakeInspectRequest(value: unknown): LakeInspectParseResult {
+  const input = exactRecord(value, ["operation", "version", "operationId", "sourceId"]);
+  if (!input || input.operation !== "lake-inspect" || input.version !== 1
+    || typeof input.operationId !== "string" || input.operationId.length > 128
+    || !/^[a-zA-Z0-9:._-]+$/.test(input.operationId)
+    || typeof input.sourceId !== "string" || input.sourceId.length > 200
+    || !/^[a-z0-9:._-]+$/.test(input.sourceId) || input.sourceId === "unattributed") {
+    return { ok: false, code: "INVALID_LAKE_INSPECT_REQUEST" };
+  }
+  return { ok: true, request: { operation: "lake-inspect", version: 1,
+    operationId: input.operationId, sourceId: input.sourceId } };
 }

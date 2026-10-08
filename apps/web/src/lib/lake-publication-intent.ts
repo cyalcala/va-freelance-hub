@@ -1,4 +1,5 @@
-import { isAdmissionInstant } from "@va-hub/scraper";
+import { isAdmissionInstant, sanitizeSourceUrl } from "@va-hub/scraper";
+import { hashLakeStageManifest, type LakeStageCandidateDescriptor } from "./lake-publication-contract";
 
 export interface LakeIntentStatement {
   bind(...values: unknown[]): LakeIntentStatement;
@@ -14,6 +15,17 @@ export interface LakeIntentInput {
   manifestHash: string;
   candidateDescriptorsJson: string;
 }
+export interface LakeInspectIntent {
+  operationKey: string;
+  sourceId: string;
+  manifestHash: string;
+  descriptors: LakeStageCandidateDescriptor[];
+  stagedAt: string;
+  revision: 0;
+}
+export type LakeInspectIntentResult = { ok: true; intent: LakeInspectIntent }
+  | { ok: false; status: 404 | 409 | 503; code: "INSPECTION_BINDING_UNAVAILABLE" | "INSPECTION_INTENT_NOT_FOUND"
+      | "INSPECTION_SOURCE_MISMATCH" | "INSPECTION_INTENT_INVALID" | "INSPECTION_INTENT_STATE_CONFLICT" };
 interface StoredIntent {
   operationId: string; sourceId: string; manifestHash: string; candidateDescriptorsJson: string;
   stagedAt: string; revision: number; sourceIdentityHash: string | null; publicationTickKey: string | null;
@@ -109,4 +121,42 @@ export async function stageLakePublicationIntent(db: LakeIntentDatabase | null |
   try {
     return inspect(await db.prepare(SELECT_INTENT).bind(input.operationId).first<StoredIntent>(), input, true);
   } catch { return { ok: false, status: 503, code: "STAGING_COMMIT_UNKNOWN" }; }
+}
+
+/** Read-only inspection. Existing control slots belong to a future governed commit. */
+export async function readLakePublicationIntent(
+  db: Pick<LakeIntentDatabase, "prepare"> | null | undefined,
+  input: { operationKey: string; sourceId: string },
+): Promise<LakeInspectIntentResult> {
+  if (!db || typeof db.prepare !== "function") return { ok: false, status: 503, code: "INSPECTION_BINDING_UNAVAILABLE" };
+  try {
+    const row = await db.prepare(SELECT_INTENT).bind(input.operationKey).first<StoredIntent>();
+    if (row === null || row === undefined) return { ok: false, status: 404, code: "INSPECTION_INTENT_NOT_FOUND" };
+    if (!validStored(row) || row.operationId !== input.operationKey || !/^[a-z0-9:._-]+$/.test(row.sourceId)
+      || row.sourceId === "unattributed") return { ok: false, status: 503, code: "INSPECTION_INTENT_INVALID" };
+    if (row.sourceId !== input.sourceId) return { ok: false, status: 409, code: "INSPECTION_SOURCE_MISMATCH" };
+    if (row.revision !== 0 || row.sourceIdentityHash !== null || row.publicationTickKey !== null
+      || row.committedReceiptKey !== null || row.committedOutcomesJson !== null) {
+      return { ok: false, status: 409, code: "INSPECTION_INTENT_STATE_CONFLICT" };
+    }
+    const descriptors = JSON.parse(row.candidateDescriptorsJson) as LakeStageCandidateDescriptor[];
+    const ids = new Set<number>(), urls = new Set<string>();
+    for (const [index, descriptor] of descriptors.entries()) {
+      if (!descriptor.lakeFingerprint.trim() || sanitizeSourceUrl(descriptor.sourceUrl) !== descriptor.sourceUrl
+        || ids.has(descriptor.lakeCandidateId) || urls.has(descriptor.sourceUrl)
+        || (index > 0 && descriptors[index - 1]!.lakeCandidateId >= descriptor.lakeCandidateId)) {
+        return { ok: false, status: 503, code: "INSPECTION_INTENT_INVALID" };
+      }
+      ids.add(descriptor.lakeCandidateId); urls.add(descriptor.sourceUrl);
+    }
+    const canonical = descriptors.map(({ lakeCandidateId, lakeFingerprint, sourceUrl, materialSha256 }) => ({
+      lakeCandidateId, lakeFingerprint, sourceUrl, materialSha256,
+    }));
+    if (JSON.stringify(canonical) !== row.candidateDescriptorsJson
+      || await hashLakeStageManifest(row.sourceId, canonical) !== row.manifestHash) {
+      return { ok: false, status: 503, code: "INSPECTION_INTENT_INVALID" };
+    }
+    return { ok: true, intent: { operationKey: row.operationId, sourceId: row.sourceId,
+      manifestHash: row.manifestHash, descriptors: canonical, stagedAt: row.stagedAt, revision: 0 } };
+  } catch { return { ok: false, status: 503, code: "INSPECTION_INTENT_INVALID" }; }
 }
