@@ -53,6 +53,6 @@
   "crossVersionDuplicateExposureSafeRollout": "NOT_ESTABLISHED",
   "remaining": ["TRUTHFUL_FRESH_CALLBACK_IDS_COUNTS_AND_POST_PERSISTENCE_OUTCOME", "ACTUAL_ID_SOURCE_OWNERSHIP", "CURRENT_INDEPENDENT_ITEM_QUALIFICATION", "SHARED_BUDGET_EPOCH_LEASE_CONTRACT", "ATOMIC_PUBLICATION_CONTROLLER", "NORMAL_RELEASE_PROVENANCE_AND_RUNTIME_ACCEPTANCE"],
   "effects": {"jobSourceRequests": 0, "productionReads": 0, "productionD1Writes": 0, "productionTursoWrites": 0, "gcpReads": 0, "gcpMutations": 0, "deployments": 0, "migrations": 0, "sourceAdmissions": 0, "newProductionClocks": 0, "credentialsOrGrantsChanged": 0, "companyEnrichmentsApplied": 0, "publicJobsPublished": 0, "primaryDocumentationWebToolOpens": 1, "documentationOriginRequestCountAndBytes": null},
-  "backup": {"gitLab": "NEW_SOURCE_SHA_PUSH_READBACK_REQUIRED", "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED", "gitLabExactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED", "runtimeAcceptance": "NOT_ESTABLISHED"},
+  "backup": {"gitLab": "PASS_SOURCE_COMMIT_PUSH_AND_EXACT_SHA_READBACK", "sourceSha": "ffcabbdbe069e41a990b483689fde52a07ff39b6", "sourceReceipt": "gitlab-publication-retry-source-backup-2026-10-09.json", "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED", "gitLabExactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED", "runtimeAcceptance": "NOT_ESTABLISHED"},
   "mathAccepted": "0/13", "verifiedFreshPublicFlow": null, "certification": "UNKNOWN"
 }

@@ -4,15 +4,26 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 04:40 Manila): the saved three-company cohort at
+Latest continuation (2026-10-09 05:22 Manila): strict historical publication replay
+and full write-request SHA-256 identities are locally verified at `ffcabbdbe069`.
+Gateway rejects mismatched/malformed receipts without persistence; callers snapshot
+full selected rows, validated activation targets and patches before awaits. Native
+SQLite/FTS and local workerd module fixtures pass; 3,312 tests, typechecks, build and
+four audits pass. Actual GitLab fetch/push and exact source SHA readback confirm
+read/write authentication. CI/deployment and cross-version duplicate exposure safety
+remain unestablished. The sole NEXT in SYSTEM_SAVEPOINT is truthful fresh publication
+receipts using actual RETURNING IDs and explicit post-persistence uncertainty;
+shared budget/epoch/lease and full atomicity remain separate missing contracts.
+Skip the completed replay repair and keep all unchanged external access triggers.
+The saved three-company cohort at
 `594f107e` has official Upwork/Intogreat careers proposals, an FVA parked-link/
 identity hold and a tested pure guarded patch/undo helper. D1's new 7403 service
 access failure leaves every current baseline UNKNOWN; real packet 3 HELD, zero
 READY/no SQL, zero applied updates. Three ordinary 200 directory observations
 are stale snapshots, not fresh DB/publication evidence. 3,261 tests, web/helper
 typechecks, build and four audits pass; exact source SHA is verified on GitLab.
-The sole NEXT in SYSTEM_SAVEPOINT is strict existing receipt replay binding and
-complete grouped-write identity, using native SQLite mismatch/replay fixtures.
+Its subsequent receipt replay/full write identity prerequisite is completed locally;
+the current sole NEXT is recorded in the newest SYSTEM_SAVEPOINT packet.
 Owner normal Cloudflare access/fresh baseline remains the separate directory
 application trigger; no retry without changed evidence. All MATH accepted 0/13
 and certified daily flow UNKNOWN remain. Prior native geo `49822e52` and exact

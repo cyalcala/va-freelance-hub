@@ -1,5 +1,104 @@
 # System Savepoint
 
+## 2026-10-09 05:22 Manila — Publication retry binding verified; GitLab read/write authentication confirmed
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual directory enrichment;
+all MATH-01..13 and existing SSAE-CED/DeepSeek cards; lucky777/Addy resumability and
+owner-authorized GitLab fallback. Accepted MATH remains **0/13**, certified fresh
+flow NULL/UNKNOWN. This unit published **zero jobs** and applied **zero company updates**.
+
+**Reentry/Git:** start `b6be67da606f1cb489db5d1ef4c040e079f180f6`, same
+`codex/verified-flow-directory-checkpoint` branch, authenticated GitLab fetched with
+zero divergence. Source/evidence `ffcabbdbe069e41a990b483689fde52a07ff39b6` pushed
+and exact remote SHA verified at **2026-10-08 21:17:26 UTC**.
+[Source/authentication receipt](operations/gitlab-publication-retry-source-backup-2026-10-09.json).
+Actual successful fetch and non-force push prove repository read/write access using
+the configured credential path. Credential values were neither retrieved nor printed.
+Origin/cached main `926d39a0ea2db80a7eba8d541d12906a0c8b0837` preserved; unchanged
+GitHub suspension not reprobed. GitLab main's independent README remains untouched.
+No MR, equivalent GitLab CI, release or runtime acceptance is implied.
+Final documentation HEAD/readback, full selected-branch history bundle and fresh
+exact-SHA restore must be recorded outside Git at
+`C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-retry-2026-10-08-212200Z.full.bundle`
+and matching `publication-retry-2026-10-08-212200Z.full.receipt.json`.
+Verify that actual final receipt; this pointer alone does not prove backup completion.
+Scope is committed source/tests/docs/history, not database/GCP-state restoration.
+Foreign untracked `.agents/skills/` and root `lucky777.md` preserved and excluded.
+
+**Recovery/constraints:** Desktop lucky777, AGENTS, absent manifest/router, CURRENT,
+current task contract, source constitution/accepted parameters/queue/deployment
+provenance recovered. Installed Addy source/TDD/review/Git methods applied; Jev's
+unchanged provider failure remains non-blocking without retry/failover. No source
+admission, production write, migration, deployment, grant, accepted parameter,
+provider/service or production clock changed. Hourly lucky777 coordination remains
+ACTIVE; older APEX remains PAUSED. GCP remains primary production background owner.
+
+**Completed bounded slice:** [PUBLICATION_RETRY_BINDING_2026-10-09](operations/PUBLICATION_RETRY_BINDING_2026-10-09.md).
+Gateway historical replay binds stored source/tick/proposed count and validates mode,
+safe count and exact unique positive safe IDs. Mismatch or malformed receipt rejects
+without callback, policy read, transition or ledger mutation; valid replay preserves
+history and grants no new authority. All five direct callers bind a versioned full
+SHA-256 request digest to source/tick/action/count and complete selected write material.
+Insert rows detach before grouping/policy awaits; actual selected vector is hashed
+and persisted. Activation ID sets are validated/deduplicated; full shared patches and
+known server SQL expressions detach before awaits. Unsupported parameterized SQL
+rejects before writes. No old truncated-key fallback or historical rewrite.
+
+**Acceptance:** independent frozen-source and finite-evidence reviews PASS. Full
+suite **3,312 pass / zero fail / 322,857 assertions / 239 files / 50.37 seconds**,
+51 new tests. Gateway native focused 51 tests/419 assertions; caller focused 53
+tests/232 assertions. Web/gateway typechecks, Astro build (56.95 seconds within
+Astro; whole-command duration UNKNOWN), four audits, JSON/hash/whitespace checks pass;
+accepted parameter parity 100%, existing audit warnings retained.
+[Finite checks and all ten frozen hashes](operations/publication-retry-local-checks-2026-10-09.json).
+Earlier concurrent full run had one unchanged diagnostic test's five-second timeout;
+unchanged file passed 14 tests alone, then the complete identical-source suite passed.
+Contention is inference; root cause UNKNOWN. No timeout/source/gate was relaxed.
+Earlier runtime fixture import-resolution failure is retained separately from RED.
+
+[Local workerd receipt](operations/publication-retry-workerd-2026-10-09.json) verifies
+imported hashing, schema/alias isolation, compiled SQL snapshot and strict replay.
+Its receipt adapter is in-memory, not D1 or a deployed Astro route. Native SQLite,
+FTS, real migration constraints, inline drain and registered Inngest-handler fixtures
+cover separate local behavior; transport/scheduling/middleware/step-cache health is
+unverified. Source key-version changes do not prove duplicate-exposure-safe rollout.
+MATH-06/09 and SSAE evidence/invalidation prerequisites advance locally; item proofs,
+all-writer closure, budgets, runtime benefit and all-card acceptance stay open.
+Source revert is rollback; this unit has no production data compensation.
+
+**External holds/owners/triggers, unchanged:** directory IDs 234/236/237 retain
+reviewed Upwork/Intogreat career-link proposals and FVA identity/parked-link hold.
+Cloudflare 7403 leaves every current baseline UNKNOWN; real packet 3 HELD, zero
+READY/no SQL. Owner normal account/service access plus a fresh successful baseline
+and appropriate subsequent per-row review is the application trigger. Prior stale
+public snapshot (735 companies/1,556 jobs) is dated stock, not current DB or flow.
+GitHub suspension blocks its backup/review/release; equivalent GitLab CI is absent.
+GCP BILLING_DISABLED and six CONTAINER_PERMISSION_DENIED starts, Janes 9046/9047
+publication-control incident and PR #228 runtime/per-row outcome remain unresolved.
+No scheduler fence, withdrawal/compensation, executed publisher tick, live caps,
+Git-SHA/image correspondence or current runtime health established. Owner owns
+normal access/image prerequisites; materially changed evidence/actual execution
+permits another bounded observation. Do not repeat unchanged failed probes.
+
+**One NEXT:** make fresh publication acknowledgements truthful using actual
+RETURNING IDs in `packages/scraper/publication-gateway.ts`, grouped callbacks in
+`apps/web/src/lib/publish-opportunities.ts`, direct
+`apps/web/src/pages/api/cron/scrape.ts` and
+`apps/web/src/lib/inngest/functions/triage-drain.ts`.
+Require safe nonnegative count, unique positive safe IDs, exact count/ID equality
+and count <= allowed proposal; replace silent clamping/slicing and meta.changes/
+planned IDs with actual returned IDs. Preserve legitimate zero/empty conflict-only
+results, existing eligibility/source/cap/lease/parameter/schema contracts. A callback
+that ran may already have written: malformed acknowledgement, thrown callback or
+later ledger failure must explicitly report post-persistence uncertainty, with no
+fabricated zero exposure or successful receipt. Native SQLite/Drizzle/FTS tests must
+prove actual insert/update IDs, conflict-only zero, ignored FTS count inflation and
+rows remaining after persistence plus bad acknowledgement/ledger failure.
+Maintainer owns this dependency-ready local unit; no production access required.
+Shared budget/epoch/lease contracts are absent; do not invent them or claim complete
+atomicity, ID-source ownership, first exposure or certified daily supply from this slice.
+
 ## 2026-10-09 04:40 Manila — Three-company facts reviewed; guarded preparation backed up on GitLab
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
