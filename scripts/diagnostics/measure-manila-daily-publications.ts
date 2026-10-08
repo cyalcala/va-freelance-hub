@@ -1,5 +1,5 @@
 ﻿/** Current eligible inventory by storage date, not a first-publication certificate. */
-import { execFileSync } from "node:child_process";
+import { queryD1ReadOnly } from "./query-d1-readonly";
 import { providerFamily } from "../ci/constitution-metrics";
 
 export const MANILA_DAILY_FLOOR = 100;
@@ -179,14 +179,7 @@ export function buildD1OpportunitiesQuery(days = 7, now: Date | string = new Dat
 }
 
 export function queryD1Opportunities(cwd = process.cwd(), days = 7, now: Date | string = new Date()): OpportunityPublicationRow[] {
-  const output = execFileSync("bun", ["run", "--cwd", "apps/web", "wrangler", "d1", "execute", "DB", "--remote", "--env", "production", "--command", buildD1OpportunitiesQuery(days, now), "--json"], {
-    cwd, encoding: "utf-8", maxBuffer: 50 * 1024 * 1024,
-  });
-  const startIdx = output.indexOf("[");
-  if (startIdx === -1) throw new Error("D1 returned no JSON result");
-  const parsed = JSON.parse(output.slice(startIdx));
-  if (parsed[0]?.success !== true || !Array.isArray(parsed[0]?.results)) throw new Error("D1 did not confirm a successful inventory query");
-  return parsed[0].results;
+  return queryD1ReadOnly<OpportunityPublicationRow>(buildD1OpportunitiesQuery(days, now), cwd).results;
 }
 
 if (import.meta.main) {

@@ -50,11 +50,18 @@ export function buildAtsCareerUrl(platform: string | null, token: string | null)
  *    non-ATS rows purely because hiring_page_url IS NULL kept them in the budget
  *    forever for a gap that can never be filled.
  *
+ * Verification selection uses the same >=1 verified / >=2 active PH-eligible
+ * job rule as the writer. Research-only companies remain in the evidence
+ * backlog instead of consuming this bounded mutation budget. The writer still
+ * rechecks evidence before updating. Hiring paths require a supported nonempty
+ * ATS identity.
+ *
  * `budget` is clamped here too, so the function is safe to interpolate even if a
  * caller forgets to validate it.
  */
 export function buildEnrichmentTargetSql(budget: number): string {
   const limit = Math.max(1, Math.min(100, Math.floor(Number(budget) || 1)));
+  const supportedPlatforms = Object.keys(ATS_CAREER_URLS).map((platform) => `'${platform}'`).join(", ");
   return `
     SELECT
       id,
@@ -65,8 +72,18 @@ export function buildEnrichmentTargetSql(budget: number): string {
       ats_token AS atsToken,
       is_verified AS isVerified
     FROM va_directory
-    WHERE (is_verified = 0 AND hires_filipinos = 1)
-       OR (ats_platform IS NOT NULL AND ats_token IS NOT NULL AND hiring_page_url IS NULL)
+    LEFT JOIN (
+      SELECT LOWER(company) AS company_key,
+        COUNT(*) AS total_ph_jobs,
+        COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs
+      FROM opportunities
+      WHERE is_active = 1 AND ph_eligibility IN ('eligible_verified', 'eligible_likely')
+      GROUP BY LOWER(company)
+    ) AS evidence ON LOWER(company_name) = evidence.company_key
+    WHERE (is_verified = 0 AND hires_filipinos = 1
+      AND evidence.verified_jobs >= 1 AND evidence.total_ph_jobs >= 2)
+       OR (ats_platform IN (${supportedPlatforms}) AND ats_token IS NOT NULL
+         AND TRIM(ats_token) <> '' AND hiring_page_url IS NULL)
     ORDER BY RANDOM()
     LIMIT ${limit}
   `;

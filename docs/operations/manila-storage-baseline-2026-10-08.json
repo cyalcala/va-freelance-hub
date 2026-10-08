@@ -1,0 +1,763 @@
+{
+  "measuredAt": "2026-10-08T11:06:40.725Z",
+  "measurementKind": "current_eligible_storage_proxy",
+  "window": {
+    "measuredAt": "2026-10-08T11:06:40.725Z",
+    "startInclusive": "2026-09-30T16:00:00.000Z",
+    "endExclusive": "2026-10-07T16:00:00.000Z",
+    "timeZone": "Asia/Manila",
+    "dates": [
+      "2026-10-07",
+      "2026-10-06",
+      "2026-10-05",
+      "2026-10-04",
+      "2026-10-03",
+      "2026-10-02",
+      "2026-10-01"
+    ]
+  },
+  "days": [
+    {
+      "manilaDate": "2026-10-07",
+      "eligibleStoredCount": 45,
+      "recentPostedStorage": 42,
+      "olderPostedStorage": 3,
+      "missingPostedAt": 0,
+      "invalidPostedAt": 0,
+      "futurePostedAt": 0,
+      "publicationFreshFlow": null,
+      "floorStatus": "UNKNOWN",
+      "bySource": {
+        "breezy:value-virtual-assistants": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby:multiplymii": {
+          "stored": 4,
+          "recentPosted": 4,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 22,
+          "recentPosted": 22,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "workable:hunt-st": {
+          "stored": 7,
+          "recentPosted": 7,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy:sourcefit": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 3,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "greenhouse:canonical": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "greenhouse:gitlab": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy:20four7va": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby:molecule": {
+          "stored": 3,
+          "recentPosted": 0,
+          "olderPosted": 3,
+          "unknownPosted": 0
+        }
+      },
+      "byFamily": {
+        "breezy": {
+          "stored": 3,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby": {
+          "stored": 7,
+          "recentPosted": 4,
+          "olderPosted": 3,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 22,
+          "recentPosted": 22,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "workable": {
+          "stored": 7,
+          "recentPosted": 7,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 3,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "greenhouse": {
+          "stored": 3,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      }
+    },
+    {
+      "manilaDate": "2026-10-06",
+      "eligibleStoredCount": 46,
+      "recentPostedStorage": 41,
+      "olderPostedStorage": 2,
+      "missingPostedAt": 3,
+      "invalidPostedAt": 0,
+      "futurePostedAt": 0,
+      "publicationFreshFlow": null,
+      "floorStatus": "UNKNOWN",
+      "bySource": {
+        "ashby:multiplymii": {
+          "stored": 4,
+          "recentPosted": 4,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 28,
+          "recentPosted": 28,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 4,
+          "recentPosted": 4,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby:getground": {
+          "stored": 2,
+          "recentPosted": 0,
+          "olderPosted": 2,
+          "unknownPosted": 0
+        },
+        "breezy:sourcefit": {
+          "stored": 3,
+          "recentPosted": 0,
+          "olderPosted": 0,
+          "unknownPosted": 3
+        },
+        "workable:hunt-st": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy:20four7va": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "remote-ok": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      },
+      "byFamily": {
+        "ashby": {
+          "stored": 6,
+          "recentPosted": 4,
+          "olderPosted": 2,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 28,
+          "recentPosted": 28,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 4,
+          "recentPosted": 4,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy": {
+          "stored": 5,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 3
+        },
+        "workable": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "remote-ok": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      }
+    },
+    {
+      "manilaDate": "2026-10-05",
+      "eligibleStoredCount": 27,
+      "recentPostedStorage": 7,
+      "olderPostedStorage": 20,
+      "missingPostedAt": 0,
+      "invalidPostedAt": 0,
+      "futurePostedAt": 0,
+      "publicationFreshFlow": null,
+      "floorStatus": "UNKNOWN",
+      "bySource": {
+        "lever:trustarc": {
+          "stored": 1,
+          "recentPosted": 0,
+          "olderPosted": 1,
+          "unknownPosted": 0
+        },
+        "ashby:multiplymii": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "workable:hunt-st": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "remotive": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy:sourcefit": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "lever:truezerotech": {
+          "stored": 17,
+          "recentPosted": 0,
+          "olderPosted": 17,
+          "unknownPosted": 0
+        },
+        "ashby:payscale": {
+          "stored": 4,
+          "recentPosted": 2,
+          "olderPosted": 2,
+          "unknownPosted": 0
+        },
+        "remote-ok": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      },
+      "byFamily": {
+        "lever": {
+          "stored": 18,
+          "recentPosted": 0,
+          "olderPosted": 18,
+          "unknownPosted": 0
+        },
+        "ashby": {
+          "stored": 5,
+          "recentPosted": 3,
+          "olderPosted": 2,
+          "unknownPosted": 0
+        },
+        "workable": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "remotive": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "remote-ok": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      }
+    },
+    {
+      "manilaDate": "2026-10-04",
+      "eligibleStoredCount": 49,
+      "recentPostedStorage": 17,
+      "olderPostedStorage": 32,
+      "missingPostedAt": 0,
+      "invalidPostedAt": 0,
+      "futurePostedAt": 0,
+      "publicationFreshFlow": null,
+      "floorStatus": "UNKNOWN",
+      "bySource": {
+        "lever:repurposeglobal": {
+          "stored": 3,
+          "recentPosted": 1,
+          "olderPosted": 2,
+          "unknownPosted": 0
+        },
+        "lever:lwolf": {
+          "stored": 4,
+          "recentPosted": 1,
+          "olderPosted": 3,
+          "unknownPosted": 0
+        },
+        "lever:hso": {
+          "stored": 1,
+          "recentPosted": 0,
+          "olderPosted": 1,
+          "unknownPosted": 0
+        },
+        "lever:deliverect": {
+          "stored": 9,
+          "recentPosted": 0,
+          "olderPosted": 9,
+          "unknownPosted": 0
+        },
+        "lever:decilegroup": {
+          "stored": 5,
+          "recentPosted": 0,
+          "olderPosted": 5,
+          "unknownPosted": 0
+        },
+        "lever:brafton": {
+          "stored": 5,
+          "recentPosted": 0,
+          "olderPosted": 5,
+          "unknownPosted": 0
+        },
+        "lever:beaverprocess": {
+          "stored": 2,
+          "recentPosted": 0,
+          "olderPosted": 2,
+          "unknownPosted": 0
+        },
+        "lever:90seconds": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "greenhouse:trainingthestreet": {
+          "stored": 1,
+          "recentPosted": 0,
+          "olderPosted": 1,
+          "unknownPosted": 0
+        },
+        "ashby:homera-health": {
+          "stored": 1,
+          "recentPosted": 0,
+          "olderPosted": 1,
+          "unknownPosted": 0
+        },
+        "ashby:circulareconomysystems": {
+          "stored": 3,
+          "recentPosted": 0,
+          "olderPosted": 3,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 14,
+          "recentPosted": 14,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      },
+      "byFamily": {
+        "lever": {
+          "stored": 30,
+          "recentPosted": 3,
+          "olderPosted": 27,
+          "unknownPosted": 0
+        },
+        "greenhouse": {
+          "stored": 1,
+          "recentPosted": 0,
+          "olderPosted": 1,
+          "unknownPosted": 0
+        },
+        "ashby": {
+          "stored": 4,
+          "recentPosted": 0,
+          "olderPosted": 4,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 14,
+          "recentPosted": 14,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      }
+    },
+    {
+      "manilaDate": "2026-10-03",
+      "eligibleStoredCount": 59,
+      "recentPostedStorage": 27,
+      "olderPostedStorage": 32,
+      "missingPostedAt": 0,
+      "invalidPostedAt": 0,
+      "futurePostedAt": 0,
+      "publicationFreshFlow": null,
+      "floorStatus": "UNKNOWN",
+      "bySource": {
+        "we-work-remotely": {
+          "stored": 15,
+          "recentPosted": 15,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby:gradient": {
+          "stored": 5,
+          "recentPosted": 0,
+          "olderPosted": 5,
+          "unknownPosted": 0
+        },
+        "remote-ok": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby:foundry-for-good": {
+          "stored": 27,
+          "recentPosted": 0,
+          "olderPosted": 27,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 7,
+          "recentPosted": 7,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "workable:crewbloom": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy:20four7va": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby:multiplymii": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      },
+      "byFamily": {
+        "we-work-remotely": {
+          "stored": 15,
+          "recentPosted": 15,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby": {
+          "stored": 33,
+          "recentPosted": 1,
+          "olderPosted": 32,
+          "unknownPosted": 0
+        },
+        "remote-ok": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 7,
+          "recentPosted": 7,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "workable": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      }
+    },
+    {
+      "manilaDate": "2026-10-02",
+      "eligibleStoredCount": 36,
+      "recentPostedStorage": 21,
+      "olderPostedStorage": 15,
+      "missingPostedAt": 0,
+      "invalidPostedAt": 0,
+      "futurePostedAt": 0,
+      "publicationFreshFlow": null,
+      "floorStatus": "UNKNOWN",
+      "bySource": {
+        "remotive": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 10,
+          "recentPosted": 10,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 3,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy:20four7va": {
+          "stored": 4,
+          "recentPosted": 4,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "remote-ok": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby:the-studio": {
+          "stored": 3,
+          "recentPosted": 1,
+          "olderPosted": 2,
+          "unknownPosted": 0
+        },
+        "lever:snappr": {
+          "stored": 13,
+          "recentPosted": 0,
+          "olderPosted": 13,
+          "unknownPosted": 0
+        }
+      },
+      "byFamily": {
+        "remotive": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 10,
+          "recentPosted": 10,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 3,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy": {
+          "stored": 4,
+          "recentPosted": 4,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "remote-ok": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby": {
+          "stored": 3,
+          "recentPosted": 1,
+          "olderPosted": 2,
+          "unknownPosted": 0
+        },
+        "lever": {
+          "stored": 13,
+          "recentPosted": 0,
+          "olderPosted": 13,
+          "unknownPosted": 0
+        }
+      }
+    },
+    {
+      "manilaDate": "2026-10-01",
+      "eligibleStoredCount": 44,
+      "recentPostedStorage": 43,
+      "olderPostedStorage": 0,
+      "missingPostedAt": 1,
+      "invalidPostedAt": 0,
+      "futurePostedAt": 0,
+      "publicationFreshFlow": null,
+      "floorStatus": "UNKNOWN",
+      "bySource": {
+        "breezy:20four7va": {
+          "stored": 4,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 1
+        },
+        "workable:crewbloom": {
+          "stored": 5,
+          "recentPosted": 5,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "workable:coconutva": {
+          "stored": 4,
+          "recentPosted": 4,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "workable:hunt-st": {
+          "stored": 12,
+          "recentPosted": 12,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 11,
+          "recentPosted": 11,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "jobicy-supporting-apac": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy:sourcefit": {
+          "stored": 2,
+          "recentPosted": 2,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby:multiplymii": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "breezy:yokly": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 3,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      },
+      "byFamily": {
+        "breezy": {
+          "stored": 7,
+          "recentPosted": 6,
+          "olderPosted": 0,
+          "unknownPosted": 1
+        },
+        "workable": {
+          "stored": 21,
+          "recentPosted": 21,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "we-work-remotely": {
+          "stored": 11,
+          "recentPosted": 11,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "jobicy-supporting-apac": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "ashby": {
+          "stored": 1,
+          "recentPosted": 1,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        },
+        "real-work-from-anywhere": {
+          "stored": 3,
+          "recentPosted": 3,
+          "olderPosted": 0,
+          "unknownPosted": 0
+        }
+      }
+    }
+  ],
+  "summary": {
+    "totalEvaluatedDays": 7,
+    "avgDailyRecentPostedStorage": 28.3,
+    "avgDailyOlderPostedStorage": 14.9,
+    "publicationFreshFlow": null,
+    "floorStatus": "UNKNOWN",
+    "limitations": [
+      "Counts use scraped_at and current active/PH eligibility; later deactivation or reclassification changes this snapshot.",
+      "A recent posting age (0 to 7 days) is necessary evidence only, not a FRESH_DISCOVERY cohort assignment.",
+      "Canonical first-exposure receipts, publication-time authority, replay/reactivation provenance and public-route verification are not measured.",
+      "Zero means no matching current rows on that storage date; it does not prove a historical day had zero publications or complete telemetry."
+    ]
+  }
+}
