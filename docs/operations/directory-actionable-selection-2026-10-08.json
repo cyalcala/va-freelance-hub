@@ -1,0 +1,73 @@
+{
+  "measuredAt": "2026-10-08T11:05:46.763Z",
+  "sql": "\n    SELECT\n      id,\n      company_name AS companyName,\n      website,\n      hiring_page_url AS hiringPageUrl,\n      ats_platform AS atsPlatform,\n      ats_token AS atsToken,\n      is_verified AS isVerified\n    FROM va_directory\n    LEFT JOIN (\n      SELECT LOWER(company) AS company_key,\n        COUNT(*) AS total_ph_jobs,\n        COUNT(CASE WHEN ph_eligibility = 'eligible_verified' THEN 1 END) AS verified_jobs\n      FROM opportunities\n      WHERE is_active = 1 AND ph_eligibility IN ('eligible_verified', 'eligible_likely')\n      GROUP BY LOWER(company)\n    ) AS evidence ON LOWER(company_name) = evidence.company_key\n    WHERE (is_verified = 0 AND hires_filipinos = 1\n      AND evidence.verified_jobs >= 1 AND evidence.total_ph_jobs >= 2)\n       OR (ats_platform IN ('greenhouse', 'lever', 'ashby', 'breezy', 'workable') AND ats_token IS NOT NULL\n         AND TRIM(ats_token) <> '' AND hiring_page_url IS NULL)\n    ORDER BY RANDOM()\n    LIMIT 100\n  ",
+  "results": [
+    {
+      "id": 980,
+      "companyName": "True Zero Technologies",
+      "isVerified": 0,
+      "atsPlatform": "lever",
+      "hasHiringPath": false
+    },
+    {
+      "id": 985,
+      "companyName": "Lone Wolf Technologies",
+      "isVerified": 0,
+      "atsPlatform": "lever",
+      "hasHiringPath": false
+    },
+    {
+      "id": 987,
+      "companyName": "Circular Economy Systems",
+      "isVerified": 0,
+      "atsPlatform": "ashby",
+      "hasHiringPath": false
+    },
+    {
+      "id": 994,
+      "companyName": "GetGround",
+      "isVerified": 0,
+      "atsPlatform": "ashby",
+      "hasHiringPath": false
+    },
+    {
+      "id": 984,
+      "companyName": "Payscale",
+      "isVerified": 0,
+      "atsPlatform": "ashby",
+      "hasHiringPath": false
+    },
+    {
+      "id": 992,
+      "companyName": "molecule.xyz",
+      "isVerified": 0,
+      "atsPlatform": "ashby",
+      "hasHiringPath": false
+    },
+    {
+      "id": 986,
+      "companyName": "rePurpose Global",
+      "isVerified": 0,
+      "atsPlatform": "lever",
+      "hasHiringPath": false
+    }
+  ],
+  "meta": {
+    "served_by": "v3-prod",
+    "served_by_region": "APAC",
+    "served_by_colo": "SIN",
+    "served_by_primary": true,
+    "timings": {
+      "sql_duration_ms": 18.9741
+    },
+    "duration": 18.9741,
+    "changes": 0,
+    "last_row_id": 0,
+    "changed_db": false,
+    "size_after": 74842112,
+    "rows_read": 5104,
+    "rows_written": 0,
+    "total_attempts": 1
+  },
+  "productionWrites": 0
+}

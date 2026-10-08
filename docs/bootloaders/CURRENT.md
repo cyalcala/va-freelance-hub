@@ -1,5 +1,17 @@
 # Current resume pointer
 
+Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
+150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
+Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
+[bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
+Diagnostics and actionable enrichment selection pass local checks; normal
+review/release/real enrichment acceptance remains pending. Fresh flow is UNKNOWN;
+the Oct 1–7 recent-posting storage proxy is 28.3/day, not certification.
+An hourly local lucky777 heartbeat is active on the current owner chat. No source
+admission, new production clock or weaker publication gate. This pointer is navigation;
+the current exact NEXT is only in SYSTEM_SAVEPOINT. Other frontend handoffs below
+retain their scope and dated evidence.
+
 Progress/backup update (2026-10-07 20:03 Manila): acceptance PR #220 is merged
 to `0bde87f4d317f6e136fde8665f32aa976c1b71d5`, verified on origin/main; main CI
 `37615599312` passed. [Status](../IMPLEMENTATION_STATUS.md),

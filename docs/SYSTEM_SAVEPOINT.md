@@ -1,5 +1,61 @@
 # System Savepoint
 
+## 2026-10-08 19:14 Manila — Verified flow and directory evidence foundation
+
+**Current owner scope:** 100 fresh unique verified PH-accessible public jobs/day,
+150 stretch; prioritize the existing directory; advance MATH-01..13 and SSAE-CED;
+resume with supplied lucky777 and Addy skills. **Unit:**
+VERIFIED-FLOW-DIRECTORY-FOUNDATION / EXECUTE. **Status:** locally verified,
+GitHub review/release and live enrichment acceptance pending; broader goals CONTINUING.
+No overall math/autonomy/supply completion percentage.
+
+**Start:** `3065f0d709d5a1950c247d5a11df542b07721bcb`, fetched origin/main;
+branch `codex/verified-flow-directory-operations`. Commits `4631703f` repair native
+D1 diagnostic transport, `6ea1c201` add canonical directory evidence backlog,
+`e86b5d65` select evidence-ready enrichment targets. Foreign `.agents/skills/`
+and `lucky777.md` stay untracked. Current fetched main advanced to
+`7c967bb0cd1d2fb08a5e3b1116f140ecef7cff61`; reconcile normally, no overwrite.
+Missing manifest/router recorded. Jev advisory returned 401; direct review governs.
+
+**Measured:** public 735 companies / 1,539-job stock; D1 inventory 761 total,
+735 visible, 26 hidden. Visible gaps: 230 websites, 315 website provenance,
+684 hiring paths, 687 verification evidence, 343 link evidence (overlap).
+Seven actionable existing ATS/company rows selected by exact new SQL; zero
+production writes. Seven complete Manila days Oct 1–7: recent-posting storage
+proxy 28.3/day; receipt-backed first-publication flow/gaps to 100/150 UNKNOWN.
+Lake snapshot: two ready/unsynced `greenhouse:janes` rows. No publication attributable
+to this task. Quality/latency/cost gains and all thirteen math acceptances UNKNOWN.
+
+**Runtime:** two GCP hourly jobs/schedules, latest five sampled executions each
+succeeded; immutable digests and execution IDs are in the
+[evidence receipt](operations/VERIFIED_FLOW_DIRECTORY_2026-10-08_EVIDENCE.md).
+Source-to-image mapping and full background cutover remain unverified. GitHub
+miner/directory/hunter/enrichment runtime remains; no clock change or GCP deploy.
+Current enrichment route remains the existing writer with unchanged evidence
+thresholds, per-target recheck, budget and random rotation. No source admission,
+website inference or job/publication-gate change.
+
+**Checks:** final 3,035 tests / 0 fail, 15 Python tests, typecheck/build and four
+audits pass. Native multiline SQL and large no-op enrichment regressions first
+failed and now pass. Canonical sanitizer removed five false bare-domain alarms.
+No independent critic or runtime benefit certification asserted. GitHub backup
+and CI receipts pending this review branch; no DB restoration claim.
+
+**Continuity:** hourly local heartbeat
+`lucky777-verified-jobs-and-directory-maintenance` ACTIVE on this chat; old APEX
+heartbeat stays PAUSED. Local host availability is required. The
+[owner-task contract](operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md) maps
+MATH-01..13 and SSAE supporting work to the sole Source Perpetuity queue.
+Reentry: recover actual branch/remote/runtime, skip completed or unchanged failed
+probes, preserve foreign work, and use this baton. Overall owner task CONTINUING.
+
+**Next exact action:** complete normal review PR/CI/release acceptance for this
+directory selection and observe a bounded existing enrichment execution with
+per-row read-back; then replace this NEXT from the newly measured bottleneck.
+Owner/controller: maintainer/current-chat heartbeat. Rollback: revert the selected
+behavior commit; no production data change has occurred in this unit yet.
+
+
 ## 2026-10-08 — Talent mark/internal diagnostics refinement, release pending
 
 Owner requested a soft deep-orange pulse in place of the talent star and removal
