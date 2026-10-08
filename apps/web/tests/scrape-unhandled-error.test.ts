@@ -18,7 +18,7 @@ function requestContext() {
  * throws, simulating a mid-run failure (the issue #123 shape: the lock goes
  * fresh while the heartbeat never advances).
  */
-function crashingDb() {
+function crashingDb(uncertainPublication = false) {
   const diagWrites: Record<string, unknown>[] = [];
   const updateCalls: Record<string, unknown>[] = [];
   let lockClaimed = false;
@@ -51,12 +51,19 @@ function crashingDb() {
         set: (values: Record<string, unknown>) => {
           updateCalls.push(values);
           return {
-            where: async () => {
-              if (!lockClaimed) {
-                lockClaimed = true;
-                return { meta: { changes: 1 } };
-              }
-              return { meta: { changes: 0 } };
+            where: () => {
+              const execute = async () => {
+                if (!lockClaimed) {
+                  lockClaimed = true;
+                  return { meta: { changes: 1 } };
+                }
+                return { meta: { changes: 0 } };
+              };
+              return { then: (resolve: any, reject: any) => execute().then(resolve, reject),
+                returning: async () => {
+                  if (uncertainPublication) throw new Error("private database acknowledgement diagnostic");
+                  return [];
+                } };
             },
           };
         },
@@ -67,6 +74,25 @@ function crashingDb() {
 }
 
 describe("scrape catch-all heartbeat (issue #123)", () => {
+  test("uncertain publication stops and exposes UNKNOWN instead of exact zero counters", async () => {
+    const { db, diagWrites, updateCalls } = crashingDb(true);
+    let fetchCalls = 0;
+    const previousFetch = globalThis.fetch;
+    globalThis.fetch = mock(async () => { fetchCalls++; throw new Error("outbound requests are forbidden"); }) as unknown as typeof fetch;
+    try {
+      const response = await createScrapeHandler({ getDb: () => db as any })(requestContext());
+      expect(response.status).toBe(500);
+      const body = await response.json();
+      expect(body).toMatchObject({ publicationOutcome: "UNKNOWN", inserted: null, actualChanges: null, skipped: null,
+        confirmedPublishedLowerBound: 0, reconciliationRequired: true });
+      expect(JSON.stringify(body)).not.toContain("private database acknowledgement diagnostic");
+      expect(fetchCalls).toBe(0);
+      expect(diagWrites).toHaveLength(1);
+      expect(diagWrites[0].lastError).toContain("UNKNOWN");
+      expect(updateCalls).toHaveLength(3); // lock, attempted publication, finally releases lock; no later writer
+    } finally { globalThis.fetch = previousFetch; }
+  });
+
   test("a mid-run throw still returns 500 and stamps the ingest heartbeat", async () => {
     const { db, diagWrites, updateCalls } = crashingDb();
     const previousFetch = globalThis.fetch;

@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, type NewOpportunity } from "@va-hub/db";
 import { chunkArray, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
-import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedInserts } from "@/lib/publish-opportunities";
+import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
 import { isAuthorized } from "@/lib/auth";
@@ -222,6 +222,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     };
     if (publicationDb && publicItems.length > 0) {
       const published = await publishGroupedInserts(publicationDb, insertChunk, publicItems, observedAt, "ingest");
+      if (published.publicationOutcome === "UNKNOWN") throw new PublicationOutcomeUnknownError(published.published);
       if (published.failed) throw new Error("publication gateway rejected direct ingest");
       insertedCount += published.published;
     } else {
@@ -243,6 +244,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       headers: { "Content-Type": "application/json" }
     });
   } catch (error) {
+    if (error instanceof PublicationOutcomeUnknownError) {
+      return new Response(JSON.stringify({ success: false, code: "POST_PERSISTENCE_FAILURE", publicationOutcome: "UNKNOWN",
+        inserted: null, confirmedPublishedLowerBound: error.confirmedPublishedLowerBound, reconciliationRequired: true,
+        error: "Publication persistence outcome is UNKNOWN; reconciliation is required" }),
+        { status: 500, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
+    }
     console.error("Ingest API Error:", error);
     return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Internal Server Error" }), { status: 500 });
   }

@@ -1,4 +1,7 @@
+// Match the client boot contract before importing the SDK in Workers.
+import "../polyfill";
 import { and, asc, eq } from "drizzle-orm";
+import { NonRetriableError } from "inngest";
 import { getDb, opportunities } from "@va-hub/db";
 import {
   geoGate,
@@ -8,7 +11,7 @@ import {
   publishPublicExposure,
   publicationTickKey,
 } from "@va-hub/scraper";
-import { publicationDbFromEnv } from "@/lib/publish-opportunities";
+import { normalizePersistedOpportunityIds, publicationDbFromEnv, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
 import { inngest, type CfBindings } from "../client";
 
@@ -188,7 +191,11 @@ export const triageDrain = inngest.createFunction(
                   : triage.employmentType || "freelance",
               updatedAt: observedAt,
             });
-          const publishRow = async () => db.update(opportunities).set(update.patch).where(eq(opportunities.id, row.id));
+          const publishRow = async () => {
+            const returned = await db.update(opportunities).set(update.patch).where(and(eq(opportunities.id, row.id),
+              eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"))).returning({ id: opportunities.id });
+            return normalizePersistedOpportunityIds(returned.map(row => row.id));
+          };
           const publicationDb = publicationDbFromEnv(env);
           if (publicationDb) {
             const sourceId = row.sourceId && /^[a-z0-9:._-]+$/.test(row.sourceId) ? row.sourceId : "unattributed";
@@ -201,13 +208,26 @@ export const triageDrain = inngest.createFunction(
                 material: { id: row.id, patch: update.material } }),
               proposedCount: 1,
               persist: async () => {
-                await publishRow();
-                return { publishedCount: 1, ids: [row.id] };
+                const ids = await publishRow();
+                return { publishedCount: ids.length, ids };
               },
             });
+            if (!published.ok && "persistenceAttempted" in published && published.persistenceAttempted === true) {
+              // Uncertain writes require reconciliation, not the configured retry loop.
+              // https://www.inngest.com/docs/durable-execution/guides-and-advanced/error-handling/retries
+              throw new NonRetriableError("Publication persistence outcome is UNKNOWN; reconciliation is required", {
+                cause: new PublicationOutcomeUnknownError(),
+              });
+            }
             if (!published.ok || published.publishedCount === 0) return "deferred" as const;
           } else {
-            await publishRow();
+            try {
+              if ((await publishRow()).length === 0) return "deferred" as const;
+            } catch {
+              throw new NonRetriableError("Publication persistence outcome is UNKNOWN; reconciliation is required", {
+                cause: new PublicationOutcomeUnknownError(),
+              });
+            }
           }
           return "published" as const;
         }),

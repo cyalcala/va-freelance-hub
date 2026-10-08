@@ -12,7 +12,7 @@ import {
 import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@/lib/inactive-reason";
 import { runLockOutcome } from "@/lib/run-lock";
 import { d1Changes } from "@/lib/d1-result";
-import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts } from "@/lib/publish-opportunities";
+import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
 import { publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
@@ -493,7 +493,11 @@ export async function drainPendingTriageInline(
         type: triage.employmentType === "contract" ? "freelance" : (triage.employmentType || "freelance"),
         updatedAt: observedAt,
       });
-      const publishRow = () => db.update(opportunities).set(update.patch).where(eq(opportunities.id, item.id));
+      const publishRow = async () => {
+        const returned = await db.update(opportunities).set(update.patch).where(and(eq(opportunities.id, item.id),
+          eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"))).returning({ id: opportunities.id });
+        return normalizePersistedOpportunityIds(returned.map(row => row.id));
+      };
       if (publicationDb) {
         const sourceId = item.sourceId && /^[a-z0-9:._-]+$/.test(item.sourceId) ? item.sourceId : "unattributed";
         const tickKey = publicationTickKey("scrape-drain", observedAt);
@@ -505,19 +509,26 @@ export async function drainPendingTriageInline(
             material: { id: item.id, patch: update.material } }),
           proposedCount: 1,
           persist: async () => {
-            await publishRow();
-            return { publishedCount: 1, ids: [item.id] };
+            const ids = await publishRow();
+            return { publishedCount: ids.length, ids };
           },
         });
+        if (!published.ok && "persistenceAttempted" in published && published.persistenceAttempted === true) {
+          throw new PublicationOutcomeUnknownError(stats.published);
+        }
         if (!published.ok || published.publishedCount === 0) {
           stats.deferred += 1;
           continue;
         }
       } else {
-        await publishRow();
+        try {
+          const ids = await publishRow();
+          if (ids.length === 0) { stats.deferred += 1; continue; }
+        } catch { throw new PublicationOutcomeUnknownError(stats.published); }
       }
       stats.published += 1;
     } catch (err) {
+      if (err instanceof PublicationOutcomeUnknownError) throw err;
       // Durable-write truth: a failed write is not credited; the row stays
       // pending and is reclaimed next pass.
       stats.deferred += 1;
@@ -586,8 +597,10 @@ export async function recoverGateEligiblePending(
   };
   try {
     if (!publicationDb) {
-      const res = await db.update(opportunities).set(publishSet).where(GATE_ELIGIBLE_PENDING());
-      return d1Changes(res);
+      try {
+        const returned = await db.update(opportunities).set(publishSet).where(GATE_ELIGIBLE_PENDING()).returning({ id: opportunities.id });
+        return normalizePersistedOpportunityIds(returned.map(row => row.id)).length;
+      } catch { throw new PublicationOutcomeUnknownError(); }
     }
     const pending = await db
       .select({ id: opportunities.id, sourceId: opportunities.sourceId })
@@ -601,16 +614,20 @@ export async function recoverGateEligiblePending(
       "scrape-gate",
       publishSet,
       async (ids, patch) => {
-        let publishedCount = 0;
+        const returnedIds: number[] = [];
         for (const batch of chunkArray(ids, 50)) {
-          const res = await db.update(opportunities).set(patch).where(inArray(opportunities.id, batch));
-          publishedCount += d1Changes(res);
+          const returned = await db.update(opportunities).set(patch).where(and(inArray(opportunities.id, batch), GATE_ELIGIBLE_PENDING()))
+            .returning({ id: opportunities.id });
+          returnedIds.push(...returned.map(row => row.id));
         }
-        return { publishedCount, ids };
+        const actualIds = normalizePersistedOpportunityIds(returnedIds);
+        return { publishedCount: actualIds.length, ids: actualIds };
       },
     );
+    if (result.publicationOutcome === "UNKNOWN") throw new PublicationOutcomeUnknownError(result.published);
     return result.published;
   } catch (err) {
+    if (err instanceof PublicationOutcomeUnknownError) throw err;
     console.warn(`[api/cron/scrape] Gate-eligible pending recovery failed:`, errorMessage(err));
     return 0;
   }
@@ -640,10 +657,12 @@ export async function reactivateFeedConfirmedJobs(
   try {
     if (!publicationDb) {
       let reactivated = 0;
-      for (const batch of chunkArray(urls, BATCH_SIZE)) {
-        const res = await db.update(opportunities).set(publishSet).where(recoverableWhere(batch));
-        reactivated += d1Changes(res);
-      }
+      try {
+        for (const batch of chunkArray(urls, BATCH_SIZE)) {
+          const returned = await db.update(opportunities).set(publishSet).where(recoverableWhere(batch)).returning({ id: opportunities.id });
+          reactivated += normalizePersistedOpportunityIds(returned.map(row => row.id)).length;
+        }
+      } catch { throw new PublicationOutcomeUnknownError(reactivated); }
       return reactivated;
     }
     const rows: Array<{ id: number; sourceId: string | null }> = [];
@@ -662,16 +681,21 @@ export async function reactivateFeedConfirmedJobs(
       "scrape-reactivate",
       publishSet,
       async (ids, patch) => {
-        let publishedCount = 0;
+        const returnedIds: number[] = [];
         for (const batch of chunkArray(ids, BATCH_SIZE)) {
-          const res = await db.update(opportunities).set(patch).where(inArray(opportunities.id, batch));
-          publishedCount += d1Changes(res);
+          const returned = await db.update(opportunities).set(patch).where(and(inArray(opportunities.id, batch),
+            eq(opportunities.isActive, false), inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
+            inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]))).returning({ id: opportunities.id });
+          returnedIds.push(...returned.map(row => row.id));
         }
-        return { publishedCount, ids };
+        const actualIds = normalizePersistedOpportunityIds(returnedIds);
+        return { publishedCount: actualIds.length, ids: actualIds };
       },
     );
+    if (result.publicationOutcome === "UNKNOWN") throw new PublicationOutcomeUnknownError(result.published);
     return result.published;
   } catch (err) {
+    if (err instanceof PublicationOutcomeUnknownError) throw err;
     console.warn(`[api/cron/scrape] Feed-confirmed reactivation failed:`, errorMessage(err));
     return 0;
   }
@@ -2827,12 +2851,14 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
           "scrape",
         );
         actualChanges = published.published;
+        if (published.publicationOutcome === "UNKNOWN") throw new PublicationOutcomeUnknownError(published.published);
         if (published.failed) {
           insertFailedBatches += 1;
           markItemsForRetry(triagedItems);
           insertErrors.push({ batchStart: 0, batchSize: triagedItems.length, error: "publication gateway rejected public insert" });
         }
       } catch (err) {
+        if (err instanceof PublicationOutcomeUnknownError) throw err;
         insertFailedBatches += 1;
         markItemsForRetry(triagedItems);
         insertErrors.push({ batchStart: 0, batchSize: triagedItems.length, error: errorMessage(err) });
@@ -2845,14 +2871,8 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         const rows = await db.insert(opportunities).values(batch).onConflictDoNothing().returning({ id: opportunities.id });
         actualChanges += normalizePersistedOpportunityIds(rows.map((row) => row.id)).length;
       } catch (err) {
-        insertFailedBatches += 1;
-        markItemsForRetry(batch);
-        insertErrors.push({
-          batchStart: i,
-          batchSize: batch.length,
-          error: errorMessage(err),
-        });
-        console.error(`[api/cron/scrape] Batch insert failed (index ${i}):`, err);
+        // The insert was attempted: do not queue a blind retry or claim zero.
+        throw new PublicationOutcomeUnknownError(actualChanges);
       }
     }
     }
@@ -3010,7 +3030,10 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     // clock is indistinguishable from stopped (issue #123). recordIngestDiagnostics
     // never throws, so it cannot mask the 500 below.
     await recordIngestDiagnostics(db, observedAt, { unhandledError: errorMessage(error) });
-    return new Response(JSON.stringify({ error: "Internal Server Error", runDurationMs: Date.now() - startedAt }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Internal Server Error", runDurationMs: Date.now() - startedAt,
+      ...(error instanceof PublicationOutcomeUnknownError ? { publicationOutcome: "UNKNOWN", inserted: null, actualChanges: null,
+        skipped: null, confirmedPublishedLowerBound: error.confirmedPublishedLowerBound, reconciliationRequired: true } : {}) }),
+      { status: 500, headers: { "Content-Type": "application/json" } });
   } finally {
     if (lockAcquired) {
       await releaseRunLock(db, observedAt);

@@ -25,9 +25,10 @@ function fakeDb(changes: number, fail = false) {
           return {
             where: () => {
               captured.whereCalled = true;
-              return fail
-                ? Promise.reject(new Error("D1 write rejected"))
-                : Promise.resolve({ meta: { changes } });
+              return { returning: async () => {
+                if (fail) throw new Error("D1 write rejected");
+                return Array.from({ length: changes }, (_, index) => ({ id: index + 1 }));
+              } };
             },
           };
         },
@@ -62,10 +63,9 @@ describe("recoverGateEligiblePending", () => {
     expect(captured.set.lastSeenInFeedAt).toBe(OBSERVED);
   });
 
-  test("fail-soft: a rejected write returns 0 and never throws", async () => {
+  test("a thrown update acknowledgement reports UNKNOWN instead of known zero", async () => {
     const { db } = fakeDb(0, true);
-    const n = await recoverGateEligiblePending(db, OBSERVED);
-    expect(n).toBe(0);
+    await expect(recoverGateEligiblePending(db, OBSERVED)).rejects.toMatchObject({ publicationOutcome: "UNKNOWN" });
   });
 
   test("with a publication db, publishes attributed pending rows and holds missing source identities", async () => {
@@ -91,7 +91,7 @@ describe("recoverGateEligiblePending", () => {
               where: (clause: any) => {
                 captured.whereClauses.push(clause);
                 captured.updates += 1;
-                return Promise.resolve({ meta: { changes: 1 } });
+                return { returning: async () => [{ id: 3 }] };
               },
             };
           },
@@ -106,7 +106,10 @@ describe("recoverGateEligiblePending", () => {
     expect(captured.set.isActive).toBe(true);
     expect(captured.set.inactiveReason).toBe(null);
     const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
-    expect(captured.whereClauses.map(clause => new SQLiteSyncDialect().sqlToQuery(clause).params)).toEqual([[3]]);
+    const params = new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[0]).params;
+    expect(params).toContain(3);
+    expect(params).toContain("pending-triage");
+    expect(params).toContain("ph_only");
     expect(publicationDb.runs.filter(run => run.query.includes("INSERT INTO source_publication_ledger"))
       .map(run => [run.values[0], run.values[3], run.values[5], run.values[6]]))
       .toEqual([["we-work-remotely", "unlimited", 1, "[3]"], ["unattributed", "blocked", 0, "[]"]]);

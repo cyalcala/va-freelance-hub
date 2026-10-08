@@ -4,6 +4,7 @@ import {
   PENDING_DRAIN_PER_TICK,
 } from "../src/pages/api/cron/scrape";
 import { FakePublicationDatabase } from "./publication-db-fake";
+import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 
 // Regression coverage for the 2026-08-18/19 board freeze recovery.
 //
@@ -76,9 +77,14 @@ function makeFakeDb(pendingRows: any[], failUpdates = false) {
     update() {
       return {
         set: (vals: any) => ({
-          where: () => {
+          where: (condition: any) => {
             calls.updates.push(vals);
-            return failUpdates ? Promise.reject(new Error("D1 write rejected")) : Promise.resolve();
+            const execute = () => failUpdates ? Promise.reject(new Error("D1 write rejected")) : Promise.resolve();
+            return { then: (resolve: any, reject: any) => execute().then(resolve, reject),
+              returning: async () => {
+                await execute();
+                return [{ id: new SQLiteSyncDialect().sqlToQuery(condition).params[0] }];
+              } };
           },
         }),
       };
@@ -186,14 +192,12 @@ describe("drainPendingTriageInline", () => {
     expect(calls.limits[0]).toBe(PENDING_DRAIN_PER_TICK);
   });
 
-  it("durable-write truth: a rejected write is not credited as published", async () => {
+  it("a thrown persistence acknowledgement stops with UNKNOWN instead of claiming deferred zero", async () => {
     const { db } = makeFakeDb([pendingRow(1)], /* failUpdates */ true);
     const { env } = makeEnv([ELIGIBLE, SKEPTIC_AGREES]);
 
-    const stats = await drainPendingTriageInline(db, env, makeBudget(), OBSERVED);
-
-    // The publish write threw, so it counts as deferred, not published.
-    expect(stats).toMatchObject({ claimed: 1, published: 0, deferred: 1 });
+    await expect(drainPendingTriageInline(db, env, makeBudget(), OBSERVED))
+      .rejects.toMatchObject({ publicationOutcome: "UNKNOWN" });
   });
 
   it("defers an eligible row when the publication gateway blocks exposure", async () => {

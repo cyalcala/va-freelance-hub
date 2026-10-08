@@ -63,6 +63,7 @@ export interface PublishPublicExposureRequest {
 export type PublishPublicExposureResult =
   | { ok: true; mode: "unlimited" | "capped"; publishedCount: number; ids: number[]; replayed: boolean }
   | { ok: true; mode: "blocked" | "rolled_back"; publishedCount: 0; ids: []; replayed: boolean; reason: string }
+  | { ok: false; code: "POST_PERSISTENCE_FAILURE"; persistenceAttempted: true; exposure: "UNKNOWN"; reason: string }
   | { ok: false; reason: string };
 
 const LOAD_POLICY_SQL = `SELECT source_id AS sourceId, compliance_state AS compliance,
@@ -217,11 +218,7 @@ export async function publishPublicExposure(
       await insertLedger(db, request, "blocked", 0, []);
       return { ok: true, mode: "blocked", publishedCount: 0, ids: [], replayed: false, reason: "canary tick cap is already exhausted" };
     }
-    const persisted = request.proposedCount === 0 ? { publishedCount: 0, ids: [] as number[] } : await request.persist(request.proposedCount);
-    const safePublished = clampLedgerPublishedCount(request.proposedCount, persisted.publishedCount);
-    const safeIds = Array.isArray(persisted.ids) ? persisted.ids.slice(0, safePublished) : [];
-    await insertLedger(db, request, "capped", safePublished, safeIds);
-    return { ok: true, mode: "capped", publishedCount: safePublished, ids: safeIds, replayed: false };
+    return persistAndRecord(db, request, "capped");
   }
 
   const expiry = policy.policyExpiry;
@@ -248,11 +245,57 @@ export async function publishPublicExposure(
     };
   }
 
-  const persisted = request.proposedCount === 0 ? { publishedCount: 0, ids: [] as number[] } : await request.persist(request.proposedCount);
-  const safePublished = clampLedgerPublishedCount(request.proposedCount, persisted.publishedCount);
-  const safeIds = Array.isArray(persisted.ids) ? persisted.ids.slice(0, safePublished) : [];
-  await insertLedger(db, request, "unlimited", safePublished, safeIds);
-  return { ok: true, mode: "unlimited", publishedCount: safePublished, ids: safeIds, replayed: false };
+  return persistAndRecord(db, request, "unlimited");
+}
+
+function postPersistenceFailure(reason: string): PublishPublicExposureResult {
+  return { ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true, exposure: "UNKNOWN", reason };
+}
+
+function snapshotAcknowledgement(value: unknown, allowedCount: number): { publishedCount: number; ids: number[] } | null {
+  if (value === null || typeof value !== "object") return null;
+  const { publishedCount, ids: rawIds } = value as { publishedCount: unknown; ids: unknown };
+  if (typeof publishedCount !== "number" || !Number.isSafeInteger(publishedCount)
+    || publishedCount < 0 || publishedCount > allowedCount || !Array.isArray(rawIds)) return null;
+  if (rawIds.length !== publishedCount) return null;
+  // Read actual indexed entries, including holes, rather than a replaceable iterator.
+  // The copy detaches callback memory before awaiting the ledger.
+  const ids: number[] = [];
+  for (let index = 0; index < publishedCount; index++) {
+    if (!Object.hasOwn(rawIds, index)) return null;
+    const id: unknown = rawIds[index];
+    if (typeof id !== "number" || !Number.isSafeInteger(id) || id <= 0) return null;
+    ids.push(id);
+  }
+  if (new Set(ids).size !== ids.length) return null;
+  return { publishedCount, ids };
+}
+
+async function persistAndRecord(
+  db: PublicationDatabase,
+  request: PublishPublicExposureRequest,
+  mode: "unlimited" | "capped",
+): Promise<PublishPublicExposureResult> {
+  if (request.proposedCount === 0) {
+    // No persistence was attempted; keep the existing empty-decision behavior.
+    await insertLedger(db, request, mode, 0, []);
+    return { ok: true, mode, publishedCount: 0, ids: [], replayed: false };
+  }
+  let persisted: unknown;
+  try { persisted = await request.persist(request.proposedCount); }
+  catch { return postPersistenceFailure("publication persistence did not complete with a valid acknowledgement"); }
+
+  let acknowledgement: { publishedCount: number; ids: number[] } | null;
+  try { acknowledgement = snapshotAcknowledgement(persisted, request.proposedCount); }
+  catch { acknowledgement = null; }
+  if (!acknowledgement) return postPersistenceFailure("publication persistence returned an invalid acknowledgement");
+
+  try { await insertLedger(db, request, mode, acknowledgement.publishedCount, acknowledgement.ids); }
+  catch {
+    // Either write may already have committed. This is not a rollback or a zero-exposure receipt.
+    return postPersistenceFailure("publication acknowledgement ledger write did not complete");
+  }
+  return { ok: true, mode, ...acknowledgement, replayed: false };
 }
 
 async function insertLedger(
@@ -262,28 +305,23 @@ async function insertLedger(
   publishedCount: number,
   ids: number[],
 ): Promise<void> {
-  const safePublished = clampLedgerPublishedCount(request.proposedCount, publishedCount);
-  const safeIds = Array.isArray(ids) ? ids.slice(0, safePublished) : [];
   const write = await db.prepare(INSERT_LEDGER_SQL).bind(
     request.sourceId,
     request.tickKey,
     request.retryKey,
     mode,
     request.proposedCount,
-    safePublished,
-    JSON.stringify(safeIds),
+    publishedCount,
+    JSON.stringify(ids),
     request.now,
   ).run();
   if (!write.success) throw new Error("publication ledger write was unsuccessful");
 }
 
 /**
- * P0-LEDGER-CLAMP (Hunter 36441469988): D1 `meta.changes` can exceed the
- * requested row count when triggers (e.g. opportunities_fts) amplify writes.
- * The ledger CHECK requires published_count <= proposed_count by definition
- * (one cannot publish more than proposed), so clamp defensively before the
- * INSERT instead of failing the whole scrape tick. Callers already slice to
- * `allowed`; this is the authoritative enforcement layer.
+ * Historical count utility retained for API compatibility. D1 `meta.changes`
+ * can include trigger writes; it is not publication evidence. The live gateway
+ * requires exact actual IDs and count and never uses this lossy utility.
  */
 export function clampLedgerPublishedCount(proposedCount: number, rawPublished: unknown): number {
   const proposed = Number.isSafeInteger(proposedCount) && proposedCount >= 0 ? proposedCount : 0;

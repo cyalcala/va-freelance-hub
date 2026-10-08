@@ -16,10 +16,36 @@ function canonicalPublicationSourceId(sourceId: string | null | undefined): stri
   return sourceId && /^[a-z0-9:._-]+$/.test(sourceId) ? sourceId : "unattributed";
 }
 
-/** IDs returned by the opportunity INSERT, never inferred from D1 write metadata. */
+/** Actual returned IDs are evidence: corrupt entries must not be repaired away. */
 export function normalizePersistedOpportunityIds(ids: readonly number[]): number[] {
   if (!Array.isArray(ids)) throw new Error("opportunity insert must return persisted IDs");
-  return [...new Set(ids.filter((id) => Number.isSafeInteger(id) && id > 0))];
+  const seen = new Set<number>();
+  const snapshot: number[] = [];
+  if (Reflect.ownKeys(ids).some(key => key !== "length" && (typeof key !== "string" || !/^(0|[1-9]\d*)$/.test(key) || Number(key) >= ids.length))) {
+    throw new Error("persisted IDs must be a plain dense array");
+  }
+  for (let index = 0; index < ids.length; index++) {
+    const descriptor = Object.getOwnPropertyDescriptor(ids, String(index));
+    if (!descriptor || !("value" in descriptor)) throw new Error("persisted IDs must be a plain dense array");
+    const id = descriptor.value;
+    if (!Number.isSafeInteger(id) || id <= 0 || seen.has(id)) {
+      throw new Error("persisted IDs must be distinct positive safe integers");
+    }
+    seen.add(id);
+    snapshot.push(id);
+  }
+  return snapshot;
+}
+
+export type GroupedPublicationResult = { published: number; failed: boolean; publicationOutcome?: "UNKNOWN" };
+
+/** Halt this invocation: persistence may have happened without a valid receipt. */
+export class PublicationOutcomeUnknownError extends Error {
+  readonly publicationOutcome = "UNKNOWN";
+  constructor(readonly confirmedPublishedLowerBound = 0) {
+    super("Publication persistence outcome is UNKNOWN; reconciliation is required");
+    this.name = "PublicationOutcomeUnknownError";
+  }
 }
 
 /**
@@ -52,7 +78,7 @@ export async function publishGroupedInserts(
   rows: NewOpportunity[],
   now: string,
   channel: string,
-): Promise<{ published: number; failed: boolean }> {
+): Promise<GroupedPublicationResult> {
   const tickKey = publicationTickKey(channel, now);
   // Detach before grouping or awaiting policy: the recorded source and the
   // eventual write must come from the same validated input snapshot.
@@ -81,7 +107,8 @@ export async function publishGroupedInserts(
         return { publishedCount: ids.length, ids };
       },
     });
-    if (!result.ok) return { published, failed: true };
+    if (!result.ok) return "persistenceAttempted" in result && result.persistenceAttempted === true
+      ? { published, failed: true, publicationOutcome: "UNKNOWN" } : { published, failed: true };
     published += result.publishedCount;
   }
   return { published, failed: false };
@@ -94,7 +121,7 @@ export async function publishGroupedActivations<T extends object>(
   channel: string,
   patch: T,
   persistIds: (ids: number[], patch: T) => Promise<{ publishedCount: number; ids: number[] }>,
-): Promise<{ published: number; failed: boolean }> {
+): Promise<GroupedPublicationResult> {
   if (rows.length === 0) return { published: 0, failed: false };
   const tickKey = publicationTickKey(channel, now);
   const action = channel === "scrape-gate" ? "gate-recovery" : channel === "scrape-reactivate" ? "feed-reactivation" : null;
@@ -130,7 +157,8 @@ export async function publishGroupedActivations<T extends object>(
       proposedCount,
       persist: async (allowed) => persistIds(selected.slice(0, allowed), update.patch),
     });
-    if (!result.ok) return { published, failed: true };
+    if (!result.ok) return "persistenceAttempted" in result && result.persistenceAttempted === true
+      ? { published, failed: true, publicationOutcome: "UNKNOWN" } : { published, failed: true };
     published += result.publishedCount;
   }
   return { published, failed: false };

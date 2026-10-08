@@ -25,9 +25,10 @@ function fakeDb(rows: Array<{ id: number; sourceId: string | null }>, changes = 
           return {
             where: (c: any) => {
               captured.whereClauses.push(c);
-              return fail
-                ? Promise.reject(new Error("D1 write rejected"))
-                : Promise.resolve({ meta: { changes } });
+              return { returning: async () => {
+                if (fail) throw new Error("D1 write rejected");
+                return Array.from({ length: changes }, (_, index) => ({ id: rows[index]?.id ?? index + 1 }));
+              } };
             },
           };
         },
@@ -66,7 +67,10 @@ describe("reactivateFeedConfirmedJobs", () => {
     expect(captured.sets[0].isActive).toBe(true);
     const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
     expect(captured.whereClauses).toHaveLength(2);
-    expect(new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[1]).params).toEqual([11]);
+    const params = new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[1]).params;
+    expect(params).toContain(11);
+    expect(params).toContain("eligible_verified");
+    expect(params).toContain("eligible_likely");
     expect(publicationDb.runs.filter(run => run.query.includes("INSERT INTO source_publication_ledger"))
       .map(run => [run.values[0], run.values[3], run.values[5], run.values[6]]))
       .toEqual([["we-work-remotely", "unlimited", 1, "[11]"], ["unattributed", "blocked", 0, "[]"]]);
@@ -100,10 +104,10 @@ describe("reactivateFeedConfirmedJobs", () => {
     expect(captured.sets.length).toBe(0);
   });
 
-  test("fail-soft: a rejected write returns 0 and never throws", async () => {
+  test("a thrown update acknowledgement reports UNKNOWN instead of known zero", async () => {
     const { db } = fakeDb([{ id: 1, sourceId: "we-work-remotely" }], 0, true);
-    const n = await reactivateFeedConfirmedJobs(db, ["https://example.com/a"], OBSERVED);
-    expect(n).toBe(0);
+    await expect(reactivateFeedConfirmedJobs(db, ["https://example.com/a"], OBSERVED))
+      .rejects.toMatchObject({ publicationOutcome: "UNKNOWN" });
   });
 
   test("enforces phEligibility in reactivation predicate", async () => {

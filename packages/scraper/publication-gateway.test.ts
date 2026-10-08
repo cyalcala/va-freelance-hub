@@ -304,7 +304,7 @@ describe("SP-23C publication gateway", () => {
     expect(persisted).toBe(0);
   });
 
-  test("clamps an inflated D1 change count to proposed so the ledger CHECK never fails (Hunter 36441469988)", async () => {
+  test("rejects an inflated fresh acknowledgement instead of clamping away unknown exposure", async () => {
     const db = new FakeDatabase({ registry: [null], retry: [null] });
     const result = await publishPublicExposure(db, {
       sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "inflated1", proposedCount: 1,
@@ -313,12 +313,8 @@ describe("SP-23C publication gateway", () => {
         return { publishedCount: 2, ids: [101, 102] };
       },
     });
-    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
-    expect((result as { ids: number[] }).ids).toEqual([101]);
-    const ledger = db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"));
-    expect(ledger).toBeDefined();
-    expect(ledger?.values[4]).toBe(1);
-    expect(ledger?.values[5]).toBe(1);
+    expect(result).toMatchObject({ ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true, exposure: "UNKNOWN" });
+    expect(db.runs).toEqual([]);
   });
 
   test("clampLedgerPublishedCount bounds raw counts to [0, proposed]", () => {
@@ -329,4 +325,93 @@ describe("SP-23C publication gateway", () => {
     expect(clampLedgerPublishedCount(3, -5)).toBe(0);
     expect(clampLedgerPublishedCount(3, Number.NaN)).toBe(0);
   });
+});
+
+describe("truthful fresh publication acknowledgements", () => {
+  const invalidAcknowledgements: Array<[string, unknown]> = [
+    ["null result", null], ["missing count", { ids: [7] }], ["string count", { publishedCount: "1", ids: [7] }],
+    ["negative count", { publishedCount: -1, ids: [] }], ["fractional count", { publishedCount: 0.5, ids: [7] }],
+    ["NaN count", { publishedCount: Number.NaN, ids: [] }], ["infinite count", { publishedCount: Infinity, ids: [7] }],
+    ["unsafe count", { publishedCount: Number.MAX_SAFE_INTEGER + 1, ids: [7] }],
+    ["excess count", { publishedCount: 3, ids: [7, 8, 9] }], ["missing IDs", { publishedCount: 1 }],
+    ["non-array IDs", { publishedCount: 1, ids: { 0: 7, length: 1 } }],
+    ["missing ID", { publishedCount: 2, ids: [7] }], ["extra ID", { publishedCount: 1, ids: [7, 8] }],
+    ["duplicate IDs", { publishedCount: 2, ids: [7, 7] }], ["zero ID", { publishedCount: 1, ids: [0] }],
+    ["negative ID", { publishedCount: 1, ids: [-7] }], ["fractional ID", { publishedCount: 1, ids: [7.5] }],
+    ["unsafe ID", { publishedCount: 1, ids: [Number.MAX_SAFE_INTEGER + 1] }],
+    ["string ID", { publishedCount: 1, ids: ["7"] }], ["null ID", { publishedCount: 1, ids: [null] }],
+    ["sparse IDs", { publishedCount: 1, ids: new Array(1) }], ["zero count with hidden IDs", { publishedCount: 0, ids: [7] }],
+  ];
+  const disguisedDuplicates = [7, 7];
+  disguisedDuplicates[Symbol.iterator] = () => [7, 8][Symbol.iterator]();
+  invalidAcknowledgements.push(["iterator-concealed duplicate IDs", { publishedCount: 2, ids: disguisedDuplicates }]);
+  const inheritedId = new Array(1);
+  Object.setPrototypeOf(inheritedId, Object.assign(Object.create(Array.prototype), { 0: 7 }));
+  invalidAcknowledgements.push(["prototype-concealed sparse ID", { publishedCount: 1, ids: inheritedId }]);
+
+  function publishingDb(mode: "unlimited" | "capped") {
+    return new FakeDatabase({ retry: [null], registry: mode === "unlimited" ? [null] : [{
+      sourceId: "greenhouse:test", compliance: "allowed", operational: "canary", optOut: 0,
+      policyExpiry: "2026-10-01T00:00:00.000Z", canaryMaxNewItemsPerTick: 2,
+    }] });
+  }
+  function freshRequest(mode: "unlimited" | "capped", persist: () => Promise<{ publishedCount: number; ids: number[] }>) {
+    return { sourceId: mode === "unlimited" ? "remotive" : "greenhouse:test", now: NOW,
+      tickKey: TICK, retryKey: "fresh-ack", proposedCount: 2, persist };
+  }
+
+  for (const mode of ["unlimited", "capped"] as const) {
+    for (const [name, acknowledgement] of invalidAcknowledgements) {
+      test(`${mode} fresh ${name} reports post-persistence uncertainty without a success ledger`, async () => {
+        const db = publishingDb(mode); let persisted = 0;
+        const result = await publishPublicExposure(db, freshRequest(mode, async () => {
+          persisted++; return acknowledgement as { publishedCount: number; ids: number[] };
+        }));
+        expect(result).toEqual({ ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true,
+          exposure: "UNKNOWN", reason: "publication persistence returned an invalid acknowledgement" });
+        expect(persisted).toBe(1); expect(db.runs).toEqual([]);
+      });
+    }
+
+    test(`${mode} fresh legitimate conflict-only zero is an exact empty receipt`, async () => {
+      const db = publishingDb(mode);
+      const result = await publishPublicExposure(db, freshRequest(mode, async () => ({ publishedCount: 0, ids: [] })));
+      expect(result).toEqual({ ok: true, mode, publishedCount: 0, ids: [], replayed: false });
+      expect(db.runs[0]?.values.slice(3, 7)).toEqual([mode, 2, 0, "[]"]);
+    });
+
+    test(`${mode} callback throw reports possible effects without leaking the caught message`, async () => {
+      const db = publishingDb(mode);
+      const result = await publishPublicExposure(db, freshRequest(mode, async () => { throw new Error("secret callback evidence"); }));
+      expect(result).toEqual({ ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true,
+        exposure: "UNKNOWN", reason: "publication persistence did not complete with a valid acknowledgement" });
+      expect(JSON.stringify(result)).not.toContain("secret"); expect(db.runs).toEqual([]);
+    });
+
+    test(`${mode} acknowledgement access failure has a fixed post-persistence result`, async () => {
+      const db = publishingDb(mode);
+      const result = await publishPublicExposure(db, freshRequest(mode, async () => ({
+        get publishedCount(): number { throw new Error("secret acknowledgement evidence"); }, ids: [7],
+      })));
+      expect(result).toEqual({ ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true,
+        exposure: "UNKNOWN", reason: "publication persistence returned an invalid acknowledgement" });
+      expect(db.runs).toEqual([]);
+    });
+
+    test(`${mode} exact IDs detach from callback memory before ledger suspension`, async () => {
+      const db = publishingDb(mode), ids = [7, 8];
+      const prepare = db.prepare.bind(db);
+      db.prepare = query => {
+        const statement = prepare(query);
+        if (query.includes("INSERT INTO source_publication_ledger")) {
+          const run = statement.run.bind(statement);
+          statement.run = async () => { ids.splice(0, ids.length, 99); await Promise.resolve(); return run(); };
+        }
+        return statement;
+      };
+      const result = await publishPublicExposure(db, freshRequest(mode, async () => ({ publishedCount: 2, ids })));
+      expect(result).toEqual({ ok: true, mode, publishedCount: 2, ids: [7, 8], replayed: false });
+      expect(ids).toEqual([99]); expect(db.runs[0]?.values.slice(5, 7)).toEqual([2, "[7,8]"]);
+    });
+  }
 });

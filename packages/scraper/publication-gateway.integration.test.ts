@@ -31,6 +31,7 @@ function freshDb(): Database {
   const db = new Database(":memory:");
   db.exec("PRAGMA foreign_keys = ON;");
   for (const migration of [
+    "0000_workable_sandman.sql", "0026_fts5_search.sql", "0027_fts5_trigger_scope.sql",
     "0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql",
     "0038_shadow_observations.sql", "0039_canary_transition_plane.sql",
     "0040_current_evidence_admission.sql", "0041_publication_ledger.sql",
@@ -153,5 +154,115 @@ test("native production constraints independently reject malformed JSON, illegal
     expect(() => seedRetry(sqlite, { mode: "unexpected" })).toThrow(/CHECK/i);
     expect(() => seedRetry(sqlite, { publishedCount: 3 })).toThrow(/CHECK/i);
     expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+  } finally { sqlite.close(); }
+});
+
+function writeOpportunity(sqlite: Database, key = "fresh-native"): number[] {
+  const rows = sqlite.query(`INSERT INTO opportunities(title, company, source_url, source_platform, content_hash)
+    VALUES('Native acknowledgement fixture', 'Fixture company', ?, 'remotive', ?)
+    ON CONFLICT(source_url) DO NOTHING RETURNING id`).all(`https://example.invalid/${key}`, key) as Array<{ id: number }>;
+  return rows.map(row => row.id);
+}
+function assertWrittenRowWithoutReceipt(sqlite: Database) {
+  expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1").get()).toEqual({ n: 1 });
+  expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(1);
+  expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+}
+const postPersistenceUnknown = { ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true, exposure: "UNKNOWN" };
+
+for (const [name, acknowledgement] of [
+  ["inflated count", { publishedCount: 2, ids: [1, 2] }],
+  ["count without IDs", { publishedCount: 1, ids: [] }],
+  ["duplicate IDs", { publishedCount: 2, ids: [1, 1] }],
+  ["unsafe ID", { publishedCount: 1, ids: [Number.MAX_SAFE_INTEGER + 1] }],
+  ["zero count with ID", { publishedCount: 0, ids: [1] }],
+] as const) test(`native physical publication plus ${name} leaves effects unresolved and no invented ledger`, async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "bad-native-ack", proposedCount: 1,
+      persist: async () => {
+        expect(writeOpportunity(sqlite)).toEqual([1]);
+        return acknowledgement as unknown as { publishedCount: number; ids: number[] };
+      },
+    });
+    expect(result).toMatchObject(postPersistenceUnknown); assertWrittenRowWithoutReceipt(sqlite);
+  } finally { sqlite.close(); }
+});
+
+test("native physical publication followed by a thrown callback is unresolved rather than rolled back", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "throw-after-write", proposedCount: 1,
+      persist: async () => { writeOpportunity(sqlite); throw new Error("secret after actual write"); },
+    });
+    expect(result).toMatchObject(postPersistenceUnknown);
+    expect(JSON.stringify(result)).not.toContain("secret"); assertWrittenRowWithoutReceipt(sqlite);
+  } finally { sqlite.close(); }
+});
+
+test("native ledger constraint rejection after a valid publication keeps the actual row and reports unknown", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec(`CREATE TRIGGER fixture_reject_ledger BEFORE INSERT ON source_publication_ledger
+      BEGIN SELECT RAISE(ABORT, 'secret fixture ledger constraint'); END;`);
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "ledger-rejected", proposedCount: 1,
+      persist: async () => { const ids = writeOpportunity(sqlite); return { publishedCount: ids.length, ids }; },
+    });
+    expect(result).toMatchObject(postPersistenceUnknown);
+    expect(JSON.stringify(result)).not.toContain("secret"); assertWrittenRowWithoutReceipt(sqlite);
+  } finally { sqlite.close(); }
+});
+
+for (const delivery of ["throws", "unsuccessful"] as const) {
+  test(`native ledger commit followed by ${delivery} delivery does not claim no ledger or no exposure`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite), prepare = db.prepare.bind(db);
+      db.prepare = query => {
+        const statement = prepare(query);
+        if (query.includes("INSERT INTO source_publication_ledger")) {
+          const run = statement.run.bind(statement);
+          statement.run = async () => {
+            await run();
+            if (delivery === "throws") throw new Error("secret delivery failed after commit");
+            return { success: false };
+          };
+        }
+        return statement;
+      };
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "committed-ledger", proposedCount: 1,
+        persist: async () => { const ids = writeOpportunity(sqlite); return { publishedCount: ids.length, ids }; },
+      });
+      expect(result).toMatchObject(postPersistenceUnknown); expect(JSON.stringify(result)).not.toContain("secret");
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities WHERE is_active=1").get()).toEqual({ n: 1 });
+      expect(sqlite.query("SELECT published_count AS count, published_ids_json AS ids FROM source_publication_ledger").get())
+        .toEqual({ count: 1, ids: "[1]" });
+    } finally { sqlite.close(); }
+  });
+}
+
+test("native actual RETURNING IDs record one row despite FTS effects and zero for a later conflict", async () => {
+  const sqlite = freshDb();
+  try {
+    const before = sqlite.query("SELECT total_changes() AS n").get() as { n: number };
+    const first = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "returned-first", proposedCount: 1,
+      persist: async () => { const ids = writeOpportunity(sqlite); return { publishedCount: ids.length, ids }; },
+    });
+    const after = sqlite.query("SELECT total_changes() AS n").get() as { n: number };
+    expect(after.n - before.n).toBeGreaterThan(2); // opportunity, ledger and the real FTS index writes.
+    expect(first).toMatchObject({ ok: true, publishedCount: 1, ids: [1], replayed: false });
+    const conflict = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "returned-conflict", proposedCount: 1,
+      persist: async () => { const ids = writeOpportunity(sqlite); return { publishedCount: ids.length, ids }; },
+    });
+    expect(conflict).toMatchObject({ ok: true, publishedCount: 0, ids: [], replayed: false });
+    expect(sqlite.query("SELECT published_count AS count, published_ids_json AS ids FROM source_publication_ledger ORDER BY id").all())
+      .toEqual([{ count: 1, ids: "[1]" }, { count: 0, ids: "[]" }]);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 1 });
   } finally { sqlite.close(); }
 });
