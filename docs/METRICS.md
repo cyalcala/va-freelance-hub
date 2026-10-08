@@ -4,8 +4,8 @@
 ```yaml
 document_metadata:
   document_type: METRICS_SPECIFICATION
-  document_status: ACTIVE_OPERATIONAL
-  version: "6.0.0"
+  document_status: PARTIALLY_RECONCILED
+  version: "6.0.1"
   effective_at: "2026-09-26T21:15:00+08:00"
   last_verified_at: "2026-09-26T21:15:00+08:00"
   verified_by: "agent-antigravity"
@@ -18,6 +18,15 @@ document_metadata:
 >
 > All metrics MUST be measured using the explicit mathematical definitions, mutually exclusive cohort partitions, and SQL queries codified below. Informal approximations, proxy gaming, circular ground-truth validations, or blending historical cohorts into fresh daily flow is **constitutionally prohibited** under Master Operating Constitution v3.0 (Parts VIII, IX, and X).
 
+**2026-10-08 correction:** master operating prompt section 9/10D governs actual
+public exposure and truthful UNKNOWNs. Queries 1/2 below use existing schema and
+measure receipt coverage/current storage only. Other SQL/specification sections
+retain dated assumptions and need independent schema/coverage verification before
+operational use. `opportunities` has `posted_at`/`scraped_at`, not `source_posted_at`
+or `created_at`; none is a substitute for first public exposure. The
+[accounting repair](operations/PUBLICATION_RECEIPT_ACCOUNTING_2026-10-08.md)
+does not certify fresh flow, public visibility, independent quality or all writers.
+
 ---
 
 ## 1. MATHEMATICAL COHORT SEPARATION (MOC v3.0 Part VIII)
@@ -28,10 +37,10 @@ To prevent historical imports, replay recoveries, or reactivations from masquera
 $$\text{Cohort}(x) \in \{\text{FRESH\_DISCOVERY}, \text{BACKLOG\_IMPORT}, \text{REACTIVATION}, \text{REPLAY\_RECOVERY}, \text{OTHER\_NON\_FRESH}\}$$
 
 Where:
-1. **$\text{REACTIVATION}$ (Highest Priority):** Listings previously inactive or expired ($o.\text{is\_active} = 0$) that were re-marked active, or published opportunities whose original creation date $o.\text{created\_at}$ precedes the beginning of the measured publication day window.
+1. **$\text{REACTIVATION}$:** An evidenced return to public exposure after an earlier exposure/withdrawal; this is an event outside the canonical first-publication set. Prior storage or a repeated receipt alone cannot prove reactivation.
 2. **$\text{REPLAY\_RECOVERY}$:** Previously rejected or ambiguous (`unclear_held`) listings re-evaluated to qualified through historical rule/heuristic re-execution or offline model replay. Replay recoveries are **qualification events**, NOT creation events.
-3. **$\text{BACKLOG\_IMPORT}$:** Listings discovered or published for the first time whose originating posting date $o.\text{source\_posted\_at}$ is older than 7 calendar days prior to observation ($\text{julianday}(o.\text{created\_at}) - \text{julianday}(o.\text{source\_posted\_at}) > 7.0$), or listings introduced through historical directory bulk backfills.
-4. **$\text{FRESH\_DISCOVERY}$:** Genuine, net-new opportunities discovered within 7 days of posting ($o.\text{source\_posted\_at} \text{ within 7 days}$ or NULL with fresh harvest verification) and published for the first time during the measured Asia/Manila calendar day.
+3. **$\text{BACKLOG\_IMPORT}$:** Evidenced first-publication cohort introduced through historical import or exceeding the current fresh posting-age criterion. Use original posting and exposure evidence; a recent harvest does not make a backlog fresh.
+4. **$\text{FRESH\_DISCOVERY}$:** Unique, qualified, authorized canonical opportunities with evidenced first public exposure during the measured Asia/Manila day and a valid known posting date satisfying the current freshness rule. Unknown/future-invalid dates cannot prove fresh discovery; replay/import provenance remains distinct.
 5. **$\text{OTHER\_NON\_FRESH}$:** Any record failing the fresh discovery criteria not classified in cohorts 1–4.
 
 ### 1.2 The True Daily Flow Formula
@@ -39,10 +48,10 @@ The true recurring daily flow accessible to freelancers in the Philippines is th
 
 $$\text{Daily Flow}(D) = \sum_{x \in \mathcal{P}(D)} \mathbf{1}_{\{\text{Cohort}(x) = \text{FRESH\_DISCOVERY}\}}$$
 
-Where $\mathcal{P}(D)$ is the set of all qualified, unique, authorized opportunities whose publication receipt in `source_publication_ledger` occurred during complete Asia/Manila calendar day $D$.
+Where $\mathcal{P}(D)$ is the set of distinct qualified, authorized canonical opportunities whose **first public exposure** is evidenced during complete Manila day $D$. Decision/ledger/sync clocks are retained separately. Reactivations belong to exposure events, outside this first-publication set. Receipt IDs must be deduplicated and authority/qualification evaluated from publication-time evidence, not rewritten by current state.
 
 By construction:
-$$\text{Total Published}(D) = |\mathcal{P}(D)| = \text{Daily Flow}(D) + \sum_{x \in \mathcal{P}(D)} \mathbf{1}_{\{\text{Cohort}(x) \neq \text{FRESH\_DISCOVERY}\}}$$
+$$\text{First Publications}(D) = |\mathcal{P}(D)| = \text{Daily Flow}(D) + \sum_{x \in \mathcal{P}(D)} \mathbf{1}_{\{\text{Cohort}(x) \neq \text{FRESH\_DISCOVERY}\}}$$
 
 This guarantees:
 - Zero double counting;
@@ -59,88 +68,56 @@ $$\text{backlog\_unlocked} \quad \text{reactivated} \quad \text{withdrawn/expire
 
 ## 2. PRODUCTION SQL QUERIES
 
-### Query 1: `qualified_first_publications_manila_day`
-Measures the genuine, recurring net-new qualified flow accessible to workers in the Philippines for each Asia/Manila calendar day using the mutually exclusive cohort model:
+### Query 1: `publication_receipt_coverage_manila_day`
+Measures ledger claims and distinct valid receipt IDs across seven complete Manila
+days. It supplies **no certified first-publication flow**: publication-time authority,
+canonical first exposure/cohort, independent qualification and actual public visibility
+coverage remain missing. A zero receipt count is not a certified zero fresh flow.
 
 ```sql
--- Qualified Net-New First Publications per Manila Calendar Day
--- Executable classifier: scripts/ci/constitution-metrics.ts
--- SQL can see created_at and source_posted_at only. previouslyInactive and
--- replayRecovery are caller-supplied flags and are not columns. Unknown dates
--- are OTHER_NON_FRESH. They are not FRESH_DISCOVERY.
--- Manila time conversion: datetime(timestamp, '+8 hours')
-
-WITH manila_publications AS (
-  SELECT 
-    spl.id AS ledger_id,
-    spl.source_id,
-    spl.decided_at,
-    strftime('%Y-%m-%d', datetime(spl.decided_at, '+8 hours')) AS manila_date,
-    json_each.value AS opportunity_id
-  FROM source_publication_ledger spl,
-       json_each(spl.published_ids_json)
-  WHERE spl.mode IN ('unlimited', 'capped')
-    AND spl.published_count > 0
-),
-cohort_partitioned AS (
-  SELECT 
-    mp.ledger_id,
-    mp.source_id,
-    mp.manila_date,
-    mp.decided_at,
-    o.id AS opportunity_id,
-    o.title,
-    o.company,
-    o.source_posted_at,
-    o.created_at AS first_public_at,
-    o.ph_eligibility,
-    o.is_active,
-    sr.operational_state,
-    sr.compliance_state,
-    -- Inferable partition only. Replay and prior-inactive flags are not columns.
-    CASE
-      WHEN o.created_at < strftime('%Y-%m-%dT00:00:00Z', datetime(mp.manila_date || ' 00:00:00', '-8 hours'))
-      THEN 'REACTIVATION'
-      WHEN o.source_posted_at IS NOT NULL
-       AND (julianday(o.created_at) - julianday(o.source_posted_at)) > 7.0
-      THEN 'BACKLOG_IMPORT'
-      WHEN o.source_posted_at IS NOT NULL
-       AND (julianday(o.created_at) - julianday(o.source_posted_at)) >= 0
-       AND (julianday(o.created_at) - julianday(o.source_posted_at)) <= 7.0
-      THEN 'FRESH_DISCOVERY'
-      ELSE 'OTHER_NON_FRESH'
-    END AS creation_cohort
-  FROM manila_publications mp
-  JOIN opportunities o 
-    ON o.id = CAST(mp.opportunity_id AS INTEGER)
-  JOIN source_registry sr 
-    ON sr.source_id = mp.source_id
-  WHERE o.ph_eligibility = 'eligible_verified'
-    AND sr.operational_state IN ('active', 'canary')
-    AND sr.compliance_state IN ('allowed', 'conditional')
-)
-SELECT 
-  manila_date,
-  COUNT(DISTINCT opportunity_id) AS total_published_today,
-  COUNT(DISTINCT CASE WHEN creation_cohort = 'FRESH_DISCOVERY' THEN opportunity_id END) AS fresh_discovery_daily_flow,
-  COUNT(DISTINCT CASE WHEN creation_cohort = 'BACKLOG_IMPORT' THEN opportunity_id END) AS backlog_imports_cohort,
-  COUNT(DISTINCT CASE WHEN creation_cohort = 'REACTIVATION' THEN opportunity_id END) AS reactivations_cohort,
-  COUNT(DISTINCT CASE WHEN creation_cohort = 'OTHER_NON_FRESH' THEN opportunity_id END) AS other_non_fresh_cohort
-FROM cohort_partitioned
-GROUP BY manila_date
-ORDER BY manila_date DESC;
+SELECT * FROM (
+  WITH RECURSIVE days(manila_date, n) AS (
+    SELECT date('now', '+8 hours', '-1 day'), 1
+    UNION ALL SELECT date(manila_date, '-1 day'), n + 1 FROM days WHERE n < 7
+  ), ledger AS (
+    SELECT id, published_count, published_ids_json,
+      date(decided_at, '+8 hours') AS manila_date
+    FROM source_publication_ledger
+    WHERE mode IN ('unlimited', 'capped') AND published_count > 0
+      AND datetime(decided_at) >= datetime('now', '+8 hours', 'start of day', '-7 days', '-8 hours')
+      AND datetime(decided_at) < datetime('now', '+8 hours', 'start of day', '-8 hours')
+  ), claims AS (
+    SELECT manila_date, COUNT(*) AS ledger_rows, SUM(published_count) AS claimed_count
+    FROM ledger GROUP BY manila_date
+  ), receipt_ids AS (
+    SELECT DISTINCT l.manila_date, j.value AS opportunity_id
+    FROM ledger l, json_each(CASE WHEN json_valid(l.published_ids_json)
+      THEN CASE WHEN json_type(l.published_ids_json) = 'array' THEN l.published_ids_json ELSE '[]' END
+      ELSE '[]' END) j
+    WHERE j.type = 'integer' AND j.value > 0 AND j.value <= 9007199254740991
+  ), coverage AS (
+    SELECT manila_date, COUNT(*) AS unique_receipt_ids FROM receipt_ids GROUP BY manila_date
+  )
+  SELECT d.manila_date, COALESCE(c.ledger_rows, 0) AS ledger_rows,
+    COALESCE(c.claimed_count, 0) AS claimed_count,
+    COALESCE(r.unique_receipt_ids, 0) AS unique_receipt_ids,
+    NULL AS verified_fresh_flow, 'UNKNOWN' AS certification
+  FROM days d LEFT JOIN claims c USING (manila_date)
+  LEFT JOIN coverage r USING (manila_date)
+  ORDER BY d.manila_date DESC
+);
 ```
 
 ---
 
-### Query 2: Daily Funnel Analysis (Intake to Serving Mart)
-Tracks progression from raw intake through deterministic and Jev gates to publication:
+### Query 2: Current active storage distribution (not a funnel)
+Groups current D1 stock by storage date. Deactivation changes the population;
+this cannot reconstruct historical stage conversion or verified daily publication.
 
 ```sql
--- Comprehensive 24-Hour Funnel Analysis
--- Evaluates pipeline conversion efficiency across all stages
+-- Current storage proxy only; use stage-specific receipts for an actual funnel.
 SELECT 
-  date(o.created_at) AS date_utc,
+  date(o.scraped_at) AS storage_date_utc,
   COUNT(o.id) AS total_stock_active,
   SUM(CASE WHEN o.ph_eligibility = 'eligible_verified' THEN 1 ELSE 0 END) AS ph_verified,
   SUM(CASE WHEN o.ph_eligibility = 'eligible_likely' THEN 1 ELSE 0 END) AS ph_likely,
@@ -148,8 +125,8 @@ SELECT
   SUM(CASE WHEN o.ph_eligibility = 'ineligible' THEN 1 ELSE 0 END) AS ph_ineligible
 FROM opportunities o
 WHERE o.is_active = 1
-GROUP BY date(o.created_at)
-ORDER BY date_utc DESC
+GROUP BY date(o.scraped_at)
+ORDER BY storage_date_utc DESC
 LIMIT 14;
 ```
 

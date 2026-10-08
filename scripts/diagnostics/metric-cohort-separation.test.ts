@@ -17,8 +17,8 @@ const MANILA_DATES = ["2026-09-09", "2026-09-08", "2026-09-07", "2026-09-06", "2
 
 const WINDOW: ManilaWindow = {
   measuredAt: NOW,
-  startInclusive: "2026-09-03T16:00:00.000Z",
-  endExclusive: "2026-09-10T16:00:00.000Z",
+  startInclusive: "2026-09-02T16:00:00.000Z",
+  endExclusive: "2026-09-09T16:00:00.000Z",
   timeZone: "Asia/Manila",
   dates: MANILA_DATES,
 };
@@ -34,7 +34,7 @@ function makeLedgerRow(
   return {
     ledgerId,
     sourceId,
-    decidedAt: `${manilaDate}T04:00:00.000Z`, // 00:00 Manila = 16:00 UTC previous day
+    decidedAt: `${manilaDate}T14:00:00.000Z`, // after fixture first exposures, within the Manila day
     manilaDate,
     opportunityId: publishedIds[0] ?? 0,
     mode,
@@ -50,11 +50,11 @@ function makeOpportunity(
   id: number,
   sourceId: string,
   sourcePostedAt: string | null,
-  createdAt: string,
+  firstPublicAt: string | null,
   phEligibility = "eligible_verified",
   isActive = 1,
 ): OpportunityRow {
-  return { id, sourceId, sourcePostedAt, createdAt, phEligibility, isActive };
+  return { id, sourceId, sourcePostedAt, firstPublicAt, phEligibility, isActive };
 }
 
 function makeRegistry(sourceId: string, operationalState = "active", complianceState = "allowed"): SourceRegistryRow {
@@ -442,6 +442,97 @@ describe("MATH-05 P0: Metric Cohort Separation — Fixture Tests", () => {
   });
 
   describe("generateCohortSeparationReport", () => {
+    test("duplicate IDs and receipts cannot inflate one canonical job's daily flow", () => {
+      const first = makeLedgerRow(1, "we-work-remotely", "2026-09-09", 1, [1, 1]);
+      const later = makeLedgerRow(2, "we-work-remotely", "2026-09-09", 1, [1]);
+      const opportunities = new Map([[1, makeOpportunity(1, "we-work-remotely", "2026-09-08T12:00:00Z", "2026-09-09T02:00:00Z")]]);
+      const registry = new Map([["we-work-remotely", makeRegistry("we-work-remotely")]]);
+      const report = generateCohortSeparationReport([later, first, first], opportunities, registry, 7, NOW);
+      const day = report.days.find((d) => d.manilaDate === "2026-09-09")!;
+      expect(day.totalPublishedToday).toBe(1);
+      expect(day.freshDiscoveryDailyFlow).toBe(1);
+      expect(day.receiptBackedCount).toBe(1);
+      expect(day.ledgerPublishedCountSum).toBe(2); // each distinct ledger's claim, not the joined duplicate
+    });
+
+    test("non-array and invalid receipt IDs cannot become receipt-backed jobs", () => {
+      const malformed = makeLedgerRow(1, "we-work-remotely", "2026-09-09", 1, []);
+      malformed.publishedIdsJson = '{"id":1}';
+      const invalid = makeLedgerRow(2, "we-work-remotely", "2026-09-09", 1, []);
+      invalid.publishedIdsJson = '["1", 0, -1, 1.5, null, 9007199254740992]';
+      const opportunities = new Map([[1, makeOpportunity(1, "we-work-remotely", "2026-09-08T12:00:00Z", "2026-09-09T02:00:00Z")]]);
+      const registry = new Map([["we-work-remotely", makeRegistry("we-work-remotely")]]);
+      const report = generateCohortSeparationReport([malformed, invalid], opportunities, registry, 7, NOW);
+      expect(report.summary.totalReceiptBacked).toBe(0);
+      expect(report.summary.totalFreshDiscoveryFlow).toBe(0);
+    });
+
+    test("a storage clock cannot substitute for absent first public exposure", () => {
+      const stored = { ...makeOpportunity(1, "we-work-remotely", "2026-09-08T12:00:00Z", null), createdAt: "2026-09-09T02:00:00Z" };
+      const report = generateCohortSeparationReport(
+        [makeLedgerRow(1, "we-work-remotely", "2026-09-09", 1, [1])],
+        new Map([[1, stored]]),
+        new Map([["we-work-remotely", makeRegistry("we-work-remotely")]]), 7, NOW,
+      );
+      expect(report.summary.totalFreshDiscoveryFlow).toBe(0);
+      expect(report.summary.totalOtherNonFresh).toBe(1);
+      expect(report.summary.freshFlowCertification).toBe("UNKNOWN");
+    });
+
+    test("the same ID on a later Manila day remains outside fresh first publications", () => {
+      const first = makeLedgerRow(1, "we-work-remotely", "2026-09-08", 1, [1]);
+      const later = makeLedgerRow(2, "remotive", "2026-09-09", 1, [1]);
+      const report = generateCohortSeparationReport([later, first],
+        new Map([[1, makeOpportunity(1, "we-work-remotely", "2026-09-08T00:00:00Z", "2026-09-08T02:00:00Z")]]),
+        new Map([["we-work-remotely", makeRegistry("we-work-remotely")], ["remotive", makeRegistry("remotive")]]), 7, NOW);
+      expect(report.summary.totalReceiptBacked).toBe(2); // two distinct daily exposure claims
+      expect(report.summary.totalFreshDiscoveryFlow).toBe(1);
+      expect(report.summary.totalReactivations).toBe(1); // provenance still provisional, not certified activation
+    });
+
+    test("invalid or outside-day exposure clocks cannot provisionally prove fresh flow", () => {
+      const rows = [1, 2, 3].map((id) => makeLedgerRow(id, "we-work-remotely", "2026-09-09", 1, [id]));
+      const opportunities = new Map([
+        [1, makeOpportunity(1, "we-work-remotely", "2026-09-08T00:00:00Z", "invalid")],
+        [2, makeOpportunity(2, "we-work-remotely", "2026-09-08T00:00:00Z", "2026-09-10T00:00:00Z")], // outside receipt day
+        [3, makeOpportunity(3, "we-work-remotely", "2026-09-08T00:00:00Z", "2026-09-09T16:00:00Z")], // next Manila day boundary
+      ]);
+      const report = generateCohortSeparationReport(rows, opportunities,
+        new Map([["we-work-remotely", makeRegistry("we-work-remotely")]]), 7, NOW);
+      expect(report.summary.totalReceiptBacked).toBe(3);
+      expect(report.summary.totalFreshDiscoveryFlow).toBe(0);
+      expect(report.summary.totalOtherNonFresh).toBe(3);
+    });
+
+    test("public exposure can follow its publication decision within the same day", () => {
+      const report = generateCohortSeparationReport(
+        [makeLedgerRow(1, "we-work-remotely", "2026-09-09", 1, [1])], // decision14Z
+        new Map([[1, makeOpportunity(1, "we-work-remotely", "2026-09-08T00:00:00Z", "2026-09-09T14:01:00Z")]]),
+        new Map([["we-work-remotely", makeRegistry("we-work-remotely")]]), 7, NOW);
+      expect(report.summary.totalFreshDiscoveryFlow).toBe(1);
+      expect(report.summary.freshFlowCertification).toBe("UNKNOWN");
+    });
+
+    test("receipts must have a real decision instant in their declared complete Manila day", () => {
+      const wrongDay = makeLedgerRow(1, "we-work-remotely", "2026-09-09", 1, [1]);
+      wrongDay.decidedAt = "2026-09-09T16:00:00Z";
+      const invalid = { ...wrongDay, ledgerId: 2, decidedAt: "invalid" };
+      const report = generateCohortSeparationReport([wrongDay, invalid],
+        new Map([[1, makeOpportunity(1, "we-work-remotely", "2026-09-08T00:00:00Z", "2026-09-09T02:00:00Z")]]),
+        new Map([["we-work-remotely", makeRegistry("we-work-remotely")]]), 7, NOW);
+      expect(report.summary.totalReceiptBacked).toBe(0);
+      expect(report.summary.totalFreshDiscoveryFlow).toBe(0);
+    });
+
+    test("direct aggregation deduplicates partitioned rows independently of the partitioner", () => {
+      const ledger = makeLedgerRow(1, "we-work-remotely", "2026-09-09", 1, [1]);
+      const rows = partitionPublicationsByCohort([ledger],
+        new Map([[1, makeOpportunity(1, "we-work-remotely", "2026-09-08T00:00:00Z", "2026-09-09T02:00:00Z")]]),
+        new Map([["we-work-remotely", makeRegistry("we-work-remotely")]]), WINDOW);
+      const days = aggregateDailyCohortMetrics([...rows, ...rows], WINDOW, [ledger, ledger]);
+      expect(days.find((d) => d.manilaDate === "2026-09-09")?.totalPublishedToday).toBe(1);
+    });
+
     test("produces report with correct gaps", () => {
       const ledgerRows: LedgerPublicationRow[] = [
         makeLedgerRow(1, "we-work-remotely", "2026-09-09", 10, [1, 2, 3]), // 10 claimed, 3 receipt

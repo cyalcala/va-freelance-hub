@@ -3,11 +3,12 @@
  *
  * Separates three distinct measurements that are currently conflated:
  * 1. LEDGER_PUBLISHED_COUNT — what source_publication_ledger.published_count claims
- * 2. RECEIPT_BACKED_FRESH_DISCOVERY — Query 1 over published_ids_json (canonical first publications)
+ * 2. RECEIPT_BACKED_FRESH_DISCOVERY — provisional unique-ID cohorts from supplied exposure evidence
  * 3. SCRAPED_AT_STORAGE_PROXY — measure-manila-daily-publications.ts proxy (current inventory by storage date)
  *
  * These are NOT equivalent. The storage proxy is a necessary-but-not-sufficient signal.
- * Receipt-backed fresh discovery requires ledger receipts with actual opportunity IDs.
+ * Storage clocks and D1 sync are not first public exposure. Historical authority,
+ * canonical linkage, replay provenance and visibility coverage remain unverified.
  * Unknown dates are OTHER_NON_FRESH, never FRESH_DISCOVERY.
  */
 
@@ -38,7 +39,8 @@ export interface OpportunityRow {
   id: number;
   sourceId: string | null;
   sourcePostedAt: string | null;
-  createdAt: string;
+  /** Explicit first public exposure from evidence; never alias scraped_at/created_at. */
+  firstPublicAt: string | null;
   phEligibility: string | null;
   isActive: number;
 }
@@ -58,7 +60,7 @@ export interface CohortPartitionedRow {
   title: string | null;
   company: string | null;
   sourcePostedAt: string | null;
-  firstPublicAt: string;
+  firstPublicAt: string | null;
   phEligibility: string | null;
   isActive: number;
   operationalState: string;
@@ -83,6 +85,7 @@ export interface CohortSeparationReport {
   window: ManilaWindow;
   days: DailyCohortMetrics[];
   summary: {
+    freshFlowCertification: "UNKNOWN";
     totalEvaluatedDays: number;
     totalLedgerPublishedCount: number;
     totalReceiptBacked: number;
@@ -103,25 +106,55 @@ function timestampMs(value: string): number {
   return Date.parse(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(normalized) ? normalized : `${normalized}Z`);
 }
 
+function receiptIds(raw: string): number[] {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? [...new Set(parsed.filter((id): id is number => Number.isSafeInteger(id) && id > 0))]
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function eligibleDailyLedgerRows(rows: LedgerPublicationRow[], window: ManilaWindow): LedgerPublicationRow[] {
+  const seen = new Set<number>();
+  return [...rows].sort((a, b) => timestampMs(a.decidedAt) - timestampMs(b.decidedAt) || a.ledgerId - b.ledgerId)
+    .filter((row) => {
+      if (!["unlimited", "capped"].includes(row.mode) || !Number.isSafeInteger(row.publishedCount) || row.publishedCount <= 0) return false;
+      const decidedMs = timestampMs(row.decidedAt);
+      if (!Number.isFinite(decidedMs) || !window.dates.includes(row.manilaDate)) return false;
+      if (new Date(decidedMs + MANILA_OFFSET_MS).toISOString().slice(0, 10) !== row.manilaDate) return false;
+      if (!Number.isSafeInteger(row.ledgerId) || row.ledgerId <= 0 || seen.has(row.ledgerId)) return false;
+      seen.add(row.ledgerId);
+      return true;
+    });
+}
+
 /** Classify a single opportunity into exactly one creation cohort. */
 export function classifyCreationCohort(
   row: CohortPartitionedRow,
   manilaDayStartUtc: string,
 ): CreationCohort {
-  // REACTIVATION: opportunity created before the measured Manila day window
-  if (timestampMs(row.firstPublicAt) < timestampMs(manilaDayStartUtc)) {
+  const firstMs = row.firstPublicAt == null ? NaN : timestampMs(row.firstPublicAt);
+  const startMs = timestampMs(manilaDayStartUtc);
+  const decidedMs = timestampMs(row.decidedAt);
+  if (!Number.isFinite(firstMs) || !Number.isFinite(startMs) || !Number.isFinite(decidedMs)) return "OTHER_NON_FRESH";
+  // A prior exposure is outside the first-publication cohort; event provenance is still incomplete.
+  if (firstMs < startMs) {
     return "REACTIVATION";
   }
 
-  // BACKLOG_IMPORT: source_posted_at older than 7 days before created_at
+  if (firstMs >= startMs + DAY_MS) return "OTHER_NON_FRESH";
+
+  // BACKLOG_IMPORT: posting older than 7 days before evidenced first public exposure.
   if (row.sourcePostedAt) {
     const postedMs = timestampMs(row.sourcePostedAt);
-    const createdMs = timestampMs(row.firstPublicAt);
-    const ageDays = (createdMs - postedMs) / DAY_MS;
+    const ageDays = (firstMs - postedMs) / DAY_MS;
     if (Number.isFinite(ageDays) && ageDays > 7.0) {
       return "BACKLOG_IMPORT";
     }
-    // FRESH_DISCOVERY: source_posted_at within 7 days (inclusive) of created_at
+    // Provisional fresh age; replay provenance and publication-time authority are not certified.
     if (Number.isFinite(ageDays) && ageDays >= 0 && ageDays <= 7.0) {
       return "FRESH_DISCOVERY";
     }
@@ -134,7 +167,7 @@ export function classifyCreationCohort(
 
 /**
  * Partition ledger publications into mutually exclusive creation cohorts.
- * Implements METRICS.md Query 1 logic in TypeScript for fixture testing.
+ * Fixture diagnostic only; current registry/eligibility cannot certify historical authority.
  */
 export function partitionPublicationsByCohort(
   ledgerRows: LedgerPublicationRow[],
@@ -143,19 +176,10 @@ export function partitionPublicationsByCohort(
   window: ManilaWindow,
 ): CohortPartitionedRow[] {
   const partitioned: CohortPartitionedRow[] = [];
+  const seen = new Set<string>();
 
-  for (const ledger of ledgerRows) {
-    if (!["unlimited", "capped"].includes(ledger.mode) || ledger.publishedCount <= 0) continue;
-
-    let ids: number[] = [];
-    try {
-      ids = JSON.parse(ledger.publishedIdsJson) as number[];
-    } catch {
-      // Empty or malformed JSON -> no receipt-backed IDs
-      ids = [];
-    }
-
-    for (const oppId of ids) {
+  for (const ledger of eligibleDailyLedgerRows(ledgerRows, window)) {
+    for (const oppId of receiptIds(ledger.publishedIdsJson)) {
       const opp = opportunities.get(oppId);
       if (!opp) continue;
 
@@ -166,6 +190,10 @@ export function partitionPublicationsByCohort(
       if (opp.phEligibility !== "eligible_verified") continue;
       if (!["active", "canary"].includes(registry.operationalState)) continue;
       if (!["allowed", "conditional"].includes(registry.complianceState)) continue;
+
+      const key = `${ledger.manilaDate}:${oppId}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
 
       const manilaDayStartUtc = window.dates.includes(ledger.manilaDate)
         ? new Date(`${ledger.manilaDate}T00:00:00+08:00`).toISOString()
@@ -181,7 +209,7 @@ export function partitionPublicationsByCohort(
           title: null,
           company: null,
           sourcePostedAt: opp.sourcePostedAt,
-          firstPublicAt: opp.createdAt,
+          firstPublicAt: opp.firstPublicAt ?? null,
           phEligibility: opp.phEligibility,
           isActive: opp.isActive,
           operationalState: registry.operationalState,
@@ -200,7 +228,7 @@ export function partitionPublicationsByCohort(
         title: null,
         company: null,
         sourcePostedAt: opp.sourcePostedAt,
-        firstPublicAt: opp.createdAt,
+        firstPublicAt: opp.firstPublicAt ?? null,
         phEligibility: opp.phEligibility,
         isActive: opp.isActive,
         operationalState: registry.operationalState,
@@ -235,24 +263,29 @@ export function aggregateDailyCohortMetrics(
     });
   }
 
-  // Count receipt-backed publications (non-empty published_ids_json)
-  for (const ledger of ledgerRows) {
-    if (!["unlimited", "capped"].includes(ledger.mode) || ledger.publishedCount <= 0) continue;
+  // Raw claims are counted once per ledger; IDs once per opportunity/day.
+  const receiptSeen = new Set<string>();
+  for (const ledger of eligibleDailyLedgerRows(ledgerRows, window)) {
     const day = dayMap.get(ledger.manilaDate);
     if (!day) continue;
     day.ledgerPublishedCountSum += ledger.publishedCount;
-    try {
-      const ids = JSON.parse(ledger.publishedIdsJson) as number[];
-      if (ids.length > 0) day.receiptBackedCount += ids.length;
-    } catch {
-      // ignore malformed
+    for (const id of receiptIds(ledger.publishedIdsJson)) {
+      const key = `${ledger.manilaDate}:${id}`;
+      if (receiptSeen.has(key)) continue;
+      receiptSeen.add(key);
+      day.receiptBackedCount += 1;
     }
   }
 
-  // Count partitioned cohorts
-  for (const row of partitioned) {
+  // Defend direct callers too; earliest receipt wins deterministically.
+  const cohortSeen = new Set<string>();
+  for (const row of [...partitioned].sort((a, b) => timestampMs(a.decidedAt) - timestampMs(b.decidedAt) || a.ledgerId - b.ledgerId)) {
     const day = dayMap.get(row.manilaDate);
     if (!day) continue;
+    if (!Number.isSafeInteger(row.opportunityId) || row.opportunityId <= 0) continue;
+    const key = `${row.manilaDate}:${row.opportunityId}`;
+    if (cohortSeen.has(key)) continue;
+    cohortSeen.add(key);
     day.totalPublishedToday += 1;
     switch (row.creationCohort) {
       case "FRESH_DISCOVERY":
@@ -301,6 +334,7 @@ export function generateCohortSeparationReport(
     window,
     days,
     summary: {
+      freshFlowCertification: "UNKNOWN",
       totalEvaluatedDays: targetDays,
       totalLedgerPublishedCount,
       totalReceiptBacked,
@@ -313,10 +347,12 @@ export function generateCohortSeparationReport(
       gapReceiptVsFreshDiscovery: totalReceiptBacked - totalFreshDiscoveryFlow,
       limitations: [
         "LEDGER_PUBLISHED_COUNT: sum of published_count from source_publication_ledger; may count reactivations and lack receipt IDs.",
-        "RECEIPT_BACKED: count of opportunity IDs actually present in published_ids_json; zero if ledger rows have empty arrays.",
-        "FRESH_DISCOVERY: receipt-backed publications that also meet fresh posting age (<=7 days) and first-publication criteria.",
-        "BACKLOG_IMPORT: first publications with source_posted_at > 7 days before created_at.",
-        "REACTIVATION: opportunity created_at precedes the measured Manila day window.",
+        "RECEIPT_BACKED: unique valid positive integer opportunity IDs per Manila day; duplicate receipts cannot inflate this count.",
+        "FRESH_DISCOVERY: provisional unique-ID cohort using supplied explicit firstPublicAt and fresh posting age (<=7 days); missing exposure stays non-fresh.",
+        "Certification UNKNOWN: publication-time authority/qualification, complete first-exposure history, canonical cross-source linkage and observed public visibility are not proven by this helper.",
+        "Grouping is by receipt decision day; visibility after a Manila midnight boundary needs its own exposure-day accounting, not a relabeled receipt.",
+        "BACKLOG_IMPORT: posting >7 days before evidenced first exposure; storage/sync clocks cannot substitute for exposure.",
+        "REACTIVATION: prior exposure predates the day; replay vs activation requires separate event provenance.",
         "REPLAY_RECOVERY: not distinguishable from schema alone; requires replay flag (not a column).",
         "OTHER_NON_FRESH: unknown/missing source_posted_at, future dates, or unclassifiable.",
         "Unknown dates are NEVER classified as FRESH_DISCOVERY (per Constitution §3.2 #4, ACCEPTED_PARAMETERS unknown_date_policy).",
@@ -332,14 +368,15 @@ export function formatCohortSeparationReportMarkdown(report: CohortSeparationRep
     "",
     `**Measured at:** ${report.measuredAt}`,
     `**Window:** [${report.window.startInclusive}, ${report.window.endExclusive}) — ${report.days.length} complete Asia/Manila days.`,
+    `**Verified fresh-flow certification:** ${report.summary.freshFlowCertification}. Cohort counts below are provisional.`,
     "",
     "## Three Measurement Layers (NOT equivalent)",
     "",
     "| Metric | Definition | Current Status |",
     "| :--- | :--- | :--- |",
     `| **LEDGER_PUBLISHED_COUNT** | Sum of \`published_count\` from \`source_publication_ledger\` (modes unlimited/capped) | ${report.summary.totalLedgerPublishedCount} |`,
-    `| **RECEIPT_BACKED** | Count of opportunity IDs in \`published_ids_json\` (non-empty arrays) | ${report.summary.totalReceiptBacked} |`,
-    `| **FRESH_DISCOVERY** | Receipt-backed + fresh posting age (<=7 days) + first publication | ${report.summary.totalFreshDiscoveryFlow} |`,
+    `| **RECEIPT_BACKED** | Unique valid opportunity IDs per complete Manila day | ${report.summary.totalReceiptBacked} |`,
+    `| **FRESH_DISCOVERY (provisional)** | Receipt-backed + fresh posting age + explicit first exposure; certification UNKNOWN | ${report.summary.totalFreshDiscoveryFlow} |`,
     "",
     "## Cohort Gaps",
     "",
