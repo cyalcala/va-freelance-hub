@@ -1,0 +1,64 @@
+{
+  "recordedAt": "2026-10-08T14:37:18.000Z",
+  "unit": "NATIVE_GREENHOUSE_ITEM_EVIDENCE_PROVENANCE_PREREQUISITE",
+  "status": "LOCAL_ACCEPTED_PREREQUISITE_ONLY",
+  "startSha": "9cc5b4953526f47a2690f2f2b9a34d9ce964a781",
+  "sourceSha": "a651cf985719360b036bd11ae72bd84a98532348",
+  "verifiedRemoteBase": "926d39a0ea2db80a7eba8d541d12906a0c8b0837",
+  "goalComplete": false,
+  "tests": { "pass": 3156, "fail": 0, "assertions": 320276, "files": 233, "newTests": 30, "seconds": 36.13 },
+  "focusedIndependentTests": { "pass": 30, "fail": 0, "assertions": 335 },
+  "frozenSourceAt": "2026-10-08T14:32:04.000Z",
+  "initialFullTestRunSupersededAfterFinalSourceEdit": true,
+  "checks": {
+    "typecheck": "PASS", "producerScopedStrictTypecheck": "PASS", "astroBuild": "PASS", "astroBuildSeconds": 50.04,
+    "guardrails": "PASS", "parameters": "PASS", "orchestrator": "PASS", "constitution": "PASS",
+    "categoriesPassed": 7, "categoriesRequired": 7, "diffCheck": "PASS"
+  },
+  "independentReview": "PASS_PREREQUISITE_SCOPE_ONLY",
+  "genuineBehavioralRed": {
+    "producer": { "pass": 0, "fail": 10, "assertions": 15 },
+    "strictStore": { "pass": 3, "fail": 6, "assertions": 49 },
+    "integration": { "pass": 1, "fail": 4, "assertions": 12 },
+    "integrationReviewRefinements": { "pass": 6, "fail": 2, "assertions": 56 },
+    "producerReplayEnumRefinement": { "pass": 11, "fail": 2, "assertions": 139 },
+    "missingImportOrHarnessFailuresCounted": false
+  },
+  "nativeEvidence": {
+    "version": "greenhouse-item-evidence-v1", "publicationAuthorized": false,
+    "collectionAuthority": "UNVERIFIED", "admissionSourceIdentity": "UNKNOWN",
+    "responseDigestScope": "RESPONSE_TEXT_REENCODED_UTF8_NOT_WIRE_BYTES_OR_ISSUER_AUTHENTICITY",
+    "retainedDigestScope": "EXACT_COMPLETE_RETAINED_UTF8_ENVELOPE",
+    "requiredFutureBinding": ["sourceId", "retainedEnvelopeSha256", "itemIndex", "itemMaterialSha256", "exactStagedMaterial"],
+    "storedMembership": "ALL_NATIVE_MEMBERS_OF_SUCCESSFULLY_STORED_RESPONSE",
+    "storageDispatch": "LEGACY_ADMIT_BRANCH_ONLY_NOT_EVERY_PROBE",
+    "maxRetainedCharacters": 1000000, "maxCompleteBytes": 1048576,
+    "fullContentCustomMetadataQuestionsRetained": false,
+    "candidateAssociation": "ONLY_AFTER_VALID_REPLAY_AND_SAFE_NATIVE_RETURNING_ID",
+    "badAcknowledgementCanFollowDurablePrivateInsert": true,
+    "integrationFixture": "ACTUAL_PROBE_PRODUCER_SQLITE_STORE_REFINERY_MANUALLY_COMPOSED_NOT_FULL_EVALUATE_TENANT_JEV",
+    "currentFreshnessReevaluationRequired": true,
+    "fullItemQualification": "NOT_ESTABLISHED"
+  },
+  "networkAndProductionEffects": {
+    "sourceRequests": 0, "productionD1Reads": 0, "productionD1Writes": 0, "productionMigrations": 0,
+    "gcpReadOnlyMetadataGets": 2, "gcpMutations": 0, "schedulerReprobe": false,
+    "deployments": 0, "sourceAdmissions": 0, "newClocks": 0, "gitHubPushes": 0,
+    "primaryDocumentation": "Official Greenhouse Job Board API; separate from source acquisition"
+  },
+  "runtimeRefresh": {
+    "executionListReceipt": "publisher-execution-refresh-2026-10-08.json",
+    "exactFailureReceipt": "publisher-container-start-failure-2026-10-08.json",
+    "newestExecution": "lake-publish-job-7g975", "createdAt": "2026-10-08T13:47:05.734100Z",
+    "completedCondition": "CONDITION_FAILED", "reason": "CONTAINER_PERMISSION_DENIED",
+    "rootCause": "UNKNOWN", "gitShaProvenance": "UNKNOWN", "publicationAcceptance": "UNKNOWN",
+    "independentOfEarlierSchedulerBillingError": true, "clockDisabledOrFullyContained": "NOT_ESTABLISHED"
+  },
+  "mathAccepted": "0/13", "verifiedFreshPublicFlow": null, "certification": "UNKNOWN",
+  "remoteExactShaCi": "UNKNOWN_NOT_DISPATCHED_ACCOUNT_SUSPENDED",
+  "gitHubBackup": "BACKUP_PENDING", "liveContainment": "NOT_ESTABLISHED",
+  "directoryAcceptance": "RELEASE_AND_PER_ROW_READBACK_PENDING",
+  "publicationPrerequisites": ["CURRENT_COLLECTION_CONTEXT_AND_MATERIAL_BINDER_ABSENT", "COMPLETE_INDEPENDENT_ITEM_PROOF_ABSENT", "SHARED_PUBLICATION_BUDGET_EPOCH_LEASE_CONTRACT_ABSENT"],
+  "next": "SYSTEM_SAVEPOINT: wire server-owned internal observation replay and exact material/source binding into private lake intent",
+  "backupScope": "SOURCE_TEST_DOCS_ONLY_NO_DATABASE_OR_GCP_STATE_RESTORE"
+}

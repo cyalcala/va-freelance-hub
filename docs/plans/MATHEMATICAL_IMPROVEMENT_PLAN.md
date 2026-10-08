@@ -113,6 +113,22 @@ is established. All thirteen accepted resolutions remain **0/13**; the finite
 [local receipt](../operations/lake-authority-date-local-checks-2026-10-08.json)
 distinguishes this prerequisite from runtime acceptance.
 
+**2026-10-08 native-evidence prerequisite checkpoint:** `a651cf98` advances
+local qualification/integrity/identity evidence dependencies: complete minimal
+Greenhouse response membership, distinct native IDs/original dates and exact-byte
+replay before strict private storage. Invalid/unknown facts never confer clearance;
+source/current admission/robots/cadence/budget/origin and complete item proof remain
+missing. Frozen-source 3,156 tests, typecheck/build and four audits pass; independent
+focused 30-test review is green. The next binder must join internal observations,
+current authority and exact staged facts, not accept caller clearance. Shared
+budget/atomic writer/controller/runtime acceptance remains open. New read-only GCP
+evidence reports two failed publisher starts, exact newest CONTAINER_PERMISSION_DENIED
+on its image; no containment or public-flow outcome follows from that condition.
+[Finite checks](../operations/lake-native-item-evidence-local-checks-2026-10-08.json)
+and the incident retain limits. No directory runtime enrichment or MATH closure
+is attributed; all thirteen accepted resolutions remain **0/13**. Exact NEXT is
+only in SYSTEM_SAVEPOINT; GitHub backup/release remains pending.
+
 | ID | Challenge | Initial state | Production-rollout prerequisites |
 | --- | --- | --- | --- |
 | MATH-01 | Dynamic source allocation | OPEN — reward/decision data not validated | MATH-00, 03, 04, 06, 08, 12; 02 capacity envelope |

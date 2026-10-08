@@ -338,3 +338,51 @@ item or to the stage protocol's exact eleven material fields. Replay freshness
 is relative to the recorded acquisition clock, so current publication requires
 fresh re-evaluation. These are remaining binder/collection prerequisites, not
 reasons to claim that the complete item-proof NEXT has passed.
+
+## Native-evidence acceptance — local prerequisite only
+
+Behavior/evidence commit `a651cf985719360b036bd11ae72bd84a98532348` implements
+the existing single-GET producer, strict complete private storage and replay-before-
+association integration. Frozen-source 3,156 tests / zero fail / 320,276 assertions
+in 233 files (36.13 seconds) pass; 30 new tests. Independent focused verification
+is 30 pass / 335 assertions, with no remaining blocking finding. Web typecheck,
+producer strict typecheck, Astro build (50.04 seconds), four governance audits
+and diff check pass. Seven local check categories out of seven; the overall owner
+goal remains active. Genuine producer/store/integration and review-refinement
+reds are recorded in the [finite receipt](lake-native-item-evidence-local-checks-2026-10-08.json).
+The full probe/producer/store/refinery SQLite fixture manually composes production
+helpers; it does not run the complete evaluateTenant/Jev orchestration.
+
+Two read-only Cloud Run metadata GETs measured changed runtime evidence. The
+12:47 and 13:47 scheduled publisher starts failed; the exact latest execution
+reports CONTAINER_PERMISSION_DENIED on its configured image. The
+[incident and finite receipts](SEV2_LAKE_AUTHORITY_2026-10-08.md) separate this new
+failure from scheduler BILLING_DISABLED, unknown root cause, publication outcome,
+Git-SHA provenance and absent full containment. No resource/IAM/billing change.
+Normal GitHub CI/release/backup remains pending; no unchanged failed probe is
+repeated. The new verified incremental local bundle preserves source/tests/docs,
+without a database or GCP-state restoration claim. Exact current NEXT is only
+in SYSTEM_SAVEPOINT; earlier NEXT statements above describe dated checkpoints.
+
+| PH reporting field | This native-evidence slice |
+| --- | --- |
+| Sources evaluated | 0 live source probes; actual collector/storage fixtures only |
+| Sources resolved | 0 authority resolutions |
+| ATS/provider identities discovered | 0 new production identities; existing native ID distinctions preserved locally |
+| Sources admitted | 0 |
+| Sources shadowed | 0 |
+| Sources blocked, reasons/triggers | 0 production lifecycle changes; retain raw-writer fence and current access/image-read holds |
+| Raw jobs observed | 0 live acquisitions; every member of a successfully stored fixture response covered |
+| PH-qualified jobs generated | 0 |
+| Net-new unique jobs | 0 attributable |
+| QUALIFIED_READY added | 0 production additions; legacy fixture readiness is not complete qualification |
+| Jobs synced to D1 | 0 attributable |
+| Jobs visibly active on site | 0 attributable; certified fresh flow remains NULL/UNKNOWN |
+| Source economics changes | UNKNOWN; no measured runtime benefit |
+| Primary remaining bottleneck | Missing current collection context/material binding and full independent item proof; shared budgets/atomic writer/release/containment still open |
+| Next autonomous action | Follow the sole internal replay/current-context/material binder NEXT in SYSTEM_SAVEPOINT |
+
+Directory release/per-row readback and every MATH-01..13 acceptance remain open
+(0/13). This slice adds no source permission, accepted parameter, schema, public
+writer, paid provider or production clock. Rollback is a normal source revert;
+no production data compensation is required.

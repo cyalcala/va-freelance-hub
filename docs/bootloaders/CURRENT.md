@@ -4,7 +4,16 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation: locally accepted source/date prerequisites at `a6ab5f6e`,
+Latest continuation: complete minimal native observations at `a651cf98` repair
+Greenhouse all-item provenance and exact-byte replay/storage. 3,156 tests,
+typecheck/build and four audits pass; 30 new tests and independent review.
+Collection/current-admission/origin and complete qualification remain unverified;
+every native assessment grants false publication authority. The exact NEXT in
+SYSTEM_SAVEPOINT wires internal observation replay/current context and staged
+material together. New 12:47/13:47 publisher starts failed; exact newest reason
+CONTAINER_PERMISSION_DENIED on the configured image, separate from scheduler
+BILLING_DISABLED. Normal access/containment/release remain unresolved.
+Earlier locally accepted source/date prerequisites at `a6ab5f6e`,
 `ad007b80` and `e63eb1b1`: six real legacy fallbacks, strict active registry leases,
 original Greenhouse posting evidence/future-date abstention, and read-only registry
 capture/native stale-state guard. [Repair contract and verification](../operations/LAKE_PUBLICATION_GATEWAY_REPAIR_2026-10-08.md).

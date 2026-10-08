@@ -1,5 +1,93 @@
 # System Savepoint
 
+## 2026-10-08 22:37 Manila — Complete native observations verified locally; new GCP start failure recorded
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the existing
+735-visible-company directory; all MATH-01..13, SSAE-CED and lucky777/Addy continuity.
+Accepted resolutions remain **0/13** and certified fresh flow NULL/UNKNOWN. This
+is a useful provenance prerequisite for the saved item-proof work, not its closure.
+
+**Git/reentry:** start `9cc5b4953526f47a2690f2f2b9a34d9ce964a781`; behavior/evidence
+commit `a651cf985719360b036bd11ae72bd84a98532348` on
+`codex/verified-flow-directory-checkpoint`. Verified remote base remains
+`926d39a0ea2db80a7eba8d541d12906a0c8b0837`. Normal fetch/push/review/CI/release
+remain pending behind unchanged GitHub suspension; no repeated failed probe or
+alternate identity. Verify this session's final docs HEAD in the unique
+`native-item-*` incremental bundle and receipt in
+`C:\Users\admin\Desktop\va-freelance-hub-recovery`. Source/tests/docs only; no
+database or GCP-state restoration claim. Foreign `.agents/skills/` and root
+`lucky777.md` are preserved. Desktop lucky777, AGENTS, absent manifest/router,
+current source constitution/parameters/queue and prior provenance were recovered.
+Installed Addy source-driven development and existing API/interface/incremental/
+TDD methods supplied the bounded workflow. Jev's unchanged provider failure was
+not retried; deterministic checks and independent review settle this slice.
+
+**Local behavior:** the existing single Greenhouse list GET creates versioned
+minimal native evidence before normalization. Successfully stored responses cover
+every member, including prospects and item21+; posting/requisition IDs and original/
+edit date distinctions retain missing/null/invalid states. Complete UTF-8 evidence
+is replay-validated before storage, never silently clipped, and hashes its exact
+retained bytes separately from decoded response text. Rehashed authority upgrades,
+broken membership, coercible enums, malformed/oversized fields and invalid returned
+IDs withhold or fail. Full content/custom metadata/questions are not retained;
+unknown Greenhouse company/location remain unknown. Other-provider legacy storage
+contracts remain unchanged. A bad acknowledgement may follow a durable private
+observation but permits no candidate association.
+
+**Honest boundary:** collection/current admission/robots/cadence/shared-budget/
+origin proof is missing. Every native assessment remains HELD/REJECTED with false
+publication authority; full remote, PH exclusions, safety, application liveness,
+canonical consolidation and taxonomy stay UNKNOWN. Complete membership is for
+the legacy ADMIT storage branch, not every probe. Hash replay is integrity, not
+issuer or lawful-collection proof. Historical acquisition freshness must be
+re-evaluated. The raw-observation FK does not bind one immutable native item or
+all eleven staged facts. Existing geography-only readiness and same-host identity
+remain incomplete; the full item-proof NEXT and shared budget contract are open.
+
+**Acceptance:** frozen-source full suite **3,156 pass / zero fail / 320,276
+assertions / 233 files (36.13 seconds)**; 30 new tests. Independent focused run:
+30 pass / 335 assertions. Typecheck, scoped producer strict typecheck, Astro build
+(50.04 seconds), four governance audits and diff check pass; seven local categories
+out of seven. An earlier full run preceded the final worker edit and was superseded
+by the frozen-source run. [Repair scope](operations/LAKE_PUBLICATION_GATEWAY_REPAIR_2026-10-08.md)
+and [finite checks](operations/lake-native-item-evidence-local-checks-2026-10-08.json)
+retain red-first/fixture limits. Actual SQLite probe/store/refinery tests manually
+compose production helpers; full evaluateTenant/Jev orchestration is unverified.
+No source request, production D1 read/write/migration, admission, deployment,
+GCP mutation, GitHub push or new clock occurred. Two GCP metadata GETs and primary
+documentation lookup are separately recorded.
+
+**New runtime failure:** the 14:12–14:13 UTC read reports the 12:47 and 13:47
+scheduled publisher executions failed after the dated 11:47 success. Exact
+`lake-publish-job-7g975` reports `CONTAINER_PERMISSION_DENIED`: its service agent
+could not read configured image digest `97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a`.
+[Execution receipts/incident boundary](operations/SEV2_LAKE_AUTHORITY_2026-10-08.md).
+This differs from the earlier scheduler BILLING_DISABLED response; root cause,
+Git-SHA provenance, public outcomes and complete clock containment remain UNKNOWN.
+No billing/IAM/scheduler change or compensation was performed. Owner investigates
+normal access/image-read prerequisites; retry only after changed evidence/new
+execution. Local raw-writer fence remains; deployed primary/fallback and Janes
+9046/9047 compensation remain unresolved. PR #228 directory release/per-row
+readback is pending; prior 735-visible/761-stored counts are dated observations.
+
+**One NEXT:** wire the existing private lake-intent boundary to server-owned
+internal candidate/observation lookup and native replay: bind current source/
+admission context, exact retained envelope digest, native item index/material
+digest and all eleven staged facts. Re-evaluate freshness at the current server
+clock; changed material, unverified collection or unsupported qualification must
+withhold. No caller hash/PASS label or raw-observation FK alone is proof. Use
+actual storage/route fixtures with mismatch, tamper, stale/current-authority and
+zero-public-write regressions; do not dispatch unpermitted inspections. Maintainer/
+current-chat heartbeat owns this bounded binder; owner owns external access and
+unresolved accepted-policy decisions. Complete permitted item inspection/quality
+proof, accepted shared budget/epoch/lease ownership, atomic publication/controller,
+normal release/Git-SHA provenance, coordinated containment and runtime acceptance
+remain subsequent requirements. Normal source revert rolls this slice back;
+no production compensation is needed. Hourly local lucky777 heartbeat remains
+ACTIVE with host availability; older APEX remains PAUSED. This binder NEXT refines
+the outstanding item-proof prerequisite and supersedes the broader NEXT below.
+
 ## 2026-10-08 21:53 Manila — Source/date prerequisites verified locally; publication proof still incomplete
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
