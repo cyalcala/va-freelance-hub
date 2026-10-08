@@ -426,6 +426,43 @@ describe("Undated listings are never given a fabricated posting date", () => {
     expect(isOpportunityFresh(new Date(now - 90 * 864e5).toISOString())).toBe(false);
   });
 
+  it("withholds a future source date even when it is otherwise parseable", () => {
+    expect(isOpportunityFresh("2099-01-01T00:00:00.000Z")).toBe(false);
+  });
+
+  it("keeps the complete freshness interval inclusive without accepting future dates", () => {
+    const now = Date.parse("2026-10-08T12:00:00.000Z");
+    const dated = (ageMs: number) => new Date(now - ageMs).toISOString();
+    expect(isOpportunityFresh(dated(0), 30, now)).toBe(true);
+    expect(isOpportunityFresh(dated(-1), 30, now)).toBe(false);
+    expect(isOpportunityFresh(dated(30 * 864e5), 30, now)).toBe(true);
+    expect(isOpportunityFresh(dated(30 * 864e5 + 1), 30, now)).toBe(false);
+    expect(isOpportunityFresh(dated(0), -1, now)).toBe(false);
+    expect(isOpportunityFresh(dated(0), NaN, now)).toBe(false);
+    expect(isOpportunityFresh(dated(0), 30, NaN)).toBe(false);
+  });
+
+  it("retains a future source timestamp as inactive evidence without crediting fresh yield", async () => {
+    const future = "2099-01-01T00:00:00.000Z";
+    const item = { "@context": "https://schema.org", "@type": "JobPosting",
+      title: "Virtual Assistant - Philippines Remote", url: "https://example.com/jobs/va-future",
+      jobLocationType: "TELECOMMUTE", datePosted: future,
+      jobLocation: { "@type": "Place", addressCountry: "Philippines" },
+      applicantLocationRequirements: { "@type": "Country", name: "Philippines" } };
+    const fetchImpl = (async () => new Response(
+      `<html><head><script type="application/ld+json">${JSON.stringify(item)}</script></head><body></body></html>`,
+      { status: 200, headers: { "Content-Type": "text/html" } },
+    )) as typeof fetch;
+    const result = await runExperimentalSourcePipeline(undatedCandidate, { crawl4aiOptions: { fetchImpl } });
+    expect(result.jobs).toHaveLength(1);
+    expect(result.jobs[0].normalized.publishedAt).toBe(future);
+    expect(result.jobs[0].normalized.is_active).toBe(0);
+    expect(result.jobs[0].isFresh).toBe(false);
+    expect(result.jobs[0].isNetNewQualified).toBe(false);
+    expect(result.metrics.freshJobs).toBe(0);
+    expect(result.metrics.netNewQualifiedYield).toBe(0);
+  });
+
   it("does not launder an unparseable source date into a stored timestamp", async () => {
     const html = `<html><head><script type="application/ld+json">${JSON.stringify({
       "@context": "https://schema.org",

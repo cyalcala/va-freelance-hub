@@ -30,6 +30,7 @@
 
 import { getLakeClient } from "./client";
 import { processAndRefineCandidate } from "./ingest-to-lake";
+import { greenhousePostingDate } from "../../packages/scraper/ats";
 import { markRawProcessed, storeRawObservation } from "./lake-shared";
 import { geoGate } from "../../packages/scraper/geoGate";
 import { collectionHeaders } from "../../packages/scraper/userAgent";
@@ -126,7 +127,7 @@ export const ATS_PROBE_TEMPLATES: Array<AtsProbeTemplate> = [
       const jobs = data?.jobs ?? [];
       if (!Array.isArray(jobs)) return [];
       return jobs
-        .filter((j: any) => j?.title && j?.absolute_url)
+        .filter((j: any) => j?.title && j?.absolute_url && j.internal_job_id !== null)
         .map((j: any) => ({
           title: j.title || "",
           company: data?.company?.name || "",
@@ -134,7 +135,8 @@ export const ATS_PROBE_TEMPLATES: Array<AtsProbeTemplate> = [
           locationRaw: j.location?.name || "Remote",
           description: j.content || "",
           tags: Array.isArray(j.departments) ? j.departments.map((d: any) => d.name) : [],
-          postedAt: j.updated_at ? new Date(j.updated_at).toISOString() : null,
+          // first_published is distinct from an edit timestamp and may be absent.
+          postedAt: greenhousePostingDate(j.first_published),
         }));
     },
   },

@@ -93,12 +93,13 @@ export function evaluateRoleRelevance(title: string, descriptionSnippet?: string
  * retain-unknown-do-not-publish, and CONSTITUTION §1.3 #2 forbids substituting
  * fetch time for a missing posting timestamp. Fails closed — callers withhold.
  */
-export function isOpportunityFresh(publishedAt?: string, maxAgeDays = 30): boolean {
+export function isOpportunityFresh(publishedAt?: string, maxAgeDays = 30, nowMs = Date.now()): boolean {
   if (typeof publishedAt !== "string" || publishedAt.trim() === "") return false;
+  if (!Number.isFinite(nowMs) || !Number.isFinite(maxAgeDays) || maxAgeDays < 0) return false;
   const parsed = Date.parse(publishedAt);
   if (Number.isNaN(parsed)) return false;
-  const ageDays = (Date.now() - parsed) / (1000 * 60 * 60 * 24);
-  return ageDays <= maxAgeDays;
+  const ageDays = (nowMs - parsed) / (1000 * 60 * 60 * 24);
+  return ageDays >= 0 && ageDays <= maxAgeDays;
 }
 
 /**

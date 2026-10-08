@@ -18,6 +18,14 @@ function safeNormalizeDate(rawDate: any): string | null {
   }
 }
 
+/** Greenhouse supplies an ISO timestamp; reject coercion and calendar rollover. */
+export function greenhousePostingDate(value: unknown): string | null {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)) return null;
+  const wallClock = safeNormalizeDate(`${value.slice(0, 19)}.000Z`);
+  if (!wallClock || wallClock.slice(0, 19) !== value.slice(0, 19)) return null;
+  return safeNormalizeDate(value);
+}
+
 function greenhouseLocationSummary(job: any): string | null {
   const location = normalizeText(job?.location?.name);
   return location ? `Location: ${location}` : null;
@@ -136,7 +144,8 @@ async function fetchGreenhouse(token: string, companyName: string): Promise<NewO
   
   const jobs = data.jobs || [];
   return jobs
-    .filter((job: any) => job && job.title && job.absolute_url)
+    // Greenhouse identifies prospect posts by a null internal_job_id.
+    .filter((job: any) => job && job.title && job.absolute_url && job.internal_job_id !== null)
     .map((job: any) => {
       const title = normalizeText(job.title);
       const sourceUrl = job.absolute_url;
@@ -150,7 +159,9 @@ async function fetchGreenhouse(token: string, companyName: string): Promise<NewO
         locationType: "remote",
         locationRaw: normalizeText(job?.location?.name) || null, // geo masterplan L0
         description: greenhouseLocationSummary(job),
-        postedAt: safeNormalizeDate(job.updated_at),
+        // An edit date is not original publication evidence. The list endpoint
+        // may omit first_published; retain unknown rather than substituting.
+        postedAt: greenhousePostingDate(job.first_published),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
       };
