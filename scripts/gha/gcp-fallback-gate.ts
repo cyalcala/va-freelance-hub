@@ -179,7 +179,7 @@ async function readLakeSnapshot(): Promise<LakeBacklogSnapshot | null> {
     const row = progress.rows[0] ?? {};
     return {
       readAt,
-      pendingStatements: Number(dry.syncedCount ?? 0),
+      pendingStatements: Number(dry.generatedStatementCount ?? 0),
       syncedRows: Number((row as Record<string, unknown>).synced_rows ?? 0),
       lastSyncedAt: (row as Record<string, unknown>).last_synced_at == null ? null : String((row as Record<string, unknown>).last_synced_at),
     };

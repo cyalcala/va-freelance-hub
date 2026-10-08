@@ -23,7 +23,18 @@ interface CandidateRow {
   fingerprint_hash: string;
 }
 
-// Canonical exact-six + active registry sources (always authorized)
+/** Temporary SEV-2 fence until the raw writer has governed publication controls. */
+export class RawLakePublicationBlockedError extends Error {
+  readonly code = "RAW_LAKE_PUBLICATION_BLOCKED";
+
+  constructor() {
+    super("RAW_LAKE_PUBLICATION_BLOCKED: raw lake publication is disabled pending authority and receipt repair; only read-only dry-run planning is available.");
+    this.name = "RawLakePublicationBlockedError";
+  }
+}
+
+// Legacy raw writer's source set, retained as read-only planning inputs.
+// These hard-coded IDs do not prove current publication authority.
 const BASE_AUTHORIZED_SOURCE_IDS = new Set([
   "we-work-remotely",
   "remotive",
@@ -40,9 +51,10 @@ const BASE_AUTHORIZED_SOURCE_IDS = new Set([
 ]);
 
 /**
- * Auto-approved lake tenants publish when `decideAutoPublish` says so.
- * There is no human approval flag. `--hold-auto-approved` is the kill switch.
- * `--allow-auto-approved` remains as a no-op alias so older commands still run.
+ * Legacy read-only planning uses `decideAutoPublish` for auto-approved tenants.
+ * `--hold-auto-approved` excludes those planning grants; the old
+ * `--allow-auto-approved` alias remains a no-op. Neither bypasses the central
+ * real-publication fence.
  */
 export function parseSyncArgs(argv: string[]): {
   limit: number;
@@ -232,7 +244,8 @@ export function isSyncableCandidate(job: Pick<CandidateRow, "title" | "source_ur
   return Boolean(job.title?.trim()) && Boolean(job.source_url?.trim());
 }
 
-/** Builds one idempotent upsert statement for a qualified lake candidate.
+/** Builds one legacy raw upsert for offline gap characterization.
+ * This statement can reactivate rows; it is not a governed publication path.
  *
  * HONESTY CONTRACT (§20 freshness, §2 anti-fabrication):
  * - Unknown `posted_at` stays SQL NULL (never `now()`). A sync event is not
@@ -285,7 +298,7 @@ export function buildSyncSql(job: CandidateRow): string {
     `.trim();
 }
 
-/** Builds an idempotent publication receipt statement for the ledger (F1 repair). */
+/** Legacy empty-ID unlimited receipt for offline gap characterization only. */
 export function buildPublicationReceiptSql(
   sourceId: string,
   count: number,
@@ -355,7 +368,8 @@ export async function syncQualifiedJobsToD1(
   limit = 200,
   dryRun = false,
   opts: { holdAutoApproved?: boolean; inventory?: InventorySnapshot | null } = {}
-) {
+): Promise<{ syncedCount: number; generatedStatementCount?: number; sample?: string }> {
+  if (dryRun !== true) throw new RawLakePublicationBlockedError();
   console.log(`\n=== Starting automatic lake sync to Cloudflare D1 (Limit: ${limit}, DryRun: ${dryRun}) ===`);
   const client = getLakeClient();
   const holdAutoApproved = opts.holdAutoApproved === true;
@@ -461,10 +475,11 @@ export async function syncQualifiedJobsToD1(
   if (dryRun) {
     console.log(`[DRY RUN] Generated ${sqlStatements.length} SQL statements. Sample:`);
     console.log(sqlStatements[0]);
-    return { syncedCount: sqlStatements.length, sample: sqlStatements[0] };
+    return { syncedCount: 0, generatedStatementCount: sqlStatements.length, sample: sqlStatements[0] };
   }
 
-  // Remote D1 rejects SQL BEGIN/COMMIT. Statements are idempotent, so a retry is safe.
+  // Historical raw execution below is unreachable while the central fence is active.
+  // Sequential statements do not establish atomic receipts or safe retry semantics.
   const tempSqlFile = path.join(os.tmpdir(), `va-hub-lake-sync-${Date.now()}.sql`);
   const batchSql = buildBatchSql(sqlStatements);
   fs.writeFileSync(tempSqlFile, batchSql, "utf-8");

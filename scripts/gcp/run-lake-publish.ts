@@ -7,7 +7,7 @@
  * ==============================================================================
  */
 
-import { syncQualifiedJobsToD1 } from "../lake/sync-to-d1";
+import { RawLakePublicationBlockedError, syncQualifiedJobsToD1 } from "../lake/sync-to-d1";
 import { enrollPublishedSources } from "../lake/enroll-published-sources";
 import { getLakeClient } from "../lake/client";
 
@@ -20,6 +20,7 @@ export interface LakePublishLogPayload {
   enrolledSources?: number;
   durationMs?: number;
   error?: string;
+  errorCode?: string;
   timestamp: string;
 }
 
@@ -33,7 +34,7 @@ export async function runLakePublish(
     syncFn?: typeof syncQualifiedJobsToD1;
     enrollFn?: typeof enrollPublishedSources;
   } = {},
-): Promise<{ ok: boolean; syncedCount: number; message: string }> {
+): Promise<{ ok: boolean; syncedCount: number; message: string; errorCode?: string }> {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
 
@@ -120,18 +121,20 @@ export async function runLakePublish(
     };
   } catch (err: any) {
     const durationMs = Date.now() - startTime;
+    const blocked = err instanceof RawLakePublicationBlockedError;
     console.error(
       formatGcpLog({
         severity: "ERROR",
         component: "lake-publish",
         unit: "GCP-02",
-        event: "lake_publish_failed",
+        event: blocked ? "lake_publish_blocked_raw_publication" : "lake_publish_failed",
         error: err.message,
+        ...(blocked ? { errorCode: err.code, syncedCount: 0, enrolledSources: 0 } : {}),
         durationMs,
         timestamp: new Date().toISOString(),
       }),
     );
-    return { ok: false, syncedCount: 0, message: err.message };
+    return { ok: false, syncedCount: 0, message: err.message, ...(blocked ? { errorCode: err.code } : {}) };
   }
 }
 
