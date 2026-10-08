@@ -10,11 +10,14 @@
  */
 import { createHash } from "crypto";
 import { getLakeClient } from "./client";
+import { SHADOW_MAX_BYTES } from "../../packages/scraper/candidate-shadow";
 
 type LakeClient = ReturnType<typeof getLakeClient>;
 
-/** Max raw payload bytes stored per observation (Turso storage hygiene). */
+/** Legacy raw payload character bound (Turso storage hygiene). */
 export const MAX_RAW_PAYLOAD_CHARS = 1_000_000;
+/** Complete evidence also honors the existing one-MiB UTF-8 evidence bound. */
+export const MAX_COMPLETE_RAW_PAYLOAD_BYTES = SHADOW_MAX_BYTES;
 
 export function sha256Hex(input: string): string {
   return createHash("sha256").update(input).digest("hex");
@@ -52,9 +55,35 @@ export async function storeRawObservation(
     rawPayload: string;
     /** Overrides the default SHA-256 of rawPayload (e.g. feed body hash). */
     contentHash?: string;
+    /** Opt-in complete evidence: no truncation or different-byte hash override. */
+    requireCompletePayload?: true;
   }
 ): Promise<number> {
-  const payload = truncatePayload(args.rawPayload);
+  const strict = args.requireCompletePayload === true;
+  if (strict) {
+    if (args.httpStatus !== 200) throw new Error("storeRawObservation: complete evidence requires explicit HTTP 200");
+    if (typeof args.sourceId !== "string" || !/^[a-z0-9:._-]+$/.test(args.sourceId)) {
+      throw new Error("storeRawObservation: complete evidence requires a canonical source ID");
+    }
+    let validEndpoint = false;
+    if (typeof args.fetchUrl === "string" && args.fetchUrl === args.fetchUrl.trim() && !args.fetchUrl.includes("\0")) {
+      try {
+        const endpoint = new URL(args.fetchUrl);
+        validEndpoint = (endpoint.protocol === "https:" || endpoint.protocol === "http:")
+          && !endpoint.username && !endpoint.password && !endpoint.hash;
+      } catch { /* Invalid representation, not a source permission decision. */ }
+    }
+    if (!validEndpoint) throw new Error("storeRawObservation: complete evidence requires an absolute HTTP(S) endpoint without credentials or fragment");
+    if (typeof args.rawPayload !== "string" || args.rawPayload.length > MAX_RAW_PAYLOAD_CHARS
+      || new TextEncoder().encode(args.rawPayload).byteLength > MAX_COMPLETE_RAW_PAYLOAD_BYTES) {
+      throw new Error("storeRawObservation: complete evidence exceeds the retained character or UTF-8 byte bound");
+    }
+  }
+  const payload = strict ? args.rawPayload : truncatePayload(args.rawPayload);
+  const contentHash = strict ? sha256Hex(payload) : args.contentHash ?? sha256Hex(args.rawPayload);
+  if (strict && args.contentHash !== undefined && args.contentHash !== contentHash) {
+    throw new Error("storeRawObservation: complete evidence hash does not match exact retained payload bytes");
+  }
   const res = await client.execute({
     sql: `
       INSERT INTO lake_raw_observations (source_id, source_platform, fetch_url, http_status, raw_payload, content_hash)
@@ -67,10 +96,15 @@ export async function storeRawObservation(
       args.fetchUrl,
       args.httpStatus ?? 200,
       payload,
-      args.contentHash ?? sha256Hex(args.rawPayload),
+      contentHash,
     ],
   });
   const id = res.rows[0]?.id as number;
+  if (strict && (res.rows.length !== 1 || !Number.isSafeInteger(id) || id <= 0)) {
+    // The INSERT may already be durable. A malformed acknowledgement grants no
+    // candidate mapping or publication claim and must stop downstream refinement.
+    throw new Error("storeRawObservation: complete evidence acknowledgement lacks exactly one positive safe integer ID");
+  }
   if (!Number.isFinite(id)) throw new Error("storeRawObservation: no id returned");
   return id;
 }

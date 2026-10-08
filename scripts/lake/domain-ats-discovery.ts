@@ -44,6 +44,7 @@ import { JEV_MIN_CONFIDENCE, wilsonLowerBound, PUBLISH_PH_RATE_FLOOR } from "./a
 import { planJevReAdjudication } from "./jev-readjudication-plan";
 import { extractAtsToken } from "../../packages/scraper/prospector";
 import { deriveCandidateSlugs, KNOWN_ATS_TOKENS } from "./process-intake";
+import { createGreenhouseItemEvidence, replayGreenhouseItemEvidence } from "./greenhouse-item-evidence";
 
 // ── Admission thresholds (exported for unit tests) ───────────────────────────
 // Minimum number of live jobs a tenant must have to be considered
@@ -99,6 +100,11 @@ export interface AtsProbeTemplate {
   }>;
 }
 
+/** Bounds match the native Greenhouse projection; invalid optional facts stay unknown. */
+function greenhouseScalar(value: unknown, limit: number): string {
+  return typeof value === "string" && value.length <= limit && !value.includes("\0") ? value : "";
+}
+
 export const ATS_PROBE_TEMPLATES: Array<AtsProbeTemplate> = [
   {
     family: "Breezy",
@@ -127,17 +133,26 @@ export const ATS_PROBE_TEMPLATES: Array<AtsProbeTemplate> = [
       const jobs = data?.jobs ?? [];
       if (!Array.isArray(jobs)) return [];
       return jobs
-        .filter((j: any) => j?.title && j?.absolute_url && j.internal_job_id !== null)
-        .map((j: any) => ({
-          title: j.title || "",
-          company: data?.company?.name || "",
-          url: j.absolute_url || "",
-          locationRaw: j.location?.name || "Remote",
-          description: j.content || "",
-          tags: Array.isArray(j.departments) ? j.departments.map((d: any) => d.name) : [],
-          // first_published is distinct from an edit timestamp and may be absent.
-          postedAt: greenhousePostingDate(j.first_published),
-        }));
+        .filter((j: any) => greenhouseScalar(j?.title, 300).trim()
+          && greenhouseScalar(j?.absolute_url, 2048).trim() && j.internal_job_id !== null)
+        .map((j: any) => {
+          const locationRaw = greenhouseScalar(j.location?.name, 500);
+          const locationText = locationRaw.replace(/<[^>]*>/g, "").trim();
+          return {
+            title: j.title,
+            company: greenhouseScalar(data?.company?.name, 200),
+            url: j.absolute_url,
+            locationRaw,
+            // The list collector retains bounded structured facts, never full content.
+            description: locationText ? `Location: ${locationText}` : "",
+            tags: Array.isArray(j.departments) ? j.departments
+              .map((d: any) => d?.name)
+              .filter((name: unknown): name is string => typeof name === "string"
+                && !name.includes("\0") && name.trim().length > 0) : [],
+            // first_published is distinct from an edit timestamp and may be absent.
+            postedAt: greenhousePostingDate(j.first_published),
+          };
+        });
     },
   },
   {
@@ -774,30 +789,90 @@ export interface BulkSeed {
   website?: string;
 }
 
+export interface TenantProbeResult {
+  jobs: ReturnType<AtsProbeTemplate["extractJobs"]>;
+  probeUrl: string;
+  rateLimited: boolean;
+  status: number;
+  family: string;
+  greenhouseEvidence?: ReturnType<typeof createGreenhouseItemEvidence>;
+  greenhouseEvidenceFailure?: true;
+}
+
 /** Probe one tenant URL with skip-on-429 host shielding. Returns null when skipped/failed. */
-async function probeTenantJobs(
+export async function probeTenantJobs(
   template: AtsProbeTemplate,
   tenantSlug: string,
   rateLimitedHosts: Set<string>,
-): Promise<{ jobs: ReturnType<AtsProbeTemplate["extractJobs"]>; probeUrl: string; rateLimited: boolean; status: number } | null> {
+): Promise<TenantProbeResult | null> {
   const probeUrl = template.buildUrl(tenantSlug);
   const host = hostOf(probeUrl);
   if (rateLimitedHosts.has(host)) return null;
+  let observedStatus = 0;
   try {
+    const startedAt = new Date().toISOString();
     const res = await fetch(probeUrl, {
       headers: collectionHeaders({ Accept: "application/json" }),
       signal: AbortSignal.timeout(12_000),
     });
+    observedStatus = res.status;
     if (res.status === 429) {
       rateLimitedHosts.add(host);
-      return { jobs: [], probeUrl, rateLimited: true, status: 429 };
+      return { jobs: [], probeUrl, rateLimited: true, status: 429, family: template.family };
     }
-    if (!res.ok) return { jobs: [], probeUrl, rateLimited: false, status: res.status };
+    if (!res.ok) return { jobs: [], probeUrl, rateLimited: false, status: res.status, family: template.family };
+    if (template.family.toLowerCase() === "greenhouse") {
+      const responseBody = await res.text();
+      const completedAt = new Date().toISOString();
+      // These facts describe the existing legacy collector's actual response.
+      // The producer explicitly records unverified collection and false public authority.
+      const greenhouseEvidence = createGreenhouseItemEvidence({
+        sourceId: buildDiscoverySourceId(template.family, tenantSlug), tenantSlug,
+        endpointUrl: probeUrl, httpStatus: res.status, startedAt, completedAt, responseBody,
+      });
+      return { jobs: template.extractJobs(greenhouseEvidence.data), probeUrl, rateLimited: false,
+        status: res.status, family: template.family, greenhouseEvidence };
+    }
     const data = await res.json();
-    return { jobs: template.extractJobs(data), probeUrl, rateLimited: false, status: res.status };
+    return { jobs: template.extractJobs(data), probeUrl, rateLimited: false, status: res.status, family: template.family };
   } catch {
-    return { jobs: [], probeUrl, rateLimited: false, status: 0 };
+    if (template.family.toLowerCase() === "greenhouse") {
+      return { jobs: [], probeUrl, rateLimited: false, status: observedStatus,
+        family: template.family, greenhouseEvidenceFailure: true };
+    }
+    return { jobs: [], probeUrl, rateLimited: false, status: 0, family: template.family };
   }
+}
+
+/** Persist the observation used by the existing candidate-refinement path. */
+export async function persistDiscoveryObservation(
+  client: ReturnType<typeof getLakeClient>,
+  input: { sourceId: string; sourcePlatform: string; probe: TenantProbeResult },
+): Promise<number> {
+  if (input.probe.family.toLowerCase() === "greenhouse") {
+    const evidence = input.probe.greenhouseEvidence;
+    if (!evidence || input.probe.greenhouseEvidenceFailure) {
+      throw new Error("GREENHOUSE_ITEM_EVIDENCE_INVALID: complete probe evidence is required before candidate refinement");
+    }
+    const replayed = replayGreenhouseItemEvidence(evidence.payload, evidence.retainedSha256);
+    const source = JSON.parse(replayed.payload).source;
+    if (source?.sourceId !== input.sourceId || source?.endpointUrl !== input.probe.probeUrl
+      || source?.httpStatus !== input.probe.status) {
+      throw new Error("GREENHOUSE_ITEM_EVIDENCE_INVALID: observation source binding differs from its actual probe");
+    }
+    return storeRawObservation(client, {
+      sourceId: input.sourceId, sourcePlatform: input.sourcePlatform,
+      fetchUrl: input.probe.probeUrl, httpStatus: input.probe.status,
+      rawPayload: replayed.payload, contentHash: replayed.retainedSha256, requireCompletePayload: true,
+    });
+  }
+  return storeRawObservation(client, {
+    sourceId: input.sourceId,
+    sourcePlatform: input.sourcePlatform,
+    fetchUrl: input.probe.probeUrl,
+    httpStatus: 200,
+    rawPayload: JSON.stringify(input.probe.jobs.slice(0, 20)),
+  });
 }
 
 function computeTenantMetrics(rawJobs: Array<{ title: string; description: string; locationRaw: string; tags: string[] }>): TenantMetrics {
@@ -834,6 +909,10 @@ async function evaluateTenant(
 
   const familyLower = template.family.toLowerCase();
   const sourceId = buildDiscoverySourceId(familyLower, seed.slug);
+  if (probe.greenhouseEvidenceFailure) {
+    console.warn(`  ⚠️ ${template.family}/${seed.slug}: complete native evidence unavailable; no observation or candidate binding.`);
+    return;
+  }
 
   // Failure containment / dead board handling:
   // If the probe returned non-200 or fewer than MIN_JOBS_TO_EVALUATE:
@@ -920,13 +999,10 @@ async function evaluateTenant(
   if (decision.verdict === "ADMIT") {
     stats.admitted++;
     console.log(`  → ADMITTED. Ingesting ${rawJobs.length} jobs into lake_candidate_jobs...`);
-    const rawPayload = JSON.stringify(rawJobs.slice(0, 20));
-    const rawObsId = await storeRawObservation(client, {
+    const rawObsId = await persistDiscoveryObservation(client, {
       sourceId,
       sourcePlatform: `${template.family}/${seed.slug}`,
-      fetchUrl: probe.probeUrl,
-      httpStatus: 200,
-      rawPayload,
+      probe,
     });
     const ingestStats = { totalExtracted: 0, duplicates: 0, excluded: 0, qualifiedReady: 0, ambiguous: 0 };
     for (let i = 0; i < rawJobs.length; i++) {
@@ -939,9 +1015,9 @@ async function evaluateTenant(
             sourcePlatform: `${template.family}/${seed.slug}`,
             sourceUrl: job.url,
             title: job.title,
-            company: job.company || seed.company,
+            company: familyLower === "greenhouse" ? job.company : job.company || seed.company,
             category: job.tags[0] || "other",
-            locationRaw: job.locationRaw || "Remote",
+            locationRaw: familyLower === "greenhouse" ? job.locationRaw : job.locationRaw || "Remote",
             description: job.description,
             applicationUrl: job.url,
             postedAt: job.postedAt,

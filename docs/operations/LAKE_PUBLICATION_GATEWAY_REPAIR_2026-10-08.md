@@ -258,3 +258,83 @@ and cannot be inferred from the target, body bounds or per-controller ticks.
 Full atomic publication/controller replacement, normal release/provenance,
 coordinated containment and bounded runtime/serving acceptance remain subsequent
 requirements. Preserve the raw-writer fence throughout.
+
+## Item-proof prerequisite: attributable native observations
+
+Start SHA `9cc5b4953526f47a2690f2f2b9a34d9ce964a781`. Reentry reviews found
+that discovery stores only twenty normalized jobs while associating every job
+with that sample. Provider posting/requisition IDs are lost. The generic raw
+store can hash different bytes from its truncated retained payload. These are
+concrete provenance gaps that must be repaired before independent item evidence
+can bind staged material. The complete item-proof NEXT remains outstanding;
+this dependency does not redefine qualification or daily-flow acceptance.
+
+Implement a real Greenhouse list-response metadata producer inside the existing
+probe-to-storage path, before filtering/normalization. Retain every item's bounded
+native posting/requisition identity, title, source URL, structured location and
+original/edit-date distinctions, including missing/null/invalid field states and
+explicit prospects. Do not retain descriptions, custom metadata, application
+questions or arbitrary nested values; no content=true, detail or application-page
+GET is added. Keep a transient response-body hash separate from the digest of
+exact retained UTF-8 projection bytes. Complete evidence must never be silently
+truncated; reject oversize proof storage before any candidate mutation. Preserve
+the generic legacy store contract for other callers while introducing explicit
+strict complete-payload storage for this producer.
+
+The legacy discovery collector lacks current admission, robots and byte-budget
+proof. Record that deficiency explicitly: collection authority UNVERIFIED,
+admission/source identity binding UNKNOWN, publication authority false. Native
+metadata is attributable to this collector's actual response, not proof of lawful
+collection or complete source/item clearance. Do not invent server proof from
+auto_approved/Jev labels or fabricate an accepted collection capability. No
+provider request or production write is dispatched in this local unit. A future
+accepted collection boundary must supply real current identity/admission/robots/
+cadence/budget evidence before these observations can support clearance.
+
+Produce replayable private assessments from these exact facts: prospect rejection,
+strict original-date unknown/invalid/future/stale distinctions and tenant-qualified
+provider identity. Fully remote, complete PH exclusions, safety, application
+liveness, employer/cross-source canonical identity and taxonomy confidence stay
+UNKNOWN where this minimal response cannot establish them. A role-looking title,
+generic Remote label or locationType default is not clearance. Each receipt is
+versioned, hashes every retained fact, contains exact item membership and always
+grants false publication authority. Integrity/membership checks may invalidate
+evidence; matching hashes cannot make unsupported dimensions PASS.
+
+Acceptance: red-first producer/storage/integration regressions; actual probe GET
+with stubbed network, all-items retained (including item21+), no extra fetch,
+no arbitrary body retention, no silent clipping/hash mismatch, honest private
+unknowns and same-byte replay/tamper checks. Existing full tests/typecheck/build,
+governance audits and independent review apply. No source permission, accepted
+parameter, enrollment, schema, clock or public writer changes. Commit finite
+task-owned source/tests/evidence, verify a new incremental local bundle, keep
+GitHub BACKUP_PENDING and save exactly one next evidence-producing action.
+
+Review refinements remain in this dependency scope: replay structural/material/
+membership/private-assessment validation before storage even when altered bytes
+have been rehashed; actual enum strings rather than coercible array values;
+bounded typed Greenhouse candidate fields so normalization cannot retain values
+the native projection marked invalid. A malformed acknowledgement can follow a
+durable private raw INSERT, but cannot authorize downstream association. Complete
+membership describes one successfully stored response; this existing collector
+persists it only in its legacy ADMIT branch. It does not archive every probed or
+SHADOW/rejected response. The legacy decision/status, geography-only refinery,
+same-host fingerprint and other-provider observation contracts remain incomplete
+qualification or provenance mechanisms and receive no new authority here.
+
+Provider semantics were checked against the primary
+[Greenhouse Job Board API documentation](https://docs.greenhouse.io/job-board.html):
+posting IDs and internal requisition IDs differ; an explicit null internal ID is
+a prospect. An edit timestamp cannot supply an absent original posting date.
+Metadata observation and these documented shapes do not establish collection
+permission, PH accessibility or application liveness.
+
+Digest scope is explicit: responseSha256 covers Response.text() re-encoded as
+UTF-8, not preserved wire bytes or independent issuer authenticity. An item's
+materialSha256 alone lacks source context; any later consumer must bind source
+identity, retained envelope digest, index and item material digest together.
+The raw-observation foreign key is not immutable correspondence to one native
+item or to the stage protocol's exact eleven material fields. Replay freshness
+is relative to the recorded acquisition clock, so current publication requires
+fresh re-evaluation. These are remaining binder/collection prerequisites, not
+reasons to claim that the complete item-proof NEXT has passed.

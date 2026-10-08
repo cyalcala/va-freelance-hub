@@ -113,6 +113,30 @@ This is LOCAL CODE CONTAINMENT only. No running image, primary/fallback clock,
 source lifecycle or production row has changed. Removing the guard is not a
 routine resume switch: the complete replacement boundary below must pass first.
 
+## New scheduled-container failure — 14:12–14:13 UTC read
+
+Two read-only Cloud Run API GETs refreshed changed execution evidence, without
+retrying the unchanged failed scheduler preflight or launching a job. The five-run
+[execution receipt](publisher-execution-refresh-2026-10-08.json) reports
+`CONDITION_FAILED` for `lake-publish-job-bj6tr` (created 12:47:05 UTC) and
+`lake-publish-job-7g975` (created 13:47:05 UTC), after the previously recorded
+11:47 success. NULL start/completion/count fields are not fabricated zeroes.
+
+The [exact newest execution receipt](publisher-container-start-failure-2026-10-08.json)
+reports `CONTAINER_PERMISSION_DENIED` in all four conditions, last transitioned
+13:47:06 UTC. Its service agent could not read the configured Artifact Registry
+image digest `97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a`.
+That is an actual container-start failure, separate from the earlier scheduler
+`BILLING_DISABLED` response. The receipt does not establish its root cause, an
+IAM change requirement, source/publication outcomes, a disabled clock, complete
+containment or Git-to-image provenance. Other writers remain independently scoped.
+
+Account owner owns normal GitHub/GCP access restoration and investigation of the
+image-read prerequisite. No billing purchase, IAM grant, scheduler change, image
+rollout, provider request or D1 mutation was dispatched. The next observation is
+triggered by changed access/configuration or a new execution; do not spin on the
+same failed probe. Dependency-ready local evidence work continues.
+
 ## Required replacement boundary — not deployed
 
 The next implementation uses an authenticated lake publication operation behind
