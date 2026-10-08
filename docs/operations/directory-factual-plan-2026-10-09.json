@@ -1,0 +1,57 @@
+{
+  "recordedAt": "2026-10-08T20:34:24.741Z",
+  "unit": "DIRECTORY_FACTUAL_COHORT_2026-10-09",
+  "status": "PASS_REAL_PACKET_HOLD",
+  "packet": {
+    "path": "docs/operations/directory-factual-proposals-2026-10-09.json",
+    "sha256": "05e5f7a562b72fb7e74e75b5cbd3ab184b02cab71440176db63d25fbfcc1c6b8"
+  },
+  "helper": {
+    "path": "scripts/diagnostics/directory-factual-patch.ts",
+    "sha256": "56839c15ca1b279f28815a33054a9239486b53af4ca9f998a9f49aa795345dcc"
+  },
+  "observationScope": "LOCAL_PURE_PLANNER_OVER_RETAINED_FACTUAL_PROPOSALS_ONLY",
+  "baselineAuthority": "UNKNOWN_FAILED_D1_SELECT",
+  "executableSqlEmitted": false,
+  "applicationAuthorized": false,
+  "actualDirectoryUpdates": 0,
+  "plan": {
+    "version": 1,
+    "mode": "EMIT_ONLY",
+    "state": "HELD",
+    "reasons": [
+      "BASELINE_UNAVAILABLE"
+    ],
+    "rows": [
+      {
+        "id": 234,
+        "state": "HELD",
+        "reasons": [
+          "BASELINE_UNAVAILABLE"
+        ],
+        "changedFields": []
+      },
+      {
+        "id": 236,
+        "state": "HELD",
+        "reasons": [
+          "IDENTITY_HELD"
+        ],
+        "changedFields": []
+      },
+      {
+        "id": 237,
+        "state": "HELD",
+        "reasons": [
+          "BASELINE_UNAVAILABLE"
+        ],
+        "changedFields": []
+      }
+    ],
+    "readyCount": 0,
+    "productionReads": 0,
+    "productionWrites": 0,
+    "publicationAuthorized": false,
+    "qualificationAuthorized": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "preparedAt": "2026-10-08T20:08:20.000Z",
+  "validFrom": "2026-10-08T20:00:00.000Z",
+  "expiresAt": "2026-10-09T20:08:20.000Z",
+  "baselineReceipt": {"status": "FAILED", "observedAt": null, "receiptId": null, "success": null, "rowsWritten": null, "changedDb": null},
+  "rows": [
+    {
+      "id": 234, "companyName": "Upwork", "identity": "CONFIRMED",
+      "baseline": {"state": "UNKNOWN"},
+      "review": {"status": "ACCEPTED", "reviewerId": "agent:/root/inspection_reader_review", "reviewedAt": "2026-10-08T20:10:05.000Z"},
+      "changes": [{"field": "hiring_page_url", "value": "https://www.upwork.com/careers", "evidence": {"kind": "PRIMARY_OFFICIAL", "url": "https://www.upwork.com/careers", "capturedAt": "2026-10-08T20:08:20.000Z", "companyName": "Upwork", "field": "hiring_page_url"}}]
+    },
+    {
+      "id": 236, "companyName": "Filipino Virtual Assistants (FVA)", "identity": "HELD",
+      "baseline": {"state": "UNKNOWN"},
+      "review": {"status": "HELD", "reviewerId": "agent:/root/inspection_reader_review", "reviewedAt": "2026-10-08T20:10:05.000Z"},
+      "changes": []
+    },
+    {
+      "id": 237, "companyName": "Intogreat Solutions", "identity": "CONFIRMED",
+      "baseline": {"state": "UNKNOWN"},
+      "review": {"status": "ACCEPTED", "reviewerId": "agent:/root/inspection_reader_review", "reviewedAt": "2026-10-08T20:10:05.000Z"},
+      "changes": [{"field": "hiring_page_url", "value": "https://intogreat.com.au/careers/", "evidence": {"kind": "PRIMARY_OFFICIAL", "url": "https://intogreat.com.au/careers/", "capturedAt": "2026-10-08T20:08:20.000Z", "companyName": "Intogreat Solutions", "field": "hiring_page_url"}}]
+    }
+  ]
+}

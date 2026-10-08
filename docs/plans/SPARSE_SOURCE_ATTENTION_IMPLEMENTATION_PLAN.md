@@ -64,6 +64,16 @@ are changed by this delivery rule; every initial card remains PROPOSED.
 
 ## Dependency outline
 
+**2026-10-09 retained-evidence prerequisite:** one bounded existing-company cohort
+now has minimal official fact pointers, dated capture/review, explicit UNKNOWN
+database values and a tested emit-only patch/undo helper. The real packet emits
+no SQL after Cloudflare service access failed. This supports SSAE-02 evidence
+memory and SSAE-07 invalidation reasoning locally, without Turso integration,
+selector/cadence changes, measured cache benefit, rollout or card acceptance.
+[Cohort and finite checks](../operations/DIRECTORY_FACTUAL_COHORT_2026-10-09.md).
+Current implementation NEXT remains solely in SYSTEM_SAVEPOINT; directory facts
+grant no collection, admission or publication permission.
+
 ### PH priority cohort mapping — supporting contracts only
 
 Use the [PH priority strategy](../strategies/PH_REMOTE_SOURCE_PRIORITY_STRATEGY.md)

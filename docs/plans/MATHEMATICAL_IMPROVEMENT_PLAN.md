@@ -84,6 +84,19 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 factual-directory prerequisite:** the reviewed three-company cohort
+retains official careers evidence and an FVA identity/parked-link hold. New pure
+patch preparation requires exact current values, dated evidence/review and guarded
+undo; website replacement invalidates only affected known provenance/health while
+preserving strikes and all flags. Native SQLite drift/replay/UNKNOWN regressions
+and 3,261 repository tests pass. The real failed-D1 packet yields three HELD rows
+and zero SQL; no company was updated. MATH-06/09 gain local integrity/identity
+prerequisites, not deployment, labeled linkage performance or all-writer closure.
+[Cohort/evidence](../operations/DIRECTORY_FACTUAL_COHORT_2026-10-09.md).
+Certified fresh flow remains UNKNOWN, accepted resolutions **0/13**. The canonical
+savepoint selects the next dependency-ready receipt replay binding slice; normal
+Cloudflare service access/fresh baseline is the directory application trigger.
+
 **2026-10-08 private-intent checkpoint:** `31501d8d` advances MATH-06 locally:
 strict authenticated lake staging, server material/manifest hashes, immutable
 private control records and native atomic registration/readback. Staging never

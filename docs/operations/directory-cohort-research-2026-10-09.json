@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "unit": "DIRECTORY_FACTUAL_COHORT_2026-10-09",
+  "startSha": "a6af33eb775413e84e04e3ee646482f4fb981f21",
+  "proposalEvidenceTimeScope": "capturedAt records the witnessed client clock after retaining web-tool extraction; it is not the exact request or origin observation/update timestamp.",
+  "proposalIdentityScope": "CONFIRMED identifies the official company facts only; current D1 ID binding requires a fresh KNOWN baseline and is UNKNOWN in this unit.",
+  "independentReview": {"reviewerId": "agent:/root/inspection_reader_review", "reviewedAt": "2026-10-08T20:10:05Z", "rows": [{"id": 234, "status": "ACCEPTED_FACTUAL_PROPOSAL_ONLY"}, {"id": 236, "status": "HELD_IDENTITY_AND_LINK_REPAIR"}, {"id": 237, "status": "ACCEPTED_FACTUAL_PROPOSAL_ONLY"}], "applicationAuthority": false},
+  "selection": {
+    "source": "directory-enrichment-baseline-2026-10-08.json",
+    "sourceMeasuredAt": "2026-10-08T11:00:59.707Z",
+    "ids": [234, 236, 237],
+    "rationale": "First three existing visible rows in the deterministic provenance-gap backlog; no new directory enrollment.",
+    "currentDatabaseVisibility": "UNKNOWN_D1_READ_FAILED_7403",
+    "currentServedVisibility": "THREE_EXACT_NAME_CARDS_IN_STALE_PUBLIC_SNAPSHOT"
+  },
+  "rows": [
+    {
+      "id": 234,
+      "companyName": "Upwork",
+      "identity": "CONFIRMED_OFFICIAL_COMPANY_NOT_CURRENT_D1_ID_BINDING",
+      "servedWebsite": "https://www.upwork.com/",
+      "websiteDecision": "RETAIN_SUPPORTED_CURRENT_SERVED_URL",
+      "proposedHiringPageUrl": "https://www.upwork.com/careers",
+      "hiringPageKind": "CORPORATE_CAREERS_NOT_FREELANCE_MARKETPLACE",
+      "primaryEvidence": [
+        {"url": "https://www.upwork.com/about", "observedAtCapturedAfter": "2026-10-08T20:06:17Z", "supports": "Official Upwork corporate identity on the same domain."},
+        {"url": "https://www.upwork.com/careers", "observedAtCapturedAfter": "2026-10-08T20:06:17Z", "supports": "Official company careers entry links employee open positions and contract roles separately from marketplace navigation."}
+      ],
+      "holds": ["CURRENT_D1_BASELINE_UNKNOWN", "STORED_WEBSITE_ORIGIN_UNKNOWN"],
+      "corporateJobsPhEligibility": "UNKNOWN",
+      "individualRemoteEligibility": "UNKNOWN",
+      "vacancyFreshnessCountAndQuality": "UNKNOWN",
+      "collectionPermission": "UNKNOWN_NOT_REQUESTED_OR_GRANTED"
+    },
+    {
+      "id": 236,
+      "companyName": "Filipino Virtual Assistants (FVA)",
+      "identity": "HELD_ALIAS_AND_POSSIBLE_DUPLICATE",
+      "servedWebsite": "https://fvacademy.com/",
+      "websiteDecision": "HELD_DO_NOT_CLEAR_OR_REPLACE_WITHOUT_CURRENT_ROW_AND_IDENTITY_RECONCILIATION",
+      "replacementWebsiteCandidate": "https://surgefreelancingmarketplace.com/",
+      "proposedHiringPageUrl": null,
+      "hiringPageState": "UNKNOWN",
+      "primaryEvidence": [
+        {"url": "https://academy.surgefreelancingmarketplace.com/about/", "observedAt": "2026-10-08T20:00:10Z", "supports": "Company-reported history names Filipino Virtual Assistance in 2016, FVA Business Consultancy in 2017 and FVA Business Consultancy-OPC in 2021."},
+        {"url": "https://surgefreelancingmarketplace.com/", "observedAt": "2026-10-08T20:00:31Z", "supports": "Surge brand links its academy and a client-facing talent marketplace; it does not prove a corporate applicant entry."},
+        {"url": "https://vaatelier.com/", "observedAt": "2026-10-08T20:00:31Z", "supports": "Client talent/services marketplace with generic account routes; no login or registration was entered."}
+      ],
+      "servedUrlObservation": {
+        "url": "https://fvacademy.com/",
+        "observedAtCapturedAfter": "2026-10-08T20:06:17Z",
+        "state": "WEB_TOOL_REPORTED_REDIRECT_TO_DOMAIN_FOR_SALE",
+        "destination": "https://forsale.godaddy.com/forsale/fvacademy.com",
+        "destinationBodyAndOriginHttpStatus": "UNKNOWN",
+        "retry": "NOT_REPEATED_NON_RETRYABLE_TOOL_RESPONSE"
+      },
+      "holds": ["CURRENT_D1_BASELINE_UNKNOWN", "PLURAL_DIRECTORY_LABEL_VERSUS_SINGULAR_PRIMARY_HISTORICAL_NAME", "DATED_EXISTING_ID_398_SURGE_DIGITAL_AGENCY_EQUIVALENCE_UNKNOWN", "EXACT_LEGAL_MAPPING_AND_REBRAND_DATE_UNKNOWN", "NO_SUPPORTED_CORPORATE_CAREERS_PATH", "PARKED_LINK_SIGNAL_REQUIRES_EXISTING_GUARDED_REPAIR_REVIEW"],
+      "restrictionObservations": "Content-protection notices on the inspected Surge pages; no license, robots or terms clearance established.",
+      "collectionPermission": "UNKNOWN_NOT_REQUESTED_OR_GRANTED"
+    },
+    {
+      "id": 237,
+      "companyName": "Intogreat Solutions",
+      "identity": "CONFIRMED_OFFICIAL_COMPANY_NOT_CURRENT_D1_ID_BINDING",
+      "servedWebsite": "https://intogreat.com.au/",
+      "websiteDecision": "RETAIN_SUPPORTED_CURRENT_SERVED_URL",
+      "proposedHiringPageUrl": "https://intogreat.com.au/careers/",
+      "hiringPageKind": "OFFICIAL_CORPORATE_CAREERS",
+      "alternateOfficialWebsite": "https://intogreatsolutions.com/",
+      "alternateOfficialCareers": "https://intogreatsolutions.com/careers/",
+      "delegatedApplicantPortal": "https://intogreatsolutions.darwinbox.com/ms/candidatev2/main/careers/allJobs",
+      "primaryEvidence": [
+        {"url": "https://intogreat.com.au/", "observedAtCapturedAfter": "2026-10-08T20:06:17Z", "supports": "Existing served domain identifies Intogreat, links its own careers entry, and links Intogreat Solutions in the footer."},
+        {"url": "https://intogreat.com.au/careers/", "observationScope": "WEB_TOOL_FETCH_AFTER_2026-10-08T20:06:17Z", "supports": "Followed the Careers link from the existing official served domain; extracted page title identifies Intogreat Solutions."},
+        {"url": "https://intogreatsolutions.com/", "observedAt": "2026-10-08T20:00:25Z", "supports": "Official company identity, company-reported Philippine recruitment context and Quezon City office."},
+        {"url": "https://intogreatsolutions.com/careers/", "observedAt": "2026-10-08T20:00:25Z", "supports": "Official careers entry delegates applicant navigation to the company-branded Darwinbox portal."},
+        {"url": "https://intogreatsolutions.darwinbox.com/ms/candidatev2/main/careers/allJobs", "observedAt": "2026-10-08T20:00:25Z", "supports": "Extracted portal title identifies Intogreat Solutions; vacancy content was unavailable."}
+      ],
+      "holds": ["CURRENT_D1_BASELINE_UNKNOWN", "STORED_WEBSITE_ORIGIN_UNKNOWN"],
+      "companyPhRecruitmentContext": "COMPANY_REPORTED_NOT_INDEPENDENT_JOB_ELIGIBILITY",
+      "individualRemoteEligibility": "UNKNOWN_REMOTE_STAFFING_SERVICE_IS_NOT_FULL_REMOTE_ROLE_PROOF",
+      "vacancyFreshnessCountAndQuality": "UNKNOWN",
+      "collectionPermission": "UNKNOWN_NOT_REQUESTED_OR_GRANTED"
+    }
+  ],
+  "observations": {
+    "d1": "directory-cloudflare-access-2026-10-09.json",
+    "publicServing": "directory-cohort-public-observation-2026-10-09.json",
+    "publicSnapshotGeneratedAt": "2026-10-08T18:43:16.637Z",
+    "publicSnapshotState": "stale",
+    "publicSnapshotAgeSeconds": 4915,
+    "reportedVisibleDirectoryCount": 735,
+    "reportedJobStock": 1556,
+    "certifiedFreshDailyFlow": null
+  },
+  "effects": {"productionWrites": 0, "directoryUpdatesApplied": 0, "sourceAdmissions": 0, "jobCollections": 0, "jobPublications": 0, "explicitCredentialsOrGrantsChanged": 0},
+  "limitations": [
+    "Web-tool observations may use cached extraction and do not establish origin HTTP freshness, redirects except where explicitly reported, URL liveness, current vacancy dates or collection permission.",
+    "No full descriptions, resumes, account details or contact submissions were retained.",
+    "Research corroborates company facts; it does not retroactively classify an existing website's seed/manual provenance.",
+    "Research and public cards cannot supply UNKNOWN database expected values or change hiring/PH/verification flags."
+  ]
+}

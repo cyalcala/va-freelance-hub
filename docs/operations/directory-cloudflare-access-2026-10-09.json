@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "measuredAt": "2026-10-08T20:05:06.202Z",
+  "startSha": "a6af33eb775413e84e04e3ee646482f4fb981f21",
+  "d1Read": {
+    "state": "FAILED",
+    "providerCode": 7403,
+    "attempts": 1,
+    "expectedIds": [
+      234,
+      236,
+      237
+    ],
+    "rows": null,
+    "successfulReadReceipt": null,
+    "currentDatabaseBaseline": "UNKNOWN",
+    "errorSummary": "Given account is not valid or is not authorized to access this service.",
+    "configuredDatabaseId": "08072f16-d3d1-436a-9104-b057a162db7c",
+    "selectedAccountId": "76cf15ef361089aa0411e75ff77d343a"
+  },
+  "authentication": {
+    "state": "METADATA_READ",
+    "loggedIn": true,
+    "authType": "OAuth Token",
+    "accountIds": [
+      "76cf15ef361089aa0411e75ff77d343a"
+    ],
+    "tokenPermissions": [
+      "user:read",
+      "offline_access",
+      "account:read",
+      "workers:write",
+      "workers_kv:write",
+      "workers_routes:write",
+      "workers_scripts:write",
+      "workers_tail:read",
+      "d1:write",
+      "pages:write",
+      "zone:read",
+      "ssl_certs:write",
+      "ai:write",
+      "ai-search:write",
+      "ai-search:run",
+      "agent-memory:write",
+      "queues:write",
+      "pipelines:write",
+      "secrets_store:write",
+      "artifacts:write",
+      "flagship:write",
+      "containers:write",
+      "cloudchamber:write",
+      "connectivity:admin",
+      "email_routing:write",
+      "email_sending:write",
+      "browser:write",
+      "challenge-widgets.write"
+    ]
+  },
+  "productionWrites": 0,
+  "credentialsPrintedOrReconfigured": false,
+  "retryTrigger": "Normal owner account/service access restored or configuration evidence materially changes.",
+  "limitations": [
+    "whoami is authentication metadata, not proof of D1 service authorization.",
+    "No account switch, login, grant, billing change or repeated D1 request occurred."
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "unit": "DIRECTORY_FACTUAL_COHORT_2026-10-09",
+  "rows": [
+    {
+      "requestedCompany": "Upwork",
+      "url": "https://remotejobs-ph.pages.dev/directory?q=Upwork",
+      "observedAt": "2026-10-08T20:05:11.451Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Thu, 08 Oct 2026 20:05:12 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "4915",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-08T18:43:16.637Z",
+        "x-public-snapshot-jobs": "1556",
+        "x-public-snapshot-source": "edge"
+      },
+      "bytes": 14919,
+      "durationMs": 612,
+      "htmlSha256": "968e0e2f35781c2629e3028d9df6ba531e8ed3a4a57bd0566c32263d97219085",
+      "exactNameCards": [
+        {
+          "companyName": "Upwork",
+          "websiteDisplayed": "https://www.upwork.com/"
+        }
+      ],
+      "databaseBaselineAuthority": false
+    },
+    {
+      "requestedCompany": "Filipino Virtual Assistants (FVA)",
+      "url": "https://remotejobs-ph.pages.dev/directory?q=Filipino+Virtual+Assistants+%28FVA%29",
+      "observedAt": "2026-10-08T20:05:11.454Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Thu, 08 Oct 2026 20:05:12 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "4915",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-08T18:43:16.637Z",
+        "x-public-snapshot-jobs": "1556",
+        "x-public-snapshot-source": "edge"
+      },
+      "bytes": 15345,
+      "durationMs": 601,
+      "htmlSha256": "94b3773cfadf5d6187fa54d283089c8d9f596ebdb7c2e888f83e20e43bafe994",
+      "exactNameCards": [
+        {
+          "companyName": "Filipino Virtual Assistants (FVA)",
+          "websiteDisplayed": "https://fvacademy.com/"
+        }
+      ],
+      "databaseBaselineAuthority": false
+    },
+    {
+      "requestedCompany": "Intogreat Solutions",
+      "url": "https://remotejobs-ph.pages.dev/directory?q=Intogreat+Solutions",
+      "observedAt": "2026-10-08T20:05:11.454Z",
+      "status": 200,
+      "headers": {
+        "cache-control": "no-store",
+        "date": "Thu, 08 Oct 2026 20:05:12 GMT",
+        "x-public-snapshot": "stale",
+        "x-public-snapshot-age-seconds": "4915",
+        "x-public-snapshot-companies": "735",
+        "x-public-snapshot-generated-at": "2026-10-08T18:43:16.637Z",
+        "x-public-snapshot-jobs": "1556",
+        "x-public-snapshot-source": "edge"
+      },
+      "bytes": 15059,
+      "durationMs": 602,
+      "htmlSha256": "33dd2ff2de42eb1a24c928587bde94e12090c900098319ab08f2d978572bcd16",
+      "exactNameCards": [
+        {
+          "companyName": "Intogreat Solutions",
+          "websiteDisplayed": "https://intogreat.com.au/"
+        }
+      ],
+      "databaseBaselineAuthority": false
+    }
+  ],
+  "productionWrites": 0,
+  "limitations": [
+    "Ordinary public serving observations do not replace the unavailable current D1 baseline.",
+    "Public cards expose names and normalized website URLs, not row IDs or stored provenance.",
+    "No linked company page, image, job detail or API was fetched by this probe."
+  ]
+}

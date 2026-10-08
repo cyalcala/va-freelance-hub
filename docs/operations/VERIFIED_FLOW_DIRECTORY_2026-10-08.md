@@ -93,6 +93,19 @@ contract and existing controls.
 
 ## Requirements and honest maturity
 
+**2026-10-09 factual cohort:** existing IDs 234/236/237 received bounded official
+company evidence and independent proposal review. Upwork and Intogreat corporate
+careers links are supported; FVA replacement remains held for parked-link/identity
+reconciliation. A failed exact-three-ID D1 read (Cloudflare 7403) leaves every
+current baseline UNKNOWN. Three ordinary public observations are stale snapshots,
+not database values. The pure guarded planner and native SQLite undo/drift tests
+pass; its real packet holds all three rows and emits no SQL. Actual directory
+updates: zero. [Cohort evidence and checks](DIRECTORY_FACTUAL_COHORT_2026-10-09.md).
+This advances factual enrichment preparation and MATH-06/09 evidence controls;
+0/13 MATH accepted and certified fresh public flow UNKNOWN remain unchanged.
+The sole next implementation unit and external access triggers are recorded only
+in SYSTEM_SAVEPOINT; no source enrollment, collection or publication is inferred.
+
 | Requirement | Measurement/implementation path | Acceptance still required |
 | --- | --- | --- |
 | 100/day, 150 stretch | Complete Manila-day first exposure, original posting age, canonical identity, publication authority and observed public visibility | Sustained daily receipts and independent quality evidence; current inventory is a proxy |

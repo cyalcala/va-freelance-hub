@@ -1,0 +1,61 @@
+{
+  "recordedAt": "2026-10-08T20:36:32.000Z",
+  "unit": "DIRECTORY_FACTUAL_COHORT_2026-10-09",
+  "status": "LOCAL_ACCEPTED_FACTUAL_PREPARATION_ONLY",
+  "startSha": "a6af33eb775413e84e04e3ee646482f4fb981f21",
+  "goalComplete": false,
+  "frozenSourceFiles": [
+    {"path": "scripts/diagnostics/directory-factual-patch.ts", "sha256": "56839c15ca1b279f28815a33054a9239486b53af4ca9f998a9f49aa795345dcc"},
+    {"path": "scripts/diagnostics/directory-factual-patch.test.ts", "sha256": "acd241870788fcf10eeda59b3eba9a99b7a98043c807612c9a2950ac987c5689"}
+  ],
+  "genuineBehavioralRed": {
+    "initialWorkingStub": {"pass": 7, "fail": 12, "assertions": 312, "tests": 19, "bunMilliseconds": 232, "outerCommandDuration": null, "toolOutputChunk": "dbdefa"},
+    "coupledHealthRegression": {"pass": 20, "fail": 3, "assertions": 652, "bunMilliseconds": 442, "outerCommandDuration": null, "toolOutputChunk": "b3803d"},
+    "harnessOrImportFailuresCounted": false,
+    "focusedLocalLogs": "NOT_WRITTEN_TOOL_OUTPUT_RETAINED"
+  },
+  "focusedNativeSqlite": {"status": "PASS", "pass": 26, "fail": 0, "assertions": 742, "bunMilliseconds": 273, "toolOutputChunk": "6220df"},
+  "independentReview": {
+    "reviewer": "agent:/root/inspection_reader_review",
+    "factualProposals": "PASS_UPWORK_AND_INTOGREAT_ONLY_FVA_HELD",
+    "finalCode": "PASS_COUPLED_HEALTH_FIX",
+    "documentationAndReceipts": "PASS_agent:/root/inspection_route_review_NO_UNSUPPORTED_AUTHORITY_OR_SECRET_EXPOSURE",
+    "testsRerunByReviewer": false,
+    "acceptanceScope": "LOCAL_PREPARATION_ONLY_NO_PRODUCTION_AUTHORITY"
+  },
+  "supersededFullSuite": {
+    "log": ".tmp-directory-factual-full-tests.log", "pass": 3258, "fail": 0,
+    "assertions": 322357, "files": 238, "bunSeconds": 128.78,
+    "reason": "PASS predates coupled link-health correction; final source rerun required and completed"
+  },
+  "tests": {
+    "status": "PASS_FROZEN_SOURCE", "log": ".tmp-directory-factual-final-tests.log",
+    "pass": 3261, "fail": 0, "assertions": 322448, "files": 238, "newTests": 26, "bunSeconds": 176.29
+  },
+  "checks": {
+    "standaloneHelperTypecheck": {"status": "PASS", "exitCode": 0, "diagnostics": 0, "command": "bun ./node_modules/typescript/bin/tsc --noEmit --strict --skipLibCheck --target ESNext --module ESNext --moduleResolution bundler --esModuleInterop --resolveJsonModule --types bun --jsx react-jsx scripts/diagnostics/directory-factual-patch.ts scripts/diagnostics/directory-factual-patch.test.ts", "installedDependenciesOnly": true},
+    "webTypecheck": {"status": "PASS", "exitCode": 0, "log": ".tmp-directory-factual-final-typecheck.log"},
+    "astroBuild": {"status": "PASS", "exitCode": 0, "astroSeconds": 100, "wholeCommandSeconds": null, "log": ".tmp-directory-factual-final-build.log", "deploymentAcceptance": false},
+    "guardrails": {"status": "PASS", "exitCode": 0, "log": ".tmp-directory-factual-final-guardrails.log"},
+    "parameters": {"status": "PASS", "exitCode": 0, "parityPercent": 100, "log": ".tmp-directory-factual-final-parameters.log"},
+    "orchestrator": {"status": "PASS", "exitCode": 0, "log": ".tmp-directory-factual-final-orchestrator.log"},
+    "constitution": {"status": "PASS", "exitCode": 0, "existingWarningsPreserved": true, "log": ".tmp-directory-factual-final-constitution.log"},
+    "finalStagedDiffCheck": "PASS_TASK_OWNED_SOURCE_AND_EVIDENCE_BEFORE_COMMIT"
+  },
+  "realPacketReceipt": "directory-factual-plan-2026-10-09.json",
+  "realPacketOutcome": {"held": 3, "ready": 0, "sqlEmitted": false, "actualDirectoryUpdates": 0},
+  "networkAndProductionEffects": {
+    "productionD1SelectAttempts": 1, "successfulD1ReadReceipts": 0,
+    "cloudflareAuthenticationMetadataInvocations": 1, "ordinaryPublicDirectoryGets": 3,
+    "companyWebToolOriginRequestsAndBytes": null,
+    "jobSourceRequests": 0, "productionD1Writes": 0, "productionTursoWrites": 0,
+    "sourceAdmissions": 0, "migrations": 0, "deployments": 0,
+    "gcpReads": 0, "gcpMutations": 0, "newProductionClocks": 0,
+    "explicitCredentialsOrGrantsChanged": 0, "automaticOAuthRefresh": "UNKNOWN"
+  },
+  "accessHold": {"receipt": "directory-cloudflare-access-2026-10-09.json", "providerCode": 7403, "currentD1Values": "UNKNOWN", "owner": "NORMAL_OWNER_ACCOUNT_SERVICE_ACCESS", "retryTrigger": "Changed normal authorization/configuration evidence only"},
+  "sourceBackup": {"gitLab": "EXACT_NEW_SHA_PUSH_READBACK_REQUIRED", "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED", "gitLabExactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED", "runtimeAcceptance": "NOT_ESTABLISHED"},
+  "mathAccepted": "0/13",
+  "verifiedFreshPublicFlow": null,
+  "certification": "UNKNOWN"
+}
