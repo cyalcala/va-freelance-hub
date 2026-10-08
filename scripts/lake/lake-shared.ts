@@ -10,14 +10,14 @@
  */
 import { createHash } from "crypto";
 import { getLakeClient } from "./client";
-import { SHADOW_MAX_BYTES } from "../../packages/scraper/candidate-shadow";
+import { MAX_GREENHOUSE_EVIDENCE_BYTES, MAX_GREENHOUSE_EVIDENCE_CHARS } from "../../packages/scraper/greenhouse-item-evidence";
 
 type LakeClient = ReturnType<typeof getLakeClient>;
 
 /** Legacy raw payload character bound (Turso storage hygiene). */
-export const MAX_RAW_PAYLOAD_CHARS = 1_000_000;
+export const MAX_RAW_PAYLOAD_CHARS = MAX_GREENHOUSE_EVIDENCE_CHARS;
 /** Complete evidence also honors the existing one-MiB UTF-8 evidence bound. */
-export const MAX_COMPLETE_RAW_PAYLOAD_BYTES = SHADOW_MAX_BYTES;
+export const MAX_COMPLETE_RAW_PAYLOAD_BYTES = MAX_GREENHOUSE_EVIDENCE_BYTES;
 
 export function sha256Hex(input: string): string {
   return createHash("sha256").update(input).digest("hex");
