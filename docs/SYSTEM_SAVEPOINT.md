@@ -1,5 +1,15 @@
 # System Savepoint
 
+## 2026-10-08 — Talent mark/internal diagnostics refinement, release pending
+
+Owner requested a soft deep-orange pulse in place of the talent star and removal
+of the public saved-listings strip. Actual state remains in headers, HTML head
+metadata and internal logs; [AI diagnostic contract](operations/PUBLIC_SNAPSHOT_DIAGNOSTICS.md).
+Start `93c2e1e4f0da8f82c0f143ed76ccd9904eebb286` is already backed up on GitHub.
+Implementation/local checks/independent review complete (3/5 checkpoints);
+CI/live acceptance pending. [Refinement evidence](design/TALENT_DIAGNOSTICS_2026_ACCEPTANCE.md).
+Earlier accepted watercolor design remains; source/GCP acceptance is unchanged.
+
 ## 2026-10-08 05:00 Manila — Pigment & Paper deployed and accepted
 
 Five of five frontend checkpoints complete (100% by checkpoint count). Owner's

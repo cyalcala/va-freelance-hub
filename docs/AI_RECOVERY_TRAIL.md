@@ -1,5 +1,17 @@
 # AI Recovery Trail
 
+## 2026-10-08 — Owner removes public snapshot strip and refines talent mark
+
+Fetched origin/main and branched from `93c2e1e4f0da8f82c0f143ed76ccd9904eebb286`,
+preserving prior savepoints/foreign work. Latest owner direction supersedes the
+old visible-banner rule. Replaced star with a decorative soft orange CSS pulse;
+removed shared strip/dead CSS and mirrored existing headers into head metadata.
+Advanced HTML asset fence and changed offline CI assertion to exact truthful
+metadata. 50 targeted tests/typecheck/build and local eleven-route/no-D1/browser
+checks pass, including guarded Apply. Independent review approved; CI/release
+acceptance pending.
+[Record](design/TALENT_DIAGNOSTICS_2026_ACCEPTANCE.md). No source/GCP governance change.
+
 ## 2026-10-08 05:00 Manila — Pigment & Paper accepted in production
 
 Pre-edit source was tagged and backed up first. Exact-head independent review

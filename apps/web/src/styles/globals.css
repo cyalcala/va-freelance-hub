@@ -127,8 +127,6 @@
   .site-nav a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 16px; border-radius: 6px; color: var(--muted); font-size: 14px; font-weight: 600; transition: color 160ms, background-color 160ms; }
   .site-nav a:hover { color: var(--ink); background: var(--recessed); }
   .site-nav a[aria-current="page"] { color: var(--accent-hover); background: var(--accent-soft); }
-  .saved-board-notice { margin-top: 24px; padding: 12px 16px; border: 1px solid rgb(129 92 24 / 0.25); border-radius: 6px; color: var(--attention); background: var(--attention-soft); font-size: 13px; line-height: 1.6; }
-  .saved-board-notice strong { font-weight: 600; }
   .site-footer-wrap { margin-top: auto; border-top: 1px solid var(--divider); }
   .site-footer { padding-block: 32px; color: var(--muted); font-size: 13px; }
   .site-footer-main { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 24px 48px; }
@@ -251,7 +249,6 @@
   .site-brand-mark { width: 38px; height: 38px; border: 1.5px solid var(--ink); border-radius: 12px; color: var(--ink); background: var(--accent-fill); box-shadow: 2px 3px 0 var(--ink); font-size: 14px; transform: rotate(-5deg); }
   .site-nav a { border: 1.5px solid transparent; border-radius: 11px; font-size: 15px; font-weight: 800; }
   .site-nav a[aria-current="page"] { border-color: #D8AF92; color: var(--ink); background: var(--accent-soft); box-shadow: 0 2px 0 #DFC0A9; }
-  .saved-board-notice { border-width: 1.5px; border-radius: 14px; box-shadow: 0 3px 0 #E6D7B7; }
   .site-footer-wrap { border-top: 2px solid var(--ink); background: #302920; }
   .site-footer, .site-footer .site-brand { color: #F8F0E4; }
   .site-footer-description, .site-footer-credit { color: #D7C8B6; }

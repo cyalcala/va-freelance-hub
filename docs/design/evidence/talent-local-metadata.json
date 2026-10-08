@@ -1,0 +1,172 @@
+{
+  "checkedAt": "2026-10-08T10:28:50.483Z",
+  "origin": "http://127.0.0.1:8788",
+  "sourceSha": "93c2e1e4f0da8f82c0f143ed76ccd9904eebb286+working-tree",
+  "results": [
+    {
+      "path": "/",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": "lkg_fallback",
+        "generated-at": "2026-10-07T09:35:53.265Z",
+        "source": "durable_lkg",
+        "age-seconds": "89576",
+        "jobs": "1519",
+        "companies": "735"
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/opportunities",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": "lkg_fallback",
+        "generated-at": "2026-10-07T09:35:53.265Z",
+        "source": "durable_lkg",
+        "age-seconds": "89576",
+        "jobs": "1519",
+        "companies": "735"
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/opportunities?q=assistant",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": "lkg_fallback",
+        "generated-at": "2026-10-07T09:35:53.265Z",
+        "source": "durable_lkg",
+        "age-seconds": "89576",
+        "jobs": "1519",
+        "companies": "735"
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/directory",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": "lkg_fallback",
+        "generated-at": "2026-10-07T09:35:53.265Z",
+        "source": "durable_lkg",
+        "age-seconds": "89576",
+        "jobs": "1519",
+        "companies": "735"
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/directory?q=unmatchedpremiumqa",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": "lkg_fallback",
+        "generated-at": "2026-10-07T09:35:53.265Z",
+        "source": "durable_lkg",
+        "age-seconds": "89576",
+        "jobs": "1519",
+        "companies": "735"
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/categories/admin",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": "lkg_fallback",
+        "generated-at": "2026-10-07T09:35:53.265Z",
+        "source": "durable_lkg",
+        "age-seconds": "89576",
+        "jobs": "1519",
+        "companies": "735"
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/jobs/8992",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": "lkg_fallback",
+        "generated-at": "2026-10-07T09:35:53.265Z",
+        "source": "durable_lkg",
+        "age-seconds": "89577",
+        "jobs": "1519",
+        "companies": "735"
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/jobs/7508",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": "lkg_fallback",
+        "generated-at": "2026-10-07T09:35:53.265Z",
+        "source": "durable_lkg",
+        "age-seconds": "89577",
+        "jobs": "1519",
+        "companies": "735"
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/data-policy",
+      "status": 200,
+      "snapshot": null,
+      "cacheControl": "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+      "metadata": {
+        "status": null,
+        "generated-at": null,
+        "source": null,
+        "age-seconds": null,
+        "jobs": null,
+        "companies": null
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/privacy",
+      "status": 200,
+      "snapshot": null,
+      "cacheControl": "public, max-age=60, s-maxage=300, stale-while-revalidate=600",
+      "metadata": {
+        "status": null,
+        "generated-at": null,
+        "source": null,
+        "age-seconds": null,
+        "jobs": null,
+        "companies": null
+      },
+      "publicStrip": false
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "snapshot": "lkg_fallback",
+      "cacheControl": "no-store",
+      "metadata": {
+        "status": null,
+        "generated-at": null,
+        "source": null,
+        "age-seconds": null,
+        "jobs": null,
+        "companies": null
+      },
+      "publicStrip": false
+    }
+  ]
+}

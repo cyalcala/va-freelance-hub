@@ -16,6 +16,7 @@ test("design releases do not reuse HTML entries from previous asset builds", () 
     expect(revision).toBeTruthy();
     expect(revision).not.toBe("2026-10-07-refresh-recovery");
     expect(revision).not.toBe("2026-10-07-premium-ui");
+    expect(revision).not.toBe("2026-10-08-pigment-paper");
   }
 });
 

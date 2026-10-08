@@ -57,6 +57,12 @@ master section 10D; existing cleared jobs need not await unrelated bulk research
 
 ## Current Audit Baseline
 
+For public serving diagnostics, read
+`docs/operations/PUBLIC_SNAPSHOT_DIAGNOSTICS.md`. The owner's October 8 refinement
+removes the visitor saved-listings strip. Inspect `X-Public-Snapshot*` response
+headers, matching `va-hub:snapshot-*` HTML head metadata and existing snapshot logs
+instead. Absence of a visible banner is not evidence of freshness or runtime health.
+
 After reading this file, use this recovery read order. It is not policy
 precedence; source-domain precedence is defined in the masterplan:
 

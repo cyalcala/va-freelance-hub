@@ -29,9 +29,6 @@ try {
   markPublicDataUnavailable(Astro.response, error);
 }
 
-const savedBoard = ['stale', 'lkg_fallback'].includes(
-  Astro.response.headers.get('X-Public-Snapshot') ?? ''
-);
 const recentOpportunities = latestOpportunities.slice(0, 6);
 const companySpotlight = [...new Map(
   [...featuredAgencyOpportunities, ...latestOpportunities]
@@ -56,7 +53,7 @@ const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
   {dataUnavailable && <ServiceUnavailable />}
   <section class="home-intro" aria-labelledby="home-title">
     <div class="home-intro-content">
-    <p class="home-eyebrow"><span aria-hidden="true">✳</span> For Filipino talent</p>
+    <p class="home-eyebrow"><span class="talent-dot" aria-hidden="true"></span> For Filipino talent</p>
     <h1 id="home-title" class="home-title">Find your next <span>remote role.</span></h1>
     <p class="home-description">
       Search remote jobs and VA roles, then head to the original listing to apply.
@@ -83,7 +80,7 @@ const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
     </nav>
 
     {!dataUnavailable && <p class="home-board-counts">
-      <span>{stats.opportunities.toLocaleString()} jobs in {savedBoard ? 'this saved board' : 'the board'}</span>
+      <span>{stats.opportunities.toLocaleString()} jobs in the board</span>
       <span>Free to browse. No account needed.</span>
     </p>}
     </div>
@@ -188,7 +185,14 @@ const categories = Object.entries(JOB_CATEGORY_MAP).map(([slug, info]) => ({
   .home-intro::before { content: ''; position: absolute; z-index: -1; inset: 0; border-radius: inherit; background: url('/textures/pigment-paper.webp') center / cover no-repeat; opacity: .9; }
   .home-intro-content { min-width: 0; }
   .home-eyebrow { display: flex; align-items: center; gap: 9px; width: fit-content; padding: 2px 6px; border-radius: 6px; background: #FFF8EC; font-size: 13px; font-weight: 800; letter-spacing: .025em; }
-  .home-eyebrow span { color: var(--accent); font-size: 25px; line-height: 1; }
+  .talent-dot { flex-shrink: 0; width: 12px; height: 12px; border-radius: 50%; background: #C55729; box-shadow: 0 0 0 4px rgb(197 87 41 / .12); animation: talent-pulse 2.6s ease-in-out infinite; }
+  @keyframes talent-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .48; transform: scale(.88); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .talent-dot { animation: none; opacity: 1; transform: none; }
+  }
   .home-title { max-width: 13ch; margin-top: 16px; font-family: var(--font-display); font-size: 42px; font-weight: 650; line-height: 1.03; letter-spacing: -.045em; text-wrap: balance; }
   .home-title span { color: var(--accent); }
   .home-description { max-width: 44ch; margin-top: 16px; padding: 4px 6px; border-radius: 6px; background: #FFF8EC; color: #514334; font-size: 16px; line-height: 1.6; }
