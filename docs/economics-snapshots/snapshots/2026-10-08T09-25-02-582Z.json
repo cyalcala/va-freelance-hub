@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "metricVersion": "SP-02",
+  "generatedAt": "2026-10-08T09:25:02.582Z",
+  "runId": "37756442319",
+  "window": {
+    "asOf": "2026-10-08T09:24:51.293Z",
+    "cut7Unix": 1790846691,
+    "cut14Unix": 1790241891,
+    "cut30Unix": 1788859491,
+    "timezone": "UTC"
+  },
+  "status": "measured",
+  "metrics": {
+    "qualifiedActive": 1538,
+    "qualifiedNew7d": 309,
+    "qualifiedPerDay7d": 44.142857142857146,
+    "qualifiedNew30d": 1232,
+    "qualifiedPerDay30d": 41.06666666666667,
+    "allActive": 1538,
+    "identityCoverage": {
+      "total": 7080,
+      "withSourceId": 7080,
+      "share": 1
+    },
+    "concentration30d": {
+      "topFamily": "we-work-remotely",
+      "topShare": 0.2621753246753247,
+      "top3Share": 0.6152597402597403,
+      "topWarn": false,
+      "top3Warn": false
+    },
+    "largestUnclear7d": [
+      {
+        "sourceId": "real-work-from-anywhere",
+        "unclear": 2
+      },
+      {
+        "sourceId": "greenhouse:gitlab",
+        "unclear": 1
+      },
+      {
+        "sourceId": "remote-ok",
+        "unclear": 1
+      }
+    ]
+  },
+  "reconciliation": {
+    "ok": true,
+    "nonZeroDeltas": []
+  },
+  "limitations": [
+    "First-stored proxy: not verified remote-only first publication.",
+    "Current-active filtering has survivorship bias.",
+    "scraped_at is the storage instant; canonical first-publication history is not reconstructed.",
+    "UTC windows; the product-target Manila-day reconciliation remains a separate contract.",
+    "largestUnclear7d cohorts are investigation inputs; unclear rows are not counted as salvageable."
+  ],
+  "prior": {
+    "snapshotKey": "2026-10-07T09-11-04-255Z",
+    "generatedAt": "2026-10-07T09:11:04.255Z",
+    "qualifiedNew7d": 321,
+    "qualifiedPerDay7d": 45.857142857142854
+  }
+}
