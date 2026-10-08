@@ -6,6 +6,8 @@ import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
 import { isAuthorized } from "@/lib/auth";
 import { readJsonBodyLimited } from "@/lib/request-body";
+import { parseLakeStageRequest } from "@/lib/lake-publication-contract";
+import { stageLakePublicationIntent } from "@/lib/lake-publication-intent";
 
 export const prerender = false;
 
@@ -122,6 +124,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
     const payload = record(parsedBody.value);
+    if (Object.prototype.hasOwnProperty.call(payload, "operation")) {
+      const headers = { "Content-Type": "application/json", "Cache-Control": "no-store" };
+      if (payload.operation !== "lake-stage") {
+        return new Response(JSON.stringify({ error: "Unsupported ingest operation", code: "INVALID_OPERATION" }), { status: 400, headers });
+      }
+      const parsed = await parseLakeStageRequest(payload);
+      if (!parsed.ok) return new Response(JSON.stringify(parsed), { status: 400, headers });
+      const result = await stageLakePublicationIntent(env?.DB, {
+        operationId: parsed.request.operationId, sourceId: parsed.request.sourceId,
+        manifestHash: parsed.manifestHash, candidateDescriptorsJson: parsed.candidateDescriptorsJson,
+      });
+      return new Response(JSON.stringify(result), { status: result.ok ? 200 : result.status, headers });
+    }
     const { items } = payload;
 
     if (!items || !Array.isArray(items)) {

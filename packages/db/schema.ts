@@ -451,6 +451,21 @@ export const sourcePublicationLedger = sqliteTable("source_publication_ledger", 
   tickIdx: index("source_publication_ledger_tick_idx").on(table.sourceId, table.tickKey, table.id),
 }));
 
+// Private immutable intent (migration 0055), never opportunity or source clearance.
+// Candidate acquisition bodies remain in Turso; constraints/triggers live in SQL.
+export const lakePublicationOperations = sqliteTable("lake_publication_operations", {
+  operationKey: text("operation_key").primaryKey().notNull(),
+  sourceId: text("source_id").notNull(),
+  manifestHash: text("manifest_hash").notNull(),
+  candidateDescriptorsJson: text("candidate_descriptors_json").notNull(),
+  stagedAt: text("staged_at").notNull().default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),
+  revision: integer("revision").notNull().default(0),
+  sourceIdentityHash: text("source_identity_hash"),
+  publicationTickKey: text("publication_tick_key"),
+  committedReceiptKey: text("committed_receipt_key").unique(),
+  committedOutcomesJson: text("committed_outcomes_json"),
+});
+
 // ─── Shadow observations (SP-22) ────────────────────────────────────────────
 // Durable history of every SP-07 shadow probe SP-22's dispatcher runs, so
 // "recurrent shadow" is provable from D1 rather than asserted from a single
@@ -538,6 +553,8 @@ export type SourceAdmissionEvidence = typeof sourceAdmissionEvidence.$inferSelec
 export type NewSourceAdmissionEvidence = typeof sourceAdmissionEvidence.$inferInsert;
 export type SourcePublicationLedgerRow = typeof sourcePublicationLedger.$inferSelect;
 export type NewSourcePublicationLedgerRow = typeof sourcePublicationLedger.$inferInsert;
+export type LakePublicationOperation = typeof lakePublicationOperations.$inferSelect;
+export type NewLakePublicationOperation = typeof lakePublicationOperations.$inferInsert;
 
 export type Opportunity = typeof opportunities.$inferSelect;
 export type NewOpportunity = typeof opportunities.$inferInsert;
