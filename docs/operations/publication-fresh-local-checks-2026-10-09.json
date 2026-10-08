@@ -1,0 +1,260 @@
+{
+  "recordedAt": "2026-10-09T06:49:32.0814682+08:00",
+  "unit": "PUBLICATION_FRESH_RECEIPTS_2026-10-09",
+  "status": "PASS_FROZEN_LOCAL_SOURCE_NATIVE_RUNTIME_AND_REPOSITORY_CHECKS",
+  "startSha": "4b2931c77060a6deb62a6ffeee5033c6e43bac5b",
+  "goalComplete": false,
+  "frozenFiles": [
+    {
+      "path": "packages/scraper/publication-gateway.ts",
+      "sha256": "591366809b8f19a823775513e98adfb61507aa165264aa1980784a3f9ca76ce1"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.test.ts",
+      "sha256": "532e7afd84ff4dfced53cdb33228aff8450a0178ba1859d82fa23b3106ff7702"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.integration.test.ts",
+      "sha256": "0402a8c75924367e4e121a24c6060dac8e4a162e52c9a3a5534bc34332c2a41f"
+    },
+    {
+      "path": "apps/web/src/lib/publish-opportunities.ts",
+      "sha256": "5ecd419368205214c59de21d618b95a98ac55cedcf2e03d955984aaedef5bef0"
+    },
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "sha256": "5cd428293e54e6053d01c252b6dd51e719fd507921d4666e27fb65239cc3245d"
+    },
+    {
+      "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+      "sha256": "2070dd99bd6ea50e39bb590cedeae96679107bceb6773be5a81ab13c71299558"
+    },
+    {
+      "path": "apps/web/src/pages/api/ingest.ts",
+      "sha256": "74d41c74140f7d6d1c14f159b27084709f81668144ad7fa1e0698fa8478bf583"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "sha256": "98f5cf8ca7763fd94feee04be39424b0e31d1178f0f30c7ea10d42c43ea16e61"
+    },
+    {
+      "path": "apps/web/tests/pending-drain.test.ts",
+      "sha256": "ef4e01d65d8cc7684f2fc7da2735247f95eb4fe632ae10da0e7e3f681ceea463"
+    },
+    {
+      "path": "apps/web/tests/pending-recovery.test.ts",
+      "sha256": "bd6cb723aa03270033974013432a38fea119ff8683e945bc01da094a7b8cab4a"
+    },
+    {
+      "path": "apps/web/tests/reactivate-feed.test.ts",
+      "sha256": "6857a5810baa2c1bfd93ddf7105f033f842df8a604e4480457e790bce6e10602"
+    },
+    {
+      "path": "apps/web/tests/scrape-unhandled-error.test.ts",
+      "sha256": "e462d524c2a4dc506c1c8b25c34cc737b9d9a2611c1d7f1980e46c744a05d097"
+    }
+  ],
+  "genuineBehavioralRed": [
+    {
+      "phase": "GATEWAY_INITIAL",
+      "pass": 55,
+      "fail": 58,
+      "assertions": 482,
+      "tests": 113,
+      "files": 2,
+      "bunSeconds": 2.57,
+      "commandSeconds": 3.2611789,
+      "toolOutputChunk": "53d496"
+    },
+    {
+      "phase": "GATEWAY_REPLACEABLE_ITERATOR",
+      "pass": 0,
+      "fail": 2,
+      "assertions": 2,
+      "filtered": 73,
+      "bunSeconds": 0.143,
+      "commandSeconds": 0.7323214,
+      "toolOutputChunk": "a7b33a"
+    },
+    {
+      "phase": "GATEWAY_INHERITED_SPARSE_SLOT_REVIEW_FINDING",
+      "pass": 0,
+      "fail": 2,
+      "assertions": 2,
+      "filtered": 75,
+      "bunSeconds": 0.146,
+      "commandSeconds": 0.7470598,
+      "toolOutputChunk": "4f4a7a"
+    },
+    {
+      "phase": "CALLER_ACTUAL_RETURNING_AND_CORRUPT_IDS",
+      "pass": 0,
+      "fail": 4,
+      "assertions": 4,
+      "filtered": 19,
+      "bunSeconds": 0.871,
+      "commandSeconds": null,
+      "toolOutputChunk": "5e197a"
+    }
+  ],
+  "setupCorrectionsNotBehavioralRed": [
+    "RETURNING_FIXTURE_METHOD_UPDATES_COUNTS_TIMINGS_UNKNOWN",
+    "POST_FREEZE_INNGEST_FIRST_POLYFILL_IMPORT_AUDIT_CORRECTION"
+  ],
+  "focusedGateway": {
+    "status": "PASS",
+    "pass": 117,
+    "fail": 0,
+    "assertions": 628,
+    "files": 2,
+    "bunSeconds": 1.77,
+    "commandSeconds": 2.370973,
+    "toolOutputChunk": "af083b"
+  },
+  "focusedCallers": {
+    "status": "PASS_AFTER_POLYFILL_IMPORT_CORRECTION",
+    "pass": 58,
+    "fail": 0,
+    "assertions": 240,
+    "files": 6,
+    "bunSeconds": 7.03,
+    "commandSeconds": null,
+    "toolOutputChunk": "2f61a5",
+    "persistentWorkerLog": null
+  },
+  "supersededCallerPasses": [
+    {
+      "pass": 53,
+      "fail": 0,
+      "assertions": 214,
+      "files": 5,
+      "bunSeconds": 1.64,
+      "toolOutputChunk": "d0b27c"
+    },
+    {
+      "pass": 58,
+      "fail": 0,
+      "assertions": 240,
+      "files": 6,
+      "bunSeconds": 3.77,
+      "toolOutputChunk": "24fa59",
+      "beforePolyfillCorrection": true
+    }
+  ],
+  "independentReview": {
+    "gateway": "PASS_agent:/root/inspection_route_review",
+    "caller": "PASS_agent:/root/inspection_reader_review",
+    "testsRerunByReviewers": false,
+    "scope": "FROZEN_LOCAL_SOURCE_AND_NATIVE_FIXTURES_ONLY",
+    "documentationAndReceipts": "PASS_agent:/root/inspection_route_review"
+  },
+  "tests": {
+    "status": "PASS_AFTER_OTHER_CHECKS_TERMINAL",
+    "pass": 3389,
+    "fail": 0,
+    "assertions": 323134,
+    "files": 239,
+    "bunSeconds": 67.7,
+    "newTests": 77,
+    "log": ".tmp-publication-fresh-final-tests.log"
+  },
+  "checks": {
+    "typecheck": {
+      "status": "PASS_AFTER_POLYFILL_CORRECTION",
+      "exitCode": 0,
+      "commandSeconds": null,
+      "log": null,
+      "toolOutputChunk": "5fd93e"
+    },
+    "standaloneGatewayTypecheck": {
+      "status": "PASS",
+      "exitCode": 0,
+      "commandSeconds": 9.1457693,
+      "toolOutputChunk": "178e79"
+    },
+    "astroBuild": {
+      "status": "PASS_FINAL_POLYFILL_CORRECTED_SOURCE",
+      "exitCode": 0,
+      "astroSeconds": 28.52,
+      "commandSeconds": null,
+      "log": ".tmp-publication-fresh-final-build.log"
+    },
+    "supersededAstroBuild": {
+      "status": "PASS_BEFORE_REQUIRED_POLYFILL_CORRECTION",
+      "exitCode": 0,
+      "astroSeconds": 46.24,
+      "log": ".tmp-publication-fresh-build.log"
+    },
+    "governanceAudits": {
+      "guardrails": "PASS",
+      "parameters": "PASS_100_PERCENT_PARITY",
+      "orchestrator": "PASS",
+      "constitution": "PASS_EXISTING_WARNINGS_PRESERVED",
+      "logPrefix": ".tmp-publication-fresh-final-"
+    },
+    "diffCheck": "PASS_REVIEWED_TASK_OWNED_SOURCE_EVIDENCE_AND_STAGED_WHITESPACE",
+    "checkpointGuardrails": {
+      "status": "PASS",
+      "exitCode": 0,
+      "log": ".tmp-publication-fresh-checkpoint-guardrails.log"
+    }
+  },
+  "workerd": [
+    {
+      "status": "PASS",
+      "receipt": "publication-fresh-workerd-2026-10-09.json",
+      "commandSeconds": 6.9547661
+    },
+    {
+      "status": "PASS_FINAL_REGISTERED_MODULE_INITIALIZATION",
+      "receipt": "publication-fresh-bootstrap-workerd-2026-10-09.json",
+      "commandSeconds": null
+    }
+  ],
+  "runtimeScope": "ISOLATED_SOURCE_MODULES_AND_IN_MEMORY_ADAPTER_NOT_D1_ASTRO_ROUTE_OR_DEPLOYMENT",
+  "nativeBehavior": "ACTUAL_SQLITE_DRIZZLE_FTS_MIGRATION_FIXTURES_PLUS_LOCAL_INLINE_INGEST_SCRAPE_AND_REGISTERED_INNGEST_CALLBACKS",
+  "installedInngestVersion": "4.18.1",
+  "inngestSdkNonRetryClassRecognition": "VERIFIED_LOCAL_INSTALLED_ENGINE_SOURCE",
+  "inngestTransportSchedulingMiddlewareStepCache": "UNVERIFIED",
+  "keyVersion": "publication-retry-v1",
+  "historicalReplayUnchanged": true,
+  "crossVersionSafeRollout": "NOT_ESTABLISHED",
+  "freshOutcomeContract": "POST_PERSISTENCE_FAILURE_PERSISTENCE_ATTEMPTED_EXPOSURE_UNKNOWN",
+  "remaining": [
+    "RETAINED_HTTP_WORKFLOW_CONSUMER_UNKNOWN_RECEIPT_PRESERVATION",
+    "DURABLE_UNKNOWN_ATTEMPT_RECONCILIATION",
+    "ALREADY_LAUNCHED_PARALLEL_SIBLINGS",
+    "ACTUAL_ID_SOURCE_OWNERSHIP_AND_CURRENT_ITEM_PROOF",
+    "SHARED_BUDGET_EPOCH_LEASE_CONTRACT",
+    "ATOMIC_PUBLICATION_CONTROLLER",
+    "NORMAL_RELEASE_PROVENANCE_AND_RUNTIME_ACCEPTANCE"
+  ],
+  "effects": {
+    "jobSourceRequests": 0,
+    "productionReads": 0,
+    "productionD1Writes": 0,
+    "productionTursoWrites": 0,
+    "gcpReads": 0,
+    "gcpMutations": 0,
+    "deployments": 0,
+    "migrations": 0,
+    "sourceAdmissions": 0,
+    "newProductionClocks": 0,
+    "credentialsOrGrantsChanged": 0,
+    "companyEnrichmentsApplied": 0,
+    "publicJobsPublished": 0,
+    "newProvidersOrPaidServices": 0
+  },
+  "backup": {
+    "gitLab": "PASS_SOURCE_COMMIT_PUSH_AND_EXACT_SHA_READBACK",
+    "sourceSha": "79f4b8c290ea0c31ac5190a18bd0194fa0b4f5df",
+    "sourceReceipt": "gitlab-publication-fresh-source-backup-2026-10-09.json",
+    "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED",
+    "gitLabExactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED_PRIOR_API404_NOT_REPROBED",
+    "runtimeAcceptance": "NOT_ESTABLISHED"
+  },
+  "mathAccepted": "0/13",
+  "verifiedFreshPublicFlow": null,
+  "certification": "UNKNOWN",
+  "jev": "PRIOR401_UNCHANGED_NONBLOCKING_NOT_REPROBED_DETERMINISTIC_SCOPE"
+}

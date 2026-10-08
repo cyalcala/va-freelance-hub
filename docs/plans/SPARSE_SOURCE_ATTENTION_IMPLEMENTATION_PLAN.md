@@ -64,6 +64,17 @@ are changed by this delivery rule; every initial card remains PROPOSED.
 
 ## Dependency outline
 
+**2026-10-09 fresh-receipt prerequisite:** actual returned IDs and strict fresh
+acknowledgements now have native local fixtures; post-persistence exceptions or
+ledger delivery failures retain UNKNOWN and stop subsequent sequential writers.
+This supports SSAE-07/09 evidence/replay integrity without measured reuse benefit,
+Turso integration, new source permission, scheduling changes or rollout acceptance.
+[Finite scope and verification](../operations/PUBLICATION_FRESH_RECEIPTS_2026-10-09.md)
+and the newest savepoint own exact repository/backup/NEXT receipts. External
+consumers/durable uncertainty reconciliation, already launched parallel siblings,
+shared budgets and atomic all-writer control remain separate open prerequisites.
+Existing SSAE cards remain unaccepted; all MATH acceptance remains 0/13.
+
 **2026-10-09 retry-control prerequisite:** current historical replay validation
 and complete selected-write identities now have native local regression coverage,
 shared immutable caller snapshots and an isolated workerd module pass. This

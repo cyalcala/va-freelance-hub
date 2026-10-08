@@ -4,7 +4,21 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 05:22 Manila): strict historical publication replay
+Latest continuation (2026-10-09 06:48 Manila): fresh receipt truthfulness is locally
+verified at `79f4b8c290ea`, pushed/read back on GitLab. Strict counts/dense unique IDs,
+actual UPDATE RETURNING, explicit post-write UNKNOWN/null totals and sequential
+stop behavior pass native SQLite/FTS and independent review. The registered
+Inngest module initializes in local workerd with its polyfill first; its affected
+step uses the SDK non-retry error. 3,389 tests, final typechecks/build/four audits
+pass. No production publication/enrichment, CI/release or runtime acceptance.
+The sole NEXT is retained HTTP/workflow UNKNOWN receipt preservation and stopping
+later requests; recover exact scope/fixtures from the newest SYSTEM_SAVEPOINT.
+Preserve the current GCP raw-sync fence; this web/legacy client work establishes
+no GCP integration. Parallel siblings, durable reconciliation, item/ID ownership,
+shared budgets and atomic control remain open. Skip completed fresh/replay repairs.
+All unchanged external access/observation triggers and MATH 0/13/flow UNKNOWN remain.
+
+Prior continuation (2026-10-09 05:22 Manila): strict historical publication replay
 and full write-request SHA-256 identities are locally verified at `ffcabbdbe069`.
 Gateway rejects mismatched/malformed receipts without persistence; callers snapshot
 full selected rows, validated activation targets and patches before awaits. Native

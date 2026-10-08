@@ -84,6 +84,18 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 fresh-receipt prerequisite:** strict fresh acknowledgements now reject
+count/ID corruption without fabricating success, and native returned insert/update
+IDs replace change metadata/planned IDs in the reviewed web writers. Exceptions
+after attempted persistence propagate UNKNOWN/null totals and stop subsequent
+sequential publication/retry marking. Native SQLite/FTS fixtures, independent
+review and local workerd module/bootstrap checks pass; installed Inngest uses its
+non-retry error for the affected uncertainty. [Finite scope/verification](../operations/PUBLICATION_FRESH_RECEIPTS_2026-10-09.md)
+owns repository/backup receipts. MATH-06/09/12 gain local integrity/measurement
+prerequisites; already launched siblings, external consumer retention, durable
+reconciliation, actual ID ownership/item proof, shared budgets and atomic release
+remain open. No production benefit or new card acceptance: 0/13, fresh flow UNKNOWN.
+
 **2026-10-09 retry-control prerequisite:** strict historical receipt validation
 now binds exact stored source/tick/proposed count and valid mode/count/unique IDs.
 Caller identities bind full selected schema write material and detached update
