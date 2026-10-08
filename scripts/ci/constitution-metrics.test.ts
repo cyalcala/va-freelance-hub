@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import {
   auditPaperSystems,
   classifyCreationCohort,
@@ -265,6 +266,27 @@ test("MEASURED and CEILING DEMONSTRATED are separate claims", () => {
 test("the repository paper-system audit passes", () => {
   const result = auditPaperSystems(rootDir);
   expect(result.errors).toEqual([]);
+});
+
+test("receipt coverage cannot replace unknown fresh flow with zero", () => {
+  const metrics = readFileSync(join(rootDir, "docs/METRICS.md"), "utf8")
+    .replace("NULL AS verified_fresh_flow", "0 AS verified_fresh_flow");
+  expect(auditPaperSystems(rootDir, metrics).errors.some(error => error.includes("verified_fresh_flow"))).toBe(true);
+});
+
+test("receipt coverage cannot claim certified exposure", () => {
+  const metrics = readFileSync(join(rootDir, "docs/METRICS.md"), "utf8")
+    .replace("'UNKNOWN' AS certification", "'CERTIFIED' AS certification");
+  expect(auditPaperSystems(rootDir, metrics).errors.some(error => error.includes("certification"))).toBe(true);
+});
+
+test("honest aliases in SQL comments cannot hide a fabricated coverage result", () => {
+  const metrics = readFileSync(join(rootDir, "docs/METRICS.md"), "utf8")
+    .replace("NULL AS verified_fresh_flow, 'UNKNOWN' AS certification",
+      "0 AS verified_fresh_flow, 'CERTIFIED' AS certification /* NULL AS verified_fresh_flow, 'UNKNOWN' AS certification */");
+  const errors = auditPaperSystems(rootDir, metrics).errors;
+  expect(errors.some(error => error.includes("verified_fresh_flow"))).toBe(true);
+  expect(errors.some(error => error.includes("certification"))).toBe(true);
 });
 
 test("the paper-system audit rejects an unconditional fresh fallback", () => {

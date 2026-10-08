@@ -309,11 +309,30 @@ export function auditPaperSystems(
       metrics = readFileSync(metricsPath, "utf-8");
     }
   }
-  if (metrics.includes("ELSE 'FRESH_DISCOVERY'")) {
+  if (/\bELSE\s+'FRESH_DISCOVERY'/i.test(metrics)) {
     errors.push("docs/METRICS.md: Query 1 must not assign unknown rows to FRESH_DISCOVERY");
   }
-  if (!metrics.includes("ELSE 'OTHER_NON_FRESH'")) {
-    errors.push("docs/METRICS.md: Query 1 must classify unknown rows as OTHER_NON_FRESH");
+  // Query 1 now measures receipt coverage, not historical first exposure. Its
+  // unverifiable flow must stay NULL/UNKNOWN; an old cohort ELSE is insufficient.
+  const queryOneSections = metrics.split(/^### Query 1:[^\r\n]*$/m);
+  const queryOneSection = queryOneSections.length === 2
+    ? queryOneSections[1].split(/^### Query \d+[A-Z]?:/m)[0] : "";
+  const queryOneSql = queryOneSection.match(/```sql\s*([\s\S]*?)```/i)?.[1];
+  if (!queryOneSql) {
+    errors.push("docs/METRICS.md: Query 1 receipt coverage SQL is missing or ambiguous");
+  } else {
+    const sql = queryOneSql.replace(/\/\*[\s\S]*?\*\//g, "").replace(/--[^\r\n]*/g, "");
+    if (!/\bFROM\s+source_publication_ledger\b/i.test(sql)) {
+      errors.push("docs/METRICS.md: Query 1 must read source_publication_ledger receipt coverage");
+    }
+    if ((sql.match(/\bAS\s+verified_fresh_flow\b/gi) ?? []).length !== 1
+        || !/\bNULL\s+AS\s+verified_fresh_flow\b/i.test(sql)) {
+      errors.push("docs/METRICS.md: Query 1 verified_fresh_flow must remain NULL while exposure evidence is missing");
+    }
+    if ((sql.match(/\bAS\s+certification\b/gi) ?? []).length !== 1
+        || !/'UNKNOWN'\s+AS\s+certification\b/i.test(sql)) {
+      errors.push("docs/METRICS.md: Query 1 certification must remain UNKNOWN for receipt coverage");
+    }
   }
   if (!metrics.includes("FROM adjudication_audit_samples")) {
     errors.push("docs/METRICS.md: Query 3B must read adjudication_audit_samples");
