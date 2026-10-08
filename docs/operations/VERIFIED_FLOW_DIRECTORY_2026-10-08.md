@@ -31,8 +31,11 @@ is changed by a diagnostic, discovery score or directory entry.
   backlog. Separate missing identity/link evidence, hiring paths, ATS identity
   and verification gaps; never infer PH eligibility, permission or a website
   from a company name. No external company fetches or production writes.
-- [ ] Save dated live evidence and requirements mapping; commit/push reviewed
+- [x] Save dated live evidence and requirements mapping; commit/push reviewed
   task-owned changes, verify the remote SHA and exact-SHA CI.
+- [ ] Verify the normal main release and deployed source SHA, then observe one
+  bounded existing enrichment execution with per-row read-back. GitHub account
+  suspension currently prevents the release check; no runtime benefit is claimed.
 - [x] Establish a local recurring maintenance heartbeat for this chat, preserving
   the separate older paused APEX automation. Recover current policy/savepoint on
   each run, perform one useful safe slice, and avoid concurrent mutations.
@@ -62,6 +65,16 @@ release path is required before claiming deployed enrichment benefit. Acceptance
 fixture proves a large no-op cohort cannot consume an actionable row's budget,
 inactive/ineligible/insufficient evidence stays excluded, and current runtime
 rules/rechecks still pass. Rollback: revert this behavior commit. No schema change.
+
+Implementation merged normally in [PR #228](https://github.com/cyalcala/va-freelance-hub/pull/228)
+to `926d39a0ea2db80a7eba8d541d12906a0c8b0837` at 11:15:33 UTC.
+Review branch `afbe5535d23c2db1e0b681af1f975208f69cfe14` was pushed and its
+remote SHA verified; exact-head CI `37768651963` passed. Main run `37768877577`
+was in progress when GitHub began returning HTTP 403, "Your account was suspended".
+Direct Cloudflare inspection around 11:18 UTC still showed production deployment
+`e1b0ff66-8a93-41b0-b9c7-6de8346c81c7` from earlier source `3065f0d`.
+Recover the sole NEXT from SYSTEM_SAVEPOINT; avoid repeated unchanged API probes
+or alternative-identity release workarounds.
 
 Hypothesis: reliable diagnostics and a reconciled directory backlog identify
 the next useful enrichment/source unit more accurately than stock counts or

@@ -1,5 +1,62 @@
 # System Savepoint
 
+## 2026-10-08 19:23 Manila — Directory slice merged; release unverified, GitHub suspension
+
+**Owner scope CONTINUING:** 100 verified fresh public jobs/day, 150 stretch;
+directory enrichment; MATH-01..13 and existing DeepSeek-inspired SSAE-CED;
+resumable lucky777 maintenance with Addy skills. **Unit:**
+VERIFIED-FLOW-DIRECTORY-FOUNDATION. Implementation, local checks and PR CI pass;
+normal main release and runtime enrichment acceptance remain UNVERIFIED. This
+is an external release blocker, not an overall supply/math/autonomy completion.
+
+**Git:** normal [PR #228](https://github.com/cyalcala/va-freelance-hub/pull/228)
+squash merge at 11:15:33 UTC produced
+`926d39a0ea2db80a7eba8d541d12906a0c8b0837`, fetched and verified on origin/main.
+Pushed review branch `afbe5535d23c2db1e0b681af1f975208f69cfe14` remote SHA was
+verified; exact-head CI `37768651963` passed at 11:14:32 UTC. Code/tests/baseline
+evidence are durably backed up. This finite checkpoint starts from that merged
+main SHA on `codex/verified-flow-directory-checkpoint`; its GitHub backup is
+**BACKUP_PENDING** until ordinary push and remote-SHA verification succeed.
+Foreign untracked `.agents/skills/` and `lucky777.md` are preserved.
+
+**Actual blocker:** main run `37768877577` was in progress; the next GitHub API
+check returned HTTP 403, "Your account was suspended". Do not repeat unchanged
+failed probes or bypass the account/normal release path. GitHub account owner
+must resolve the suspension through the normal account process. Direct Cloudflare
+inventory around 11:18 UTC still showed production
+`e1b0ff66-8a93-41b0-b9c7-6de8346c81c7`, source `3065f0d`. Ordinary directory
+request returned 200/stale snapshot/1,539 jobs; no outage or new deployment is
+established. No manual deployment, GCP change or task-attributed production write.
+
+**Evidence:** 735 visible companies / 761 stored; gaps 230 websites, 315 website
+provenance, 684 hiring paths, 687 verification evidence, 343 link evidence
+(overlapping categories). New exact query selects seven existing actionable
+companies rather than spending the pulse on the 424-row no-op-heavy pool.
+Thresholds, per-target recheck, random rotation, cap and source/publication gates
+remain. Oct 1–7 recent-posting storage proxy 28.3/day; certified first-publication
+flow/gaps to 100/150 UNKNOWN. At 11:21:10 UTC two unsynced `greenhouse:janes`
+jobs remained. Local policy with unknown inventory/opt-out says PUBLISH x2;
+full runtime authority/hold reason is unresolved. No forced publication.
+
+**Checks:** 3,035 tests / 0 fail, 15 Python tests, typecheck/build, four governance
+audits, plus required exact-head GitHub CI pass. Runtime/source acceptance is
+separate. [Detailed receipt](operations/VERIFIED_FLOW_DIRECTORY_2026-10-08_EVIDENCE.md)
+holds measurement limits, GCP digests, coverage and all 15 PH reporting fields.
+[Task contract](operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md) maps all thirteen
+MATH requirements and existing SSAE work; none is declared fully resolved here.
+
+**Continuity:** hourly local heartbeat
+`lucky777-verified-jobs-and-directory-maintenance` ACTIVE on this chat; older
+APEX heartbeat stays PAUSED. Recover supplied lucky777/current constitution and
+this baton each run; host availability is required. Quiet on unchanged state.
+
+**One NEXT:** once normal GitHub access is restored, push this checkpoint and
+verify its remote SHA, fetch/reconcile current main, then verify exact-version
+main release and observe one bounded existing directory enrichment execution
+with per-row read-back. Replace NEXT only after that evidence. Owner: account
+owner for unblock; maintainer/current-chat heartbeat for release/read-back.
+Rollback: normal revert of the merged selection change; no schema compensation.
+
 ## 2026-10-08 19:14 Manila — Verified flow and directory evidence foundation
 
 **Current owner scope:** 100 fresh unique verified PH-accessible public jobs/day,

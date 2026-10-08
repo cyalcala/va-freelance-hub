@@ -4,8 +4,10 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Diagnostics and actionable enrichment selection pass local checks; normal
-review/release/real enrichment acceptance remains pending. Fresh flow is UNKNOWN;
+Diagnostics and actionable enrichment selection merged in PR #228 to `926d39a0`
+after exact-head CI passed. Normal main release/real enrichment acceptance is
+unverified: GitHub API reports account suspension and Cloudflare still showed
+earlier source `3065f0d` at the last bounded inspection. Fresh flow is UNKNOWN;
 the Oct 1–7 recent-posting storage proxy is 28.3/day, not certification.
 An hourly local lucky777 heartbeat is active on the current owner chat. No source
 admission, new production clock or weaker publication gate. This pointer is navigation;

@@ -4,7 +4,8 @@ Unit: VERIFIED-FLOW-DIRECTORY-FOUNDATION, owner-authorized implementation.
 Start `3065f0d709d5a1950c247d5a11df542b07721bcb`; branch
 `codex/verified-flow-directory-operations`. Local implementation:
 `4631703f` diagnostic transport, `6ea1c201` directory evidence backlog,
-`e86b5d65` actionable enrichment selection. Release/operational acceptance pending.
+`e86b5d65` actionable enrichment selection. Code merged and backed up; normal
+main release/operational acceptance pending behind GitHub account suspension.
 The [bounded task contract](VERIFIED_FLOW_DIRECTORY_2026-10-08.md) maps all
 MATH-01..13 and existing SSAE cards; it does not mark their outcomes accepted.
 
@@ -36,6 +37,15 @@ MATH-01..13 and existing SSAE cards; it does not mark their outcomes accepted.
   source `greenhouse:janes`; synced 1,067; raw observations 389, unprocessed 1,
   replay events 31, auto-approved discovery tenants 49. Approval labels and
   sync counts do not establish publication authority or public flow.
+- Bounded source trace at 11:21:10 UTC: `greenhouse:janes` discovery stores
+  10 jobs, two qualified-ready, auto_approved, last evaluated 10:47:40 UTC,
+  parsed Jev ADMIT confidence 0.85. The current local publication policy evaluates
+  PUBLISH x2 with Wilson lower bound 0.05668094798069332 and concentration UNKNOWN
+  when inventory/opt-out are not supplied. This is a partial diagnostic, not a
+  full publication clearance or proof of the deployed decision. Two unsynced
+  QUALIFIED_READY rows remain, oldest observed 10:47:42 UTC; posting range
+  September 24–October 5. No forced publication or gate change. Actual runtime
+  hold/ordering and full source/item authority remain unresolved.
 - GCP inspected project/region: antigravity-494415 / asia-southeast1. Two jobs
   and two enabled hourly schedules remain (`:47` publisher, `:53` shadow).
   Publisher image digest `97db3a248ac23bd5cab40a44d60c233fb98881d531fbc18f179e1bac8fd3b97a`;
@@ -83,6 +93,33 @@ relevant source/SSAE/MATH/PH contracts and diagnostic/enrichment call paths.
 Historical recovery files were indexed/sampled by relevance; this is not a full
 semantic audit of the repository or all thirteen mathematical implementations.
 No provider/release research facts beyond observed local/live evidence are claimed.
+
+## GitHub durability and release blocker
+
+[PR #228](https://github.com/cyalcala/va-freelance-hub/pull/228) passed exact-head
+CI `37768651963` on `afbe5535d23c2db1e0b681af1f975208f69cfe14`, completing
+at 11:14:32 UTC. Code, tests, baseline evidence and recovery contract were
+already pushed; `ls-remote` verified that branch SHA. Normal squash merge at
+11:15:33 UTC produced `926d39a0ea2db80a7eba8d541d12906a0c8b0837`, fetched and
+verified on origin/main. The unrelated pre-change enrichment run `37766338452`
+processed two rows, set two hiring paths and verified one company; it ran from
+`3065f0d`, so none of those writes are attributed to this implementation.
+
+Main CI/release run `37768877577` started, but its next API status query returned
+HTTP 403, "Your account was suspended". No retry, alternative identity or manual
+deployment bypass was used. Direct Cloudflare deployment inventory around
+11:18 UTC returned latest production `e1b0ff66-8a93-41b0-b9c7-6de8346c81c7`,
+source `3065f0d`; a fresh ordinary `/directory` request was HTTP 200 with a stale
+snapshot marker and 1,539-job stock. This does not prove an outage or a new release.
+Required main release completion, new production version and runtime enrichment
+effect are UNVERIFIED. The new finite acceptance/blocker checkpoint is local;
+GitHub backup for this checkpoint remains pending until the remote is verified.
+
+Unblock owner: GitHub account owner resolves the suspension through the normal
+account process. Maintainer then pushes the local checkpoint normally, fetches
+and reconciles current main, checks exact-version release, and observes one bounded
+existing enrichment run plus per-row read-back. No publication target has been
+certified and no running GCP image was changed.
 
 ## Full PH reporting contract for this slice
 
