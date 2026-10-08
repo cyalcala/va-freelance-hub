@@ -84,6 +84,19 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 retry-control prerequisite:** strict historical receipt validation
+now binds exact stored source/tick/proposed count and valid mode/count/unique IDs.
+Caller identities bind full selected schema write material and detached update
+patches, with source snapshotting before policy awaits and unique activation
+targets. Native SQLite/FTS and real local inline/Inngest handler fixtures cover
+long-key collisions, changed material, exact replay and aliases. Focused gateway
+51 tests and caller 53 tests pass; independent review and isolated workerd module
+verification pass. [Combined scope/checks](../operations/PUBLICATION_RETRY_BINDING_2026-10-09.md)
+own final repository/backup receipts. MATH-06/09/10 gain necessary local integrity
+prerequisites; fresh callback acknowledgements, shared budgets, atomic writes,
+rollout and verified first exposure remain open. No published jobs or applied
+company enrichments; accepted resolutions 0/13, fresh flow UNKNOWN.
+
 **2026-10-09 factual-directory prerequisite:** the reviewed three-company cohort
 retains official careers evidence and an FVA identity/parked-link hold. New pure
 patch preparation requires exact current values, dated evidence/review and guarded

@@ -6,6 +6,7 @@ import {
   wrapD1Binding,
   type PublicationDatabase,
 } from "@va-hub/scraper";
+import { publicationRetryKey, snapshotPublicationInserts, snapshotPublicationUpdate } from "./publication-retry-key";
 
 export function publicationDbFromEnv(env: { DB?: { prepare: (sql: string) => any } } | null | undefined): PublicationDatabase | null {
   return env?.DB?.prepare ? wrapD1Binding(env.DB) : null;
@@ -53,8 +54,11 @@ export async function publishGroupedInserts(
   channel: string,
 ): Promise<{ published: number; failed: boolean }> {
   const tickKey = publicationTickKey(channel, now);
+  // Detach before grouping or awaiting policy: the recorded source and the
+  // eventual write must come from the same validated input snapshot.
+  const input = snapshotPublicationInserts(rows).rows;
   const grouped = new Map<string, NewOpportunity[]>();
-  for (const row of rows) {
+  for (const row of input) {
     const sourceId = canonicalPublicationSourceId(row.sourceId);
     const list = grouped.get(sourceId) ?? [];
     list.push(row);
@@ -62,16 +66,17 @@ export async function publishGroupedInserts(
   }
   let published = 0;
   for (const [sourceId, group] of grouped) {
-    const urls = group.map((row) => row.sourceUrl).sort().join("\n");
     const proposedCount = await canaryClampedProposal(publicationDb, sourceId, group.length);
+    const selected = snapshotPublicationInserts(group.slice(0, proposedCount));
+    const retryKey = await publicationRetryKey({ sourceId, tickKey, action: "insert", proposedCount, material: selected.material });
     const result = await publishPublicExposure(publicationDb, {
       sourceId,
       now,
       tickKey,
-      retryKey: `${tickKey}:${sourceId}:insert:${proposedCount}:${urls.slice(0, 200)}`,
+      retryKey,
       proposedCount,
       persist: async (allowed) => {
-        const ids = normalizePersistedOpportunityIds(await insertBatch(group.slice(0, allowed)));
+        const ids = normalizePersistedOpportunityIds(await insertBatch(selected.rows.slice(0, allowed)));
         if (ids.length > allowed) throw new Error("insert returned more persisted IDs than allowed");
         return { publishedCount: ids.length, ids };
       },
@@ -82,18 +87,30 @@ export async function publishGroupedInserts(
   return { published, failed: false };
 }
 
-export async function publishGroupedActivations(
+export async function publishGroupedActivations<T extends object>(
   publicationDb: PublicationDatabase,
   rows: Array<{ id: number; sourceId: string | null }>,
   now: string,
   channel: string,
-  persistIds: (ids: number[]) => Promise<{ publishedCount: number; ids: number[] }>,
+  patch: T,
+  persistIds: (ids: number[], patch: T) => Promise<{ publishedCount: number; ids: number[] }>,
 ): Promise<{ published: number; failed: boolean }> {
   if (rows.length === 0) return { published: 0, failed: false };
   const tickKey = publicationTickKey(channel, now);
+  const action = channel === "scrape-gate" ? "gate-recovery" : channel === "scrape-reactivate" ? "feed-reactivation" : null;
+  if (!action) throw new Error("grouped activation requires a known publication action");
+  const update = snapshotPublicationUpdate(patch);
   const grouped = new Map<string, number[]>();
+  const targetSources = new Map<number, string>();
   for (const row of rows) {
+    if (!Number.isSafeInteger(row.id) || row.id <= 0) throw new Error("activation target ID must be a positive safe integer");
     const sourceId = canonicalPublicationSourceId(row.sourceId);
+    const priorSource = targetSources.get(row.id);
+    if (priorSource !== undefined) {
+      if (priorSource !== sourceId) throw new Error("activation target has conflicting source attribution");
+      continue;
+    }
+    targetSources.set(row.id, sourceId);
     const list = grouped.get(sourceId) ?? [];
     list.push(row.id);
     grouped.set(sourceId, list);
@@ -102,13 +119,16 @@ export async function publishGroupedActivations(
   for (const [sourceId, ids] of grouped) {
     const ordered = [...ids].sort((a, b) => a - b);
     const proposedCount = await canaryClampedProposal(publicationDb, sourceId, ordered.length);
+    const selected = ordered.slice(0, proposedCount);
+    const retryKey = await publicationRetryKey({ sourceId, tickKey, action, proposedCount,
+      material: { ids: selected, patch: update.material } });
     const result = await publishPublicExposure(publicationDb, {
       sourceId,
       now,
       tickKey,
-      retryKey: `${tickKey}:${sourceId}:activate:${ordered.join(",")}`,
+      retryKey,
       proposedCount,
-      persist: async (allowed) => persistIds(ordered.slice(0, allowed)),
+      persist: async (allowed) => persistIds(selected.slice(0, allowed), update.patch),
     });
     if (!result.ok) return { published, failed: true };
     published += result.publishedCount;

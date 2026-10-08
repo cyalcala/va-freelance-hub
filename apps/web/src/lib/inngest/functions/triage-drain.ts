@@ -9,6 +9,7 @@ import {
   publicationTickKey,
 } from "@va-hub/scraper";
 import { publicationDbFromEnv } from "@/lib/publish-opportunities";
+import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
 import { inngest, type CfBindings } from "../client";
 
 // How many `pending-triage` rows one cron pass claims. Kept small on purpose:
@@ -162,9 +163,7 @@ export const triageDrain = inngest.createFunction(
             .filter(Boolean)
             .map((t) => (typeof t === "string" ? t.toLowerCase().trim() : t));
 
-          const publishRow = async () => db
-            .update(opportunities)
-            .set({
+          const update = snapshotPublicationUpdate({
               isActive: true,
               inactiveReason: null,
               geoScope: gate.geoScope,
@@ -188,16 +187,18 @@ export const triageDrain = inngest.createFunction(
                   ? "freelance"
                   : triage.employmentType || "freelance",
               updatedAt: observedAt,
-            })
-            .where(eq(opportunities.id, row.id));
+            });
+          const publishRow = async () => db.update(opportunities).set(update.patch).where(eq(opportunities.id, row.id));
           const publicationDb = publicationDbFromEnv(env);
           if (publicationDb) {
             const sourceId = row.sourceId && /^[a-z0-9:._-]+$/.test(row.sourceId) ? row.sourceId : "unattributed";
+            const tickKey = publicationTickKey("triage-drain", observedAt);
             const published = await publishPublicExposure(publicationDb, {
               sourceId,
               now: observedAt,
-              tickKey: publicationTickKey("triage-drain", observedAt),
-              retryKey: `triage-drain:${row.id}:${observedAt}`,
+              tickKey,
+              retryKey: await publicationRetryKey({ sourceId, tickKey, action: "triage-drain", proposedCount: 1,
+                material: { id: row.id, patch: update.material } }),
               proposedCount: 1,
               persist: async () => {
                 await publishRow();

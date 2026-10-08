@@ -70,7 +70,8 @@ const LOAD_POLICY_SQL = `SELECT source_id AS sourceId, compliance_state AS compl
   canary_max_new_items_per_tick AS canaryMaxNewItemsPerTick
   FROM source_registry WHERE source_id = ?`;
 const LOAD_OPT_OUT_SQL = `SELECT source_id FROM source_opt_outs WHERE source_id = ? LIMIT 1`;
-const LOAD_RETRY_SQL = `SELECT mode, published_count AS publishedCount, published_ids_json AS publishedIdsJson
+const LOAD_RETRY_SQL = `SELECT source_id AS sourceId, tick_key AS tickKey, proposed_count AS proposedCount,
+  mode, published_count AS publishedCount, published_ids_json AS publishedIdsJson
   FROM source_publication_ledger WHERE retry_key = ?`;
 const LOAD_TICK_SUM_SQL = `SELECT IFNULL(SUM(published_count), 0) AS published FROM source_publication_ledger
   WHERE source_id = ? AND tick_key = ?`;
@@ -140,12 +141,29 @@ export async function loadPublicationPolicy(
   };
 }
 
-function replayedResult(row: { mode: string; publishedCount: number; publishedIdsJson: string }): PublishPublicExposureResult {
-  const ids = JSON.parse(row.publishedIdsJson) as number[];
+interface PublicationReplayRow {
+  sourceId: unknown; tickKey: unknown; proposedCount: unknown;
+  mode: unknown; publishedCount: unknown; publishedIdsJson: unknown;
+}
+
+function replayedResult(row: PublicationReplayRow, request: PublishPublicExposureRequest): PublishPublicExposureResult {
+  const invalid: PublishPublicExposureResult = { ok: false, reason: "stored publication retry is invalid or does not match the request" };
+  if (row.sourceId !== request.sourceId || row.tickKey !== request.tickKey || row.proposedCount !== request.proposedCount
+    || (row.mode !== "unlimited" && row.mode !== "capped" && row.mode !== "blocked" && row.mode !== "rolled_back")
+    || typeof row.proposedCount !== "number" || !Number.isSafeInteger(row.proposedCount) || row.proposedCount < 0
+    || typeof row.publishedCount !== "number" || !Number.isSafeInteger(row.publishedCount) || row.publishedCount < 0
+    || row.publishedCount > row.proposedCount || typeof row.publishedIdsJson !== "string") return invalid;
+  let ids: unknown;
+  try { ids = JSON.parse(row.publishedIdsJson); } catch { return invalid; }
+  if (!Array.isArray(ids) || ids.length !== row.publishedCount
+    || !ids.every((id: unknown) => typeof id === "number" && Number.isSafeInteger(id) && id > 0)
+    || new Set(ids).size !== ids.length) return invalid;
   if (row.mode === "blocked" || row.mode === "rolled_back") {
+    if (row.publishedCount !== 0) return invalid;
     return { ok: true, mode: row.mode, publishedCount: 0, ids: [], replayed: true, reason: "idempotent retry of a non-publishing decision" };
   }
-  return { ok: true, mode: row.mode as "unlimited" | "capped", publishedCount: row.publishedCount, ids, replayed: true };
+  // This is an immutable historical receipt, not a new qualification or publication decision.
+  return { ok: true, mode: row.mode, publishedCount: row.publishedCount, ids, replayed: true };
 }
 
 export async function publishPublicExposure(
@@ -160,10 +178,8 @@ export async function publishPublicExposure(
     return { ok: false, reason: "publication tick and retry keys are required" };
   }
 
-  const prior = await db.prepare(LOAD_RETRY_SQL).bind(request.retryKey).first<{
-    mode: string; publishedCount: number; publishedIdsJson: string;
-  }>();
-  if (prior) return replayedResult(prior);
+  const prior = await db.prepare(LOAD_RETRY_SQL).bind(request.retryKey).first<PublicationReplayRow>();
+  if (prior) return replayedResult(prior, request);
 
   const policy = await loadPublicationPolicy(db, request.sourceId);
   const already = await db.prepare(LOAD_TICK_SUM_SQL).bind(request.sourceId, request.tickKey).first<{ published: number }>();

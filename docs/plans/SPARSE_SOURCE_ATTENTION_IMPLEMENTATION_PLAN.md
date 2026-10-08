@@ -64,6 +64,15 @@ are changed by this delivery rule; every initial card remains PROPOSED.
 
 ## Dependency outline
 
+**2026-10-09 retry-control prerequisite:** current historical replay validation
+and complete selected-write identities now have native local regression coverage,
+shared immutable caller snapshots and an isolated workerd module pass. This
+supports SSAE-07/09 invalidation/replay integrity locally. It is neither a cached
+item-clearance token nor SSAE rollout, measured benefit, new admission or Turso
+integration. [Finite scope and verification](../operations/PUBLICATION_RETRY_BINDING_2026-10-09.md)
+and the newest savepoint own exact completion/backup/NEXT. Existing cards remain
+unaccepted; current fresh acknowledgement/atomic/shared-budget gaps remain open.
+
 **2026-10-09 retained-evidence prerequisite:** one bounded existing-company cohort
 now has minimal official fact pointers, dated capture/review, explicit UNKNOWN
 database values and a tested emit-only patch/undo helper. The real packet emits

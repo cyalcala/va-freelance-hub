@@ -218,7 +218,8 @@ describe("SP-23C publication gateway", () => {
 
   test("replays a retry key instead of publishing twice", async () => {
     const db = new FakeDatabase({
-      retry: [{ mode: "unlimited", publishedCount: 2, publishedIdsJson: "[10,11]" }],
+      retry: [{ sourceId: "we-work-remotely", tickKey: TICK, proposedCount: 2,
+        mode: "unlimited", publishedCount: 2, publishedIdsJson: "[10,11]" }],
     });
     let persisted = 0;
     const result = await publishPublicExposure(db, {
@@ -227,6 +228,45 @@ describe("SP-23C publication gateway", () => {
     });
     expect(result).toMatchObject({ ok: true, publishedCount: 2, ids: [10, 11], replayed: true });
     expect(persisted).toBe(0);
+  });
+
+  test("partial replay projections fail closed without persistence, ledger writes or transitions", async () => {
+    const complete = { sourceId: "we-work-remotely", tickKey: TICK, proposedCount: 2,
+      mode: "unlimited", publishedCount: 2, publishedIdsJson: "[10,11]" };
+    for (const key of Object.keys(complete)) {
+      const partial: Record<string, unknown> = { ...complete }; delete partial[key];
+      const db = new FakeDatabase({ retry: [partial] }); let persisted = 0;
+      const result = await publishPublicExposure(db, { sourceId: "we-work-remotely", now: NOW, tickKey: TICK,
+        retryKey: "missing-field", proposedCount: 2,
+        persist: async () => { persisted++; return { publishedCount: 2, ids: [99, 100] }; } });
+      expect(result.ok).toBe(false); expect(persisted).toBe(0); expect(db.runs).toEqual([]);
+    }
+  });
+
+  test("replay counts are strict safe integers and non-publishing modes cannot conceal exposure", async () => {
+    const complete = { sourceId: "we-work-remotely", tickKey: TICK, proposedCount: 2,
+      mode: "unlimited", publishedCount: 2, publishedIdsJson: "[10,11]" };
+    for (const change of [{ proposedCount: "2" }, { publishedCount: "2" }, { proposedCount: null }, { publishedCount: null },
+      { proposedCount: Number.NaN }, { publishedCount: Number.POSITIVE_INFINITY }, { publishedCount: true },
+      { publishedCount: -1 }, { publishedCount: 1.5 }, { publishedCount: 3 },
+      { proposedCount: Number.MAX_SAFE_INTEGER + 1 }, { mode: "blocked" }, { mode: "rolled_back" }]) {
+      const db = new FakeDatabase({ retry: [{ ...complete, ...change }] }); let persisted = 0;
+      const result = await publishPublicExposure(db, { sourceId: "we-work-remotely", now: NOW, tickKey: TICK,
+        retryKey: "invalid-replay", proposedCount: 2,
+        persist: async () => { persisted++; return { publishedCount: 2, ids: [99, 100] }; } });
+      expect(result.ok).toBe(false); expect(persisted).toBe(0); expect(db.runs).toEqual([]);
+    }
+  });
+
+  test("valid capped historical replay preserves its receipt without treating it as fresh authority", async () => {
+    const db = new FakeDatabase({ retry: [{ sourceId: "greenhouse:retired", tickKey: TICK, proposedCount: 2,
+      mode: "capped", publishedCount: 1, publishedIdsJson: "[11]" }], registry: [activePolicy("greenhouse:retired", null)] });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, { sourceId: "greenhouse:retired", now: NOW, tickKey: TICK,
+      retryKey: "historical-capped", proposedCount: 2,
+      persist: async () => { persisted++; return { publishedCount: 2, ids: [99, 100] }; } });
+    expect(result).toEqual({ ok: true, mode: "capped", publishedCount: 1, ids: [11], replayed: true });
+    expect(persisted).toBe(0); expect(db.runs).toEqual([]);
   });
 
   test("blocks a later canary batch in the same tick without publishing a partial subset", async () => {

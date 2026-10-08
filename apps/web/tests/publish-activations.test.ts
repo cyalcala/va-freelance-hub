@@ -14,6 +14,47 @@ const CANARY_ROW = {
 };
 
 describe("publishGroupedActivations", () => {
+  test("duplicate exact targets become one publication target before count and persistence", async () => {
+    const db = new FakePublicationDatabase();
+    const selected: number[][] = [];
+    const result = await publishGroupedActivations(db, [{ id: 1, sourceId: "remotive" }, { id: 1, sourceId: "remotive" }],
+      NOW, "scrape-gate", { isActive: true }, async ids => { selected.push(ids); return { publishedCount: ids.length, ids }; });
+    expect(result).toEqual({ published: 1, failed: false });
+    expect(selected).toEqual([[1]]);
+    expect(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values[4]).toBe(1);
+  });
+
+  test("invalid IDs and conflicting attribution reject before any target callback", async () => {
+    for (const rows of [[{ id: 0, sourceId: "remotive" }], [{ id: Number.MAX_SAFE_INTEGER + 1, sourceId: "remotive" }],
+      [{ id: 1, sourceId: "remotive" }, { id: 1, sourceId: "remote-ok" }]]) {
+      const db = new FakePublicationDatabase();
+      let calls = 0;
+      await expect(publishGroupedActivations(db, rows, NOW, "scrape-gate", { isActive: true }, async ids => {
+        calls++; return { publishedCount: ids.length, ids };
+      })).rejects.toThrow("activation target");
+      expect(calls).toBe(0);
+      expect(db.runs).toHaveLength(0);
+    }
+  });
+
+  test("same targets with changed patch or action receive distinct full identities", async () => {
+    const keys: unknown[] = [];
+    const patches: object[] = [];
+    for (const [channel, patch] of [["scrape-gate", { isActive: true, inactiveReason: null, geoEvidence: "first" }],
+      ["scrape-gate", { isActive: true, inactiveReason: null, geoEvidence: "changed" }],
+      ["scrape-reactivate", { isActive: true, inactiveReason: null, geoEvidence: "first" }]] as const) {
+      const db = new FakePublicationDatabase();
+      await publishGroupedActivations(db, [{ id: 1, sourceId: "remotive" }], NOW, channel, patch, async (ids, actualPatch) => {
+        patches.push(actualPatch);
+        return { publishedCount: ids.length, ids };
+      });
+      keys.push(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values[2]);
+    }
+    expect(new Set(keys).size).toBe(3);
+    expect(patches).toEqual([{ isActive: true, inactiveReason: null, geoEvidence: "first" },
+      { isActive: true, inactiveReason: null, geoEvidence: "changed" }, { isActive: true, inactiveReason: null, geoEvidence: "first" }]);
+  });
+
   test("publishes attributed exact-six rows and holds rows without a source identity", async () => {
     const db = new FakePublicationDatabase();
     const persisted: number[][] = [];
@@ -26,6 +67,7 @@ describe("publishGroupedActivations", () => {
       ],
       NOW,
       "scrape-gate",
+      { isActive: true, inactiveReason: null },
       async (ids) => {
         persisted.push(ids);
         return { publishedCount: ids.length, ids };
@@ -67,6 +109,7 @@ describe("publishGroupedActivations", () => {
       [{ id: 4, sourceId: "greenhouse:test" }],
       NOW,
       "scrape-reactivate",
+      { isActive: true, inactiveReason: null },
       async (ids) => {
         persisted += ids.length;
         return { publishedCount: ids.length, ids };
@@ -78,7 +121,7 @@ describe("publishGroupedActivations", () => {
 
   test("empty candidate list is a no-op and does not touch the ledger", async () => {
     const db = new FakePublicationDatabase();
-    const result = await publishGroupedActivations(db, [], NOW, "scrape-gate", async () => {
+    const result = await publishGroupedActivations(db, [], NOW, "scrape-gate", { isActive: true }, async () => {
       throw new Error("persist must not run");
     });
     expect(result).toEqual({ published: 0, failed: false });
@@ -97,6 +140,7 @@ describe("publishGroupedActivations", () => {
       ],
       NOW,
       "scrape-gate",
+      { isActive: true, inactiveReason: null },
       async (ids) => {
         persisted.push(ids);
         return { publishedCount: ids.length, ids };

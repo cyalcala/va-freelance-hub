@@ -1,0 +1,58 @@
+{
+  "recordedAt": "2026-10-08T21:11:30.000Z",
+  "unit": "PUBLICATION_RETRY_BINDING_2026-10-09",
+  "status": "LOCAL_ACCEPTED_RETRY_INTEGRITY_PREREQUISITE_ONLY",
+  "startSha": "b6be67da606f1cb489db5d1ef4c040e079f180f6",
+  "goalComplete": false,
+  "frozenFiles": [
+    {"path": "packages/scraper/publication-gateway.ts", "sha256": "f89ecb3af35d671bfc369a64745eb6e5ed393df8e315e2abeac4751abf5baf66"},
+    {"path": "packages/scraper/publication-gateway.test.ts", "sha256": "09d9fbaaf998a04a473a88ecfaeb342e13d8599c9aa61e30158e079f7fbd0e65"},
+    {"path": "packages/scraper/publication-gateway.integration.test.ts", "sha256": "955cdb27c5cdfe6dfb0510146ddc5a884540eb0ddefb17d71d08974a44b161b7"},
+    {"path": "apps/web/src/lib/publication-retry-key.ts", "sha256": "961726c49ba1b2fb8fb471534c665a260e058882a3adf5839bb74cd81ceade28"},
+    {"path": "apps/web/src/lib/publish-opportunities.ts", "sha256": "5c2a92ef436ea00ca8802e1ebed81b857de6e0619326a1bd1faad53a1aac9912"},
+    {"path": "apps/web/src/pages/api/cron/scrape.ts", "sha256": "b18124e878884af39b5faba96336d37e8a2eabad9cba16f8be18a101b4f76746"},
+    {"path": "apps/web/src/lib/inngest/functions/triage-drain.ts", "sha256": "14c5bbfdcd458ec6dc292ac68f1f66210dddd5c3e662766ae30b2633cd0b8b5d"},
+    {"path": "apps/web/tests/publication-retry-key.test.ts", "sha256": "f81fcf47c76468165da819e6becbcba8d416e8baec2e99f33587f3c4d6a1d4db"},
+    {"path": "apps/web/tests/publish-inserts.test.ts", "sha256": "1b7e4a93594b72ca1d99c702c0ef40ce7949bff747b8943e3393e8f7b2e6ff41"},
+    {"path": "apps/web/tests/publish-activations.test.ts", "sha256": "b2f504319df21f8276ec7b08e8b9eed7db57d3d245fb95666ffb7f5cad64854d"}
+  ],
+  "genuineBehavioralRed": {
+    "gatewayReplay": {"pass": 24, "fail": 27, "assertions": 356, "tests": 51, "bunSeconds": 1.199, "commandWallSeconds": 1.9828, "toolOutputChunk": "6d0797"},
+    "callerCollisions": {"pass": 11, "fail": 3, "assertions": 46, "tests": 14, "bunSeconds": 0.686, "toolOutputChunk": "053d10"},
+    "mutableSqlAlias": {"pass": 6, "fail": 1, "assertions": 65, "tests": 7, "bunSeconds": 2.71, "toolOutputChunk": "d76821"},
+    "prePolicySourceAlias": {"pass": 0, "fail": 1, "assertions": 1, "filtered": 15, "bunSeconds": 2.18, "toolOutputChunk": "49ca05"},
+    "activationTargets": {"pass": 0, "fail": 2, "assertions": 2, "filtered": 5, "bunSeconds": 0.312, "toolOutputChunk": "c0e7e1"},
+    "workerFocusedLogs": "NOT_WRITTEN_TRANSCRIPT_OUTPUT_RETAINED"
+  },
+  "setupCorrectionsNotBehavioralRed": {
+    "initialCallerFixture": {"toolOutputChunk": "ab8f20", "pass": 11, "fail": 3, "assertions": 43, "bunSeconds": 0.99, "classification": "TWO_NATIVE_LEDGER_CLOCK_TRIGGER_FIXTURE_ERRORS_PLUS_ONE_BEHAVIORAL_FAILURE_EXCLUDED_AS_MIXED_RUN"},
+    "callerStaticTyping": {"failedProcesses": 2, "diagnostics": 3, "classification": "INTENTIONAL_INVALID_VALUE_AND_THROWING_FETCH_PROPERTY_ORDER_FIXTURE_CASTS", "finalStatus": "PASS"},
+    "gatewayNativeBindings": "EXPLICIT_SQLQueryBindings_TYPE_ANNOTATION_AT_EXISTING_TEST_ADAPTER_NO_SOURCE_DIAGNOSTIC",
+    "workerdInitial": {"status": "SETUP_FAILED", "classification": "ROOT_FIXTURE_COULD_NOT_RESOLVE_WORKSPACE_DRIZZLE_IMPORTS", "runnerWindowSeconds": 45, "log": ".tmp-publication-retry-workerd.log", "buildLog": ".tmp-publication-retry-worker-output.log", "fix": "QUALIFY_EXISTING_APPS_WEB_NODE_MODULE_IMPORTS_IN_IGNORED_FIXTURE_ONLY", "applicationSourceChanged": false}
+  },
+  "focusedGateway": {"status": "PASS", "pass": 51, "fail": 0, "assertions": 419, "files": 2, "bunSeconds": 2.72, "commandWallSeconds": 3.9508, "toolOutputChunk": "099379"},
+  "focusedCallers": {"status": "PASS", "pass": 53, "fail": 0, "assertions": 232, "files": 6, "bunSeconds": 1.58, "toolOutputChunk": "c13f19"},
+  "independentReview": {"gateway": "PASS_agent:/root/inspection_route_review", "caller": "PASS_agent:/root/inspection_reader_review", "documentationAndHashReceipts": "PASS_agent:/root/inspection_route_review", "testsRerunByReviewers": false, "scope": "FROZEN_LOCAL_RETRY_SOURCE_AND_NATIVE_FIXTURES_ONLY"},
+  "supersededFullRun": {"status": "ONE_TIMEOUT", "pass": 3311, "fail": 1, "assertions": 322857, "files": 239, "bunSeconds": 133.81, "log": ".tmp-publication-retry-full-tests.log", "failedTest": "read-only cohort query carries no write, no limit and no source widening", "timeoutMilliseconds": 5000, "file": "scripts/lake/held-tenant-readjudication-wiring.test.ts", "concurrentBuildAndWorkerd": true, "rootCause": "UNKNOWN_CONTENTION_IS_INFERENCE"},
+  "isolatedTimeoutRecheck": {"status": "PASS_UNCHANGED_FILE_AND_TIMEOUT", "pass": 14, "fail": 0, "assertions": 45, "files": 1, "bunSeconds": 1.51, "log": ".tmp-publication-retry-timeout-recheck.log"},
+  "tests": {"status": "PASS_IDENTICAL_FROZEN_SOURCE_WITH_OTHER_CHECKS_TERMINAL", "pass": 3312, "fail": 0, "assertions": 322857, "files": 239, "newTests": 51, "bunSeconds": 50.37, "log": ".tmp-publication-retry-final-tests.log"},
+  "checks": {
+    "typecheck": {"status": "PASS", "exitCode": 0, "log": ".tmp-publication-retry-typecheck.log"},
+    "standaloneGatewayTypecheck": {"status": "PASS", "exitCode": 0, "scope": "GATEWAY_SOURCE_AND_TWO_NATIVE_TEST_FILES"},
+    "astroBuild": {"status": "PASS", "exitCode": 0, "astroSeconds": 56.95, "commandSeconds": null, "log": ".tmp-publication-retry-build.log", "deploymentAcceptance": false},
+    "guardrails": {"status": "PASS", "exitCode": 0}, "parameters": {"status": "PASS", "exitCode": 0, "parityPercent": 100},
+    "orchestrator": {"status": "PASS", "exitCode": 0}, "constitution": {"status": "PASS", "exitCode": 0, "existingWarningsPreserved": true},
+    "diffCheck": "PASS_REVIEWED_TASK_OWNED_SOURCE_EVIDENCE_AND_STAGED_WHITESPACE"
+  },
+  "workerd": {"status": "PASS_ISOLATED_SOURCE_MODULE_FIXTURE", "receipt": "publication-retry-workerd-2026-10-09.json", "log": ".tmp-publication-retry-workerd-final.log", "d1": "IN_MEMORY_ADAPTER_ONLY_NOT_NATIVE_D1_EXECUTION", "productionBindings": false, "astroRouteOrDeployment": false},
+  "nativeBehavior": "ACTUAL_SQLITE_DRIZZLE_D1_ADAPTER_FTS_AND_0041_0042_SCHEMA_PLUS_LOCAL_INLINE_AND_REGISTERED_INNGEST_HANDLER_FIXTURES",
+  "inngestTransportSchedulingMiddlewareStepCache": "UNVERIFIED",
+  "keyVersion": "publication-retry-v1",
+  "legacyKeyFallback": false,
+  "historyMutated": false,
+  "crossVersionDuplicateExposureSafeRollout": "NOT_ESTABLISHED",
+  "remaining": ["TRUTHFUL_FRESH_CALLBACK_IDS_COUNTS_AND_POST_PERSISTENCE_OUTCOME", "ACTUAL_ID_SOURCE_OWNERSHIP", "CURRENT_INDEPENDENT_ITEM_QUALIFICATION", "SHARED_BUDGET_EPOCH_LEASE_CONTRACT", "ATOMIC_PUBLICATION_CONTROLLER", "NORMAL_RELEASE_PROVENANCE_AND_RUNTIME_ACCEPTANCE"],
+  "effects": {"jobSourceRequests": 0, "productionReads": 0, "productionD1Writes": 0, "productionTursoWrites": 0, "gcpReads": 0, "gcpMutations": 0, "deployments": 0, "migrations": 0, "sourceAdmissions": 0, "newProductionClocks": 0, "credentialsOrGrantsChanged": 0, "companyEnrichmentsApplied": 0, "publicJobsPublished": 0, "primaryDocumentationWebToolOpens": 1, "documentationOriginRequestCountAndBytes": null},
+  "backup": {"gitLab": "NEW_SOURCE_SHA_PUSH_READBACK_REQUIRED", "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED", "gitLabExactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED", "runtimeAcceptance": "NOT_ESTABLISHED"},
+  "mathAccepted": "0/13", "verifiedFreshPublicFlow": null, "certification": "UNKNOWN"
+}

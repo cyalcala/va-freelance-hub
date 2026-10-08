@@ -13,6 +13,7 @@ import { isFeedRecoverableInactiveReason, RECOVERABLE_INACTIVE_REASONS } from "@
 import { runLockOutcome } from "@/lib/run-lock";
 import { d1Changes } from "@/lib/d1-result";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts } from "@/lib/publish-opportunities";
+import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
 import { publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
@@ -473,7 +474,7 @@ export async function drainPendingTriageInline(
       const mergedTags = Array.from(new Set([...baseTags, triage.category, ...(triage.tags || [])]))
         .filter(Boolean)
         .map((t) => (typeof t === "string" ? t.toLowerCase().trim() : t));
-      const publishRow = () => db.update(opportunities).set({
+      const update = snapshotPublicationUpdate({
         isActive: true,
         inactiveReason: null,
         geoScope: gate.geoScope,
@@ -491,14 +492,17 @@ export async function drainPendingTriageInline(
         experienceLevel: triage.experienceLevel,
         type: triage.employmentType === "contract" ? "freelance" : (triage.employmentType || "freelance"),
         updatedAt: observedAt,
-      }).where(eq(opportunities.id, item.id));
+      });
+      const publishRow = () => db.update(opportunities).set(update.patch).where(eq(opportunities.id, item.id));
       if (publicationDb) {
         const sourceId = item.sourceId && /^[a-z0-9:._-]+$/.test(item.sourceId) ? item.sourceId : "unattributed";
+        const tickKey = publicationTickKey("scrape-drain", observedAt);
         const published = await publishPublicExposure(publicationDb, {
           sourceId,
           now: observedAt,
-          tickKey: publicationTickKey("scrape-drain", observedAt),
-          retryKey: `scrape-drain:${item.id}:${observedAt}`,
+          tickKey,
+          retryKey: await publicationRetryKey({ sourceId, tickKey, action: "scrape-drain", proposedCount: 1,
+            material: { id: item.id, patch: update.material } }),
           proposedCount: 1,
           persist: async () => {
             await publishRow();
@@ -595,10 +599,11 @@ export async function recoverGateEligiblePending(
       pending,
       observedAt,
       "scrape-gate",
-      async (ids) => {
+      publishSet,
+      async (ids, patch) => {
         let publishedCount = 0;
         for (const batch of chunkArray(ids, 50)) {
-          const res = await db.update(opportunities).set(publishSet).where(inArray(opportunities.id, batch));
+          const res = await db.update(opportunities).set(patch).where(inArray(opportunities.id, batch));
           publishedCount += d1Changes(res);
         }
         return { publishedCount, ids };
@@ -655,10 +660,11 @@ export async function reactivateFeedConfirmedJobs(
       rows,
       observedAt,
       "scrape-reactivate",
-      async (ids) => {
+      publishSet,
+      async (ids, patch) => {
         let publishedCount = 0;
         for (const batch of chunkArray(ids, BATCH_SIZE)) {
-          const res = await db.update(opportunities).set(publishSet).where(inArray(opportunities.id, batch));
+          const res = await db.update(opportunities).set(patch).where(inArray(opportunities.id, batch));
           publishedCount += d1Changes(res);
         }
         return { publishedCount, ids };
