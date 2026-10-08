@@ -1,16 +1,17 @@
 # Directory Enrichment — Latest
 
-Date: 2026-10-07
-Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37684331084
+Date: 2026-10-08
+Workflow run: https://github.com/cyalcala/va-freelance-hub/actions/runs/37766338452
 
 | Metric | Value |
 | --- | ---: |
-| Companies processed | 1 |
+| Companies processed | 2 |
 | Websites set | 0 |
-| Hiring pages set | 1 |
+| Hiring pages set | 2 |
 | Auto-verified | 1 |
 | Budget | 40 |
 
 ## Enrichment details
 
-- #988 Beaver Process Equipment: hiring_page=https://jobs.lever.co/beaverprocess; auto-verified (2 verified, 2 PH-eligible jobs)
+- #982 Decile Group: hiring_page=https://jobs.lever.co/decilegroup
+- #983 Brafton: hiring_page=https://jobs.lever.co/brafton; auto-verified (2 verified, 5 PH-eligible jobs)
