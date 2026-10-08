@@ -1,5 +1,5 @@
 ﻿/** Inventory evidence for a funnel; missing pipeline stages remain UNKNOWN. */
-import { execFileSync } from "node:child_process";
+import { queryD1ReadOnly } from "./query-d1-readonly";
 import { completeManilaWindow, FRESHNESS_WINDOW_SECONDS, type ManilaWindow } from "./measure-manila-daily-publications";
 
 export interface SourceFunnelObservation {
@@ -195,14 +195,10 @@ export function mapD1FunnelRows(rows: Array<{ source_id: string | null; total_ro
 }
 
 export function queryD1FunnelObservations(cwd = process.cwd(), days = 7, now: Date | string = new Date()): SourceFunnelObservation[] {
-  const output = execFileSync("bun", ["run", "--cwd", "apps/web", "wrangler", "d1", "execute", "DB", "--remote", "--env", "production", "--command", buildD1FunnelQuery(days, now), "--json"], {
-    cwd, encoding: "utf-8", maxBuffer: 50 * 1024 * 1024,
-  });
-  const startIdx = output.indexOf("[");
-  if (startIdx === -1) throw new Error("D1 returned no JSON result");
-  const parsed = JSON.parse(output.slice(startIdx));
-  if (parsed[0]?.success !== true || !Array.isArray(parsed[0]?.results)) throw new Error("D1 did not confirm a successful inventory query");
-  return mapD1FunnelRows(parsed[0].results, days);
+  const { results } = queryD1ReadOnly<{ source_id: string | null; total_rows: number; eligible_rows: number; recent_posted_rows: number }>(
+    buildD1FunnelQuery(days, now), cwd,
+  );
+  return mapD1FunnelRows(results, days);
 }
 
 if (import.meta.main) {
