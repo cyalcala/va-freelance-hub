@@ -1,14 +1,8 @@
-// Freshness cron Worker (2026-07). Cloudflare Cron Triggers are free-plan and
-// fire on schedule reliably — unlike GitHub Actions' free cron, which we
-// observed drifting 1.5-3 hours late. This tiny Worker pings the scrape
-// endpoint every 10 minutes so fetch/triage/persist has processing headroom
-// inside the 15-minute freshness target. The scrape endpoint owns all the real logic (conditional
-// fetch, run-lock, triage); this Worker is just a reliable clock.
-//
-// The scrape endpoint is idempotent and holds a run-lock, so it is safe for
-// this Worker and the GitHub Hunter to both trigger it — overlaps are deduped.
+// Retained freshness clock: cadence/ownership remains governed by the current
+// savepoint and cutover contract. The endpoint owns ingestion and publication.
+// A run-lock alone does not resolve uncertain writes or fence later invocations.
 
-import { assessSuccessfulScrapeResponse } from "./scrape-response";
+import { assessScrapeResponse, readScrapeResponseBody, ScrapeResponseError, type ScrapeReceipt } from "./scrape-response";
 import { assessShadowResponse } from "./shadow-response";
 
 export interface Env {
@@ -33,18 +27,33 @@ export async function ping(env: Env): Promise<void> {
   if (!env.PROXY_SECRET) {
     throw new Error("PROXY_SECRET is not configured");
   }
-  const res = await fetch(env.SCRAPE_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${env.PROXY_SECRET}`,
-      "x-cron-secret": env.PROXY_SECRET,
-      "Content-Type": "application/json",
-    },
-    signal: AbortSignal.timeout(60_000),
-  });
-  const body = await res.text();
-  if (!res.ok) throw new Error(`scrape endpoint returned HTTP ${res.status}`);
-  console.log(`[freshness-cron] scrape ${res.status}: ${assessSuccessfulScrapeResponse(body)}`);
+  let status: number | null = null;
+  let receipt: ScrapeReceipt;
+  try {
+    const response = await fetch(env.SCRAPE_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.PROXY_SECRET}`,
+        "x-cron-secret": env.PROXY_SECRET,
+        "Content-Type": "application/json",
+      },
+      // A redirected POST would be another request and can forward auth headers.
+      // https://developers.cloudflare.com/workers/runtime-apis/request/#properties
+      redirect: "manual",
+      signal: AbortSignal.timeout(60_000),
+    });
+    status = response.status;
+    const body = await readScrapeResponseBody(response);
+    receipt = assessScrapeResponse(body.raw, status,
+      body.bodyValidity === "UNREADABLE" ? "INCOMPLETE" : "COMPLETE", body.bodyValidity);
+  } catch {
+    receipt = assessScrapeResponse("", status, "INCOMPLETE", "UNREADABLE");
+  }
+  // Persist non-secret response evidence in the existing Worker log before failure.
+  console.log(`[freshness-cron] scrape receipt: ${JSON.stringify(receipt)}`);
+  if (!["completed", "lock-held"].includes(receipt.responseEvidence.terminalState)) {
+    throw new ScrapeResponseError(receipt);
+  }
 }
 
 export default {
@@ -72,8 +81,11 @@ export default {
     try {
       await ping(env);
       return new Response("ok", { status: 200 });
-    } catch (e) {
-      return new Response(`error: ${(e as Error).message}`, { status: 500 });
+    } catch (error) {
+      return new Response(JSON.stringify({ error: "SCRAPE_RESPONSE_REJECTED",
+        ...(error instanceof ScrapeResponseError ? { receipt: error.receipt } : {}) }), {
+        status: 500, headers: { "Content-Type": "application/json" },
+      });
     }
   },
 };
