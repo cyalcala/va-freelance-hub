@@ -208,7 +208,10 @@ describe("Hunter workflow terminal-state contract", () => {
       /elif \.inserted == 0 and \(\(\.skipped \| if type == "number" then \. > 0 else false end\)\) then "success"\r?\n\s+elif \.inserted == 0 then "needs-rerun"/g,
     ) ?? [];
 
-    expect(skippedOnlySuccessRules).toHaveLength(2);
+    // Execution now uses the separately tested response CLI; fallback summary
+    // retains one jq classifier. Native workflow fixtures cover both paths.
+    expect(skippedOnlySuccessRules).toHaveLength(1);
+    expect(workflow).toContain('bun scripts/gha/hunter-response.ts "$RAW_BODY" "$HTTP_CODE" "$CURL_EXIT" harvest.log');
   });
 
   test("does not let empty optional summary fields determine shell step status", async () => {

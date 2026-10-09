@@ -128,91 +128,56 @@ jobs:
         id: hunt
         if: ${{ github.event_name != 'schedule' || steps.failover.outputs.action == 'takeover' }}
         run: |
+          set -euo pipefail
           if [ "${{ github.event_name }}" = "schedule" ]; then
             echo "SP-21 fenced takeover: ${{ steps.failover.outputs.reason }}"
           fi
-          echo "{}" > harvest.log
-
-          HTTP_CODE=$(curl -s -w "%{http_code}" -o temp_harvest.log -X POST "$SCRAPE_API_URL" \
+          RAW_BODY=$(mktemp "${RUNNER_TEMP:-/tmp}/hunter-response.XXXXXX")
+          trap 'rm -f -- "$RAW_BODY"' EXIT
+          CURL_EXIT=0
+          # --disable must be first: a user curlrc must never replay a POST.
+          # Leave time before the existing 15-min job deadline to retain evidence.
+          HTTP_CODE=$(curl --disable -s --connect-timeout 15 --max-time 660 --max-filesize 1048576 \
+            -w "%{http_code}" -o "$RAW_BODY" -X POST "$SCRAPE_API_URL" \
             -H "Authorization: Bearer $PROXY_SECRET" \
             -H "x-cron-secret: $PROXY_SECRET" \
-            -H "Content-Type: application/json")
+            -H "Content-Type: application/json") || CURL_EXIT=$?
 
-          echo "HTTP Status: $HTTP_CODE"
-          cat temp_harvest.log
-          echo ""
-
-          # Fail on any non-2xx, INCLUDING curl connection failures (code
-          # "000") and 3xx — a bare `-ge 400` let a total outage pass as a
-          # warning with all-zero metrics (a watermelon).
-          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            echo "::error::Scraper API returned HTTP $HTTP_CODE"
-            exit 1
-          fi
-
-          mv temp_harvest.log harvest.log
-
-          # Evaluate the single response and emit terminal state
-          TERMINAL_STATE=$(jq -r '
-            if .error then "error"
-            elif .skipped == true and .reason == "run-lock-held" and .lockState == "held" then "lock-held"
-            elif .inserted > 0 and .backlogRemaining > 0 then "backlog"
-            elif .inserted > 0 then "success"
-            elif .inserted == 0 and ((.skipped | if type == "number" then . > 0 else false end)) then "success"
-            elif .inserted == 0 then "needs-rerun"
-            else "needs-rerun"
-            end
-          ' harvest.log)
+          # Sanitize/retain before any terminal failure. No raw body/header logging.
+          RECEIPT_EXIT=0
+          bun scripts/gha/hunter-response.ts "$RAW_BODY" "$HTTP_CODE" "$CURL_EXIT" harvest.log || RECEIPT_EXIT=$?
+          TERMINAL_STATE=$(jq -r '.responseEvidence.terminalState // "unknown"' harvest.log)
           echo "terminal_state=$TERMINAL_STATE" >> "$GITHUB_OUTPUT"
-
-          # Compute next-safe-at for lock-held or backlog states
           NEXT_SAFE_AT=""
           if [ "$TERMINAL_STATE" = "lock-held" ] || [ "$TERMINAL_STATE" = "backlog" ]; then
-            # Server should provide retry-after; fall back to 8-min lock TTL
-            RETRY_AFTER=$(jq -r '.retryAfter // .nextSafeAt // empty' harvest.log)
-            if [ -n "$RETRY_AFTER" ]; then
-              NEXT_SAFE_AT="$RETRY_AFTER"
-            else
-              # Lock TTL is 8 minutes (RUN_LOCK_TTL_MIN in scrape.ts)
-              NEXT_SAFE_AT=$(date -u -d "+8 minutes" +"%Y-%m-%dT%H:%M:%SZ")
-            fi
+            NEXT_SAFE_AT=$(date -u -d "+8 minutes" +"%Y-%m-%dT%H:%M:%SZ")
           fi
-
-          # Extract key metrics for summary
-          INSERTED=$(jq -r '.inserted // 0' harvest.log)
-          ACCEPTED=$(jq -r '.acceptedForInsert // 0' harvest.log)
-          ATTEMPTED=$(jq -r '.attemptedInsert // 0' harvest.log)
-          INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // 0' harvest.log)
-          INSERT_ERRORS=$(jq -r '[.insertErrors[]?] | length' harvest.log)
-          BACKLOG=$(jq -r '.backlogRemaining // 0' harvest.log)
-          LOCK_STATE=$(jq -r '.lockState // "free"' harvest.log)
-          MESSAGE=$(jq -r '.message // ""' harvest.log)
-
-          echo "TERMINAL_STATE=$TERMINAL_STATE" >> $GITHUB_ENV
-          echo "NEXT_SAFE_AT=$NEXT_SAFE_AT" >> $GITHUB_ENV
-          echo "INSERTED=$INSERTED" >> $GITHUB_ENV
-          echo "ACCEPTED=$ACCEPTED" >> $GITHUB_ENV
-          echo "ATTEMPTED=$ATTEMPTED" >> $GITHUB_ENV
-          echo "INSERT_FAILED_BATCHES=$INSERT_FAILED_BATCHES" >> $GITHUB_ENV
-          echo "INSERT_ERRORS=$INSERT_ERRORS" >> $GITHUB_ENV
-          echo "BACKLOG=$BACKLOG" >> $GITHUB_ENV
-          echo "LOCK_STATE=$LOCK_STATE" >> $GITHUB_ENV
-          echo "MESSAGE=$MESSAGE" >> $GITHUB_ENV
-
-          echo "=== Hunter Single-Call Summary ==="
+          INSERTED=$(jq -r '.inserted // "UNKNOWN"' harvest.log)
+          ACCEPTED=$(jq -r '.acceptedForInsert // "UNKNOWN"' harvest.log)
+          ATTEMPTED=$(jq -r '.attemptedInsert // "UNKNOWN"' harvest.log)
+          INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // "UNKNOWN"' harvest.log)
+          INSERT_ERRORS=$(jq -r 'if (.insertErrors | type) == "array" then (.insertErrors | length) else "UNKNOWN" end' harvest.log)
+          BACKLOG=$(jq -r '.backlogRemaining // "UNKNOWN"' harvest.log)
+          LOCK_STATE=$(jq -r '.lockState // "UNKNOWN"' harvest.log)
+          MESSAGE=$(jq -r '.responseEvidence.reason // "RESPONSE_UNAVAILABLE"' harvest.log)
+          LOWER_BOUND=$(jq -r '.confirmedPublishedLowerBound // "UNKNOWN"' harvest.log)
+          RECONCILIATION_REQUIRED=$(jq -r '.reconciliationRequired' harvest.log)
+          for FIELD in TERMINAL_STATE NEXT_SAFE_AT INSERTED ACCEPTED ATTEMPTED INSERT_FAILED_BATCHES INSERT_ERRORS BACKLOG LOCK_STATE MESSAGE LOWER_BOUND RECONCILIATION_REQUIRED; do
+            printf '%s=%s\n' "$FIELD" "${!FIELD}" >> "$GITHUB_ENV"
+          done
+          echo "Hunter single response (API-reported counters):"
           echo "Terminal state: $TERMINAL_STATE"
           echo "Inserted: $INSERTED"
-          echo "Accepted for insert: $ACCEPTED"
-          echo "Attempted inserts: $ATTEMPTED"
-          echo "Insert failed batches: $INSERT_FAILED_BATCHES"
-          echo "Insert errors: $INSERT_ERRORS"
-          echo "Backlog remaining: $BACKLOG"
-          echo "Lock state: $LOCK_STATE"
+          echo "API-reported confirmed lower bound: $LOWER_BOUND"
           if [ -n "$NEXT_SAFE_AT" ]; then
             echo "Next safe at: $NEXT_SAFE_AT"
           fi
           if [ -n "$MESSAGE" ]; then
             echo "Message: $MESSAGE"
+          fi
+          if [ "$RECEIPT_EXIT" -ne 0 ]; then
+            echo "::error::Publication outcome is incomplete; reconcile before retry. No second POST issued."
+            exit 1
           fi
 
       - name: Query Clock After Lock-Held Takeover (schedule only)
@@ -239,6 +204,28 @@ jobs:
         run: |
           SHOULD_FAIL=false
           [ -f harvest.log ] || echo "{}" > harvest.log
+          # Incomplete evidence gets a compact UNKNOWN report, not all-zero health.
+          if jq -e '.publicationOutcome == "UNKNOWN" or .reconciliationRequired == true or .diagnosticsComplete != true' harvest.log >/dev/null; then
+            {
+              echo "### Hunter Source Health"
+              echo ""
+              echo "- Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+              echo "- Terminal State: ${TERMINAL_STATE:-unknown}"
+              echo "- API-reported inserted: ${INSERTED:-UNKNOWN}"
+              echo "- API-reported confirmed lower bound: ${LOWER_BOUND:-UNKNOWN}"
+              echo "- Reconciliation required: ${RECONCILIATION_REQUIRED:-UNKNOWN}"
+              echo "- Source health diagnostics: UNKNOWN/incomplete"
+              if [ -n "${NEXT_SAFE_AT:-}" ]; then
+                echo "- Next Safe At: ${NEXT_SAFE_AT}"
+              fi
+            } > source-health-summary.md
+            if jq -e '.publicationOutcome == "UNKNOWN" or .reconciliationRequired == true' harvest.log >/dev/null; then
+              echo "::error::Publication outcome UNKNOWN; reconciliation is required before retry."
+              exit 1
+            fi
+            echo "::notice::Source health evidence is incomplete; no recovery is inferred."
+            exit 0
+          fi
 
           # 1. Total Failure Check (0 jobs scraped)
           if grep -q '"inserted":\s*0' harvest.log && grep -q '"skipped":\s*0' harvest.log; then
@@ -279,7 +266,7 @@ jobs:
           fi
 
           # 4. Cadence guard availability check
-          CADENCE_STATE_AVAILABLE=$(jq -r '.cadenceGuards.stateAvailable // true' harvest.log || echo true)
+          CADENCE_STATE_AVAILABLE=$(jq -r 'if (.cadenceGuards.stateAvailable | type) == "boolean" then .cadenceGuards.stateAvailable else "UNKNOWN" end' harvest.log || echo UNKNOWN)
           if [ "$CADENCE_STATE_AVAILABLE" != "true" ]; then
             echo "::warning title=Cadence guards skipped::source_fetch_state was unavailable this run; per-source cadence limits were not enforced."
           fi
@@ -312,11 +299,13 @@ jobs:
             echo "- Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
             echo "- Run ID: ${GITHUB_RUN_ID:-unknown}"
             echo "- Terminal State: ${TERMINAL_STATE:-unknown}"
-            echo "- Signals Harvested: ${INSERTED:-0}"
-            echo "- Accepted For Insert: ${ACCEPTED:-0}"
-            echo "- Attempted Inserts: ${ATTEMPTED:-0}"
-            echo "- Failed Insert Batches: ${INSERT_FAILED_BATCHES:-0}"
-            echo "- Insert Errors: ${INSERT_ERRORS:-0}"
+            echo "- API-reported inserted: ${INSERTED:-UNKNOWN}"
+            echo "- API-reported confirmed lower bound: ${LOWER_BOUND:-UNKNOWN}"
+            echo "- Reconciliation required: ${RECONCILIATION_REQUIRED:-UNKNOWN}"
+            echo "- Accepted For Insert: ${ACCEPTED:-UNKNOWN}"
+            echo "- Attempted Inserts: ${ATTEMPTED:-UNKNOWN}"
+            echo "- Failed Insert Batches: ${INSERT_FAILED_BATCHES:-UNKNOWN}"
+            echo "- Insert Errors: ${INSERT_ERRORS:-UNKNOWN}"
             echo "- Failed Sources: $FAILED_SOURCE_COUNT"
             echo "- Zero-Count Successful Sources: $ZERO_COUNT_SOURCE_COUNT"
             echo "- Skipped Sources: $SKIPPED_SOURCE_COUNT"
@@ -366,13 +355,26 @@ jobs:
             exit 0
           fi
 
+          if [ ! -f harvest.log ] || ! jq -e '.diagnosticsComplete == true and .publicationOutcome != "UNKNOWN" and .reconciliationRequired != true' harvest.log >/dev/null 2>&1; then
+            {
+              echo "### Hunter response evidence"
+              echo "- Terminal State: ${TERMINAL_STATE:-unknown}"
+              echo "- API-reported inserted: ${INSERTED:-UNKNOWN}"
+              echo "- API-reported confirmed lower bound: ${LOWER_BOUND:-UNKNOWN}"
+              echo "- Reconciliation required: ${RECONCILIATION_REQUIRED:-UNKNOWN}"
+              echo "- Source health diagnostics: UNKNOWN/incomplete"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           FAILED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' harvest.log || echo 0)
           ZERO_COUNT_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.ok == true and .count == 0 and (.skipped != true))] | length' harvest.log || echo 0)
           SKIPPED_SOURCE_COUNT=$(jq -r '[.sourceResults[]? | select(.skipped == true)] | length' harvest.log || echo 0)
           INSERT_FAILED_BATCHES=$(jq -r '.insertFailedBatches // 0' harvest.log || echo 0)
           INSERT_ERROR_COUNT=$(jq -r '[.insertErrors[]?] | length' harvest.log || echo 0)
           TERMINAL_STATE=$(jq -r '
-            if .error then "error"
+            if .publicationOutcome == "UNKNOWN" or .reconciliationRequired == true then "unknown"
+            elif .error then "error"
             elif .skipped == true and .reason == "run-lock-held" and .lockState == "held" then "lock-held"
             elif .inserted > 0 and .backlogRemaining > 0 then "backlog"
             elif .inserted > 0 then "success"
@@ -390,13 +392,15 @@ jobs:
           fi
 
           echo "### 🏹 Sovereign Hunter Report" >> $GITHUB_STEP_SUMMARY
-          echo "- **Status**: ✅ Signal Safari Concluded" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status**: $TERMINAL_STATE" >> $GITHUB_STEP_SUMMARY
           echo "- **Terminal State**: $TERMINAL_STATE" >> $GITHUB_STEP_SUMMARY
-          echo "- **Signals Harvested**: ${INSERTED:-0}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Accepted For Insert**: ${ACCEPTED:-0}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Attempted Inserts**: ${ATTEMPTED:-0}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Failed Insert Batches**: ${INSERT_FAILED_BATCHES:-0}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Insert Errors**: ${INSERT_ERRORS:-0}" >> $GITHUB_STEP_SUMMARY
+          echo "- **API-reported inserted**: ${INSERTED:-UNKNOWN}" >> $GITHUB_STEP_SUMMARY
+          echo "- **API-reported confirmed lower bound**: ${LOWER_BOUND:-UNKNOWN}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Reconciliation required**: ${RECONCILIATION_REQUIRED:-UNKNOWN}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Accepted For Insert**: ${ACCEPTED:-UNKNOWN}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Attempted Inserts**: ${ATTEMPTED:-UNKNOWN}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Failed Insert Batches**: ${INSERT_FAILED_BATCHES:-UNKNOWN}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Insert Errors**: ${INSERT_ERRORS:-UNKNOWN}" >> $GITHUB_STEP_SUMMARY
           echo "- **Failed Sources**: $FAILED_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
           echo "- **Zero-Count Successful Sources**: $ZERO_COUNT_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
           echo "- **Skipped Sources**: $SKIPPED_SOURCE_COUNT" >> $GITHUB_STEP_SUMMARY
@@ -562,12 +566,16 @@ jobs:
             STATE=unknown
             REASONS="harvest.log missing or unparseable"
             FAILED_SOURCES=0; EVENT_FAILED=0; TRIAGE_FAILURES=0; INSERT_FAILED=0; CADENCE_OK=true
+          elif jq -e '.publicationOutcome == "UNKNOWN" or .reconciliationRequired == true or .diagnosticsComplete != true' "$LOG" >/dev/null; then
+            STATE=unknown
+            REASONS="publication or diagnostic evidence incomplete; reconciliation required where flagged"
+            FAILED_SOURCES=0; EVENT_FAILED=0; TRIAGE_FAILURES=0; INSERT_FAILED=0; CADENCE_OK=unknown
           else
             FAILED_SOURCES=$(jq -r '[.sourceResults[]? | select(.ok == false)] | length' "$LOG")
             EVENT_FAILED=$(jq -r '.fetchEventLog.failedBatches // 0' "$LOG")
             TRIAGE_FAILURES=$(jq -r '.triageFailures // 0' "$LOG")
             INSERT_FAILED=$(jq -r '.insertFailedBatches // 0' "$LOG")
-            CADENCE_OK=$(jq -r '.cadenceGuards.stateAvailable // true' "$LOG")
+            CADENCE_OK=$(jq -r 'if (.cadenceGuards.stateAvailable | type) == "boolean" then .cadenceGuards.stateAvailable else "UNKNOWN" end' "$LOG")
             INSERT_ERRORS=$(jq -r '(.insertErrors // []) | length' "$LOG")
             INSERTED=$(jq -r '.inserted // empty' "$LOG")
 
