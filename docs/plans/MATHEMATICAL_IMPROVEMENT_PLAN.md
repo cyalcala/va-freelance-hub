@@ -84,6 +84,18 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 19:18 original-date freshness prerequisite:** strict raw original-date
+assessment, accepted inclusive30d semantics and bounded per-current-ID date ACK
+checks pass locally, including nanosecond future/calendar-invalid evidence.
+UNKNOWN retains rows/FTS/no fresh ledger and stops later sequential writes;
+historical replay remains separate from daily flow. Full3683 tests/types/build/
+four audits/review pass. [Finite evidence](../operations/INGEST_PUBLICATION_FRESHNESS_BOUNDARY_2026-10-09.md)
+owns exact checks/backup scope. Supports MATH-06/12 and SSAE-01/07/09 integrity only;
+no source permission, Turso integration, production deployment, optimization or
+rollout acceptance. Source-origin/full remote/URL/safety, write provenance,
+atomicity/durable uncertainty/shared controls remain open; newest savepoint owns
+the sole NEXT. MATH stays0/13, SSAE cards unaccepted, certified flow UNKNOWN.
+
 **2026-10-09 public PH parity prerequisite:** canonical serving, ingest public/
 hidden partition and fresh current-row acknowledgement share the existing accepted
 PH states. Unclear inputs stay pending; post-write eligibility drift retains

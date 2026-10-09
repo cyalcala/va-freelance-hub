@@ -1,5 +1,99 @@
 # System Savepoint
 
+## 2026-10-09 19:18 Manila — Strict original posting freshness verified locally; source backed up to GitLab
+
+**Owner scope CONTINUING:**100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day,150 stretch; factual enrichment of reported
+735-entry directory; MATH-01..13 and SSAE-CED/DeepSeek; lucky777/Addy resumability
+and authorized GitLab fallback. Accepted MATH **0/13**, certified daily fresh flow
+**NULL/UNKNOWN**. Zero production publications or company enrichments this unit.
+Completes exact saved freshness NEXT; full owner objective remains open.
+
+**Reentry/Git:** START `99edcd6728c53fb3cddc44161458962a3ad1b54a`, unchanged
+`codex/verified-flow-directory-checkpoint`. Prior actual final source bundle/
+clean restore verified; GitLab fetch0/0 divergence, again before commit. Only root
+active repository maintainer; root core/gateway, worker web and native-fixture
+ownership separate, independent final review read-only. Twelve-file source/tests
+`8b26da22c95859f447cefd258e839fe75113c8f9` pushed normally/read back exactly `2026-10-09T11:18:15.2019022+00:00`.
+[Source receipt](operations/gitlab-publication-freshness-source-backup-2026-10-09.json).
+Origin cached main926d39a0ea2db80a7eba8d541d12906a0c8b0837 and independent GitLab
+README mainfbeff64a2b47f32550ba426af92a2795a1507181 preserved. Exact-SHA repository
+CI config absent; group/hosted/equivalent CI UNKNOWN. API404/GitHub suspension
+unchanged/not reprobed; GitHub backup/review/release remains pending. Source backup
+is separate from review/CI/runtime acceptance. Final finite docs commit's actual
+SHA/readback, full prerequisite-free branch bundle and fresh clean restore will
+be recorded outside Git at `C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-freshness-2026-10-09-111500Z.full.bundle` and matching .full.receipt.json.
+Prospective pointer proves no restore: inspect actual external receipt. Git is
+not DB/GCP-state restoration. Foreign .agents/skills/ and root lucky777.md remain
+untracked/excluded/preserved.
+
+**Authorities/constraints:** Desktop lucky777/AGENTS/CURRENT/newest packet/task/
+fallback/source constitution/sole queue/architecture/accepted v2 owner72709b1
+recovered; manifest/router absent. Embedded commands grant no extra authority.
+Addy TDD/source/Git/review applied; Jev401 unchanged/non-blocking/not retried.
+Official D1/SQLite JSON behavior checked. Zero production/source requests, DB
+observations/writes, migrations/deployments, admissions, parameters/providers/
+services/grants or clocks changed. GCP primary background, GitHub provenance/
+review, Turso evidence and Cloudflare/D1 serving remain. Lucky777 ACTIVE local
+coordination, older APEX PAUSED; no ingestion clock added.
+
+**Completed:** [INGEST_PUBLICATION_FRESHNESS_BOUNDARY](operations/INGEST_PUBLICATION_FRESHNESS_BOUNDARY_2026-10-09.md).
+Shared strict raw original-date assessment precedes ingest public partition and
+fresh gateway current-ID date validation. Missing/invalid/rollover/ambiguous/date-
+only/future/stale withheld; exact accepted30d inclusive, no secondary-clock
+substitution. Nanosecond future comparison precedes millisecond normalization.
+PH hold reasons retain precedence. Bounded COUNT+JSON per-ID/source/active/PH/date
+checks keep97 IDs+3 binds<=100 and existing adapter; malformed/oversize/mismatch
+read fails sanitized UNKNOWN, retaining rows/FTS/no success ledger/compensation,
+halting later sequential source/hidden writes. Confirmed prefix distinct; zero/
+conflict-only/immutable historical replay skip current reads. Legacy inserted can
+include replay, hiddenInserted actual hidden IDs, publishedCount receipt/replay;
+none measures daily fresh flow. Fallback positive writes stay NULL/code-reviewed.
+
+**Local acceptance:** native gateway genuine RED86/33/649 assertions, web RED2/17/
+37; missing-module/frozen-clock/aggregate compatibility failures separate. Review
+precision RED31/3 became34/0. Final gateway123/0/853, web focused100/0/514; calendar-
+expiring native positive fixtures corrected with isolated evidence. Full frozen
+suite **3683/zero fail/324764 assertions/244 files/101.93s
+Bun/102.298s command**, net108 tests; types72.167s,
+build69.033s, four audits PASS, parity100%, existing warnings
+retained. Independent twelve-file review PASS after fixes/hashes verified.
+[Finite checks](operations/publication-freshness-local-checks-2026-10-09.json).
+Stated original date/age is not independent origin or full remote/URL/safety
+proof. Write provenance, atomicity, cache visibility, durable uncertainty/shared
+budgets/epochs/leases, future parallel writers and GCP runtime/headroom/supply
+remain unproved. MATH-06/12 and SSAE-01/07/09 local prerequisites only.
+
+**Unchanged holds/owners/triggers:**directory234 Upwork/237 Intogreat reviewed
+careers proposals;236 FVA parked/rebrand Surge398 identity hold. CF7403 leaves
+baseline UNKNOWN:3 HELD,0 READY/no SQL/0 applied; owner normal account/service
+access plus fresh successful baseline/per-row review enables application. Dated
+735-company/1,556-job snapshot is stock,not current flow. GitHub backup/review/
+release/PR228 deployed outcomes; GCP BILLING_DISABLED and six container-permission
+failures; Janes9046/9047 control incident remain unresolved/unreprobed. Current
+image/tick/withdrawal/compensation UNKNOWN. Changed access/image/new execution
+evidence permits bounded re-observation; skip unchanged probes/completed repairs.
+
+**One NEXT: PUBLICATION_CURRENT_OUTBOUND_URL_BOUNDARY.** Ordinary ingest already
+sanitizes source/apply URLs and drops invalid-source inputs before any writer;
+preserve that guard. Fresh gateway current-row ACK projects only id/postedAt,
+so a valid write followed by current source_url corruption can still get a fresh
+success ledger while detail/click rejects its outbound link. Reuse existing
+sanitizeSourceUrl and sanitizeApplyUrlForSource/safe-source fallback semantics
+in one bounded exact-ID current-row URL assessment; optional NULL apply must
+retain existing safe-source fallback. Native SQLite/Drizzle tests prove current
+javascript/credential/local/empty-source drift becomes sanitized UNKNOWN with
+rows/FTS retained, no fresh success ledger, no later sequential source/hidden
+write and a distinct confirmed prefix; valid normalized source/fallback, existing
+prewrite rejection, zero/conflict-only and immutable historical replay stay
+unchanged. No external liveness fetch, new host/permission/source admission,
+schema/parameter/clock or production access. Maintainer owns local core/gateway/
+fixtures. First read packages/scraper/urls.ts, gateway current-row projection,
+apps/web/src/lib/outbound-url.ts and detail/click consumers, then capture native
+post-write corruption RED. URL validity is not source-origin/write proof or
+atomic visibility; remote metadata inference, durable uncertainty/shared controls
+and the current GCP raw-sync fence remain separate open contracts.
+
 ## 2026-10-09 18:44 Manila — Public PH eligibility parity verified locally; source backed up to GitLab
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

@@ -1,0 +1,459 @@
+{
+  "schemaVersion": 1,
+  "unit": "INGEST_PUBLICATION_FRESHNESS_BOUNDARY_2026-10-09",
+  "checkedAtUtc": "2026-10-09T11:18:21.561Z",
+  "startSha": "99edcd6728c53fb3cddc44161458962a3ad1b54a",
+  "sourceSha": "8b26da22c95859f447cefd258e839fe75113c8f9",
+  "branch": "codex/verified-flow-directory-checkpoint",
+  "sourceFiles": [
+    {
+      "path": "packages/scraper/publication-freshness.ts",
+      "frozenWorkingFileSha256": "8e57d6dadf7b787ad23337650af4d9e133d4cfeae071d983e6caa00067289d77",
+      "sourceGitBlob": "17e0a822641986e83024776841533ac4fe30a1a6"
+    },
+    {
+      "path": "packages/scraper/publication-freshness.test.ts",
+      "frozenWorkingFileSha256": "cc98f05654a8b2533e60e59340f041dcc8b7ea9ad9f09f58da01f49b26fbb6a8",
+      "sourceGitBlob": "b2e084ff3e964b0833e23fd179817e49f004f9db"
+    },
+    {
+      "path": "packages/scraper/index.ts",
+      "frozenWorkingFileSha256": "cf4b22fdf14639c6aacdf2a54bb0ccaed3ff60f95d03d73bc157831099b6c923",
+      "sourceGitBlob": "3b3c679cfa0756c34d5fb7ce53a83086844ae16d"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.ts",
+      "frozenWorkingFileSha256": "07430de60aab183773760ef854ebf0283f9ef9b424756c8c01debff60a299f25",
+      "sourceGitBlob": "0f2015f2c585078681e0c60de7f0234b6b5cb9f5"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.integration.test.ts",
+      "frozenWorkingFileSha256": "f4d9f0f578e7fc34b2b928afbe08fdbcc103b97a4cb1df8a02def8337b3ac610",
+      "sourceGitBlob": "81f07f0933b2cd228554a0a5659c296d00da1ac1"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.test.ts",
+      "frozenWorkingFileSha256": "a6b6e0de1e21280fc7d19c980b540de979b194a355a97c38e080e7b8b5efd941",
+      "sourceGitBlob": "22501e0de9ca07b94e3674d1a38f0283929b9fd1"
+    },
+    {
+      "path": "packages/scraper/publication-authority-gaps.test.ts",
+      "frozenWorkingFileSha256": "3996f30e4424b65afb54e56711f256be897ccb4f64a0cb2729adca3dd27df3e0",
+      "sourceGitBlob": "a37632019eb076cdcf23c8dcedf983cf87ddac54"
+    },
+    {
+      "path": "apps/web/src/pages/api/ingest.ts",
+      "frozenWorkingFileSha256": "f181aaf9f9acfeac942d27fd19117a15d40686ece1b3e4564109107d5ed1c111",
+      "sourceGitBlob": "6f6f677ddc792d2ecf4227ec16c5060498351e67"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "frozenWorkingFileSha256": "7cd4419a2c440c2bcb808fda07c82598199bae67e007265ef18142fae433d185",
+      "sourceGitBlob": "491303f04487e1c78b1177c191be441544b1d0f5"
+    },
+    {
+      "path": "apps/web/tests/publish-activations.test.ts",
+      "frozenWorkingFileSha256": "ce5503f63472b2bc7bc2a42facb72a6ec110e9ae0e2e55c8433c922544518e0b",
+      "sourceGitBlob": "945ec08b4bcd1c274a28f3dc18d73963414334ab"
+    },
+    {
+      "path": "apps/web/tests/pending-recovery.test.ts",
+      "frozenWorkingFileSha256": "e19bae61c612fdfa805cea884d14468d98a994d7c28f1dd3dd239790dc572dac",
+      "sourceGitBlob": "785ed87d6b949836a55fdda02de7d7697bf31152"
+    },
+    {
+      "path": "apps/web/tests/reactivate-feed.test.ts",
+      "frozenWorkingFileSha256": "07763c4efb61bdd28c9c81570f2643ba6f1c7433f0edeea26f2c439e86f74a5a",
+      "sourceGitBlob": "40ec501def53e875e7420110e0c108447d435ad1"
+    }
+  ],
+  "nativeGatewayEvidence": {
+    "unit": "INGEST_PUBLICATION_FRESHNESS_BOUNDARY",
+    "startSha": "99edcd6728c53fb3cddc44161458962a3ad1b54a",
+    "scope": "Offline native Bun SQLite gateway integration tests; no network, CI, deployment, production, or daily-flow acceptance.",
+    "testFile": "packages/scraper/publication-gateway.integration.test.ts",
+    "testFileSha256": "f4d9f0f578e7fc34b2b928afbe08fdbcc103b97a4cb1df8a02def8337b3ac610",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts",
+    "fixtureCompatibility": "Existing migration 0003 supplies nullable updated_at; posted_at already exists in migration 0000. Positive fixtures explicitly state synthetic NOW-minus-one-day posted_at. No production schema or source file was changed by this agent.",
+    "red": {
+      "testFileSha256": "37805bc548b6b12c42790e7adf9d3652da8cfbc11c63ef4b1fcc7bc69221244f",
+      "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts *> 'tmp/publication-freshness-native-red-2026-10-09.log'",
+      "toolChunkId": "dd8b91",
+      "startedAtUtc": "2026-10-09T10:59:02.1340539Z",
+      "endedAtUtc": "2026-10-09T10:59:07.2820441Z",
+      "timestampNote": "UTC conversion of the actual captured Get-Date values with explicit +08:00 offsets.",
+      "commandElapsedMs": 5147.9902,
+      "bunReportedSeconds": 5.01,
+      "exitCode": 1,
+      "tests": 119,
+      "passed": 86,
+      "failed": 33,
+      "assertions": 649,
+      "priorCasesPassed": 71,
+      "newPositiveReplayAndOrderCasesPassed": 15,
+      "actualOriginalDateBehaviorFailures": 16,
+      "actualOriginalDateBehaviorFailureGroups": {
+        "invalidOriginalDateAndSecondaryClockNonSubstitution": 10,
+        "postPersistenceDateDrift": 3,
+        "middleAndLaterChunkDateMismatch": 3
+      },
+      "malformedAggregateValidationContractFailures": 16,
+      "aggregateQueryEvidenceExpectationFailures": 1,
+      "classificationNote": "The 97-ID case existed previously but now additionally expects a real date aggregate projection. Malformed aggregates retain actual SQLite opportunity persistence and COUNT results while the adapter corrupts only the aggregate reply. Missing pure modules and compatibility-only fixture changes are not claimed as behavioral RED.",
+      "gatewayUnchangedDuringCapture": true,
+      "gatewayBeforeSha256": "7ee00f68801444260f2fff8d728c7e64ccaee5b28deb1c21bc8f76e0341f7af7",
+      "gatewayAfterSha256": "7ee00f68801444260f2fff8d728c7e64ccaee5b28deb1c21bc8f76e0341f7af7",
+      "log": "tmp/publication-freshness-native-red-2026-10-09.log",
+      "logSha256": "36ebef4a6c2e294d3d2a684c883bc468bca8781b830b2e8446d4d13b7c754f0d"
+    },
+    "intermediateGreen": {
+      "scope": "Root-captured 119-case native GREEN before the two additional precision data cases",
+      "tests": 119,
+      "passed": 119,
+      "failed": 0,
+      "assertions": 831,
+      "bunReportedSeconds": 5.16,
+      "commandElapsedMs": 5349.9977,
+      "log": "tmp/publication-freshness-native-green-2026-10-09.log",
+      "captureMetadata": "tmp/publication-freshness-native-green-2026-10-09.json",
+      "timestampNote": "Exact timestamps were not present in the root capture metadata reviewed by this agent; none are inferred."
+    },
+    "green": {
+      "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts *> 'tmp/publication-freshness-native-final-green-2026-10-09.log'",
+      "toolChunkId": "9dd571",
+      "startedAtUtc": "2026-10-09T11:06:57.1817156Z",
+      "endedAtUtc": "2026-10-09T11:07:02.7451278Z",
+      "timestampNote": "UTC conversion of actual captured Get-Date values with explicit +08:00 offsets.",
+      "commandElapsedMs": 5563.4122,
+      "bunReportedSeconds": 5.4,
+      "exitCode": 0,
+      "tests": 123,
+      "passed": 123,
+      "failed": 0,
+      "assertions": 853,
+      "testFileSha256": "f4d9f0f578e7fc34b2b928afbe08fdbcc103b97a4cb1df8a02def8337b3ac610",
+      "greenOnlyPrecisionRegressions": 4,
+      "precisionCaseNote": "Two requested data cases add four tests: future by one nanosecond plus existing historical-replay loop, and one nanosecond inside the lower inclusive boundary for both accepted PH states. These were added after the root's separate genuine three-failure precision RED; the original 119-case RED is not rewritten.",
+      "gatewayUnchangedDuringCapture": true,
+      "gatewayBeforeSha256": "07430de60aab183773760ef854ebf0283f9ef9b424756c8c01debff60a299f25",
+      "gatewayAfterSha256": "07430de60aab183773760ef854ebf0283f9ef9b424756c8c01debff60a299f25",
+      "coreBeforeSha256": "8e57d6dadf7b787ad23337650af4d9e133d4cfeae071d983e6caa00067289d77",
+      "coreAfterSha256": "8e57d6dadf7b787ad23337650af4d9e133d4cfeae071d983e6caa00067289d77",
+      "log": "tmp/publication-freshness-native-final-green-2026-10-09.log",
+      "logSha256": "b70c2ecb4ec2f9ea8075e0f6be029544b0f58af6922ec119a8e0e55b47b44d0b"
+    },
+    "status": "FINAL_NATIVE_GREEN_CAPTURED_LOCAL_ONLY",
+    "limits": [
+      "Original stated timestamp validity and accepted 30-day age boundary only; no independent origin provenance.",
+      "A current-row observation is not an atomic row/ledger snapshot or proof of IDs arising from the specific write.",
+      "Historical replay remains immutable ledger evidence and is not fresh daily flow.",
+      "Full remote/URL/safety, cached serving, durable uncertainty, shared controls, production headroom, and rollout are outside this local test scope."
+    ]
+  },
+  "webBehaviorRed": {
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts --test-name-pattern freshness:",
+    "startedAt": "2026-10-09T11:00:26.5088336+00:00",
+    "finishedAt": "2026-10-09T11:00:28.2408687+00:00",
+    "exitCode": 1,
+    "elapsedMilliseconds": 1723,
+    "classification": "Genuine native SQLite/Drizzle original-posting freshness pre-write and post-write behavior RED",
+    "beforeWebProductionEdits": true,
+    "productionWrites": 0,
+    "clock": "Captured explicit test observation near SQLite actual wallclock; Bun Date frozen only per test and restoredfinally; originalpostinginput ageboundary separately computed",
+    "passed": 2,
+    "failed": 17,
+    "assertions": 37,
+    "total": 19,
+    "bunSeconds": 1.61
+  },
+  "webFixtureClockSetupFailure": {
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts --test-name-pattern freshness:",
+    "startedAt": "2026-10-09T18:57:42.7371099+08:00",
+    "finishedAt": "2026-10-09T18:57:44.6188198+08:00",
+    "exitCode": 1,
+    "elapsedMilliseconds": 1873,
+    "classification": "FIXTURE_CLOCK_SETUP_NOT_BEHAVIOR_RED",
+    "beforeWebProductionEdits": true,
+    "productionWrites": 0,
+    "clock": "Pinned Bun setSystemTime FRESHNESS_NOW, restored in finally; runtime scheduling unchanged",
+    "passed": 6,
+    "failed": 13
+  },
+  "webFixtureCompatibility": {
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts apps/web/tests/public-opportunities.test.ts apps/web/tests/publish-activations.test.ts apps/web/tests/pending-recovery.test.ts apps/web/tests/reactivate-feed.test.ts",
+    "startedAt": "2026-10-09T11:02:48.7614080+00:00",
+    "finishedAt": "2026-10-09T11:02:53.5555584+00:00",
+    "exitCode": 1,
+    "elapsedMilliseconds": 4782,
+    "classification": "Aggregate COUNT matcher and explicit positive postingRows fixture compatibility failure, not new behavioral RED",
+    "productionWrites": 0
+  },
+  "webFocusedGreen": {
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts apps/web/tests/public-opportunities.test.ts apps/web/tests/publish-activations.test.ts apps/web/tests/pending-recovery.test.ts apps/web/tests/reactivate-feed.test.ts",
+    "startedAt": "2026-10-09T11:06:02.1116717Z",
+    "completedAt": "2026-10-09T11:06:07.8639641Z",
+    "elapsedSeconds": 5.752145,
+    "exitCode": 0,
+    "classification": "Focused final verification after genuine native behavior RED and explicit aggregate fixture compatibility repairs",
+    "log": "tmp/ingest-freshness-web-focused-green-2026-10-09.log",
+    "passed": 100,
+    "failed": 0,
+    "assertions": 514,
+    "bunSeconds": 5.52,
+    "frozenFiles": [
+      {
+        "path": "apps/web/src/pages/api/ingest.ts",
+        "sha256": "f181aaf9f9acfeac942d27fd19117a15d40686ece1b3e4564109107d5ed1c111"
+      },
+      {
+        "path": "apps/web/tests/publish-inserts.test.ts",
+        "sha256": "a00b746b4b58f584510a399927dfa3ff900b69a36e93b0d773d668225cf3f3a3"
+      },
+      {
+        "path": "apps/web/tests/publish-activations.test.ts",
+        "sha256": "ce5503f63472b2bc7bc2a42facb72a6ec110e9ae0e2e55c8433c922544518e0b"
+      },
+      {
+        "path": "apps/web/tests/pending-recovery.test.ts",
+        "sha256": "e19bae61c612fdfa805cea884d14468d98a994d7c28f1dd3dd239790dc572dac"
+      },
+      {
+        "path": "apps/web/tests/reactivate-feed.test.ts",
+        "sha256": "07763c4efb61bdd28c9c81570f2643ba6f1c7433f0edeea26f2c439e86f74a5a"
+      }
+    ]
+  },
+  "webNativeFixtureCorrection": {
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts",
+    "startedAt": "2026-10-09T11:14:05.7614623Z",
+    "completedAt": "2026-10-09T11:14:09.9982100Z",
+    "elapsedSeconds": 4.2368603,
+    "exitCode": 0,
+    "classification": "Targeted native fixture correction verification; no production code changes",
+    "log": "tmp/ingest-freshness-native-fixture-correction-green-2026-10-09.log",
+    "passed": 80,
+    "failed": 0,
+    "assertions": 415,
+    "bunSeconds": 4.02,
+    "refrozen": {
+      "unit": "INGEST_PUBLICATION_FRESHNESS_BOUNDARY",
+      "refrozenAt": "2026-10-09T11:14:40.5257863Z",
+      "priorFreeze": "tmp/ingest-freshness-web-frozen-2026-10-09.json",
+      "changedOwnedPaths": [
+        "apps/web/tests/publish-inserts.test.ts"
+      ],
+      "otherOwnedHashesUnchanged": true,
+      "diffCheckExit": 0,
+      "correction": "Native positive rows use explicit synthetic original posting timestamp at the captured real observation; fixed historical policy/fake timestamps and deliberate unsupported date overrides preserved",
+      "focusedCorrectionTests": {
+        "assertions": 415,
+        "pass": 80,
+        "fail": 0,
+        "files": 1,
+        "bunElapsedSeconds": 4.02
+      },
+      "futureDayDiagnosis": {
+        "assertions": 1,
+        "pass": 0,
+        "fail": 1,
+        "log": "tmp/ingest-freshness-native-fixture-expiry-2026-10-09.log",
+        "classification": "Isolated fixture age STALE, not production RED; SQLite clock guard not altered or simulated"
+      },
+      "files": [
+        {
+          "path": "apps/web/src/pages/api/ingest.ts",
+          "sha256": "f181aaf9f9acfeac942d27fd19117a15d40686ece1b3e4564109107d5ed1c111"
+        },
+        {
+          "path": "apps/web/tests/publish-inserts.test.ts",
+          "sha256": "7cd4419a2c440c2bcb808fda07c82598199bae67e007265ef18142fae433d185"
+        },
+        {
+          "path": "apps/web/tests/publish-activations.test.ts",
+          "sha256": "ce5503f63472b2bc7bc2a42facb72a6ec110e9ae0e2e55c8433c922544518e0b"
+        },
+        {
+          "path": "apps/web/tests/pending-recovery.test.ts",
+          "sha256": "e19bae61c612fdfa805cea884d14468d98a994d7c28f1dd3dd239790dc572dac"
+        },
+        {
+          "path": "apps/web/tests/reactivate-feed.test.ts",
+          "sha256": "07763c4efb61bdd28c9c81570f2643ba6f1c7433f0edeea26f2c439e86f74a5a"
+        }
+      ]
+    }
+  },
+  "webFutureDayFixtureDiagnosis": {
+    "startedAt": "2026-10-09T11:13:21.4232512Z",
+    "completedAt": "2026-10-09T11:13:21.7984651Z",
+    "elapsedSeconds": 0.3752728,
+    "exitCode": 1,
+    "classification": "Isolated future-day positive fixture age failure (STALE), not a production behavior RED or native future-clock runtime simulation",
+    "observedAt": "2026-10-25T12:00:00.000Z",
+    "postedFixtureAt": "2026-09-24T12:00:00.000Z",
+    "log": "tmp/ingest-freshness-native-fixture-expiry-2026-10-09.log",
+    "passed": 0,
+    "failed": 1,
+    "assertions": 1
+  },
+  "firstFullSuiteBeforeFixtureCorrection": {
+    "checkedAt": "2026-10-09T19:10:23.9303572+08:00",
+    "startedAt": "2026-10-09T19:08:02.3134051+08:00",
+    "command": "bun run test",
+    "exit": 0,
+    "milliseconds": 141606.8597,
+    "scope": "INITIAL_FULL_PASS_BEFORE_REVIEW_NATIVE_POSITIVE_FIXTURE_DATE_CORRECTION",
+    "log": "tmp/publication-freshness-first-full-suite-2026-10-09.log",
+    "logSha256": "479ac0fcee2a48916df514d2851ba16d8bf6d28b4ac783f99fecfb33de2f0e3c"
+  },
+  "pureModuleAbsence": {
+    "checkedAt": "2026-10-09T10:57:40.7146206+00:00",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-freshness.test.ts",
+    "exit": 1,
+    "milliseconds": 343,
+    "classification": "NEW_SHARED_MODULE_ABSENCE_SETUP_NOT_EXISTING_GATEWAY_BEHAVIOR_RED",
+    "log": "tmp/ingest-freshness-core-absent-red-2026-10-09.log"
+  },
+  "pureInitialGreen": {
+    "passed": 30,
+    "failed": 0,
+    "assertions": 30,
+    "bunMs": 146,
+    "toolChunk": "dd207e",
+    "scope": "Before independent precision review; no log/timestamp inferred"
+  },
+  "pureCombinedGreen": {
+    "scope": "Before four added precision tests; final precision covered separately/full suite",
+    "exitCode": 0,
+    "elapsedMs": 421.0525,
+    "compatibilityFailure": "Prior capture148pass1fail due explicit valid-lease fixture ID1 versus returned7; corrected to known7, no assertion relaxed.",
+    "log": "tmp/publication-freshness-pure-final-2026-10-09.log",
+    "passed": 149,
+    "failed": 0,
+    "assertions": 470,
+    "bunMs": 274
+  },
+  "precisionReviewRegression": {
+    "finding": "Supported fractional precision could lose a nanosecond future in Date.parse; fixed exact submillisecond age comparison before normalization.",
+    "red": {
+      "passed": 31,
+      "failed": 3,
+      "assertions": 34,
+      "bunMs": 150,
+      "toolChunk": "3bf9fd",
+      "logSha256": "5c5db310f3d646b4c91dcffa6c3769e95579a538a1a9bc520a630e7652ce8011"
+    },
+    "green": {
+      "passed": 34,
+      "failed": 0,
+      "assertions": 34,
+      "bunMs": 180,
+      "toolChunk": "9a6f17",
+      "logSha256": "78d42f06493818b981472e61510eea7042550cee872db651a4e2fe105e2794a2"
+    }
+  },
+  "fullSuite": {
+    "checkedAt": "2026-10-09T11:17:22.3712513+00:00",
+    "startedAt": "2026-10-09T11:15:40.0700519+00:00",
+    "command": "bun run test",
+    "exit": 0,
+    "milliseconds": 102297.677,
+    "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+    "log": "tmp/publication-freshness-full-suite-2026-10-09.log",
+    "logSha256": "27bc8ba13e5fa6afc89f57ed92b27b1120d030ca7515a2f7e917e768c4919bb3",
+    "passed": 3683,
+    "failed": 0,
+    "assertions": 324764,
+    "tests": 3683,
+    "files": 244,
+    "bunReported": "101.93s",
+    "netNewTests": 108
+  },
+  "localChecks": [
+    {
+      "checkedAt": "2026-10-09T11:08:32.2049748+00:00",
+      "startedAt": "2026-10-09T11:07:20.0331943+00:00",
+      "command": "bun run typecheck",
+      "exit": 0,
+      "milliseconds": 72166.66290000001,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-freshness-typecheck-2026-10-09.log",
+      "logSha256": "30ef8b747bc38daad3dc3d377094f38db96e7208893e3be99a7b783da90cf8ab"
+    },
+    {
+      "checkedAt": "2026-10-09T11:08:29.1114024+00:00",
+      "startedAt": "2026-10-09T11:07:20.0734460+00:00",
+      "command": "bun run build",
+      "exit": 0,
+      "milliseconds": 69032.7595,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-freshness-build-2026-10-09.log",
+      "logSha256": "3b93dbd28197495f1f81c63f5d2d538de7068ab6489f194b16a4c3cdd8120f75"
+    },
+    {
+      "checkedAt": "2026-10-09T11:08:30.3032317+00:00",
+      "startedAt": "2026-10-09T11:08:09.9200762+00:00",
+      "command": "bun run audit:guardrails",
+      "exit": 0,
+      "milliseconds": 20378.273,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-freshness-audit-guardrails-2026-10-09.log",
+      "logSha256": "e5d85f723e265f151e18e0f5af9376414ed81ad92718b0dc4b6f0b243b5cf710"
+    },
+    {
+      "checkedAt": "2026-10-09T11:08:27.4295258+00:00",
+      "startedAt": "2026-10-09T11:08:18.0632883+00:00",
+      "command": "bun run audit:parameters",
+      "exit": 0,
+      "milliseconds": 9356.9252,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-freshness-audit-parameters-2026-10-09.log",
+      "logSha256": "9827b8a08a7b67e2da90694a40315f0a854806812289698b610d80b700257dac"
+    },
+    {
+      "checkedAt": "2026-10-09T11:08:29.5782890+00:00",
+      "startedAt": "2026-10-09T11:08:18.1782773+00:00",
+      "command": "bun run audit:orchestrator",
+      "exit": 0,
+      "milliseconds": 11394.6291,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-freshness-audit-orchestrator-2026-10-09.log",
+      "logSha256": "eda3cebcba1e9a52334a1fedb71ca6f6d43bfc7c52d85f5dd3a9ca354883546e"
+    },
+    {
+      "checkedAt": "2026-10-09T11:08:30.7106665+00:00",
+      "startedAt": "2026-10-09T11:08:23.8124322+00:00",
+      "command": "bun run audit:constitution",
+      "exit": 0,
+      "milliseconds": 6883.8775,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-freshness-audit-constitution-2026-10-09.log",
+      "logSha256": "3f014a900ebb4f4895392b9328422df8441f07e221a9758d34b7ba3fd5286eee"
+    }
+  ],
+  "independentReview": "PASS_AFTER_PRECISION_FIX_CORE_GATEWAY_AND_WEB_INTERACTIONS; frozen hashes checked before source commit",
+  "executionWrapperSetup": "Initial Windows PowerShell5 Stop-on-stderr wrapper aborted on Bun command echo; no tests/type/build outcome inferred. Corrected wrapper and successful actual checks recorded above.",
+  "acceptedParameterParity": "100_PERCENT",
+  "constitutionalWarnings": "PROVISIONAL_CONTROL_AND_NO_LIVE_QUEUE_WARNINGS_RETAINED",
+  "production": {
+    "sourceRequests": 0,
+    "databaseObservations": 0,
+    "databaseWrites": 0,
+    "publications": 0,
+    "companyUpdates": 0,
+    "migrations": 0,
+    "deployments": 0,
+    "parametersChanged": 0,
+    "clockChanges": 0
+  },
+  "acceptedMathResolutions": 0,
+  "mathDenominator": 13,
+  "certifiedDailyFreshFlow": null,
+  "limits": [
+    "Stated original timestamp validity and age only, not independently proven source origin.",
+    "Postwrite mismatch preserves rows/FTS and UNKNOWN; no compensation or atomic visibility fence.",
+    "Historical replay/receipt counts are not new daily flow.",
+    "Full remote/URL/safety, specific-write provenance, durable uncertainty, shared budgets/epochs/leases, future parallel writers, GCP integration and runtime acceptance remain open.",
+    "Normalized storage retains milliseconds; raw fraction is assessed first."
+  ]
+}

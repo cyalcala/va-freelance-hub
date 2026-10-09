@@ -4,7 +4,20 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 18:44 Manila): public PH parity is locally verified
+Latest continuation (2026-10-09 19:18 Manila): strict raw original posting date and
+accepted inclusive30d freshness verified locally at `8b26da22c958`, pushed/
+read back on GitLab. Ingest withholds unknown/invalid/future/stale dates before
+public writes; fresh ACK strictly checks every bounded current ID/date without
+secondary clocks. Post-write mismatch preserves UNKNOWN/rows/FTS and stops later
+sequential writes; zero/replay semantics unchanged. 3683 full tests/types/build/
+four audits and independent twelve-file review pass. Actual final external
+bundle/clean-restore receipt is required; a prospective pointer proves no restore.
+No production/CI/runtime acceptance, MATH0/13, certified flow UNKNOWN. Sole NEXT
+is PUBLICATION_CURRENT_OUTBOUND_URL_BOUNDARY in newest savepoint; existing prewrite
+URL guard stays, current-ID outbound drift needs strict ACK proof. All unchanged
+directory/access/GCP/Janes holds retain owners/triggers.
+
+Prior continuation (2026-10-09 18:44 Manila): public PH parity is locally verified
 at `60c850415aab`, pushed/read back on GitLab. Shared accepted PH tuple connects
 canonical serving, ingest public/hidden partition and fresh current-row receipts.
 Unclear stays pending; post-write drift retains UNKNOWN/rows/FTS and stops later
