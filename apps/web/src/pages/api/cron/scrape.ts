@@ -14,7 +14,8 @@ import { runLockOutcome } from "@/lib/run-lock";
 import { d1Changes } from "@/lib/d1-result";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
-import { D1_MAX_BOUND_PARAMETERS, publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
+import { noExplicitNonRemoteWorkplace } from "@/lib/publication-remote";
+import { D1_MAX_BOUND_PARAMETERS, hasExplicitNonRemoteLocationType, publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -383,6 +384,7 @@ export async function drainPendingTriageInline(
     company: string | null;
     tags: string[] | null;
     locationRaw: string | null;
+    locationType: string | null;
     sourceUrl: string;
     applicationUrl: string | null;
     sourceId: string | null;
@@ -396,6 +398,7 @@ export async function drainPendingTriageInline(
         company: opportunities.company,
         tags: opportunities.tags,
         locationRaw: opportunities.locationRaw,
+        locationType: opportunities.locationType,
         sourceUrl: opportunities.sourceUrl,
         applicationUrl: opportunities.applicationUrl,
         sourceId: opportunities.sourceId,
@@ -418,8 +421,37 @@ export async function drainPendingTriageInline(
       title: item.title,
       description: item.description,
       locationRaw: item.locationRaw,
+      locationType: item.locationType,
       tags: baseTags,
     });
+
+    // Known workplace contradictions need no AI. Fence the selected source,
+    // pending state and exact type so a changed row is deferred, not overwritten.
+    if (hasExplicitNonRemoteLocationType(item.locationType)) {
+      try {
+        const rejected = await db.update(opportunities).set({
+          inactiveReason: "policy-rejected",
+          phEligibility: "ineligible",
+          geoScope: gate.geoScope,
+          category: "other",
+          tags: Array.from(new Set([...baseTags, "triage-rejected"])),
+          geoEvidence: gate.evidence,
+          geoCheckedAt: observedAt,
+          updatedAt: observedAt,
+        }).where(and(
+          eq(opportunities.id, item.id),
+          sourceBinding === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceBinding),
+          eq(opportunities.isActive, false),
+          eq(opportunities.inactiveReason, "pending-triage"),
+          eq(opportunities.locationType, item.locationType),
+        )).returning({ id: opportunities.id });
+        if (rejected.length > 0) stats.rejected += 1;
+        else stats.deferred += 1;
+      } catch {
+        stats.deferred += 1;
+      }
+      continue;
+    }
 
     let decision: Awaited<ReturnType<typeof decideTriage>>;
     try {
@@ -497,7 +529,8 @@ export async function drainPendingTriageInline(
       const publishRow = async () => {
         const returned = await db.update(opportunities).set(update.patch).where(and(eq(opportunities.id, item.id),
           sourceBinding === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceBinding),
-          eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"))).returning({ id: opportunities.id });
+          eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"),
+          noExplicitNonRemoteWorkplace())).returning({ id: opportunities.id });
         return normalizePersistedOpportunityIds(returned.map(row => row.id));
       };
       if (publicationDb) {
@@ -582,6 +615,7 @@ const GATE_ELIGIBLE_PENDING = () => and(
   eq(opportunities.isActive, false),
   eq(opportunities.inactiveReason, "pending-triage"),
   inArray(opportunities.geoScope, [...GATE_ELIGIBLE_GEO_SCOPES]),
+  noExplicitNonRemoteWorkplace(),
 );
 
 export async function recoverGateEligiblePending(
@@ -666,6 +700,7 @@ export async function reactivateFeedConfirmedJobs(
     eq(opportunities.isActive, false),
     inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
     inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]),
+    noExplicitNonRemoteWorkplace(),
   );
   try {
     const rows: Array<{ id: number; sourceId: string | null; sourceUrl: string }> = [];
@@ -690,7 +725,8 @@ export async function reactivateFeedConfirmedJobs(
           inArray(opportunities.sourceUrl, confirmedUrls),
           sourceId === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceId),
           eq(opportunities.isActive, false), inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
-          inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]))).returning({ id: opportunities.id });
+          inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]),
+          noExplicitNonRemoteWorkplace())).returning({ id: opportunities.id });
       };
       // Each selected target contributes ID + URL binds. Count the actual
       // pinned Drizzle query's remaining binds instead of guessing patch cost.

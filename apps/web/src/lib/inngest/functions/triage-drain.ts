@@ -10,9 +10,11 @@ import {
   sanitizeApplyUrlForSource,
   publishPublicExposure,
   publicationTickKey,
+  hasExplicitNonRemoteLocationType,
 } from "@va-hub/scraper";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
+import { noExplicitNonRemoteWorkplace } from "@/lib/publication-remote";
 import { inngest, type CfBindings } from "../client";
 
 // How many `pending-triage` rows one cron pass claims. Kept small on purpose:
@@ -30,6 +32,7 @@ type PendingRow = {
   company: string | null;
   tags: string[] | null;
   locationRaw: string | null;
+  locationType: string | null;
   sourceUrl: string;
   applicationUrl: string | null;
   sourceId: string | null;
@@ -72,6 +75,7 @@ export const triageDrain = inngest.createFunction(
           company: opportunities.company,
           tags: opportunities.tags,
           locationRaw: opportunities.locationRaw,
+          locationType: opportunities.locationType,
           sourceUrl: opportunities.sourceUrl,
           applicationUrl: opportunities.applicationUrl,
           sourceId: opportunities.sourceId,
@@ -105,8 +109,33 @@ export const triageDrain = inngest.createFunction(
             title: row.title,
             description: row.description,
             locationRaw: row.locationRaw,
+            locationType: row.locationType,
             tags: baseTags,
           });
+
+          // A held structured contradiction cannot be overridden by AI. Bind
+          // the observed source, state and workplace type so a stale claim
+          // cannot reject a row another writer has already changed.
+          if (hasExplicitNonRemoteLocationType(row.locationType)) {
+            const rejected = await db
+              .update(opportunities)
+              .set({
+                inactiveReason: "policy-rejected",
+                phEligibility: "ineligible",
+                geoScope: gate.geoScope,
+                category: "other",
+                tags: Array.from(new Set([...baseTags, "geo-gate-rejected"])),
+                geoEvidence: gate.evidence,
+                geoCheckedAt: observedAt,
+                updatedAt: observedAt,
+              })
+              .where(and(eq(opportunities.id, row.id),
+                sourceBinding === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceBinding),
+                eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"),
+                eq(opportunities.locationType, row.locationType)))
+              .returning({ id: opportunities.id });
+            return rejected.length > 0 ? "rejected" as const : "deferred" as const;
+          }
 
           const decision = await decideTriage(
             {
@@ -195,7 +224,8 @@ export const triageDrain = inngest.createFunction(
           const publishRow = async () => {
             const returned = await db.update(opportunities).set(update.patch).where(and(eq(opportunities.id, row.id),
               sourceBinding === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceBinding),
-              eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"))).returning({ id: opportunities.id });
+              eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"),
+              noExplicitNonRemoteWorkplace())).returning({ id: opportunities.id });
             return normalizePersistedOpportunityIds(returned.map(row => row.id));
           };
           const publicationDb = publicationDbFromEnv(env);

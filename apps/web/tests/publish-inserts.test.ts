@@ -316,6 +316,247 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
   return { sqlite, binding, queries, opportunityMutationChanges, opportunityUpdateBindings };
 }
 
+type HeldActivationMode = "inline" | "inngest" | "gate" | "feed";
+const HELD_ACTIVATION_PATHS = [
+  { mode: "inline", governed: true }, { mode: "inline", governed: false },
+  { mode: "inngest", governed: true },
+  { mode: "gate", governed: true }, { mode: "gate", governed: false },
+  { mode: "feed", governed: true }, { mode: "feed", governed: false },
+] as const;
+
+function heldActivationRow(i: number, mode: HeldActivationMode, locationType: string | null = "remote") {
+  return { ...nativeRow(i, "remotive"), description: "Remote role open to applicants in the Philippines.",
+    locationRaw: "Philippines", tags: ["remote"],
+    // Production location_type is nullable TEXT without an enum CHECK. These
+    // synthetic NULL/unsupported controls prove noncontradiction, not remote origin.
+    locationType: locationType as NewOpportunity["locationType"],
+    isActive: false, inactiveReason: mode === "feed" ? "stale-feed" : "pending-triage",
+    geoScope: "ph_only" as const, phEligibility: "eligible_verified" as const,
+    scrapedAt: FRESHNESS_NOW } satisfies NewOpportunity;
+}
+
+async function runHeldActivation(mode: HeldActivationMode, governed: boolean,
+  db: ReturnType<typeof getDb>, binding: ReturnType<typeof sqliteD1>["binding"],
+  candidates: NewOpportunity[]) {
+  let aiCalls = 0;
+  const steps: string[] = [];
+  const env = { DB: binding, AI: { run: async () => {
+    aiCalls++;
+    return { response: JSON.stringify({ eligibleForFilipinos: true, eligible: true,
+      reason: "Open to applicants in the Philippines", category: "tech" }) };
+  } } };
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = (async () => { throw new Error("held-row fixture forbids outbound requests"); }) as unknown as typeof fetch;
+  let result: unknown;
+  let error: unknown;
+  try {
+    const publicationDb = governed ? publicationDbFromEnv(env) : undefined;
+    if (mode === "inline") result = await drainPendingTriageInline(db, env, { exhausted: () => false }, FRESHNESS_NOW, 12, publicationDb);
+    else if (mode === "gate") result = await recoverGateEligiblePending(db, FRESHNESS_NOW, publicationDb);
+    else if (mode === "feed") result = await reactivateFeedConfirmedJobs(db, candidates.map(candidate => candidate.sourceUrl), FRESHNESS_NOW, publicationDb);
+    else {
+      // The actual registered handler with local step callbacks; no Inngest
+      // transport, middleware, retry, scheduling or parallel cancellation claim.
+      result = await (triageDrain as unknown as { fn: (ctx: unknown) => Promise<unknown> }).fn({ env,
+        step: { run: async (name: string, callback: () => Promise<unknown>) => { steps.push(name); return callback(); } } });
+    }
+  } catch (caught) { error = caught; }
+  finally { globalThis.fetch = originalFetch; }
+  return { result, error, aiCalls, steps,
+    published: typeof result === "number" ? result : (result as { published?: number } | undefined)?.published };
+}
+
+describe("HELD REMOTE: native current-row activation boundary", () => {
+  for (const { mode, governed } of HELD_ACTIVATION_PATHS) {
+    const label = `${mode} ${governed ? "governed" : "existing fallback"}`;
+    for (const locationType of ["onsite", "hybrid"] as const) {
+      test(`${label} stable ${locationType} remains physically hidden before AI/public activation`, async () => {
+        const { sqlite, binding, queries } = sqliteD1();
+        try {
+          const db = getDb({ DB: binding as any });
+          const candidate = heldActivationRow(1, mode, locationType);
+          await db.insert(opportunities).values(candidate);
+          const outcome = await runHeldActivation(mode, governed, db, binding, [candidate]);
+          expect(sqlite.query("SELECT is_active AS active, location_type AS type FROM opportunities").get())
+            .toEqual({ active: 0, type: locationType });
+          expect(outcome.error).toBeUndefined();
+          expect(outcome.published).toBe(0);
+          expect(outcome.aiCalls).toBe(0);
+          if (mode === "inline" || mode === "inngest") expect(outcome.result).toMatchObject({ claimed: 1, rejected: 1 });
+          expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+          expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts").get()).toEqual({ n: 1 });
+          expect(queries.some(isOwnershipObservation)).toBe(false);
+          expect(queries.some(query => /^delete\b/i.test(query))).toBe(false);
+        } finally { sqlite.close(); }
+      });
+
+      test(`${label} remote-to-${locationType} before UPDATE yields exact zero without a fresh false receipt`, async () => {
+        const { sqlite, binding, queries } = sqliteD1({ beforeOpportunityUpdate: sqlite => {
+          sqlite.query("UPDATE opportunities SET location_type = ?").run(locationType);
+        } });
+        try {
+          const db = getDb({ DB: binding as any });
+          const candidate = heldActivationRow(1, mode);
+          await db.insert(opportunities).values(candidate);
+          const outcome = await runHeldActivation(mode, governed, db, binding, [candidate]);
+          expect(sqlite.query("SELECT is_active AS active, location_type AS type FROM opportunities").get())
+            .toEqual({ active: 0, type: locationType });
+          expect(outcome.error).toBeUndefined();
+          expect(outcome.published).toBe(0);
+          if (mode === "inline" || mode === "inngest") expect(outcome.result).toMatchObject({ deferred: 1 });
+          expect(sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").all())
+            .toEqual(governed ? [{ n: 0, ids: "[]" }] : []);
+          expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts").get()).toEqual({ n: 1 });
+          expect(queries.some(isOwnershipObservation)).toBe(false);
+        } finally { sqlite.close(); }
+      });
+    }
+
+    test(`${label} mixed stable metadata activates only the exact remote subset`, async () => {
+      const { sqlite, binding } = sqliteD1();
+      try {
+        const db = getDb({ DB: binding as any });
+        const candidates = ["remote", "onsite", "hybrid", "remote"].map((type, i) => heldActivationRow(i + 1, mode, type));
+        const ids = await db.insert(opportunities).values(candidates).returning({ id: opportunities.id });
+        const outcome = await runHeldActivation(mode, governed, db, binding, candidates);
+        expect(sqlite.query("SELECT id, is_active AS active FROM opportunities ORDER BY id").all())
+          .toEqual(ids.map((row, i) => ({ id: row.id, active: i === 0 || i === 3 ? 1 : 0 })));
+        expect(outcome.error).toBeUndefined();
+        expect(outcome.published).toBe(2);
+        if (mode === "inline" || mode === "inngest") {
+          expect(outcome.result).toMatchObject({ claimed: 4, rejected: 2 });
+          expect(outcome.aiCalls).toBe(2);
+        }
+        const receipts = sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger ORDER BY id").all() as { n: number; ids: string }[];
+        expect(receipts.reduce((sum, receipt) => sum + receipt.n, 0)).toBe(governed ? 2 : 0);
+        expect(receipts.flatMap(receipt => JSON.parse(receipt.ids))).toEqual(governed ? [ids[0].id, ids[3].id] : []);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts").get()).toEqual({ n: 4 });
+      } finally { sqlite.close(); }
+    });
+
+    test(`${label} mixed pre-UPDATE drift records only actual still-remote RETURNING IDs`, async () => {
+      let driftId = 0;
+      const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => {
+        sqlite.query("UPDATE opportunities SET location_type = 'hybrid' WHERE id = ?").run(driftId);
+      } });
+      try {
+        const db = getDb({ DB: binding as any });
+        const candidates = [1, 2].map(i => heldActivationRow(i, mode));
+        const ids = await db.insert(opportunities).values(candidates).returning({ id: opportunities.id });
+        driftId = ids[1].id;
+        const outcome = await runHeldActivation(mode, governed, db, binding, candidates);
+        expect(sqlite.query("SELECT id, is_active AS active FROM opportunities ORDER BY id").all())
+          .toEqual([{ id: ids[0].id, active: 1 }, { id: ids[1].id, active: 0 }]);
+        expect(outcome.error).toBeUndefined();
+        expect(outcome.published).toBe(1);
+        const receipts = sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger ORDER BY id").all() as { n: number; ids: string }[];
+        expect(receipts.reduce((sum, receipt) => sum + receipt.n, 0)).toBe(governed ? 1 : 0);
+        expect(receipts.flatMap(receipt => JSON.parse(receipt.ids))).toEqual(governed ? [ids[0].id] : []);
+        if (mode === "inline" || mode === "inngest") expect(outcome.result).toMatchObject({ deferred: 1 });
+      } finally { sqlite.close(); }
+    });
+
+    for (const control of [
+      { label: "explicit remote", type: "remote", description: "Remote role open to applicants in the Philippines." },
+      { label: "description-only hybrid collaboration", type: "remote", description: "Hybrid collaboration and asynchronous work. Remote role open to applicants in the Philippines." },
+      { label: "opaque NULL noncontradiction", type: null, description: "Remote role open to applicants in the Philippines." },
+      { label: "unsupported stored metadata noncontradiction", type: "unproven-workplace", description: "Remote role open to applicants in the Philippines." },
+    ]) {
+      test(`${label} preserves ${control.label} without claiming independent remote origin`, async () => {
+        const { sqlite, binding } = sqliteD1();
+        try {
+          const db = getDb({ DB: binding as any });
+          const candidate = { ...heldActivationRow(1, mode, control.type), description: control.description };
+          const ids = await db.insert(opportunities).values(candidate).returning({ id: opportunities.id });
+          const outcome = await runHeldActivation(mode, governed, db, binding, [candidate]);
+          expect(outcome.error).toBeUndefined();
+          expect(outcome.published).toBe(1);
+          expect(sqlite.query("SELECT is_active AS active, location_type AS type FROM opportunities").get())
+            .toEqual({ active: 1, type: control.type });
+          expect(sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").all())
+            .toEqual(governed ? [{ n: 1, ids: JSON.stringify([ids[0].id]) }] : []);
+        } finally { sqlite.close(); }
+      });
+    }
+  }
+
+  for (const { mode, governed } of HELD_ACTIVATION_PATHS.filter(path => path.mode === "inline" || path.mode === "inngest")) {
+    for (const drift of [
+      { label: "source owner", sql: "UPDATE opportunities SET source_id = 'remote-ok'", source: "remote-ok", active: 0, reason: "pending-triage", type: "onsite" },
+      { label: "NULL source", sql: "UPDATE opportunities SET source_id = NULL", source: null, active: 0, reason: "pending-triage", type: "onsite" },
+      { label: "hidden hold state", sql: "UPDATE opportunities SET inactive_reason = 'manual-hold'", source: "remotive", active: 0, reason: "manual-hold", type: "onsite" },
+      { label: "already-active state", sql: "UPDATE opportunities SET is_active = 1, inactive_reason = NULL", source: "remotive", active: 1, reason: null, type: "onsite" },
+      { label: "workplace metadata", sql: "UPDATE opportunities SET location_type = 'remote'", source: "remotive", active: 0, reason: "pending-triage", type: "remote" },
+    ]) {
+      test(`${mode} ${governed ? "governed" : "fallback"} defers stale deterministic rejection after ${drift.label} drift without clobbering the current row`, async () => {
+        const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => sqlite.exec(drift.sql) });
+        try {
+          const db = getDb({ DB: binding as any });
+          const candidate = heldActivationRow(1, mode, "onsite");
+          await db.insert(opportunities).values(candidate);
+          const outcome = await runHeldActivation(mode, governed, db, binding, [candidate]);
+          expect(sqlite.query("SELECT source_id AS source, is_active AS active, inactive_reason AS reason, location_type AS type, ph_eligibility AS ph FROM opportunities").get())
+            .toEqual({ source: drift.source, active: drift.active, reason: drift.reason, type: drift.type, ph: "eligible_verified" });
+          expect(outcome.error).toBeUndefined();
+          expect(outcome.result).toMatchObject({ claimed: 1, published: 0, rejected: 0, deferred: 1 });
+          expect(outcome.aiCalls).toBe(0);
+          expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+        } finally { sqlite.close(); }
+      });
+    }
+  }
+
+  for (const mode of ["gate", "feed"] as const) for (const governed of [true, false]) {
+    test(`${mode} ${governed ? "governed" : "fallback"} later native UPDATE chunk excludes drift within the existing 100-bind limit`, async () => {
+      let driftId = 0;
+      const { sqlite, binding, opportunityUpdateBindings } = sqliteD1({ beforeOpportunityUpdate: sqlite => {
+        sqlite.query("UPDATE opportunities SET location_type = 'onsite' WHERE id = ?").run(driftId);
+      } });
+      try {
+        const db = getDb({ DB: binding as any });
+        const candidates = Array.from({ length: 55 }, (_, i) => heldActivationRow(i + 1, mode));
+        // Insert chunks respect the actual Drizzle row binding limit too.
+        const ids: { id: number }[] = [];
+        for (let offset = 0; offset < candidates.length; offset += 3) ids.push(...await db.insert(opportunities)
+          .values(candidates.slice(offset, offset + 3)).returning({ id: opportunities.id }));
+        driftId = ids[54].id;
+        const outcome = await runHeldActivation(mode, governed, db, binding, candidates);
+        expect(outcome.error).toBeUndefined();
+        expect(outcome.published).toBe(54);
+        expect(sqlite.query("SELECT id FROM opportunities WHERE is_active = 1 ORDER BY id").all()).toEqual(ids.slice(0, 54));
+        expect(sqlite.query("SELECT is_active AS active FROM opportunities WHERE id = ?").get(driftId)).toEqual({ active: 0 });
+        expect(opportunityUpdateBindings.length).toBeGreaterThan(1);
+        expect(opportunityUpdateBindings.every(params => params.length <= 100)).toBe(true);
+        const receipts = sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger ORDER BY id").all() as { n: number; ids: string }[];
+        expect(receipts.reduce((sum, receipt) => sum + receipt.n, 0)).toBe(governed ? 54 : 0);
+        expect(receipts.flatMap(receipt => JSON.parse(receipt.ids))).toEqual(governed ? ids.slice(0, 54).map(row => row.id) : []);
+      } finally { sqlite.close(); }
+    });
+  }
+
+  for (const mode of ["inline", "inngest", "gate", "feed"] as const) for (const locationType of ["onsite", "hybrid"] as const) {
+    test(`${mode} post-write ${locationType} drift stays UNKNOWN with physical rows/FTS retained and no fresh ledger`, async () => {
+      const { sqlite, binding, queries } = sqliteD1({ beforeOwnershipRead: sqlite => {
+        sqlite.query("UPDATE opportunities SET location_type = ?").run(locationType);
+      } });
+      try {
+        const db = getDb({ DB: binding as any });
+        const candidate = heldActivationRow(1, mode);
+        await db.insert(opportunities).values(candidate);
+        const outcome = await runHeldActivation(mode, true, db, binding, [candidate]);
+        expect(outcome.error).toBeDefined();
+        if (mode === "inngest") expect(outcome.error).toMatchObject({ cause: { publicationOutcome: "UNKNOWN" } });
+        else expect(outcome.error).toMatchObject({ publicationOutcome: "UNKNOWN" });
+        expect(sqlite.query("SELECT is_active AS active, location_type AS type FROM opportunities").get())
+          .toEqual({ active: 1, type: locationType });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts").get()).toEqual({ n: 1 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+        expect(queries.some(query => /^delete\b/i.test(query))).toBe(false);
+      } finally { sqlite.close(); }
+    });
+  }
+});
+
 describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
   for (const locationType of ["onsite", "hybrid"] as const) {
     test(`REMOTE ACK: explicit ${locationType} metadata with ordinary PH text is hidden before public writes`, async () => {
