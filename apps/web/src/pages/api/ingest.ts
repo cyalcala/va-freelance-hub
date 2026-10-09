@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, type NewOpportunity } from "@va-hub/db";
-import { chunkArray, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate } from "@va-hub/scraper";
+import { chunkArray, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate, isPublicPhEligibility } from "@va-hub/scraper";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
@@ -73,8 +73,9 @@ async function normalizeOpportunityForInsert(item: unknown, observedAt: string) 
     postedAt: normalizeUtcIso(input.postedAt),
     scrapedAt: normalizeUtcIso(input.scrapedAt) ?? observedAt,
     // Server-owned safety fields — never client-controlled.
-    isActive: gate.phEligibility !== "ineligible",
-    inactiveReason: gate.phEligibility === "ineligible" ? "policy-rejected" : null,
+    isActive: isPublicPhEligibility(gate.phEligibility),
+    inactiveReason: isPublicPhEligibility(gate.phEligibility) ? null
+      : gate.phEligibility === "ineligible" ? "policy-rejected" : "pending-triage",
     contentHash: toContentHash(title, sourceUrl ?? title),
     descriptionHash: await sha256Hex(title + (description ?? "").slice(0, 1500)),
     experienceLevel: enumOrNull(input.experienceLevel, EXPERIENCE_LEVELS),
@@ -195,7 +196,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     if (items.length === 0) {
-      return new Response(JSON.stringify({ success: true, inserted: 0 }), { status: 200 });
+      return new Response(JSON.stringify({ success: true, inserted: 0, publishedCount: 0, hiddenInserted: 0 }), { status: 200 });
     }
 
 
@@ -210,9 +211,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Insert with deduplication based on sourceUrl, chunked to avoid SQLite limits
     let insertedCount = 0;
+    let publishedCount: number | null = 0;
+    let hiddenInserted = 0;
     const publicationDb = publicationDbFromEnv(env);
-    const publicItems = normalizedItems.filter((row) => row.isActive);
-    const hiddenItems = normalizedItems.filter((row) => !row.isActive);
+    const publicItems = normalizedItems.filter((row) => row.isActive && isPublicPhEligibility(row.phEligibility));
+    const hiddenItems = normalizedItems.filter((row) => !row.isActive || !isPublicPhEligibility(row.phEligibility));
     const insertChunk = async (chunk: NewOpportunity[]) => {
       const result = await db.insert(opportunities)
         .values(chunk)
@@ -225,18 +228,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (published.publicationOutcome === "UNKNOWN") throw new PublicationOutcomeUnknownError(published.published);
       if (published.failed) throw new Error("publication gateway rejected direct ingest");
       insertedCount += published.published;
+      publishedCount = published.published;
     } else {
       for (const chunk of chunkArray(publicItems, DIRECT_INGEST_BATCH_SIZE)) {
-        insertedCount += (await insertChunk(chunk)).length;
+        const inserted = (await insertChunk(chunk)).length;
+        insertedCount += inserted;
+        // Physical fallback writes do not establish publication authority.
+        if (inserted > 0) publishedCount = null;
       }
     }
     for (const chunk of chunkArray(hiddenItems, DIRECT_INGEST_BATCH_SIZE)) {
-      insertedCount += (await insertChunk(chunk)).length;
+      const inserted = (await insertChunk(chunk)).length;
+      insertedCount += inserted;
+      hiddenInserted += inserted;
     }
 
     return new Response(JSON.stringify({
       success: true,
       inserted: insertedCount,
+      publishedCount,
+      hiddenInserted,
       totalReceived: items.length,
       rejectedForUrl,
     }), {

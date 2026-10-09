@@ -8,6 +8,7 @@ import { POST as ingest } from "../src/pages/api/ingest";
 import { triageDrain } from "../src/lib/inngest/functions/triage-drain";
 import { drainPendingTriageInline, recoverGateEligiblePending, reactivateFeedConfirmedJobs } from "../src/pages/api/cron/scrape";
 import { publicationRetryKey, snapshotPublicationUpdate } from "../src/lib/publication-retry-key";
+import { publicOpportunityFilters } from "../src/lib/public-opportunities";
 import { FakePublicationDatabase } from "./publication-db-fake";
 import { NonRetriableError } from "inngest";
 
@@ -31,6 +32,7 @@ function row(i: number, sourceId = "breezy:test") {
     sourcePlatform: "TestCo",
     contentHash: `hash-${i}`,
     sourceId,
+    phEligibility: "eligible_likely",
   } satisfies NewOpportunity;
 }
 
@@ -212,7 +214,8 @@ describe("publishGroupedInserts persisted ID accounting", () => {
 
 /** Real SQLite + production Drizzle D1 adapter; no network or native-module mocks. */
 function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => void; rejectLedger?: boolean;
-  throwAfterOpportunityUpdate?: boolean; failOwnershipRead?: "throw" | "malformed" | "mismatch"; failOwnershipReadAt?: number } = {}) {
+  throwAfterOpportunityUpdate?: boolean; failOwnershipRead?: "throw" | "malformed" | "mismatch"; failOwnershipReadAt?: number;
+  beforeOwnershipRead?: (sqlite: Database, ordinal: number) => void } = {}) {
   const sqlite = new Database(":memory:");
   const columns = getTableConfig(opportunities).columns.map((column) =>
     `"${column.name}" ${column.getSQLType()}${column.name === "id" ? " PRIMARY KEY AUTOINCREMENT" : ""}`,
@@ -243,16 +246,16 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
           return this;
         },
         async first() {
-          const result = statement.get(...values);
           if (query.includes("SELECT COUNT(*) AS ownedCount FROM opportunities")) {
             ownershipReads++;
+            options.beforeOwnershipRead?.(sqlite, ownershipReads);
             if (ownershipReads === (options.failOwnershipReadAt ?? 1)) {
               if (options.failOwnershipRead === "throw") throw new Error("synthetic ownership read diagnostic");
               if (options.failOwnershipRead === "malformed") return { ownedCount: "1" };
               if (options.failOwnershipRead === "mismatch") return { ownedCount: 0 };
             }
           }
-          return result;
+          return statement.get(...values);
         },
         async all() { return { results: statement.all(...values) }; },
         async raw() {
@@ -282,6 +285,124 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
 }
 
 describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
+  test("direct ingest keeps unclear and non-PH rows hidden while accepted PH receipts match actual canonical visibility", async () => {
+    const { sqlite, binding } = sqliteD1();
+    try {
+      const db = getDb({ DB: binding as any });
+      const request = new Request("https://example.test/api/ingest", { method: "POST",
+        headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+        body: JSON.stringify({ items: [
+          { ...row(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+          { ...row(2, "remotive"), locationRaw: "Remote", description: "Remote role open worldwide." },
+          { ...row(3, "remotive"), title: "Operations specialist", description: "Handle customer records.",
+            phEligibility: "eligible_verified", isActive: true, inactiveReason: null },
+          { ...row(4, "remotive"), locationRaw: "United States only", description: "Candidates must be based in the United States only" },
+        ] }) });
+      const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ success: true, inserted: 4, publishedCount: 2, hiddenInserted: 2, totalReceived: 4 });
+      const stored = sqlite.query(`SELECT ph_eligibility AS eligibility, is_active AS active, inactive_reason AS reason
+        FROM opportunities ORDER BY source_url`).all();
+      expect(stored).toEqual([
+        { eligibility: "eligible_verified", active: 1, reason: null },
+        { eligibility: "eligible_likely", active: 1, reason: null },
+        { eligibility: "unclear", active: 0, reason: "pending-triage" },
+        { eligibility: "ineligible", active: 0, reason: "policy-rejected" },
+      ]);
+      const visible = await db.select({ id: opportunities.id }).from(opportunities).where(publicOpportunityFilters());
+      expect(visible).toHaveLength(2);
+      const receipt = sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get();
+      expect(receipt).toEqual({ n: 2, ids: JSON.stringify(visible.map(candidate => candidate.id)) });
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job OR specialist'").get()).toEqual({ n: 4 });
+    } finally { sqlite.close(); }
+  });
+
+  test("direct ingest with only unclear evidence produces hidden writes and no public ledger or ownership observation", async () => {
+    const { sqlite, binding, queries } = sqliteD1();
+    try {
+      const request = new Request("https://example.test/api/ingest", { method: "POST",
+        headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+        body: JSON.stringify({ items: [{ ...row(1, "remotive"), title: "Operations specialist", description: "Handle customer records." }] }) });
+      const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ success: true, inserted: 1, publishedCount: 0, hiddenInserted: 1 });
+      expect(sqlite.query("SELECT is_active AS active, ph_eligibility AS eligibility, inactive_reason AS reason FROM opportunities").get())
+        .toEqual({ active: 0, eligibility: "unclear", reason: "pending-triage" });
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+      expect(queries.some(query => query.includes("AS ownedCount FROM opportunities"))).toBe(false);
+    } finally { sqlite.close(); }
+  });
+
+  test("direct ingest empty and conflict-only receipts keep physical, hidden and public counts at exact zero", async () => {
+    const { sqlite, binding } = sqliteD1();
+    try {
+      const send = async (items: unknown[]) => ingest({ request: new Request("https://example.test/api/ingest", { method: "POST",
+        headers: { authorization: "Bearer test-secret", "content-type": "application/json" }, body: JSON.stringify({ items }) }),
+        locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+      const empty = await send([]);
+      expect(empty.status).toBe(200);
+      expect(await empty.json()).toMatchObject({ success: true, inserted: 0, publishedCount: 0, hiddenInserted: 0 });
+      const candidate = { ...row(1, "remotive"), title: "Operations specialist", description: "Handle customer records." };
+      const initial = await send([candidate]);
+      expect(await initial.json()).toMatchObject({ success: true, inserted: 1, publishedCount: 0, hiddenInserted: 1 });
+      const duplicate = await send([candidate]);
+      expect(duplicate.status).toBe(200);
+      expect(await duplicate.json()).toMatchObject({ success: true, inserted: 0, publishedCount: 0, hiddenInserted: 0 });
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 1 });
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    } finally { sqlite.close(); }
+  });
+
+  for (const eligibility of [null, "unclear", "ineligible", "ELIGIBLE_LIKELY", "unexpected"]) {
+    test(`direct ingest post-write PH drift to ${eligibility} preserves UNKNOWN and stops later source and hidden writes`, async () => {
+      const { sqlite, binding } = sqliteD1({ beforeOwnershipRead: sqlite => {
+        sqlite.query("UPDATE opportunities SET ph_eligibility = ? WHERE source_id = 'remotive'").run(eligibility);
+      } });
+      try {
+        const db = getDb({ DB: binding as any });
+        const request = new Request("https://example.test/api/ingest", { method: "POST",
+          headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+          body: JSON.stringify({ items: [
+            { ...row(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+            { ...row(2, "remote-ok"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+            { ...row(3, "remotive"), title: "Operations specialist", description: "Handle customer records." },
+          ] }) });
+        const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+        expect(response.status).toBe(500);
+        expect(await response.json()).toMatchObject({ code: "POST_PERSISTENCE_FAILURE", publicationOutcome: "UNKNOWN",
+          inserted: null, confirmedPublishedLowerBound: 0, reconciliationRequired: true });
+        expect(sqlite.query("SELECT source_id AS source, ph_eligibility AS eligibility, is_active AS active FROM opportunities").all())
+          .toEqual([{ source: "remotive", eligibility, active: 1 }]);
+        expect(await db.select({ id: opportunities.id }).from(opportunities).where(publicOpportunityFilters())).toEqual([]);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 1 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+      } finally { sqlite.close(); }
+    });
+  }
+
+  test("direct ingest retains an accepted prefix when the second committed source loses PH eligibility", async () => {
+    const { sqlite, binding } = sqliteD1({ beforeOwnershipRead: (sqlite, ordinal) => {
+      if (ordinal === 2) sqlite.exec("UPDATE opportunities SET ph_eligibility = 'unclear' WHERE source_id = 'remote-ok'");
+    } });
+    try {
+      const db = getDb({ DB: binding as any });
+      const request = new Request("https://example.test/api/ingest", { method: "POST",
+        headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+        body: JSON.stringify({ items: ["remotive", "remote-ok", "jobicy-admin-support-apac"].map((source, index) => ({
+          ...row(index + 1, source), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines",
+        })) }) });
+      const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+      expect(response.status).toBe(500);
+      expect(await response.json()).toMatchObject({ code: "POST_PERSISTENCE_FAILURE", publicationOutcome: "UNKNOWN",
+        inserted: null, confirmedPublishedLowerBound: 1, reconciliationRequired: true });
+      expect(sqlite.query("SELECT source_id AS source, ph_eligibility AS eligibility FROM opportunities ORDER BY id").all())
+        .toEqual([{ source: "remotive", eligibility: "eligible_verified" }, { source: "remote-ok", eligibility: "unclear" }]);
+      expect(await db.select({ id: opportunities.id }).from(opportunities).where(publicOpportunityFilters())).toHaveLength(1);
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 2 });
+      expect(sqlite.query("SELECT source_id AS source, published_count AS n FROM source_publication_ledger").all())
+        .toEqual([{ source: "remotive", n: 1 }]);
+    } finally { sqlite.close(); }
+  });
   test("ownership failure in the second source group retains the confirmed first receipt and stops the third group", async () => {
     const { sqlite, binding } = sqliteD1({ failOwnershipRead: "mismatch", failOwnershipReadAt: 2 });
     try {

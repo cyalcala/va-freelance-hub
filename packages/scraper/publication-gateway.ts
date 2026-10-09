@@ -12,6 +12,7 @@ import { decideCanaryPublication } from "./transition-plane";
 import type { RegistryComplianceState, RegistryOperationalState } from "./policy-resolver";
 import { isAdmissionInstant } from "./admission-evidence";
 import { D1_MAX_BOUND_PARAMETERS } from "./batch";
+import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 
 export interface PublicationStatement {
   bind(...values: unknown[]): PublicationStatement;
@@ -277,14 +278,17 @@ function snapshotAcknowledgement(value: unknown, allowedCount: number): { publis
 }
 
 async function hasCurrentOwnership(db: PublicationDatabase, sourceId: string, ids: readonly number[]): Promise<boolean> {
-  // One source binding leaves room for 99 IDs at D1's existing 100-variable
-  // limit. This observes current rows, not write provenance or an atomic lease.
-  const chunkSize = D1_MAX_BOUND_PARAMETERS - 1;
+  // Bind the same accepted PH states used by public serving. One source and
+  // two PH bindings leave 97 IDs at the existing D1 100-variable limit. This
+  // observes current rows, not write provenance or an atomic lease.
+  const chunkSize = D1_MAX_BOUND_PARAMETERS - 1 - PUBLIC_PH_ELIGIBILITIES.length;
   for (let offset = 0; offset < ids.length; offset += chunkSize) {
     const chunk = ids.slice(offset, offset + chunkSize);
     const row = await db.prepare(`SELECT COUNT(*) AS ownedCount FROM opportunities
-      WHERE source_id = ? AND is_active = 1 AND id IN (${chunk.map(() => "?").join(", ")})`)
-      .bind(sourceId, ...chunk).first<{ ownedCount: unknown }>();
+      WHERE source_id = ? AND is_active = 1
+      AND ph_eligibility IN (${PUBLIC_PH_ELIGIBILITIES.map(() => "?").join(", ")})
+      AND id IN (${chunk.map(() => "?").join(", ")})`)
+      .bind(sourceId, ...PUBLIC_PH_ELIGIBILITIES, ...chunk).first<{ ownedCount: unknown }>();
     const count = row?.ownedCount;
     if (typeof count !== "number" || !Number.isSafeInteger(count) || count !== chunk.length) return false;
   }
@@ -312,7 +316,7 @@ async function persistAndRecord(
 
   try {
     if (!await hasCurrentOwnership(db, request.sourceId, acknowledgement.ids)) {
-      return postPersistenceFailure("publication IDs did not match current active source ownership");
+      return postPersistenceFailure("publication IDs did not match current active PH-eligible source ownership");
     }
   } catch {
     return postPersistenceFailure("publication source ownership could not be verified");
