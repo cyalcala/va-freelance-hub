@@ -2686,6 +2686,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         title: item.title,
         description: item.description,
         locationRaw: (item as { locationRaw?: string | null }).locationRaw ?? null,
+        locationType: item.locationType,
         tags: item.tags,
       });
       if (gate.phEligibility === "ineligible") {
