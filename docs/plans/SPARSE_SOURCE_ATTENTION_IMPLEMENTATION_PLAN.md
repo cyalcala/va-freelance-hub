@@ -64,6 +64,16 @@ are changed by this delivery rule; every initial card remains PROPOSED.
 
 ## Dependency outline
 
+**2026-10-09 freshness consumer prerequisite:** retained Worker UNKNOWN evidence,
+strict reported/lock/degraded acknowledgements and bounded response handling now
+have native local manual/scheduled/redirect fixtures. No healthy tick is inferred
+from uncertain/incomplete replies. This supports SSAE-01/07/09 evidence/replay
+integrity locally, with no Turso integration, measured reuse benefit, new source
+permission, schedule change or rollout acceptance. [Finite evidence](../operations/FRESHNESS_PUBLICATION_RECEIPTS_2026-10-09.md)
+owns checks/backup scope. Durable uncertainty/current item ownership/shared
+budgets/atomic all-writer control remain open; newest savepoint owns sole NEXT.
+Existing cards remain unaccepted and MATH0/13; certifiedflowUNKNOWN unchanged.
+
 **2026-10-09 Hunter consumer prerequisite:** a retained HTTP workflow preserves
 sanitized response/status/operation evidence and explicit uncertainty across
 failure, summary and alert paths. Native local fixtures prove one request without

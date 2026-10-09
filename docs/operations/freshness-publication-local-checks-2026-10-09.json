@@ -1,0 +1,250 @@
+{
+  "recordedAt": "2026-10-09T09:36:33.8677833+00:00",
+  "unit": "FRESHNESS_PUBLICATION_RECEIPTS_2026-10-09",
+  "status": "PASS_FROZEN_LOCAL_SOURCE_NATIVE_WORKER_AND_REPOSITORY_CHECKS",
+  "startSha": "193d767f6d0c9f3ff511f19b833d211bb2a8d97a",
+  "sourceSha": "fd02b72a28ed5374750cdefe45cc8e4796bdd605",
+  "goalComplete": false,
+  "frozenFiles": [
+    {
+      "path": "workers/freshness-cron/src/index.ts",
+      "sha256": "ff909b23e737e8921717da7fe6799addfa09da5652c1de3490bde20fa8c87719"
+    },
+    {
+      "path": "workers/freshness-cron/src/index.test.ts",
+      "sha256": "864ca5a4443053c77487c18d02ce4b2366bf6c9af552fc850e30b7e07712fa84"
+    },
+    {
+      "path": "workers/freshness-cron/src/scrape-response.ts",
+      "sha256": "42a5d1ab248266a72f0c40afbb1e4976450e58834d3bc4ad15e67d2e4758b4ef"
+    },
+    {
+      "path": "workers/freshness-cron/src/scrape-response.test.ts",
+      "sha256": "146576f91495767ae38e899f04e7374b610c3eee71d548f883cf929987c28f13"
+    },
+    {
+      "path": "workers/freshness-cron/src/worker-http.test.ts",
+      "sha256": "691baf77dfef91181928966d4bd3b14fd8cf2f2baf75c419351e0e22c0297a0b"
+    }
+  ],
+  "behavioralRed": [
+    {
+      "phase": "ORIGINAL_PARSER_UNKNOWN_FRACTIONAL_STRING_COUNTER_LOOSE_LOCK_AND_RAW_ERROR",
+      "assertions": 21,
+      "log": "tmp/freshness-response-behavior-red-2026-10-09.log",
+      "fail": 5,
+      "commandMilliseconds": 386,
+      "bunMilliseconds": 100,
+      "toolChunk": "e61fbf",
+      "pass": 5
+    },
+    {
+      "assertions": 2,
+      "pass": 0,
+      "phase": "NATIVE_ORIGINAL_UNKNOWN500_RECEIPT_LOSS",
+      "fail": 1,
+      "bunSeconds": 3.4,
+      "log": "tmp/freshness-native-behavior-red-2026-10-09.log"
+    },
+    {
+      "assertions": 8,
+      "pass": 0,
+      "phase": "NATIVE_ORIGINAL_UNKNOWN200_PRIVATE_ERROR_AND_SCHEDULED_RECEIPT",
+      "fail": 3,
+      "bunSeconds": 4.99,
+      "log": "tmp/freshness-native-more-behavior-red-2026-10-09.log"
+    },
+    {
+      "phase": "REVIEW_MALFORMED_HELD_LOCK_BACKLOG",
+      "assertions": 22,
+      "log": "tmp/freshness-lock-review-red-2026-10-09.log",
+      "fail": 1,
+      "commandMilliseconds": 402,
+      "bunMilliseconds": 123,
+      "toolChunk": "48bf0b",
+      "pass": 7
+    }
+  ],
+  "setupFailuresSeparateFromBehavior": [
+    "MINIFLARE5_REQUIRES_INSTALLED_CONVERT_V4_OPTIONS_SCHEMA",
+    "NATIVE_STDOUT_NEEDS_RESULT_MARKER_WHILE_RETAINING_ACTUAL_WORKER_CONSOLE"
+  ],
+  "setupEvidence": [
+    "tmp/freshness-native-red-2026-10-09.log",
+    "tmp/freshness-native-more-red-2026-10-09.log",
+    "TOOL_TRANSCRIPT_WORKERS_ARRAY_SCHEMA_SETUP_FAILURE"
+  ],
+  "initialTypeFailures": {
+    "logs": [
+      "tmp/freshness-worker-types-2026-10-09.log",
+      "tmp/freshness-worker-types-green-2026-10-09.log"
+    ],
+    "reason": "PINNED_WORKER_TEXTDECODER_OPTIONS_REQUIRE_IGNOREBOM_AND_BUN_FETCH_FAKE_NEEDS_EXPLICIT_RESPONSE_RETURN",
+    "resolved": true
+  },
+  "focusedFrozenPureIndex": {
+    "assertions": 198,
+    "pass": 49,
+    "files": 2,
+    "fail": 0,
+    "log": "tmp/freshness-response-frozen-pure-green-2026-10-09.log",
+    "toolChunk": "f264f4",
+    "bunMilliseconds": 130
+  },
+  "firstNativeGreen": {
+    "commandMilliseconds": 35986,
+    "assertions": 200,
+    "pass": 20,
+    "scope": "INITIAL20_CASES_BEFORE_FINAL_FIXED_READER_AND308_INCOMPLETE_ADDITIONS",
+    "fail": 0,
+    "bunSeconds": 35.46,
+    "log": "tmp/freshness-native-green-2026-10-09.log"
+  },
+  "finalNative": {
+    "status": "PASS_IN_FROZEN_FULL_REPOSITORY_SUITE",
+    "scope": "ACTUAL_LOCAL_NATIVE_WORKER_MANUAL_AND_SCHEDULED_HANDLERS_LOOPBACK_HTTP",
+    "runtime": {
+      "miniflare": "5.20260926.0-alpha",
+      "wrangler": "4.143.0",
+      "compatibilityDate": "2026-07-01",
+      "workerd": "1.20260926.1"
+    },
+    "tests": 22
+  },
+  "fullSuite": {
+    "files": 242,
+    "fail": 0,
+    "command": "bun run test",
+    "log": "tmp/freshness-full-suite-2026-10-09.log",
+    "checkedAt": "2026-10-09T17:33:46.610216+08:00",
+    "assertions": 323848,
+    "commandMilliseconds": 102934,
+    "netNewTests": 63,
+    "bunSeconds": 102.66,
+    "toolChunk": "14f4a6",
+    "pass": 3499
+  },
+  "workerTypecheck": {
+    "command": "bunx tsc --noEmit -p workers/freshness-cron/tsconfig.json",
+    "exit": 0,
+    "milliseconds": 4221,
+    "checkedAt": "2026-10-09T17:34:39.1703927+08:00",
+    "scope": "FROZEN_HELPER_ENTRYPOINT_AND_ALL_THREE_TEST_FILES"
+  },
+  "webTypecheck": {
+    "command": "bun run typecheck",
+    "exit": 0,
+    "milliseconds": 23094,
+    "checkedAt": "2026-10-09T17:30:19.3118153+08:00"
+  },
+  "workerBuild": {
+    "receipt": {
+      "command": "node node_modules/wrangler/bin/wrangler.js deploy --config workers/freshness-cron/wrangler.toml --dry-run --outdir C:/Users/admin/Desktop/va-freelance-hub/tmp/freshness-worker-dry-run-2026-10-09 --env-file C:/Users/admin/Desktop/va-freelance-hub/tmp/freshness-empty.env --autoconfig=false",
+      "wranglerVersion": "4.143.0",
+      "emptyEnvFile": "tmp/freshness-empty.env",
+      "exit": 0,
+      "milliseconds": 9720,
+      "checkedAt": "2026-10-09T17:30:53.90079+08:00",
+      "scope": "LOCAL_BUNDLE_NO_UPLOAD_OR_DEPLOYMENT"
+    },
+    "log": "tmp/freshness-worker-dry-run-2026-10-09.log",
+    "uploadKiBReportedForDryRun": 17.37,
+    "gzipKiB": 5.14,
+    "toolChunk": "180c17",
+    "actualUpload": false
+  },
+  "astroBuild": "NOT_RERUN_NO_WEB_IMPLEMENTATION_CHANGED_RELEVANT_WORKER_DRYRUN_BUILD_PASS_PRIOR_ASTRO_PASS_RETAINED",
+  "audits": [
+    {
+      "command": "bun run audit:guardrails",
+      "exit": 0,
+      "milliseconds": 1405,
+      "log": "tmp/freshness-audit-guardrails-2026-10-09.log",
+      "checkedAt": "2026-10-09T17:31:45.1897882+08:00"
+    },
+    {
+      "command": "bun run audit:parameters",
+      "exit": 0,
+      "milliseconds": 385,
+      "log": "tmp/freshness-audit-parameters-2026-10-09.log",
+      "checkedAt": "2026-10-09T17:31:45.5900984+08:00"
+    },
+    {
+      "command": "bun run audit:orchestrator",
+      "exit": 0,
+      "milliseconds": 586,
+      "log": "tmp/freshness-audit-orchestrator-2026-10-09.log",
+      "checkedAt": "2026-10-09T17:31:46.1764886+08:00"
+    },
+    {
+      "command": "bun run audit:constitution",
+      "exit": 0,
+      "milliseconds": 241,
+      "log": "tmp/freshness-audit-constitution-2026-10-09.log",
+      "checkedAt": "2026-10-09T17:31:46.4184798+08:00"
+    }
+  ],
+  "parameterParityPercent": 100,
+  "constitutionalWarningsPreserved": true,
+  "independentSourceAndNativeReview": "PASS_READ_ONLY_FIVE_FILE",
+  "independentDocumentReview": "PASS_READ_ONLY_SEVEN_FILES_AFTER_COMMAND_AND_PRE_UPDATE_DRIFT_CORRECTIONS",
+  "finalDocumentValidation": {
+    "checkedAt": "2026-10-09T09:44:37.1239699+00:00",
+    "jsonParsing": "PASS_TWO_DOCUMENTS",
+    "frozenSourceHashes": "PASS_ALL_FIVE_FILES",
+    "sourceDiff": "CLEAN_FROZEN",
+    "sourceBackup": "EXACT_SHA_CONSISTENT",
+    "workingDiffWhitespace": "PASS",
+    "toolChunk": "86970c"
+  },
+  "finalDocumentGuardrail": {
+    "checkedAt": "2026-10-09T09:46:52.6240179+00:00",
+    "command": "bun run audit:guardrails",
+    "exit": 0,
+    "milliseconds": 604,
+    "log": "tmp/freshness-final-document-guardrails-2026-10-09.log",
+    "toolChunk": "e9430d",
+    "scope": "FINAL_COMMAND_AND_PRE_UPDATE_DRIFT_DOCUMENT_CORRECTIONS"
+  },
+  "coverageLimits": [
+    "ACTUAL60_SECOND_EXPIRY_NOT_EXERCISED_TIMEOUT_ARGUMENT_AND_HEADERS_TESTED_LOCALLY",
+    "LOCAL_NATIVE_RUNTIME_NOT_CLOUDFLARE_GCP_DEPLOYMENT_OR_SOURCE_SERVICE",
+    "LOG_RECEIPT_NOT_DURABLE_CROSS_CLOCK_UNCERTAINTY_ATTEMPT_LEDGER",
+    "FUTURE_SCHEDULED_INVOCATIONS_AND_ALREADY_LAUNCHED_SIBLINGS_NOT_FENCED"
+  ],
+  "effects": {
+    "jobSourceRequests": 0,
+    "gcpMutations": 0,
+    "productionTursoWrites": 0,
+    "productionReads": 0,
+    "migrations": 0,
+    "publicJobsPublished": 0,
+    "productionD1Writes": 0,
+    "deployments": 0,
+    "sourceAdmissions": 0,
+    "gcpReads": 0,
+    "newProvidersOrPaidServices": 0,
+    "companyEnrichmentsApplied": 0,
+    "credentialsOrGrantsChanged": 0,
+    "newProductionClocks": 0
+  },
+  "mathAccepted": "0/13",
+  "verifiedFreshPublicFlow": null,
+  "certification": "UNKNOWN",
+  "jev": "PRIOR401_UNCHANGED_NONBLOCKING_NOT_REPROBED",
+  "backup": {
+    "exactShaCi": "UNKNOWN_GROUP_POLICY_PIPELINE_AND_EQUIVALENT_CI_NOT_ESTABLISHED_PRIOR_API404_UNCHANGED_NOT_REPROBED",
+    "sourceReceipt": "gitlab-freshness-publication-source-backup-2026-10-09.json",
+    "gitLab": "PASS_SOURCE_COMMIT_PUSH_EXACT_SHA_READBACK",
+    "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED",
+    "runtimeAcceptance": "NOT_ESTABLISHED"
+  },
+  "remaining": [
+    "ACTUAL_ID_SOURCE_OWNERSHIP_CURRENT_ITEM_PROOF",
+    "DURABLE_UNKNOWN_ATTEMPT_RECONCILIATION_ACROSS_CLOCKS",
+    "ALREADY_LAUNCHED_PARALLEL_SIBLINGS",
+    "SHARED_BUDGET_EPOCH_LEASE_CONTRACT",
+    "ATOMIC_PUBLICATION_CONTROLLER",
+    "NORMAL_RELEASE_PROVENANCE_RUNTIME_FIRST_PUBLICATION_ACCEPTANCE"
+  ]
+}

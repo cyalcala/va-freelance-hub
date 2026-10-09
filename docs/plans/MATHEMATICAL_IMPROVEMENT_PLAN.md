@@ -84,6 +84,17 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 freshness consumer prerequisite:** retained Worker response handling
+now preserves fixed sanitized UNKNOWN/status/transport evidence before failure,
+validates reported totals and health, bounds actual streamed bytes and prevents
+redirect POST replay. Native local manual/scheduled fixtures preserve auth and
+independent shadow; full3,499 tests/types/Worker build/audits/review pass. This
+advances MATH-06/12 integrity prerequisites, not runtime/current source health or
+daily publication acceptance. [Finite scope](../operations/FRESHNESS_PUBLICATION_RECEIPTS_2026-10-09.md)
+owns evidence/backup limits. ActualID/source ownership, full item proof, durable
+uncertainty, shared budgets and atomic control remain open; newest savepoint owns
+one NEXT. MATH0/13 accepted, freshflowUNKNOWN, zero production jobs/enrichments.
+
 **2026-10-09 Hunter consumer prerequisite:** the retained Hunter workflow now
 saves bounded sanitized HTTP/transport/operation evidence before failing, keeps
 UNKNOWN totals null with a distinct API-reported lower bound, and issues one POST

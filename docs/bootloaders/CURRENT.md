@@ -4,7 +4,19 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 16:58 Manila): Hunter uncertainty evidence is
+Latest continuation (2026-10-09 17:38 Manila): retained freshness worker uncertainty
+evidence is locally verified at `fd02b72a28ed`, pushed/read back on GitLab. Fixed
+sanitized receipts precede failures; UNKNOWN totals/prefixes, degraded reported
+counts and real zero/lock outcomes remain distinct. One POST/manual redirects,
+bounded streamed body, auth/60s signal and independent hourly shadow preserved.
+Full3,499 tests include22 native worker cases; types/local configured Worker build/
+four audits and review pass. No deployment/production benefit/CI acceptance.
+The sole NEXT is PUBLICATION_ID_SOURCE_OWNERSHIP in SYSTEM_SAVEPOINT: fresh gateway
+ownership read and activation source predicates with native drift/failure fixtures.
+Durable uncertainty/shared budgets/atomic control remain separate. MATH0/13 and
+certifiedflowUNKNOWN; unchanged directory/access/GCP holds retain their triggers.
+
+Prior continuation (2026-10-09 16:58 Manila): Hunter uncertainty evidence is
 locally verified at `b7720af38b15`, pushed/read back on GitLab. The active workflow
 retains bounded sanitized HTTP/transport/operation receipts before failure, sends
 one POST without curlrc retries, and keeps UNKNOWN totals distinct from reported

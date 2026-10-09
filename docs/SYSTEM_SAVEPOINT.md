@@ -1,5 +1,106 @@
 # System Savepoint
 
+## 2026-10-09 17:38 Manila — Freshness response uncertainty retained locally; final source verified on GitLab
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of reported
+735-entry directory; all MATH-01..13 and existing SSAE-CED/DeepSeek cards;
+lucky777/Addy resumability and owner-authorized GitLab fallback. Accepted MATH
+**0/13**, certified daily fresh public flow **NULL/UNKNOWN**. This unit published
+zero production jobs and applied zero company enrichments. Previous turn was
+verified source/checkpoint progress; this continuation advances its exact NEXT.
+
+**Reentry/Git:** START `193d767f6d0c9f3ff511f19b833d211bb2a8d97a`, unchanged
+`codex/verified-flow-directory-checkpoint`. Verified the prior actual external
+Hunter receipt's final remote SHA and clean full-bundle restore. GitLab fetch
+confirmed zero divergence at reentry and immediately before source commit.
+No other active repository maintainer chat found; root source/index tests and
+native fixture ownership separate, review read-only. Source/tests
+`fd02b72a28ed5374750cdefe45cc8e4796bdd605` pushed normally and exact SHA read back
+at **2026-10-09 09:35:35 UTC**. [Source receipt](operations/gitlab-freshness-publication-source-backup-2026-10-09.json).
+Origin/cached main `926d39a0ea2db80a7eba8d541d12906a0c8b0837`, independent GitLab
+README main `fbeff64a2b47f32550ba426af92a2795a1507181` preserved. GitHub suspension
+unchanged/not reprobed. Final docs use one finite commit; actual final SHA/readback,
+full-history bundle and fresh clean restore will be recorded outside Git at
+`C:/Users/admin/Desktop/va-freelance-hub-recovery/freshness-receipts-2026-10-09-093600Z.full.bundle`
+and matching `.full.receipt.json`. External closure pending until actual receipt
+verified; pointer alone is not a restore assertion. Git source backup is not
+Turso/D1/GCP-state recovery. Foreign `.agents/skills/` and root `lucky777.md`
+untracked/excluded/preserved.
+
+**Authorities/constraints:** Desktop lucky777, AGENTS, absent manifest/router,
+CURRENT/newest savepoint/task/fallback, canonical master/source constitution/sole
+queue, accepted parameter v2 owner `72709b1` and dated deployment provenance
+recovered; task-relevant current code remeasured. Addy TDD/source/Git/review/CI
+methods applied. Unchanged Jev401 not retried, non-blocking. GCP primary background,
+GitHub provenance/review, Turso evidence and Cloudflare/D1 serving preserved.
+No production/source request/read/write, migration, deployment, source admission,
+parameter, service/provider/grant or clock changed. Lucky777 ACTIVE coordination,
+older APEX PAUSED. GitLab source backup differs from exact-SHA CI/release/runtime;
+hosted/group/equivalent CI UNKNOWN, unchanged API404 not reprobed.
+
+**Completed saved NEXT:** [FRESHNESS_PUBLICATION_RECEIPTS_2026-10-09](operations/FRESHNESS_PUBLICATION_RECEIPTS_2026-10-09.md).
+Retained worker now emits a bounded sanitized fixed scrape/status/transport/body/
+reason receipt before rejection. UNKNOWN500/200 and transport/malformed replies
+retain null totals/reconciliation with a validated distinct API-reported lower
+bound. Valid completed/no-jobs/dedup and strict held-lock paths remain terminal;
+optional absent triage counts stay null. Supplied invalid/incomplete/degraded
+health rejects scheduled success while keeping valid REPORTED totals distinct.
+Manual auth failure exposes no upstream text. One POST, manual redirects, no
+local retry, fixed 1 MiB streamed buffer; existing auth/60s signal/triggers/hourly
+independent shadow unchanged. No durable cross-clock uncertainty record created.
+
+**Local acceptance:** independent frozen source/native review PASS. Pure/index
+**49 pass / 198 assertions / 130ms**. Final full suite **3,499 pass / zero fail /
+323,848 assertions / 242 files / 102.66s Bun / 102.934s command**, net 63 tests;
+all **22 native workerd/loopback manual/scheduled cases** pass on frozen source.
+Actual scheduled UNKNOWN is exception, shadow remains independent; 307/308 targets
+see no redirected POST, unauthorized requests cause no upstream traffic.
+Worker types 4.221s, web types 23.094s, configured local Worker dry-run 9.720s
+(17.37 KiB/gzip5.14 KiB, zero upload); four audits pass, parameter parity100% and
+constitutional warnings retained. No web implementation changed; relevant Worker
+build replaces an unnecessary Astro repeat. [Finite checks](operations/freshness-publication-local-checks-2026-10-09.json).
+Original parser/native failures and review malformed-lock-backlog RED are recorded
+separately from Miniflare schema/stdout setup and initial pinned-type corrections.
+60s argument/headers checked locally; actual60s expiry not exercised. Native
+runtime is not production acceptance. MATH-06/12 and SSAE-01/07/09 gain local
+integrity prerequisites; all-card rollout/optimization/supply remain open.
+
+**Unchanged holds/owners/triggers:** directory IDs234/236/237 keep reviewed
+Upwork/Intogreat careers proposals and FVA identity/parked-link hold. Cloudflare
+7403 left current baselines UNKNOWN:3 HELD,0 READY/no SQL. Owner normal account/
+service access plus fresh successful baseline and later per-row review enables
+application. Dated735-company/1,556-job public snapshot is stock, not currentflow.
+GitHub backup/review/release and PR228 runtime/per-row outcomes; GCP BILLING_DISABLED
+and six CONTAINER_PERMISSION_DENIED starts; Janes9046/9047 publication-control
+incident remain unresolved/unreprobed. No current deployment/image/tick/withdrawal
+or compensation proved. Changed access/image evidence or new execution permits
+bounded re-observation; skip unchanged failed probes and completed repairs.
+
+**One NEXT: PUBLICATION_ID_SOURCE_OWNERSHIP.** Before accepting/recording fresh
+gateway IDs, verify bounded parameterized current opportunity existence/source/
+active ownership in `packages/scraper/publication-gateway.ts`; fence existing web
+activation UPDATEs to their snapshotted authorized source in
+`apps/web/src/pages/api/cron/scrape.ts` and
+`apps/web/src/lib/inngest/functions/triage-drain.ts`, with
+`publish-opportunities.ts` carrying the immutable source binding as required.
+Current gateway checks dense unique ID/count shape but never reads opportunity
+ownership; activation UPDATE predicates check ID/quality state without source_id.
+Real SQLite/Drizzle pre-UPDATE source-change races must produce zero RETURNING
+IDs/no foreign activation, preserving the normal empty acknowledgement. Native
+gateway nonexistent/foreign/NULL/inactive IDs or a failed ownership read after
+actual persistence must fail fresh acceptance: existing row/FTS remains, no
+success ledger, POST_PERSISTENCE_FAILURE/UNKNOWN and no compensation or subsequent
+sequential write. Valid ownership must pass;
+zero/blocked decisions avoid ownership reads. Historical ledger replay remains
+immutable/ledger-only. Use existing nullable schema/prepare.first, bounded ID
+chunks; no invented legacy attribution or new writable schema. Maintainer owns
+local code/tests; no production access needed. Source/item/opt-out/lease/cap gates
+and current GCP raw-sync fence remain. Ownership is not complete current item
+qualification or proof the IDs arose from this specific write. Durable uncertainty,
+future invocations/parallel siblings, shared budgets/epochs/leases and fully atomic
+publication/controller/runtime acceptance stay separate open requirements.
+
 ## 2026-10-09 16:58 Manila — Hunter uncertainty evidence retained locally; GitLab checkpoint verified
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
