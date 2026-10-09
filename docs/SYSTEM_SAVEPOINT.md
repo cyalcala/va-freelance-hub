@@ -1,5 +1,106 @@
 # System Savepoint
 
+## 2026-10-09 16:58 Manila — Hunter uncertainty evidence retained locally; GitLab checkpoint verified
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735-entry directory; all MATH-01..13 and existing SSAE-CED/DeepSeek cards;
+lucky777/Addy resumability and authorized GitLab fallback. Accepted MATH remains
+**0/13**, certified fresh daily flow **NULL/UNKNOWN**. This unit published zero
+production jobs and applied zero company enrichments. Previous turn was concrete
+progress, not goal completion; this unit advances its saved consumer prerequisite.
+
+**Reentry/Git:** START `a37dd0d444124cf0038bbe55bbed568056775853`, unchanged
+`codex/verified-flow-directory-checkpoint`. GitLab fetch/ancestry returned zero
+divergence at reentry, after the resumed clock gap and immediately before commit.
+No other active repo maintainer chat found; task ownership separated from read-only
+review/native fixture work. Source/tests `b7720af38b152c2fa0c097b89c8ee03d43265446`
+pushed normally and exact remote SHA read back at **2026-10-09 08:58:07 UTC**.
+[Source receipt](operations/gitlab-hunter-publication-source-backup-2026-10-09.json).
+Origin/cached main `926d39a0ea2db80a7eba8d541d12906a0c8b0837` preserved; unchanged
+GitHub suspension not reprobed. GitLab independent README main is preserved.
+Final verification/reentry docs follow as a separate finite commit, with actual
+final HEAD/readback, full selected-branch history bundle and fresh exact-SHA restore
+to be recorded outside Git at
+`C:/Users/admin/Desktop/va-freelance-hub-recovery/hunter-receipts-2026-10-09-085800Z.full.bundle`
+and matching `.full.receipt.json`. External closure is pending until the actual
+receipt is verified; this pointer alone does not establish final restore.
+Source/history backup is not DB/GCP-state backup.
+Foreign `.agents/skills/` and root `lucky777.md` remain untracked/excluded/preserved.
+
+**Authorities/constraints:** Desktop lucky777, AGENTS, absent manifest/router,
+CURRENT/newest savepoint/task/fallback contracts, source constitution/sole queue,
+accepted parameters and deployment provenance recovered. Addy TDD/CI/review/Git
+methods applied; unchanged Jev 401 non-blocking and not retried. GCP primary
+background owner, GitHub source/review/provenance, Turso evidence memory and
+Cloudflare/D1 serving preserved. No production/source request/read/write, migration,
+deployment, service/provider/grant, accepted parameter, source admission or clock
+changed. Lucky777 coordination ACTIVE; older APEX PAUSED. Source backup is not
+exact-SHA CI/release/runtime acceptance; equivalent GitLab CI is not established.
+
+**Completed bounded NEXT:** [HUNTER_PUBLICATION_RECEIPTS_2026-10-09](operations/HUNTER_PUBLICATION_RECEIPTS_2026-10-09.md).
+Audit corrected: the older harvest loop is already blocked by top-level
+LEGACY_QUARANTINE; its unsafe unreachable loop was not activated/refactored.
+The retained active Hunter workflow now saves sanitized body/status/transport/
+fixed operation evidence to its normal artifact before failure. curlrc cannot add
+retries; one POST, no raw response/header printing or upload. Explicit UNKNOWN,
+transport/malformed acknowledgement and contradictory held locks retain null
+publication totals and reconciliation requirements, with validated API-reported
+confirmed lower bounds separate. Valid normal, zero/skipped, backlog and held-lock
+paths preserve semantics and the existing bounded post-lock diagnostic read.
+Incomplete/invalid/truncated health evidence stays UNKNOWN; both summary paths
+avoid fabricated zero health, and alert recovery cannot advance/close on it.
+
+**Local acceptance:** independent frozen five-file review PASS. Pure/existing
+Hunter **44 pass / 192 assertions**, native local CLI/HTTP **19 pass / 196
+assertions / 24.48 seconds**. Full frozen-source suite **3,436 pass / zero fail /
+323,446 assertions / 241 files / 82.55 seconds**, 47 new tests. Standalone script
+and web types, Astro build **45.08 seconds within Astro** (132.0185689 seconds
+whole command), four audits, hashes and whitespace pass. Parameter parity 100%;
+existing constitutional warnings retained. [Finite evidence](operations/hunter-publication-local-checks-2026-10-09.json).
+Native behavioral RED reproduced lost UNKNOWN500 artifact; seven review cases
+failed before lock/diagnostic corrections. Absent-helper feature RED, fixture
+corrections and the concurrent build/type Windows 15s startup timeout are recorded
+separately. Final native 45s test budget/terminal competing handles resolved that
+local execution issue; no production speed claim.
+
+Native fixtures use actual Bash/curl/jq/Bun/loopback; retry-config GET control,
+single POST, sanitized evidence, both summaries and zero legacy traffic pass.
+The alert classifier slice plus installed CLI yields HOLD without GitHub service
+calls. Incomplete-but-REPORTED native HOLD is not separately fixture-tested;
+pure tests/code inspection cover it. Oversized CLI test does not test curl's limit.
+No remote workflow/service transport, deployed clock, durable attempt reconciliation
+or all-writer containment proved. MATH-06/12 and SSAE-01/07/09 gain local prerequisites;
+all-card acceptance/optimization and runtime benefit remain open.
+
+**Unchanged holds/owners/triggers:** directory IDs 234/236/237 keep reviewed
+Upwork/Intogreat careers proposals and FVA identity/parked-link hold. Cloudflare 7403
+left current baselines UNKNOWN: 3 HELD, zero READY/no SQL. Owner normal account/
+service access plus a fresh successful baseline and later per-row review is the
+apply trigger. The prior stale 735-company/1,556-job snapshot is dated stock.
+GitHub backup/review/release and PR 228 runtime/per-row outcomes, GCP BILLING_DISABLED/
+six CONTAINER_PERMISSION_DENIED starts and Janes 9046/9047 publication-control
+incident remain unresolved/unreprobed. No current deployment/image/tick/withdrawal
+or compensation proved. Normal access/image prerequisites and changed evidence/
+new execution permit bounded re-observation; do not repeat identical probes.
+
+**One NEXT:** preserve truthful UNKNOWN response evidence in the other retained
+HTTP consumer, `workers/freshness-cron/src/index.ts` (`ping`) and
+`scrape-response.ts`, without changing its triggers or retry/schedule ownership.
+Current code throws only HTTP status on non-2xx, losing the body/prefix; the
+successful-response parser can accept contradictory UNKNOWN with numeric counts
+and echo arbitrary server error strings. Add a bounded pure sanitized response
+boundary: fixed operation/status/transport evidence, explicit uncertainty/null
+counters and API-reported lower bound, fixed non-secret failure, one request and
+no local retry. Prove UNKNOWN500, contradictory UNKNOWN200, malformed/ordinary/
+lost replies and valid lock/completed/degraded cases in local native Worker/HTTP
+fixtures; preserve auth, timeouts, shadow independence, source gates and clocks.
+Maintainer owns local code/tests; no production access needed. No new DB attempt
+schema or durable cross-clock containment claim. Keep current GCP raw-sync fence;
+its runner is not this ingest HTTP consumer. Future scheduled invocations, durable
+reconciliation, already launched siblings, actual item/ID ownership, shared budget/
+epoch/lease controls and atomic publication remain distinct open prerequisites.
+
 ## 2026-10-09 06:48 Manila — Fresh publication receipts are truthful locally; uncertainty remains explicit
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

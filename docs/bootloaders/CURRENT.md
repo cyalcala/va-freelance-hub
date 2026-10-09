@@ -4,15 +4,28 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 06:48 Manila): fresh receipt truthfulness is locally
+Latest continuation (2026-10-09 16:58 Manila): Hunter uncertainty evidence is
+locally verified at `b7720af38b15`, pushed/read back on GitLab. The active workflow
+retains bounded sanitized HTTP/transport/operation receipts before failure, sends
+one POST without curlrc retries, and keeps UNKNOWN totals distinct from reported
+lower bounds across summaries/alert recovery. Legacy harvest quarantine retained.
+Native CLI/HTTP 19 tests, full 3,436 tests, types/build/four audits and independent
+review pass; no production benefit, equivalent CI or runtime acceptance claimed.
+The sole NEXT is the retained freshness-cron response boundary; recover its exact
+scope/fixtures from SYSTEM_SAVEPOINT. Durable reconciliation/future invocations,
+item ownership/shared controls and all-card acceptance stay open. Preserve GCP
+raw-sync fence and every unchanged external hold/trigger; MATH 0/13/flow UNKNOWN.
+
+Prior continuation (2026-10-09 06:48 Manila): fresh receipt truthfulness is locally
 verified at `79f4b8c290ea`, pushed/read back on GitLab. Strict counts/dense unique IDs,
 actual UPDATE RETURNING, explicit post-write UNKNOWN/null totals and sequential
 stop behavior pass native SQLite/FTS and independent review. The registered
 Inngest module initializes in local workerd with its polyfill first; its affected
 step uses the SDK non-retry error. 3,389 tests, final typechecks/build/four audits
 pass. No production publication/enrichment, CI/release or runtime acceptance.
-The sole NEXT is retained HTTP/workflow UNKNOWN receipt preservation and stopping
-later requests; recover exact scope/fixtures from the newest SYSTEM_SAVEPOINT.
+Its saved NEXT was retained HTTP/workflow UNKNOWN receipt preservation and stopping
+later requests. The Hunter slice is now complete locally; the newest SYSTEM_SAVEPOINT
+governs the remaining freshness consumer.
 Preserve the current GCP raw-sync fence; this web/legacy client work establishes
 no GCP integration. Parallel siblings, durable reconciliation, item/ID ownership,
 shared budgets and atomic control remain open. Skip completed fresh/replay repairs.

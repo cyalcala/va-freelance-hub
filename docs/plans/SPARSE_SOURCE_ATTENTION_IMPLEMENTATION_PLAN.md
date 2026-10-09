@@ -64,6 +64,16 @@ are changed by this delivery rule; every initial card remains PROPOSED.
 
 ## Dependency outline
 
+**2026-10-09 Hunter consumer prerequisite:** a retained HTTP workflow preserves
+sanitized response/status/operation evidence and explicit uncertainty across
+failure, summary and alert paths. Native local fixtures prove one request without
+retry configuration, truthful nullable counters and no healthy recovery from
+UNKNOWN/incomplete evidence. This supports SSAE-01/07/09 evidence/replay integrity
+without measured reuse benefit, Turso integration, schedule/source changes or
+rollout acceptance. [Finite evidence](../operations/HUNTER_PUBLICATION_RECEIPTS_2026-10-09.md)
+owns checks/backup scope. Other retained consumers and durable cross-invocation
+reconciliation remain open; existing SSAE cards stay unaccepted and MATH 0/13.
+
 **2026-10-09 fresh-receipt prerequisite:** actual returned IDs and strict fresh
 acknowledgements now have native local fixtures; post-persistence exceptions or
 ledger delivery failures retain UNKNOWN and stop subsequent sequential writers.

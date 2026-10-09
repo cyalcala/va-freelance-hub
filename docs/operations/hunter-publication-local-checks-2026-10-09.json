@@ -1,0 +1,213 @@
+{
+  "recordedAt": "2026-10-09T16:59:08.671694+08:00",
+  "unit": "HUNTER_PUBLICATION_RECEIPTS_2026-10-09",
+  "status": "PASS_FROZEN_LOCAL_SOURCE_NATIVE_CLI_AND_REPOSITORY_CHECKS",
+  "startSha": "a37dd0d444124cf0038bbe55bbed568056775853",
+  "sourceSha": "b7720af38b152c2fa0c097b89c8ee03d43265446",
+  "goalComplete": false,
+  "frozenFiles": [
+    {
+      "path": ".github/workflows/gha-hunter-pulse.yml",
+      "sha256": "81eeec2d3d0d8fb66e7becbf00166ad2bebd023415d9404e7f943e8480db7b9b"
+    },
+    {
+      "path": "apps/web/tests/hunter-recovery.test.ts",
+      "sha256": "d8afd0170ee26beb925ff7a937dc6c27d7632fddda181675042e1c02f54a9db2"
+    },
+    {
+      "path": "scripts/gha/hunter-response.ts",
+      "sha256": "13b9b0cb9d2f5a5ce4018a24f30d3591f1c294446b87b4f3aec4453d3b1d49e4"
+    },
+    {
+      "path": "scripts/gha/hunter-response.test.ts",
+      "sha256": "d02905b35744e22c94b18980a004da76225e5b1457c1b0d9b9b9c15168e7e44a"
+    },
+    {
+      "path": "scripts/gha/hunter-workflow-response.test.ts",
+      "sha256": "71dcfb1dd4ae32cb6a70ed872ac9412abc7cf29157b895b6870b97db4587d165"
+    }
+  ],
+  "behavioralRed": [
+    {
+      "phase": "ACTIVE_WORKFLOW_UNKNOWN500_RESPONSE_LOSS",
+      "pass": 0,
+      "fail": 1,
+      "assertions": 3,
+      "bunSeconds": 0.799,
+      "commandMilliseconds": 1021,
+      "log": "tmp/hunter-native-red-2026-10-09.log"
+    },
+    {
+      "phase": "REVIEW_LOCK_CONTRADICTIONS_AND_DIAGNOSTIC_COMPLETENESS",
+      "pass": 0,
+      "fail": 7,
+      "assertions": 7,
+      "bunSeconds": 0.187,
+      "toolChunk": "35b394",
+      "log": "tmp/hunter-response-review-red-2026-10-09.log"
+    }
+  ],
+  "featureRed": {
+    "phase": "HELPER_IMPLEMENTATION_ABSENT_NOT_OLD_CONSUMER_BEHAVIOR",
+    "pass": 0,
+    "fail": 19,
+    "assertions": null,
+    "bunSeconds": 0.938,
+    "toolChunk": "30a942",
+    "log": "tmp/hunter-response-red-2026-10-09.log"
+  },
+  "fixtureCorrectionsNotBehaviorRed": [
+    "REAL_LOCK_RESPONSE_OMITS_PUBLICATION_COUNTERS",
+    "CHANGED_API_REPORTED_SUMMARY_LABELS",
+    "CURLRC_POSITIVE_CONTROL_SYSTEM_CURL_DEV_NULL_WRITE_ERROR23_REPLACED_WITH_TEMP_FILE"
+  ],
+  "environmentalRun": {
+    "cause": "WINDOWS_SUBPROCESS_STARTUP_CONTENTION_DURING_LIVE_BUILD_TYPES",
+    "pass": 18,
+    "fail": 1,
+    "postTimeoutErrors": 1,
+    "assertions": 187,
+    "bunSeconds": 94.35,
+    "commandMilliseconds": 95690,
+    "log": "tmp/hunter-native-final-2026-10-09.log",
+    "mitigation": "NATIVE_TEST_TIMEOUT15S_TO45S_BUILD_AND_TYPE_HANDLES_TERMINAL_BEFORE_FINAL_RUN",
+    "productionLatencyClaim": false
+  },
+  "focusedPureAndExistingHunter": {
+    "pass": 44,
+    "fail": 0,
+    "assertions": 192,
+    "files": 2,
+    "bunSeconds": 0.142,
+    "log": "tmp/hunter-pure-frozen-2026-10-09.log",
+    "toolChunk": "4eca78"
+  },
+  "focusedNative": {
+    "pass": 19,
+    "fail": 0,
+    "assertions": 196,
+    "files": 1,
+    "bunSeconds": 24.48,
+    "commandMilliseconds": 24825,
+    "log": "tmp/hunter-native-final-green-2026-10-09.log"
+  },
+  "fullSuite": {
+    "pass": 3436,
+    "fail": 0,
+    "assertions": 323446,
+    "files": 241,
+    "bunSeconds": 82.55,
+    "commandSeconds": 82.9333732,
+    "checkedAt": "2026-10-09T16:54:13.4339603+08:00",
+    "command": "bun run test",
+    "log": "tmp/hunter-full-suite-2026-10-09.log",
+    "toolChunk": "b5e726"
+  },
+  "newTests": 47,
+  "standaloneScriptTypecheck": {
+    "status": "PASS",
+    "scope": "HELPER_AND_BOTH_NEW_TEST_FILES",
+    "command": "bunx tsc --noEmit --target ESNext --module ESNext --moduleResolution bundler --allowImportingTsExtensions --skipLibCheck --types bun scripts/gha/hunter-response.ts scripts/gha/hunter-response.test.ts scripts/gha/hunter-workflow-response.test.ts",
+    "commandSeconds": 6.654373,
+    "toolChunk": "6630bb",
+    "log": "tmp/hunter-all-script-typecheck-2026-10-09.log"
+  },
+  "webTypecheck": {
+    "status": "PASS",
+    "commandSeconds": 76.784317,
+    "log": "tmp/hunter-web-typecheck-2026-10-09.log",
+    "toolChunk": "5ff82b"
+  },
+  "astroBuild": {
+    "status": "PASS",
+    "astroSeconds": 45.08,
+    "commandSeconds": 132.0185689,
+    "log": "tmp/hunter-astro-build-2026-10-09.log",
+    "toolChunk": "798752"
+  },
+  "audits": [
+    {
+      "command": "bun run audit:guardrails",
+      "exitCode": 0,
+      "seconds": 8.4493133,
+      "log": "tmp/hunter-audit-guardrails-2026-10-09.log"
+    },
+    {
+      "command": "bun run audit:parameters",
+      "exitCode": 0,
+      "seconds": 10.028935,
+      "log": "tmp/hunter-audit-parameters-2026-10-09.log"
+    },
+    {
+      "command": "bun run audit:orchestrator",
+      "exitCode": 0,
+      "seconds": 3.7232061,
+      "log": "tmp/hunter-audit-orchestrator-2026-10-09.log"
+    },
+    {
+      "command": "bun run audit:constitution",
+      "exitCode": 0,
+      "seconds": 1.5605904,
+      "log": "tmp/hunter-audit-constitution-2026-10-09.log"
+    }
+  ],
+  "parameterParityPercent": 100,
+  "constitutionalWarningsPreserved": true,
+  "independentReview": "PASS_FROZEN_FIVE_FILE_READ_ONLY",
+  "reviewCoverageLimits": [
+    "INCOMPLETE_DIAGNOSTICS_REPORTED_NON_RECONCILIATION_NATIVE_HOLD_NOT_SEPARATELY_FIXTURED_PURE_TESTS_AND_CODE_INSPECTION",
+    "LIFECYCLE_CLASSIFIER_SLICE_AND_INSTALLED_CLI_NOT_GITHUB_SERVICE_MUTATIONS",
+    "OVERSIZED_NATIVE_HELPER_NOT_CURL_RESPONSE_BYTE_LIMIT_TEST",
+    "WINDOWS_LOCAL_NATIVE_CLI_NOT_REMOTE_ACTIONS_OR_CLOUDFLARE_GCP_RUNTIME"
+  ],
+  "effects": {
+    "jobSourceRequests": 0,
+    "productionReads": 0,
+    "productionD1Writes": 0,
+    "productionTursoWrites": 0,
+    "gcpReads": 0,
+    "gcpMutations": 0,
+    "deployments": 0,
+    "migrations": 0,
+    "sourceAdmissions": 0,
+    "newProductionClocks": 0,
+    "credentialsOrGrantsChanged": 0,
+    "companyEnrichmentsApplied": 0,
+    "publicJobsPublished": 0,
+    "newProvidersOrPaidServices": 0
+  },
+  "mathAccepted": "0/13",
+  "verifiedFreshPublicFlow": null,
+  "certification": "UNKNOWN",
+  "jev": "PRIOR401_UNCHANGED_NONBLOCKING_NOT_REPROBED",
+  "backup": {
+    "gitLab": "PASS_SOURCE_COMMIT_PUSH_EXACT_SHA_READBACK",
+    "sourceReceipt": "gitlab-hunter-publication-source-backup-2026-10-09.json",
+    "gitHub": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED",
+    "exactShaCi": "UNKNOWN_EQUIVALENT_CI_NOT_ESTABLISHED",
+    "runtimeAcceptance": "NOT_ESTABLISHED",
+    "exactShaCiInspectionScope": "SOURCE_SHA_B772_HAS_NO_REPO_GITLAB_CI_CONFIG_HOSTED_PIPELINE_OR_GROUP_POLICY_UNKNOWN_UNCHANGED_API_ACCESS_HOLD_NOT_REPROBED"
+  },
+  "remaining": [
+    "OTHER_RETAINED_HTTP_CONSUMERS_BEGIN_FRESHNESS_CRON",
+    "DURABLE_UNKNOWN_ATTEMPT_RECONCILIATION_ACROSS_CLOCK_INVOCATIONS",
+    "ALREADY_LAUNCHED_PARALLEL_SIBLINGS",
+    "ACTUAL_ID_SOURCE_OWNERSHIP_CURRENT_ITEM_PROOF",
+    "SHARED_BUDGET_EPOCH_LEASE_CONTRACT",
+    "ATOMIC_PUBLICATION_CONTROLLER",
+    "NORMAL_RELEASE_PROVENANCE_RUNTIME_FIRST_PUBLICATION_ACCEPTANCE"
+  ],
+  "checkpointGuardrail": {
+    "status": "PASS",
+    "log": "tmp/hunter-savepoint-guardrails-2026-10-09.log",
+    "toolChunk": "eaeed9",
+    "scope": "UPDATED_CANONICAL_SAVEPOINT"
+  },
+  "jsonAndFrozenHashVerification": {
+    "status": "PASS",
+    "toolChunk": "eaeed9",
+    "sourceDiffFromSourceCommit": "NONE",
+    "jsonFiles": 2,
+    "frozenFiles": 5
+  }
+}

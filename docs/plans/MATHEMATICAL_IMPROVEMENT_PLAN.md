@@ -84,6 +84,17 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 Hunter consumer prerequisite:** the retained Hunter workflow now
+saves bounded sanitized HTTP/transport/operation evidence before failing, keeps
+UNKNOWN totals null with a distinct API-reported lower bound, and issues one POST
+without curlrc retries. Incomplete/contradictory replies cannot become healthy
+summaries or alert recovery. Native local HTTP/Bash/curl/Bun fixtures and review
+support MATH-06/12 integrity/measurement prerequisites; [finite evidence](../operations/HUNTER_PUBLICATION_RECEIPTS_2026-10-09.md)
+owns exact checks/backups. The old prototype remains quarantined. Other retained
+consumers, future clock invocations, durable reconciliation, shared controls and
+actual runtime/first-publication evidence remain open. Accepted MATH stays 0/13;
+fresh flow UNKNOWN and zero production jobs/enrichments in this local unit.
+
 **2026-10-09 fresh-receipt prerequisite:** strict fresh acknowledgements now reject
 count/ID corruption without fabricating success, and native returned insert/update
 IDs replace change metadata/planned IDs in the reviewed web writers. Exceptions
