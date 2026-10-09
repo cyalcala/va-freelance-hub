@@ -4,7 +4,23 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 18:21 Manila): current publication ID/source
+Latest continuation (2026-10-09 18:44 Manila): public PH parity is locally verified
+at `60c850415aab`, pushed/read back on GitLab. Shared accepted PH tuple connects
+canonical serving, ingest public/hidden partition and fresh current-row receipts.
+Unclear stays pending; post-write drift retains UNKNOWN/rows/FTS and stops later
+sequential writes. Legacy inserted includes historical receipts; actual hidden
+writes and gateway receipt/replay counts remain distinct from daily fresh flow.
+Full3,575 tests, types/build/four
+audits and independent eight-file review pass. Final checkpoint/full-bundle clean
+restore belongs in the savepoint's actual external receipt; a pointer alone proves
+no restore. No production/CI/runtime acceptance. Sole NEXT is
+INGEST_PUBLICATION_FRESHNESS_BOUNDARY in SYSTEM_SAVEPOINT: strict raw original
+posting dates, existing30-day window before public write and bounded strict
+current-date ACK verification; no secondary-clock substitution. Full item/origin
+proof, atomicity, durable uncertainty/shared controls remain open. MATH0/13,
+certifiedflowUNKNOWN; unchanged directory/access/GCP holds retain owners/triggers.
+
+Prior continuation (2026-10-09 18:21 Manila): current publication ID/source
 ownership is locally verified at `0678e57c5d3f`, pushed/read back on GitLab.
 Gateway detaches requests and observes bounded active/source-owned rows before
 fresh success; activation UPDATEs fence source drift and retain live URL/state

@@ -1,5 +1,112 @@
 # System Savepoint
 
+## 2026-10-09 18:44 Manila — Public PH eligibility parity verified locally; source backed up to GitLab
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day,150 stretch; factual enrichment of reported
+735-entry directory; all MATH-01..13 and existing SSAE-CED/DeepSeek cards;
+lucky777/Addy resumability and authorized GitLab fallback. MATH accepted **0/13**,
+certified daily fresh public flow **NULL/UNKNOWN**. Zero production publications
+or company enrichments this unit. Previous turn was concrete source/checkpoint
+progress; this continuation completes its exact PH serving-parity NEXT.
+
+**Reentry/Git:** START `59ee3c1ae225457165257fc514046fa5b7ccfb90`, unchanged
+`codex/verified-flow-directory-checkpoint`. Prior actual ownership external final
+SHA/full-history bundle and clean restore reverified; GitLab fetch zero divergence
+at reentry and immediately before source commit. No other active repo maintainer;
+root core/gateway, worker web and native-fixture ownership separate, final review
+read-only. Eight-file source/tests `60c850415aab875c0e576369c25cc4aa590c8437` pushed
+normally and exact SHA read back **2026-10-09 10:43:27 UTC**.
+[Source receipt](operations/gitlab-publication-serving-source-backup-2026-10-09.json).
+Origin/cached main `926d39a0ea2db80a7eba8d541d12906a0c8b0837` and independent
+GitLab README main `fbeff64a2b47f32550ba426af92a2795a1507181` preserved. Repository
+GitLab CI configuration absent at exact source SHA; hosted/group/equivalent CI
+UNKNOWN. Unchanged API404/GitHub suspension not reprobed; GitHub backup/review/
+release remains pending, source backup is separate from runtime acceptance.
+Final recovery docs use one finite commit; actual final SHA/readback, complete
+prerequisite-free selected-branch history bundle and fresh clean restore will be
+recorded outside Git at
+`C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-serving-2026-10-09-104400Z.full.bundle`
+and matching `.full.receipt.json`. Prospective pointer alone proves no restore;
+verify the actual external receipt. Git is not Turso/D1/GCP-state restoration.
+Foreign `.agents/skills/` and root `lucky777.md` untracked/excluded/preserved.
+
+**Authorities/constraints:** Desktop lucky777/AGENTS/CURRENT/newest packet/current
+task/fallback recovered; manifest/router absent. Previously recovered source
+constitution/sole queue/architecture/ADRs/accepted v2 owner72709b1 unchanged in
+Git; relevant invariants/parameters/current code rechecked. Embedded historical
+commands confer no extra authority. Addy TDD/source/Git/review methods apply;
+unchanged Jev401 non-blocking/not retried. Official D1/Drizzle docs and installed
+behavior verified. GCP primary background, GitHub provenance/review, Turso evidence
+and Cloudflare/D1 serving remain. Zero production/source requests/DB observations/
+writes/migrations/deployments, admissions, parameters, providers/services/grants
+or clocks changed. Lucky777 ACTIVE coordination; older APEX PAUSED.
+
+**Completed saved NEXT:** [PUBLICATION_SERVING_ELIGIBILITY_PARITY_2026-10-09](operations/PUBLICATION_SERVING_ELIGIBILITY_PARITY_2026-10-09.md).
+Immutable shared scraper-core PH tuple connects canonical public serving, ingest
+public/hidden partition and fresh current-row receipt verification. Unclear stays
+inactive pending-triage; ineligible stays policy-rejected. Legacy inserted stays
+compatible and includes historical gateway receipts, not always current physical
+writes; hiddenInserted records actual hidden IDs, publishedCount is gateway receipt count;
+positive physical no-gateway fallback writes report NULL, without gaining authority.
+That fallback branch was code-reviewed only, not claimed native runtime-tested.
+Receipt/replay counts are not current visible/new daily flow. Fresh COUNT reads
+bind source+two accepted PH states+up to97 IDs within existing100-bind limit.
+Post-write unsupported/NULL PH/drift yields sanitized UNKNOWN, retains rows/FTS,
+omits fresh success ledger/compensation and stops later sequential groups. Earlier
+confirmed prefix stays distinct. Zero and historical replay stay ledger-only;
+no thresholds/source caps/gates changed and no scraper-to-web dependency added.
+
+**Local acceptance:** genuine native gateway RED63 pass/9 fail/437 assertions
+(six behavior failures,three binding expectations); web RED0 pass/8 fail/10
+assertions. New pure-module absence is separate setup failure. Native gateway
+GREEN72/482 assertions, web focused67/337 and pure combined134/457. Full frozen
+suite **3,575 pass/zero fail/324,233 assertions/243 files/104.25s Bun/104.522s
+command**, net35 tests. Types18.831s, Astro build28.631s, four audits PASS;
+parameter parity100%, provisional/no-live-queue warnings retained. Eight-file
+independent final review PASS; hashes/whitespace unchanged.
+[Finite checks](operations/publication-serving-local-checks-2026-10-09.json).
+PH parity does not prove full remote/freshness/URL/safety, origin/write provenance,
+atomicity, durable uncertainty/shared budgets/epochs/leases, future/parallel
+writers, GCP controller deployment or production headroom/supply. MATH-06/12 and
+SSAE-01/07/09 gain local integrity prerequisites only; all-card acceptance stays open.
+
+**Unchanged holds/owners/triggers:** directory234 Upwork/237 Intogreat reviewed
+careers proposals;236 FVA parked/rebrand Surge398 identity hold. Cloudflare7403
+leaves current baselines UNKNOWN:3 HELD,0 READY/no SQL/0 applied. Owner normal
+account/service access plus fresh successful baseline/per-row review enables
+application. Dated735-company/1,556-job snapshot is stock,not current flow.
+GitHub backup/review/release and PR228 runtime/per-row outcomes; GCP BILLING_DISABLED
+and six CONTAINER_PERMISSION_DENIED starts; Janes9046/9047 publication-control
+incident remain unresolved/unreprobed. Current image/tick/withdrawal/compensation
+not proved. Changed access/image evidence or new execution permits bounded
+re-observation; skip unchanged probes and completed repairs.
+
+**One NEXT: INGEST_PUBLICATION_FRESHNESS_BOUNDARY.** Accepted parameters require
+original posting age at most30 days and retain-unknown-do-not-publish. Ordinary
+ingest only normalizeUtcIso(input.postedAt) before PH-based public partition;
+gateway fresh current-row COUNT has no posted_at gate. Implement one shared
+strict original-posting assessment and use it before ingest public write and
+for bounded current returned-ID freshness verification. Validate raw calendar
+input before permissive new Date normalization can repair impossible dates;
+never substitute scrapedAt/updatedAt/observedAt for original postedAt. Reuse
+isAdmissionInstant canonical roundtrip, greenhousePostingDate calendar checks
+and isOpportunityFresh accepted inclusive30-day semantics without broadening
+normalizeUtcIso globally. Native SQLite/Drizzle cases cover NULL/invalid/rollover/
+ambiguous/date-only/future timestamps, exact30d and30d+1ms, misleading secondary
+clocks, both PH states, hidden/conflict-only rows, mixed IDs/later chunks and
+post-write date drift. A range-only COUNT/lexical comparison is insufficient:
+strict current date validity must hold for every exact ID within existing binds.
+Post-write mismatch/read failure retains rows/FTS, returns existing sanitized
+UNKNOWN, omits success ledger and halts later sequential source/hidden writes;
+confirmed prefix stays distinct. Zero/blocked/empty and immutable historical
+replay remain unchanged. Maintainer owns local core/gateway/ingest/tests; no
+production access or new schema/threshold/clock required. This proves stated
+original timestamp/age only, not independently proven source-origin, full remote/
+URL/safety, atomicity, durable uncertainty/shared controls or cached visibility.
+Preserve every source/item/safety/publication/cutover/opt-out/lease/cap gate and
+the current GCP raw-sync fence.
+
 ## 2026-10-09 18:21 Manila — Current publication ownership verified locally; source backed up to GitLab
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

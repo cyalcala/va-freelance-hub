@@ -84,6 +84,19 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 public PH parity prerequisite:** canonical serving, ingest public/
+hidden partition and fresh current-row acknowledgement share the existing accepted
+PH states. Unclear inputs stay pending; post-write eligibility drift retains
+UNKNOWN/physical rows and stops later sequential groups. Native SQLite/Drizzle
+and full 3,575 tests pass locally. Legacy insert counts, actual hidden writes,
+gateway receipt counts and
+certified fresh daily flow remain distinct; no deployed supply benefit or quality
+calibration is established. [Finite scope](../operations/PUBLICATION_SERVING_ELIGIBILITY_PARITY_2026-10-09.md)
+advances MATH-06/12 prerequisites only. Original date/freshness, full item proof,
+atomicity, durable uncertainty and shared controls remain open; newest savepoint
+owns sole NEXT. Accepted MATH remains 0/13, fresh flow UNKNOWN, zero production
+publications/company enrichments.
+
 **2026-10-09 current ownership prerequisite:** fresh gateway acknowledgements
 now observe actual active/source-owned rows through bounded strict reads and
 detach request identity before awaits. Web UPDATEs fence source drift and preserve

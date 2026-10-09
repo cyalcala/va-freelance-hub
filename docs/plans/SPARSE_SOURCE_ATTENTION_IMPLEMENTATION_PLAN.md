@@ -64,6 +64,15 @@ are changed by this delivery rule; every initial card remains PROPOSED.
 
 ## Dependency outline
 
+**2026-10-09 public PH parity prerequisite:** shared accepted PH semantics now
+connect canonical serving, ingest public/hidden partition and fresh current-row
+receipts. Native drift/prefix/hidden cases and full 3,575 tests pass locally;
+this supports SSAE-01/07/09 integrity without Turso integration, measured reuse
+benefit, new permission or rollout acceptance. [Finite evidence](../operations/PUBLICATION_SERVING_ELIGIBILITY_PARITY_2026-10-09.md)
+owns check/backup scope. Original date/freshness, full item proof, atomicity,
+durable uncertainty and shared controls remain open; sole NEXT stays in newest
+savepoint. Existing cards stay unaccepted, MATH 0/13, certified fresh flow UNKNOWN.
+
 **2026-10-09 current ownership prerequisite:** fresh publication receipts require
 bounded current active/source ownership and immutable request identity. Source/
 URL drift fences and native post-write UNKNOWN/stop cases support SSAE-01/07/09

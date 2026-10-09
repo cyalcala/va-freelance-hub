@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_SERVING_ELIGIBILITY_PARITY_2026-10-09",
+  "checkedAt": "2026-10-09T18:44:30.4484104+08:00",
+  "startSha": "59ee3c1ae225457165257fc514046fa5b7ccfb90",
+  "sourceSha": "60c850415aab875c0e576369c25cc4aa590c8437",
+  "branch": "codex/verified-flow-directory-checkpoint",
+  "sourceFiles": [
+    {
+      "path": "packages/scraper/publication-eligibility.ts",
+      "frozenWorkingFileSha256": "49376ea62da7ec05c3e0d238dc3548dba8cb6abcdf6f18016b52214c052a962c",
+      "sourceGitBlob": "337ac56bc062aa579ade5e7316ce494c3345ea7f"
+    },
+    {
+      "path": "packages/scraper/publication-eligibility.test.ts",
+      "frozenWorkingFileSha256": "e4b859f6aa063675430aac5cb932b09f6edcbbf02b963b16ab7a9f163d354f84",
+      "sourceGitBlob": "4763f9d3ed013a2287f6c443467d2c8badea00e5"
+    },
+    {
+      "path": "packages/scraper/index.ts",
+      "frozenWorkingFileSha256": "d042dad62d8b888151520a42916d0fe32212089fabc3e6a0b4d6a8104c6839ac",
+      "sourceGitBlob": "05f2e6d6f04434d942b4d534d64e57b5c0a7d1c4"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.ts",
+      "frozenWorkingFileSha256": "7ee00f68801444260f2fff8d728c7e64ccaee5b28deb1c21bc8f76e0341f7af7",
+      "sourceGitBlob": "2c5e61e6f865199259f9d35e98519b90f4e42b3d"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.integration.test.ts",
+      "frozenWorkingFileSha256": "43f55d17a94b35e15e4e98de505cf43e07da1b7be043bb8f8cd586c72233003d",
+      "sourceGitBlob": "c58b95cbe0fd5d107518ef722ab48f658aadb02f"
+    },
+    {
+      "path": "apps/web/src/lib/public-opportunities.ts",
+      "frozenWorkingFileSha256": "16f72e55c083fe7f78667ca71f64701c9756ef89ca7b0299cf6ca6a36874c7db",
+      "sourceGitBlob": "8008731a397b40a7450bd540e6c4da6a8e4504e2"
+    },
+    {
+      "path": "apps/web/src/pages/api/ingest.ts",
+      "frozenWorkingFileSha256": "bf9b070df27f1f995f3f500f67d26b2ae33d303280bed71cdd0341fa59390ece",
+      "sourceGitBlob": "3dc5824f0e0ff3d55a6096c2d6b39bec8b296977"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "frozenWorkingFileSha256": "e0eecf8ba79c741bcca0130232bddc68d91ae0cace58979f1b2c1a998018b4f8",
+      "sourceGitBlob": "1b9a6d0e75518efb3f7e8bab02922cc20de8cc44"
+    }
+  ],
+  "nativeGatewayEvidence": {
+    "unit": "PUBLICATION_SERVING_ELIGIBILITY_PARITY",
+    "startSha": "59ee3c1ae225457165257fc514046fa5b7ccfb90",
+    "scope": "Offline Bun SQLite integration tests only; no CI, deployment, production, throughput, or daily-flow acceptance.",
+    "testFile": "packages/scraper/publication-gateway.integration.test.ts",
+    "testFileSha256": "43f55d17a94b35e15e4e98de505cf43e07da1b7be043bb8f8cd586c72233003d",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts",
+    "timestampNote": "UTC values are converted from the actual captured PowerShell Get-Date values with explicit +08:00 offsets; no test timestamps are inferred from filenames.",
+    "red": {
+      "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts *> 'tmp/publication-serving-native-red-2026-10-09.log'",
+      "toolChunkId": "b86461",
+      "startedAtUtc": "2026-10-09T10:34:36.2083054Z",
+      "endedAtUtc": "2026-10-09T10:34:40.045025Z",
+      "commandElapsedMs": 3836.7196,
+      "bunReportedSeconds": 3.68,
+      "exitCode": 1,
+      "tests": 72,
+      "passed": 63,
+      "failed": 9,
+      "assertions": 437,
+      "behavioralFailures": 6,
+      "behavioralFailureCases": [
+        "NULL PH eligibility",
+        "unclear PH eligibility",
+        "ineligible PH eligibility",
+        "post-persistence PH eligibility drift",
+        "mixed accepted/unclear acknowledgement",
+        "later PH eligibility chunk mismatch"
+      ],
+      "bindingContractFailures": 3,
+      "bindingContractFailureCases": [
+        "97 IDs plus source and two PH bindings",
+        "policy-await request snapshot expected bindings",
+        "persist-await request snapshot expected bindings"
+      ],
+      "gatewayUnchangedDuringCapture": true,
+      "gatewayBeforeSha256": "9518c845251bd38816ff09a38fcbc805eebffb00fb063209d20d6a406cd63ece",
+      "gatewayAfterSha256": "9518c845251bd38816ff09a38fcbc805eebffb00fb063209d20d6a406cd63ece",
+      "log": "tmp/publication-serving-native-red-2026-10-09.log",
+      "logSha256": "b1959d0b1e8089151e87629902a1868c1a30203e198689bd5931e37ce0afe789"
+    },
+    "green": {
+      "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts *> 'tmp/publication-serving-native-green-2026-10-09.log'",
+      "toolChunkId": "3a497a",
+      "startedAtUtc": "2026-10-09T10:35:44.3005758Z",
+      "endedAtUtc": "2026-10-09T10:35:47.4068143Z",
+      "commandElapsedMs": 3106.2385,
+      "bunReportedSeconds": 2.96,
+      "exitCode": 0,
+      "tests": 72,
+      "passed": 72,
+      "failed": 0,
+      "assertions": 482,
+      "gatewayUnchangedDuringCapture": true,
+      "gatewayBeforeSha256": "7ee00f68801444260f2fff8d728c7e64ccaee5b28deb1c21bc8f76e0341f7af7",
+      "gatewayAfterSha256": "7ee00f68801444260f2fff8d728c7e64ccaee5b28deb1c21bc8f76e0341f7af7",
+      "log": "tmp/publication-serving-native-green-2026-10-09.log",
+      "logSha256": "fec476d0ae0389dc13e762f0578bd830240677bdf64f0f4a6943a65bfab1141e"
+    },
+    "artifactHashVerificationToolChunkId": "bb5df0",
+    "fixtureCompatibility": "The native fixture applies existing nullable-column migration 0021_geo_eligibility.sql and defaults positive physical writes to eligible_verified; no production schema change.",
+    "limits": [
+      "The query proves current active/source-owned accepted PH state, not write provenance or atomicity.",
+      "Historical replay is immutable ledger evidence and is not requalified against current PH state.",
+      "Remote, freshness, safety, durable uncertainty, shared budgets, and cached serving are outside this bounded predicate change."
+    ]
+  },
+  "webRed": {
+    "pass": 0,
+    "fail": 8,
+    "assertions": 10,
+    "bunMilliseconds": 1206,
+    "capture": {
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts --test-name-pattern direct ingest (keeps unclear|with only unclear|post-write PH drift|retains an accepted prefix)",
+      "startedAt": "2026-10-09T18:33:09.5098992+08:00",
+      "finishedAt": "2026-10-09T18:33:10.939672+08:00",
+      "exitCode": 1,
+      "elapsedMilliseconds": 1422,
+      "classification": "Genuine native SQLite/Drizzle ingest partition and post-persistence PH receipt RED",
+      "beforeWebProductionEdits": true,
+      "productionWrites": 0,
+      "actualLog": "tmp/serving-eligibility-web-red-2026-10-09.log",
+      "logSha256": "5b4cc49af741854331aae19fe000d2b753315b8a8d44078338793c5bba938561"
+    },
+    "reproducibleCommand": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts --test-name-pattern \"direct ingest (keeps unclear|with only unclear|post-write PH drift|retains an accepted prefix)\""
+  },
+  "newModuleAbsent": {
+    "classification": "SETUP_NEW_PURE_MODULE_MISSING_NOT_EXISTING_BEHAVIOR_RED",
+    "capture": {
+      "checkedAt": "2026-10-09T18:32:15.5825167+08:00",
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-eligibility.test.ts",
+      "exit": 1,
+      "milliseconds": 317,
+      "classification": "NEW_PURE_MODULE_ABSENT_NOT_EXISTING_BEHAVIORAL_RED",
+      "log": "tmp/publication-serving-core-absent-red-2026-10-09.log",
+      "actualLog": "tmp/publication-serving-core-absent-red-2026-10-09.log",
+      "logSha256": "73474430a563055f6bbaf0f863e35068351f0db78e1b55afb882c9a579b1f631"
+    }
+  },
+  "pureGreen": {
+    "pass": 134,
+    "fail": 0,
+    "assertions": 457,
+    "files": 3,
+    "bunMilliseconds": 320,
+    "capture": {
+      "checkedAt": "2026-10-09T18:35:22.4966727+08:00",
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.test.ts packages/scraper/publication-authority-gaps.test.ts packages/scraper/publication-eligibility.test.ts",
+      "exit": 0,
+      "milliseconds": 513,
+      "scope": "PURE_GATEWAY_POLICY_AND_SHARED_ELIGIBILITY",
+      "log": "tmp/publication-serving-gateway-pure-green-2026-10-09.log",
+      "actualLog": "tmp/publication-serving-gateway-pure-green-2026-10-09.log",
+      "logSha256": "1276774c52347189d11c1f8e48eed5ab5de6cd9015fc7bde6aa27d449cc70645"
+    }
+  },
+  "webGreen": {
+    "pass": 67,
+    "fail": 0,
+    "assertions": 337,
+    "files": 3,
+    "bunMilliseconds": 3920,
+    "capture": {
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts apps/web/tests/public-opportunities.test.ts apps/web/tests/publish-activations.test.ts",
+      "startedAt": "2026-10-09T18:36:22.9797222+08:00",
+      "finishedAt": "2026-10-09T18:36:27.1530591+08:00",
+      "exitCode": 0,
+      "elapsedMilliseconds": 4165,
+      "scope": "Native ingest and canonical public-serving parity; five post-write PH drift and zero/nonzero confirmed-prefix retention; existing insert/activation compatibility",
+      "productionWrites": 0,
+      "actualLog": "tmp/serving-eligibility-web-green-2026-10-09.log",
+      "logSha256": "eb04efed90e59d7f4bcc8ce929e5ccaf02bed27c3d0fa1d04cc25ff089c47076"
+    }
+  },
+  "fullSuite": {
+    "pass": 3575,
+    "fail": 0,
+    "assertions": 324233,
+    "files": 243,
+    "netNewTests": 35,
+    "bunMilliseconds": 104250,
+    "capture": {
+      "checkedAt": "2026-10-09T18:39:27.6436392+08:00",
+      "command": "bun run test",
+      "exit": 0,
+      "milliseconds": 104522,
+      "scope": "EIGHT_FROZEN_SOURCE_TEST_FILES_LOCAL",
+      "log": "tmp/publication-serving-full-suite-2026-10-09.log",
+      "actualLog": "tmp/publication-serving-full-suite-2026-10-09.log",
+      "logSha256": "e4ce158c3751f7178c51ebc3cbf671c5e239da3843b93636d09745f9f270ba30"
+    }
+  },
+  "finalChecks": [
+    {
+      "checkedAt": "2026-10-09T18:41:21.6071009+08:00",
+      "command": "bun run typecheck",
+      "exit": 0,
+      "milliseconds": 18831,
+      "scope": "EIGHT_FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-serving-typecheck-2026-10-09.log"
+    },
+    {
+      "checkedAt": "2026-10-09T18:41:50.2916964+08:00",
+      "command": "bun run build",
+      "exit": 0,
+      "milliseconds": 28631,
+      "scope": "EIGHT_FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-serving-build-2026-10-09.log"
+    },
+    {
+      "checkedAt": "2026-10-09T18:41:51.6150995+08:00",
+      "command": "bun run audit:guardrails",
+      "exit": 0,
+      "milliseconds": 1314,
+      "scope": "EIGHT_FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-serving-audit-guardrails-2026-10-09.log"
+    },
+    {
+      "checkedAt": "2026-10-09T18:41:52.213124+08:00",
+      "command": "bun run audit:parameters",
+      "exit": 0,
+      "milliseconds": 591,
+      "scope": "EIGHT_FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-serving-audit-parameters-2026-10-09.log"
+    },
+    {
+      "checkedAt": "2026-10-09T18:41:52.9351746+08:00",
+      "command": "bun run audit:orchestrator",
+      "exit": 0,
+      "milliseconds": 717,
+      "scope": "EIGHT_FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-serving-audit-orchestrator-2026-10-09.log"
+    },
+    {
+      "checkedAt": "2026-10-09T18:41:53.3357188+08:00",
+      "command": "bun run audit:constitution",
+      "exit": 0,
+      "milliseconds": 393,
+      "scope": "EIGHT_FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-serving-audit-constitution-2026-10-09.log"
+    }
+  ],
+  "review": {
+    "scope": "EIGHT_FROZEN_SOURCE_TEST_FILES",
+    "result": "PASS",
+    "reviewer": "independent read-only /root/hunter_receipt_review",
+    "requiredCorrections": 0
+  },
+  "nativeCoverage": [
+    "Actual canonical publicOpportunityFilters with SQLite/FTS and production Drizzle",
+    "Both existing accepted states",
+    "Unclear hidden pending-triage; ineligible policy-rejected",
+    "NULL/unclear/ineligible and unsupported PH drift after physical write",
+    "Mixed acknowledgements and later query-chunk mismatch",
+    "97 IDs plus source and two PH binds at most100",
+    "Retained physical rows and zero/nonzero confirmed prefixes; no next sequential source write",
+    "Historical replay and zero/blocked/empty/conflict acknowledgements unchanged",
+    "Immutable shared accepted tuple; no caller inference"
+  ],
+  "limits": [
+    "Legacy inserted already includes historical gateway receipt counts and is not always current-invocation physical writes",
+    "No-gateway count NULL branch inspected only; native D1 fixture always enables gateway",
+    "Gateway receipt/replay totals are not certified first-publication daily flow or current visibility",
+    "No strict original date/freshness or complete remote/URL/safety qualification",
+    "No independent source-origin or write-to-ID provenance",
+    "No atomic row/ledger snapshot or shared budgets/epochs/leases",
+    "No durable uncertainty/future invocation or parallel sibling acceptance",
+    "No GCP controller rollout, deployed cache visibility, performance or supply acceptance"
+  ],
+  "sourceBackup": "gitlab-publication-serving-source-backup-2026-10-09.json",
+  "finalClosure": {
+    "bundle": "C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-serving-2026-10-09-104400Z.full.bundle",
+    "receipt": "C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-serving-2026-10-09-104400Z.full.receipt.json",
+    "restore": "C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-serving-2026-10-09-104400Z.restore",
+    "status": "PROSPECTIVE_FINITE_POINTER_ACTUAL_EXTERNAL_RECEIPT_REQUIRED"
+  },
+  "ci": {
+    "repoGitLabConfigurationAtSourceSha": [],
+    "hostedGroupOrEquivalent": "UNKNOWN",
+    "gitHubBackup": "PENDING_UNCHANGED_SUSPENSION",
+    "runtimeAcceptance": "NOT_ESTABLISHED",
+    "unchangedAccessProbes": "NOT_REPEATED"
+  },
+  "productionEffects": {
+    "sourceRequests": 0,
+    "dbObservations": 0,
+    "dbWrites": 0,
+    "migrations": 0,
+    "deployments": 0,
+    "publishedJobs": 0,
+    "appliedCompanyEnrichments": 0,
+    "newSources": 0,
+    "changedParameters": 0,
+    "changedClocks": 0,
+    "newServicesProvidersGrants": 0
+  },
+  "progress": {
+    "acceptedMathCards": 0,
+    "totalMathCards": 13,
+    "localPrerequisites": [
+      "MATH-06",
+      "MATH-12",
+      "SSAE-01",
+      "SSAE-07",
+      "SSAE-09"
+    ],
+    "certifiedFreshDailyPublicFlow": null,
+    "flowState": "UNKNOWN",
+    "currentPublicStock": "UNKNOWN"
+  },
+  "next": {
+    "unit": "INGEST_PUBLICATION_FRESHNESS_BOUNDARY",
+    "owner": "maintainer local code/tests",
+    "trigger": "CURRENT_LOCAL_DEPENDENCY_READY_NO_PRODUCTION_ACCESS",
+    "evidence": "Accepted freshness.max_days_since_post30 and retain-unknown-do-not-publish; ingest normalizes postedAt but publishes by PH pair; fresh gateway current-row query has no posted_at validation",
+    "acceptance": "Strict raw original-date calendar validation before normalization, exact accepted30d inclusive boundary, no secondary-clock substitution; pre-write hidden/hold partition and bounded strict current returned-ID date checks; post-write drift/read failure UNKNOWN retained rows/FTS no ledger or later sequential source/hidden write; zero and immutable ledger replay unchanged",
+    "limits": "Stated original date and age only, not independently proven source origin, full remote/URL/safety, atomicity, durable uncertainty or shared controls"
+  }
+}
