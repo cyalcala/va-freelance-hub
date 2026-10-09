@@ -17,7 +17,7 @@ describe("publishGroupedActivations", () => {
   test("persistence receives the immutable authorized source despite caller mutation during policy lookup", async () => {
     const target = { id: 1, sourceId: "remotive" };
     const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1,
-      postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null }]) }] });
+      postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null, locationType: "remote" }]) }] });
     const prepare = db.prepare.bind(db);
     db.prepare = query => {
       if (query.includes("FROM source_registry")) target.sourceId = "remote-ok";
@@ -33,7 +33,7 @@ describe("publishGroupedActivations", () => {
   });
   test("duplicate exact targets become one publication target before count and persistence", async () => {
     const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1,
-      postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null }]) }] });
+      postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null, locationType: "remote" }]) }] });
     const selected: number[][] = [];
     const result = await publishGroupedActivations(db, [{ id: 1, sourceId: "remotive" }, { id: 1, sourceId: "remotive" }],
       NOW, "scrape-gate", { isActive: true }, async ids => { selected.push(ids); return { publishedCount: ids.length, ids }; });
@@ -62,7 +62,7 @@ describe("publishGroupedActivations", () => {
       ["scrape-gate", { isActive: true, inactiveReason: null, geoEvidence: "changed" }],
       ["scrape-reactivate", { isActive: true, inactiveReason: null, geoEvidence: "first" }]] as const) {
       const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1,
-        postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null }]) }] });
+        postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null, locationType: "remote" }]) }] });
       await publishGroupedActivations(db, [{ id: 1, sourceId: "remotive" }], NOW, channel, patch, async (ids, actualPatch) => {
         patches.push(actualPatch);
         return { publishedCount: ids.length, ids };
@@ -76,8 +76,8 @@ describe("publishGroupedActivations", () => {
 
   test("publishes attributed exact-six rows and holds rows without a source identity", async () => {
     const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 2,
-      postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null },
-        { id: 2, postedAt: NOW, sourceUrl: "https://example.test/p/2", applicationUrl: null }]) }] });
+      postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null, locationType: "remote" },
+        { id: 2, postedAt: NOW, sourceUrl: "https://example.test/p/2", applicationUrl: null, locationType: "remote" }]) }] });
     const persisted: number[][] = [];
     const result = await publishGroupedActivations(
       db,
@@ -151,8 +151,8 @@ describe("publishGroupedActivations", () => {
 
   test("clamps canary activations to the per-tick cap so the gateway never rolls back", async () => {
     const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
-      postingRows: JSON.stringify([{ id: 3, postedAt: NOW, sourceUrl: "https://example.test/p/3", applicationUrl: null },
-        { id: 4, postedAt: NOW, sourceUrl: "https://example.test/p/4", applicationUrl: null }]) }] });
+      postingRows: JSON.stringify([{ id: 3, postedAt: NOW, sourceUrl: "https://example.test/p/3", applicationUrl: null, locationType: "remote" },
+        { id: 4, postedAt: NOW, sourceUrl: "https://example.test/p/4", applicationUrl: null, locationType: "remote" }]) }] });
     const persisted: number[][] = [];
     const result = await publishGroupedActivations(
       db,

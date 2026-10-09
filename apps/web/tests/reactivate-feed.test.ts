@@ -70,7 +70,7 @@ describe("reactivateFeedConfirmedJobs", () => {
       1,
     );
     const publicationDb = new FakePublicationDatabase({ ownership: [{ ownedCount: 1,
-      postingRows: JSON.stringify([{ id: 11, postedAt: OBSERVED, sourceUrl: "https://example.com/a", applicationUrl: null }]) }] });
+      postingRows: JSON.stringify([{ id: 11, postedAt: OBSERVED, sourceUrl: "https://example.com/a", applicationUrl: null, locationType: "remote" }]) }] });
     const n = await reactivateFeedConfirmedJobs(
       db,
       ["https://example.com/a", "https://example.com/b"],

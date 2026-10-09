@@ -49,10 +49,12 @@ async function normalizeOpportunityForInsert(item: unknown, observedAt: string) 
   const applicationUrl = sanitizeApplyUrlForSource(input.applicationUrl, sourceUrl) ?? (sourceUrl ?? null);
   const description = str(input.description);
   const rawTags = Array.isArray(input.tags) ? input.tags.filter((t): t is string => typeof t === "string").slice(0, 15) : [];
+  const locationType = enumOrFallback(input.locationType, LOCATION_TYPES, "remote");
   const gate = geoGate({
     title,
     description,
     locationRaw: str(input.locationRaw),
+    locationType,
     tags: rawTags,
   });
   // Assess the raw original timestamp before permissive normalization can
@@ -68,7 +70,7 @@ async function normalizeOpportunityForInsert(item: unknown, observedAt: string) 
     sourceId: str(input.sourceId)?.toLowerCase() ?? null,
     tags: rawTags,
     category: str(input.category) ?? "other",
-    locationType: enumOrFallback(input.locationType, LOCATION_TYPES, "remote"),
+    locationType,
     clientTimezone: str(input.clientTimezone),
     payRange: str(input.payRange),
     description,

@@ -173,10 +173,11 @@ test("native production constraints independently reject malformed JSON, illegal
 });
 
 function writeOpportunity(sqlite: Database, key = "fresh-native", sourceId: string | null = "remotive", isActive = 1,
-  phEligibility: string | null = "eligible_verified", postedAt: string | null = FRESH_POSTED_AT): number[] {
-  const rows = sqlite.query(`INSERT INTO opportunities(title, company, source_url, source_platform, content_hash, source_id, is_active, ph_eligibility, posted_at)
-    VALUES('Native acknowledgement fixture', 'Fixture company', ?, 'remotive', ?, ?, ?, ?, ?)
-    ON CONFLICT(source_url) DO NOTHING RETURNING id`).all(`https://example.invalid/${key}`, key, sourceId, isActive, phEligibility, postedAt) as Array<{ id: number }>;
+  phEligibility: string | null = "eligible_verified", postedAt: string | null = FRESH_POSTED_AT,
+  locationType: string | null = "remote"): number[] {
+  const rows = sqlite.query(`INSERT INTO opportunities(title, company, source_url, source_platform, content_hash, source_id, is_active, ph_eligibility, posted_at, location_type)
+    VALUES('Native acknowledgement fixture', 'Fixture company', ?, 'remotive', ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(source_url) DO NOTHING RETURNING id`).all(`https://example.invalid/${key}`, key, sourceId, isActive, phEligibility, postedAt, locationType) as Array<{ id: number }>;
   return rows.map(row => row.id);
 }
 function currentPublicIds(sqlite: Database): number[] {
@@ -193,7 +194,106 @@ function assertWrittenRowWithoutReceipt(sqlite: Database) {
 const postPersistenceUnknown = { ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true, exposure: "UNKNOWN" };
 
 function aggregatePostingRow(change: Record<string, unknown> = {}) {
-  return { id: 1, postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null, ...change };
+  return { id: 1, postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null, locationType: "remote", ...change };
+}
+
+for (const locationType of ["onsite", "hybrid"] as const) {
+  test(`native current explicit ${locationType} metadata rejects fresh publication after actual persistence`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite);
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "explicit-nonremote", proposedCount: 1,
+        persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite, "explicit-nonremote", "remotive", 1,
+          "eligible_verified", FRESH_POSTED_AT, locationType) }),
+      });
+      expect(result).toMatchObject(postPersistenceUnknown);
+      expect(sqlite.query("SELECT location_type FROM opportunities").get()).toEqual({ location_type: locationType });
+      assertWrittenRowWithoutReceipt(sqlite);
+      expect(db.runs).toEqual([]);
+    } finally { sqlite.close(); }
+  });
+
+  test(`native post-persistence remote-to-${locationType} metadata drift preserves UNKNOWN and physical rows`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite);
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "nonremote-drift", proposedCount: 1,
+        persist: async () => {
+          const ids = writeOpportunity(sqlite, "nonremote-drift");
+          expect(sqlite.query("SELECT location_type FROM opportunities").get()).toEqual({ location_type: "remote" });
+          sqlite.query("UPDATE opportunities SET location_type=? WHERE id=?").run(locationType, ids[0]!);
+          return { publishedCount: ids.length, ids };
+        },
+      });
+      expect(result).toMatchObject(postPersistenceUnknown);
+      expect(sqlite.query("SELECT location_type FROM opportunities").get()).toEqual({ location_type: locationType });
+      assertWrittenRowWithoutReceipt(sqlite);
+      expect(db.runs).toEqual([]);
+    } finally { sqlite.close(); }
+  });
+
+  for (const invalidIndex of [48, 145, 195]) {
+    test(`native explicit ${locationType} metadata at index ${invalidIndex} stops later current-row chunks`, async () => {
+      const sqlite = freshDb();
+      try {
+        const db = new BunDb(sqlite);
+        const result = await publishPublicExposure(db, {
+          sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "nonremote-chunk", proposedCount: 201,
+          persist: async () => {
+            const ids = Array.from({ length: 201 }, (_, index) => writeOpportunity(sqlite, `nonremote-chunk-${index}`)[0]!);
+            sqlite.query("UPDATE opportunities SET location_type=? WHERE id=?").run(locationType, ids[invalidIndex]!);
+            return { publishedCount: ids.length, ids };
+          },
+        });
+        expect(result).toMatchObject(postPersistenceUnknown);
+        const reads = db.reads.filter(read => read.query.includes("FROM opportunities"));
+        expect(reads).toHaveLength(Math.floor(invalidIndex / CURRENT_READ_STRIDE) + 1);
+        expect(reads.every(read => read.values.length <= 100)).toBe(true);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 201 });
+        expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(201);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+        expect(db.runs).toEqual([]);
+      } finally { sqlite.close(); }
+    });
+  }
+}
+
+for (const locationType of ["onsite", "hybrid", null, "private-unsupported-location-type", "x".repeat(4096)] as const) {
+  test(`native immutable replay ignores current remote metadata ${locationType === null ? "NULL" : locationType.length > 100 ? "oversize" : locationType}`, async () => {
+    const sqlite = freshDb();
+    try {
+      const first = await publishPublicExposure(new BunDb(sqlite), {
+        sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "saved-retry", proposedCount: 1,
+        persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite, "historical-remote", "we-work-remotely") }),
+      });
+      expect(first).toMatchObject({ ok: true, publishedCount: 1, ids: [1], replayed: false });
+      sqlite.query("UPDATE opportunities SET location_type=? WHERE id=1").run(locationType);
+      expect(await inspectRetry(sqlite, { proposedCount: 1 }))
+        .toEqual({ ok: true, mode: "unlimited", publishedCount: 1, ids: [1], replayed: true });
+      expect(sqlite.query("SELECT location_type FROM opportunities").get()).toEqual({ location_type: locationType });
+    } finally { sqlite.close(); }
+  });
+}
+
+for (const locationType of ["remote", null, "unsupported-stored-metadata", "x".repeat(4096)] as const) {
+  test(`native stored ${locationType === null ? "NULL" : locationType.length > 100 ? "oversize" : locationType} metadata passes only the explicit-contradiction boundary`, async () => {
+    const sqlite = freshDb();
+    try {
+      const result = await publishPublicExposure(new BunDb(sqlite), {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "noncontradiction-control", proposedCount: 1,
+        persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite, "noncontradiction-control", "remotive", 1,
+          "eligible_verified", FRESH_POSTED_AT, locationType) }),
+      });
+      // The production TEXT column is nullable without an enum CHECK. Neither
+      // NULL nor unsupported stored text independently establishes remote work.
+      expect(result).toMatchObject({ ok: true, publishedCount: 1, ids: [1], replayed: false });
+      expect(sqlite.query("SELECT location_type FROM opportunities").get()).toEqual({ location_type: locationType });
+      expect(sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get())
+        .toEqual({ n: 1, ids: "[1]" });
+    } finally { sqlite.close(); }
+  });
 }
 
 const invalidCurrentSourceCases = [
@@ -479,16 +579,16 @@ for (const [name, postingRows] of [
   ["malformed JSON aggregate", "private-incomplete-json["], ["JSON null aggregate", "null"],
   ["JSON object aggregate", "{}"], ["missing aggregate row", "[]"],
   ["primitive aggregate row", '["unexpected"]'],
-  ["missing aggregate ID", JSON.stringify([{ postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null }])],
+  ["missing aggregate ID", JSON.stringify([{ postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null, locationType: "remote" }])],
   ["string aggregate ID", JSON.stringify([aggregatePostingRow({ id: "1" })])],
   ["fractional aggregate ID", JSON.stringify([aggregatePostingRow({ id: 1.5 })])],
   ["foreign aggregate ID", JSON.stringify([aggregatePostingRow({ id: 404 })])],
-  ["missing aggregate date", JSON.stringify([{ id: 1, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null }])],
+  ["missing aggregate date", JSON.stringify([{ id: 1, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null, locationType: "remote" }])],
   ["invalid aggregate date", JSON.stringify([aggregatePostingRow({ postedAt: "private-provider-time" })])],
   ["extra aggregate row", JSON.stringify([aggregatePostingRow(), aggregatePostingRow({ id: 404 })])],
-  ["missing both aggregate URL fields", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT }])],
-  ["missing aggregate source URL", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT, applicationUrl: null }])],
-  ["missing aggregate application URL", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native" }])],
+  ["missing both aggregate URL fields", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT, locationType: "remote" }])],
+  ["missing aggregate source URL", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT, applicationUrl: null, locationType: "remote" }])],
+  ["missing aggregate application URL", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native", locationType: "remote" }])],
   ["NULL aggregate source URL", JSON.stringify([aggregatePostingRow({ sourceUrl: null })])],
   ["numeric aggregate source URL", JSON.stringify([aggregatePostingRow({ sourceUrl: 1 })])],
   ["array aggregate source URL", JSON.stringify([aggregatePostingRow({ sourceUrl: [] })])],
@@ -498,6 +598,13 @@ for (const [name, postingRows] of [
   ["object aggregate application URL", JSON.stringify([aggregatePostingRow({ applicationUrl: { private: "apply" } })])],
   ["extra aggregate field", JSON.stringify([aggregatePostingRow({ private: "provider-metadata" })])],
   ["oversize URL aggregate reply", JSON.stringify([aggregatePostingRow({ sourceUrl: "s".repeat(30_000) })])],
+  ["missing aggregate location metadata", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null }])],
+  ["numeric aggregate location metadata", JSON.stringify([aggregatePostingRow({ locationType: 1 })])],
+  ["boolean aggregate location metadata", JSON.stringify([aggregatePostingRow({ locationType: false })])],
+  ["array aggregate location metadata", JSON.stringify([aggregatePostingRow({ locationType: [] })])],
+  ["object aggregate location metadata", JSON.stringify([aggregatePostingRow({ locationType: { private: "provider-location" } })])],
+  ["oversize aggregate location metadata", JSON.stringify([aggregatePostingRow({ locationType: "private-provider-location".repeat(256) })])],
+  ["unsupported aggregate location metadata", JSON.stringify([aggregatePostingRow({ locationType: "unsupported-provider-location" })])],
 ] as const) {
   test(`native physical persistence plus ${name} cannot certify original posting freshness`, async () => {
     const sqlite = freshDb();
@@ -792,6 +899,7 @@ test("native ownership and eligibility verify every distinct ID with bounded 80-
       expect(read.query).toContain("posted_at");
       expect(read.query).toContain("source_url");
       expect(read.query).toContain("application_url");
+      expect(read.query).toContain("location_type");
       seen.push(...read.values.slice(3));
     }
     expect(seen).toEqual(Array.from({ length: 201 }, (_, index) => index + 1));

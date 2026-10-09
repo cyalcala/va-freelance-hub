@@ -15,6 +15,7 @@ import { D1_MAX_BOUND_PARAMETERS } from "./batch";
 import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 import { assessPostingFreshness } from "./publication-freshness";
 import { resolvePublicationOutboundUrl } from "./publication-outbound";
+import { hasExplicitNonRemoteLocationType } from "./publication-remote";
 import { MAX_URL_INPUT_LENGTH } from "./urls";
 
 export interface PublicationStatement {
@@ -282,13 +283,16 @@ function snapshotAcknowledgement(value: unknown, allowedCount: number): { publis
 
 async function hasCurrentOwnership(db: PublicationDatabase, sourceId: string, ids: readonly number[], now: string): Promise<boolean> {
   // Bindings stay within 100. Two bounded URL fields and the date can each
-  // expand up to six JSON bytes per SQLite character; keep the aggregate below
+  // expand up to six JSON bytes per SQLite character; the canonical workplace
+  // enum adds at most six characters. Keep the aggregate below
   // D1's 2,000,000-byte single-string/row ceiling. This leaves 80 IDs per read,
   // without changing any publication/source cap or proving atomic ownership.
   const maxJsonBytes = 2_000_000;
-  const maxRowJsonBytes = 2 * MAX_URL_INPUT_LENGTH * 6 + 35 * 6 + 128;
+  const maxRowJsonBytes = 2 * MAX_URL_INPUT_LENGTH * 6 + 35 * 6 + 6 * 6 + 128;
   const chunkSize = Math.min(D1_MAX_BOUND_PARAMETERS - 1 - PUBLIC_PH_ELIGIBILITIES.length,
     Math.floor((maxJsonBytes - 2) / maxRowJsonBytes));
+  // NULL/unsupported workplace metadata stays opaque: this read detects explicit
+  // contradictions, not independent remote proof or the default-remote gap.
   for (let offset = 0; offset < ids.length; offset += chunkSize) {
     const chunk = ids.slice(offset, offset + chunkSize);
     const row = await db.prepare(`SELECT COUNT(*) AS ownedCount,
@@ -297,7 +301,9 @@ async function hasCurrentOwnership(db: PublicationDatabase, sourceId: string, id
         'sourceUrl', CASE WHEN typeof(source_url) = 'text' AND length(source_url) <= ${MAX_URL_INPUT_LENGTH}
           THEN source_url ELSE NULL END,
         'applicationUrl', CASE WHEN typeof(application_url) = 'text' AND length(application_url) <= ${MAX_URL_INPUT_LENGTH}
-          THEN application_url ELSE NULL END)) AS postingRows
+          THEN application_url ELSE NULL END,
+        'locationType', CASE WHEN location_type IN ('remote', 'onsite', 'hybrid')
+          THEN location_type ELSE NULL END)) AS postingRows
       FROM opportunities
       WHERE source_id = ? AND is_active = 1
       AND ph_eligibility IN (${PUBLIC_PH_ELIGIBILITIES.map(() => "?").join(", ")})
@@ -317,16 +323,19 @@ async function hasCurrentOwnership(db: PublicationDatabase, sourceId: string, id
     for (const value of rows) {
       if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
       const keys = Object.keys(value);
-      const { id, postedAt, sourceUrl, applicationUrl } = value as {
-        id: unknown; postedAt: unknown; sourceUrl: unknown; applicationUrl: unknown;
+      const { id, postedAt, sourceUrl, applicationUrl, locationType } = value as {
+        id: unknown; postedAt: unknown; sourceUrl: unknown; applicationUrl: unknown; locationType: unknown;
       };
-      if (keys.length !== 4 || !Object.hasOwn(value, "id") || !Object.hasOwn(value, "postedAt")
+      if (keys.length !== 5 || !Object.hasOwn(value, "id") || !Object.hasOwn(value, "postedAt")
         || !Object.hasOwn(value, "sourceUrl") || !Object.hasOwn(value, "applicationUrl")
+        || !Object.hasOwn(value, "locationType")
         || typeof id !== "number" || !remaining.delete(id)
         || assessPostingFreshness(postedAt, now).state !== "WITHIN_WINDOW"
         || (applicationUrl !== null && typeof applicationUrl !== "string")
         || (typeof applicationUrl === "string" && [...applicationUrl].length > MAX_URL_INPUT_LENGTH)
-        || !resolvePublicationOutboundUrl(sourceUrl, applicationUrl)) return false;
+        || !resolvePublicationOutboundUrl(sourceUrl, applicationUrl)
+        || (locationType !== null && locationType !== "remote" && !hasExplicitNonRemoteLocationType(locationType))
+        || hasExplicitNonRemoteLocationType(locationType)) return false;
     }
     if (remaining.size !== 0) return false;
   }
@@ -354,7 +363,7 @@ async function persistAndRecord(
 
   try {
     if (!await hasCurrentOwnership(db, request.sourceId, acknowledgement.ids, request.now)) {
-      return postPersistenceFailure("publication IDs did not match current active PH-eligible fresh source ownership and outbound URL");
+      return postPersistenceFailure("publication IDs did not match current active PH-eligible fresh source ownership, outbound URL and remote metadata");
     }
   } catch {
     return postPersistenceFailure("publication source ownership could not be verified");

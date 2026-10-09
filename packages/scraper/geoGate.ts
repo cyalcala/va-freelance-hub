@@ -10,10 +10,12 @@
 //   residence-lock pattern.
 // - Timezone-OVERLAP requirements ("must overlap 4h with EST") stay eligible —
 //   that is normal VA reality. Only hard residence/authorization locks reject.
-// - onsite/hybrid markers only count in the title and location string, never
+// - onsite/hybrid counts in structured workplace type, title or location, never
 //   in free description text ("we use a hybrid of async and sync" is fine).
 // - When signals conflict or are absent the verdict is `unknown` and the AI
 //   layer decides. This gate must be precise, not clever.
+
+import { hasExplicitNonRemoteLocationType } from "./publication-remote";
 
 export type GeoScope =
   | "worldwide"
@@ -34,6 +36,8 @@ export interface GeoGateInput {
   description?: string | null;
   /** Structured location string from the source (RemoteOK `location`, WWR `<region>`, ATS offices). */
   locationRaw?: string | null;
+  /** Existing structured workplace enum; missing metadata is not remote proof. */
+  locationType?: string | null;
   tags?: string[] | null;
 }
 
@@ -247,7 +251,12 @@ export function geoGate(input: GeoGateInput): GeoVerdict {
   const tags = (input.tags || []).map((t) => String(t).toLowerCase().trim());
   const titleAndDesc = `${title} ${description}`;
 
-  // 0. Onsite / hybrid markers in title or structured location string.
+  // 0. An explicit workplace type contradicts remote eligibility independently
+  // of positive PH geography. Missing metadata adds no remote proof.
+  if (hasExplicitNonRemoteLocationType(input.locationType)) {
+    return verdict("country_locked", "ineligible", `Not fully remote: "${input.locationType}" workplace type`);
+  }
+  // Onsite / hybrid markers in title or structured location string.
   // A job that is not remote cannot be an eligible remote opportunity,
   // even if located in the Philippines. Note: description text is deliberately
   // excluded ("we use a hybrid of async and sync" remains eligible).

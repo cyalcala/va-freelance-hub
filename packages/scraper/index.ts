@@ -9,6 +9,7 @@ export type { GeoGateInput, GeoVerdict, GeoScope, PhEligibility } from "./geoGat
 export { PUBLIC_PH_ELIGIBILITIES, isPublicPhEligibility } from "./publication-eligibility";
 export { assessPostingFreshness, type PostingFreshnessAssessment } from "./publication-freshness";
 export { resolvePublicationOutboundUrl } from "./publication-outbound";
+export { hasExplicitNonRemoteLocationType } from "./publication-remote";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";
 export { decideTriage, mapTriageCategoryToUiCategory } from "./triage-decision";

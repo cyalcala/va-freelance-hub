@@ -1,6 +1,31 @@
 import { describe, it, expect } from "bun:test";
 import { geoGate, detectDominantLanguage, scanLandingPageForGeoLock } from "./geoGate";
 
+describe("structured remote metadata", () => {
+  for (const locationType of ["onsite", "hybrid"]) {
+    for (const locationRaw of ["Philippines", "Worldwide", "APAC"]) {
+      it(`${locationType} contradicts remote eligibility even with positive ${locationRaw}`, () => {
+        const input = { title: "Customer Support Specialist", locationRaw, locationType,
+          description: "Open to applicants in the Philippines" };
+        expect(geoGate(input)).toMatchObject({ geoScope: "country_locked", phEligibility: "ineligible" });
+      });
+    }
+  }
+  it("explicit remote retains the existing PH positive", () => {
+    const input = { title: "Customer Support Specialist", locationRaw: "Philippines", locationType: "remote" };
+    expect(geoGate(input).phEligibility).toBe("eligible_verified");
+  });
+  it("hybrid collaboration in free description is not a hybrid workplace", () => {
+    const input = { title: "Customer Support Specialist", locationRaw: "Philippines", locationType: "remote",
+      description: "We use a hybrid of async and sync collaboration" };
+    expect(geoGate(input).phEligibility).toBe("eligible_verified");
+  });
+  it("absent structured metadata retains the existing geo verdict without proving remote origin", () => {
+    expect(geoGate({ title: "Customer Support Specialist", locationRaw: "Philippines" }).phEligibility)
+      .toBe("eligible_verified");
+  });
+});
+
 // Golden set for the deterministic geo-gate. Fixture #1 is the real
 // production escape that motivated the whole geo masterplan (job #4667).
 

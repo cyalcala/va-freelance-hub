@@ -20,7 +20,7 @@ import * as path from "path";
 
 const NOW = "2026-09-06T12:00:00.000Z";
 const TICK = publicationTickKey("scrape", NOW);
-const currentRows = (ids: number[]) => ({ ownedCount: ids.length, postingRows: JSON.stringify(ids.map(id => ({ id, postedAt: NOW, sourceUrl: "https://jobs.example.com/role/123", applicationUrl: null }))) });
+const currentRows = (ids: number[]) => ({ ownedCount: ids.length, postingRows: JSON.stringify(ids.map(id => ({ id, postedAt: NOW, sourceUrl: "https://jobs.example.com/role/123", applicationUrl: null, locationType: "remote" }))) });
 
 class FakeStatement implements PublicationStatement {
   constructor(
