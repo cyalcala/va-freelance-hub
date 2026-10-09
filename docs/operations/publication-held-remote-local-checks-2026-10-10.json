@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY",
+  "checkedAtUtc": "2026-10-09T21:26:12.1961313+00:00",
+  "startSha": "433d0ed2b9e10f214903747d1f1a7be45c37af3e",
+  "sourceSha": "2336f27bdb6bebbbfe5e9e020000b6af2ce38315",
+  "scope": "FOUR_FROZEN_SOURCE_TEST_FILES_LOCAL_ONLY_NO_CI_DEPLOYMENT_OR_FLOW_ACCEPTANCE",
+  "interruption": "Native RED, implementation and GREEN completed October9; usage-limit interruption stopped independent review/checkpoint; resumed October10 Manila from actual files and terminal receipts without restarting native tests",
+  "files": [
+    {
+      "path": "apps/web/src/lib/publication-remote.ts",
+      "frozenWorkingFileSha256": "b48cdba659730d21b068a8e879bfd2529c2f1c369274ac580f9feefefd545969",
+      "sourceGitBlob": "68f7294ad7ad052934d4ae44848329fe1612afd6"
+    },
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "frozenWorkingFileSha256": "40a8b84f5bf1ff27e27ea7ab3405a5277cd2ca4ae2c45648746f4bcf1d24a546",
+      "sourceGitBlob": "eed6100d82000d4ef0886d5c3e15e45f81f0d0e2"
+    },
+    {
+      "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+      "frozenWorkingFileSha256": "9fac662d303b1a2a87f7e4b7ac8dc30b8802a0486ae1665a78a5c120401c2ea9",
+      "sourceGitBlob": "d1e491bae284a878772b874f4d663746d63adeb6"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "frozenWorkingFileSha256": "635f145abd1e5af49d69e021bf808e6dd2acf5976c9bd15a0ad5facc265fd432",
+      "sourceGitBlob": "9d51c83616098c16ca1b4ff6c5adf6ed367aafe0"
+    }
+  ],
+  "native": {
+    "red": {
+      "receipt": {
+        "unit": "PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY",
+        "startSha": "433d0ed2b9e10f214903747d1f1a7be45c37af3e",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts",
+        "startedAtUtc": "2026-10-09T20:25:55.5148733+08:00",
+        "endedAtUtc": "2026-10-09T20:26:12.4605174+08:00",
+        "commandElapsedMs": 16942.3289,
+        "exitCode": 1,
+        "log": "tmp/publication-held-remote-native-red-2026-10-09.log",
+        "logSha256": "f91b0394a54c0c6f73c0090465b7cfc3040db8a1c8eda21042aba5bc8ee3a562",
+        "testFile": "apps/web/tests/publish-inserts.test.ts",
+        "testFileSha256": "635f145abd1e5af49d69e021bf808e6dd2acf5976c9bd15a0ad5facc265fd432",
+        "productionBefore": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "a5b2275a057844121f32a69d2fe5f5240324d866bd1b9d6d096b8daf6df3aa6b"
+          },
+          {
+            "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+            "sha256": "4485c380b6216c7563a9ee26874002f5c1cd9c4b5db37df60981a529b0ae7283"
+          }
+        ],
+        "productionAfter": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "a5b2275a057844121f32a69d2fe5f5240324d866bd1b9d6d096b8daf6df3aa6b"
+          },
+          {
+            "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+            "sha256": "4485c380b6216c7563a9ee26874002f5c1cd9c4b5db37df60981a529b0ae7283"
+          }
+        ],
+        "actualCounts": {
+          "passed": 145,
+          "failed": 61,
+          "assertions": 862,
+          "tests": 206,
+          "files": 1,
+          "bunReportedSeconds": 16.72
+        },
+        "classification": "GENUINE_HELD_ROW_PREFENCE_BEHAVIOR_RED_ALL_109_PRIOR_CASES_PASS_NO_SETUP_FAILURE",
+        "failureGroups": {
+          "stableRejection": 14,
+          "preUpdateDrift": 14,
+          "mixedSubsets": 14,
+          "staleRejectionFence": 15,
+          "laterBoundedChunk": 4
+        },
+        "originalCasesPassed": 109,
+        "newCases": {
+          "tests": 97,
+          "passed": 36,
+          "failed": 61,
+          "positiveAndOpaqueControlsPassed": 28,
+          "existingPostWriteUnknownControlsPassed": 8
+        },
+        "toolChunkIds": [
+          "619d3a",
+          "a7b65c"
+        ],
+        "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts *> $taskNativeLog",
+        "captureVariables": {
+          "taskNativeLog": "tmp/publication-held-remote-native-red-2026-10-09.log"
+        },
+        "scope": "Offline Bun SQLite using production Drizzle queries and existing schema-column/FTS migrations; registered Inngest handler executes local step callbacks only, not transport/scheduling/retries/parallel cancellation. No source/schema edit, network, production or broad full suite.",
+        "failureCountingMethod": "Distinct failure names; Bun repeats failures in its final failure list. Raw fail-line count is not the test failure count."
+      },
+      "receiptSha256": "3ed7af2d2560baa67bde018e9c4088308a79dba99d3882e81a8f3f0d668578ad",
+      "actualCounts": {
+        "passed": 145,
+        "failed": 61,
+        "assertions": 862,
+        "tests": 206,
+        "files": 1,
+        "bunReportedSeconds": 16.72
+      }
+    },
+    "green": {
+      "receipt": {
+        "unit": "PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY",
+        "startSha": "433d0ed2b9e10f214903747d1f1a7be45c37af3e",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts",
+        "startedAtUtc": "2026-10-09T20:28:39.2631947+08:00",
+        "endedAtUtc": "2026-10-09T20:28:51.2531767+08:00",
+        "commandElapsedMs": 11986.0427,
+        "exitCode": 0,
+        "log": "tmp/publication-held-remote-native-green-2026-10-09.log",
+        "logSha256": "8ec696529b956fe53ed8c790cd826e76f550729a9f374143bafd4503fd038dfe",
+        "testFile": "apps/web/tests/publish-inserts.test.ts",
+        "testFileSha256": "635f145abd1e5af49d69e021bf808e6dd2acf5976c9bd15a0ad5facc265fd432",
+        "productionBefore": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "40a8b84f5bf1ff27e27ea7ab3405a5277cd2ca4ae2c45648746f4bcf1d24a546"
+          },
+          {
+            "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+            "sha256": "9fac662d303b1a2a87f7e4b7ac8dc30b8802a0486ae1665a78a5c120401c2ea9"
+          },
+          {
+            "path": "apps/web/src/lib/publication-remote.ts",
+            "sha256": "b48cdba659730d21b068a8e879bfd2529c2f1c369274ac580f9feefefd545969"
+          }
+        ],
+        "productionAfter": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "40a8b84f5bf1ff27e27ea7ab3405a5277cd2ca4ae2c45648746f4bcf1d24a546"
+          },
+          {
+            "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+            "sha256": "9fac662d303b1a2a87f7e4b7ac8dc30b8802a0486ae1665a78a5c120401c2ea9"
+          },
+          {
+            "path": "apps/web/src/lib/publication-remote.ts",
+            "sha256": "b48cdba659730d21b068a8e879bfd2529c2f1c369274ac580f9feefefd545969"
+          }
+        ]
+      },
+      "receiptSha256": "0290325b7521dfbf763397c3118777eb577a3fd1a2c4783da42552e450956a2d",
+      "actualCounts": {
+        "passed": 206,
+        "failed": 0,
+        "assertions": 1164,
+        "tests": 206,
+        "files": 1,
+        "bunReportedSeconds": 11.71
+      }
+    }
+  },
+  "checks": {
+    "full-suite": {
+      "checkedAt": "2026-10-10T05:24:19.5368144+08:00",
+      "startedAt": "2026-10-10T05:20:44.9241971+08:00",
+      "command": "bun run test",
+      "exit": 0,
+      "milliseconds": 214608.4218,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-held-remote-full-suite-2026-10-10.log",
+      "logSha256": "210810c3488bec2b49b333f252026898049197bed0a009050d1e07f2f2be82a5"
+    },
+    "typecheck": {
+      "checkedAt": "2026-10-10T05:22:03.3604563+08:00",
+      "startedAt": "2026-10-10T05:20:49.470653+08:00",
+      "command": "bun run typecheck",
+      "exit": 0,
+      "milliseconds": 73885.8569,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-held-remote-typecheck-2026-10-10.log",
+      "logSha256": "4ffe99488e8b95277c0b5110e21846165152e354361495a2e344f2312540ddcc"
+    },
+    "build": {
+      "checkedAt": "2026-10-10T05:22:49.3122561+08:00",
+      "startedAt": "2026-10-10T05:20:59.6436362+08:00",
+      "command": "bun run build",
+      "exit": 0,
+      "milliseconds": 109657.1396,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-held-remote-build-2026-10-10.log",
+      "logSha256": "887c09ddd53f7b04172a642442b2457ca5e9f41a0588a207b982c8f2d8f6f536"
+    },
+    "audit-guardrails": {
+      "checkedAt": "2026-10-10T05:21:37.8393833+08:00",
+      "startedAt": "2026-10-10T05:21:11.2151376+08:00",
+      "command": "bun run audit:guardrails",
+      "exit": 0,
+      "milliseconds": 26618.0009,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-held-remote-audit-guardrails-2026-10-10.log",
+      "logSha256": "e5d85f723e265f151e18e0f5af9376414ed81ad92718b0dc4b6f0b243b5cf710"
+    },
+    "audit-parameters": {
+      "checkedAt": "2026-10-10T05:21:27.4687967+08:00",
+      "startedAt": "2026-10-10T05:21:15.9455164+08:00",
+      "command": "bun run audit:parameters",
+      "exit": 0,
+      "milliseconds": 11511.5431,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-held-remote-audit-parameters-2026-10-10.log",
+      "logSha256": "9827b8a08a7b67e2da90694a40315f0a854806812289698b610d80b700257dac"
+    },
+    "audit-orchestrator": {
+      "checkedAt": "2026-10-10T05:21:33.189809+08:00",
+      "startedAt": "2026-10-10T05:21:21.1192017+08:00",
+      "command": "bun run audit:orchestrator",
+      "exit": 0,
+      "milliseconds": 12014.0322,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-held-remote-audit-orchestrator-2026-10-10.log",
+      "logSha256": "c2138df9749d23ab2aeee0dae435f410527e9f4c6e8a298bf633ec4e140b9d5a"
+    },
+    "audit-constitution": {
+      "checkedAt": "2026-10-10T05:21:33.6320182+08:00",
+      "startedAt": "2026-10-10T05:21:24.3515831+08:00",
+      "command": "bun run audit:constitution",
+      "exit": 0,
+      "milliseconds": 9273.358,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-held-remote-audit-constitution-2026-10-10.log",
+      "logSha256": "3f014a900ebb4f4895392b9328422df8441f07e221a9758d34b7ba3fd5286eee"
+    }
+  },
+  "fullSuiteActualCounts": {
+    "passed": 3941,
+    "failed": 0,
+    "assertions": 326106,
+    "files": 246,
+    "tests": 3941,
+    "bunReportedSeconds": 213.9,
+    "netNewTests": 97
+  },
+  "review": {
+    "status": "PASS_NO_BLOCKING_FINDING",
+    "independentReviewer": "/root/ownership_activation",
+    "rootReview": "PASS_REGISTERED_HANDLER_AND_NATIVE_FIXTURE_SCOPE",
+    "axes": [
+      "correctness",
+      "readability",
+      "architecture",
+      "security",
+      "performance"
+    ],
+    "hashAndWhitespace": "PASS",
+    "limits": "Registered handler is a local callback, not hosted Inngest transport/scheduling/retries or sibling cancellation"
+  },
+  "behavior": {
+    "stableKnownNonremote": "INACTIVE_BEFORE_AI_OR_PUBLIC_ACTIVATION",
+    "staleRejection": "CURRENT_SOURCE_INACTIVE_PENDING_EXACT_TYPE_FENCED_ACTUAL_RETURNING_ELSE_DEFERRED",
+    "liveActivation": "ALL_FOUR_UPDATES_EXCLUDE_EXACT_ONSITE_HYBRID",
+    "actualIds": "ACTUAL_RETURNING_ONLY",
+    "zero": "VALID_EMPTY_ACK_NO_CURRENT_READ",
+    "mixed": "EXACT_ACTUAL_REMOTE_SUBSET",
+    "opaque": "NULL_OR_UNSUPPORTED_IS_NONCONTRADICTION_NOT_REMOTE_PROOF",
+    "postWrite": "UNKNOWN_PHYSICAL_ROWS_FTS_RETAINED_NO_FRESH_LEDGER_NO_LATER_SEQUENTIAL_WRITER_DISTINCT_PREFIX",
+    "fallback": "EXISTING_PATH_TESTED_NO_PUBLICATION_AUTHORITY_GRANTED",
+    "bindLimit": 100,
+    "helperExtraBinds": 2,
+    "feedSizing": "ACTUAL_DRIZZLE_QUERY_BIND_BUDGET_RETAINED",
+    "publicationCaps": "UNCHANGED"
+  },
+  "authority": {
+    "productionSourceRequests": 0,
+    "productionDbReads": 0,
+    "productionDbWrites": 0,
+    "productionPublications": 0,
+    "productionDirectoryEnrichments": 0,
+    "deployments": 0,
+    "migrations": 0,
+    "newAdmissions": 0,
+    "parametersProvidersPermissionsClocks": "UNCHANGED",
+    "gcpPrimary": "RETAINED",
+    "sourceQueue": "SOLE_CANONICAL_QUEUE_RETAINED"
+  },
+  "objective": {
+    "dailyFloor": 100,
+    "stretch": 150,
+    "reportedDirectoryCount": 735,
+    "certifiedDailyFreshFlow": null,
+    "acceptedMath": 0,
+    "mathTotal": 13,
+    "localMappings": [
+      "MATH-06",
+      "MATH-12",
+      "SSAE-01",
+      "SSAE-07",
+      "SSAE-09"
+    ],
+    "maturity": "LOCAL_PREREQUISITE_ONLY_FULL_OWNER_OBJECTIVE_OPEN"
+  },
+  "sourceBackupReceipt": "gitlab-publication-held-remote-source-backup-2026-10-10.json",
+  "next": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+  "nextEvidence": "Native prewrite reproduction of scrape.ts2685 omitted held item.locationType surviving ...item at2872 before any repair",
+  "prospectiveRecoveryPrefix": "C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-held-remote-2026-10-09-212604Z",
+  "recoveryPointerStatus": "PROSPECTIVE_ONLY_INSPECT_ACTUAL_EXTERNAL_RECEIPT",
+  "productionImageTickCIReviewSupply": "UNKNOWN_OR_NOT_ESTABLISHED_NOT_INFERRED_FROM_LOCAL_TESTS_OR_SOURCE_BACKUP"
+}

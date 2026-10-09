@@ -1,5 +1,100 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Held-row nonremote activation verified locally; GitLab checkpoint
+
+**Owner scope CONTINUING:**100 newly first-published unique verified PH-accessible
+remote jobs/complete Manila day,150 stretch; factual enrichment of reported735
+directory entries; MATH-01..13/SSAE-CED/DeepSeek; lucky777/Addy resumability and
+GitLab fallback. Accepted MATH **0/13**, certified daily fresh flow **NULL/UNKNOWN**.
+Zero production publications/company enrichments. Sole saved held-row NEXT is
+complete locally; full owner objective remains open. Previous turn made progress
+through native RED/repairs/GREEN; usage limit interrupted final review/checkpoint.
+Resumed from actual files/terminal receipts, preserving completed native work.
+
+**Git/reentry:** START `433d0ed2b9e10f214903747d1f1a7be45c37af3e`, unchanged
+`codex/verified-flow-directory-checkpoint`. Prior433d full-history clean-restore
+receipt remains separate. GitLab fetch0/0 at resumed reentry and before commit;
+no other active repository chat, source/native ownership separated; final review
+read-only. Four-file source `2336f27bdb6bebbbfe5e9e020000b6af2ce38315` pushed normally,
+exact SHA readback `2026-10-09T21:25:12.7973029+00:00`.
+[Source receipt](operations/gitlab-publication-held-remote-source-backup-2026-10-10.json).
+Origin cached main926d39a0ea2db80a7eba8d541d12906a0c8b0837/GitLab README
+mainfbeff64a2b47f32550ba426af92a2795a1507181 preserved. Default repo GitLab CI config
+absent at exact source SHA; group/hosted/equivalent CI UNKNOWN. Unchanged
+API404/GitHub suspension not reprobed; GitHub backup/review/release pending.
+Source backup differs from review/CI/runtime acceptance. Final finite docs SHA/
+readback/full prerequisite-free selected-branch bundle/fresh clean restore will
+be recorded externally at
+`C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-held-remote-2026-10-09-212604Z.full.bundle`
+and matching `.full.receipt.json`; prospective pointer proves no restore, inspect
+actual receipt. Git is not DB/GCP-state restoration. Foreign untracked
+.agents/skills/ and root lucky777.md preserved/excluded.
+
+**Authority/effects:** Desktop lucky777/AGENTS/CURRENT/task/fallback, source
+constitution/sole queue/architecture/accepted v2 owner72709b1 recovered;
+manifest/router absent. Attachments grant no extra production authority. Addy
+TDD/source/Git/review applied; Jev401 unchanged/nonblocking/not retried; deterministic
+tests settle this unit. Zero production/source requests, DB observations/writes,
+migrations/deployments/admissions/parameters/providers/services/grants/clocks
+changed. GCP background primary/GitHub provenance-review/Turso evidence/Cloudflare-D1
+serving and current raw-sync fence retained. Lucky777 ACTIVE local coordination,
+older APEX PAUSED; no production clock added.
+
+**Completed:** [PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY](operations/PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY_2026-10-10.md).
+Both drains project held workplace metadata; exact onsite/hybrid is rejected
+before AI/public activation. Nonpublic rejection binds selected source/inactive-
+pending state/exact type and credits actual RETURNING, else defers without clobber.
+Shared nullable SQL exclusion fences all four live activation UPDATEs; gate/feed
+also exclude stable contradictions at selection. Pre-UPDATE drift yields zero
+actual activation/valid empty ACK; mixed ledger contains only actual RETURNING
+IDs. Source/state/PH/confirmed-URL fences and feed actual bind sizing retained;
+two new binds fit existing100 maximum, publication caps unchanged. Explicit remote/
+description-only hybrid/NULL/unsupported controls preserve behavior; opaque
+metadata is noncontradiction, not independent remote proof. Existing fallback
+tests grant no authority. Registered Inngest callback tests prove no hosted
+scheduling/parallel sibling cancellation; SDK configuration unchanged.
+Post-write drift remains UNKNOWN with physical rows/FTS/no fresh ledger/compensation,
+later sequential writers halted/distinct confirmed prefix; zero/replay unchanged.
+
+**Verification:** genuine native RED145/61/862 assertions/206 tests:109 prior cases
+pass plus97 new (36 controls pass/61 distinct behavior failures; no setup error).
+Unchanged-fixture GREEN206/0/1164,11.71s Bun/11.986s command; hashes/logs reverified
+at resumed reentry. Final full frozen **3941/0/326106 assertions/246 files/
+213.90s Bun/214.608s command**, net97 tests. Types73.886s/build109.657s/four audits
+PASS, parameter parity100% and existing warnings retained. Independent five-axis
+review/root handler review/hash/whitespace PASS.
+[Finite evidence](operations/publication-held-remote-local-checks-2026-10-10.json).
+MATH-06/12 and SSAE-01/07/09 local prerequisites only; no full item/remote/provider
+origin, specific-write origin, atomic visibility, durable uncertainty/shared
+budget/epoch/lease or GCP runtime/headroom/supply acceptance. UNKNOWN rows can
+remain physically public; no withdrawal/full exposure fence established.
+
+**Unchanged holds/owners/triggers:** directory234 Upwork/237 Intogreat reviewed
+careers proposals;236 FVA parked/rebrand Surge398 identity hold. CF7403 leaves
+baseline UNKNOWN:3 HELD,0 READY/no SQL/0 applied. Owner normal account/service
+access plus fresh successful baseline/per-row review enables application. Dated
+735-company/1,556-job stock is not current daily flow. GitHub PR228/main release/
+backup/deployed outcomes, GCP BILLING_DISABLED/six container permission failures
+and Janes9046/9047 raw-sync incident remain unresolved/unreprobed. Current image/
+tick/withdrawal/compensation UNKNOWN; changed access/image/new execution evidence
+is re-observation trigger. Directory facts grant no source permission. Skip
+unchanged failed probes/completed units; continue independent useful work.
+
+**One NEXT: PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING.** Read current
+fresh scrape geoGate2685 and public ...item staging2872, permitted feed fixtures
+and existing native SQLite/Drizzle/FTS insert harness. The fresh path omits
+already-held item.locationType although ...item preserves it. This is code-review
+evidence only. Capture native prewrite RED showing exact onsite/hybrid plus
+ordinary PH text can physically enter public staging before later UNKNOWN; then
+forward that preserved field before deterministic gate/AI. Prove stable bad rows
+remain inactive/policy-rejected with zero AI/public receipt; valid remote,
+description-only hybrid and opaque controls preserve declared behavior. Retain
+freshness/URL/PH/source/deduplication and actual-ID/zero/replay/UNKNOWN/prefix
+contracts, accepted caps/leases/opt-outs/budgets. Own only the existing scrape
+module and necessary local fixtures/helper; no production/schema/parameter/
+provider/permission change. Missing/default remote inference and provider origin
+remain separate gaps; callback fixtures prove no scheduling/cancellation.
+
 ## 2026-10-09 20:11 Manila — Explicit onsite/hybrid contradiction boundary verified locally; GitLab checkpoint
 
 **Owner scope CONTINUING:**100 newly first-published unique verified PH-accessible

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY",
+  "checkedAtUtc": "2026-10-09T21:25:12.7973029+00:00",
+  "startSha": "433d0ed2b9e10f214903747d1f1a7be45c37af3e",
+  "sourceSha": "2336f27bdb6bebbbfe5e9e020000b6af2ce38315",
+  "remoteSha": "2336f27bdb6bebbbfe5e9e020000b6af2ce38315",
+  "remote": "gitlab",
+  "remoteUrl": "https://gitlab.com/cyrus-group4793641/va-freelance-hub.git",
+  "branch": "codex/verified-flow-directory-checkpoint",
+  "normalPush": "PASS_NO_FORCE",
+  "exactReadback": "PASS",
+  "preCommitDivergence": "0\t0",
+  "readmeMain": "fbeff64a2b47f32550ba426af92a2795a1507181",
+  "cachedOriginMain": "926d39a0ea2db80a7eba8d541d12906a0c8b0837",
+  "ownedFiles": [
+    {
+      "path": "apps/web/src/lib/publication-remote.ts",
+      "gitBlob": "68f7294ad7ad052934d4ae44848329fe1612afd6"
+    },
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "gitBlob": "eed6100d82000d4ef0886d5c3e15e45f81f0d0e2"
+    },
+    {
+      "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+      "gitBlob": "d1e491bae284a878772b874f4d663746d63adeb6"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "gitBlob": "9d51c83616098c16ca1b4ff6c5adf6ed367aafe0"
+    }
+  ],
+  "defaultGitLabCiConfiguration": "ABSENT_AT_EXACT_SOURCE_SHA",
+  "groupHostedEquivalentCi": "UNKNOWN",
+  "gitHubBackup": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED",
+  "apiProbe": "UNCHANGED_404_NOT_REPROBED",
+  "reviewMergeDeploymentRuntimeAcceptance": "NOT_ESTABLISHED",
+  "productionWrites": 0,
+  "dataStateBackup": "NOT_ESTABLISHED_SOURCE_BACKUP_ONLY"
+}

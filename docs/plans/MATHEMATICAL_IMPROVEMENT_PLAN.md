@@ -84,6 +84,19 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-10 Manila held-row workplace prerequisite:** both drains now project
+metadata/reject exact onsite/hybrid before AI with current source/state/type
+fenced actual rejection. Shared nullable SQL exclusion fences all four activation
+UPDATEs; native zero/mixed/drift/opaque/100-bind controls pass. Post-write UNKNOWN
+retains rows/FTS/no fresh ledger/later sequential stop/prefix; hosted Inngest
+scheduling/sibling cancellation and full remote/provider origin remain unproved.
+206 native/3941 full tests/types/build/four audits/review pass locally.
+[Finite evidence](../operations/PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY_2026-10-10.md)
+owns exact source backup and restore limits. MATH-06/12 and SSAE-01/07/09 local
+prerequisites only; accepted MATH0/13/certifiedflowUNKNOWN, rollout/optimization/
+supply acceptance open. Sole NEXT lives in newest savepoint; fresh scrape's
+omitted held field needs native reproduction before repair.
+
 **2026-10-09 20:11 Manila explicit workplace contradiction prerequisite:** shared exact
 onsite/hybrid rejection now precedes ordinary ingest PH positives and fresh gateway
 current-ID success. Known nonremote input stays hidden; post-write drift is UNKNOWN

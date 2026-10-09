@@ -4,6 +4,21 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
+Latest continuation (2026-10-10 Manila): held-row nonremote activation boundary
+verified locally at `2336f27bdb6b`, pushed/read back exactly on GitLab. Both drains
+reject exact onsite/hybrid before AI; source/state/type fenced rejections credit
+actual RETURNING. All four activation UPDATEs exclude live contradictions; zero/
+mixed/replay/UNKNOWN/prefix/100-bind limits retained. NULL/unsupported metadata
+remains opaque noncontradiction, not remote proof.206 native tests/3941 full tests,
+types/build/four audits/independent review pass. Usage interruption resumed from
+actual GREEN fingerprints without rerunning completed native work. Final external
+bundle/clean-restore receipt is required; prospective pointer proves no restore.
+No production/CI/runtime acceptance; MATH0/13/flowUNKNOWN. Sole NEXT is
+PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING in newest savepoint:
+fresh scrape still omits its held workplace field at geoGate before public staging;
+capture native RED before repair. All unchanged directory/access/GCP/Janes holds
+retain owners/triggers.
+
 Latest continuation (2026-10-09 20:11 Manila): explicit onsite/hybrid metadata contradiction
 verified locally at `06c43f39af44`, pushed/read back on GitLab. Ordinary ingest
 forwards the preserved enum before PH positives; fresh ACK rejects current known
