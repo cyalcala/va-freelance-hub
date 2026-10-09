@@ -75,7 +75,8 @@ describe("publishGroupedInserts canary cap clamp", () => {
     const keys: unknown[] = [];
     for (const candidates of [[row(1), row(2), row(3)], [row(1), row(2), { ...row(4), description: "unused" }]]) {
       const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
-        postingRows: JSON.stringify([{ id: 1, postedAt: NOW }, { id: 2, postedAt: NOW }]) }] });
+        postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null },
+          { id: 2, postedAt: NOW, sourceUrl: "https://example.test/p/2", applicationUrl: null }]) }] });
       await publishGroupedInserts(db, async rows => rows.map((_, index) => index + 1), candidates, NOW, "scrape");
       keys.push(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values[2]);
     }
@@ -84,7 +85,8 @@ describe("publishGroupedInserts canary cap clamp", () => {
 
   test("caller mutation during a policy read cannot change the source or persisted values", async () => {
     const original = row(1, "remotive");
-    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1, postingRows: JSON.stringify([{ id: 1, postedAt: NOW }]) }] });
+    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1,
+      postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null }]) }] });
     const prepare = db.prepare.bind(db);
     db.prepare = query => {
       const statement = prepare(query);
@@ -107,7 +109,8 @@ describe("publishGroupedInserts canary cap clamp", () => {
 
   test("clamps a canary batch to canaryMaxNewItemsPerTick so the gateway never rolls back", async () => {
     const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
-      postingRows: JSON.stringify([{ id: 1001, postedAt: NOW }, { id: 1002, postedAt: NOW }]) }] });
+      postingRows: JSON.stringify([{ id: 1001, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null },
+        { id: 1002, postedAt: NOW, sourceUrl: "https://example.test/p/2", applicationUrl: null }]) }] });
     const persistedBatches: number[] = [];
     const persistedUrls: string[][] = [];
     const result = await publishGroupedInserts(
@@ -132,7 +135,9 @@ describe("publishGroupedInserts canary cap clamp", () => {
 
   test("unregistered exact-six source publishes the full batch unchanged", async () => {
     const db = new FakePublicationDatabase({ registry: [null, null], ownership: [{ ownedCount: 3,
-      postingRows: JSON.stringify([{ id: 2001, postedAt: NOW }, { id: 2002, postedAt: NOW }, { id: 2003, postedAt: NOW }]) }] });
+      postingRows: JSON.stringify([{ id: 2001, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null },
+        { id: 2002, postedAt: NOW, sourceUrl: "https://example.test/p/2", applicationUrl: null },
+        { id: 2003, postedAt: NOW, sourceUrl: "https://example.test/p/3", applicationUrl: null }]) }] });
     const persistedBatches: number[] = [];
     const result = await publishGroupedInserts(
       db,
@@ -208,7 +213,8 @@ describe("publishGroupedInserts persisted ID accounting", () => {
   });
 
   test("partial insertion retains only actual inserted IDs", async () => {
-    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1, postingRows: JSON.stringify([{ id: 91, postedAt: NOW }]) }] });
+    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1,
+      postingRows: JSON.stringify([{ id: 91, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null }]) }] });
     const result = await publishGroupedInserts(db, async () => [91], [row(1, "remotive"), row(2, "remotive")], NOW, "scrape");
     expect(result).toEqual({ published: 1, failed: false });
     expect(db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"))?.values[6]).toBe("[91]");
@@ -310,6 +316,133 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
 }
 
 describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
+  const unsafeSourceUrls = [
+    { label: "script", url: "javascript:alert(1)" },
+    { label: "credential-bearing", url: "https://fixture-user:fixture-pass@example.test/job" },
+    { label: "local", url: "https://localhost/job" },
+    { label: "empty", url: "" },
+    { label: "oversize", url: `https://example.test/${"a".repeat(2048)}` },
+    { label: "NULL", url: null },
+  ];
+
+  for (const scenario of unsafeSourceUrls) {
+    test(`URL ACK: existing prewrite guard drops ${scenario.label} source even with a valid application candidate`, async () => {
+      const { sqlite, binding, queries } = sqliteD1();
+      try {
+        const request = new Request("https://example.test/api/ingest", { method: "POST",
+          headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+          body: JSON.stringify({ items: [{ ...nativeRow(1, "remotive"), sourceUrl: scenario.url,
+            applicationUrl: "https://example.test/apply/1", locationRaw: "Philippines",
+            description: "Remote role open to applicants in the Philippines" }] }) });
+        const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+        expect(response.status).toBe(200);
+        expect(await response.json()).toMatchObject({ success: true, inserted: 0, publishedCount: 0,
+          hiddenInserted: 0, totalReceived: 1, rejectedForUrl: 1 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 0 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts").get()).toEqual({ n: 0 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+        expect(queries.some(isOwnershipObservation)).toBe(false);
+        expect(queries.some(query => /^insert into "opportunities"/i.test(query))).toBe(false);
+      } finally { sqlite.close(); }
+    });
+  }
+
+  for (const scenario of [
+    { label: "script", applicationUrl: "javascript:alert(1)" },
+    { label: "credential-bearing", applicationUrl: "https://fixture-user:fixture-pass@example.test/apply" },
+    { label: "local", applicationUrl: "https://localhost/apply" },
+    { label: "unrelated", applicationUrl: "https://unrelated.test/apply" },
+    { label: "NULL", applicationUrl: null },
+    { label: "empty", applicationUrl: "" },
+    { label: "oversize", applicationUrl: `https://example.test/${"a".repeat(2048)}` },
+    { label: "valid attributable", applicationUrl: "https://example.test/apply/1" },
+  ]) {
+    test(`URL ACK: existing prewrite application ${scenario.label} keeps a safe effective source or attributable destination`, async () => {
+      const { sqlite, binding } = sqliteD1();
+      try {
+        const candidate = nativeRow(1, "remotive");
+        const applicationUrl = scenario.label === "valid attributable" ? scenario.applicationUrl : candidate.sourceUrl;
+        const request = new Request("https://example.test/api/ingest", { method: "POST",
+          headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+          body: JSON.stringify({ items: [{ ...candidate, applicationUrl: scenario.applicationUrl,
+            locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" }] }) });
+        const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+        expect(response.status).toBe(200);
+        expect(await response.json()).toMatchObject({ success: true, inserted: 1, publishedCount: 1,
+          hiddenInserted: 0, rejectedForUrl: 0 });
+        const stored = sqlite.query("SELECT id, source_url AS sourceUrl, application_url AS applicationUrl FROM opportunities").get() as {
+          id: number; sourceUrl: string; applicationUrl: string | null;
+        };
+        expect(stored).toEqual({ id: stored.id, sourceUrl: candidate.sourceUrl, applicationUrl });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 1 });
+        expect(sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get())
+          .toEqual({ n: 1, ids: JSON.stringify([stored.id]) });
+      } finally { sqlite.close(); }
+    });
+  }
+
+  // This focused adapter intentionally does not synthesize the production
+  // source_url NOT NULL constraint. NULL drift proves nullable-fixture ACK
+  // rejection only; production-schema NULL write rejection has separate proof.
+  for (const scenario of unsafeSourceUrls) {
+    test(`URL ACK: post-write ${scenario.label === "NULL" ? "NULL in nullable fixture" : scenario.label} source drift yields sanitized UNKNOWN and stops later source and hidden writes`, async () => {
+      const { sqlite, binding, queries } = sqliteD1({ beforeOwnershipRead: sqlite => {
+        sqlite.query("UPDATE opportunities SET source_url = ? WHERE source_id = 'remotive'").run(scenario.url);
+      } });
+      try {
+        const request = new Request("https://example.test/api/ingest", { method: "POST",
+          headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+          body: JSON.stringify({ items: [
+            { ...nativeRow(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+            { ...nativeRow(2, "remote-ok"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+            { ...nativeRow(3, "remotive"), title: "Operations specialist", description: "Handle customer records." },
+          ] }) });
+        const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+        expect(response.status).toBe(500);
+        const body = await response.json();
+        expect(body).toEqual({ success: false, code: "POST_PERSISTENCE_FAILURE", publicationOutcome: "UNKNOWN",
+          inserted: null, confirmedPublishedLowerBound: 0, reconciliationRequired: true,
+          error: "Publication persistence outcome is UNKNOWN; reconciliation is required" });
+        expect(JSON.stringify(body)).not.toContain("fixture-pass");
+        expect(sqlite.query("SELECT source_id AS source, source_url AS url, is_active AS active FROM opportunities").all())
+          .toEqual([{ source: "remotive", url: scenario.url, active: 1 }]);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 1 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+        expect(queries.filter(query => /^insert into "opportunities"/i.test(query))).toHaveLength(1);
+        expect(queries.some(query => /^delete\b/i.test(query))).toBe(false);
+      } finally { sqlite.close(); }
+    });
+  }
+
+  test("URL ACK: source URL drift in the second committed group retains the first confirmed prefix and stops all later writes", async () => {
+    const unsafeUrl = "https://fixture-user:fixture-pass@example.test/job";
+    const { sqlite, binding, queries } = sqliteD1({ beforeOwnershipRead: (sqlite, ordinal) => {
+      if (ordinal === 2) sqlite.query("UPDATE opportunities SET source_url = ? WHERE source_id = 'remote-ok'").run(unsafeUrl);
+    } });
+    try {
+      const candidates = ["remotive", "remote-ok", "jobicy-admin-support-apac"].map((source, index) => ({
+        ...nativeRow(index + 1, source), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines",
+      }));
+      const request = new Request("https://example.test/api/ingest", { method: "POST",
+        headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+        body: JSON.stringify({ items: [...candidates, { ...nativeRow(4, "remotive"), title: "Operations specialist", description: "Handle customer records." }] }) });
+      const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+      expect(response.status).toBe(500);
+      const body = await response.json();
+      expect(body).toEqual({ success: false, code: "POST_PERSISTENCE_FAILURE", publicationOutcome: "UNKNOWN",
+        inserted: null, confirmedPublishedLowerBound: 1, reconciliationRequired: true,
+        error: "Publication persistence outcome is UNKNOWN; reconciliation is required" });
+      expect(JSON.stringify(body)).not.toContain("fixture-pass");
+      expect(sqlite.query("SELECT source_id AS source, source_url AS url FROM opportunities ORDER BY id").all())
+        .toEqual([{ source: "remotive", url: candidates[0].sourceUrl }, { source: "remote-ok", url: unsafeUrl }]);
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 2 });
+      expect(sqlite.query("SELECT source_id AS source, published_count AS n FROM source_publication_ledger").all())
+        .toEqual([{ source: "remotive", n: 1 }]);
+      expect(queries.filter(query => /^insert into "opportunities"/i.test(query))).toHaveLength(2);
+      expect(queries.some(query => /^delete\b/i.test(query))).toBe(false);
+    } finally { sqlite.close(); }
+  });
+
   for (const scenario of [
     { label: "missing", postedAt: undefined, state: "UNKNOWN", stored: null },
     { label: "NULL", postedAt: null, state: "UNKNOWN", stored: null },
@@ -1059,13 +1192,17 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
   test("a changed canary-selected prefix binds the rows actually passed to persistence", async () => {
     const retryKeys: unknown[] = [];
     const selected: string[][] = [];
-    for (const candidates of [[row(1), row(2), row(3)], [row(3), row(2), row(1)]]) {
+    for (const scenario of [
+      { candidates: [row(1), row(2), row(3)], persistedSourceUrls: ["https://example.test/p/1", "https://example.test/p/2"] },
+      { candidates: [row(3), row(2), row(1)], persistedSourceUrls: ["https://example.test/p/3", "https://example.test/p/2"] },
+    ]) {
       const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
-        postingRows: JSON.stringify([{ id: 1, postedAt: NOW }, { id: 2, postedAt: NOW }]) }] });
+        postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: scenario.persistedSourceUrls[0], applicationUrl: null },
+          { id: 2, postedAt: NOW, sourceUrl: scenario.persistedSourceUrls[1], applicationUrl: null }]) }] });
       await publishGroupedInserts(db, async (rows) => {
         selected.push(rows.map(row => row.sourceUrl));
         return rows.map((_, index) => index + 1);
-      }, candidates, NOW, "scrape");
+      }, scenario.candidates, NOW, "scrape");
       retryKeys.push(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values[2]);
     }
     expect(selected).toEqual([[row(1).sourceUrl, row(2).sourceUrl], [row(3).sourceUrl, row(2).sourceUrl]]);

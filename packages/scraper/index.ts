@@ -8,6 +8,7 @@ export { geoGate, detectDominantLanguage, scanLandingPageForGeoLock, htmlToVisib
 export type { GeoGateInput, GeoVerdict, GeoScope, PhEligibility } from "./geoGate";
 export { PUBLIC_PH_ELIGIBILITIES, isPublicPhEligibility } from "./publication-eligibility";
 export { assessPostingFreshness, type PostingFreshnessAssessment } from "./publication-freshness";
+export { resolvePublicationOutboundUrl } from "./publication-outbound";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";
 export { decideTriage, mapTriageCategoryToUiCategory } from "./triage-decision";

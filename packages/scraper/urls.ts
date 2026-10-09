@@ -9,6 +9,7 @@
 
 const ALLOWED_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
 const SOURCE_PROTOCOLS = new Set(["http:", "https:"]);
+export const MAX_URL_INPUT_LENGTH = 2048;
 
 // Pragmatic address shape check for mailto: targets — not RFC-complete.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -29,7 +30,7 @@ function isLocalOrIpHost(hostname: string): boolean {
 export function sanitizeSourceUrl(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
   const candidate = raw.trim();
-  if (candidate === "" || candidate.length > 2048) return null;
+  if (candidate === "" || candidate.length > MAX_URL_INPUT_LENGTH) return null;
 
   try {
     const url = new URL(candidate);
@@ -48,7 +49,7 @@ export function sanitizeSourceUrl(raw: unknown): string | null {
 export function sanitizeApplyUrl(raw: unknown): string | null {
   if (typeof raw !== "string") return null;
   const candidate = raw.trim();
-  if (candidate === "" || candidate.length > 2048) return null;
+  if (candidate === "" || candidate.length > MAX_URL_INPUT_LENGTH) return null;
 
   let url: URL | null = null;
   try {

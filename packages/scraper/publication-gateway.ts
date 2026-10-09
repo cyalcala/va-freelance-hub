@@ -14,6 +14,8 @@ import { isAdmissionInstant } from "./admission-evidence";
 import { D1_MAX_BOUND_PARAMETERS } from "./batch";
 import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 import { assessPostingFreshness } from "./publication-freshness";
+import { resolvePublicationOutboundUrl } from "./publication-outbound";
+import { MAX_URL_INPUT_LENGTH } from "./urls";
 
 export interface PublicationStatement {
   bind(...values: unknown[]): PublicationStatement;
@@ -279,15 +281,23 @@ function snapshotAcknowledgement(value: unknown, allowedCount: number): { publis
 }
 
 async function hasCurrentOwnership(db: PublicationDatabase, sourceId: string, ids: readonly number[], now: string): Promise<boolean> {
-  // Bind the same accepted PH states used by public serving. One source and
-  // two PH bindings leave 97 IDs at the existing D1 100-variable limit. This
-  // observes current rows, not write provenance or an atomic lease.
-  const chunkSize = D1_MAX_BOUND_PARAMETERS - 1 - PUBLIC_PH_ELIGIBILITIES.length;
+  // Bindings stay within 100. Two bounded URL fields and the date can each
+  // expand up to six JSON bytes per SQLite character; keep the aggregate below
+  // D1's 2,000,000-byte single-string/row ceiling. This leaves 80 IDs per read,
+  // without changing any publication/source cap or proving atomic ownership.
+  const maxJsonBytes = 2_000_000;
+  const maxRowJsonBytes = 2 * MAX_URL_INPUT_LENGTH * 6 + 35 * 6 + 128;
+  const chunkSize = Math.min(D1_MAX_BOUND_PARAMETERS - 1 - PUBLIC_PH_ELIGIBILITIES.length,
+    Math.floor((maxJsonBytes - 2) / maxRowJsonBytes));
   for (let offset = 0; offset < ids.length; offset += chunkSize) {
     const chunk = ids.slice(offset, offset + chunkSize);
     const row = await db.prepare(`SELECT COUNT(*) AS ownedCount,
       json_group_array(json_object('id', id, 'postedAt',
-        CASE WHEN length(posted_at) <= 35 THEN posted_at ELSE NULL END)) AS postingRows
+        CASE WHEN length(posted_at) <= 35 THEN posted_at ELSE NULL END,
+        'sourceUrl', CASE WHEN typeof(source_url) = 'text' AND length(source_url) <= ${MAX_URL_INPUT_LENGTH}
+          THEN source_url ELSE NULL END,
+        'applicationUrl', CASE WHEN typeof(application_url) = 'text' AND length(application_url) <= ${MAX_URL_INPUT_LENGTH}
+          THEN application_url ELSE NULL END)) AS postingRows
       FROM opportunities
       WHERE source_id = ? AND is_active = 1
       AND ph_eligibility IN (${PUBLIC_PH_ELIGIBILITIES.map(() => "?").join(", ")})
@@ -298,7 +308,8 @@ async function hasCurrentOwnership(db: PublicationDatabase, sourceId: string, id
     // Bound and validate every exact ID/date pair. A count or SQL lexical date
     // comparison alone cannot prove strict calendar validity for all rows.
     const json = row?.postingRows;
-    if (typeof json !== "string" || json.length > chunk.length * 100 + 2) return false;
+    if (typeof json !== "string" || json.length > chunk.length * maxRowJsonBytes + 2
+      || new TextEncoder().encode(json).byteLength > chunk.length * maxRowJsonBytes + 2) return false;
     let rows: unknown;
     try { rows = JSON.parse(json); } catch { return false; }
     if (!Array.isArray(rows) || rows.length !== chunk.length) return false;
@@ -306,10 +317,16 @@ async function hasCurrentOwnership(db: PublicationDatabase, sourceId: string, id
     for (const value of rows) {
       if (value === null || typeof value !== "object" || Array.isArray(value)) return false;
       const keys = Object.keys(value);
-      const { id, postedAt } = value as { id: unknown; postedAt: unknown };
-      if (keys.length !== 2 || !Object.hasOwn(value, "id") || !Object.hasOwn(value, "postedAt")
+      const { id, postedAt, sourceUrl, applicationUrl } = value as {
+        id: unknown; postedAt: unknown; sourceUrl: unknown; applicationUrl: unknown;
+      };
+      if (keys.length !== 4 || !Object.hasOwn(value, "id") || !Object.hasOwn(value, "postedAt")
+        || !Object.hasOwn(value, "sourceUrl") || !Object.hasOwn(value, "applicationUrl")
         || typeof id !== "number" || !remaining.delete(id)
-        || assessPostingFreshness(postedAt, now).state !== "WITHIN_WINDOW") return false;
+        || assessPostingFreshness(postedAt, now).state !== "WITHIN_WINDOW"
+        || (applicationUrl !== null && typeof applicationUrl !== "string")
+        || (typeof applicationUrl === "string" && [...applicationUrl].length > MAX_URL_INPUT_LENGTH)
+        || !resolvePublicationOutboundUrl(sourceUrl, applicationUrl)) return false;
     }
     if (remaining.size !== 0) return false;
   }
@@ -337,7 +354,7 @@ async function persistAndRecord(
 
   try {
     if (!await hasCurrentOwnership(db, request.sourceId, acknowledgement.ids, request.now)) {
-      return postPersistenceFailure("publication IDs did not match current active PH-eligible fresh source ownership");
+      return postPersistenceFailure("publication IDs did not match current active PH-eligible fresh source ownership and outbound URL");
     }
   } catch {
     return postPersistenceFailure("publication source ownership could not be verified");

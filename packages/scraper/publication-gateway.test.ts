@@ -11,7 +11,7 @@ import {
 
 const NOW = "2026-09-06T12:00:00.000Z";
 const TICK = publicationTickKey("scrape", NOW);
-const currentRows = (ids: number[]) => ({ ownedCount: ids.length, postingRows: JSON.stringify(ids.map(id => ({ id, postedAt: NOW }))) });
+const currentRows = (ids: number[]) => ({ ownedCount: ids.length, postingRows: JSON.stringify(ids.map(id => ({ id, postedAt: NOW, sourceUrl: "https://jobs.example.com/role/123", applicationUrl: null }))) });
 const REAL_LEGACY_SOURCES = ["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac", "jobicy-supporting-apac"];
 const activePolicy = (sourceId: string, policyExpiry: unknown) => ({
   sourceId, compliance: "allowed", operational: "active", optOut: 0, policyExpiry, canaryMaxNewItemsPerTick: null,

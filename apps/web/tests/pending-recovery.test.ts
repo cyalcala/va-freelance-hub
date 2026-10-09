@@ -106,7 +106,7 @@ describe("recoverGateEligiblePending", () => {
       },
     };
     const publicationDb = new FakePublicationDatabase({ ownership: [{ ownedCount: 1,
-      postingRows: JSON.stringify([{ id: 3, postedAt: OBSERVED }]) }] });
+      postingRows: JSON.stringify([{ id: 3, postedAt: OBSERVED, sourceUrl: "https://example.test/p/3", applicationUrl: null }]) }] });
     const n = await recoverGateEligiblePending(db, OBSERVED, publicationDb);
     expect(n).toBe(1);
     expect(captured.selected).toBe(true);

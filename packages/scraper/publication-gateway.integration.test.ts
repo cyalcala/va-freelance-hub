@@ -10,6 +10,9 @@ const TICK = publicationTickKey("scrape", NOW);
 const DAY_MS = 86_400_000;
 const FRESH_POSTED_AT = new Date(Date.parse(NOW) - DAY_MS).toISOString();
 const STALE_POSTED_AT = new Date(Date.parse(NOW) - 31 * DAY_MS).toISOString();
+// Read transport only: bounded URL JSON must also fit D1's 2 MB row limit.
+// This is independent of source/publication caps and preserves <=100 binds.
+const CURRENT_READ_STRIDE = 80;
 
 class BunStatement implements PublicationStatement {
   private values: SQLQueryBindings[] = [];
@@ -40,7 +43,7 @@ function freshDb(): Database {
   const db = new Database(":memory:");
   db.exec("PRAGMA foreign_keys = ON;");
   for (const migration of [
-    "0000_workable_sandman.sql", "0003_yielding_maelstrom.sql", "0021_geo_eligibility.sql", "0026_fts5_search.sql", "0027_fts5_trigger_scope.sql",
+    "0000_workable_sandman.sql", "0003_yielding_maelstrom.sql", "0005_harsh_punisher.sql", "0021_geo_eligibility.sql", "0026_fts5_search.sql", "0027_fts5_trigger_scope.sql",
     "0034_opportunity_source_id.sql", "0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql",
     "0038_shadow_observations.sql", "0039_canary_transition_plane.sql",
     "0040_current_evidence_admission.sql", "0041_publication_ledger.sql",
@@ -189,6 +192,166 @@ function assertWrittenRowWithoutReceipt(sqlite: Database) {
 }
 const postPersistenceUnknown = { ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true, exposure: "UNKNOWN" };
 
+function aggregatePostingRow(change: Record<string, unknown> = {}) {
+  return { id: 1, postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null, ...change };
+}
+
+const invalidCurrentSourceCases = [
+  ["empty source", ""], ["blank source", "   "],
+  ["javascript source", "javascript:private-source-url"],
+  ["credential source", "https://private-user:private-token@example.invalid/job"],
+  ["local source", "http://localhost/private-source-url"],
+  ["IPv4 source", "http://127.0.0.1/private-source-url"],
+  ["IPv6 source", "http://[::1]/private-source-url"],
+  ["relative source", "/private-source-url"],
+  ["oversize source", `https://example.invalid/${"a".repeat(2048)}`],
+] as const;
+
+for (const [name, sourceUrl] of invalidCurrentSourceCases) {
+  test(`native current outbound ${name} drift after a valid write retains UNKNOWN and physical rows`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite);
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "current-outbound-drift", proposedCount: 1,
+        persist: async () => {
+          const ids = writeOpportunity(sqlite, "current-outbound-drift");
+          expect(ids).toEqual([1]);
+          expect(sqlite.query("SELECT source_url FROM opportunities").get()).toEqual({ source_url: "https://example.invalid/current-outbound-drift" });
+          sqlite.query("UPDATE opportunities SET source_url=? WHERE id=?").run(sourceUrl, ids[0]!);
+          return { publishedCount: ids.length, ids };
+        },
+      });
+      expect(result).toMatchObject(postPersistenceUnknown);
+      expect(JSON.stringify(result)).not.toContain("private");
+      expect(sqlite.query("SELECT source_url FROM opportunities").get()).toEqual({ source_url: sourceUrl });
+      assertWrittenRowWithoutReceipt(sqlite);
+      expect(db.runs).toEqual([]);
+    } finally { sqlite.close(); }
+  });
+
+  test(`native immutable historical receipt ignores current outbound ${name}`, async () => {
+    const sqlite = freshDb();
+    try {
+      const first = await publishPublicExposure(new BunDb(sqlite), {
+        sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "saved-retry", proposedCount: 1,
+        persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite, "historical-outbound", "we-work-remotely") }),
+      });
+      expect(first).toMatchObject({ ok: true, publishedCount: 1, ids: [1], replayed: false });
+      sqlite.query("UPDATE opportunities SET source_url=?, application_url=? WHERE id=1").run(sourceUrl, "javascript:private-apply-url");
+      expect(await inspectRetry(sqlite, { proposedCount: 1 }))
+        .toEqual({ ok: true, mode: "unlimited", publishedCount: 1, ids: [1], replayed: true });
+      expect(sqlite.query("SELECT source_url, application_url FROM opportunities").get())
+        .toEqual({ source_url: sourceUrl, application_url: "javascript:private-apply-url" });
+    } finally { sqlite.close(); }
+  });
+}
+
+test("native existing source URL NOT NULL constraint rejects NULL corruption before gateway observation", () => {
+  const sqlite = freshDb();
+  try {
+    expect(writeOpportunity(sqlite)).toEqual([1]);
+    expect(() => sqlite.query("UPDATE opportunities SET source_url=NULL WHERE id=1").run()).toThrow(/NOT NULL/i);
+    expect(sqlite.query("SELECT source_url FROM opportunities").get()).toEqual({ source_url: "https://example.invalid/fresh-native" });
+    assertWrittenRowWithoutReceipt(sqlite);
+  } finally { sqlite.close(); }
+});
+
+for (const invalidIndex of [48, 145, 195]) {
+  test(`native current outbound mismatch at index ${invalidIndex} stops later bounded chunk observations`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite);
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "chunk-outbound-drift", proposedCount: 201,
+        persist: async () => {
+          const ids = Array.from({ length: 201 }, (_, index) => writeOpportunity(sqlite, `chunk-outbound-${index}`)[0]!);
+          sqlite.query("UPDATE opportunities SET source_url=? WHERE id=?").run("javascript:private-chunk-source", ids[invalidIndex]!);
+          return { publishedCount: ids.length, ids };
+        },
+      });
+      expect(result).toMatchObject(postPersistenceUnknown);
+      expect(JSON.stringify(result)).not.toContain("private");
+      const reads = db.reads.filter(read => read.query.includes("FROM opportunities"));
+      expect(reads).toHaveLength(Math.floor(invalidIndex / CURRENT_READ_STRIDE) + 1);
+      expect(reads.every(read => read.values.length <= 100)).toBe(true);
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 201 });
+      expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(201);
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+      expect(db.runs).toEqual([]);
+    } finally { sqlite.close(); }
+  });
+}
+
+const longestSource = `https://example.invalid/${"s".repeat(2048 - "https://example.invalid/".length)}`;
+const longestApply = `https://example.invalid/${"a".repeat(2048 - "https://example.invalid/".length)}`;
+for (const [name, sourceUrl, applicationUrl] of [
+  ["normalized source and NULL apply fallback", "  HTTPS://Example.Invalid/job  ", null],
+  ["invalid apply safe-source fallback", "https://example.invalid/job", "javascript:private-apply-url"],
+  ["unrelated apply safe-source fallback", "https://example.invalid/job", "https://unrelated.invalid/private-apply-url"],
+  ["oversize apply safe-source fallback", "https://example.invalid/job", `https://example.invalid/${"a".repeat(2048)}`],
+  ["same-host attributable apply", "https://example.invalid/job", "https://example.invalid/apply"],
+  ["Greenhouse same-tenant alias", "https://boards-api.greenhouse.io/v1/boards/example/jobs/1", "https://boards.greenhouse.io/example/jobs/1"],
+  ["Lever same-tenant alias", "https://api.lever.co/v0/postings/example/job-1", "https://jobs.lever.co/example/job-1"],
+  ["Ashby same-tenant alias", "https://api.ashbyhq.com/posting-api/job-board/example/job-1", "https://jobs.ashbyhq.com/example/job-1"],
+  ["different ATS tenant safe-source fallback", "https://boards-api.greenhouse.io/v1/boards/example/jobs/1", "https://boards.greenhouse.io/other/jobs/1"],
+  ["both raw URLs at the existing 2048-character limit", longestSource, longestApply],
+  ["JSON-escaped raw source and apply strings at the existing limit",
+    `https://example.invalid/${'"'.repeat(2048 - "https://example.invalid/".length)}`,
+    `https://example.invalid/${'"'.repeat(2048 - "https://example.invalid/".length)}`],
+] as const) {
+  test(`native current outbound receipt accepts existing ${name}`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite);
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "valid-current-outbound", proposedCount: 1,
+        persist: async () => {
+          const ids = writeOpportunity(sqlite, "valid-current-outbound");
+          sqlite.query("UPDATE opportunities SET source_url=?, application_url=? WHERE id=?").run(sourceUrl, applicationUrl, ids[0]!);
+          return { publishedCount: ids.length, ids };
+        },
+      });
+      expect(result).toMatchObject({ ok: true, publishedCount: 1, ids: [1], replayed: false });
+      expect(sqlite.query("SELECT source_url, application_url FROM opportunities").get()).toEqual({ source_url: sourceUrl, application_url: applicationUrl });
+      expect(sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get()).toEqual({ n: 1, ids: "[1]" });
+      expect(db.reads.filter(read => read.query.includes("FROM opportunities"))).toHaveLength(1);
+    } finally { sqlite.close(); }
+  });
+}
+
+test("native full 80-ID URL observation bounds worst-case JSON escaping below D1's row limit", async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite);
+    const result = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "escaped-outbound-bounds", proposedCount: 81,
+      persist: async () => {
+        const ids = Array.from({ length: 81 }, (_, index) => {
+          const id = writeOpportunity(sqlite, `escaped-outbound-${index}`)[0]!;
+          const prefix = `https://example.invalid/${index}/`;
+          // These existing-sanitizer-compatible controls require six JSON bytes
+          // apiece. Distinct prefixes preserve the actual unique source URL.
+          const rawUrl = prefix + "\u0001".repeat(2048 - prefix.length);
+          sqlite.query("UPDATE opportunities SET source_url=?, application_url=? WHERE id=?").run(rawUrl, rawUrl, id);
+          return id;
+        });
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, publishedCount: 81, ids: Array.from({ length: 81 }, (_, index) => index + 1) });
+    const reads = db.reads.filter(read => read.query.includes("FROM opportunities"));
+    expect(reads.map(read => read.values.length)).toEqual([83, 4]);
+    const byteLengths = reads.map(read => {
+      const observed = sqlite.query(read.query).get(...read.values as SQLQueryBindings[]) as { postingRows: string };
+      return Buffer.byteLength(observed.postingRows, "utf8");
+    });
+    expect(byteLengths[0]).toBeGreaterThan(1_900_000);
+    expect(byteLengths.every(length => length <= 2_000_000)).toBe(true);
+    expect(sqlite.query("SELECT published_count AS n FROM source_publication_ledger").get()).toEqual({ n: 81 });
+  } finally { sqlite.close(); }
+});
+
 const invalidPostingCases = [
   { name: "NULL original date", postedAt: null, now: NOW },
   { name: "invalid original date", postedAt: "private-provider-time", now: NOW },
@@ -301,7 +464,7 @@ for (const invalidIndex of [48, 145, 195]) {
       });
       expect(result).toMatchObject(postPersistenceUnknown);
       const reads = db.reads.filter(read => read.query.includes("FROM opportunities"));
-      expect(reads).toHaveLength(Math.floor(invalidIndex / 97) + 1);
+      expect(reads).toHaveLength(Math.floor(invalidIndex / CURRENT_READ_STRIDE) + 1);
       expect(reads.every(read => read.values.length <= 100)).toBe(true);
       expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 201 });
       expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(201);
@@ -316,13 +479,25 @@ for (const [name, postingRows] of [
   ["malformed JSON aggregate", "private-incomplete-json["], ["JSON null aggregate", "null"],
   ["JSON object aggregate", "{}"], ["missing aggregate row", "[]"],
   ["primitive aggregate row", '["unexpected"]'],
-  ["missing aggregate ID", JSON.stringify([{ postedAt: FRESH_POSTED_AT }])],
-  ["string aggregate ID", JSON.stringify([{ id: "1", postedAt: FRESH_POSTED_AT }])],
-  ["fractional aggregate ID", JSON.stringify([{ id: 1.5, postedAt: FRESH_POSTED_AT }])],
-  ["foreign aggregate ID", JSON.stringify([{ id: 404, postedAt: FRESH_POSTED_AT }])],
-  ["missing aggregate date", JSON.stringify([{ id: 1 }])],
-  ["invalid aggregate date", JSON.stringify([{ id: 1, postedAt: "private-provider-time" }])],
-  ["extra aggregate row", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT }, { id: 404, postedAt: FRESH_POSTED_AT }])],
+  ["missing aggregate ID", JSON.stringify([{ postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null }])],
+  ["string aggregate ID", JSON.stringify([aggregatePostingRow({ id: "1" })])],
+  ["fractional aggregate ID", JSON.stringify([aggregatePostingRow({ id: 1.5 })])],
+  ["foreign aggregate ID", JSON.stringify([aggregatePostingRow({ id: 404 })])],
+  ["missing aggregate date", JSON.stringify([{ id: 1, sourceUrl: "https://example.invalid/fresh-native", applicationUrl: null }])],
+  ["invalid aggregate date", JSON.stringify([aggregatePostingRow({ postedAt: "private-provider-time" })])],
+  ["extra aggregate row", JSON.stringify([aggregatePostingRow(), aggregatePostingRow({ id: 404 })])],
+  ["missing both aggregate URL fields", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT }])],
+  ["missing aggregate source URL", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT, applicationUrl: null }])],
+  ["missing aggregate application URL", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT, sourceUrl: "https://example.invalid/fresh-native" }])],
+  ["NULL aggregate source URL", JSON.stringify([aggregatePostingRow({ sourceUrl: null })])],
+  ["numeric aggregate source URL", JSON.stringify([aggregatePostingRow({ sourceUrl: 1 })])],
+  ["array aggregate source URL", JSON.stringify([aggregatePostingRow({ sourceUrl: [] })])],
+  ["object aggregate source URL", JSON.stringify([aggregatePostingRow({ sourceUrl: { private: "source" } })])],
+  ["numeric aggregate application URL", JSON.stringify([aggregatePostingRow({ applicationUrl: 1 })])],
+  ["array aggregate application URL", JSON.stringify([aggregatePostingRow({ applicationUrl: [] })])],
+  ["object aggregate application URL", JSON.stringify([aggregatePostingRow({ applicationUrl: { private: "apply" } })])],
+  ["extra aggregate field", JSON.stringify([aggregatePostingRow({ private: "provider-metadata" })])],
+  ["oversize URL aggregate reply", JSON.stringify([aggregatePostingRow({ sourceUrl: "s".repeat(30_000) })])],
 ] as const) {
   test(`native physical persistence plus ${name} cannot certify original posting freshness`, async () => {
     const sqlite = freshDb();
@@ -360,7 +535,8 @@ test("native duplicate original-date aggregate IDs cannot replace the second per
       if (query.includes("FROM opportunities")) statement.first = async <T>() => {
         const actual = await first<{ ownedCount: number }>();
         expect(actual?.ownedCount).toBe(2);
-        return { ...actual, postingRows: JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT }, { id: 1, postedAt: FRESH_POSTED_AT }]) } as T;
+        return { ...actual, postingRows: JSON.stringify([aggregatePostingRow({ sourceUrl: "https://example.invalid/aggregate-one" }),
+          aggregatePostingRow({ sourceUrl: "https://example.invalid/aggregate-one" })]) } as T;
       };
       return statement;
     };
@@ -591,7 +767,7 @@ for (const stage of ["prepare", "first"] as const) test(`native ${stage} ownersh
   } finally { sqlite.close(); }
 });
 
-test("native ownership and PH eligibility verify every distinct ID with 97-ID parameterized chunks", async () => {
+test("native ownership and eligibility verify every distinct ID with bounded 80-ID transport chunks", async () => {
   const sqlite = freshDb();
   try {
     const db = new BunDb(sqlite);
@@ -604,7 +780,7 @@ test("native ownership and PH eligibility verify every distinct ID with 97-ID pa
     });
     expect(result).toMatchObject({ ok: true, publishedCount: 201 });
     const reads = db.reads.filter(read => read.query.includes("FROM opportunities"));
-    expect(reads.map(read => read.values.length)).toEqual([100, 100, 10]);
+    expect(reads.map(read => read.values.length)).toEqual([83, 83, 44]);
     const seen: unknown[] = [];
     for (const read of reads) {
       expect(read.values.length).toBeLessThanOrEqual(100);
@@ -614,6 +790,8 @@ test("native ownership and PH eligibility verify every distinct ID with 97-ID pa
       expect(read.query).not.toContain("eligible_likely");
       expect(read.query).toContain("json_group_array");
       expect(read.query).toContain("posted_at");
+      expect(read.query).toContain("source_url");
+      expect(read.query).toContain("application_url");
       seen.push(...read.values.slice(3));
     }
     expect(seen).toEqual(Array.from({ length: 201 }, (_, index) => index + 1));

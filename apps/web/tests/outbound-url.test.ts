@@ -36,3 +36,31 @@ test("treats remotephjobs.com as an attributable external source, not an owned o
 
   expect(resolveOutboundUrl(job, job.applicationUrl)).toBe("https://remotephjobs.com/apply/123");
 });
+
+for (const scenario of [
+  { label: "script", url: "javascript:alert(1)" },
+  { label: "credential-bearing", url: "https://fixture-user:fixture-pass@example.test/job" },
+  { label: "local", url: "https://localhost/job" },
+  { label: "empty", url: "" },
+  { label: "oversize", url: `https://example.test/${"a".repeat(2048)}` },
+]) {
+  test(`existing outbound guard rejects ${scenario.label} source even with a valid application target`, () => {
+    const job = { sourceUrl: scenario.url, applicationUrl: "https://example.test/apply" };
+    expect(resolveOutboundUrl(job, scenario.url)).toBeNull();
+    expect(resolveOutboundUrl(job, job.applicationUrl)).toBeNull();
+  });
+
+  test(`existing outbound guard uses the safe source when the stored application URL is ${scenario.label}`, () => {
+    const job = { sourceUrl: "https://example.test/job", applicationUrl: scenario.url };
+    expect(resolveOutboundUrl(job, job.sourceUrl)).toBe(job.sourceUrl);
+    // A missing redirect target remains a no-op; nonempty unsafe stored links
+    // use the same safe source fallback as public navigation.
+    expect(resolveOutboundUrl(job, job.applicationUrl)).toBe(scenario.url === "" ? null : job.sourceUrl);
+  });
+}
+
+test("existing outbound guard preserves the source path for NULL application values", () => {
+  const job = { sourceUrl: "https://example.test/job", applicationUrl: null };
+  expect(resolveOutboundUrl(job, job.sourceUrl)).toBe(job.sourceUrl);
+  expect(resolveOutboundUrl(job, null)).toBeNull();
+});
