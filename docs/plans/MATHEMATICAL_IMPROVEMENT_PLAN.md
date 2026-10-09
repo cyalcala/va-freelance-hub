@@ -689,3 +689,19 @@ cutover acceptance. None implies the other two.
 ## Scheduling boundary
 
 Trigger.dev is not currently used. Treat its repository assets as historical or future work. The current scheduling system uses the Cloudflare freshness Worker and GitHub Actions; adding Trigger.dev requires a separate architecture decision.
+
+## 2026-10-10 bounded consumer metadata continuation
+
+[PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING](../operations/PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING_2026-10-10.md)
+at source `3ae421645e088f6e08ded9429a5790c8ecbcabfc` advances MATH-06/12 local prerequisites only.
+One original workplace field now reaches fresh geoGate before AI/public staging.
+Synthetic consumer RED9/3 -> GREEN13/0; full3954/0/326182 assertions/247 files.
+Initial fixture enum typing failure is retained; type-only exact inversion plus
+final types/focused13/0 pass. Full behavioral freeze is recorded separately.
+No reachable current provider escape proved: Breezy onsite text already blocks;
+real parsing differs from synthetic adapter-output proof. Native hidden7/14 counter
+proxy is not row/job count or live D1. Source backup does not establish CI/runtime
+or optimization/supply acceptance. Zero production publications/enrichments;
+accepted MATH0/13, certified daily fresh flow NULL/UNKNOWN. Sole NEXT/owner/trigger
+is in newest savepoint: real-parser raw posting-date evidence before any repair.
+No card promotion, source/parameter/permission/clock change or parallel source queue.

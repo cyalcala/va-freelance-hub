@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+  "checkedAtUtc": "2026-10-09T21:48:50.6006613+00:00",
+  "startSha": "e96b35ef8e8d1573fade2188e37107f157a6e5b4",
+  "sourceSha": "3ae421645e088f6e08ded9429a5790c8ecbcabfc",
+  "remoteSha": "3ae421645e088f6e08ded9429a5790c8ecbcabfc",
+  "remote": "gitlab",
+  "remoteUrl": "https://gitlab.com/cyrus-group4793641/va-freelance-hub.git",
+  "branch": "codex/verified-flow-directory-checkpoint",
+  "normalPush": "PASS_NO_FORCE",
+  "exactReadback": "PASS",
+  "preCommitDivergence": "0\t0",
+  "readmeMain": "fbeff64a2b47f32550ba426af92a2795a1507181",
+  "cachedOriginMain": "926d39a0ea2db80a7eba8d541d12906a0c8b0837",
+  "ownedFiles": [
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "gitBlob": "182027a971802c76889dfb2380584975fcd9b742"
+    },
+    {
+      "path": "apps/web/tests/native-fresh-scrape-remote.test.ts",
+      "gitBlob": "86b071e685d92a5cd0ca4cfca392d78a18a4939a"
+    },
+    {
+      "path": "apps/web/tests/fixtures/native-fresh-scrape-remote.ts",
+      "gitBlob": "3216094980a0c80c4bd47f9388bba13c6febd079"
+    }
+  ],
+  "defaultGitLabCiConfiguration": "ABSENT_AT_EXACT_SOURCE_SHA",
+  "groupHostedEquivalentCi": "UNKNOWN",
+  "gitHubBackup": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED",
+  "apiProbe": "UNCHANGED_404_NOT_REPROBED",
+  "reviewMergeDeploymentRuntimeAcceptance": "NOT_ESTABLISHED",
+  "productionWrites": 0,
+  "dataStateBackup": "NOT_ESTABLISHED_SOURCE_BACKUP_ONLY"
+}

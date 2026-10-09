@@ -1,5 +1,22 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): fresh scrape consumer metadata forwarding
+verified locally at `3ae421645e08`, normally pushed/read back on GitLab.
+One preserved field precedes geoGate/AI/public staging; synthetic onsite/hybrid
+inactive, zero AI/public IDs. No current admitted-provider escape proved; existing
+Breezy text marker already rejects.13 focused/3954 full tests/build/four audits
+pass. Initial fixture typing failure then type-only exact-inverse correction/final
+types and13 focused tests pass; full behavioral freeze provenance preserved.
+Native hidden7/14 proxy is not job count/live D1. Post-write UNKNOWN remains physical
+rows/FTS/no fresh ledger/compensation. External full bundle/clean-restore actual
+receipt required; pointer alone proves no restore. No production/CI/runtime or
+MATH/supply acceptance; MATH0/13/flowUNKNOWN. Sole NEXT is PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE
+in newest savepoint: recover and verify newly produced foreign independent audit
+raw-date evidence first; preserve its files, reuse valid real-parser/native results
+and capture only missing cases before original-date/prewrite repair. Raw calendar
+validation must precede parser normalization. No production occurrence inferred.
+All unchanged directory/access/GCP/Janes holds retain owners/triggers.
+
 Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and

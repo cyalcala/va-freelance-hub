@@ -1,5 +1,110 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Fresh scrape consumer metadata forwarding verified; GitLab checkpoint
+
+**Owner scope CONTINUING:**100 newly first-published unique verified PH-accessible
+remote jobs/complete Manila day,150 stretch; factual enrichment of reported735
+directory entries; MATH-01..13/SSAE-CED/DeepSeek; lucky777/Addy resumability/GitLab
+fallback. Accepted MATH **0/13**, certified daily fresh flow **NULL/UNKNOWN**.
+Zero production publications/company enrichments. Sole saved metadata NEXT is
+complete locally; full objective open. Current unit is synthetic consumer proof,
+not a demonstrated admitted-provider or runtime failure.
+
+**Git/reentry:** START `e96b35ef8e8d1573fade2188e37107f157a6e5b4`, unchanged
+`codex/verified-flow-directory-checkpoint`; prior e96 full-history clean restore
+reverified. GitLab fetch0/0, sole active repository chat, root production/native
+worker ownership separated and independent read-only review. Three-file source
+`3ae421645e088f6e08ded9429a5790c8ecbcabfc` pushed normally, exact readback
+`2026-10-09T21:48:50.6006613+00:00`. [Source receipt](operations/gitlab-publication-fresh-remote-source-backup-2026-10-10.json).
+Cached originmain926d39a0ea2db80a7eba8d541d12906a0c8b0837 and independent GitLab
+README mainfbeff64a2b47f32550ba426af92a2795a1507181 preserved. Default GitLab CI
+config absent at exact source; group/hosted/equivalent CI UNKNOWN. GitHub suspension/
+API404 unchanged/not reprobed; GitHub backup/review/release pending. Backup differs
+from MR/CI/runtime acceptance. Final finite docs SHA/readback/full prerequisite-free
+selected-branch bundle/fresh clean restore belongs externally at
+`C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-fresh-remote-2026-10-09-215050Z.full.bundle` and matching
+`.full.receipt.json`; prospective pointer proves no restore, inspect actual receipt.
+Git is not DB/GCP-state restoration. Foreign .agents/skills/ and root lucky777.md
+untracked/preserved/excluded.
+
+**Authority:** lucky777/AGENTS/CURRENT/task/fallback/source constitution/sole queue/
+architecture/accepted v2 owner72709b1 recovered; manifest/router absent. Attachments
+grant no extra authority. Addy TDD/source/Git/review applied; Jev401 unchanged/
+nonblocking/not retried. Zero production/source requests, DB reads/writes,
+deployments/migrations/admissions/parameters/providers/services/grants/clocks
+changed. GCP background primary/GitHub provenance-review/Turso evidence/Cloudflare-D1
+serving and raw-sync fence retained. Lucky777 ACTIVE local coordination/older APEX
+PAUSED; no new production clock.
+
+**Completed:** [PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING](operations/PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING_2026-10-10.md).
+One field forwards original item.locationType into fresh geoGate before AI/public
+staging. Synthetic exact onsite/hybrid inputs remain inactive/policy-rejected,
+zero AI/public IDs; remote/description-only hybrid/NULL/unsupported/empty/dedup/
+mixed controls preserved. Opaque is noncontradiction, not remote proof. Real route/
+native SQLite/Drizzle/migrations/FTS/gateway retained; only child feed adapters
+substituted, other transport blocked. No current enum-only provider escape proved:
+exact-six RSS/JSON/HTML assign remote, fresh ATS uses fetchATSFeed, Breezy onsite
+also carries existing blocked text marker; actual parser proof remains existing
+breezy-feed.test.ts. Live registry/occurrence UNKNOWN. Post-write UNKNOWN retains
+physical rows/FTS/no fresh ledger/compensation, stops later sequential writers,
+preserves confirmed prefix. Dedup zero differs from historical replay/origin.
+
+**Verification:** genuine consumer RED9/3/52 assertions/12 tests; unchanged source,
+three physical-staging failures. First repaired rerun10/3/67/13: only new hidden
+counter assumptions failed; exact rows/AI/public IDs corrected already. Native
+rejectedPersisted7/14 for1/2 hidden rows is existing SQLite/FTS changes proxy, not
+job count/live D1 proof; production/binding unchanged. Three unsupported new
+scalar assumptions corrected to exact physical rows/failed batches; original
+public-ID/actualChanges/FTS/UNKNOWN/prefix checks retained. GREEN13/0/76 with
+one separately recorded GREEN-only Breezy-shaped control/portable cwd/labels/
+result parsing/transport guard. Full **3954/0/326182 assertions/247 files/186.94s
+Bun/187.442s command**, net13 tests. Initial types exit2 fixture widened enum;
+one type-erased as const exact inverse reproduces full-suite hash. Final13/0/76
+focused tests/types26.024s pass; full/build79.567s/four audits retain earlier
+behavioral freeze provenance. Parameter parity100%, existing warnings retained.
+Independent five-axis/type-only/hash/whitespace PASS. [Finite evidence](operations/publication-fresh-remote-local-checks-2026-10-10.json).
+MATH-06/12/SSAE-01/07/09 local prerequisites only; no provider origin/full item/
+atomicity/withdrawal/durable uncertainty/shared controls or runtime/supply acceptance.
+
+**Unchanged holds/owners/triggers:** directory234 Upwork/237 Intogreat reviewed
+careers proposals;236 FVA parked/rebrand Surge398 identity hold. CF7403 leaves
+baseline UNKNOWN:3 HELD,0 READY/no SQL/0 applied. Owner normal account/service
+access plus fresh successful baseline/per-row review enables application. Dated
+735-company/1556-job stock is not daily flow. GitHub PR228/mainrelease/backup,
+GCP BILLING_DISABLED/six container permission failures and Janes9046/9047 raw-sync
+incident unresolved/unreprobed. Current image/tick/withdrawal/compensation UNKNOWN;
+changed access/image/new execution evidence triggers re-observation. Directory
+facts grant no source permission. Continue independent useful work; no unchanged
+failed probes/completed-unit reruns.
+
+**One NEXT: PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE.** Review original posting-date handling in
+the admitted RSS/RemoteOK adapters and fresh scrape staging. Source review finds
+missing/invalid dates can normalize to NULL and valid stale dates are retained;
+fresh staging normalizes postedAt without an assessPostingFreshness precondition,
+while the gateway checks freshness after persistence. This unit performed source
+review only; no live occurrence was observed. A separate active mainly-read-only
+audit now owns untracked docs/audits/INDEPENDENT_SYSTEMS_AUDIT_2026-10-10.md,
+its CONTINUATION packet and evidence/2026-10-10-independent/. Preserve/exclude
+those foreign files. It reports real Remotive RSS/RemoteOK parsing plus native
+route exposure on missing/invalid/stale/future dates and September31 calendar
+rollover receiving success. These are newly available LOCAL audit claims, not
+production observation or this unit's tests; the audit's final manifest/review/
+backup remains external ownership. First recover its completed packet and match
+exact source, fixture/result hashes, original inputs, physical public predicate,
+FTS and receipt IDs. Reuse valid captured evidence; do not blindly repeat completed
+probes. If incomplete, capture only missing cases through the REAL parser/adapter
+and actual native route. Never substitute adapter output as provider proof.
+Prove or refute original-date physical exposure before repair. Preserve/validate
+raw calendar evidence before parser Date coercion; a helper after normalization
+cannot detect an already-repaired calendar. Reuse accepted existing strict
+inclusive30-day assessPostingFreshness before public writes, preserving valid
+provider date formats, URL/PH/source/dedup and actual-ID/zero/UNKNOWN/prefix controls.
+No new threshold/provider/source permission/admission/production change. Original
+remote inference, atomic visibility, withdrawal/durable uncertainty/shared budgets/
+epochs/leases and runtime/supply remain separate. Root owns existing scrape path;
+native worker owns necessary bounded raw-response fixtures. Skip completed work
+and unchanged failed probes; recover current ownership and dependencies first.
+
 ## 2026-10-10 Manila — Held-row nonremote activation verified locally; GitLab checkpoint
 
 **Owner scope CONTINUING:**100 newly first-published unique verified PH-accessible

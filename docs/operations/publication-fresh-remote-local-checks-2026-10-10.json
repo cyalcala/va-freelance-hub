@@ -1,0 +1,482 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+  "checkedAtUtc": "2026-10-09T21:50:50.509990+00:00",
+  "startSha": "e96b35ef8e8d1573fade2188e37107f157a6e5b4",
+  "sourceSha": "3ae421645e088f6e08ded9429a5790c8ecbcabfc",
+  "scope": "SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_BOUNDARY_LOCAL_ONLY_NOT_RAW_PROVIDER_REPRODUCTION_OR_RUNTIME_ACCEPTANCE",
+  "files": [
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "sha256": "f8366ef92a524783406efcab7d3567d8f798f058289e7a859dc8db5e0ee11efe",
+      "sourceGitBlob": "182027a971802c76889dfb2380584975fcd9b742"
+    },
+    {
+      "path": "apps/web/tests/native-fresh-scrape-remote.test.ts",
+      "sha256": "75ca39d49426ec5e53017c98b49531757f9000efc7ff2df6a6c594ba5e1c5d1c",
+      "sourceGitBlob": "86b071e685d92a5cd0ca4cfca392d78a18a4939a"
+    },
+    {
+      "path": "apps/web/tests/fixtures/native-fresh-scrape-remote.ts",
+      "sha256": "1d64d5f3d542acf3ee78b07dcfa31e7b5ebbafebf970871db6aac376154beac1",
+      "sourceGitBlob": "3216094980a0c80c4bd47f9388bba13c6febd079"
+    }
+  ],
+  "fullSuiteFreeze": {
+    "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+    "startSha": "e96b35ef8e8d1573fade2188e37107f157a6e5b4",
+    "frozenAtUtc": "2026-10-09T21:40:36.8799598+00:00",
+    "nativeGreenHashMatch": "PASS",
+    "scope": "SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_NOT_PROVIDER_RUNTIME_REPRODUCTION",
+    "files": [
+      {
+        "path": "apps/web/src/pages/api/cron/scrape.ts",
+        "sha256": "f8366ef92a524783406efcab7d3567d8f798f058289e7a859dc8db5e0ee11efe"
+      },
+      {
+        "path": "apps/web/tests/native-fresh-scrape-remote.test.ts",
+        "sha256": "75ca39d49426ec5e53017c98b49531757f9000efc7ff2df6a6c594ba5e1c5d1c"
+      },
+      {
+        "path": "apps/web/tests/fixtures/native-fresh-scrape-remote.ts",
+        "sha256": "5078050bc1de68a9c01463550e15328d9588731527d0a6b0990c0a8a5eb27786"
+      }
+    ]
+  },
+  "finalFreeze": {
+    "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+    "startSha": "e96b35ef8e8d1573fade2188e37107f157a6e5b4",
+    "frozenAtUtc": "2026-10-10T05:47:25.7069304+08:00",
+    "nativeGreenHashMatch": "PASS_FINAL_FOCUSED_13_ZERO_FAIL_AND_TYPECHECK_TYPE_ONLY_INVERSION_PASS",
+    "scope": "SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_NOT_PROVIDER_RUNTIME_REPRODUCTION",
+    "files": [
+      {
+        "path": "apps/web/src/pages/api/cron/scrape.ts",
+        "sha256": "f8366ef92a524783406efcab7d3567d8f798f058289e7a859dc8db5e0ee11efe"
+      },
+      {
+        "path": "apps/web/tests/native-fresh-scrape-remote.test.ts",
+        "sha256": "75ca39d49426ec5e53017c98b49531757f9000efc7ff2df6a6c594ba5e1c5d1c"
+      },
+      {
+        "path": "apps/web/tests/fixtures/native-fresh-scrape-remote.ts",
+        "sha256": "1d64d5f3d542acf3ee78b07dcfa31e7b5ebbafebf970871db6aac376154beac1"
+      }
+    ],
+    "typeOnlyCorrection": {
+      "path": "apps/web/tests/fixtures/native-fresh-scrape-remote.ts",
+      "change": "dedup seed eligible_verified literal as const",
+      "inverseHash": "5078050bc1de68a9c01463550e15328d9588731527d0a6b0990c0a8a5eb27786",
+      "runtimeEffect": "NONE_TYPE_ERASED",
+      "fullSuiteFreeze": "tmp/publication-fresh-remote-full-suite-frozen-source-2026-10-10.json"
+    }
+  },
+  "native": {
+    "red": {
+      "receipt": {
+        "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+        "startSha": "e96b35ef8e8d1573fade2188e37107f157a6e5b4",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/native-fresh-scrape-remote.test.ts",
+        "startedAtUtc": "2026-10-10T05:36:27.7317464+08:00",
+        "endedAtUtc": "2026-10-10T05:36:34.338425+08:00",
+        "commandElapsedMs": 6603.8274,
+        "exitCode": 1,
+        "log": "tmp/publication-fresh-remote-native-red-2026-10-10.log",
+        "logSha256": "4c41fef6a058fe8b303eb308f6c50b010896621c6f6e5bfa9ac7db4b5abd6244",
+        "productionBefore": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "40a8b84f5bf1ff27e27ea7ab3405a5277cd2ca4ae2c45648746f4bcf1d24a546"
+          },
+          {
+            "path": "packages/scraper/geoGate.ts",
+            "sha256": "838711d88d2e653e97461f9f3a77667c22809d78f4c175b4c41fe9e2b6390fce"
+          },
+          {
+            "path": "packages/scraper/publication-gateway.ts",
+            "sha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4"
+          }
+        ],
+        "productionAfter": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "40a8b84f5bf1ff27e27ea7ab3405a5277cd2ca4ae2c45648746f4bcf1d24a546"
+          },
+          {
+            "path": "packages/scraper/geoGate.ts",
+            "sha256": "838711d88d2e653e97461f9f3a77667c22809d78f4c175b4c41fe9e2b6390fce"
+          },
+          {
+            "path": "packages/scraper/publication-gateway.ts",
+            "sha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4"
+          }
+        ],
+        "testFiles": [
+          {
+            "path": "apps/web/tests/native-fresh-scrape-remote.test.ts",
+            "sha256": "138d4aa8631df291bbef945953d793a20aabca078ac16213ae000c8ac3a33999"
+          },
+          {
+            "path": "apps/web/tests/fixtures/native-fresh-scrape-remote.ts",
+            "sha256": "b2c5ca272790e85136ee179f56e67471a0d68249958d606b3b3d89a50229c161"
+          }
+        ],
+        "scope": "SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_BOUNDARY_ACTUAL_ROUTE_SQLITE_DRIZZLE_FTS_GATEWAY_NOT_REACHABLE_PROVIDER_OR_RUNTIME_REPRODUCTION",
+        "setup": "Separate direct child remote control reached200 and actualID ledger with unchanged production. No schema edits; existing migrations applied to memory only.",
+        "actualCounts": {
+          "passed": 9,
+          "failed": 3,
+          "assertions": 52,
+          "tests": 12,
+          "files": 1,
+          "bunReportedSeconds": 6.45
+        },
+        "classification": "GENUINE_SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_BEHAVIOR_RED_NOT_ACTUAL_PROVIDER_RUNTIME",
+        "behavioralFailures": [
+          "onsite physical public staging with ordinary PH text",
+          "hybrid physical public staging with ordinary PH text",
+          "mixed public/hidden metadata enters UNKNOWN before proper partition"
+        ],
+        "toolChunkId": "f72ad2",
+        "postRedTestChanges": "One GREEN-only exact existing Breezy PH (onsite) output-shape control added; existing generic text-marker label corrected to avoid actual reachability claim. Parent result-line parsing uses reverse/find for existing TypeScript target; child synthetic robot transport additionally limited to configured source origins. Original12-case RED/hash/counts preserved; actual parser proof remains existing breezy-feed.test.ts, no ATS admission."
+      },
+      "receiptSha256": "89e864ec4f87721a0d02bf0dee9e3ad309e18f82d50ea849d12aa240d9c20c86"
+    },
+    "post-repair-diagnostic-failure": {
+      "receipt": {
+        "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+        "startSha": "e96b35ef8e8d1573fade2188e37107f157a6e5b4",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/native-fresh-scrape-remote.test.ts",
+        "startedAtUtc": "2026-10-10T05:38:06.602292+08:00",
+        "endedAtUtc": "2026-10-10T05:38:14.0218891+08:00",
+        "commandElapsedMs": 7417.4339,
+        "exitCode": 1,
+        "log": "tmp/publication-fresh-remote-native-post-repair-diagnostic-failure-2026-10-10.log",
+        "logSha256": "6005f899cce06d13b2f79154241ca8e2409f3327f72ee3518ae93f171ba13c4d",
+        "productionBefore": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "f8366ef92a524783406efcab7d3567d8f798f058289e7a859dc8db5e0ee11efe"
+          },
+          {
+            "path": "packages/scraper/geoGate.ts",
+            "sha256": "838711d88d2e653e97461f9f3a77667c22809d78f4c175b4c41fe9e2b6390fce"
+          },
+          {
+            "path": "packages/scraper/publication-gateway.ts",
+            "sha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4"
+          }
+        ],
+        "productionAfter": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "f8366ef92a524783406efcab7d3567d8f798f058289e7a859dc8db5e0ee11efe"
+          },
+          {
+            "path": "packages/scraper/geoGate.ts",
+            "sha256": "838711d88d2e653e97461f9f3a77667c22809d78f4c175b4c41fe9e2b6390fce"
+          },
+          {
+            "path": "packages/scraper/publication-gateway.ts",
+            "sha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4"
+          }
+        ],
+        "testFiles": [
+          {
+            "path": "apps/web/tests/native-fresh-scrape-remote.test.ts",
+            "sha256": "30526706cac9a5ac56799ac4f15bf86554f714b66b35b8b22bc2eba4674db9eb"
+          },
+          {
+            "path": "apps/web/tests/fixtures/native-fresh-scrape-remote.ts",
+            "sha256": "5078050bc1de68a9c01463550e15328d9588731527d0a6b0990c0a8a5eb27786"
+          }
+        ],
+        "scope": "SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_BOUNDARY_ACTUAL_ROUTE_SQLITE_DRIZZLE_FTS_GATEWAY_NOT_REACHABLE_PROVIDER_OR_RUNTIME_REPRODUCTION",
+        "postRedDelta": "One GREEN-only exact Breezy PH (onsite) shape control; fileURLToPath cwd portability, existing-output-shape labels, reverse/find result parser and configured-origin synthetic robots guard. No original assertion removed or weakened.",
+        "actualCounts": {
+          "passed": 10,
+          "failed": 3,
+          "assertions": 67,
+          "tests": 13,
+          "files": 1,
+          "bunReportedSeconds": 7.26
+        },
+        "classification": "POST_REPAIR_DIAGNOSTIC_EXPECTATION_FAILURE_NOT_GREEN",
+        "diagnosticObservation": "Physical inactive rows and zero-AI/public-ID boundaries pass after forwarding; existing native Bun SQLite/FTS changes proxy reports rejectedPersisted7 for1 physical hidden row and14 for2. Not job count or live D1 evidence. Only unsupported new scalar assumptions are corrected; production/binding bookkeeping unchanged.",
+        "toolChunkId": "43773f"
+      },
+      "receiptSha256": "28d53a3b6c0f71e042686cdd40bb17bbf5a106c0b69ee2705920985f6c250a9e"
+    },
+    "green": {
+      "receipt": {
+        "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+        "startSha": "e96b35ef8e8d1573fade2188e37107f157a6e5b4",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/native-fresh-scrape-remote.test.ts",
+        "startedAtUtc": "2026-10-10T05:40:01.6789171+08:00",
+        "endedAtUtc": "2026-10-10T05:40:08.4196589+08:00",
+        "commandElapsedMs": 6738.6399,
+        "exitCode": 0,
+        "log": "tmp/publication-fresh-remote-native-green-2026-10-10.log",
+        "logSha256": "860305c3ed5961c143de21d7d5033a4a51fc5056e3d5cc0e6108a8d87bff1985",
+        "productionBefore": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "f8366ef92a524783406efcab7d3567d8f798f058289e7a859dc8db5e0ee11efe"
+          },
+          {
+            "path": "packages/scraper/geoGate.ts",
+            "sha256": "838711d88d2e653e97461f9f3a77667c22809d78f4c175b4c41fe9e2b6390fce"
+          },
+          {
+            "path": "packages/scraper/publication-gateway.ts",
+            "sha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4"
+          }
+        ],
+        "productionAfter": [
+          {
+            "path": "apps/web/src/pages/api/cron/scrape.ts",
+            "sha256": "f8366ef92a524783406efcab7d3567d8f798f058289e7a859dc8db5e0ee11efe"
+          },
+          {
+            "path": "packages/scraper/geoGate.ts",
+            "sha256": "838711d88d2e653e97461f9f3a77667c22809d78f4c175b4c41fe9e2b6390fce"
+          },
+          {
+            "path": "packages/scraper/publication-gateway.ts",
+            "sha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4"
+          }
+        ],
+        "testFiles": [
+          {
+            "path": "apps/web/tests/native-fresh-scrape-remote.test.ts",
+            "sha256": "75ca39d49426ec5e53017c98b49531757f9000efc7ff2df6a6c594ba5e1c5d1c"
+          },
+          {
+            "path": "apps/web/tests/fixtures/native-fresh-scrape-remote.ts",
+            "sha256": "5078050bc1de68a9c01463550e15328d9588731527d0a6b0990c0a8a5eb27786"
+          }
+        ],
+        "scope": "SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_BOUNDARY_ACTUAL_ROUTE_SQLITE_DRIZZLE_FTS_GATEWAY_NOT_REACHABLE_PROVIDER_OR_RUNTIME_REPRODUCTION",
+        "postRedDelta": "One GREEN-only exact Breezy PH (onsite) shape control; portable cwd/scope labels/result parsing and configured-origin synthetic robot guard. Three unsupported hidden diagnostic scalar expectations corrected after separate failed post-repair capture; exact physical rows/FTS/public IDs/ledger/inserted/actualChanges retained. Binding and production bookkeeping unchanged.",
+        "diagnosticLimits": "Native rejectedPersisted7/14 for1/2 hidden rows is existing Bun SQLite/FTS changes proxy, not job count or live D1 proof. Historical gateway replay remains existing ledger-only contract; this route fixture directly proves dedup zero, not independent replay/origin.",
+        "actualCounts": {
+          "passed": 13,
+          "failed": 0,
+          "assertions": 76,
+          "tests": 13,
+          "files": 1,
+          "bunReportedSeconds": 6.58
+        },
+        "toolChunkId": "9328cb",
+        "classification": "FINAL_GREEN_SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_BOUNDARY_LOCAL_ONLY"
+      },
+      "receiptSha256": "9839ecd98780285cbde622ce48f606502dfba40111980ef444f2428c8487755a"
+    },
+    "final-native-green": {
+      "receipt": {
+        "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+        "startedAtUtc": "2026-10-09T21:47:42.3981737+00:00",
+        "endedAtUtc": "2026-10-09T21:47:50.7326781+00:00",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/native-fresh-scrape-remote.test.ts",
+        "exitCode": 0,
+        "commandElapsedMs": 8326.1377,
+        "log": "tmp/publication-fresh-remote-final-native-green-2026-10-10.log",
+        "logSha256": "c98bde4fefc73fa180934baa603e4ae262c822181ef74747ce75a81be5dba8ea",
+        "scope": "FINAL_TYPE_ONLY_FIX_SYNTHETIC_ADAPTER_OUTPUT_CONSUMER_LOCAL"
+      },
+      "receiptSha256": "b6144540028c6e361ee7d04409fb5ace31a5f9942d98b1d87bfd366e055de73c",
+      "actualCounts": {
+        "passed": 13,
+        "failed": 0,
+        "assertions": 76,
+        "tests": 13,
+        "files": 1,
+        "bunReportedSeconds": 7.99
+      }
+    }
+  },
+  "checks": {
+    "full-suite": {
+      "checkedAt": "2026-10-09T21:43:55.6711892+00:00",
+      "startedAt": "2026-10-09T21:40:48.2257334+00:00",
+      "command": "bun run test",
+      "exit": 0,
+      "milliseconds": 187441.7277,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-fresh-remote-full-suite-2026-10-10.log",
+      "logSha256": "ffb8b43b5d8536ce0a59365ed9361a3f1f241a3f760e33ea83bac01549c5ff57"
+    },
+    "typecheck": {
+      "checkedAt": "2026-10-09T21:47:54.9084908+00:00",
+      "startedAt": "2026-10-09T21:47:28.8826993+00:00",
+      "command": "bun run typecheck",
+      "exit": 0,
+      "milliseconds": 26023.9782,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-fresh-remote-final-typecheck-2026-10-10.log",
+      "logSha256": "4ffe99488e8b95277c0b5110e21846165152e354361495a2e344f2312540ddcc"
+    },
+    "build": {
+      "checkedAt": "2026-10-09T21:42:13.0251441+00:00",
+      "startedAt": "2026-10-09T21:40:53.4507785+00:00",
+      "command": "bun run build",
+      "exit": 0,
+      "milliseconds": 79567.2596,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-fresh-remote-build-2026-10-10.log",
+      "logSha256": "f2271a4bae266b276c42b7a47fa9b17b290cf207669e13d908b10f811d452a49"
+    },
+    "audit-guardrails": {
+      "checkedAt": "2026-10-09T21:41:34.1812258+00:00",
+      "startedAt": "2026-10-09T21:41:07.1106822+00:00",
+      "command": "bun run audit:guardrails",
+      "exit": 0,
+      "milliseconds": 27065.8901,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-fresh-remote-audit-guardrails-2026-10-10.log",
+      "logSha256": "e5d85f723e265f151e18e0f5af9376414ed81ad92718b0dc4b6f0b243b5cf710"
+    },
+    "audit-parameters": {
+      "checkedAt": "2026-10-09T21:41:28.0559722+00:00",
+      "startedAt": "2026-10-09T21:41:15.7047002+00:00",
+      "command": "bun run audit:parameters",
+      "exit": 0,
+      "milliseconds": 12347.1004,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-fresh-remote-audit-parameters-2026-10-10.log",
+      "logSha256": "9827b8a08a7b67e2da90694a40315f0a854806812289698b610d80b700257dac"
+    },
+    "audit-orchestrator": {
+      "checkedAt": "2026-10-09T21:41:34.1237163+00:00",
+      "startedAt": "2026-10-09T21:41:20.4026819+00:00",
+      "command": "bun run audit:orchestrator",
+      "exit": 0,
+      "milliseconds": 13716.5041,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-fresh-remote-audit-orchestrator-2026-10-10.log",
+      "logSha256": "c2138df9749d23ab2aeee0dae435f410527e9f4c6e8a298bf633ec4e140b9d5a"
+    },
+    "audit-constitution": {
+      "checkedAt": "2026-10-09T21:41:34.8857456+00:00",
+      "startedAt": "2026-10-09T21:41:24.8431034+00:00",
+      "command": "bun run audit:constitution",
+      "exit": 0,
+      "milliseconds": 10034.2332,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-fresh-remote-audit-constitution-2026-10-10.log",
+      "logSha256": "3f014a900ebb4f4895392b9328422df8441f07e221a9758d34b7ba3fd5286eee"
+    }
+  },
+  "firstTypecheckFailure": {
+    "receipt": {
+      "checkedAt": "2026-10-09T21:42:13.2060533+00:00",
+      "startedAt": "2026-10-09T21:41:01.3283922+00:00",
+      "command": "bun run typecheck",
+      "exit": 2,
+      "milliseconds": 71866.512,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-fresh-remote-typecheck-2026-10-10.log",
+      "logSha256": "ad0d7cfef77626b6dcd750a2eecbd328a60b1d241cce58d40dae2a8e444aa869"
+    },
+    "reason": "TS2769 dedup fixture seed widened eligible_verified to string; no production failure"
+  },
+  "finalTypeOnlyCorrection": {
+    "change": "eligible_verified as const on one dedup seed expression",
+    "inversePriorFixtureSha256": "5078050bc1de68a9c01463550e15328d9588731527d0a6b0990c0a8a5eb27786",
+    "finalFixtureSha256": "1d64d5f3d542acf3ee78b07dcfa31e7b5ebbafebf970871db6aac376154beac1",
+    "verification": "ROOT_AND_INDEPENDENT_REVIEW_EXACT_INVERSION_PASS",
+    "fullSuiteScope": "BEHAVIORAL_FREEZE_BEFORE_TYPE_ERASED_CORRECTION",
+    "finalScope": "FINAL_TYPECHECK_AND_13_FOCUSED_TESTS_PASS_NO_FULL_SUITE_REPEAT"
+  },
+  "fullSuiteActualCounts": {
+    "passed": 3954,
+    "failed": 0,
+    "assertions": 326182,
+    "tests": 3954,
+    "files": 247,
+    "bunReportedSeconds": 186.94,
+    "netNewTests": 13
+  },
+  "reachabilityReview": {
+    "currentEnumOnlyProviderEscape": "NOT_PROVED",
+    "rssJsonHtml": "existing paths assign remote",
+    "freshAtsDispatch": "fetchATSFeed, not capability-registry Teamtailor dispatch",
+    "breezy": "onsite enum accompanies onsite text marker already rejected by geoGate",
+    "realParserExistingTest": "packages/scraper/breezy-feed.test.ts",
+    "liveRegistryOrOccurrence": "UNKNOWN_NOT_OBSERVED",
+    "fixture": "only four feed adapters substituted in isolated child; actual route/gates/triage/policy/cadence/locks/Drizzle/SQLite/migrations/FTS/gateway retained; all other transport blocked"
+  },
+  "review": {
+    "status": "PASS_NO_BLOCKING_FINDING",
+    "independentReviewer": "/root/ownership_activation",
+    "axes": [
+      "correctness",
+      "readability",
+      "architecture",
+      "security",
+      "performance"
+    ],
+    "finalTypeOnlyDelta": "PASS",
+    "rootHashWhitespace": "PASS",
+    "providerRuntimeClaim": "EXPLICITLY_EXCLUDED"
+  },
+  "behavior": {
+    "productionChange": "one field forwards original item.locationType into fresh geoGate before AI/public staging",
+    "stableExactOnsiteHybrid": "INACTIVE_POLICY_REJECTED_ZERO_AI_NO_PUBLIC_IDS",
+    "controls": "explicit remote, description-only hybrid, NULL/unsupported, Breezy-shaped text marker, empty/dedup zero, mixed exact actual IDs",
+    "opaque": "NONCONTRADICTION_NOT_REMOTE_PROOF",
+    "postWriteDrift": "UNKNOWN_PHYSICAL_ROWS_FTS_RETAINED_NO_FRESH_LEDGER_NO_COMPENSATION_LATER_SEQUENTIAL_WRITER_STOP_DISTINCT_CONFIRMED_PREFIX",
+    "historicalReplay": "EXISTING_LEDGER_ONLY_CONTRACT_NOT_DIRECTLY_PROVED_BY_THIS_DEDUP_FIXTURE",
+    "hiddenProxy": "native rejectedPersisted7/14 for1/2 physical hidden rows; existing Bun SQLite/FTS changes proxy, not job counts or live D1 proof; binding/production bookkeeping unchanged",
+    "postRedChanges": "GREEN-only Breezy-shaped control, cwd portability, scope/result parsing/transport guard, then three unsupported diagnostic scalar assumptions replaced with exact physical rows plus failed-batch zero; original public IDs/inserted/actualChanges/FTS/UNKNOWN/prefix assertions retained"
+  },
+  "authority": {
+    "productionSourceRequests": 0,
+    "productionDbReads": 0,
+    "productionDbWrites": 0,
+    "publications": 0,
+    "directoryEnrichments": 0,
+    "deployments": 0,
+    "migrations": 0,
+    "newAdmissions": 0,
+    "parametersProvidersPermissionsClocks": "UNCHANGED",
+    "gcpPrimaryAndRawSyncFence": "RETAINED",
+    "sourceQueue": "SOLE_CANONICAL_QUEUE_RETAINED"
+  },
+  "objective": {
+    "dailyFloor": 100,
+    "stretch": 150,
+    "reportedDirectoryEntries": 735,
+    "certifiedDailyFreshFlow": null,
+    "acceptedMath": 0,
+    "mathTotal": 13,
+    "localMappings": [
+      "MATH-06",
+      "MATH-12",
+      "SSAE-01",
+      "SSAE-07",
+      "SSAE-09"
+    ],
+    "maturity": "LOCAL_PREREQUISITE_ONLY_FULL_OWNER_OBJECTIVE_OPEN"
+  },
+  "sourceBackupReceipt": "gitlab-publication-fresh-remote-source-backup-2026-10-10.json",
+  "next": "PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE",
+  "nextEvidence": "Recover new foreign independent raw-date audit, verify exact source/fixture/results/public-predicate/FTS/IDs, reuse valid evidence and capture only missing real-parser cases; preserve raw calendar before normalization and existing strict30-day prewrite gate.",
+  "prospectiveRecoveryPrefix": "C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-fresh-remote-2026-10-09-215050Z",
+  "recoveryPointerStatus": "PROSPECTIVE_ONLY_INSPECT_ACTUAL_EXTERNAL_RECEIPT",
+  "runtimeSupplyCIImageTickReview": "UNKNOWN_OR_NOT_ESTABLISHED_NOT_INFERRED_FROM_LOCAL_CHECKS_OR_SOURCE_BACKUP",
+  "foreignAuditReentry": {
+    "thread": "01a122b1-bdcf-7150-950c-750badffb083",
+    "title": "Audit VA Freelance Hub systems",
+    "status": "ACTIVE_MAINLY_READ_ONLY_SEPARATE_OWNED_AUDIT_FILES_NOT_STAGED_BY_THIS_UNIT",
+    "paths": [
+      "docs/audits/INDEPENDENT_SYSTEMS_AUDIT_2026-10-10.md",
+      "docs/audits/INDEPENDENT_SYSTEMS_AUDIT_CONTINUATION_2026-10-10.md",
+      "docs/audits/evidence/2026-10-10-independent/"
+    ],
+    "reportedSource": "3ae421645e088f6e08ded9429a5790c8ecbcabfc",
+    "reportedFinding": "real-parser/native bad-date physical exposure plus calendar rollover success",
+    "acceptance": "FOREIGN_LOCAL_EVIDENCE_PENDING_ITS_FINAL_MANIFEST_REVIEW_BACKUP_NO_LIVE_OCCURRENCE_CLAIM",
+    "effects": "NO_OVERLAPPING_PRODUCTION_SOURCE_OR_SHARED_RECOVERY_DOC_MUTATION_OBSERVED; PRESERVE_EXCLUDE_FOREIGN_AUDIT_FILES"
+  }
+}
