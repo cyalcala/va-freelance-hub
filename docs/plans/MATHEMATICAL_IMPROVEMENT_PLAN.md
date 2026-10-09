@@ -84,6 +84,17 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 20:11 Manila explicit workplace contradiction prerequisite:** shared exact
+onsite/hybrid rejection now precedes ordinary ingest PH positives and fresh gateway
+current-ID success. Known nonremote input stays hidden; post-write drift is UNKNOWN
+with rows/FTS retained/no fresh ledger/later writes halted. NULL/unsupported metadata,
+default inference and provider origin remain unproved; no all-writer prewrite claim.
+Full3844 tests/types/build/four audits/review pass; byte stride80/83binds changes no
+publication cap. [Finite evidence](../operations/PUBLICATION_EXPLICIT_REMOTE_METADATA_BOUNDARY_2026-10-09.md) owns exact scope/backup.
+MATH-06/12 and SSAE-01/07/09 local integrity prerequisites only; MATH0/13,
+certifiedflowUNKNOWN and rollout/optimization/supply acceptance remain open.
+Sole NEXT is only in newest savepoint; other activation/triage paths remain open.
+
 **2026-10-09 19:47 Manila current outbound prerequisite:** fresh gateway ACK now
 reuses existing safe-source/attributable-apply fallback for every exact current ID.
 Invalid-source drift is UNKNOWN with physical rows/FTS retained, no fresh ledger,

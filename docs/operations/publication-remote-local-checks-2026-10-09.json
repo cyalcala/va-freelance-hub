@@ -1,0 +1,495 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_EXPLICIT_REMOTE_METADATA_BOUNDARY",
+  "checkedAtUtc": "2026-10-09T12:11:05.972318+00:00",
+  "startSha": "df3ae7c2a9721cda4ad8be9eb1a0066c76338c78",
+  "sourceSha": "06c43f39af44ae9eeccaf9bee677ffb71b020371",
+  "scope": "FOURTEEN_FROZEN_SOURCE_TEST_FILES_LOCAL_ONLY_NO_CI_DEPLOYMENT_OR_FLOW_ACCEPTANCE",
+  "files": [
+    {
+      "path": "packages/scraper/publication-remote.ts",
+      "frozenWorkingFileSha256": "479a03244876b9a248b086f09b24716223186f4649e83d4002d30df1f70389ad",
+      "sourceGitBlob": "9e2d5c0d99ab463e2a3ff8a65da26956ddba7871"
+    },
+    {
+      "path": "packages/scraper/publication-remote.test.ts",
+      "frozenWorkingFileSha256": "ca20593bf3729e50ebac6108aed20930766f05f91aad86e4d05bf5f45d4b61ea",
+      "sourceGitBlob": "feaa94bb998aa3a0fbafb9896d81a98380e10ff9"
+    },
+    {
+      "path": "packages/scraper/geoGate.ts",
+      "frozenWorkingFileSha256": "838711d88d2e653e97461f9f3a77667c22809d78f4c175b4c41fe9e2b6390fce",
+      "sourceGitBlob": "0018ddf9c970bc8161408ab1bc97a62f191e0cd3"
+    },
+    {
+      "path": "packages/scraper/geoGate.test.ts",
+      "frozenWorkingFileSha256": "922ef0056af3962640e606d0e3c47eb4a130bee3233657f15690be59794eb05c",
+      "sourceGitBlob": "3f14b6f5405c1366c374bc1c97ddd035da65c8b0"
+    },
+    {
+      "path": "packages/scraper/index.ts",
+      "frozenWorkingFileSha256": "964099df56e0de62934d83c1ead21214464b8db658b59ce08011fde553ac4c10",
+      "sourceGitBlob": "97e54412458857d2bb8648935e644de462a064cd"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.ts",
+      "frozenWorkingFileSha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4",
+      "sourceGitBlob": "c6c5abb21200f71712bb71ddc5f6d5fd74c1241d"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.integration.test.ts",
+      "frozenWorkingFileSha256": "1885f9ccf65da69ce5ce4c484c775a1ee74ec92bd7192d0b9d22c211f9c5df34",
+      "sourceGitBlob": "f8f342c91d3e87411d955d820b1b65def65c2c2e"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.test.ts",
+      "frozenWorkingFileSha256": "f38a239d4c8c05949f21a023a57025b47317ad0a9ace80b3844de80a1954bf32",
+      "sourceGitBlob": "6fe6072873f2d3030e0d0f17a4b295da2761cf14"
+    },
+    {
+      "path": "packages/scraper/publication-authority-gaps.test.ts",
+      "frozenWorkingFileSha256": "d9e183f883494e463dc5b99bf601ad9d9ed934f542cf8680f193d7d607a35985",
+      "sourceGitBlob": "0197d79871bcddeef75acf713a19b12df55af155"
+    },
+    {
+      "path": "apps/web/src/pages/api/ingest.ts",
+      "frozenWorkingFileSha256": "a8c42c3ae033534bcfe2691fe4e7c8261257d25a257e748108f0fec8c5541b84",
+      "sourceGitBlob": "4251419c3b585fb85ebd6a416b2d7308c5e074c2"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "frozenWorkingFileSha256": "68cc6b0596c71aabb5a650f66cb2e785aeb123e864ca86091b9e9a076c808068",
+      "sourceGitBlob": "ea82a7c597aef28a5316ca019e26fcef2591faee"
+    },
+    {
+      "path": "apps/web/tests/publish-activations.test.ts",
+      "frozenWorkingFileSha256": "a2ca6486a0c3b5a6c79c502aba80f50fcb6821f60652d5e8df2546ba3e83c31d",
+      "sourceGitBlob": "df48b680c846ee392b0fe00cd31ba699ba7de173"
+    },
+    {
+      "path": "apps/web/tests/pending-recovery.test.ts",
+      "frozenWorkingFileSha256": "209e501d52eae10815b3341873ecf54dc456fabc8c1b8d3acc651f1533c6a2ba",
+      "sourceGitBlob": "eae0e12e307f86070b2bb90912758dbaa6c50e35"
+    },
+    {
+      "path": "apps/web/tests/reactivate-feed.test.ts",
+      "frozenWorkingFileSha256": "9136f2170dac9aff1dcbfe97d40c5423ff73418ebee1d3450725d3c48c80ba9a",
+      "sourceGitBlob": "50f8e29cf74e9728358961f3f2cd02a564a9a7b3"
+    }
+  ],
+  "checks": {
+    "full-suite": {
+      "checkedAt": "2026-10-09T12:05:41.0742381+00:00",
+      "startedAt": "2026-10-09T12:02:58.8497054+00:00",
+      "command": "bun run test",
+      "exit": 0,
+      "milliseconds": 162221.3411,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-remote-full-suite-2026-10-09.log",
+      "logSha256": "f4dbf2795a866edf929bbdff862970304f081864781f6ae32b35632f9b8fc28d",
+      "actualCounts": {
+        "passed": 3844,
+        "failed": 0,
+        "assertions": 325545,
+        "tests": 3844,
+        "files": 246,
+        "bunReportedSeconds": 161.7
+      }
+    },
+    "typecheck": {
+      "checkedAt": "2026-10-09T12:04:06.2349363+00:00",
+      "startedAt": "2026-10-09T12:03:03.5078775+00:00",
+      "command": "bun run typecheck",
+      "exit": 0,
+      "milliseconds": 62718.5298,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-remote-typecheck-2026-10-09.log",
+      "logSha256": "4ffe99488e8b95277c0b5110e21846165152e354361495a2e344f2312540ddcc"
+    },
+    "build": {
+      "checkedAt": "2026-10-09T12:04:10.2218546+00:00",
+      "startedAt": "2026-10-09T12:03:08.6678293+00:00",
+      "command": "bun run build",
+      "exit": 0,
+      "milliseconds": 61525.1444,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-remote-build-2026-10-09.log",
+      "logSha256": "ff9e9c3cfa2d2af3701631f736714d98697451e959a325574d2b5fb7bd5e1b2c"
+    },
+    "audit-guardrails": {
+      "checkedAt": "2026-10-09T12:03:28.1165321+00:00",
+      "startedAt": "2026-10-09T12:03:16.8835456+00:00",
+      "command": "bun run audit:guardrails",
+      "exit": 0,
+      "milliseconds": 11228.7304,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-remote-audit-guardrails-2026-10-09.log",
+      "logSha256": "e5d85f723e265f151e18e0f5af9376414ed81ad92718b0dc4b6f0b243b5cf710"
+    },
+    "audit-parameters": {
+      "checkedAt": "2026-10-09T12:03:28.3238987+00:00",
+      "startedAt": "2026-10-09T12:03:20.0809848+00:00",
+      "command": "bun run audit:parameters",
+      "exit": 0,
+      "milliseconds": 8235.8805,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-remote-audit-parameters-2026-10-09.log",
+      "logSha256": "9827b8a08a7b67e2da90694a40315f0a854806812289698b610d80b700257dac"
+    },
+    "audit-orchestrator": {
+      "checkedAt": "2026-10-09T12:03:39.4998851+00:00",
+      "startedAt": "2026-10-09T12:03:25.5099458+00:00",
+      "command": "bun run audit:orchestrator",
+      "exit": 0,
+      "milliseconds": 13984.0359,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-remote-audit-orchestrator-2026-10-09.log",
+      "logSha256": "eda3cebcba1e9a52334a1fedb71ca6f6d43bfc7c52d85f5dd3a9ca354883546e"
+    },
+    "audit-constitution": {
+      "checkedAt": "2026-10-09T12:03:40.9259502+00:00",
+      "startedAt": "2026-10-09T12:03:30.0434190+00:00",
+      "command": "bun run audit:constitution",
+      "exit": 0,
+      "milliseconds": 10877.2274,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-remote-audit-constitution-2026-10-09.log",
+      "logSha256": "5e5c4ec8789861a970717c7a3e23af37c394b46a5819869f6fcb85de4867fd4b"
+    }
+  },
+  "geoBehaviorRed": {
+    "startedAtUtc": "2026-10-09T11:57:13.1669529+00:00",
+    "endedAtUtc": "2026-10-09T11:57:13.6051032+00:00",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/geoGate.test.ts -t 'structured remote metadata'",
+    "exitCode": 1,
+    "milliseconds": 430.5601,
+    "geoBefore": "cd0bd039f66a2bf43619f16788f7968375b1cebaff84abf653578a6c0ba83059",
+    "geoAfter": "cd0bd039f66a2bf43619f16788f7968375b1cebaff84abf653578a6c0ba83059",
+    "classification": "GENUINE_STRUCTURED_METADATA_CONTRADICTION_RED_WITH_EXISTING_BASELINE_CONTROLS",
+    "log": "tmp/publication-remote-geo-red-2026-10-09.log",
+    "logSha256": "ba33aa10d0a741014da0c1f6a0400092d0f8f66a4820405b8870ef0871b90091",
+    "actualCounts": {
+      "passed": 3,
+      "failed": 6,
+      "assertions": 9,
+      "tests": 9,
+      "files": 1,
+      "bunReportedSeconds": 0.094
+    },
+    "commandDisplayCorrection": "Actual tool cb47b3 supplied the quoted selector; capture metadata display omitted those quotes. Counts/hash/timestamps remain unchanged."
+  },
+  "pureCombinedGreen": {
+    "startedAtUtc": "2026-10-09T11:59:17.0225741+00:00",
+    "endedAtUtc": "2026-10-09T11:59:17.5989310+00:00",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-remote.test.ts packages/scraper/geoGate.test.ts packages/scraper/publication-gateway.test.ts packages/scraper/publication-authority-gaps.test.ts",
+    "exitCode": 0,
+    "milliseconds": 566.5526,
+    "classification": "EXPLICIT_METADATA_PURE_GATE_AND_FIVE_FIELD_FAKE_COMPATIBILITY_LOCAL",
+    "log": "tmp/publication-remote-pure-green-2026-10-09.log",
+    "logSha256": "04a96d1be2082a4f305226f80b8822f5f3a419fd1e88950d3f7a1204c799e435",
+    "actualCounts": {
+      "passed": 184,
+      "failed": 0,
+      "assertions": 590,
+      "tests": 184,
+      "files": 4,
+      "bunReportedSeconds": 0.345
+    }
+  },
+  "nativeGatewayEvidence": {
+    "unit": "PUBLICATION_EXPLICIT_REMOTE_METADATA_BOUNDARY",
+    "startSha": "df3ae7c2a9721cda4ad8be9eb1a0066c76338c78",
+    "scope": "Offline native Bun SQLite current-row acknowledgement tests; no network, production, CI, rollout or daily-flow acceptance.",
+    "testFile": "packages/scraper/publication-gateway.integration.test.ts",
+    "testFileSha256": "1885f9ccf65da69ce5ce4c484c775a1ee74ec92bd7192d0b9d22c211f9c5df34",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts",
+    "fixtureCompatibility": "The existing native fixture applies production migrations; location_type in migration 0000 is nullable TEXT DEFAULT remote without an enum CHECK. The TypeScript schema lists remote/hybrid/onsite. Positive fixture inserts now explicitly supply remote; strict ID/date/URL corrupted aggregate fixtures supply the fifth metadata field to preserve their intended invalid dimension. No schema file, production schema or production source was edited by this agent.",
+    "semanticBoundary": "Only explicit canonical onsite/hybrid metadata contradicts remote eligibility. Actual NULL/unsupported/oversize stored metadata controls mean absence of that contradiction, not remote proof or unknown/default inference repair. Malformed/missing/unsupported aggregate fields are separately invalid adapter contracts.",
+    "red": {
+      "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts *> $taskNativeLog",
+      "captureVariables": {
+        "taskNativeLog": "tmp/publication-remote-native-red-2026-10-09.log"
+      },
+      "toolChunkId": "dcfb3a",
+      "startedAtUtc": "2026-10-09T11:56:27.4790472Z",
+      "endedAtUtc": "2026-10-09T11:56:36.6511656Z",
+      "commandElapsedMs": 9172.1184,
+      "bunReportedSeconds": 8.98,
+      "exitCode": 1,
+      "tests": 195,
+      "passed": 183,
+      "failed": 12,
+      "assertions": 1293,
+      "actualExplicitNonremoteBehaviorFailures": 10,
+      "actualBehaviorFailureGroups": {
+        "currentOnsiteAndHybridRows": 2,
+        "postPersistenceRemoteDrift": 2,
+        "middleAndLater80IdChunks": 6
+      },
+      "missingMetadataAggregateContractFailures": 1,
+      "addedMetadataQueryProjectionExpectationFailures": 1,
+      "priorCasesPassed": 168,
+      "newPositiveReplayNoncontradictionAndMalformedContractCasesPassed": 15,
+      "classificationNote": "The preexisting bounded80-ID test additionally expects location_type projection. Native current and drift cases persist using the actual production nullable location_type column and keep rows/FTS intact. Existing aggregate compatibility changes are not claimed as behavior RED; raw actual NULL/unsupported/oversize metadata positive controls establish only absence of an explicit canonical contradiction.",
+      "gatewayUnchangedDuringCapture": true,
+      "gatewayBeforeSha256": "e6008c40e535e847402ae8194c2c42d0d207d18df122e3959d8e272d57e690bb",
+      "gatewayAfterSha256": "e6008c40e535e847402ae8194c2c42d0d207d18df122e3959d8e272d57e690bb",
+      "testFileSha256": "1885f9ccf65da69ce5ce4c484c775a1ee74ec92bd7192d0b9d22c211f9c5df34",
+      "log": "tmp/publication-remote-native-red-2026-10-09.log",
+      "logSha256": "c26c0c71358d184e5b42ae3d657400a84dcc4eae3aeaaea104dc5d384006b7d3"
+    },
+    "green": {
+      "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts *> $taskNativeLog",
+      "captureVariables": {
+        "taskNativeLog": "tmp/publication-remote-native-green-2026-10-09.log"
+      },
+      "toolChunkId": "86a546",
+      "startedAtUtc": "2026-10-09T12:00:27.9528778Z",
+      "endedAtUtc": "2026-10-09T12:00:38.9055814Z",
+      "commandElapsedMs": 10952.7036,
+      "bunReportedSeconds": 10.79,
+      "exitCode": 0,
+      "tests": 195,
+      "passed": 195,
+      "failed": 0,
+      "assertions": 1375,
+      "gatewayUnchangedDuringCapture": true,
+      "gatewayBeforeSha256": "f3cb8842a3f7646c75e8dc8152f54f1fe78d9b4acc4102231d5233b3576d64d1",
+      "gatewayAfterSha256": "f3cb8842a3f7646c75e8dc8152f54f1fe78d9b4acc4102231d5233b3576d64d1",
+      "testFileSha256": "1885f9ccf65da69ce5ce4c484c775a1ee74ec92bd7192d0b9d22c211f9c5df34",
+      "log": "tmp/publication-remote-native-green-2026-10-09.log",
+      "logSha256": "a2d87eee2fc6bfd6a49132646c06cd5b238b63eec195e59653196f677fb9fb75"
+    },
+    "postCaptureCommentOnlyGatewayUpdate": {
+      "capturedSha256": "f3cb8842a3f7646c75e8dc8152f54f1fe78d9b4acc4102231d5233b3576d64d1",
+      "reviewedFinalSha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4",
+      "scope": "Only explanatory byte-budget and opaque-NULL metadata comments changed after native GREEN.",
+      "verification": "Exact in-memory reversal of those two comment edits reconstructs captured gateway SHA256; no file mutation or behavior change.",
+      "verificationToolChunkId": "636f82",
+      "additionalNativeRun": false,
+      "note": "Original native GREEN hashes and metrics are retained unchanged; root owns final full frozen verification."
+    },
+    "status": "FINAL_NATIVE_GREEN_CAPTURED_LOCAL_ONLY",
+    "limits": [
+      "Explicit canonical onsite/hybrid metadata contradiction handling only, not independently verified remote origin.",
+      "NULL/unsupported stored metadata is unproven; this unit does not repair unknown/default-remote inference.",
+      "Current-row acknowledgement is not proof of this write or an atomic row/ledger/cache snapshot.",
+      "Historical replay is immutable ledger evidence, not daily first-publication flow.",
+      "Full item/safety/source provenance, durable uncertainty, shared budgets/epochs/leases, future parallel writers and rollout remain open."
+    ]
+  },
+  "webBehaviorRed": {
+    "unit": "PUBLICATION_EXPLICIT_REMOTE_METADATA_BOUNDARY",
+    "startSha": "df3ae7c2a9721cda4ad8be9eb1a0066c76338c78",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts -t 'REMOTE ACK:'",
+    "startedAt": "2026-10-09T11:55:56.3905534Z",
+    "completedAt": "2026-10-09T11:55:57.7759521Z",
+    "elapsedSeconds": 1.3606581,
+    "exitCode": 1,
+    "classification": "Existing explicit remote and description-only hybrid controls PASS; genuine structured onsite/hybrid prewrite and post-write drift behavior RED before root repair",
+    "productionBefore": [
+      {
+        "path": "apps/web/src/pages/api/ingest.ts",
+        "sha256": "f181aaf9f9acfeac942d27fd19117a15d40686ece1b3e4564109107d5ed1c111"
+      },
+      {
+        "path": "packages/scraper/geoGate.ts",
+        "sha256": "cd0bd039f66a2bf43619f16788f7968375b1cebaff84abf653578a6c0ba83059"
+      },
+      {
+        "path": "packages/scraper/publication-gateway.ts",
+        "sha256": "e6008c40e535e847402ae8194c2c42d0d207d18df122e3959d8e272d57e690bb"
+      }
+    ],
+    "productionAfter": [
+      {
+        "path": "apps/web/src/pages/api/ingest.ts",
+        "sha256": "f181aaf9f9acfeac942d27fd19117a15d40686ece1b3e4564109107d5ed1c111"
+      },
+      {
+        "path": "packages/scraper/geoGate.ts",
+        "sha256": "cd0bd039f66a2bf43619f16788f7968375b1cebaff84abf653578a6c0ba83059"
+      },
+      {
+        "path": "packages/scraper/publication-gateway.ts",
+        "sha256": "e6008c40e535e847402ae8194c2c42d0d207d18df122e3959d8e272d57e690bb"
+      }
+    ],
+    "testFileSha256": "562f535bd237581fa0aea4f7e380733b18e4e13ad1eb4f2bcc8a9d0b1fc96db6",
+    "log": "tmp/publication-remote-web-native-red-2026-10-09.log",
+    "limitations": [
+      "No unknown/default-remote or provider-origin proof",
+      "No production source/schema/network/production actions"
+    ],
+    "passed": 2,
+    "failed": 6,
+    "assertions": 18,
+    "tests": 8,
+    "bunReportedSeconds": 1.071,
+    "logSha256": "36ff49d9d55570ef561a4fff01a24c352ee4a4b36215b075eadf78c64de27488",
+    "actualCounts": {
+      "passed": 2,
+      "failed": 6,
+      "assertions": 18,
+      "tests": 8,
+      "files": 1,
+      "bunReportedSeconds": 1.071
+    }
+  },
+  "webFocusedGreen": {
+    "unit": "PUBLICATION_EXPLICIT_REMOTE_METADATA_BOUNDARY",
+    "startSha": "df3ae7c2a9721cda4ad8be9eb1a0066c76338c78",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts apps/web/tests/publish-activations.test.ts apps/web/tests/pending-recovery.test.ts apps/web/tests/reactivate-feed.test.ts",
+    "startedAt": "2026-10-09T12:00:12.2774015Z",
+    "completedAt": "2026-10-09T12:00:17.8478037Z",
+    "elapsedSeconds": 5.5704343,
+    "exitCode": 0,
+    "classification": "Four-file focused final behavior verification after genuine native remote-metadata RED and explicit positive metadata fixture compatibility",
+    "log": "tmp/publication-remote-web-focused-green-2026-10-09.log",
+    "logSha256": "7f4fdcc3d481cd70949137d41a019fc4d88c3a2534184f883159f5b3d8f39c1f",
+    "actualCounts": {
+      "passed": 127,
+      "failed": 0,
+      "assertions": 682,
+      "tests": 127,
+      "files": 4,
+      "bunReportedSeconds": 5.37
+    }
+  },
+  "webFreeze": {
+    "unit": "PUBLICATION_EXPLICIT_REMOTE_METADATA_BOUNDARY",
+    "startSha": "df3ae7c2a9721cda4ad8be9eb1a0066c76338c78",
+    "frozenAt": "2026-10-09T12:01:21.6742443Z",
+    "diffCheckExit": 0,
+    "red": {
+      "log": "tmp/publication-remote-web-native-red-2026-10-09.log",
+      "assertions": 18,
+      "bunReportedSeconds": 1.071,
+      "pass": 2,
+      "tests": 8,
+      "classification": "Two existing remote/description-only hybrid controls PASS and six genuine pre/post-write metadata failures",
+      "fail": 6,
+      "actualCounts": {
+        "passed": 2,
+        "failed": 6,
+        "assertions": 18,
+        "tests": 8,
+        "files": 1,
+        "bunReportedSeconds": 1.071
+      },
+      "logSha256": "36ff49d9d55570ef561a4fff01a24c352ee4a4b36215b075eadf78c64de27488"
+    },
+    "green": {
+      "log": "tmp/publication-remote-web-focused-green-2026-10-09.log",
+      "assertions": 682,
+      "bunReportedSeconds": 5.37,
+      "pass": 127,
+      "tests": 127,
+      "files": 4,
+      "fail": 0,
+      "actualCounts": {
+        "passed": 127,
+        "failed": 0,
+        "assertions": 682,
+        "tests": 127,
+        "files": 4,
+        "bunReportedSeconds": 5.37
+      },
+      "logSha256": "7f4fdcc3d481cd70949137d41a019fc4d88c3a2534184f883159f5b3d8f39c1f"
+    },
+    "files": [
+      {
+        "path": "apps/web/tests/publish-inserts.test.ts",
+        "sha256": "68cc6b0596c71aabb5a650f66cb2e785aeb123e864ca86091b9e9a076c808068"
+      },
+      {
+        "path": "apps/web/tests/publish-activations.test.ts",
+        "sha256": "a2ca6486a0c3b5a6c79c502aba80f50fcb6821f60652d5e8df2546ba3e83c31d"
+      },
+      {
+        "path": "apps/web/tests/pending-recovery.test.ts",
+        "sha256": "209e501d52eae10815b3341873ecf54dc456fabc8c1b8d3acc651f1533c6a2ba"
+      },
+      {
+        "path": "apps/web/tests/reactivate-feed.test.ts",
+        "sha256": "9136f2170dac9aff1dcbfe97d40c5423ff73418ebee1d3450725d3c48c80ba9a"
+      }
+    ],
+    "reviewedProductionFilesReadOnly": [
+      {
+        "path": "packages/scraper/publication-remote.ts",
+        "sha256": "479a03244876b9a248b086f09b24716223186f4649e83d4002d30df1f70389ad"
+      },
+      {
+        "path": "packages/scraper/geoGate.ts",
+        "sha256": "838711d88d2e653e97461f9f3a77667c22809d78f4c175b4c41fe9e2b6390fce"
+      },
+      {
+        "path": "apps/web/src/pages/api/ingest.ts",
+        "sha256": "a8c42c3ae033534bcfe2691fe4e7c8261257d25a257e748108f0fec8c5541b84"
+      },
+      {
+        "path": "packages/scraper/publication-gateway.ts",
+        "sha256": "981a75df74d541c766f32721e35ed44f5ba40c5f4a601a8a7d65562b154363f4"
+      },
+      {
+        "path": "packages/scraper/index.ts",
+        "sha256": "964099df56e0de62934d83c1ead21214464b8db658b59ce08011fde553ac4c10"
+      }
+    ],
+    "sourceEditsByWebWorker": 0,
+    "scopeReview": "PASS explicit onsite/hybrid contradiction repair; ingest enum behavior unchanged, geoGate prioritizes explicit nonremote rejection, fifth-key current ACK rejects drift with prior UNKNOWN/stop/prefix semantics",
+    "nextExactItemEvidenceGap": "Absent/malformed original workplace metadata still defaults to remote; positive PH alone remains insufficient independent fully-remote evidence. Native reproduction for that separate inference boundary has not been run in this unit.",
+    "limits": [
+      "Explicit metadata contradictions only; no default/unknown/provider-origin proof",
+      "No web production/schema/network/provider/Git/deployment actions",
+      "Uncertain active rows/FTS retained; no withdrawal, atomic exposure fence, durable reconciliation or fresh daily-flow proof"
+    ]
+  },
+  "independentReview": {
+    "status": "PASS",
+    "reviewers": [
+      "hunter_receipt_review",
+      "ownership_activation"
+    ],
+    "scope": "Root core/geo/ingest/gateway/fakes plus native/web owned test files"
+  },
+  "boundedRead": {
+    "canonicalMetadataMaxCharacters": 6,
+    "maxJsonBytes": 2000000,
+    "worstRowBytes": 24950,
+    "idsPerRead": 80,
+    "worstAggregateBytes": 1996002,
+    "maxBindings": 83,
+    "publicationOrSourceCapChanged": false
+  },
+  "limits": [
+    "Only exact existing onsite/hybrid enum contradictions are handled; NULL/unsupported stored metadata projects NULL and remains opaque, not remote proof.",
+    "Ordinary ingest missing/invalid locationType still defaults remote; no original remote provenance is certified.",
+    "Other geoGate callers can omit already-held workplace metadata; no all-caller prewrite coverage is claimed.",
+    "Gateway UNKNOWN retains physical rows/FTS; post-write observation is not atomic row/ledger/cache or specific-write evidence.",
+    "No durable uncertainty/shared budgets/epochs/leases, origin/safety/all-writer closure, GCP runtime/headroom or daily supply acceptance."
+  ],
+  "productionEffects": {
+    "sourceJobsObserved": 0,
+    "productionPublications": 0,
+    "directoryUpdates": 0,
+    "productionDbReads": 0,
+    "productionDbWrites": 0,
+    "deployments": 0,
+    "migrations": 0,
+    "admissions": 0,
+    "acceptedParameterChanges": 0,
+    "clocksChanged": 0,
+    "certifiedDailyFreshFlow": null,
+    "mathAccepted": 0
+  },
+  "next": {
+    "unit": "PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY",
+    "evidence": "CODE_REVIEW_ONLY_NOT_NATIVE_REPRODUCED_YET",
+    "owner": "Maintainer",
+    "trigger": "Current ready local native fixture reproduction",
+    "scope": "Inline/Inngest pending drains and gate/feed recovery in scrape.ts/triage-drain.ts: deterministic held-row rejection and all four current activation UPDATE predicates",
+    "callerEvidence": "Already-held locationType omitted by both drains; decideTriage does not reject country_locked. Known nonremote rows can be physically active before ACK returns UNKNOWN. Fresh scrape omission is a distinct follow-up."
+  }
+}

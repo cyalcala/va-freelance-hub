@@ -4,7 +4,20 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 19:47 Manila): current outbound URL receipt boundary verified
+Latest continuation (2026-10-09 20:11 Manila): explicit onsite/hybrid metadata contradiction
+verified locally at `06c43f39af44`, pushed/read back on GitLab. Ordinary ingest
+forwards the preserved enum before PH positives; fresh ACK rejects current known
+nonremote drift, preserving UNKNOWN/rows/FTS/no fresh ledger/later-write stop/prefix.
+NULL/unsupported metadata and default-remote inference remain unproved; no full
+remote-origin certificate.3844 full tests/types/build/four audits/review pass.
+80-ID/83-bind reads stay bounded; publication caps and zero/replay unchanged.
+Actual final external bundle/clean-restore receipt is required; pointer alone
+proves no restore. No production/CI/runtime acceptance; MATH0/13/flowUNKNOWN.
+Sole NEXT is PUBLICATION_HELD_ROW_NONREMOTE_ACTIVATION_BOUNDARY in newest savepoint:
+four held-row activation paths must prevent known onsite/hybrid physical exposure.
+All unchanged directory/access/GCP/Janes holds retain their owners/triggers.
+
+Prior continuation (2026-10-09 19:47 Manila): current outbound URL receipt boundary verified
 locally at `d4810c37d350`, pushed/read back on GitLab. Exact current IDs
 require safe source and existing attributable apply/source fallback; malformed
 URL drift retains UNKNOWN/physical rows/FTS/no fresh success ledger and stops
