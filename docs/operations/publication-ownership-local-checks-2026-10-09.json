@@ -1,0 +1,370 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_ID_SOURCE_OWNERSHIP_2026-10-09",
+  "checkedAt": "2026-10-09T18:21:56.7318856+08:00",
+  "startSha": "8817ff6f28baa612fa20e93ab890098a4d55a9ba",
+  "sourceSha": "0678e57c5d3fab9fbd70f442d95e4378afed1458",
+  "branch": "codex/verified-flow-directory-checkpoint",
+  "sourceFiles": [
+    {
+      "path": "packages/scraper/publication-gateway.ts",
+      "frozenWorkingFileSha256": "9518c845251bd38816ff09a38fcbc805eebffb00fb063209d20d6a406cd63ece",
+      "sourceGitBlob": "362dc3ce3b8cbedc0334e826ed8c9fac9c38d341"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.test.ts",
+      "frozenWorkingFileSha256": "e7ccd35693a70f7fecf0aa298e0403920daed3ddd217e56bd59717dd564f1f69",
+      "sourceGitBlob": "eea1514c7b3660846d695bdb467f10a471e1520e"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.integration.test.ts",
+      "frozenWorkingFileSha256": "04c026c4727c5503a201d29af7ecfac6e999c31c1bcf4642d13e7635a915738c",
+      "sourceGitBlob": "711a134ea911d1dc19c81ce084ca848d828141f3"
+    },
+    {
+      "path": "packages/scraper/publication-authority-gaps.test.ts",
+      "frozenWorkingFileSha256": "9506ef0c3f50f6337f524f5bef7f64792eb3f6be9888090d171bc1fded13303f",
+      "sourceGitBlob": "a5537bb2441fd66a5755935aecea6dc802cf5a0f"
+    },
+    {
+      "path": "apps/web/tests/publication-db-fake.ts",
+      "frozenWorkingFileSha256": "3d78ad13d125d0ad29e448c6eca78cfc3eb3a98afb6bd57bf2e298d3238857a8",
+      "sourceGitBlob": "8771d3a3292463855c0b879bbd949e143a572a5c"
+    },
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "frozenWorkingFileSha256": "a5b2275a057844121f32a69d2fe5f5240324d866bd1b9d6d096b8daf6df3aa6b",
+      "sourceGitBlob": "3812d3f044aeb770858fbdc6d7ff0250f8c12c02"
+    },
+    {
+      "path": "apps/web/src/lib/inngest/functions/triage-drain.ts",
+      "frozenWorkingFileSha256": "4485c380b6216c7563a9ee26874002f5c1cd9c4b5db37df60981a529b0ae7283",
+      "sourceGitBlob": "ab97e10e169cde2e130a9ef55129d83bd97a887b"
+    },
+    {
+      "path": "apps/web/src/lib/publish-opportunities.ts",
+      "frozenWorkingFileSha256": "802d0d07215b1f2fda37bec9c3be899a8d8004c428ec96b757dc75e9899d6f66",
+      "sourceGitBlob": "67a0e36f72d544aeb95d0c44517b868a8dee9099"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "frozenWorkingFileSha256": "070f54c20f668423cdbe650098576cd0fb0004956b234c35c27928d78af29b75",
+      "sourceGitBlob": "21b90ed4e274fe2191e54197be51ace41c49cd60"
+    },
+    {
+      "path": "apps/web/tests/publish-activations.test.ts",
+      "frozenWorkingFileSha256": "62ac58693ee863e5babbfb9c905aaac889288b9349cde7a04c2ca6a9b06dd825",
+      "sourceGitBlob": "7331bcfae3c16a2d4f2e31240c7134ae1d13503f"
+    },
+    {
+      "path": "apps/web/tests/reactivate-feed.test.ts",
+      "frozenWorkingFileSha256": "394b6937ff0356e5de298a2c9a065fb21138eee1aabb6e53b49a612c28d83308",
+      "sourceGitBlob": "f2439677dede968c0b47636e75388f0d007450b4"
+    },
+    {
+      "path": "apps/web/tests/pending-recovery.test.ts",
+      "frozenWorkingFileSha256": "25159e811e703fd8c81e732e8a8b2e17cec9e1fc4438b0ee3a7aee69ae01de52",
+      "sourceGitBlob": "608742350512d1ede6d6e75472164ee8ebe8223a"
+    },
+    {
+      "path": "apps/web/tests/scrape-unhandled-error.test.ts",
+      "frozenWorkingFileSha256": "988698b6a762b4aba85e0bab2c8fe92600e86df2d48506b2d31a0bbac1a7f15b",
+      "sourceGitBlob": "b4a67ce02f64bad2fa1742d782cd755c3618e06d"
+    }
+  ],
+  "review": {
+    "result": "PASS",
+    "scope": "THIRTEEN_FROZEN_SOURCE_TEST_FILES",
+    "reviewer": "independent read-only /root/hunter_receipt_review",
+    "findingsResolved": [
+      "Restore prior live feed sourceUrl predicate",
+      "Keep actual Drizzle parameter count at or below existing D1 limit",
+      "Repair stale initial heartbeat candidate SELECT fixture without weakening error assertions"
+    ]
+  },
+  "behavioralRed": [
+    {
+      "classification": "ORIGINAL_NATIVE_OWNERSHIP_AND_REQUEST_MUTATION",
+      "pass": 41,
+      "fail": 20,
+      "assertions": 307,
+      "bunMilliseconds": 2490,
+      "capture": {
+        "checkedAt": "2026-10-09T17:54:51.0756637+08:00",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts",
+        "exit": 1,
+        "milliseconds": 2681,
+        "phase": "NATIVE_CURRENT_ROW_OWNERSHIP_AND_IMMUTABLE_AUTHORIZED_REQUEST_RED",
+        "log": "tmp/publication-ownership-native-red-2026-10-09.log",
+        "logSha256": "01a1af0c5486419d071cf7e2cbee94eccf69734f24b15f974b8edf12248237ff"
+      }
+    },
+    {
+      "classification": "ORIGINAL_NATIVE_ACTIVATION_SOURCE_DRIFT",
+      "pass": 0,
+      "fail": 7,
+      "assertions": 9,
+      "bunMilliseconds": 1203,
+      "capture": {
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts apps/web/tests/publish-activations.test.ts --test-name-pattern source-changed|selected source binding|immutable authorized source",
+        "startedAt": "2026-10-09T17:53:23.5209151+08:00",
+        "finishedAt": "2026-10-09T17:53:25.0016679+08:00",
+        "exitCode": 1,
+        "elapsedMilliseconds": 1470,
+        "scope": "Native SQLite + production Drizzle pre-UPDATE source drift and immutable callback binding",
+        "beforeProductionEdits": true,
+        "productionWrites": 0
+      },
+      "reproducibleCommand": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts apps/web/tests/publish-activations.test.ts --test-name-pattern \"source-changed|selected source binding|immutable authorized source\""
+    },
+    {
+      "classification": "IN_UNIT_REFACTOR_DROPPED_PRIOR_LIVE_URL_PREDICATE",
+      "pass": 0,
+      "fail": 2,
+      "assertions": 2,
+      "bunMilliseconds": 708,
+      "capture": {
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts --test-name-pattern live confirmed-URL",
+        "startedAt": "2026-10-09T18:03:03.805027+08:00",
+        "finishedAt": "2026-10-09T18:03:04.7506912+08:00",
+        "exitCode": 1,
+        "elapsedMilliseconds": 935,
+        "beforeURLPredicateRepair": true,
+        "scope": "Actual native SQLite/Drizzle pre-UPDATE URL drift after candidate selection",
+        "productionWrites": 0
+      },
+      "reproducibleCommand": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts --test-name-pattern \"live confirmed-URL\""
+    }
+  ],
+  "focusedGreen": [
+    {
+      "scope": "NATIVE_GATEWAY",
+      "pass": 61,
+      "fail": 0,
+      "assertions": 391,
+      "bunMilliseconds": 2320,
+      "capture": {
+        "checkedAt": "2026-10-09T17:55:59.6196487+08:00",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts",
+        "exit": 0,
+        "milliseconds": 2530,
+        "phase": "NATIVE_CURRENT_ROW_OWNERSHIP_AND_IMMUTABLE_AUTHORIZED_REQUEST_GREEN",
+        "log": "tmp/publication-ownership-native-green-2026-10-09.log",
+        "logSha256": "ead1f21d34e765950fd9bfddc8191515be75db292f5966555c9dfcafff4c0ed6"
+      }
+    },
+    {
+      "scope": "THREE_GATEWAY_FILES",
+      "pass": 180,
+      "fail": 0,
+      "assertions": 831,
+      "bunMilliseconds": 2910,
+      "capture": {
+        "checkedAt": "2026-10-09T17:58:17.4861047+08:00",
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.test.ts packages/scraper/publication-gateway.integration.test.ts packages/scraper/publication-authority-gaps.test.ts",
+        "exit": 0,
+        "milliseconds": 3105,
+        "log": "tmp/publication-ownership-gateway-focused-green-2026-10-09.log",
+        "logSha256": "be96a29688a81f0ea91d09954e56f5cf4972adc2d382f76639bd37a525293dac"
+      }
+    },
+    {
+      "scope": "TWO_NATIVE_WEB_FILES",
+      "pass": 56,
+      "fail": 0,
+      "assertions": 263,
+      "bunMilliseconds": 2660,
+      "capture": {
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts apps/web/tests/publish-activations.test.ts",
+        "startedAt": "2026-10-09T18:04:50.2251865+08:00",
+        "finishedAt": "2026-10-09T18:04:53.0977985+08:00",
+        "exitCode": 0,
+        "elapsedMilliseconds": 2863,
+        "scope": "Native source/URL drift, actual D1 UPDATE parameter ceiling, nullable fallback and zero/nonzero confirmed-prefix post-commit ownership stop",
+        "productionWrites": 0
+      }
+    }
+  ],
+  "fullSuiteFailure": {
+    "classification": "STALE_HEARTBEAT_INITIAL_SELECT_FIXTURE_NOT_BEHAVIORAL_RED",
+    "pass": 3538,
+    "fail": 2,
+    "assertions": 324065,
+    "files": 242,
+    "bunMilliseconds": 97640,
+    "capture": {
+      "checkedAt": "2026-10-09T18:12:30.2223762+08:00",
+      "command": "bun run test",
+      "exit": 1,
+      "milliseconds": 97893,
+      "scope": "TWELVE_FROZEN_SOURCE_TEST_FILES_FULL_REPOSITORY",
+      "log": "tmp/publication-ownership-full-suite-2026-10-09.log",
+      "logSha256": "ab6a183791e4bb70f1711a8158a9a1d10bb592370510acb2003a42e8ebcdad81"
+    },
+    "repair": "Initial opportunities candidate SELECT succeeds; later non-governance SELECTs still throw the original mid-run error; all assertions preserved",
+    "focusedRepair": {
+      "pass": 3,
+      "fail": 0,
+      "assertions": 18,
+      "bunMilliseconds": 320,
+      "capture": {
+        "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/scrape-unhandled-error.test.ts",
+        "startedAt": "2026-10-09T18:14:47.1225449+08:00",
+        "finishedAt": "2026-10-09T18:14:47.6820438+08:00",
+        "exitCode": 0,
+        "elapsedMilliseconds": 546,
+        "classification": "Stale initial recovery SELECT fixture compatibility repair; previous fullsuite3538PASS2FAIL not behavioral RED",
+        "productionCodeEdits": 0,
+        "productionWrites": 0
+      }
+    }
+  },
+  "fullSuite": {
+    "pass": 3540,
+    "fail": 0,
+    "assertions": 324071,
+    "files": 242,
+    "netNewTests": 41,
+    "bunMilliseconds": 90630,
+    "capture": {
+      "checkedAt": "2026-10-09T18:17:04.6506186+08:00",
+      "command": "bun run test",
+      "exit": 0,
+      "milliseconds": 90877,
+      "scope": "THIRTEEN_FROZEN_SOURCE_TEST_FILES_FULL_REPOSITORY",
+      "log": "tmp/publication-ownership-full-suite-final-2026-10-09.log",
+      "logSha256": "c7468ce21c600f138b873393c542b75775ae28b38202a1b7b29f96958ea55f55"
+    }
+  },
+  "typecheck": {
+    "checkedAt": "2026-10-09T18:19:44.3429955+08:00",
+    "command": "bun run typecheck",
+    "exit": 0,
+    "milliseconds": 18664,
+    "scope": "THIRTEEN_FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+    "log": "tmp/publication-ownership-thirteen-file-typecheck-2026-10-09.log",
+    "logSha256": "4ffe99488e8b95277c0b5110e21846165152e354361495a2e344f2312540ddcc"
+  },
+  "build": {
+    "checkedAt": "2026-10-09T18:07:37.0120018+08:00",
+    "command": "bun run build",
+    "exit": 0,
+    "milliseconds": 24753,
+    "scope": "FINAL_FROZEN_SOURCE_LOCAL_NO_DEPLOYMENT",
+    "log": "tmp/publication-ownership-frozen-build-2026-10-09.log",
+    "logSha256": "96f8c9c2093ee2c20ca588847746411e259a7e125997b34e6bc8b0e1e769e3fd"
+  },
+  "buildApplicability": "Production source hashes unchanged after build; subsequent edits were fixture-only; local Astro build uploaded nothing",
+  "audits": [
+    {
+      "checkedAt": "2026-10-09T18:11:49.3601507+08:00",
+      "command": "bun run audit:guardrails",
+      "exit": 0,
+      "milliseconds": 729,
+      "log": "tmp/publication-ownership-frozen-audit-guardrails-2026-10-09.log",
+      "scope": "TWELVE_FROZEN_FILES_AFTER_URL_REGRESSION_REPAIR"
+    },
+    {
+      "checkedAt": "2026-10-09T18:11:49.7562863+08:00",
+      "command": "bun run audit:parameters",
+      "exit": 0,
+      "milliseconds": 375,
+      "log": "tmp/publication-ownership-frozen-audit-parameters-2026-10-09.log",
+      "scope": "TWELVE_FROZEN_FILES_AFTER_URL_REGRESSION_REPAIR"
+    },
+    {
+      "checkedAt": "2026-10-09T18:11:50.7432639+08:00",
+      "command": "bun run audit:orchestrator",
+      "exit": 0,
+      "milliseconds": 978,
+      "log": "tmp/publication-ownership-frozen-audit-orchestrator-2026-10-09.log",
+      "scope": "TWELVE_FROZEN_FILES_AFTER_URL_REGRESSION_REPAIR"
+    },
+    {
+      "checkedAt": "2026-10-09T18:11:51.2258618+08:00",
+      "command": "bun run audit:constitution",
+      "exit": 0,
+      "milliseconds": 478,
+      "log": "tmp/publication-ownership-frozen-audit-constitution-2026-10-09.log",
+      "scope": "TWELVE_FROZEN_FILES_AFTER_URL_REGRESSION_REPAIR"
+    }
+  ],
+  "auditsApplicability": "Production source unchanged after four passing audits; final thirteenth path is fixture-only; parameter parity 100 percent",
+  "constitutionalWarnings": [
+    "Replay/prior-inactive flags are caller supplied, no invented fresh discovery",
+    "Concentration measurement is not an automatic brake",
+    "LITTLE_LAW_CV_MAX is provisional",
+    "No live D1/Turso queue rows read by these definition checks"
+  ],
+  "nativeCoverage": [
+    "Real SQLite and production Drizzle RETURNING/FTS",
+    "Missing foreign NULL-source inactive IDs",
+    "Malformed or throwing ownership reads after physical commit",
+    "99-ID current-read chunks plus authorized source within existing 100 bind limit",
+    "Request detachment across policy and persist awaits",
+    "Source drift before UPDATE returns zero IDs",
+    "Live confirmed URL drift fence preserved",
+    "55 targets exercise actual bounded ID/URL update chunks",
+    "Unchanged raw nullable no-gateway fallback",
+    "Zero and nonzero confirmed prefixes stop later sequential groups on UNKNOWN",
+    "Blocked/zero acknowledgement avoid current-row reads; historical ledger replay unchanged"
+  ],
+  "limitations": [
+    "Current ownership observations are not atomic with success ledger",
+    "Not proof that each ID arose from this write",
+    "Not complete current PH remote freshness URL safety qualification",
+    "No durable uncertainty reconciliation or future invocation fencing",
+    "No parallel sibling/shared budget/epoch/lease acceptance",
+    "No production latency headroom supply or deployment acceptance"
+  ],
+  "sourceBackup": "gitlab-publication-ownership-source-backup-2026-10-09.json",
+  "finalClosure": {
+    "bundle": "C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-ownership-2026-10-09-102100Z.full.bundle",
+    "receipt": "C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-ownership-2026-10-09-102100Z.full.receipt.json",
+    "restore": "C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-ownership-2026-10-09-102100Z.restore",
+    "status": "PROSPECTIVE_FINITE_POINTER_ACTUAL_EXTERNAL_RECEIPT_REQUIRED"
+  },
+  "ci": {
+    "repoGitLabConfigurationAtSourceSha": [],
+    "hostedGroupOrEquivalent": "UNKNOWN",
+    "gitHub": "PENDING_UNCHANGED_SUSPENSION",
+    "runtimeAcceptance": "NOT_ESTABLISHED",
+    "failedAccessProbes": "UNCHANGED_NOT_REPEATED"
+  },
+  "productionEffects": {
+    "sourceRequests": 0,
+    "dbObservations": 0,
+    "dbWrites": 0,
+    "migrations": 0,
+    "deployments": 0,
+    "publishedJobs": 0,
+    "appliedCompanyEnrichments": 0,
+    "newSources": 0,
+    "changedParameters": 0,
+    "changedClocks": 0,
+    "newServicesProvidersGrants": 0
+  },
+  "progress": {
+    "acceptedMathCards": 0,
+    "totalMathCards": 13,
+    "localPrerequisites": [
+      "MATH-06",
+      "MATH-12",
+      "SSAE-01",
+      "SSAE-07",
+      "SSAE-09"
+    ],
+    "certifiedFreshDailyPublicFlow": null,
+    "flowState": "UNKNOWN",
+    "currentPublicStock": "UNKNOWN"
+  },
+  "next": {
+    "unit": "PUBLICATION_SERVING_ELIGIBILITY_PARITY",
+    "owner": "maintainer local code/tests",
+    "evidence": "Existing publicOpportunityFilters() uses PUBLIC_PH_ELIGIBILITIES (eligible_verified/eligible_likely) plus active; ingest isActive currently admits unclear and public partition counts any active row",
+    "trigger": "CURRENT_LOCAL_DEPENDENCY_READY_NO_PRODUCTION_ACCESS",
+    "acceptance": "Share accepted PH eligibility semantics; pre-write unclear/ineligible/NULL stays held or hidden and distinct from public flow; native actual serving predicate and post-write drift produce UNKNOWN retained rows/FTS no success ledger and stop later groups",
+    "preserved": "No inferred PH eligibility, new threshold/schema/clock/admission or production access; replay/zero behavior preserved"
+  },
+  "commandCaptureNote": "Historical capture.command display strings are retained verbatim; added reproducibleCommand preserves quotes around original multiword/pipe-containing pattern arguments. No failed result is relabeled."
+}

@@ -64,6 +64,15 @@ are changed by this delivery rule; every initial card remains PROPOSED.
 
 ## Dependency outline
 
+**2026-10-09 current ownership prerequisite:** fresh publication receipts require
+bounded current active/source ownership and immutable request identity. Source/
+URL drift fences and native post-write UNKNOWN/stop cases support SSAE-01/07/09
+integrity locally, without a new source permission, Turso integration, measured
+reuse benefit or rollout acceptance. [Finite evidence](../operations/PUBLICATION_ID_SOURCE_OWNERSHIP_2026-10-09.md)
+owns checks and backup scope. Serving parity, full item proof, atomicity, durable
+uncertainty and shared budgets remain open. Existing cards stay unaccepted,
+MATH stays 0/13, certified fresh flow stays UNKNOWN; savepoint owns the sole NEXT.
+
 **2026-10-09 freshness consumer prerequisite:** retained Worker UNKNOWN evidence,
 strict reported/lock/degraded acknowledgements and bounded response handling now
 have native local manual/scheduled/redirect fixtures. No healthy tick is inferred

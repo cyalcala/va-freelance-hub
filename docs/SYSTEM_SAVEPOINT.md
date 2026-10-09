@@ -1,5 +1,111 @@
 # System Savepoint
 
+## 2026-10-09 18:21 Manila — Current publication ownership verified locally; source backed up to GitLab
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of reported
+735-entry directory; all MATH-01..13 and existing SSAE-CED/DeepSeek cards;
+lucky777/Addy resumability and owner-authorized GitLab fallback. Accepted MATH
+**0/13**, certified daily fresh public flow **NULL/UNKNOWN**. This unit published
+zero production jobs and applied zero company enrichments. It completes the
+previous packet's exact local ownership NEXT; the full owner objective stays open.
+
+**Reentry/Git:** START `8817ff6f28baa612fa20e93ab890098a4d55a9ba`, unchanged
+`codex/verified-flow-directory-checkpoint`. Actual prior freshness external
+receipt/full-history bundle and clean restore verified at reentry; fallback fetch
+showed zero divergence, again immediately before the source commit. No other
+active repository maintainer was found. Root gateway/fakes and worker activation/
+fixtures had separate ownership; independent review remained read-only.
+Thirteen-file source/tests `0678e57c5d3fab9fbd70f442d95e4378afed1458` pushed
+normally and exact SHA read back **2026-10-09 10:20:41 UTC**.
+[Source receipt](operations/gitlab-publication-ownership-source-backup-2026-10-09.json).
+Origin/cached main `926d39a0ea2db80a7eba8d541d12906a0c8b0837` and independent
+GitLab README main `fbeff64a2b47f32550ba426af92a2795a1507181` preserved. GitHub
+suspension unchanged/not reprobed; repository GitLab CI configuration absent at
+the exact source SHA, hosted/group/equivalent CI UNKNOWN, unchanged API404 not
+reprobed. Backup is separate from review/merge/release/runtime acceptance.
+Final documents use one finite commit; actual final SHA/readback, prerequisite-free
+full selected-branch history bundle and fresh clean restore will be recorded at
+`C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-ownership-2026-10-09-102100Z.full.bundle`
+and matching `.full.receipt.json`. External closure remains pending until the
+actual receipt is verified; a pointer alone proves no restore. Git history is
+not Turso/D1/GCP-state recovery. Foreign `.agents/skills/` and root `lucky777.md`
+remain untracked/excluded/preserved.
+
+**Authorities/constraints:** Desktop lucky777, AGENTS, absent manifest/router,
+CURRENT/newest savepoint/task/fallback, source constitution/sole queue, accepted
+parameter v2 owner `72709b1` and deployment provenance recovered. Addy TDD/source/
+Git/review methods applied; unchanged Jev401 non-blocking/not retried. Actual
+Cloudflare prepared-statement/100-bind and installed Drizzle behavior checked.
+GCP primary background, GitHub provenance/review, Turso evidence and Cloudflare/D1
+serving preserved. No production/source request/read/write, migration, deployment,
+source admission, accepted parameter, provider/service/grant or clock changed.
+Lucky777 ACTIVE coordination, older APEX PAUSED; no new ingestion clock.
+
+**Completed saved NEXT:** [PUBLICATION_ID_SOURCE_OWNERSHIP_2026-10-09](operations/PUBLICATION_ID_SOURCE_OWNERSHIP_2026-10-09.md).
+Gateway detaches request identity before awaits and validates fresh dense IDs
+against current active rows owned by the exact authorized source. Strict numeric
+COUNT observations use existing prepare.bind.first, 99 IDs plus one source within
+the existing 100-bind ceiling. Missing/foreign/NULL/inactive rows or failed reads
+after persistence retain physical rows/FTS, return sanitized POST_PERSISTENCE_FAILURE/
+UNKNOWN and omit success ledger/compensation. Confirmed prefixes remain distinct
+and later sequential groups stop. Zero/blocked paths avoid ownership reads;
+historical replay remains immutable/ledger-only. Gate/feed/inline/Inngest UPDATEs
+fence immutable source snapshots; pre-UPDATE source drift gives zero RETURNING
+IDs/normal empty acknowledgement. Raw NULL fallback attribution stays unknown;
+those no-gateway paths still lack publication authority. Feed live confirmed-URL
+predicate restored after review caught an in-unit regression; actual Drizzle
+parameters bound paired ID/URL update chunks without changing accepted caps.
+
+**Local acceptance:** original gateway native RED 41 pass/20 fail; original
+activation RED 0 pass/7 fail; in-unit URL regression RED 0 pass/2 fail, separately
+classified. Final gateway focused 180 pass/831 assertions, including61 native
+cases; two native web files56 pass/263 assertions. Final full suite **3,540 pass /
+zero fail / 324,071 assertions / 242 files / 90.63s Bun / 90.877s command**, net41
+tests. First full suite3,538 pass/2 stale heartbeat fixture failures retained;
+only initial candidate SELECT setup fixed, affected3 tests/18 assertions pass,
+all original error/heartbeat/lock assertions unchanged. Final thirteen-file types
+18.664s, frozen-production Astro build24.753s and four audits PASS; production
+hashes unchanged after later fixture-only edits. Parameter parity100%; provisional
+control/no-live-queue warnings retained. Final independent thirteen-file review
+PASS. [Finite checks](operations/publication-ownership-local-checks-2026-10-09.json).
+No production performance, deployed benefit or runtime/CI acceptance established.
+Current ownership is not atomic with ledger, full item qualification or proof
+IDs arose from this write. Durable uncertainty, future/parallel writers and shared
+budgets/epochs/leases remain open. MATH-06/12 and SSAE-01/07/09 gain local integrity
+prerequisites only; all-card acceptance and measured daily supply stay open.
+
+**Unchanged holds/owners/triggers:** directory234 Upwork and237 Intogreat have
+reviewed careers proposals;236 FVA retains parked/rebrand Surge398 identity hold.
+Cloudflare7403 leaves current baselines UNKNOWN:3 HELD,0 READY/no SQL/0 applied.
+Owner normal account/service access plus fresh successful baseline and per-row
+review enables application. Dated735-company/1,556-job snapshot is stock, not
+current flow. GitHub backup/review/release and PR228 runtime/per-row outcomes;
+GCP BILLING_DISABLED and six CONTAINER_PERMISSION_DENIED starts; Janes9046/9047
+publication-control incident remain unresolved/unreprobed. No current deployed
+image/tick/withdrawal/compensation proved. Changed access/image evidence or a new
+execution permits bounded re-observation; skip unchanged probes/completed repairs.
+
+**One NEXT: PUBLICATION_SERVING_ELIGIBILITY_PARITY.** Share the existing accepted
+PH eligibility semantics across canonical serving, pre-public-write partitioning
+and bounded fresh acknowledgement verification. Actual
+`apps/web/src/lib/public-opportunities.ts` publicOpportunityFilters() requires active
+plus eligible_verified/eligible_likely; `apps/web/src/pages/api/ingest.ts` currently
+sets isActive for unclear and counts active inserts as public. Gateway current
+ownership likewise accepts active same-source unclear/ineligible/NULL eligibility,
+which canonical serving excludes. Choose a shared existing-core module boundary
+without importing web into scraper or adding a threshold/schema. Native actual
+serving-predicate fixtures cover NULL/unclear/ineligible and both accepted states:
+pre-write uncertainty stays held/hidden, with hidden writes distinct from public
+flow; post-write PH drift retains rows/FTS and produces UNKNOWN/no success ledger/
+no later sequential write, with confirmed prefix distinct. Zero and historical
+replay behavior remain unchanged. Maintainer owns local code/tests; no production
+access required. PH prior is never item eligibility; unknown stays unknown. This
+establishes serving eligibility only, not cache visibility, complete remote/
+freshness/URL/safety proof, write provenance, atomicity, durable uncertainty or
+shared budgets/leases. Preserve every source/item/safety/cutover/opt-out/cap gate
+and the current GCP raw-sync fence.
+
 ## 2026-10-09 17:38 Manila — Freshness response uncertainty retained locally; final source verified on GitLab
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

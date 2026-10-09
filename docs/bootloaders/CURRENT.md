@@ -4,7 +4,22 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 17:38 Manila): retained freshness worker uncertainty
+Latest continuation (2026-10-09 18:21 Manila): current publication ID/source
+ownership is locally verified at `0678e57c5d3f`, pushed/read back on GitLab.
+Gateway detaches requests and observes bounded active/source-owned rows before
+fresh success; activation UPDATEs fence source drift and retain live URL/state
+predicates. Post-write ambiguity retains rows/FTS, omits success ledger and stops
+later sequential groups; zero/replay semantics remain unchanged. Full3,540 tests,
+final types/build/four audits and independent thirteen-file review pass. Actual
+final checkpoint/full-bundle clean restore belongs in the savepoint's external
+receipt; prospective pointer alone proves no restore. No production deployment,
+flow benefit or CI acceptance. The sole NEXT is PUBLICATION_SERVING_ELIGIBILITY_PARITY
+in SYSTEM_SAVEPOINT: shared accepted PH serving/pre-write/ACK semantics with native
+unclear/NULL/ineligible and post-write drift evidence. Full item proof, atomicity,
+durable uncertainty/shared budgets remain open. MATH0/13, certifiedflowUNKNOWN;
+unchanged directory/access/GCP holds keep their owners/triggers.
+
+Prior continuation (2026-10-09 17:38 Manila): retained freshness worker uncertainty
 evidence is locally verified at `fd02b72a28ed`, pushed/read back on GitLab. Fixed
 sanitized receipts precede failures; UNKNOWN totals/prefixes, degraded reported
 counts and real zero/lock outcomes remain distinct. One POST/manual redirects,

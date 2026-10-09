@@ -84,6 +84,17 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 current ownership prerequisite:** fresh gateway acknowledgements
+now observe actual active/source-owned rows through bounded strict reads and
+detach request identity before awaits. Web UPDATEs fence source drift and preserve
+current quality/confirmed-URL predicates. Native cases retain post-write UNKNOWN
+and stop later groups, including a distinct nonzero confirmed prefix. This
+advances MATH-06/12 integrity locally; it does not prove serving eligibility,
+full item qualification, atomicity, durable uncertainty, runtime or daily supply.
+[Finite scope](../operations/PUBLICATION_ID_SOURCE_OWNERSHIP_2026-10-09.md) owns
+acceptance/backup limits; newest savepoint owns sole NEXT. MATH remains 0/13 and
+certified fresh public flow UNKNOWN, with zero production jobs/enrichments.
+
 **2026-10-09 freshness consumer prerequisite:** retained Worker response handling
 now preserves fixed sanitized UNKNOWN/status/transport evidence before failure,
 validates reported totals and health, bounds actual streamed bytes and prevents
