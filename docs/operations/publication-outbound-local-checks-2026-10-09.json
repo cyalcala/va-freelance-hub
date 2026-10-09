@@ -1,0 +1,561 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_CURRENT_OUTBOUND_URL_BOUNDARY",
+  "checkedAtUtc": "2026-10-09T11:47:34.338947+00:00",
+  "startSha": "01865df84335199e4085cd9456bb1f5663ef7845",
+  "sourceSha": "d4810c37d350a006866db056a5a9a58568a31d9a",
+  "scope": "OFFLINE_SOURCE_TEST_INTEGRITY_NO_DEPLOYMENT_PRODUCTION_FLOW_OR_CI_ACCEPTANCE",
+  "files": [
+    {
+      "path": "packages/scraper/publication-outbound.ts",
+      "frozenWorkingFileSha256": "c58dd2880849beb10e489a2d8289357e715b03f500a5bb258ed3d79dacc9ff18",
+      "sourceGitBlob": "1c6fc7e50d05cdb63a9a4b9fb95101da98bb8bb1"
+    },
+    {
+      "path": "packages/scraper/publication-outbound.test.ts",
+      "frozenWorkingFileSha256": "a882be3da388790a7436d4829f45cef7a9e9cca4ede53caaf0e5783bfde9458a",
+      "sourceGitBlob": "aad4965e7c60124d9a4308ea645f24f6d57fdc93"
+    },
+    {
+      "path": "packages/scraper/index.ts",
+      "frozenWorkingFileSha256": "2b36728153e21be9e7f6ff602ea06d6dc8a3586aa77ff548a25a48c2f400cb80",
+      "sourceGitBlob": "cbf1ba3ed5799cb7ab9727116ce155e6864d960c"
+    },
+    {
+      "path": "packages/scraper/urls.ts",
+      "frozenWorkingFileSha256": "b847041e9c9b253ed032792cf4878b029e4198938ee306c12339ece8bfe34ce9",
+      "sourceGitBlob": "1b49f4b9a9b07d9a6ba6e19f67bc25d7547901fd"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.ts",
+      "frozenWorkingFileSha256": "e6008c40e535e847402ae8194c2c42d0d207d18df122e3959d8e272d57e690bb",
+      "sourceGitBlob": "42bd6479634a0539cf0b6934ac7e97557b9c36db"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.integration.test.ts",
+      "frozenWorkingFileSha256": "3948cf6fb299b6d5f9969d51461ddfba392ab4f07c8122f2c5dcd5c308ea2c40",
+      "sourceGitBlob": "e111d7e89bbd5f7440e62575253fb60ce3ede649"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.test.ts",
+      "frozenWorkingFileSha256": "4c958f1ba7a0e02ef1db0e37fa2dc9709a326e9e3784ec6247f1eaeaddf7bee3",
+      "sourceGitBlob": "2215f688838014d79e30c8646a1e9d4236a4d5e5"
+    },
+    {
+      "path": "packages/scraper/publication-authority-gaps.test.ts",
+      "frozenWorkingFileSha256": "94c9a7d290568b506a54574f82f7289dd4ea8733d8701169c718ebe6cf385dbe",
+      "sourceGitBlob": "fe08efb6239602a883b928895dae2d10d8bb1d1a"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "frozenWorkingFileSha256": "14aa3b795c12ba76f01bf8dc032fa39b949ba7e3fdb9957c373fb94366e670e5",
+      "sourceGitBlob": "61881181d09fa38b5c8a776315b6a9efbbcd3366"
+    },
+    {
+      "path": "apps/web/tests/publish-activations.test.ts",
+      "frozenWorkingFileSha256": "8e9f0b87517a727c7e41c8efbf428152da3618da069d6754b50bc71b2879dbd5",
+      "sourceGitBlob": "3e9dd398ecbce3983d1ca5edc0caf819d86bbc03"
+    },
+    {
+      "path": "apps/web/tests/pending-recovery.test.ts",
+      "frozenWorkingFileSha256": "816c6da159090109da8ce29607595d635c37ff25ad03286b848c5e6373c47a99",
+      "sourceGitBlob": "de21ca8e81284ccc61e10bb4e4d60a4c1f292e3e"
+    },
+    {
+      "path": "apps/web/tests/reactivate-feed.test.ts",
+      "frozenWorkingFileSha256": "2e44c6f4907867bcd66ec689512afc02d35c55da390f2aedf6ac39b0e3b77a42",
+      "sourceGitBlob": "4b31cc5d2e14699d759e389cf17bcfb20498caee"
+    },
+    {
+      "path": "apps/web/tests/outbound-url.test.ts",
+      "frozenWorkingFileSha256": "fe2dce0aa56e8cc0a2ccc23159badf8b4d5e6eb378ea4abf8d268ec2733d279e",
+      "sourceGitBlob": "52fbce50f19bfbe35d4d4825061da26ee2583f32"
+    }
+  ],
+  "initialFullSuiteFrozenFiles": [
+    {
+      "path": "packages/scraper/publication-outbound.ts",
+      "sha256": "c58dd2880849beb10e489a2d8289357e715b03f500a5bb258ed3d79dacc9ff18"
+    },
+    {
+      "path": "packages/scraper/publication-outbound.test.ts",
+      "sha256": "a882be3da388790a7436d4829f45cef7a9e9cca4ede53caaf0e5783bfde9458a"
+    },
+    {
+      "path": "packages/scraper/index.ts",
+      "sha256": "2b36728153e21be9e7f6ff602ea06d6dc8a3586aa77ff548a25a48c2f400cb80"
+    },
+    {
+      "path": "packages/scraper/urls.ts",
+      "sha256": "b847041e9c9b253ed032792cf4878b029e4198938ee306c12339ece8bfe34ce9"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.ts",
+      "sha256": "e6008c40e535e847402ae8194c2c42d0d207d18df122e3959d8e272d57e690bb"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.integration.test.ts",
+      "sha256": "3948cf6fb299b6d5f9969d51461ddfba392ab4f07c8122f2c5dcd5c308ea2c40"
+    },
+    {
+      "path": "packages/scraper/publication-gateway.test.ts",
+      "sha256": "4c958f1ba7a0e02ef1db0e37fa2dc9709a326e9e3784ec6247f1eaeaddf7bee3"
+    },
+    {
+      "path": "packages/scraper/publication-authority-gaps.test.ts",
+      "sha256": "94c9a7d290568b506a54574f82f7289dd4ea8733d8701169c718ebe6cf385dbe"
+    },
+    {
+      "path": "apps/web/tests/publish-inserts.test.ts",
+      "sha256": "f7c10dc1cf44c528ab80045c644451f1b77e424d93aa0512b8e16d93e676fbdd"
+    },
+    {
+      "path": "apps/web/tests/publish-activations.test.ts",
+      "sha256": "8e9f0b87517a727c7e41c8efbf428152da3618da069d6754b50bc71b2879dbd5"
+    },
+    {
+      "path": "apps/web/tests/pending-recovery.test.ts",
+      "sha256": "816c6da159090109da8ce29607595d635c37ff25ad03286b848c5e6373c47a99"
+    },
+    {
+      "path": "apps/web/tests/reactivate-feed.test.ts",
+      "sha256": "2e44c6f4907867bcd66ec689512afc02d35c55da390f2aedf6ac39b0e3b77a42"
+    },
+    {
+      "path": "apps/web/tests/outbound-url.test.ts",
+      "sha256": "fe2dce0aa56e8cc0a2ccc23159badf8b4d5e6eb378ea4abf8d268ec2733d279e"
+    }
+  ],
+  "checks": {
+    "full-suite": {
+      "checkedAt": "2026-10-09T11:40:57.5931894+00:00",
+      "startedAt": "2026-10-09T11:38:08.1937675+00:00",
+      "command": "bun run test",
+      "exit": 0,
+      "milliseconds": 169396.6748,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-outbound-full-suite-2026-10-09.log",
+      "logSha256": "e99a0b75994c8cf4de77e83bcfb110c270fb8ecbf2989c03732e2723ca6f4df1",
+      "passed": 3793,
+      "failed": 0,
+      "assertions": 325296,
+      "tests": 3793,
+      "files": 245,
+      "bunReportedSeconds": 168.9,
+      "scopeCorrection": "Behavior suite passed against the initial thirteen-file freeze; subsequent change is one test-only query-row type annotation with strict equality unchanged. Final file is independently rerun and final typecheck passes; no second full-suite run is claimed."
+    },
+    "typecheck": {
+      "checkedAt": "2026-10-09T11:42:36.8810223+00:00",
+      "startedAt": "2026-10-09T11:42:17.5413620+00:00",
+      "command": "bun run typecheck",
+      "exit": 0,
+      "milliseconds": 19336.9486,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-outbound-typecheck-2026-10-09.log",
+      "logSha256": "4ffe99488e8b95277c0b5110e21846165152e354361495a2e344f2312540ddcc"
+    },
+    "build": {
+      "checkedAt": "2026-10-09T11:39:19.9955792+00:00",
+      "startedAt": "2026-10-09T11:38:19.7061987+00:00",
+      "command": "bun run build",
+      "exit": 0,
+      "milliseconds": 60283.9599,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-outbound-build-2026-10-09.log",
+      "logSha256": "092e374b2d5a7a4ba458547986c29701e578e4261613f3e92ce3f2078931cdfe"
+    },
+    "audit-guardrails": {
+      "checkedAt": "2026-10-09T11:38:39.3369747+00:00",
+      "startedAt": "2026-10-09T11:38:23.9396229+00:00",
+      "command": "bun run audit:guardrails",
+      "exit": 0,
+      "milliseconds": 15393.2441,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-outbound-audit-guardrails-2026-10-09.log",
+      "logSha256": "e5d85f723e265f151e18e0f5af9376414ed81ad92718b0dc4b6f0b243b5cf710"
+    },
+    "audit-parameters": {
+      "checkedAt": "2026-10-09T11:38:40.7225662+00:00",
+      "startedAt": "2026-10-09T11:38:30.2034912+00:00",
+      "command": "bun run audit:parameters",
+      "exit": 0,
+      "milliseconds": 10483.9986,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-outbound-audit-parameters-2026-10-09.log",
+      "logSha256": "9827b8a08a7b67e2da90694a40315f0a854806812289698b610d80b700257dac"
+    },
+    "audit-orchestrator": {
+      "checkedAt": "2026-10-09T11:38:50.4621150+00:00",
+      "startedAt": "2026-10-09T11:38:38.6434009+00:00",
+      "command": "bun run audit:orchestrator",
+      "exit": 0,
+      "milliseconds": 11777.9624,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-outbound-audit-orchestrator-2026-10-09.log",
+      "logSha256": "eda3cebcba1e9a52334a1fedb71ca6f6d43bfc7c52d85f5dd3a9ca354883546e"
+    },
+    "audit-constitution": {
+      "checkedAt": "2026-10-09T11:38:47.9776316+00:00",
+      "startedAt": "2026-10-09T11:38:41.8138464+00:00",
+      "command": "bun run audit:constitution",
+      "exit": 0,
+      "milliseconds": 6157.6397,
+      "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+      "log": "tmp/publication-outbound-audit-constitution-2026-10-09.log",
+      "logSha256": "9df16dff73255e5a6aeac7ab372fb9ab26817bddf2163a5e5019695ab394bb7f"
+    }
+  },
+  "initialTypecheckFailure": {
+    "checkedAt": "2026-10-09T19:39:12.5172591+08:00",
+    "startedAt": "2026-10-09T19:38:13.2292549+08:00",
+    "command": "bun run typecheck",
+    "exit": 2,
+    "milliseconds": 59281.9516,
+    "scope": "FROZEN_SOURCE_TEST_FILES_LOCAL_NO_DEPLOYMENT",
+    "log": "tmp/publication-outbound-typecheck-initial-failure-2026-10-09.log",
+    "logSha256": "e84c7b1405151ee390655f4f91a5c8a336be7640bdb4304597b03ab1e69e59f2"
+  },
+  "pureEvidence": {
+    "core-absent-red": {
+      "checkedAtUtc": "2026-10-09T11:27:15.7890263+00:00",
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-outbound.test.ts",
+      "exitCode": 1,
+      "elapsedMs": 396.5374,
+      "classification": "NEW_PURE_MODULE_ABSENCE_NOT_EXISTING_GATEWAY_BEHAVIOR_RED",
+      "log": "tmp/publication-outbound-core-absent-red-2026-10-09.log",
+      "logSha256": "b56d439a73fab0f8bf6f1ddba68942de233594e2c083fbb1ff23e162a77a6b24"
+    },
+    "core-green": {
+      "checkedAtUtc": "2026-10-09T11:27:54.4246790+00:00",
+      "exitCode": 0,
+      "elapsedMs": 366.262,
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-outbound.test.ts",
+      "log": "tmp/publication-outbound-core-green-2026-10-09.log",
+      "scope": "PURE_EXISTING_SOURCE_AND_APPLY_FALLBACK_LOCAL",
+      "logSha256": "c04699e8c56c9aa519d79b78b1ba2c3ef8618d0645b9a5645906c772996faf2b",
+      "passed": 31,
+      "failed": 0,
+      "assertions": 31,
+      "tests": 31,
+      "files": 1,
+      "bunReportedSeconds": 0.089
+    },
+    "pure-green": {
+      "checkedAtUtc": "2026-10-09T11:31:44.1848443+00:00",
+      "exitCode": 0,
+      "elapsedMs": 507.0943,
+      "scope": "PURE_OUTBOUND_HELPER_EXISTING_SANITIZERS_AND_EXPLICIT_FOUR_FIELD_FAKES",
+      "log": "tmp/publication-outbound-pure-green-2026-10-09.log",
+      "logSha256": "68411e1cfcde599dac50f24f84a4d3b87f54595ea165517d519c6044d286d67d",
+      "passed": 156,
+      "failed": 0,
+      "assertions": 498,
+      "tests": 156,
+      "files": 4,
+      "bunReportedSeconds": 0.341
+    }
+  },
+  "normalizationEvidence": {
+    "initial-baseline-pass": {
+      "log": "tmp/publication-outbound-normalization-initial-baseline-pass-2026-10-09.log",
+      "logSha256": "f008054a7ad1cc265f4f70bec5a54a9a5322f2b07c3f68d802a36af4e50a9fb2",
+      "passed": 32,
+      "failed": 0,
+      "assertions": 32,
+      "tests": 32,
+      "files": 1,
+      "bunReportedSeconds": 0.088
+    },
+    "red": {
+      "log": "tmp/publication-outbound-normalization-red-2026-10-09.log",
+      "logSha256": "91ffd05890c3a584478f7ad9b0e401d1d6d9344ba4bc0443028030c27ad41b64",
+      "passed": 31,
+      "failed": 1,
+      "assertions": 32,
+      "tests": 32,
+      "files": 1,
+      "bunReportedSeconds": 0.089
+    },
+    "green": {
+      "log": "tmp/publication-outbound-normalization-green-2026-10-09.log",
+      "logSha256": "0fda76bbcd95af3cfda826e32608d2e2f675d45428c953a98bac5a4571bfee79",
+      "passed": 32,
+      "failed": 0,
+      "assertions": 32,
+      "tests": 32,
+      "files": 1,
+      "bunReportedSeconds": 0.098
+    },
+    "classification": "Initial control-only suffix was trimmed by URL normalization and passed: it is not RED. Adding a trailing x creates raw 2036-character source normalizing to 6056 characters; normalized-source attribution then genuinely failed 31/1 and raw-source attribution passes 32/0. Exact timestamps were not captured; none inferred."
+  },
+  "nativeGatewayEvidence": {
+    "unit": "PUBLICATION_CURRENT_OUTBOUND_URL_BOUNDARY",
+    "startSha": "01865df84335199e4085cd9456bb1f5663ef7845",
+    "scope": "Offline actual Bun SQLite gateway integration fixtures; no network, production, CI, rollout, or daily-flow acceptance.",
+    "testFile": "packages/scraper/publication-gateway.integration.test.ts",
+    "testFileSha256": "3948cf6fb299b6d5f9969d51461ddfba392ab4f07c8122f2c5dcd5c308ea2c40",
+    "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts",
+    "fixtureCompatibility": "Existing migration 0005 supplies nullable application_url in the native fixture. Production source_url is NOT NULL; a native constraint-rejection control covers NULL and the malformed aggregate contract independently covers NULL source URL. No schema file or production schema changed.",
+    "red": {
+      "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts *> $taskNativeLog",
+      "captureVariables": {
+        "taskNativeLog": "tmp/publication-outbound-native-red-2026-10-09.log"
+      },
+      "toolChunkId": "b6f6f6",
+      "startedAtUtc": "2026-10-09T11:29:50.3866462Z",
+      "endedAtUtc": "2026-10-09T11:29:57.6502444Z",
+      "commandElapsedMs": 7263.5982,
+      "bunReportedSeconds": 7.1,
+      "exitCode": 1,
+      "tests": 168,
+      "passed": 154,
+      "failed": 14,
+      "assertions": 1088,
+      "actualCurrentSourceUrlDriftFailures": 12,
+      "actualCurrentSourceUrlDriftFailureGroups": {
+        "singlePersistedRowCorruption": 9,
+        "middleAndLater97IdChunks": 3
+      },
+      "missingUrlAggregateContractFailures": 1,
+      "addedQueryProjectionExpectationFailures": 1,
+      "priorCasesPassed": 122,
+      "newPositiveReplayConstraintAndMalformedContractCasesPassed": 32,
+      "classificationNote": "The existing 97-ID observation case additionally expects source_url and application_url projection. Existing strict ID/date aggregate cases now supply both URL fields so their intended invalid dimension remains meaningful after repair. Setup compatibility and positive controls are not counted as behavioral failures. After this capture, only read-transport expectations move to the agreed 80-ID stride; this original RED is retained unchanged.",
+      "gatewayUnchangedDuringCapture": true,
+      "gatewayBeforeSha256": "07430de60aab183773760ef854ebf0283f9ef9b424756c8c01debff60a299f25",
+      "gatewayAfterSha256": "07430de60aab183773760ef854ebf0283f9ef9b424756c8c01debff60a299f25",
+      "testFileSha256": "dff6f8ecbf55fe6837e585ae7a7eabe2d7fb4baf882e55a8b45ed3deba28a6f7",
+      "log": "tmp/publication-outbound-native-red-2026-10-09.log",
+      "logSha256": "4375f92a6ede8131d88181aa1e8b5703ea1243f6a2a6d6fb87f48e73d4223f8b"
+    },
+    "green": {
+      "captureCommand": "& bun test --no-env-file --preload ./scripts/ci/test-environment.ts packages/scraper/publication-gateway.integration.test.ts *> $taskNativeLog",
+      "captureVariables": {
+        "taskNativeLog": "tmp/publication-outbound-native-green-2026-10-09.log"
+      },
+      "toolChunkId": "8095d9",
+      "startedAtUtc": "2026-10-09T11:34:51.4605850Z",
+      "endedAtUtc": "2026-10-09T11:34:59.2799068Z",
+      "commandElapsedMs": 7819.3218,
+      "bunReportedSeconds": 7.66,
+      "exitCode": 0,
+      "tests": 169,
+      "passed": 169,
+      "failed": 0,
+      "assertions": 1193,
+      "greenOnlySerializerBoundaryControls": 1,
+      "classificationNote": "After the original 168-case RED, expected read stride moved from 97 to 80 IDs for the independent 2 MB aggregate transport ceiling; no source/publication cap changed. One new GREEN-only control exercises actual 81-row persistence, two 2048-character URL inputs dominated by JSON-escaped controls, first 80-row aggregate greater than 1.9 MB and at most 2 MB, and 83/4 parameter counts. Original RED is not relabeled or rewritten.",
+      "gatewayUnchangedDuringCapture": true,
+      "gatewayBeforeSha256": "e6008c40e535e847402ae8194c2c42d0d207d18df122e3959d8e272d57e690bb",
+      "gatewayAfterSha256": "e6008c40e535e847402ae8194c2c42d0d207d18df122e3959d8e272d57e690bb",
+      "testFileSha256": "3948cf6fb299b6d5f9969d51461ddfba392ab4f07c8122f2c5dcd5c308ea2c40",
+      "log": "tmp/publication-outbound-native-green-2026-10-09.log",
+      "logSha256": "6cb39e3e2c670722940fed86ac452d33066d16ae7ea89eb0ebb7637dc5e62553"
+    },
+    "status": "FINAL_NATIVE_GREEN_CAPTURED_LOCAL_ONLY",
+    "limits": [
+      "Current URL syntax, attribution and existing safe-source fallback only; no network liveness or new host/source permission.",
+      "Current-row checks are not specific-write origin proof or an atomic row/ledger snapshot.",
+      "Historical replay remains immutable ledger evidence and is not fresh daily flow.",
+      "Full remote/safety, provenance, durable uncertainty, shared controls, production headroom and rollout remain outside this slice."
+    ]
+  },
+  "webEvidence": {
+    "native-red": {
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts -t 'URL ACK:'",
+      "startedAt": "2026-10-09T11:28:12.9944144Z",
+      "completedAt": "2026-10-09T11:28:14.7923455Z",
+      "elapsedSeconds": 1.7979483,
+      "exitCode": 1,
+      "classification": "Native existing prewrite guard baseline PASS plus genuine post-persistence source-URL drift RED before gateway URL implementation",
+      "log": "tmp/url-ack-web-native-red-2026-10-09.log",
+      "startSha": "01865df84335199e4085cd9456bb1f5663ef7845",
+      "pass": 14,
+      "fail": 7,
+      "assertions": 89,
+      "bunElapsedSeconds": 1.59,
+      "frozenNativeTestSha256": "f2fa4ace2c2a5a1ef39b9ec256e1aea71656c1b4671eb321443e1121a3eca34a",
+      "logSha256": "42482676fd44b03e5cff18e7436f601a389e60932ac4b11301c8904832c9968f",
+      "passed": 14,
+      "failed": 7,
+      "tests": 21,
+      "files": 1,
+      "bunReportedSeconds": 1.59
+    },
+    "outbound-existing-guard": {
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/outbound-url.test.ts",
+      "startedAt": "2026-10-09T11:30:46.6676422Z",
+      "completedAt": "2026-10-09T11:30:47.0610926Z",
+      "elapsedSeconds": 0.3934918,
+      "exitCode": 0,
+      "classification": "Existing outbound sanitizer guard baseline; not a new behavior RED",
+      "log": "tmp/url-ack-web-outbound-existing-guard-2026-10-09.log",
+      "logSha256": "9613c54e7c88fba0b371361e295f6d58ed635f19c6d291b63532c90698ed8b70",
+      "passed": 15,
+      "failed": 0,
+      "assertions": 28,
+      "tests": 15,
+      "files": 1,
+      "bunReportedSeconds": 0.157
+    },
+    "focused-green": {
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/publish-inserts.test.ts apps/web/tests/publish-activations.test.ts apps/web/tests/pending-recovery.test.ts apps/web/tests/reactivate-feed.test.ts apps/web/tests/outbound-url.test.ts",
+      "startedAt": "2026-10-09T11:37:41.3323619Z",
+      "completedAt": "2026-10-09T11:37:46.4587344Z",
+      "elapsedSeconds": 5.1264542,
+      "exitCode": 0,
+      "classification": "Five-file focused verification after genuine URL drift native RED and explicit URL aggregate fixture compatibility",
+      "log": "tmp/url-ack-web-focused-green-2026-10-09.log",
+      "startSha": "01865df84335199e4085cd9456bb1f5663ef7845",
+      "logSha256": "a55b8fa196acf604c444ab1fef0d97f7cd641e830e4ca54c0e55af268a92706b",
+      "passed": 134,
+      "failed": 0,
+      "assertions": 660,
+      "tests": 134,
+      "files": 5,
+      "bunReportedSeconds": 4.9
+    },
+    "shape-type-failure": {
+      "command": "bun node_modules/typescript/bin/tsc --noEmit --skipLibCheck --moduleResolution Bundler --module ESNext --target ES2022 --types bun tmp/url-ack-web-shape-type-diagnostic-2026-10-09.ts",
+      "startedAt": "2026-10-09T11:40:45.6820192Z",
+      "completedAt": "2026-10-09T11:40:52.7706124Z",
+      "elapsedSeconds": 7.0884086,
+      "exitCode": 2,
+      "classification": "Isolated TS2769 narrow query-row typing fixture failure; separate from preserved genuine native URL behavior RED",
+      "parentDiagnostic": "apps/web/tests/publish-inserts.test.ts:374 TS2769 overly narrow {id:number} query row cast",
+      "log": "tmp/url-ack-web-shape-type-failure-2026-10-09.log",
+      "logSha256": "6452b87a91515c227754367466fc27a05c33cc2dc7a3bdff239378e4d244365f"
+    },
+    "shape-type-green": {
+      "command": "bun node_modules/typescript/bin/tsc --noEmit --skipLibCheck --moduleResolution Bundler --module ESNext --target ES2022 --types bun tmp/url-ack-web-shape-type-diagnostic-2026-10-09.ts",
+      "startedAt": "2026-10-09T11:41:15.5173744Z",
+      "completedAt": "2026-10-09T11:41:18.0878443Z",
+      "elapsedSeconds": 2.5703923,
+      "exitCode": 0,
+      "classification": "Isolated query row shape compiler verification after type-only fix; parent owns final full typecheck",
+      "log": "tmp/url-ack-web-shape-type-green-2026-10-09.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "finalFreezeAndTargetedFix": {
+      "unit": "PUBLICATION_CURRENT_OUTBOUND_URL_BOUNDARY",
+      "startSha": "01865df84335199e4085cd9456bb1f5663ef7845",
+      "frozenAt": "2026-10-09T11:42:16.8394245Z",
+      "diffCheckExit": 0,
+      "fiveFileGreen": {
+        "pass": 134,
+        "fail": 0,
+        "files": 5,
+        "log": "tmp/url-ack-web-focused-green-2026-10-09.log",
+        "assertions": 660,
+        "bunElapsedSeconds": 4.9,
+        "logSha256": "a55b8fa196acf604c444ab1fef0d97f7cd641e830e4ca54c0e55af268a92706b",
+        "actualLogCounts": {
+          "passed": 134,
+          "failed": 0,
+          "assertions": 660,
+          "tests": 134,
+          "files": 5,
+          "bunReportedSeconds": 4.9
+        }
+      },
+      "shapeFixedRetest": {
+        "classification": "Only native query row type cast changed after five-file GREEN; strict assertions unchanged",
+        "pass": 101,
+        "fail": 0,
+        "files": 1,
+        "log": "tmp/url-ack-web-shape-fixed-focused-green-2026-10-09.log",
+        "assertions": 553,
+        "bunElapsedSeconds": 5.08,
+        "logSha256": "c49c154c2355918036a6ac11ec258802fa428d98aa81409ad8caed903e3ea519",
+        "actualLogCounts": {
+          "passed": 101,
+          "failed": 0,
+          "assertions": 553,
+          "tests": 101,
+          "files": 1,
+          "bunReportedSeconds": 5.08
+        }
+      },
+      "typeFixtureEvidence": {
+        "fixExit": 0,
+        "failureLog": "tmp/url-ack-web-shape-type-failure-2026-10-09.log",
+        "fixLog": "tmp/url-ack-web-shape-type-green-2026-10-09.log",
+        "failureExit": 2,
+        "classification": "Isolated TS2769 type-fixture correction, separate from native behavior RED; parent owns full typecheck"
+      },
+      "newTests": {
+        "outbound": 11,
+        "native": 21
+      },
+      "files": [
+        {
+          "path": "apps/web/tests/publish-inserts.test.ts",
+          "sha256": "14aa3b795c12ba76f01bf8dc032fa39b949ba7e3fdb9957c373fb94366e670e5"
+        },
+        {
+          "path": "apps/web/tests/publish-activations.test.ts",
+          "sha256": "8e9f0b87517a727c7e41c8efbf428152da3618da069d6754b50bc71b2879dbd5"
+        },
+        {
+          "path": "apps/web/tests/pending-recovery.test.ts",
+          "sha256": "816c6da159090109da8ce29607595d635c37ff25ad03286b848c5e6373c47a99"
+        },
+        {
+          "path": "apps/web/tests/reactivate-feed.test.ts",
+          "sha256": "2e44c6f4907867bcd66ec689512afc02d35c55da390f2aedf6ac39b0e3b77a42"
+        },
+        {
+          "path": "apps/web/tests/outbound-url.test.ts",
+          "sha256": "fe2dce0aa56e8cc0a2ccc23159badf8b4d5e6eb378ea4abf8d268ec2733d279e"
+        }
+      ],
+      "limitations": [
+        "Native NULL source drift is nullable-fixture ACK evidence only; production NOT NULL rejection separately verified by native worker",
+        "Prewrite source/app sanitization and public outbound tests prove existing guard baseline, not new behavior RED",
+        "No web production edits or network/runtime/production/daily-flow evidence",
+        "Next gap: explicit onsite/hybrid locationType and unknown-to-remote default are not independent fully remote proof; code-review evidence only"
+      ]
+    }
+  },
+  "independentReview": {
+    "status": "PASS_FINAL_THIRTEEN_SOURCE_TEST_FILES",
+    "reviewers": [
+      "hunter_receipt_review",
+      "ownership_activation"
+    ],
+    "webFinalTypeOnlyFix": "Reviewed actual query row type; strict equality unchanged"
+  },
+  "boundedRead": {
+    "maxUrlRawSqliteCharacters": 2048,
+    "maxJsonBytes": 2000000,
+    "worstRowJsonBytes": 24914,
+    "idsPerRead": 80,
+    "worstAggregateBytes": 1993122,
+    "maxBoundParameters": 83,
+    "publicationCapChange": false
+  },
+  "limits": [
+    "No external URL liveness or independent source-origin evidence.",
+    "Raw source text beyond bounded projection stays unobservable/UNKNOWN even if trimming could normalize it.",
+    "Optional unusable/NULL apply retains safe source fallback; safe apply cannot rescue invalid source.",
+    "Native production schema source_url NOT NULL rejects NULL; web nullable-fixture and malformed-aggregate controls are separately labeled.",
+    "Current-row observation is not proof of this write or atomic row/ledger/cache visibility.",
+    "UNKNOWN retains physical rows/FTS; no withdrawal, compensation or durable reconciliation receipt.",
+    "Full remote/safety, shared budgets/epochs/leases, parallel writers, GCP runtime and daily supply remain open."
+  ],
+  "productionEffects": {
+    "sourceJobsObserved": 0,
+    "productionPublications": 0,
+    "directoryUpdates": 0,
+    "productionDbReads": 0,
+    "productionDbWrites": 0,
+    "deployments": 0,
+    "migrations": 0,
+    "admissions": 0,
+    "acceptedParameterChanges": 0,
+    "clocksChanged": 0,
+    "certifiedDailyFreshFlow": null,
+    "mathAccepted": 0
+  },
+  "next": "PUBLICATION_EXPLICIT_REMOTE_METADATA_BOUNDARY"
+}

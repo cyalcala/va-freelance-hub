@@ -84,6 +84,18 @@ solution delivered by version 5.2. **Accepted resolutions: 0/13.** Existing help
 code is partial implementation, not automatically an accepted program solution.
 Do not substitute this count for whole-project progress.
 
+**2026-10-09 19:47 Manila current outbound prerequisite:** fresh gateway ACK now
+reuses existing safe-source/attributable-apply fallback for every exact current ID.
+Invalid-source drift is UNKNOWN with physical rows/FTS retained, no fresh ledger,
+later sequential writes halted; optional unusable apply keeps safe source and
+historical replay remains separate.80-ID/83-bind bounded reads change no publication
+cap. Native169 tests/web134 pass; full3793 behavior tests, final targeted type-only
+fix/typecheck, build/four audits and review pass locally.
+[Finite evidence](../operations/PUBLICATION_CURRENT_OUTBOUND_URL_BOUNDARY_2026-10-09.md) owns exact scope/backup limits.
+MATH-06/12 and SSAE-01/07/09 integrity prerequisites only; no rollout/optimization/
+permission or full source-origin/remote/safety/atomic/durable-control acceptance.
+MATH0/13, certifiedflowUNKNOWN; sole NEXT only in newest savepoint.
+
 **2026-10-09 19:18 original-date freshness prerequisite:** strict raw original-date
 assessment, accepted inclusive30d semantics and bounded per-current-ID date ACK
 checks pass locally, including nanosecond future/calendar-invalid evidence.

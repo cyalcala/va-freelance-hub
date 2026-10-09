@@ -4,7 +4,20 @@ Owner maintenance resumed 2026-10-08: 100/day verified fresh-publication floor,
 150 stretch, existing-directory enrichment, all MATH-01..13 and SSAE-CED.
 Read the newest [SYSTEM_SAVEPOINT](../SYSTEM_SAVEPOINT.md) and
 [bounded task/evidence contract](../operations/VERIFIED_FLOW_DIRECTORY_2026-10-08.md).
-Latest continuation (2026-10-09 19:18 Manila): strict raw original posting date and
+Latest continuation (2026-10-09 19:47 Manila): current outbound URL receipt boundary verified
+locally at `d4810c37d350`, pushed/read back on GitLab. Exact current IDs
+require safe source and existing attributable apply/source fallback; malformed
+URL drift retains UNKNOWN/physical rows/FTS/no fresh success ledger and stops
+later sequential writes.80-ID reads/83 binds stay below the existing D1 byte limit;
+publication caps and zero/replay unchanged.3793 full behavior tests pass; one
+test-only row typing fix then passes101 targeted tests and final typecheck; build/
+four audits/review PASS. Actual final external bundle/clean-restore receipt is
+required; a prospective pointer proves no restore. No production/CI/runtime
+acceptance, MATH0/13 and certifiedflowUNKNOWN. Sole NEXT is PUBLICATION_EXPLICIT_REMOTE_METADATA_BOUNDARY
+in newest savepoint; explicit onsite/hybrid metadata contradiction needs native
+RED before repair. All unchanged directory/access/GCP/Janes holds keep triggers.
+
+Prior continuation (2026-10-09 19:18 Manila): strict raw original posting date and
 accepted inclusive30d freshness verified locally at `8b26da22c958`, pushed/
 read back on GitLab. Ingest withholds unknown/invalid/future/stale dates before
 public writes; fresh ACK strictly checks every bounded current ID/date without
