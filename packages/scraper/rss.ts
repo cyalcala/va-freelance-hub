@@ -5,6 +5,7 @@ import { decodeHtmlEntities, xmlNodeText, xmlTextList } from "./text";
 import { toContentHash } from "./contentHash";
 import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
 import { collectionHeaders } from "./userAgent";
+import { normalizeSourcePostingDate } from "./source-posting-date";
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -45,17 +46,6 @@ function normalizeText(raw: string | undefined): string {
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function normalizeDate(rawDate: string | undefined): string | null {
-  if (!rawDate) return null;
-  try {
-    const d = new Date(rawDate);
-    if (isNaN(d.getTime())) return null;
-    return d.toISOString();
-  } catch (e) {
-    return null;
-  }
 }
 
 export async function fetchRSSFeed(source: Source, state?: ConditionalState): Promise<SourceFetchOutput> {
@@ -153,7 +143,7 @@ export async function fetchRSSFeed(source: Source, state?: ConditionalState): Pr
         ) || null,
         payRange: null,
         description: normalizeText(xmlNodeText(item.description) ?? undefined).slice(0, 1500) || null,
-        postedAt: normalizeDate(rawDate),
+        postedAt: normalizeSourcePostingDate(rawDate),
         isActive: true,
         contentHash: toContentHash(finalTitle, sourceUrl),
       } satisfies NewOpportunity];

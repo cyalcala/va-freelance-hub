@@ -15,7 +15,7 @@ import { d1Changes } from "@/lib/d1-result";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
 import { noExplicitNonRemoteWorkplace } from "@/lib/publication-remote";
-import { D1_MAX_BOUND_PARAMETERS, hasExplicitNonRemoteLocationType, publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
+import { D1_MAX_BOUND_PARAMETERS, assessPostingFreshness, hasExplicitNonRemoteLocationType, publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -2663,6 +2663,9 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     // separately from AI rejections so the response shows how much the gate
     // catches — and how many Workers AI calls it saves.
     let geoGateRejected = 0;
+    // Input holds, not a persistence/publication count. Check before either
+    // inline AI or durable pending-triage can stage a public candidate.
+    let postingFreshnessWithheld = 0;
     // Items where the two AI votes disagreed (L2 consensus) — quarantined.
     let consensusQuarantined = 0;
     // Items deferred because the per-invocation Workers AI subrequest budget was
@@ -2713,10 +2716,38 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
         });
         continue;
       }
+      const freshness = assessPostingFreshness(item.postedAt, observedAt);
+      if (freshness.state !== "WITHIN_WINDOW") {
+        postingFreshnessWithheld += 1;
+        const cleanDesc = (item.description || "").slice(0, 1500);
+        rejectedItems.push({
+          ...item,
+          isActive: false,
+          // Never pending-triage/expired: those recovery paths must not grant
+          // publication to a posting that lacks a current original date.
+          inactiveReason: `posting-freshness-${freshness.state.toLowerCase()}`,
+          category: "other",
+          geoScope: gate.geoScope,
+          phEligibility: gate.phEligibility,
+          geoEvidence: gate.evidence,
+          geoCheckedAt: observedAt,
+          descriptionHash: await sha256Hex(item.title + cleanDesc),
+          applicationUrl: sanitizeApplyUrlForSource(item.applicationUrl, item.sourceUrl) || item.sourceUrl,
+          postedAt: freshness.postedAt,
+          scrapedAt: observedAt,
+          lastSeenInFeedAt: observedAt,
+          updatedAt: observedAt,
+        });
+        continue;
+      }
       gatePassedItems.push({ item, gate });
     }
     if (geoGateRejected > 0) {
       console.log(`[api/cron/scrape] Geo-gate rejected ${geoGateRejected}/${itemsToProcess.length} items before AI triage.`);
+    }
+
+    if (postingFreshnessWithheld > 0) {
+      console.log(`[api/cron/scrape] Posting freshness withheld ${postingFreshnessWithheld}/${itemsToProcess.length} items before AI triage.`);
     }
 
     // ── Durable triage path: persist, don't classify inline ──────────────────
@@ -2951,7 +2982,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
     }
     }
 
-    // 6b. Persist triage-rejected items as inactive rows so their URLs join
+    // 6b. Persist policy/freshness/triage-rejected items as inactive rows so their URLs join
     // dedup and they are never re-triaged. Failures here must not fail the
     // run — they are counted and surfaced instead.
     let rejectedPersisted = 0;
@@ -2974,7 +3005,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       }
     }
     if (rejectedItems.length > 0) {
-      console.log(`[api/cron/scrape] Persisted ${rejectedPersisted}/${rejectedItems.length} triage-rejected items as inactive rows (${rejectedInsertFailedBatches} failed batches).`);
+      console.log(`[api/cron/scrape] Persisted ${rejectedPersisted}/${rejectedItems.length} held/rejected items as inactive rows (${rejectedInsertFailedBatches} failed batches).`);
     }
 
     // 6b. Persist gate-passed listings that still need a durable AI verdict.
@@ -3058,6 +3089,7 @@ export function createScrapeHandler(dependencies: { getDb?: typeof getDb } = {})
       aiSubrequestCalls: aiBudget.calls(),
       aiSubrequestBudget: AI_SUBREQUEST_BUDGET_PER_RUN,
       geoGateRejected,
+      postingFreshnessWithheld,
       geoRejectionsBySource,
       consensusQuarantined,
       unclearRetriaged,

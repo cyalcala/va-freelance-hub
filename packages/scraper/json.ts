@@ -4,6 +4,7 @@ import { decodeHtmlEntities, fixMojibake } from "./text";
 import { toContentHash } from "./contentHash";
 import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
 import { collectionHeaders } from "./userAgent";
+import { normalizeSourcePostingDate } from "./source-posting-date";
 
 interface RemoteOkJob {
   id?: string | number;
@@ -31,13 +32,6 @@ export function normalizeText(raw: unknown): string {
     .replace(/<[^>]*>/g, " ")
     .replace(/\s+/g, " ")
     .trim();
-}
-
-function normalizeDate(rawDate: unknown): string | null {
-  if (typeof rawDate !== "string") return null;
-  const parsed = new Date(rawDate);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toISOString();
 }
 
 export function normalizeRemoteOkUrl(rawUrl: unknown): string | null {
@@ -151,7 +145,7 @@ export async function fetchJSONSource(source: Source, state?: ConditionalState):
         payRange: normalizePayRange(job.salary_min, job.salary_max),
         description: description.slice(0, 1500) || null,
         applicationUrl: normalizeRemoteOkUrl(job.apply_url) ?? sourceUrl,
-        postedAt: normalizeDate(job.date),
+        postedAt: normalizeSourcePostingDate(job.date),
         isActive: true,
         contentHash: toContentHash(title, sourceUrl),
       };
