@@ -120,7 +120,7 @@ export async function publishGroupedActivations<T extends object>(
   now: string,
   channel: string,
   patch: T,
-  persistIds: (ids: number[], patch: T) => Promise<{ publishedCount: number; ids: number[] }>,
+  persistIds: (ids: number[], patch: T, sourceId: string) => Promise<{ publishedCount: number; ids: number[] }>,
 ): Promise<GroupedPublicationResult> {
   if (rows.length === 0) return { published: 0, failed: false };
   const tickKey = publicationTickKey(channel, now);
@@ -155,7 +155,9 @@ export async function publishGroupedActivations<T extends object>(
       tickKey,
       retryKey,
       proposedCount,
-      persist: async (allowed) => persistIds(selected.slice(0, allowed), update.patch),
+      // The UPDATE must use this detached authorized group identity, never a
+      // later source lookup or the caller's mutable row objects.
+      persist: async (allowed) => persistIds(selected.slice(0, allowed), update.patch, sourceId),
     });
     if (!result.ok) return "persistenceAttempted" in result && result.persistenceAttempted === true
       ? { published, failed: true, publicationOutcome: "UNKNOWN" } : { published, failed: true };

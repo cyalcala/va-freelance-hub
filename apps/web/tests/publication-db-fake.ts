@@ -23,6 +23,7 @@ export class FakePublicationDatabase implements PublicationDatabase {
       : query.includes("FROM source_publication_ledger WHERE retry_key") ? "retry"
       : query.includes("SUM(published_count)") ? "tickSum"
       : query.includes("FROM source_registry") ? "registry"
+      : query.includes("FROM opportunities") ? "ownership"
       : query.includes("INSERT INTO source_publication_ledger") ? "insert"
       : query.includes("INSERT INTO source_transition_events") ? "transition"
       : "other";

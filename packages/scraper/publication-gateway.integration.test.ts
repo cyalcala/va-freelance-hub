@@ -2,16 +2,20 @@ import { expect, test } from "bun:test";
 import { Database, type SQLQueryBindings } from "bun:sqlite";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { publishPublicExposure, publicationTickKey, type PublicationDatabase, type PublicationStatement } from "./publication-gateway";
+import { publishPublicExposure, publicationTickKey, type PublicationDatabase, type PublicationStatement, type PublishPublicExposureRequest } from "./publication-gateway";
 
 const NOW = new Date().toISOString();
 const TICK = publicationTickKey("scrape", NOW);
 
 class BunStatement implements PublicationStatement {
   private values: SQLQueryBindings[] = [];
-  constructor(private readonly db: Database, private readonly query: string, private readonly runs: string[]) {}
+  constructor(private readonly db: Database, private readonly query: string, private readonly runs: string[],
+    private readonly reads: Array<{ query: string; values: unknown[] }>) {}
   bind(...values: unknown[]) { this.values = values as SQLQueryBindings[]; return this; }
-  async first<T>() { return (this.db.query(this.query).get(...this.values) as T | null) ?? null; }
+  async first<T>() {
+    this.reads.push({ query: this.query, values: [...this.values] });
+    return (this.db.query(this.query).get(...this.values) as T | null) ?? null;
+  }
   async run() {
     this.runs.push(this.query);
     this.db.query(this.query).run(...this.values);
@@ -21,9 +25,10 @@ class BunStatement implements PublicationStatement {
 class BunDb implements PublicationDatabase {
   readonly runs: string[] = [];
   readonly queries: string[] = [];
+  readonly reads: Array<{ query: string; values: unknown[] }> = [];
   constructor(private readonly db: Database) {}
   prepare(query: string): PublicationStatement {
-    this.queries.push(query); return new BunStatement(this.db, query, this.runs);
+    this.queries.push(query); return new BunStatement(this.db, query, this.runs, this.reads);
   }
 }
 
@@ -32,7 +37,7 @@ function freshDb(): Database {
   db.exec("PRAGMA foreign_keys = ON;");
   for (const migration of [
     "0000_workable_sandman.sql", "0026_fts5_search.sql", "0027_fts5_trigger_scope.sql",
-    "0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql",
+    "0034_opportunity_source_id.sql", "0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql",
     "0038_shadow_observations.sql", "0039_canary_transition_plane.sql",
     "0040_current_evidence_admission.sql", "0041_publication_ledger.sql",
     "0042_d1_like_glob_limit.sql",
@@ -47,7 +52,10 @@ test("SP-23C ledger persists unlimited exact-six writes, empty ticks, and retry 
   const db = new BunDb(sqlite);
   const unlimited = await publishPublicExposure(db, {
     sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "u1", proposedCount: 5,
-    persist: async (allowed) => ({ publishedCount: allowed, ids: [1, 2, 3, 4, 5] }),
+    persist: async (allowed) => {
+      const ids = Array.from({ length: allowed }, (_, index) => writeOpportunity(sqlite, `unlimited-${index}`, "we-work-remotely")[0]!);
+      return { publishedCount: ids.length, ids };
+    },
   });
   expect(unlimited).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 5 });
 
@@ -157,10 +165,10 @@ test("native production constraints independently reject malformed JSON, illegal
   } finally { sqlite.close(); }
 });
 
-function writeOpportunity(sqlite: Database, key = "fresh-native"): number[] {
-  const rows = sqlite.query(`INSERT INTO opportunities(title, company, source_url, source_platform, content_hash)
-    VALUES('Native acknowledgement fixture', 'Fixture company', ?, 'remotive', ?)
-    ON CONFLICT(source_url) DO NOTHING RETURNING id`).all(`https://example.invalid/${key}`, key) as Array<{ id: number }>;
+function writeOpportunity(sqlite: Database, key = "fresh-native", sourceId: string | null = "remotive", isActive = 1): number[] {
+  const rows = sqlite.query(`INSERT INTO opportunities(title, company, source_url, source_platform, content_hash, source_id, is_active)
+    VALUES('Native acknowledgement fixture', 'Fixture company', ?, 'remotive', ?, ?, ?)
+    ON CONFLICT(source_url) DO NOTHING RETURNING id`).all(`https://example.invalid/${key}`, key, sourceId, isActive) as Array<{ id: number }>;
   return rows.map(row => row.id);
 }
 function assertWrittenRowWithoutReceipt(sqlite: Database) {
@@ -187,6 +195,187 @@ for (const [name, acknowledgement] of [
       },
     });
     expect(result).toMatchObject(postPersistenceUnknown); assertWrittenRowWithoutReceipt(sqlite);
+  } finally { sqlite.close(); }
+});
+
+for (const [name, sourceId, isActive, reportedId] of [
+  ["nonexistent ID", "remotive", 1, 404],
+  ["foreign source", "remote-ok", 1, 1],
+  ["NULL source", null, 1, 1],
+  ["inactive row", "remotive", 0, 1],
+] as const) test(`native fresh ownership rejects ${name} after physical persistence without compensation`, async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite);
+    const result = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "ownership-invalid", proposedCount: 1,
+      persist: async () => {
+        expect(writeOpportunity(sqlite, "ownership-invalid", sourceId, isActive)).toEqual([1]);
+        return { publishedCount: 1, ids: [reportedId] };
+      },
+    });
+    expect(result).toMatchObject(postPersistenceUnknown);
+    expect(sqlite.query("SELECT source_id, is_active FROM opportunities").get()).toEqual({ source_id: sourceId, is_active: isActive });
+    expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(1);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    expect(db.runs).toEqual([]);
+  } finally { sqlite.close(); }
+});
+
+test("native fresh ownership rejects a mixed-source subset rather than counting only existing IDs", async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite);
+    const result = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "mixed-ownership", proposedCount: 2,
+      persist: async () => ({ publishedCount: 2, ids: [...writeOpportunity(sqlite, "owned"), ...writeOpportunity(sqlite, "foreign", "remote-ok")] }),
+    });
+    expect(result).toMatchObject(postPersistenceUnknown);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 2 });
+    expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(2);
+    expect(db.runs).toEqual([]);
+  } finally { sqlite.close(); }
+});
+
+for (const [name, response] of [
+  ["null", null], ["missing count", {}], ["string count", { ownedCount: "1" }],
+  ["fractional count", { ownedCount: 1.5 }], ["negative count", { ownedCount: -1 }],
+  ["oversized count", { ownedCount: 2 }], ["boolean count", { ownedCount: true }],
+  ["NaN count", { ownedCount: NaN }], ["infinite count", { ownedCount: Infinity }],
+] as const) test(`native physical persistence plus ${name} ownership response stays UNKNOWN`, async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite), prepare = db.prepare.bind(db);
+    db.prepare = query => {
+      const statement = prepare(query);
+      if (query.includes("FROM opportunities")) statement.first = async <T>() => response as T | null;
+      return statement;
+    };
+    const result = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "malformed-ownership", proposedCount: 1,
+      persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite) }),
+    });
+    expect(result).toMatchObject(postPersistenceUnknown);
+    assertWrittenRowWithoutReceipt(sqlite);
+    expect(db.runs).toEqual([]);
+  } finally { sqlite.close(); }
+});
+
+for (const stage of ["prepare", "first"] as const) test(`native ${stage} ownership read failure after commit stays UNKNOWN and sanitized`, async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite), prepare = db.prepare.bind(db);
+    db.prepare = query => {
+      if (stage === "prepare" && query.includes("FROM opportunities")) throw new Error("private ownership query failure");
+      const statement = prepare(query);
+      if (stage === "first" && query.includes("FROM opportunities")) {
+        statement.first = async () => { throw new Error("private ownership read failure"); };
+      }
+      return statement;
+    };
+    const result = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "failed-ownership", proposedCount: 1,
+      persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite) }),
+    });
+    expect(result).toMatchObject(postPersistenceUnknown);
+    expect(JSON.stringify(result)).not.toContain("private");
+    assertWrittenRowWithoutReceipt(sqlite);
+    expect(db.runs).toEqual([]);
+  } finally { sqlite.close(); }
+});
+
+test("native ownership verifies every distinct ID through bounded parameterized queries", async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite);
+    const result = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "bounded-ownership", proposedCount: 201,
+      persist: async () => {
+        const ids = Array.from({ length: 201 }, (_, index) => writeOpportunity(sqlite, `bounded-${index}`)[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, publishedCount: 201 });
+    const reads = db.reads.filter(read => read.query.includes("FROM opportunities"));
+    expect(reads.length).toBeGreaterThan(1);
+    const seen: unknown[] = [];
+    for (const read of reads) {
+      expect(read.values.length).toBeLessThanOrEqual(100);
+      expect(read.values[0]).toBe("remotive");
+      expect(read.query).not.toContain("remotive");
+      seen.push(...read.values.slice(1));
+    }
+    expect(seen).toEqual(Array.from({ length: 201 }, (_, index) => index + 1));
+  } finally { sqlite.close(); }
+});
+
+test("native later ownership chunk mismatch stops reads and keeps all physical rows without a ledger", async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite);
+    const result = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "later-ownership-mismatch", proposedCount: 201,
+      persist: async () => {
+        const ids = Array.from({ length: 201 }, (_, index) => writeOpportunity(sqlite, `later-${index}`, index === 99 ? "remote-ok" : "remotive")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject(postPersistenceUnknown);
+    expect(db.reads.filter(read => read.query.includes("FROM opportunities"))).toHaveLength(2);
+    expect(db.runs).toEqual([]);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 201 });
+    expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(201);
+  } finally { sqlite.close(); }
+});
+
+for (const stage of ["policy-await", "persist-await"] as const) test(`native request identity remains snapshotted across ${stage}`, async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite);
+    const changeRequest = () => {
+      request.sourceId = "remote-ok"; request.tickKey = "different-tick";
+      request.retryKey = "different-retry"; request.now = "2026-10-01T00:00:00.000Z";
+      request.proposedCount = 0; request.persist = async () => { throw new Error("replacement callback"); };
+    };
+    const request: PublishPublicExposureRequest = {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "original-request", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite);
+        if (stage === "persist-await") changeRequest();
+        await Promise.resolve();
+        return { publishedCount: ids.length, ids };
+      },
+    };
+    if (stage === "policy-await") {
+      const prepare = db.prepare.bind(db);
+      db.prepare = query => {
+        const statement = prepare(query), first = statement.first.bind(statement);
+        if (query.includes("FROM source_publication_ledger WHERE retry_key")) {
+          statement.first = async <T>() => { changeRequest(); await Promise.resolve(); return first<T>(); };
+        }
+        return statement;
+      };
+    }
+    const result = await publishPublicExposure(db, request);
+    expect(result).toMatchObject({ ok: true, publishedCount: 1, ids: [1], replayed: false });
+    expect(sqlite.query("SELECT source_id, tick_key, retry_key, proposed_count, decided_at FROM source_publication_ledger").get())
+      .toEqual({ source_id: "remotive", tick_key: TICK, retry_key: "original-request", proposed_count: 1, decided_at: NOW });
+    expect(db.reads.find(read => read.query.includes("FROM opportunities"))?.values).toEqual(["remotive", 1]);
+  } finally { sqlite.close(); }
+});
+
+test("native empty and blocked decisions avoid current ownership reads", async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite);
+    for (const sourceId of ["remotive", "unregistered:fixture"]) {
+      const result = await publishPublicExposure(db, {
+        sourceId, now: NOW, tickKey: TICK, retryKey: sourceId, proposedCount: 0,
+        persist: async () => { throw new Error("empty decision must not write"); },
+      });
+      expect(result).toMatchObject({ ok: true, publishedCount: 0 });
+    }
+    expect(db.reads.filter(read => read.query.includes("FROM opportunities"))).toEqual([]);
   } finally { sqlite.close(); }
 });
 

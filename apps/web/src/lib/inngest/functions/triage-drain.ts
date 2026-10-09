@@ -1,6 +1,6 @@
 // Match the client boot contract before importing the SDK in Workers.
 import "../polyfill";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, isNull } from "drizzle-orm";
 import { NonRetriableError } from "inngest";
 import { getDb, opportunities } from "@va-hub/db";
 import {
@@ -95,6 +95,7 @@ export const triageDrain = inngest.createFunction(
     const outcomes = await Promise.all(
       pending.map((row) =>
         step.run(`triage-${row.id}`, async () => {
+          const sourceBinding = row.sourceId;
           const observedAt = new Date().toISOString();
           const baseTags = row.tags ?? [];
 
@@ -193,12 +194,13 @@ export const triageDrain = inngest.createFunction(
             });
           const publishRow = async () => {
             const returned = await db.update(opportunities).set(update.patch).where(and(eq(opportunities.id, row.id),
+              sourceBinding === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceBinding),
               eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"))).returning({ id: opportunities.id });
             return normalizePersistedOpportunityIds(returned.map(row => row.id));
           };
           const publicationDb = publicationDbFromEnv(env);
           if (publicationDb) {
-            const sourceId = row.sourceId && /^[a-z0-9:._-]+$/.test(row.sourceId) ? row.sourceId : "unattributed";
+            const sourceId = sourceBinding && /^[a-z0-9:._-]+$/.test(sourceBinding) ? sourceBinding : "unattributed";
             const tickKey = publicationTickKey("triage-drain", observedAt);
             const published = await publishPublicExposure(publicationDb, {
               sourceId,

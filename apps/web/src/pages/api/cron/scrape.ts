@@ -14,7 +14,7 @@ import { runLockOutcome } from "@/lib/run-lock";
 import { d1Changes } from "@/lib/d1-result";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
-import { publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
+import { D1_MAX_BOUND_PARAMETERS, publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -412,6 +412,7 @@ export async function drainPendingTriageInline(
   for (const item of pending) {
     if (aiBudget.exhausted()) break;
     stats.claimed += 1;
+    const sourceBinding = item.sourceId;
     const baseTags = item.tags ?? [];
     const gate = geoGate({
       title: item.title,
@@ -495,11 +496,12 @@ export async function drainPendingTriageInline(
       });
       const publishRow = async () => {
         const returned = await db.update(opportunities).set(update.patch).where(and(eq(opportunities.id, item.id),
+          sourceBinding === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceBinding),
           eq(opportunities.isActive, false), eq(opportunities.inactiveReason, "pending-triage"))).returning({ id: opportunities.id });
         return normalizePersistedOpportunityIds(returned.map(row => row.id));
       };
       if (publicationDb) {
-        const sourceId = item.sourceId && /^[a-z0-9:._-]+$/.test(item.sourceId) ? item.sourceId : "unattributed";
+        const sourceId = sourceBinding && /^[a-z0-9:._-]+$/.test(sourceBinding) ? sourceBinding : "unattributed";
         const tickKey = publicationTickKey("scrape-drain", observedAt);
         const published = await publishPublicExposure(publicationDb, {
           sourceId,
@@ -596,33 +598,44 @@ export async function recoverGateEligiblePending(
     lastSeenInFeedAt: observedAt,
   };
   try {
-    if (!publicationDb) {
-      try {
-        const returned = await db.update(opportunities).set(publishSet).where(GATE_ELIGIBLE_PENDING()).returning({ id: opportunities.id });
-        return normalizePersistedOpportunityIds(returned.map(row => row.id)).length;
-      } catch { throw new PublicationOutcomeUnknownError(); }
-    }
     const pending = await db
       .select({ id: opportunities.id, sourceId: opportunities.sourceId })
       .from(opportunities)
       .where(GATE_ELIGIBLE_PENDING());
     if (pending.length === 0) return 0;
+    const persistIds = async (ids: number[], patch: typeof publishSet, sourceId: string | null) => {
+      const returnedIds: number[] = [];
+      for (const batch of chunkArray(ids, 50)) {
+        const returned = await db.update(opportunities).set(patch).where(and(inArray(opportunities.id, batch),
+          sourceId === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceId), GATE_ELIGIBLE_PENDING()))
+          .returning({ id: opportunities.id });
+        returnedIds.push(...returned.map(row => row.id));
+      }
+      const actualIds = normalizePersistedOpportunityIds(returnedIds);
+      return { publishedCount: actualIds.length, ids: actualIds };
+    };
+    if (!publicationDb) {
+      let published = 0;
+      const grouped = new Map<string | null, number[]>();
+      for (const row of pending) {
+        const ids = grouped.get(row.sourceId) ?? [];
+        ids.push(row.id);
+        grouped.set(row.sourceId, ids);
+      }
+      try {
+        for (const [sourceId, ids] of grouped) {
+          for (const batch of chunkArray(ids, 50)) published += (await persistIds(batch, publishSet, sourceId)).publishedCount;
+        }
+        return published;
+      } catch { throw new PublicationOutcomeUnknownError(published); }
+    }
     const result = await publishGroupedActivations(
       publicationDb,
       pending,
       observedAt,
       "scrape-gate",
       publishSet,
-      async (ids, patch) => {
-        const returnedIds: number[] = [];
-        for (const batch of chunkArray(ids, 50)) {
-          const returned = await db.update(opportunities).set(patch).where(and(inArray(opportunities.id, batch), GATE_ELIGIBLE_PENDING()))
-            .returning({ id: opportunities.id });
-          returnedIds.push(...returned.map(row => row.id));
-        }
-        const actualIds = normalizePersistedOpportunityIds(returnedIds);
-        return { publishedCount: actualIds.length, ids: actualIds };
-      },
+      persistIds,
     );
     if (result.publicationOutcome === "UNKNOWN") throw new PublicationOutcomeUnknownError(result.published);
     return result.published;
@@ -655,42 +668,66 @@ export async function reactivateFeedConfirmedJobs(
     inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]),
   );
   try {
-    if (!publicationDb) {
-      let reactivated = 0;
-      try {
-        for (const batch of chunkArray(urls, BATCH_SIZE)) {
-          const returned = await db.update(opportunities).set(publishSet).where(recoverableWhere(batch)).returning({ id: opportunities.id });
-          reactivated += normalizePersistedOpportunityIds(returned.map(row => row.id)).length;
-        }
-      } catch { throw new PublicationOutcomeUnknownError(reactivated); }
-      return reactivated;
-    }
-    const rows: Array<{ id: number; sourceId: string | null }> = [];
+    const rows: Array<{ id: number; sourceId: string | null; sourceUrl: string }> = [];
     for (const batch of chunkArray(urls, BATCH_SIZE)) {
       const found = await db
-        .select({ id: opportunities.id, sourceId: opportunities.sourceId })
+        .select({ id: opportunities.id, sourceId: opportunities.sourceId, sourceUrl: opportunities.sourceUrl })
         .from(opportunities)
         .where(recoverableWhere(batch));
       rows.push(...found);
     }
     if (rows.length === 0) return 0;
+    const selectedUrls = new Map(rows.map(row => [row.id, row.sourceUrl]));
+    const persistIds = async (ids: number[], patch: typeof publishSet, sourceId: string | null) => {
+      const returnedIds: number[] = [];
+      const buildUpdate = (batch: number[]) => {
+        const confirmedUrls = batch.map(id => {
+          const url = selectedUrls.get(id);
+          if (typeof url !== "string") throw new Error("activation target lacks a confirmed source URL");
+          return url;
+        });
+        return db.update(opportunities).set(patch).where(and(inArray(opportunities.id, batch),
+          inArray(opportunities.sourceUrl, confirmedUrls),
+          sourceId === null ? isNull(opportunities.sourceId) : eq(opportunities.sourceId, sourceId),
+          eq(opportunities.isActive, false), inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
+          inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]))).returning({ id: opportunities.id });
+      };
+      // Each selected target contributes ID + URL binds. Count the actual
+      // pinned Drizzle query's remaining binds instead of guessing patch cost.
+      const available = D1_MAX_BOUND_PARAMETERS - buildUpdate([]).toSQL().params.length;
+      const updateBatchSize = Math.min(BATCH_SIZE, Math.floor(available / 2));
+      if (updateBatchSize <= 0) throw new Error("activation query exceeds the existing D1 parameter limit");
+      for (const batch of chunkArray(ids, updateBatchSize)) {
+        const query = buildUpdate(batch);
+        if (query.toSQL().params.length > D1_MAX_BOUND_PARAMETERS) throw new Error("activation query exceeds the existing D1 parameter limit");
+        const returned = await query;
+        returnedIds.push(...returned.map(row => row.id));
+      }
+      const actualIds = normalizePersistedOpportunityIds(returnedIds);
+      return { publishedCount: actualIds.length, ids: actualIds };
+    };
+    if (!publicationDb) {
+      let published = 0;
+      const grouped = new Map<string | null, number[]>();
+      for (const row of rows) {
+        const ids = grouped.get(row.sourceId) ?? [];
+        ids.push(row.id);
+        grouped.set(row.sourceId, ids);
+      }
+      try {
+        for (const [sourceId, ids] of grouped) {
+          for (const batch of chunkArray(ids, BATCH_SIZE)) published += (await persistIds(batch, publishSet, sourceId)).publishedCount;
+        }
+        return published;
+      } catch { throw new PublicationOutcomeUnknownError(published); }
+    }
     const result = await publishGroupedActivations(
       publicationDb,
       rows,
       observedAt,
       "scrape-reactivate",
       publishSet,
-      async (ids, patch) => {
-        const returnedIds: number[] = [];
-        for (const batch of chunkArray(ids, BATCH_SIZE)) {
-          const returned = await db.update(opportunities).set(patch).where(and(inArray(opportunities.id, batch),
-            eq(opportunities.isActive, false), inArray(opportunities.inactiveReason, [...RECOVERABLE_INACTIVE_REASONS]),
-            inArray(opportunities.phEligibility, ["eligible_verified", "eligible_likely"]))).returning({ id: opportunities.id });
-          returnedIds.push(...returned.map(row => row.id));
-        }
-        const actualIds = normalizePersistedOpportunityIds(returnedIds);
-        return { publishedCount: actualIds.length, ids: actualIds };
-      },
+      persistIds,
     );
     if (result.publicationOutcome === "UNKNOWN") throw new PublicationOutcomeUnknownError(result.published);
     return result.published;

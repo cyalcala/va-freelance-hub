@@ -1,5 +1,5 @@
 import { describe, expect, mock, test } from "bun:test";
-import { sourceOptOuts, sourceRegistry } from "@va-hub/db";
+import { opportunities, sourceOptOuts, sourceRegistry } from "@va-hub/db";
 import { INGEST_DIAG_ID, summarizeRunDiagnostics } from "../src/lib/run-diagnostics";
 import { createScrapeHandler } from "../src/pages/api/cron/scrape";
 
@@ -14,14 +14,15 @@ function requestContext() {
 }
 
 /**
- * Governance reads succeed and the run lock is acquired; every later D1 read
- * throws, simulating a mid-run failure (the issue #123 shape: the lock goes
- * fresh while the heartbeat never advances).
+ * Governance and initial gate-recovery candidate reads succeed after the run
+ * lock is acquired. Later D1 reads throw, simulating a mid-run failure (the
+ * issue #123 shape: the lock goes fresh while the heartbeat never advances).
  */
 function crashingDb(uncertainPublication = false) {
   const diagWrites: Record<string, unknown>[] = [];
   const updateCalls: Record<string, unknown>[] = [];
   let lockClaimed = false;
+  let recoveryCandidatesSelected = false;
   const db = {
     select() {
       return {
@@ -31,6 +32,10 @@ function crashingDb(uncertainPublication = false) {
         // instead of the synchronous throw the real client surfaces here.
         from(table: unknown) {
           if (table === sourceRegistry || table === sourceOptOuts) return [];
+          if (table === opportunities && !recoveryCandidatesSelected) {
+            recoveryCandidatesSelected = true;
+            return { where: async () => [{ id: 1, sourceId: "remotive" }] };
+          }
           throw new Error("simulated mid-run D1 failure");
         },
       };

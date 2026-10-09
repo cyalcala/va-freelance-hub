@@ -4,6 +4,7 @@ import {
   GATE_ELIGIBLE_GEO_SCOPES,
 } from "../src/pages/api/cron/scrape";
 import { FakePublicationDatabase } from "./publication-db-fake";
+import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 
 // Board-freshness fallback (2026-08-20 freeze follow-up).
 //
@@ -17,17 +18,23 @@ const OBSERVED = "2026-08-20T02:00:00.000Z";
 
 function fakeDb(changes: number, fail = false) {
   const captured: { set?: any; whereCalled?: boolean } = {};
+  const rows = Array.from({ length: fail ? 1 : changes }, (_, index) => ({ id: index + 1, sourceId: "we-work-remotely" }));
   const db: any = {
+    select() {
+      const builder: any = { from: () => builder, where: () => Promise.resolve(rows) };
+      return builder;
+    },
     update() {
       return {
         set: (vals: any) => {
           captured.set = vals;
           return {
-            where: () => {
+            where: (clause: any) => {
               captured.whereCalled = true;
               return { returning: async () => {
                 if (fail) throw new Error("D1 write rejected");
-                return Array.from({ length: changes }, (_, index) => ({ id: index + 1 }));
+                const params = new SQLiteSyncDialect().sqlToQuery(clause).params;
+                return rows.filter(row => params.includes(row.id)).map(row => ({ id: row.id }));
               } };
             },
           };
@@ -98,7 +105,7 @@ describe("recoverGateEligiblePending", () => {
         };
       },
     };
-    const publicationDb = new FakePublicationDatabase();
+    const publicationDb = new FakePublicationDatabase({ ownership: [{ ownedCount: 1 }] });
     const n = await recoverGateEligiblePending(db, OBSERVED, publicationDb);
     expect(n).toBe(1);
     expect(captured.selected).toBe(true);
@@ -108,6 +115,7 @@ describe("recoverGateEligiblePending", () => {
     const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
     const params = new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[0]).params;
     expect(params).toContain(3);
+    expect(params).toContain("we-work-remotely");
     expect(params).toContain("pending-triage");
     expect(params).toContain("ph_only");
     expect(publicationDb.runs.filter(run => run.query.includes("INSERT INTO source_publication_ledger"))

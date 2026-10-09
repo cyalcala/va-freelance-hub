@@ -44,6 +44,7 @@ class FakeDatabase implements PublicationDatabase {
       : query.includes("FROM source_publication_ledger WHERE retry_key") ? "retry"
       : query.includes("SUM(published_count)") ? "tickSum"
       : query.includes("FROM source_registry") ? "registry"
+      : query.includes("FROM opportunities") ? "ownership"
       : query.includes("INSERT INTO source_publication_ledger") ? "insert"
       : query.includes("INSERT INTO source_transition_events") ? "transition"
       : "other";
@@ -326,7 +327,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
 
   describe("Gateway fallback behavior — F4 unattributed fallback repair", () => {
     test("unregistered exact-six source gets unlimited fallback", async () => {
-      const db = new FakeDatabase({ registry: [null], retry: [null] });
+      const db = new FakeDatabase({ registry: [null], retry: [null], ownership: [{ ownedCount: 4 }] });
       const result = await publishPublicExposure(db, {
         sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "r1", proposedCount: 4,
         persist: async (allowed) => ({ publishedCount: allowed, ids: [1, 2, 3, 4] }),
@@ -381,7 +382,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
 
   describe("Atomicity Gap: persistence occurs before ledger insert", () => {
     test("gateway calls persist before insertLedger (source: publication-gateway.ts:199,226)", async () => {
-      const db = new FakeDatabase({ registry: [null], retry: [null] });
+      const db = new FakeDatabase({ registry: [null], retry: [null], ownership: [{ ownedCount: 2 }] });
       let persistCalled = false;
       let ledgerInserted = false;
       const originalPrepare = db.prepare.bind(db);
@@ -412,6 +413,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
         optOut: [null],
         retry: [null, null],
         tickSum: [{ published: 2 }, { published: 3 }], // Each call sees different prior count
+        ownership: [{ ownedCount: 3 }],
       });
       let persisted1 = 0, persisted2 = 0;
       const r1 = await publishPublicExposure(db, {
@@ -510,19 +512,21 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
   });
 
   describe("scrape.ts null-publicationDb Bypass Paths", () => {
-    test("recoverGateEligiblePending bypasses gateway when publicationDb is null (lines 584-586)", () => {
+    test("recoverGateEligiblePending retains its null-publicationDb gateway bypass", () => {
       const content = readFile("apps/web/src/pages/api/cron/scrape.ts");
-      // Check for the bypass pattern
-      expect(content).toContain("if (!publicationDb)");
-      expect(content).toContain("db.update(opportunities).set(publishSet)");
+      const gateSection = content.slice(content.indexOf("export async function recoverGateEligiblePending"),
+        content.indexOf("export async function reactivateFeedConfirmedJobs"));
+      // Source fencing does not replace the missing publication gateway.
+      expect(gateSection).toContain("if (!publicationDb)");
+      expect(gateSection).toContain("await persistIds(batch, publishSet, sourceId)");
     });
 
-    test("reactivateFeedConfirmedJobs bypasses gateway when publicationDb is null (lines 636-642)", () => {
+    test("reactivateFeedConfirmedJobs retains its null-publicationDb gateway bypass", () => {
       const content = readFile("apps/web/src/pages/api/cron/scrape.ts");
       // Check for the bypass pattern in reactivate function
       const reactivateSection = content.slice(content.indexOf("reactivateFeedConfirmedJobs"));
       expect(reactivateSection).toContain("if (!publicationDb)");
-      expect(reactivateSection).toContain("db.update(opportunities).set(publishSet)");
+      expect(reactivateSection).toContain("await persistIds(batch, publishSet, sourceId)");
     });
   });
 

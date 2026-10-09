@@ -50,7 +50,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
   test("unchanged selected canary rows keep identity when only an unused suffix changes", async () => {
     const keys: unknown[] = [];
     for (const candidates of [[row(1), row(2), row(3)], [row(1), row(2), { ...row(4), description: "unused" }]]) {
-      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW] });
+      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2 }] });
       await publishGroupedInserts(db, async rows => rows.map((_, index) => index + 1), candidates, NOW, "scrape");
       keys.push(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values[2]);
     }
@@ -59,7 +59,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
 
   test("caller mutation during a policy read cannot change the source or persisted values", async () => {
     const original = row(1, "remotive");
-    const db = new FakePublicationDatabase();
+    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1 }] });
     const prepare = db.prepare.bind(db);
     db.prepare = query => {
       const statement = prepare(query);
@@ -81,7 +81,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
   });
 
   test("clamps a canary batch to canaryMaxNewItemsPerTick so the gateway never rolls back", async () => {
-    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW] });
+    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2 }] });
     const persistedBatches: number[] = [];
     const persistedUrls: string[][] = [];
     const result = await publishGroupedInserts(
@@ -105,7 +105,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
   });
 
   test("unregistered exact-six source publishes the full batch unchanged", async () => {
-    const db = new FakePublicationDatabase({ registry: [null, null] });
+    const db = new FakePublicationDatabase({ registry: [null, null], ownership: [{ ownedCount: 3 }] });
     const persistedBatches: number[] = [];
     const result = await publishGroupedInserts(
       db,
@@ -181,7 +181,7 @@ describe("publishGroupedInserts persisted ID accounting", () => {
   });
 
   test("partial insertion retains only actual inserted IDs", async () => {
-    const db = new FakePublicationDatabase();
+    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1 }] });
     const result = await publishGroupedInserts(db, async () => [91], [row(1, "remotive"), row(2, "remotive")], NOW, "scrape");
     expect(result).toEqual({ published: 1, failed: false });
     expect(db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"))?.values[6]).toBe("[91]");
@@ -212,7 +212,7 @@ describe("publishGroupedInserts persisted ID accounting", () => {
 
 /** Real SQLite + production Drizzle D1 adapter; no network or native-module mocks. */
 function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => void; rejectLedger?: boolean;
-  throwAfterOpportunityUpdate?: boolean } = {}) {
+  throwAfterOpportunityUpdate?: boolean; failOwnershipRead?: "throw" | "malformed" | "mismatch"; failOwnershipReadAt?: number } = {}) {
   const sqlite = new Database(":memory:");
   const columns = getTableConfig(opportunities).columns.map((column) =>
     `"${column.name}" ${column.getSQLType()}${column.name === "id" ? " PRIMARY KEY AUTOINCREMENT" : ""}`,
@@ -228,6 +228,8 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
   ]) sqlite.exec(readFileSync(new URL(`../../../packages/db/migrations/${filename}`, import.meta.url), "utf8"));
   const queries: string[] = [];
   const opportunityMutationChanges: number[] = [];
+  const opportunityUpdateBindings: unknown[][] = [];
+  let ownershipReads = 0;
   const binding = {
     prepare(query: string) {
       queries.push(query);
@@ -235,8 +237,23 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
       const statement = sqlite.query(query);
       let values: any[] = [];
       return {
-        bind(...params: any[]) { values = params; return this; },
-        async first() { return statement.get(...values); },
+        bind(...params: any[]) {
+          values = params;
+          if (/^update "opportunities"/i.test(query)) opportunityUpdateBindings.push([...params]);
+          return this;
+        },
+        async first() {
+          const result = statement.get(...values);
+          if (query.includes("SELECT COUNT(*) AS ownedCount FROM opportunities")) {
+            ownershipReads++;
+            if (ownershipReads === (options.failOwnershipReadAt ?? 1)) {
+              if (options.failOwnershipRead === "throw") throw new Error("synthetic ownership read diagnostic");
+              if (options.failOwnershipRead === "malformed") return { ownedCount: "1" };
+              if (options.failOwnershipRead === "mismatch") return { ownedCount: 0 };
+            }
+          }
+          return result;
+        },
         async all() { return { results: statement.all(...values) }; },
         async raw() {
           const before = (sqlite.query("SELECT total_changes() AS n").get() as { n: number }).n;
@@ -261,10 +278,233 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
       };
     },
   };
-  return { sqlite, binding, queries, opportunityMutationChanges };
+  return { sqlite, binding, queries, opportunityMutationChanges, opportunityUpdateBindings };
 }
 
 describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
+  test("ownership failure in the second source group retains the confirmed first receipt and stops the third group", async () => {
+    const { sqlite, binding } = sqliteD1({ failOwnershipRead: "mismatch", failOwnershipReadAt: 2 });
+    try {
+      const db = getDb({ DB: binding as any });
+      const attemptedSources: Array<string | null | undefined> = [];
+      const result = await publishGroupedInserts(publicationDbFromEnv({ DB: binding })!, async candidates => {
+        attemptedSources.push(candidates[0].sourceId);
+        return (await db.insert(opportunities).values(candidates).returning({ id: opportunities.id })).map(candidate => candidate.id);
+      }, [row(1, "remotive"), row(2, "remote-ok"), row(3, "jobicy-admin-support-apac")], new Date().toISOString(), "scrape");
+      expect(result).toEqual({ published: 1, failed: true, publicationOutcome: "UNKNOWN" });
+      expect(attemptedSources).toEqual(["remotive", "remote-ok"]);
+      expect(sqlite.query("SELECT source_id AS source, is_active AS active FROM opportunities ORDER BY id").all())
+        .toEqual([{ source: "remotive", active: 1 }, { source: "remote-ok", active: 1 }]);
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities WHERE source_id = 'jobicy-admin-support-apac'").get()).toEqual({ n: 0 });
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 2 });
+      expect(sqlite.query("SELECT source_id AS source, published_count AS n FROM source_publication_ledger").all())
+        .toEqual([{ source: "remotive", n: 1 }]);
+    } finally { sqlite.close(); }
+  });
+  for (const failure of ["throw", "malformed", "mismatch"] as const) {
+    test(`ownership ${failure} after the first insert commits retains its row and FTS while stopping the next source group`, async () => {
+      const { sqlite, binding, queries } = sqliteD1({ failOwnershipRead: failure });
+      try {
+        const db = getDb({ DB: binding as any });
+        const attemptedSources: Array<string | null | undefined> = [];
+        const result = await publishGroupedInserts(publicationDbFromEnv({ DB: binding })!, async candidates => {
+          attemptedSources.push(candidates[0].sourceId);
+          return (await db.insert(opportunities).values(candidates).returning({ id: opportunities.id })).map(candidate => candidate.id);
+        }, [row(1, "remotive"), row(2, "remote-ok")], new Date().toISOString(), "scrape");
+        // published is the confirmed prefix only; the first physical write is
+        // uncertain and must never be counted as an accepted zero or success.
+        expect(result).toEqual({ published: 0, failed: true, publicationOutcome: "UNKNOWN" });
+        expect(attemptedSources).toEqual(["remotive"]);
+        expect(sqlite.query("SELECT source_id AS source, is_active AS active FROM opportunities").all())
+          .toEqual([{ source: "remotive", active: 1 }]);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities WHERE source_id = 'remote-ok'").get()).toEqual({ n: 0 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 1 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+        expect(queries.filter(query => query.includes("SELECT COUNT(*) AS ownedCount FROM opportunities"))).toHaveLength(1);
+        expect(queries.some(query => /^delete\b/i.test(query) || /^update "opportunities"/i.test(query))).toBe(false);
+      } finally { sqlite.close(); }
+    });
+  }
+  for (const mode of ["gate", "feed"] as const) {
+    test(`${mode} activation acknowledges exact zero when all selected sources changed before UPDATE`, async () => {
+      const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => sqlite.exec("UPDATE opportunities SET source_id = 'remote-ok'") });
+      try {
+        const db = getDb({ DB: binding as any });
+        const now = new Date().toISOString();
+        const candidate = { ...row(1, "remotive"), isActive: false,
+          inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
+          phEligibility: "eligible_verified" as const, scrapedAt: now };
+        await db.insert(opportunities).values(candidate);
+        const publicationDb = publicationDbFromEnv({ DB: binding });
+        const published = mode === "gate" ? await recoverGateEligiblePending(db, now, publicationDb)
+          : await reactivateFeedConfirmedJobs(db, [candidate.sourceUrl], now, publicationDb);
+        expect(published).toBe(0);
+        expect(sqlite.query("SELECT is_active AS active, source_id AS source FROM opportunities").get())
+          .toEqual({ active: 0, source: "remote-ok" });
+        expect(sqlite.query("SELECT source_id AS source, published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get())
+          .toEqual({ source: "remotive", n: 0, ids: "[]" });
+      } finally { sqlite.close(); }
+    });
+
+    test(`${mode} existing fallback retains an unchanged NULL source and excludes NULL-to-source drift`, async () => {
+      for (const changed of [false, true]) {
+        const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: changed
+          ? sqlite => sqlite.exec("UPDATE opportunities SET source_id = 'remote-ok'") : undefined });
+        try {
+          const db = getDb({ DB: binding as any });
+          const now = new Date().toISOString();
+          const candidate = { ...row(1, "remotive"), sourceId: null, isActive: false,
+            inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
+            phEligibility: "eligible_verified" as const, scrapedAt: now };
+          await db.insert(opportunities).values(candidate);
+          const published = mode === "gate" ? await recoverGateEligiblePending(db, now)
+            : await reactivateFeedConfirmedJobs(db, [candidate.sourceUrl], now);
+          expect(published).toBe(changed ? 0 : 1);
+          expect(sqlite.query("SELECT is_active AS active, source_id AS source FROM opportunities").get())
+            .toEqual({ active: changed ? 0 : 1, source: changed ? "remote-ok" : null });
+          expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+        } finally { sqlite.close(); }
+      }
+    });
+
+    test(`${mode} activation excludes a source-changed target and records only the still-owned RETURNING subset`, async () => {
+      for (const driftedSource of ["remote-ok", null]) {
+        let changedId = 0;
+        const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => {
+          sqlite.query("UPDATE opportunities SET source_id = ? WHERE id = ?").run(driftedSource, changedId);
+        } });
+        try {
+          const db = getDb({ DB: binding as any });
+          const now = new Date().toISOString();
+          const candidates = [1, 2].map(i => ({ ...row(i, "remotive"), isActive: false,
+            inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
+            phEligibility: "eligible_verified" as const, scrapedAt: now }));
+          const targets = await db.insert(opportunities).values(candidates).returning({ id: opportunities.id });
+          changedId = targets[1].id;
+          const publicationDb = publicationDbFromEnv({ DB: binding });
+          const published = mode === "gate" ? await recoverGateEligiblePending(db, now, publicationDb)
+            : await reactivateFeedConfirmedJobs(db, candidates.map(candidate => candidate.sourceUrl), now, publicationDb);
+          expect(published).toBe(1);
+          expect(sqlite.query("SELECT is_active AS active, source_id AS source FROM opportunities WHERE id = ?").get(changedId))
+            .toEqual({ active: 0, source: driftedSource });
+          expect(sqlite.query("SELECT source_id AS source, published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get())
+            .toEqual({ source: "remotive", n: 1, ids: JSON.stringify([targets[0].id]) });
+        } finally { sqlite.close(); }
+      }
+    });
+
+    test(`${mode} fallback activation keeps the selected source binding before UPDATE`, async () => {
+      let changedId = 0;
+      const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => {
+        sqlite.query("UPDATE opportunities SET source_id = 'remote-ok' WHERE id = ?").run(changedId);
+      } });
+      try {
+        const db = getDb({ DB: binding as any });
+        const now = new Date().toISOString();
+        const candidate = { ...row(1, "remotive"), isActive: false,
+          inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
+          phEligibility: "eligible_verified" as const, scrapedAt: now };
+        const [target] = await db.insert(opportunities).values(candidate).returning({ id: opportunities.id });
+        changedId = target.id;
+        const published = mode === "gate" ? await recoverGateEligiblePending(db, now)
+          : await reactivateFeedConfirmedJobs(db, [candidate.sourceUrl], now);
+        expect(published).toBe(0);
+        expect(sqlite.query("SELECT is_active AS active, source_id AS source FROM opportunities").get())
+          .toEqual({ active: 0, source: "remote-ok" });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+      } finally { sqlite.close(); }
+    });
+  }
+
+  for (const governed of [false, true]) {
+    test(`feed ${governed ? "governed" : "nullable fallback"} activation keeps unchanged URLs across bounded native UPDATE chunks`, async () => {
+      const { sqlite, binding, opportunityUpdateBindings } = sqliteD1();
+      try {
+        const db = getDb({ DB: binding as any });
+        const now = new Date().toISOString();
+        const candidates = Array.from({ length: 55 }, (_, i) => ({ ...row(i + 1, "remotive"),
+          sourceId: governed ? "remotive" : null, isActive: false, inactiveReason: "stale-feed",
+          phEligibility: "eligible_verified" as const, scrapedAt: now }));
+        await db.insert(opportunities).values(candidates);
+        expect(await reactivateFeedConfirmedJobs(db, candidates.map(candidate => candidate.sourceUrl), now,
+          governed ? publicationDbFromEnv({ DB: binding }) : undefined)).toBe(55);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities WHERE is_active = 1").get()).toEqual({ n: 55 });
+        expect(sqlite.query("SELECT source_url AS url, source_id AS source FROM opportunities ORDER BY id").all())
+          .toEqual(candidates.map(candidate => ({ url: candidate.sourceUrl, source: candidate.sourceId })));
+        expect(opportunityUpdateBindings.length).toBeGreaterThan(1);
+        expect(opportunityUpdateBindings.every(params => params.length <= 100)).toBe(true);
+        expect(opportunityUpdateBindings.some(params => params.length >= 90)).toBe(true);
+        expect(sqlite.query("SELECT published_count AS n FROM source_publication_ledger").all())
+          .toEqual(governed ? [{ n: 55 }] : []);
+      } finally { sqlite.close(); }
+    });
+
+    test(`feed ${governed ? "governed" : "fallback"} activation retains its live confirmed-URL predicate after selection`, async () => {
+      const unconfirmedUrl = "https://example.test/unconfirmed";
+      const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => {
+        sqlite.query("UPDATE opportunities SET source_url = ?").run(unconfirmedUrl);
+      } });
+      try {
+        const db = getDb({ DB: binding as any });
+        const now = new Date().toISOString();
+        const candidate = { ...row(1, "remotive"), isActive: false, inactiveReason: "stale-feed",
+          phEligibility: "eligible_verified" as const, scrapedAt: now };
+        await db.insert(opportunities).values(candidate);
+        expect(await reactivateFeedConfirmedJobs(db, [candidate.sourceUrl], now,
+          governed ? publicationDbFromEnv({ DB: binding }) : undefined)).toBe(0);
+        expect(sqlite.query("SELECT is_active AS active, source_url AS url FROM opportunities").get())
+          .toEqual({ active: 0, url: unconfirmedUrl });
+        const receipts = sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").all();
+        expect(receipts).toEqual(governed ? [{ n: 0, ids: "[]" }] : []);
+      } finally { sqlite.close(); }
+    });
+  }
+
+  test("inline drain fallback preserves the selected source binding when source ownership changes", async () => {
+    const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => sqlite.exec("UPDATE opportunities SET source_id = 'remote-ok'") });
+    try {
+      const db = getDb({ DB: binding as any });
+      const now = new Date().toISOString();
+      await db.insert(opportunities).values({ ...row(1, "remotive"), description: "Remote role open worldwide.",
+        locationRaw: "Remote", isActive: false, inactiveReason: "pending-triage", scrapedAt: now });
+      const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech" }),
+        JSON.stringify({ eligible: true, reason: "no disqualifier" })];
+      const env = { AI: { run: async () => ({ response: responses.shift() }) } };
+      expect(await drainPendingTriageInline(db, env, { exhausted: () => false }, now, 4))
+        .toEqual({ claimed: 1, published: 0, rejected: 0, quarantined: 0, deferred: 1 });
+      expect(sqlite.query("SELECT is_active AS active, source_id AS source FROM opportunities").get())
+        .toEqual({ active: 0, source: "remote-ok" });
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    } finally { sqlite.close(); }
+  });
+
+  for (const mode of ["inline", "inngest"] as const) {
+    test(`${mode} drain defers a source-changed target without foreign activation or a false publication receipt`, async () => {
+      for (const driftedSource of ["remote-ok", null]) {
+        const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => {
+          sqlite.query("UPDATE opportunities SET source_id = ?").run(driftedSource);
+        } });
+        try {
+          const db = getDb({ DB: binding as any });
+          const now = new Date().toISOString();
+          await db.insert(opportunities).values({ ...row(1, "remotive"), description: "Remote role open worldwide.",
+            locationRaw: "Remote", isActive: false, inactiveReason: "pending-triage", scrapedAt: now });
+          const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech" }),
+            JSON.stringify({ eligible: true, reason: "no disqualifier" })];
+          const env = { DB: binding, AI: { run: async () => ({ response: responses.shift() }) } };
+          const result = mode === "inline"
+            ? await drainPendingTriageInline(db, env, { exhausted: () => false }, now, 4, publicationDbFromEnv(env))
+            : await (triageDrain as unknown as { fn: (ctx: unknown) => Promise<unknown> }).fn({ env,
+              step: { run: async (_: string, callback: () => Promise<unknown>) => callback() } });
+          expect(result).toEqual({ claimed: 1, published: 0, rejected: 0, quarantined: 0, deferred: 1 });
+          expect(sqlite.query("SELECT is_active AS active, source_id AS source, inactive_reason AS reason FROM opportunities").get())
+            .toEqual({ active: 0, source: driftedSource, reason: "pending-triage" });
+          expect(sqlite.query("SELECT source_id AS source, published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get())
+            .toEqual({ source: "remotive", n: 0, ids: "[]" });
+        } finally { sqlite.close(); }
+      }
+    });
+  }
   test("a malformed insert acknowledgement stops later groups and leaves actual written rows explicitly UNKNOWN", async () => {
     const { sqlite, binding } = sqliteD1();
     try {
@@ -562,7 +802,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     const retryKeys: unknown[] = [];
     const selected: string[][] = [];
     for (const candidates of [[row(1), row(2), row(3)], [row(3), row(2), row(1)]]) {
-      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW] });
+      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2 }] });
       await publishGroupedInserts(db, async (rows) => {
         selected.push(rows.map(row => row.sourceUrl));
         return rows.map((_, index) => index + 1);

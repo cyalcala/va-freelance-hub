@@ -11,6 +11,7 @@ import { applyTypedTransition, type TransitionGatewayDatabase } from "./transiti
 import { decideCanaryPublication } from "./transition-plane";
 import type { RegistryComplianceState, RegistryOperationalState } from "./policy-resolver";
 import { isAdmissionInstant } from "./admission-evidence";
+import { D1_MAX_BOUND_PARAMETERS } from "./batch";
 
 export interface PublicationStatement {
   bind(...values: unknown[]): PublicationStatement;
@@ -171,6 +172,10 @@ export async function publishPublicExposure(
   db: PublicationDatabase,
   request: PublishPublicExposureRequest,
 ): Promise<PublishPublicExposureResult> {
+  // Keep the authorized identity and ledger keys detached from caller memory
+  // across policy reads, persistence and the ownership observation below.
+  const { sourceId, now, tickKey, retryKey, proposedCount, persist } = request;
+  request = { sourceId, now, tickKey, retryKey, proposedCount, persist };
   if (!isCanonicalSourceId(request.sourceId)) return { ok: false, reason: "source identity is required for public exposure" };
   if (!Number.isSafeInteger(request.proposedCount) || request.proposedCount < 0) {
     return { ok: false, reason: "proposed publication count must be a non-negative integer" };
@@ -271,6 +276,21 @@ function snapshotAcknowledgement(value: unknown, allowedCount: number): { publis
   return { publishedCount, ids };
 }
 
+async function hasCurrentOwnership(db: PublicationDatabase, sourceId: string, ids: readonly number[]): Promise<boolean> {
+  // One source binding leaves room for 99 IDs at D1's existing 100-variable
+  // limit. This observes current rows, not write provenance or an atomic lease.
+  const chunkSize = D1_MAX_BOUND_PARAMETERS - 1;
+  for (let offset = 0; offset < ids.length; offset += chunkSize) {
+    const chunk = ids.slice(offset, offset + chunkSize);
+    const row = await db.prepare(`SELECT COUNT(*) AS ownedCount FROM opportunities
+      WHERE source_id = ? AND is_active = 1 AND id IN (${chunk.map(() => "?").join(", ")})`)
+      .bind(sourceId, ...chunk).first<{ ownedCount: unknown }>();
+    const count = row?.ownedCount;
+    if (typeof count !== "number" || !Number.isSafeInteger(count) || count !== chunk.length) return false;
+  }
+  return true;
+}
+
 async function persistAndRecord(
   db: PublicationDatabase,
   request: PublishPublicExposureRequest,
@@ -289,6 +309,14 @@ async function persistAndRecord(
   try { acknowledgement = snapshotAcknowledgement(persisted, request.proposedCount); }
   catch { acknowledgement = null; }
   if (!acknowledgement) return postPersistenceFailure("publication persistence returned an invalid acknowledgement");
+
+  try {
+    if (!await hasCurrentOwnership(db, request.sourceId, acknowledgement.ids)) {
+      return postPersistenceFailure("publication IDs did not match current active source ownership");
+    }
+  } catch {
+    return postPersistenceFailure("publication source ownership could not be verified");
+  }
 
   try { await insertLedger(db, request, mode, acknowledgement.publishedCount, acknowledgement.ids); }
   catch {

@@ -1,11 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import { reactivateFeedConfirmedJobs } from "../src/pages/api/cron/scrape";
 import { FakePublicationDatabase } from "./publication-db-fake";
+import { getDb, opportunities } from "@va-hub/db";
+import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 
 const OBSERVED = "2026-09-06T12:00:00.000Z";
 
-function fakeDb(rows: Array<{ id: number; sourceId: string | null }>, changes = rows.length, fail = false) {
+function fakeDb(rows: Array<{ id: number; sourceId: string | null; sourceUrl: string }>, changes = rows.length, fail = false) {
   const captured: { sets: any[]; selected: boolean; whereClauses: any[] } = { sets: [], selected: false, whereClauses: [] };
+  // Use the production Drizzle builder for query introspection; only actual
+  // execution is replaced. Empty toSQL probes must not fabricate writes.
+  const queryDb = getDb({ DB: { prepare() { throw new Error("fixture cannot execute its query introspection binding"); } } as any });
   const db: any = {
     select() {
       captured.selected = true;
@@ -21,13 +26,20 @@ function fakeDb(rows: Array<{ id: number; sourceId: string | null }>, changes = 
     update() {
       return {
         set: (vals: any) => {
-          captured.sets.push(vals);
           return {
             where: (c: any) => {
-              captured.whereClauses.push(c);
-              return { returning: async () => {
-                if (fail) throw new Error("D1 write rejected");
-                return Array.from({ length: changes }, (_, index) => ({ id: rows[index]?.id ?? index + 1 }));
+              return { returning: () => {
+                const query = queryDb.update(opportunities).set(vals).where(c).returning({ id: opportunities.id });
+                return {
+                  toSQL: () => query.toSQL(),
+                  then: (resolve: any, reject: any) => Promise.resolve().then(() => {
+                    captured.sets.push(vals);
+                    captured.whereClauses.push(c);
+                    if (fail) throw new Error("D1 write rejected");
+                    const params = new SQLiteSyncDialect().sqlToQuery(c).params;
+                    return rows.filter(row => params.includes(row.id)).slice(0, changes).map(row => ({ id: row.id }));
+                  }).then(resolve, reject),
+                };
               } };
             },
           };
@@ -39,11 +51,13 @@ function fakeDb(rows: Array<{ id: number; sourceId: string | null }>, changes = 
 }
 
 describe("reactivateFeedConfirmedJobs", () => {
-  test("without a publication db, bulk-reactivates feed-confirmed stale/link rows", async () => {
-    const { db, captured } = fakeDb([{ id: 1, sourceId: "we-work-remotely" }], 2);
+  test("without a publication db, snapshots and reactivates feed-confirmed stale/link rows", async () => {
+    const { db, captured } = fakeDb([{ id: 1, sourceId: "we-work-remotely", sourceUrl: "https://example.com/a" },
+      { id: 2, sourceId: "we-work-remotely", sourceUrl: "https://example.com/b" }]);
     const n = await reactivateFeedConfirmedJobs(db, ["https://example.com/a", "https://example.com/b"], OBSERVED);
     expect(n).toBe(2);
-    expect(captured.selected).toBe(false);
+    expect(captured.selected).toBe(true);
+    expect(captured.whereClauses).toHaveLength(2); // executed SELECT + UPDATE
     expect(captured.sets[0].isActive).toBe(true);
     expect(captured.sets[0].inactiveReason).toBe(null);
     expect(captured.sets[0].failedVerificationCount).toBe(0);
@@ -51,10 +65,11 @@ describe("reactivateFeedConfirmedJobs", () => {
 
   test("with a publication db, reactivates attributed rows and holds missing source identities", async () => {
     const { db, captured } = fakeDb(
-      [{ id: 11, sourceId: "we-work-remotely" }, { id: 12, sourceId: null }],
+      [{ id: 11, sourceId: "we-work-remotely", sourceUrl: "https://example.com/a" },
+        { id: 12, sourceId: null, sourceUrl: "https://example.com/b" }],
       1,
     );
-    const publicationDb = new FakePublicationDatabase();
+    const publicationDb = new FakePublicationDatabase({ ownership: [{ ownedCount: 1 }] });
     const n = await reactivateFeedConfirmedJobs(
       db,
       ["https://example.com/a", "https://example.com/b"],
@@ -69,6 +84,8 @@ describe("reactivateFeedConfirmedJobs", () => {
     expect(captured.whereClauses).toHaveLength(2);
     const params = new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[1]).params;
     expect(params).toContain(11);
+    expect(params).toContain("we-work-remotely");
+    expect(params).toContain("https://example.com/a");
     expect(params).toContain("eligible_verified");
     expect(params).toContain("eligible_likely");
     expect(publicationDb.runs.filter(run => run.query.includes("INSERT INTO source_publication_ledger"))
@@ -77,7 +94,7 @@ describe("reactivateFeedConfirmedJobs", () => {
   });
 
   test("blocked publication leaves archived rows inactive", async () => {
-    const { db, captured } = fakeDb([{ id: 11, sourceId: "greenhouse:test" }]);
+    const { db, captured } = fakeDb([{ id: 11, sourceId: "greenhouse:test", sourceUrl: "https://example.com/a" }]);
     const publicationDb = new FakePublicationDatabase({
       registry: [
         {
@@ -105,20 +122,24 @@ describe("reactivateFeedConfirmedJobs", () => {
   });
 
   test("a thrown update acknowledgement reports UNKNOWN instead of known zero", async () => {
-    const { db } = fakeDb([{ id: 1, sourceId: "we-work-remotely" }], 0, true);
+    const { db } = fakeDb([{ id: 1, sourceId: "we-work-remotely", sourceUrl: "https://example.com/a" }], 0, true);
     await expect(reactivateFeedConfirmedJobs(db, ["https://example.com/a"], OBSERVED))
       .rejects.toMatchObject({ publicationOutcome: "UNKNOWN" });
   });
 
   test("enforces phEligibility in reactivation predicate", async () => {
     const { SQLiteSyncDialect } = await import("drizzle-orm/sqlite-core");
-    const { db, captured } = fakeDb([{ id: 1, sourceId: "we-work-remotely" }], 1);
+    const { db, captured } = fakeDb([{ id: 1, sourceId: "we-work-remotely", sourceUrl: "https://example.com/a" }], 1);
     await reactivateFeedConfirmedJobs(db, ["https://example.com/a"], OBSERVED);
     expect(captured.whereClauses.length).toBeGreaterThan(0);
     const query = new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[0]);
     expect(query.sql).toContain('"ph_eligibility" in (?, ?)');
     expect(query.params).toContain("eligible_verified");
     expect(query.params).toContain("eligible_likely");
+    const updateQuery = new SQLiteSyncDialect().sqlToQuery(captured.whereClauses[1]);
+    expect(updateQuery.sql).toContain('"ph_eligibility" in (?, ?)');
+    expect(updateQuery.params).toContain("eligible_verified");
+    expect(updateQuery.params).toContain("eligible_likely");
   });
 });
 
