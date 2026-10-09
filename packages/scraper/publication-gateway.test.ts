@@ -11,6 +11,7 @@ import {
 
 const NOW = "2026-09-06T12:00:00.000Z";
 const TICK = publicationTickKey("scrape", NOW);
+const currentRows = (ids: number[]) => ({ ownedCount: ids.length, postingRows: JSON.stringify(ids.map(id => ({ id, postedAt: NOW }))) });
 const REAL_LEGACY_SOURCES = ["we-work-remotely", "remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac", "jobicy-supporting-apac"];
 const activePolicy = (sourceId: string, policyExpiry: unknown) => ({
   sourceId, compliance: "allowed", operational: "active", optOut: 0, policyExpiry, canaryMaxNewItemsPerTick: null,
@@ -64,7 +65,7 @@ describe("SP-23C publication gateway", () => {
   test("all six real unregistered legacy sources retain their accepted null-lease exemption", async () => {
     expect([...LEGACY_EXACT_SIX_SOURCE_IDS].sort()).toEqual([...REAL_LEGACY_SOURCES].sort());
     for (const sourceId of REAL_LEGACY_SOURCES) {
-      const db = new FakeDatabase({ registry: [null], retry: [null], optOut: [null], ownership: [{ ownedCount: 1 }] });
+      const db = new FakeDatabase({ registry: [null], retry: [null], optOut: [null], ownership: [currentRows([1])] });
       let persisted = 0;
       const result = await publishPublicExposure(db, { sourceId, now: NOW, tickKey: TICK,
         retryKey: `legacy:${sourceId}`, proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; } });
@@ -138,7 +139,7 @@ describe("SP-23C publication gateway", () => {
 
   test("a canonical registry lease strictly after now permits allowed and conditional active sources", async () => {
     for (const compliance of ["allowed", "conditional"]) {
-      const db = new FakeDatabase({ registry: [{ ...activePolicy("greenhouse:tenant", "2026-09-06T12:00:00.001Z"), compliance }], retry: [null], optOut: [null], ownership: [{ ownedCount: 1 }] });
+      const db = new FakeDatabase({ registry: [{ ...activePolicy("greenhouse:tenant", "2026-09-06T12:00:00.001Z"), compliance }], retry: [null], optOut: [null], ownership: [currentRows([7])] });
       let persisted = 0;
       const result = await publishPublicExposure(db, { sourceId: "greenhouse:tenant", now: NOW, tickKey: TICK,
         retryKey: `valid-active:${compliance}`, proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [7] }; } });
@@ -148,7 +149,7 @@ describe("SP-23C publication gateway", () => {
   });
 
   test("keeps an unregistered exact-six source unlimited", async () => {
-    const db = new FakeDatabase({ registry: [null], retry: [null], ownership: [{ ownedCount: 4 }] });
+    const db = new FakeDatabase({ registry: [null], retry: [null], ownership: [currentRows([1, 2, 3, 4])] });
     const result = await publishPublicExposure(db, {
       sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "r1", proposedCount: 4,
       persist: async (allowed) => ({ publishedCount: allowed, ids: [1, 2, 3, 4] }),
@@ -351,7 +352,7 @@ describe("truthful fresh publication acknowledgements", () => {
   invalidAcknowledgements.push(["prototype-concealed sparse ID", { publishedCount: 1, ids: inheritedId }]);
 
   function publishingDb(mode: "unlimited" | "capped") {
-    return new FakeDatabase({ retry: [null], ownership: [{ ownedCount: 2 }], registry: mode === "unlimited" ? [null] : [{
+    return new FakeDatabase({ retry: [null], ownership: [currentRows([7, 8])], registry: mode === "unlimited" ? [null] : [{
       sourceId: "greenhouse:test", compliance: "allowed", operational: "canary", optOut: 0,
       policyExpiry: "2026-10-01T00:00:00.000Z", canaryMaxNewItemsPerTick: 2,
     }] });

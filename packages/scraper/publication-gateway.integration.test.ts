@@ -7,6 +7,9 @@ import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 
 const NOW = new Date().toISOString();
 const TICK = publicationTickKey("scrape", NOW);
+const DAY_MS = 86_400_000;
+const FRESH_POSTED_AT = new Date(Date.parse(NOW) - DAY_MS).toISOString();
+const STALE_POSTED_AT = new Date(Date.parse(NOW) - 31 * DAY_MS).toISOString();
 
 class BunStatement implements PublicationStatement {
   private values: SQLQueryBindings[] = [];
@@ -37,7 +40,7 @@ function freshDb(): Database {
   const db = new Database(":memory:");
   db.exec("PRAGMA foreign_keys = ON;");
   for (const migration of [
-    "0000_workable_sandman.sql", "0021_geo_eligibility.sql", "0026_fts5_search.sql", "0027_fts5_trigger_scope.sql",
+    "0000_workable_sandman.sql", "0003_yielding_maelstrom.sql", "0021_geo_eligibility.sql", "0026_fts5_search.sql", "0027_fts5_trigger_scope.sql",
     "0034_opportunity_source_id.sql", "0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql",
     "0038_shadow_observations.sql", "0039_canary_transition_plane.sql",
     "0040_current_evidence_admission.sql", "0041_publication_ledger.sql",
@@ -167,10 +170,10 @@ test("native production constraints independently reject malformed JSON, illegal
 });
 
 function writeOpportunity(sqlite: Database, key = "fresh-native", sourceId: string | null = "remotive", isActive = 1,
-  phEligibility: string | null = "eligible_verified"): number[] {
-  const rows = sqlite.query(`INSERT INTO opportunities(title, company, source_url, source_platform, content_hash, source_id, is_active, ph_eligibility)
-    VALUES('Native acknowledgement fixture', 'Fixture company', ?, 'remotive', ?, ?, ?, ?)
-    ON CONFLICT(source_url) DO NOTHING RETURNING id`).all(`https://example.invalid/${key}`, key, sourceId, isActive, phEligibility) as Array<{ id: number }>;
+  phEligibility: string | null = "eligible_verified", postedAt: string | null = FRESH_POSTED_AT): number[] {
+  const rows = sqlite.query(`INSERT INTO opportunities(title, company, source_url, source_platform, content_hash, source_id, is_active, ph_eligibility, posted_at)
+    VALUES('Native acknowledgement fixture', 'Fixture company', ?, 'remotive', ?, ?, ?, ?, ?)
+    ON CONFLICT(source_url) DO NOTHING RETURNING id`).all(`https://example.invalid/${key}`, key, sourceId, isActive, phEligibility, postedAt) as Array<{ id: number }>;
   return rows.map(row => row.id);
 }
 function currentPublicIds(sqlite: Database): number[] {
@@ -185,6 +188,205 @@ function assertWrittenRowWithoutReceipt(sqlite: Database) {
   expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
 }
 const postPersistenceUnknown = { ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true, exposure: "UNKNOWN" };
+
+const invalidPostingCases = [
+  { name: "NULL original date", postedAt: null, now: NOW },
+  { name: "invalid original date", postedAt: "private-provider-time", now: NOW },
+  // The impossible date rolls into March and would look fresh to permissive Date.parse.
+  { name: "calendar rollover within the age window", postedAt: "2026-02-30T12:00:00.000Z", now: "2026-03-02T12:00:00.000Z" },
+  { name: "date-only original date", postedAt: NOW.slice(0, 10), now: NOW },
+  { name: "ambiguous timezone original date", postedAt: NOW.slice(0, 19), now: NOW },
+  { name: "future by one millisecond", postedAt: new Date(Date.parse(NOW) + 1).toISOString(), now: NOW },
+  { name: "future by one nanosecond", postedAt: `${NOW.slice(0, 23)}000001Z`, now: NOW },
+  { name: "stale original date", postedAt: STALE_POSTED_AT, now: NOW },
+  { name: "30-day boundary plus one millisecond", postedAt: new Date(Date.parse(NOW) - 30 * DAY_MS - 1).toISOString(), now: NOW },
+  { name: "blank original date", postedAt: "", now: NOW },
+  { name: "oversize original date", postedAt: "x".repeat(4096), now: NOW },
+] as const;
+
+for (const { name, postedAt, now } of invalidPostingCases) {
+  test(`native fresh receipt rejects ${name} despite accepted PH and fresh secondary clocks`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite);
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now, tickKey: publicationTickKey("scrape", now), retryKey: "invalid-original-date", proposedCount: 1,
+        persist: async () => {
+          const ids = writeOpportunity(sqlite, "invalid-original-date", "remotive", 1, "eligible_verified", postedAt);
+          sqlite.query("UPDATE opportunities SET scraped_at=?, updated_at=? WHERE id=?").run(now, now, ids[0]!);
+          expect(ids).toEqual([1]);
+          return { publishedCount: ids.length, ids };
+        },
+      });
+      expect(result).toMatchObject(postPersistenceUnknown);
+      expect(JSON.stringify(result)).not.toContain("private-provider-time");
+      expect(sqlite.query("SELECT posted_at, scraped_at, updated_at FROM opportunities").get())
+        .toEqual({ posted_at: postedAt, scraped_at: now, updated_at: now });
+      assertWrittenRowWithoutReceipt(sqlite);
+      expect(db.runs).toEqual([]);
+    } finally { sqlite.close(); }
+  });
+
+  test(`native immutable historical receipt ignores current ${name}`, async () => {
+    const sqlite = freshDb();
+    try {
+      const first = await publishPublicExposure(new BunDb(sqlite), {
+        sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "saved-retry", proposedCount: 1,
+        persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite, "historical-date", "we-work-remotely") }),
+      });
+      expect(first).toMatchObject({ ok: true, publishedCount: 1, ids: [1], replayed: false });
+      sqlite.query("UPDATE opportunities SET posted_at=? WHERE id=1").run(postedAt);
+      expect(await inspectRetry(sqlite, { proposedCount: 1 }))
+        .toEqual({ ok: true, mode: "unlimited", publishedCount: 1, ids: [1], replayed: true });
+      expect(sqlite.query("SELECT posted_at FROM opportunities").get()).toEqual({ posted_at: postedAt });
+    } finally { sqlite.close(); }
+  });
+}
+
+for (const phEligibility of ["eligible_verified", "eligible_likely"] as const) {
+  for (const [name, postedAt] of [
+    ["zero posting age", NOW],
+    ["inclusive exact 30-day boundary", new Date(Date.parse(NOW) - 30 * DAY_MS).toISOString()],
+    ["one nanosecond inside the inclusive 30-day boundary", `${new Date(Date.parse(NOW) - 30 * DAY_MS).toISOString().slice(0, 23)}000001Z`],
+  ] as const) {
+    test(`native fresh receipt accepts ${phEligibility} at ${name}`, async () => {
+      const sqlite = freshDb();
+      try {
+        const result = await publishPublicExposure(new BunDb(sqlite), {
+          sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "valid-original-date", proposedCount: 1,
+          persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite, "valid-original-date", "remotive", 1, phEligibility, postedAt) }),
+        });
+        expect(result).toMatchObject({ ok: true, publishedCount: 1, ids: [1], replayed: false });
+        expect(sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get())
+          .toEqual({ n: 1, ids: "[1]" });
+      } finally { sqlite.close(); }
+    });
+  }
+}
+
+for (const postedAt of [null, STALE_POSTED_AT, new Date(Date.parse(NOW) + 1).toISOString()] as const) {
+  test(`native current original date drift to ${postedAt === null ? "NULL" : postedAt === STALE_POSTED_AT ? "stale" : "future"} retains UNKNOWN after persistence`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite);
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "original-date-drift", proposedCount: 1,
+        persist: async () => {
+          const ids = writeOpportunity(sqlite, "original-date-drift");
+          expect(sqlite.query("SELECT posted_at FROM opportunities").get()).toEqual({ posted_at: FRESH_POSTED_AT });
+          sqlite.query("UPDATE opportunities SET posted_at=? WHERE id=?").run(postedAt, ids[0]!);
+          return { publishedCount: ids.length, ids };
+        },
+      });
+      expect(result).toMatchObject(postPersistenceUnknown);
+      expect(sqlite.query("SELECT posted_at FROM opportunities").get()).toEqual({ posted_at: postedAt });
+      assertWrittenRowWithoutReceipt(sqlite);
+      expect(db.runs).toEqual([]);
+    } finally { sqlite.close(); }
+  });
+}
+
+for (const invalidIndex of [48, 145, 195]) {
+  test(`native current original date mismatch at index ${invalidIndex} halts bounded chunk reads without undoing rows`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite);
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "chunk-original-date", proposedCount: 201,
+        persist: async () => {
+          const ids = Array.from({ length: 201 }, (_, index) => writeOpportunity(sqlite, `chunk-original-${index}`, "remotive", 1,
+            index % 2 ? "eligible_likely" : "eligible_verified", index === invalidIndex ? null : FRESH_POSTED_AT)[0]!);
+          return { publishedCount: ids.length, ids };
+        },
+      });
+      expect(result).toMatchObject(postPersistenceUnknown);
+      const reads = db.reads.filter(read => read.query.includes("FROM opportunities"));
+      expect(reads).toHaveLength(Math.floor(invalidIndex / 97) + 1);
+      expect(reads.every(read => read.values.length <= 100)).toBe(true);
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 201 });
+      expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(201);
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+      expect(db.runs).toEqual([]);
+    } finally { sqlite.close(); }
+  });
+}
+
+for (const [name, postingRows] of [
+  ["missing aggregate", undefined], ["NULL aggregate", null], ["non-text aggregate", []],
+  ["malformed JSON aggregate", "private-incomplete-json["], ["JSON null aggregate", "null"],
+  ["JSON object aggregate", "{}"], ["missing aggregate row", "[]"],
+  ["primitive aggregate row", '["unexpected"]'],
+  ["missing aggregate ID", JSON.stringify([{ postedAt: FRESH_POSTED_AT }])],
+  ["string aggregate ID", JSON.stringify([{ id: "1", postedAt: FRESH_POSTED_AT }])],
+  ["fractional aggregate ID", JSON.stringify([{ id: 1.5, postedAt: FRESH_POSTED_AT }])],
+  ["foreign aggregate ID", JSON.stringify([{ id: 404, postedAt: FRESH_POSTED_AT }])],
+  ["missing aggregate date", JSON.stringify([{ id: 1 }])],
+  ["invalid aggregate date", JSON.stringify([{ id: 1, postedAt: "private-provider-time" }])],
+  ["extra aggregate row", JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT }, { id: 404, postedAt: FRESH_POSTED_AT }])],
+] as const) {
+  test(`native physical persistence plus ${name} cannot certify original posting freshness`, async () => {
+    const sqlite = freshDb();
+    try {
+      const db = new BunDb(sqlite), prepare = db.prepare.bind(db);
+      db.prepare = query => {
+        const statement = prepare(query), first = statement.first.bind(statement);
+        if (query.includes("FROM opportunities")) {
+          statement.first = async <T>() => {
+            const actual = await first<{ ownedCount: number }>();
+            expect(actual?.ownedCount).toBe(1);
+            return { ...actual, postingRows } as T;
+          };
+        }
+        return statement;
+      };
+      const result = await publishPublicExposure(db, {
+        sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "malformed-posting-aggregate", proposedCount: 1,
+        persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite) }),
+      });
+      expect(result).toMatchObject(postPersistenceUnknown);
+      expect(JSON.stringify(result)).not.toContain("private");
+      assertWrittenRowWithoutReceipt(sqlite);
+      expect(db.runs).toEqual([]);
+    } finally { sqlite.close(); }
+  });
+}
+
+test("native duplicate original-date aggregate IDs cannot replace the second persisted ID", async () => {
+  const sqlite = freshDb();
+  try {
+    const db = new BunDb(sqlite), prepare = db.prepare.bind(db);
+    db.prepare = query => {
+      const statement = prepare(query), first = statement.first.bind(statement);
+      if (query.includes("FROM opportunities")) statement.first = async <T>() => {
+        const actual = await first<{ ownedCount: number }>();
+        expect(actual?.ownedCount).toBe(2);
+        return { ...actual, postingRows: JSON.stringify([{ id: 1, postedAt: FRESH_POSTED_AT }, { id: 1, postedAt: FRESH_POSTED_AT }]) } as T;
+      };
+      return statement;
+    };
+    const result = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "duplicate-posting-aggregate", proposedCount: 2,
+      persist: async () => ({ publishedCount: 2, ids: [...writeOpportunity(sqlite, "aggregate-one"), ...writeOpportunity(sqlite, "aggregate-two")] }),
+    });
+    expect(result).toMatchObject(postPersistenceUnknown);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 2 });
+    expect(sqlite.query("SELECT rowid FROM opportunities_fts WHERE opportunities_fts MATCH 'acknowledgement'").all()).toHaveLength(2);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    expect(db.runs).toEqual([]);
+  } finally { sqlite.close(); }
+});
+
+test("native aggregate date membership accepts exact returned IDs regardless of acknowledgement order", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "reverse-original-ids", proposedCount: 2,
+      persist: async () => ({ publishedCount: 2, ids: [...writeOpportunity(sqlite, "reverse-one"), ...writeOpportunity(sqlite, "reverse-two")].reverse() }),
+    });
+    expect(result).toMatchObject({ ok: true, publishedCount: 2, ids: [2, 1], replayed: false });
+    expect(sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get()).toEqual({ n: 2, ids: "[2,1]" });
+  } finally { sqlite.close(); }
+});
 
 for (const phEligibility of [null, "unclear", "ineligible"] as const) {
   test(`native fresh publication rejects ${String(phEligibility)} PH eligibility excluded by public serving`, async () => {
@@ -410,6 +612,8 @@ test("native ownership and PH eligibility verify every distinct ID with 97-ID pa
       expect(read.query).not.toContain("remotive");
       expect(read.query).not.toContain("eligible_verified");
       expect(read.query).not.toContain("eligible_likely");
+      expect(read.query).toContain("json_group_array");
+      expect(read.query).toContain("posted_at");
       seen.push(...read.values.slice(3));
     }
     expect(seen).toEqual(Array.from({ length: 201 }, (_, index) => index + 1));

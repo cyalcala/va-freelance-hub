@@ -20,6 +20,7 @@ import * as path from "path";
 
 const NOW = "2026-09-06T12:00:00.000Z";
 const TICK = publicationTickKey("scrape", NOW);
+const currentRows = (ids: number[]) => ({ ownedCount: ids.length, postingRows: JSON.stringify(ids.map(id => ({ id, postedAt: NOW }))) });
 
 class FakeStatement implements PublicationStatement {
   constructor(
@@ -327,7 +328,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
 
   describe("Gateway fallback behavior — F4 unattributed fallback repair", () => {
     test("unregistered exact-six source gets unlimited fallback", async () => {
-      const db = new FakeDatabase({ registry: [null], retry: [null], ownership: [{ ownedCount: 4 }] });
+      const db = new FakeDatabase({ registry: [null], retry: [null], ownership: [currentRows([1, 2, 3, 4])] });
       const result = await publishPublicExposure(db, {
         sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "r1", proposedCount: 4,
         persist: async (allowed) => ({ publishedCount: allowed, ids: [1, 2, 3, 4] }),
@@ -382,7 +383,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
 
   describe("Atomicity Gap: persistence occurs before ledger insert", () => {
     test("gateway calls persist before insertLedger (source: publication-gateway.ts:199,226)", async () => {
-      const db = new FakeDatabase({ registry: [null], retry: [null], ownership: [{ ownedCount: 2 }] });
+      const db = new FakeDatabase({ registry: [null], retry: [null], ownership: [currentRows([1, 2])] });
       let persistCalled = false;
       let ledgerInserted = false;
       const originalPrepare = db.prepare.bind(db);
@@ -413,7 +414,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
         optOut: [null],
         retry: [null, null],
         tickSum: [{ published: 2 }, { published: 3 }], // Each call sees different prior count
-        ownership: [{ ownedCount: 3 }],
+        ownership: [currentRows([1, 2, 3])],
       });
       let persisted1 = 0, persisted2 = 0;
       const r1 = await publishPublicExposure(db, {

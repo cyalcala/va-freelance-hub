@@ -69,7 +69,8 @@ describe("reactivateFeedConfirmedJobs", () => {
         { id: 12, sourceId: null, sourceUrl: "https://example.com/b" }],
       1,
     );
-    const publicationDb = new FakePublicationDatabase({ ownership: [{ ownedCount: 1 }] });
+    const publicationDb = new FakePublicationDatabase({ ownership: [{ ownedCount: 1,
+      postingRows: JSON.stringify([{ id: 11, postedAt: OBSERVED }]) }] });
     const n = await reactivateFeedConfirmedJobs(
       db,
       ["https://example.com/a", "https://example.com/b"],

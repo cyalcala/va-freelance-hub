@@ -7,6 +7,7 @@ export type { TriageContext, SkepticVerdict } from "./triage";
 export { geoGate, detectDominantLanguage, scanLandingPageForGeoLock, htmlToVisibleText } from "./geoGate";
 export type { GeoGateInput, GeoVerdict, GeoScope, PhEligibility } from "./geoGate";
 export { PUBLIC_PH_ELIGIBILITIES, isPublicPhEligibility } from "./publication-eligibility";
+export { assessPostingFreshness, type PostingFreshnessAssessment } from "./publication-freshness";
 export type { CollectionMethod, ComplianceStatus, Source, SourceType } from "./sources";
 export type { TriageResult } from "./triage";
 export { decideTriage, mapTriageCategoryToUiCategory } from "./triage-decision";

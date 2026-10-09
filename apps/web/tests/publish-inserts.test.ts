@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, setSystemTime, test } from "bun:test";
 import { Database } from "bun:sqlite";
 import { readFileSync } from "node:fs";
 import { getDb, opportunities, type NewOpportunity } from "@va-hub/db";
@@ -13,6 +13,16 @@ import { FakePublicationDatabase } from "./publication-db-fake";
 import { NonRetriableError } from "inngest";
 
 const NOW = "2026-09-24T12:00:00.000Z";
+// Freeze one explicit observation near SQLite's real clock so its unchanged
+// publication-ledger clock guard remains exercised. Posting fixtures are
+// separate original instants with exact age boundaries, never fallback clocks.
+const FRESHNESS_NOW = new Date().toISOString();
+const FRESHNESS_BOUNDARY = new Date(Date.parse(FRESHNESS_NOW) - 30 * 86_400_000).toISOString();
+const FRESHNESS_STALE_ONE_MS = new Date(Date.parse(FRESHNESS_BOUNDARY) - 1).toISOString();
+const FRESHNESS_FUTURE_ONE_MS = new Date(Date.parse(FRESHNESS_NOW) + 1).toISOString();
+const FRESHNESS_FUTURE_ONE_NS = FRESHNESS_NOW.replace("Z", "000001Z");
+const FRESHNESS_BOUNDARY_PLUS_ONE_NS = FRESHNESS_BOUNDARY.replace("Z", "000001Z");
+const FRESHNESS_STALE_31_DAYS = new Date(Date.parse(FRESHNESS_NOW) - 31 * 86_400_000).toISOString();
 
 const CANARY_ROW = {
   sourceId: "breezy:test",
@@ -23,7 +33,7 @@ const CANARY_ROW = {
   canaryMaxNewItemsPerTick: 2,
 };
 
-function row(i: number, sourceId = "breezy:test") {
+function row(i: number, sourceId = "breezy:test", postedAt = NOW) {
   return {
     title: `Job ${i}`,
     company: "TestCo",
@@ -33,7 +43,19 @@ function row(i: number, sourceId = "breezy:test") {
     contentHash: `hash-${i}`,
     sourceId,
     phEligibility: "eligible_likely",
+    postedAt,
   } satisfies NewOpportunity;
+}
+
+// Native positive source timestamps are explicit synthetic originals at this
+// run's captured real observation. Keep fixed NOW for historical policy/fake
+// fixtures and leave every deliberately invalid/stale/future override intact.
+function nativeRow(i: number, sourceId = "breezy:test") {
+  return row(i, sourceId, FRESHNESS_NOW);
+}
+
+function isOwnershipObservation(query: string) {
+  return query.includes("SELECT COUNT(*) AS ownedCount") && query.includes("FROM opportunities");
 }
 
 describe("publishGroupedInserts canary cap clamp", () => {
@@ -52,7 +74,8 @@ describe("publishGroupedInserts canary cap clamp", () => {
   test("unchanged selected canary rows keep identity when only an unused suffix changes", async () => {
     const keys: unknown[] = [];
     for (const candidates of [[row(1), row(2), row(3)], [row(1), row(2), { ...row(4), description: "unused" }]]) {
-      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2 }] });
+      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
+        postingRows: JSON.stringify([{ id: 1, postedAt: NOW }, { id: 2, postedAt: NOW }]) }] });
       await publishGroupedInserts(db, async rows => rows.map((_, index) => index + 1), candidates, NOW, "scrape");
       keys.push(db.runs.find(run => run.query.includes("INSERT INTO source_publication_ledger"))?.values[2]);
     }
@@ -61,7 +84,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
 
   test("caller mutation during a policy read cannot change the source or persisted values", async () => {
     const original = row(1, "remotive");
-    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1 }] });
+    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1, postingRows: JSON.stringify([{ id: 1, postedAt: NOW }]) }] });
     const prepare = db.prepare.bind(db);
     db.prepare = query => {
       const statement = prepare(query);
@@ -83,7 +106,8 @@ describe("publishGroupedInserts canary cap clamp", () => {
   });
 
   test("clamps a canary batch to canaryMaxNewItemsPerTick so the gateway never rolls back", async () => {
-    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2 }] });
+    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
+      postingRows: JSON.stringify([{ id: 1001, postedAt: NOW }, { id: 1002, postedAt: NOW }]) }] });
     const persistedBatches: number[] = [];
     const persistedUrls: string[][] = [];
     const result = await publishGroupedInserts(
@@ -107,7 +131,8 @@ describe("publishGroupedInserts canary cap clamp", () => {
   });
 
   test("unregistered exact-six source publishes the full batch unchanged", async () => {
-    const db = new FakePublicationDatabase({ registry: [null, null], ownership: [{ ownedCount: 3 }] });
+    const db = new FakePublicationDatabase({ registry: [null, null], ownership: [{ ownedCount: 3,
+      postingRows: JSON.stringify([{ id: 2001, postedAt: NOW }, { id: 2002, postedAt: NOW }, { id: 2003, postedAt: NOW }]) }] });
     const persistedBatches: number[] = [];
     const result = await publishGroupedInserts(
       db,
@@ -183,7 +208,7 @@ describe("publishGroupedInserts persisted ID accounting", () => {
   });
 
   test("partial insertion retains only actual inserted IDs", async () => {
-    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1 }] });
+    const db = new FakePublicationDatabase({ ownership: [{ ownedCount: 1, postingRows: JSON.stringify([{ id: 91, postedAt: NOW }]) }] });
     const result = await publishGroupedInserts(db, async () => [91], [row(1, "remotive"), row(2, "remotive")], NOW, "scrape");
     expect(result).toEqual({ published: 1, failed: false });
     expect(db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"))?.values[6]).toBe("[91]");
@@ -246,7 +271,7 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
           return this;
         },
         async first() {
-          if (query.includes("SELECT COUNT(*) AS ownedCount FROM opportunities")) {
+          if (isOwnershipObservation(query)) {
             ownershipReads++;
             options.beforeOwnershipRead?.(sqlite, ownershipReads);
             if (ownershipReads === (options.failOwnershipReadAt ?? 1)) {
@@ -285,6 +310,118 @@ function sqliteD1(options: { beforeOpportunityUpdate?: (sqlite: Database) => voi
 }
 
 describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
+  for (const scenario of [
+    { label: "missing", postedAt: undefined, state: "UNKNOWN", stored: null },
+    { label: "NULL", postedAt: null, state: "UNKNOWN", stored: null },
+    { label: "invalid", postedAt: "not-a-time", state: "INVALID", stored: null },
+    { label: "calendar rollover", postedAt: "2026-02-30T12:00:00.000Z", state: "INVALID", stored: null },
+    { label: "date-only", postedAt: "2026-10-09", state: "INVALID", stored: null },
+    { label: "ambiguous", postedAt: "10/08/2026", state: "INVALID", stored: null },
+    { label: "numeric clock", postedAt: 1791547200000, state: "INVALID", stored: null },
+    { label: "future", postedAt: FRESHNESS_FUTURE_ONE_MS, state: "FUTURE", stored: FRESHNESS_FUTURE_ONE_MS },
+    { label: "future by 1ns", postedAt: FRESHNESS_FUTURE_ONE_NS, state: "FUTURE", stored: FRESHNESS_NOW },
+    { label: "stale", postedAt: FRESHNESS_STALE_31_DAYS, state: "STALE", stored: FRESHNESS_STALE_31_DAYS },
+    { label: "30 days plus 1ms", postedAt: FRESHNESS_STALE_ONE_MS, state: "STALE", stored: FRESHNESS_STALE_ONE_MS },
+  ]) {
+    test(`freshness: direct ingest hides ${scenario.label} source dates despite fresh secondary clocks`, async () => {
+      setSystemTime(new Date(FRESHNESS_NOW));
+      const { sqlite, binding, queries } = sqliteD1();
+      try {
+        const db = getDb({ DB: binding as any });
+        const request = new Request("https://example.test/api/ingest", { method: "POST",
+          headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+          body: JSON.stringify({ items: [{ ...nativeRow(1, "remotive"), locationRaw: "Philippines",
+            description: "Remote role open to applicants in the Philippines", postedAt: scenario.postedAt,
+            scrapedAt: FRESHNESS_NOW, updatedAt: FRESHNESS_NOW, observedAt: FRESHNESS_NOW, lastSeenInFeedAt: FRESHNESS_NOW,
+            isActive: true, inactiveReason: null }] }) });
+        const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+        expect(response.status).toBe(200);
+        expect(await response.json()).toMatchObject({ success: true, inserted: 1, publishedCount: 0, hiddenInserted: 1 });
+        expect(sqlite.query("SELECT is_active AS active, posted_at AS postedAt, ph_eligibility AS eligibility, inactive_reason AS reason FROM opportunities").get())
+          .toEqual({ active: 0, postedAt: scenario.stored, eligibility: "eligible_verified", reason: `posting-freshness-${scenario.state.toLowerCase()}` });
+        expect(await db.select({ id: opportunities.id }).from(opportunities).where(publicOpportunityFilters())).toEqual([]);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+        expect(queries.some(isOwnershipObservation)).toBe(false);
+      } finally { sqlite.close(); setSystemTime(); }
+    });
+  }
+
+  for (const scenario of [
+    { label: "exact30-day", postedAt: FRESHNESS_BOUNDARY },
+    { label: "30-day boundary plus 1ns", postedAt: FRESHNESS_BOUNDARY_PLUS_ONE_NS },
+  ]) for (const eligibility of ["eligible_verified", "eligible_likely"] as const) {
+    test(`freshness: direct ingest accepts ${scenario.label} original timestamps for ${eligibility}`, async () => {
+      setSystemTime(new Date(FRESHNESS_NOW));
+      const { sqlite, binding } = sqliteD1();
+      try {
+        const db = getDb({ DB: binding as any });
+        const postedAt = scenario.postedAt;
+        const request = new Request("https://example.test/api/ingest", { method: "POST",
+          headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+          body: JSON.stringify({ items: [{ ...nativeRow(1, "remotive"), postedAt,
+            locationRaw: eligibility === "eligible_verified" ? "Philippines" : "Remote",
+            description: eligibility === "eligible_verified" ? "Remote role open to applicants in the Philippines" : "Remote role open worldwide." }] }) });
+        const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+        expect(response.status).toBe(200);
+        expect(await response.json()).toMatchObject({ success: true, inserted: 1, publishedCount: 1, hiddenInserted: 0 });
+        expect(sqlite.query("SELECT is_active AS active, posted_at AS postedAt, ph_eligibility AS eligibility, inactive_reason AS reason FROM opportunities").get())
+          .toEqual({ active: 1, postedAt: FRESHNESS_BOUNDARY, eligibility, reason: null });
+        const [visible] = await db.select({ id: opportunities.id }).from(opportunities).where(publicOpportunityFilters());
+        expect(visible).toBeDefined();
+        expect(sqlite.query("SELECT published_count AS n, published_ids_json AS ids FROM source_publication_ledger").get())
+          .toEqual({ n: 1, ids: JSON.stringify([visible.id]) });
+      } finally { sqlite.close(); setSystemTime(); }
+    });
+  }
+
+  for (const postedAt of [null, "not-a-time", "2026-02-30T12:00:00.000Z", "2026-10-09", FRESHNESS_STALE_ONE_MS, FRESHNESS_FUTURE_ONE_MS, FRESHNESS_FUTURE_ONE_NS]) {
+    test(`freshness: direct ingest post-write date drift to ${postedAt} remains UNKNOWN and stops later writes`, async () => {
+      setSystemTime(new Date(FRESHNESS_NOW));
+      const { sqlite, binding } = sqliteD1({ beforeOwnershipRead: sqlite => {
+        sqlite.query("UPDATE opportunities SET posted_at = ? WHERE source_id = 'remotive'").run(postedAt);
+      } });
+      try {
+        const request = new Request("https://example.test/api/ingest", { method: "POST",
+          headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+          body: JSON.stringify({ items: [
+            { ...nativeRow(1, "remotive"), postedAt: FRESHNESS_NOW, locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+            { ...nativeRow(2, "remote-ok"), postedAt: FRESHNESS_NOW, locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+            { ...nativeRow(3, "remotive"), title: "Operations specialist", description: "Handle customer records." },
+          ] }) });
+        const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+        expect(response.status).toBe(500);
+        expect(await response.json()).toMatchObject({ code: "POST_PERSISTENCE_FAILURE", publicationOutcome: "UNKNOWN",
+          inserted: null, confirmedPublishedLowerBound: 0, reconciliationRequired: true });
+        expect(sqlite.query("SELECT source_id AS source, posted_at AS postedAt, is_active AS active FROM opportunities").all())
+          .toEqual([{ source: "remotive", postedAt, active: 1 }]);
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 1 });
+        expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+      } finally { sqlite.close(); setSystemTime(); }
+    });
+  }
+
+  test("freshness: direct ingest retains the first confirmed prefix when the second committed source posting becomes stale", async () => {
+    setSystemTime(new Date(FRESHNESS_NOW));
+    const { sqlite, binding } = sqliteD1({ beforeOwnershipRead: (sqlite, ordinal) => {
+      if (ordinal === 2) sqlite.query("UPDATE opportunities SET posted_at = ? WHERE source_id = 'remote-ok'").run(FRESHNESS_STALE_ONE_MS);
+    } });
+    try {
+      const request = new Request("https://example.test/api/ingest", { method: "POST",
+        headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
+        body: JSON.stringify({ items: ["remotive", "remote-ok", "jobicy-admin-support-apac"].map((source, index) => ({
+          ...nativeRow(index + 1, source), postedAt: FRESHNESS_NOW, locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines",
+        })) }) });
+      const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
+      expect(response.status).toBe(500);
+      expect(await response.json()).toMatchObject({ code: "POST_PERSISTENCE_FAILURE", publicationOutcome: "UNKNOWN",
+        inserted: null, confirmedPublishedLowerBound: 1, reconciliationRequired: true });
+      expect(sqlite.query("SELECT source_id AS source, posted_at AS postedAt FROM opportunities ORDER BY id").all())
+        .toEqual([{ source: "remotive", postedAt: FRESHNESS_NOW }, { source: "remote-ok", postedAt: FRESHNESS_STALE_ONE_MS }]);
+      expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 2 });
+      expect(sqlite.query("SELECT source_id AS source, published_count AS n FROM source_publication_ledger").all())
+        .toEqual([{ source: "remotive", n: 1 }]);
+    } finally { sqlite.close(); setSystemTime(); }
+  });
   test("direct ingest keeps unclear and non-PH rows hidden while accepted PH receipts match actual canonical visibility", async () => {
     const { sqlite, binding } = sqliteD1();
     try {
@@ -292,11 +429,11 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       const request = new Request("https://example.test/api/ingest", { method: "POST",
         headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
         body: JSON.stringify({ items: [
-          { ...row(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
-          { ...row(2, "remotive"), locationRaw: "Remote", description: "Remote role open worldwide." },
-          { ...row(3, "remotive"), title: "Operations specialist", description: "Handle customer records.",
+          { ...nativeRow(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+          { ...nativeRow(2, "remotive"), locationRaw: "Remote", description: "Remote role open worldwide." },
+          { ...nativeRow(3, "remotive"), title: "Operations specialist", description: "Handle customer records.",
             phEligibility: "eligible_verified", isActive: true, inactiveReason: null },
-          { ...row(4, "remotive"), locationRaw: "United States only", description: "Candidates must be based in the United States only" },
+          { ...nativeRow(4, "remotive"), locationRaw: "United States only", description: "Candidates must be based in the United States only" },
         ] }) });
       const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
       expect(response.status).toBe(200);
@@ -322,14 +459,14 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     try {
       const request = new Request("https://example.test/api/ingest", { method: "POST",
         headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
-        body: JSON.stringify({ items: [{ ...row(1, "remotive"), title: "Operations specialist", description: "Handle customer records." }] }) });
+        body: JSON.stringify({ items: [{ ...nativeRow(1, "remotive"), title: "Operations specialist", description: "Handle customer records." }] }) });
       const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
       expect(response.status).toBe(200);
       expect(await response.json()).toMatchObject({ success: true, inserted: 1, publishedCount: 0, hiddenInserted: 1 });
       expect(sqlite.query("SELECT is_active AS active, ph_eligibility AS eligibility, inactive_reason AS reason FROM opportunities").get())
         .toEqual({ active: 0, eligibility: "unclear", reason: "pending-triage" });
       expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
-      expect(queries.some(query => query.includes("AS ownedCount FROM opportunities"))).toBe(false);
+      expect(queries.some(isOwnershipObservation)).toBe(false);
     } finally { sqlite.close(); }
   });
 
@@ -342,7 +479,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       const empty = await send([]);
       expect(empty.status).toBe(200);
       expect(await empty.json()).toMatchObject({ success: true, inserted: 0, publishedCount: 0, hiddenInserted: 0 });
-      const candidate = { ...row(1, "remotive"), title: "Operations specialist", description: "Handle customer records." };
+      const candidate = { ...nativeRow(1, "remotive"), title: "Operations specialist", description: "Handle customer records." };
       const initial = await send([candidate]);
       expect(await initial.json()).toMatchObject({ success: true, inserted: 1, publishedCount: 0, hiddenInserted: 1 });
       const duplicate = await send([candidate]);
@@ -363,9 +500,9 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         const request = new Request("https://example.test/api/ingest", { method: "POST",
           headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
           body: JSON.stringify({ items: [
-            { ...row(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
-            { ...row(2, "remote-ok"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
-            { ...row(3, "remotive"), title: "Operations specialist", description: "Handle customer records." },
+            { ...nativeRow(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+            { ...nativeRow(2, "remote-ok"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+            { ...nativeRow(3, "remotive"), title: "Operations specialist", description: "Handle customer records." },
           ] }) });
         const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
         expect(response.status).toBe(500);
@@ -389,7 +526,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       const request = new Request("https://example.test/api/ingest", { method: "POST",
         headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
         body: JSON.stringify({ items: ["remotive", "remote-ok", "jobicy-admin-support-apac"].map((source, index) => ({
-          ...row(index + 1, source), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines",
+          ...nativeRow(index + 1, source), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines",
         })) }) });
       const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
       expect(response.status).toBe(500);
@@ -411,7 +548,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       const result = await publishGroupedInserts(publicationDbFromEnv({ DB: binding })!, async candidates => {
         attemptedSources.push(candidates[0].sourceId);
         return (await db.insert(opportunities).values(candidates).returning({ id: opportunities.id })).map(candidate => candidate.id);
-      }, [row(1, "remotive"), row(2, "remote-ok"), row(3, "jobicy-admin-support-apac")], new Date().toISOString(), "scrape");
+      }, [nativeRow(1, "remotive"), nativeRow(2, "remote-ok"), nativeRow(3, "jobicy-admin-support-apac")], new Date().toISOString(), "scrape");
       expect(result).toEqual({ published: 1, failed: true, publicationOutcome: "UNKNOWN" });
       expect(attemptedSources).toEqual(["remotive", "remote-ok"]);
       expect(sqlite.query("SELECT source_id AS source, is_active AS active FROM opportunities ORDER BY id").all())
@@ -431,7 +568,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         const result = await publishGroupedInserts(publicationDbFromEnv({ DB: binding })!, async candidates => {
           attemptedSources.push(candidates[0].sourceId);
           return (await db.insert(opportunities).values(candidates).returning({ id: opportunities.id })).map(candidate => candidate.id);
-        }, [row(1, "remotive"), row(2, "remote-ok")], new Date().toISOString(), "scrape");
+        }, [nativeRow(1, "remotive"), nativeRow(2, "remote-ok")], new Date().toISOString(), "scrape");
         // published is the confirmed prefix only; the first physical write is
         // uncertain and must never be counted as an accepted zero or success.
         expect(result).toEqual({ published: 0, failed: true, publicationOutcome: "UNKNOWN" });
@@ -441,7 +578,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities WHERE source_id = 'remote-ok'").get()).toEqual({ n: 0 });
         expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities_fts WHERE opportunities_fts MATCH 'Job'").get()).toEqual({ n: 1 });
         expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
-        expect(queries.filter(query => query.includes("SELECT COUNT(*) AS ownedCount FROM opportunities"))).toHaveLength(1);
+        expect(queries.filter(isOwnershipObservation)).toHaveLength(1);
         expect(queries.some(query => /^delete\b/i.test(query) || /^update "opportunities"/i.test(query))).toBe(false);
       } finally { sqlite.close(); }
     });
@@ -452,7 +589,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       try {
         const db = getDb({ DB: binding as any });
         const now = new Date().toISOString();
-        const candidate = { ...row(1, "remotive"), isActive: false,
+        const candidate = { ...nativeRow(1, "remotive"), isActive: false,
           inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
           phEligibility: "eligible_verified" as const, scrapedAt: now };
         await db.insert(opportunities).values(candidate);
@@ -474,7 +611,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         try {
           const db = getDb({ DB: binding as any });
           const now = new Date().toISOString();
-          const candidate = { ...row(1, "remotive"), sourceId: null, isActive: false,
+          const candidate = { ...nativeRow(1, "remotive"), sourceId: null, isActive: false,
             inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
             phEligibility: "eligible_verified" as const, scrapedAt: now };
           await db.insert(opportunities).values(candidate);
@@ -497,7 +634,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         try {
           const db = getDb({ DB: binding as any });
           const now = new Date().toISOString();
-          const candidates = [1, 2].map(i => ({ ...row(i, "remotive"), isActive: false,
+          const candidates = [1, 2].map(i => ({ ...nativeRow(i, "remotive"), isActive: false,
             inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
             phEligibility: "eligible_verified" as const, scrapedAt: now }));
           const targets = await db.insert(opportunities).values(candidates).returning({ id: opportunities.id });
@@ -522,7 +659,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       try {
         const db = getDb({ DB: binding as any });
         const now = new Date().toISOString();
-        const candidate = { ...row(1, "remotive"), isActive: false,
+        const candidate = { ...nativeRow(1, "remotive"), isActive: false,
           inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
           phEligibility: "eligible_verified" as const, scrapedAt: now };
         const [target] = await db.insert(opportunities).values(candidate).returning({ id: opportunities.id });
@@ -543,7 +680,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       try {
         const db = getDb({ DB: binding as any });
         const now = new Date().toISOString();
-        const candidates = Array.from({ length: 55 }, (_, i) => ({ ...row(i + 1, "remotive"),
+        const candidates = Array.from({ length: 55 }, (_, i) => ({ ...nativeRow(i + 1, "remotive"),
           sourceId: governed ? "remotive" : null, isActive: false, inactiveReason: "stale-feed",
           phEligibility: "eligible_verified" as const, scrapedAt: now }));
         await db.insert(opportunities).values(candidates);
@@ -568,7 +705,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       try {
         const db = getDb({ DB: binding as any });
         const now = new Date().toISOString();
-        const candidate = { ...row(1, "remotive"), isActive: false, inactiveReason: "stale-feed",
+        const candidate = { ...nativeRow(1, "remotive"), isActive: false, inactiveReason: "stale-feed",
           phEligibility: "eligible_verified" as const, scrapedAt: now };
         await db.insert(opportunities).values(candidate);
         expect(await reactivateFeedConfirmedJobs(db, [candidate.sourceUrl], now,
@@ -586,7 +723,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     try {
       const db = getDb({ DB: binding as any });
       const now = new Date().toISOString();
-      await db.insert(opportunities).values({ ...row(1, "remotive"), description: "Remote role open worldwide.",
+      await db.insert(opportunities).values({ ...nativeRow(1, "remotive"), description: "Remote role open worldwide.",
         locationRaw: "Remote", isActive: false, inactiveReason: "pending-triage", scrapedAt: now });
       const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech" }),
         JSON.stringify({ eligible: true, reason: "no disqualifier" })];
@@ -608,7 +745,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         try {
           const db = getDb({ DB: binding as any });
           const now = new Date().toISOString();
-          await db.insert(opportunities).values({ ...row(1, "remotive"), description: "Remote role open worldwide.",
+          await db.insert(opportunities).values({ ...nativeRow(1, "remotive"), description: "Remote role open worldwide.",
             locationRaw: "Remote", isActive: false, inactiveReason: "pending-triage", scrapedAt: now });
           const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech" }),
             JSON.stringify({ eligible: true, reason: "no disqualifier" })];
@@ -635,7 +772,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         calls++;
         const returned = await db.insert(opportunities).values(rows).returning({ id: opportunities.id });
         return [returned[0].id, returned[0].id];
-      }, [row(1, "remotive"), row(2, "remote-ok")], new Date().toISOString(), "scrape");
+      }, [nativeRow(1, "remotive"), nativeRow(2, "remote-ok")], new Date().toISOString(), "scrape");
       expect(result).toEqual({ published: 0, failed: true, publicationOutcome: "UNKNOWN" });
       expect(calls).toBe(1);
       expect(sqlite.query("SELECT source_id AS source FROM opportunities").all()).toEqual([{ source: "remotive" }]);
@@ -649,8 +786,8 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       const request = new Request("https://example.test/api/ingest", { method: "POST",
         headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
         body: JSON.stringify({ items: [
-          { ...row(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
-          { ...row(2, "remotive"), locationRaw: "United States only", description: "Candidates must be based in the United States only" },
+          { ...nativeRow(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+          { ...nativeRow(2, "remotive"), locationRaw: "United States only", description: "Candidates must be based in the United States only" },
         ] }) });
       const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);
       expect(response.status).toBe(500);
@@ -669,7 +806,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       const { sqlite, binding } = sqliteD1(options);
       try {
         const db = getDb({ DB: binding as any });
-        await db.insert(opportunities).values({ ...row(1, "remotive"), description: "Remote role open worldwide.", locationRaw: "Remote",
+        await db.insert(opportunities).values({ ...nativeRow(1, "remotive"), description: "Remote role open worldwide.", locationRaw: "Remote",
           isActive: false, inactiveReason: "pending-triage", scrapedAt: new Date().toISOString() });
         const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech" }),
           JSON.stringify({ eligible: true, reason: "no disqualifier" })];
@@ -700,7 +837,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       try {
         const db = getDb({ DB: binding as any });
         const now = new Date().toISOString();
-        await db.insert(opportunities).values([1, 2].map(i => ({ ...row(i, "remotive"), description: "Remote role open worldwide.",
+        await db.insert(opportunities).values([1, 2].map(i => ({ ...nativeRow(i, "remotive"), description: "Remote role open worldwide.",
           locationRaw: "Remote", isActive: false, inactiveReason: "pending-triage", scrapedAt: now })));
         const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech" }),
           JSON.stringify({ eligible: true, reason: "no disqualifier" })];
@@ -721,7 +858,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     try {
       const db = getDb({ DB: binding as any });
       const now = new Date().toISOString();
-      const targets = await db.insert(opportunities).values([1, 2].map(i => ({ ...row(i, "remotive"),
+      const targets = await db.insert(opportunities).values([1, 2].map(i => ({ ...nativeRow(i, "remotive"),
         isActive: false, inactiveReason: "pending-triage", geoScope: "ph_only" as const, scrapedAt: now }))).returning({ id: opportunities.id });
       changedId = targets[1].id;
       expect(await recoverGateEligiblePending(db, now, publicationDbFromEnv({ DB: binding }))).toBe(1);
@@ -737,7 +874,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       try {
         const db = getDb({ DB: binding as any });
         const now = new Date().toISOString();
-        const candidate = { ...row(1, "remotive"), isActive: false,
+        const candidate = { ...nativeRow(1, "remotive"), isActive: false,
           inactiveReason: mode === "gate" ? "pending-triage" : "stale-feed", geoScope: "ph_only" as const,
           phEligibility: "eligible_verified" as const, scrapedAt: now };
         await db.insert(opportunities).values(candidate);
@@ -755,7 +892,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     const { sqlite, binding } = sqliteD1({ beforeOpportunityUpdate: sqlite => sqlite.exec("DELETE FROM opportunities") });
     try {
       const db = getDb({ DB: binding as any });
-      await db.insert(opportunities).values({ ...row(1, "remotive"), description: "Remote role open worldwide.", locationRaw: "Remote",
+      await db.insert(opportunities).values({ ...nativeRow(1, "remotive"), description: "Remote role open worldwide.", locationRaw: "Remote",
         isActive: false, inactiveReason: "pending-triage", scrapedAt: new Date().toISOString() });
       const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech" }),
         JSON.stringify({ eligible: true, reason: "no disqualifier" })];
@@ -776,7 +913,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     try {
       const db = getDb({ DB: binding as any });
       const now = new Date().toISOString();
-      const candidates = [1, 2].map(i => ({ ...row(i, "remotive"), isActive: false, inactiveReason: "stale-feed",
+      const candidates = [1, 2].map(i => ({ ...nativeRow(i, "remotive"), isActive: false, inactiveReason: "stale-feed",
         phEligibility: "eligible_likely" as const, scrapedAt: now }));
       const targets = await db.insert(opportunities).values(candidates).returning({ id: opportunities.id });
       changedId = targets[1].id;
@@ -792,7 +929,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     try {
       const db = getDb({ DB: binding as any });
       const now = new Date().toISOString();
-      await db.insert(opportunities).values({ ...row(1, "remotive"), description: "Remote role open worldwide.",
+      await db.insert(opportunities).values({ ...nativeRow(1, "remotive"), description: "Remote role open worldwide.",
         locationRaw: "Remote", isActive: false, inactiveReason: "pending-triage", scrapedAt: now });
       const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech" }),
         JSON.stringify({ eligible: true, reason: "no disqualifier" })];
@@ -811,7 +948,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     try {
       const db = getDb({ DB: binding as any });
       const now = new Date().toISOString();
-      const inserted = await db.insert(opportunities).values({ ...row(5, "remotive"), description: "Remote role open worldwide.",
+      const inserted = await db.insert(opportunities).values({ ...nativeRow(5, "remotive"), description: "Remote role open worldwide.",
         locationRaw: "Remote", tags: ["va"], isActive: false, inactiveReason: "pending-triage", scrapedAt: now }).returning({ id: opportunities.id });
       const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech",
         tags: ["remote"], payRange: "$11/hour", experienceLevel: "mid", employmentType: "full-time",
@@ -844,7 +981,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     globalThis.fetch = (async () => { throw new Error("outbound requests forbidden"); }) as unknown as typeof fetch;
     try {
       const db = getDb({ DB: binding as any });
-      const inserted = await db.insert(opportunities).values({ ...row(4, "remotive"),
+      const inserted = await db.insert(opportunities).values({ ...nativeRow(4, "remotive"),
         description: "Remote role open worldwide.", locationRaw: "Remote", tags: ["va"],
         isActive: false, inactiveReason: "pending-triage", scrapedAt: new Date().toISOString() }).returning({ id: opportunities.id });
       const responses = [JSON.stringify({ eligibleForFilipinos: true, reason: "Open worldwide", category: "tech",
@@ -888,7 +1025,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         calls++;
         return (await db.insert(opportunities).values(rows).onConflictDoNothing().returning({ id: opportunities.id })).map(row => row.id);
       };
-      const first = { ...row(1, "remotive"), description: "Original", tags: ["va"], phEligibility: "eligible_likely" as const };
+      const first = { ...nativeRow(1, "remotive"), description: "Original", tags: ["va"], phEligibility: "eligible_likely" as const };
       const now = new Date().toISOString();
       expect(await publishGroupedInserts(publicationDb, insert, [first], now, "scrape")).toEqual({ published: 1, failed: false });
       expect(await publishGroupedInserts(publicationDb, insert, [{ ...first, description: "Changed" }], now, "scrape"))
@@ -911,8 +1048,8 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       };
       const prefix = `https://example.test/${"a".repeat(240)}/`;
       const now = new Date().toISOString();
-      await publishGroupedInserts(publicationDb, insert, [{ ...row(1, "remotive"), sourceUrl: `${prefix}one` }], now, "scrape");
-      await publishGroupedInserts(publicationDb, insert, [{ ...row(2, "remotive"), sourceUrl: `${prefix}two` }], now, "scrape");
+      await publishGroupedInserts(publicationDb, insert, [{ ...nativeRow(1, "remotive"), sourceUrl: `${prefix}one` }], now, "scrape");
+      await publishGroupedInserts(publicationDb, insert, [{ ...nativeRow(2, "remotive"), sourceUrl: `${prefix}two` }], now, "scrape");
       expect(calls).toBe(2);
       expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 2 });
       expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 2 });
@@ -923,7 +1060,8 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     const retryKeys: unknown[] = [];
     const selected: string[][] = [];
     for (const candidates of [[row(1), row(2), row(3)], [row(3), row(2), row(1)]]) {
-      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2 }] });
+      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
+        postingRows: JSON.stringify([{ id: 1, postedAt: NOW }, { id: 2, postedAt: NOW }]) }] });
       await publishGroupedInserts(db, async (rows) => {
         selected.push(rows.map(row => row.sourceUrl));
         return rows.map((_, index) => index + 1);
@@ -939,7 +1077,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
     try {
       const db = getDb({ DB: binding as any });
       const publicationDb = publicationDbFromEnv({ DB: binding })!;
-      const existing = row(1, "remotive");
+      const existing = nativeRow(1, "remotive");
       await db.insert(opportunities).values(existing).onConflictDoNothing().returning({ id: opportunities.id });
       let persistCalls = 0;
       const insert = async (rows: NewOpportunity[]) => {
@@ -947,7 +1085,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
         const returned = await db.insert(opportunities).values(rows).onConflictDoNothing().returning({ id: opportunities.id });
         return returned.map((row) => row.id);
       };
-      const candidates = [existing, row(2, "remotive"), row(3, "remotive")];
+      const candidates = [existing, nativeRow(2, "remotive"), nativeRow(3, "remotive")];
       const now = new Date().toISOString();
       const before = (sqlite.query("SELECT total_changes() AS n").get() as { n: number }).n;
       const reorderedProperties = candidates.map(row => Object.fromEntries(Object.entries(row).reverse()) as unknown as NewOpportunity);
@@ -972,8 +1110,8 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       const request = new Request("https://example.test/api/ingest", {
         method: "POST", headers: { authorization: "Bearer test-secret", "content-type": "application/json" },
         body: JSON.stringify({ items: [
-          { ...row(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
-          { ...row(2, "remotive"), locationRaw: "United States only", description: "Candidates must be based in the United States only" },
+          { ...nativeRow(1, "remotive"), locationRaw: "Philippines", description: "Remote role open to applicants in the Philippines" },
+          { ...nativeRow(2, "remotive"), locationRaw: "United States only", description: "Candidates must be based in the United States only" },
         ] }),
       });
       const response = await ingest({ request, locals: { runtime: { env: { DB: binding, PROXY_SECRET: "test-secret" } } } } as any);

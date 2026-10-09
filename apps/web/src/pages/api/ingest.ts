@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getDb, opportunities, type NewOpportunity } from "@va-hub/db";
-import { chunkArray, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate, isPublicPhEligibility } from "@va-hub/scraper";
+import { chunkArray, sanitizeApplyUrlForSource, sanitizeSourceUrl, toContentHash, sha256Hex, geoGate, isPublicPhEligibility, assessPostingFreshness } from "@va-hub/scraper";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { normalizeUtcIso, nowUtcIso } from "@/lib/time";
 import { DIRECT_INGEST_BATCH_SIZE } from "@/lib/ingest-batch";
@@ -55,6 +55,9 @@ async function normalizeOpportunityForInsert(item: unknown, observedAt: string) 
     locationRaw: str(input.locationRaw),
     tags: rawTags,
   });
+  // Assess the raw original timestamp before permissive normalization can
+  // repair an impossible calendar date. Secondary clocks grant no freshness.
+  const freshness = assessPostingFreshness(input.postedAt, observedAt);
 
   return {
     title,
@@ -70,12 +73,13 @@ async function normalizeOpportunityForInsert(item: unknown, observedAt: string) 
     payRange: str(input.payRange),
     description,
     applicationUrl,
-    postedAt: normalizeUtcIso(input.postedAt),
+    postedAt: freshness.postedAt,
     scrapedAt: normalizeUtcIso(input.scrapedAt) ?? observedAt,
     // Server-owned safety fields — never client-controlled.
-    isActive: isPublicPhEligibility(gate.phEligibility),
-    inactiveReason: isPublicPhEligibility(gate.phEligibility) ? null
-      : gate.phEligibility === "ineligible" ? "policy-rejected" : "pending-triage",
+    isActive: isPublicPhEligibility(gate.phEligibility) && freshness.state === "WITHIN_WINDOW",
+    inactiveReason: gate.phEligibility === "ineligible" ? "policy-rejected"
+      : !isPublicPhEligibility(gate.phEligibility) ? "pending-triage"
+      : freshness.state === "WITHIN_WINDOW" ? null : `posting-freshness-${freshness.state.toLowerCase()}`,
     contentHash: toContentHash(title, sourceUrl ?? title),
     descriptionHash: await sha256Hex(title + (description ?? "").slice(0, 1500)),
     experienceLevel: enumOrNull(input.experienceLevel, EXPERIENCE_LEVELS),
