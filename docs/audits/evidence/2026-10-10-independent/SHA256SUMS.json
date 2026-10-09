@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "normalization": "UTF-8 decode preserving BOM if present; replace CRLF with LF; UTF-8 encode; no other transformations",
+  "scope": "Audit artifacts only; manifest excludes itself",
+  "files": [
+    {
+      "path": "docs/audits/INDEPENDENT_SYSTEMS_AUDIT_2026-10-10.md",
+      "localByteLength": 49483,
+      "localBytesSha256": "5f0b0f938d59539176cfdf2a25af7eed2812a14db57e061ea60626ba958e36c4",
+      "lfNormalizedUtf8Sha256": "16b0e2fa51affd70f5c27f1324f4e2a16f14bd576faee88941a53284a0324bf9",
+      "filteredGitBlobSha1": "0719b13ec497bf2cc01dee7cbf1254d3fe923760"
+    },
+    {
+      "path": "docs/audits/INDEPENDENT_SYSTEMS_AUDIT_CONTINUATION_2026-10-10.md",
+      "localByteLength": 6808,
+      "localBytesSha256": "0322cdbde43ad6bf6762c8ab925320a2d6c65f6dca7c1b9cbc51f71a3cc0f78e",
+      "lfNormalizedUtf8Sha256": "5ae5e2dd22fb4a3999c5cf68bfc91bfe797545e6f9b62e1b118809497ba8df81",
+      "filteredGitBlobSha1": "4d5b38500de0ff3ca5c5cf683ef2c5bfad913234"
+    },
+    {
+      "path": "docs/audits/evidence/2026-10-10-independent/audit-fresh-posting-date-calendar-native.ts",
+      "localByteLength": 4230,
+      "localBytesSha256": "e4ea36ad8c2fac1934a33555609a4effd46570bb0ac95a781e1646ca1c7bbce8",
+      "lfNormalizedUtf8Sha256": "46125d90fb78960c7388305f1317a92283d00d7731b5cdb4e803eb69fa8ef4dd",
+      "filteredGitBlobSha1": "ca8f2934815f6c65f2200b3beb1489d327c8d3ba"
+    },
+    {
+      "path": "docs/audits/evidence/2026-10-10-independent/audit-fresh-posting-date-native.ts",
+      "localByteLength": 4159,
+      "localBytesSha256": "fdb3dbbbcd10115b29c8dd0258d01c297ae86ca6b02d6eb5a3ffbcd53cf1de12",
+      "lfNormalizedUtf8Sha256": "13400590286b8adce77630838237b9823843d07f40dcb144b42ef370e126d361",
+      "filteredGitBlobSha1": "73f4d396b4b03f3f5554fbd15b2780358baba18e"
+    },
+    {
+      "path": "docs/audits/evidence/2026-10-10-independent/audit-observation.json",
+      "localByteLength": 4342,
+      "localBytesSha256": "a6e504174f2aee80457c772ba0ab1d7ed704b4e9d821e5ade052fccff3d78350",
+      "lfNormalizedUtf8Sha256": "bfb2991ee3b074a23a9b004e17de189e9fb2264670fc6f2a31cf6d4350ad9603",
+      "filteredGitBlobSha1": "60a8469a160ab53cdbde348680f8c17621178301"
+    },
+    {
+      "path": "docs/audits/evidence/2026-10-10-independent/calendar-repair-results.json",
+      "localByteLength": 18681,
+      "localBytesSha256": "8675b3179afc9c4785658d063413989d35cb0bc71e50754c1165b8789a9aeb79",
+      "lfNormalizedUtf8Sha256": "afb33fb59734d2e9bb5b189edaebc13505e2df3d4176add59ee636ef0f6fde0f",
+      "filteredGitBlobSha1": "5482316058eede92c62214742617016bb2bd1c44"
+    },
+    {
+      "path": "docs/audits/evidence/2026-10-10-independent/raw-date-results.json",
+      "localByteLength": 39598,
+      "localBytesSha256": "12299627b4fc6e1219637f0bef858662f101498bc97b5ba74023dce5db4f0d03",
+      "lfNormalizedUtf8Sha256": "3527faeeae08bea66fcaf5a77fd4d8d0f9f64d14ec1a6148fecf9c326594672a",
+      "filteredGitBlobSha1": "29c733b449aeea241bcddb363d1f26f52eeefc4b"
+    },
+    {
+      "path": "docs/audits/evidence/2026-10-10-independent/README.md",
+      "localByteLength": 4849,
+      "localBytesSha256": "ff49a5bb1d1e8f4956c84da31239d73838d56701062f50de57cfff38548a9879",
+      "lfNormalizedUtf8Sha256": "f9597d3d0f8b40bac6dfb08835607df02d9535f836d2fc10014f68a6bc24e5bc",
+      "filteredGitBlobSha1": "a859845eb2b09fb73a0535c860881ac6743e1cea"
+    }
+  ]
+}

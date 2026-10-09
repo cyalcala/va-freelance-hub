@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "preparedAtUtc": "2026-10-09T23:01:54.2921671Z",
+  "userFacingDate": "2026-10-10",
+  "userFacingTimezone": "Asia/Singapore",
+  "evidenceTimezoneEquivalent": "Asia/Manila",
+  "mode": "AUDIT_ONLY",
+  "source": {
+    "project": "cyrus-group4793641/va-freelance-hub",
+    "projectId": 87403264,
+    "branch": "codex/verified-flow-directory-checkpoint",
+    "auditedImplementationSha": "3ae421645e088f6e08ded9429a5790c8ecbcabfc",
+    "ownerCheckpointAtPackaging": "19c2031c6d41fd3ca8b7eb6b6eacf72904cc1da6",
+    "implementationEquivalentToAudit": true,
+    "implementationCleanAtPackaging": true
+  },
+  "independentOfflineEvidence": {
+    "sources": [
+      "remotive",
+      "remote-ok"
+    ],
+    "rawDateCases": 10,
+    "nonfreshUnknownWithPublicRows": 8,
+    "freshSuccessfulControls": 2,
+    "impossibleCalendarSuccessfulCases": 2,
+    "publicObservation": "canonical publicOpportunityFilters query, not browser or production",
+    "rowsPerCase": 1,
+    "ftsRowsPerCase": 1,
+    "uncertainCasesLedgerRows": 0,
+    "successfulCasesLedgerRows": 1,
+    "successfulIds": [
+      1
+    ],
+    "copiedOriginalHashesValidated": true,
+    "rawInputs": "synthetic transport",
+    "ai": "synthetic",
+    "parsers": "real",
+    "route": "real",
+    "database": "native bun:sqlite :memory: with production migrations",
+    "network": "unexpected fetch rejected",
+    "scope": "local reproduction only"
+  },
+  "gitlabObservation": {
+    "authenticatedReadOnly": true,
+    "visibleBranches": 2,
+    "sourceBranchProtected": false,
+    "defaultBranch": "main",
+    "defaultSha": "fbeff64a2b47f32550ba426af92a2795a1507181",
+    "defaultProtected": true,
+    "visibleProjectPipelines": 0,
+    "visibleSourceProjectMergeRequests": 0,
+    "externalOrGroupCi": "UNKNOWN",
+    "repositoryCiConfig": "not present",
+    "independentMainHasCommonAncestor": false,
+    "ownerCheckpointExactRemoteReadback": "19c2031c6d41fd3ca8b7eb6b6eacf72904cc1da6"
+  },
+  "freshNetworkRecovery": {
+    "sourceSha": "3ae421645e088f6e08ded9429a5790c8ecbcabfc",
+    "reachableCommits": 1877,
+    "shallow": false,
+    "originalLocalObjectsShared": false,
+    "fsckExitCode": 0,
+    "detachedCheckoutExitCode": 0,
+    "cleanCheckout": true,
+    "scope": "selected committed branch history only",
+    "runtimeDataArtifactRecovery": "NOT ESTABLISHED"
+  },
+  "inheritedAcceptance": {
+    "unit": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+    "scopedLocalEvidence": "fingerprint verified",
+    "fullSuite": {
+      "pass": 3954,
+      "fail": 0,
+      "assertions": 326182,
+      "files": 247
+    },
+    "focused": {
+      "pass": 13,
+      "fail": 0,
+      "assertions": 76
+    },
+    "fullSuiteRerunByAudit": false,
+    "sourceBackedUp": true,
+    "foreignDocumentation": "preserved; subsequently committed by original owner",
+    "finalCheckpointSha": "19c2031c6d41fd3ca8b7eb6b6eacf72904cc1da6",
+    "externalRestoreReceiptExists": true,
+    "externalRestoreReceiptSha256": "10c61da1456e3da2c777d773227a6f2af63e9cbb481f984e7d6ebe5edcb89943",
+    "fullBundleSha256": "2c10a986bdbad1371f85383aecae61211d7fb9359e022d16a5db5d542edfbd7d",
+    "bundleVerify": "PASS_NO_PREREQUISITES",
+    "restoredHeadVerified": "19c2031c6d41fd3ca8b7eb6b6eacf72904cc1da6",
+    "restoredWorktreeClean": true,
+    "restoredContentBlobsVerified": 10
+  },
+  "queue": {
+    "entryRemoteNext": "PUBLICATION_FRESH_SCRAPE_NONREMOTE_METADATA_FORWARDING",
+    "currentBackedUpNext": "PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE",
+    "dateRepair": "NOT PERFORMED",
+    "sweepFinding": "verified static code only; native reproduction pending",
+    "acceptedQueueChangedByAudit": false
+  },
+  "limits": [
+    "No observed live provider occurrence",
+    "No production mutation or deployment",
+    "No live public browser observation",
+    "No universal writer, withdrawal or atomicity acceptance",
+    "No certified current QUPD or measured throughput improvement",
+    "Historical suite numbers belong to inherited receipt"
+  ],
+  "packagingValidation": "12 captured results checked against physical rows, public query, FTS and exact receipt effects; original fixture/result hashes matched; calendar extraction preserves original JSON timestamp strings"
+}

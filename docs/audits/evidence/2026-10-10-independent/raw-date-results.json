@@ -1,0 +1,1014 @@
+[
+  {
+    "scenario": {
+      "date": "missing",
+      "source": "remotive"
+    },
+    "rawResponse": "<rss><channel><item><title>Audit Customer Support</title><link>https://remotive.com/remote-jobs/customer-support/audit-native-123</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><author>Audit Fixture Co</author></item></channel></rss>",
+    "status": 500,
+    "body": {
+      "error": "Internal Server Error",
+      "runDurationMs": 88,
+      "publicationOutcome": "UNKNOWN",
+      "inserted": null,
+      "actualChanges": null,
+      "skipped": null,
+      "confirmedPublishedLowerBound": 0,
+      "reconciliationRequired": true
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": null,
+        "scraped_at": "2026-10-09T22:10:03.739Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "invalid",
+      "source": "remotive"
+    },
+    "rawResponse": "<rss><channel><item><title>Audit Customer Support</title><link>https://remotive.com/remote-jobs/customer-support/audit-native-123</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><pubDate>not-a-date</pubDate><author>Audit Fixture Co</author></item></channel></rss>",
+    "status": 500,
+    "body": {
+      "error": "Internal Server Error",
+      "runDurationMs": 127,
+      "publicationOutcome": "UNKNOWN",
+      "inserted": null,
+      "actualChanges": null,
+      "skipped": null,
+      "confirmedPublishedLowerBound": 0,
+      "reconciliationRequired": true
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": null,
+        "scraped_at": "2026-10-09T22:10:04.509Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "stale",
+      "source": "remotive"
+    },
+    "rawResponse": "<rss><channel><item><title>Audit Customer Support</title><link>https://remotive.com/remote-jobs/customer-support/audit-native-123</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><pubDate>2026-09-08T22:10:05.177Z</pubDate><author>Audit Fixture Co</author></item></channel></rss>",
+    "status": 500,
+    "body": {
+      "error": "Internal Server Error",
+      "runDurationMs": 107,
+      "publicationOutcome": "UNKNOWN",
+      "inserted": null,
+      "actualChanges": null,
+      "skipped": null,
+      "confirmedPublishedLowerBound": 0,
+      "reconciliationRequired": true
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": "2026-09-08T22:10:05.177Z",
+        "scraped_at": "2026-10-09T22:10:05.281Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "future",
+      "source": "remotive"
+    },
+    "rawResponse": "<rss><channel><item><title>Audit Customer Support</title><link>https://remotive.com/remote-jobs/customer-support/audit-native-123</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><pubDate>2026-10-10T22:10:05.778Z</pubDate><author>Audit Fixture Co</author></item></channel></rss>",
+    "status": 500,
+    "body": {
+      "error": "Internal Server Error",
+      "runDurationMs": 171,
+      "publicationOutcome": "UNKNOWN",
+      "inserted": null,
+      "actualChanges": null,
+      "skipped": null,
+      "confirmedPublishedLowerBound": 0,
+      "reconciliationRequired": true
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": "2026-10-10T22:10:05.778Z",
+        "scraped_at": "2026-10-09T22:10:05.938Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "fresh",
+      "source": "remotive"
+    },
+    "rawResponse": "<rss><channel><item><title>Audit Customer Support</title><link>https://remotive.com/remote-jobs/customer-support/audit-native-123</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><pubDate>2026-10-08T22:10:06.845Z</pubDate><author>Audit Fixture Co</author></item></channel></rss>",
+    "status": 200,
+    "body": {
+      "inserted": 1,
+      "actualChanges": 1,
+      "acceptedForInsert": 1,
+      "attemptedInsert": 1,
+      "insertFailedBatches": 0,
+      "insertErrors": [],
+      "triageFailures": 0,
+      "triageAiUnavailable": 0,
+      "triageProviderFailures": [],
+      "triageBudgetDeferred": 0,
+      "aiSubrequestCalls": 1,
+      "aiSubrequestBudget": 15,
+      "geoGateRejected": 0,
+      "geoRejectionsBySource": {},
+      "consensusQuarantined": 0,
+      "unclearRetriaged": 0,
+      "unclearUpgraded": 0,
+      "unclearDeactivated": 0,
+      "unclearSkepticUnavailable": 0,
+      "unclearQuotaUnavailable": false,
+      "stateWriteOk": 5,
+      "stateWriteFailed": 0,
+      "rejectedPersisted": 0,
+      "rejectedInsertFailedBatches": 0,
+      "pendingPersisted": 0,
+      "pendingInsertFailedBatches": 0,
+      "pendingDrainClaimed": 0,
+      "pendingDrainPublished": 0,
+      "pendingDrainRejected": 0,
+      "pendingDrainQuarantined": 0,
+      "pendingDrainDeferred": 0,
+      "triageViaInngest": false,
+      "geminiConfigured": false,
+      "groqConfigured": false,
+      "droppedNoUrl": 0,
+      "quarantinedApplicationUrls": 0,
+      "anomalousApplicationHosts": [],
+      "unmatchedPauses": [],
+      "filteredOut": 0,
+      "processed": 1,
+      "backlogRemaining": 0,
+      "skipped": 0,
+      "failedSources": [],
+      "sourceResults": [
+        {
+          "sourceId": "we-work-remotely",
+          "sourceName": "We Work Remotely",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 7,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "13dafe8603fd5dc8",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://weworkremotely.com"
+        },
+        {
+          "sourceId": "remotive",
+          "sourceName": "Remotive",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+          "ok": true,
+          "count": 1,
+          "durationMs": 6,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "3a977681613eb099",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://remotive.com"
+        },
+        {
+          "sourceId": "real-work-from-anywhere",
+          "sourceName": "Real Work From Anywhere",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 6,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "13dafe8603fd5dc8",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /rss.xml",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://www.realworkfromanywhere.com"
+        },
+        {
+          "sourceId": "jobicy-admin-support-apac",
+          "sourceName": "Jobicy Admin Support APAC",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 6,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "13dafe8603fd5dc8",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://jobicy.com"
+        },
+        {
+          "sourceId": "jobicy-supporting-apac",
+          "sourceName": "Jobicy Customer Support APAC",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+        },
+        {
+          "sourceId": "remote-ok",
+          "sourceName": "Remote OK",
+          "sourceType": "JSON",
+          "collectionMethod": "public_json_api",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 1,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "79b28c9ed0952022",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /api",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://remoteok.com"
+        },
+        {
+          "sourceId": "problogger",
+          "sourceName": "ProBlogger",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+        },
+        {
+          "sourceId": "remote-co",
+          "sourceName": "Remote.co",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+        },
+        {
+          "sourceId": "authentic-jobs",
+          "sourceName": "Authentic Jobs",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+        },
+        {
+          "sourceId": "dribbble",
+          "sourceName": "Dribbble Jobs",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+        },
+        {
+          "sourceId": "onlinejobs-ph",
+          "sourceName": "OnlineJobs.ph",
+          "sourceType": "HTML",
+          "collectionMethod": "public_html",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+        },
+        {
+          "sourceId": "jobspresso",
+          "sourceName": "Jobspresso",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+        }
+      ],
+      "fetchEventLog": {
+        "attempted": 12,
+        "recorded": 12,
+        "failedBatches": 0,
+        "errors": []
+      },
+      "cadenceGuards": {
+        "stateAvailable": true
+      },
+      "sourcesUnchanged": 0,
+      "robotsWouldBlock": 0,
+      "runDurationMs": 151
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": "2026-10-08T22:10:06.845Z",
+        "scraped_at": "2026-10-09T22:10:07.182Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [
+      {
+        "source_id": "remotive",
+        "published_count": 1,
+        "published_ids_json": "[1]"
+      }
+    ],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "missing",
+      "source": "remote-ok"
+    },
+    "rawResponse": "[{\"position\":\"Audit Customer Support\",\"company\":\"Audit Fixture Co\",\"url\":\"https://remoteok.com/remote-jobs/audit-native-123\",\"description\":\"Remote role open to applicants in the Philippines.\",\"location\":\"Philippines\"}]",
+    "status": 500,
+    "body": {
+      "error": "Internal Server Error",
+      "runDurationMs": 257,
+      "publicationOutcome": "UNKNOWN",
+      "inserted": null,
+      "actualChanges": null,
+      "skipped": null,
+      "confirmedPublishedLowerBound": 0,
+      "reconciliationRequired": true
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": null,
+        "scraped_at": "2026-10-09T22:10:08.109Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "invalid",
+      "source": "remote-ok"
+    },
+    "rawResponse": "[{\"position\":\"Audit Customer Support\",\"company\":\"Audit Fixture Co\",\"url\":\"https://remoteok.com/remote-jobs/audit-native-123\",\"description\":\"Remote role open to applicants in the Philippines.\",\"location\":\"Philippines\",\"date\":\"not-a-date\"}]",
+    "status": 500,
+    "body": {
+      "error": "Internal Server Error",
+      "runDurationMs": 133,
+      "publicationOutcome": "UNKNOWN",
+      "inserted": null,
+      "actualChanges": null,
+      "skipped": null,
+      "confirmedPublishedLowerBound": 0,
+      "reconciliationRequired": true
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": null,
+        "scraped_at": "2026-10-09T22:10:09.741Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "stale",
+      "source": "remote-ok"
+    },
+    "rawResponse": "[{\"position\":\"Audit Customer Support\",\"company\":\"Audit Fixture Co\",\"url\":\"https://remoteok.com/remote-jobs/audit-native-123\",\"description\":\"Remote role open to applicants in the Philippines.\",\"location\":\"Philippines\",\"date\":\"2026-09-08T22:10:10.619Z\"}]",
+    "status": 500,
+    "body": {
+      "error": "Internal Server Error",
+      "runDurationMs": 161,
+      "publicationOutcome": "UNKNOWN",
+      "inserted": null,
+      "actualChanges": null,
+      "skipped": null,
+      "confirmedPublishedLowerBound": 0,
+      "reconciliationRequired": true
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": "2026-09-08T22:10:10.619Z",
+        "scraped_at": "2026-10-09T22:10:10.819Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "future",
+      "source": "remote-ok"
+    },
+    "rawResponse": "[{\"position\":\"Audit Customer Support\",\"company\":\"Audit Fixture Co\",\"url\":\"https://remoteok.com/remote-jobs/audit-native-123\",\"description\":\"Remote role open to applicants in the Philippines.\",\"location\":\"Philippines\",\"date\":\"2026-10-10T22:10:11.678Z\"}]",
+    "status": 500,
+    "body": {
+      "error": "Internal Server Error",
+      "runDurationMs": 194,
+      "publicationOutcome": "UNKNOWN",
+      "inserted": null,
+      "actualChanges": null,
+      "skipped": null,
+      "confirmedPublishedLowerBound": 0,
+      "reconciliationRequired": true
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": "2026-10-10T22:10:11.678Z",
+        "scraped_at": "2026-10-09T22:10:11.972Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  },
+  {
+    "scenario": {
+      "date": "fresh",
+      "source": "remote-ok"
+    },
+    "rawResponse": "[{\"position\":\"Audit Customer Support\",\"company\":\"Audit Fixture Co\",\"url\":\"https://remoteok.com/remote-jobs/audit-native-123\",\"description\":\"Remote role open to applicants in the Philippines.\",\"location\":\"Philippines\",\"date\":\"2026-10-08T22:10:13.281Z\"}]",
+    "status": 200,
+    "body": {
+      "inserted": 1,
+      "actualChanges": 1,
+      "acceptedForInsert": 1,
+      "attemptedInsert": 1,
+      "insertFailedBatches": 0,
+      "insertErrors": [],
+      "triageFailures": 0,
+      "triageAiUnavailable": 0,
+      "triageProviderFailures": [],
+      "triageBudgetDeferred": 0,
+      "aiSubrequestCalls": 1,
+      "aiSubrequestBudget": 15,
+      "geoGateRejected": 0,
+      "geoRejectionsBySource": {},
+      "consensusQuarantined": 0,
+      "unclearRetriaged": 0,
+      "unclearUpgraded": 0,
+      "unclearDeactivated": 0,
+      "unclearSkepticUnavailable": 0,
+      "unclearQuotaUnavailable": false,
+      "stateWriteOk": 5,
+      "stateWriteFailed": 0,
+      "rejectedPersisted": 0,
+      "rejectedInsertFailedBatches": 0,
+      "pendingPersisted": 0,
+      "pendingInsertFailedBatches": 0,
+      "pendingDrainClaimed": 0,
+      "pendingDrainPublished": 0,
+      "pendingDrainRejected": 0,
+      "pendingDrainQuarantined": 0,
+      "pendingDrainDeferred": 0,
+      "triageViaInngest": false,
+      "geminiConfigured": false,
+      "groqConfigured": false,
+      "droppedNoUrl": 0,
+      "quarantinedApplicationUrls": 0,
+      "anomalousApplicationHosts": [],
+      "unmatchedPauses": [],
+      "filteredOut": 0,
+      "processed": 1,
+      "backlogRemaining": 0,
+      "skipped": 0,
+      "failedSources": [],
+      "sourceResults": [
+        {
+          "sourceId": "we-work-remotely",
+          "sourceName": "We Work Remotely",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 22,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "13dafe8603fd5dc8",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://weworkremotely.com"
+        },
+        {
+          "sourceId": "remotive",
+          "sourceName": "Remotive",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 18,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "13dafe8603fd5dc8",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://remotive.com"
+        },
+        {
+          "sourceId": "real-work-from-anywhere",
+          "sourceName": "Real Work From Anywhere",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 17,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "13dafe8603fd5dc8",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /rss.xml",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://www.realworkfromanywhere.com"
+        },
+        {
+          "sourceId": "jobicy-admin-support-apac",
+          "sourceName": "Jobicy Admin Support APAC",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 16,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "13dafe8603fd5dc8",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://jobicy.com"
+        },
+        {
+          "sourceId": "jobicy-supporting-apac",
+          "sourceName": "Jobicy Customer Support APAC",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+        },
+        {
+          "sourceId": "remote-ok",
+          "sourceName": "Remote OK",
+          "sourceType": "JSON",
+          "collectionMethod": "public_json_api",
+          "complianceStatus": "allowed",
+          "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+          "ok": true,
+          "count": 1,
+          "durationMs": 51,
+          "notModified": false,
+          "etag": null,
+          "lastModified": null,
+          "bodyHash": "023d8a973bc6bb8f",
+          "robotsMode": "enforce",
+          "robotsVerdict": "allowed",
+          "robotsEvidence": "Allow: / matched /api",
+          "robotsCrawlDelay": null,
+          "robotsWouldBlock": false,
+          "robotsOrigin": "https://remoteok.com"
+        },
+        {
+          "sourceId": "problogger",
+          "sourceName": "ProBlogger",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+        },
+        {
+          "sourceId": "remote-co",
+          "sourceName": "Remote.co",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+        },
+        {
+          "sourceId": "authentic-jobs",
+          "sourceName": "Authentic Jobs",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+        },
+        {
+          "sourceId": "dribbble",
+          "sourceName": "Dribbble Jobs",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+        },
+        {
+          "sourceId": "onlinejobs-ph",
+          "sourceName": "OnlineJobs.ph",
+          "sourceType": "HTML",
+          "collectionMethod": "public_html",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+        },
+        {
+          "sourceId": "jobspresso",
+          "sourceName": "Jobspresso",
+          "sourceType": "RSS",
+          "collectionMethod": "rss_feed",
+          "complianceStatus": "paused",
+          "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+          "ok": true,
+          "count": 0,
+          "durationMs": 0,
+          "skipped": true,
+          "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+        }
+      ],
+      "fetchEventLog": {
+        "attempted": 12,
+        "recorded": 12,
+        "failedBatches": 0,
+        "errors": []
+      },
+      "cadenceGuards": {
+        "stateAvailable": true
+      },
+      "sourcesUnchanged": 0,
+      "robotsWouldBlock": 0,
+      "runDurationMs": 897
+    },
+    "aiCalls": 1,
+    "rows": [
+      {
+        "id": 1,
+        "is_active": 1,
+        "location_type": "remote",
+        "ph_eligibility": "eligible_verified",
+        "posted_at": "2026-10-08T22:10:13.281Z",
+        "scraped_at": "2026-10-09T22:10:14.214Z"
+      }
+    ],
+    "visible": [
+      {
+        "id": 1
+      }
+    ],
+    "fts": {
+      "n": 1
+    },
+    "ledger": [
+      {
+        "source_id": "remote-ok",
+        "published_count": 1,
+        "published_ids_json": "[1]"
+      }
+    ],
+    "transports": [
+      "https://weworkremotely.com/robots.txt",
+      "https://remotive.com/robots.txt",
+      "https://www.realworkfromanywhere.com/robots.txt",
+      "https://jobicy.com/robots.txt",
+      "https://weworkremotely.com/remote-jobs.rss",
+      "https://remotive.com/remote-jobs/feed",
+      "https://www.realworkfromanywhere.com/rss.xml",
+      "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "https://remoteok.com/robots.txt",
+      "https://remoteok.com/api"
+    ],
+    "scope": "SYNTHETIC_RAW_RESPONSE_REAL_PARSERS_NATIVE_ROUTE_SQLITE_NO_NETWORK_NO_PRODUCTION"
+  }
+]
