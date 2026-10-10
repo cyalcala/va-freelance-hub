@@ -869,6 +869,18 @@ daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded rejected snapshot null count is not an empty book
+
+[PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_NULL_COUNT_IS_NOT_AN_EMPTY_BOOK](../operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_NULL_COUNT_IS_NOT_AN_EMPTY_BOOK_2026-10-10.md)
+is a publication-measurement prerequisite, not an SSAE card promotion. A
+rejected snapshot pair scored with a null matched count and empty rows is null,
+not `UNKNOWN`. A known empty pair scored the same way is `UNKNOWN`. The reader
+does not block the writer. No ranker, allocator, shadow canary, or neural
+routing change. Accepted MATH remains 0/13. Certified daily flow remains
+UNKNOWN. Sole NEXT is
+PUBLICATION_MANILA_DAY_MISSING_SNAPSHOT_PAIR_IS_NOT_AN_EMPTY_BOOK in the newest
+savepoint.
+
 ## 2026-10-10 bounded rejected snapshot zero is not an empty book
 
 [PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_ZERO_IS_NOT_AN_EMPTY_BOOK](../operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_ZERO_IS_NOT_AN_EMPTY_BOOK_2026-10-10.md)

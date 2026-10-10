@@ -1,5 +1,45 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Rejected snapshot null count is not an empty book
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_NULL_COUNT_IS_NOT_AN_EMPTY_BOOK.
+`loadedSameSourcePairManilaFamilyStatus(rejected, null, [], [])` is null, not
+`UNKNOWN`. The same call on a known empty pair is `UNKNOWN`. Direct
+`sameSourcePairManilaFamilyStatus(null, [], [], [])` stays `UNKNOWN`. The
+loaded call with matched count 0 stays null. `sameSourcePairManilaDayFlowCount`
+of OPEN and of CLOSED with that null status and a null matched count stays
+null. Caller-supplied 100 and 150 stay absent. The shipped reader already
+returned these results, so this slice locks them and does not add another
+wrapper. The unlimited publish already succeeded. The writer does not call
+this reader. No migration was added. This is not MATH-08 and not a certified
+daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_NULL_COUNT_IS_NOT_AN_EMPTY_BOOK_2026-10-10.md).
+Behavior SHA `ec18b93fe351c879d6ccea37941ddddec422ae38` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057. A rejected pair scored with matched count 0
+stays null. A known empty id row still reports 0.
+
+**One NEXT: PUBLICATION_MANILA_DAY_MISSING_SNAPSHOT_PAIR_IS_NOT_AN_EMPTY_BOOK.**
+`loadedSameSourcePairManilaFamilyStatus(null, null, [], [])` is null, not
+`UNKNOWN`. The same call with matched count 0 is null. Direct
+`sameSourcePairManilaFamilyStatus(null, [], [], [])` stays `UNKNOWN`. A missing
+pair is not the rejected-pair case already locked. Do not block the writer. Do
+not record CLOSED. Do not claim MATH-08. Do not grant a source, change cadence,
+or add a clock.
+
 ## 2026-10-10 Manila — Rejected snapshot zero is not an empty book
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

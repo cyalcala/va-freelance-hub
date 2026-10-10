@@ -1,6 +1,19 @@
 # Current resume pointer
 
 Latest continuation (2026-10-10 Manila): loadedSameSourcePairManilaFamilyStatus of
+a rejected pair, a null matched count, and empty rows is null, not UNKNOWN. The
+same call on a known empty pair is UNKNOWN. Direct
+sameSourcePairManilaFamilyStatus(null, [], [], []) stays UNKNOWN. The loaded
+call with matched count 0 stays null. sameSourcePairManilaDayFlowCount of OPEN
+and of CLOSED with that null status and a null matched count stays null.
+Caller-supplied 100 and 150 stay absent. The writer does not call this reader.
+No migration was added. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`ec18b93fe351c879d6ccea37941ddddec422ae38`. Sole NEXT is
+PUBLICATION_MANILA_DAY_MISSING_SNAPSHOT_PAIR_IS_NOT_AN_EMPTY_BOOK in the newest
+savepoint.
+
+Latest continuation (2026-10-10 Manila): loadedSameSourcePairManilaFamilyStatus of
 a rejected pair, matched count 0, and empty rows is null, not UNKNOWN. The same
 call on a known empty pair is UNKNOWN. Direct
 sameSourcePairManilaFamilyStatus(0, [], [], []) stays UNKNOWN.
