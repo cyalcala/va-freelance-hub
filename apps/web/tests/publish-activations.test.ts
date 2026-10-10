@@ -150,7 +150,7 @@ describe("publishGroupedActivations", () => {
   });
 
   test("clamps canary activations to the per-tick cap so the gateway never rolls back", async () => {
-    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
+    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
       postingRows: JSON.stringify([{ id: 3, postedAt: NOW, sourceUrl: "https://example.test/p/3", applicationUrl: null, locationType: "remote" },
         { id: 4, postedAt: NOW, sourceUrl: "https://example.test/p/4", applicationUrl: null, locationType: "remote" }]) }] });
     const persisted: number[][] = [];

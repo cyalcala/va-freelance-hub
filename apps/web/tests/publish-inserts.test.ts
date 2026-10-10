@@ -75,7 +75,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
   test("unchanged selected canary rows keep identity when only an unused suffix changes", async () => {
     const keys: unknown[] = [];
     for (const candidates of [[row(1), row(2), row(3)], [row(1), row(2), { ...row(4), description: "unused" }]]) {
-      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
+      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
         postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null, locationType: "remote" },
           { id: 2, postedAt: NOW, sourceUrl: "https://example.test/p/2", applicationUrl: null, locationType: "remote" }]) }] });
       await publishGroupedInserts(db, async rows => rows.map((_, index) => index + 1), candidates, NOW, "scrape");
@@ -109,7 +109,7 @@ describe("publishGroupedInserts canary cap clamp", () => {
   });
 
   test("clamps a canary batch to canaryMaxNewItemsPerTick so the gateway never rolls back", async () => {
-    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
+    const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
       postingRows: JSON.stringify([{ id: 1001, postedAt: NOW, sourceUrl: "https://example.test/p/1", applicationUrl: null, locationType: "remote" },
         { id: 1002, postedAt: NOW, sourceUrl: "https://example.test/p/2", applicationUrl: null, locationType: "remote" }]) }] });
     const persistedBatches: number[] = [];
@@ -1540,7 +1540,7 @@ describe("web insert receipts with SQLite RETURNING and FTS triggers", () => {
       { candidates: [row(1), row(2), row(3)], persistedSourceUrls: ["https://example.test/p/1", "https://example.test/p/2"] },
       { candidates: [row(3), row(2), row(1)], persistedSourceUrls: ["https://example.test/p/3", "https://example.test/p/2"] },
     ]) {
-      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
+      const db = new FakePublicationDatabase({ registry: [CANARY_ROW, CANARY_ROW, CANARY_ROW], ownership: [{ ownedCount: 2,
         postingRows: JSON.stringify([{ id: 1, postedAt: NOW, sourceUrl: scenario.persistedSourceUrls[0], applicationUrl: null, locationType: "remote" },
           { id: 2, postedAt: NOW, sourceUrl: scenario.persistedSourceUrls[1], applicationUrl: null, locationType: "remote" }]) }] });
       await publishGroupedInserts(db, async (rows) => {

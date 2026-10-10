@@ -1131,3 +1131,47 @@ test("native actual RETURNING IDs record one row despite FTS effects and zero fo
     expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 1 });
   } finally { sqlite.close(); }
 });
+
+test("native opt-out inserted after the first authority read does not publish", async () => {
+  const sqlite = freshDb();
+  try {
+    const inner = new BunDb(sqlite);
+    let optOutReads = 0;
+    const db: PublicationDatabase = {
+      prepare(query: string): PublicationStatement {
+        const statement = inner.prepare(query);
+        if (!query.includes("FROM source_opt_outs")) return statement;
+        return {
+          bind(...values: unknown[]) {
+            const bound = statement.bind(...values);
+            return {
+              bind() { return this; },
+              async first<T>() {
+                optOutReads += 1;
+                const row = await bound.first<T>();
+                if (optOutReads === 1) {
+                  sqlite.query("INSERT INTO source_opt_outs(source_id, reason) VALUES(?, ?)").run("we-work-remotely", "owner opt-out after the authority snapshot");
+                }
+                return row;
+              },
+              run: () => bound.run(),
+            };
+          },
+        };
+      },
+    };
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "native-epoch-opt-out", proposedCount: 1,
+      persist: async () => {
+        persisted += 1;
+        const ids = writeOpportunity(sqlite, "native-epoch-opt-out", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(persisted).toBe(0);
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 0 });
+    expect(sqlite.query("SELECT mode FROM source_publication_ledger").all()).toEqual([{ mode: "blocked" }]);
+  } finally { sqlite.close(); }
+});

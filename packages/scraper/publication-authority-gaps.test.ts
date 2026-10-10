@@ -409,11 +409,13 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
 
   describe("Cross-writer reservation Gap: no cumulative reservation across writers", () => {
     test("each publishPublicExposure call checks tickSum independently — no shared reservation", async () => {
+      const canary = { sourceId: "greenhouse:test", compliance: "allowed", operational: "canary", optOut: 0, policyExpiry: "2026-10-01T00:00:00.000Z", canaryMaxNewItemsPerTick: 5 };
       const db = new FakeDatabase({
-        registry: [{ sourceId: "greenhouse:test", compliance: "allowed", operational: "canary", optOut: 0, policyExpiry: "2026-10-01T00:00:00.000Z", canaryMaxNewItemsPerTick: 5 }],
-        optOut: [null],
+        registry: [canary, canary, canary],
+        optOut: [null, null, null],
         retry: [null, null],
-        tickSum: [{ published: 2 }, { published: 3 }], // Each call sees different prior count
+        // Each call's pre-write read and the first call's second read see these counts.
+        tickSum: [{ published: 2 }, { published: 2 }, { published: 3 }],
         ownership: [currentRows([1, 2, 3])],
       });
       let persisted1 = 0, persisted2 = 0;

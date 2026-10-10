@@ -139,7 +139,8 @@ describe("SP-23C publication gateway", () => {
 
   test("a canonical registry lease strictly after now permits allowed and conditional active sources", async () => {
     for (const compliance of ["allowed", "conditional"]) {
-      const db = new FakeDatabase({ registry: [{ ...activePolicy("greenhouse:tenant", "2026-09-06T12:00:00.001Z"), compliance }], retry: [null], optOut: [null], ownership: [currentRows([7])] });
+      const policy = { ...activePolicy("greenhouse:tenant", "2026-09-06T12:00:00.001Z"), compliance };
+      const db = new FakeDatabase({ registry: [policy, policy], retry: [null], optOut: [null, null], ownership: [currentRows([7])] });
       let persisted = 0;
       const result = await publishPublicExposure(db, { sourceId: "greenhouse:tenant", now: NOW, tickKey: TICK,
         retryKey: `valid-active:${compliance}`, proposedCount: 1, persist: async () => { persisted++; return { publishedCount: 1, ids: [7] }; } });
@@ -352,10 +353,15 @@ describe("truthful fresh publication acknowledgements", () => {
   invalidAcknowledgements.push(["prototype-concealed sparse ID", { publishedCount: 1, ids: inheritedId }]);
 
   function publishingDb(mode: "unlimited" | "capped") {
-    return new FakeDatabase({ retry: [null], ownership: [currentRows([7, 8])], registry: mode === "unlimited" ? [null] : [{
+    const canaryPolicy = {
       sourceId: "greenhouse:test", compliance: "allowed", operational: "canary", optOut: 0,
       policyExpiry: "2026-10-01T00:00:00.000Z", canaryMaxNewItemsPerTick: 2,
-    }] });
+    };
+    return new FakeDatabase({
+      retry: [null], ownership: [currentRows([7, 8])], optOut: [null, null],
+      registry: mode === "unlimited" ? [null, null] : [canaryPolicy, canaryPolicy],
+      tickSum: [{ published: 0 }, { published: 0 }],
+    });
   }
   function freshRequest(mode: "unlimited" | "capped", persist: () => Promise<{ publishedCount: number; ids: number[] }>) {
     return { sourceId: mode === "unlimited" ? "remotive" : "greenhouse:test", now: NOW,
@@ -416,4 +422,88 @@ describe("truthful fresh publication acknowledgements", () => {
       expect(ids).toEqual([99]); expect(db.runs[0]?.values.slice(5, 7)).toEqual([2, "[7,8]"]);
     });
   }
+});
+
+describe("publication source-policy epoch", () => {
+  const canary = {
+    sourceId: "greenhouse:test", compliance: "allowed", operational: "canary", optOut: 0,
+    policyExpiry: "2026-10-01T00:00:00.000Z", canaryMaxNewItemsPerTick: 3,
+  };
+
+  test("an opt-out appearing after the first authority read does not publish", async () => {
+    const db = new FakeDatabase({
+      retry: [null], registry: [null, null],
+      optOut: [null, { source_id: "we-work-remotely" }],
+    });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "epoch-opt-out", proposedCount: 1,
+      persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; },
+    });
+    expect(persisted).toBe(0);
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
+  });
+
+  test("a lease that expires after the first authority read does not publish", async () => {
+    const db = new FakeDatabase({
+      retry: [null], optOut: [null, null],
+      registry: [
+        activePolicy("greenhouse:tenant", "2026-10-01T00:00:00.000Z"),
+        activePolicy("greenhouse:tenant", NOW),
+      ],
+    });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "greenhouse:tenant", now: NOW, tickKey: TICK, retryKey: "epoch-expiry", proposedCount: 1,
+      persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; },
+    });
+    expect(persisted).toBe(0);
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, reason: "source policy has expired" });
+  });
+
+  test("a canary opt-out appearing after the first authority read does not publish and does not require active", async () => {
+    const db = new FakeDatabase({
+      retry: [null], tickSum: [{ published: 0 }],
+      registry: [canary, canary],
+      optOut: [null, { source_id: "greenhouse:test" }],
+    });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "greenhouse:test", now: NOW, tickKey: TICK, retryKey: "epoch-canary-opt-out", proposedCount: 1,
+      persist: async () => { persisted++; return { publishedCount: 1, ids: [1] }; },
+    });
+    expect(persisted).toBe(0);
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
+  });
+
+  test("a canary tick that fills after the first cap read does not publish the later batch", async () => {
+    const db = new FakeDatabase({
+      retry: [null], optOut: [null, null],
+      registry: [canary, canary],
+      tickSum: [{ published: 0 }, { published: 2 }],
+    });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "greenhouse:test", now: NOW, tickKey: TICK, retryKey: "epoch-canary-cap", proposedCount: 2,
+      persist: async () => { persisted++; return { publishedCount: 2, ids: [1, 2] }; },
+    });
+    expect(persisted).toBe(0);
+    expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, reason: "canary tick cap is already exhausted" });
+  });
+
+  test("a canary that is still canary at the second read publishes without being active", async () => {
+    const db = new FakeDatabase({
+      retry: [null], optOut: [null, null],
+      registry: [canary, { ...canary, canaryMaxNewItemsPerTick: 2 }],
+      tickSum: [{ published: 0 }, { published: 0 }],
+      ownership: [currentRows([7])],
+    });
+    let persisted = 0;
+    const result = await publishPublicExposure(db, {
+      sourceId: "greenhouse:test", now: NOW, tickKey: TICK, retryKey: "epoch-canary-holds", proposedCount: 1,
+      persist: async () => { persisted++; return { publishedCount: 1, ids: [7] }; },
+    });
+    expect(persisted).toBe(1);
+    expect(result).toMatchObject({ ok: true, mode: "capped", publishedCount: 1, ids: [7] });
+  });
 });

@@ -348,6 +348,66 @@ async function persistAndRecord(
   request: PublishPublicExposureRequest,
   mode: "unlimited" | "capped",
 ): Promise<PublishPublicExposureResult> {
+  // The first read can go stale before this write. Re-read here. This is
+  // sequential for one writer, not a shared reservation across connections.
+  const fresh = await loadPublicationPolicy(db, request.sourceId);
+  if (mode === "capped") {
+    const decision = decideCanaryPublication({
+      sourceId: request.sourceId,
+      compliance: fresh.compliance,
+      operational: fresh.operational,
+      optOut: fresh.optOut,
+      policyExpiry: fresh.policyExpiry,
+      canaryMaxNewItemsPerTick: fresh.canaryMaxNewItemsPerTick,
+      proposedNewItems: request.proposedCount,
+      now: request.now,
+    });
+    if (decision.action === "rollback_to_shadow") {
+      await applyTypedTransition(db, {
+        sourceId: request.sourceId,
+        to: { compliance: fresh.compliance, operational: "shadow" },
+        cause: decision.transition.cause,
+        now: request.now,
+        evidenceHash: decision.transition.event.evidenceHash,
+        proposedNewItems: request.proposedCount,
+      });
+      await insertLedger(db, request, "rolled_back", 0, []);
+      return { ok: true, mode: "rolled_back", publishedCount: 0, ids: [], replayed: false, reason: decision.transition.reason };
+    }
+    if (decision.action !== "allow" || decision.publicationMode !== "capped") {
+      await insertLedger(db, request, "blocked", 0, []);
+      return { ok: true, mode: "blocked", publishedCount: 0, ids: [], replayed: false, reason: "reason" in decision ? decision.reason : "canary is not publication-eligible" };
+    }
+    const cap = fresh.canaryMaxNewItemsPerTick ?? 0;
+    const already = await db.prepare(LOAD_TICK_SUM_SQL).bind(request.sourceId, request.tickKey).first<{ published: number }>();
+    const alreadyPublished = Number(already?.published ?? 0);
+    if (alreadyPublished + request.proposedCount > cap) {
+      await insertLedger(db, request, "blocked", 0, []);
+      return { ok: true, mode: "blocked", publishedCount: 0, ids: [], replayed: false, reason: "canary tick cap is already exhausted" };
+    }
+  } else {
+    const expiry = fresh.policyExpiry;
+    const canonicalLease = isAdmissionInstant(expiry) && isAdmissionInstant(request.now);
+    const isExpired = canonicalLease && request.now >= expiry;
+    const hasCurrentLease = fresh.authorityOrigin === "legacy-fallback"
+      || (canonicalLease && request.now < expiry);
+    if (
+      fresh.optOut
+      || !hasCurrentLease
+      || (fresh.compliance !== "allowed" && fresh.compliance !== "conditional")
+      || fresh.operational !== "active"
+    ) {
+      await insertLedger(db, request, "blocked", 0, []);
+      return {
+        ok: true,
+        mode: "blocked",
+        publishedCount: 0,
+        ids: [],
+        replayed: false,
+        reason: isExpired ? "source policy has expired" : "source is not publication-eligible",
+      };
+    }
+  }
   if (request.proposedCount === 0) {
     // No persistence was attempted; keep the existing empty-decision behavior.
     await insertLedger(db, request, mode, 0, []);
