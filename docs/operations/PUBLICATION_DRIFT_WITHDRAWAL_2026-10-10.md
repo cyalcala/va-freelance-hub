@@ -55,6 +55,13 @@ or browser proof.
 The typecheck also required a literal `as const` on the unclear-sweep patch and
 `unknown` casts on two fixture `fetch` stubs. Those are type-only.
 
+## Backup
+
+Behavior commit `a302004ab53b3767b504d2d2657beea7a0334f48`. `git push gitlab
+HEAD:codex/verified-flow-directory-checkpoint` returned HTTP Basic access
+denied. BACKUP_PENDING until GitLab authentication succeeds. `main` was not
+pushed. GitHub was not probed.
+
 ## Still open
 
 Accepted MATH remains 0/13. Certified fresh flow remains UNKNOWN. Directory

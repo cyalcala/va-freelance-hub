@@ -19,6 +19,9 @@ remote control. ADR-010 still rejects a collapsed replacement board and keeps
 the previous board. Unknown dates, null workplace, unclear rows, and ledger-less
 history stay public.
 [Evidence](operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md).
+Behavior SHA `a302004ab53b3767b504d2d2657beea7a0334f48`. GitLab push of that
+SHA returned HTTP Basic access denied. **BACKUP_PENDING.** Retry when GitLab
+authentication succeeds. Do not push `main`. GitHub was not probed.
 
 **Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
 236 FVA stays parked. No directory SQL. GCP billing, image identity, and Janes
