@@ -209,3 +209,17 @@ export function ledgerMatchedManilaDayFlowCount(dayState: string, matchedCount: 
   if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
   return null;
 }
+
+// Internal still-public agreement is absent when those ids are not the serving
+// rows that remain public. This reader does not prefer either length and is
+// not a closed-day flow.
+export function servingMatchedManilaStillPublicCount(
+  stillPublicCount: number,
+  pair: ManilaSnapshotPair | null,
+  servingIds: readonly number[],
+): number | null {
+  const agreed = agreedManilaStillPublicCount(stillPublicCount, pair);
+  if (agreed === null || !pair) return null;
+  if (!samePositiveIds(pair.stillPublicIds, servingIds)) return null;
+  return agreed;
+}

@@ -3013,3 +3013,58 @@ test("a ledger-matched count is not a completed Manila-day flow", async () => {
     expect(ledgerMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("still-public ids that are not the serving rows stay absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "still-public-serving", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "still-public-serving", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const today = manilaDateOf(NOW);
+    const servingIds = stillPublicFirstPublishIds(sqlite, [realId]);
+    expect(servingIds).toEqual([realId]);
+    const agreedLoaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, agreedManilaStillPublicCount, servingMatchedManilaStillPublicCount } = await import("./manila-day");
+    const agreedPair = latestManilaSnapshotPair(agreedLoaded.counts, agreedLoaded.ids, today);
+    expect(agreedPair).not.toBeNull();
+    expect(agreedPair!.stillPublicIds).toEqual(servingIds);
+    const agreedCount = agreedLoaded.counts.find((row) => row.retryKey === agreedPair!.retryKey);
+    expect(agreedCount).toBeDefined();
+    expect(agreedManilaStillPublicCount(agreedCount!.stillPublicCount, agreedPair)).toBe(servingIds.length);
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'still-public-not-serving', ?, 'OPEN', 1, 0, ?)`).run(TICK, today, later);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'still-public-not-serving', ?, ?, '[]', ?)`).run(TICK, today, JSON.stringify([realId]), later);
+    const loaded = loadSnapshotPair(sqlite);
+    const latestCount = latestManilaOpenSnapshot(loaded.counts, today);
+    expect(latestCount).not.toBeNull();
+    expect(latestCount!.stillPublicCount).toBe(0);
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.retryKey).toBe("still-public-not-serving");
+    expect(paired!.idsKnown).toBe(true);
+    expect(paired!.stillPublicIds).toEqual([]);
+    expect(paired!.stillPublicIds).not.toEqual(servingIds);
+    const agreed = agreedManilaStillPublicCount(latestCount!.stillPublicCount, paired);
+    expect(agreed).toBe(0);
+    expect(agreed).toBe(paired!.stillPublicIds.length);
+    expect(agreed).not.toBe(servingIds.length);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof servingMatchedManilaStillPublicCount).toBe("function");
+    const matched = servingMatchedManilaStillPublicCount(latestCount!.stillPublicCount, paired, servingIds);
+    expect(matched).toBeNull();
+    expect(matched).not.toBe(agreed);
+    expect(matched).not.toBe(servingIds.length);
+    expect(servingMatchedManilaStillPublicCount(agreedCount!.stillPublicCount, agreedPair, servingIds)).toBe(servingIds.length);
+  } finally { sqlite.close(); }
+});
