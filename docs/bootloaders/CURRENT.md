@@ -1,5 +1,15 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): an exact family-ceiling OK on the
+recorded opportunity sources is not a completed Manila-day flow. A
+caller-supplied CLOSED state does not create one. Caller-supplied 100 and 150
+stay absent. The writer does not call this reader. No migration was added.
+MATH remains 0/13 and certified daily flow remains UNKNOWN. The 735-company
+directory stays on its existing holds. Behavior SHA
+`6286e53eaf153b198544fa738d506b9babfb9d78`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): two of five still-public ids in one
 provider family sit on the 40% ceiling and stay OK when those sources are the
 ones recorded on the opportunities. Three of five stay a breach. A
