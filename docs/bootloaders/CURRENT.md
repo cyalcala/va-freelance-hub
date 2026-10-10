@@ -1,5 +1,15 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): an OPEN snapshot whose same-source
+family status is null because the still-public id list contains a duplicate id
+stays absent from sameSourcePairManilaDayFlowCount. A caller-supplied CLOSED state
+does not create one. Caller-supplied 100 and 150 stay absent. The writer does not
+call this reader. No migration was added. MATH remains 0/13 and certified daily flow
+remains UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`3c2c609ba8b8495cf2ca02e5c8309fa92a344933`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_REPEATED_ID_IS_NOT_A_FLOW in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a same-source breach whose still-public
 id list contains a duplicate id or non-positive integer stays absent from
 sameSourcePairManilaFamilyStatus. The family status is null, not OK and not
