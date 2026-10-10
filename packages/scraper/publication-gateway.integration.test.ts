@@ -4089,3 +4089,88 @@ test("a stored-source family breach is not a completed Manila-day flow", async (
     expect(storedPublishingSourceManilaDayFlowCount("OPEN", status, 150)).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("an exact family ceiling stays OK on the recorded opportunity sources", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "exact-family-ceiling", proposedCount: 5,
+      persist: async () => {
+        const ids = Array.from({ length: 5 }, (_, index) => writeOpportunity(sqlite, `exact-family-ceiling-${index}`, "we-work-remotely")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 5, replayed: false });
+    const publishedIds = result.ok ? [...result.ids].sort((left, right) => left - right) : [];
+    expect(publishedIds).toHaveLength(5);
+    const stored = (sqlite.query("SELECT source_id AS sourceId FROM source_publication_manila_open_snapshot WHERE retry_key = ?").get("exact-family-ceiling") as { sourceId: string }).sourceId;
+    expect(stored).toBe("we-work-remotely");
+    const open = readManilaOpenSnapshot(sqlite, "exact-family-ceiling");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(open!.still_public_count).toBe(5);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, snapshotSourcedManilaFamilyStatus, recordedOpportunityManilaFamilyStatus } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect([...paired!.stillPublicIds].sort((left, right) => left - right)).toEqual(publishedIds);
+    const recorded = publishedIds.map((id) => {
+      const row = sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(id) as { sourceId: string };
+      return { id, sourceId: row.sourceId };
+    });
+    expect(recorded.every((row) => row.sourceId === stored)).toBe(true);
+    const recordedStatus = snapshotSourcedManilaFamilyStatus(5, paired!.stillPublicIds, recorded, [{ sourceId: stored, count: 5 }]);
+    expect(recordedStatus).toBe("BREACH");
+    expect(recordedStatus).not.toBe("OK");
+    const ceilingSources = ["jobicy:admin", "jobicy:support", "remotive", "remote-ok", "real-work-from-anywhere"];
+    const claimed = publishedIds.map((id, index) => ({ id, sourceId: ceilingSources[index]! }));
+    const claimedBook = ceilingSources.map((sourceId) => ({ sourceId, count: 1 }));
+    const ceiling = concentrationReport(familyShares(claimedBook), TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(ceiling.topId).toBe("jobicy");
+    expect(ceiling.topShare).toBe(0.4);
+    expect(ceiling.status).toBe("OK");
+    expect(ceiling.topShare).not.toBeGreaterThan(TOP_PROVIDER_FAMILY_SHARE_MAX);
+    const claimedStatus = snapshotSourcedManilaFamilyStatus(5, paired!.stillPublicIds, claimed, claimedBook);
+    expect(claimedStatus).toBe("OK");
+    expect(claimedStatus).not.toBe("BREACH");
+    expect(typeof recordedOpportunityManilaFamilyStatus).toBe("function");
+    const absent = recordedOpportunityManilaFamilyStatus(5, paired!.stillPublicIds, recorded, claimed, claimedBook);
+    expect(absent).toBeNull();
+    expect(absent).not.toBe("OK");
+    expect(absent).not.toBe("BREACH");
+    for (const row of claimed) sqlite.query("UPDATE opportunities SET source_id = ? WHERE id = ?").run(row.sourceId, row.id);
+    const exactRecorded = publishedIds.map((id) => {
+      const row = sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(id) as { sourceId: string };
+      return { id, sourceId: row.sourceId };
+    });
+    expect(exactRecorded).toEqual(claimed);
+    const exactStatus = recordedOpportunityManilaFamilyStatus(5, paired!.stillPublicIds, exactRecorded, claimed, claimedBook);
+    expect(exactStatus).toBe("OK");
+    expect(exactStatus).not.toBe("BREACH");
+    const third = publishedIds[2]!;
+    sqlite.query("UPDATE opportunities SET source_id = ? WHERE id = ?").run("jobicy:design", third);
+    const breachRecorded = publishedIds.map((id) => {
+      const row = sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(id) as { sourceId: string };
+      return { id, sourceId: row.sourceId };
+    });
+    const breachBook = [
+      { sourceId: "jobicy:admin", count: 1 },
+      { sourceId: "jobicy:support", count: 1 },
+      { sourceId: "jobicy:design", count: 1 },
+      { sourceId: "remote-ok", count: 1 },
+      { sourceId: "real-work-from-anywhere", count: 1 },
+    ];
+    const breachMath = concentrationReport(familyShares(breachBook), TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(breachMath.topId).toBe("jobicy");
+    expect(breachMath.topShare).toBe(0.6);
+    expect(breachMath.status).toBe("BREACH");
+    const breachStatus = recordedOpportunityManilaFamilyStatus(5, paired!.stillPublicIds, breachRecorded, breachRecorded, breachBook);
+    expect(breachStatus).toBe("BREACH");
+    expect(breachStatus).not.toBe("OK");
+    const swapped = claimed.map((row, index) => index === 0 ? { id: row.id, sourceId: "jobicy:support" } : index === 1 ? { id: row.id, sourceId: "jobicy:admin" } : row);
+    expect(recordedOpportunityManilaFamilyStatus(5, paired!.stillPublicIds, exactRecorded, swapped, claimedBook)).toBeNull();
+    expect(recordedOpportunityManilaFamilyStatus(null, [], [], [], [])).toBe("UNKNOWN");
+  } finally { sqlite.close(); }
+});

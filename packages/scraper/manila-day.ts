@@ -427,6 +427,36 @@ export function storedPublishingSourceManilaDayFlowCount(
   return null;
 }
 
+function sameRecordedOpportunitySources(
+  recorded: readonly { id: number; sourceId: string }[],
+  claimed: readonly { id: number; sourceId: string }[],
+): boolean {
+  if (recorded.length !== claimed.length) return false;
+  const claimedById = new Map<number, string>();
+  for (const row of claimed) {
+    if (claimedById.has(row.id)) return false;
+    claimedById.set(row.id, row.sourceId);
+  }
+  return recorded.every((row) => claimedById.get(row.id) === row.sourceId);
+}
+
+// A caller-supplied family book is not the snapshot family status unless
+// each still-public id keeps the source recorded on that opportunity. Two
+// of five ids in one family sit on the 40% ceiling and stay OK. Three of
+// five stay a breach. The ceiling is strictly greater. This does not block
+// a writer, does not record CLOSED, and does not claim MATH-08.
+export function recordedOpportunityManilaFamilyStatus(
+  matchedCount: number | null,
+  stillPublicIds: readonly number[],
+  recordedSources: readonly { id: number; sourceId: string }[],
+  claimedSources: readonly { id: number; sourceId: string }[],
+  suppliedRows: readonly { sourceId: string; count: number }[],
+): "UNKNOWN" | "OK" | "BREACH" | null {
+  if (!samePositiveIds(stillPublicIds, recordedSources.map((row) => row.id))) return null;
+  if (!sameRecordedOpportunitySources(recordedSources, claimedSources)) return null;
+  return snapshotSourcedManilaFamilyStatus(matchedCount, stillPublicIds, recordedSources, suppliedRows);
+}
+
 // A remote serving match stays absent when the original posting is outside the
 // inclusive 30-day window or unknown. This reader does not prefer the remote
 // length and is not a closed-day flow.
