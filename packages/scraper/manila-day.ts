@@ -475,6 +475,29 @@ export function recordedOpportunityManilaDayFlowCount(
   return null;
 }
 
+// A source-share breach is not a family breach. Two of five ids with the
+// same source sit at source share 0.4, above the 25% source ceiling, and
+// family share 0.4, which stays OK. A real family breach stays a breach.
+// Both statuses come from the same recorded rows. This does not block a
+// writer, does not record CLOSED, and does not claim MATH-08.
+export function sameSourcePairManilaFamilyStatus(
+  matchedCount: number | null,
+  stillPublicIds: readonly number[],
+  recordedSources: readonly { id: number; sourceId: string }[],
+  suppliedRows: readonly { sourceId: string; count: number }[],
+): "UNKNOWN" | "OK" | "BREACH" | null {
+  const sourceStatus = remoteMatchedManilaPortfolioStatus(matchedCount, suppliedRows);
+  const familyStatus = recordedOpportunityManilaFamilyStatus(
+    matchedCount,
+    stillPublicIds,
+    recordedSources,
+    recordedSources,
+    suppliedRows,
+  );
+  if (sourceStatus === null || familyStatus === null) return null;
+  return familyStatus;
+}
+
 // A remote serving match stays absent when the original posting is outside the
 // inclusive 30-day window or unknown. This reader does not prefer the remote
 // length and is not a closed-day flow.
