@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): three of five still-public ids with the
+same source are a source breach and a family breach. The paired reader returns
+BREACH. The writer does not call this reader. No migration was added. MATH
+remains 0/13 and certified daily flow remains UNKNOWN. The 735-company
+directory stays on its existing holds. Behavior SHA
+`4dcfc13ffea85f34177b96e492068997c6ce2bfb`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_IS_NOT_A_FLOW in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): an OPEN snapshot whose same-source pair
 stays OK is not a completed Manila-day flow. A caller-supplied CLOSED state does
 not create one. Caller-supplied 100 and 150 stay absent. The writer does not

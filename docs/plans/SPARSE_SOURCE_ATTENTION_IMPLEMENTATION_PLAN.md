@@ -869,6 +869,17 @@ daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded same-source breach is a family breach
+
+[PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_IS_A_FAMILY_BREACH](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_IS_A_FAMILY_BREACH_2026-10-10.md)
+is a publication-measurement prerequisite, not an SSAE card promotion. Three of
+five recorded still-public ids with the same source are a source breach at
+share 0.6 and a family breach at share 0.6. The paired reader returns BREACH,
+matching the source breach status. The reader does not block the writer. No
+ranker, allocator, shadow canary, or neural routing change. Accepted MATH
+remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_IS_NOT_A_FLOW in the newest savepoint.
+
 ## 2026-10-10 bounded same-source pair is not a flow
 
 [PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FLOW](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FLOW_2026-10-10.md)

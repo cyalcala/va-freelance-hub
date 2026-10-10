@@ -1257,6 +1257,17 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint. No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded same-source breach is a family breach
+
+[PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_IS_A_FAMILY_BREACH](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_IS_A_FAMILY_BREACH_2026-10-10.md)
+advances a local measurement prerequisite only. Three of five recorded
+still-public ids with the same source are a source breach at share 0.6 and
+a family breach at share 0.6. This is not card acceptance or a certified
+QUPD. Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
+735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_IS_NOT_A_FLOW in the newest savepoint.
+No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded same-source pair is not a flow
 
 [PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FLOW](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FLOW_2026-10-10.md)
