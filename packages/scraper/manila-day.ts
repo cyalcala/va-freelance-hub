@@ -1,3 +1,5 @@
+import { canonicalizeSourceUrl } from "./contentHash";
+
 const CANONICAL_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;
 
@@ -298,4 +300,21 @@ export function phMatchedManilaDayFlowCount(dayState: string, matchedCount: numb
   if (dayState.length === 0) return null;
   if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
   return null;
+}
+
+// A PH match stays absent when two still-public ids share one canonical
+// source URL. This reader does not prefer the raw id length, does not
+// collapse the pair to one survivor, and is not a closed-day flow.
+export function canonicalUrlMatchedManilaStillPublicCount(
+  stillPublicCount: number,
+  pair: ManilaSnapshotPair | null,
+  phIds: readonly number[],
+  rows: readonly { id: number; sourceUrl: string }[],
+): number | null {
+  const matched = phMatchedManilaStillPublicCount(stillPublicCount, pair, phIds, phIds);
+  if (matched === null || !pair) return null;
+  if (!samePositiveIds(pair.stillPublicIds, rows.map((row) => row.id))) return null;
+  const canonical = rows.map((row) => canonicalizeSourceUrl(row.sourceUrl));
+  if (new Set(canonical).size !== canonical.length) return null;
+  return matched;
 }

@@ -9,6 +9,7 @@ import { withdrawUnreceiptedAcknowledgements } from "./publication-uncertainty";
 import { isPublicPhEligibility, PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 import { assessPostingFreshness } from "./publication-freshness";
 import { resolvePublicationOutboundUrl } from "./publication-outbound";
+import { canonicalizeSourceUrl } from "./contentHash";
 
 const NOW = new Date().toISOString();
 const TICK = publicationTickKey("scrape", NOW);
@@ -3330,5 +3331,57 @@ test("a PH-matched count is not a completed Manila-day flow", async () => {
     expect(phMatchedManilaDayFlowCount("CLOSED", matched)).toBeNull();
     expect(phMatchedManilaDayFlowCount("OPEN", 100)).toBeNull();
     expect(phMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
+  } finally { sqlite.close(); }
+});
+
+test("two still-public ids that share a canonical source URL stay absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "canonical-url", proposedCount: 2,
+      persist: async () => {
+        const ids = [
+          ...writeOpportunity(sqlite, "canonical-url-a", "we-work-remotely"),
+          ...writeOpportunity(sqlite, "canonical-url-b", "we-work-remotely"),
+        ];
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 2, replayed: false });
+    const ids = result.ok ? [...result.ids].sort((left, right) => left - right) : [];
+    expect(ids).toHaveLength(2);
+    const today = manilaDateOf(NOW);
+    const phIds = stillPublicFirstPublishIds(sqlite, ids);
+    expect(phIds).toEqual(ids);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, phMatchedManilaStillPublicCount, canonicalUrlMatchedManilaStillPublicCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect([...paired!.stillPublicIds].sort((left, right) => left - right)).toEqual(ids);
+    const snapshot = loaded.counts.find((row) => row.retryKey === paired!.retryKey);
+    expect(snapshot).toBeDefined();
+    expect(phMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, phIds, phIds)).toBe(2);
+    const secondId = ids[1]!;
+    sqlite.query("UPDATE opportunities SET source_url = ? WHERE id = ?").run("https://Example.invalid/canonical-url-a", secondId);
+    const rows = sqlite.query("SELECT id, source_url AS sourceUrl FROM opportunities WHERE id IN (?, ?) ORDER BY id")
+      .all(ids[0], secondId) as Array<{ id: number; sourceUrl: string }>;
+    expect(rows).toHaveLength(2);
+    const canonical = rows.map((row) => canonicalizeSourceUrl(row.sourceUrl));
+    expect(new Set(canonical).size).toBe(1);
+    expect(canonical[0]).toBe("https://example.invalid/canonical-url-a");
+    expect(phMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, phIds, phIds)).toBe(2);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof canonicalUrlMatchedManilaStillPublicCount).toBe("function");
+    const matched = canonicalUrlMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, phIds, rows);
+    expect(matched).toBeNull();
+    expect(matched).not.toBe(2);
+    expect(matched).not.toBe(1);
+    expect(matched).not.toBe(0);
+    expect(canonicalUrlMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, phIds, rows.slice(0, 1))).toBeNull();
+    sqlite.query("UPDATE opportunities SET source_url = ? WHERE id = ?").run("https://example.invalid/canonical-url-b", secondId);
+    const distinct = sqlite.query("SELECT id, source_url AS sourceUrl FROM opportunities WHERE id IN (?, ?) ORDER BY id")
+      .all(ids[0], secondId) as Array<{ id: number; sourceUrl: string }>;
+    expect(new Set(distinct.map((row) => canonicalizeSourceUrl(row.sourceUrl))).size).toBe(2);
+    expect(canonicalUrlMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, phIds, distinct)).toBe(2);
   } finally { sqlite.close(); }
 });
