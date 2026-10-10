@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive receipt stores the
+Manila-day receipt count and still-public count with day state OPEN. The
+table rejects a closed day. A missing table fails open. Migration 0063 was
+not applied. MATH remains 0/13 and certified daily flow remains UNKNOWN. The
+735-company directory stays on its existing holds. Behavior SHA
+`18ec13dc9c1ef35d4e86030547c607ca89cee8e7`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SNAPSHOT_LATEST in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive receipt records how many
 of that Manila day's first-publish ids are still active and
 Philippines-eligible. A withdrawn id stays in the receipt count and leaves

@@ -1,5 +1,36 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Manila-day counts are stored as an open snapshot
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_OPEN_SNAPSHOT. A positive publish
+stores the receipt count and the still-public count with day state OPEN. The
+table rejects every other state. A missing table fails open. Migration 0063
+adds no `julianday('now')` and was not applied. An open snapshot is not a
+closed Manila day and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_OPEN_SNAPSHOT_2026-10-10.md).
+Behavior SHA `18ec13dc9c1ef35d4e86030547c607ca89cee8e7` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0062 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_SNAPSHOT_LATEST.** The day's open count is
+the latest snapshot for that Manila date. Do not sum snapshot rows. Do not
+treat the latest open row as a closed day or a certified production flow. Do
+not turn 25% or 40% into a per-write block. Do not grant a source, change
+cadence, or add a clock.
+
 ## 2026-10-10 Manila — Still-public ids are counted separately from first publishes
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
