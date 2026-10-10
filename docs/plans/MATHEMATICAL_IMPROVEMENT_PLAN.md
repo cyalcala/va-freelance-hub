@@ -964,6 +964,16 @@ flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_AGREED_IDS_MUST_MATCH_LEDGER in the newest savepoint.
 No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded Manila-day ledger id match
+
+[PUBLICATION_MANILA_DAY_AGREED_IDS_MUST_MATCH_LEDGER](../operations/PUBLICATION_MANILA_DAY_LEDGER_ID_MATCH_2026-10-10.md)
+advances a local measurement prerequisite only. A distinct foreign id list
+stays absent even when its length matches the ledger. This is not card
+acceptance or a certified QUPD. Accepted MATH remains 0/13. Certified daily
+flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_STILL_PUBLIC_COUNT_ID_AGREEMENT in the newest
+savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

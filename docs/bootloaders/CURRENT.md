@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): agreed snapshot ids must be the
+ledger's first-publish ids. A distinct foreign list of the same length stays
+absent. The writer does not call this reader. No migration was added. MATH
+remains 0/13 and certified daily flow remains UNKNOWN. The 735-company
+directory stays on its existing holds. Behavior SHA
+`14cc74949408790b22802d82026ecd683527ee1b`. Sole NEXT is
+PUBLICATION_MANILA_DAY_STILL_PUBLIC_COUNT_ID_AGREEMENT in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a repeated snapshot id does not agree
 with its raw length. The distinct agreed count stays absent when an id
 repeats, even if that raw length matches the snapshot count. The writer does
