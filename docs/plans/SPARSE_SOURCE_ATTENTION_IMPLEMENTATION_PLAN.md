@@ -825,6 +825,17 @@ remains UNKNOWN. Sole NEXT is
 PUBLICATION_MANILA_DAY_CLAIMED_SOURCE_IS_NOT_THE_SNAPSHOT_SOURCE in the newest
 savepoint.
 
+## 2026-10-10 bounded claimed source is not the snapshot source
+
+[PUBLICATION_MANILA_DAY_CLAIMED_SOURCE_IS_NOT_THE_SNAPSHOT_SOURCE](../operations/PUBLICATION_MANILA_DAY_CLAIMED_SOURCE_IS_NOT_THE_SNAPSHOT_SOURCE_2026-10-10.md)
+is a publication-measurement prerequisite, not an SSAE card promotion. A
+caller-supplied publishing source that is not the snapshot row's stored
+source stays absent and does not block the writer. No ranker, allocator,
+shadow canary, or neural routing change. Accepted MATH remains 0/13.
+Certified daily flow remains UNKNOWN. Sole NEXT is
+PUBLICATION_MANILA_DAY_STORED_FAMILY_BREACH_IS_NOT_A_FLOW in the newest
+savepoint.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

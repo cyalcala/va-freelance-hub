@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a caller-supplied publishing source
+that is not the snapshot row's stored source is not the day's family status.
+Passing the replacement as the publishing source stays absent. The writer does
+not call this reader. No migration was added. MATH remains 0/13 and certified
+daily flow remains UNKNOWN. The 735-company directory stays on its existing
+holds. Behavior SHA `7a9330b27177128eda3894964ae1d4f262ccd33e`. Sole NEXT is
+PUBLICATION_MANILA_DAY_STORED_FAMILY_BREACH_IS_NOT_A_FLOW in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a still-public id whose current
 source is no longer the publishing source is not the published family status.
 A self-matching replacement book stays absent. The writer does not call this
