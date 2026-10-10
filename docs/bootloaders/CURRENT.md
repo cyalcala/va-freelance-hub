@@ -1,5 +1,16 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): two of five still-public ids in one
+provider family sit on the 40% ceiling and stay OK when those sources are the
+ones recorded on the opportunities. Three of five stay a breach. A
+caller-supplied book that does not match the recorded sources stays absent.
+The writer does not call this reader. No migration was added. MATH remains
+0/13 and certified daily flow remains UNKNOWN. The 735-company directory stays
+on its existing holds. Behavior SHA
+`7ee06c7e0ea02326c0cbb6558a644891ad0dd82d`. Sole NEXT is
+PUBLICATION_MANILA_DAY_EXACT_FAMILY_CEILING_IS_NOT_A_FLOW in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a family breach from the stored
 publishing source on an OPEN snapshot is not a completed Manila-day flow. A
 caller-supplied CLOSED state does not create one. Caller-supplied 100 and 150
