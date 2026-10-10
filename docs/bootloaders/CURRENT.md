@@ -1,5 +1,15 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a same-source breach whose still-public
+id list contains a foreign id not in recorded rows stays absent from
+sameSourcePairManilaFamilyStatus. Passing recorded rows containing a foreign id
+also returns null. Restoring original matching ids restores BREACH. The writer
+does not call this reader. No migration was added. MATH remains 0/13 and certified
+daily flow remains UNKNOWN. The 735-company directory stays on its existing holds.
+Behavior SHA `e743ad5d3e38c7f766e4093fc9671d4bfba70cf2`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_FOREIGN_ID_IS_NOT_A_FLOW in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a same-source pair whose still-public
 id list contains a foreign id not in recorded rows stays absent from
 sameSourcePairManilaFamilyStatus. Passing recorded rows containing a foreign id
