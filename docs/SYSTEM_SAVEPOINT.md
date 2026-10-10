@@ -1,5 +1,46 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Rejected snapshot id row is not a reportable count
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_REPORTABLE_COUNT.
+The open count row still stores `first_publish_count` 5 and `still_public_count`
+5 after its only id row is rejected for a foreign still-public id.
+`reportableManilaSnapshotIdCount` of that loaded pair is null, not 5 and not 0.
+`agreedManilaSnapshotIdCount(5, rejected)` is null.
+`agreedManilaStillPublicCount(5, rejected)` is null. The intact pair still
+reports 5. `completedManilaDayFlowCount` of the OPEN state and the stored count
+5 is null, not 5 and not 0. Caller-supplied CLOSED, 100, and 150 stay absent.
+The shipped readers already returned null, so this slice locks that result and
+does not add another wrapper. The unlimited publish already succeeded. The
+writer does not call these readers. No migration was added. This is not MATH-08
+and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_REPORTABLE_COUNT_2026-10-10.md).
+Behavior SHA `f79dbbc3acb1bbadcb47df274136271e64acba73` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057. A genuinely empty supplied book stays
+`UNKNOWN`. A loaded pair with `idsKnown` false stays null, not `UNKNOWN`.
+
+**One NEXT: PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_ZERO_COUNT.**
+`agreedManilaStillPublicCount(0, rejected)` is null, not 0.
+`agreedManilaSnapshotIdCount(0, rejected)` is null, not 0. A length check alone
+would still refuse 5 and would accept 0, because the rejected arrays are empty.
+A known empty id row, with `idsKnown` true and both arrays empty, still reports
+0. Do not block the writer. Do not record CLOSED. Do not claim MATH-08. Do not
+grant a source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Rejected snapshot id row is not an empty book
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
