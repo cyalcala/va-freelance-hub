@@ -822,6 +822,16 @@ Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
 PUBLICATION_MANILA_DAY_STILL_PUBLIC in the newest savepoint. No source grant,
 parameter, budget, or clock change.
 
+## 2026-10-10 bounded Manila-day still-public count
+
+[PUBLICATION_MANILA_DAY_STILL_PUBLIC](../operations/PUBLICATION_MANILA_DAY_STILL_PUBLIC_2026-10-10.md)
+advances a local flow-accounting prerequisite only. A withdrawn first-publish
+id stays in the receipt count and leaves the still-public count. This is not
+card acceptance, a closed Manila day, or a certified QUPD. Accepted MATH
+remains 0/13. Certified daily flow remains UNKNOWN. The 735-entry directory
+is not enriched. Sole NEXT is PUBLICATION_MANILA_DAY_OPEN_SNAPSHOT in the
+newest savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
