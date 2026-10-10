@@ -17,7 +17,8 @@ pass deactivates only a marked id that still has no success ledger receipt.
 A public row with no marker stays public. Migration 0056 adds no
 `julianday('now')` and was not applied to production. No new clock.
 [Evidence](operations/PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD_2026-10-10.md).
-GitLab authentication for this review branch remains denied. **BACKUP_PENDING.**
+Behavior SHA `e56ea9bbe5b25885d4559e1216d313ab771a59bd`. GitLab authentication
+for this review branch remains denied. **BACKUP_PENDING.**
 That push was not retried. Do not push `main`. GitHub was not probed.
 
 **Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.

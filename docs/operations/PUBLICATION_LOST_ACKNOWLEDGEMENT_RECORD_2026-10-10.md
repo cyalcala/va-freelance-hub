@@ -62,7 +62,8 @@ clock projection.
 
 ## Backup
 
-This checkpoint is local. The earlier GitLab push of this review branch was
+Behavior commit `e56ea9bbe5b25885d4559e1216d313ab771a59bd`. This checkpoint is
+local. The earlier GitLab push of this review branch was
 denied HTTP Basic authentication. That push was not retried. BACKUP_PENDING
 until GitLab authentication succeeds. `main` was not pushed. GitHub was not
 probed.
