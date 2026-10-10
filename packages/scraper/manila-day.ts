@@ -264,6 +264,15 @@ export function freshMatchedManilaStillPublicCount(
   return matched;
 }
 
+// A fresh-matched still-public count is not a completed Manila-day flow.
+// This reader has no closed-day evidence, so a caller-supplied CLOSED state
+// does not create one. The 100 floor is not a flow either.
+export function freshMatchedManilaDayFlowCount(dayState: string, matchedCount: number | null): number | null {
+  if (dayState.length === 0) return null;
+  if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
+  return null;
+}
+
 // A fresh remote match stays absent when the outbound apply URL does not
 // resolve. This reader does not prefer the fresh length and is not a
 // closed-day flow.
