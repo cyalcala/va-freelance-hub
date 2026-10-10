@@ -318,3 +318,12 @@ export function canonicalUrlMatchedManilaStillPublicCount(
   if (new Set(canonical).size !== canonical.length) return null;
   return matched;
 }
+
+// A canonical-URL still-public count is not a completed Manila-day flow.
+// This reader has no closed-day evidence, so a caller-supplied CLOSED state
+// does not create one. The 100 floor is not a flow either.
+export function canonicalUrlMatchedManilaDayFlowCount(dayState: string, matchedCount: number | null): number | null {
+  if (dayState.length === 0) return null;
+  if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
+  return null;
+}
