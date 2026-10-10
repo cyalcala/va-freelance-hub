@@ -5400,4 +5400,44 @@ test("a rejected snapshot null count is not an empty same-source book", async ()
   } finally { sqlite.close(); }
 });
 
+test("a missing snapshot pair is not an empty same-source book", async () => {
+  const sqlite = freshDb();
+  try {
+    const today = manilaDateOf(NOW);
+    const yesterdayInstant = new Date(Date.parse(NOW) - 24 * 60 * 60 * 1000).toISOString();
+    const yesterday = manilaDateOf(yesterdayInstant);
+    expect(yesterday).not.toBe(today);
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'missing-snapshot-pair-other-day', ?, 'OPEN', 0, 0, ?)`).run(TICK, yesterday, yesterdayInstant);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'missing-snapshot-pair-other-day', ?, '[]', '[]', ?)`).run(TICK, yesterday, yesterdayInstant);
+    const readers = await import("./manila-day");
+    const loadedRows = loadSnapshotPair(sqlite);
+    expect(loadedRows.counts).toHaveLength(1);
+    expect(loadedRows.ids).toHaveLength(1);
+    const missing = readers.latestManilaSnapshotPair(loadedRows.counts, loadedRows.ids, today);
+    expect(missing).toBeNull();
+    const otherDay = readers.latestManilaSnapshotPair(loadedRows.counts, loadedRows.ids, yesterday);
+    expect(otherDay).not.toBeNull();
+    expect(otherDay!.idsKnown).toBe(true);
+    const absent = readers.loadedSameSourcePairManilaFamilyStatus(missing, null, [], []);
+    expect(absent).toBeNull();
+    expect(absent).not.toBe("UNKNOWN");
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(missing, 0, [], [])).toBeNull();
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(null, null, [], [])).toBeNull();
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(null, 0, [], [])).toBeNull();
+    expect(readers.sameSourcePairManilaFamilyStatus(null, [], [], [])).toBe("UNKNOWN");
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(otherDay, null, [], [])).toBe("UNKNOWN");
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, null)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("CLOSED", absent, null)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, 0)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, 100)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, 150)).toBeNull();
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+  } finally { sqlite.close(); }
+});
+
 
