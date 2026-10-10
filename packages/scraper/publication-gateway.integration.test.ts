@@ -57,6 +57,7 @@ function freshDb(): Database {
     "0060_publication_portfolio_divergence.sql",
     "0061_publication_manila_day.sql",
     "0062_publication_manila_still_public.sql",
+    "0063_publication_manila_open_snapshot.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1820,5 +1821,57 @@ test("a missing still-public table keeps the Manila-day receipt count", async ()
     expect(day).not.toBeNull();
     expect(day!.first_publish_count).toBe(1);
     expect(readManilaStillPublic(sqlite, "still-public-missing")).toBeNull();
+  } finally { sqlite.close(); }
+});
+
+function readManilaOpenSnapshot(sqlite: Database, retryKey: string): { day_state: string; first_publish_count: number; still_public_count: number } | null {
+  try {
+    return sqlite.query(`SELECT day_state, first_publish_count, still_public_count
+      FROM source_publication_manila_open_snapshot WHERE retry_key = ?`).get(retryKey) as { day_state: string; first_publish_count: number; still_public_count: number } | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+test("a Manila-day count is stored as an open snapshot", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "open-snapshot", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "open-snapshot", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const day = readManilaFirstPublish(sqlite, "open-snapshot");
+    const still = readManilaStillPublic(sqlite, "open-snapshot");
+    expect(day).not.toBeNull();
+    expect(still).not.toBeNull();
+    const open = readManilaOpenSnapshot(sqlite, "open-snapshot");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(open!.first_publish_count).toBe(day!.first_publish_count);
+    expect(open!.still_public_count).toBe(still!.still_public_count);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+  } finally { sqlite.close(); }
+});
+
+test("a missing open-snapshot table keeps the receipt and still-public counts", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_manila_open_snapshot;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "open-snapshot-missing", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "open-snapshot-missing", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readManilaFirstPublish(sqlite, "open-snapshot-missing")!.first_publish_count).toBe(1);
+    expect(readManilaStillPublic(sqlite, "open-snapshot-missing")!.still_public_count).toBe(1);
+    expect(readManilaOpenSnapshot(sqlite, "open-snapshot-missing")).toBeNull();
   } finally { sqlite.close(); }
 });

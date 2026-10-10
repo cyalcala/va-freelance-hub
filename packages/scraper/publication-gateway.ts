@@ -147,6 +147,9 @@ WHERE is_active = 1 AND ph_eligibility IN (${PUBLIC_PH_SQL})
 const INSERT_STILL_PUBLIC_SQL = `INSERT INTO source_publication_manila_still_public (
   source_id, tick_key, retry_key, manila_date, first_publish_count, still_public_count, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+const INSERT_OPEN_SNAPSHOT_SQL = `INSERT INTO source_publication_manila_open_snapshot (
+  source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+) VALUES (?, ?, ?, ?, 'OPEN', ?, ?, ?)`;
 
 function isCanonicalSourceId(value: string): boolean {
   return /^[a-z0-9:._-]+$/.test(value);
@@ -660,13 +663,24 @@ async function recordManilaDayFirstPublish(
       request.now,
     ).run();
     const publicRow = await db.prepare(LOAD_STILL_PUBLIC_SQL).bind(JSON.stringify(firstIds)).first<{ ids: string | null }>();
+    const stillPublicCount = countJsonNumberArray(publicRow?.ids);
     await db.prepare(INSERT_STILL_PUBLIC_SQL).bind(
       request.sourceId,
       request.tickKey,
       request.retryKey,
       manilaDate,
       firstPublishCount,
-      countJsonNumberArray(publicRow?.ids),
+      stillPublicCount,
+      request.now,
+    ).run();
+    // The writer cannot observe day close. The stored state is OPEN, not a completed day.
+    await db.prepare(INSERT_OPEN_SNAPSHOT_SQL).bind(
+      request.sourceId,
+      request.tickKey,
+      request.retryKey,
+      manilaDate,
+      firstPublishCount,
+      stillPublicCount,
       request.now,
     ).run();
   } catch {
