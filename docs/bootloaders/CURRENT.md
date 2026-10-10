@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): the day's ids belong to the latest
+OPEN count snapshot. A newer count snapshot with no id row stays unknown and
+does not keep an older id row. The writer does not call this reader. No
+migration was added. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`bf4e1414e585d06e2536adf0c987faf946939244`. Sole NEXT is
+PUBLICATION_MANILA_DAY_UNKNOWN_IDS_ARE_NOT_ZERO in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): the day's ids are the newest valid id
 row for that Manila date. Equal recorded times use the higher id. Rows are not
 unioned. Another date does not replace this date. The writer does not call

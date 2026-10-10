@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-10 Manila — The day's ids belong to the latest count snapshot
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_SNAPSHOT_PAIR. The day's ids are
+the ids of the latest OPEN count snapshot. A newer count snapshot with no id
+row stays unknown and does not keep an older id row. When the latest snapshot
+has its own ids, those ids are returned and are not the union of earlier
+rows. The writer does not call this reader. No migration was added. This is
+not MATH-08 and not a certified daily flow. The snapshot remains OPEN.
+[Evidence](operations/PUBLICATION_MANILA_DAY_SNAPSHOT_PAIR_2026-10-10.md).
+Behavior SHA `bf4e1414e585d06e2536adf0c987faf946939244` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_UNKNOWN_IDS_ARE_NOT_ZERO.** An unknown id
+pair stores empty arrays. Empty is not a measured zero. The reportable id
+count is absent when `idsKnown` is false. Do not read those arrays as zero.
+Do not compare an unknown day with the 100 floor. Do not record CLOSED. Do
+not block the writer. Do not claim MATH-08. Do not grant a source, change
+cadence, or add a clock.
+
 ## 2026-10-10 Manila — The day's ids are the latest id row
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
