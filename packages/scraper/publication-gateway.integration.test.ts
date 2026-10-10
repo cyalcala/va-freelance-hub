@@ -2871,3 +2871,56 @@ test("a repeated snapshot id does not agree with its raw length", async () => {
     expect(distinctAgreedManilaSnapshotIdCount(distinctCount!.firstPublishCount, distinctPair)).toBe(distinctCount!.firstPublishCount);
   } finally { sqlite.close(); }
 });
+
+test("agreed snapshot ids that are not the ledger ids stay absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "ledger-id-match", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "ledger-id-match", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const ledgerIds = distinctFirstPublishIds(sqlite, today);
+    expect(ledgerIds).toHaveLength(1);
+    const matchedLoaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, distinctAgreedManilaSnapshotIdCount, ledgerMatchedManilaSnapshotIdCount } = await import("./manila-day");
+    const matchedPair = latestManilaSnapshotPair(matchedLoaded.counts, matchedLoaded.ids, today);
+    expect(matchedPair).not.toBeNull();
+    expect(matchedPair!.idsKnown).toBe(true);
+    expect(matchedPair!.firstPublishIds).toEqual(ledgerIds);
+    const matchedCount = matchedLoaded.counts.find((row) => row.retryKey === matchedPair!.retryKey);
+    expect(matchedCount).toBeDefined();
+    expect(distinctAgreedManilaSnapshotIdCount(matchedCount!.firstPublishCount, matchedPair)).toBe(ledgerIds.length);
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'ledger-id-foreign', ?, 'OPEN', 1, 1, ?)`).run(TICK, today, later);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'ledger-id-foreign', ?, '[9001]', '[9001]', ?)`).run(TICK, today, later);
+    const loaded = loadSnapshotPair(sqlite);
+    const latestCount = latestManilaOpenSnapshot(loaded.counts, today);
+    expect(latestCount).not.toBeNull();
+    expect(latestCount!.firstPublishCount).toBe(1);
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.retryKey).toBe("ledger-id-foreign");
+    expect(paired!.idsKnown).toBe(true);
+    expect(paired!.firstPublishIds).toEqual([9001]);
+    expect(paired!.firstPublishIds).not.toEqual(ledgerIds);
+    const foreignAgreed = distinctAgreedManilaSnapshotIdCount(latestCount!.firstPublishCount, paired);
+    expect(foreignAgreed).toBe(1);
+    expect(foreignAgreed).toBe(ledgerIds.length);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof ledgerMatchedManilaSnapshotIdCount).toBe("function");
+    const matched = ledgerMatchedManilaSnapshotIdCount(latestCount!.firstPublishCount, paired, ledgerIds);
+    expect(matched).toBeNull();
+    expect(matched).not.toBe(foreignAgreed);
+    expect(matched).not.toBe(ledgerIds.length);
+    expect(ledgerMatchedManilaSnapshotIdCount(matchedCount!.firstPublishCount, matchedPair, ledgerIds)).toBe(ledgerIds.length);
+  } finally { sqlite.close(); }
+});

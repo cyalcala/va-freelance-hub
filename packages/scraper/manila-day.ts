@@ -163,3 +163,27 @@ export function distinctAgreedManilaSnapshotIdCount(firstPublishCount: number, p
   if (new Set(pair.firstPublishIds).size !== pair.firstPublishIds.length) return null;
   return agreed;
 }
+
+function samePositiveIds(left: readonly number[], right: readonly number[]): boolean {
+  if (left.length !== right.length) return false;
+  if (!left.every((id) => Number.isSafeInteger(id) && id > 0)) return false;
+  if (!right.every((id) => Number.isSafeInteger(id) && id > 0)) return false;
+  if (new Set(left).size !== left.length || new Set(right).size !== right.length) return false;
+  const sortedLeft = [...left].sort((a, b) => a - b);
+  const sortedRight = [...right].sort((a, b) => a - b);
+  return sortedLeft.every((id, index) => id === sortedRight[index]);
+}
+
+// Distinct agreement is absent when the known ids are not the ledger's
+// first-publish ids. This reader does not prefer either length and is not a
+// closed-day flow.
+export function ledgerMatchedManilaSnapshotIdCount(
+  firstPublishCount: number,
+  pair: ManilaSnapshotPair | null,
+  ledgerIds: readonly number[],
+): number | null {
+  const agreed = distinctAgreedManilaSnapshotIdCount(firstPublishCount, pair);
+  if (agreed === null || !pair) return null;
+  if (!samePositiveIds(pair.firstPublishIds, ledgerIds)) return null;
+  return agreed;
+}
