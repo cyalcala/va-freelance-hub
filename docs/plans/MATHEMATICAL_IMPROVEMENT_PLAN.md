@@ -811,6 +811,17 @@ Certified daily flow remains UNKNOWN. The 735-entry directory is not enriched.
 Sole NEXT is PUBLICATION_MANILA_DAY_FIRST_PUBLISH_ACCOUNTING in the newest
 savepoint. No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded Manila-day first-publish accounting
+
+[PUBLICATION_MANILA_DAY_FIRST_PUBLISH_ACCOUNTING](../operations/PUBLICATION_MANILA_DAY_FIRST_PUBLISH_ACCOUNTING_2026-10-10.md)
+advances a local flow-accounting prerequisite only. A positive receipt records
+the distinct ids whose earliest positive receipt falls on that Manila date.
+This is not card acceptance, a certified QUPD, or the live public set.
+Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
+735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_STILL_PUBLIC in the newest savepoint. No source grant,
+parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

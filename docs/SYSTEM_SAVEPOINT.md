@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Manila-day first publishes are counted from receipt ids
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_FIRST_PUBLISH_ACCOUNTING. A
+positive receipt records how many distinct opportunity ids have their earliest
+positive receipt on that Manila date. Empty id lists, replays, repeated ids,
+and the previous Manila day do not increment it. The count includes every
+source. A missing table fails open. Migration 0061 adds no `julianday('now')`
+and was not applied. The count is not the live public set and not a certified
+daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_FIRST_PUBLISH_ACCOUNTING_2026-10-10.md).
+Behavior SHA `e0ea80ae21f5ff2613efe74904d50ed7d9dc11f3` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0060 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_STILL_PUBLIC.** Record how many of that
+day's first-publish ids are still active and Philippines-eligible. Do not
+treat the receipt count as the live board. Do not certify a production daily
+flow. Do not turn 25% or 40% into a per-write block. Do not grant a source,
+change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Ledger and serving status disagreement is recorded
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

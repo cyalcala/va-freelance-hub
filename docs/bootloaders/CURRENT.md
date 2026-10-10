@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive receipt records how many
+distinct opportunity ids have their earliest positive receipt on that Manila
+date. Empty id lists, replays, repeated ids, and the previous Manila day do
+not increment it. A missing table fails open. Migration 0061 was not applied.
+The count is not the live public set. MATH remains 0/13 and certified daily
+flow remains UNKNOWN. The 735-company directory stays on its existing holds.
+Behavior SHA `e0ea80ae21f5ff2613efe74904d50ed7d9dc11f3`. Sole NEXT is
+PUBLICATION_MANILA_DAY_STILL_PUBLIC in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive publication that records
 both exposure books also records whether their source and provider-family
 statuses match. A ledger BREACH beside a serving OK still publishes. Status
