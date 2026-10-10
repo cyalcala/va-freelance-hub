@@ -373,6 +373,21 @@ export function snapshotSourcedManilaFamilyStatus(
   return publishedManilaFamilyStatus(matchedCount, published, suppliedRows);
 }
 
+// A still-public id whose current source is no longer the publishing source
+// is not the published family status. A self-matching replacement book stays
+// absent. This does not block a writer and is not a closed-day flow.
+export function publishingSourceManilaFamilyStatus(
+  matchedCount: number | null,
+  publishingSourceId: string,
+  stillPublicIds: readonly number[],
+  idSources: readonly { id: number; sourceId: string }[],
+  suppliedRows: readonly { sourceId: string; count: number }[],
+): "UNKNOWN" | "OK" | "BREACH" | null {
+  if (publishingSourceId.trim().length === 0) return null;
+  if (idSources.some((row) => row.sourceId !== publishingSourceId)) return null;
+  return snapshotSourcedManilaFamilyStatus(matchedCount, stillPublicIds, idSources, suppliedRows);
+}
+
 // A remote serving match stays absent when the original posting is outside the
 // inclusive 30-day window or unknown. This reader does not prefer the remote
 // length and is not a closed-day flow.
