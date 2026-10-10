@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive publish stores the ledger
+book total, the serving book total, and whether they differ. Status labels can
+agree while the totals differ. A missing table fails open. Migration 0064 was
+not applied. MATH remains 0/13 and certified daily flow remains UNKNOWN. The
+735-company directory stays on its existing holds. Behavior SHA
+`e71fe3e6da233b8ad376acdd639bc7cd23ae33fb`. Sole NEXT is
+PUBLICATION_PORTFOLIO_BOOK_MEMBERSHIP in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): the day's open count is the newest
 OPEN snapshot for that Manila date. Rows are not summed. Another date does
 not replace this date. The writer does not block. No migration was added.

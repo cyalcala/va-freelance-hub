@@ -852,6 +852,16 @@ remains 0/13. Certified daily flow remains UNKNOWN. The 735-entry directory
 is not enriched. Sole NEXT is PUBLICATION_PORTFOLIO_BOOK_TOTAL_DIVERGENCE in
 the newest savepoint. No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded portfolio book-total divergence
+
+[PUBLICATION_PORTFOLIO_BOOK_TOTAL_DIVERGENCE](../operations/PUBLICATION_PORTFOLIO_BOOK_TOTAL_DIVERGENCE_2026-10-10.md)
+advances a local measurement prerequisite only. Status agreement can stay true
+while the ledger book total and the serving book total differ. This is not
+card acceptance or a certified QUPD. Accepted MATH remains 0/13. Certified
+daily flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT
+is PUBLICATION_PORTFOLIO_BOOK_MEMBERSHIP in the newest savepoint. No source
+grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
