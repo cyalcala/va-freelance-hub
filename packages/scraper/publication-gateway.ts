@@ -169,6 +169,9 @@ const INSERT_STILL_PUBLIC_SQL = `INSERT INTO source_publication_manila_still_pub
 const INSERT_OPEN_SNAPSHOT_SQL = `INSERT INTO source_publication_manila_open_snapshot (
   source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
 ) VALUES (?, ?, ?, ?, 'OPEN', ?, ?, ?)`;
+const INSERT_MANILA_SNAPSHOT_IDS_SQL = `INSERT INTO source_publication_manila_snapshot_ids (
+  source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
 function isCanonicalSourceId(value: string): boolean {
   return /^[a-z0-9:._-]+$/.test(value);
@@ -732,6 +735,21 @@ function countJsonIds(raw: unknown): { known: boolean; ids: number[] } {
   return { known: true, ids };
 }
 
+function snapshotIdList(raw: unknown): number[] | null {
+  if (raw === null || raw === undefined) return [];
+  if (typeof raw !== "string" || raw.length === 0 || raw === "null") return [];
+  let parsed: unknown;
+  try { parsed = JSON.parse(raw); } catch { return null; }
+  if (!Array.isArray(parsed)) return null;
+  const ids: number[] = [];
+  for (const id of parsed) {
+    if (typeof id !== "number" || !Number.isSafeInteger(id) || id <= 0) return null;
+    ids.push(id);
+  }
+  ids.sort((left, right) => left - right);
+  return ids;
+}
+
 function countJsonNumberArray(raw: unknown): number {
   if (typeof raw !== "string" || raw.length === 0 || raw === "null") return 0;
   let parsed: unknown;
@@ -797,6 +815,20 @@ async function recordManilaDayFirstPublish(
       stillPublicCount,
       request.now,
     ).run();
+    const stillIds = snapshotIdList(publicRow?.ids);
+    const firstSet = new Set(firstIds);
+    // Equal counts are not the same jobs. This snapshot's ids are not the union of earlier rows.
+    if (stillIds !== null && stillIds.length === stillPublicCount && stillIds.every((id) => firstSet.has(id))) {
+      await db.prepare(INSERT_MANILA_SNAPSHOT_IDS_SQL).bind(
+        request.sourceId,
+        request.tickKey,
+        request.retryKey,
+        manilaDate,
+        JSON.stringify(firstIds),
+        JSON.stringify(stillIds),
+        request.now,
+      ).run();
+    }
   } catch {
     // The ledger receipt already exists. Do not turn this into UNKNOWN exposure.
   }

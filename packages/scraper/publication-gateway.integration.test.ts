@@ -63,6 +63,7 @@ function freshDb(): Database {
     "0065_publication_portfolio_book_membership.sql",
     "0066_publication_portfolio_source_counts.sql",
     "0067_publication_portfolio_job_identity.sql",
+    "0068_publication_manila_snapshot_ids.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -2346,5 +2347,148 @@ test("the day's open count is the latest snapshot, not the sum of snapshot rows"
     expect(latest!.id).toBe(independent!.id);
     expect(latest!.manilaDate).toBe(today);
     expect(latest!.dayState).toBe("OPEN");
+  } finally { sqlite.close(); }
+});
+
+function readManilaSnapshotIds(sqlite: Database, retryKey: string): { first_publish_ids_json: string; still_public_ids_json: string } | null {
+  try {
+    return sqlite.query(`SELECT first_publish_ids_json, still_public_ids_json
+      FROM source_publication_manila_snapshot_ids WHERE retry_key = ?`).get(retryKey) as { first_publish_ids_json: string; still_public_ids_json: string } | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+function stillPublicFirstPublishIds(sqlite: Database, ids: readonly number[]): number[] {
+  if (ids.length === 0) return [];
+  const marks = ids.map(() => "?").join(", ");
+  return (sqlite.query(`SELECT id FROM opportunities
+    WHERE is_active = 1 AND ph_eligibility IN (?, ?) AND id IN (${marks})
+    ORDER BY id`).all(...PUBLIC_PH_ELIGIBILITIES, ...ids) as Array<{ id: number }>).map((row) => row.id);
+}
+
+test("open snapshot counts do not name the day's latest ids", async () => {
+  const sqlite = freshDb();
+  try {
+    const publishOne = async (sourceId: string, retryKey: string) => publishPublicExposure(new BunDb(sqlite), {
+      sourceId, now: NOW, tickKey: TICK, retryKey, proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, retryKey, sourceId);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    const first = await publishOne("we-work-remotely", "snapshot-ids-a");
+    expect(first).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const withdrawnId = first.ok ? first.ids[0] : 0;
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE id = ?").run(withdrawnId);
+    const second = await publishOne("remotive", "snapshot-ids-b");
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const firstIds = distinctFirstPublishIds(sqlite, today);
+    const stillIds = stillPublicFirstPublishIds(sqlite, firstIds);
+    const earlier = readManilaOpenSnapshot(sqlite, "snapshot-ids-a");
+    const latest = readManilaOpenSnapshot(sqlite, "snapshot-ids-b");
+    expect(earlier).not.toBeNull();
+    expect(latest).not.toBeNull();
+    expect(earlier!.still_public_count).toBe(1);
+    expect(latest!.still_public_count).toBe(1);
+    expect(latest!.first_publish_count).toBe(2);
+    expect(firstIds).toEqual([withdrawnId, second.ok ? second.ids[0] : 0].sort((left, right) => left - right));
+    expect(stillIds).toEqual(second.ok ? second.ids : []);
+    expect(stillIds).not.toContain(withdrawnId);
+    const stored = readManilaSnapshotIds(sqlite, "snapshot-ids-b");
+    expect(stored).not.toBeNull();
+    expect(JSON.parse(stored!.first_publish_ids_json)).toEqual(firstIds);
+    expect(JSON.parse(stored!.still_public_ids_json)).toEqual(stillIds);
+    const earlierIds = readManilaSnapshotIds(sqlite, "snapshot-ids-a");
+    expect(earlierIds).not.toBeNull();
+    const unionStill = [...new Set([
+      ...(JSON.parse(earlierIds!.still_public_ids_json) as number[]),
+      ...(JSON.parse(stored!.still_public_ids_json) as number[]),
+    ])].sort((left, right) => left - right);
+    expect(unionStill).toEqual(firstIds);
+    expect(JSON.parse(stored!.still_public_ids_json)).not.toEqual(unionStill);
+    const rows = sqlite.query(`SELECT id, manila_date, recorded_at, day_state, first_publish_count, still_public_count
+      FROM source_publication_manila_open_snapshot`).all() as Array<{
+      id: number; manila_date: string; recorded_at: string; day_state: string;
+      first_publish_count: number; still_public_count: number;
+    }>;
+    const selected = latestManilaOpenSnapshot(rows.map((row) => ({
+      id: row.id,
+      manilaDate: row.manila_date,
+      recordedAt: row.recorded_at,
+      dayState: row.day_state,
+      firstPublishCount: row.first_publish_count,
+      stillPublicCount: row.still_public_count,
+    })), today);
+    expect(selected).not.toBeNull();
+    expect(selected!.stillPublicCount).toBe(1);
+    expect(selected!.firstPublishCount).toBe(firstIds.length);
+    const selectedIds = readManilaSnapshotIds(sqlite, "snapshot-ids-b");
+    expect(JSON.parse(selectedIds!.still_public_ids_json)).toEqual(stillIds);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const otherDate = manilaDateOf(new Date(Date.parse(NOW) - DAY_MS).toISOString());
+    expect(otherDate).not.toBe(today);
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('remotive', ?, 'snapshot-ids-other-day', ?, 'OPEN', 9, 9, ?)`).run(TICK, otherDate, later);
+    const afterRows = sqlite.query(`SELECT id, manila_date, recorded_at, day_state, first_publish_count, still_public_count
+      FROM source_publication_manila_open_snapshot`).all() as Array<{
+      id: number; manila_date: string; recorded_at: string; day_state: string;
+      first_publish_count: number; still_public_count: number;
+    }>;
+    const stillToday = latestManilaOpenSnapshot(afterRows.map((row) => ({
+      id: row.id,
+      manilaDate: row.manila_date,
+      recordedAt: row.recorded_at,
+      dayState: row.day_state,
+      firstPublishCount: row.first_publish_count,
+      stillPublicCount: row.still_public_count,
+    })), today);
+    expect(stillToday).not.toBeNull();
+    expect(stillToday!.manilaDate).toBe(today);
+    expect(stillToday!.firstPublishCount).toBe(firstIds.length);
+    expect(stillToday!.stillPublicCount).toBe(stillIds.length);
+    expect(JSON.parse(readManilaSnapshotIds(sqlite, "snapshot-ids-b")!.still_public_ids_json)).toEqual(stillIds);
+  } finally { sqlite.close(); }
+});
+
+test("one open snapshot records the same first-publish and still-public ids", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "snapshot-ids-same", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "snapshot-ids-same", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const firstIds = distinctFirstPublishIds(sqlite, manilaDateOf(NOW));
+    const stored = readManilaSnapshotIds(sqlite, "snapshot-ids-same");
+    expect(stored).not.toBeNull();
+    expect(JSON.parse(stored!.first_publish_ids_json)).toEqual(firstIds);
+    expect(JSON.parse(stored!.still_public_ids_json)).toEqual(firstIds);
+    expect(readManilaOpenSnapshot(sqlite, "snapshot-ids-same")!.still_public_count).toBe(firstIds.length);
+  } finally { sqlite.close(); }
+});
+
+test("a missing snapshot-id table keeps publication and the open snapshot", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_manila_snapshot_ids;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "snapshot-ids-missing", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "snapshot-ids-missing", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readManilaOpenSnapshot(sqlite, "snapshot-ids-missing")).not.toBeNull();
+    expect(readManilaOpenSnapshot(sqlite, "snapshot-ids-missing")!.first_publish_count).toBe(1);
+    expect(readManilaSnapshotIds(sqlite, "snapshot-ids-missing")).toBeNull();
   } finally { sqlite.close(); }
 });
