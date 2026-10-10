@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): two still-public ids that canonicalize
+to one source URL stay absent. The reader does not collapse that pair to one
+survivor. The writer does not call this reader. No migration was added. MATH
+remains 0/13 and certified daily flow remains UNKNOWN. The 735-company
+directory stays on its existing holds. Behavior SHA
+`4e6c59c7519c0ecc676e78e6b292e30581c96617`. Sole NEXT is
+PUBLICATION_MANILA_DAY_CANONICAL_URL_MATCH_IS_NOT_A_FLOW in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive PH-matched still-public
 count on an OPEN snapshot is not a completed Manila-day flow. A caller-supplied
 CLOSED state does not create one. The writer does not call this reader. No
