@@ -5350,4 +5350,54 @@ test("a rejected snapshot zero is not an empty same-source book", async () => {
   } finally { sqlite.close(); }
 });
 
+test("a rejected snapshot null count is not an empty same-source book", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "rejected-snapshot-null-not-empty", proposedCount: 5,
+      persist: async () => {
+        const ids = Array.from({ length: 5 }, (_, index) => writeOpportunity(sqlite, `rejected-snapshot-null-not-empty-${index}`, "we-work-remotely")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 5, replayed: false });
+    const publishedIds = result.ok ? [...result.ids].sort((left, right) => left - right) : [];
+    expect(publishedIds).toHaveLength(5);
+    const today = manilaDateOf(NOW);
+    const readers = await import("./manila-day");
+    const foreignId = Math.max(...publishedIds) + 999;
+    sqlite.exec("DROP TRIGGER IF EXISTS source_publication_manila_snapshot_ids_append_only_update;");
+    sqlite.query("UPDATE source_publication_manila_snapshot_ids SET still_public_ids_json = ? WHERE retry_key = ?").run(
+      JSON.stringify([publishedIds[0]!, publishedIds[1]!, publishedIds[2]!, publishedIds[3]!, foreignId]),
+      "rejected-snapshot-null-not-empty",
+    );
+    const rejected = readers.latestManilaSnapshotPair(loadSnapshotPair(sqlite).counts, loadSnapshotPair(sqlite).ids, today);
+    expect(rejected).not.toBeNull();
+    expect(rejected!.idsKnown).toBe(false);
+    const absent = readers.loadedSameSourcePairManilaFamilyStatus(rejected, null, [], []);
+    expect(absent).toBeNull();
+    expect(absent).not.toBe("UNKNOWN");
+    expect(readers.sameSourcePairManilaFamilyStatus(null, [], [], [])).toBe("UNKNOWN");
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(rejected, 0, [], [])).toBeNull();
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'rejected-snapshot-null-known-empty', ?, 'OPEN', 0, 0, ?)`).run(TICK, today, later);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'rejected-snapshot-null-known-empty', ?, '[]', '[]', ?)`).run(TICK, today, later);
+    const knownEmpty = readers.latestManilaSnapshotPair(loadSnapshotPair(sqlite).counts, loadSnapshotPair(sqlite).ids, today);
+    expect(knownEmpty).not.toBeNull();
+    expect(knownEmpty!.idsKnown).toBe(true);
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(knownEmpty, null, [], [])).toBe("UNKNOWN");
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(rejected, null, [], [])).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, null)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("CLOSED", absent, null)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, 100)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, 150)).toBeNull();
+  } finally { sqlite.close(); }
+});
+
 
