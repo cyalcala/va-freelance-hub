@@ -4174,3 +4174,66 @@ test("an exact family ceiling stays OK on the recorded opportunity sources", asy
     expect(recordedOpportunityManilaFamilyStatus(null, [], [], [], [])).toBe("UNKNOWN");
   } finally { sqlite.close(); }
 });
+
+test("an exact family ceiling is not a completed Manila-day flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "exact-ceiling-not-flow", proposedCount: 5,
+      persist: async () => {
+        const ids = Array.from({ length: 5 }, (_, index) => writeOpportunity(sqlite, `exact-ceiling-not-flow-${index}`, "we-work-remotely")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 5, replayed: false });
+    const publishedIds = result.ok ? [...result.ids].sort((left, right) => left - right) : [];
+    expect(publishedIds).toHaveLength(5);
+    const open = readManilaOpenSnapshot(sqlite, "exact-ceiling-not-flow");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(open!.still_public_count).toBe(5);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, recordedOpportunityManilaFamilyStatus, recordedOpportunityManilaDayFlowCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect([...paired!.stillPublicIds].sort((left, right) => left - right)).toEqual(publishedIds);
+    const ceilingSources = ["jobicy:admin", "jobicy:support", "remotive", "remote-ok", "real-work-from-anywhere"];
+    for (const [index, id] of publishedIds.entries()) {
+      sqlite.query("UPDATE opportunities SET source_id = ? WHERE id = ?").run(ceilingSources[index], id);
+    }
+    const recorded = publishedIds.map((id) => {
+      const row = sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(id) as { sourceId: string };
+      return { id, sourceId: row.sourceId };
+    });
+    const recordedBook = ceilingSources.map((sourceId) => ({ sourceId, count: 1 }));
+    const status = recordedOpportunityManilaFamilyStatus(5, paired!.stillPublicIds, recorded, recorded, recordedBook);
+    expect(status).toBe("OK");
+    expect(status).not.toBe("BREACH");
+    expect(typeof recordedOpportunityManilaDayFlowCount).toBe("function");
+    const completed = recordedOpportunityManilaDayFlowCount(open!.day_state, status, 5);
+    expect(completed).toBeNull();
+    expect(completed).not.toBe(5);
+    expect(completed).not.toBe(0);
+    expect(recordedOpportunityManilaDayFlowCount("CLOSED", status, 5)).toBeNull();
+    expect(recordedOpportunityManilaDayFlowCount("OPEN", status, 100)).toBeNull();
+    expect(recordedOpportunityManilaDayFlowCount("OPEN", status, 150)).toBeNull();
+    const third = publishedIds[2]!;
+    sqlite.query("UPDATE opportunities SET source_id = ? WHERE id = ?").run("jobicy:design", third);
+    const breachRecorded = publishedIds.map((id) => {
+      const row = sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(id) as { sourceId: string };
+      return { id, sourceId: row.sourceId };
+    });
+    const breachBook = [
+      { sourceId: "jobicy:admin", count: 1 },
+      { sourceId: "jobicy:support", count: 1 },
+      { sourceId: "jobicy:design", count: 1 },
+      { sourceId: "remote-ok", count: 1 },
+      { sourceId: "real-work-from-anywhere", count: 1 },
+    ];
+    const breachStatus = recordedOpportunityManilaFamilyStatus(5, paired!.stillPublicIds, breachRecorded, breachRecorded, breachBook);
+    expect(breachStatus).toBe("BREACH");
+    expect(recordedOpportunityManilaDayFlowCount(open!.day_state, breachStatus, 5)).toBeNull();
+  } finally { sqlite.close(); }
+});
