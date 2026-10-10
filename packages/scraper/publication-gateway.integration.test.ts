@@ -2975,3 +2975,41 @@ test("a still-public count that disagrees with its known ids stays absent", asyn
     expect(agreedManilaStillPublicCount(agreedCount!.stillPublicCount, agreedPair)).toBe(agreedCount!.stillPublicCount);
   } finally { sqlite.close(); }
 });
+
+test("a ledger-matched count is not a completed Manila-day flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "ledger-match-not-flow", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "ledger-match-not-flow", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const ledgerIds = distinctFirstPublishIds(sqlite, today);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, ledgerMatchedManilaSnapshotIdCount, ledgerMatchedManilaDayFlowCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.firstPublishIds).toEqual(ledgerIds);
+    const snapshot = loaded.counts.find((row) => row.retryKey === paired!.retryKey);
+    expect(snapshot).toBeDefined();
+    const matched = ledgerMatchedManilaSnapshotIdCount(snapshot!.firstPublishCount, paired, ledgerIds);
+    expect(matched).toBe(ledgerIds.length);
+    expect(matched).toBe(1);
+    const open = readManilaOpenSnapshot(sqlite, "ledger-match-not-flow");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof ledgerMatchedManilaDayFlowCount).toBe("function");
+    const completed = ledgerMatchedManilaDayFlowCount(open!.day_state, matched);
+    expect(completed).toBeNull();
+    expect(completed).not.toBe(matched);
+    expect(completed).not.toBe(0);
+    expect(ledgerMatchedManilaDayFlowCount("CLOSED", matched)).toBeNull();
+    expect(ledgerMatchedManilaDayFlowCount("OPEN", 100)).toBeNull();
+    expect(ledgerMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
+  } finally { sqlite.close(); }
+});
