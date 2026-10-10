@@ -134,6 +134,9 @@ const INSERT_DIVERGENCE_SQL = `INSERT INTO source_publication_portfolio_divergen
   serving_source_status, serving_family_status,
   source_status_agrees, family_status_agrees, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+const INSERT_BOOK_TOTAL_SQL = `INSERT INTO source_publication_portfolio_book_total (
+  source_id, tick_key, retry_key, ledger_book_total, serving_book_total, totals_differ, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 const LOAD_FIRST_PUBLISH_SQL = `SELECT json_group_array(json_object('idsJson', published_ids_json, 'decidedAt', decided_at)) AS receipts
 FROM source_publication_ledger
 WHERE mode IN ('unlimited', 'capped') AND published_count > 0`;
@@ -610,6 +613,16 @@ async function recordPortfolioExposure(
         servingFamily.status,
         source.status === servingSource.status ? 1 : 0,
         family.status === servingFamily.status ? 1 : 0,
+        request.now,
+      ).run();
+      // Status agreement is not equal totals. The difference is recorded and does not block.
+      await db.prepare(INSERT_BOOK_TOTAL_SQL).bind(
+        request.sourceId,
+        request.tickKey,
+        request.retryKey,
+        source.total,
+        servingSource.total,
+        source.total === servingSource.total ? 0 : 1,
         request.now,
       ).run();
     }

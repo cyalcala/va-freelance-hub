@@ -59,6 +59,7 @@ function freshDb(): Database {
     "0061_publication_manila_day.sql",
     "0062_publication_manila_still_public.sql",
     "0063_publication_manila_open_snapshot.sql",
+    "0064_publication_portfolio_book_total.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1583,6 +1584,107 @@ test("matching ledger and serving breaches are persisted as agreement", async ()
     });
     expect(replay).toMatchObject({ ok: true, publishedCount: 1, replayed: true });
     expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_portfolio_divergence").get()).toEqual({ n: 1 });
+  } finally { sqlite.close(); }
+});
+
+function readBookTotals(sqlite: Database, retryKey: string): { ledger_book_total: number; serving_book_total: number; totals_differ: number } | null {
+  try {
+    return sqlite.query(`SELECT ledger_book_total, serving_book_total, totals_differ
+      FROM source_publication_portfolio_book_total WHERE retry_key = ?`).get(retryKey) as { ledger_book_total: number; serving_book_total: number; totals_differ: number } | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+test("status agreement does not make unequal book totals the same", async () => {
+  const sqlite = freshDb();
+  try {
+    const first = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "totals-first", proposedCount: 2,
+      persist: async () => {
+        const ids = [
+          ...writeOpportunity(sqlite, "totals-a", "we-work-remotely"),
+          ...writeOpportunity(sqlite, "totals-b", "we-work-remotely"),
+        ];
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(first).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 2, replayed: false });
+    const withdrawnId = first.ok ? first.ids[0] : 0;
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE id = ?").run(withdrawnId);
+    const second = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "totals-differ", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "totals-c", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledgerTotal = sqlite.query(`SELECT CAST(TOTAL(published_count) AS INTEGER) AS n
+      FROM source_publication_ledger
+      WHERE mode IN ('unlimited', 'capped') AND published_count > 0`).get() as { n: number };
+    const servingTotal = sqlite.query(`SELECT COUNT(*) AS n FROM "opportunities"
+      WHERE is_active = 1 AND ph_eligibility IN (?, ?)
+        AND typeof(source_id) = 'text' AND length(source_id) > 0`).get(...PUBLIC_PH_ELIGIBILITIES) as { n: number };
+    expect(ledgerTotal.n).toBe(3);
+    expect(servingTotal.n).toBe(2);
+    const ledger = readPortfolioMeasurement(sqlite, "totals-differ");
+    const serving = readServingMeasurement(sqlite, "totals-differ");
+    expect(ledger).not.toBeNull();
+    expect(serving).not.toBeNull();
+    expect(ledger!.book_total).toBe(ledgerTotal.n);
+    expect(serving!.book_total).toBe(servingTotal.n);
+    const divergence = readBookDivergence(sqlite, "totals-differ");
+    expect(divergence).not.toBeNull();
+    expect(divergence!.source_status_agrees).toBe(1);
+    expect(divergence!.family_status_agrees).toBe(1);
+    const compared = readBookTotals(sqlite, "totals-differ");
+    expect(compared).not.toBeNull();
+    expect(compared!.ledger_book_total).toBe(ledger!.book_total);
+    expect(compared!.serving_book_total).toBe(serving!.book_total);
+    expect(compared!.totals_differ).toBe(1);
+  } finally { sqlite.close(); }
+});
+
+test("equal book totals are recorded as not different", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "totals-equal", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "totals-equal", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledger = readPortfolioMeasurement(sqlite, "totals-equal");
+    const serving = readServingMeasurement(sqlite, "totals-equal");
+    expect(ledger!.book_total).toBe(serving!.book_total);
+    const compared = readBookTotals(sqlite, "totals-equal");
+    expect(compared).not.toBeNull();
+    expect(compared!.ledger_book_total).toBe(ledger!.book_total);
+    expect(compared!.serving_book_total).toBe(serving!.book_total);
+    expect(compared!.totals_differ).toBe(0);
+  } finally { sqlite.close(); }
+});
+
+test("a missing book-total table keeps publication and the status comparison", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_portfolio_book_total;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "totals-missing", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "totals-missing", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readPortfolioMeasurement(sqlite, "totals-missing")).not.toBeNull();
+    expect(readServingMeasurement(sqlite, "totals-missing")).not.toBeNull();
+    expect(readBookDivergence(sqlite, "totals-missing")).not.toBeNull();
+    expect(readBookTotals(sqlite, "totals-missing")).toBeNull();
   } finally { sqlite.close(); }
 });
 
