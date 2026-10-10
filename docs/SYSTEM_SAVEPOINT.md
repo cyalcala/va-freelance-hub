@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Canonical-URL count is not a completed flow
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_CANONICAL_URL_MATCH_IS_NOT_A_FLOW.
+A positive canonical-URL still-public count on an OPEN snapshot stays out of
+a completed flow. A caller-supplied CLOSED state does not create one.
+Caller-supplied 100 and 150 stay absent. The reader returns null, not the
+matched count and not 0. The writer does not call this reader. No migration
+was added. This is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_CANONICAL_URL_MATCH_IS_NOT_A_FLOW_2026-10-10.md).
+Behavior SHA `b51c1342b20568fc892ae43fa1832fa60aab115f` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_ON_THE_PUBLISHING_SOURCE.**
+A canonical-URL id can leave the publishing source. When `source_id` is no
+longer that source, the still-public count stays absent. Do not prefer the
+canonical-URL length. Do not record CLOSED. Do not block the writer. Do not
+claim MATH-08. Do not grant a source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Still-public ids must have distinct canonical URLs
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
