@@ -290,3 +290,12 @@ export function phMatchedManilaStillPublicCount(
   if (!samePositiveIds(pair.stillPublicIds, phIds)) return null;
   return matched;
 }
+
+// A PH-matched still-public count is not a completed Manila-day flow. This
+// reader has no closed-day evidence, so a caller-supplied CLOSED state does
+// not create one. The 100 floor is not a flow either.
+export function phMatchedManilaDayFlowCount(dayState: string, matchedCount: number | null): number | null {
+  if (dayState.length === 0) return null;
+  if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
+  return null;
+}
