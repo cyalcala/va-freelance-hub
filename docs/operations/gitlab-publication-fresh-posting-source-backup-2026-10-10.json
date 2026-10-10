@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "unit": "PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE",
+  "checkedAtUtc": "2026-10-09T23:42:03.8814582+00:00",
+  "startSha": "3d5f4ea311f3a6c126c99bc07874c50456985755",
+  "sourceSha": "f6753582a11ca7ffff70943ee69c3fdddbdc60b0",
+  "remoteSha": "f6753582a11ca7ffff70943ee69c3fdddbdc60b0",
+  "remote": "gitlab",
+  "remoteUrl": "https://gitlab.com/cyrus-group4793641/va-freelance-hub.git",
+  "branch": "codex/verified-flow-directory-checkpoint",
+  "normalPush": "PASS_NO_FORCE",
+  "exactReadback": "PASS",
+  "preCommitDivergence": "0\t0",
+  "readmeMain": "fbeff64a2b47f32550ba426af92a2795a1507181",
+  "cachedOriginMain": "926d39a0ea2db80a7eba8d541d12906a0c8b0837",
+  "ownedFiles": [
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "gitBlob": "ca57546e4ffd51c091101997d746f2ffcad441ea"
+    },
+    {
+      "path": "apps/web/tests/fixtures/native-fresh-scrape-posting-date.ts",
+      "gitBlob": "08c9d59e68204d099de6d9db604dd8b727b84391"
+    },
+    {
+      "path": "apps/web/tests/native-fresh-scrape-posting-date.test.ts",
+      "gitBlob": "18c26b4775e0fa137e1e82fdced416bbd7631aeb"
+    },
+    {
+      "path": "packages/scraper/json.ts",
+      "gitBlob": "db0f47b3f04440ac4e1723b7c0bece50bf322d29"
+    },
+    {
+      "path": "packages/scraper/rss.ts",
+      "gitBlob": "f33acb0295c9a92415019d8fe8a8e5c2f931a298"
+    },
+    {
+      "path": "packages/scraper/source-posting-date.ts",
+      "gitBlob": "35187dea85d7a241bde6d0c7ca8e8b2ceac062c3"
+    }
+  ],
+  "defaultGitLabCiConfiguration": "ABSENT_AT_EXACT_SOURCE_SHA",
+  "groupHostedEquivalentCi": "UNKNOWN",
+  "gitHubBackup": "PENDING_UNCHANGED_SUSPENSION_NOT_REPROBED",
+  "apiProbe": "UNCHANGED_404_NOT_REPROBED",
+  "reviewMergeDeploymentRuntimeAcceptance": "NOT_ESTABLISHED",
+  "productionWrites": 0,
+  "dataStateBackup": "NOT_ESTABLISHED_SOURCE_BACKUP_ONLY"
+}

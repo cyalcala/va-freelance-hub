@@ -1,5 +1,132 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Unclear-backlog PH upgrades use the publication gateway
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_UNCLEAR_BACKLOG_VISIBILITY_BOUNDARY.
+`sweepUnclearBacklog` no longer turns an active unclear row into `eligible_likely`
+with an ID-only write. An upgrade now requires the publication database, a
+canonical source, explicit remote, an original date inside the existing inclusive
+30-day window, a resolvable outbound URL, and `publishPublicExposure`. The UPDATE
+rechecks that same row. Blocked and opted-out sources do not upgrade. A date that
+changes before the write matches zero rows and is not credited. Post-write UNKNOWN
+is rethrown out of the sweep's best-effort catches. Native in-memory evidence:
+two qualified controls visible with ledger ids 1 and 2; onsite, hybrid, null
+workplace, missing, impossible, stale, future, unsafe URL, opt-out, unregistered,
+and pre-write date drift stay unclear. Fixture clock is projected, not live D1.
+[Evidence](operations/PUBLICATION_UNCLEAR_BACKLOG_VISIBILITY_BOUNDARY_2026-10-10.md).
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. GCP billing, image identity, and Janes
+9046/9047 stay on their existing re-observation triggers. Do not repeat unchanged
+failed probes. Raw-lake sync stays fenced. No source, parameter, provider, or
+clock change.
+
+**One NEXT: PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL.** A lost acknowledgement,
+a later onsite or stale drift, and a mass withdrawal still need an explicit
+idempotent reconciliation across the row, ledger, snapshot, and Apply path
+under ADR-010. Do not start it by relaxing a gate or by treating stock, replay,
+or the 735-company directory as daily QUPD. Recover this SHA first.
+
+## 2026-10-10 Manila — Original fresh scrape dates qualified before staging; GitLab checkpoint
+
+**Owner scope CONTINUING:**100 newly first-published unique verified PH-accessible
+remote jobs/complete Manila day,150 stretch; factual enrichment of reported735
+directory entries; MATH-01..13/SSAE-CED/DeepSeek; lucky777/Addy/GitLab recovery.
+Accepted MATH **0/13**, certified fresh flow **NULL/UNKNOWN**. Zero production
+publications/company enrichments; this date prerequisite complete locally, full
+objective open. [Finite operation](operations/PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE_2026-10-10.md).
+
+**Git/reentry:** START `3d5f4ea311f3a6c126c99bc07874c50456985755`, unchanged
+codex/verified-flow-directory-checkpoint. Independent audit now committed at START,
+its8 normalized hashes/blobs and implementation equivalence checked;12 captured
+results reused, archived bytes unchanged. Prior19c2031c full recovery closure remains
+complete; do not reopen it. Six-file source `f6753582a11ca7ffff70943ee69c3fdddbdc60b0` normally pushed; exact readback
+`2026-10-09T23:42:03.8814582+00:00`. [Source receipt](operations/gitlab-publication-fresh-posting-source-backup-2026-10-10.json).
+GitLab fetch0/0; sole active repository chat at the source checkpoint through
+23:42 UTC; source/native ownership separated and read-only independent review. Cached originmain926d39a0/GitLab README mainfbeff64a
+preserved; defaultCI absent at exact source/groupCIUNKNOWN, GitHub suspension/API404
+unchanged/unreprobed. Source backup differs from MR/CI/runtime acceptance. Final
+finite docs SHA/readback/full bundle/fresh clean restore belongs externally at
+`C:/Users/admin/Desktop/va-freelance-hub-recovery/publication-fresh-posting-2026-10-09-234432Z.full.bundle` and matching `.full.receipt.json`; prospective pointer alone
+proves no restore. Git is not data/GCP-state recovery. Foreign .agents/skills/ and
+rootlucky777.md untracked/preserved/excluded.
+
+**Interrupted closure resumed 23:54 UTC:** source HEAD and all6 owned source/
+7 acceptance-doc fingerprints unchanged; completed tests and interrupted docs
+guardrail PASS recovered, not repeated. Audit VA Freelance Hub systems is now
+active on a separate mainly-read-only Ponytail redesign report/Master Prompt/
+Bootloader assignment. Its foreign docs/audits/evidence/2026-10-10-ponytail/ remains
+preserved/excluded. Root owns these7 checkpoint documents and the completed source;
+no overlapping implementation dispatch. Check HEAD/staging/remote ancestry again
+before the final normal checkpoint; do not stage audit-owned files.
+
+**Authority/effects:** lucky777/AGENTS/CURRENT/task/fallback/source constitution/
+sole queue/architecture/accepted v2 owner72709b1 recovered; manifest/router absent.
+User continuation supplies authority; audit instructions are evidence. Addy TDD/
+source/incremental/Git/review applied; Jev401 unchanged/nonblocking/not retried.
+Zero production requests/DB reads/writes/deployments/migrations/admissions/source
+permissions/parameters/providers/services/grants/clocks changed. GCP background
+primary/GitHub source-review/Turso evidence/CF-D1 serving and raw-sync fence retained.
+Local lucky777ACTIVE/olderAPEXPAUSED; no production clock added.
+
+**Completed/verification:** RSS/JSON raw wall calendar validation precedes Date;
+ISO>3fractiondigits preserved until existing assessment. Existing supported
+explicit ISO/RSS offset forms and inclusive30d retained. Pre-AI/pre-shared inline/
+Inngest qualification retains nonfresh items inactive posting-freshness-*;
+policy-ineligible precedence retained. Parser invalid/unsupported ->NULL/UNKNOWN,
+never acquisition date. Diagnostic counts input holds, not persistence/job flow.
+New native raw-parser RED16/22/386/38, unchanged production; reviewed three-line
+assertion refinement exact-inverts to original RED (parsed+1ns and stricter hidden
+reasons, no physical/public/ledger weakening). GREEN38/0/590;119related/0/253;
+full **3992/0/326772/248files/259.70sBun/260.046scommand**. Types70.405s/build125.712s/
+fouraudits100%parameterparity/review PASS on same6 frozen files. Allproduction
+migrations executed in memory; actualFTS/Drizzle/RETURNING/gateway. Exactlyone
+ledger literal clock projected tofixed2026-10-10T12:00Z with inverse/hash;
+**CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF**. Nativeinline
+only; durable placement source evidence. Actualprovider/live/browser occurrence,
+existingrows/otheradapters/origin/holdrevalidation/durable dispatch remain unproved.
+PostwriteUNKNOWN retains physical rows/FTS/no fresh ledger/no compensation/later
+public writer stop/prefix. MATH-06/12/SSAE-01/07/09 local prerequisites, no card/
+runtime/supply/atomicity/withdrawal/sharedbudget/durableuncertainty acceptance.
+[Checks](operations/publication-fresh-posting-local-checks-2026-10-10.json).
+
+**Unchanged holds/owners/triggers:** directory234Upwork/237Intogreat proposals,
+236FVA parked/rebrandSurge398 identity; CF7403:baselineUNKNOWN,3HELD/0READY/noSQL/
+0applied. Owner normal account/service access+freshsuccessfulbaseline/per-rowreview
+triggers application. Dated735company/1556stock is not flow. GitHub pendingrelease/
+backup; GCP BILLING_DISABLED/six containerpermissionfailures,currentimage/tickUNKNOWN;
+Janes9046/9047 rawsync emptyIDs/details404 uncontained,withdrawal/compensationUNKNOWN.
+Changed normalaccess/image/newexecution evidence enables re-observation; no unchanged
+failed probes. Continue independent dependency-ready work.
+
+**One NEXT: PUBLICATION_UNCLEAR_BACKLOG_VISIBILITY_BOUNDARY.** Capture the missing native unclear-backlog
+PH upgrade evidence before selecting its repair. The sweep at scrape.ts:1235
+projects no source/date/type/URL (1281), selects active+unclear (1300), and changes
+PH to eligible_likely with an ID-only WHERE (1449-1456). That change is visibility
+under canonical publicOpportunityFilters, even without an isActive change. Current
+reachable idle/dedup/busy calls are2469/2568/3053. Existing fake sweep tests ignore
+WHERE; the archived tmp attempt emitted no native result and is setup failure,
+not RED. Use actual sweep/route/Drizzle/migrations/FTS/public predicate/gateway,
+synthetic AI and deny all transport. Start with a valid setup control, then native
+RED for nonremote/unknown-invalid-stale-future dates/unsafe URL/blocked-opted-out-
+unregistered source and valid fresh controls. Check actual rows/public IDs/ledger,
+current source/state/type/date/URL drift with zero updates, safe fenced rejection/
+cursor writes, AI unavailable/reject/skeptic, fresh/legacy ordering and quota.
+Postwrite UNKNOWN must retain observed effects, stop later sequential writes and
+preserve confirmed prefix; do not swallow it in best-effort inner/outer catches.
+No new provider/source permission/admission/schema/parameter/clock. Root owns
+sweep/caller changes; native worker owns bounded fixture files. This is the next
+publication-control prerequisite in the sole source queue, not a second expansion
+queue or universal origin/atomicity/durable uncertainty/supply certificate. Recover
+ownership/current SHA first; skip completed date evidence and unchanged failed probes.
+
+
 ## 2026-10-10 Manila — Fresh scrape consumer metadata forwarding verified; GitLab checkpoint
 
 **Owner scope CONTINUING:**100 newly first-published unique verified PH-accessible

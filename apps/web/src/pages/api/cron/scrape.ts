@@ -15,7 +15,7 @@ import { d1Changes } from "@/lib/d1-result";
 import { normalizePersistedOpportunityIds, publicationDbFromEnv, publishGroupedActivations, publishGroupedInserts, PublicationOutcomeUnknownError } from "@/lib/publish-opportunities";
 import { publicationRetryKey, snapshotPublicationUpdate } from "@/lib/publication-retry-key";
 import { noExplicitNonRemoteWorkplace } from "@/lib/publication-remote";
-import { D1_MAX_BOUND_PARAMETERS, assessPostingFreshness, hasExplicitNonRemoteLocationType, publishPublicExposure, publicationTickKey } from "@va-hub/scraper";
+import { D1_MAX_BOUND_PARAMETERS, assessPostingFreshness, hasExplicitNonRemoteLocationType, publishPublicExposure, publicationTickKey, resolvePublicationOutboundUrl } from "@va-hub/scraper";
 import { createRobotsStore } from "@/lib/robots-store";
 import {
   buildIngestDiagRow,
@@ -1277,6 +1277,7 @@ export async function sweepUnclearBacklog(
     return { retriaged: 0, upgraded: 0, deactivated: 0, quotaUnavailable: true };
   }
   const stats: UnclearSweepStats = { retriaged: 0, upgraded: 0, deactivated: 0 };
+  const publicationDb = publicationDbFromEnv(env);
   try {
     const sweepCols = {
       id: opportunities.id,
@@ -1285,6 +1286,11 @@ export async function sweepUnclearBacklog(
       tags: opportunities.tags,
       company: opportunities.company,
       locationRaw: opportunities.locationRaw,
+      sourceId: opportunities.sourceId,
+      sourceUrl: opportunities.sourceUrl,
+      applicationUrl: opportunities.applicationUrl,
+      postedAt: opportunities.postedAt,
+      locationType: opportunities.locationType,
     };
 
     // FRESH-FIRST. Ordering purely by oldest geoCheckedAt puts the ~1,435 legacy
@@ -1446,20 +1452,88 @@ export async function sweepUnclearBacklog(
           stats.deactivated += 1;
           continue;
         }
-        await db.update(opportunities).set({
+        // A PH upgrade of an already-active row is a publication. The same
+        // source, freshness, explicit-remote, outbound-URL and receipt gates
+        // apply, and the write itself must still match the row that was judged.
+        const sourceId = typeof row.sourceId === "string" ? row.sourceId : "";
+        const postedAt = typeof row.postedAt === "string" ? row.postedAt : null;
+        const sourceUrl = typeof row.sourceUrl === "string" ? row.sourceUrl : null;
+        const freshness = assessPostingFreshness(postedAt, observedAt);
+        const qualified = Boolean(publicationDb)
+          && /^[a-z0-9:._-]+$/.test(sourceId)
+          && row.locationType === "remote"
+          && freshness.state === "WITHIN_WINDOW"
+          && freshness.postedAt === postedAt
+          && sourceUrl !== null
+          && resolvePublicationOutboundUrl(sourceUrl, row.applicationUrl) !== null;
+        if (!qualified || !publicationDb || postedAt === null || sourceUrl === null) {
+          await db.update(opportunities)
+            .set({ geoCheckedAt: observedAt, updatedAt: observedAt })
+            .where(and(eq(opportunities.id, row.id), eq(opportunities.phEligibility, "unclear")));
+          continue;
+        }
+        const evidence = skeptic?.aiUnavailable
+          ? `AI re-triage passed (single vote): ${(triage.reason || "eligible").slice(0, 160)}`
+          : `AI re-triage + skeptic agreed: ${(triage.reason || "eligible").slice(0, 160)}`;
+        const update = snapshotPublicationUpdate({
           phEligibility: "eligible_likely",
-          geoEvidence: skeptic?.aiUnavailable
-            ? `AI re-triage passed (single vote): ${(triage.reason || "eligible").slice(0, 160)}`
-            : `AI re-triage + skeptic agreed: ${(triage.reason || "eligible").slice(0, 160)}`,
+          geoEvidence: evidence,
           geoCheckedAt: observedAt,
           updatedAt: observedAt,
-        }).where(eq(opportunities.id, row.id));
+        });
+        const tickKey = publicationTickKey("unclear-sweep", observedAt);
+        const published = await publishPublicExposure(publicationDb, {
+          sourceId,
+          now: observedAt,
+          tickKey,
+          retryKey: await publicationRetryKey({
+            sourceId,
+            tickKey,
+            action: "unclear-sweep",
+            proposedCount: 1,
+            material: {
+              id: row.id,
+              patch: update.material,
+              postedAt,
+              sourceUrl,
+              applicationUrl: row.applicationUrl ?? null,
+              locationType: "remote",
+            },
+          }),
+          proposedCount: 1,
+          persist: async () => {
+            const returned = await db.update(opportunities).set(update.patch).where(and(
+              eq(opportunities.id, row.id),
+              eq(opportunities.isActive, true),
+              eq(opportunities.phEligibility, "unclear"),
+              eq(opportunities.sourceId, sourceId),
+              eq(opportunities.postedAt, postedAt),
+              eq(opportunities.sourceUrl, sourceUrl),
+              row.applicationUrl == null ? isNull(opportunities.applicationUrl) : eq(opportunities.applicationUrl, row.applicationUrl),
+              eq(opportunities.locationType, "remote"),
+            )).returning({ id: opportunities.id });
+            const ids = normalizePersistedOpportunityIds(returned.map((item) => item.id));
+            return { publishedCount: ids.length, ids };
+          },
+        });
+        if (!published.ok && "persistenceAttempted" in published && published.persistenceAttempted === true) {
+          throw new PublicationOutcomeUnknownError(stats.upgraded);
+        }
+        if (!published.ok || published.publishedCount !== 1) {
+          if (published.ok && published.mode === "blocked") {
+            await db.update(opportunities)
+              .set({ geoCheckedAt: observedAt, updatedAt: observedAt })
+              .where(and(eq(opportunities.id, row.id), eq(opportunities.phEligibility, "unclear")));
+          }
+          continue;
+        }
         if (skeptic?.aiUnavailable) {
           stats.skepticUnavailable = (stats.skepticUnavailable ?? 0) + 1;
         }
         stats.retriaged += 1;
         stats.upgraded += 1;
       } catch (err) {
+        if (err instanceof PublicationOutcomeUnknownError) throw err;
         console.warn(`[api/cron/scrape] Unclear re-triage failed for #${row.id}:`, errorMessage(err));
         // Same wedge hazard as the aiUnavailable path: without advancing the
         // cursor this row stays oldest-checked and is re-selected first every
@@ -1530,7 +1604,9 @@ export async function sweepUnclearBacklog(
       }
     }
   } catch (err) {
-    // The sweep is best-effort maintenance — it must never fail the run.
+    // Ordinary sweep maintenance stays best-effort. A post-write UNKNOWN is not
+    // maintenance: later rows in this tick must not publish over an unreceipted prefix.
+    if (err instanceof PublicationOutcomeUnknownError) throw err;
     console.warn(`[api/cron/scrape] Unclear-backlog sweep skipped:`, errorMessage(err));
   }
   return stats;

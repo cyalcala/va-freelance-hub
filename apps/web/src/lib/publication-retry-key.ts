@@ -4,7 +4,7 @@ import { getTableColumns, is, SQL, sql } from "drizzle-orm";
 import { SQLiteSyncDialect } from "drizzle-orm/sqlite-core";
 
 type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
-export type PublicationRetryAction = "insert" | "gate-recovery" | "feed-reactivation" | "scrape-drain" | "triage-drain";
+export type PublicationRetryAction = "insert" | "gate-recovery" | "feed-reactivation" | "scrape-drain" | "triage-drain" | "unclear-sweep";
 const columnNames = Object.keys(getTableColumns(opportunities)).sort();
 const columns = new Set(columnNames);
 const dialect = new SQLiteSyncDialect();
@@ -136,7 +136,7 @@ export async function publicationRetryKey(request: {
     || typeof request.tickKey !== "string" || !request.tickKey || request.tickKey.includes("\0")
     || !Number.isSafeInteger(request.proposedCount) || request.proposedCount < 0
     || typeof request.action !== "string"
-    || !["insert", "gate-recovery", "feed-reactivation", "scrape-drain", "triage-drain"].includes(request.action)) {
+    || !["insert", "gate-recovery", "feed-reactivation", "scrape-drain", "triage-drain", "unclear-sweep"].includes(request.action)) {
     throw new Error("publication retry identity requires a valid source, tick, action and count");
   }
   // Existing Web Crypto helper is Workers-compatible. SHA-256 digest API:

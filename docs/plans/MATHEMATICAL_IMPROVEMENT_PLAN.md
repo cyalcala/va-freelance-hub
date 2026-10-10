@@ -705,3 +705,34 @@ or optimization/supply acceptance. Zero production publications/enrichments;
 accepted MATH0/13, certified daily fresh flow NULL/UNKNOWN. Sole NEXT/owner/trigger
 is in newest savepoint: real-parser raw posting-date evidence before any repair.
 No card promotion, source/parameter/permission/clock change or parallel source queue.
+
+## 2026-10-10 bounded original posting-date continuation
+
+[PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE](../operations/PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE_2026-10-10.md)
+at source `f6753582a11ca7ffff70943ee69c3fdddbdc60b0` advances MATH-06/12 and SSAE-01/07/09 local
+publication-control prerequisites only. Real RSS/JSON raw calendars validated before
+Date; precision preserved through existing inclusive30d assessment before public
+staging. Native16/22RED ->38/0GREEN; full3992/0/326772/248files,types/build/fouraudits/
+independent review PASS on same freeze. Three reviewed assertion refinements exact-
+invert to RED; public/physical/ledger expectations retained. One fixture ledger
+clock projected with explicit hash/inverse, not byte-identical runtimeproof;
+nativeinline only; shared durable placement source evidence. PostwriteUNKNOWN/
+physical rows/FTS/noledger/compensation limitation remains. Zero production
+publications/enrichments, MATH0/13, certifiedflowNULL/UNKNOWN. Source backup does
+not establish hostedCI/runtime/supply/optimization acceptance. All other audit
+obligations remain open at the existing contracts; no card promotion/parallelqueue/
+source grant/parameter/budget/clock change. Sole NEXT/ownership/action/holds live
+in newest savepoint: missing native unclear-backlog visibility evidence first.
+
+## 2026-10-10 bounded unclear-backlog visibility continuation
+
+[PUBLICATION_UNCLEAR_BACKLOG_VISIBILITY_BOUNDARY](../operations/PUBLICATION_UNCLEAR_BACKLOG_VISIBILITY_BOUNDARY_2026-10-10.md)
+advances a MATH-06 local writer prerequisite only. Active unclear PH upgrades
+now require the publication gateway plus explicit remote, original inclusive-30-day
+freshness, a resolvable outbound URL, and the same row at write time. Native
+evidence receipts two qualified controls and withholds eleven unqualified rows.
+Post-write UNKNOWN is not swallowed. This is not card acceptance, a withdrawal
+model, shared-cap proof, or a QUPD measurement. Accepted MATH remains 0/13.
+Certified daily flow remains UNKNOWN. The 735-entry directory is not enriched.
+Sole NEXT is PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL in the newest savepoint.
+No source grant, parameter, budget, or clock change.

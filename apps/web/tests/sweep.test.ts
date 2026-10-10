@@ -180,7 +180,7 @@ describe("sweepUnclearBacklog — daily cap", () => {
   });
 
   it("ignores a tally from a previous day (self-resets at 00:00 UTC)", async () => {
-    const { db } = makeFakeDb([
+    const { db, calls } = makeFakeDb([
       [{ day: "2026-07-25", used: DAILY_SWEEP_CAP }], // stale stamp
       [row(1)],                                       // fresh
       [],                                             // legacy
@@ -189,8 +189,10 @@ describe("sweepUnclearBacklog — daily cap", () => {
 
     const stats = await sweepUnclearBacklog(db, env, OBSERVED, 1);
 
-    // Stale tally must not throttle: the row was processed.
-    expect(stats.retriaged).toBe(1);
+    // Stale tally must not throttle. The row is judged, then withheld because
+    // this fake has no publication database.
+    expect(stats).toMatchObject({ retriaged: 0, upgraded: 0 });
+    expect(calls.updates.some((u) => u.geoCheckedAt === OBSERVED && !u.phEligibility)).toBe(true);
   });
 
   it("clamps the per-tick budget to what remains of the cap", async () => {
@@ -243,7 +245,8 @@ describe("sweepUnclearBacklog — fresh-first ordering", () => {
     // limits[1] is the fresh query, limits[2] the legacy top-up.
     expect(calls.limits[1]).toBe(3);
     expect(calls.limits[2]).toBe(2); // 3 budget - 1 fresh row
-    expect(stats.retriaged).toBe(3);
+    expect(stats.upgraded).toBe(0);
+    expect(calls.updates.filter((u) => u.geoCheckedAt === OBSERVED && !u.phEligibility)).toHaveLength(3);
   });
 
   it("does not query legacy at all when fresh rows fill the budget", async () => {
@@ -264,16 +267,15 @@ describe("sweepUnclearBacklog — fresh-first ordering", () => {
 });
 
 describe("sweepUnclearBacklog — verdicts", () => {
-  it("upgrades a row when triage and skeptic agree", async () => {
+  it("does not upgrade visibility without a publication database", async () => {
     const { db, calls } = makeFakeDb([[{ day: TODAY, used: 0 }], [row(1)], []]);
     const { env } = makeEnv([ELIGIBLE, SKEPTIC_AGREES]);
 
     const stats = await sweepUnclearBacklog(db, env, OBSERVED, 1);
 
-    expect(stats).toMatchObject({ retriaged: 1, upgraded: 1, deactivated: 0 });
-    const write = calls.updates.find((u) => u.phEligibility === "eligible_likely");
-    expect(write).toBeDefined();
-    expect(write.geoEvidence).toContain("re-triage");
+    expect(stats).toMatchObject({ retriaged: 0, upgraded: 0, deactivated: 0 });
+    expect(calls.updates.some((u) => u.phEligibility === "eligible_likely")).toBe(false);
+    expect(calls.updates.some((u) => u.geoCheckedAt === OBSERVED && !u.phEligibility)).toBe(true);
   });
 
   it("deactivates on a consensus split rather than publishing", async () => {
@@ -323,13 +325,13 @@ describe("sweepUnclearBacklog — verdicts", () => {
 });
 
 describe("sweepUnclearBacklog — durable-write truth (REL-04)", () => {
-  it("credits retriaged/upgraded only after the durable upgrade write succeeds", async () => {
+  it("does not credit an upgrade that has no publication database", async () => {
     const { db } = makeFakeDb([[{ day: TODAY, used: 0 }], [row(1)], []]);
     const { env } = makeEnv([ELIGIBLE, SKEPTIC_AGREES]);
 
     const stats = await sweepUnclearBacklog(db, env, OBSERVED, 1);
 
-    expect(stats).toEqual({ retriaged: 1, upgraded: 1, deactivated: 0 });
+    expect(stats).toEqual({ retriaged: 0, upgraded: 0, deactivated: 0 });
   });
 
   it("does not credit deactivated when the verdict write rejects", async () => {

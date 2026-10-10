@@ -1,5 +1,33 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): unclear-backlog PH upgrades now go
+through the publication gateway. Explicit remote, original inclusive-30-day
+date, resolvable URL, canonical source, and the current row must still match
+at the write. Native evidence shows two qualified controls receipted and eleven
+unqualified rows staying unclear, including opt-out, unregistered, and a date
+that changes before the UPDATE. Post-write UNKNOWN leaves the sweep instead of
+being swallowed. No production publication, directory enrichment, or MATH card
+acceptance. MATH remains 0/13 and certified daily flow remains UNKNOWN. The
+735-company directory stays on its existing holds. Sole NEXT is
+PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL in the newest savepoint.
+
+Latest continuation (2026-10-10 Manila): original fresh-scrape dates qualified
+before AI/public staging at `f6753582a11c`, normally pushed/exact GitLab readback.
+Raw calendar validation before Date and retained nanoseconds address committed
+independent audit evidence.38 native/3992 full tests/types/build/four audits/review
+PASS. Fixture ledger clock projected explicitly; not byte-identical runtimeproof;
+nativeinline only. PostwriteUNKNOWN/rows/FTS/noledger/compensation remain. No
+production/MATH/supply acceptance;MATH0/13/certifiedflowUNKNOWN. Final external
+bundle/clean-restore actual receipt required, pointer alone insufficient.
+Closure resumed after interruption: existing source/tests/guardrail receipts
+recovered unchanged. Separate active Ponytail audit owns foreign evidence under
+docs/audits/evidence/2026-10-10-ponytail/; preserve/exclude it, retain root checkpoint
+ownership, check shared HEAD/staging/remote before normal final commit.
+Sole NEXT is PUBLICATION_UNCLEAR_BACKLOG_VISIBILITY_BOUNDARY in newest savepoint:
+correct native unclear-backlog PH visibility evidence before its repair; prior
+attempt setupfailed, not RED. All unchanged access/directory/GCP/Janes holds retain
+owners/triggers. Preserve audit archives, skip completed date probes.
+
 Latest continuation (2026-10-10 Manila): fresh scrape consumer metadata forwarding
 verified locally at `3ae421645e08`, normally pushed/read back on GitLab.
 One preserved field precedes geoGate/AI/public staging; synthetic onsite/hybrid
