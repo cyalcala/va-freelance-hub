@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a repeated snapshot id does not agree
+with its raw length. The distinct agreed count stays absent when an id
+repeats, even if that raw length matches the snapshot count. The writer does
+not call this reader. No migration was added. MATH remains 0/13 and certified
+daily flow remains UNKNOWN. The 735-company directory stays on its existing
+holds. Behavior SHA `c813f7119e751d943e338b11f04bc8a2b4ee65a1`. Sole NEXT is
+PUBLICATION_MANILA_DAY_AGREED_IDS_MUST_MATCH_LEDGER in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): the snapshot first-publish count and
 the known id length agree only when they are the same safe integer.
 Disagreement stays absent, and an unknown pair stays absent. The writer does

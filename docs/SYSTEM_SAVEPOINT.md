@@ -1,5 +1,40 @@
 # System Savepoint
 
+## 2026-10-10 Manila — A repeated id does not agree
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_DUPLICATE_IDS_DO_NOT_AGREE. The
+distinct agreed count is the shared number only when the ids do not repeat.
+A repeated id stays absent even when the raw length matches the snapshot
+count. The raw-length reader still returns that matching length. The distinct
+reader does not prefer the raw length or the distinct length. The writer does
+not call this reader. No migration was added. This is not MATH-08 and not a
+certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_DUPLICATE_IDS_2026-10-10.md).
+Behavior SHA `c813f7119e751d943e338b11f04bc8a2b4ee65a1` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_AGREED_IDS_MUST_MATCH_LEDGER.** A distinct
+id list of the matching length can name jobs that are not the day's ledger
+first publishes. When the known ids are not that ledger set, the agreed count
+stays absent. Do not prefer the snapshot length or the ledger length. Do not
+compare an open count with the 100 floor. Do not record CLOSED. Do not block
+the writer. Do not claim MATH-08. Do not grant a source, change cadence, or
+add a clock.
+
 ## 2026-10-10 Manila — Snapshot count and known ids must agree
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
