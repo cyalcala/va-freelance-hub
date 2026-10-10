@@ -86,6 +86,10 @@ const LOAD_TICK_SUM_SQL = `SELECT IFNULL(SUM(published_count), 0) AS published F
 const INSERT_LEDGER_SQL = `INSERT INTO source_publication_ledger (
   source_id, tick_key, retry_key, mode, proposed_count, published_count, published_ids_json, decided_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+const LOAD_RESERVATION_SQL = `SELECT retry_key FROM source_publication_reservation WHERE retry_key = ?`;
+const INSERT_RESERVATION_SQL = `INSERT INTO source_publication_reservation (
+  source_id, tick_key, retry_key, reserved_count
+) VALUES (?, ?, ?, ?)`;
 
 function isCanonicalSourceId(value: string): boolean {
   return /^[a-z0-9:._-]+$/.test(value);
@@ -385,6 +389,10 @@ async function persistAndRecord(
       await insertLedger(db, request, "blocked", 0, []);
       return { ok: true, mode: "blocked", publishedCount: 0, ids: [], replayed: false, reason: "canary tick cap is already exhausted" };
     }
+    if (request.proposedCount > 0 && !await reserveCanaryCapacity(db, request)) {
+      await insertLedger(db, request, "blocked", 0, []);
+      return { ok: true, mode: "blocked", publishedCount: 0, ids: [], replayed: false, reason: "canary tick cap is already exhausted" };
+    }
   } else {
     const expiry = fresh.policyExpiry;
     const canonicalLease = isAdmissionInstant(expiry) && isAdmissionInstant(request.now);
@@ -437,6 +445,24 @@ async function persistAndRecord(
     return postPersistenceFailure("publication acknowledgement ledger write did not complete");
   }
   return { ok: true, mode, ...acknowledgement, replayed: false };
+}
+
+async function reserveCanaryCapacity(
+  db: PublicationDatabase,
+  request: PublishPublicExposureRequest,
+): Promise<boolean> {
+  // Committed before persistence. A second writer sees this hold even when the
+  // first ledger receipt does not exist yet. The same retry keeps its hold.
+  const existing = await db.prepare(LOAD_RESERVATION_SQL).bind(request.retryKey).first<{ retry_key: string }>();
+  if (existing?.retry_key === request.retryKey) return true;
+  try {
+    const write = await db.prepare(INSERT_RESERVATION_SQL).bind(
+      request.sourceId, request.tickKey, request.retryKey, request.proposedCount,
+    ).run();
+    return write.success;
+  } catch {
+    return false;
+  }
 }
 
 async function insertLedger(

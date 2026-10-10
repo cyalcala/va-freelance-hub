@@ -50,6 +50,7 @@ function freshDb(): Database {
     "0038_shadow_observations.sql", "0039_canary_transition_plane.sql",
     "0040_current_evidence_admission.sql", "0041_publication_ledger.sql",
     "0042_d1_like_glob_limit.sql", "0056_publication_outcome_uncertainty.sql",
+    "0057_publication_reservation.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1129,6 +1130,84 @@ test("native actual RETURNING IDs record one row despite FTS effects and zero fo
     expect(sqlite.query("SELECT published_count AS count, published_ids_json AS ids FROM source_publication_ledger ORDER BY id").all())
       .toEqual([{ count: 1, ids: "[1]" }, { count: 0, ids: "[]" }]);
     expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 1 });
+  } finally { sqlite.close(); }
+});
+
+test("overlapping capped writers cannot both publish the same remaining cap", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TRIGGER IF EXISTS source_registry_initial_state_is_dormant;");
+    sqlite.query(`INSERT INTO provider_profiles (
+      id, display_name, provider_family, mechanism, auth_class, evidence_lease_days,
+      default_compliance_state, default_operational_state
+    ) VALUES ('fixture-provider', 'Fixture', 'fixture', 'public_api', 'none', 180, 'allowed', 'candidate')`).run();
+    sqlite.query(`INSERT INTO source_registry (
+      source_id, provider_id, display_name, endpoint_url, compliance_state, operational_state,
+      policy_expiry, canary_max_new_items_per_tick
+    ) VALUES ('greenhouse:test', 'fixture-provider', 'Fixture', 'https://example.invalid/jobs',
+      'allowed', 'canary', '2027-01-01T00:00:00.000Z', 2)`).run();
+    let releaseSecond: () => void = () => {};
+    const secondDone = new Promise<void>((resolve) => { releaseSecond = resolve; });
+    let releaseEntered: () => void = () => {};
+    const firstEntered = new Promise<void>((resolve) => { releaseEntered = resolve; });
+    let firstPersisted = 0;
+    let secondPersisted = 0;
+    const first = publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "greenhouse:test", now: NOW, tickKey: TICK, retryKey: "reserve-first", proposedCount: 2,
+      persist: async () => {
+        firstPersisted += 1;
+        releaseEntered();
+        await secondDone;
+        const ids = [1, 2].map((n) => writeOpportunity(sqlite, `reserve-first-${n}`, "greenhouse:test")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    await firstEntered;
+    const second = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "greenhouse:test", now: NOW, tickKey: TICK, retryKey: "reserve-second", proposedCount: 2,
+      persist: async () => {
+        secondPersisted += 1;
+        const ids = writeOpportunity(sqlite, "reserve-second", "greenhouse:test");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    releaseSecond();
+    const firstResult = await first;
+    expect(secondPersisted).toBe(0);
+    expect(second).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
+    expect(firstPersisted).toBe(1);
+    expect(firstResult).toMatchObject({ ok: true, mode: "capped", publishedCount: 2 });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 2 });
+  } finally { sqlite.close(); }
+});
+
+test("a capped persist failure holds the tick for a different retry", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TRIGGER IF EXISTS source_registry_initial_state_is_dormant;");
+    sqlite.query(`INSERT INTO provider_profiles (
+      id, display_name, provider_family, mechanism, auth_class, evidence_lease_days,
+      default_compliance_state, default_operational_state
+    ) VALUES ('fixture-provider', 'Fixture', 'fixture', 'public_api', 'none', 180, 'allowed', 'candidate')`).run();
+    sqlite.query(`INSERT INTO source_registry (
+      source_id, provider_id, display_name, endpoint_url, compliance_state, operational_state,
+      policy_expiry, canary_max_new_items_per_tick
+    ) VALUES ('greenhouse:test', 'fixture-provider', 'Fixture', 'https://example.invalid/jobs',
+      'allowed', 'canary', '2027-01-01T00:00:00.000Z', 2)`).run();
+    const failed = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "greenhouse:test", now: NOW, tickKey: TICK, retryKey: "reserve-failed", proposedCount: 2,
+      persist: async () => { throw new Error("persist failed after the hold"); },
+    });
+    let persisted = 0;
+    const second = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "greenhouse:test", now: NOW, tickKey: TICK, retryKey: "reserve-after-failure", proposedCount: 1,
+      persist: async () => { persisted += 1; return { publishedCount: 1, ids: [1] }; },
+    });
+    expect(failed).toMatchObject({ ok: false, code: "POST_PERSISTENCE_FAILURE", exposure: "UNKNOWN" });
+    expect(persisted).toBe(0);
+    expect(second).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 0 });
+    expect(sqlite.query("SELECT reserved_count AS n FROM source_publication_reservation").get()).toEqual({ n: 2 });
   } finally { sqlite.close(); }
 });
 

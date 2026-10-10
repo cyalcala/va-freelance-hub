@@ -407,8 +407,8 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
     });
   });
 
-  describe("Cross-writer reservation Gap: no cumulative reservation across writers", () => {
-    test("each publishPublicExposure call checks tickSum independently — no shared reservation", async () => {
+  describe("sequential canary tick accounting", () => {
+    test("a later call sees the next tick sum and blocks before persistence", async () => {
       const canary = { sourceId: "greenhouse:test", compliance: "allowed", operational: "canary", optOut: 0, policyExpiry: "2026-10-01T00:00:00.000Z", canaryMaxNewItemsPerTick: 5 };
       const db = new FakeDatabase({
         registry: [canary, canary, canary],
@@ -429,7 +429,7 @@ describe("MATH-06A: Publication Authority — Known Gap Characterization Tests",
       });
       // First call: alreadyPublished=2, proposed=3, cap=5 → 2+3=5 ≤ 5 → ALLOWS
       // Second call: alreadyPublished=3, proposed=3, cap=5 → 3+3=6 > 5 → BLOCKS
-      // But if both ran concurrently with same tickSum snapshot, both might pass
+      // This fake is sequential. The native reservation test covers the overlap.
       expect(r1.mode).toBe("capped");
       expect(r2.mode).toBe("blocked");
     });

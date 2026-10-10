@@ -377,7 +377,8 @@ describe("truthful fresh publication acknowledgements", () => {
         }));
         expect(result).toEqual({ ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true,
           exposure: "UNKNOWN", reason: "publication persistence returned an invalid acknowledgement" });
-        expect(persisted).toBe(1); expect(db.runs).toEqual([]);
+        expect(persisted).toBe(1);
+        expect(db.runs.filter((run) => run.query.includes("INSERT INTO source_publication_ledger"))).toEqual([]);
       });
     }
 
@@ -385,7 +386,7 @@ describe("truthful fresh publication acknowledgements", () => {
       const db = publishingDb(mode);
       const result = await publishPublicExposure(db, freshRequest(mode, async () => ({ publishedCount: 0, ids: [] })));
       expect(result).toEqual({ ok: true, mode, publishedCount: 0, ids: [], replayed: false });
-      expect(db.runs[0]?.values.slice(3, 7)).toEqual([mode, 2, 0, "[]"]);
+      expect(db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"))?.values.slice(3, 7)).toEqual([mode, 2, 0, "[]"]);
     });
 
     test(`${mode} callback throw reports possible effects without leaking the caught message`, async () => {
@@ -393,7 +394,8 @@ describe("truthful fresh publication acknowledgements", () => {
       const result = await publishPublicExposure(db, freshRequest(mode, async () => { throw new Error("secret callback evidence"); }));
       expect(result).toEqual({ ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true,
         exposure: "UNKNOWN", reason: "publication persistence did not complete with a valid acknowledgement" });
-      expect(JSON.stringify(result)).not.toContain("secret"); expect(db.runs).toEqual([]);
+      expect(JSON.stringify(result)).not.toContain("secret");
+      expect(db.runs.filter((run) => run.query.includes("INSERT INTO source_publication_ledger"))).toEqual([]);
     });
 
     test(`${mode} acknowledgement access failure has a fixed post-persistence result`, async () => {
@@ -403,7 +405,7 @@ describe("truthful fresh publication acknowledgements", () => {
       })));
       expect(result).toEqual({ ok: false, code: "POST_PERSISTENCE_FAILURE", persistenceAttempted: true,
         exposure: "UNKNOWN", reason: "publication persistence returned an invalid acknowledgement" });
-      expect(db.runs).toEqual([]);
+      expect(db.runs.filter((run) => run.query.includes("INSERT INTO source_publication_ledger"))).toEqual([]);
     });
 
     test(`${mode} exact IDs detach from callback memory before ledger suspension`, async () => {
@@ -419,7 +421,8 @@ describe("truthful fresh publication acknowledgements", () => {
       };
       const result = await publishPublicExposure(db, freshRequest(mode, async () => ({ publishedCount: 2, ids })));
       expect(result).toEqual({ ok: true, mode, publishedCount: 2, ids: [7, 8], replayed: false });
-      expect(ids).toEqual([99]); expect(db.runs[0]?.values.slice(5, 7)).toEqual([2, "[7,8]"]);
+      expect(ids).toEqual([99]);
+      expect(db.runs.find((run) => run.query.includes("INSERT INTO source_publication_ledger"))?.values.slice(5, 7)).toEqual([2, "[7,8]"]);
     });
   }
 });
