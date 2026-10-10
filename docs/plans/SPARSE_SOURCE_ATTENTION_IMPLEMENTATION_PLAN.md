@@ -869,6 +869,19 @@ daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded repeated id in same-source breach stays absent
+
+[PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_REPEATED_ID_STAYS_ABSENT](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_REPEATED_ID_STAYS_ABSENT_2026-10-10.md)
+is a publication-measurement prerequisite, not an SSAE card promotion. A
+same-source breach whose still-public id list contains a duplicate id or
+non-positive integer stays absent from `sameSourcePairManilaFamilyStatus`. The
+family status is null, not OK and not BREACH. Restoring the distinct id list
+restores the BREACH status. The reader does not block the writer. No ranker,
+allocator, shadow canary, or neural routing change. Accepted MATH remains 0/13.
+Certified daily flow remains UNKNOWN. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_REPEATED_ID_IS_NOT_A_FLOW in the newest
+savepoint.
+
 ## 2026-10-10 bounded repeated id in same-source pair stays absent
 
 [PUBLICATION_MANILA_DAY_SAME_SOURCE_REPEATED_ID_STAYS_ABSENT](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_REPEATED_ID_STAYS_ABSENT_2026-10-10.md)

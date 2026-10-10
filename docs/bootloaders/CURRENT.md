@@ -1,5 +1,15 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a same-source breach whose still-public
+id list contains a duplicate id or non-positive integer stays absent from
+sameSourcePairManilaFamilyStatus. The family status is null, not OK and not
+BREACH. Restoring distinct ids restores BREACH. The writer does not call this
+reader. No migration was added. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`899f14725350c33a901e6ef2974fae7e60fb7f0f`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_REPEATED_ID_IS_NOT_A_FLOW in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a same-source pair whose still-public
 id list contains a duplicate id or non-positive integer stays absent from
 sameSourcePairManilaFamilyStatus. The family status is null, not OK and not
