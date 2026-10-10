@@ -3474,3 +3474,46 @@ test("a canonical-URL id that leaves the publishing source stays absent", async 
     expect(sourceMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, urlRows(), ownedRows(), "")).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("a source-matched count is not a completed Manila-day flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "source-match-not-flow", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "source-match-not-flow", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, sourceMatchedManilaStillPublicCount, sourceMatchedManilaDayFlowCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    const snapshot = loaded.counts.find((row) => row.retryKey === paired!.retryKey);
+    expect(snapshot).toBeDefined();
+    const urlRows = sqlite.query("SELECT id, source_url AS sourceUrl FROM opportunities WHERE id = ?")
+      .all(realId) as Array<{ id: number; sourceUrl: string }>;
+    const ownedRows = sqlite.query("SELECT id, source_id AS sourceId FROM opportunities WHERE id = ?")
+      .all(realId) as Array<{ id: number; sourceId: string }>;
+    expect(ownedRows).toEqual([{ id: realId, sourceId: "we-work-remotely" }]);
+    const matched = sourceMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, urlRows, ownedRows, "we-work-remotely");
+    expect(matched).toBe(1);
+    const open = readManilaOpenSnapshot(sqlite, "source-match-not-flow");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof sourceMatchedManilaDayFlowCount).toBe("function");
+    const completed = sourceMatchedManilaDayFlowCount(open!.day_state, matched);
+    expect(completed).toBeNull();
+    expect(completed).not.toBe(matched);
+    expect(completed).not.toBe(0);
+    expect(sourceMatchedManilaDayFlowCount("CLOSED", matched)).toBeNull();
+    expect(sourceMatchedManilaDayFlowCount("OPEN", 100)).toBeNull();
+    expect(sourceMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
+  } finally { sqlite.close(); }
+});
