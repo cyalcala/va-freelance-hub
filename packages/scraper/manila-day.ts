@@ -153,3 +153,13 @@ export function agreedManilaSnapshotIdCount(firstPublishCount: number, pair: Man
   if (reported === null || reported !== firstPublishCount) return null;
   return reported;
 }
+
+// A repeated id is not a distinct job. Raw length can match the snapshot count
+// and still stay absent. This reader does not prefer either number and is not
+// a closed-day flow.
+export function distinctAgreedManilaSnapshotIdCount(firstPublishCount: number, pair: ManilaSnapshotPair | null): number | null {
+  const agreed = agreedManilaSnapshotIdCount(firstPublishCount, pair);
+  if (agreed === null || !pair) return null;
+  if (new Set(pair.firstPublishIds).size !== pair.firstPublishIds.length) return null;
+  return agreed;
+}
