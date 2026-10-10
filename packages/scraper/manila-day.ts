@@ -388,6 +388,28 @@ export function publishingSourceManilaFamilyStatus(
   return snapshotSourcedManilaFamilyStatus(matchedCount, stillPublicIds, idSources, suppliedRows);
 }
 
+// A caller-supplied publishing source is not the snapshot's stored source.
+// Passing the replacement as the publishing source stays absent. This does
+// not block a writer and is not a closed-day flow.
+export function storedPublishingSourceManilaFamilyStatus(
+  matchedCount: number | null,
+  storedPublishingSourceId: string,
+  claimedPublishingSourceId: string,
+  stillPublicIds: readonly number[],
+  idSources: readonly { id: number; sourceId: string }[],
+  suppliedRows: readonly { sourceId: string; count: number }[],
+): "UNKNOWN" | "OK" | "BREACH" | null {
+  if (storedPublishingSourceId.trim().length === 0) return null;
+  if (storedPublishingSourceId !== claimedPublishingSourceId) return null;
+  return publishingSourceManilaFamilyStatus(
+    matchedCount,
+    storedPublishingSourceId,
+    stillPublicIds,
+    idSources,
+    suppliedRows,
+  );
+}
+
 // A remote serving match stays absent when the original posting is outside the
 // inclusive 30-day window or unknown. This reader does not prefer the remote
 // length and is not a closed-day flow.
