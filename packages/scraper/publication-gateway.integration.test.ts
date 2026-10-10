@@ -4677,6 +4677,67 @@ test("an inactive same-source opportunity is not a completed Manila-day flow", a
   } finally { sqlite.close(); }
 });
 
+test("a same-source pair whose still-public id list contains a duplicate id stays absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "same-source-repeated-id", proposedCount: 5,
+      persist: async () => {
+        const ids = Array.from({ length: 5 }, (_, index) => writeOpportunity(sqlite, `same-source-repeated-id-${index}`, "we-work-remotely")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 5, replayed: false });
+    const publishedIds = result.ok ? [...result.ids].sort((left, right) => left - right) : [];
+    expect(publishedIds).toHaveLength(5);
+    const open = readManilaOpenSnapshot(sqlite, "same-source-repeated-id");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(open!.still_public_count).toBe(5);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, sameSourcePairManilaFamilyStatus } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect([...paired!.stillPublicIds].sort((left, right) => left - right)).toEqual(publishedIds);
+    const pairSources = ["jobicy:admin", "jobicy:admin", "remotive", "remote-ok", "real-work-from-anywhere"];
+    for (const [index, id] of publishedIds.entries()) {
+      sqlite.query("UPDATE opportunities SET source_id = ? WHERE id = ?").run(pairSources[index], id);
+    }
+    const recorded = publishedIds.map((id) => {
+      const row = sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(id) as { sourceId: string };
+      return { id, sourceId: row.sourceId };
+    });
+    const pairBook = [
+      { sourceId: "jobicy:admin", count: 2 },
+      { sourceId: "remotive", count: 1 },
+      { sourceId: "remote-ok", count: 1 },
+      { sourceId: "real-work-from-anywhere", count: 1 },
+    ];
+    const initialStatus = sameSourcePairManilaFamilyStatus(5, paired!.stillPublicIds, recorded, pairBook);
+    expect(initialStatus).toBe("OK");
+    expect(initialStatus).not.toBe("BREACH");
+
+    const repeatedIds = [publishedIds[0]!, publishedIds[0]!, publishedIds[1]!, publishedIds[2]!, publishedIds[3]!];
+    expect(repeatedIds).toHaveLength(5);
+    expect(new Set(repeatedIds).size).toBe(4);
+    const repeatedStatus = sameSourcePairManilaFamilyStatus(5, repeatedIds, recorded, pairBook);
+    expect(repeatedStatus).toBeNull();
+    expect(repeatedStatus).not.toBe("OK");
+    expect(repeatedStatus).not.toBe("BREACH");
+
+    const nonPositiveIds = [0, publishedIds[1]!, publishedIds[2]!, publishedIds[3]!, publishedIds[4]!];
+    expect(sameSourcePairManilaFamilyStatus(5, nonPositiveIds, recorded, pairBook)).toBeNull();
+
+    const restoredStatus = sameSourcePairManilaFamilyStatus(5, paired!.stillPublicIds, recorded, pairBook);
+    expect(restoredStatus).toBe("OK");
+    expect(restoredStatus).not.toBe("BREACH");
+    expect(restoredStatus).not.toBeNull();
+  } finally { sqlite.close(); }
+});
+
+
 
 
 
