@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a caller-supplied source book that is
+not the published still-public source counts is not the day's family status.
+The folded four-row breach stays absent for the one published job. The writer
+does not call this reader. No migration was added. MATH remains 0/13 and
+certified daily flow remains UNKNOWN. The 735-company directory stays on its
+existing holds. Behavior SHA `4ff2da3f2d1bce97e8d22a6d48faca7775fba679`. Sole
+NEXT is PUBLICATION_MANILA_DAY_FAMILY_STATUS_REQUIRES_SNAPSHOT_IDS in the
+newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a family breach on an OPEN snapshot
 is not a completed Manila-day flow. A caller-supplied CLOSED state does not
 create one. Caller-supplied 100 and 150 stay absent. The writer does not call
