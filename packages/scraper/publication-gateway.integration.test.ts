@@ -3868,3 +3868,47 @@ test("a family breach is not a completed Manila-day flow", async () => {
     expect(remoteMatchedManilaFamilyDayFlowCount("OPEN", status, 150)).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("a foreign source book is not the published family status", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "foreign-book-not-family", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "foreign-book-not-family", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const sourceId = (sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(realId) as { sourceId: string }).sourceId;
+    expect(sourceId).toBe("we-work-remotely");
+    const open = readManilaOpenSnapshot(sqlite, "foreign-book-not-family");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(open!.still_public_count).toBe(1);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const published = [{ sourceId, count: open!.still_public_count }];
+    const folded = [
+      { sourceId: "jobicy:admin", count: 1 },
+      { sourceId: "jobicy:support", count: 1 },
+      { sourceId: "we-work-remotely", count: 1 },
+      { sourceId: "remotive", count: 1 },
+    ];
+    const { remoteMatchedManilaFamilyStatus, publishedManilaFamilyStatus } = await import("./manila-day");
+    const foreignStatus = remoteMatchedManilaFamilyStatus(4, folded);
+    expect(foreignStatus).toBe("BREACH");
+    expect(foreignStatus).not.toBe("OK");
+    const ownStatus = remoteMatchedManilaFamilyStatus(open!.still_public_count, published);
+    expect(ownStatus).toBe("BREACH");
+    expect(typeof publishedManilaFamilyStatus).toBe("function");
+    const foreign = publishedManilaFamilyStatus(4, published, folded);
+    expect(foreign).toBeNull();
+    expect(foreign).not.toBe("BREACH");
+    expect(foreign).not.toBe("OK");
+    expect(publishedManilaFamilyStatus(open!.still_public_count, published, published)).toBe("BREACH");
+    expect(publishedManilaFamilyStatus(4, published, published)).toBeNull();
+    expect(publishedManilaFamilyStatus(null, [], [])).toBe("UNKNOWN");
+  } finally { sqlite.close(); }
+});

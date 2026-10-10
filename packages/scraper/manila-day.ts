@@ -321,6 +321,40 @@ export function remoteMatchedManilaFamilyDayFlowCount(
   return null;
 }
 
+function usableSourceTotals(rows: readonly { sourceId: string; count: number }[]): Array<[string, number]> {
+  const sums = new Map<string, number>();
+  for (const row of rows) {
+    if (!(row.count > 0) || row.sourceId.trim().length === 0) continue;
+    sums.set(row.sourceId, (sums.get(row.sourceId) ?? 0) + row.count);
+  }
+  return [...sums.entries()].sort((left, right) => left[0].localeCompare(right[0]));
+}
+
+function samePublishedSourceBook(
+  publishedRows: readonly { sourceId: string; count: number }[],
+  suppliedRows: readonly { sourceId: string; count: number }[],
+): boolean {
+  const published = usableSourceTotals(publishedRows);
+  const supplied = usableSourceTotals(suppliedRows);
+  if (published.length !== supplied.length) return false;
+  return published.every((row, index) => {
+    const other = supplied[index];
+    return other !== undefined && row[0] === other[0] && row[1] === other[1];
+  });
+}
+
+// A caller-supplied source book is not the day's family status unless it is
+// the published still-public source counts. A foreign breach stays absent.
+// This does not block a writer and is not a closed-day flow.
+export function publishedManilaFamilyStatus(
+  matchedCount: number | null,
+  publishedRows: readonly { sourceId: string; count: number }[],
+  suppliedRows: readonly { sourceId: string; count: number }[],
+): "UNKNOWN" | "OK" | "BREACH" | null {
+  if (!samePublishedSourceBook(publishedRows, suppliedRows)) return null;
+  return remoteMatchedManilaFamilyStatus(matchedCount, publishedRows);
+}
+
 // A remote serving match stays absent when the original posting is outside the
 // inclusive 30-day window or unknown. This reader does not prefer the remote
 // length and is not a closed-day flow.
