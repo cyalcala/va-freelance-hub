@@ -63,3 +63,34 @@ export function latestManilaOpenSnapshot(rows: readonly ManilaOpenSnapshot[], ma
   }
   return latest;
 }
+
+export type ManilaSnapshotIdRow = {
+  id: number;
+  manilaDate: string;
+  recordedAt: string;
+  firstPublishIds: readonly number[];
+  stillPublicIds: readonly number[];
+};
+
+function positiveIds(ids: readonly number[]): boolean {
+  return ids.every((id) => Number.isSafeInteger(id) && id > 0);
+}
+
+// One Manila date keeps the newest valid id row. Rows are not unioned, and a
+// later row for another date does not replace this date. Equal instants use the higher id.
+export function latestManilaSnapshotIds(rows: readonly ManilaSnapshotIdRow[], manilaDate: string): ManilaSnapshotIdRow | null {
+  let latest: ManilaSnapshotIdRow | null = null;
+  for (const row of rows) {
+    if (row.manilaDate !== manilaDate) continue;
+    if (!CANONICAL_INSTANT.test(row.recordedAt)) continue;
+    if (!Number.isSafeInteger(row.id) || row.id <= 0) continue;
+    if (!positiveIds(row.firstPublishIds) || !positiveIds(row.stillPublicIds)) continue;
+    if (row.stillPublicIds.length > row.firstPublishIds.length) continue;
+    const first = new Set(row.firstPublishIds);
+    if (!row.stillPublicIds.every((id) => first.has(id))) continue;
+    if (latest === null || row.recordedAt > latest.recordedAt || (row.recordedAt === latest.recordedAt && row.id > latest.id)) {
+      latest = row;
+    }
+  }
+  return latest;
+}

@@ -2492,3 +2492,82 @@ test("a missing snapshot-id table keeps publication and the open snapshot", asyn
     expect(readManilaSnapshotIds(sqlite, "snapshot-ids-missing")).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("the day's ids are the latest id row, not the union of snapshot rows", async () => {
+  const sqlite = freshDb();
+  try {
+    const publishOne = async (sourceId: string, retryKey: string) => publishPublicExposure(new BunDb(sqlite), {
+      sourceId, now: NOW, tickKey: TICK, retryKey, proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, retryKey, sourceId);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    const first = await publishOne("we-work-remotely", "snapshot-id-latest-a");
+    expect(first).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const withdrawnId = first.ok ? first.ids[0] : 0;
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE id = ?").run(withdrawnId);
+    const second = await publishOne("remotive", "snapshot-id-latest-b");
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const firstIds = distinctFirstPublishIds(sqlite, today);
+    const stillIds = stillPublicFirstPublishIds(sqlite, firstIds);
+    expect(firstIds).toHaveLength(2);
+    expect(stillIds).toEqual(second.ok ? second.ids : []);
+    expect(stillIds).not.toContain(withdrawnId);
+    const loaded = sqlite.query(`SELECT id, manila_date, recorded_at, first_publish_ids_json, still_public_ids_json
+      FROM source_publication_manila_snapshot_ids`).all() as Array<{
+      id: number; manila_date: string; recorded_at: string;
+      first_publish_ids_json: string; still_public_ids_json: string;
+    }>;
+    expect(loaded).toHaveLength(2);
+    expect(new Set(loaded.map((row) => row.recorded_at)).size).toBe(1);
+    const unionStill = [...new Set(loaded.flatMap((row) => JSON.parse(row.still_public_ids_json) as number[]))]
+      .sort((left, right) => left - right);
+    expect(unionStill).toEqual(firstIds);
+    expect(unionStill).not.toEqual(stillIds);
+    const otherDate = manilaDateOf(new Date(Date.parse(NOW) - DAY_MS).toISOString());
+    expect(otherDate).not.toBe(today);
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('remotive', ?, 'snapshot-id-latest-other', ?, '[9001]', '[9001]', ?)`).run(TICK, otherDate, later);
+    const rows = sqlite.query(`SELECT id, manila_date, recorded_at, first_publish_ids_json, still_public_ids_json
+      FROM source_publication_manila_snapshot_ids`).all() as Array<{
+      id: number; manila_date: string; recorded_at: string;
+      first_publish_ids_json: string; still_public_ids_json: string;
+    }>;
+    const mapped = rows.map((row) => ({
+      id: row.id,
+      manilaDate: row.manila_date,
+      recordedAt: row.recorded_at,
+      firstPublishIds: JSON.parse(row.first_publish_ids_json) as number[],
+      stillPublicIds: JSON.parse(row.still_public_ids_json) as number[],
+    }));
+    const { latestManilaSnapshotIds } = await import("./manila-day");
+    expect(typeof latestManilaSnapshotIds).toBe("function");
+    const selected = latestManilaSnapshotIds(mapped, today);
+    expect(selected).not.toBeNull();
+    expect(selected!.stillPublicIds).toEqual(stillIds);
+    expect(selected!.firstPublishIds).toEqual(firstIds);
+    expect(selected!.stillPublicIds).not.toEqual(unionStill);
+    expect(selected!.stillPublicIds).not.toContain(9001);
+    expect(selected!.manilaDate).toBe(today);
+    const newestToday = mapped
+      .filter((row) => row.manilaDate === today)
+      .sort((left, right) => left.recordedAt < right.recordedAt ? -1 : left.recordedAt > right.recordedAt ? 1 : left.id - right.id)
+      .at(-1);
+    expect(selected!.id).toBe(newestToday!.id);
+    const invalidNewer = {
+      id: selected!.id + 1,
+      manilaDate: today,
+      recordedAt: later,
+      firstPublishIds: firstIds,
+      stillPublicIds: [9001],
+    };
+    const withInvalid = latestManilaSnapshotIds([...mapped, invalidNewer], today);
+    expect(withInvalid).not.toBeNull();
+    expect(withInvalid!.id).toBe(selected!.id);
+    expect(withInvalid!.stillPublicIds).toEqual(stillIds);
+  } finally { sqlite.close(); }
+});
