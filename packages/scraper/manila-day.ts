@@ -327,3 +327,26 @@ export function canonicalUrlMatchedManilaDayFlowCount(dayState: string, matchedC
   if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
   return null;
 }
+
+// A canonical-URL match stays absent when the id no longer belongs to the
+// publishing source. This reader does not prefer the canonical-URL length
+// and is not a closed-day flow.
+export function sourceMatchedManilaStillPublicCount(
+  stillPublicCount: number,
+  pair: ManilaSnapshotPair | null,
+  rows: readonly { id: number; sourceUrl: string }[],
+  ownedRows: readonly { id: number; sourceId: string }[],
+  publishingSourceId: string,
+): number | null {
+  const matched = canonicalUrlMatchedManilaStillPublicCount(
+    stillPublicCount,
+    pair,
+    rows.map((row) => row.id),
+    rows,
+  );
+  if (matched === null || !pair) return null;
+  if (publishingSourceId.length === 0) return null;
+  if (!samePositiveIds(pair.stillPublicIds, ownedRows.map((row) => row.id))) return null;
+  if (!ownedRows.every((row) => row.sourceId === publishingSourceId)) return null;
+  return matched;
+}
