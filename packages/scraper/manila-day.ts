@@ -187,3 +187,16 @@ export function ledgerMatchedManilaSnapshotIdCount(
   if (!samePositiveIds(pair.firstPublishIds, ledgerIds)) return null;
   return agreed;
 }
+
+// The still-public count and the known still-public id length are reportable
+// only when they are the same safe integer. Disagreement stays absent. This
+// reader does not prefer either number and is not a closed-day flow.
+export function agreedManilaStillPublicCount(stillPublicCount: number, pair: ManilaSnapshotPair | null): number | null {
+  if (!Number.isSafeInteger(stillPublicCount) || stillPublicCount < 0) return null;
+  if (!pair || pair.idsKnown !== true) return null;
+  if (new Set(pair.stillPublicIds).size !== pair.stillPublicIds.length) return null;
+  const first = new Set(pair.firstPublishIds);
+  if (!pair.stillPublicIds.every((id) => first.has(id))) return null;
+  if (pair.stillPublicIds.length !== stillPublicCount) return null;
+  return stillPublicCount;
+}

@@ -2924,3 +2924,54 @@ test("agreed snapshot ids that are not the ledger ids stay absent", async () => 
     expect(ledgerMatchedManilaSnapshotIdCount(matchedCount!.firstPublishCount, matchedPair, ledgerIds)).toBe(ledgerIds.length);
   } finally { sqlite.close(); }
 });
+
+test("a still-public count that disagrees with its known ids stays absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "still-public-agree", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "still-public-agree", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const today = manilaDateOf(NOW);
+    const agreedLoaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, agreedManilaStillPublicCount } = await import("./manila-day");
+    const agreedPair = latestManilaSnapshotPair(agreedLoaded.counts, agreedLoaded.ids, today);
+    expect(agreedPair).not.toBeNull();
+    expect(agreedPair!.idsKnown).toBe(true);
+    const agreedCount = agreedLoaded.counts.find((row) => row.retryKey === agreedPair!.retryKey);
+    expect(agreedCount).toBeDefined();
+    expect(agreedCount!.stillPublicCount).toBe(agreedPair!.stillPublicIds.length);
+    expect(agreedPair!.stillPublicIds).toEqual([realId]);
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'still-public-disagree', ?, 'OPEN', 1, 0, ?)`).run(TICK, today, later);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'still-public-disagree', ?, ?, ?, ?)`).run(TICK, today, JSON.stringify([realId]), JSON.stringify([realId]), later);
+    const loaded = loadSnapshotPair(sqlite);
+    const latestCount = latestManilaOpenSnapshot(loaded.counts, today);
+    expect(latestCount).not.toBeNull();
+    expect(latestCount!.stillPublicCount).toBe(0);
+    expect(latestCount!.firstPublishCount).toBe(1);
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.retryKey).toBe("still-public-disagree");
+    expect(paired!.idsKnown).toBe(true);
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    expect(paired!.stillPublicIds.length).not.toBe(latestCount!.stillPublicCount);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof agreedManilaStillPublicCount).toBe("function");
+    const disagreed = agreedManilaStillPublicCount(latestCount!.stillPublicCount, paired);
+    expect(disagreed).toBeNull();
+    expect(disagreed).not.toBe(latestCount!.stillPublicCount);
+    expect(disagreed).not.toBe(paired!.stillPublicIds.length);
+    expect(agreedManilaStillPublicCount(agreedCount!.stillPublicCount, agreedPair)).toBe(agreedCount!.stillPublicCount);
+  } finally { sqlite.close(); }
+});
