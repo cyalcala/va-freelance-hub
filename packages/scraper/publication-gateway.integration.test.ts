@@ -55,6 +55,7 @@ function freshDb(): Database {
     "0058_publication_portfolio_measurement.sql",
     "0059_publication_serving_measurement.sql",
     "0060_publication_portfolio_divergence.sql",
+    "0061_publication_manila_day.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1598,5 +1599,161 @@ test("a missing divergence table keeps both exposure measurements", async () => 
     expect(readServingMeasurement(sqlite, "divergence-missing-table")).not.toBeNull();
     expect(sqlite.query("SELECT mode, published_count AS count FROM source_publication_ledger").all())
       .toEqual([{ mode: "unlimited", count: 1 }]);
+  } finally { sqlite.close(); }
+});
+
+function manilaDateOf(instant: string): string {
+  return new Date(Date.parse(instant) + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function distinctFirstPublishIds(sqlite: Database, manilaDate: string): number[] {
+  const rows = sqlite.query(`SELECT published_ids_json AS ids, decided_at AS decidedAt
+    FROM source_publication_ledger
+    WHERE mode IN ('unlimited', 'capped') AND published_count > 0
+    ORDER BY decided_at, id`).all() as Array<{ ids: string; decidedAt: string }>;
+  const firstAt = new Map<number, string>();
+  for (const row of rows) {
+    const parsed = JSON.parse(row.ids) as unknown;
+    if (!Array.isArray(parsed)) continue;
+    for (const id of parsed) {
+      if (typeof id !== "number" || !Number.isSafeInteger(id) || id <= 0) continue;
+      const prior = firstAt.get(id);
+      if (prior === undefined || row.decidedAt < prior) firstAt.set(id, row.decidedAt);
+    }
+  }
+  return [...firstAt.entries()]
+    .filter(([, decidedAt]) => manilaDateOf(decidedAt) === manilaDate)
+    .map(([id]) => id)
+    .sort((left, right) => left - right);
+}
+
+function readManilaFirstPublish(sqlite: Database, retryKey: string): { manila_date: string; first_publish_count: number } | null {
+  try {
+    return sqlite.query(`SELECT manila_date, first_publish_count
+      FROM source_publication_manila_day WHERE retry_key = ?`).get(retryKey) as { manila_date: string; first_publish_count: number } | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+test("empty ledger counts do not inflate the Manila-day first-publish count", async () => {
+  const sqlite = freshDb();
+  try {
+    seedPublishedBook(sqlite, "we-work-remotely", 96, "manila-empty-history");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "manila-first", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "manila-first", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ids = distinctFirstPublishIds(sqlite, manilaDateOf(NOW));
+    expect(ids).toHaveLength(1);
+    const measured = readManilaFirstPublish(sqlite, "manila-first");
+    expect(measured).not.toBeNull();
+    expect(measured!.manila_date).toBe(manilaDateOf(NOW));
+    expect(measured!.first_publish_count).toBe(ids.length);
+    const replay = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "manila-first", proposedCount: 1,
+      persist: async () => ({ publishedCount: 1, ids: [1] }),
+    });
+    expect(replay).toMatchObject({ ok: true, publishedCount: 1, replayed: true });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_day").get()).toEqual({ n: 1 });
+  } finally { sqlite.close(); }
+});
+
+test("a later receipt of the same id does not increment the Manila-day count", async () => {
+  const sqlite = freshDb();
+  try {
+    const first = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "manila-same-a", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "manila-same", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(first).toMatchObject({ ok: true, publishedCount: 1, replayed: false });
+    const heldId = first.ok ? first.ids[0] : 0;
+    const second = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "manila-same-b", proposedCount: 1,
+      persist: async () => ({ publishedCount: 1, ids: [heldId!] }),
+    });
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const measured = readManilaFirstPublish(sqlite, "manila-same-b");
+    expect(measured).not.toBeNull();
+    expect(measured!.first_publish_count).toBe(distinctFirstPublishIds(sqlite, manilaDateOf(NOW)).length);
+    expect(measured!.first_publish_count).toBe(1);
+  } finally { sqlite.close(); }
+});
+
+test("a previous Manila day stays out of today's first-publish count", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TRIGGER source_publication_ledger_validate_insert;");
+    const yesterday = new Date(Date.parse(NOW) - 24 * 60 * 60 * 1000).toISOString();
+    expect(manilaDateOf(yesterday)).not.toBe(manilaDateOf(NOW));
+    sqlite.query(`INSERT INTO source_publication_ledger(
+      source_id, tick_key, retry_key, mode, proposed_count, published_count, published_ids_json, decided_at
+    ) VALUES ('we-work-remotely', ?, 'manila-yesterday', 'unlimited', 1, 1, '[9001]', ?)`).run(TICK, yesterday);
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "manila-today", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "manila-today", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ids = distinctFirstPublishIds(sqlite, manilaDateOf(NOW));
+    expect(ids).toHaveLength(1);
+    expect(ids).not.toContain(9001);
+    const measured = readManilaFirstPublish(sqlite, "manila-today");
+    expect(measured!.first_publish_count).toBe(ids.length);
+  } finally { sqlite.close(); }
+});
+
+test("another source's first publish counts in the same Manila day", async () => {
+  const sqlite = freshDb();
+  try {
+    const other = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "manila-other-source", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "manila-other-source", "remotive");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(other).toMatchObject({ ok: true, publishedCount: 1, replayed: false });
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "manila-with-other", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "manila-with-other", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ids = distinctFirstPublishIds(sqlite, manilaDateOf(NOW));
+    expect(ids).toHaveLength(2);
+    const measured = readManilaFirstPublish(sqlite, "manila-with-other");
+    expect(measured!.first_publish_count).toBe(2);
+    expect(measured!.first_publish_count).toBe(ids.length);
+  } finally { sqlite.close(); }
+});
+
+test("a missing Manila-day table keeps the unlimited receipt and the exposure rows", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_manila_day;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "manila-missing-table", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "manila-missing-table", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readPortfolioMeasurement(sqlite, "manila-missing-table")).not.toBeNull();
+    expect(readServingMeasurement(sqlite, "manila-missing-table")).not.toBeNull();
+    expect(readBookDivergence(sqlite, "manila-missing-table")).not.toBeNull();
   } finally { sqlite.close(); }
 });

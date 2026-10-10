@@ -22,6 +22,7 @@ import {
   TOP_PROVIDER_FAMILY_SHARE_MAX,
   TOP_SOURCE_SHARE_MAX,
 } from "./portfolio-concentration";
+import { manilaCalendarDate, manilaFirstPublishCount, type FirstPublishReceipt } from "./manila-day";
 import { recordLostAcknowledgement } from "./publication-uncertainty";
 import { MAX_URL_INPUT_LENGTH } from "./urls";
 
@@ -133,6 +134,12 @@ const INSERT_DIVERGENCE_SQL = `INSERT INTO source_publication_portfolio_divergen
   serving_source_status, serving_family_status,
   source_status_agrees, family_status_agrees, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+const LOAD_FIRST_PUBLISH_SQL = `SELECT json_group_array(json_object('idsJson', published_ids_json, 'decidedAt', decided_at)) AS receipts
+FROM source_publication_ledger
+WHERE mode IN ('unlimited', 'capped') AND published_count > 0`;
+const INSERT_MANILA_SQL = `INSERT INTO source_publication_manila_day (
+  source_id, tick_key, retry_key, manila_date, first_publish_count, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?)`;
 
 function isCanonicalSourceId(value: string): boolean {
   return /^[a-z0-9:._-]+$/.test(value);
@@ -489,6 +496,7 @@ async function persistAndRecord(
   }
   if (acknowledgement.publishedCount > 0) {
     await recordPortfolioExposure(db, request, acknowledgement.publishedCount);
+    await recordManilaDayFirstPublish(db, request);
   }
   return { ok: true, mode, ...acknowledgement, replayed: false };
 }
@@ -595,6 +603,45 @@ async function recordPortfolioExposure(
         request.now,
       ).run();
     }
+  } catch {
+    // The ledger receipt already exists. Do not turn this into UNKNOWN exposure.
+  }
+}
+
+function parseFirstPublishReceipts(raw: unknown): FirstPublishReceipt[] | null {
+  if (typeof raw !== "string" || raw.length === 0 || raw === "null") return null;
+  let parsed: unknown;
+  try { parsed = JSON.parse(raw); } catch { return null; }
+  if (!Array.isArray(parsed)) return null;
+  const receipts: FirstPublishReceipt[] = [];
+  for (const item of parsed) {
+    if (!item || typeof item !== "object") return null;
+    const idsJson = (item as { idsJson?: unknown }).idsJson;
+    const decidedAt = (item as { decidedAt?: unknown }).decidedAt;
+    if (typeof idsJson !== "string" || typeof decidedAt !== "string") return null;
+    receipts.push({ idsJson, decidedAt });
+  }
+  return receipts;
+}
+
+async function recordManilaDayFirstPublish(
+  db: PublicationDatabase,
+  request: PublishPublicExposureRequest,
+): Promise<void> {
+  // A missing table fails open. This count is not a certified daily flow and does not block.
+  try {
+    const row = await db.prepare(LOAD_FIRST_PUBLISH_SQL).first<{ receipts: string | null }>();
+    const receipts = parseFirstPublishReceipts(row?.receipts);
+    const manilaDate = manilaCalendarDate(request.now);
+    if (!receipts || !manilaDate) return;
+    await db.prepare(INSERT_MANILA_SQL).bind(
+      request.sourceId,
+      request.tickKey,
+      request.retryKey,
+      manilaDate,
+      manilaFirstPublishCount(receipts, manilaDate),
+      request.now,
+    ).run();
   } catch {
     // The ledger receipt already exists. Do not turn this into UNKNOWN exposure.
   }
