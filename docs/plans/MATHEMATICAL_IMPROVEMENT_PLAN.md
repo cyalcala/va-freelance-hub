@@ -1154,6 +1154,16 @@ flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_REMOTE_MATCH_IS_NOT_A_PORTFOLIO_PASS in the newest
 savepoint. No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded one-source remote match is not a portfolio pass
+
+[PUBLICATION_MANILA_DAY_REMOTE_MATCH_IS_NOT_A_PORTFOLIO_PASS](../operations/PUBLICATION_MANILA_DAY_REMOTE_MATCH_IS_NOT_A_PORTFOLIO_PASS_2026-10-10.md)
+advances a local measurement prerequisite only. One publishing source at the
+whole remote-matched count is a source-share breach and does not block the
+writer. This is not card acceptance or a certified QUPD. Accepted MATH remains
+0/13. Certified daily flow remains UNKNOWN. The 735-entry directory is not
+enriched. Sole NEXT is PUBLICATION_MANILA_DAY_SOURCE_OK_IS_NOT_A_FAMILY_PASS
+in the newest savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

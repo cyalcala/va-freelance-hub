@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-10 Manila — One-source remote match is not a portfolio pass
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_REMOTE_MATCH_IS_NOT_A_PORTFOLIO_PASS.
+A remote-matched count held by one publishing source is a source-share breach.
+An empty book with no positive matched count stays UNKNOWN. A row total that
+disagrees with the matched count stays absent. The unlimited publish already
+succeeded. The writer does not call this reader. No migration was added. This
+is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_REMOTE_MATCH_IS_NOT_A_PORTFOLIO_PASS_2026-10-10.md).
+Behavior SHA `c7bd1a6839d3cd84b9db92dc8569db2a9bfca4f9` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_SOURCE_OK_IS_NOT_A_FAMILY_PASS.** Two
+colon-prefixed ids in one provider family can each sit at the 25% source
+ceiling and still breach the 40% family ceiling. The unprefixed Jobicy feeds
+do not fold. That family breach stays out of OK. Do not block the writer. Do
+not turn 25/40 into a per-write block. Do not claim MATH-08. Do not grant a
+source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Remote-matched count is not a completed flow
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

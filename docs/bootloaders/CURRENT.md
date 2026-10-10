@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a one-source remote-matched count is
+a source-share breach, not a portfolio pass. An empty book stays UNKNOWN. The
+writer does not call this reader. No migration was added. MATH remains 0/13
+and certified daily flow remains UNKNOWN. The 735-company directory stays on
+its existing holds. Behavior SHA `c7bd1a6839d3cd84b9db92dc8569db2a9bfca4f9`.
+Sole NEXT is PUBLICATION_MANILA_DAY_SOURCE_OK_IS_NOT_A_FAMILY_PASS in the
+newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive remote-matched still-public
 count on an OPEN snapshot is not a completed Manila-day flow. A caller-supplied
 CLOSED state does not create one. The writer does not call this reader. No
