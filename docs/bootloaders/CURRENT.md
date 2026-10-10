@@ -1,5 +1,15 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a sequential publication writer
+re-reads source policy before persistence. Opt-out, expiry, and an exhausted
+canary tick block that write. A still-canary source keeps its capped path.
+This is not a shared reservation, and the 25% and 40% portfolio figures are
+not a per-write gate. No production publication, directory enrichment, or MATH
+card acceptance. MATH remains 0/13 and certified daily flow remains UNKNOWN.
+The 735-company directory stays on its existing holds. Migration 0056 was not
+applied. Behavior SHA `c59a65575c7fe77d059bc8b724df3e5855b5d6e6`. Sole NEXT is
+PUBLICATION_SHARED_RESERVATION in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): Secure Source Manager is the canonical
 Git remote. Instance `va-freelance-hub` in `asia-northeast1`, repository
 `va-freelance-hub`, verified at `073f4a5462cf7e04730aa5e5e1c8562b242bf3f9`

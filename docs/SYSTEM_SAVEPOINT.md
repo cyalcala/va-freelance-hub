@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Sequential source-policy re-read blocks a stale write
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** the sequential part of PUBLICATION_SOURCE_POLICY_EPOCH.
+`persistAndRecord` re-reads source policy before persistence. Opt-out, expiry,
+loss of an active unlimited lease, and a canary tick that is already full block
+that write. A still-canary source keeps the capped path. Exact-six legacy
+fallback still publishes. This is one writer. It is not a shared reservation,
+and the 25% and 40% portfolio figures are not a per-write gate. No new
+`julianday('now')`. Migration 0056 was not applied.
+[Evidence](operations/PUBLICATION_SOURCE_POLICY_EPOCH_SEQUENTIAL_2026-10-10.md).
+Behavior SHA `c59a65575c7fe77d059bc8b724df3e5855b5d6e6` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged.
+
+**One NEXT: PUBLICATION_SHARED_RESERVATION.** Competing channels must not both
+publish from the same remaining cap. Enforce that reservation before the write.
+Do not turn portfolio source or family share into a per-write block. Do not
+grant a source, change cadence, add a clock, or treat unknown dates, null
+workplace, or the 735-company directory as this unit.
+
 ## 2026-10-10 Manila — Secure Source Manager holds the canonical Git history
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

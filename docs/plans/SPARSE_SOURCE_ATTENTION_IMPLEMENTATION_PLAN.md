@@ -398,6 +398,14 @@ withdrawn later. No ranker, allocator, shadow canary, or neural routing change.
 Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_SOURCE_POLICY_EPOCH in the newest savepoint.
 
+## 2026-10-10 bounded sequential source-policy re-read
+
+[PUBLICATION_SOURCE_POLICY_EPOCH sequential re-read](../operations/PUBLICATION_SOURCE_POLICY_EPOCH_SEQUENTIAL_2026-10-10.md)
+is a publication-control prerequisite, not an SSAE card promotion. One writer
+re-reads policy before persistence. No ranker, allocator, shadow canary, or
+neural routing change. Accepted MATH remains 0/13. Certified daily flow remains
+UNKNOWN. Sole NEXT is PUBLICATION_SHARED_RESERVATION in the newest savepoint.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

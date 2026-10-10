@@ -755,6 +755,17 @@ Certified daily flow remains UNKNOWN. The 735-entry directory is not enriched.
 Sole NEXT is PUBLICATION_SOURCE_POLICY_EPOCH in the newest savepoint. No source
 grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded sequential source-policy re-read
+
+[PUBLICATION_SOURCE_POLICY_EPOCH sequential re-read](../operations/PUBLICATION_SOURCE_POLICY_EPOCH_SEQUENTIAL_2026-10-10.md)
+advances a MATH-06 local writer prerequisite only. One writer re-reads policy
+before persistence, so a stale opt-out, expiry, or exhausted canary tick does
+not publish. This is not card acceptance, a shared reservation, a portfolio
+share gate, or a QUPD measurement. Accepted MATH remains 0/13. Certified daily
+flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_SHARED_RESERVATION in the newest savepoint. No source grant,
+parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
