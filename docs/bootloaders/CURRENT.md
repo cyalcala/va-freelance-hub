@@ -1,6 +1,14 @@
 # Current resume pointer
 
 Latest continuation (2026-10-10 Manila): a positive publish stores the ledger
+source set, the serving source set, and whether they differ. Equal totals and
+agreeing status can hide different sets. A missing table fails open. Migration
+0065 was not applied. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`10dd3980a964d6640558eeed6ac2d9477b62c8aa`. Sole NEXT is
+PUBLICATION_PORTFOLIO_SOURCE_COUNT_VECTOR in the newest savepoint.
+
+Latest continuation (2026-10-10 Manila): a positive publish stores the ledger
 book total, the serving book total, and whether they differ. Status labels can
 agree while the totals differ. A missing table fails open. Migration 0064 was
 not applied. MATH remains 0/13 and certified daily flow remains UNKNOWN. The

@@ -862,6 +862,16 @@ daily flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT
 is PUBLICATION_PORTFOLIO_BOOK_MEMBERSHIP in the newest savepoint. No source
 grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded portfolio book membership
+
+[PUBLICATION_PORTFOLIO_BOOK_MEMBERSHIP](../operations/PUBLICATION_PORTFOLIO_BOOK_MEMBERSHIP_2026-10-10.md)
+advances a local measurement prerequisite only. Equal totals and agreeing
+status can hide different source sets. This is not card acceptance or a
+certified QUPD. Accepted MATH remains 0/13. Certified daily flow remains
+UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_PORTFOLIO_SOURCE_COUNT_VECTOR in the newest savepoint. No source
+grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
