@@ -3912,3 +3912,45 @@ test("a foreign source book is not the published family status", async () => {
     expect(publishedManilaFamilyStatus(null, [], [])).toBe("UNKNOWN");
   } finally { sqlite.close(); }
 });
+
+test("a self-matching book is not the snapshot family status", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "snapshot-id-family", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "snapshot-id-family", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const sourceId = (sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(realId) as { sourceId: string }).sourceId;
+    expect(sourceId).toBe("we-work-remotely");
+    const open = readManilaOpenSnapshot(sqlite, "snapshot-id-family");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(open!.still_public_count).toBe(1);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, publishedManilaFamilyStatus, snapshotSourcedManilaFamilyStatus } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    const remotiveBook = [{ sourceId: "remotive", count: 1 }];
+    const selfMatched = publishedManilaFamilyStatus(1, remotiveBook, remotiveBook);
+    expect(selfMatched).toBe("BREACH");
+    expect(selfMatched).not.toBe("OK");
+    expect(typeof snapshotSourcedManilaFamilyStatus).toBe("function");
+    const idSources = [{ id: realId, sourceId }];
+    const absent = snapshotSourcedManilaFamilyStatus(1, paired!.stillPublicIds, idSources, remotiveBook);
+    expect(absent).toBeNull();
+    expect(absent).not.toBe("BREACH");
+    expect(absent).not.toBe("OK");
+    expect(snapshotSourcedManilaFamilyStatus(1, paired!.stillPublicIds, idSources, [{ sourceId, count: 1 }])).toBe("BREACH");
+    expect(snapshotSourcedManilaFamilyStatus(1, paired!.stillPublicIds, [{ id: realId + 1, sourceId }], [{ sourceId, count: 1 }])).toBeNull();
+    expect(snapshotSourcedManilaFamilyStatus(null, [], [], [])).toBe("UNKNOWN");
+  } finally { sqlite.close(); }
+});

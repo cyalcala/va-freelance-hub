@@ -355,6 +355,24 @@ export function publishedManilaFamilyStatus(
   return remoteMatchedManilaFamilyStatus(matchedCount, publishedRows);
 }
 
+// A self-matching caller-supplied book is not the day's family status unless
+// its source counts are the snapshot's still-public opportunity sources. A
+// different id stays absent. This does not block a writer and is not a
+// closed-day flow.
+export function snapshotSourcedManilaFamilyStatus(
+  matchedCount: number | null,
+  stillPublicIds: readonly number[],
+  idSources: readonly { id: number; sourceId: string }[],
+  suppliedRows: readonly { sourceId: string; count: number }[],
+): "UNKNOWN" | "OK" | "BREACH" | null {
+  if (!samePositiveIds(stillPublicIds, idSources.map((row) => row.id))) return null;
+  if (idSources.some((row) => row.sourceId.trim().length === 0)) return null;
+  const counts = new Map<string, number>();
+  for (const row of idSources) counts.set(row.sourceId, (counts.get(row.sourceId) ?? 0) + 1);
+  const published = [...counts.entries()].map(([sourceId, count]) => ({ sourceId, count }));
+  return publishedManilaFamilyStatus(matchedCount, published, suppliedRows);
+}
+
 // A remote serving match stays absent when the original posting is outside the
 // inclusive 30-day window or unknown. This reader does not prefer the remote
 // length and is not a closed-day flow.
