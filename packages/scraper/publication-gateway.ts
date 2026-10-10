@@ -140,6 +140,9 @@ const INSERT_BOOK_TOTAL_SQL = `INSERT INTO source_publication_portfolio_book_tot
 const INSERT_BOOK_MEMBERSHIP_SQL = `INSERT INTO source_publication_portfolio_book_membership (
   source_id, tick_key, retry_key, ledger_sources_json, serving_sources_json, sets_differ, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+const INSERT_SOURCE_COUNTS_SQL = `INSERT INTO source_publication_portfolio_source_counts (
+  source_id, tick_key, retry_key, ledger_counts_json, serving_counts_json, counts_differ, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 const LOAD_FIRST_PUBLISH_SQL = `SELECT json_group_array(json_object('idsJson', published_ids_json, 'decidedAt', decided_at)) AS receipts
 FROM source_publication_ledger
 WHERE mode IN ('unlimited', 'capped') AND published_count > 0`;
@@ -539,6 +542,14 @@ function canonicalSourceIds(rows: readonly { sourceId: string }[]): string {
   return JSON.stringify([...new Set(rows.map((row) => row.sourceId))].sort());
 }
 
+function canonicalSourceCounts(rows: readonly { sourceId: string; count: number }[]): string {
+  const totals = new Map<string, number>();
+  for (const row of rows) totals.set(row.sourceId, (totals.get(row.sourceId) ?? 0) + row.count);
+  const counts = [...totals.entries()].map(([sourceId, count]) => ({ sourceId, count }));
+  counts.sort((left, right) => left.sourceId.localeCompare(right.sourceId));
+  return JSON.stringify(counts);
+}
+
 function parsePortfolioBook(raw: unknown): Array<{ sourceId: string; count: number }> | null {
   if (typeof raw !== "string" || raw.length === 0 || raw === "null") return null;
   let parsed: unknown;
@@ -642,6 +653,18 @@ async function recordPortfolioExposure(
         ledgerSources,
         servingSources,
         ledgerSources === servingSources ? 0 : 1,
+        request.now,
+      ).run();
+      const ledgerCounts = canonicalSourceCounts(book);
+      const servingCounts = canonicalSourceCounts(servingBook);
+      // An equal source set is not equal per-source counts. The difference is recorded and does not block.
+      await db.prepare(INSERT_SOURCE_COUNTS_SQL).bind(
+        request.sourceId,
+        request.tickKey,
+        request.retryKey,
+        ledgerCounts,
+        servingCounts,
+        ledgerCounts === servingCounts ? 0 : 1,
         request.now,
       ).run();
     }

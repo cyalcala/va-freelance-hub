@@ -61,6 +61,7 @@ function freshDb(): Database {
     "0063_publication_manila_open_snapshot.sql",
     "0064_publication_portfolio_book_total.sql",
     "0065_publication_portfolio_book_membership.sql",
+    "0066_publication_portfolio_source_counts.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1775,6 +1776,97 @@ test("a missing membership table keeps publication and the book totals", async (
     expect(readBookTotals(sqlite, "membership-missing")).not.toBeNull();
     expect(readBookDivergence(sqlite, "membership-missing")).not.toBeNull();
     expect(readBookMembership(sqlite, "membership-missing")).toBeNull();
+  } finally { sqlite.close(); }
+});
+
+function readSourceCounts(sqlite: Database, retryKey: string): { ledger_counts_json: string; serving_counts_json: string; counts_differ: number } | null {
+  try {
+    return sqlite.query(`SELECT ledger_counts_json, serving_counts_json, counts_differ
+      FROM source_publication_portfolio_source_counts WHERE retry_key = ?`).get(retryKey) as { ledger_counts_json: string; serving_counts_json: string; counts_differ: number } | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+function sourceCounts(sqlite: Database, sql: string, params: unknown[] = []): Array<{ sourceId: string; count: number }> {
+  const rows = sqlite.query(sql).all(...params) as Array<{ source_id: string; count: number }>;
+  return rows.map((row) => ({ sourceId: row.source_id, count: Number(row.count) })).sort((left, right) => left.sourceId.localeCompare(right.sourceId));
+}
+
+test("an equal source set and equal totals do not prove the same source counts", async () => {
+  const sqlite = freshDb();
+  try {
+    seedPublishedBook(sqlite, "we-work-remotely", 2, "count-vector-wwr");
+    seedPublishedBook(sqlite, "remotive", 1, "count-vector-remotive");
+    writeOpportunity(sqlite, "count-vector-wwr-public", "we-work-remotely");
+    writeOpportunity(sqlite, "count-vector-remotive-a", "remotive");
+    writeOpportunity(sqlite, "count-vector-remotive-b", "remotive");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remote-ok", now: NOW, tickKey: TICK, retryKey: "count-vector-differ", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "count-vector-remote-ok", "remote-ok");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledgerCounts = sourceCounts(sqlite, `SELECT source_id, CAST(TOTAL(published_count) AS INTEGER) AS count
+      FROM source_publication_ledger
+      WHERE mode IN ('unlimited', 'capped') AND published_count > 0
+      GROUP BY source_id`);
+    const servingCounts = sourceCounts(sqlite, `SELECT source_id, CAST(COUNT(*) AS INTEGER) AS count
+      FROM "opportunities"
+      WHERE is_active = 1 AND ph_eligibility IN (?, ?)
+        AND typeof(source_id) = 'text' AND length(source_id) > 0
+      GROUP BY source_id`, [...PUBLIC_PH_ELIGIBILITIES]);
+    expect(ledgerCounts.map((row) => row.sourceId)).toEqual(servingCounts.map((row) => row.sourceId));
+    expect(ledgerCounts).not.toEqual(servingCounts);
+    const totals = readBookTotals(sqlite, "count-vector-differ");
+    expect(totals!.ledger_book_total).toBe(totals!.serving_book_total);
+    expect(totals!.totals_differ).toBe(0);
+    const membership = readBookMembership(sqlite, "count-vector-differ");
+    expect(membership!.sets_differ).toBe(0);
+    const counted = readSourceCounts(sqlite, "count-vector-differ");
+    expect(counted).not.toBeNull();
+    expect(JSON.parse(counted!.ledger_counts_json)).toEqual(ledgerCounts);
+    expect(JSON.parse(counted!.serving_counts_json)).toEqual(servingCounts);
+    expect(counted!.counts_differ).toBe(1);
+  } finally { sqlite.close(); }
+});
+
+test("the same source counts are recorded as not different", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "count-vector-same", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "count-vector-same", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const counted = readSourceCounts(sqlite, "count-vector-same");
+    expect(counted).not.toBeNull();
+    expect(JSON.parse(counted!.ledger_counts_json)).toEqual([{ sourceId: "we-work-remotely", count: 1 }]);
+    expect(JSON.parse(counted!.serving_counts_json)).toEqual([{ sourceId: "we-work-remotely", count: 1 }]);
+    expect(counted!.counts_differ).toBe(0);
+  } finally { sqlite.close(); }
+});
+
+test("a missing source-count table keeps publication and the source sets", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_portfolio_source_counts;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "count-vector-missing", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "count-vector-missing", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readBookMembership(sqlite, "count-vector-missing")).not.toBeNull();
+    expect(readSourceCounts(sqlite, "count-vector-missing")).toBeNull();
   } finally { sqlite.close(); }
 });
 
