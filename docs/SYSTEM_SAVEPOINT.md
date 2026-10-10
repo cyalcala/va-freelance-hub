@@ -1,5 +1,36 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Portfolio exposure is recorded and does not block
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING for the ledger
+receipt book. A positive publish appends source and provider-family share using
+the constitution ceilings. A share above 25% or 40% still publishes. Exact-six
+stays unlimited. A canary write stays capped. A missing measurement table fails
+open. Migration 0058 adds no `julianday('now')` and was not applied. The ledger
+book is not the live serving set and not a Manila-day flow.
+[Evidence](operations/PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING_2026-10-10.md).
+Behavior SHA `ff031f7dc5322cebe8bed6420f36609fade09109` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 and 0057 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_SERVING_PORTFOLIO_EXPOSURE.** Measure the live public
+serving book with the same ceilings. Do not turn 25% or 40% into a per-write
+block. Do not grant a source, change cadence, add a clock, or treat unknown
+dates, null workplace, or the 735-company directory as this unit.
+
 ## 2026-10-10 Manila — Canary ticks reserve capacity before the write
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

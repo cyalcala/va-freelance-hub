@@ -777,6 +777,17 @@ Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
 PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING in the newest savepoint. No source
 grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded portfolio exposure accounting
+
+[PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING](../operations/PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING_2026-10-10.md)
+advances a MATH-08 measurement prerequisite only. A publishing receipt records
+source and provider-family share for the ledger book. A breach does not block
+the writer. This is not card acceptance, an integrated limit, or a QUPD
+measurement. Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN.
+The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_SERVING_PORTFOLIO_EXPOSURE in the newest savepoint. No source
+grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive publication records source
+and provider-family share for the ledger receipt book and still publishes when
+that share is above 25% or 40%. Exact-six stays unlimited. A missing
+measurement table fails open. Migration 0058 was not applied. MATH remains
+0/13 and certified daily flow remains UNKNOWN. The 735-company directory stays
+on its existing holds. Behavior SHA `ff031f7dc5322cebe8bed6420f36609fade09109`.
+Sole NEXT is PUBLICATION_SERVING_PORTFOLIO_EXPOSURE in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a capped canary reserves its proposal
 before persistence. An overlapping writer cannot publish the same remaining
 tick cap. A persist failure keeps that hold against a different retry.
