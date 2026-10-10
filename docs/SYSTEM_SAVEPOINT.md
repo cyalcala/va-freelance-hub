@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-10 Manila — The latest open snapshot stores its job ids
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_SNAPSHOT_IDS. A positive publish
+stores that open snapshot's first-publish ids and still-public ids. Equal
+still-public counts can name different jobs. The day's ids are the latest
+snapshot's ids, not the union of earlier snapshots. Another date does not
+replace this date. A missing table fails open. Migration 0068 adds no
+`julianday('now')` and was not applied. This is not MATH-08 and not a
+certified daily flow. The stored state remains OPEN.
+[Evidence](operations/PUBLICATION_MANILA_DAY_SNAPSHOT_IDS_2026-10-10.md).
+Behavior SHA `b1df5b0ef6098494a22ec5f9e067f02626cd7ccb` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0067 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_SNAPSHOT_ID_LATEST.** Each snapshot now has
+ids, and a reader can still union those rows. The day's ids are the latest id
+row for that Manila date. Do not union snapshot rows. Another date does not
+replace this date. Do not record CLOSED. Do not block the writer. Do not claim
+MATH-08. Do not grant a source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Different job ids are recorded when the counts match
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

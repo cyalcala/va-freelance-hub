@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive publish stores that open
+snapshot's first-publish ids and still-public ids. Equal still-public counts
+can name different jobs. The day's ids are the latest snapshot's ids, not the
+union of earlier snapshots. A missing table fails open. Migration 0068 was not
+applied. MATH remains 0/13 and certified daily flow remains UNKNOWN. The
+735-company directory stays on its existing holds. Behavior SHA
+`b1df5b0ef6098494a22ec5f9e067f02626cd7ccb`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SNAPSHOT_ID_LATEST in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive publish stores the named
 ledger receipt ids, the active serving ids, and whether those known ids differ.
 An empty receipt id list stays unknown. Equal per-source counts can hide
