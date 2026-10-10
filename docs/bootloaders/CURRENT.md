@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): the still-public count and the known
+still-public id length agree only when they are the same safe integer.
+Disagreement stays absent. The writer does not call this reader. No migration
+was added. MATH remains 0/13 and certified daily flow remains UNKNOWN. The
+735-company directory stays on its existing holds. Behavior SHA
+`eb49e6d60d0757b69ceddf38615de44ab78432ba`. Sole NEXT is
+PUBLICATION_MANILA_DAY_LEDGER_MATCH_IS_NOT_A_FLOW in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): agreed snapshot ids must be the
 ledger's first-publish ids. A distinct foreign list of the same length stays
 absent. The writer does not call this reader. No migration was added. MATH
