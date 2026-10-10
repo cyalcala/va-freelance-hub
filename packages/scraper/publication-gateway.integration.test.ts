@@ -3517,3 +3517,45 @@ test("a source-matched count is not a completed Manila-day flow", async () => {
     expect(sourceMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("a source-matched id that leaves the active set stays absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "still-public-active", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "still-public-active", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, sourceMatchedManilaStillPublicCount, activeMatchedManilaStillPublicCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    const snapshot = loaded.counts.find((row) => row.retryKey === paired!.retryKey);
+    expect(snapshot).toBeDefined();
+    const urlRows = sqlite.query("SELECT id, source_url AS sourceUrl FROM opportunities WHERE id = ?")
+      .all(realId) as Array<{ id: number; sourceUrl: string }>;
+    const ownedRows = sqlite.query("SELECT id, source_id AS sourceId FROM opportunities WHERE id = ?")
+      .all(realId) as Array<{ id: number; sourceId: string }>;
+    expect(sourceMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, urlRows, ownedRows, "we-work-remotely")).toBe(1);
+    expect(stillPublicFirstPublishIds(sqlite, [realId])).toEqual([realId]);
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE id = ?").run(realId);
+    expect(stillPublicFirstPublishIds(sqlite, [realId])).toEqual([]);
+    expect(sourceMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, urlRows, ownedRows, "we-work-remotely")).toBe(1);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof activeMatchedManilaStillPublicCount).toBe("function");
+    const activeIds = stillPublicFirstPublishIds(sqlite, [realId]);
+    const matched = activeMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, urlRows, ownedRows, "we-work-remotely", activeIds);
+    expect(matched).toBeNull();
+    expect(matched).not.toBe(1);
+    expect(matched).not.toBe(0);
+    sqlite.query("UPDATE opportunities SET is_active = 1 WHERE id = ?").run(realId);
+    expect(activeMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, urlRows, ownedRows, "we-work-remotely", stillPublicFirstPublishIds(sqlite, [realId]))).toBe(1);
+  } finally { sqlite.close(); }
+});

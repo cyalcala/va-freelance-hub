@@ -359,3 +359,25 @@ export function sourceMatchedManilaDayFlowCount(dayState: string, matchedCount: 
   if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
   return null;
 }
+
+// A source match stays absent when the id is no longer active. This reader
+// does not prefer the source-matched length and is not a closed-day flow.
+export function activeMatchedManilaStillPublicCount(
+  stillPublicCount: number,
+  pair: ManilaSnapshotPair | null,
+  rows: readonly { id: number; sourceUrl: string }[],
+  ownedRows: readonly { id: number; sourceId: string }[],
+  publishingSourceId: string,
+  activeIds: readonly number[],
+): number | null {
+  const matched = sourceMatchedManilaStillPublicCount(
+    stillPublicCount,
+    pair,
+    rows,
+    ownedRows,
+    publishingSourceId,
+  );
+  if (matched === null || !pair) return null;
+  if (!samePositiveIds(pair.stillPublicIds, activeIds)) return null;
+  return matched;
+}
