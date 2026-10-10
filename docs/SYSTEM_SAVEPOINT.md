@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Source-share OK is not a family pass
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_SOURCE_OK_IS_NOT_A_FAMILY_PASS.
+Two colon-prefixed ids in one provider family can each sit at the 25% source
+ceiling and still breach the 40% family ceiling. The unprefixed Jobicy feeds
+do not fold. An empty book stays UNKNOWN. The unlimited publish already
+succeeded. The writer does not call this reader. No migration was added. This
+is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_SOURCE_OK_IS_NOT_A_FAMILY_PASS_2026-10-10.md).
+Behavior SHA `df01e2ee7c2ec23e2d0f7da24bd8e0ea6cb1a66d` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_FAMILY_BREACH_IS_NOT_A_FLOW.** A family
+breach on an OPEN snapshot is not a completed Manila-day flow. A
+caller-supplied CLOSED state does not create one. Caller-supplied 100 and 150
+stay absent. The reader returns null, not a daily count and not 0. Do not
+record CLOSED. Do not block the writer. Do not claim MATH-08. Do not grant a
+source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — One-source remote match is not a portfolio pass
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

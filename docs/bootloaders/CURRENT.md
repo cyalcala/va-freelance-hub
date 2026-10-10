@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a source-share OK book can still
+breach the 40% provider-family ceiling. Unprefixed Jobicy feeds do not fold.
+The writer does not call this reader. No migration was added. MATH remains
+0/13 and certified daily flow remains UNKNOWN. The 735-company directory stays
+on its existing holds. Behavior SHA
+`df01e2ee7c2ec23e2d0f7da24bd8e0ea6cb1a66d`. Sole NEXT is
+PUBLICATION_MANILA_DAY_FAMILY_BREACH_IS_NOT_A_FLOW in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a one-source remote-matched count is
 a source-share breach, not a portfolio pass. An empty book stays UNKNOWN. The
 writer does not call this reader. No migration was added. MATH remains 0/13

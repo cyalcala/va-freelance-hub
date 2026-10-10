@@ -772,6 +772,16 @@ neural routing change. Accepted MATH remains 0/13. Certified daily flow
 remains UNKNOWN. Sole NEXT is
 PUBLICATION_MANILA_DAY_SOURCE_OK_IS_NOT_A_FAMILY_PASS in the newest savepoint.
 
+## 2026-10-10 bounded source-share OK is not a family pass
+
+[PUBLICATION_MANILA_DAY_SOURCE_OK_IS_NOT_A_FAMILY_PASS](../operations/PUBLICATION_MANILA_DAY_SOURCE_OK_IS_NOT_A_FAMILY_PASS_2026-10-10.md)
+is a publication-measurement prerequisite, not an SSAE card promotion. A
+source-share OK book can still breach the 40% family ceiling and does not
+block the writer. No ranker, allocator, shadow canary, or neural routing
+change. Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN.
+Sole NEXT is PUBLICATION_MANILA_DAY_FAMILY_BREACH_IS_NOT_A_FLOW in the newest
+savepoint.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
