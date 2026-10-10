@@ -143,3 +143,13 @@ export function completedManilaDayFlowCount(dayState: string, reportableCount: n
   if (reportableCount !== null && !Number.isSafeInteger(reportableCount)) return null;
   return null;
 }
+
+// The snapshot count and the known id length are reportable only when they
+// are the same safe integer. Disagreement stays absent. An unknown pair stays
+// absent. This reader does not prefer either number and is not a closed-day flow.
+export function agreedManilaSnapshotIdCount(firstPublishCount: number, pair: ManilaSnapshotPair | null): number | null {
+  if (!Number.isSafeInteger(firstPublishCount) || firstPublishCount < 0) return null;
+  const reported = reportableManilaSnapshotIdCount(pair);
+  if (reported === null || reported !== firstPublishCount) return null;
+  return reported;
+}

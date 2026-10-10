@@ -2747,3 +2747,74 @@ test("an open snapshot count is not a completed Manila-day flow", async () => {
     expect(completedManilaDayFlowCount("CLOSED", reported)).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("a snapshot count that disagrees with its known ids stays absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "count-id-agree", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "count-id-agree", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const agreedLoaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, reportableManilaSnapshotIdCount, agreedManilaSnapshotIdCount } = await import("./manila-day");
+    const agreedPair = latestManilaSnapshotPair(agreedLoaded.counts, agreedLoaded.ids, today);
+    expect(agreedPair).not.toBeNull();
+    expect(agreedPair!.idsKnown).toBe(true);
+    expect(agreedPair!.retryKey).toBe("count-id-agree");
+    const agreedCount = agreedLoaded.counts.find((row) => row.retryKey === agreedPair!.retryKey);
+    expect(agreedCount).toBeDefined();
+    expect(agreedCount!.firstPublishCount).toBe(agreedPair!.firstPublishIds.length);
+    expect(reportableManilaSnapshotIdCount(agreedPair)).toBe(agreedCount!.firstPublishCount);
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'count-id-disagree', ?, 'OPEN', 4, 1, ?)`).run(TICK, today, later);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'count-id-disagree', ?, '[9001]', '[9001]', ?)`).run(TICK, today, later);
+    const loaded = loadSnapshotPair(sqlite);
+    const latestCount = latestManilaOpenSnapshot(loaded.counts, today);
+    expect(latestCount).not.toBeNull();
+    expect(latestCount!.firstPublishCount).toBe(4);
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.retryKey).toBe("count-id-disagree");
+    expect(paired!.idsKnown).toBe(true);
+    expect(paired!.firstPublishIds).toEqual([9001]);
+    expect(paired!.firstPublishIds).not.toEqual(agreedPair!.firstPublishIds);
+    const reported = reportableManilaSnapshotIdCount(paired);
+    expect(reported).toBe(paired!.firstPublishIds.length);
+    expect(reported).toBe(1);
+    expect(reported).not.toBe(latestCount!.firstPublishCount);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof agreedManilaSnapshotIdCount).toBe("function");
+    const disagreed = agreedManilaSnapshotIdCount(latestCount!.firstPublishCount, paired);
+    expect(disagreed).toBeNull();
+    expect(disagreed).not.toBe(reported);
+    expect(disagreed).not.toBe(latestCount!.firstPublishCount);
+    expect(disagreed).not.toBe(agreedCount!.firstPublishCount);
+    expect(agreedManilaSnapshotIdCount(agreedCount!.firstPublishCount, agreedPair)).toBe(agreedCount!.firstPublishCount);
+    const unknownAt = new Date(Date.parse(NOW) + 120_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'count-id-unknown', ?, 'OPEN', 0, 0, ?)`).run(TICK, today, unknownAt);
+    expect(readManilaSnapshotIds(sqlite, "count-id-unknown")).toBeNull();
+    const unknownLoaded = loadSnapshotPair(sqlite);
+    const unknownPair = latestManilaSnapshotPair(unknownLoaded.counts, unknownLoaded.ids, today);
+    expect(unknownPair).not.toBeNull();
+    expect(unknownPair!.idsKnown).toBe(false);
+    expect(unknownPair!.firstPublishIds).toEqual([]);
+    const unknownCount = unknownLoaded.counts.find((row) => row.retryKey === unknownPair!.retryKey);
+    expect(unknownCount).toBeDefined();
+    expect(unknownCount!.firstPublishCount).toBe(0);
+    const unknownAgreed = agreedManilaSnapshotIdCount(unknownCount!.firstPublishCount, unknownPair);
+    expect(unknownAgreed).toBeNull();
+    expect(unknownAgreed).not.toBe(0);
+    expect(unknownAgreed).not.toBe(unknownPair!.firstPublishIds.length);
+  } finally { sqlite.close(); }
+});
