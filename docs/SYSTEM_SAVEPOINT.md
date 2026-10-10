@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-10 Manila — The day's open count is the latest snapshot
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_SNAPSHOT_LATEST. The day's open
+count is the newest OPEN snapshot for that Manila date. Equal instants use the
+higher id. Rows are not summed, and another date does not replace this date.
+The writer does not block. No migration was added. Migration 0063 stays
+unapplied. The latest open row is not a closed Manila day and not a certified
+daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_SNAPSHOT_LATEST_2026-10-10.md).
+Behavior SHA `c2aa5031f5d0bdd63c4afc5abb85ea5dc1aa4230` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0063 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_PORTFOLIO_BOOK_TOTAL_DIVERGENCE.** Status agreement
+does not prove the ledger book total equals the serving book total. Record
+both totals and whether they differ. Do not treat agreement as equal totals.
+Do not block the writer. Do not claim MATH-08. Do not grant a source, change
+cadence, or add a clock.
+
 ## 2026-10-10 Manila — Manila-day counts are stored as an open snapshot
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

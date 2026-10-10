@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): the day's open count is the newest
+OPEN snapshot for that Manila date. Rows are not summed. Another date does
+not replace this date. The writer does not block. No migration was added.
+MATH remains 0/13 and certified daily flow remains UNKNOWN. The 735-company
+directory stays on its existing holds. Behavior SHA
+`c2aa5031f5d0bdd63c4afc5abb85ea5dc1aa4230`. Sole NEXT is
+PUBLICATION_PORTFOLIO_BOOK_TOTAL_DIVERGENCE in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive receipt stores the
 Manila-day receipt count and still-public count with day state OPEN. The
 table rejects a closed day. A missing table fails open. Migration 0063 was

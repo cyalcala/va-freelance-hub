@@ -842,6 +842,16 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SNAPSHOT_LATEST in the newest savepoint. No source
 grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded Manila-day latest open snapshot
+
+[PUBLICATION_MANILA_DAY_SNAPSHOT_LATEST](../operations/PUBLICATION_MANILA_DAY_SNAPSHOT_LATEST_2026-10-10.md)
+advances a local flow-accounting prerequisite only. The day's open count is the
+newest OPEN snapshot for that Manila date. Rows are not summed. This is not
+card acceptance, a closed Manila day, or a certified QUPD. Accepted MATH
+remains 0/13. Certified daily flow remains UNKNOWN. The 735-entry directory
+is not enriched. Sole NEXT is PUBLICATION_PORTFOLIO_BOOK_TOTAL_DIVERGENCE in
+the newest savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
