@@ -1,5 +1,39 @@
 # System Savepoint
 
+## 2026-10-10 Manila — An unknown snapshot id count stays absent
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_UNKNOWN_IDS_ARE_NOT_ZERO. The
+reportable id count is the first-publish id length only when the latest count
+snapshot's ids are known. An unknown pair keeps empty arrays, and the
+reportable count is null. Null is not zero. A known pair reports its
+first-publish id count. The writer does not call this reader. No migration
+was added. This is not MATH-08 and not a certified daily flow. The snapshot
+remains OPEN.
+[Evidence](operations/PUBLICATION_MANILA_DAY_UNKNOWN_IDS_2026-10-10.md).
+Behavior SHA `0110e37d26e30d8618d7ce895657c42bd275f18f` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_OPEN_COUNT_IS_NOT_A_FLOW.** The reportable
+id count is the size of a known open snapshot. It is not a completed
+Manila-day flow. A completed-day total stays absent while the snapshot is
+OPEN. Do not compare the open count with the 100 floor. Do not record CLOSED.
+Do not block the writer. Do not claim MATH-08. Do not grant a source, change
+cadence, or add a clock.
+
 ## 2026-10-10 Manila — The day's ids belong to the latest count snapshot
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

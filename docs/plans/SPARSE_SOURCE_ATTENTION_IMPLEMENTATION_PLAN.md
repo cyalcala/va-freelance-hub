@@ -543,6 +543,15 @@ the writer. No ranker, allocator, shadow canary, or neural routing change.
 Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_MANILA_DAY_UNKNOWN_IDS_ARE_NOT_ZERO in the newest savepoint.
 
+## 2026-10-10 bounded unknown snapshot ids
+
+[PUBLICATION_MANILA_DAY_UNKNOWN_IDS_ARE_NOT_ZERO](../operations/PUBLICATION_MANILA_DAY_UNKNOWN_IDS_2026-10-10.md)
+is a publication-measurement prerequisite, not an SSAE card promotion. An
+unknown id count stays absent and does not block the writer. No ranker,
+allocator, shadow canary, or neural routing change. Accepted MATH remains
+0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
+PUBLICATION_MANILA_DAY_OPEN_COUNT_IS_NOT_A_FLOW in the newest savepoint.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

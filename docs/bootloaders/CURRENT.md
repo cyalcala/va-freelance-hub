@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): an unknown snapshot id pair is not a
+measured zero. The reportable count is null when the ids are unknown, and it
+is the first-publish id length when they are known. The writer does not call
+this reader. No migration was added. MATH remains 0/13 and certified daily
+flow remains UNKNOWN. The 735-company directory stays on its existing holds.
+Behavior SHA `0110e37d26e30d8618d7ce895657c42bd275f18f`. Sole NEXT is
+PUBLICATION_MANILA_DAY_OPEN_COUNT_IS_NOT_A_FLOW in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): the day's ids belong to the latest
 OPEN count snapshot. A newer count snapshot with no id row stays unknown and
 does not keep an older id row. The writer does not call this reader. No
