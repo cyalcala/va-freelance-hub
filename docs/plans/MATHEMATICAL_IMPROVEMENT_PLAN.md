@@ -1014,6 +1014,16 @@ flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_REMOTE in the newest
 savepoint. No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded still-public ids must stay remote
+
+[PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_REMOTE](../operations/PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_REMOTE_2026-10-10.md)
+advances a local measurement prerequisite only. An onsite row that remains
+active and PH-eligible stays out of the remote-matched count. This is not
+card acceptance or a certified QUPD. Accepted MATH remains 0/13. Certified
+daily flow remains UNKNOWN. The 735-entry directory is not enriched. Sole
+NEXT is PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_FRESH in the newest
+savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

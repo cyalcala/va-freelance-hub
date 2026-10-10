@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a serving-matched still-public id
+that is no longer remote stays absent. The active PH length is not preferred.
+The writer does not call this reader. No migration was added. MATH remains
+0/13 and certified daily flow remains UNKNOWN. The 735-company directory
+stays on its existing holds. Behavior SHA
+`f610369ddd0058d4b905feaa60e3ff342195a52b`. Sole NEXT is
+PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_FRESH in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive serving-matched
 still-public count on an OPEN snapshot is not a completed Manila-day flow. A
 caller-supplied CLOSED state does not create one. The writer does not call
