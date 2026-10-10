@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): the day's ids are the newest valid id
+row for that Manila date. Equal recorded times use the higher id. Rows are not
+unioned. Another date does not replace this date. The writer does not call
+this reader. No migration was added. MATH remains 0/13 and certified daily
+flow remains UNKNOWN. The 735-company directory stays on its existing holds.
+Behavior SHA `03bd8ebc412442e127f47c4cf7368af439b69ae5`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SNAPSHOT_PAIR in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive publish stores that open
 snapshot's first-publish ids and still-public ids. Equal still-public counts
 can name different jobs. The day's ids are the latest snapshot's ids, not the

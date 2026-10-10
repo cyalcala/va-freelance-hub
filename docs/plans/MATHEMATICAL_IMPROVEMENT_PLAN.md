@@ -903,6 +903,16 @@ Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
 PUBLICATION_MANILA_DAY_SNAPSHOT_ID_LATEST in the newest savepoint. No source
 grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded latest Manila-day snapshot ids
+
+[PUBLICATION_MANILA_DAY_SNAPSHOT_ID_LATEST](../operations/PUBLICATION_MANILA_DAY_SNAPSHOT_ID_LATEST_2026-10-10.md)
+advances a local measurement prerequisite only. The day's ids are the newest
+valid id row, not the union of snapshot rows. This is not card acceptance or
+a certified QUPD. Accepted MATH remains 0/13. Certified daily flow remains
+UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_SNAPSHOT_PAIR in the newest savepoint. No source grant,
+parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
