@@ -5440,4 +5440,43 @@ test("a missing snapshot pair is not an empty same-source book", async () => {
   } finally { sqlite.close(); }
 });
 
+test("a nonempty supplied book is not an empty same-source book", async () => {
+  const sqlite = freshDb();
+  try {
+    const today = manilaDateOf(NOW);
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'nonempty-supplied-book-known-empty', ?, 'OPEN', 0, 0, ?)`).run(TICK, today, NOW);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'nonempty-supplied-book-known-empty', ?, '[]', '[]', ?)`).run(TICK, today, NOW);
+    const readers = await import("./manila-day");
+    const knownEmpty = readers.latestManilaSnapshotPair(loadSnapshotPair(sqlite).counts, loadSnapshotPair(sqlite).ids, today);
+    expect(knownEmpty).not.toBeNull();
+    expect(knownEmpty!.idsKnown).toBe(true);
+    const book = [{ sourceId: "we-work-remotely", count: 1 }];
+    expect(readers.remoteMatchedManilaPortfolioStatus(null, book)).toBeNull();
+    expect(readers.remoteMatchedManilaPortfolioStatus(null, book)).not.toBe("UNKNOWN");
+    expect(readers.remoteMatchedManilaPortfolioStatus(0, book)).toBeNull();
+    expect(readers.remoteMatchedManilaFamilyStatus(null, book)).toBeNull();
+    expect(readers.remoteMatchedManilaFamilyStatus(null, book)).not.toBe("UNKNOWN");
+    expect(readers.remoteMatchedManilaFamilyStatus(0, book)).toBeNull();
+    const absent = readers.sameSourcePairManilaFamilyStatus(null, [], [], book);
+    expect(absent).toBeNull();
+    expect(absent).not.toBe("UNKNOWN");
+    expect(readers.sameSourcePairManilaFamilyStatus(0, [], [], book)).toBeNull();
+    expect(readers.sameSourcePairManilaFamilyStatus(null, [], [], [])).toBe("UNKNOWN");
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(knownEmpty, null, [], book)).toBeNull();
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(knownEmpty, 0, [], book)).toBeNull();
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(knownEmpty, null, [], [])).toBe("UNKNOWN");
+    expect(readers.loadedSameSourcePairManilaFamilyStatus(null, null, [], book)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, null)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("CLOSED", absent, null)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, 100)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("OPEN", absent, 150)).toBeNull();
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+  } finally { sqlite.close(); }
+});
+
 
