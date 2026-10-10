@@ -6,7 +6,7 @@ import { concentrationReport, familyShares, TOP_PROVIDER_FAMILY_SHARE_MAX, TOP_S
 import { latestManilaOpenSnapshot } from "./manila-day";
 import { publishPublicExposure, publicationTickKey, type PublicationDatabase, type PublicationStatement, type PublishPublicExposureRequest } from "./publication-gateway";
 import { withdrawUnreceiptedAcknowledgements } from "./publication-uncertainty";
-import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
+import { isPublicPhEligibility, PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 import { assessPostingFreshness } from "./publication-freshness";
 import { resolvePublicationOutboundUrl } from "./publication-outbound";
 
@@ -3247,5 +3247,46 @@ test("a fresh remote id with no resolvable apply URL stays absent", async () => 
     expect(matched).not.toBe(1);
     expect(matched).not.toBe(0);
     expect(applyMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, [realId], [realId])).toBe(1);
+  } finally { sqlite.close(); }
+});
+
+test("a fresh remote id that leaves the PH pair stays absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "still-public-ph", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "still-public-ph", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const eligibility = () => (sqlite.query("SELECT ph_eligibility AS ph FROM opportunities WHERE id = ?").get(realId) as { ph: string | null }).ph;
+    expect(isPublicPhEligibility(eligibility())).toBe(true);
+    expect(stillPublicFirstPublishIds(sqlite, [realId])).toEqual([realId]);
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, applyMatchedManilaStillPublicCount, phMatchedManilaStillPublicCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    const snapshot = loaded.counts.find((row) => row.retryKey === paired!.retryKey);
+    expect(snapshot).toBeDefined();
+    expect(applyMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, [realId], [realId])).toBe(1);
+    sqlite.query("UPDATE opportunities SET ph_eligibility = 'ineligible' WHERE id = ?").run(realId);
+    expect(isPublicPhEligibility(eligibility())).toBe(false);
+    expect(stillPublicFirstPublishIds(sqlite, [realId])).toEqual([]);
+    expect(applyMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, [realId], [realId])).toBe(1);
+    const phIds = stillPublicFirstPublishIds(sqlite, [realId]);
+    expect(phIds).toEqual([]);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof phMatchedManilaStillPublicCount).toBe("function");
+    const matched = phMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, [realId], phIds);
+    expect(matched).toBeNull();
+    expect(matched).not.toBe(1);
+    expect(matched).not.toBe(0);
+    expect(phMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, [realId], [realId])).toBe(1);
   } finally { sqlite.close(); }
 });

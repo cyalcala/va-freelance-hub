@@ -276,3 +276,17 @@ export function applyMatchedManilaStillPublicCount(
   if (!samePositiveIds(pair.stillPublicIds, applyIds)) return null;
   return matched;
 }
+
+// An apply match stays absent when the id leaves the accepted PH pair. This
+// reader does not prefer the apply-matched length and is not a closed-day flow.
+export function phMatchedManilaStillPublicCount(
+  stillPublicCount: number,
+  pair: ManilaSnapshotPair | null,
+  applyIds: readonly number[],
+  phIds: readonly number[],
+): number | null {
+  const matched = applyMatchedManilaStillPublicCount(stillPublicCount, pair, applyIds, applyIds);
+  if (matched === null || !pair) return null;
+  if (!samePositiveIds(pair.stillPublicIds, phIds)) return null;
+  return matched;
+}
