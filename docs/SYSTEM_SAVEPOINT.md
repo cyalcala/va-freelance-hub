@@ -1,5 +1,35 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Verified fresh scrape posting date preference evidence
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed and verified locally:** PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE.
+All 6 acceptance criteria independently proven under benchmark integrity mode.
+Bad original dates yield zero active public-selectable rows (`isActive=1`) and
+zero successful publication IDs in `source_publication_ledger` (proven across
+missing, unparseable, impossible September 31, non-leap Feb 29, future 1ms/1ns,
+stale 31 days, 30 days + 1ms/+1ns, invalid hour, and ambiguous date-only cases).
+Valid inclusive-window controls preserve original timestamp meaning, actual row
+active status, public visibility (`visible: [{ id: 1 }]`), and ledger IDs
+(`ledger: [{ n: 1, ids: "[1]" }]`). Mixed batches expose only qualified rows
+while withholding candidates with `posting-freshness-*` reasons. Full regression
+suite, typecheck, and build are green (38/38 native posting-date tests, 1,537/1,537
+scraper tests, 72/72 DB tests, 0 type errors, 0 build errors).
+[Evidence](operations/PUBLICATION_FRESH_SCRAPE_POSTING_DATE_PREFENCE_EVIDENCE_2026-10-10.md).
+Behavior commit `f6753582a11ca7ffff70943ee69c3fdddbdc60b0` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint`.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Raw-lake sync stays fenced. No source,
+parameter, provider, or clock change. Cloud Run, Scheduler, Artifact Registry,
+Turso, D1, and Cloudflare were unchanged. Migrations 0056 through 0068 stay
+unapplied in production.
+
 ## 2026-10-10 Manila — Rejected snapshot null count is not an empty book
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

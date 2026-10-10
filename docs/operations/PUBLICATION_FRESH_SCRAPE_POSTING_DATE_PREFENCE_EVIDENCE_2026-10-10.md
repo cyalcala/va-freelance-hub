@@ -144,3 +144,19 @@ sweep/caller changes; native worker owns bounded fixture files. This is the next
 publication-control prerequisite in the sole source queue, not a second expansion
 queue or universal origin/atomicity/durable uncertainty/supply certificate. Recover
 ownership/current SHA first; skip completed date evidence and unchanged failed probes.
+
+## Milestone M1 Independent Re-Verification — 2026-10-10 Manila
+
+Conducted by Worker 1 (`worker_m1_1`) under benchmark integrity mode. All 6 acceptance criteria independently verified and proven against current HEAD:
+
+1. **Bad Original Dates**: Yield 0 active public-selectable rows (`isActive=1`) and 0 successful publication IDs in `source_publication_ledger`. Verified across 22 bad date variants (missing, unparseable, impossible September 31 calendar rollover, non-leap Feb 29, future 1ms/1ns, stale 31 days, 30 days + 1ms/+1ns, invalid hour, ambiguous date-only) across Remotive RSS and RemoteOK JSON. All rows received `active === 0`, `visible === []`, `ledger === []`, `ownershipReads === 0`, `aiCalls === 0`.
+2. **Valid Inclusive-Window Controls**: Preserve original meaning, row active status (`active: 1`), public visibility (`visible: [{ id: 1 }]`), and ledger IDs (`ledger: [{ n: 1, ids: "[1]" }]`). Verified across 10 valid date variants (fresh ISO, RSS RFC GMT, RSS RFC +0000, RSS RFC +0200, ISO timezone, inclusive exact 30 days, 30-day boundary + 1ns).
+3. **Mixed Batches**: Only qualified rows are published (`active: 1`, `visible: [{ id: fresh.id }]`, `ledger: [{ n: 1, ids: JSON.stringify([fresh.id]) }]`), while unqualified rows are retained with `active: 0` and nonrecoverable `posting-freshness-*` reasons.
+4. **Targeted Adversarial Suite**: `bun test --no-env-file --preload ./scripts/ci/test-environment.ts apps/web/tests/native-fresh-scrape-posting-date.test.ts` passed 38/38 tests, 0 failures, 590 assertions (35.07s).
+5. **Broader Regression Suite**:
+   - `bun test packages/scraper`: 1,537 pass, 0 fail, 6,950 assertions, 67 files (26.58s).
+   - `bun test packages/db`: 72 pass, 0 fail, 412 assertions, 12 files (3.65s).
+6. **Typecheck and Build**:
+   - `bun run typecheck`: exit code 0, 0 errors.
+   - `bun run build`: exit code 0, 0 errors (65.53s).
+
