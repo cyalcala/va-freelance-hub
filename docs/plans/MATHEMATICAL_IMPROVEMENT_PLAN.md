@@ -1194,6 +1194,16 @@ daily flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT
 is PUBLICATION_MANILA_DAY_FAMILY_STATUS_REQUIRES_SNAPSHOT_IDS in the newest
 savepoint. No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded snapshot ids are required for a family status
+
+[PUBLICATION_MANILA_DAY_FAMILY_STATUS_REQUIRES_SNAPSHOT_IDS](../operations/PUBLICATION_MANILA_DAY_FAMILY_STATUS_REQUIRES_SNAPSHOT_IDS_2026-10-10.md)
+advances a local measurement prerequisite only. A self-matching book stays
+absent unless its sources are the snapshot's still-public opportunity ids.
+This is not card acceptance or a certified QUPD. Accepted MATH remains 0/13.
+Certified daily flow remains UNKNOWN. The 735-entry directory is not enriched.
+Sole NEXT is PUBLICATION_MANILA_DAY_CHANGED_SOURCE_IS_NOT_A_FAMILY_STATUS in
+the newest savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
