@@ -12,7 +12,7 @@ export type FirstPublishReceipt = { idsJson: string; decidedAt: string };
 
 // Distinct positive ids whose earliest positive receipt falls on manilaDate.
 // An empty id list does not count. A later receipt of the same id does not count.
-export function manilaFirstPublishCount(receipts: readonly FirstPublishReceipt[], manilaDate: string): number {
+export function manilaFirstPublishIds(receipts: readonly FirstPublishReceipt[], manilaDate: string): number[] {
   const firstAt = new Map<number, string>();
   for (const receipt of receipts) {
     if (!CANONICAL_INSTANT.test(receipt.decidedAt)) continue;
@@ -25,9 +25,14 @@ export function manilaFirstPublishCount(receipts: readonly FirstPublishReceipt[]
       if (prior === undefined || receipt.decidedAt < prior) firstAt.set(id, receipt.decidedAt);
     }
   }
-  let count = 0;
-  for (const decidedAt of firstAt.values()) {
-    if (manilaCalendarDate(decidedAt) === manilaDate) count += 1;
+  const ids: number[] = [];
+  for (const [id, decidedAt] of firstAt) {
+    if (manilaCalendarDate(decidedAt) === manilaDate) ids.push(id);
   }
-  return count;
+  ids.sort((left, right) => left - right);
+  return ids;
+}
+
+export function manilaFirstPublishCount(receipts: readonly FirstPublishReceipt[], manilaDate: string): number {
+  return manilaFirstPublishIds(receipts, manilaDate).length;
 }

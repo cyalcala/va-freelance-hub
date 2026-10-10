@@ -56,6 +56,7 @@ function freshDb(): Database {
     "0059_publication_serving_measurement.sql",
     "0060_publication_portfolio_divergence.sql",
     "0061_publication_manila_day.sql",
+    "0062_publication_manila_still_public.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1737,6 +1738,9 @@ test("another source's first publish counts in the same Manila day", async () =>
     const measured = readManilaFirstPublish(sqlite, "manila-with-other");
     expect(measured!.first_publish_count).toBe(2);
     expect(measured!.first_publish_count).toBe(ids.length);
+    const still = readManilaStillPublic(sqlite, "manila-with-other");
+    expect(still).not.toBeNull();
+    expect(still!.still_public_count).toBe(ids.length);
   } finally { sqlite.close(); }
 });
 
@@ -1755,5 +1759,66 @@ test("a missing Manila-day table keeps the unlimited receipt and the exposure ro
     expect(readPortfolioMeasurement(sqlite, "manila-missing-table")).not.toBeNull();
     expect(readServingMeasurement(sqlite, "manila-missing-table")).not.toBeNull();
     expect(readBookDivergence(sqlite, "manila-missing-table")).not.toBeNull();
+  } finally { sqlite.close(); }
+});
+
+function readManilaStillPublic(sqlite: Database, retryKey: string): { first_publish_count: number; still_public_count: number } | null {
+  try {
+    return sqlite.query(`SELECT first_publish_count, still_public_count
+      FROM source_publication_manila_still_public WHERE retry_key = ?`).get(retryKey) as { first_publish_count: number; still_public_count: number } | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+test("a withdrawn first publish stays in the Manila-day count and leaves the still-public count", async () => {
+  const sqlite = freshDb();
+  try {
+    const first = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "still-public-a", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "still-public-a", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(first).toMatchObject({ ok: true, publishedCount: 1, replayed: false });
+    const withdrawnId = first.ok ? first.ids[0] : 0;
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE id = ?").run(withdrawnId);
+    const second = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "still-public-b", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "still-public-b", "remotive");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const day = readManilaFirstPublish(sqlite, "still-public-b");
+    expect(day).not.toBeNull();
+    expect(day!.first_publish_count).toBe(2);
+    const still = readManilaStillPublic(sqlite, "still-public-b");
+    expect(still).not.toBeNull();
+    expect(still!.first_publish_count).toBe(day!.first_publish_count);
+    expect(still!.still_public_count).toBe(1);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities WHERE is_active = 0").get()).toEqual({ n: 1 });
+  } finally { sqlite.close(); }
+});
+
+test("a missing still-public table keeps the Manila-day receipt count", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_manila_still_public;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "still-public-missing", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "still-public-missing", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const day = readManilaFirstPublish(sqlite, "still-public-missing");
+    expect(day).not.toBeNull();
+    expect(day!.first_publish_count).toBe(1);
+    expect(readManilaStillPublic(sqlite, "still-public-missing")).toBeNull();
   } finally { sqlite.close(); }
 });

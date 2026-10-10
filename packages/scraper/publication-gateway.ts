@@ -22,7 +22,7 @@ import {
   TOP_PROVIDER_FAMILY_SHARE_MAX,
   TOP_SOURCE_SHARE_MAX,
 } from "./portfolio-concentration";
-import { manilaCalendarDate, manilaFirstPublishCount, type FirstPublishReceipt } from "./manila-day";
+import { manilaCalendarDate, manilaFirstPublishIds, type FirstPublishReceipt } from "./manila-day";
 import { recordLostAcknowledgement } from "./publication-uncertainty";
 import { MAX_URL_INPUT_LENGTH } from "./urls";
 
@@ -140,6 +140,13 @@ WHERE mode IN ('unlimited', 'capped') AND published_count > 0`;
 const INSERT_MANILA_SQL = `INSERT INTO source_publication_manila_day (
   source_id, tick_key, retry_key, manila_date, first_publish_count, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?)`;
+const LOAD_STILL_PUBLIC_SQL = `SELECT json_group_array(id) AS ids
+FROM "opportunities"
+WHERE is_active = 1 AND ph_eligibility IN (${PUBLIC_PH_SQL})
+  AND id IN (SELECT value FROM json_each(?))`;
+const INSERT_STILL_PUBLIC_SQL = `INSERT INTO source_publication_manila_still_public (
+  source_id, tick_key, retry_key, manila_date, first_publish_count, still_public_count, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
 function isCanonicalSourceId(value: string): boolean {
   return /^[a-z0-9:._-]+$/.test(value);
@@ -608,6 +615,14 @@ async function recordPortfolioExposure(
   }
 }
 
+function countJsonNumberArray(raw: unknown): number {
+  if (typeof raw !== "string" || raw.length === 0 || raw === "null") return 0;
+  let parsed: unknown;
+  try { parsed = JSON.parse(raw); } catch { return 0; }
+  if (!Array.isArray(parsed)) return 0;
+  return parsed.filter((id) => typeof id === "number" && Number.isSafeInteger(id) && id > 0).length;
+}
+
 function parseFirstPublishReceipts(raw: unknown): FirstPublishReceipt[] | null {
   if (typeof raw !== "string" || raw.length === 0 || raw === "null") return null;
   let parsed: unknown;
@@ -634,12 +649,24 @@ async function recordManilaDayFirstPublish(
     const receipts = parseFirstPublishReceipts(row?.receipts);
     const manilaDate = manilaCalendarDate(request.now);
     if (!receipts || !manilaDate) return;
+    const firstIds = manilaFirstPublishIds(receipts, manilaDate);
+    const firstPublishCount = firstIds.length;
     await db.prepare(INSERT_MANILA_SQL).bind(
       request.sourceId,
       request.tickKey,
       request.retryKey,
       manilaDate,
-      manilaFirstPublishCount(receipts, manilaDate),
+      firstPublishCount,
+      request.now,
+    ).run();
+    const publicRow = await db.prepare(LOAD_STILL_PUBLIC_SQL).bind(JSON.stringify(firstIds)).first<{ ids: string | null }>();
+    await db.prepare(INSERT_STILL_PUBLIC_SQL).bind(
+      request.sourceId,
+      request.tickKey,
+      request.retryKey,
+      manilaDate,
+      firstPublishCount,
+      countJsonNumberArray(publicRow?.ids),
       request.now,
     ).run();
   } catch {
