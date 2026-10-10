@@ -1,6 +1,17 @@
 # Current resume pointer
 
 Latest continuation (2026-10-10 Manila): an OPEN snapshot whose same-source
+family status is null because the still-public id list for a source-share breach
+contains a foreign id stays absent from sameSourcePairManilaDayFlowCount. The
+flow count is null, not the matched count and not 0. A caller-supplied CLOSED
+state does not create one. Caller-supplied 100, 150, and null matched counts stay
+absent. The writer does not call this reader. No migration was added. MATH remains
+0/13 and certified daily flow remains UNKNOWN. The 735-company directory stays on
+its existing holds. Behavior SHA `0525bb1fcb54f5c68b17d972868af324a8d7d6ef`. Sole
+NEXT is PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_AN_EMPTY_BOOK in the
+newest savepoint.
+
+Latest continuation (2026-10-10 Manila): an OPEN snapshot whose same-source
 family status is null because the still-public id list contains a foreign id
 stays absent from sameSourcePairManilaDayFlowCount. A caller-supplied CLOSED state
 does not create one. Caller-supplied 100 and 150 stay absent. The writer does not

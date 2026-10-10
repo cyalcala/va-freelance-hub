@@ -1257,6 +1257,20 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded foreign id in a same-source breach is not a flow
+
+[PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_FOREIGN_ID_IS_NOT_A_FLOW](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_FOREIGN_ID_IS_NOT_A_FLOW_2026-10-10.md)
+advances a local measurement prerequisite only. An OPEN snapshot whose
+same-source family status is null because the still-public id list for a
+source-share breach contains a foreign id stays absent from
+`sameSourcePairManilaDayFlowCount`. The flow count is null, not the matched
+count and not 0. A caller-supplied CLOSED state does not create one.
+Caller-supplied 100, 150, and null matched counts stay absent. This is not
+card acceptance or a certified QUPD. Accepted MATH remains 0/13. Certified
+daily flow remains UNKNOWN. The 735-entry directory is not enriched. Sole
+NEXT is PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_AN_EMPTY_BOOK in
+the newest savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded foreign id in same-source pair is not a flow
 
 [PUBLICATION_MANILA_DAY_SAME_SOURCE_FOREIGN_ID_IS_NOT_A_FLOW](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_FOREIGN_ID_IS_NOT_A_FLOW_2026-10-10.md)
