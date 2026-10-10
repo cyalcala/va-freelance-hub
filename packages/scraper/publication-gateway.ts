@@ -16,6 +16,12 @@ import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 import { assessPostingFreshness } from "./publication-freshness";
 import { resolvePublicationOutboundUrl } from "./publication-outbound";
 import { hasExplicitNonRemoteLocationType } from "./publication-remote";
+import {
+  concentrationReport,
+  familyShares,
+  TOP_PROVIDER_FAMILY_SHARE_MAX,
+  TOP_SOURCE_SHARE_MAX,
+} from "./portfolio-concentration";
 import { recordLostAcknowledgement } from "./publication-uncertainty";
 import { MAX_URL_INPUT_LENGTH } from "./urls";
 
@@ -90,6 +96,19 @@ const LOAD_RESERVATION_SQL = `SELECT retry_key FROM source_publication_reservati
 const INSERT_RESERVATION_SQL = `INSERT INTO source_publication_reservation (
   source_id, tick_key, retry_key, reserved_count
 ) VALUES (?, ?, ?, ?)`;
+// TOTAL, not SUM: the publication fake routes any SUM(published_count) query to the canary tick queue.
+const LOAD_PORTFOLIO_BOOK_SQL = `SELECT json_group_array(json_object('sourceId', source_id, 'count', published)) AS book
+FROM (
+  SELECT source_id, CAST(TOTAL(published_count) AS INTEGER) AS published
+  FROM source_publication_ledger
+  WHERE mode IN ('unlimited', 'capped') AND published_count > 0
+  GROUP BY source_id
+)`;
+const INSERT_PORTFOLIO_SQL = `INSERT INTO source_publication_portfolio_measurement (
+  source_id, tick_key, retry_key, published_count, book_total,
+  source_share_status, family_share_status,
+  top_source_id, top_source_share, top_family_id, top_family_share, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
 function isCanonicalSourceId(value: string): boolean {
   return /^[a-z0-9:._-]+$/.test(value);
@@ -444,6 +463,9 @@ async function persistAndRecord(
     await recordLostAcknowledgement(db, request, acknowledgement.ids);
     return postPersistenceFailure("publication acknowledgement ledger write did not complete");
   }
+  if (acknowledgement.publishedCount > 0) {
+    await recordPortfolioExposure(db, request, acknowledgement.publishedCount);
+  }
   return { ok: true, mode, ...acknowledgement, replayed: false };
 }
 
@@ -462,6 +484,58 @@ async function reserveCanaryCapacity(
     return write.success;
   } catch {
     return false;
+  }
+}
+
+function parsePortfolioBook(raw: unknown): Array<{ sourceId: string; count: number }> | null {
+  if (typeof raw !== "string" || raw.length === 0 || raw === "null") return null;
+  let parsed: unknown;
+  try { parsed = JSON.parse(raw); } catch { return null; }
+  if (!Array.isArray(parsed) || parsed.length === 0) return null;
+  const rows: Array<{ sourceId: string; count: number }> = [];
+  for (const item of parsed) {
+    if (!item || typeof item !== "object") return null;
+    const sourceId = (item as { sourceId?: unknown }).sourceId;
+    const count = (item as { count?: unknown }).count;
+    if (typeof sourceId !== "string" || sourceId.trim().length === 0) return null;
+    if (typeof count !== "number" || !Number.isSafeInteger(count) || count <= 0) return null;
+    rows.push({ sourceId, count });
+  }
+  return rows;
+}
+
+async function recordPortfolioExposure(
+  db: PublicationDatabase,
+  request: PublishPublicExposureRequest,
+  publishedCount: number,
+): Promise<void> {
+  // A share above 25% or 40% is recorded and does not change the publication result.
+  // A missing measurement table fails open. This is not a per-write block.
+  try {
+    const row = await db.prepare(LOAD_PORTFOLIO_BOOK_SQL).first<{ book: string | null }>();
+    const book = parsePortfolioBook(row?.book);
+    if (!book) return;
+    const source = concentrationReport(
+      book.map((entry) => ({ id: entry.sourceId, count: entry.count })),
+      TOP_SOURCE_SHARE_MAX,
+    );
+    const family = concentrationReport(familyShares(book), TOP_PROVIDER_FAMILY_SHARE_MAX);
+    await db.prepare(INSERT_PORTFOLIO_SQL).bind(
+      request.sourceId,
+      request.tickKey,
+      request.retryKey,
+      publishedCount,
+      source.total,
+      source.status,
+      family.status,
+      source.topId,
+      source.topShare,
+      family.topId,
+      family.topShare,
+      request.now,
+    ).run();
+  } catch {
+    // The ledger receipt already exists. Do not turn this into UNKNOWN exposure.
   }
 }
 

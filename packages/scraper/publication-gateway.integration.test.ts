@@ -2,6 +2,7 @@ import { expect, test } from "bun:test";
 import { Database, type SQLQueryBindings } from "bun:sqlite";
 import { readFileSync } from "fs";
 import { join } from "path";
+import { concentrationReport, familyShares, TOP_PROVIDER_FAMILY_SHARE_MAX, TOP_SOURCE_SHARE_MAX } from "../../scripts/ci/constitution-metrics";
 import { publishPublicExposure, publicationTickKey, type PublicationDatabase, type PublicationStatement, type PublishPublicExposureRequest } from "./publication-gateway";
 import { withdrawUnreceiptedAcknowledgements } from "./publication-uncertainty";
 import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
@@ -51,6 +52,7 @@ function freshDb(): Database {
     "0040_current_evidence_admission.sql", "0041_publication_ledger.sql",
     "0042_d1_like_glob_limit.sql", "0056_publication_outcome_uncertainty.sql",
     "0057_publication_reservation.sql",
+    "0058_publication_portfolio_measurement.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1252,5 +1254,173 @@ test("native opt-out inserted after the first authority read does not publish", 
     expect(result).toMatchObject({ ok: true, mode: "blocked", publishedCount: 0, ids: [] });
     expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities").get()).toEqual({ n: 0 });
     expect(sqlite.query("SELECT mode FROM source_publication_ledger").all()).toEqual([{ mode: "blocked" }]);
+  } finally { sqlite.close(); }
+});
+
+interface PortfolioMeasurementRow {
+  source_share_status: string;
+  family_share_status: string;
+  book_total: number;
+  published_count: number;
+  top_source_id: string | null;
+  top_family_id: string | null;
+  top_source_share: number | null;
+  top_family_share: number | null;
+}
+
+function seedPublishedBook(sqlite: Database, sourceId: string, count: number, retryKey: string) {
+  sqlite.query(`INSERT INTO source_publication_ledger(
+    source_id, tick_key, retry_key, mode, proposed_count, published_count, published_ids_json, decided_at
+  ) VALUES (?, ?, ?, 'unlimited', ?, ?, '[]', ?)`).run(sourceId, TICK, retryKey, count, count, NOW);
+}
+
+function ledgerExposureBook(sqlite: Database): Array<{ sourceId: string; count: number }> {
+  return sqlite.query(`SELECT source_id AS sourceId, SUM(published_count) AS count
+    FROM source_publication_ledger
+    WHERE mode IN ('unlimited', 'capped') AND published_count > 0
+    GROUP BY source_id`).all() as Array<{ sourceId: string; count: number }>;
+}
+
+function readPortfolioMeasurement(sqlite: Database, retryKey: string): PortfolioMeasurementRow | null {
+  try {
+    return sqlite.query(`SELECT source_share_status, family_share_status, book_total, published_count,
+      top_source_id, top_family_id, top_source_share, top_family_share
+      FROM source_publication_portfolio_measurement WHERE retry_key = ?`).get(retryKey) as PortfolioMeasurementRow | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+function expectPortfolioMatchesLedger(sqlite: Database, retryKey: string, publishedCount: number) {
+  const book = ledgerExposureBook(sqlite);
+  const source = concentrationReport(book.map((row) => ({ id: row.sourceId, count: row.count })), TOP_SOURCE_SHARE_MAX);
+  const family = concentrationReport(familyShares(book), TOP_PROVIDER_FAMILY_SHARE_MAX);
+  const measured = readPortfolioMeasurement(sqlite, retryKey);
+  expect(measured).not.toBeNull();
+  expect(measured!.published_count).toBe(publishedCount);
+  expect(measured!.book_total).toBe(source.total);
+  expect(measured!.source_share_status).toBe(source.status);
+  expect(measured!.family_share_status).toBe(family.status);
+  expect(measured!.top_source_id).toBe(source.topId);
+  expect(measured!.top_family_id).toBe(family.topId);
+  expect(measured!.top_source_share).toBeCloseTo(source.topShare ?? Number.NaN, 10);
+  expect(measured!.top_family_share).toBeCloseTo(family.topShare ?? Number.NaN, 10);
+  return { source, family };
+}
+
+test("a concentrated exact-six publish stays unlimited and records a portfolio breach", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "portfolio-breach", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "portfolio-breach", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const { source, family } = expectPortfolioMatchesLedger(sqlite, "portfolio-breach", 1);
+    expect(source.status).toBe("BREACH");
+    expect(family.status).toBe("BREACH");
+    expect(source.topShare).toBe(1);
+    const replay = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "portfolio-breach", proposedCount: 1,
+      persist: async () => ({ publishedCount: 1, ids: [99] }),
+    });
+    expect(replay).toMatchObject({ ok: true, publishedCount: 1, replayed: true });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_portfolio_measurement").get()).toEqual({ n: 1 });
+  } finally { sqlite.close(); }
+});
+
+test("a portfolio family above 40% is recorded while the top source stays inside 25%", async () => {
+  const sqlite = freshDb();
+  try {
+    seedPublishedBook(sqlite, "greenhouse:a", 15, "portfolio-family-a");
+    seedPublishedBook(sqlite, "greenhouse:b", 15, "portfolio-family-b");
+    seedPublishedBook(sqlite, "greenhouse:c", 15, "portfolio-family-c");
+    seedPublishedBook(sqlite, "remotive", 14, "portfolio-family-remotive");
+    seedPublishedBook(sqlite, "real-work-from-anywhere", 14, "portfolio-family-rwfa");
+    seedPublishedBook(sqlite, "remote-ok", 14, "portfolio-family-remote-ok");
+    seedPublishedBook(sqlite, "jobicy-admin-support-apac", 13, "portfolio-family-jobicy");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "portfolio-family", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "portfolio-family", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const { source, family } = expectPortfolioMatchesLedger(sqlite, "portfolio-family", 1);
+    expect(source.status).toBe("OK");
+    expect(family.status).toBe("BREACH");
+    expect(family.topId).toBe("greenhouse");
+  } finally { sqlite.close(); }
+});
+
+test("a diversified exact-six publish records an in-ceiling portfolio measurement", async () => {
+  const sqlite = freshDb();
+  try {
+    for (const sourceId of ["remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac"]) {
+      seedPublishedBook(sqlite, sourceId, 24, `portfolio-ok-${sourceId}`);
+    }
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "portfolio-ok", proposedCount: 4,
+      persist: async (allowed) => {
+        const ids = Array.from({ length: allowed }, (_, index) => writeOpportunity(sqlite, `portfolio-ok-${index}`, "we-work-remotely")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 4, replayed: false });
+    const { source, family } = expectPortfolioMatchesLedger(sqlite, "portfolio-ok", 4);
+    expect(source.status).toBe("OK");
+    expect(family.status).toBe("OK");
+    expect(source.topShare).toBeLessThanOrEqual(TOP_SOURCE_SHARE_MAX);
+    expect(family.topShare).toBeLessThanOrEqual(TOP_PROVIDER_FAMILY_SHARE_MAX);
+  } finally { sqlite.close(); }
+});
+
+test("a concentrated canary publish stays capped and records a portfolio breach", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TRIGGER IF EXISTS source_registry_initial_state_is_dormant;");
+    sqlite.query(`INSERT INTO provider_profiles (
+      id, display_name, provider_family, mechanism, auth_class, evidence_lease_days,
+      default_compliance_state, default_operational_state
+    ) VALUES ('fixture-provider', 'Fixture', 'fixture', 'public_api', 'none', 180, 'allowed', 'candidate')`).run();
+    sqlite.query(`INSERT INTO source_registry (
+      source_id, provider_id, display_name, endpoint_url, compliance_state, operational_state,
+      policy_expiry, canary_max_new_items_per_tick
+    ) VALUES ('greenhouse:test', 'fixture-provider', 'Fixture', 'https://example.invalid/jobs',
+      'allowed', 'canary', '2027-01-01T00:00:00.000Z', 2)`).run();
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "greenhouse:test", now: NOW, tickKey: TICK, retryKey: "portfolio-canary", proposedCount: 2,
+      persist: async () => {
+        const ids = [1, 2].map((n) => writeOpportunity(sqlite, `portfolio-canary-${n}`, "greenhouse:test")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "capped", publishedCount: 2, replayed: false });
+    const { source, family } = expectPortfolioMatchesLedger(sqlite, "portfolio-canary", 2);
+    expect(source.status).toBe("BREACH");
+    expect(family.status).toBe("BREACH");
+    expect(sqlite.query("SELECT mode FROM source_publication_ledger").all()).toEqual([{ mode: "capped" }]);
+  } finally { sqlite.close(); }
+});
+
+test("a missing portfolio measurement table does not block exact-six publication", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_portfolio_measurement;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "portfolio-missing-table", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "portfolio-missing-table", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(sqlite.query("SELECT mode, published_count AS count FROM source_publication_ledger").all())
+      .toEqual([{ mode: "unlimited", count: 1 }]);
   } finally { sqlite.close(); }
 });
