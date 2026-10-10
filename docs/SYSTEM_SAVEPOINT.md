@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Different per-source counts are recorded when the set matches
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_PORTFOLIO_SOURCE_COUNT_VECTOR. A positive
+publish stores each source count on the ledger book and the serving book, and
+whether any count differs. An equal source set and equal totals can hide
+different counts. A missing table fails open. Migration 0066 adds no
+`julianday('now')` and was not applied. This is not MATH-08 and not a certified
+daily flow.
+[Evidence](operations/PUBLICATION_PORTFOLIO_SOURCE_COUNT_VECTOR_2026-10-10.md).
+Behavior SHA `cf1119bb3737d6000b43446c11daa25b75fd66ab` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0065 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_PORTFOLIO_JOB_IDENTITY.** Equal per-source counts do not
+prove the same opportunity ids. Record whether the named ledger receipt ids and
+the serving ids differ. An empty id list stays unknown. Do not treat equal
+counts as the same jobs. Do not block the writer. Do not claim MATH-08. Do not
+grant a source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Different source sets are recorded when totals match
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
