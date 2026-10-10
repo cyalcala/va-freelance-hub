@@ -261,3 +261,18 @@ export function freshMatchedManilaStillPublicCount(
   if (!samePositiveIds(pair.stillPublicIds, freshIds)) return null;
   return matched;
 }
+
+// A fresh remote match stays absent when the outbound apply URL does not
+// resolve. This reader does not prefer the fresh length and is not a
+// closed-day flow.
+export function applyMatchedManilaStillPublicCount(
+  stillPublicCount: number,
+  pair: ManilaSnapshotPair | null,
+  freshIds: readonly number[],
+  applyIds: readonly number[],
+): number | null {
+  const matched = freshMatchedManilaStillPublicCount(stillPublicCount, pair, freshIds, freshIds);
+  if (matched === null || !pair) return null;
+  if (!samePositiveIds(pair.stillPublicIds, applyIds)) return null;
+  return matched;
+}
