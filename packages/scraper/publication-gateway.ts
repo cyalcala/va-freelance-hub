@@ -109,6 +109,24 @@ const INSERT_PORTFOLIO_SQL = `INSERT INTO source_publication_portfolio_measureme
   source_share_status, family_share_status,
   top_source_id, top_source_share, top_family_id, top_family_share, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+const PUBLIC_PH_SQL = PUBLIC_PH_ELIGIBILITIES.map((value) => {
+  if (!/^[a-z_]+$/.test(value)) throw new Error("public PH eligibility cannot be embedded in SQL");
+  return `'${value}'`;
+}).join(", ");
+// Quoted table name: the publication fake treats "FROM opportunities" as the ownership queue.
+const LOAD_SERVING_BOOK_SQL = `SELECT json_group_array(json_object('sourceId', source_id, 'count', published)) AS book
+FROM (
+  SELECT source_id, CAST(COUNT(*) AS INTEGER) AS published
+  FROM "opportunities"
+  WHERE is_active = 1 AND ph_eligibility IN (${PUBLIC_PH_SQL})
+    AND typeof(source_id) = 'text' AND length(source_id) > 0
+  GROUP BY source_id
+)`;
+const INSERT_SERVING_SQL = `INSERT INTO source_publication_serving_measurement (
+  source_id, tick_key, retry_key, published_count, book_total,
+  source_share_status, family_share_status,
+  top_source_id, top_source_share, top_family_id, top_family_share, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
 function isCanonicalSourceId(value: string): boolean {
   return /^[a-z0-9:._-]+$/.test(value);
@@ -534,6 +552,29 @@ async function recordPortfolioExposure(
       family.topShare,
       request.now,
     ).run();
+    const servingRow = await db.prepare(LOAD_SERVING_BOOK_SQL).first<{ book: string | null }>();
+    const servingBook = parsePortfolioBook(servingRow?.book);
+    if (servingBook) {
+      const servingSource = concentrationReport(
+        servingBook.map((entry) => ({ id: entry.sourceId, count: entry.count })),
+        TOP_SOURCE_SHARE_MAX,
+      );
+      const servingFamily = concentrationReport(familyShares(servingBook), TOP_PROVIDER_FAMILY_SHARE_MAX);
+      await db.prepare(INSERT_SERVING_SQL).bind(
+        request.sourceId,
+        request.tickKey,
+        request.retryKey,
+        publishedCount,
+        servingSource.total,
+        servingSource.status,
+        servingFamily.status,
+        servingSource.topId,
+        servingSource.topShare,
+        servingFamily.topId,
+        servingFamily.topShare,
+        request.now,
+      ).run();
+    }
   } catch {
     // The ledger receipt already exists. Do not turn this into UNKNOWN exposure.
   }

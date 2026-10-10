@@ -53,6 +53,7 @@ function freshDb(): Database {
     "0042_d1_like_glob_limit.sql", "0056_publication_outcome_uncertainty.sql",
     "0057_publication_reservation.sql",
     "0058_publication_portfolio_measurement.sql",
+    "0059_publication_serving_measurement.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1420,6 +1421,78 @@ test("a missing portfolio measurement table does not block exact-six publication
       },
     });
     expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(sqlite.query("SELECT mode, published_count AS count FROM source_publication_ledger").all())
+      .toEqual([{ mode: "unlimited", count: 1 }]);
+  } finally { sqlite.close(); }
+});
+
+function readServingMeasurement(sqlite: Database, retryKey: string): PortfolioMeasurementRow | null {
+  try {
+    return sqlite.query(`SELECT source_share_status, family_share_status, book_total, published_count,
+      top_source_id, top_family_id, top_source_share, top_family_share
+      FROM source_publication_serving_measurement WHERE retry_key = ?`).get(retryKey) as PortfolioMeasurementRow | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+test("a withdrawn job stays in the ledger book and leaves the live serving book", async () => {
+  const sqlite = freshDb();
+  try {
+    seedPublishedBook(sqlite, "we-work-remotely", 96, "serving-history");
+    writeOpportunity(sqlite, "serving-inactive", "we-work-remotely", 0);
+    writeOpportunity(sqlite, "serving-public-greenhouse-a", "greenhouse:a");
+    writeOpportunity(sqlite, "serving-public-greenhouse-b", "greenhouse:b");
+    for (const sourceId of ["remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac"]) {
+      const ids = writeOpportunity(sqlite, `serving-public-${sourceId}`, sourceId);
+      expect(ids).toHaveLength(1);
+    }
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "serving-book", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "serving-new", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledger = expectPortfolioMatchesLedger(sqlite, "serving-book", 1);
+    expect(ledger.source.status).toBe("BREACH");
+    const serving = readServingMeasurement(sqlite, "serving-book");
+    expect(serving).not.toBeNull();
+    const publicRows = sqlite.query(`SELECT source_id AS sourceId, COUNT(*) AS count
+      FROM opportunities
+      WHERE is_active = 1 AND ph_eligibility IN (?, ?)
+      GROUP BY source_id`).all(...PUBLIC_PH_ELIGIBILITIES) as Array<{ sourceId: string; count: number }>;
+    const source = concentrationReport(publicRows.map((row) => ({ id: row.sourceId, count: row.count })), TOP_SOURCE_SHARE_MAX);
+    const family = concentrationReport(familyShares(publicRows), TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(source.status).toBe("OK");
+    expect(family.status).toBe("OK");
+    expect(serving!.book_total).toBe(source.total);
+    expect(serving!.source_share_status).toBe(source.status);
+    expect(serving!.family_share_status).toBe(family.status);
+    expect(serving!.top_source_id).toBe(source.topId);
+    expect(serving!.top_family_id).toBe(family.topId);
+    expect(serving!.top_source_share).toBeCloseTo(source.topShare ?? Number.NaN, 10);
+    expect(serving!.top_family_share).toBeCloseTo(family.topShare ?? Number.NaN, 10);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM opportunities WHERE is_active = 0 AND source_id = 'we-work-remotely'").get())
+      .toEqual({ n: 1 });
+  } finally { sqlite.close(); }
+});
+
+test("a missing serving measurement table keeps the unlimited receipt and the ledger measurement", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_serving_measurement;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "serving-missing-table", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "serving-missing-table", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readPortfolioMeasurement(sqlite, "serving-missing-table")).not.toBeNull();
     expect(sqlite.query("SELECT mode, published_count AS count FROM source_publication_ledger").all())
       .toEqual([{ mode: "unlimited", count: 1 }]);
   } finally { sqlite.close(); }
