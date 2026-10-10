@@ -54,6 +54,7 @@ function freshDb(): Database {
     "0057_publication_reservation.sql",
     "0058_publication_portfolio_measurement.sql",
     "0059_publication_serving_measurement.sql",
+    "0060_publication_portfolio_divergence.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1493,6 +1494,108 @@ test("a missing serving measurement table keeps the unlimited receipt and the le
     });
     expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
     expect(readPortfolioMeasurement(sqlite, "serving-missing-table")).not.toBeNull();
+    expect(sqlite.query("SELECT mode, published_count AS count FROM source_publication_ledger").all())
+      .toEqual([{ mode: "unlimited", count: 1 }]);
+  } finally { sqlite.close(); }
+});
+
+type BookDivergenceRow = {
+  ledger_source_status: string;
+  serving_source_status: string;
+  ledger_family_status: string;
+  serving_family_status: string;
+  source_status_agrees: number;
+  family_status_agrees: number;
+};
+
+function readBookDivergence(sqlite: Database, retryKey: string): BookDivergenceRow | null {
+  try {
+    return sqlite.query(`SELECT ledger_source_status, serving_source_status,
+      ledger_family_status, serving_family_status, source_status_agrees, family_status_agrees
+      FROM source_publication_portfolio_divergence WHERE retry_key = ?`).get(retryKey) as BookDivergenceRow | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+test("a ledger breach beside a serving ok is persisted as disagreement", async () => {
+  const sqlite = freshDb();
+  try {
+    seedPublishedBook(sqlite, "we-work-remotely", 96, "divergence-history");
+    writeOpportunity(sqlite, "divergence-inactive", "we-work-remotely", 0);
+    writeOpportunity(sqlite, "divergence-public-greenhouse-a", "greenhouse:a");
+    writeOpportunity(sqlite, "divergence-public-greenhouse-b", "greenhouse:b");
+    for (const sourceId of ["remotive", "real-work-from-anywhere", "remote-ok", "jobicy-admin-support-apac"]) {
+      writeOpportunity(sqlite, `divergence-public-${sourceId}`, sourceId);
+    }
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "divergence-books", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "divergence-new", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledger = expectPortfolioMatchesLedger(sqlite, "divergence-books", 1);
+    const serving = readServingMeasurement(sqlite, "divergence-books");
+    expect(ledger.source.status).toBe("BREACH");
+    expect(serving).not.toBeNull();
+    expect(serving!.source_share_status).toBe("OK");
+    const divergence = readBookDivergence(sqlite, "divergence-books");
+    expect(divergence).not.toBeNull();
+    expect(divergence!.ledger_source_status).toBe(ledger.source.status);
+    expect(divergence!.serving_source_status).toBe(serving!.source_share_status);
+    expect(divergence!.ledger_family_status).toBe(ledger.family.status);
+    expect(divergence!.serving_family_status).toBe(serving!.family_share_status);
+    expect(divergence!.source_status_agrees).toBe(0);
+    expect(divergence!.family_status_agrees).toBe(0);
+    expect(result.mode).toBe("unlimited");
+  } finally { sqlite.close(); }
+});
+
+test("matching ledger and serving breaches are persisted as agreement", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "divergence-agree", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "divergence-agree", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledger = expectPortfolioMatchesLedger(sqlite, "divergence-agree", 1);
+    const serving = readServingMeasurement(sqlite, "divergence-agree");
+    expect(ledger.source.status).toBe("BREACH");
+    expect(serving!.source_share_status).toBe("BREACH");
+    const divergence = readBookDivergence(sqlite, "divergence-agree");
+    expect(divergence).not.toBeNull();
+    expect(divergence!.source_status_agrees).toBe(1);
+    expect(divergence!.family_status_agrees).toBe(1);
+    const replay = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "divergence-agree", proposedCount: 1,
+      persist: async () => ({ publishedCount: 1, ids: [1] }),
+    });
+    expect(replay).toMatchObject({ ok: true, publishedCount: 1, replayed: true });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_portfolio_divergence").get()).toEqual({ n: 1 });
+  } finally { sqlite.close(); }
+});
+
+test("a missing divergence table keeps both exposure measurements", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_portfolio_divergence;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "divergence-missing-table", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "divergence-missing-table", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readPortfolioMeasurement(sqlite, "divergence-missing-table")).not.toBeNull();
+    expect(readServingMeasurement(sqlite, "divergence-missing-table")).not.toBeNull();
     expect(sqlite.query("SELECT mode, published_count AS count FROM source_publication_ledger").all())
       .toEqual([{ mode: "unlimited", count: 1 }]);
   } finally { sqlite.close(); }

@@ -127,6 +127,12 @@ const INSERT_SERVING_SQL = `INSERT INTO source_publication_serving_measurement (
   source_share_status, family_share_status,
   top_source_id, top_source_share, top_family_id, top_family_share, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+const INSERT_DIVERGENCE_SQL = `INSERT INTO source_publication_portfolio_divergence (
+  source_id, tick_key, retry_key, published_count,
+  ledger_source_status, ledger_family_status,
+  serving_source_status, serving_family_status,
+  source_status_agrees, family_status_agrees, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
 function isCanonicalSourceId(value: string): boolean {
   return /^[a-z0-9:._-]+$/.test(value);
@@ -572,6 +578,20 @@ async function recordPortfolioExposure(
         servingSource.topShare,
         servingFamily.topId,
         servingFamily.topShare,
+        request.now,
+      ).run();
+      // Disagreement is recorded and does not change the publication result.
+      await db.prepare(INSERT_DIVERGENCE_SQL).bind(
+        request.sourceId,
+        request.tickKey,
+        request.retryKey,
+        publishedCount,
+        source.status,
+        family.status,
+        servingSource.status,
+        servingFamily.status,
+        source.status === servingSource.status ? 1 : 0,
+        family.status === servingFamily.status ? 1 : 0,
         request.now,
       ).run();
     }
