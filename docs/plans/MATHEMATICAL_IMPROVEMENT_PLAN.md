@@ -1257,6 +1257,20 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded rejected snapshot id row is not an empty book
+
+[PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_AN_EMPTY_BOOK](../operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_AN_EMPTY_BOOK_2026-10-10.md)
+advances a local measurement prerequisite only. A loaded pair with `idsKnown`
+false, because its only stored id row has a still-public id outside the
+first-publish set, is not scored as an empty same-source book. The family
+status for that loaded pair is null, not `UNKNOWN`. Direct
+`sameSourcePairManilaFamilyStatus(null, [], [], [])` stays `UNKNOWN`. An intact
+five-id breach book stays `BREACH`. This is not card acceptance or a certified
+QUPD. Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
+735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_REPORTABLE_COUNT in the
+newest savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded foreign id in a same-source breach is not a flow
 
 [PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_FOREIGN_ID_IS_NOT_A_FLOW](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_FOREIGN_ID_IS_NOT_A_FLOW_2026-10-10.md)

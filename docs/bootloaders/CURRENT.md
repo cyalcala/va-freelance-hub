@@ -1,5 +1,17 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a loaded pair with idsKnown false,
+because its only stored id row has a still-public id outside the first-publish
+set, is not scored as an empty same-source book.
+loadedSameSourcePairManilaFamilyStatus of that pair is null, not UNKNOWN and not
+BREACH. Direct sameSourcePairManilaFamilyStatus(null, [], [], []) stays UNKNOWN.
+An intact five-id breach book stays BREACH. The writer does not call this reader.
+No migration was added. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`a61d1abb1cf4f8a34fbb5fc1ed2951f7234930fb`. Sole NEXT is
+PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_REPORTABLE_COUNT in the
+newest savepoint.
+
 Latest continuation (2026-10-10 Manila): an OPEN snapshot whose same-source
 family status is null because the still-public id list for a source-share breach
 contains a foreign id stays absent from sameSourcePairManilaDayFlowCount. The
