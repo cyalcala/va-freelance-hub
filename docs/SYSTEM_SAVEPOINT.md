@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Ledger and serving status disagreement is recorded
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_PORTFOLIO_BOOK_DIVERGENCE. A positive publish
+that records both books also records whether their source statuses match and
+whether their provider-family statuses match. A ledger BREACH beside a serving
+OK still publishes. Matching BREACH statuses are agreement. Status agreement
+does not mean the books have the same rows or the same totals. A missing
+divergence table fails open. Migration 0060 adds no `julianday('now')` and was
+not applied. This comparison is not a Manila-day flow.
+[Evidence](operations/PUBLICATION_PORTFOLIO_BOOK_DIVERGENCE_2026-10-10.md).
+Behavior SHA `b118eae1ca49e5c678830693c92a321de4473506` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056, 0057, 0058, and 0059 stay unapplied. Do not
+deploy the reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_FIRST_PUBLISH_ACCOUNTING.** Count distinct
+opportunity ids whose first positive receipt falls on one Manila day. A replay
+or a second receipt of the same id does not increment that count. Do not
+certify a production daily flow. Do not turn 25% or 40% into a per-write
+block. Do not grant a source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Serving exposure is recorded and does not block
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

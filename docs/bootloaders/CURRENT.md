@@ -1,5 +1,15 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive publication that records
+both exposure books also records whether their source and provider-family
+statuses match. A ledger BREACH beside a serving OK still publishes. Status
+agreement does not mean the books are the same. A missing divergence table
+fails open. Migration 0060 was not applied. MATH remains 0/13 and certified
+daily flow remains UNKNOWN. The 735-company directory stays on its existing
+holds. Behavior SHA `b118eae1ca49e5c678830693c92a321de4473506`.
+Sole NEXT is PUBLICATION_MANILA_DAY_FIRST_PUBLISH_ACCOUNTING in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive publication records source
 and provider-family share for the live public serving book and still publishes
 when that share is above 25% or 40%. A withdrawn row stays in the ledger book
