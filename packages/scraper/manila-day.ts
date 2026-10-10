@@ -498,6 +498,24 @@ export function sameSourcePairManilaFamilyStatus(
   return familyStatus;
 }
 
+// A same-source pair that stays a family OK is not a completed Manila-day
+// flow. This reader has no closed-day evidence, so a caller-supplied CLOSED
+// state does not create one. Caller-supplied 100 and 150 stay absent. The
+// result is not the matched count and not 0. This does not block a writer
+// and does not claim MATH-08.
+export function sameSourcePairManilaDayFlowCount(
+  dayState: string,
+  familyStatus: "UNKNOWN" | "OK" | "BREACH" | null,
+  matchedCount: number | null,
+): number | null {
+  if (dayState.length === 0) return null;
+  if (familyStatus !== "BREACH" && familyStatus !== "OK" && familyStatus !== "UNKNOWN" && familyStatus !== null) {
+    return null;
+  }
+  if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
+  return null;
+}
+
 // A remote serving match stays absent when the original posting is outside the
 // inclusive 30-day window or unknown. This reader does not prefer the remote
 // length and is not a closed-day flow.
