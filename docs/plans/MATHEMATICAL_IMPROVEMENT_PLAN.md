@@ -1257,6 +1257,18 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint. No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded repeated id in same-source pair stays absent
+
+[PUBLICATION_MANILA_DAY_SAME_SOURCE_REPEATED_ID_STAYS_ABSENT](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_REPEATED_ID_STAYS_ABSENT_2026-10-10.md)
+advances a local measurement prerequisite only. A same-source pair whose
+still-public id list contains a duplicate id or non-positive integer stays
+absent from `sameSourcePairManilaFamilyStatus`. The family status is null, not
+OK and not BREACH. Restoring the distinct id list restores the OK status. This
+is not card acceptance or a certified QUPD. Accepted MATH remains 0/13. Certified
+daily flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_REPEATED_ID_STAYS_ABSENT in the newest
+savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded inactive same-source opportunity is not a flow
 
 [PUBLICATION_MANILA_DAY_SAME_SOURCE_INACTIVE_IS_NOT_A_FLOW](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_INACTIVE_IS_NOT_A_FLOW_2026-10-10.md)
