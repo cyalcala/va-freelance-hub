@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Still-public ids must stay fresh
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_FRESH.
+The fresh-matched still-public count is the shared number only when the
+remote-matched ids are inside the inclusive 30-day original posting window. A
+stale posting stays absent. An unknown posting stays absent. The reader does
+not prefer the remote length. The writer does not call this reader. No
+migration was added. This is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_FRESH_2026-10-10.md).
+Behavior SHA `7b0549195a17c0435d6316aa9be4a31716406e1e` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_RESOLVE_APPLY_URL.** A
+fresh remote id can remain in the still-public set when its outbound apply URL
+does not resolve. When that URL does not resolve, the still-public count stays
+absent. Do not prefer the fresh length. Do not record CLOSED. Do not block the
+writer. Do not claim MATH-08. Do not grant a source, change cadence, or add a
+clock.
+
 ## 2026-10-10 Manila — Still-public ids must stay remote
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
