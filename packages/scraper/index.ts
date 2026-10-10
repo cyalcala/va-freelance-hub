@@ -121,6 +121,7 @@ export { applyTypedTransition } from "./transition-gateway";
 export { admitReviewedSourceToShadow } from "./source-admission";
 export type { AdmitReviewedSourceInput, AdmitReviewedSourceResult } from "./source-admission";
 export { publishPublicExposure, publicationTickKey, loadPublicationPolicy, wrapD1Binding, clampLedgerPublishedCount } from "./publication-gateway";
+export { recordLostAcknowledgement, withdrawUnreceiptedAcknowledgements, PUBLICATION_UNRECEIPTED_INACTIVE_REASON } from "./publication-uncertainty";
 export type {
   PublicationDatabase,
   PublicationStatement,

@@ -3,6 +3,7 @@ import { Database, type SQLQueryBindings } from "bun:sqlite";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { publishPublicExposure, publicationTickKey, type PublicationDatabase, type PublicationStatement, type PublishPublicExposureRequest } from "./publication-gateway";
+import { withdrawUnreceiptedAcknowledgements } from "./publication-uncertainty";
 import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 
 const NOW = new Date().toISOString();
@@ -44,10 +45,11 @@ function freshDb(): Database {
   db.exec("PRAGMA foreign_keys = ON;");
   for (const migration of [
     "0000_workable_sandman.sql", "0003_yielding_maelstrom.sql", "0005_harsh_punisher.sql", "0021_geo_eligibility.sql", "0026_fts5_search.sql", "0027_fts5_trigger_scope.sql",
+    "0028_opportunity_inactive_reason.sql",
     "0034_opportunity_source_id.sql", "0036_registry_foundation.sql", "0037_source_lifecycle_opt_out.sql",
     "0038_shadow_observations.sql", "0039_canary_transition_plane.sql",
     "0040_current_evidence_admission.sql", "0041_publication_ledger.sql",
-    "0042_d1_like_glob_limit.sql",
+    "0042_d1_like_glob_limit.sql", "0056_publication_outcome_uncertainty.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1053,6 +1055,58 @@ for (const delivery of ["throws", "unsuccessful"] as const) {
     } finally { sqlite.close(); }
   });
 }
+
+test("native lost ledger acknowledgement names only the written id and a later pass leaves ledger-less history public", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec(`CREATE TRIGGER fixture_reject_ledger BEFORE INSERT ON source_publication_ledger
+      BEGIN SELECT RAISE(ABORT, 'fixture ledger rejection'); END;`);
+    const neighbor = writeOpportunity(sqlite, "historical-neighbor");
+    const db = new BunDb(sqlite);
+    const lost = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "ledger-rejected-marked", proposedCount: 1,
+      persist: async () => ({ publishedCount: 1, ids: writeOpportunity(sqlite, "lost-ack") }),
+    });
+    expect(lost).toMatchObject(postPersistenceUnknown);
+    expect(JSON.stringify(lost)).not.toContain("fixture ledger rejection");
+    const lostId = (sqlite.query("SELECT id FROM opportunities WHERE source_url = ?").get("https://example.invalid/lost-ack") as { id: number }).id;
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    expect(sqlite.query(`SELECT source_id AS sourceId, retry_key AS retryKey, opportunity_ids_json AS ids, reason
+      FROM publication_outcome_uncertainty`).all()).toEqual([{
+      sourceId: "remotive", retryKey: "ledger-rejected-marked", ids: `[${lostId}]`, reason: "ledger-acknowledgement-unconfirmed",
+    }]);
+    expect(currentPublicIds(sqlite)).toEqual([neighbor[0], lostId].sort((a, b) => a! - b!));
+
+    const again = await publishPublicExposure(db, {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "ledger-rejected-marked", proposedCount: 1,
+      persist: async () => ({ publishedCount: 1, ids: [lostId] }),
+    });
+    expect(again).toMatchObject(postPersistenceUnknown);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM publication_outcome_uncertainty").get()).toEqual({ n: 1 });
+
+    sqlite.exec("DROP TRIGGER fixture_reject_ledger;");
+    const receiptedId = writeOpportunity(sqlite, "receipted-neighbor");
+    sqlite.query(`INSERT INTO source_publication_ledger(
+      source_id, tick_key, retry_key, mode, proposed_count, published_count, published_ids_json, decided_at
+    ) VALUES ('remotive', ?, 'receipted-neighbor', 'unlimited', 1, 1, ?, ?)`).run(TICK, `[${receiptedId}]`, NOW);
+    sqlite.query(`INSERT INTO publication_outcome_uncertainty(
+      source_id, tick_key, retry_key, opportunity_ids_json, reason, recorded_at
+    ) VALUES ('remotive', ?, 'receipted-neighbor-uncertain', ?, 'ledger-acknowledgement-unconfirmed', ?)`).run(
+      TICK, `[${receiptedId}]`, NOW,
+    );
+
+    const first = await withdrawUnreceiptedAcknowledgements(db, NOW);
+    const second = await withdrawUnreceiptedAcknowledgements(db, NOW);
+    expect(first.withdrawnIds).toEqual([lostId]);
+    expect(second.withdrawnIds).toEqual([]);
+    expect(currentPublicIds(sqlite)).toEqual([neighbor[0]!, receiptedId[0]!].sort((a, b) => a - b));
+    expect(sqlite.query("SELECT is_active AS active, inactive_reason AS reason FROM opportunities WHERE id = ?").get(lostId))
+      .toEqual({ active: 0, reason: "publication-unreceipted" });
+    expect(sqlite.query("SELECT is_active AS active, inactive_reason AS reason FROM opportunities WHERE id = ?").get(neighbor[0]!))
+      .toEqual({ active: 1, reason: null });
+    expect(sqlite.query("SELECT is_active AS active FROM opportunities WHERE id = ?").get(receiptedId[0]!)).toEqual({ active: 1 });
+  } finally { sqlite.close(); }
+});
 
 test("native actual RETURNING IDs record one row despite FTS effects and zero for a later conflict", async () => {
   const sqlite = freshDb();

@@ -737,6 +737,18 @@ Certified daily flow remains UNKNOWN. The 735-entry directory is not enriched.
 Sole NEXT is PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL in the newest savepoint.
 No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded lost-acknowledgement continuation
+
+[PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD](../operations/PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD_2026-10-10.md)
+advances a MATH-06 local writer prerequisite only. A failed ledger insert after
+a valid owned write remains UNKNOWN, and the written ids are named in an
+append-only uncertainty marker. A later pass withdraws only an unreceipted
+marked id. Ledger-less history stays. This is not card acceptance, source-policy
+enforcement, shared-cap proof, or a QUPD measurement. Accepted MATH remains 0/13.
+Certified daily flow remains UNKNOWN. The 735-entry directory is not enriched.
+Sole NEXT is PUBLICATION_SOURCE_POLICY_EPOCH in the newest savepoint. No source
+grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

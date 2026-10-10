@@ -16,6 +16,7 @@ import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
 import { assessPostingFreshness } from "./publication-freshness";
 import { resolvePublicationOutboundUrl } from "./publication-outbound";
 import { hasExplicitNonRemoteLocationType } from "./publication-remote";
+import { recordLostAcknowledgement } from "./publication-uncertainty";
 import { MAX_URL_INPUT_LENGTH } from "./urls";
 
 export interface PublicationStatement {
@@ -372,6 +373,7 @@ async function persistAndRecord(
   try { await insertLedger(db, request, mode, acknowledgement.publishedCount, acknowledgement.ids); }
   catch {
     // Either write may already have committed. This is not a rollback or a zero-exposure receipt.
+    await recordLostAcknowledgement(db, request, acknowledgement.ids);
     return postPersistenceFailure("publication acknowledgement ledger write did not complete");
   }
   return { ok: true, mode, ...acknowledgement, replayed: false };

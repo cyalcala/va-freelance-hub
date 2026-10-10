@@ -1,5 +1,38 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Lost publication acknowledgements are durable
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD. A valid owned
+write whose ledger insert fails still returns `POST_PERSISTENCE_FAILURE` with
+exposure `UNKNOWN` and does not roll the row back. It also appends one
+`publication_outcome_uncertainty` marker naming those ids. A later verify-links
+pass deactivates only a marked id that still has no success ledger receipt.
+`publication-unreceipted` is not feed-recoverable. A receipted id stays public.
+A public row with no marker stays public. Migration 0056 adds no
+`julianday('now')` and was not applied to production. No new clock.
+[Evidence](operations/PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD_2026-10-10.md).
+GitLab authentication for this review branch remains denied. **BACKUP_PENDING.**
+That push was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. GCP billing, image identity, and Janes
+9046/9047 stay on their existing re-observation triggers. Do not repeat unchanged
+failed probes. Raw-lake sync stays fenced. No source, parameter, provider, or
+clock change. Unknown dates and null workplace stay public.
+
+**One NEXT: PUBLICATION_SOURCE_POLICY_EPOCH.** Stale source authority must not
+publish or oversubscribe physical exposure. Enforce current policy and the
+accepted source, provider, and global limits at reservation time, not only as a
+post-write ledger refusal. Do not grant a source, change cadence, add a clock,
+or treat unknown dates, null workplace, or the 735-company directory as this
+unit. Recover this SHA first.
+
 ## 2026-10-10 Manila — Public workplace and original-date drift is withdrawn
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

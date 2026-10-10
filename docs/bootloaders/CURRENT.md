@@ -1,5 +1,15 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a valid publication whose ledger insert
+fails still returns UNKNOWN and now appends one uncertainty marker. A later
+verify-links pass withdraws only a marked id with no success receipt.
+Ledger-less history, unknown dates, and null workplace stay public.
+`publication-unreceipted` is not feed-recoverable. Migration 0056 is local and
+was not applied to production. No production publication, directory enrichment,
+or MATH card acceptance. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Sole NEXT is
+PUBLICATION_SOURCE_POLICY_EPOCH in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): already-public onsite, hybrid, and
 out-of-window original dates are deactivated as `publication-drift` on the
 existing verify-links pass. Unknown dates, null workplace, and ledger-less

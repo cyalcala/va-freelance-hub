@@ -384,6 +384,15 @@ and URL fences. No ranker, allocator, shadow canary, or neural routing change.
 Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL in the newest savepoint.
 
+## 2026-10-10 bounded lost-acknowledgement continuation
+
+[PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD](../operations/PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD_2026-10-10.md)
+is a publication-control prerequisite, not an SSAE card promotion. A lost ledger
+acknowledgement is now a durable marker, and only that named unreceipted id is
+withdrawn later. No ranker, allocator, shadow canary, or neural routing change.
+Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
+PUBLICATION_SOURCE_POLICY_EPOCH in the newest savepoint.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

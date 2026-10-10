@@ -437,6 +437,16 @@ export const sourceAdmissionEvidence = sqliteTable("source_admission_evidence", 
   sourceIdx: index("source_admission_evidence_source_idx").on(table.sourceId, table.id),
 }));
 
+export const publicationOutcomeUncertainty = sqliteTable("publication_outcome_uncertainty", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  sourceId: text("source_id").notNull(),
+  tickKey: text("tick_key").notNull(),
+  retryKey: text("retry_key").notNull().unique(),
+  opportunityIdsJson: text("opportunity_ids_json").notNull(),
+  reason: text("reason").notNull(),
+  recordedAt: text("recorded_at").notNull(),
+});
+
 export const sourcePublicationLedger = sqliteTable("source_publication_ledger", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   sourceId: text("source_id").notNull(),
