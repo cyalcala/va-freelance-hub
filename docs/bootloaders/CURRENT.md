@@ -1,5 +1,15 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): an OPEN snapshot whose same-source
+family status is null because an id left active stays absent from
+sameSourcePairManilaDayFlowCount. A caller-supplied CLOSED state does not create
+one. Caller-supplied 100 and 150 stay absent. The writer does not call this
+reader. No migration was added. MATH remains 0/13 and certified daily flow
+remains UNKNOWN. The 735-company directory stays on its existing holds.
+Behavior SHA `fa794c015bcaad48ecaa643f80c65c5c16d5668b`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_REPEATED_ID_STAYS_ABSENT in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a same-source breach whose recorded id
 leaves active stays absent from sameSourcePairManilaFamilyStatus. The family
 status is null, not OK and not BREACH. Restoring active restores BREACH. The writer
