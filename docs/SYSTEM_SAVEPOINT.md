@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Public workplace and original-date drift is withdrawn
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** the later-drift part of PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL.
+`withdrawInvalidPublicDrift` deactivates an already-public row whose stored
+workplace is onsite or hybrid, or whose stored original date is outside the
+existing inclusive 30-day window. The write rechecks that evidence. A repaired
+date is not withdrawn. A second call is a no-op. `publication-drift` is not
+feed-recoverable. The existing verify-links cron runs it. No new clock.
+Native Apply returns 404 for the withdrawn onsite row and 302 for the fresh
+remote control. ADR-010 still rejects a collapsed replacement board and keeps
+the previous board. Unknown dates, null workplace, unclear rows, and ledger-less
+history stay public.
+[Evidence](operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md).
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. GCP billing, image identity, and Janes
+9046/9047 stay on their existing re-observation triggers. Do not repeat unchanged
+failed probes. Raw-lake sync stays fenced. No source, parameter, provider, or
+clock change.
+
+**One NEXT: PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD.** A persist whose ledger
+write fails still leaves the physical row public and writes no durable
+uncertainty marker. Do not withdraw historical ledger-less stock to imitate
+that marker. Do not treat unknown dates or null workplace as this unit.
+Recover this SHA first.
+
 ## 2026-10-10 Manila — Unclear-backlog PH upgrades use the publication gateway
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

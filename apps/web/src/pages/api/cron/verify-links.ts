@@ -4,6 +4,7 @@ import { eq, sql, inArray } from "drizzle-orm";
 import { chunkArray, classifyLinkResponse, linkCheckHeaders, sanitizeSourceUrl, scanLandingPageForGeoLock } from "@va-hub/scraper";
 import { daysAgoUtcIso, nowUtcIso } from "@/lib/time";
 import { isAuthorized } from "@/lib/auth";
+import { withdrawInvalidPublicDrift } from "@/lib/publication-drift-withdrawal";
 import {
   buildVerifierFailureUpdate,
   buildVerifierSelectionQuery,
@@ -87,6 +88,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   try {
+    const drift = await withdrawInvalidPublicDrift(db, startedAt);
+    if (drift.withdrawnIds.length > 0) {
+      console.log(`[api/cron/verify-links] Withdrew ${drift.withdrawnIds.length} public rows for workplace or original-date drift`);
+    }
+
     // 1. Auto-archive stale jobs that haven't been seen in feeds for 30 days
     const staleCutoff = daysAgoUtcIso(30);
     const stale = await db.select({ id: opportunities.id })

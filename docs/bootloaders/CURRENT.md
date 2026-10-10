@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): already-public onsite, hybrid, and
+out-of-window original dates are deactivated as `publication-drift` on the
+existing verify-links pass. Unknown dates, null workplace, and ledger-less
+history stay public. Apply refuses a withdrawn row. ADR-010 still rejects a
+collapsed snapshot. No production publication, directory enrichment, or MATH
+card acceptance. MATH remains 0/13 and certified daily flow remains UNKNOWN.
+The 735-company directory stays on its existing holds. Sole NEXT is
+PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): unclear-backlog PH upgrades now go
 through the publication gateway. Explicit remote, original inclusive-30-day
 date, resolvable URL, canonical source, and the current row must still match

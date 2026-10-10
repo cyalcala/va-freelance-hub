@@ -43,7 +43,7 @@ const seeds: Seed[] = [
 setSystemTime(new Date(REFERENCE));
 globalThis.fetch = (() => {
   throw new Error("unclear sweep fixture rejects every network request");
-}) as typeof fetch;
+}) as unknown as typeof fetch;
 const sqlite = new Database(":memory:");
 try {
   const migrations = join(import.meta.dir, "../../../../packages/db/migrations");

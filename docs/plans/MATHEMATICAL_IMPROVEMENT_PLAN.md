@@ -736,3 +736,15 @@ model, shared-cap proof, or a QUPD measurement. Accepted MATH remains 0/13.
 Certified daily flow remains UNKNOWN. The 735-entry directory is not enriched.
 Sole NEXT is PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL in the newest savepoint.
 No source grant, parameter, budget, or clock change.
+
+## 2026-10-10 bounded public-drift withdrawal continuation
+
+[PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
+advances a MATH-06 local withdrawal prerequisite only. Already-public explicit
+non-remote rows and original dates outside the inclusive 30-day window are
+deactivated idempotently. Unknown dates, null workplace, and ledger-less history
+stay. This is not card acceptance, lost-acknowledgement durability, shared-cap
+proof, or a QUPD measurement. Accepted MATH remains 0/13. Certified daily flow
+remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD in the newest savepoint. No source
+grant, parameter, budget, or clock change.

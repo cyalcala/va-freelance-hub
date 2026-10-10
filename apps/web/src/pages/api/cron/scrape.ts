@@ -1476,7 +1476,7 @@ export async function sweepUnclearBacklog(
           ? `AI re-triage passed (single vote): ${(triage.reason || "eligible").slice(0, 160)}`
           : `AI re-triage + skeptic agreed: ${(triage.reason || "eligible").slice(0, 160)}`;
         const update = snapshotPublicationUpdate({
-          phEligibility: "eligible_likely",
+          phEligibility: "eligible_likely" as const,
           geoEvidence: evidence,
           geoCheckedAt: observedAt,
           updatedAt: observedAt,

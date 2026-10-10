@@ -383,3 +383,12 @@ upgrade is now a gateway write with the current source, freshness, explicit-remo
 and URL fences. No ranker, allocator, shadow canary, or neural routing change.
 Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL in the newest savepoint.
+
+## 2026-10-10 bounded public-drift withdrawal continuation
+
+[PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
+is a publication-control prerequisite, not an SSAE card promotion. Explicit
+non-remote and out-of-window public rows are withdrawn on the existing verifier.
+No ranker, allocator, shadow canary, or neural routing change. Accepted MATH
+remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
+PUBLICATION_LOST_ACKNOWLEDGEMENT_RECORD in the newest savepoint.
