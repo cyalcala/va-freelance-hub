@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Inactive same-source pair id stays absent
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE.
+A same-source pair whose recorded id leaves `is_active = 1` stays absent from
+`sameSourcePairManilaFamilyStatus`. The family status is null, not OK and not
+BREACH. Restoring `is_active = 1` restores the `OK` status. The unlimited publish
+already succeeded. The writer does not call this reader. No migration was added.
+This is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE_2026-10-10.md).
+Behavior SHA `951e69e71ec6e0bfd987d69e46950346cbbccfc7` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE.**
+A same-source breach whose recorded id leaves `is_active = 1` stays absent from
+`sameSourcePairManilaFamilyStatus`. The family status is null, not OK and not
+BREACH. Do not block the writer. Do not record CLOSED. Do not claim MATH-08.
+Do not grant a source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Same-source breach is not a flow
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
