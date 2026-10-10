@@ -1257,6 +1257,19 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded missing snapshot pair is not an empty book
+
+[PUBLICATION_MANILA_DAY_MISSING_SNAPSHOT_PAIR_IS_NOT_AN_EMPTY_BOOK](../operations/PUBLICATION_MANILA_DAY_MISSING_SNAPSHOT_PAIR_IS_NOT_AN_EMPTY_BOOK_2026-10-10.md)
+advances a local measurement prerequisite only. A Manila day with no snapshot
+pair, scored with a null matched count and empty rows, is null, not `UNKNOWN`.
+The same call with matched count 0 is null. Direct
+`sameSourcePairManilaFamilyStatus(null, [], [], [])` stays `UNKNOWN`. A known
+empty pair on another Manila day stays `UNKNOWN`. This is not card acceptance
+or a certified QUPD. Accepted MATH remains 0/13. Certified daily flow remains
+UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_NONEMPTY_SUPPLIED_BOOK_IS_NOT_AN_EMPTY_BOOK in the
+newest savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded rejected snapshot null count is not an empty book
 
 [PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_NULL_COUNT_IS_NOT_AN_EMPTY_BOOK](../operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_NULL_COUNT_IS_NOT_AN_EMPTY_BOOK_2026-10-10.md)

@@ -1,5 +1,49 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Missing snapshot pair is not an empty book
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_MISSING_SNAPSHOT_PAIR_IS_NOT_AN_EMPTY_BOOK.
+`loadedSameSourcePairManilaFamilyStatus(null, null, [], [])` is null, not
+`UNKNOWN`. The same call with matched count 0 is null. Direct
+`sameSourcePairManilaFamilyStatus(null, [], [], [])` stays `UNKNOWN`. A known
+empty pair on another Manila day stays `UNKNOWN` and does not become today's
+pair. The publication ledger stays empty. `sameSourcePairManilaDayFlowCount`
+of OPEN and of CLOSED with that null status stays null for a null matched
+count, for 0, and for caller-supplied 100 and 150. The shipped reader already
+returned these results, so this slice locks them and does not add another
+wrapper. The writer does not call this reader. No migration was added. This
+is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_MISSING_SNAPSHOT_PAIR_IS_NOT_AN_EMPTY_BOOK_2026-10-10.md).
+Behavior SHA `d90930c554c3d690eea4c2507203f816f8a81777` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057. A rejected pair scored with a null matched
+count stays null. A known empty id row still reports `UNKNOWN` for an empty
+supplied book. Parent docs commit `3025e032e0fc25e9054bb3ad3e0b9fd946b29386`
+does not accept a MATH card.
+
+**One NEXT: PUBLICATION_MANILA_DAY_NONEMPTY_SUPPLIED_BOOK_IS_NOT_AN_EMPTY_BOOK.**
+`remoteMatchedManilaPortfolioStatus(null, one positive row)` is null, not
+`UNKNOWN`. The same call with matched count 0 is null.
+`remoteMatchedManilaFamilyStatus` of both calls is null, not `UNKNOWN`.
+`sameSourcePairManilaFamilyStatus(null, [], [], one positive row)` is null,
+not `UNKNOWN`. Direct `sameSourcePairManilaFamilyStatus(null, [], [], [])`
+stays `UNKNOWN`. A known empty pair with empty rows stays `UNKNOWN`. Do not
+block the writer. Do not record CLOSED. Do not claim MATH-08. Do not grant a
+source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Verified fresh scrape posting date preference evidence
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
