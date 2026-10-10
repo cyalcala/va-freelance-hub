@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive ledger-matched count on an
+OPEN snapshot is not a completed Manila-day flow. A caller-supplied CLOSED
+state does not create one. The writer does not call this reader. No migration
+was added. MATH remains 0/13 and certified daily flow remains UNKNOWN. The
+735-company directory stays on its existing holds. Behavior SHA
+`8beef02744b49fc9c3926a5d2d322823d8efbc76`. Sole NEXT is
+PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_MATCH_SERVING in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): the still-public count and the known
 still-public id length agree only when they are the same safe integer.
 Disagreement stays absent. The writer does not call this reader. No migration

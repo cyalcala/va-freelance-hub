@@ -1,5 +1,39 @@
 # System Savepoint
 
+## 2026-10-10 Manila — A ledger-matched count is not a flow
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_LEDGER_MATCH_IS_NOT_A_FLOW. A
+positive ledger-matched count on an OPEN snapshot is not a completed
+Manila-day flow. A caller-supplied CLOSED state does not create one.
+Caller-supplied 100 and 150 stay absent. The reader does not return the
+matched count and does not return 0. The writer does not call this reader. No
+migration was added. This is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_LEDGER_MATCH_IS_NOT_A_FLOW_2026-10-10.md).
+Behavior SHA `8beef02744b49fc9c3926a5d2d322823d8efbc76` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_MATCH_SERVING.** The
+still-public count can agree with its known id length while those ids are not
+the serving rows that remain public. When the known still-public ids are not
+those serving rows, the still-public count stays absent. Do not prefer the
+snapshot length or the serving length. Do not fall back to an older row. Do
+not record CLOSED. Do not block the writer. Do not claim MATH-08. Do not grant
+a source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Still-public count and ids must agree
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
