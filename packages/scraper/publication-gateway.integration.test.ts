@@ -3734,3 +3734,53 @@ test("a remote-matched count is not a completed Manila-day flow", async () => {
     expect(remoteMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("a one-source remote match is not a portfolio pass", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "remote-match-not-portfolio", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "remote-match-not-portfolio", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const locationType = (sqlite.query("SELECT location_type AS locationType FROM opportunities WHERE id = ?").get(realId) as { locationType: string | null }).locationType;
+    expect(locationType).toBe("remote");
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, remoteMatchedManilaStillPublicCount, remoteMatchedManilaPortfolioStatus } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    const snapshot = loaded.counts.find((row) => row.retryKey === paired!.retryKey);
+    expect(snapshot).toBeDefined();
+    const remoteIds = locationType === "remote" ? [realId] : [];
+    const matched = remoteMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, remoteIds, remoteIds);
+    expect(matched).toBe(1);
+    const oneSource = concentrationReport([{ id: "we-work-remotely", count: matched! }], TOP_SOURCE_SHARE_MAX);
+    expect(oneSource.status).toBe("BREACH");
+    expect(oneSource.status).not.toBe("OK");
+    expect(oneSource.topShare).toBe(1);
+    const empty = concentrationReport([], TOP_SOURCE_SHARE_MAX);
+    expect(empty.status).toBe("UNKNOWN");
+    expect(empty.status).not.toBe("OK");
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof remoteMatchedManilaPortfolioStatus).toBe("function");
+    const status = remoteMatchedManilaPortfolioStatus(matched, [{ sourceId: "we-work-remotely", count: matched! }]);
+    expect(status).toBe("BREACH");
+    expect(status).not.toBe("OK");
+    expect(remoteMatchedManilaPortfolioStatus(matched, [])).toBeNull();
+    expect(remoteMatchedManilaPortfolioStatus(null, [])).toBe("UNKNOWN");
+    const balanced = [
+      { sourceId: "we-work-remotely", count: 1 },
+      { sourceId: "remotive", count: 1 },
+      { sourceId: "real-work-from-anywhere", count: 1 },
+      { sourceId: "remote-ok", count: 1 },
+    ];
+    expect(remoteMatchedManilaPortfolioStatus(4, balanced)).toBe("OK");
+  } finally { sqlite.close(); }
+});

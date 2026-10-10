@@ -1,4 +1,5 @@
 import { canonicalizeSourceUrl } from "./contentHash";
+import { concentrationReport, TOP_SOURCE_SHARE_MAX } from "./portfolio-concentration";
 
 const CANONICAL_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const MANILA_OFFSET_MS = 8 * 60 * 60 * 1000;
@@ -256,6 +257,28 @@ export function remoteMatchedManilaDayFlowCount(dayState: string, matchedCount: 
   if (dayState.length === 0) return null;
   if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
   return null;
+}
+
+// A remote-matched count is not a portfolio pass. One source above the
+// constitution ceiling is a breach. An empty book stays UNKNOWN. A row total
+// that disagrees with the matched count stays absent. This does not block a
+// writer and is not a closed-day flow.
+export function remoteMatchedManilaPortfolioStatus(
+  matchedCount: number | null,
+  rows: readonly { sourceId: string; count: number }[],
+): "UNKNOWN" | "OK" | "BREACH" | null {
+  if (matchedCount !== null && (!Number.isSafeInteger(matchedCount) || matchedCount < 0)) return null;
+  const usable = rows.filter((row) => row.count > 0 && row.sourceId.trim().length > 0);
+  const total = usable.reduce((sum, row) => sum + row.count, 0);
+  if (matchedCount === null || matchedCount === 0) {
+    if (total !== 0) return null;
+    return concentrationReport([], TOP_SOURCE_SHARE_MAX).status;
+  }
+  if (total !== matchedCount) return null;
+  return concentrationReport(
+    usable.map((row) => ({ id: row.sourceId, count: row.count })),
+    TOP_SOURCE_SHARE_MAX,
+  ).status;
 }
 
 // A remote serving match stays absent when the original posting is outside the
