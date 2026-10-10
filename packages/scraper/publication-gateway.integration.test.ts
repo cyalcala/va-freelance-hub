@@ -4048,3 +4048,44 @@ test("a claimed publishing source is not the snapshot source", async () => {
     expect(storedPublishingSourceManilaFamilyStatus(null, stored, stored, [], [], [])).toBe("UNKNOWN");
   } finally { sqlite.close(); }
 });
+
+test("a stored-source family breach is not a completed Manila-day flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "stored-family-not-flow", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "stored-family-not-flow", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const stored = (sqlite.query("SELECT source_id AS sourceId FROM source_publication_manila_open_snapshot WHERE retry_key = ?").get("stored-family-not-flow") as { sourceId: string }).sourceId;
+    expect(stored).toBe("we-work-remotely");
+    const open = readManilaOpenSnapshot(sqlite, "stored-family-not-flow");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(open!.still_public_count).toBe(1);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, storedPublishingSourceManilaFamilyStatus, storedPublishingSourceManilaDayFlowCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    const idSources = [{ id: realId, sourceId: stored }];
+    const status = storedPublishingSourceManilaFamilyStatus(1, stored, stored, paired!.stillPublicIds, idSources, [{ sourceId: stored, count: 1 }]);
+    expect(status).toBe("BREACH");
+    expect(status).not.toBe("OK");
+    expect(typeof storedPublishingSourceManilaDayFlowCount).toBe("function");
+    const completed = storedPublishingSourceManilaDayFlowCount(open!.day_state, status, 1);
+    expect(completed).toBeNull();
+    expect(completed).not.toBe(1);
+    expect(completed).not.toBe(0);
+    expect(storedPublishingSourceManilaDayFlowCount("CLOSED", status, 1)).toBeNull();
+    expect(storedPublishingSourceManilaDayFlowCount("OPEN", status, 100)).toBeNull();
+    expect(storedPublishingSourceManilaDayFlowCount("OPEN", status, 150)).toBeNull();
+  } finally { sqlite.close(); }
+});
