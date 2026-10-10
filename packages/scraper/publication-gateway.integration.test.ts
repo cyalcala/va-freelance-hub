@@ -5121,12 +5121,68 @@ test("a foreign still-public id in a same-source breach is not a completed Manil
   } finally { sqlite.close(); }
 });
 
+test("a rejected snapshot id row is not an empty same-source book", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "rejected-snapshot-ids-not-empty", proposedCount: 5,
+      persist: async () => {
+        const ids = Array.from({ length: 5 }, (_, index) => writeOpportunity(sqlite, `rejected-snapshot-ids-not-empty-${index}`, "we-work-remotely")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 5, replayed: false });
+    const publishedIds = result.ok ? [...result.ids].sort((left, right) => left - right) : [];
+    expect(publishedIds).toHaveLength(5);
+    const open = readManilaOpenSnapshot(sqlite, "rejected-snapshot-ids-not-empty");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const today = manilaDateOf(NOW);
+    const breachSources = ["jobicy:admin", "jobicy:admin", "jobicy:admin", "remotive", "remote-ok"];
+    for (const [index, id] of publishedIds.entries()) {
+      sqlite.query("UPDATE opportunities SET source_id = ? WHERE id = ?").run(breachSources[index], id);
+    }
+    const recorded = publishedIds.map((id) => {
+      const row = sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(id) as { sourceId: string };
+      return { id, sourceId: row.sourceId };
+    });
+    const breachBook = [
+      { sourceId: "jobicy:admin", count: 3 },
+      { sourceId: "remotive", count: 1 },
+      { sourceId: "remote-ok", count: 1 },
+    ];
+    const readers = await import("./manila-day");
+    const intact = readers.latestManilaSnapshotPair(loadSnapshotPair(sqlite).counts, loadSnapshotPair(sqlite).ids, today);
+    expect(intact).not.toBeNull();
+    expect(intact!.idsKnown).toBe(true);
+    expect(readers.sameSourcePairManilaFamilyStatus(5, intact!.stillPublicIds, recorded, breachBook)).toBe("BREACH");
 
+    const foreignId = Math.max(...publishedIds) + 999;
+    const rejectedStill = [publishedIds[0]!, publishedIds[1]!, publishedIds[2]!, publishedIds[3]!, foreignId];
+    sqlite.exec("DROP TRIGGER IF EXISTS source_publication_manila_snapshot_ids_append_only_update;");
+    sqlite.query("UPDATE source_publication_manila_snapshot_ids SET still_public_ids_json = ? WHERE retry_key = ?").run(
+      JSON.stringify(rejectedStill),
+      "rejected-snapshot-ids-not-empty",
+    );
+    const rejected = readers.latestManilaSnapshotPair(loadSnapshotPair(sqlite).counts, loadSnapshotPair(sqlite).ids, today);
+    expect(rejected).not.toBeNull();
+    expect(rejected!.idsKnown).toBe(false);
+    expect(rejected!.stillPublicIds).toEqual([]);
+    expect(rejected!.firstPublishIds).toEqual([]);
+    expect(readers.sameSourcePairManilaFamilyStatus(null, [], [], [])).toBe("UNKNOWN");
+    expect(readers.sameSourcePairManilaFamilyStatus(null, rejected!.stillPublicIds, [], [])).toBe("UNKNOWN");
 
-
-
-
-
-
+    const loadedStatus = readers.loadedSameSourcePairManilaFamilyStatus;
+    expect(typeof loadedStatus).toBe("function");
+    const absent = loadedStatus(rejected, 5, recorded, breachBook);
+    expect(absent).toBeNull();
+    expect(absent).not.toBe("UNKNOWN");
+    expect(absent).not.toBe("BREACH");
+    expect(loadedStatus(intact, 5, recorded, breachBook)).toBe("BREACH");
+    expect(readers.sameSourcePairManilaDayFlowCount(open!.day_state, absent, 5)).toBeNull();
+    expect(readers.sameSourcePairManilaDayFlowCount("CLOSED", absent, 5)).toBeNull();
+  } finally { sqlite.close(); }
+});
 
 

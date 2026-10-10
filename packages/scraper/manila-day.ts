@@ -498,6 +498,20 @@ export function sameSourcePairManilaFamilyStatus(
   return familyStatus;
 }
 
+// A loaded pair whose id row was rejected is not an empty book. Empty arrays
+// with idsKnown false stay absent. A genuinely empty supplied book still
+// reports UNKNOWN through sameSourcePairManilaFamilyStatus. This does not
+// block a writer, does not record CLOSED, and does not claim MATH-08.
+export function loadedSameSourcePairManilaFamilyStatus(
+  pair: ManilaSnapshotPair | null,
+  matchedCount: number | null,
+  recordedSources: readonly { id: number; sourceId: string }[],
+  suppliedRows: readonly { sourceId: string; count: number }[],
+): "UNKNOWN" | "OK" | "BREACH" | null {
+  if (!pair || pair.idsKnown !== true) return null;
+  return sameSourcePairManilaFamilyStatus(matchedCount, pair.stillPublicIds, recordedSources, suppliedRows);
+}
+
 // A same-source pair that stays a family OK is not a completed Manila-day
 // flow. This reader has no closed-day evidence, so a caller-supplied CLOSED
 // state does not create one. Caller-supplied 100 and 150 stay absent. The
