@@ -1,5 +1,44 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Rejected snapshot id row is not a measured zero
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_ZERO_COUNT.
+`agreedManilaStillPublicCount(0, rejected)` is null, not 0.
+`agreedManilaSnapshotIdCount(0, rejected)` is null, not 0. The reportable id
+count of that rejected pair stays null. A later known empty id row, with
+`idsKnown` true and both arrays empty, still reports 0. The rejected pair still
+agrees with 0 as null. `completedManilaDayFlowCount` of OPEN and of CLOSED with
+0 stays null. The shipped readers already returned these results, so this slice
+locks them and does not add another wrapper. The unlimited publish already
+succeeded. The writer does not call these readers. No migration was added.
+This is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_ZERO_COUNT_2026-10-10.md).
+Behavior SHA `38744979303a4add2f1ad2c43bd45adc19729ad6` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057. A genuinely empty supplied book stays
+`UNKNOWN`. A rejected pair's reportable count stays null, not 5 and not 0.
+
+**One NEXT: PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_ZERO_IS_NOT_AN_EMPTY_BOOK.**
+`loadedSameSourcePairManilaFamilyStatus(rejected, 0, [], [])` is null, not
+`UNKNOWN`. The same call on a known empty pair is `UNKNOWN`. Direct
+`sameSourcePairManilaFamilyStatus(0, [], [], [])` stays `UNKNOWN`. A missing
+`idsKnown` check would collapse the rejected call into that empty book. Do not
+block the writer. Do not record CLOSED. Do not claim MATH-08. Do not grant a
+source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Rejected snapshot id row is not a reportable count
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

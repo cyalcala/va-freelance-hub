@@ -1257,6 +1257,18 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded rejected snapshot id row is not a measured zero
+
+[PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_ZERO_COUNT](../operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_ZERO_COUNT_2026-10-10.md)
+advances a local measurement prerequisite only. Agreement of a rejected snapshot
+pair with a caller-supplied 0 is null, not 0. A later known empty id row still
+reports 0. `completedManilaDayFlowCount` of OPEN and of CLOSED with 0 stays
+null. This is not card acceptance or a certified QUPD. Accepted MATH remains
+0/13. Certified daily flow remains UNKNOWN. The 735-entry directory is not
+enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_ZERO_IS_NOT_AN_EMPTY_BOOK in the newest
+savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded rejected snapshot id row is not a reportable count
 
 [PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_REPORTABLE_COUNT](../operations/PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_IDS_ARE_NOT_A_REPORTABLE_COUNT_2026-10-10.md)

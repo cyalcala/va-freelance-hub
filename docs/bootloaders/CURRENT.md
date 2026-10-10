@@ -1,5 +1,17 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): agreedManilaStillPublicCount(0, rejected)
+and agreedManilaSnapshotIdCount(0, rejected) are null, not 0, after the only id
+row is rejected. The reportable id count of that pair stays null. A later known
+empty id row, with idsKnown true and both arrays empty, still reports 0. The
+rejected pair still agrees with 0 as null. completedManilaDayFlowCount of OPEN
+and of CLOSED with 0 stays null. The writer does not call these readers. No
+migration was added. MATH remains 0/13 and certified daily flow remains UNKNOWN.
+The 735-company directory stays on its existing holds. Behavior SHA
+`38744979303a4add2f1ad2c43bd45adc19729ad6`. Sole NEXT is
+PUBLICATION_MANILA_DAY_REJECTED_SNAPSHOT_ZERO_IS_NOT_AN_EMPTY_BOOK in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): an OPEN snapshot still stores
 first_publish_count 5 and still_public_count 5 after its only id row is rejected
 for a foreign still-public id. reportableManilaSnapshotIdCount of that loaded
