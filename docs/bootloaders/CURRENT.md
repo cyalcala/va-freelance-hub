@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): the snapshot first-publish count and
+the known id length agree only when they are the same safe integer.
+Disagreement stays absent, and an unknown pair stays absent. The writer does
+not call this reader. No migration was added. MATH remains 0/13 and certified
+daily flow remains UNKNOWN. The 735-company directory stays on its existing
+holds. Behavior SHA `1ff29b7198fd0b8a724266de7195f535d620e67d`. Sole NEXT is
+PUBLICATION_MANILA_DAY_DUPLICATE_IDS_DO_NOT_AGREE in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a known open id count is not a
 completed Manila-day flow. The completed-day reader returns null for OPEN and
 for a caller-supplied CLOSED state. The writer does not call this reader. No
