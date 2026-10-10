@@ -3603,3 +3603,48 @@ test("an active-matched count is not a completed Manila-day flow", async () => {
     expect(activeMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("an apply-matched count is not a completed Manila-day flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "apply-match-not-flow", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "apply-match-not-flow", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const urls = sqlite.query("SELECT source_url AS sourceUrl, application_url AS applicationUrl FROM opportunities WHERE id = ?")
+      .get(realId) as { sourceUrl: string | null; applicationUrl: string | null };
+    expect(resolvePublicationOutboundUrl(urls.sourceUrl, urls.applicationUrl)).not.toBeNull();
+    const postedAt = (sqlite.query("SELECT posted_at AS postedAt FROM opportunities WHERE id = ?").get(realId) as { postedAt: string | null }).postedAt;
+    expect(assessPostingFreshness(postedAt, NOW).state).toBe("WITHIN_WINDOW");
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, applyMatchedManilaStillPublicCount, applyMatchedManilaDayFlowCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    const snapshot = loaded.counts.find((row) => row.retryKey === paired!.retryKey);
+    expect(snapshot).toBeDefined();
+    const applyIds = resolvePublicationOutboundUrl(urls.sourceUrl, urls.applicationUrl) ? [realId] : [];
+    expect(applyIds).toEqual([realId]);
+    const matched = applyMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, applyIds, applyIds);
+    expect(matched).toBe(1);
+    const open = readManilaOpenSnapshot(sqlite, "apply-match-not-flow");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof applyMatchedManilaDayFlowCount).toBe("function");
+    const completed = applyMatchedManilaDayFlowCount(open!.day_state, matched);
+    expect(completed).toBeNull();
+    expect(completed).not.toBe(matched);
+    expect(completed).not.toBe(0);
+    expect(applyMatchedManilaDayFlowCount("CLOSED", matched)).toBeNull();
+    expect(applyMatchedManilaDayFlowCount("OPEN", 100)).toBeNull();
+    expect(applyMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
+  } finally { sqlite.close(); }
+});

@@ -279,6 +279,15 @@ export function applyMatchedManilaStillPublicCount(
   return matched;
 }
 
+// An apply-matched still-public count is not a completed Manila-day flow.
+// This reader has no closed-day evidence, so a caller-supplied CLOSED state
+// does not create one. The 100 floor is not a flow either.
+export function applyMatchedManilaDayFlowCount(dayState: string, matchedCount: number | null): number | null {
+  if (dayState.length === 0) return null;
+  if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
+  return null;
+}
+
 // An apply match stays absent when the id leaves the accepted PH pair. This
 // reader does not prefer the apply-matched length and is not a closed-day flow.
 export function phMatchedManilaStillPublicCount(
