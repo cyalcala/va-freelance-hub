@@ -1174,6 +1174,16 @@ daily flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT
 is PUBLICATION_MANILA_DAY_FAMILY_BREACH_IS_NOT_A_FLOW in the newest savepoint.
 No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded family breach is not a flow
+
+[PUBLICATION_MANILA_DAY_FAMILY_BREACH_IS_NOT_A_FLOW](../operations/PUBLICATION_MANILA_DAY_FAMILY_BREACH_IS_NOT_A_FLOW_2026-10-10.md)
+advances a local measurement prerequisite only. A family breach on an OPEN
+snapshot stays out of a completed flow. This is not card acceptance or a
+certified QUPD. Accepted MATH remains 0/13. Certified daily flow remains
+UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_FOREIGN_BOOK_IS_NOT_A_FAMILY_STATUS in the newest
+savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

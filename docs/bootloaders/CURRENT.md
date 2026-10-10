@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a family breach on an OPEN snapshot
+is not a completed Manila-day flow. A caller-supplied CLOSED state does not
+create one. Caller-supplied 100 and 150 stay absent. The writer does not call
+this reader. No migration was added. MATH remains 0/13 and certified daily
+flow remains UNKNOWN. The 735-company directory stays on its existing holds.
+Behavior SHA `1ce99c5f46444a79cea1e50d18a7d8a88104acc2`. Sole NEXT is
+PUBLICATION_MANILA_DAY_FOREIGN_BOOK_IS_NOT_A_FAMILY_STATUS in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a source-share OK book can still
 breach the 40% provider-family ceiling. Unprefixed Jobicy feeds do not fold.
 The writer does not call this reader. No migration was added. MATH remains
