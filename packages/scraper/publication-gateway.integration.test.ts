@@ -2680,3 +2680,41 @@ test("the latest count snapshot keeps its own ids", async () => {
     expect(paired!.stillPublicIds).not.toEqual(unionStill);
   } finally { sqlite.close(); }
 });
+
+test("an unknown snapshot id pair is not a measured zero", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "snapshot-unknown-zero", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "snapshot-unknown-zero", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const knownIds = distinctFirstPublishIds(sqlite, today);
+    expect(knownIds).toHaveLength(1);
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'snapshot-unknown-zero-newer', ?, 'OPEN', 0, 0, ?)`).run(TICK, today, later);
+    expect(readManilaSnapshotIds(sqlite, "snapshot-unknown-zero-newer")).toBeNull();
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, reportableManilaSnapshotIdCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.idsKnown).toBe(false);
+    expect(paired!.firstPublishIds).toEqual([]);
+    expect(paired!.retryKey).toBe("snapshot-unknown-zero-newer");
+    expect(typeof reportableManilaSnapshotIdCount).toBe("function");
+    const reported = reportableManilaSnapshotIdCount(paired);
+    expect(reported).toBeNull();
+    expect(reported).not.toBe(0);
+    expect(reported).not.toBe(paired!.firstPublishIds.length);
+    const knownLoaded = loadSnapshotPair(sqlite);
+    knownLoaded.counts = knownLoaded.counts.filter((row) => row.retryKey !== "snapshot-unknown-zero-newer");
+    const known = latestManilaSnapshotPair(knownLoaded.counts, knownLoaded.ids, today);
+    expect(reportableManilaSnapshotIdCount(known)).toBe(knownIds.length);
+  } finally { sqlite.close(); }
+});

@@ -127,3 +127,11 @@ export function latestManilaSnapshotPair(
     stillPublicIds: [...checked.stillPublicIds],
   };
 }
+
+// Empty arrays on an unknown pair are not a measured zero. A known pair
+// reports its first-publish id count. This is not a closed-day flow.
+export function reportableManilaSnapshotIdCount(pair: ManilaSnapshotPair | null): number | null {
+  if (!pair || pair.idsKnown !== true) return null;
+  if (pair.stillPublicIds.length > pair.firstPublishIds.length) return null;
+  return pair.firstPublishIds.length;
+}
