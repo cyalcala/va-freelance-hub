@@ -223,3 +223,12 @@ export function servingMatchedManilaStillPublicCount(
   if (!samePositiveIds(pair.stillPublicIds, servingIds)) return null;
   return agreed;
 }
+
+// A serving-matched still-public count is not a completed Manila-day flow.
+// This reader has no closed-day evidence, so a caller-supplied CLOSED state
+// does not create one. The 100 floor is not a flow either.
+export function servingMatchedManilaDayFlowCount(dayState: string, matchedCount: number | null): number | null {
+  if (dayState.length === 0) return null;
+  if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
+  return null;
+}
