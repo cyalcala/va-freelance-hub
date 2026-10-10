@@ -424,6 +424,16 @@ writer. No ranker, allocator, shadow canary, or neural routing change.
 Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_SERVING_PORTFOLIO_EXPOSURE in the newest savepoint.
 
+## 2026-10-10 bounded serving portfolio exposure
+
+[PUBLICATION_SERVING_PORTFOLIO_EXPOSURE](../operations/PUBLICATION_SERVING_PORTFOLIO_EXPOSURE_2026-10-10.md)
+is a publication-measurement prerequisite, not an SSAE card promotion. The
+live public serving book records source and provider-family share and does not
+block the writer. A withdrawn row leaves that book. No ranker, allocator,
+shadow canary, or neural routing change. Accepted MATH remains 0/13. Certified
+daily flow remains UNKNOWN. Sole NEXT is PUBLICATION_PORTFOLIO_BOOK_DIVERGENCE
+in the newest savepoint.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

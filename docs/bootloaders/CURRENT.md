@@ -1,6 +1,15 @@
 # Current resume pointer
 
 Latest continuation (2026-10-10 Manila): a positive publication records source
+and provider-family share for the live public serving book and still publishes
+when that share is above 25% or 40%. A withdrawn row stays in the ledger book
+and leaves the serving book. Exact-six stays unlimited. A missing serving
+table fails open. Migration 0059 was not applied. MATH remains 0/13 and
+certified daily flow remains UNKNOWN. The 735-company directory stays on its
+existing holds. Behavior SHA `3dcb8efcca8c9b20851cf8be234a4ff12c707175`.
+Sole NEXT is PUBLICATION_PORTFOLIO_BOOK_DIVERGENCE in the newest savepoint.
+
+Latest continuation (2026-10-10 Manila): a positive publication records source
 and provider-family share for the ledger receipt book and still publishes when
 that share is above 25% or 40%. Exact-six stays unlimited. A missing
 measurement table fails open. Migration 0058 was not applied. MATH remains

@@ -1,5 +1,39 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Serving exposure is recorded and does not block
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_SERVING_PORTFOLIO_EXPOSURE for the live
+public serving book. A positive publish still records the ledger book, then
+appends source and provider-family share for active Philippines-eligible rows.
+A share above 25% or 40% still publishes. A withdrawn row stays in the ledger
+book and leaves the serving book. Exact-six stays unlimited. A missing serving
+table fails open and the ledger measurement stands. Migration 0059 adds no
+`julianday('now')` and was not applied. The serving book is not a Manila-day
+flow.
+[Evidence](operations/PUBLICATION_SERVING_PORTFOLIO_EXPOSURE_2026-10-10.md).
+Behavior SHA `3dcb8efcca8c9b20851cf8be234a4ff12c707175` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056, 0057, and 0058 stay unapplied. Do not deploy
+the reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_PORTFOLIO_BOOK_DIVERGENCE.** The same publish can
+record a ledger BREACH and a serving OK. Persist that disagreement. Do not
+turn 25% or 40% into a per-write block. Do not grant a source, change cadence,
+add a clock, or treat the comparison as a Manila-day flow or a MATH-08
+acceptance.
+
 ## 2026-10-10 Manila — Portfolio exposure is recorded and does not block
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
