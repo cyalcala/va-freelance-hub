@@ -3,6 +3,7 @@ import { Database, type SQLQueryBindings } from "bun:sqlite";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { concentrationReport, familyShares, TOP_PROVIDER_FAMILY_SHARE_MAX, TOP_SOURCE_SHARE_MAX } from "../../scripts/ci/constitution-metrics";
+import { latestManilaOpenSnapshot } from "./manila-day";
 import { publishPublicExposure, publicationTickKey, type PublicationDatabase, type PublicationStatement, type PublishPublicExposureRequest } from "./publication-gateway";
 import { withdrawUnreceiptedAcknowledgements } from "./publication-uncertainty";
 import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
@@ -1873,5 +1874,70 @@ test("a missing open-snapshot table keeps the receipt and still-public counts", 
     expect(readManilaFirstPublish(sqlite, "open-snapshot-missing")!.first_publish_count).toBe(1);
     expect(readManilaStillPublic(sqlite, "open-snapshot-missing")!.still_public_count).toBe(1);
     expect(readManilaOpenSnapshot(sqlite, "open-snapshot-missing")).toBeNull();
+  } finally { sqlite.close(); }
+});
+
+test("the day's open count is the latest snapshot, not the sum of snapshot rows", async () => {
+  const sqlite = freshDb();
+  try {
+    const publishOne = async (sourceId: string, retryKey: string) => publishPublicExposure(new BunDb(sqlite), {
+      sourceId, now: NOW, tickKey: TICK, retryKey, proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, retryKey, sourceId);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    const first = await publishOne("we-work-remotely", "snapshot-latest-a");
+    expect(first).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const second = await publishOne("remotive", "snapshot-latest-b");
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE source_id IN ('we-work-remotely', 'remotive')").run();
+    const third = await publishOne("real-work-from-anywhere", "snapshot-latest-c");
+    expect(third).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const otherDate = manilaDateOf(new Date(Date.parse(NOW) - DAY_MS).toISOString());
+    expect(otherDate).not.toBe(today);
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('remotive', ?, 'snapshot-latest-other-day', ?, 'OPEN', 9, 9, ?)`).run(TICK, otherDate, later);
+    const rows = sqlite.query(`SELECT id, manila_date, recorded_at, day_state, first_publish_count, still_public_count
+      FROM source_publication_manila_open_snapshot`).all() as Array<{
+      id: number; manila_date: string; recorded_at: string; day_state: string;
+      first_publish_count: number; still_public_count: number;
+    }>;
+    const todayRows = rows.filter((row) => row.manila_date === today);
+    const summedFirst = todayRows.reduce((total, row) => total + row.first_publish_count, 0);
+    const summedStill = todayRows.reduce((total, row) => total + row.still_public_count, 0);
+    const maxStill = todayRows.reduce((max, row) => Math.max(max, row.still_public_count), 0);
+    expect(todayRows).toHaveLength(3);
+    expect(summedFirst).toBe(6);
+    expect(summedStill).toBe(4);
+    expect(maxStill).toBe(2);
+    const independent = todayRows
+      .filter((row) => row.day_state === "OPEN")
+      .sort((left, right) => left.recorded_at < right.recorded_at ? -1 : left.recorded_at > right.recorded_at ? 1 : left.id - right.id)
+      .at(-1);
+    const ids = distinctFirstPublishIds(sqlite, today);
+    expect(ids).toHaveLength(3);
+    const latest = latestManilaOpenSnapshot(rows.map((row) => ({
+      id: row.id,
+      manilaDate: row.manila_date,
+      recordedAt: row.recorded_at,
+      dayState: row.day_state,
+      firstPublishCount: row.first_publish_count,
+      stillPublicCount: row.still_public_count,
+    })), today);
+    expect(latest).not.toBeNull();
+    expect(latest!.firstPublishCount).toBe(ids.length);
+    expect(latest!.firstPublishCount).toBe(independent!.first_publish_count);
+    expect(latest!.firstPublishCount).not.toBe(summedFirst);
+    expect(latest!.stillPublicCount).toBe(independent!.still_public_count);
+    expect(latest!.stillPublicCount).toBe(1);
+    expect(latest!.stillPublicCount).not.toBe(summedStill);
+    expect(latest!.stillPublicCount).not.toBe(maxStill);
+    expect(latest!.id).toBe(independent!.id);
+    expect(latest!.manilaDate).toBe(today);
+    expect(latest!.dayState).toBe("OPEN");
   } finally { sqlite.close(); }
 });

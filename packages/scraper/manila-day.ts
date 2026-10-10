@@ -36,3 +36,30 @@ export function manilaFirstPublishIds(receipts: readonly FirstPublishReceipt[], 
 export function manilaFirstPublishCount(receipts: readonly FirstPublishReceipt[], manilaDate: string): number {
   return manilaFirstPublishIds(receipts, manilaDate).length;
 }
+
+export type ManilaOpenSnapshot = {
+  id: number;
+  manilaDate: string;
+  recordedAt: string;
+  dayState: string;
+  firstPublishCount: number;
+  stillPublicCount: number;
+};
+
+// One Manila date keeps the newest OPEN row. Rows are not summed, and a later
+// row for another date does not replace this date. Equal instants use the higher id.
+export function latestManilaOpenSnapshot(rows: readonly ManilaOpenSnapshot[], manilaDate: string): ManilaOpenSnapshot | null {
+  let latest: ManilaOpenSnapshot | null = null;
+  for (const row of rows) {
+    if (row.manilaDate !== manilaDate || row.dayState !== "OPEN") continue;
+    if (!CANONICAL_INSTANT.test(row.recordedAt)) continue;
+    if (!Number.isSafeInteger(row.id) || row.id <= 0) continue;
+    if (!Number.isSafeInteger(row.firstPublishCount) || row.firstPublishCount < 0) continue;
+    if (!Number.isSafeInteger(row.stillPublicCount) || row.stillPublicCount < 0) continue;
+    if (row.stillPublicCount > row.firstPublishCount) continue;
+    if (latest === null || row.recordedAt > latest.recordedAt || (row.recordedAt === latest.recordedAt && row.id > latest.id)) {
+      latest = row;
+    }
+  }
+  return latest;
+}
