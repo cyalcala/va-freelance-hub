@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive publish stores the named
+ledger receipt ids, the active serving ids, and whether those known ids differ.
+An empty receipt id list stays unknown. Equal per-source counts can hide
+different ids. A missing table fails open. Migration 0067 was not applied.
+MATH remains 0/13 and certified daily flow remains UNKNOWN. The 735-company
+directory stays on its existing holds. Behavior SHA
+`e96c33dbdd813f1011989fc2db946d807d18a170`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SNAPSHOT_IDS in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive publish stores each source
 count on the ledger book and the serving book, and whether any count differs.
 An equal source set and equal totals can hide different counts. A missing table
