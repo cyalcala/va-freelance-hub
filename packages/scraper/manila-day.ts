@@ -135,3 +135,11 @@ export function reportableManilaSnapshotIdCount(pair: ManilaSnapshotPair | null)
   if (pair.stillPublicIds.length > pair.firstPublishIds.length) return null;
   return pair.firstPublishIds.length;
 }
+
+// An open count is not a completed Manila-day flow. This reader has no
+// closed-day evidence, so a caller-supplied CLOSED state does not create one.
+export function completedManilaDayFlowCount(dayState: string, reportableCount: number | null): number | null {
+  if (dayState.length === 0) return null;
+  if (reportableCount !== null && !Number.isSafeInteger(reportableCount)) return null;
+  return null;
+}

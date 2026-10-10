@@ -2718,3 +2718,32 @@ test("an unknown snapshot id pair is not a measured zero", async () => {
     expect(reportableManilaSnapshotIdCount(known)).toBe(knownIds.length);
   } finally { sqlite.close(); }
 });
+
+test("an open snapshot count is not a completed Manila-day flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "open-not-flow", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "open-not-flow", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, reportableManilaSnapshotIdCount, completedManilaDayFlowCount } = await import("./manila-day");
+    const reported = reportableManilaSnapshotIdCount(latestManilaSnapshotPair(loaded.counts, loaded.ids, today));
+    expect(reported).toBe(1);
+    const open = readManilaOpenSnapshot(sqlite, "open-not-flow");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof completedManilaDayFlowCount).toBe("function");
+    const completed = completedManilaDayFlowCount(open!.day_state, reported);
+    expect(completed).toBeNull();
+    expect(completed).not.toBe(reported);
+    expect(completed).not.toBe(0);
+    expect(completedManilaDayFlowCount("CLOSED", reported)).toBeNull();
+  } finally { sqlite.close(); }
+});
