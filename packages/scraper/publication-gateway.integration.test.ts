@@ -2571,3 +2571,112 @@ test("the day's ids are the latest id row, not the union of snapshot rows", asyn
     expect(withInvalid!.stillPublicIds).toEqual(stillIds);
   } finally { sqlite.close(); }
 });
+
+function loadSnapshotPair(sqlite: Database): {
+  counts: Array<{ id: number; manilaDate: string; recordedAt: string; dayState: string; firstPublishCount: number; stillPublicCount: number; retryKey: string }>;
+  ids: Array<{ id: number; manilaDate: string; recordedAt: string; firstPublishIds: number[]; stillPublicIds: number[]; retryKey: string }>;
+} {
+  const counts = (sqlite.query(`SELECT id, retry_key, manila_date, recorded_at, day_state, first_publish_count, still_public_count
+    FROM source_publication_manila_open_snapshot`).all() as Array<{
+    id: number; retry_key: string; manila_date: string; recorded_at: string; day_state: string;
+    first_publish_count: number; still_public_count: number;
+  }>).map((row) => ({
+    id: row.id,
+    retryKey: row.retry_key,
+    manilaDate: row.manila_date,
+    recordedAt: row.recorded_at,
+    dayState: row.day_state,
+    firstPublishCount: row.first_publish_count,
+    stillPublicCount: row.still_public_count,
+  }));
+  const ids = (sqlite.query(`SELECT id, retry_key, manila_date, recorded_at, first_publish_ids_json, still_public_ids_json
+    FROM source_publication_manila_snapshot_ids`).all() as Array<{
+    id: number; retry_key: string; manila_date: string; recorded_at: string;
+    first_publish_ids_json: string; still_public_ids_json: string;
+  }>).map((row) => ({
+    id: row.id,
+    retryKey: row.retry_key,
+    manilaDate: row.manila_date,
+    recordedAt: row.recorded_at,
+    firstPublishIds: JSON.parse(row.first_publish_ids_json) as number[],
+    stillPublicIds: JSON.parse(row.still_public_ids_json) as number[],
+  }));
+  return { counts, ids };
+}
+
+test("a newer count snapshot without ids does not keep an older id row", async () => {
+  const sqlite = freshDb();
+  try {
+    const publishOne = async (sourceId: string, retryKey: string) => publishPublicExposure(new BunDb(sqlite), {
+      sourceId, now: NOW, tickKey: TICK, retryKey, proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, retryKey, sourceId);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    const first = await publishOne("we-work-remotely", "snapshot-pair-a");
+    expect(first).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const withdrawnId = first.ok ? first.ids[0] : 0;
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE id = ?").run(withdrawnId);
+    const second = await publishOne("remotive", "snapshot-pair-b");
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const olderIds = readManilaSnapshotIds(sqlite, "snapshot-pair-b");
+    expect(olderIds).not.toBeNull();
+    const later = new Date(Date.parse(NOW) + 60_000).toISOString();
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('remotive', ?, 'snapshot-pair-newer', ?, 'OPEN', 4, 3, ?)`).run(TICK, today, later);
+    expect(readManilaSnapshotIds(sqlite, "snapshot-pair-newer")).toBeNull();
+    const loaded = loadSnapshotPair(sqlite);
+    const latestCount = latestManilaOpenSnapshot(loaded.counts, today);
+    expect(latestCount).not.toBeNull();
+    expect(latestCount!.firstPublishCount).toBe(4);
+    expect(latestCount!.stillPublicCount).toBe(3);
+    const olderStill = JSON.parse(olderIds!.still_public_ids_json) as number[];
+    expect(olderStill).not.toContain(withdrawnId);
+    expect(olderStill.length).toBeGreaterThan(0);
+    const { latestManilaSnapshotPair } = await import("./manila-day");
+    expect(typeof latestManilaSnapshotPair).toBe("function");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.retryKey).toBe("snapshot-pair-newer");
+    expect(paired!.idsKnown).toBe(false);
+    expect(paired!.stillPublicIds).toEqual([]);
+    expect(paired!.firstPublishIds).toEqual([]);
+    expect(paired!.stillPublicIds).not.toEqual(olderStill);
+  } finally { sqlite.close(); }
+});
+
+test("the latest count snapshot keeps its own ids", async () => {
+  const sqlite = freshDb();
+  try {
+    const publishOne = async (sourceId: string, retryKey: string) => publishPublicExposure(new BunDb(sqlite), {
+      sourceId, now: NOW, tickKey: TICK, retryKey, proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, retryKey, sourceId);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    const first = await publishOne("we-work-remotely", "snapshot-pair-own-a");
+    expect(first).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE id = ?").run(first.ok ? first.ids[0] : 0);
+    const second = await publishOne("remotive", "snapshot-pair-own-b");
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const today = manilaDateOf(NOW);
+    const firstIds = distinctFirstPublishIds(sqlite, today);
+    const stillIds = stillPublicFirstPublishIds(sqlite, firstIds);
+    const loaded = loadSnapshotPair(sqlite);
+    const unionStill = [...new Set(loaded.ids.flatMap((row) => row.stillPublicIds))].sort((left, right) => left - right);
+    expect(unionStill).toEqual(firstIds);
+    expect(unionStill).not.toEqual(stillIds);
+    const { latestManilaSnapshotPair } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.retryKey).toBe("snapshot-pair-own-b");
+    expect(paired!.idsKnown).toBe(true);
+    expect(paired!.firstPublishIds).toEqual(firstIds);
+    expect(paired!.stillPublicIds).toEqual(stillIds);
+    expect(paired!.stillPublicIds).not.toEqual(unionStill);
+  } finally { sqlite.close(); }
+});

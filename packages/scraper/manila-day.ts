@@ -94,3 +94,36 @@ export function latestManilaSnapshotIds(rows: readonly ManilaSnapshotIdRow[], ma
   }
   return latest;
 }
+
+export type ManilaSnapshotPairCount = ManilaOpenSnapshot & { retryKey: string };
+export type ManilaSnapshotPairIds = ManilaSnapshotIdRow & { retryKey: string };
+export type ManilaSnapshotPair = {
+  retryKey: string;
+  idsKnown: boolean;
+  firstPublishIds: number[];
+  stillPublicIds: number[];
+};
+
+// The day's ids belong to the latest count snapshot. A missing id row stays
+// unknown and does not fall back to an older publish.
+export function latestManilaSnapshotPair(
+  counts: readonly ManilaSnapshotPairCount[],
+  ids: readonly ManilaSnapshotPairIds[],
+  manilaDate: string,
+): ManilaSnapshotPair | null {
+  const latest = latestManilaOpenSnapshot(counts, manilaDate);
+  if (!latest) return null;
+  const count = counts.find((row) => row.id === latest.id && row.recordedAt === latest.recordedAt && row.manilaDate === latest.manilaDate);
+  if (!count || count.retryKey.length === 0) return null;
+  const matches = ids.filter((row) => row.retryKey === count.retryKey);
+  const checked = matches.length === 1 ? latestManilaSnapshotIds(matches, manilaDate) : null;
+  if (!checked) {
+    return { retryKey: count.retryKey, idsKnown: false, firstPublishIds: [], stillPublicIds: [] };
+  }
+  return {
+    retryKey: count.retryKey,
+    idsKnown: true,
+    firstPublishIds: [...checked.firstPublishIds],
+    stillPublicIds: [...checked.stillPublicIds],
+  };
+}
