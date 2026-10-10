@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): still-public ids match serving only
+when they are the rows that remain public. Internal agreement with a different
+serving list stays absent. The writer does not call this reader. No migration
+was added. MATH remains 0/13 and certified daily flow remains UNKNOWN. The
+735-company directory stays on its existing holds. Behavior SHA
+`f339aae8f1017d228a26bac9ee0496db2fcf4d43`. Sole NEXT is
+PUBLICATION_MANILA_DAY_SERVING_MATCH_IS_NOT_A_FLOW in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive ledger-matched count on an
 OPEN snapshot is not a completed Manila-day flow. A caller-supplied CLOSED
 state does not create one. The writer does not call this reader. No migration
