@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): Secure Source Manager is the canonical
+Git remote. Instance `va-freelance-hub` in `asia-northeast1`, repository
+`va-freelance-hub`, verified at `073f4a5462cf7e04730aa5e5e1c8562b242bf3f9`
+with 155 heads, 45 tags, and 2702 commits. GitLab is the secondary mirror.
+The GitHub remote is named `github` and was not probed. Production runtime,
+Turso, D1, and Cloudflare were unchanged. MATH remains 0/13 and certified
+daily flow remains UNKNOWN. The 735-company directory stays on its existing
+holds. Sole NEXT is PUBLICATION_SOURCE_POLICY_EPOCH in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a valid publication whose ledger insert
 fails still returns UNKNOWN and now appends one uncertainty marker. A later
 verify-links pass withdraws only a marked id with no success receipt.

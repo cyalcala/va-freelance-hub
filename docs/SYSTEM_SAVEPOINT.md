@@ -1,5 +1,36 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Secure Source Manager holds the canonical Git history
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** the full Git history is on Secure Source Manager and that
+remote is `origin`. Instance `va-freelance-hub`, region `asia-northeast1`,
+repository `va-freelance-hub`. Verified branch
+`codex/verified-flow-directory-checkpoint` at
+`073f4a5462cf7e04730aa5e5e1c8562b242bf3f9`: 155 heads, 45 tags, 2702 commits,
+0 missing refs, 0 mismatched SHAs. GitLab `main` is preserved as
+`mirror/gitlab/main`. GitLab remains the secondary mirror. The previous
+`origin` is now the local remote `github` and was not probed. Cloud Run,
+Scheduler, Artifact Registry, Turso, D1, and Cloudflare were unchanged.
+[Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Migration 0056 was not applied to
+production. Unknown dates and null workplace stay public. Raw-lake sync stays
+fenced. No source, parameter, provider, or clock change.
+
+**One NEXT: PUBLICATION_SOURCE_POLICY_EPOCH.** Stale source authority must not
+publish or oversubscribe physical exposure. Enforce current policy and the
+accepted source, provider, and global limits at reservation time, not only as a
+post-write ledger refusal. Do not grant a source, change cadence, add a clock,
+or treat unknown dates, null workplace, or the 735-company directory as this
+unit. Recover this SHA first.
+
 ## 2026-10-10 Manila — Lost publication acknowledgements are durable
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
