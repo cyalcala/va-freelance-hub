@@ -232,3 +232,17 @@ export function servingMatchedManilaDayFlowCount(dayState: string, matchedCount:
   if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
   return null;
 }
+
+// A serving match stays absent when those ids are no longer remote. This
+// reader does not prefer the active PH length and is not a closed-day flow.
+export function remoteMatchedManilaStillPublicCount(
+  stillPublicCount: number,
+  pair: ManilaSnapshotPair | null,
+  servingIds: readonly number[],
+  remoteIds: readonly number[],
+): number | null {
+  const matched = servingMatchedManilaStillPublicCount(stillPublicCount, pair, servingIds);
+  if (matched === null || !pair) return null;
+  if (!samePositiveIds(pair.stillPublicIds, remoteIds)) return null;
+  return matched;
+}
