@@ -7,6 +7,7 @@ import { latestManilaOpenSnapshot } from "./manila-day";
 import { publishPublicExposure, publicationTickKey, type PublicationDatabase, type PublicationStatement, type PublishPublicExposureRequest } from "./publication-gateway";
 import { withdrawUnreceiptedAcknowledgements } from "./publication-uncertainty";
 import { PUBLIC_PH_ELIGIBILITIES } from "./publication-eligibility";
+import { assessPostingFreshness } from "./publication-freshness";
 
 const NOW = new Date().toISOString();
 const TICK = publicationTickKey("scrape", NOW);
@@ -3151,5 +3152,56 @@ test("a serving-matched id that is no longer remote stays absent", async () => {
     expect(remoteMatched).not.toBe(stillMatched);
     expect(remoteMatched).not.toBe(0);
     expect(remoteMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, servingIds, servingIds)).toBe(servingIds.length);
+  } finally { sqlite.close(); }
+});
+
+test("a remote still-public id outside the posting window stays absent", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "still-public-fresh", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "still-public-fresh", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const realId = result.ok ? result.ids[0] : 0;
+    expect(realId).toBeGreaterThan(0);
+    const posted = () => (sqlite.query("SELECT posted_at AS postedAt FROM opportunities WHERE id = ?").get(realId) as { postedAt: string | null }).postedAt;
+    expect(assessPostingFreshness(posted(), NOW).state).toBe("WITHIN_WINDOW");
+    const today = manilaDateOf(NOW);
+    const remoteIds = () => (sqlite.query("SELECT id FROM opportunities WHERE id = ? AND location_type = 'remote' AND is_active = 1").all(realId) as Array<{ id: number }>).map((row) => row.id);
+    expect(remoteIds()).toEqual([realId]);
+    const loaded = loadSnapshotPair(sqlite);
+    const { latestManilaSnapshotPair, remoteMatchedManilaStillPublicCount, freshMatchedManilaStillPublicCount } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.stillPublicIds).toEqual([realId]);
+    const snapshot = loaded.counts.find((row) => row.retryKey === paired!.retryKey);
+    expect(snapshot).toBeDefined();
+    expect(remoteMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, remoteIds(), remoteIds())).toBe(1);
+    sqlite.query("UPDATE opportunities SET posted_at = ? WHERE id = ?").run(STALE_POSTED_AT, realId);
+    expect(assessPostingFreshness(posted(), NOW).state).toBe("STALE");
+    expect(remoteIds()).toEqual([realId]);
+    expect(remoteMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, remoteIds(), remoteIds())).toBe(1);
+    const staleFreshIds = assessPostingFreshness(posted(), NOW).state === "WITHIN_WINDOW" ? [realId] : [];
+    expect(staleFreshIds).toEqual([]);
+    sqlite.query("UPDATE opportunities SET posted_at = NULL WHERE id = ?").run(realId);
+    expect(assessPostingFreshness(posted(), NOW).state).toBe("UNKNOWN");
+    expect(remoteIds()).toEqual([realId]);
+    expect(remoteMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, remoteIds(), remoteIds())).toBe(1);
+    const unknownFreshIds = assessPostingFreshness(posted(), NOW).state === "WITHIN_WINDOW" ? [realId] : [];
+    expect(unknownFreshIds).toEqual([]);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof freshMatchedManilaStillPublicCount).toBe("function");
+    const staleMatched = freshMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, remoteIds(), staleFreshIds);
+    expect(staleMatched).toBeNull();
+    expect(staleMatched).not.toBe(1);
+    expect(staleMatched).not.toBe(0);
+    const unknownMatched = freshMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, remoteIds(), unknownFreshIds);
+    expect(unknownMatched).toBeNull();
+    expect(unknownMatched).not.toBe(1);
+    expect(freshMatchedManilaStillPublicCount(snapshot!.stillPublicCount, paired, [realId], [realId])).toBe(1);
   } finally { sqlite.close(); }
 });

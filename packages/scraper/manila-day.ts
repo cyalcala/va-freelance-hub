@@ -246,3 +246,18 @@ export function remoteMatchedManilaStillPublicCount(
   if (!samePositiveIds(pair.stillPublicIds, remoteIds)) return null;
   return matched;
 }
+
+// A remote serving match stays absent when the original posting is outside the
+// inclusive 30-day window or unknown. This reader does not prefer the remote
+// length and is not a closed-day flow.
+export function freshMatchedManilaStillPublicCount(
+  stillPublicCount: number,
+  pair: ManilaSnapshotPair | null,
+  remoteIds: readonly number[],
+  freshIds: readonly number[],
+): number | null {
+  const matched = remoteMatchedManilaStillPublicCount(stillPublicCount, pair, remoteIds, remoteIds);
+  if (matched === null || !pair) return null;
+  if (!samePositiveIds(pair.stillPublicIds, freshIds)) return null;
+  return matched;
+}
