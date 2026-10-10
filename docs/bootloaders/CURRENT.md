@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive PH-matched still-public
+count on an OPEN snapshot is not a completed Manila-day flow. A caller-supplied
+CLOSED state does not create one. The writer does not call this reader. No
+migration was added. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`734c0d477761cae703de5454a97436a3e01f41ee`. Sole NEXT is
+PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_HAVE_DISTINCT_CANONICAL_URLS in
+the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a fresh remote still-public id that
 leaves the accepted PH eligibility pair stays absent. The writer does not call
 this reader. No migration was added. MATH remains 0/13 and certified daily flow
