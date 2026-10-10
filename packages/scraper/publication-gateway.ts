@@ -137,6 +137,9 @@ const INSERT_DIVERGENCE_SQL = `INSERT INTO source_publication_portfolio_divergen
 const INSERT_BOOK_TOTAL_SQL = `INSERT INTO source_publication_portfolio_book_total (
   source_id, tick_key, retry_key, ledger_book_total, serving_book_total, totals_differ, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+const INSERT_BOOK_MEMBERSHIP_SQL = `INSERT INTO source_publication_portfolio_book_membership (
+  source_id, tick_key, retry_key, ledger_sources_json, serving_sources_json, sets_differ, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?)`;
 const LOAD_FIRST_PUBLISH_SQL = `SELECT json_group_array(json_object('idsJson', published_ids_json, 'decidedAt', decided_at)) AS receipts
 FROM source_publication_ledger
 WHERE mode IN ('unlimited', 'capped') AND published_count > 0`;
@@ -532,6 +535,10 @@ async function reserveCanaryCapacity(
   }
 }
 
+function canonicalSourceIds(rows: readonly { sourceId: string }[]): string {
+  return JSON.stringify([...new Set(rows.map((row) => row.sourceId))].sort());
+}
+
 function parsePortfolioBook(raw: unknown): Array<{ sourceId: string; count: number }> | null {
   if (typeof raw !== "string" || raw.length === 0 || raw === "null") return null;
   let parsed: unknown;
@@ -623,6 +630,18 @@ async function recordPortfolioExposure(
         source.total,
         servingSource.total,
         source.total === servingSource.total ? 0 : 1,
+        request.now,
+      ).run();
+      const ledgerSources = canonicalSourceIds(book);
+      const servingSources = canonicalSourceIds(servingBook);
+      // Equal totals are not the same source set. The difference is recorded and does not block.
+      await db.prepare(INSERT_BOOK_MEMBERSHIP_SQL).bind(
+        request.sourceId,
+        request.tickKey,
+        request.retryKey,
+        ledgerSources,
+        servingSources,
+        ledgerSources === servingSources ? 0 : 1,
         request.now,
       ).run();
     }

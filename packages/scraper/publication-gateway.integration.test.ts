@@ -60,6 +60,7 @@ function freshDb(): Database {
     "0062_publication_manila_still_public.sql",
     "0063_publication_manila_open_snapshot.sql",
     "0064_publication_portfolio_book_total.sql",
+    "0065_publication_portfolio_book_membership.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1685,6 +1686,95 @@ test("a missing book-total table keeps publication and the status comparison", a
     expect(readServingMeasurement(sqlite, "totals-missing")).not.toBeNull();
     expect(readBookDivergence(sqlite, "totals-missing")).not.toBeNull();
     expect(readBookTotals(sqlite, "totals-missing")).toBeNull();
+  } finally { sqlite.close(); }
+});
+
+function readBookMembership(sqlite: Database, retryKey: string): { ledger_sources_json: string; serving_sources_json: string; sets_differ: number } | null {
+  try {
+    return sqlite.query(`SELECT ledger_sources_json, serving_sources_json, sets_differ
+      FROM source_publication_portfolio_book_membership WHERE retry_key = ?`).get(retryKey) as { ledger_sources_json: string; serving_sources_json: string; sets_differ: number } | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+function sourceSet(sqlite: Database, sql: string, params: unknown[] = []): string[] {
+  const rows = sqlite.query(sql).all(...params) as Array<{ source_id: string }>;
+  return rows.map((row) => row.source_id).sort();
+}
+
+test("equal totals and agreeing status do not prove the same source set", async () => {
+  const sqlite = freshDb();
+  try {
+    seedPublishedBook(sqlite, "we-work-remotely", 2, "membership-history");
+    writeOpportunity(sqlite, "membership-serving-a", "remotive");
+    writeOpportunity(sqlite, "membership-serving-b", "remotive");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remotive", now: NOW, tickKey: TICK, retryKey: "membership-differ", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "membership-serving-c", "remotive");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledgerSources = sourceSet(sqlite, `SELECT source_id FROM source_publication_ledger
+      WHERE mode IN ('unlimited', 'capped') AND published_count > 0 GROUP BY source_id`);
+    const servingSources = sourceSet(sqlite, `SELECT source_id FROM "opportunities"
+      WHERE is_active = 1 AND ph_eligibility IN (?, ?)
+        AND typeof(source_id) = 'text' AND length(source_id) > 0
+      GROUP BY source_id`, [...PUBLIC_PH_ELIGIBILITIES]);
+    expect(ledgerSources).toEqual(["remotive", "we-work-remotely"]);
+    expect(servingSources).toEqual(["remotive"]);
+    const totals = readBookTotals(sqlite, "membership-differ");
+    expect(totals).not.toBeNull();
+    expect(totals!.ledger_book_total).toBe(totals!.serving_book_total);
+    expect(totals!.totals_differ).toBe(0);
+    const divergence = readBookDivergence(sqlite, "membership-differ");
+    expect(divergence!.source_status_agrees).toBe(1);
+    expect(divergence!.family_status_agrees).toBe(1);
+    const membership = readBookMembership(sqlite, "membership-differ");
+    expect(membership).not.toBeNull();
+    expect(JSON.parse(membership!.ledger_sources_json)).toEqual(ledgerSources);
+    expect(JSON.parse(membership!.serving_sources_json)).toEqual(servingSources);
+    expect(membership!.sets_differ).toBe(1);
+  } finally { sqlite.close(); }
+});
+
+test("the same source set is recorded as not different", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "membership-same", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "membership-same", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const membership = readBookMembership(sqlite, "membership-same");
+    expect(membership).not.toBeNull();
+    expect(JSON.parse(membership!.ledger_sources_json)).toEqual(["we-work-remotely"]);
+    expect(JSON.parse(membership!.serving_sources_json)).toEqual(["we-work-remotely"]);
+    expect(membership!.sets_differ).toBe(0);
+  } finally { sqlite.close(); }
+});
+
+test("a missing membership table keeps publication and the book totals", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_portfolio_book_membership;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "membership-missing", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "membership-missing", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readBookTotals(sqlite, "membership-missing")).not.toBeNull();
+    expect(readBookDivergence(sqlite, "membership-missing")).not.toBeNull();
+    expect(readBookMembership(sqlite, "membership-missing")).toBeNull();
   } finally { sqlite.close(); }
 });
 
