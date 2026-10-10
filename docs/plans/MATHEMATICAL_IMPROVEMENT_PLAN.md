@@ -1257,6 +1257,18 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint. No source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded inactive same-source breach id stays absent
+
+[PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE_2026-10-10.md)
+advances a local measurement prerequisite only. A same-source breach whose
+recorded id leaves `is_active = 1` stays absent from `sameSourcePairManilaFamilyStatus`.
+The family status is null, not OK and not BREACH. Restoring `is_active = 1`
+restores the BREACH status. This is not card acceptance or a certified QUPD.
+Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The 735-entry
+directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_INACTIVE_IS_NOT_A_FLOW in the newest
+savepoint. No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded inactive same-source pair id stays absent
 
 [PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE_2026-10-10.md)

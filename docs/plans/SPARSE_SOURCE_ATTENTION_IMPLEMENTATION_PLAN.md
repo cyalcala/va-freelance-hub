@@ -869,6 +869,18 @@ daily flow remains UNKNOWN. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded inactive same-source breach id stays absent
+
+[PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_BREACH_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE_2026-10-10.md)
+is a publication-measurement prerequisite, not an SSAE card promotion. A
+same-source breach whose recorded id leaves `is_active = 1` stays absent from
+`sameSourcePairManilaFamilyStatus`. The family status is null, not OK and not
+BREACH. Restoring `is_active = 1` restores the BREACH status. The reader does not
+block the writer. No ranker, allocator, shadow canary, or neural routing change.
+Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. Sole NEXT is
+PUBLICATION_MANILA_DAY_SAME_SOURCE_INACTIVE_IS_NOT_A_FLOW in the newest
+savepoint.
+
 ## 2026-10-10 bounded inactive same-source pair id stays absent
 
 [PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE](../operations/PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_STILL_PUBLIC_IDS_MUST_STAY_ACTIVE_2026-10-10.md)
