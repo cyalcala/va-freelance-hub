@@ -1,5 +1,16 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a capped canary reserves its proposal
+before persistence. An overlapping writer cannot publish the same remaining
+tick cap. A persist failure keeps that hold against a different retry.
+Unlimited exact-six does not use the reservation. The 25% and 40% portfolio
+figures are not a per-write gate. Migration 0057 was not applied, and this
+gateway must not be deployed before it. No production publication, directory
+enrichment, or MATH card acceptance. MATH remains 0/13 and certified daily
+flow remains UNKNOWN. The 735-company directory stays on its existing holds.
+Behavior SHA `7732842eb032e88d8f6b2c8ed1d8b4ceb29ebc6b`. Sole NEXT is
+PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a sequential publication writer
 re-reads source policy before persistence. Opt-out, expiry, and an exhausted
 canary tick block that write. A still-canary source keeps its capped path.

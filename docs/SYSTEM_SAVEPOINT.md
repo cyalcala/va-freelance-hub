@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Canary ticks reserve capacity before the write
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_SHARED_RESERVATION for one canary tick.
+A capped proposal inserts a reservation before persistence. An overlapping
+writer that would exceed the cap is blocked and does not persist. A persist
+failure keeps that hold for a different retry. Unlimited exact-six does not
+use the reservation. The 25% and 40% portfolio figures are not a per-write
+gate. Migration 0057 adds no `julianday('now')` and was not applied. Do not
+deploy this gateway before that migration: a missing table fails closed for
+capped writers.
+[Evidence](operations/PUBLICATION_SHARED_RESERVATION_2026-10-10.md).
+Behavior SHA `7732842eb032e88d8f6b2c8ed1d8b4ceb29ebc6b` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged.
+
+**One NEXT: PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING.** Keep source and
+provider-family exposure as measurements. Do not turn 25% or 40% into a
+per-write block. Do not grant a source, change cadence, add a clock, or treat
+unknown dates, null workplace, or the 735-company directory as this unit.
+
 ## 2026-10-10 Manila — Sequential source-policy re-read blocks a stale write
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

@@ -766,6 +766,17 @@ flow remains UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_SHARED_RESERVATION in the newest savepoint. No source grant,
 parameter, budget, or clock change.
 
+## 2026-10-10 bounded canary reservation
+
+[PUBLICATION_SHARED_RESERVATION](../operations/PUBLICATION_SHARED_RESERVATION_2026-10-10.md)
+advances a MATH-06 local writer prerequisite only. One canary tick reserves a
+proposal before persistence, and an overlapping writer cannot pass that cap.
+This is not card acceptance, a portfolio share gate, or a QUPD measurement.
+Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
+735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING in the newest savepoint. No source
+grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)

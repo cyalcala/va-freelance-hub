@@ -406,6 +406,15 @@ re-reads policy before persistence. No ranker, allocator, shadow canary, or
 neural routing change. Accepted MATH remains 0/13. Certified daily flow remains
 UNKNOWN. Sole NEXT is PUBLICATION_SHARED_RESERVATION in the newest savepoint.
 
+## 2026-10-10 bounded canary reservation
+
+[PUBLICATION_SHARED_RESERVATION](../operations/PUBLICATION_SHARED_RESERVATION_2026-10-10.md)
+is a publication-control prerequisite, not an SSAE card promotion. A canary
+tick reserves capacity before persistence. No ranker, allocator, shadow
+canary, or neural routing change. Accepted MATH remains 0/13. Certified daily
+flow remains UNKNOWN. Sole NEXT is PUBLICATION_PORTFOLIO_EXPOSURE_ACCOUNTING
+in the newest savepoint.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
