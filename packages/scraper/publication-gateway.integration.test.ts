@@ -4381,3 +4381,63 @@ test("a same-source pair is not a completed Manila-day flow", async () => {
     expect(sameSourcePairManilaDayFlowCount(open!.day_state, breachStatus, 5)).toBeNull();
   } finally { sqlite.close(); }
 });
+
+test("a same-source breach is a family breach", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "same-source-breach", proposedCount: 5,
+      persist: async () => {
+        const ids = Array.from({ length: 5 }, (_, index) => writeOpportunity(sqlite, `same-source-breach-${index}`, "we-work-remotely")[0]!);
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 5, replayed: false });
+    const publishedIds = result.ok ? [...result.ids].sort((left, right) => left - right) : [];
+    expect(publishedIds).toHaveLength(5);
+    const open = readManilaOpenSnapshot(sqlite, "same-source-breach");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(open!.still_public_count).toBe(5);
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const today = manilaDateOf(NOW);
+    const loaded = loadSnapshotPair(sqlite);
+    const {
+      latestManilaSnapshotPair,
+      remoteMatchedManilaPortfolioStatus,
+      sameSourcePairManilaFamilyStatus,
+    } = await import("./manila-day");
+    const paired = latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect([...paired!.stillPublicIds].sort((left, right) => left - right)).toEqual(publishedIds);
+    const breachSources = ["jobicy:admin", "jobicy:admin", "jobicy:admin", "remotive", "remote-ok"];
+    for (const [index, id] of publishedIds.entries()) {
+      sqlite.query("UPDATE opportunities SET source_id = ? WHERE id = ?").run(breachSources[index], id);
+    }
+    const recorded = publishedIds.map((id) => {
+      const row = sqlite.query("SELECT source_id AS sourceId FROM opportunities WHERE id = ?").get(id) as { sourceId: string };
+      return { id, sourceId: row.sourceId };
+    });
+    const breachBook = [
+      { sourceId: "jobicy:admin", count: 3 },
+      { sourceId: "remotive", count: 1 },
+      { sourceId: "remote-ok", count: 1 },
+    ];
+    const sourceMath = concentrationReport(breachBook.map((row) => ({ id: row.sourceId, count: row.count })), TOP_SOURCE_SHARE_MAX);
+    expect(sourceMath.topId).toBe("jobicy:admin");
+    expect(sourceMath.topShare).toBe(0.6);
+    expect(sourceMath.status).toBe("BREACH");
+    const familyMath = concentrationReport(familyShares(breachBook), TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(familyMath.topId).toBe("jobicy");
+    expect(familyMath.topShare).toBe(0.6);
+    expect(familyMath.status).toBe("BREACH");
+    const sourceStatus = remoteMatchedManilaPortfolioStatus(5, breachBook);
+    expect(sourceStatus).toBe("BREACH");
+    const status = sameSourcePairManilaFamilyStatus(5, paired!.stillPublicIds, recorded, breachBook);
+    expect(status).toBe("BREACH");
+    expect(status).not.toBe("OK");
+    expect(status).toBe(sourceStatus);
+    expect(sameSourcePairManilaFamilyStatus(5, paired!.stillPublicIds, recorded, [{ sourceId: "jobicy:admin", count: 2 }, { sourceId: "remotive", count: 1 }, { sourceId: "remote-ok", count: 1 }])).toBeNull();
+  } finally { sqlite.close(); }
+});
+
