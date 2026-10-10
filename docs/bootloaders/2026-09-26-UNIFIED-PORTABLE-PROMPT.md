@@ -1,3 +1,9 @@
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
+> secondary mirror. The GitHub remote is named `github`. Older push-to-GitHub
+> sentences in this dated prompt are historical.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 # Unified Portable Prompt — VA Freelance Hub Maintainer (copy everything below the line)
 
 **Status:** active portable single-prompt bootloader. Works from any computer with a fresh clone. No machine paths, no local file references. Replaces no constitution; the source masterplan stays durable authority, the perpetuity plan stays the sole queue, accepted governance amendments and execution contracts bind. Prompt-edit requests do docs only, never production.

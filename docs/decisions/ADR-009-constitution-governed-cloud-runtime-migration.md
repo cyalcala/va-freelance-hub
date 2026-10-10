@@ -3,10 +3,18 @@
 ## Status
 Accepted (Governed under Master Operating Constitution v3.0, Unit GCP-01)
 
+## 2026-10-10 Git remote
+
+Secure Source Manager is the canonical Git repository. Local remote `origin`,
+instance `va-freelance-hub`, region `asia-northeast1`. GitLab is the secondary
+mirror. The GitHub remote is named `github`. This note does not change the
+runtime-migration decision below.
+[Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## October 4 canonical reconciliation
 
 The [latest complete owner resource](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
-clarifies GitHub source control/code/provenance and GCP primary background
+records the 2026-10-04 GitHub source-control/code/provenance split and GCP primary background
 execution, with Turso acquisition and Cloudflare/D1 serving retained. GitHub
 Actions must not be a required production clock or freshness dependency.
 The [current architecture](../architecture/CURRENT_STATE.md) and [bounded live audit](../architecture/GCP_MIGRATION_RECONCILIATION_2026-10-04.md)

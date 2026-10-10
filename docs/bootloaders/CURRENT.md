@@ -296,11 +296,15 @@ c835d875ee5263fc264d7bb2fe27bebdcdcacf67 is verified in draft PR #166;
 CI run 37164707420 passed, production deployment skipped.
 Earlier v6.3 receipts remain historical.
 
-Canonical platform: GitHub source control/governance/memory; GCP background
-scheduling/compute; Turso acquisition memory; Cloudflare D1 serving mart;
-Cloudflare frontend/edge/API. GitHub Actions must not be a required production
-clock. The [current architectural map](../architecture/CURRENT_STATE.md) separates
-this ownership from dated deployed evidence. The [October 4 live reconciliation](../architecture/GCP_MIGRATION_RECONCILIATION_2026-10-04.md)
+Canonical platform as of 2026-10-10: Secure Source Manager holds source
+control, governance and memory (`origin`, instance `va-freelance-hub`,
+`asia-northeast1`). GitLab is the secondary mirror. The GitHub remote is
+named `github`. GCP remains background scheduling/compute; Turso remains
+acquisition memory; Cloudflare D1 remains the serving mart; Cloudflare remains
+the frontend/edge/API. GitHub Actions must not be a required production clock.
+The paragraph above that names GitLab as the authenticated continuity remote
+is dated 2026-10-09 evidence. The [current architectural map](../architecture/CURRENT_STATE.md)
+separates this ownership from dated deployed evidence. The [October 4 live reconciliation](../architecture/GCP_MIGRATION_RECONCILIATION_2026-10-04.md)
 verified two GCP hourly jobs and found residual GitHub runtime; complete background
 cutover and exact Git-to-running-image mapping are not demonstrated. Refresh facts.
 

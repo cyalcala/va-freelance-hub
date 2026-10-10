@@ -1,5 +1,10 @@
 # Dependency Exceptions and Reporting Policy
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the dependency-exception policy.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 Date: 2026-08-15
 Owner: Cyrus Alcala
 Status: Accepted — tracks path-verified dependency exceptions from `bun audit --production`.

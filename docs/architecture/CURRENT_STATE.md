@@ -1,6 +1,6 @@
 # VA Freelance Hub — current architectural ownership and evidence
 
-**Version:** 1.2 · 2026-10-04. **Purpose:** canonical ownership, current evidence
+**Version:** 1.3 · 2026-10-10. **Purpose:** canonical ownership, current evidence
 pointers and unresolved migration facts. This map does not dispatch runtime work.
 The [October 4 owner resource](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
 clarifies source control versus execution. The [October 1 topology snapshot](CURRENT_STATE_2026-10-01_SNAPSHOT.md)
@@ -10,8 +10,12 @@ Read the newest savepoint and verify deployed versions before acting.
 ## Canonical operating model
 
 ```text
-GitHub: code/tests/infra, version history, review, governance, evidence/recovery
+Secure Source Manager: canonical Git remote and durable engineering memory
+  code/tests/infra, version history, review, governance, evidence/recovery
+  instance va-freelance-hub, region asia-northeast1, local remote name origin
   -> reproducible committed build/config with immutable deployment provenance
+GitLab: secondary mirror, not the canonical repository
+GitHub: local remote name github; residual Actions clocks are not Git authority
 GCP: Cloud Scheduler -> Cloud Run jobs/controllers/background compute
   -> Turso: permitted acquisition, source/intake memory, qualified candidates
   -> source/item policy + current publication gateway/ledger
@@ -19,7 +23,7 @@ GCP: Cloud Scheduler -> Cloud Run jobs/controllers/background compute
   -> Cloudflare: Astro public frontend/edge/API -> observed eligible visibility
 ```
 
-GitHub stores code; it does not supply the required production clock. CI/release
+Secure Source Manager stores the canonical code history. It does not supply the required production clock. GitLab is the secondary mirror. CI/release
 verification is separate from production scheduling. GCP migration does not imply
 moving Turso, D1 or the public frontend. Retained edge/API execution is an explicit
 dependency, not an architecture contradiction. Every collection/publication still
@@ -40,7 +44,9 @@ It covers one project/region and sampled workflows, not the entire fleet.
 | gha-lake-miner | CURRENT residual background runtime | Active recent scheduled GitHub execution; GCP runner/definition alone is not migration acceptance |
 | gha-directory-pulse / gha-hunter-pulse | CURRENT residual runtime | Active recent scheduled GitHub executions; replacement/retirement ownership unresolved |
 | GitHub project validation | CI-ONLY as runtime role | Tests/build/type checks validate inspected source; not GCP health or production publication |
-| GitHub docs/ADRs/prompts/history | DOCUMENTATION-ONLY / source control | Durable memory and versioned code/config provenance |
+| Secure Source Manager repository | CURRENT canonical Git remote | Instance `va-freelance-hub` in `asia-northeast1`; receipt `../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md` |
+| GitLab mirror | SECONDARY fallback | Not the canonical repository. Older GitLab readbacks remain dated evidence |
+| GitHub docs/ADRs/prompts/history | RETAINED remote `github` / not canonical Git | Residual Actions clocks stay classified below. Do not push canonical history there |
 | GCP miner / other migrated controllers | UNKNOWN outside inspected scope | No miner job/scheduler in inspected region; don't infer none elsewhere |
 | Exact Git SHA -> running image/config | UNKNOWN | Artifact images/tags exist; immutable source-to-execution mapping not recovered |
 | Historical Trigger/Vercel/Next application paths | LEGACY unless new evidence | Preserve artifacts; don't revive old clocks merely for familiarity |
@@ -55,7 +61,7 @@ before bounded replacement/retirement. No uncontrolled duplicate publication clo
 ## Runtime provenance and durability
 
 All meaningful code/tests/infrastructure/config/doc changes enter Git history and
-GitHub backup. Every deployed GCP revision maps to Git SHA or a reproducible artifact
+the Secure Source Manager remote `origin`. Every deployed GCP revision maps to Git SHA or a reproducible artifact
 with Git-backed definition, immutable image digest, job/config version, deployment
 time, scheduler/policy/parameter version, execution IDs, checks and rollback.
 Mutable latest is not proof of current Git deployment. Detect drift and reconcile

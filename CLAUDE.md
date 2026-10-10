@@ -21,9 +21,17 @@ Current active architecture:
 - Astro app in `apps/web`
 - Cloudflare Pages hosting
 - Cloudflare D1 database
-- GitHub Actions pulse workflows
 - TypeScript scraper code in `packages/scraper`
-- GitHub commits, pushes, docs, and workflow runs as the recovery trail
+- Canonical Git and recovery history: Google Cloud Secure Source Manager
+  (`origin`, instance `va-freelance-hub`, region `asia-northeast1`)
+- GitLab: secondary mirror, not the canonical repository
+- GitHub: local remote `github` only. Residual GitHub Actions clocks may still
+  exist; they are not the canonical history and not a required production clock
+
+The 2026-10-10 receipt is
+`docs/operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md`. Older notes
+that say GitHub is the durable source repository describe the state before
+that migration.
 
 Do not assume the older Next.js, Vercel, Turso, Trigger.dev, or Zig-parser plan
 is the active production path unless a newer accepted decision explicitly says

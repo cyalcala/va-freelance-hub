@@ -1,5 +1,10 @@
 # ADR-005: Preserve the Cloudflare Pages Compatibility Line Until a Workers Migration Is Approved
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the hosting decision.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Status
 
 Accepted as the 2026-08-10 hardening pause decision. Revisit only through an

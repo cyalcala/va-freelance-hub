@@ -99,6 +99,12 @@ active_lease:
 ## 3. PREFLIGHT & LIVE CODE ANCHOR VERIFICATION (C19)
 
 ### 3.1 Preflight Command Sequence
+
+`origin` is Google Cloud Secure Source Manager, instance `va-freelance-hub`
+in `asia-northeast1`. GitLab is the secondary mirror. The GitHub remote is
+named `github`. `git rev-parse origin/main` reads the Secure Source Manager
+`main` tip.
+
 Execute portable git and runtime commands:
 ```bash
 git status -sb

@@ -1,5 +1,10 @@
 # Planning Decision: Constitutional Active Source Leak Repair & Title Geo-Gate Precision (2026-09-25)
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the 2026-09-25 planning decision.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Context & Problem
 Following the constitutional promotion of mature shadow sources (`greenhouse:ghost`, `greenhouse:nearform`, `breezy:time-etc`) to canary in remote production D1, immediate verification of live ingestion ticks revealed two critical structural leaks:
 

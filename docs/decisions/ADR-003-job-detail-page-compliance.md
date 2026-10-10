@@ -1,5 +1,10 @@
 # ADR-003: Job Detail Page Content & Compliance Policy
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the compliance decision.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Status
 
 Accepted — 2026-08-02

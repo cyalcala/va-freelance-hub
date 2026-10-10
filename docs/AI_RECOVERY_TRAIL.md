@@ -1,5 +1,15 @@
 # AI Recovery Trail
 
+## 2026-10-10 — Canonical Git history moved to Secure Source Manager
+
+Full local history was pushed to Google Cloud Secure Source Manager and
+verified: 155 branches, 45 tags, 2702 commits, then the receipt commit
+`46bc67fc38a3abe5249ee74ad1bcb5f334c8b55d` on
+`codex/verified-flow-directory-checkpoint`. Local `origin` is that remote.
+GitLab is the secondary mirror. The previous `origin` was renamed `github`
+and was not probed. Production jobs, Turso, D1, and Cloudflare were unchanged.
+[Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## 2026-10-08 — Owner removes public snapshot strip and refines talent mark
 
 Fetched origin/main and branched from `93c2e1e4f0da8f82c0f143ed76ccd9904eebb286`,

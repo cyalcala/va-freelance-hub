@@ -1,3 +1,9 @@
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
+> secondary mirror. The GitHub remote is named `github`. Older push-to-GitHub
+> sentences in this dated bootloader are historical.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 # Lake Maintainer Bootloader — Turso Lake → D1 → 100–150 Jobs/Day
 
 **Created:** 2026-09-26. **Start SHA:** `511dd52` (main == origin/main, clean).

@@ -1,5 +1,14 @@
 # Handoff
 
+## 2026-10-10 — Secure Source Manager is the canonical Git remote
+
+Push and recovery for this repository go to `origin`, which is Google Cloud
+Secure Source Manager in `asia-northeast1` (instance and repository
+`va-freelance-hub`). GitLab remains the secondary mirror. The GitHub remote
+is named `github`. Older handoffs below that say a change was backed up on
+GitHub record that day's remote, not the current canonical repository.
+[Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## 2026-10-08 — Talent mark/internal diagnostics refinement (current handoff)
 
 Continue `codex/filipino-talent-pulse` in the attached premium-2026-design worktree,

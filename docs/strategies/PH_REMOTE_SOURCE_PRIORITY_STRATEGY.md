@@ -1,5 +1,9 @@
 # PH Remote Source Priority Expansion
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 **Date:** 2026-10-03. **Status:** documented priority overlay; runtime integration unverified.
 **Epoch:** `ph_remote_priority:2026-10-03`.
 **Source:** [complete owner-supplied directive](../directives/2026-10-03-PH-REMOTE-SOURCE-PRIORITY-EXPANSION.md), all 32 sections preserved verbatim.

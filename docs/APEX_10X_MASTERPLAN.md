@@ -1,3 +1,8 @@
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. Older push-to-GitHub sentences in this masterplan are dated.
+> [Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 # APEX-10X Master Strategy & Autonomous Governance Masterplan
 
 ## 0. Executive Mission & Prime Directive

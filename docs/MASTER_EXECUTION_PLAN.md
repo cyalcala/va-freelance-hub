@@ -1,5 +1,11 @@
 # Master Execution Plan — Karpathy-First Competence Gauntlet
 
+**Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+(`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
+secondary mirror. The GitHub remote is named `github`. Older backup
+instructions in this plan are dated.
+[Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 **Planning checkpoint:** 2026-08-22
 
 **Repository:** `cyalcala/va-freelance-hub`

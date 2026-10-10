@@ -1,5 +1,16 @@
 # Implementation Status
 
+## 2026-10-10 — Canonical Git remote is Secure Source Manager
+
+Google Cloud Secure Source Manager holds the repository history. Local remote
+`origin`, instance `va-freelance-hub`, region `asia-northeast1`, repository
+`va-freelance-hub`. Verified branch
+`codex/verified-flow-directory-checkpoint` at
+`46bc67fc38a3abe5249ee74ad1bcb5f334c8b55d`. GitLab is the secondary mirror.
+The GitHub remote is named `github`. Production runtime, Turso, D1, and
+Cloudflare were not changed by the migration.
+[Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## 2026-10-08 — Talent mark/internal diagnostics refinement active
 
 Three of five frontend checkpoints complete. Owner-directed orange pulse and

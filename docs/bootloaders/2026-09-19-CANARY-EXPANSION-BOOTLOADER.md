@@ -1,3 +1,9 @@
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
+> secondary mirror. The GitHub remote is named `github`. Older push-to-GitHub
+> sentences in this dated bootloader are historical.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 # VA FREELANCE HUB — CANARY EXPANSION & CAPACITY BOOTLOADER
 
 **Authoring Timestamp**: 2026-09-19T09:55:00+08:00  

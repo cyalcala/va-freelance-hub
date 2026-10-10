@@ -1,6 +1,11 @@
 # VA FREELANCE HUB
 # AUTONOMOUS WORLDWIDE SOURCE UNIVERSE + GOOGLE CLOUD MINING MASTER PROMPT
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
+> secondary mirror. The GitHub remote is named `github`.
+> [Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Version: Global Miner / GCP Automation Overlay
 ## Mode: Autonomous Marathon
 ## Repository: `cyalcala/va-freelance-hub`

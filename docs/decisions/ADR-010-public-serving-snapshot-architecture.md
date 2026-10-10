@@ -1,5 +1,10 @@
 # ADR-010: Public Serving Snapshot Architecture
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the snapshot decision.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Status
 Accepted. Production correction recorded 2026-10-07.
 

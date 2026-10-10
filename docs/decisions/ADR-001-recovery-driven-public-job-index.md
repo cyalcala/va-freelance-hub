@@ -1,5 +1,11 @@
 # ADR-001: Adopt Recovery-Driven Public Job Index Methodology
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. Decision item 1 below named GitHub on 2026-06-06. Recovery pushes
+> now go to Secure Source Manager. This note does not change the rest of the
+> methodology. [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Status
 
 Accepted

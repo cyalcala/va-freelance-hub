@@ -1,5 +1,10 @@
 # ADR-006: Adopt Evidence-Tiered Controlled Source Replenishment
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the replenishment decision below.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Status
 
 Accepted; routine-admission governance amended by

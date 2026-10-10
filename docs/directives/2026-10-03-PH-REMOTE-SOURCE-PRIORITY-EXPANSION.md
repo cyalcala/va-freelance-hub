@@ -1,5 +1,10 @@
 # VA FREELANCE HUB — PH REMOTE SOURCE PRIORITY EXPANSION
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not activate any command in the directive below.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 **Mode:** Autonomous execution  
 **Priority:** HIGH  
 **Date:** 2026-10-03  

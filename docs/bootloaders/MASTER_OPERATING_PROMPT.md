@@ -294,16 +294,21 @@ without a deliverable.
 
 ## 7. Architectural ownership
 
-The canonical separation is **GitHub stores and remembers; GCP schedules and
+The canonical separation is **Secure Source Manager stores and remembers; GCP schedules and
 executes background work; Turso retains acquisition memory; Cloudflare D1 and
-Cloudflare serve the public website**. Source code stored in GitHub is not code
-executing in GitHub. The [October 4 owner directive](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
-clarifies that GitHub remains source control, backup, review and recovery history.
-Do not move the frontend or database merely from the phrase "GCP migration."
+Cloudflare serve the public website**. Source code stored in Git is not code
+executing in GCP. On 2026-10-10 the owner made Secure Source Manager the
+canonical Git remote: local name `origin`, instance `va-freelance-hub`, region
+`asia-northeast1`. GitLab is the secondary mirror. The GitHub remote is named
+`github`. The [October 4 owner directive](../directives/2026-10-04-PH-VA-FRESHNESS-GCP-CANONICAL-UPGRADE.md)
+is dated on the GitHub-as-repository point; the [SSM receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md)
+supersedes that remote. Do not move the frontend or database merely from the phrase "GCP migration."
 
 | Responsibility | Canonical boundary |
 | --- | --- |
-| GitHub | Source code, tests, infrastructure/deployment definitions, parameters, ADRs, prompts, plans, savepoints, non-secret evidence, reviews and durable version history |
+| Secure Source Manager | Canonical Git history: source code, tests, infrastructure/deployment definitions, parameters, ADRs, prompts, plans, savepoints, non-secret evidence, reviews and durable version history |
+| GitLab | Secondary mirror and fallback. Not the canonical repository |
+| GitHub | Local remote `github`. Residual Actions clocks and historical CI. Not the canonical Git history |
 | GCP | Production background orchestration, Cloud Scheduler/Cloud Run jobs/controllers, miners, reconciliation, publication batches, appropriate analytics and runtime logs |
 | Turso | Acquisition lake, candidate reservoir, observations, source/intake memory and replay/refinement state |
 | Cloudflare D1 | Governed public serving mart and publication/control records |
@@ -586,10 +591,10 @@ After all 13 are accepted, validate their interactions and maintain drift checks
 recovery drills and source resilience. Supply targets and autonomous cutover still
 require their own evidence; 13/13 is not a guarantee of perpetual daily supply.
 
-Verify current GCP scheduling and execution receipts; GitHub retains source
-control/history and must not be the required production clock. Classify retained
-edge/GitHub fallbacks from evidence rather than dismiss them as historical. Do not infer clocks
-from a plan. Trigger.dev assets remain historical/future work unless a separate
+Verify current GCP scheduling and execution receipts. Secure Source Manager
+holds source control and history. GitHub Actions must not be the required
+production clock. Classify retained edge and residual GitHub Actions clocks
+from evidence. Do not infer clocks from a plan. Trigger.dev assets remain historical/future work unless a separate
 accepted architecture decision and runtime evidence show otherwise.
 
 ## 10B. SSAE-CED: sparse source attention and reusable processing
@@ -826,8 +831,8 @@ retain all current dependency, expiry, opt-out and withdrawal rules.
 HOT 15–30 minutes, WARM approximately hourly, COOL 3–6 hours, COLD daily/adaptive
 and DORMANT recovery are conceptual starting classes, not deployed cadences.
 Measure change, unique PH yield, overlap, reliability and cost before promotion
-or reduction. Preserve existing GCP execution, Turso dynamic state, GitHub
-code/governance memory and Cloudflare serving. An hourly publisher cannot alone
+or reduction. Preserve existing GCP execution, Turso dynamic state, Secure
+Source Manager code and governance memory, and Cloudflare serving. An hourly publisher cannot alone
 prove approximately 15-minute public freshness; measure queue/publisher latency
 and resolve that constraint through the existing engineering process.
 
@@ -1065,11 +1070,12 @@ Retain all 15 PH fields, 108-label steady-state coverage, complete Manila-day fr
 first-publication flow, 100/day floor and 150/day stretch. Raw throughput/stock,
 backlog imports, duplicate reactivations and replays are separate outcomes.
 
-### GitHub durability and GCP deployment provenance
+### Secure Source Manager durability and GCP deployment provenance
 
 All meaningful task-owned code, tests, infrastructure/config, decisions and evidence
-enter Git history and durable GitHub backup. GitHub is source control and memory,
-not the operational clock. Keep GCP execution artifacts/state backed up by actual
+enter Git history and the Secure Source Manager remote `origin`. That remote is
+source control and memory, not the operational clock. GitLab stays the secondary
+mirror. Keep GCP execution artifacts/state backed up by actual
 supported mechanisms; a Git push is not a database backup or restoration drill.
 
 For every coherent bounded slice: preserve foreign work -> relevant checks ->

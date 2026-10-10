@@ -9,7 +9,8 @@ Certified fresh flow **UNKNOWN**. This slice published nothing in production and
 enriched no company.
 
 **Completed locally:** the full Git history is on Secure Source Manager and that
-remote is `origin`. Instance `va-freelance-hub`, region `asia-northeast1`,
+remote is `origin`. Live recovery docs, bootloaders, ADRs, and the archived
+gauntlet mandate name that remote. Instance `va-freelance-hub`, region `asia-northeast1`,
 repository `va-freelance-hub`. Verified branch
 `codex/verified-flow-directory-checkpoint` at
 `073f4a5462cf7e04730aa5e5e1c8562b242bf3f9`: 155 heads, 45 tags, 2702 commits,

@@ -1,3 +1,8 @@
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the two-speed governance decision.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 > **2026-09-08 audit correction:** Historical branch narrative below is not current production evidence. See `docs/gauntlet/evidence/APEX-AUDIT-2026-09-08/AUDIT.md` and `docs/benchmarks/APEX_10X_BASELINE_2026-09-08.md`. Only three sources are in live shadow; additional allowlist entries are not admissions. Risk tiers are advisory; seven-day server policy remains enforced. Numeric estimates and exact-zero billing claims are unverified.
 
 # ADR-008: Two-Speed Risk-Proportional Source Governance

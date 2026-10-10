@@ -1,5 +1,10 @@
 # Planning Decision: Reconcile Expansion Ledgers and Authorize Unclear Supply Recovery
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the 2026-09-25 planning decision.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 **Decision Date:** 2026-09-25  
 **Auditor / Architect:** Antigravity / Codex  
 **Status:** ACCEPTED (Planning Contract)  

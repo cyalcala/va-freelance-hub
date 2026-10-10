@@ -3,7 +3,8 @@
 VA Freelance Hub is a public job index and portfolio project for Filipino
 freelancers. It collects allowed public remote and VA-friendly opportunities,
 keeps a VA-friendly company directory, and demonstrates a recovery-driven
-agentic engineering loop with GitHub-backed evidence.
+agentic engineering loop. Canonical Git history is on Google Cloud Secure
+Source Manager. GitLab is the secondary mirror.
 
 Live site: [remotejobs-ph.pages.dev](https://remotejobs-ph.pages.dev)
 
@@ -14,11 +15,13 @@ Live site: [remotejobs-ph.pages.dev](https://remotejobs-ph.pages.dev)
 - Hosting: Cloudflare Pages
 - Database: Cloudflare D1
 - Primary ingestion clock: Cloudflare Worker every 10 minutes
-- Scheduled maintenance: GitHub Actions pulse workflows
+- Scheduled maintenance: residual GitHub Actions pulse workflows. They are not the canonical Git remote.
 - Ingestion API: Astro API routes under `apps/web/src/pages/api`
 - Collection and triage: TypeScript packages under `packages/scraper`, with a
   Gemini -> Groq -> Cloudflare reserve cascade where configured
-- Backup and recovery: Git commits, workflow run evidence, and recovery docs
+- Backup and recovery: Git commits on Secure Source Manager (`origin`),
+  GitLab as the secondary mirror, workflow run evidence, and recovery docs.
+  The GitHub remote is named `github` and is not the canonical repository.
 
 Older Next.js, Vercel, Turso, Trigger.dev, and parser experiments remain in the
 repo as historical backup paths. They are not the current production path.

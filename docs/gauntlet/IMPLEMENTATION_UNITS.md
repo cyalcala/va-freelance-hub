@@ -1,5 +1,10 @@
 # Portable Implementation Unit Contracts
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. The G5 "GitHub backup" row below is historical gauntlet language.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 Status: **TERMINAL HISTORICAL LEDGER — all 24 Gauntlet units are accepted and
 must not be reopened by this document**
 

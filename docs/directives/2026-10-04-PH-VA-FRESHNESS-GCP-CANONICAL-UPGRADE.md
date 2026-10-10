@@ -1,5 +1,11 @@
 # VA FREELANCE HUB — SOL 6.1 CANONICAL MASTER-PROMPT + BOOTLOADER UPGRADE
 
+> **2026-10-10:** Sentences below that name GitHub as the durable Git repository
+> describe this directive's date. Secure Source Manager is now the canonical
+> Git remote (`origin`, instance `va-freelance-hub`, `asia-northeast1`).
+> GitLab is the secondary mirror. The GitHub remote is named `github`.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## IDENTITY
 
 You are **GPT Sol 6.1** acting as:

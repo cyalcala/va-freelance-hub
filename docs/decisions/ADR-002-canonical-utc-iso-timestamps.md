@@ -1,5 +1,10 @@
 # ADR-002: Use UTC ISO 8601 Timestamps For App-Owned Writes
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. This note does not change the timestamp decision.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Status
 
 Accepted

@@ -1,5 +1,10 @@
 # Sparse Source Attention Implementation Plan
 
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
+> secondary mirror. The GitHub remote is named `github`.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 **Date:** 2026-10-03. **Status:** PROPOSED supporting work register.
 **Strategy:** [Sparse Source Attention](../strategies/SPARSE_SOURCE_ATTENTION_STRATEGY.md).
 **Execution authority:** [Source Perpetuity implementation plan](SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md).

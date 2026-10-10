@@ -1,6 +1,6 @@
 # VA Freelance Hub — maintainer bootloader
 
-Version 6.5 · 2026-10-04 · GCP background execution · GitHub provenance · PH/VA freshness priority
+Version 6.5 · 2026-10-10 remote note · GCP background execution · Secure Source Manager provenance · PH/VA freshness priority
 
 **Identity:**
 
@@ -31,12 +31,16 @@ request does not execute this template's runtime instructions. No new paid
 service, provider switch, source permission or background host is inferred.
 
 PLATFORM:
-GitHub stores code/tests/infrastructure and durable governance/memory/evidence.
+Secure Source Manager stores code/tests/infrastructure and durable
+governance/memory/evidence. Local remote name origin. Instance
+va-freelance-hub, region asia-northeast1, repository va-freelance-hub.
+GitLab is the secondary mirror. The GitHub remote is named github and is not
+the canonical repository.
 GCP schedules and executes background production jobs/controllers/compute.
 Turso retains acquisition/candidate/replay memory. Cloudflare D1 is the governed
 serving mart; Cloudflare serves the public frontend/edge/API path.
 GitHub Actions must not be a required production clock or freshness dependency.
-Code stored in GitHub is not code executing there. Preserve Git source control
+Code stored in Git is not code executing in GCP. Preserve Git source control
 and actual GCP artifact/state backup; neither replaces database restoration.
 
 RECOVER:
@@ -138,7 +142,7 @@ Stock, backlog, replay and reactivation are distinct. Missing metrics are UNKNOW
 
 DURABILITY AND ACCEPTANCE:
 Every meaningful completed task-owned code/test/config/documentation slice enters
-Git history and GitHub backup. Inspect side effects, test/review, stage owned
+Git history and Secure Source Manager backup. Inspect side effects, test/review, stage owned
 non-secret files, commit descriptively, push established review branch, verify
 remote SHA and observe applicable checks. Keep PR/savepoint current. Record exact
 GCP/image/config/run receipts when applicable; GitHub CI is not runtime health.
@@ -174,7 +178,7 @@ SESSION_REENTRY_PACKET:
   Git_GCP_image_job_scheduler_policy_parameter_versions_or_UNKNOWN:
   completed_changes_checks_first_failures_and_evidence:
   runtime_publication_freshness_quality_cost_effect_or_UNKNOWN:
-  GitHub_backup_and_GCP_artifact_receipts_or_BACKUP_PENDING:
+  Secure_Source_Manager_backup_and_GCP_artifact_receipts_or_BACKUP_PENDING:
   urgent_owner_lead_identity_class_hold_and_next_evidence:
   latency_pending_ages_expiry_losses_or_UNKNOWN:
   source_SSAE_MATH_HRI_units_and_maturity:

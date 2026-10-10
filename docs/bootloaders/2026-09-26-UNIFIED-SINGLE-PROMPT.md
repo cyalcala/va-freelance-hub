@@ -1,3 +1,9 @@
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`, instance `va-freelance-hub`, `asia-northeast1`). GitLab is the
+> secondary mirror. The GitHub remote is named `github`. Older push-to-GitHub
+> sentences in this dated prompt are historical.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 # Unified Single Prompt — VA Freelance Hub Maintainer (copy everything below the line)
 
 **File:** `docs/bootloaders/2026-09-26-UNIFIED-SINGLE-PROMPT.md` | **Start SHA:** `1608d59` | **Status:** active single-prompt bootloader. Fuses strategy-fused §§1–12 + lake maintainer + datalake777 audits. Replaces no constitution: masterplan stays durable authority, implementation plan stays sole queue, ADR-006/007 + G1–G9 bind. Prompt-edit requests do docs only, never production.

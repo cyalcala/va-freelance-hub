@@ -1,9 +1,19 @@
 # Source-control fallback and recovery contract — 2026-10-09
 
+## 2026-10-10 supersession
+
+Secure Source Manager is now the canonical Git remote. Local name `origin`,
+instance `va-freelance-hub`, region `asia-northeast1`. GitLab remains the
+secondary mirror described below. The GitHub remote was renamed from `origin`
+to `github`. The body of this contract is the 2026-10-09 decision and is not
+rewritten.
+[Receipt](SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Decision and current status
 
-The owner authorized GitLab as an independent source-control fallback. Retain
-GitHub `origin`; the credential-free `gitlab` remote is configured as
+The owner authorized GitLab as an independent source-control fallback. At the
+time of this contract, retain GitHub `origin`; the credential-free `gitlab`
+remote is configured as
 `https://gitlab.com/cyrus-group4793641/va-freelance-hub.git`. Git Credential Manager
 2.6.1 handles local authentication through its Windows credential store. Following
 the owner's Chrome authentication, a noninteractive fetch and push dry run passed.

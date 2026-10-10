@@ -1,3 +1,9 @@
+> **Git remote, 2026-10-10:** Secure Source Manager is the canonical repository
+> (`origin`). GitLab is the secondary mirror. The GitHub remote is named
+> `github`. Dated notes below that say GitHub backup remains pending record
+> that day's status.
+> [Receipt](../operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ### v5.2 addition: optional human research through the lake
 
 The owner authorizes planning for human-supplied companies, sources, links,

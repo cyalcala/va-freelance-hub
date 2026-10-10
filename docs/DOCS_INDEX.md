@@ -5,6 +5,14 @@
 This index tells future AI agents which documents are canonical, which are
 historical, and where to resume. Start here instead of guessing from filenames.
 
+**Git remote, 2026-10-10.** Google Cloud Secure Source Manager is the canonical
+Git repository. Local remote `origin`, instance `va-freelance-hub`, region
+`asia-northeast1`, repository `va-freelance-hub`. GitLab is the secondary
+mirror. The GitHub remote is named `github` and is not canonical. Older
+documents that say to push to GitHub, or that call GitLab the continuity
+remote, describe the state before this migration.
+[Receipt](operations/SECURE_SOURCE_MANAGER_CANONICAL_2026-10-10.md).
+
 ## Authoritative APEX-10X Transformation Entry Point — 2026-09-07
 
 Status: **APEX-10X MASTER STRATEGY ACTIVE; WAVE 4 ZERO-WASTE TRIAGE & CANONICAL GOVERNANCE COMPLETE.**
