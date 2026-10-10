@@ -1,5 +1,12 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a fresh remote still-public id with
+no resolvable outbound apply URL stays absent. The writer does not call this
+reader. No migration was added. MATH remains 0/13 and certified daily flow
+remains UNKNOWN. The 735-company directory stays on its existing holds.
+Behavior SHA `07033654531a8bf5655f82d61c0cebac1240a319`. Sole NEXT is
+PUBLICATION_MANILA_DAY_STILL_PUBLIC_IDS_MUST_STAY_PH_ELIGIBLE in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): a remote still-public id outside the
 inclusive 30-day original posting window stays absent, and an unknown posting
 stays absent. The writer does not call this reader. No migration was added.
