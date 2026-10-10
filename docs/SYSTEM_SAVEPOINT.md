@@ -1,5 +1,37 @@
 # System Savepoint
 
+## 2026-10-10 Manila — An open count is not a completed flow
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_OPEN_COUNT_IS_NOT_A_FLOW. A known
+open id count is not a completed Manila-day flow. The completed-day reader
+returns null while the snapshot is OPEN. A caller-supplied CLOSED state does
+not create a flow. The writer does not call this reader. No migration was
+added. This is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_OPEN_COUNT_IS_NOT_A_FLOW_2026-10-10.md).
+Behavior SHA `4f07235841bc10e9df0bf02b7c8ceda726b5d7b5` on Secure Source Manager
+branch `codex/verified-flow-directory-checkpoint` after this checkpoint is
+pushed. GitLab was not retried. Do not push `main`. GitHub was not probed.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057.
+
+**One NEXT: PUBLICATION_MANILA_DAY_COUNT_ID_AGREEMENT.** A known id list can
+disagree with the snapshot's first-publish count. When those two numbers
+disagree, the reportable count stays absent. Do not prefer either number. Do
+not compare an open count with the 100 floor. Do not record CLOSED. Do not
+block the writer. Do not claim MATH-08. Do not grant a source, change cadence,
+or add a clock.
+
 ## 2026-10-10 Manila — An unknown snapshot id count stays absent
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible

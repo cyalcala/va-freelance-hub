@@ -1,5 +1,13 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a known open id count is not a
+completed Manila-day flow. The completed-day reader returns null for OPEN and
+for a caller-supplied CLOSED state. The writer does not call this reader. No
+migration was added. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`4f07235841bc10e9df0bf02b7c8ceda726b5d7b5`. Sole NEXT is
+PUBLICATION_MANILA_DAY_COUNT_ID_AGREEMENT in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): an unknown snapshot id pair is not a
 measured zero. The reportable count is null when the ids are unknown, and it
 is the first-publish id length when they are known. The writer does not call

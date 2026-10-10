@@ -934,6 +934,16 @@ Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
 PUBLICATION_MANILA_DAY_OPEN_COUNT_IS_NOT_A_FLOW in the newest savepoint. No
 source grant, parameter, budget, or clock change.
 
+## 2026-10-10 bounded open count is not a flow
+
+[PUBLICATION_MANILA_DAY_OPEN_COUNT_IS_NOT_A_FLOW](../operations/PUBLICATION_MANILA_DAY_OPEN_COUNT_IS_NOT_A_FLOW_2026-10-10.md)
+advances a local measurement prerequisite only. A known open id count is not
+a completed Manila-day flow. This is not card acceptance or a certified QUPD.
+Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The
+735-entry directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_COUNT_ID_AGREEMENT in the newest savepoint. No source
+grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded public-drift withdrawal continuation
 
 [PUBLICATION_DRIFT_WITHDRAWAL](../operations/PUBLICATION_DRIFT_WITHDRAWAL_2026-10-10.md)
