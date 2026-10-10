@@ -3829,3 +3829,42 @@ test("a source-share OK book is not a provider-family pass", async () => {
     expect(remoteMatchedManilaFamilyStatus(null, [])).toBe("UNKNOWN");
   } finally { sqlite.close(); }
 });
+
+test("a family breach is not a completed Manila-day flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "family-breach-not-flow", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "family-breach-not-flow", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const folded = [
+      { sourceId: "jobicy:admin", count: 1 },
+      { sourceId: "jobicy:support", count: 1 },
+      { sourceId: "we-work-remotely", count: 1 },
+      { sourceId: "remotive", count: 1 },
+    ];
+    const source = concentrationReport(folded.map((row) => ({ id: row.sourceId, count: row.count })), TOP_SOURCE_SHARE_MAX);
+    expect(source.status).toBe("OK");
+    expect(source.topShare).toBe(0.25);
+    const { remoteMatchedManilaFamilyStatus, remoteMatchedManilaFamilyDayFlowCount } = await import("./manila-day");
+    const status = remoteMatchedManilaFamilyStatus(4, folded);
+    expect(status).toBe("BREACH");
+    expect(status).not.toBe("OK");
+    const open = readManilaOpenSnapshot(sqlite, "family-breach-not-flow");
+    expect(open).not.toBeNull();
+    expect(open!.day_state).toBe("OPEN");
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    expect(typeof remoteMatchedManilaFamilyDayFlowCount).toBe("function");
+    const completed = remoteMatchedManilaFamilyDayFlowCount(open!.day_state, status, 4);
+    expect(completed).toBeNull();
+    expect(completed).not.toBe(4);
+    expect(completed).not.toBe(0);
+    expect(remoteMatchedManilaFamilyDayFlowCount("CLOSED", status, 4)).toBeNull();
+    expect(remoteMatchedManilaFamilyDayFlowCount("OPEN", status, 100)).toBeNull();
+    expect(remoteMatchedManilaFamilyDayFlowCount("OPEN", status, 150)).toBeNull();
+  } finally { sqlite.close(); }
+});
