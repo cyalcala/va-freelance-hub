@@ -3784,3 +3784,48 @@ test("a one-source remote match is not a portfolio pass", async () => {
     expect(remoteMatchedManilaPortfolioStatus(4, balanced)).toBe("OK");
   } finally { sqlite.close(); }
 });
+
+test("a source-share OK book is not a provider-family pass", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "source-ok-not-family", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "source-ok-not-family", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const folded = [
+      { sourceId: "jobicy:admin", count: 1 },
+      { sourceId: "jobicy:support", count: 1 },
+      { sourceId: "we-work-remotely", count: 1 },
+      { sourceId: "remotive", count: 1 },
+    ];
+    const source = concentrationReport(folded.map((row) => ({ id: row.sourceId, count: row.count })), TOP_SOURCE_SHARE_MAX);
+    expect(source.status).toBe("OK");
+    expect(source.topShare).toBe(0.25);
+    const family = concentrationReport(familyShares(folded), TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(family.status).toBe("BREACH");
+    expect(family.status).not.toBe("OK");
+    expect(family.topId).toBe("jobicy");
+    expect(family.topShare).toBe(0.5);
+    const unprefixed = [
+      { sourceId: "jobicy-admin-support-apac", count: 1 },
+      { sourceId: "jobicy-supporting-apac", count: 1 },
+      { sourceId: "we-work-remotely", count: 1 },
+      { sourceId: "remotive", count: 1 },
+    ];
+    const unprefixedFamily = concentrationReport(familyShares(unprefixed), TOP_PROVIDER_FAMILY_SHARE_MAX);
+    expect(unprefixedFamily.status).toBe("OK");
+    expect(unprefixedFamily.topId).not.toBe("jobicy");
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+    const { remoteMatchedManilaFamilyStatus } = await import("./manila-day");
+    expect(typeof remoteMatchedManilaFamilyStatus).toBe("function");
+    const status = remoteMatchedManilaFamilyStatus(4, folded);
+    expect(status).toBe("BREACH");
+    expect(status).not.toBe("OK");
+    expect(remoteMatchedManilaFamilyStatus(4, unprefixed)).toBe("OK");
+    expect(remoteMatchedManilaFamilyStatus(null, [])).toBe("UNKNOWN");
+  } finally { sqlite.close(); }
+});
