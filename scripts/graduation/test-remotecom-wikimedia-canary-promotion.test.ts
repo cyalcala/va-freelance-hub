@@ -126,7 +126,8 @@ describe("Shadow -> Canary Promotion Verification for Remote.com and Wikimedia",
         'conditional', 'shadow', '${s.policyExpiry}', ${s.cap}, '${dummyShadowHash}', ${s.sourceGovRev}
       )`);
 
-      const nowMs = Date.now();
+      // Five seconds behind SQLite now so julianday('now') cannot drop the newest row.
+      const nowMs = Date.now() - 5_000;
       for (let day = 14; day >= 0; day--) {
         const obsTime = new Date(nowMs - day * 86_400_000).toISOString();
         db.exec(`INSERT INTO source_shadow_observations (

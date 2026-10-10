@@ -115,8 +115,11 @@ describe("Shadow -> Canary Promotion Verification for Ghost, Nearform, Time Etc"
         'conditional', 'shadow', '${s.policyExpiry}', ${s.cap}, '${s.shadowEntryHash}', ${s.sourceGovRev}
       )`);
 
-      // Seed 10 distinct days of healthy shadow observations
-      const nowMs = Date.now();
+      // Seed 10 distinct days of healthy shadow observations.
+      // The newest stamp stays a few seconds behind SQLite now. julianday('now')
+      // can exclude a Date.now() row until the SQL clock catches up, and the
+      // promotion guard then counts an id the sampled list omitted.
+      const nowMs = Date.now() - 5_000;
       for (let day = 9; day >= 0; day--) {
         const obsTime = new Date(nowMs - day * 86_400_000).toISOString();
         db.exec(`INSERT INTO source_shadow_observations (

@@ -184,8 +184,9 @@ describe("Shadow -> Canary Promotion Verification for 7 Workable PH Agencies", (
         'conditional', 'shadow', '${s.policyExpiry}', ${s.cap}, '${dummyShadowHash}', ${s.sourceGovRev}
       )`);
 
-      // Seed 12 distinct days of healthy shadow observations
-      const nowMs = Date.now();
+      // Seed 12 distinct days. The newest stamp stays five seconds behind SQLite
+      // now so julianday('now') cannot drop it before the promotion guard runs.
+      const nowMs = Date.now() - 5_000;
       for (let day = 11; day >= 0; day--) {
         const obsTime = new Date(nowMs - day * 86_400_000).toISOString();
         db.exec(`INSERT INTO source_shadow_observations (
