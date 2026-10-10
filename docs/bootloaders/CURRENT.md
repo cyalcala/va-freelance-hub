@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): a positive remote-matched still-public
+count on an OPEN snapshot is not a completed Manila-day flow. A caller-supplied
+CLOSED state does not create one. The writer does not call this reader. No
+migration was added. MATH remains 0/13 and certified daily flow remains
+UNKNOWN. The 735-company directory stays on its existing holds. Behavior SHA
+`a8ec2f439684c44e49283e9ab2853f1863e3aa7f`. Sole NEXT is
+PUBLICATION_MANILA_DAY_REMOTE_MATCH_IS_NOT_A_PORTFOLIO_PASS in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): a positive fresh-matched still-public
 count on an OPEN snapshot is not a completed Manila-day flow. A caller-supplied
 CLOSED state does not create one. The writer does not call this reader. No
