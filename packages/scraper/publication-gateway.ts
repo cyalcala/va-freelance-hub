@@ -143,6 +143,16 @@ const INSERT_BOOK_MEMBERSHIP_SQL = `INSERT INTO source_publication_portfolio_boo
 const INSERT_SOURCE_COUNTS_SQL = `INSERT INTO source_publication_portfolio_source_counts (
   source_id, tick_key, retry_key, ledger_counts_json, serving_counts_json, counts_differ, recorded_at
 ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
+const LOAD_SERVING_IDS_SQL = `SELECT json_group_array(id) AS ids
+FROM (
+  SELECT id FROM "opportunities"
+  WHERE is_active = 1 AND ph_eligibility IN (${PUBLIC_PH_SQL})
+    AND typeof(source_id) = 'text' AND length(source_id) > 0
+  ORDER BY id
+)`;
+const INSERT_JOB_IDENTITY_SQL = `INSERT INTO source_publication_portfolio_job_identity (
+  source_id, tick_key, retry_key, ledger_ids_json, serving_ids_json, ids_known, ids_differ, recorded_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 const LOAD_FIRST_PUBLISH_SQL = `SELECT json_group_array(json_object('idsJson', published_ids_json, 'decidedAt', decided_at)) AS receipts
 FROM source_publication_ledger
 WHERE mode IN ('unlimited', 'capped') AND published_count > 0`;
@@ -542,6 +552,20 @@ function canonicalSourceIds(rows: readonly { sourceId: string }[]): string {
   return JSON.stringify([...new Set(rows.map((row) => row.sourceId))].sort());
 }
 
+function namedReceiptIdentity(receipts: readonly FirstPublishReceipt[]): { known: boolean; ids: number[] } {
+  const ids = new Set<number>();
+  for (const receipt of receipts) {
+    let parsed: unknown;
+    try { parsed = JSON.parse(receipt.idsJson); } catch { return { known: false, ids: [] }; }
+    if (!Array.isArray(parsed) || parsed.length === 0) return { known: false, ids: [] };
+    for (const id of parsed) {
+      if (typeof id !== "number" || !Number.isSafeInteger(id) || id <= 0) return { known: false, ids: [] };
+      ids.add(id);
+    }
+  }
+  return { known: true, ids: [...ids].sort((left, right) => left - right) };
+}
+
 function canonicalSourceCounts(rows: readonly { sourceId: string; count: number }[]): string {
   const totals = new Map<string, number>();
   for (const row of rows) totals.set(row.sourceId, (totals.get(row.sourceId) ?? 0) + row.count);
@@ -667,10 +691,45 @@ async function recordPortfolioExposure(
         ledgerCounts === servingCounts ? 0 : 1,
         request.now,
       ).run();
+      const receiptRow = await db.prepare(LOAD_FIRST_PUBLISH_SQL).first<{ receipts: string | null }>();
+      const receipts = parseFirstPublishReceipts(receiptRow?.receipts);
+      const servingIdsRow = await db.prepare(LOAD_SERVING_IDS_SQL).first<{ ids: string | null }>();
+      if (receipts && servingIdsRow) {
+        const ledgerIdentity = namedReceiptIdentity(receipts);
+        const servingIds = countJsonIds(servingIdsRow.ids);
+        const servingJson = JSON.stringify(servingIds.ids);
+        const ledgerJson = JSON.stringify(ledgerIdentity.ids);
+        const known = ledgerIdentity.known && servingIds.known;
+        // Equal counts are not the same jobs. An unnamed receipt stays unknown and does not block.
+        await db.prepare(INSERT_JOB_IDENTITY_SQL).bind(
+          request.sourceId,
+          request.tickKey,
+          request.retryKey,
+          ledgerJson,
+          servingJson,
+          known ? 1 : 0,
+          known && ledgerJson !== servingJson ? 1 : 0,
+          request.now,
+        ).run();
+      }
     }
   } catch {
     // The ledger receipt already exists. Do not turn this into UNKNOWN exposure.
   }
+}
+
+function countJsonIds(raw: unknown): { known: boolean; ids: number[] } {
+  if (typeof raw !== "string" || raw.length === 0 || raw === "null") return { known: false, ids: [] };
+  let parsed: unknown;
+  try { parsed = JSON.parse(raw); } catch { return { known: false, ids: [] }; }
+  if (!Array.isArray(parsed)) return { known: false, ids: [] };
+  const ids: number[] = [];
+  for (const id of parsed) {
+    if (typeof id !== "number" || !Number.isSafeInteger(id) || id <= 0) return { known: false, ids: [] };
+    ids.push(id);
+  }
+  ids.sort((left, right) => left - right);
+  return { known: true, ids };
 }
 
 function countJsonNumberArray(raw: unknown): number {

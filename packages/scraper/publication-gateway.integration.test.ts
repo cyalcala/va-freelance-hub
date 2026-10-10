@@ -62,6 +62,7 @@ function freshDb(): Database {
     "0064_publication_portfolio_book_total.sql",
     "0065_publication_portfolio_book_membership.sql",
     "0066_publication_portfolio_source_counts.sql",
+    "0067_publication_portfolio_job_identity.sql",
   ]) {
     db.exec(readFileSync(join(import.meta.dir, "../db/migrations", migration), "utf-8"));
   }
@@ -1867,6 +1868,128 @@ test("a missing source-count table keeps publication and the source sets", async
     expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
     expect(readBookMembership(sqlite, "count-vector-missing")).not.toBeNull();
     expect(readSourceCounts(sqlite, "count-vector-missing")).toBeNull();
+  } finally { sqlite.close(); }
+});
+
+function readJobIdentity(sqlite: Database, retryKey: string): { ledger_ids_json: string; serving_ids_json: string; ids_differ: number; ids_known: number } | null {
+  try {
+    return sqlite.query(`SELECT ledger_ids_json, serving_ids_json, ids_differ, ids_known
+      FROM source_publication_portfolio_job_identity WHERE retry_key = ?`).get(retryKey) as { ledger_ids_json: string; serving_ids_json: string; ids_differ: number; ids_known: number } | null;
+  } catch (error) {
+    if (error instanceof Error && /no such table/i.test(error.message)) return null;
+    throw error;
+  }
+}
+
+function namedLedgerIds(sqlite: Database): number[] {
+  const rows = sqlite.query(`SELECT published_ids_json AS ids FROM source_publication_ledger
+    WHERE mode IN ('unlimited', 'capped') AND published_count > 0`).all() as Array<{ ids: string }>;
+  const found = new Set<number>();
+  for (const row of rows) {
+    const parsed = JSON.parse(row.ids) as unknown;
+    if (!Array.isArray(parsed)) continue;
+    for (const id of parsed) {
+      if (typeof id === "number" && Number.isSafeInteger(id) && id > 0) found.add(id);
+    }
+  }
+  return [...found].sort((left, right) => left - right);
+}
+
+test("equal per-source counts do not prove the same opportunity ids", async () => {
+  const sqlite = freshDb();
+  try {
+    const first = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "job-identity-first", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "job-identity-a", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(first).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const withdrawnId = first.ok ? first.ids[0] : 0;
+    sqlite.query("UPDATE opportunities SET is_active = 0 WHERE id = ?").run(withdrawnId);
+    writeOpportunity(sqlite, "job-identity-b", "we-work-remotely");
+    const second = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remote-ok", now: NOW, tickKey: TICK, retryKey: "job-identity-differ", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "job-identity-c", "remote-ok");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(second).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledgerIds = namedLedgerIds(sqlite);
+    const servingIds = (sqlite.query(`SELECT id FROM "opportunities"
+      WHERE is_active = 1 AND ph_eligibility IN (?, ?)
+        AND typeof(source_id) = 'text' AND length(source_id) > 0
+      ORDER BY id`).all(...PUBLIC_PH_ELIGIBILITIES) as Array<{ id: number }>).map((row) => row.id);
+    expect(ledgerIds).not.toEqual(servingIds);
+    const counted = readSourceCounts(sqlite, "job-identity-differ");
+    expect(counted).not.toBeNull();
+    expect(counted!.counts_differ).toBe(0);
+    const identity = readJobIdentity(sqlite, "job-identity-differ");
+    expect(identity).not.toBeNull();
+    expect(identity!.ids_known).toBe(1);
+    expect(JSON.parse(identity!.ledger_ids_json)).toEqual(ledgerIds);
+    expect(JSON.parse(identity!.serving_ids_json)).toEqual(servingIds);
+    expect(identity!.ids_differ).toBe(1);
+  } finally { sqlite.close(); }
+});
+
+test("an empty receipt id list stays unknown", async () => {
+  const sqlite = freshDb();
+  try {
+    seedPublishedBook(sqlite, "we-work-remotely", 1, "job-identity-blank");
+    writeOpportunity(sqlite, "job-identity-blank-public", "we-work-remotely");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "remote-ok", now: NOW, tickKey: TICK, retryKey: "job-identity-unknown", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "job-identity-unknown", "remote-ok");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const identity = readJobIdentity(sqlite, "job-identity-unknown");
+    expect(identity).not.toBeNull();
+    expect(identity!.ids_known).toBe(0);
+    expect(identity!.ids_differ).toBe(0);
+  } finally { sqlite.close(); }
+});
+
+test("the same opportunity ids are recorded as not different", async () => {
+  const sqlite = freshDb();
+  try {
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "job-identity-same", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "job-identity-same", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    const ledgerIds = namedLedgerIds(sqlite);
+    const identity = readJobIdentity(sqlite, "job-identity-same");
+    expect(identity).not.toBeNull();
+    expect(identity!.ids_known).toBe(1);
+    expect(identity!.ids_differ).toBe(0);
+    expect(JSON.parse(identity!.ledger_ids_json)).toEqual(ledgerIds);
+    expect(JSON.parse(identity!.serving_ids_json)).toEqual(ledgerIds);
+  } finally { sqlite.close(); }
+});
+
+test("a missing job-identity table keeps publication and the source counts", async () => {
+  const sqlite = freshDb();
+  try {
+    sqlite.exec("DROP TABLE source_publication_portfolio_job_identity;");
+    const result = await publishPublicExposure(new BunDb(sqlite), {
+      sourceId: "we-work-remotely", now: NOW, tickKey: TICK, retryKey: "job-identity-missing", proposedCount: 1,
+      persist: async () => {
+        const ids = writeOpportunity(sqlite, "job-identity-missing", "we-work-remotely");
+        return { publishedCount: ids.length, ids };
+      },
+    });
+    expect(result).toMatchObject({ ok: true, mode: "unlimited", publishedCount: 1, replayed: false });
+    expect(readSourceCounts(sqlite, "job-identity-missing")).not.toBeNull();
+    expect(readJobIdentity(sqlite, "job-identity-missing")).toBeNull();
   } finally { sqlite.close(); }
 });
 
