@@ -21,6 +21,8 @@ completed Manila-day flow.
 | Ledger side-effects | `source_publication_ledger` remains empty (`n = 0`) |
 | Closed snapshot side-effects | `day_state = 'CLOSED'` rows remain absent (`n = 0`) |
 | Integration tests passing | 303 / 303 (`packages/scraper/publication-gateway.integration.test.ts`) |
+| Adversarial tests passing | 8 / 8 (`packages/scraper/adversarial-uncertain-withdrawal.test.ts`, SHA `96003df0`) |
+| Verification Gate Verdict | **PASS** (Reviewer 1 & 2: APPROVE, Challenger 1 & 2: APPROVE, Auditor: CLEAN) |
 | TypeScript typechecking | Clean (exit code 0 via `bun run typecheck`) |
 | CI Guardrail Audits | 4 / 4 clean (`guardrails`, `parameters`, `orchestrator`, `constitution`) |
 
