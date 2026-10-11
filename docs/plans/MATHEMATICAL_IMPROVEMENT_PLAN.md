@@ -1257,6 +1257,17 @@ UNKNOWN. The 735-entry directory is not enriched. Sole NEXT is
 PUBLICATION_MANILA_DAY_SAME_SOURCE_PAIR_IS_NOT_A_FAMILY_BREACH in the newest
 savepoint.
 
+## 2026-10-10 bounded family status OK is not a completed flow
+
+[PUBLICATION_MANILA_DAY_FAMILY_OK_IS_NOT_A_COMPLETED_FLOW](../operations/PUBLICATION_MANILA_DAY_FAMILY_OK_IS_NOT_A_COMPLETED_FLOW_2026-10-10.md)
+advances a local measurement prerequisite only. An intact snapshot pair whose
+same-source family status is `OK` scores null across flow-count readers. Caller-supplied
+100 and 150 floor counts stay absent. This is not card acceptance or a certified
+QUPD. Accepted MATH remains 0/13. Certified daily flow remains UNKNOWN. The 735-entry
+directory is not enriched. Sole NEXT is
+PUBLICATION_MANILA_DAY_FAMILY_BREACH_IS_NOT_A_COMPLETED_FLOW in the newest savepoint.
+No source grant, parameter, budget, or clock change.
+
 ## 2026-10-10 bounded mismatched count is not a family status
 
 [PUBLICATION_MANILA_DAY_MISMATCHED_COUNT_IS_NOT_A_FAMILY_STATUS](../operations/PUBLICATION_MANILA_DAY_MISMATCHED_COUNT_IS_NOT_A_FAMILY_STATUS_2026-10-10.md)

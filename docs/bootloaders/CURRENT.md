@@ -1,5 +1,14 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): an intact snapshot pair whose same-source
+family status is OK is not a completed Manila-day flow. sameSourcePairManilaDayFlowCount
+and remoteMatchedManilaFamilyDayFlowCount of OPEN and of CLOSED with that status
+stay null for total, for 100, and for 150. The writer does not call this reader.
+No migration was added. MATH remains 0/13 and certified daily flow remains UNKNOWN.
+The 735-company directory stays on its existing holds. Behavior SHA `0dae4698`. Sole
+NEXT is PUBLICATION_MANILA_DAY_FAMILY_BREACH_IS_NOT_A_COMPLETED_FLOW in the newest
+savepoint.
+
 Latest continuation (2026-10-10 Manila): remoteMatchedManilaPortfolioStatus and
 remoteMatchedManilaFamilyStatus of total + 1 and total - 1 on a populated book
 are null, not OK or BREACH. sameSourcePairManilaFamilyStatus of both calls is null.
