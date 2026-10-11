@@ -1,14 +1,26 @@
 # Current resume pointer
 
-Latest continuation (2026-10-11 Manila): an intact snapshot pair whose still-public
-IDs carry unconfirmed uncertainty markers is not a completed Manila-day flow.
-uncertainMatchedManilaStillPublicCount returns 5 when all 5 IDs are free of unconfirmed uncertainty,
-and null when any ID carries an uncertainty marker. uncertainMatchedManilaDayFlowCount of
-OPEN and of CLOSED with that status stays null for matched, for 100, and for 150.
-The writer does not call this reader. No migration was added. MATH remains 0/13
-and certified daily flow remains UNKNOWN. The 735-company directory stays on its
-existing holds. Behavior SHA `ee782589`. Sole NEXT is
-PUBLICATION_SOURCE_POLICY_EPOCH_AND_SHARED_RESERVATION in the newest savepoint.
+Latest owner-directed continuation (2026-10-11 Manila): first preserve Antigravity
+and swarm progress on canonical SSM and GitLab mirror, then deeply read
+`astra777.txt` and continue the 100/day floor, 150/day stretch objective.
+Read the newest [savepoint](../SYSTEM_SAVEPOINT.md) and
+[independent reconciliation](../operations/ANTIGRAVITY_SWARM_PROGRESS_RECONCILIATION_2026-10-11.md).
+The reconciliation corrects overbroad reader/operational-contract claims.
+MATH accepted remains 0/13, certified daily flow UNKNOWN. Source-policy/shared
+reservation remains open; a four-row grouped D1 binding counterexample is a
+new concrete throughput bottleneck. Exact backup receipts and complete broader
+verification remain pending. Historical entries below are not the current NEXT.
+
+Latest continuation (2026-10-10 Manila): an intact snapshot pair whose still-public
+IDs contain unconfirmed uncertainty markers or are withdrawn is not a completed Manila-day flow.
+uncertainMatchedManilaStillPublicCount returns 5 when all 5 IDs remain active and free
+of unconfirmed uncertainty markers (uncertainIds: []), and null when any ID is uncertain
+or inactive/withdrawn. uncertainMatchedManilaDayFlowCount of OPEN and of CLOSED with that
+status stays null for matched, for 100, and for 150. Aliases withdrawalSafeManilaStillPublicCount
+and withdrawalSafeManilaDayFlowCount enforce the identical contract. The writer does not call
+this reader. No migration was added. MATH remains 0/13 and certified daily flow remains UNKNOWN.
+The 735-company directory stays on its existing holds. Behavior SHA `96003df0` (code `ee782589`).
+Sole NEXT is PUBLICATION_SOURCE_POLICY_EPOCH_AND_SHARED_RESERVATION in the newest savepoint.
 
 Latest continuation (2026-10-10 Manila): an intact snapshot pair whose still-public
 IDs remain active is not a completed Manila-day flow.

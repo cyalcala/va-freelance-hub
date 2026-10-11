@@ -1,6 +1,47 @@
 # System Savepoint
 
-## 2026-10-11 Manila — Uncertain-matched count is not a completed flow
+## 2026-10-11 Manila — Antigravity/swarm preservation and independent scope correction
+
+Inventory start SHA `75d08a173fd2f0aa046b0651d485da73e848eb3e`, branch
+`codex/verified-flow-directory-checkpoint`. The owner requested preservation
+before reading `astra777.txt`; no instruction-file reading or runtime mutation
+has occurred in this preservation slice.
+
+Read [the progress reconciliation](operations/ANTIGRAVITY_SWARM_PROGRESS_RECONCILIATION_2026-10-11.md)
+first. It inventories M1/M2/M4 and full behavior/evidence SHAs, archives swarm
+claims, and corrects their scope: the newest readers establish supplied-ID,
+ownership, URL uniqueness, active membership and uncertainty consistency; they
+do not independently prove current freshness/PH/Apply facts or the complete
+uncertainty/withdrawal operational contract. Completed-day flow stays null.
+Accepted MATH remains **0/13**; certified new verified PH daily flow **UNKNOWN**.
+
+Fresh independent checks: **79 pass / 0 fail / 426 assertions** across uncertain
+withdrawal, freshness stress and native partitioning suites; typecheck exit 0.
+Build exit 0. Broader regression was dispatched and encountered a native
+Hunter subprocess counterexample (expected exit 1, observed 143); full regression
+results remain pending. These are local checks, not deployment or throughput
+evidence. Historical verification claims remain attributed, not silently accepted.
+
+New source-inspection bottleneck: normal `scrape.ts` grouped publication bypasses
+the D1 insert row cap; four same-source 30-field rows yield 120 bindings against
+the configured 100 limit. The archived Ponytail probe has broken relative imports
+and a missing advertised manifest/report. Diagnose with a native bounded-binding
+counterexample after preserving the first checkpoint. No source/cadence change,
+migration, deployment, public mutation or new paid service was performed.
+
+Backup is **PENDING** until this checkpoint's exact SHA is read back from both
+remotes. GitLab connector freshly read current branch at inventory start SHA;
+older credential/tip claims are superseded only within that inspected scope.
+SSM's configured gcloud helper lacks an active account; a local service-account
+credential path is being tested without exposing secrets. A malformed duplicate
+remote-tracking ref also limits all-ref inventory; preserve it before repair.
+
+**NEXT:** finish initial canonical/mirror preservation, deeply read `astra777.txt`,
+then reconcile the named source-policy/shared-reservation prerequisite with the
+D1 binding bottleneck and outstanding uncertainty/serving/certification gaps.
+Do not manufacture completed MATH cards or 100/150 flow from snapshot readers.
+
+## 2026-10-10 Manila — Uncertain effects and withdrawal contract is not a completed flow
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
 remote jobs per complete Manila day, 150 stretch; factual enrichment of the
@@ -8,18 +49,19 @@ reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**
 Certified fresh flow **UNKNOWN**. This slice published nothing in production and
 enriched no company.
 
-**Completed locally:** PUBLICATION_MANILA_DAY_UNCERTAIN_MATCHED_IS_NOT_A_COMPLETED_FLOW.
-An intact snapshot pair whose still-public IDs carry unconfirmed outcome uncertainty
-markers or unreceipted acknowledgements is not a completed Manila-day flow.
-`uncertainMatchedManilaStillPublicCount` returns 5 when all 5 IDs are free of unconfirmed uncertainty,
-and null when any ID carries an uncertainty marker.
-`uncertainMatchedManilaDayFlowCount("OPEN", matched)` is null, not `matched` and not 0.
-`uncertainMatchedManilaDayFlowCount("CLOSED", matched)` is null.
-Caller-supplied 100 and 150 stay absent.
+**Completed locally:** PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL_CONTRACT.
+An intact snapshot pair whose still-public IDs contain unconfirmed uncertainty markers
+or are withdrawn is not a completed Manila-day flow.
+`uncertainMatchedManilaStillPublicCount` returns 5 when all 5 IDs remain active and free
+of unconfirmed uncertainty markers (`uncertainIds: []`), and null when any ID is uncertain
+or inactive/withdrawn.
+`uncertainMatchedManilaDayFlowCount` returns null for OPEN, CLOSED, 100, 150, null.
+Aliases `withdrawalSafeManilaStillPublicCount` and `withdrawalSafeManilaDayFlowCount` enforce
+the identical fail-closed contract.
 The publication ledger stays empty. The writer does not call this reader.
 No migration was added. This is not MATH-08 and not a certified daily flow.
-[Evidence](operations/PUBLICATION_MANILA_DAY_UNCERTAIN_MATCHED_IS_NOT_A_COMPLETED_FLOW_2026-10-11.md).
-Behavior SHA `ee782589` on branch `codex/verified-flow-directory-checkpoint`.
+[Evidence](operations/PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL_CONTRACT_2026-10-10.md).
+Behavior SHA `96003df0` (code `ee782589`, adversarial suite `96003df0`) on branch `codex/verified-flow-directory-checkpoint`.
 `BACKUP_PENDING` recorded for external authentication.
 
 **Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
@@ -32,10 +74,10 @@ or zero matched count.
 
 **One NEXT: PUBLICATION_SOURCE_POLICY_EPOCH_AND_SHARED_RESERVATION.**
 Stale authority cannot publish or oversubscribe physical exposure.
-Depends on complete writer map and selected consistency contract.
-Enforce current authority and accepted source/provider/global exposure limits,
-not merely a post-write ledger refusal. Do not block the writer. Do not record CLOSED.
-Do not claim MATH-08. Do not grant a source, change cadence, or add a clock.
+Revoke/expire/opt-out between read and write, competing channels/ticks, ledger failure, retries,
+and exhaustion require current authority and accepted source/provider/global exposure limits enforced.
+Do not block the writer. Do not record CLOSED. Do not claim MATH-08.
+Do not grant a source, change cadence, or add a clock.
 
 ## 2026-10-10 Manila — Active-matched count is not a completed flow
 

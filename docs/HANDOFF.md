@@ -1,5 +1,29 @@
 # Handoff
 
+## 2026-10-11 Manila — Antigravity/swarm preservation is the current handoff
+
+Continue `codex/verified-flow-directory-checkpoint`, inventory start
+`75d08a173fd2f0aa046b0651d485da73e848eb3e`. Read the newest
+[savepoint](SYSTEM_SAVEPOINT.md) and [progress reconciliation](operations/ANTIGRAVITY_SWARM_PROGRESS_RECONCILIATION_2026-10-11.md).
+Preserve all Antigravity/swarm code, tests, reports and useful artifacts first;
+verify exact checkpoint SHAs on Google Cloud Secure Source Manager (`origin`)
+and GitLab (`gitlab`). Then deeply read owner instruction `astra777.txt`.
+
+Independent targeted checks reproduced 79 pass / 0 fail / 426 assertions;
+typecheck and build passed. Broader regression encountered a native Hunter subprocess
+failure; full-suite completion and canonical/mirror push receipts remain
+pending. The newest readers prove only supplied membership/ownership/uncertainty
+consistency and fail-closed flow. Freshness/PH/Apply facts, full repair/exposure
+contract, deployed consumers and sealed daily throughput remain unproven.
+MATH is 0/13, certified flow UNKNOWN. Historical frontend handoffs below do not
+dispatch an unrelated redesign for the current objective.
+
+Highest-value new counterexample: four same-source scrape rows produce 120 D1
+bindings because normal grouped publication bypasses the 100-binding row cap.
+Source-policy epoch/shared reservation is also an open named prerequisite.
+Choose the next bounded test/implementation after the initial preservation and
+mandate read; preserve source authority, exposure/billing guards and runtime holds.
+
 ## 2026-10-10 — Secure Source Manager is the canonical Git remote
 
 Push and recovery for this repository go to `origin`, which is Google Cloud

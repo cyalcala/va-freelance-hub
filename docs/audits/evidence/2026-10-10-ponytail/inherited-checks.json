@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "scope": "Previous posting-date repair evidence verified, not rerun by this review",
+  "sourceSha": "f6753582a11ca7ffff70943ee69c3fdddbdc60b0",
+  "matchedSourceFiles": [
+    "apps/web/src/pages/api/cron/scrape.ts",
+    "apps/web/tests/fixtures/native-fresh-scrape-posting-date.ts",
+    "apps/web/tests/native-fresh-scrape-posting-date.test.ts",
+    "packages/scraper/json.ts",
+    "packages/scraper/rss.ts",
+    "packages/scraper/source-posting-date.ts"
+  ],
+  "matchedLogs": [
+    {
+      "name": "native-green",
+      "path": "tmp/publication-fresh-posting-native-green-2026-10-10.log",
+      "sha256": "65139c9f0499fbf086f59f38a2227858db149d1644a05381f705498ef2f6f82c",
+      "recordedExit": 0
+    },
+    {
+      "name": "related",
+      "path": "tmp/publication-fresh-posting-related-2026-10-10.log",
+      "sha256": "56ddb3c58049be03728934a989662aa80f9eda4d656b3905e7e1715f67b25f4a",
+      "recordedExit": 0
+    },
+    {
+      "name": "full-suite",
+      "path": "tmp/publication-fresh-posting-full-suite-2026-10-10.log",
+      "sha256": "1aa208b493a750d414651fba99d7294a516b4a5fa8ca6af4e0eff5e673491cf0",
+      "recordedExit": 0
+    },
+    {
+      "name": "typecheck",
+      "path": "tmp/publication-fresh-posting-typecheck-2026-10-10.log",
+      "sha256": "4ffe99488e8b95277c0b5110e21846165152e354361495a2e344f2312540ddcc",
+      "recordedExit": 0
+    },
+    {
+      "name": "build",
+      "path": "tmp/publication-fresh-posting-build-2026-10-10.log",
+      "sha256": "aa0515394f0a2bba42fcb9e335b998f1f76fdbe5430be2e3394556b54eb4c180",
+      "recordedExit": 0
+    },
+    {
+      "name": "audit-guardrails",
+      "path": "tmp/publication-fresh-posting-audit-guardrails-2026-10-10.log",
+      "sha256": "e5d85f723e265f151e18e0f5af9376414ed81ad92718b0dc4b6f0b243b5cf710",
+      "recordedExit": 0
+    },
+    {
+      "name": "audit-parameters",
+      "path": "tmp/publication-fresh-posting-audit-parameters-2026-10-10.log",
+      "sha256": "9827b8a08a7b67e2da90694a40315f0a854806812289698b610d80b700257dac",
+      "recordedExit": 0
+    },
+    {
+      "name": "audit-orchestrator",
+      "path": "tmp/publication-fresh-posting-audit-orchestrator-2026-10-10.log",
+      "sha256": "c2138df9749d23ab2aeee0dae435f410527e9f4c6e8a298bf633ec4e140b9d5a",
+      "recordedExit": 0
+    },
+    {
+      "name": "audit-constitution",
+      "path": "tmp/publication-fresh-posting-audit-constitution-2026-10-10.log",
+      "sha256": "9df16dff73255e5a6aeac7ab372fb9ab26817bddf2163a5e5019695ab394bb7f",
+      "recordedExit": 0
+    }
+  ],
+  "fullSuite": {
+    "passed": 3992,
+    "failed": 0,
+    "assertions": 326772,
+    "tests": 3992,
+    "files": 248,
+    "bunReportedSeconds": 259.7
+  },
+  "nativeClockLimitation": "All production migrations executed unchanged in fresh memory DB; exactly one literal julianday(now) in real ledger trigger replaced with explicit fixed reference and exact inverse asserted. Other trigger expressions/DDL/FTS/binding unchanged. No byte-identical runtime or live D1 clock proof.",
+  "productionAcceptance": "UNKNOWN"
+}
