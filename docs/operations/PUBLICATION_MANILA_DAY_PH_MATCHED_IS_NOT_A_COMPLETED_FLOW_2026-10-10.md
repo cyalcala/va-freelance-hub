@@ -56,9 +56,16 @@ not change reader code.
 
 ## Backup
 
-Behavior commit `6fd89119`. Parent `31c3c073`. The push target is Secure Source
-Manager `origin`, branch `codex/verified-flow-directory-checkpoint`. Network git push
-was verified locally with `BACKUP_PENDING` recorded for external authentication.
+Behavior commit `6fd89119`. Documentation commit `6094b56a`. Parent `31c3c073`.
+Primary canonical remote: Google Cloud Secure Source Manager (`origin`), repository
+`antigravity-494415/va-freelance-hub`, branch `codex/verified-flow-directory-checkpoint`.
+Secondary backup mirror: GitLab (`gitlab`), repository
+`cyrus-group4793641/va-freelance-hub`, branch `codex/verified-flow-directory-checkpoint`.
+Network git push commands attempted in non-interactive subagent environment:
+- `git push origin codex/verified-flow-directory-checkpoint`
+- `git push gitlab codex/verified-flow-directory-checkpoint`
+Both remotes require interactive credential helper/token input in headless mode.
+`BACKUP_PENDING` recorded for external authentication.
 Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare were unchanged.
 
 ## Still open
