@@ -5,24 +5,28 @@
 Continue `codex/verified-flow-directory-checkpoint`, inventory start
 `75d08a173fd2f0aa046b0651d485da73e848eb3e`. Read the newest
 [savepoint](SYSTEM_SAVEPOINT.md) and [progress reconciliation](operations/ANTIGRAVITY_SWARM_PROGRESS_RECONCILIATION_2026-10-11.md).
-Preserve all Antigravity/swarm code, tests, reports and useful artifacts first;
-verify exact checkpoint SHAs on Google Cloud Secure Source Manager (`origin`)
-and GitLab (`gitlab`). Then deeply read owner instruction `astra777.txt`.
+Initial preservation is complete at `d8e28bc853c458e2f54de31cb9a2a318a051849e`,
+exactly read back from canonical SSM and GitLab before deeply reading all of
+`astra777.txt`. Read the [remote receipt](operations/ANTIGRAVITY_PRESERVATION_REMOTE_RECEIPT_2026-10-11.md)
+and [requirement reconciliation](operations/ASTRA777_REQUIREMENT_RECONCILIATION_2026-10-11.md).
 
 Independent targeted checks reproduced 79 pass / 0 fail / 426 assertions;
 typecheck and build passed. Broader regression encountered a native Hunter subprocess
-failure; full-suite completion and canonical/mirror push receipts remain
-pending. The newest readers prove only supplied membership/ownership/uncertainty
+timeout; broad baseline finished 4,186 pass / 1 fail / 1 error. Unchanged isolated
+and whole-file Hunter replays passed; frozen binding-repair regression is pending.
+The newest readers prove only supplied membership/ownership/uncertainty
 consistency and fail-closed flow. Freshness/PH/Apply facts, full repair/exposure
 contract, deployed consumers and sealed daily throughput remain unproven.
 MATH is 0/13, certified flow UNKNOWN. Historical frontend handoffs below do not
 dispatch an unrelated redesign for the current objective.
 
-Highest-value new counterexample: four same-source scrape rows produce 120 D1
-bindings because normal grouped publication bypasses the 100-binding row cap.
-Source-policy epoch/shared reservation is also an open named prerequisite.
-Choose the next bounded test/implementation after the initial preservation and
-mandate read; preserve source authority, exposure/billing guards and runtime holds.
+Fresh native counterexample: four same-source scrape rows produce 108 D1 bindings
+because normal grouped publication bypasses the 100-binding cap. The earlier
+120 was a synthetic 30-field probe. Bounded physical insert repairs/tests for
+scrape and authenticated ingestion are in progress, preserving one source
+proposal/receipt and UNKNOWN after partial persistence. Source-policy epoch/shared
+reservation is the next named safety prerequisite. Preserve source authority,
+exposure/billing guards and runtime holds; no deployed acceptance is inferred.
 
 ## 2026-10-10 — Secure Source Manager is the canonical Git remote
 

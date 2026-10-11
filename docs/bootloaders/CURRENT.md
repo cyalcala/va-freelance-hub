@@ -8,8 +8,15 @@ Read the newest [savepoint](../SYSTEM_SAVEPOINT.md) and
 The reconciliation corrects overbroad reader/operational-contract claims.
 MATH accepted remains 0/13, certified daily flow UNKNOWN. Source-policy/shared
 reservation remains open; a four-row grouped D1 binding counterexample is a
-new concrete throughput bottleneck. Exact backup receipts and complete broader
-verification remain pending. Historical entries below are not the current NEXT.
+new concrete throughput bottleneck. Initial preservation is exactly verified on
+both remotes at `d8e28bc853c458e2f54de31cb9a2a318a051849e`; all of Astra is now
+deeply read. Read [remote receipt](../operations/ANTIGRAVITY_PRESERVATION_REMOTE_RECEIPT_2026-10-11.md)
+and [MATH/SSAE gap map](../operations/ASTRA777_REQUIREMENT_RECONCILIATION_2026-10-11.md).
+Broad baseline finished 4,186 pass / 1 fail / 1 error; unchanged Hunter isolated
+and whole-file replays passed. Source/test binding repair is in progress for
+scrape and authenticated ingestion; frozen regression remains pending. NEXT after
+that bounded unit is native mutation-time authority/reservation identity.
+Historical entries below are not the current NEXT.
 
 Latest continuation (2026-10-10 Manila): an intact snapshot pair whose still-public
 IDs contain unconfirmed uncertainty markers or are withdrawn is not a completed Manila-day flow.

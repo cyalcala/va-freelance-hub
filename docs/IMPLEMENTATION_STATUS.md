@@ -1,5 +1,21 @@
 # Implementation Status
 
+## 2026-10-11 Manila — Authoritative preservation and Astra reconciliation
+
+Initial Antigravity/swarm preservation is backed up on canonical SSM and GitLab
+at exact SHA `d8e28bc853c458e2f54de31cb9a2a318a051849e` before the complete
+`astra777.txt` deep read. [Remote/check receipt](operations/ANTIGRAVITY_PRESERVATION_REMOTE_RECEIPT_2026-10-11.md)
+and [requirement gap map](operations/ASTRA777_REQUIREMENT_RECONCILIATION_2026-10-11.md)
+supersede historical overbroad reader/operational-contract claims below.
+Readers prove supplied consistency and fail-closed daily flow, not independently
+observed qualification, complete uncertainty withdrawal or certified throughput.
+MATH accepted **0/13**; certified daily flow **UNKNOWN**. Targeted 79 tests,
+typecheck/build and four governance audits passed. Broad baseline was 4,186 pass /
+1 fail / 1 error; unchanged isolated/whole-file Hunter reruns passed. Retain both
+results; no broad green claim. D1 binding repairs and independent native tests
+for both insert writers are in progress. NEXT is mutation-time authority and
+reservation identity. No production publication, deployment or migration here.
+
 ## 2026-10-11 Manila — Uncertain-matched flow reader invariant sealed
 
 Completed locally on branch `codex/verified-flow-directory-checkpoint`:

@@ -3,9 +3,10 @@
 ## 2026-10-11 Manila — Antigravity/swarm preservation and independent scope correction
 
 Inventory start SHA `75d08a173fd2f0aa046b0651d485da73e848eb3e`, branch
-`codex/verified-flow-directory-checkpoint`. The owner requested preservation
-before reading `astra777.txt`; no instruction-file reading or runtime mutation
-has occurred in this preservation slice.
+`codex/verified-flow-directory-checkpoint`. Initial preservation completed at
+`d8e28bc853c458e2f54de31cb9a2a318a051849e`, exactly read back on canonical SSM
+and GitLab before `astra777.txt` was read. The complete owner input has now been
+deeply read and reconciled. No runtime mutation occurred.
 
 Read [the progress reconciliation](operations/ANTIGRAVITY_SWARM_PROGRESS_RECONCILIATION_2026-10-11.md)
 first. It inventories M1/M2/M4 and full behavior/evidence SHAs, archives swarm
@@ -17,28 +18,35 @@ Accepted MATH remains **0/13**; certified new verified PH daily flow **UNKNOWN**
 
 Fresh independent checks: **79 pass / 0 fail / 426 assertions** across uncertain
 withdrawal, freshness stress and native partitioning suites; typecheck exit 0.
-Build exit 0. Broader regression was dispatched and encountered a native
-Hunter subprocess counterexample (expected exit 1, observed 143); full regression
-results remain pending. These are local checks, not deployment or throughput
-evidence. Historical verification claims remain attributed, not silently accepted.
+Build exit 0. Broad regression finished **4,186 pass / 1 fail / 1 error**; the
+Hunter dropped-transport case timed out (expected exit 1, observed 143).
+Independent unchanged isolated and whole-file replays passed. Resource contention
+is a supported hypothesis, not a proved root cause. The failed broad receipt is
+retained; frozen sequential verification of the binding repair is pending.
+These are local checks, not deployment or throughput evidence.
 
 New source-inspection bottleneck: normal `scrape.ts` grouped publication bypasses
-the D1 insert row cap; four same-source 30-field rows yield 120 bindings against
-the configured 100 limit. The archived Ponytail probe has broken relative imports
+the D1 insert row cap. A native RED now proves four Remote OK rows produce **108
+bindings** against the configured 100 limit; the earlier 120 was a synthetic
+30-field probe. Scraper chunking is implemented locally with five native tests
+passing; independent partial-failure and direct-ingestion work is in progress.
+The archived Ponytail probe has broken relative imports
 and a missing advertised manifest/report. Diagnose with a native bounded-binding
 counterexample after preserving the first checkpoint. No source/cadence change,
 migration, deployment, public mutation or new paid service was performed.
 
-Backup is **PENDING** until this checkpoint's exact SHA is read back from both
-remotes. GitLab connector freshly read current branch at inventory start SHA;
-older credential/tip claims are superseded only within that inspected scope.
-SSM's configured gcloud helper lacks an active account; a local service-account
-credential path is being tested without exposing secrets. A malformed duplicate
-remote-tracking ref also limits all-ref inventory; preserve it before repair.
+Initial backup is **VERIFIED** at `d8e28bc853c458e2f54de31cb9a2a318a051849e`
+on both remotes. [Remote receipt](operations/ANTIGRAVITY_PRESERVATION_REMOTE_RECEIPT_2026-10-11.md)
+records exact scope and failed/retried SSM connection. The local malformed
+duplicate tracking ref was preserved under `.git/codex-recovery` and a recovery
+ref before repair; bounded fetch and all-ref log now work. Credential material
+is ignored and was never printed or committed. Current uncommitted binding work
+is not covered by the initial checkpoint.
 
-**NEXT:** finish initial canonical/mirror preservation, deeply read `astra777.txt`,
-then reconcile the named source-policy/shared-reservation prerequisite with the
-D1 binding bottleneck and outstanding uncertainty/serving/certification gaps.
+**NEXT:** finish native D1 binding-budget repair/independent acceptance for both
+writers, then native mutation-time source authority and reservation identity.
+Read [Astra reconciliation](operations/ASTRA777_REQUIREMENT_RECONCILIATION_2026-10-11.md)
+for all MATH/SSAE proof gaps and independent economics/queue diagnostic work.
 Do not manufacture completed MATH cards or 100/150 flow from snapshot readers.
 
 ## 2026-10-10 Manila — Uncertain effects and withdrawal contract is not a completed flow

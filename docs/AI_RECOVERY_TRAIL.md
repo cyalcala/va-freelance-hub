@@ -1,5 +1,22 @@
 # AI Recovery Trail
 
+## 2026-10-11 Manila — Verified initial backup, full Astra recovery, binding RED
+
+Preservation behavior/documentation commit `d8e28bc853c458e2f54de31cb9a2a318a051849e`
+is exactly read back on SSM and GitLab. This precedes the complete owner-input
+deep read. [Receipt](operations/ANTIGRAVITY_PRESERVATION_REMOTE_RECEIPT_2026-10-11.md)
+retains the failed/retried remote connection and failed broad baseline alongside
+passing independent targeted/typecheck/build/audit and Hunter replay evidence.
+[Reconciliation](operations/ASTRA777_REQUIREMENT_RECONCILIATION_2026-10-11.md)
+maps all MATH01–13 and SSAE00–15 to missing acceptance evidence.
+Native D1 RED: four Remote OK rows bind 108 parameters, exceeding 100.
+Root and independent agents are repairing/testing bounded inserts on both
+authenticated writers without changing whole proposals, receipts or source caps.
+Current uncommitted work is not covered by the initial backup. NEXT after its
+verification/checkpoint is native authority/reservation counterexamples, with
+economics/queue diagnostic slices ready independently. Accepted MATH **0/13**,
+certified daily flow **UNKNOWN**. No live write/deployment/migration occurred.
+
 ## 2026-10-11 Manila — Uncertain-matched count is not a completed flow
 
 Completed locally: PUBLICATION_MANILA_DAY_UNCERTAIN_MATCHED_IS_NOT_A_COMPLETED_FLOW.
