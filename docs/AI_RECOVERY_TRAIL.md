@@ -1,5 +1,20 @@
 # AI Recovery Trail
 
+## 2026-10-11 Manila — Uncertain-matched count is not a completed flow
+
+Completed locally: PUBLICATION_MANILA_DAY_UNCERTAIN_MATCHED_IS_NOT_A_COMPLETED_FLOW.
+An intact snapshot pair whose still-public IDs carry unconfirmed outcome uncertainty
+markers or unreceipted acknowledgements is not a completed Manila-day flow.
+`uncertainMatchedManilaStillPublicCount` returns 5 when all 5 IDs are free of unconfirmed uncertainty,
+and null when any ID carries an uncertainty marker.
+`uncertainMatchedManilaDayFlowCount("OPEN", matched)` is null, not `matched` and not 0.
+`uncertainMatchedManilaDayFlowCount("CLOSED", matched)` is null.
+Caller-supplied 100 and 150 stay absent.
+Behavior commit `ee782589`. Documentation commit pending on branch `codex/verified-flow-directory-checkpoint`.
+Target remotes: Google Cloud Secure Source Manager (`origin`) and GitLab secondary mirror (`gitlab`).
+[Evidence](operations/PUBLICATION_MANILA_DAY_UNCERTAIN_MATCHED_IS_NOT_A_COMPLETED_FLOW_2026-10-11.md).
+[GitLab & SSM Audit](operations/GITLAB_AND_SSM_RECONCILIATION_AND_DOCUMENTATION_STATUS_2026-10-11.md).
+
 ## 2026-10-10 Manila — Active-matched count is not a completed flow
 
 Completed locally: PUBLICATION_MANILA_DAY_ACTIVE_MATCHED_IS_NOT_A_COMPLETED_FLOW.

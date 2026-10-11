@@ -1,5 +1,20 @@
 # Implementation Status
 
+## 2026-10-11 Manila — Uncertain-matched flow reader invariant sealed
+
+Completed locally on branch `codex/verified-flow-directory-checkpoint`:
+Full sequential proof locking intact snapshot pairs with uncertain outcome IDs out of completed Manila-day flow:
+- `UNCERTAIN_MATCHED`: `ee782589` (code) / doc pending
+  - `uncertainMatchedManilaStillPublicCount`: returns 5 on clean uncertain IDs, null on tainted uncertain IDs
+  - `uncertainMatchedManilaDayFlowCount`: returns null for OPEN, CLOSED, 100, 150, and null
+  - Evidence: `docs/operations/PUBLICATION_MANILA_DAY_UNCERTAIN_MATCHED_IS_NOT_A_COMPLETED_FLOW_2026-10-11.md`
+  - Comprehensive Audit & Login Guide: `docs/operations/GITLAB_AND_SSM_RECONCILIATION_AND_DOCUMENTATION_STATUS_2026-10-11.md`
+
+All 303 integration tests pass, `bun run typecheck` (`tsc`) passes with zero errors,
+and 4/4 CI guardrails pass cleanly.
+Durable savepoint updated at `docs/SYSTEM_SAVEPOINT.md`; resume pointer updated at `docs/bootloaders/CURRENT.md`.
+Current sole NEXT: `PUBLICATION_SOURCE_POLICY_EPOCH_AND_SHARED_RESERVATION`.
+
 ## 2026-10-10 Manila — Snapshot flow reader invariant sequence sealed
 
 Completed locally on branch `codex/verified-flow-directory-checkpoint`:
