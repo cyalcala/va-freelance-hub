@@ -1,6 +1,16 @@
 # Current resume pointer
 
 Latest continuation (2026-10-10 Manila): an intact snapshot pair whose still-public
+IDs have resolvable apply URLs is not a completed Manila-day flow.
+applyMatchedManilaStillPublicCount returns 5 when all 5 IDs have valid apply URLs,
+and null when any ID is missing an apply URL. applyMatchedManilaDayFlowCount of
+OPEN and of CLOSED with that status stays null for matched, for 100, and for 150.
+The writer does not call this reader. No migration was added. MATH remains 0/13
+and certified daily flow remains UNKNOWN. The 735-company directory stays on its
+existing holds. Behavior SHA `30a77752`. Sole NEXT is
+PUBLICATION_MANILA_DAY_PH_MATCHED_IS_NOT_A_COMPLETED_FLOW in the newest savepoint.
+
+Latest continuation (2026-10-10 Manila): an intact snapshot pair whose still-public
 IDs are fresh is not a completed Manila-day flow. freshMatchedManilaStillPublicCount
 returns 5 when all 5 IDs are fresh, and null when any ID is stale.
 freshMatchedManilaDayFlowCount of OPEN and of CLOSED with that status stays null

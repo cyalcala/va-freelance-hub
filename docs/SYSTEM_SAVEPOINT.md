@@ -1,5 +1,41 @@
 # System Savepoint
 
+## 2026-10-10 Manila — Apply-matched count is not a completed flow
+
+**Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
+remote jobs per complete Manila day, 150 stretch; factual enrichment of the
+reported 735 directory entries; MATH-01..13 and SSAE-CED. Accepted MATH **0/13**.
+Certified fresh flow **UNKNOWN**. This slice published nothing in production and
+enriched no company.
+
+**Completed locally:** PUBLICATION_MANILA_DAY_APPLY_MATCHED_IS_NOT_A_COMPLETED_FLOW.
+An intact snapshot pair whose still-public IDs have resolvable outbound apply URLs
+is not a completed Manila-day flow. `applyMatchedManilaStillPublicCount` returns 5
+when all 5 IDs have valid apply URLs, and null when any ID is missing an apply URL.
+`applyMatchedManilaDayFlowCount("OPEN", matched)` is null, not `matched` and not 0.
+`applyMatchedManilaDayFlowCount("CLOSED", matched)` is null.
+Caller-supplied 100 and 150 stay absent.
+The publication ledger stays empty. The writer does not call this reader.
+No migration was added. This is not MATH-08 and not a certified daily flow.
+[Evidence](operations/PUBLICATION_MANILA_DAY_APPLY_MATCHED_IS_NOT_A_COMPLETED_FLOW_2026-10-10.md).
+Behavior SHA `30a77752` on branch `codex/verified-flow-directory-checkpoint`.
+`BACKUP_PENDING` recorded for external authentication.
+
+**Unchanged holds:** directory 234 Upwork and 237 IntoGreat remain proposals.
+236 FVA stays parked. No directory SQL. Unknown dates and null workplace stay
+public. Raw-lake sync stays fenced. No source, parameter, provider, or clock
+change. Cloud Run, Scheduler, Artifact Registry, Turso, D1, and Cloudflare
+were unchanged. Migrations 0056 through 0068 stay unapplied. Do not deploy the
+reservation gateway before 0057. A missing snapshot pair stays null for a null
+or zero matched count.
+
+**One NEXT: PUBLICATION_MANILA_DAY_PH_MATCHED_IS_NOT_A_COMPLETED_FLOW.**
+A PH-matched still-public count is not a completed Manila-day flow.
+`phMatchedManilaDayFlowCount("OPEN", count)` is null, not `count` and not 0.
+`phMatchedManilaDayFlowCount("CLOSED", count)` is null.
+Caller-supplied 100 and 150 stay absent. Do not block the writer. Do not record CLOSED.
+Do not claim MATH-08. Do not grant a source, change cadence, or add a clock.
+
 ## 2026-10-10 Manila — Fresh-matched count is not a completed flow
 
 **Owner scope CONTINUING:** 100 newly first-published unique verified PH-accessible
