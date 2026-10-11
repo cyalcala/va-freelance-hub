@@ -1,5 +1,17 @@
 # Current resume pointer
 
+Latest continuation (2026-10-10 Manila): remoteMatchedManilaPortfolioStatus and
+remoteMatchedManilaFamilyStatus of a nonempty supplied book with a null or zero
+matched count are null, not UNKNOWN. sameSourcePairManilaFamilyStatus of that
+book is null. Direct empty-book status stays UNKNOWN. A known empty pair with
+the nonempty book scores null through loadedSameSourcePairManilaFamilyStatus.
+sameSourcePairManilaDayFlowCount of OPEN and of CLOSED with that null status stays
+null for a null matched count, for 100, and for 150. The writer does not call
+this reader. No migration was added. MATH remains 0/13 and certified daily flow
+remains UNKNOWN. The 735-company directory stays on its existing holds. Behavior
+SHA `8ae3903f6f1c4ee408d6c770c0ba42c16c6802e8`. Sole NEXT is
+PUBLICATION_MANILA_DAY_MISMATCHED_COUNT_IS_NOT_A_FAMILY_STATUS in the newest savepoint.
+
 Latest continuation (2026-10-10 Manila): loadedSameSourcePairManilaFamilyStatus of
 a missing snapshot pair, a null matched count, and empty rows is null, not
 UNKNOWN. The same call with matched count 0 is null. Direct
