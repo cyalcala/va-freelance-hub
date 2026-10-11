@@ -1,6 +1,16 @@
 # Current resume pointer
 
 Latest continuation (2026-10-10 Manila): an intact snapshot pair whose still-public
+IDs match the publishing source is not a completed Manila-day flow.
+sourceMatchedManilaStillPublicCount returns 5 when all 5 IDs match the publishing
+source, and null when any ID changes source. sourceMatchedManilaDayFlowCount of
+OPEN and of CLOSED with that status stays null for matched, for 100, and for 150.
+The writer does not call this reader. No migration was added. MATH remains 0/13
+and certified daily flow remains UNKNOWN. The 735-company directory stays on its
+existing holds. Behavior SHA `525372f5`. Sole NEXT is
+PUBLICATION_MANILA_DAY_ACTIVE_MATCHED_IS_NOT_A_COMPLETED_FLOW in the newest savepoint.
+
+Latest continuation (2026-10-10 Manila): an intact snapshot pair whose still-public
 IDs have distinct canonical source URLs is not a completed Manila-day flow.
 canonicalUrlMatchedManilaStillPublicCount returns 5 when all 5 IDs have distinct
 canonical URLs, and null when duplicate canonical URLs exist.
