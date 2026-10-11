@@ -5619,4 +5619,43 @@ test("an intact snapshot pair whose family status is BREACH is not a completed f
   } finally { sqlite.close(); }
 });
 
+test("an intact snapshot pair whose still-public ids are fresh is not a completed flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const today = manilaDateOf(NOW);
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'fresh-matched-known', ?, 'OPEN', 5, 5, ?)`).run(TICK, today, NOW);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'fresh-matched-known', ?, '[1,2,3,4,5]', '[1,2,3,4,5]', ?)`).run(TICK, today, NOW);
+    const readers = await import("./manila-day");
+    const loaded = loadSnapshotPair(sqlite);
+    const paired = readers.latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.idsKnown).toBe(true);
+    expect(paired!.stillPublicIds).toEqual([1, 2, 3, 4, 5]);
+
+    const remoteIds = [1, 2, 3, 4, 5];
+    const freshIds = [1, 2, 3, 4, 5];
+    const matched = readers.freshMatchedManilaStillPublicCount(5, paired, remoteIds, freshIds);
+    expect(matched).toBe(5);
+
+    expect(readers.freshMatchedManilaDayFlowCount("OPEN", matched)).toBeNull();
+    expect(readers.freshMatchedManilaDayFlowCount("CLOSED", matched)).toBeNull();
+    expect(readers.freshMatchedManilaDayFlowCount("OPEN", 100)).toBeNull();
+    expect(readers.freshMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
+    expect(readers.freshMatchedManilaDayFlowCount("OPEN", null)).toBeNull();
+
+    const staleIds = [1, 2, 3, 4];
+    const staleMatched = readers.freshMatchedManilaStillPublicCount(5, paired, remoteIds, staleIds);
+    expect(staleMatched).toBeNull();
+    expect(readers.freshMatchedManilaDayFlowCount("OPEN", staleMatched)).toBeNull();
+
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+  } finally { sqlite.close(); }
+});
+
+
 
