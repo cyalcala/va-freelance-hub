@@ -729,38 +729,3 @@ export function uncertainMatchedManilaDayFlowCount(dayState: string, matchedCoun
 
 export const withdrawalSafeManilaDayFlowCount = uncertainMatchedManilaDayFlowCount;
 
-
-// An active match stays absent when any still-public id carries an unconfirmed
-// outcome uncertainty marker or has an unreceipted acknowledgement. This reader
-// enforces ADR-010 withdrawal bounds and is not a closed-day flow.
-export function uncertainMatchedManilaStillPublicCount(
-  stillPublicCount: number,
-  pair: ManilaSnapshotPair | null,
-  rows: readonly { id: number; sourceUrl: string }[],
-  ownedRows: readonly { id: number; sourceId: string }[],
-  publishingSourceId: string,
-  activeIds: readonly number[],
-  uncertainIds: readonly number[],
-): number | null {
-  const matched = activeMatchedManilaStillPublicCount(
-    stillPublicCount,
-    pair,
-    rows,
-    ownedRows,
-    publishingSourceId,
-    activeIds,
-  );
-  if (matched === null || !pair) return null;
-  if (pair.stillPublicIds.some((id) => uncertainIds.includes(id))) return null;
-  return matched;
-}
-
-// An uncertain-matched still-public count is not a completed Manila-day flow.
-// This reader has no closed-day evidence, so a caller-supplied CLOSED state
-// does not create one. The 100 floor is not a flow either.
-export function uncertainMatchedManilaDayFlowCount(dayState: string, matchedCount: number | null): number | null {
-  if (dayState.length === 0) return null;
-  if (matchedCount !== null && !Number.isSafeInteger(matchedCount)) return null;
-  return null;
-}
-

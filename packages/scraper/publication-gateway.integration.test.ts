@@ -5890,8 +5890,10 @@ test("an intact snapshot pair whose still-public ids remain active is not a comp
   } finally { sqlite.close(); }
 });
 
-test("an intact snapshot pair whose still-public ids are free of unconfirmed uncertainty is not a completed flow", async () => {
+test("an intact snapshot pair with active matched ids that are uncertain or withdrawn is not a completed Manila-day flow", async () => {
   const sqlite = freshDb();
+  let writerCalled = 0;
+  const writer = () => { writerCalled++; };
   try {
     const today = manilaDateOf(NOW);
     sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
@@ -5922,7 +5924,6 @@ test("an intact snapshot pair whose still-public ids are free of unconfirmed unc
       { id: 5, sourceId: "we-work-remotely" },
     ];
     const activeIds = [1, 2, 3, 4, 5];
-    const cleanUncertainIds: number[] = [];
     const matched = readers.uncertainMatchedManilaStillPublicCount(
       5,
       paired,
@@ -5930,30 +5931,54 @@ test("an intact snapshot pair whose still-public ids are free of unconfirmed unc
       ownedRows,
       "we-work-remotely",
       activeIds,
-      cleanUncertainIds,
+      [],
     );
     expect(matched).toBe(5);
+    expect(readers.withdrawalSafeManilaStillPublicCount(5, paired, urlRows, ownedRows, "we-work-remotely", activeIds, [])).toBe(5);
 
-    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", matched)).toBeNull();
-    expect(readers.uncertainMatchedManilaDayFlowCount("CLOSED", matched)).toBeNull();
-    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", 100)).toBeNull();
-    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
-    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", null)).toBeNull();
-
-    const taintedUncertainIds = [3];
-    const taintedMatched = readers.uncertainMatchedManilaStillPublicCount(
+    const uncertainMatched = readers.uncertainMatchedManilaStillPublicCount(
       5,
       paired,
       urlRows,
       ownedRows,
       "we-work-remotely",
       activeIds,
-      taintedUncertainIds,
+      [3],
     );
-    expect(taintedMatched).toBeNull();
-    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", taintedMatched)).toBeNull();
+    expect(uncertainMatched).toBeNull();
+    expect(readers.withdrawalSafeManilaStillPublicCount(5, paired, urlRows, ownedRows, "we-work-remotely", activeIds, [3])).toBeNull();
+
+    const inactiveIds = [1, 2, 4, 5];
+    const inactiveMatched = readers.uncertainMatchedManilaStillPublicCount(
+      5,
+      paired,
+      urlRows,
+      ownedRows,
+      "we-work-remotely",
+      inactiveIds,
+      [],
+    );
+    expect(inactiveMatched).toBeNull();
+    expect(readers.withdrawalSafeManilaStillPublicCount(5, paired, urlRows, ownedRows, "we-work-remotely", inactiveIds, [])).toBeNull();
+
+    const openFlow = readers.uncertainMatchedManilaDayFlowCount("OPEN", matched);
+    expect(openFlow).toBeNull();
+    expect(openFlow).not.toBe(matched);
+    expect(openFlow).not.toBe(0);
+
+    expect(readers.uncertainMatchedManilaDayFlowCount("CLOSED", matched)).toBeNull();
+    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", 100)).toBeNull();
+    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
+    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", null)).toBeNull();
+
+    expect(readers.withdrawalSafeManilaDayFlowCount("OPEN", matched)).toBeNull();
+    expect(readers.withdrawalSafeManilaDayFlowCount("CLOSED", matched)).toBeNull();
+    expect(readers.withdrawalSafeManilaDayFlowCount("OPEN", 100)).toBeNull();
+    expect(readers.withdrawalSafeManilaDayFlowCount("OPEN", 150)).toBeNull();
+    expect(readers.withdrawalSafeManilaDayFlowCount("OPEN", null)).toBeNull();
 
     expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    expect(writerCalled).toBe(0);
     expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
   } finally { sqlite.close(); }
 });
