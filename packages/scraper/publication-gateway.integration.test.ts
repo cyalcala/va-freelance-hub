@@ -5890,6 +5890,75 @@ test("an intact snapshot pair whose still-public ids remain active is not a comp
   } finally { sqlite.close(); }
 });
 
+test("an intact snapshot pair whose still-public ids are free of unconfirmed uncertainty is not a completed flow", async () => {
+  const sqlite = freshDb();
+  try {
+    const today = manilaDateOf(NOW);
+    sqlite.query(`INSERT INTO source_publication_manila_open_snapshot (
+      source_id, tick_key, retry_key, manila_date, day_state, first_publish_count, still_public_count, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'uncertain-matched-known', ?, 'OPEN', 5, 5, ?)`).run(TICK, today, NOW);
+    sqlite.query(`INSERT INTO source_publication_manila_snapshot_ids (
+      source_id, tick_key, retry_key, manila_date, first_publish_ids_json, still_public_ids_json, recorded_at
+    ) VALUES ('we-work-remotely', ?, 'uncertain-matched-known', ?, '[1,2,3,4,5]', '[1,2,3,4,5]', ?)`).run(TICK, today, NOW);
+    const readers = await import("./manila-day");
+    const loaded = loadSnapshotPair(sqlite);
+    const paired = readers.latestManilaSnapshotPair(loaded.counts, loaded.ids, today);
+    expect(paired).not.toBeNull();
+    expect(paired!.idsKnown).toBe(true);
+    expect(paired!.stillPublicIds).toEqual([1, 2, 3, 4, 5]);
+
+    const urlRows = [
+      { id: 1, sourceUrl: "https://example.invalid/job/1" },
+      { id: 2, sourceUrl: "https://example.invalid/job/2" },
+      { id: 3, sourceUrl: "https://example.invalid/job/3" },
+      { id: 4, sourceUrl: "https://example.invalid/job/4" },
+      { id: 5, sourceUrl: "https://example.invalid/job/5" },
+    ];
+    const ownedRows = [
+      { id: 1, sourceId: "we-work-remotely" },
+      { id: 2, sourceId: "we-work-remotely" },
+      { id: 3, sourceId: "we-work-remotely" },
+      { id: 4, sourceId: "we-work-remotely" },
+      { id: 5, sourceId: "we-work-remotely" },
+    ];
+    const activeIds = [1, 2, 3, 4, 5];
+    const cleanUncertainIds: number[] = [];
+    const matched = readers.uncertainMatchedManilaStillPublicCount(
+      5,
+      paired,
+      urlRows,
+      ownedRows,
+      "we-work-remotely",
+      activeIds,
+      cleanUncertainIds,
+    );
+    expect(matched).toBe(5);
+
+    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", matched)).toBeNull();
+    expect(readers.uncertainMatchedManilaDayFlowCount("CLOSED", matched)).toBeNull();
+    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", 100)).toBeNull();
+    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", 150)).toBeNull();
+    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", null)).toBeNull();
+
+    const taintedUncertainIds = [3];
+    const taintedMatched = readers.uncertainMatchedManilaStillPublicCount(
+      5,
+      paired,
+      urlRows,
+      ownedRows,
+      "we-work-remotely",
+      activeIds,
+      taintedUncertainIds,
+    );
+    expect(taintedMatched).toBeNull();
+    expect(readers.uncertainMatchedManilaDayFlowCount("OPEN", taintedMatched)).toBeNull();
+
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_ledger").get()).toEqual({ n: 0 });
+    expect(sqlite.query("SELECT COUNT(*) AS n FROM source_publication_manila_open_snapshot WHERE day_state = 'CLOSED'").get()).toEqual({ n: 0 });
+  } finally { sqlite.close(); }
+});
+
+
 
 
 
