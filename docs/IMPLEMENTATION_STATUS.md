@@ -1,5 +1,23 @@
 # Implementation Status
 
+## 2026-10-10 Manila — Snapshot flow reader invariant sequence sealed
+
+Completed locally on branch `codex/verified-flow-directory-checkpoint`:
+Full sequential proof locking intact snapshot pairs out of completed Manila-day flow:
+- `FAMILY_OK`: `0dae4698` (code) / `0e8d0122` (doc)
+- `FAMILY_BREACH`: `52fd798a` (code) / `92b562fc` (doc)
+- `FRESH_MATCHED`: `69f7f700` (code) / `86a47c3a` (doc)
+- `APPLY_MATCHED`: `30a77752` (code) / `31c3c073` (doc)
+- `PH_MATCHED`: `6fd89119` (code) / `6094b56a` (doc)
+- `CANONICAL_URL_MATCHED`: `7ab46b82` (code) / `86b75446` (doc)
+- `SOURCE_MATCHED`: `525372f5` (code) / `8113de61` (doc)
+- `ACTIVE_MATCHED`: `5f642df1` (code) / `301820d3` (doc)
+
+All 302 integration tests pass, `bun run typecheck` (`tsc`) passes with zero errors,
+and 4/4 CI guardrails pass.
+Durable savepoint updated at `docs/SYSTEM_SAVEPOINT.md`; resume pointer updated at `docs/bootloaders/CURRENT.md`.
+Current sole NEXT: `PUBLICATION_UNCERTAIN_EFFECTS_WITHDRAWAL_CONTRACT`.
+
 ## 2026-10-10 — Canonical Git remote is Secure Source Manager
 
 Google Cloud Secure Source Manager holds the repository history. Local remote

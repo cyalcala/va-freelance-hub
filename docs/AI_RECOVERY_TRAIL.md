@@ -1,5 +1,57 @@
 # AI Recovery Trail
 
+## 2026-10-10 Manila — Active-matched count is not a completed flow
+
+Completed locally: PUBLICATION_MANILA_DAY_ACTIVE_MATCHED_IS_NOT_A_COMPLETED_FLOW.
+An intact snapshot pair whose still-public IDs remain active is not a completed
+Manila-day flow. `activeMatchedManilaStillPublicCount` returns 5 when all 5 IDs remain active,
+and null when any ID is inactive.
+`activeMatchedManilaDayFlowCount("OPEN", matched)` is null, not `matched` and not 0.
+`activeMatchedManilaDayFlowCount("CLOSED", matched)` is null.
+Caller-supplied 100 and 150 stay absent.
+Behavior commit `5f642df1`. Documentation commit `301820d3` on branch `codex/verified-flow-directory-checkpoint`.
+Target remotes: Google Cloud Secure Source Manager (`origin`) and GitLab secondary mirror (`gitlab`).
+[Evidence](operations/PUBLICATION_MANILA_DAY_ACTIVE_MATCHED_IS_NOT_A_COMPLETED_FLOW_2026-10-10.md).
+
+## 2026-10-10 Manila — Source-matched count is not a completed flow
+
+Completed locally: PUBLICATION_MANILA_DAY_SOURCE_MATCHED_IS_NOT_A_COMPLETED_FLOW.
+An intact snapshot pair whose still-public IDs match the publishing source is not a completed
+Manila-day flow. `sourceMatchedManilaStillPublicCount` returns 5 when all 5 IDs match the publishing
+source, and null when any ID changes source.
+`sourceMatchedManilaDayFlowCount("OPEN", matched)` is null, not `matched` and not 0.
+`sourceMatchedManilaDayFlowCount("CLOSED", matched)` is null.
+Caller-supplied 100 and 150 stay absent.
+Behavior commit `525372f5`. Documentation commit `8113de61` on branch `codex/verified-flow-directory-checkpoint`.
+Target remotes: Google Cloud Secure Source Manager (`origin`) and GitLab secondary mirror (`gitlab`).
+[Evidence](operations/PUBLICATION_MANILA_DAY_SOURCE_MATCHED_IS_NOT_A_COMPLETED_FLOW_2026-10-10.md).
+
+## 2026-10-10 Manila — Canonical-URL-matched count is not a completed flow
+
+Completed locally: PUBLICATION_MANILA_DAY_CANONICAL_URL_MATCHED_IS_NOT_A_COMPLETED_FLOW.
+An intact snapshot pair whose still-public IDs have distinct canonical source URLs is not a completed
+Manila-day flow. `canonicalUrlMatchedManilaStillPublicCount` returns 5 when all 5 IDs have distinct
+canonical URLs, and null when duplicate canonical URLs exist.
+`canonicalUrlMatchedManilaDayFlowCount("OPEN", matched)` is null, not `matched` and not 0.
+`canonicalUrlMatchedManilaDayFlowCount("CLOSED", matched)` is null.
+Caller-supplied 100 and 150 stay absent.
+Behavior commit `7ab46b82`. Documentation commit `86b75446` on branch `codex/verified-flow-directory-checkpoint`.
+Target remotes: Google Cloud Secure Source Manager (`origin`) and GitLab secondary mirror (`gitlab`).
+[Evidence](operations/PUBLICATION_MANILA_DAY_CANONICAL_URL_MATCHED_IS_NOT_A_COMPLETED_FLOW_2026-10-10.md).
+
+## 2026-10-10 Manila — PH-matched count is not a completed flow
+
+Completed locally: PUBLICATION_MANILA_DAY_PH_MATCHED_IS_NOT_A_COMPLETED_FLOW.
+An intact snapshot pair whose still-public IDs match the accepted PH pair is not a completed
+Manila-day flow. `phMatchedManilaStillPublicCount` returns 5 when all 5 IDs match the accepted
+PH pair, and null when any ID leaves the accepted PH pair.
+`phMatchedManilaDayFlowCount("OPEN", matched)` is null, not `matched` and not 0.
+`phMatchedManilaDayFlowCount("CLOSED", matched)` is null.
+Caller-supplied 100 and 150 stay absent.
+Behavior commit `6fd89119`. Documentation commit `6094b56a` on branch `codex/verified-flow-directory-checkpoint`.
+Target remotes: Google Cloud Secure Source Manager (`origin`) and GitLab secondary mirror (`gitlab`).
+[Evidence](operations/PUBLICATION_MANILA_DAY_PH_MATCHED_IS_NOT_A_COMPLETED_FLOW_2026-10-10.md).
+
 ## 2026-10-10 — Canonical Git history moved to Secure Source Manager
 
 Full local history was pushed to Google Cloud Secure Source Manager and
