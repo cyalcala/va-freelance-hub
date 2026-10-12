@@ -1,0 +1,378 @@
+{
+  "version": "ponytail-behavioral-evidence-v1",
+  "capturedAt": "2026-10-12T13:18:26.934899+00:00",
+  "head": "c5521b1b1ca977e9a762413965db6df3a5dc6019",
+  "reportedLiveRevision": "3065f0d709d5a1950c247d5a11df542b07721bcb",
+  "reportedLiveMigrationCeiling": "0054",
+  "scope": "OFFLINE_COUNTEREXAMPLE_ARCHIVE_NOT_REPAIR_OR_PRODUCTION_ACCEPTANCE",
+  "mathCompleted": "0/13",
+  "certifiedDailyPublications": "UNKNOWN",
+  "artifacts": [
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/0054-date-prefence-assessment.md",
+      "bytes": 5853,
+      "sha256": "fd2843ec19aac67ebab8cd66072b20a7ed1629308b085b6341f27d6b9dd5f0bf",
+      "lfNormalizedSha256": "fd2843ec19aac67ebab8cd66072b20a7ed1629308b085b6341f27d6b9dd5f0bf"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/ats-date-live-baseline.json",
+      "bytes": 1014,
+      "sha256": "9b71238a4feb329c705b29ee1d84e8540addf5d6ebdeeca279b8951245644cfb",
+      "lfNormalizedSha256": "cb3f559de7d1bda93866893484b80330ef7b5f13409c57d785e50fa809e7de6c"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/ats-date-probe.ts",
+      "bytes": 4368,
+      "sha256": "e8252b6e2e0207380b97192a726726dcf4a4b03a6921592f191c9d775fd06bee",
+      "lfNormalizedSha256": "e8252b6e2e0207380b97192a726726dcf4a4b03a6921592f191c9d775fd06bee"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/ats-date-result.json",
+      "bytes": 4806,
+      "sha256": "46c9edfa05ca8b41f3a72adf9cbc0ddca5b2a997a3ed4740130b262e081bb45c",
+      "lfNormalizedSha256": "b7c686552122694559c5f1b309d43983329c6651d58bab8a4475d27e62129236"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/bun-auto-install-reference.json",
+      "bytes": 863,
+      "sha256": "7a78bb1dbf97cf8f580c3537274bcc22f2d5f1e031ebf164e3f0b5102930eafc",
+      "lfNormalizedSha256": "198d404e78d02073c08c061e3e920eb725ca838454f6f2b9a139122e7b1a864b"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/canary-overflow-probe.ts",
+      "bytes": 16466,
+      "sha256": "c41e9abcca1f5ed2a428d90d7c111064ab00ce8286f1ddafdfc0edb3fee8d96b",
+      "lfNormalizedSha256": "771d940ae5d375bec644f4cffa73229924e3ab631d4d4d5254d368ac54d5279a"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/canary-overflow-reproduced-result.json",
+      "bytes": 38990,
+      "sha256": "709659a1730a9568a77234d3bb492b2d70bf572a7afc8535b85baada9c97d562",
+      "lfNormalizedSha256": "962bb1447c30d50d7be7bd89e9159d9945dc5e35b6f7bdc57d22f99b4e624a62"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/canary-overflow-result.json",
+      "bytes": 38990,
+      "sha256": "709659a1730a9568a77234d3bb492b2d70bf572a7afc8535b85baada9c97d562",
+      "lfNormalizedSha256": "962bb1447c30d50d7be7bd89e9159d9945dc5e35b6f7bdc57d22f99b4e624a62"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/consumer-search.txt",
+      "bytes": 40150,
+      "sha256": "741f9543982307e55db4b4fd3572f5eafe761c488ccc84c899dd7d91476b1f00",
+      "lfNormalizedSha256": "8c1b2d36f2973fc44d95cf823c030e59e2094557230cce0cd4cc57e8427a45d5"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/logs/ats-date-reproduction.log",
+      "bytes": 3688,
+      "sha256": "dff333b9fc30a67a5c5e3ed04cc36b38f67c0d15a26e98969b1b8cd16fc22339",
+      "lfNormalizedSha256": "cc6c19cde333d27b3fb6aa0a7d9028164b998383f4213978b358fd834becf09d"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/logs/canary-overflow-reproduction.log",
+      "bytes": 30463,
+      "sha256": "71c62f3b2ee93b7cf31b9af7e19f0fe49a7f8d6e940e6523cfd9824581a0ccbe",
+      "lfNormalizedSha256": "c1cf74532ce527abf15af3b3f014276f2ddbe53fda67e68a4919dfdb367e2388"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/logs/registry-rotation-reproduction.log",
+      "bytes": 909,
+      "sha256": "301ef5d9a5fcec31f6e93f49ec1c28945f87ddd134edae6e774f9c47c9a1f17a",
+      "lfNormalizedSha256": "73e02b3ef4d89efa422fab9dbc46c98c015d0e3184d8ee58de515a81f2038165"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/logs/strict-date-guards-targeted.log",
+      "bytes": 16637,
+      "sha256": "1f1c73700e9b1e4b0bfae24db9286e42304309f2e893b854d52fad39bf4566df",
+      "lfNormalizedSha256": "fa1d508568346db8f59ecaaf876d690cc3cdc5a70e143d228594627db45c93c0"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/README.md",
+      "bytes": 4319,
+      "sha256": "b9979507be9831331fd89e9da091d728700a8972a61ed2519ebae6a8a6d09d04",
+      "lfNormalizedSha256": "b9979507be9831331fd89e9da091d728700a8972a61ed2519ebae6a8a6d09d04"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/registry-rotation-probe.ts",
+      "bytes": 1752,
+      "sha256": "8d649b15bbe48e856126e6ef0dfd5cbe9474fb9a7d00a37e616e0605c0f38961",
+      "lfNormalizedSha256": "fe162db0feb990271243246cfb6d7fed646d4b1841e99dfd6b7a782de9f9efaa"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/registry-rotation-reproduced-result.json",
+      "bytes": 1470,
+      "sha256": "9202fca9a9b3898ef69f01441801162daaab6b813c7af5011c5f98a7f18cee04",
+      "lfNormalizedSha256": "9840686a299e5cd512a7ec2004306f006ee4d04ac072edcbf873f82ebbb3b0a5"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/registry-rotation-result.json",
+      "bytes": 1400,
+      "sha256": "1beda0dbe457ea93e3f071e6ae03b4f85995b38bc4c0633cd857e5f663d36a3a",
+      "lfNormalizedSha256": "0bf5d6b59f4a02e80dbfbae6c6942fcd1267561f0de8b342a8ed77345f90580e"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/registry-selector-before-repair.json",
+      "bytes": 940,
+      "sha256": "3318cc9e1f2186d3730a97ac2e3dd5bee227e98c5fe95443cc3eb74540cd85e4",
+      "lfNormalizedSha256": "3ecd4f0f40c5bdb2e051b57a29261fee53c1d1e4405b9728146f037888025be0"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/upstream/LICENSE",
+      "bytes": 1071,
+      "sha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab",
+      "lfNormalizedSha256": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/upstream/ponytail-audit.SKILL.md",
+      "bytes": 5417,
+      "sha256": "2b3223a02c386d1263e1b08343cb8eb3a53e444cdafb1d79e26c8ec2a8fcad28",
+      "lfNormalizedSha256": "2b3223a02c386d1263e1b08343cb8eb3a53e444cdafb1d79e26c8ec2a8fcad28"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/upstream/ponytail-review.SKILL.md",
+      "bytes": 5143,
+      "sha256": "33fe4ebe22a460924e5d4a261e223df22e409cc94ab76182bee9fb91a3ef022e",
+      "lfNormalizedSha256": "33fe4ebe22a460924e5d4a261e223df22e409cc94ab76182bee9fb91a3ef022e"
+    },
+    {
+      "path": "docs/evidence/ponytail-behavioral-2026-10-12/upstream/ponytail.SKILL.md",
+      "bytes": 3492,
+      "sha256": "ba68ff26239c3c3b05b2a9a47ee0d9a6b93a69639a2555ec87a5d44bffaf2f0c",
+      "lfNormalizedSha256": "ba68ff26239c3c3b05b2a9a47ee0d9a6b93a69639a2555ec87a5d44bffaf2f0c"
+    },
+    {
+      "path": "docs/audits/PONYTAIL_BEHAVIORAL_BLOAT_2026-10-12.md",
+      "bytes": 23272,
+      "sha256": "203833694a76bedd90cb0dc03e1ed1a1aa7cf1c911b2c9269a0158eff645a786",
+      "lfNormalizedSha256": "cb48e910750557ed7e7b65d056495d0b14187cfe025a01ffd4a61a20954d1ffe"
+    }
+  ],
+  "workingSourceInputs": [
+    {
+      "path": "apps/web/src/lib/publish-opportunities.ts",
+      "bytes": 7534,
+      "sha256": "802d0d07215b1f2fda37bec9c3be899a8d8004c428ec96b757dc75e9899d6f66",
+      "lfNormalizedSha256": "802d0d07215b1f2fda37bec9c3be899a8d8004c428ec96b757dc75e9899d6f66"
+    },
+    {
+      "path": "apps/web/src/pages/api/cron/scrape.ts",
+      "bytes": 145597,
+      "sha256": "70dff977e513bfc7820b8ea1724e70e0b379eeb60ce8a0eed22b4788e90ab223",
+      "lfNormalizedSha256": "70dff977e513bfc7820b8ea1724e70e0b379eeb60ce8a0eed22b4788e90ab223"
+    },
+    {
+      "path": "packages/scraper/ats.ts",
+      "bytes": 12534,
+      "sha256": "1c196f1fac0c14333ed70f6f82b30972f18216facee0578440271690df9cb184",
+      "lfNormalizedSha256": "3973f052cf4ebf0c0881b05dc38a6785916a92e9f9a6ace4da70424e37aa28d1"
+    },
+    {
+      "path": "packages/scraper/source-posting-date.ts",
+      "bytes": 2590,
+      "sha256": "3ac8ad1abc65642fafbe326872bc0538869ee51aafbc2212b8e9d8d81c2536dc",
+      "lfNormalizedSha256": "3ac8ad1abc65642fafbe326872bc0538869ee51aafbc2212b8e9d8d81c2536dc"
+    },
+    {
+      "path": "packages/scraper/publication-freshness.ts",
+      "bytes": 2014,
+      "sha256": "8e57d6dadf7b787ad23337650af4d9e133d4cfeae071d983e6caa00067289d77",
+      "lfNormalizedSha256": "8e57d6dadf7b787ad23337650af4d9e133d4cfeae071d983e6caa00067289d77"
+    },
+    {
+      "path": "packages/scraper/admission-evidence.ts",
+      "bytes": 23773,
+      "sha256": "60803a0055dcda9e51712dd75716c3155d381cc54565b42084c593adfb3c07a6",
+      "lfNormalizedSha256": "d738ce0af87e81e2b9117878f6873c999a11d1d27e2bf34ab67a292e89eb2909"
+    },
+    {
+      "path": "scripts/lake/ingest-to-lake.ts",
+      "bytes": 27118,
+      "sha256": "9816dd154fd00135ab729b1c0dd990493feab8fb549802e888acff385302e0cc",
+      "lfNormalizedSha256": "9c9e7be87ce782bac7b03cf3e1edcf90d85f5461c0da0b5a4e81d34363deaeab"
+    },
+    {
+      "path": "scripts/lake/run-lake-miner.ts",
+      "bytes": 12093,
+      "sha256": "5b090e7490ca1e28abfad07b1c9bbd4631cee5e36fe9f8bbe36e4755bc848974",
+      "lfNormalizedSha256": "a991ec967cde5134c7c9f66ca8d2db7d55326bcaa64dc1a2ea81b55d72a5aefc"
+    },
+    {
+      "path": "scripts/lake/domain-ats-discovery.ts",
+      "bytes": 58729,
+      "sha256": "0fca02858551c9c08f1730c5cadb45e0e0f75d84ba3be4a648d5c13c80262852",
+      "lfNormalizedSha256": "e7677c40a631fe2f9a786f011b09c498bb0da68f98a6bd9432aa72c0d916cf5b"
+    },
+    {
+      "path": "scripts/lake/reconcile-discovered-corpus.ts",
+      "bytes": 6487,
+      "sha256": "3b8665adcd026fb513908e406ee0b7f9b6d360671beb9d9a85206f3bbcb4cc46",
+      "lfNormalizedSha256": "63cbf8a712b6a13ec7a26042340c5114bb601b51a6d70adcad9b653f563ec2a6"
+    },
+    {
+      "path": "scripts/lake/sync-to-d1.ts",
+      "bytes": 21042,
+      "sha256": "b1d39eda1d3136da1704e71ae5e8e9533552aad1ab874370df109bb231ab68de",
+      "lfNormalizedSha256": "bb7ecb5172deab71e99e234ea874d306bcd8e102bca0aeafc462fdce87783b8d"
+    },
+    {
+      "path": "scripts/gcp/run-lake-miner.ts",
+      "bytes": 4104,
+      "sha256": "7b4b4a005f1ceee5cfab9155ba5ebe07094e29a460c2b8526af08e9351288c58",
+      "lfNormalizedSha256": "7e88f0c97ebce8e219d3fd9658792482ef1418c0e9e2107ec91395c5d0731ae2"
+    },
+    {
+      "path": "scripts/gcp/run-lake-publish.ts",
+      "bytes": 5121,
+      "sha256": "e0e6b824d58eb2753fb327468d743a5bcf0251da4ebe75b4c57401740820f104",
+      "lfNormalizedSha256": "e0e6b824d58eb2753fb327468d743a5bcf0251da4ebe75b4c57401740820f104"
+    },
+    {
+      "path": "apps/web/src/lib/public-serving-snapshot.ts",
+      "bytes": 35687,
+      "sha256": "3cd9308d66e18ebdc95ce64ac35d0896e74cd48dd34656d7fcfc75f97180a7c0",
+      "lfNormalizedSha256": "3cd9308d66e18ebdc95ce64ac35d0896e74cd48dd34656d7fcfc75f97180a7c0"
+    },
+    {
+      "path": "apps/web/src/lib/public-opportunities.ts",
+      "bytes": 573,
+      "sha256": "16f72e55c083fe7f78667ca71f64701c9756ef89ca7b0299cf6ca6a36874c7db",
+      "lfNormalizedSha256": "16f72e55c083fe7f78667ca71f64701c9756ef89ca7b0299cf6ca6a36874c7db"
+    },
+    {
+      "path": "apps/web/src/lib/public-board.ts",
+      "bytes": 6293,
+      "sha256": "cb524d4043c47b35f2c53c1fe170bd94f9db004ae19de9a1aeaa6d3353addab6",
+      "lfNormalizedSha256": "a0703b68811e95c2f17f5f57f7a93e6ae564c38cc96a15d8e2aecdaddd82ac12"
+    },
+    {
+      "path": "docs/ACCEPTED_PARAMETERS.yaml",
+      "bytes": 3925,
+      "sha256": "1384fc7ac0f86045293ed94594b306744c3c59ac6272803610088ecebf17cf69",
+      "lfNormalizedSha256": "1384fc7ac0f86045293ed94594b306744c3c59ac6272803610088ecebf17cf69"
+    },
+    {
+      "path": "infra/gcp/lake-miner/package.json",
+      "bytes": 193,
+      "sha256": "0dbb195f124eeeb8bf55c597703d96239c3e14c88f836b6336f81e08a33a1889",
+      "lfNormalizedSha256": "79871b6164c8cc7515f17904b040b4fa7425a92f9ac142e3e56bb09e52d4b321"
+    },
+    {
+      "path": "infra/gcp/lake-miner/Dockerfile",
+      "bytes": 926,
+      "sha256": "4428fe28b3ad42bb5dd18b335e230975f1b9d2ffd136f699c0910f08a29e7c0a",
+      "lfNormalizedSha256": "524b9b7da4844aa2c714f653178d387ec5d22edd7292058f566ae555cc3c9a6b"
+    }
+  ],
+  "sourceInputCaveat": "Working bytes were captured during concurrent owner tasks; digests describe inputs, not a clean committed source acceptance.",
+  "reproductions": [
+    {
+      "command": "bun run --no-env-file --preload ./scripts/ci/test-environment.ts ./docs/evidence/ponytail-behavioral-2026-10-12/canary-overflow-probe.ts",
+      "arguments": {
+        "source": "remotive",
+        "dates": [
+          "2026-10-09T12:00:00.000Z",
+          "2026-10-09T12:00:00.000Z",
+          "2026-10-09T12:00:00.000Z",
+          "2026-10-09T12:00:00.000Z"
+        ],
+        "enforceD1BindingBudget": true
+      },
+      "exitCode": 0,
+      "receipt": "canary-overflow-reproduced-result.json",
+      "oracle": "four inputs, cap two, two persisted/visible; validator saved; second304 leaves two missing",
+      "status": 200,
+      "secondStatus": 200,
+      "physicalRows": 2,
+      "visibleRows": 2,
+      "scope": {
+        "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+        "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+        "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+        "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+        "reference": "2026-10-10T12:00:00.000Z",
+        "replacementCount": 1,
+        "clockProjection": [
+          {
+            "name": "source_publication_ledger_append_only_delete",
+            "replacements": 0,
+            "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+            "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+          },
+          {
+            "name": "source_publication_ledger_append_only_update",
+            "replacements": 0,
+            "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+            "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+          },
+          {
+            "name": "source_publication_ledger_reject_caller_id",
+            "replacements": 0,
+            "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+            "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+          },
+          {
+            "name": "source_publication_ledger_validate_insert",
+            "replacements": 1,
+            "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+            "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+          }
+        ],
+        "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+        "maxBoundParameters": 100,
+        "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+      }
+    },
+    {
+      "command": "bun run --no-env-file --preload ./scripts/ci/test-environment.ts ./docs/evidence/ponytail-behavioral-2026-10-12/registry-rotation-probe.ts",
+      "exitCode": 0,
+      "receipt": "registry-rotation-reproduced-result.json",
+      "oracle": "five synthetic dispatches select aa,bb, never cc",
+      "ticks": 5,
+      "scope": "ACTUAL_REGISTRY_MERGE_AND_ARCHIVED_PRE_REPAIR_SELECTOR_SYNTHETIC_DISPATCH_NOT_CURRENT_SELECTOR_ACCEPTANCE"
+    },
+    {
+      "command": "bun run --no-env-file --preload ./scripts/ci/test-environment.ts ./docs/evidence/ponytail-behavioral-2026-10-12/ats-date-probe.ts",
+      "exitCode": 0,
+      "receipt": "ats-date-result.json",
+      "oracle": "malformed/unknown/future raw Workable evidence appears fresh after conversion; old Greenhouse edit date appears fresh for stale original",
+      "interceptedAttempts": 2,
+      "providerRequests": 0,
+      "aiCalls": 0,
+      "databaseWrites": 0,
+      "scope": "ACTUAL_CURRENT_ATS_PARSER_AND_FRESHNESS_COMPOSITION_ARCHIVED_LEGACY_NORMALIZER_NOT_ROUTE_OR_LIVE_D1_PROOF"
+    },
+    {
+      "command": "bun test --no-env-file --preload ./scripts/ci/test-environment.ts ./packages/scraper/publication-freshness.test.ts ./packages/scraper/adversarial-freshness-stress.test.ts ./packages/scraper/greenhouse-posting-evidence.test.ts",
+      "exitCode": 0,
+      "passed": 107,
+      "failed": 0,
+      "assertions": 157,
+      "files": 3,
+      "durationSeconds": 6.51,
+      "scope": "EXISTING_PURE_STRICT_DATE_GUARD_TESTS_NOT_NATIVE_RELEASE_OR_LIVE_PROOF"
+    }
+  ],
+  "skillProvenance": {
+    "baseAndAuditPriorPinnedRevision": "9cc65d03aa2da1db7121b912d03596409ee340b8",
+    "reviewUpstreamRevision": "NOT_INDEPENDENTLY_ESTABLISHED",
+    "upstreamFetchedForThisAudit": false
+  },
+  "optionalRocketAMSShadow": {
+    "status": "HELD",
+    "providerAttempts": 0,
+    "reason": "current request/cadence reservation not supplied; direct existing shadow defaults do not meet stricter512KiB/enforcedrobots contract"
+  },
+  "notProven": [
+    "0054 hotfix release acceptance",
+    "live503 cause",
+    "durable all-opening intake",
+    "company/vacancy PH qualification",
+    "100\u2013150 certified newly published jobs per day",
+    "MATH1\u201313 completion"
+  ],
+  "archiveFinalizedAt": "2026-10-12T13:20:33.551801+00:00",
+  "frameworkDocsRead": [
+    "https://bun.sh/docs/runtime/bunfig",
+    "https://bun.sh/docs/runtime/auto-install"
+  ]
+}

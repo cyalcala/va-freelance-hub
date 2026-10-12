@@ -1,0 +1,135 @@
+bun test v1.3.14 (0d9b296a)
+
+packages\scraper\publication-freshness.test.ts:
+(pass) accepted original posting freshness > retains missing original date null as unknown [7.05ms]
+(pass) accepted original posting freshness > retains missing original date undefined as unknown [0.12ms]
+(pass) accepted original posting freshness > retains missing original date "" as unknown [0.04ms]
+(pass) accepted original posting freshness > retains missing original date "   " as unknown [0.02ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date 0 [0.18ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date true [0.03ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date {}
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-10-09T12:00:00.000Z" [0.02ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-10-09" [0.10ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "October 9, 2026" [0.01ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-10-09T12:00:00"
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-02-29T12:00:00Z" [0.03ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-02-31T12:00:00Z" [0.02ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-04-31T12:00:00Z" [0.02ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-13-09T12:00:00Z" [0.01ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-10-09T24:00:00Z" [0.01ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-10-09T12:00:60Z" [0.01ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date "2026-10-09T12:00:00+24:00" [0.02ms]
+(pass) accepted original posting freshness > rejects invalid or ambiguous original date " 2026-10-09T12:00:00Z" [0.01ms]
+(pass) accepted original posting freshness > normalizes a valid stated instant 2026-10-09T12:00:00Z without substituting another clock [0.59ms]
+(pass) accepted original posting freshness > normalizes a valid stated instant 2026-10-09T20:00:00+08:00 without substituting another clock [0.06ms]
+(pass) accepted original posting freshness > normalizes a valid stated instant 2026-10-09T07:00:00-05:00 without substituting another clock [0.03ms]
+(pass) accepted original posting freshness > accepts exactly the existing inclusive thirty-day age boundary [0.18ms]
+(pass) accepted original posting freshness > withholds thirty days plus one millisecond without resetting the original date [0.12ms]
+(pass) accepted original posting freshness > withholds a posting one millisecond in the future [0.12ms]
+(pass) accepted original posting freshness > retains a valid leap-day timestamp as stale rather than repairing its calendar [0.08ms]
+(pass) accepted original posting freshness > accepts the existing source ISO fractional precision and preserves its normalized instant [0.09ms]
+(pass) accepted original posting freshness > withholds a supported sub-millisecond future instant 2026-10-09T12:00:00.000000001Z [0.57ms]
+(pass) accepted original posting freshness > withholds a supported sub-millisecond future instant 2026-10-09T12:00:00.123000001Z [0.14ms]
+(pass) accepted original posting freshness > withholds a supported sub-millisecond future instant 2026-10-09T20:00:00.000000001+08:00 [0.04ms]
+(pass) accepted original posting freshness > accepts a nanosecond inside the lower inclusive boundary [0.18ms]
+(pass) accepted original posting freshness > fails closed on invalid evaluation instant "" [0.08ms]
+(pass) accepted original posting freshness > fails closed on invalid evaluation instant "2026-02-31T12:00:00.000Z" [0.03ms]
+(pass) accepted original posting freshness > fails closed on invalid evaluation instant "2026-10-09T12:00:00Z" [0.03ms]
+
+packages\scraper\adversarial-freshness-stress.test.ts:
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-09-31T12:00:00.000Z [2.70ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-04-31T12:00:00.000Z [0.07ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-06-31T12:00:00.000Z [0.01ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-11-31T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-02-29T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-02-30T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-02-31T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 1900-02-29T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2100-02-29T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-00-15T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-13-15T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-10-00T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-10-32T12:00:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-10-10T24:00:00.000Z [0.03ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-10-10T24:01:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-10-10T12:60:00.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible ISO date: 2026-10-10T12:00:60.000Z
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: Wed, 31 Sep 2026 12:00:00 GMT [1.83ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: Sun, 29 Feb 2026 12:00:00 GMT [0.06ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: Sun, 29 Feb 2026 12:00:00 +0000 [0.02ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: Sun, 29 Feb 2026 12:00:00 +0800 [0.01ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: Sun, 29 Feb 2026 12:00:00 +08:00 [0.01ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: 31 Sep 2026 12:00:00 GMT [0.02ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: 29 Feb 2026 12:00:00 GMT [0.02ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: 31 Apr 2026 12:00:00 GMT [0.02ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: 31 Jun 2026 12:00:00 GMT [0.01ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: 31 Nov 2026 12:00:00 GMT [0.02ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: Wed, 31 Sep 2026 12:00:00 EST [0.01ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > rejects impossible RSS date: Sun, 29 Feb 2026 12:00:00 PST [0.08ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > accepts valid leap year February 29 (2024) [0.24ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 1. Impossible calendar rollover > accepts valid leap year February 29 (2000 - divisible by 400) [0.09ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: null [0.05ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: undefined [0.05ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "" [0.02ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "   "
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: 12345678 [0.06ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: {}
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: []
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "not-a-date" [0.02ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "undefined" [0.03ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "null"
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "NaN"
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "2026-10-10" [49.59ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "2026/10/10 12:00:00" [0.02ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "October 10, 2026"
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "Sat, 10 Oct 2026"
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "Fri, 09 Oct 2026 12:00:00 +25:00" [0.08ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 2. Unparseable, garbage, and edge inputs > rejects garbage input: "Fri, 09 Oct 2026 12:00:00 +00:60" [0.08ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 3. Preserves high-precision sub-millisecond timestamps > preserves nanosecond precision in ISO strings [0.14ms]
+(pass) Adversarial Stress Test: normalizeSourcePostingDate > 3. Preserves high-precision sub-millisecond timestamps > preserves microsecond precision in ISO strings [0.16ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 1. Impossible calendar dates > assessPostingFreshness returns INVALID for 2026-09-31T12:00:00.000Z [0.11ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 1. Impossible calendar dates > assessPostingFreshness returns INVALID for 2026-02-29T12:00:00.000Z [0.04ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 1. Impossible calendar dates > assessPostingFreshness returns INVALID for 2026-04-31T12:00:00.000Z [0.06ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 1. Impossible calendar dates > assessPostingFreshness returns INVALID for 2026-10-10T24:00:00.000Z [0.03ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 2. Sub-millisecond and nanosecond future boundaries > exact same millisecond (0ms offset) is WITHIN_WINDOW [0.34ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 2. Sub-millisecond and nanosecond future boundaries > +1ms future is FUTURE [0.40ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 2. Sub-millisecond and nanosecond future boundaries > +1ns future is FUTURE [0.50ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 2. Sub-millisecond and nanosecond future boundaries > +10ns future is FUTURE [0.11ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 2. Sub-millisecond and nanosecond future boundaries > +1 microsecond (1,000ns) future is FUTURE [0.15ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 2. Sub-millisecond and nanosecond future boundaries > +999 microseconds (999,000ns) future is FUTURE [0.10ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 2. Sub-millisecond and nanosecond future boundaries > future with timezone offset +08:00 (Manila) is FUTURE [0.07ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 3. Exact 30-day inclusive boundary and boundary +1ms / +1ns > exact 30-day inclusive boundary is WITHIN_WINDOW [0.13ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 3. Exact 30-day inclusive boundary and boundary +1ms / +1ns > 30 days minus 1ns (newer than boundary by 1ns) is WITHIN_WINDOW [0.09ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 3. Exact 30-day inclusive boundary and boundary +1ms / +1ns > 30 days minus 1ms (newer than boundary by 1ms) is WITHIN_WINDOW [0.11ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 3. Exact 30-day inclusive boundary and boundary +1ms / +1ns > 30 days plus 1ms (older than boundary by 1ms) is STALE [0.12ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 3. Exact 30-day inclusive boundary and boundary +1ms / +1ns > 30 days plus 1ns (older than boundary by 1ns) is STALE [0.09ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 3. Exact 30-day inclusive boundary and boundary +1ms / +1ns > 30 days plus 10ns (older than boundary by 10ns) is STALE [0.07ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 3. Exact 30-day inclusive boundary and boundary +1ms / +1ns > 30 days plus 500 microseconds (older by 500us) is STALE [0.07ms]
+(pass) Adversarial Stress Test: assessPostingFreshness > 3. Exact 30-day inclusive boundary and boundary +1ms / +1ns > 31 days stale is STALE [0.39ms]
+
+packages\scraper\greenhouse-posting-evidence.test.ts:
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+(pass) Greenhouse uses only supplied first_published as posting date on both intake planes [5.48ms]
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+[ats] Fetching greenhouse feed for Fixture (fixture)...
+(pass) missing or invalid first_published remains unknown despite a valid edit or creation timestamp [19.28ms]
+(pass) absence of prospect identity preserves the supplied source item without certifying vacancy [1.13ms]
+(pass) explicit Greenhouse prospect posts are not openings even with a role-looking title and date [0.80ms]
+
+ 107 pass
+ 0 fail
+ 157 expect() calls
+Ran 107 tests across 3 files. [6.51s]

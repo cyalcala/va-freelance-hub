@@ -1,0 +1,1215 @@
+{
+  "scope": {
+    "transport": "SYNTHETIC_ALLOWLISTED_RAW_PROVIDER_RESPONSES",
+    "parser": "ACTUAL_RSS_AND_REMOTEOK_JSON",
+    "persistence": "ACTUAL_ROUTE_DRIZZLE_NATIVE_SQLITE_FTS_GATEWAY",
+    "clock": "CLOCK_PROJECTED_NATIVE_TRIGGERS_NOT_BYTE_IDENTICAL_RUNTIME_PROOF",
+    "reference": "2026-10-10T12:00:00.000Z",
+    "replacementCount": 1,
+    "clockProjection": [
+      {
+        "name": "source_publication_ledger_append_only_delete",
+        "replacements": 0,
+        "originalSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d",
+        "projectedSha256": "8be4930aa790916f7b3b61b685242953ec48ab237e6e007bb343aa1b3a4b0e7d"
+      },
+      {
+        "name": "source_publication_ledger_append_only_update",
+        "replacements": 0,
+        "originalSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1",
+        "projectedSha256": "f36f4dd1a9ec373e4b9962113c3276fc9355c2a121dac5a2b28b65a4203a75c1"
+      },
+      {
+        "name": "source_publication_ledger_reject_caller_id",
+        "replacements": 0,
+        "originalSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685",
+        "projectedSha256": "a7f1463e370b2ac63000b092640f1de2d50b1d0bc8b35ed29994bbc2f8aab685"
+      },
+      {
+        "name": "source_publication_ledger_validate_insert",
+        "replacements": 1,
+        "originalSha256": "fca121eb06098b4f073d815cd48465b8161684f0b0a5196d15668aaba28a116c",
+        "projectedSha256": "c226d68a0c5774727a84b551725f0bf5e19a1eca6ca0b2d792bd89ddd58c7b7e"
+      }
+    ],
+    "bindingBudget": "D1_PARAMETER_CAP_ONLY_NOT_FULL_D1_RUNTIME",
+    "maxBoundParameters": 100,
+    "limitation": "Bun has no SQLite UDF registration; installed Node SQLite has no FTS5. Only literal ledger clock is projected; no live D1/provider/browser evidence."
+  },
+  "scenario": {
+    "source": "remotive",
+    "dates": [
+      "2026-10-09T12:00:00.000Z",
+      "2026-10-09T12:00:00.000Z",
+      "2026-10-09T12:00:00.000Z",
+      "2026-10-09T12:00:00.000Z"
+    ],
+    "enforceD1BindingBudget": true
+  },
+  "rawInputs": [
+    {
+      "source": "remotive",
+      "dates": [
+        "2026-10-09T12:00:00.000Z",
+        "2026-10-09T12:00:00.000Z",
+        "2026-10-09T12:00:00.000Z",
+        "2026-10-09T12:00:00.000Z"
+      ],
+      "body": "<rss><channel><item><title>Customer Support remotive 0</title><link>https://remotive.com/remote-jobs/customer-support/native-posting-0</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><pubDate>2026-10-09T12:00:00.000Z</pubDate><author>Native Posting Fixture Co</author></item><item><title>Customer Support remotive 1</title><link>https://remotive.com/remote-jobs/customer-support/native-posting-1</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><pubDate>2026-10-09T12:00:00.000Z</pubDate><author>Native Posting Fixture Co</author></item><item><title>Customer Support remotive 2</title><link>https://remotive.com/remote-jobs/customer-support/native-posting-2</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><pubDate>2026-10-09T12:00:00.000Z</pubDate><author>Native Posting Fixture Co</author></item><item><title>Customer Support remotive 3</title><link>https://remotive.com/remote-jobs/customer-support/native-posting-3</link><description>Remote role open to applicants in the Philippines.</description><region>Philippines</region><pubDate>2026-10-09T12:00:00.000Z</pubDate><author>Native Posting Fixture Co</author></item></channel></rss>"
+    }
+  ],
+  "parsed": [
+    {
+      "source": "remotive",
+      "items": [
+        {
+          "title": "Customer Support remotive 0",
+          "postedAt": "2026-10-09T12:00:00.000Z",
+          "sourceUrl": "https://remotive.com/remote-jobs/customer-support/native-posting-0",
+          "locationType": "remote",
+          "locationRaw": "Philippines"
+        },
+        {
+          "title": "Customer Support remotive 1",
+          "postedAt": "2026-10-09T12:00:00.000Z",
+          "sourceUrl": "https://remotive.com/remote-jobs/customer-support/native-posting-1",
+          "locationType": "remote",
+          "locationRaw": "Philippines"
+        },
+        {
+          "title": "Customer Support remotive 2",
+          "postedAt": "2026-10-09T12:00:00.000Z",
+          "sourceUrl": "https://remotive.com/remote-jobs/customer-support/native-posting-2",
+          "locationType": "remote",
+          "locationRaw": "Philippines"
+        },
+        {
+          "title": "Customer Support remotive 3",
+          "postedAt": "2026-10-09T12:00:00.000Z",
+          "sourceUrl": "https://remotive.com/remote-jobs/customer-support/native-posting-3",
+          "locationType": "remote",
+          "locationRaw": "Philippines"
+        }
+      ]
+    }
+  ],
+  "status": 200,
+  "body": {
+    "inserted": 2,
+    "actualChanges": 2,
+    "acceptedForInsert": 4,
+    "attemptedInsert": 4,
+    "insertFailedBatches": 0,
+    "insertErrors": [],
+    "triageFailures": 0,
+    "triageAiUnavailable": 0,
+    "triageProviderFailures": [],
+    "triageBudgetDeferred": 0,
+    "aiSubrequestCalls": 4,
+    "aiSubrequestBudget": 15,
+    "geoGateRejected": 0,
+    "postingFreshnessWithheld": 0,
+    "geoRejectionsBySource": {},
+    "consensusQuarantined": 0,
+    "unclearRetriaged": 0,
+    "unclearUpgraded": 0,
+    "unclearDeactivated": 0,
+    "unclearSkepticUnavailable": 0,
+    "unclearQuotaUnavailable": false,
+    "stateWriteOk": 5,
+    "stateWriteFailed": 0,
+    "rejectedPersisted": 0,
+    "rejectedInsertFailedBatches": 0,
+    "pendingPersisted": 0,
+    "pendingInsertFailedBatches": 0,
+    "pendingDrainClaimed": 0,
+    "pendingDrainPublished": 0,
+    "pendingDrainRejected": 0,
+    "pendingDrainQuarantined": 0,
+    "pendingDrainDeferred": 0,
+    "triageViaInngest": false,
+    "geminiConfigured": false,
+    "groqConfigured": false,
+    "droppedNoUrl": 0,
+    "quarantinedApplicationUrls": 0,
+    "anomalousApplicationHosts": [],
+    "unmatchedPauses": [],
+    "filteredOut": 0,
+    "processed": 4,
+    "backlogRemaining": 0,
+    "skipped": 2,
+    "failedSources": [],
+    "sourceResults": [
+      {
+        "sourceId": "we-work-remotely",
+        "sourceName": "We Work Remotely",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "notModified": false,
+        "etag": null,
+        "lastModified": null,
+        "bodyHash": "13dafe8603fd5dc8",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://weworkremotely.com"
+      },
+      {
+        "sourceId": "remotive",
+        "sourceName": "Remotive",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+        "ok": true,
+        "count": 4,
+        "durationMs": 0,
+        "notModified": false,
+        "etag": "\"canary-overflow-v1\"",
+        "lastModified": null,
+        "bodyHash": "1585d272cf75f84b",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://remotive.com"
+      },
+      {
+        "sourceId": "real-work-from-anywhere",
+        "sourceName": "Real Work From Anywhere",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "notModified": false,
+        "etag": null,
+        "lastModified": null,
+        "bodyHash": "13dafe8603fd5dc8",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /rss.xml",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://www.realworkfromanywhere.com"
+      },
+      {
+        "sourceId": "jobicy-admin-support-apac",
+        "sourceName": "Jobicy Admin Support APAC",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "notModified": false,
+        "etag": null,
+        "lastModified": null,
+        "bodyHash": "13dafe8603fd5dc8",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://jobicy.com"
+      },
+      {
+        "sourceId": "jobicy-supporting-apac",
+        "sourceName": "Jobicy Customer Support APAC",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-admin-support-apac this tick (shared-origin alternation)."
+      },
+      {
+        "sourceId": "remote-ok",
+        "sourceName": "Remote OK",
+        "sourceType": "JSON",
+        "collectionMethod": "public_json_api",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "notModified": false,
+        "etag": null,
+        "lastModified": null,
+        "bodyHash": "79b28c9ed0952022",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /api",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://remoteok.com"
+      },
+      {
+        "sourceId": "problogger",
+        "sourceName": "ProBlogger",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+      },
+      {
+        "sourceId": "remote-co",
+        "sourceName": "Remote.co",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+      },
+      {
+        "sourceId": "authentic-jobs",
+        "sourceName": "Authentic Jobs",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+      },
+      {
+        "sourceId": "dribbble",
+        "sourceName": "Dribbble Jobs",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+      },
+      {
+        "sourceId": "onlinejobs-ph",
+        "sourceName": "OnlineJobs.ph",
+        "sourceType": "HTML",
+        "collectionMethod": "public_html",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+      },
+      {
+        "sourceId": "jobspresso",
+        "sourceName": "Jobspresso",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+      }
+    ],
+    "fetchEventLog": {
+      "attempted": 12,
+      "recorded": 12,
+      "failedBatches": 0,
+      "errors": []
+    },
+    "cadenceGuards": {
+      "stateAvailable": true
+    },
+    "sourcesUnchanged": 0,
+    "robotsWouldBlock": 0,
+    "runDurationMs": 0
+  },
+  "firstRows": [
+    {
+      "url": "https://remotive.com/remote-jobs/customer-support/native-posting-0"
+    },
+    {
+      "url": "https://remotive.com/remote-jobs/customer-support/native-posting-1"
+    }
+  ],
+  "firstState": {
+    "source_id": "remotive",
+    "etag": "\"canary-overflow-v1\"",
+    "last_body_hash": "1585d272cf75f84b",
+    "last_attempt_at": "2026-10-10T12:00:00.000Z"
+  },
+  "secondStatus": 200,
+  "secondBody": {
+    "inserted": 0,
+    "actualChanges": 0,
+    "acceptedForInsert": 0,
+    "attemptedInsert": 0,
+    "insertFailedBatches": 0,
+    "insertErrors": [],
+    "skipped": 0,
+    "droppedNoUrl": 0,
+    "unmatchedPauses": [],
+    "failedSources": [],
+    "sourceResults": [
+      {
+        "sourceId": "we-work-remotely",
+        "sourceName": "We Work Remotely",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-09: public RSS page says anyone can use the feed with attribution and links back to WWR; robots allows the feed path.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "notModified": true,
+        "etag": null,
+        "lastModified": null,
+        "bodyHash": "13dafe8603fd5dc8",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /remote-jobs.rss",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://weworkremotely.com"
+      },
+      {
+        "sourceId": "remotive",
+        "sourceName": "Remotive",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-09: Remotive documents public API/RSS use with source mention and linkback; keep jobs ungated and route users to Remotive URLs.",
+        "ok": true,
+        "count": 4,
+        "durationMs": 0,
+        "notModified": true,
+        "etag": "\"canary-overflow-v1\"",
+        "lastModified": null,
+        "bodyHash": "1585d272cf75f84b",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /remote-jobs/feed",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://remotive.com"
+      },
+      {
+        "sourceId": "real-work-from-anywhere",
+        "sourceName": "Real Work From Anywhere",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-12: official public RSS endpoint is reachable, robots allows all, and feed metadata uses hourly TTL; collect minimal metadata and link back to original postings.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "notModified": true,
+        "etag": null,
+        "lastModified": null,
+        "bodyHash": "13dafe8603fd5dc8",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /rss.xml",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://www.realworkfromanywhere.com"
+      },
+      {
+        "sourceId": "jobicy-admin-support-apac",
+        "sourceName": "Jobicy Admin Support APAC",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-12: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Deferred by cadence group \"jobicy.com\": turn held by jobicy-supporting-apac this tick (shared-origin alternation)."
+      },
+      {
+        "sourceId": "jobicy-supporting-apac",
+        "sourceName": "Jobicy Customer Support APAC",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Goldilocks review 2026-06-13: documented RSS feed is intended for wider job distribution with source credit and linkback; robots allows /feed/job_feed and feed legal notice recommends only a few checks daily/hourly.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "notModified": false,
+        "etag": null,
+        "lastModified": null,
+        "bodyHash": "13dafe8603fd5dc8",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /feed/job_feed?job_categories=supporting&job_types=full-time&search_region=apac",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://jobicy.com"
+      },
+      {
+        "sourceId": "remote-ok",
+        "sourceName": "Remote OK",
+        "sourceType": "JSON",
+        "collectionMethod": "public_json_api",
+        "complianceStatus": "allowed",
+        "complianceNotes": "Current review 2026-06-13: official public JSON API is reachable, robots allows /api, and the API legal header requires follow links back to Remote OK job URLs plus source mention. Do not use the Remote OK logo without permission.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "notModified": true,
+        "etag": null,
+        "lastModified": null,
+        "bodyHash": "79b28c9ed0952022",
+        "robotsMode": "enforce",
+        "robotsVerdict": "allowed",
+        "robotsEvidence": "Allow: / matched /api",
+        "robotsCrawlDelay": null,
+        "robotsWouldBlock": false,
+        "robotsOrigin": "https://remoteok.com"
+      },
+      {
+        "sourceId": "problogger",
+        "sourceName": "ProBlogger",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: current feed returns only a moved/deleting notice and produces zero useful jobs; confirm a supported current feed before re-enabling."
+      },
+      {
+        "sourceId": "remote-co",
+        "sourceName": "Remote.co",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: repeated Hunter failures and live audit timeout/HTTP 520 behavior make this a noisy, unreliable source until reviewed."
+      },
+      {
+        "sourceId": "authentic-jobs",
+        "sourceName": "Authentic Jobs",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: robots.txt disallows /feed/; do not fetch until source permission or an allowed feed path is confirmed."
+      },
+      {
+        "sourceId": "dribbble",
+        "sourceName": "Dribbble Jobs",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: Dribbble terms prohibit scraping and automated access beyond narrow search-engine indexing permission."
+      },
+      {
+        "sourceId": "onlinejobs-ph",
+        "sourceName": "OnlineJobs.ph",
+        "sourceType": "HTML",
+        "collectionMethod": "public_html",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: terms permit personal use without automated means unless expressly granted; public HTML jobsearch is not a supported feed/API."
+      },
+      {
+        "sourceId": "jobspresso",
+        "sourceName": "Jobspresso",
+        "sourceType": "RSS",
+        "collectionMethod": "rss_feed",
+        "complianceStatus": "paused",
+        "complianceNotes": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing.",
+        "ok": true,
+        "count": 0,
+        "durationMs": 0,
+        "skipped": true,
+        "skipReason": "Paused 2026-06-09: current feed returns only a small placeholder/zero-job response, and site terms limit material use to personal transitory viewing."
+      }
+    ],
+    "fetchEventLog": {
+      "attempted": 12,
+      "recorded": 12,
+      "failedBatches": 0,
+      "errors": []
+    },
+    "cadenceGuards": {
+      "stateAvailable": true
+    },
+    "sourcesUnchanged": 4,
+    "robotsWouldBlock": 0,
+    "quarantinedApplicationUrls": 0,
+    "anomalousApplicationHosts": [],
+    "unclearRetriaged": 0,
+    "unclearUpgraded": 0,
+    "unclearDeactivated": 0,
+    "unclearSkepticUnavailable": 0,
+    "unclearQuotaUnavailable": false,
+    "stateWriteOk": 5,
+    "stateWriteFailed": 0,
+    "message": "No jobs scraped"
+  },
+  "secondState": {
+    "source_id": "remotive",
+    "etag": "\"canary-overflow-v1\"",
+    "last_body_hash": "1585d272cf75f84b",
+    "last_attempt_at": "2026-10-10T13:01:00.000Z"
+  },
+  "aiCalls": 4,
+  "rows": [
+    {
+      "id": 1,
+      "title": "Customer Support remotive 0",
+      "active": 1,
+      "reason": null,
+      "eligibility": "eligible_verified",
+      "type": "remote",
+      "source": "remotive",
+      "postedAt": "2026-10-09T12:00:00.000Z",
+      "scrapedAt": "2026-10-10T12:00:00.000Z",
+      "updatedAt": "2026-10-10T12:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "Customer Support remotive 1",
+      "active": 1,
+      "reason": null,
+      "eligibility": "eligible_verified",
+      "type": "remote",
+      "source": "remotive",
+      "postedAt": "2026-10-09T12:00:00.000Z",
+      "scrapedAt": "2026-10-10T12:00:00.000Z",
+      "updatedAt": "2026-10-10T12:00:00.000Z"
+    }
+  ],
+  "visible": [
+    {
+      "id": 1
+    },
+    {
+      "id": 2
+    }
+  ],
+  "ftsCount": 2,
+  "ledger": [
+    {
+      "source": "remotive",
+      "n": 2,
+      "ids": "[1,2]"
+    }
+  ],
+  "ownershipReads": 1,
+  "actualReturnedIds": [
+    [
+      1,
+      2
+    ]
+  ],
+  "transports": [
+    {
+      "phase": "parser-preview",
+      "source": "remotive",
+      "url": "https://remotive.com/remote-jobs/feed",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route",
+      "source": null,
+      "url": "https://weworkremotely.com/robots.txt"
+    },
+    {
+      "phase": "route",
+      "source": null,
+      "url": "https://remotive.com/robots.txt"
+    },
+    {
+      "phase": "route",
+      "source": null,
+      "url": "https://www.realworkfromanywhere.com/robots.txt"
+    },
+    {
+      "phase": "route",
+      "source": null,
+      "url": "https://jobicy.com/robots.txt"
+    },
+    {
+      "phase": "route",
+      "source": "we-work-remotely",
+      "url": "https://weworkremotely.com/remote-jobs.rss",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route",
+      "source": "remotive",
+      "url": "https://remotive.com/remote-jobs/feed",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route",
+      "source": "real-work-from-anywhere",
+      "url": "https://www.realworkfromanywhere.com/rss.xml",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route",
+      "source": "jobicy-admin-support-apac",
+      "url": "https://jobicy.com/feed/job_feed?job_categories=admin-support&job_types=full-time&search_region=apac",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route",
+      "source": null,
+      "url": "https://remoteok.com/robots.txt"
+    },
+    {
+      "phase": "route",
+      "source": "remote-ok",
+      "url": "https://remoteok.com/api",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route-second",
+      "source": "we-work-remotely",
+      "url": "https://weworkremotely.com/remote-jobs.rss",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route-second",
+      "source": "remotive",
+      "url": "https://remotive.com/remote-jobs/feed",
+      "ifNoneMatch": "\"canary-overflow-v1\"",
+      "status": 304
+    },
+    {
+      "phase": "route-second",
+      "source": "real-work-from-anywhere",
+      "url": "https://www.realworkfromanywhere.com/rss.xml",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route-second",
+      "source": "jobicy-supporting-apac",
+      "url": "https://jobicy.com/feed/job_feed?job_categories=supporting&job_types=full-time&search_region=apac",
+      "ifNoneMatch": null,
+      "status": 200
+    },
+    {
+      "phase": "route-second",
+      "source": "remote-ok",
+      "url": "https://remoteok.com/api",
+      "ifNoneMatch": null,
+      "status": 200
+    }
+  ],
+  "bindingAttempts": [
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 8,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 7,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 13,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 13,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 13,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 13,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 13,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 95,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 95,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 38,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": true,
+      "parameters": 54,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 5,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 8,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 12,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 12,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 11,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 7,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 7,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 7,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 8,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 6,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 7,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 7,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 7,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 15,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 8,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 7,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 0,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 1,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 95,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 95,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 38,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 25,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 2,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 15,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 4,
+      "rejected": false
+    },
+    {
+      "opportunityInsert": false,
+      "parameters": 3,
+      "rejected": false
+    }
+  ],
+  "opportunityInsertAttempts": 1,
+  "insertFaultInjected": false,
+  "opportunityInserts": 1,
+  "deleteQueries": 0
+}

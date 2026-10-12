@@ -1,5 +1,64 @@
 # Astra777 — current incident and continuation contract
 
+## Latest owner steering and reconciled runtime evidence — October 12
+
+The owner explicitly prioritizes all openings at known VA companies, especially
+the Australian/dayshift and previously vetted directory cohorts. Apply the
+exception to attention and intake completeness. Account for every permitted
+observed opening as published, rejected with a reason, or durably pending.
+Preserve per-vacancy PH/remote, original-date, source permission, URL, opt-out,
+deduplication, canary and publication gates. A directory label or employer name
+does not create verified vacancy evidence. Scoped current employer policy may
+support a vacancy only when it demonstrably covers that role and no posting
+restriction contradicts it. Never count incomplete/uncertain output as certified.
+
+The owner also requested Ponytail investigation of behavioral bloat. The current
+main/review/audit skills are installed under .agents/skills/ponytail-upstream,
+pinned to upstream 9b58c1ffb790c075ca32e70a89cf1d80588f4abf. Read their actual
+SKILL.md instructions; reuse existing controls and fix demonstrated behavior.
+
+Later evidence supersedes the initial persistent-zero diagnosis:
+
+- Acquisition/publication resumed at 18:30 Manila, before our caller release.
+  Earlier 503 cause remains unknown. The 19:20 scheduled tick completed cleanly
+  with zero output; it was one idle tick, not the whole recovery window.
+- At 19:39 D1 had 1,634 public rows, 22 first seen today, eight stored verified
+  labels and 17 source-posted-today rows. The ledger reported 22 publications
+  but retained only 14 unique IDs. These are not a certified daily cohort.
+- At 19:44 ordinary pages still showed snapshot 17:03, 1,617 jobs and one
+  October 12 label. At 19:52 a newer 19:05 snapshot showed 1,631 jobs, 19
+  arrivals and 15 October 12 labels. Snapshot delay was real and later recovered.
+- Seven admitted Workable canaries are starved by selection before permission,
+  cadence and deduplication; registry-only negative IDs also never advance the
+  directory verification clock. The actual old handler has a native RED with
+  six ticks and zero Workable fetches. A due/policy/unique selector is integrated
+  locally; main native GREEN passed four tests/102 assertions. The separate
+  0054-compatible release still needs complete verification and deployment.
+- A native current-handler counterexample received four fresh PH postings,
+  published two under a canary cap, saved validators, then lost the other two
+  behind the next 304. ATS fetches are unconditional but their overflow is also
+  undurable. All-opening completeness requires durable coverage before limits.
+- Existing Australian/dayshift inventory has 46 records, 44 visible and 22
+  stored verified flags. Only five have careers URLs/canonical joins; Hunt St
+  and RocketAMS are admitted canaries, three others need review, and 39 visible
+  companies lack those joins. Flags alone do not prove current vetting.
+
+Read docs/operations/ZERO_FLOW_SOURCE_DIAGNOSIS_2026-10-12.md and
+docs/operations/RETAINED_CALLER_DIAGNOSTIC_RELEASE_2026-10-12.md for exact windows.
+The latter's module exactly matches the tested artifact and its source commit
+is read back on both SSM/GitLab. MATH remains 0/13; certified daily flow UNKNOWN.
+NEXT: protect every enabled public exposure with original-date checks in the
+0054-compatible release before restoring Workable selection. The offline ATS
+probe demonstrates impossible-date coercion, nanosecond-future truncation and
+creation/edit-date substitution. The existing strict date guards pass 107 tests,
+but that is not live release acceptance. Read
+docs/audits/PONYTAIL_BEHAVIORAL_BLOAT_2026-10-12.md and its hashed evidence.
+The local five-minute snapshot repair passed 52 targeted tests/211 assertions;
+independent review found a cached-HIT TTL boundary needing repair. It remains
+undeployed. Retain all permitted opening intake before publication limits,
+then independently reconcile real vacancy/receipt/visibility outcomes. No new
+clock, source admission, lowered cap or completed MATH claim follows from prose.
+
 Updated 2026-10-12, Asia/Manila (+08:00). The owner reports one October 12
 job on the website at 17:26 and directs steady, reliable progress every ten
 minutes and every hour toward 100–150 newly first-published unique verified
@@ -84,10 +143,21 @@ REDs were 108 scraper bindings and 120 direct-ingest bindings, above 100.
 Three-row physical chunks retain one source proposal and actual-ID receipt.
 Native controls cover invalid dates, duplicates, historical retries, canary cap
 and partial failure. Full regression passed 4,204 tests / zero failures /
-329,278 assertions / 255 files. Final typecheck and build pass; remote checkpoint
-is pending. Initial fixture type errors were corrected without suppressions.
+329,278 assertions / 255 files. Final typecheck and build pass. Checkpoint
+170ad5fd5fecb47ecc7e5bbafaa9ace997dd00a1 is exactly read back on SSM and GitLab
+and recovered through a fresh network clone. Initial fixture type errors were
+corrected without suppressions.
 Fixture transport instrumentation received a separate narrow verification;
 do not silently attribute a changed fixture to the earlier full run.
+
+The caller diagnostic slice c5521b1b1ca977e9a762413965db6df3a5dc6019 is also
+exactly read back on both remotes. Its 104 Worker tests / zero failures / 628
+assertions, typecheck, build dry run and independent review passed. Only the
+existing retained Worker was deployed, version 5869833f-bdd2-4d74-99f1-ab571a4a5fe4,
+preserving its */10 clock and targets. Independent module/configuration read-back
+and a passive normal tick passed; this is not a flow repair. The locally reviewed RETURNING
+lock-owner repair is separate, with broader verification in progress. Production
+Pages/schema remains at the observed old revision/0054.
 
 UNKNOWN/prefix truth does not imply rollback: partial unreceipted rows can remain
 public. An independent opt-out-between-chunks probe still publishes successfully.

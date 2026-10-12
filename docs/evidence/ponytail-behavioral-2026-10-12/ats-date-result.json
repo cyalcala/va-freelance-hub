@@ -1,0 +1,154 @@
+{
+  "scope": "ACTUAL_CURRENT_ATS_PARSER_AND_FRESHNESS_COMPOSITION_ARCHIVED_LEGACY_NORMALIZER_NOT_ROUTE_OR_LIVE_D1_PROOF",
+  "observedAt": "2026-10-12T12:00:00.000Z",
+  "legacyRevision": "3065f0d709d5a1950c247d5a11df542b07721bcb",
+  "interceptedAttempts": 2,
+  "providerRequests": 0,
+  "aiCalls": 0,
+  "databaseWrites": 0,
+  "workable": [
+    {
+      "name": "fresh original",
+      "published_on": "2026-10-11T12:00:00.000Z",
+      "legacyPostedAt": "2026-10-11T12:00:00.000Z",
+      "adapterPostedAt": "2026-10-11T12:00:00.000Z",
+      "adapterFreshness": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-11T12:00:00.000Z"
+      },
+      "strictOriginal": "2026-10-11T12:00:00.000Z",
+      "originalFreshness": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-11T12:00:00.000Z"
+      }
+    },
+    {
+      "name": "impossible September31",
+      "published_on": "2026-09-31T12:00:00.000Z",
+      "legacyPostedAt": "2026-10-01T12:00:00.000Z",
+      "adapterPostedAt": "2026-10-01T12:00:00.000Z",
+      "adapterFreshness": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-01T12:00:00.000Z"
+      },
+      "strictOriginal": null,
+      "originalFreshness": {
+        "state": "INVALID",
+        "postedAt": null
+      }
+    },
+    {
+      "name": "date only",
+      "published_on": "2026-10-11",
+      "legacyPostedAt": "2026-10-11T00:00:00.000Z",
+      "adapterPostedAt": "2026-10-11T00:00:00.000Z",
+      "adapterFreshness": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-11T00:00:00.000Z"
+      },
+      "strictOriginal": null,
+      "originalFreshness": {
+        "state": "INVALID",
+        "postedAt": null
+      }
+    },
+    {
+      "name": "one nanosecond future",
+      "published_on": "2026-10-12T12:00:00.000000001Z",
+      "legacyPostedAt": "2026-10-12T12:00:00.000Z",
+      "adapterPostedAt": "2026-10-12T12:00:00.000Z",
+      "adapterFreshness": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-12T12:00:00.000Z"
+      },
+      "strictOriginal": "2026-10-12T12:00:00.000000001Z",
+      "originalFreshness": {
+        "state": "FUTURE",
+        "postedAt": "2026-10-12T12:00:00.000Z"
+      }
+    },
+    {
+      "name": "missing publication with creation fallback",
+      "published_on": null,
+      "created_at": "2026-10-11T12:00:00.000Z",
+      "legacyPostedAt": "2026-10-11T12:00:00.000Z",
+      "adapterPostedAt": "2026-10-11T12:00:00.000Z",
+      "adapterFreshness": {
+        "state": "WITHIN_WINDOW",
+        "postedAt": "2026-10-11T12:00:00.000Z"
+      },
+      "strictOriginal": null,
+      "originalFreshness": {
+        "state": "UNKNOWN",
+        "postedAt": null
+      }
+    },
+    {
+      "name": "missing both",
+      "published_on": null,
+      "legacyPostedAt": null,
+      "adapterPostedAt": null,
+      "adapterFreshness": {
+        "state": "UNKNOWN",
+        "postedAt": null
+      },
+      "strictOriginal": null,
+      "originalFreshness": {
+        "state": "UNKNOWN",
+        "postedAt": null
+      }
+    },
+    {
+      "name": "stale original",
+      "published_on": "2026-09-01T12:00:00.000Z",
+      "legacyPostedAt": "2026-09-01T12:00:00.000Z",
+      "adapterPostedAt": "2026-09-01T12:00:00.000Z",
+      "adapterFreshness": {
+        "state": "STALE",
+        "postedAt": "2026-09-01T12:00:00.000Z"
+      },
+      "strictOriginal": "2026-09-01T12:00:00.000Z",
+      "originalFreshness": {
+        "state": "STALE",
+        "postedAt": "2026-09-01T12:00:00.000Z"
+      }
+    },
+    {
+      "name": "future original",
+      "published_on": "2026-10-13T12:00:00.000Z",
+      "legacyPostedAt": "2026-10-13T12:00:00.000Z",
+      "adapterPostedAt": "2026-10-13T12:00:00.000Z",
+      "adapterFreshness": {
+        "state": "FUTURE",
+        "postedAt": "2026-10-13T12:00:00.000Z"
+      },
+      "strictOriginal": "2026-10-13T12:00:00.000Z",
+      "originalFreshness": {
+        "state": "FUTURE",
+        "postedAt": "2026-10-13T12:00:00.000Z"
+      }
+    }
+  ],
+  "greenhouse": {
+    "raw": {
+      "title": "Edited stale role",
+      "absolute_url": "https://boards.greenhouse.io/synthetic-date-audit/jobs/1",
+      "internal_job_id": 1,
+      "updated_at": "2026-10-12T12:00:00.000Z",
+      "first_published": "2026-09-01T12:00:00.000Z",
+      "location": {
+        "name": "Remote Philippines"
+      }
+    },
+    "legacyPostedAt": "2026-10-12T12:00:00.000Z",
+    "currentPostedAt": "2026-09-01T12:00:00.000Z",
+    "legacyFreshnessIfChecked": {
+      "state": "WITHIN_WINDOW",
+      "postedAt": "2026-10-12T12:00:00.000Z"
+    },
+    "currentFreshness": {
+      "state": "STALE",
+      "postedAt": "2026-09-01T12:00:00.000Z"
+    }
+  }
+}

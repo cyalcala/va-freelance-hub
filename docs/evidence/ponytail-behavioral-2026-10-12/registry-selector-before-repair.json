@@ -1,0 +1,6 @@
+{
+  "gitRevision": "c5521b1b1ca977e9a762413965db6df3a5dc6019",
+  "path": "apps/web/src/pages/api/cron/scrape.ts",
+  "code": "    const sortedAtsAgencies = [...atsAgencies].sort((a, b) =>\n      atsSourceKey(a).localeCompare(atsSourceKey(b)) ||\n      a.companyName.localeCompare(b.companyName)\n    );\n\n    // Staggered Workable Polling: Select only the 2 oldest/unscraped Workable agencies\n    const workableAgencies = sortedAtsAgencies.filter(a => a.atsPlatform === \"workable\");\n    workableAgencies.sort((a, b) => {\n      if (!a.verifiedAt && b.verifiedAt) return -1;\n      if (a.verifiedAt && !b.verifiedAt) return 1;\n      if (!a.verifiedAt && !b.verifiedAt) return 0;\n      return a.verifiedAt!.localeCompare(b.verifiedAt!);\n    });\n    const allowedWorkableTokens = new Set(workableAgencies.slice(0, 2).map(a => a.atsToken));\n\n",
+  "sha256Lf": "4b6e0d3a53b69f4ebbe0d6f974dcabab616ea5f40d85096b85b35819131d0c77"
+}

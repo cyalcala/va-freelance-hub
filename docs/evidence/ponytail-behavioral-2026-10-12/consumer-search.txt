@@ -1,0 +1,301 @@
+.\.agents\teamwork\teamwork_preview_explorer_m1_2_rep\handoff.md:27:     - Lines 536–552: Canary capacity reservation via `reserveCanaryCapacity` using `source_publication_reservation` (migration `0057`).
+.\.agents\teamwork\teamwork_preview_explorer_m1_2_rep\analysis.md:83:       │ (Capped: reserveCanaryCapacity in 0057)
+.\.agents\teamwork\teamwork_preview_explorer_m1_2_rep\analysis.md:97:[recordPortfolioExposure() & recordManilaDay()]           postPersistenceFailure()
+.\.agents\teamwork\teamwork_preview_explorer_m1_2_rep\analysis.md:189:  - For canary sources: `reserveCanaryCapacity()` checks `LOAD_RESERVATION_SQL WHERE retry_key = ?`. Since the previous reservation committed with this `retry_key`, it recognises the existing reservation (`if (existing?.retry_key === request.retryKey) return true;`) and permits the write.
+.\docs\AI_RECOVERY_TRAIL.md:910:**SP-12 (Greenhouse minimal-index shadow) is VERIFYING, not KEEP.** Real live SP-07 shadow probe against `greenhouse:grafanalabs` returned healthy (134 real jobs, robots allowed); the SP-08 evidence packet is `review_ready`. Code merged (`7769d69` → `main` `23e74dd`, PR #92) with **zero D1 mutation** — the actual `source_registry`/`provider_profiles`/`source_decisions` write was **blocked by the harness's own auto-mode safety classifier** (a real compliance-state change on a source outside the exact six) and was deliberately not routed around; it awaits explicit owner authorization. Evidence: `docs/gauntlet/evidence/SP-12-greenhouse-grafanalabs-day1-evidence.md`. Exact-six `ROBOTS_ENFORCE_SOURCE_IDS` and the five-token `ATS_TOKEN_POLICIES` Greenhouse pause are both unchanged.
+.\scripts\lake\raw-publication-fence.test.ts:116:      const outcome = await runner.runLakePublish();
+.\scripts\gcp\run-lake-publish.ts:31:export async function runLakePublish(
+.\scripts\gcp\run-lake-publish.ts:142:  const result = await runLakePublish();
+.\scripts\gcp\run-lake-publish.test.ts:2:import { runLakePublish, formatGcpLog, type LakePublishLogPayload } from "./run-lake-publish";
+.\scripts\gcp\run-lake-publish.test.ts:35:    const result = await runLakePublish(mockEnv as any);
+.\scripts\gcp\run-lake-publish.test.ts:47:    const result = await runLakePublish(mockEnv as any);
+.\scripts\gcp\run-lake-publish.test.ts:66:    const result = await runLakePublish(mockEnv as any, { syncFn: throwingSync as any });
+.\scripts\gcp\run-lake-miner.ts:29:export async function runGcpLakeMiner(
+.\scripts\gcp\run-lake-miner.ts:127:  runGcpLakeMiner().then((res) => {
+.\scripts\gcp\run-lake-miner.test.ts:2:import { runGcpLakeMiner, formatGcpMinerLog } from "./run-lake-miner";
+.\scripts\gcp\run-lake-miner.test.ts:25:    const result = await runGcpLakeMiner({
+.\scripts\gcp\run-lake-miner.test.ts:47:    const result = await runGcpLakeMiner(
+.\scripts\gcp\run-lake-miner.test.ts:77:    const result = await runGcpLakeMiner(
+.\apps\web\tests\workable-rotation.test.ts:2:import { selectWorkableRotation } from "../src/lib/workable-rotation";
+.\apps\web\tests\residual-ats-source-policy.test.ts:7:const tokenPolicyStart = scrapeSource.indexOf("const ATS_TOKEN_POLICIES");
+.\apps\web\tests\residual-ats-source-policy.test.ts:17:  greenhouse: "GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE",
+.\apps\web\tests\residual-ats-source-policy.test.ts:18:  breezy: "BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE",
+.\apps\web\tests\residual-ats-source-policy.test.ts:45:    const greenhouse = note("GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE");
+.\apps\web\tests\residual-ats-source-policy.test.ts:50:    const breezy = note("BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE");
+.\apps\web\tests\native-workable-rotation.test.ts:18:    "./apps/web/tests/fixtures/native-workable-rotation.ts", JSON.stringify(scenario)], {
+.\apps\web\tests\ashby-source-policy.test.ts:7:const tokenPolicyStart = scrapeSource.indexOf("const ATS_TOKEN_POLICIES");
+.\apps\web\tests\ashby-source-policy.test.ts:28:        "complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE",
+.\apps\web\src\pages\api\cron\scrape.ts:14:import { selectWorkableRotation } from "@/lib/workable-rotation";
+.\apps\web\src\pages\api\cron\scrape.ts:794:const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
+.\apps\web\src\pages\api\cron\scrape.ts:797:    // ATS_TOKEN_POLICIES below (fail-closed for any unreviewed Ashby org).
+.\apps\web\src\pages\api\cron\scrape.ts:829:const ASHBY_PARTNER_ACCESS_PAUSE_NOTE =
+.\apps\web\src\pages\api\cron\scrape.ts:832:const GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE =
+.\apps\web\src\pages\api\cron\scrape.ts:835:const BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE =
+.\apps\web\src\pages\api\cron\scrape.ts:838:const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
+.\apps\web\src\pages\api\cron\scrape.ts:845:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:850:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:855:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:860:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:865:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:870:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:875:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:880:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:885:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:890:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:895:    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:900:    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:905:    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:910:    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\apps\web\src\pages\api\cron\scrape.ts:969:  if (sourceKey && sourceKey in ATS_TOKEN_POLICIES) {
+.\apps\web\src\pages\api\cron\scrape.ts:970:    return ATS_TOKEN_POLICIES[sourceKey];
+.\apps\web\src\pages\api\cron\scrape.ts:973:  if (platform && platform in ATS_PLATFORM_POLICIES) {
+.\apps\web\src\pages\api\cron\scrape.ts:974:    return ATS_PLATFORM_POLICIES[platform];
+.\apps\web\src\pages\api\cron\prospect.ts:38://    token absent from ATS_TOKEN_POLICIES stays PAUSED, so nothing is scraped
+.\apps\web\src\pages\api\cron\prospect.ts:425:    // into ATS_TOKEN_POLICIES. Now augmented by durable registry state:
+.\scripts\diagnostics\source-registry.ts:29:// `ATS_TOKEN_POLICIES` in `apps/web/src/pages/api/cron/scrape.ts`.
+.\.github\workflows\gha-prospector-pulse.yml:102:          # without a human editing ATS_TOKEN_POLICIES.
+.\.github\workflows\gha-prospector-pulse.yml:122:              echo "2. Add \`${KEY}\` to \`ATS_TOKEN_POLICIES\` in \`apps/web/src/pages/api/cron/scrape.ts\` as \`enabled: true, complianceStatus: \"needs_review\"\`."
+.\docs\error-catalog.md:19:  `packages/scraper/sources.ts` or `ATS_TOKEN_POLICIES` if terms/availability
+.\docs\directory-growth-strategy-2026-08-16.md:124:   tokens; a human reviews and enables them in `ATS_TOKEN_POLICIES`.
+.\packages\scraper\rss.ts:6:import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput, type SourceTransport } from "./conditional";
+.\packages\scraper\rss.ts:51:export async function fetchRSSFeed(source: Source, state?: ConditionalState, transport?: SourceTransport): Promise<SourceFetchOutput> {
+.\packages\scraper\rss.ts:59:    const cond = await conditionalFetchText(
+.\packages\scraper\publication-gateway.ts:474:    if (request.proposedCount > 0 && !await reserveCanaryCapacity(db, request)) {
+.\packages\scraper\publication-gateway.ts:530:    await recordPortfolioExposure(db, request, acknowledgement.publishedCount);
+.\packages\scraper\publication-gateway.ts:531:    await recordManilaDayFirstPublish(db, request);
+.\packages\scraper\publication-gateway.ts:536:async function reserveCanaryCapacity(
+.\packages\scraper\publication-gateway.ts:597:async function recordPortfolioExposure(
+.\packages\scraper\publication-gateway.ts:777:async function recordManilaDayFirstPublish(
+.\packages\scraper\publication-authority-gaps.test.ts:17:import { ROBOTS_ENFORCE_SOURCE_IDS, ATS_PLATFORM_POLICIES } from "./policy-resolver";
+.\packages\scraper\publication-authority-gaps.test.ts:465:    test("ATS_PLATFORM_POLICIES ashby is paused with COMP-01C reference", () => {
+.\packages\scraper\publication-authority-gaps.test.ts:466:      const ashby = ATS_PLATFORM_POLICIES.ashby;
+.\packages\scraper\publication-authority-gaps.test.ts:473:    test("ATS_PLATFORM_POLICIES breezy is paused with COMP-01D reference", () => {
+.\packages\scraper\publication-authority-gaps.test.ts:474:      const breezy = ATS_PLATFORM_POLICIES.breezy;
+.\packages\scraper\publication-authority-gaps.test.ts:482:      expect(ATS_PLATFORM_POLICIES.workable.enabled).toBe(false);
+.\packages\scraper\publication-authority-gaps.test.ts:483:      expect(ATS_PLATFORM_POLICIES.greenhouse.enabled).toBe(false);
+.\packages\scraper\publication-authority-gaps.test.ts:484:      expect(ATS_PLATFORM_POLICIES.lever.enabled).toBe(false);
+.\packages\scraper\policy-resolver.ts:16: *   `ATS_PLATFORM_POLICIES` / `ATS_TOKEN_POLICIES` until registry rollout is
+.\packages\scraper\policy-resolver.ts:169:// Exact copy of `ATS_PLATFORM_POLICIES` in `scrape.ts` (2026-08-29).
+.\packages\scraper\policy-resolver.ts:170:export const ATS_PLATFORM_POLICIES: Record<AtsPlatform, AtsPlatformPolicy> = {
+.\packages\scraper\policy-resolver.ts:203:const ASHBY_PARTNER_ACCESS_PAUSE_NOTE =
+.\packages\scraper\policy-resolver.ts:206:const GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE =
+.\packages\scraper\policy-resolver.ts:209:const BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE =
+.\packages\scraper\policy-resolver.ts:212:// Exact copy of `ATS_TOKEN_POLICIES` in `scrape.ts`.
+.\packages\scraper\policy-resolver.ts:213:export const ATS_TOKEN_POLICIES: Record<string, AtsPlatformPolicy> = {
+.\packages\scraper\policy-resolver.ts:217:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:222:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:227:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:232:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:237:    complianceNotes: ASHBY_PARTNER_ACCESS_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:242:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:247:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:252:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:257:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:262:    complianceNotes: GREENHOUSE_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:267:    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:272:    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:277:    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:282:    complianceNotes: BREEZY_INTEGRATION_AUTHORITY_PAUSE_NOTE,
+.\packages\scraper\policy-resolver.ts:317:  if (sourceKey in ATS_TOKEN_POLICIES) return ATS_TOKEN_POLICIES[sourceKey];
+.\packages\scraper\policy-resolver.ts:319:  if (platform && platform in ATS_PLATFORM_POLICIES) return ATS_PLATFORM_POLICIES[platform];
+.\packages\scraper\policy-resolver.ts:487:    if (platform in ATS_PLATFORM_POLICIES) {
+.\packages\scraper\policy-resolver.ts:488:      const p = ATS_PLATFORM_POLICIES[platform];
+.\packages\scraper\policy-resolver.ts:617:export const KNOWN_ATS_IDS = Object.keys(ATS_TOKEN_POLICIES);
+.\packages\scraper\policy-resolver.test.ts:10:  ATS_PLATFORM_POLICIES,
+.\packages\scraper\policy-resolver.test.ts:11:  ATS_TOKEN_POLICIES,
+.\packages\scraper\policy-resolver.test.ts:130:    const platforms = Object.keys(ATS_PLATFORM_POLICIES);
+.\packages\scraper\policy-resolver.test.ts:132:    for (const p of Object.values(ATS_PLATFORM_POLICIES)) {
+.\packages\scraper\policy-resolver.test.ts:139:    for (const [key, pol] of Object.entries(ATS_TOKEN_POLICIES)) {
+.\packages\scraper\policy-resolver.test.ts:234:    // Not in ATS_TOKEN_POLICIES, but platform is known
+.\packages\scraper\json.ts:5:import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput, type SourceTransport } from "./conditional";
+.\packages\scraper\json.ts:82:export async function fetchJSONSource(source: Source, state?: ConditionalState, transport?: SourceTransport): Promise<SourceFetchOutput> {
+.\packages\scraper\json.ts:90:    const cond = await conditionalFetchText(
+.\docs\SYSTEM_SAVEPOINT.md:10320:**STOP — classifier-blocked, not routed around.** Generating the actual `INSERT`/`UPDATE` SQL to write this decision to production `source_registry`/`provider_profiles`/`source_decisions` was blocked by the harness's own auto-mode safety classifier. Per its own instruction ("should not attempt to work around this denial... should STOP and explain"), no alternate path was attempted. This is treated as a genuine, correct stop condition: activating any source outside the current exact-six — even into `shadow`, which `policy-resolver.ts`'s `isPublishable` guarantees is non-publishing regardless of compliance state — is exactly the kind of boundary the strategy's own anti-expansion guard exists to protect, and the standing "proceed with all, fair and reasonable" authorization from this session should not be read to override a classifier-level block on a real compliance-state change. **No D1 write occurred.** `greenhouse:grafanalabs` remains exactly as before: absent from the registry, `paused`/`enabled=false` in the unchanged `ATS_TOKEN_POLICIES` fallback.
+.\docs\SYSTEM_SAVEPOINT.md:10546:- **Golden parity:** `policy-resolver.test.ts` 34/0 proves for all 26 `KNOWN_SOURCE_IDS` (12 static `sources.ts` + 14 `ATS_TOKEN_POLICIES`) that `resolvePolicy(id, null)` equals `fallbackPolicy(id)` byte-for-byte; 6 allowed static are `allowed/active/publishable`, 6 paused static are `blocked/paused`, 14 ATS tokens are `blocked/paused/fail-closed`. `KNOWN_SOURCE_IDS` is exactly 26, `ROBOTS_ENFORCE_SOURCE_IDS` is exactly six (`we-work-remotely`, `remotive`, `real-work-from-anywhere`, `remote-ok`, `jobicy-admin-support-apac`, `jobicy-supporting-apac`) at `apps/web/src/pages/api/cron/scrape.ts:52`.
+.\docs\SYSTEM_SAVEPOINT.md:10553:Rollback: keep `activeRegistryPolicies` empty (ignore `source_registry`/`provider_profiles` tables) or revert the single `resolvePolicy`/`loadRegistryPolicies` import in `apps/web/src/pages/api/cron/scrape.ts:24,1809`; hard-coded `ATS_PLATFORM_POLICIES`/`ATS_TOKEN_POLICIES` remain the explicit rollback adapter. No row deletion required.
+.\docs\SYSTEM_SAVEPOINT.md:10580:  `ATS_TOKEN_POLICIES`) vs registry rows → 0 mapped / 26 unmapped on empty
+.\docs\SYSTEM_SAVEPOINT.md:10595:`staticSources`/`ATS_TOKEN_POLICIES` remain authority until SP-04 resolver. No
+.\docs\SYSTEM_SAVEPOINT.md:11325:`conditionalFetchText`. Production D1 (read-only, `changed_db=false`
+.\docs\superpowers\plans\2026-09-06-apex-expansion-ex01-ex02.md:29:- `ATS_TOKEN_POLICIES` Greenhouse pause remains the rollback adapter; only the registry overlay admits one board.
+.\packages\scraper\index.ts:18:export { conditionalFetchText, unchangedOutput } from "./conditional";
+.\packages\scraper\index.ts:19:export type { ConditionalState, ConditionalResult, SourceFetchOutput, SourceTransport } from "./conditional";
+.\packages\scraper\index.ts:63:  ATS_PLATFORM_POLICIES,
+.\packages\scraper\index.ts:64:  ATS_TOKEN_POLICIES,
+.\packages\scraper\html.ts:4:import { conditionalFetchText, unchangedOutput, type ConditionalState, type SourceFetchOutput } from "./conditional";
+.\packages\scraper\html.ts:110:    const cond = await conditionalFetchText(
+.\docs\remotework38-import-2026-07-12.md:69:  `ATS_PLATFORM_POLICIES.ashby` (paused by default) + 7 enabled
+.\packages\scraper\greenhouse-canary.ts:20: * (ATS_TOKEN_POLICIES, apps/web/src/pages/api/cron/scrape.ts) is NOT changed
+.\docs\plans\SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md:601:fixture inserts 12 static `sources.ts` + 14 ATS `ATS_TOKEN_POLICIES` token ids =
+.\docs\plans\SOURCE_PERPETUITY_IMPLEMENTATION_PLAN.md:1092:around.** No D1 mutation occurred; the five-token `ATS_TOKEN_POLICIES`
+.\packages\scraper\conditional.ts:57:export type SourceTransport = (url: string, init: RequestInit) => Promise<Response>;
+.\packages\scraper\conditional.ts:64:export async function conditionalFetchText(
+.\packages\scraper\conditional.ts:69:  transport?: SourceTransport,
+.\packages\scraper\conditional.test.ts:2:import { conditionalFetchText, unchangedOutput } from "./conditional";
+.\packages\scraper\conditional.test.ts:18:describe("conditionalFetchText", () => {
+.\packages\scraper\conditional.test.ts:25:    await conditionalFetchText("https://x/feed", { "User-Agent": "t" }, { etag: 'W/"abc"', lastModified: "Mon, 01 Jan 2026 00:00:00 GMT" });
+.\packages\scraper\conditional.test.ts:33:    const r = await conditionalFetchText("https://x/feed", {}, { etag: 'W/"abc"', lastBodyHash: "deadbeef" });
+.\packages\scraper\conditional.test.ts:44:    const first = await conditionalFetchText("https://x/feed", {}, undefined);
+.\packages\scraper\conditional.test.ts:47:    const second = await conditionalFetchText("https://x/feed", {}, { lastBodyHash: first.bodyHash });
+.\packages\scraper\conditional.test.ts:54:    const r = await conditionalFetchText("https://x/feed", {}, { lastBodyHash: "oldhash" });
+.\packages\scraper\conditional.test.ts:63:    await expect(conditionalFetchText("https://x/feed", {}, undefined)).rejects.toThrow(/HTTP 503/);
+.\packages\scraper\accepted-feed-transport.test.ts:2:import { conditionalFetchText } from "./conditional";
+.\packages\scraper\accepted-feed-transport.test.ts:59:    const result = await conditionalFetchText(rssSource.url, { "User-Agent": "synthetic-agent" },
+.\packages\scraper\accepted-feed-transport.test.ts:165:    const result = await conditionalFetchText(rssSource.url, {}, { lastBodyHash: hashString(body) }, 15_000, transport);
+.\packages\db\registry.test.ts:188:  // 14 ATS token ids from scrape.ts ATS_TOKEN_POLICIES
+.\docs\comprehensive-audit-report-2026-07.md:242:  (`ATS_PLATFORM_POLICIES.workable.enabled = false`) and Sentinel would pause
+.\docs\company-hunter-strategy.md:23:Remaining (Phase 3-4): promote proposed ATS tokens into `ATS_TOKEN_POLICIES`
+.\docs\company-hunter-strategy.md:102:via `ATS_TOKEN_POLICIES` (code), and any token not explicitly listed there
+.\docs\company-hunter-strategy.md:113:  probe evidence, for one-click promotion into `ATS_TOKEN_POLICIES`. This is
+.\docs\company-hunter-strategy.md:182:   tokens to `ATS_TOKEN_POLICIES` with probe evidence; human one-click merge.
+.\docs\audits\2026-10-03-WRITER-INVENTORY.md:194:**Also paused:** Workable, Greenhouse, Lever — all in `ATS_PLATFORM_POLICIES` and `ATS_TOKEN_POLICIES`
+.\docs\audits\2026-10-04-SSAE-02-COMPACT-SOURCE-MEMORY.md:84:- `conditionalFetchText` sends `If-None-Match`/`If-Modified-Since`
+.\docs\maintenance-bot-2026-07-04.md:42:`ATS_TOKEN_POLICIES` in `scrape.ts`). Read-only D1 access via the same
+.\docs\IMPLEMENTATION_STATUS.md:893:- **Resolver:** `RegistryComplianceState`/`RegistryOperationalState` (ADR-006 vocab), `ROBOTS_ENFORCE_SOURCE_IDS` mirror, `ATS_PLATFORM_POLICIES`/`ATS_TOKEN_POLICIES` byte-identical copies, `fallbackPolicy`/`resolvePolicy` with CHECK (`shadow/canary/active ⇒ allowed|conditional`) and durable `optOut` handling, `isPublishable`/`isShadowCanaryActive` mirrors, `KNOWN_SOURCE_IDS` = 26 (12 static + 14 ATS), `loadRegistryPolicies` returns empty Map on missing/table/empty without throwing. `scrape.ts` now imports `resolvePolicy`/`loadRegistryPolicies`, loads `activeRegistryPolicies` per-tick at `apps/web/src/pages/api/cron/scrape.ts:1809`, and consults it in `fetchConfiguredSourceWithStatus` and `atsPlatformPolicy` before the hard-coded fallback — rollback is to keep Map empty or revert the import.
+.\docs\HANDOFF.md:1229:Exact-six production behavior (`ROBOTS_ENFORCE_SOURCE_IDS`) and the five-token `ATS_TOKEN_POLICIES` Greenhouse pause are both completely unchanged by everything above.
+.\docs\gauntlet\IMPLEMENTATION_UNITS.md:1181:| AFFECTED FILES / SYMBOLS | `apps/web/src/pages/api/cron/scrape.ts` — five `ashby:*` entries in `ATS_TOKEN_POLICIES`; focused policy regression test; `docs/gauntlet/evidence/COMP-01C-ashby-access-review.md`; baton/problem register. |
+.\docs\gauntlet\IMPLEMENTATION_UNITS.md:1234:| AFFECTED FILES / SYMBOLS | `apps/web/src/pages/api/cron/scrape.ts` — five `greenhouse:*` and four `breezy:*` entries in `ATS_TOKEN_POLICIES`; focused policy guard; `docs/gauntlet/evidence/COMP-01D-residual-ats-access-review.md`; baton/problem register. |
+.\docs\operations\ASTRA777_REQUIREMENT_RECONCILIATION_2026-10-11.md:151:2. `reserveCanaryCapacity` currently returns true when any row with the same
+.\docs\gauntlet\evidence\SRC-4E-jobicy-supporting-cdata-diagnosis.md:30:`res.text()` delivered by `conditionalFetchText` (`packages/scraper/
+.\docs\gauntlet\evidence\SP-12-greenhouse-grafanalabs-day1-evidence.md:9:**The existing five-token blanket pause in `ATS_TOKEN_POLICIES` (`apps/web/src/pages/api/cron/scrape.ts`) is unchanged by this unit** and remains the exact-scoped rollback adapter, per the plan's own criterion.
+.\docs\gauntlet\evidence\SP-12-greenhouse-grafanalabs-day1-evidence.md:49:No `provider_profiles`, `source_registry`, or `source_decisions` row was written. `greenhouse:grafanalabs` remains exactly as it was before this session: absent from the registry, and `paused`/`enabled=false` in the hard-coded `ATS_TOKEN_POLICIES` fallback. The exact-six `ROBOTS_ENFORCE_SOURCE_IDS` is untouched. No opportunity was written or could have been — shadow is non-publishing by design (`isPublishable` returns `false` for `operational=shadow` regardless of compliance state), so even the pending write would not have changed what's live on the site.
+.\docs\gauntlet\evidence\COMP-01D-residual-ats-access-review.md:61:`ATS_TOKEN_POLICIES` now assigns the five Greenhouse identities and four
+.\docs\gauntlet\evidence\COMP-01C-ashby-access-review.md:52:`ATS_TOKEN_POLICIES` now assigns all five identities `enabled: false`,
+.\docs\freshness-masterplan-2026-07.md:29:- `packages/scraper/conditional.ts`: `conditionalFetchText()` sends
+.\docs\SYSTEM_SAVEPOINT.md:7090:- **F1 Repair (`scripts/lake/sync-to-d1.ts`):** Added `buildPublicationReceiptSql` to generate idempotent publication receipts into `source_publication_ledger` for every synced candidate batch. Added unit test in `scripts/lake/lake.test.ts`.
+.\docs\SYSTEM_SAVEPOINT.md:7409:- **VERIFICATION:** Lake and policy tests passed (27/0 in the focused run). `audit:guardrails` passed before the batch-SQL fix; the fix is covered by `buildBatchSql` test.
+.\docs\SYSTEM_SAVEPOINT.md:7782:- **Reconciliation (fail-closed, no eligibility/behavior change for valid rows, zero D1 writes in unit):** `sync-to-d1.ts` — `parseSyncArgs()` (numeric-first-arg, limit default 50 clamp 500, `--dry-run`, `--allow-auto-approved`); `buildAuthorizedSourceIds(client, {includeAutoApproved:false})` holds auto-approved tenants with a warning unless explicitly opted in; authorization moved INTO the SELECT (`source_id IN (...)` before `LIMIT`) + `[Queue]` held-backlog count; `buildSyncSql` keeps unknown `posted_at` NULL, throws on non-eligible `ph_eligibility`, degrades unknown `geo_scope` to `'unknown'`, per-row try/skip; explicit `[BYPASS NOTICE]` on live runs; `domain-ats-discovery.ts` comments/summary updated to HELD semantics; `docs/DATA_LAKE_OPERATIONS.md` sync contract + runbook updated.
+.\scripts\lake\sync-to-d1.ts:260:export function buildSyncSql(job: CandidateRow): string {
+.\scripts\lake\sync-to-d1.ts:302:export function buildPublicationReceiptSql(
+.\scripts\lake\sync-to-d1.ts:343:export function buildBatchSql(statements: string[]): string {
+.\scripts\lake\sync-to-d1.ts:348:function wranglerD1Command(tempSqlFile: string): string {
+.\scripts\lake\sync-to-d1.ts:460:      sqlStatements.push(buildSyncSql(job));
+.\scripts\lake\sync-to-d1.ts:472:    sqlStatements.push(buildPublicationReceiptSql(sourceId, count, receiptNow));
+.\scripts\lake\sync-to-d1.ts:484:  const batchSql = buildBatchSql(sqlStatements);
+.\scripts\lake\sync-to-d1.ts:489:    const cmd = wranglerD1Command(tempSqlFile);
+.\scripts\lake\replay-latency-receipt.ts:47:  proveCompleteSnapshot,
+.\scripts\lake\replay-latency-receipt.ts:253:  const reproof = proveCompleteSnapshot(input.replay_identities, input.expected_identities);
+.\scripts\lake\replay-latency-receipt.test.ts:28:  planExactBoundedReplay,
+.\scripts\lake\replay-latency-receipt.test.ts:161:  const plan = planExactBoundedReplay({
+.\scripts\lake\replay-latency-receipt.test.ts:358:    const plan = planExactBoundedReplay({
+.\scripts\lake\replay-latency-receipt.test.ts:619:    const first = planExactBoundedReplay({
+.\scripts\lake\lake.test.ts:11:  buildSyncSql,
+.\scripts\lake\lake.test.ts:12:  buildPublicationReceiptSql,
+.\scripts\lake\lake.test.ts:16:  buildBatchSql,
+.\scripts\lake\lake.test.ts:120:  it("buildSyncSql emits an idempotent upsert with canonical hash", () => {
+.\scripts\lake\lake.test.ts:121:    const sql = buildSyncSql({
+.\scripts\lake\lake.test.ts:142:  it("buildSyncSql keeps unknown posted_at NULL instead of fabricating now()", () => {
+.\scripts\lake\lake.test.ts:143:    const sql = buildSyncSql({
+.\scripts\lake\lake.test.ts:164:  it("buildSyncSql refuses to fabricate eligibility or worldwide scope", () => {
+.\scripts\lake\lake.test.ts:182:    expect(buildSyncSql(base)).toContain("'unknown'");
+.\scripts\lake\lake.test.ts:183:    expect(buildSyncSql(base)).not.toContain("'worldwide'");
+.\scripts\lake\lake.test.ts:185:    expect(() => buildSyncSql({ ...base, ph_eligibility: "unclear" })).toThrow();
+.\scripts\lake\lake.test.ts:186:    expect(() => buildSyncSql({ ...base, ph_eligibility: "ineligible" })).toThrow();
+.\scripts\lake\lake.test.ts:189:  it("buildBatchSql does not wrap remote D1 statements in BEGIN/COMMIT", () => {
+.\scripts\lake\lake.test.ts:190:    const sql = buildBatchSql(["INSERT INTO opportunities (title) VALUES ('a');"]);
+.\scripts\lake\lake.test.ts:195:  it("buildPublicationReceiptSql generates idempotent ledger insert with valid keys (F1 repair)", () => {
+.\scripts\lake\lake.test.ts:196:    const sql = buildPublicationReceiptSql("breezy:20four7va", 5, "2026-09-27T10:00:00.000Z");
+.\scripts\lake\job-delta-replay.ts:229:export function closeDependencies(
+.\scripts\lake\job-delta-replay.ts:328:export function proveCompleteSnapshot(
+.\scripts\lake\job-delta-replay.ts:452:  const closure = closeDependencies(input.changed_dependencies);
+.\scripts\lake\job-delta-replay.ts:685:export function planExactBoundedReplay(input: ExactReplayPlanInput): ExactReplayPlan {
+.\scripts\lake\job-delta-replay.ts:687:  const snapshot = proveCompleteSnapshot(
+.\scripts\lake\job-delta-replay.ts:932:export function applyReplayDecision(
+.\scripts\lake\job-delta-replay.ts:1125:export function generateReplayReceipt(plan: ExactReplayPlan): string {
+.\scripts\lake\job-delta-replay.test.ts:15:  applyReplayDecision,
+.\scripts\lake\job-delta-replay.test.ts:16:  closeDependencies,
+.\scripts\lake\job-delta-replay.test.ts:19:  generateReplayReceipt,
+.\scripts\lake\job-delta-replay.test.ts:20:  planExactBoundedReplay,
+.\scripts\lake\job-delta-replay.test.ts:23:  proveCompleteSnapshot,
+.\scripts\lake\job-delta-replay.test.ts:111:    const closure = closeDependencies(["GEO"]);
+.\scripts\lake\job-delta-replay.test.ts:121:    const closure = closeDependencies(["GEO"]);
+.\scripts\lake\job-delta-replay.test.ts:128:    const closure = closeDependencies(["GEO", "some_future_processor"]);
+.\scripts\lake\job-delta-replay.test.ts:139:    const closure = closeDependencies(["PARSER"]);
+.\scripts\lake\job-delta-replay.test.ts:145:    const authority = closeDependencies(["SOURCE_AUTHORITY"]);
+.\scripts\lake\job-delta-replay.test.ts:149:    const policy = closeDependencies(["POLICY"]);
+.\scripts\lake\job-delta-replay.test.ts:155:    const a = closeDependencies(["GEO", "POLICY", "GEO"]);
+.\scripts\lake\job-delta-replay.test.ts:156:    const b = closeDependencies(["POLICY", "GEO"]);
+.\scripts\lake\job-delta-replay.test.ts:162:    const closure = closeDependencies([]);
+.\scripts\lake\job-delta-replay.test.ts:171:    const proof = proveCompleteSnapshot(["a", "b", "c"], ["c", "b", "a"]);
+.\scripts\lake\job-delta-replay.test.ts:180:    const proof = proveCompleteSnapshot(["a", "b"], null);
+.\scripts\lake\job-delta-replay.test.ts:187:    const proof = proveCompleteSnapshot(["a"], ["a", "b", "c"]);
+.\scripts\lake\job-delta-replay.test.ts:194:    const proof = proveCompleteSnapshot(["a", "b", "z"], ["a", "b"]);
+.\scripts\lake\job-delta-replay.test.ts:201:    const proof = proveCompleteSnapshot(["a", "a", "b"], ["a", "b"]);
+.\scripts\lake\job-delta-replay.test.ts:481:    const plan = planExactBoundedReplay(planInput([clean], { changed_dependencies: [] }));
+.\scripts\lake\job-delta-replay.test.ts:488:    const plan = planExactBoundedReplay(
+.\scripts\lake\job-delta-replay.test.ts:499:    const plan = planExactBoundedReplay(planInput([stale()], { budget: { max_records: 0 } }));
+.\scripts\lake\job-delta-replay.test.ts:505:    const plan = planExactBoundedReplay(planInput([stale()], { version_transition: "" }));
+.\scripts\lake\job-delta-replay.test.ts:512:    const first = planExactBoundedReplay(planInput(records));
+.\scripts\lake\job-delta-replay.test.ts:517:    expect(first.cohort_digest).toBe(planExactBoundedReplay(planInput(records)).cohort_digest);
+.\scripts\lake\job-delta-replay.test.ts:526:    const first = planExactBoundedReplay(planInput(records, { budget: { max_records: 2 } }));
+.\scripts\lake\job-delta-replay.test.ts:533:    const second = planExactBoundedReplay(
+.\scripts\lake\job-delta-replay.test.ts:543:    const first = planExactBoundedReplay(planInput(records));
+.\scripts\lake\job-delta-replay.test.ts:544:    const repeat = planExactBoundedReplay(planInput(records));
+.\scripts\lake\job-delta-replay.test.ts:545:    expect(generateReplayReceipt(first)).toBe(generateReplayReceipt(repeat));
+.\scripts\lake\job-delta-replay.test.ts:550:    const first = planExactBoundedReplay(planInput(records, { budget: { max_records: 1 } }));
+.\scripts\lake\job-delta-replay.test.ts:555:    const plan = planExactBoundedReplay(
+.\scripts\lake\job-delta-replay.test.ts:564:    const first = planExactBoundedReplay(planInput(records, { budget: { max_records: 1 } }));
+.\scripts\lake\job-delta-replay.test.ts:568:    const plan = planExactBoundedReplay(
+.\scripts\lake\job-delta-replay.test.ts:577:    const first = planExactBoundedReplay(planInput(records));
+.\scripts\lake\job-delta-replay.test.ts:585:    const plan = planExactBoundedReplay(planInput(records, { cursor }));
+.\scripts\lake\job-delta-replay.test.ts:593:    const plan = planExactBoundedReplay(
+.\scripts\lake\job-delta-replay.test.ts:610:    const plan = planExactBoundedReplay(planInput([held]));
+.\scripts\lake\job-delta-replay.test.ts:618:    const plan = planExactBoundedReplay(planInput([stale()]));
+.\scripts\lake\job-delta-replay.test.ts:619:    const receipt = JSON.parse(generateReplayReceipt(plan));
+.\scripts\lake\job-delta-replay.test.ts:647:      snapshot: proveCompleteSnapshot(
+.\scripts\lake\job-delta-replay.test.ts:698:      snapshot: proveCompleteSnapshot(records.map((entry) => entry.identity_hash), null),
+.\scripts\lake\job-delta-replay.test.ts:715:    const already = applyReplayDecision(restricted.clocks, emptyReplayState(), {
+.\scripts\lake\job-delta-replay.test.ts:731:      snapshot: proveCompleteSnapshot(["id-public"], ["id-public"]),
+.\scripts\lake\job-delta-replay.test.ts:744:      snapshot: proveCompleteSnapshot(["id-x"], ["id-x"]),
+.\scripts\lake\job-delta-replay.test.ts:758:      snapshot: proveCompleteSnapshot(
+.\scripts\lake\job-delta-replay.test.ts:789:  function decision(overrides: Partial<Parameters<typeof applyReplayDecision>[2]> = {}) {
+.\scripts\lake\job-delta-replay.test.ts:805:    const result = applyReplayDecision(clocks, emptyReplayState(), decision());
+.\scripts\lake\job-delta-replay.test.ts:822:    const result = applyReplayDecision(clocks, emptyReplayState(), decision());
+.\scripts\lake\job-delta-replay.test.ts:831:    const first = applyReplayDecision(clocks, state, decision());
+.\scripts\lake\job-delta-replay.test.ts:832:    const second = applyReplayDecision(first.clocks, first.state, decision());
+.\scripts\lake\job-delta-replay.test.ts:843:    const first = applyReplayDecision(clocks, state, decision());
+.\scripts\lake\job-delta-replay.test.ts:844:    const conflicting = applyReplayDecision(first.clocks, first.state, decision({ decision_id: "d-2" }));
+.\scripts\lake\job-delta-replay.test.ts:853:    const first = applyReplayDecision(clocks, emptyReplayState(), decision());
+.\scripts\lake\job-delta-replay.test.ts:854:    const superseded = applyReplayDecision(
+.\scripts\lake\job-delta-replay.test.ts:868:    const first = applyReplayDecision(clocks, emptyReplayState(), decision());
+.\scripts\lake\job-delta-replay.test.ts:869:    const later = applyReplayDecision(
+.\scripts\lake\job-delta-replay.test.ts:882:    const result = applyReplayDecision(published(), emptyReplayState(), decision({ identity_hash: "id-other" }));
+.\scripts\lake\job-delta-replay.test.ts:889:    expect(applyReplayDecision(clocks, emptyReplayState(), decision({ decision_id: "" })).ok).toBe(false);
+.\scripts\lake\job-delta-replay.test.ts:890:    expect(applyReplayDecision(clocks, emptyReplayState(), decision({ version_transition: "" })).ok).toBe(false);
+.\scripts\lake\job-delta-replay.test.ts:891:    expect(applyReplayDecision(clocks, emptyReplayState(), decision({ decided_at: "soon" })).ok).toBe(false);
+.\scripts\lake\job-delta-replay.test.ts:895:    const result = applyReplayDecision(published(), emptyReplayState(), decision({ facts: null }));
+.\scripts\lake\job-delta-replay.test.ts:902:    const result = applyReplayDecision(
+.\scripts\lake\job-delta-replay.test.ts:917:    const first = applyReplayDecision(
+.\scripts\lake\job-delta-replay.test.ts:922:    const second = applyReplayDecision(
+.\scripts\lake\job-delta-replay.test.ts:934:    const withdrawn = applyReplayDecision(
+.\scripts\lake\job-delta-replay.test.ts:939:    const restore = applyReplayDecision(
+.\scripts\lake\job-delta-replay.test.ts:951:    const result = applyReplayDecision(
+.\scripts\lake\job-delta-replay.test.ts:965:    const workerA = applyReplayDecision(clocks, state, decision());
+.\scripts\lake\job-delta-replay.test.ts:966:    const workerB = applyReplayDecision(clocks, state, decision());
+.\scripts\lake\job-delta-replay.test.ts:971:    const settled = applyReplayDecision(workerB.clocks, workerB.state, decision());
+.\scripts\lake\job-delta-replay.test.ts:978:    const a = applyReplayDecision(clocks, state, decision({ decision_id: "d-a" }));
+.\scripts\lake\job-delta-replay.test.ts:979:    const b = applyReplayDecision(clocks, state, decision({ decision_id: "d-b" }));
+.\scripts\lake\job-delta-replay.test.ts:983:    const settled = applyReplayDecision(a.clocks, a.state, b.state.lineage[0]);
+.\scripts\diagnostics\publisher-outcome-classification.ts:209: * `buildPublicationReceiptSql` writes, so a row with any other prefix is not this writer.
+.\scripts\diagnostics\publish-landing-reconciliation.ts:14: * - `buildSyncSql` (`sync-to-d1.ts:183-199`) sets `scraped_at` on INSERT and
+.\docs\IMPLEMENTATION_STATUS.md:358:  - `sync-to-d1.ts`: `parseSyncArgs`, opt-in `buildAuthorizedSourceIds`, SQL-side `source_id IN` gate + held-backlog observability, honest `buildSyncSql`, bypass notice, per-row skip guards.
+.\docs\IMPLEMENTATION_STATUS.md:374:  - `sync-to-d1.ts`: exported `escapeSql` (NUL-safe), `isSyncableCandidate`, `buildSyncSql`; temp batch file moved to OS tmpdir; repo-pinned wrangler invocation; single `BEGIN;…COMMIT;` batch; unsyncable rows skipped with warning.
+.\docs\HANDOFF.md:481:  - `sync-to-d1.ts`: `parseSyncArgs()` (NaN-proof), opt-in `buildAuthorizedSourceIds`, SQL-side auth gate + held-backlog count, honest `buildSyncSql` (NULL dates, eligibility refusal, `'unknown'` scope), live-run bypass notice.
+.\docs\audits\2026-10-04-SSAE-00-PROFILE-CONTRACT.md:30:[auto-publish-policy.ts] → decideAutoPublish → buildSyncSql
+.\docs\audits\2026-10-04-SSAE-00-PROFILE-CONTRACT.md:99:| **Build SQL** | `scripts/lake/sync-to-d1.ts:162` | `buildSyncSql()` | `type='freelance'`, `location_type='remote'`, `is_active=1` | `posted_at` stays NULL if unknown (honesty contract) |
+.\docs\audits\2026-10-03-WRITER-INVENTORY.md:11:| 1 | `scripts/lake/sync-to-d1.ts` (buildSyncSql) | CLI `bun run lake:sync`, GHA `gha-lake-publish.yml`, GCP `lake-publish-job` | Hard-coded `BASE_AUTHORIZED_SOURCE_IDS` + `decideAutoPublish` on `lake_ats_discovery.auto_approved` | `buildPublicationReceiptSql` writes ledger but `published_ids_json='[]'`; `published_count = candidate count` | **YES** — raw INSERT, never calls `publishPublicExposure` |
+.\docs\audits\2026-10-03-WRITER-INVENTORY.md:37:**Receipt:** `buildPublicationReceiptSql` (lines 204-220)
+.\docs\audits\2026-10-03-WRITER-INVENTORY.md:246:  → Write: buildSyncSql() → raw INSERT ON CONFLICT (reactivates) + buildPublicationReceiptSql()
+.\packages\scraper\publication-authority-gaps.test.ts:3:  buildPublicationReceiptSql,
+.\packages\scraper\publication-authority-gaps.test.ts:4:  buildSyncSql,
+.\packages\scraper\publication-authority-gaps.test.ts:65:  describe("buildPublicationReceiptSql (sync-to-d1.ts) — F1 Gap: empty published_ids_json", () => {
+.\packages\scraper\publication-authority-gaps.test.ts:67:      const sql = buildPublicationReceiptSql("ashby:supabase", 13, NOW);
+.\packages\scraper\publication-authority-gaps.test.ts:77:      const sql = buildPublicationReceiptSql("greenhouse:ghost", 5, NOW);
+.\packages\scraper\publication-authority-gaps.test.ts:83:  describe("buildSyncSql (sync-to-d1.ts) — F1 Gap: raw INSERT with reactivation", () => {
+.\packages\scraper\publication-authority-gaps.test.ts:101:      const sql = buildSyncSql(job);
+.\packages\scraper\publication-authority-gaps.test.ts:128:      const sql = buildSyncSql(job);
+.\packages\scraper\publication-authority-gaps.test.ts:151:      const sql = buildSyncSql(job);
+.\packages\scraper\publication-authority-gaps.test.ts:173:      const sql = buildSyncSql(job);
+.\packages\scraper\publication-authority-gaps.test.ts:196:      expect(() => buildSyncSql(job)).toThrow("must be eligible_verified/eligible_likely");
+.\packages\scraper\publication-authority-gaps.test.ts:216:      const sql = buildSyncSql(job);
+.\docs\ENFORCEMENT.md:43:| **Timestamp Honesty (No Fallback to Now)** | Strips fallback; unknown source date forced to `NULL` | `scripts/lake/sync-to-d1.ts: buildSyncSql`, `publication-gateway.ts` | **ENFORCED — TESTED** | Tested in `lake.test.ts` |
+.\docs\DATA_LAKE_OPERATIONS.md:63:- **Sync honesty:** unknown `posted_at` stays SQL NULL (never `now()` — a sync event is not a posting event; ordering falls back via `coalesce(posted_at, scraped_at)`); `buildSyncSql` throws on non-eligible `ph_eligibility` instead of defaulting to `eligible_verified`; unknown `geo_scope` stays `'unknown'`, never `'worldwide'`.

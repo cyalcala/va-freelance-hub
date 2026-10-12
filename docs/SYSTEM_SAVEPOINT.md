@@ -1,5 +1,74 @@
 # System Savepoint
 
+## 2026-10-12 21:30 Manila — Behavioral counterexamples and source recovery checkpoint
+
+This checkpoint preserves the owner Australian/dayshift steering, revised Astra,
+accepted caller deployment observation and bounded live diagnosis. It also
+preserves the independent Ponytail audit with 23 hashed artifacts and three
+reproducible offline counterexamples. Root independently checked every artifact
+hash and compared all three newly installed skill files byte-for-byte with pinned
+upstream `9b58c1ffb790c075ca32e70a89cf1d80588f4abf`; the MIT license and provenance
+are included. The audit's older archived instruction bytes remain separately
+identified and are not relabeled as the new upstream revision.
+
+The measured Australian/dayshift directory cohort and snapshot query-cost reads
+are archived under `evidence/au-dayshift-cohort-2026-10-12/` with hashes. Stored
+company flags are not current source/vacancy proof. No source admission, provider
+job request, database mutation, new clock or app deployment occurred in this
+documentation checkpoint. The already accepted caller release is separately
+identified by its immutable version and exact tested-module digest.
+
+Current runtime edits are deliberately outside this documentation slice. Main
+Workable native tests passed four tests/102 assertions and app typecheck passed.
+The initial snapshot target passed 52 tests/211 assertions; independent review
+then found cached-HIT remaining-TTL and exact rebuild-boundary cases requiring
+repair. Neither result is production acceptance. The 0054-compatible release
+must also add strict original-date checks before new-item AI and every enabled
+public insert/activation; live old source lacks those checks and its ATS parsers
+can discard invalid/missing/precise publication evidence. The audit records exact
+counterexamples and dependencies without importing later gateway/schema.
+
+**NEXT:** finish and independently verify that bounded live-schema repair,
+preserve actual IDs and write limits, then release through canonical source with
+rollback and observe ordinary clocks/public visibility. Follow with deferred
+source retry and durable private intake coverage before validators/public caps.
+MATH remains **0/13**; certified daily flow remains **UNKNOWN**. The task is active.
+
+## 2026-10-12 later — Owner company completeness, recovered flow and real starvation
+
+The owner added known VA companies, especially Australian/dayshift/vetted lists,
+and Ponytail behavioral-bloat investigation to the active goal. Apply priority
+and complete permitted intake while preserving vacancy/source/publication/math
+gates. Latest `astra777.txt` records the steering and supersedes earlier NEXT.
+
+Caller source `c5521b1b1ca977e9a762413965db6df3a5dc6019` is exactly read back on
+SSM/GitLab. Deployment `4e85ee4c-e21d-4e77-811f-a61b040b0836`, version
+`5869833f-bdd2-4d74-99f1-ab571a4a5fe4`, matches tested module SHA256
+`3fa64867ecb2256111244404504a82fac974c4ed4bf7d937062a360e1ea4cc92`. Existing
+cron/targets/secret binding/compatibility/public-route settings remain unchanged.
+Independent passive 19:20 tick completed with zero inserts. Recovery actually
+began at 18:30, before this release; earlier 503 cause remains unknown.
+
+[Later live diagnosis](operations/ZERO_FLOW_SOURCE_DIAGNOSIS_2026-10-12.md)
+finds 22 public first-seen rows, eight stored verified labels, 17 source-posted
+today and only 14 IDs for the ledger's reported 22 publications (19:39–19:50).
+Public snapshot lagged at 19:44, then showed 19 arrivals/15 today's dates at
+19:52. None of these counts is a certified daily cohort; MATH remains 0/13.
+
+Local due/policy/unique Workable selection now replaces the demonstrated
+starvation; native actual old-handler RED is preserved, integrated main GREEN
+passed four tests/102 assertions; isolated release remains pending. Main lock tests include retained timeout failures and isolated passes;
+type/build pass. The separate live-base 3065/0054 lock artifact passed 19 native
+tests/169 assertions, typecheck and build before selection integration. Its
+subsequent artifact needs renewed verification; it is not deployed. Pure selector
+and transport targets pass 113/292 on pinned Bun 1.3.14. Source scopes remain
+separate from runtime acceptance. Full source-tree freeze/regression is pending.
+
+**NEXT:** compatible proven Workable selection and existing snapshot age-bound
+repair, then durable all-opening coverage and independent publication evidence.
+Ponytail investigation must preserve safety and required mathematical evidence.
+No parallel collector/clock or raw-lake-publication bypass is activated here.
+
 ## 2026-10-12 Manila — Live shortfall recovered; bounded inserts verified locally
 
 Owner priority is the one October 12 website listing reported at 17:26, with

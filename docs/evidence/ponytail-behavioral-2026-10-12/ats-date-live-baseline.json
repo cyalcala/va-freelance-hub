@@ -1,0 +1,14 @@
+{
+  "gitRevision": "3065f0d709d5a1950c247d5a11df542b07721bcb",
+  "path": "packages/scraper/ats.ts",
+  "gitBlobLfSha256": "7f94279c0fd0f4d404c148ec4d0c569fe9d8a2903b91363dce3184441d67ac8b",
+  "safeNormalizeDateFunction": "function safeNormalizeDate(rawDate: any): string | null {\n  if (!rawDate) return null;\n  try {\n    const d = new Date(rawDate);\n    if (isNaN(d.getTime())) return null;\n    return d.toISOString();\n  } catch (e) {\n    return null;\n  }\n}",
+  "safeNormalizeDateBody": "\n  if (!rawDate) return null;\n  try {\n    const d = new Date(rawDate);\n    if (isNaN(d.getTime())) return null;\n    return d.toISOString();\n  } catch (e) {\n    return null;\n  }\n",
+  "postingExpressions": [
+    "postedAt: safeNormalizeDate(job.createdAt),",
+    "postedAt: safeNormalizeDate(job.updated_at),",
+    "postedAt: safeNormalizeDate(job.publishedAt),",
+    "postedAt: safeNormalizeDate(job.published_on || job.created_at),",
+    "postedAt: safeNormalizeDate(job.published_date),"
+  ]
+}

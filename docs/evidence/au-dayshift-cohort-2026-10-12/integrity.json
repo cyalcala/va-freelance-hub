@@ -1,0 +1,17 @@
+{
+  "scope": "bounded read-only stored directory/registry and snapshot query-cost observations; not current employer/source/vacancy vetting, publication authorization or daily certification",
+  "artifacts": [
+    {
+      "path": "directory-au-dayshift-cohort-oct12.json",
+      "bytes": 32408,
+      "sha256": "8b76ececa10fcfa5266214dad35aa4fea875e4140e41f9225f722acf32049d64",
+      "lfNormalizedSha256": "8b76ececa10fcfa5266214dad35aa4fea875e4140e41f9225f722acf32049d64"
+    },
+    {
+      "path": "cohort-snapshot-readonly-oct12.json",
+      "bytes": 44107,
+      "sha256": "ec3e3cd59879ec17eac60b81ba70a9f8c9fcfcb9d03b03968116a382b036c6ac",
+      "lfNormalizedSha256": "ec3e3cd59879ec17eac60b81ba70a9f8c9fcfcb9d03b03968116a382b036c6ac"
+    }
+  ]
+}

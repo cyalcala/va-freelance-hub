@@ -1,0 +1,77 @@
+{
+  "scope": "ACTUAL_REGISTRY_MERGE_AND_EXTRACTED_CURRENT_SELECTOR_SYNTHETIC_DISPATCH_NO_ROUTE_OR_NETWORK_PROOF",
+  "agencies": [
+    {
+      "id": -1,
+      "companyName": "aa",
+      "atsPlatform": "workable",
+      "atsToken": "aa",
+      "verifiedAt": null
+    },
+    {
+      "id": -1,
+      "companyName": "bb",
+      "atsPlatform": "workable",
+      "atsToken": "bb",
+      "verifiedAt": null
+    },
+    {
+      "id": -1,
+      "companyName": "cc",
+      "atsPlatform": "workable",
+      "atsToken": "cc",
+      "verifiedAt": null
+    }
+  ],
+  "ticks": [
+    {
+      "now": "2026-10-12T00:00:00.000Z",
+      "chosen": [
+        "aa",
+        "bb"
+      ]
+    },
+    {
+      "now": "2026-10-12T01:01:00.000Z",
+      "chosen": [
+        "aa",
+        "bb"
+      ]
+    },
+    {
+      "now": "2026-10-12T02:02:00.000Z",
+      "chosen": [
+        "aa",
+        "bb"
+      ]
+    },
+    {
+      "now": "2026-10-12T03:03:00.000Z",
+      "chosen": [
+        "aa",
+        "bb"
+      ]
+    },
+    {
+      "now": "2026-10-12T04:04:00.000Z",
+      "chosen": [
+        "aa",
+        "bb"
+      ]
+    }
+  ],
+  "states": [
+    [
+      "workable:aa",
+      {
+        "lastAttemptAt": "2026-10-12T04:04:00.000Z"
+      }
+    ],
+    [
+      "workable:bb",
+      {
+        "lastAttemptAt": "2026-10-12T04:04:00.000Z"
+      }
+    ]
+  ]
+}

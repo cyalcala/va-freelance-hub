@@ -72,3 +72,75 @@ measure actual receipt/visibility outcomes. Current Pages/schema stays at its
 observed older revision/0054 until separately tested and recovered. Deployment
 and runtime observation receipts follow; neither is claimed by this pre-release
 document.
+
+## Canonical source and controlled deployment receipt
+
+The frozen caller slice is commit
+`c5521b1b1ca977e9a762413965db6df3a5dc6019`. Both SSM and GitLab returned this
+exact SHA for `refs/heads/codex/verified-flow-directory-checkpoint` after push.
+The earlier binding checkpoint `170ad5fd5fecb47ecc7e5bbafaa9ace997dd00a1`
+was also pushed and read back on both remotes; its source recovery is above.
+
+After the owner resumed the goal, fresh read-only preflight at 11:06:52 UTC
+(19:06 Manila) confirmed the old version, downloaded module digest, target URLs,
+secret binding name, compatibility date, disabled workers.dev/previews and
+`*/10` schedule still matched the rollback baseline. Cached OAuth had expired;
+one normal pinned Wrangler `whoami` refresh succeeded. Failed reads were not
+used as drift evidence. No credential value was retained.
+
+The pinned Wrangler 4.143.0 command deployed only this existing Worker with
+`--keep-vars --strict` and message
+`SSM c5521b1b1ca977e9a762413965db6df3a5dc6019 retained caller failure signatures`.
+It exited 0, uploaded 18.31 KiB / 5.42 KiB gzip and reported version
+`5869833f-bdd2-4d74-99f1-ab571a4a5fe4`, with `*/10 * * * *` retained.
+Independent deployment/configuration/module read-back and a passive normal
+scheduled response are pending. CLI upload success does not establish endpoint
+repair, new acquisition, publication, visibility or daily throughput. The Pages
+lock candidate remains separate; no manual lock release or migration occurred.
+
+## Independent post-release observation
+
+At 11:11:23 UTC, independent Cloudflare API read-back confirmed deployment
+`4e85ee4c-e21d-4e77-811f-a61b040b0836`, 100% version
+`5869833f-bdd2-4d74-99f1-ab571a4a5fe4`, with the exact `c5521b1b` source message.
+The downloaded 18,753-byte `index.js` module SHA256 was
+`3fa64867ecb2256111244404504a82fac974c4ed4bf7d937062a360e1ea4cc92`, exactly
+matching the verified local dry-run artifact. Compatibility `2026-07-01`, no
+compatibility flags, the two existing target URLs, `PROXY_SECRET` binding name,
+disabled workers.dev/previews and `*/10 * * * *` schedule were unchanged. No
+secret value was emitted. The rollback version remains the recorded October 3
+version. Pages metadata still identified deployment
+`e1b0ff66-8a93-41b0-b9c7-6de8346c81c7` / reported commit `3065f0d7`.
+
+A passive, sanitized tail armed at 11:11:23 UTC observed the normal 19:20 Manila
+tick (scheduled timestamp 11:20:58 UTC), then terminated cleanly at 11:21:40.700
+UTC. It sent no additional scrape request. The execution used the new Worker
+version and returned `outcome: ok`. Its receipt reported HTTP 200, `COMPLETE`
+transport, `JSON_OBJECT`, `terminalState: completed`, `publicationOutcome:
+REPORTED`, `reason: VALID_REPORTED_COUNTERS`, `inserted: 0`, `actualChanges: 0`,
+`reconciliationRequired: false`, and available cadence/complete diagnostics.
+Reported failure counters were zero; absent optional counters remained null.
+No exception or server-failure class was emitted.
+
+Read-only D1 SELECTs at 11:24:34 UTC confirmed `__ingest_diag__` attempt/success at
+`11:20:59.280Z`, count zero and no error. The lock was released to the epoch with
+`updated_at: 11:21:07.899Z`. Fetch events were durably present at the same run
+timestamp: Remotive returned 16 changed items, WWR was unchanged, and ATS paths
+recorded cadence, rotation, duplicate-token or policy skips. All diagnostic
+queries reported zero rows written.
+
+This accepts the bounded caller release and sanitized scheduled observation.
+It does not prove the cause of earlier HTTP 503 responses: neither recognized
+503 signature occurred in this successful tick. It also establishes no new
+publication; zero inserts do not satisfy the daily target. A supported Worker
+script download attempt using the Pages project's `production_script_name`
+returned 404 / code 10007. Therefore Pages commit metadata remains provenance
+metadata, without deployed-function byte attestation through that read path.
+MATH remains 0/13 and certified daily flow remains UNKNOWN.
+
+Later bounded source-event read-back established the first resumed durable run
+after `05:50:57.109Z` at `10:30:57.221Z` (18:30 Manila), before the caller's
+19:08 deployment. Do not attribute endpoint or publication recovery to this
+caller release. The successful zero-insert observation was one tick within a
+resumed pipeline; the subsequent source/visibility/receipt investigation is
+recorded in `ZERO_FLOW_SOURCE_DIAGNOSIS_2026-10-12.md`.

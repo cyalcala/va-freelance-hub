@@ -1,0 +1,16 @@
+{
+  "scope": "PRIMARY_FRAMEWORK_DOCUMENTATION_NOT_JOB_PROVIDER_IO_OR_CONTAINER_ACCEPTANCE",
+  "sources": [
+    {
+      "title": "Bun runtime configuration",
+      "url": "https://bun.sh/docs/runtime/bunfig",
+      "claim": "Default auto mode resolves local node_modules when present; fallback must be selected to auto-install missing packages."
+    },
+    {
+      "title": "Bun automatic installation",
+      "url": "https://bun.sh/docs/runtime/auto-install",
+      "claim": "Automatic module installation begins when no node_modules directory exists in the working directory or above."
+    }
+  ],
+  "inference": "Miner Dockerfile installs standalone libsql dependencies before copying workspace source, leaving a reachable fast-xml-parser import unestablished by the standalone install. Actual isolated container execution remains unverified."
+}
